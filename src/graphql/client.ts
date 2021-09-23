@@ -1,6 +1,6 @@
 import { ApolloClient, InMemoryCache } from '@apollo/client'
 import Config from 'react-native-config'
-import { AccountData_accountActivity } from './__generated__/AccountData'
+import { Account_accountActivity } from './__generated__/Account'
 
 const cache = new InMemoryCache({
   typePolicies: {
@@ -9,8 +9,8 @@ const cache = new InMemoryCache({
         accountActivity: {
           keyArgs: ['address'],
           merge(existing, incoming) {
-            const prev = existing as AccountData_accountActivity
-            const next = incoming as AccountData_accountActivity
+            const prev = existing as Account_accountActivity
+            const next = incoming as Account_accountActivity
             const { cursor, data: nextData } = next
             const joined = [...(nextData || []), ...(prev?.data || [])].filter(
               (v, i, a) => a.findIndex((t) => t?.hash === v?.hash) === i, // filter dups

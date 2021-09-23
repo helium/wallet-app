@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client'
 
 export const DATA_QUERY = gql`
-  query AccountData($address: String!, $cursor: String) {
+  query Account($address: String, $cursor: String) {
     account(address: $address) {
       address
       balance
@@ -21,6 +21,22 @@ export const DATA_QUERY = gql`
         time
         type
         hash
+        endEpoch
+        startEpoch
+        height
+        rewards {
+          account
+          amount
+          gateway
+          type
+        }
+        payer
+        nonce
+        fee
+        payments {
+          payee
+          amount
+        }
       }
     }
   }
