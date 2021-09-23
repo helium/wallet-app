@@ -1,4 +1,4 @@
-import React, {memo, useCallback, useEffect, useState} from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react'
 import {
   ActivityIndicator,
   Button,
@@ -6,9 +6,9 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-} from 'react-native';
-import {gql, useLazyQuery} from '@apollo/client';
-import Input from './Input';
+} from 'react-native'
+import { gql, useLazyQuery } from '@apollo/client'
+import Input from './Input'
 
 const DATA_QUERY = gql`
   query data($address: String!, $cursor: String) {
@@ -34,40 +34,38 @@ const DATA_QUERY = gql`
       }
     }
   }
-`;
+`
 
 const AccountInfo = () => {
-  const [address, setAddress] = useState('');
-  const [cursor, setCursor] = useState('');
-  const [getData, {loading, data, fetchMore, error}] = useLazyQuery(
-    DATA_QUERY,
-    {
-      notifyOnNetworkStatusChange: true,
-    },
-  );
-  console.log({loading, data, address, cursor, error});
+  const [address, setAddress] = useState('')
+  const [cursor, setCursor] = useState('')
+  const [getData, { loading, data, fetchMore }] = useLazyQuery(DATA_QUERY, {
+    notifyOnNetworkStatusChange: true,
+  })
 
   useEffect(() => {
     if (!data) {
-      return;
+      return
     }
     const {
-      accountActivity: {cursor: nextCursor, data: innerData},
-    } = data;
+      accountActivity: { cursor: nextCursor },
+    } = data
 
-    console.log({dataLength: innerData.length});
-    setCursor(nextCursor);
-  }, [cursor, data]);
+    setCursor(nextCursor)
+  }, [cursor, data])
 
-  const handleTextChange = useCallback(text => {
-    setAddress(text);
-    setCursor('');
-  }, []);
+  const handleTextChange = useCallback((text) => {
+    setAddress(text)
+    setCursor('')
+  }, [])
 
   const handleDataRequest = useCallback(() => {
-    console.log('handleDataRequest');
-    getData({variables: {address, cursor}});
-  }, [address, cursor, getData]);
+    getData({ variables: { address, cursor } })
+  }, [address, cursor, getData])
+
+  const handleFetchMore = useCallback(() => {
+    fetchMore?.({ variables: { address, cursor } })
+  }, [address, cursor, fetchMore])
 
   return (
     <SafeAreaView style={styles.container}>
@@ -85,26 +83,20 @@ const AccountInfo = () => {
           }}
         />
         <Button title="Get Account Data" onPress={handleDataRequest} />
-        <Button
-          title="Fetch More Activity"
-          onPress={() => {
-            console.log({fetchMore: !!fetchMore});
-            fetchMore?.({variables: {address, cursor}});
-          }}
-        />
+        <Button title="Fetch More Activity" onPress={handleFetchMore} />
         {loading && <ActivityIndicator color="black" />}
         <Text>{JSON.stringify(data, null, 2)}</Text>
       </ScrollView>
     </SafeAreaView>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
     margin: 24,
   },
-  inputContainer: {marginVertical: 24},
+  inputContainer: { marginVertical: 24 },
   input: {},
-});
+})
 
-export default memo(AccountInfo);
+export default memo(AccountInfo)
