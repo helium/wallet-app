@@ -7,51 +7,30 @@ import {
   StyleSheet,
   Text,
 } from 'react-native'
-import { gql, useLazyQuery } from '@apollo/client'
+import { useLazyQuery } from '@apollo/client'
 import Input from './Input'
-
-const DATA_QUERY = gql`
-  query data($address: String!, $cursor: String) {
-    account(address: $address) {
-      address
-      balance
-      block
-      dcBalance
-      dcNonce
-      nonce
-      secBalance
-      secNonce
-      speculativeNonce
-      speculativeSecNonce
-      stakedBalance
-    }
-    accountActivity(address: $address, cursor: $cursor) {
-      cursor
-      data {
-        time
-        type
-        hash
-      }
-    }
-  }
-`
+import { DATA_QUERY } from './graphql/account'
+import { AccountData } from './graphql/__generated__/AccountData'
 
 const AccountInfo = () => {
   const [address, setAddress] = useState('')
   const [cursor, setCursor] = useState('')
-  const [getData, { loading, data, fetchMore }] = useLazyQuery(DATA_QUERY, {
-    notifyOnNetworkStatusChange: true,
-  })
+  const [getData, { loading, data, fetchMore }] = useLazyQuery<AccountData>(
+    DATA_QUERY,
+    {
+      notifyOnNetworkStatusChange: true,
+    },
+  )
 
   useEffect(() => {
-    if (!data) {
+    if (!data?.accountActivity) {
       return
     }
     const {
       accountActivity: { cursor: nextCursor },
     } = data
 
-    setCursor(nextCursor)
+    setCursor(nextCursor || '')
   }, [cursor, data])
 
   const handleTextChange = useCallback((text) => {
