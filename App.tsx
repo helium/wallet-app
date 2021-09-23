@@ -10,7 +10,7 @@ const cache = new InMemoryCache({
           keyArgs: ['address'],
           merge(existing, incoming) {
             const { cursor, data } = incoming
-            const existingData: any[] = existing?.data || []
+            const existingData: unknown[] = existing?.data || []
             const nextData = [...data, ...existingData].filter(
               (v, i, a) => a.findIndex((t) => t.hash === v.hash) === i, // filter dups
             )
