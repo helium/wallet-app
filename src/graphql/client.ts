@@ -1,4 +1,5 @@
 import { ApolloClient, InMemoryCache } from '@apollo/client'
+import Config from 'react-native-config'
 import { AccountData_accountActivity } from './__generated__/AccountData'
 
 const cache = new InMemoryCache({
@@ -11,7 +12,7 @@ const cache = new InMemoryCache({
             const prev = existing as AccountData_accountActivity
             const next = incoming as AccountData_accountActivity
             const { cursor, data: nextData } = next
-            const joined = [...(nextData || []), ...(prev.data || [])].filter(
+            const joined = [...(nextData || []), ...(prev?.data || [])].filter(
               (v, i, a) => a.findIndex((t) => t?.hash === v?.hash) === i, // filter dups
             )
 
@@ -24,7 +25,7 @@ const cache = new InMemoryCache({
 })
 
 const client = new ApolloClient({
-  uri: 'http://localhost:4000/graphiql',
+  uri: Config.GRAPH_URI,
   cache,
 })
 

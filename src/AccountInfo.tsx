@@ -15,12 +15,10 @@ import { AccountData } from './graphql/__generated__/AccountData'
 const AccountInfo = () => {
   const [address, setAddress] = useState('')
   const [cursor, setCursor] = useState('')
-  const [getData, { loading, data, fetchMore }] = useLazyQuery<AccountData>(
-    DATA_QUERY,
-    {
+  const [getData, { loading, data, fetchMore, error }] =
+    useLazyQuery<AccountData>(DATA_QUERY, {
       notifyOnNetworkStatusChange: true,
-    },
-  )
+    })
 
   useEffect(() => {
     if (!data?.accountActivity) {
@@ -65,6 +63,7 @@ const AccountInfo = () => {
         <Button title="Fetch More Activity" onPress={handleFetchMore} />
         {loading && <ActivityIndicator color="black" />}
         <Text>{JSON.stringify(data, null, 2)}</Text>
+        <Text style={styles.error}>{error?.message}</Text>
       </ScrollView>
     </SafeAreaView>
   )
@@ -76,6 +75,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: { marginVertical: 24 },
   input: {},
+  error: { color: 'red' },
 })
 
 export default memo(AccountInfo)
