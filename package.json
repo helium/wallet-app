@@ -7,7 +7,24 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "test": "jest",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx && tsc",
+    "bump-patch": "npx react-native bump-version --skip-semver-for android --skip-code-for all --type patch",
+    "bump-minor": "npx react-native bump-version --skip-semver-for android --skip-code-for all --type minor",
+    "bump-major": "npx react-native bump-version --skip-semver-for android --skip-code-for all --type major",
+    "prettier": "prettier --write *.ts*"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx,md,html}": [
+      "prettier --write ."
+    ],
+    "*.{js,ts,tsx}": [
+      "eslint --quiet --fix"
+    ]
   },
   "dependencies": {
     "@apollo/client": "^3.4.13",
@@ -18,14 +35,27 @@
   "devDependencies": {
     "@babel/core": "^7.12.9",
     "@babel/runtime": "^7.12.5",
-    "@react-native-community/eslint-config": "^2.0.0",
     "@types/jest": "^26.0.23",
     "@types/react-native": "^0.65.0",
     "@types/react-test-renderer": "^17.0.1",
+    "@typescript-eslint/eslint-plugin": "^4.31.2",
+    "@typescript-eslint/parser": "^4.31.2",
     "babel-jest": "^26.6.3",
-    "eslint": "^7.14.0",
+    "eslint": "^7.2.0",
+    "eslint-config-airbnb": "18.2.1",
+    "eslint-config-airbnb-typescript": "^14.0.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jest": "^24.4.2",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-react": "^7.21.5",
+    "eslint-plugin-react-hooks": "^1.7.0",
+    "husky": "^7.0.2",
     "jest": "^26.6.3",
+    "lint-staged": "^11.1.2",
     "metro-react-native-babel-preset": "^0.66.0",
+    "prettier": "^2.4.1",
     "react-native-codegen": "^0.0.7",
     "react-test-renderer": "17.0.2",
     "typescript": "^3.8.3"
