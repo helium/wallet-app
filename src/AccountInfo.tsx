@@ -1,22 +1,16 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import {
-  ActivityIndicator,
-  Button,
-  FlatList,
-  Keyboard,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-} from 'react-native'
+import { ActivityIndicator, Button, FlatList, Keyboard } from 'react-native'
 import { useLazyQuery } from '@apollo/client'
 import Balance, { CurrencyType } from '@helium/currency'
-import Input from './Input'
 import { DATA_QUERY } from './graphql/account'
+import TextInput from './components/TextInput'
+import Text from './components/Text'
 import {
   Account,
   Account_accountActivity_data,
 } from './graphql/__generated__/Account'
+import SafeAreaBox from './components/SafeAreaBox'
+import TouchableOpacityBox from './components/TouchableOpacityBox'
 
 const AccountInfo = () => {
   const [address, setAddress] = useState('')
@@ -58,9 +52,17 @@ const AccountInfo = () => {
   const renderItem = useCallback(
     (listItem: { index: number; item: Account_accountActivity_data }) => {
       return (
-        <TouchableOpacity onPress={handlePress} style={styles.row}>
-          <Text>{listItem.item?.type}</Text>
-        </TouchableOpacity>
+        <TouchableOpacityBox
+          onPress={handlePress}
+          height={60}
+          padding="m"
+          backgroundColor="primaryBackground"
+          justifyContent="center"
+          borderBottomColor="primary"
+          borderBottomWidth={1}
+        >
+          <Text variant="body1">{listItem.item?.type}</Text>
+        </TouchableOpacityBox>
       )
     },
     [handlePress],
@@ -83,18 +85,14 @@ const AccountInfo = () => {
   }, [data])
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Input
-        title="Enter Account Address"
-        style={styles.inputContainer}
-        inputProps={{
-          editable: !loading,
-          onChangeText: handleTextChange,
-          value: address,
-          placeholder: 'Address',
-          style: styles.input,
-          multiline: true,
-        }}
+    <SafeAreaBox padding="l" backgroundColor="primaryBackground" flex={1}>
+      <TextInput
+        onChangeText={handleTextChange}
+        value={address}
+        marginVertical="l"
+        placeholder="Enter Account Address"
+        variant="regular"
+        padding="m"
       />
       <Button
         title="Get Account Data"
@@ -103,33 +101,20 @@ const AccountInfo = () => {
       />
       <Button title="Fetch More Activity" onPress={handleFetchMore} />
       {loading && <ActivityIndicator color="black" />}
-      <Text style={styles.balanceText}>{`Account Balance: ${balance}`}</Text>
-      <Text style={styles.error}>{error?.message}</Text>
+      <Text
+        variant="subtitle2"
+        marginVertical="l"
+      >{`Account Balance: ${balance}`}</Text>
+      <Text variant="subtitle1" color="error">
+        {error?.message}
+      </Text>
       <FlatList
         data={listData}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
       />
-    </SafeAreaView>
+    </SafeAreaBox>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    margin: 24,
-  },
-  balanceText: { fontSize: 21, marginVertical: 12 },
-  inputContainer: { marginVertical: 24 },
-  input: {},
-  error: { color: 'red' },
-  row: {
-    height: 60,
-    padding: 16,
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    borderBottomColor: 'lightgray',
-    borderBottomWidth: 1,
-  },
-})
 
 export default memo(AccountInfo)

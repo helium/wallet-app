@@ -31,12 +31,16 @@
     "@apollo/client": "^3.4.13",
     "@helium/currency": "^3.25.1",
     "@react-native-async-storage/async-storage": "^1.15.8",
+    "@shopify/restyle": "^1.4.0",
     "apollo3-cache-persist": "^0.13.0",
     "graphql": "^15.6.0",
     "react": "17.0.2",
     "react-async-hook": "^4.0.0",
     "react-native": "0.65.1",
-    "react-native-config": "^1.4.4"
+    "react-native-config": "^1.4.4",
+    "react-native-safe-area-context": "^3.3.2",
+    "tinycolor2": "^1.4.2",
+    "use-debounce": "^7.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
@@ -45,6 +49,7 @@
     "@types/jest": "^26.0.23",
     "@types/react-native": "^0.65.0",
     "@types/react-test-renderer": "^17.0.1",
+    "@types/tinycolor2": "^1.4.3",
     "@typescript-eslint/eslint-plugin": "^4.31.2",
     "@typescript-eslint/parser": "^4.31.2",
     "apollo": "^2.33.6",
