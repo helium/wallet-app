@@ -3,12 +3,14 @@ import {
   ActivityIndicator,
   Button,
   FlatList,
+  Keyboard,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
 } from 'react-native'
 import { useLazyQuery } from '@apollo/client'
+import Balance, { CurrencyType } from '@helium/currency'
 import Input from './Input'
 import { DATA_QUERY } from './graphql/account'
 import {
@@ -43,6 +45,7 @@ const AccountInfo = () => {
   }, [])
 
   const handleDataRequest = useCallback(() => {
+    Keyboard.dismiss()
     getData({ variables: { address, cursor } })
   }, [address, cursor, getData])
 
@@ -70,6 +73,15 @@ const AccountInfo = () => {
 
   const keyExtractor = useCallback((item) => item.hash, [])
 
+  const balance = useMemo(() => {
+    if (!data?.account?.balance) return ''
+
+    return new Balance(
+      data.account.balance,
+      CurrencyType.networkToken,
+    ).toString(2)
+  }, [data])
+
   return (
     <SafeAreaView style={styles.container}>
       <Input
@@ -84,9 +96,14 @@ const AccountInfo = () => {
           multiline: true,
         }}
       />
-      <Button title="Get Account Data" onPress={handleDataRequest} />
+      <Button
+        title="Get Account Data"
+        onPress={handleDataRequest}
+        disabled={!!data}
+      />
       <Button title="Fetch More Activity" onPress={handleFetchMore} />
       {loading && <ActivityIndicator color="black" />}
+      <Text style={styles.balanceText}>{`Account Balance: ${balance}`}</Text>
       <Text style={styles.error}>{error?.message}</Text>
       <FlatList
         data={listData}
@@ -101,6 +118,7 @@ const styles = StyleSheet.create({
   container: {
     margin: 24,
   },
+  balanceText: { fontSize: 21, marginVertical: 12 },
   inputContainer: { marginVertical: 24 },
   input: {},
   error: { color: 'red' },
