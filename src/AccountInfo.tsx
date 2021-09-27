@@ -2,6 +2,7 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, Button, FlatList, Keyboard } from 'react-native'
 import { useLazyQuery } from '@apollo/client'
 import Balance, { CurrencyType } from '@helium/currency'
+import { useTranslation } from 'react-i18next'
 import { DATA_QUERY } from './graphql/account'
 import TextInput from './components/TextInput'
 import Text from './components/Text'
@@ -13,6 +14,7 @@ import SafeAreaBox from './components/SafeAreaBox'
 import TouchableOpacityBox from './components/TouchableOpacityBox'
 
 const AccountInfo = () => {
+  const { t } = useTranslation()
   const [address, setAddress] = useState('')
   const [cursor, setCursor] = useState('')
   const [getData, { loading, data, fetchMore, error }] = useLazyQuery<Account>(
@@ -84,27 +86,31 @@ const AccountInfo = () => {
     ).toString(2)
   }, [data])
 
+  const placeholder = useMemo(() => t('placeholder.enterAccountAddress'), [t])
+
   return (
     <SafeAreaBox padding="l" backgroundColor="primaryBackground" flex={1}>
       <TextInput
         onChangeText={handleTextChange}
         value={address}
         marginVertical="l"
-        placeholder="Enter Account Address"
+        placeholder={placeholder}
         variant="regular"
         padding="m"
       />
       <Button
-        title="Get Account Data"
+        title={t('placeholder.getAccountData')}
         onPress={handleDataRequest}
         disabled={!!data}
       />
-      <Button title="Fetch More Activity" onPress={handleFetchMore} />
+      <Button
+        title={t('placeholder.fetchMoreActivity')}
+        onPress={handleFetchMore}
+      />
       {loading && <ActivityIndicator color="black" />}
-      <Text
-        variant="subtitle2"
-        marginVertical="l"
-      >{`Account Balance: ${balance}`}</Text>
+      <Text variant="subtitle2" marginVertical="l">
+        {t('placeholder.accountBalanceValue', { balance })}
+      </Text>
       <Text variant="subtitle1" color="error">
         {error?.message}
       </Text>
