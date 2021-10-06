@@ -55,44 +55,37 @@ const palette = {
   white: '#FFFFFF',
   transparent: '#00000000',
   offWhite: '#F9FAFC',
-  bobcatRed: '#EE2737',
-  bobcatDarkGrey: '#333333',
-  bobcatGrey: '#aeaeae',
+  gold: '#FFD700',
+  red: '#EE2737',
+  darkGrey: '#333333',
+  grey: '#aeaeae',
 }
 
 export const lightThemeColors = {
   ...palette,
 
-  primary: palette.bobcatRed,
+  primary: palette.gold,
+  secondary: palette.grey,
   primaryBackground: palette.white,
   primaryText: palette.black,
-  secondaryBackground: palette.offWhite,
-  secondary: palette.bobcatGrey,
-  secondaryText: palette.bobcatDarkGrey,
-  error: palette.bobcatRed,
-  surface: palette.white,
-  surfaceText: palette.bobcatDarkGrey,
-  surfaceSecondary: palette.offWhite,
-  surfaceSecondaryText: palette.bobcatDarkGrey,
-  surfaceContrast: palette.bobcatDarkGrey,
+  error: palette.red,
+  surface: palette.offWhite,
+  surfaceText: palette.darkGrey,
+  surfaceContrast: palette.darkGrey,
   surfaceContrastText: palette.white,
 }
 export const darkThemeColors = {
   ...palette,
 
-  primary: palette.bobcatRed,
+  primary: palette.gold,
+  secondary: palette.darkGrey,
   primaryBackground: palette.black,
   primaryText: palette.white,
-  secondaryBackground: palette.bobcatDarkGrey,
-  secondary: palette.bobcatDarkGrey,
-  secondaryText: palette.white,
-  error: palette.bobcatRed,
-  surface: palette.bobcatDarkGrey,
+  error: palette.red,
+  surface: palette.darkGrey,
   surfaceText: palette.white,
-  surfaceSecondary: palette.offWhite,
-  surfaceSecondaryText: palette.bobcatDarkGrey,
   surfaceContrast: palette.white,
-  surfaceContrastText: palette.bobcatDarkGrey,
+  surfaceContrastText: palette.darkGrey,
 }
 
 export const theme = createTheme({
@@ -148,7 +141,7 @@ export const theme = createTheme({
       backgroundColor: 'surface',
     },
     elevated: {
-      shadowColor: 'secondaryBackground',
+      shadowColor: 'surface',
       borderRadius: 'm',
       shadowOffset: {
         width: 0,
@@ -166,7 +159,7 @@ export const theme = createTheme({
   textVariants,
   inputVariants: {
     regular: {
-      backgroundColor: 'secondaryBackground',
+      backgroundColor: 'surface',
       fontSize: 18,
       color: 'primaryText',
       borderRadius: 'm',

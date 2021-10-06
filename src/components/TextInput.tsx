@@ -32,7 +32,7 @@ const TI = ({ variant, placeholderTextColor, ...rest }: Props) => {
     const findColor = () => {
       if (placeholderTextColor) return colors[placeholderTextColor]
 
-      return theme.inputVariants.regular.color
+      return colors[theme.inputVariants.regular.color as Color]
     }
 
     const color = findColor()

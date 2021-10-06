@@ -26,6 +26,7 @@ module.exports = {
     'jest/no-export': 'off',
     'import/prefer-default-export': 'off',
     'no-use-before-define': 'off',
+    'no-console': [2, { allow: ['warn', 'error'] }],
     '@typescript-eslint/no-use-before-define': 'off',
     'default-case': 'off',
     quotes: [
