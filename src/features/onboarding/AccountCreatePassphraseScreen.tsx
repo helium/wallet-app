@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { useNavigation } from '@react-navigation/native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { useAsync } from 'react-async-hook'
 import Carousel, { Pagination } from 'react-native-snap-carousel'
@@ -7,16 +7,24 @@ import { upperFirst } from 'lodash'
 import { Button } from 'react-native'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
-import { OnboardingNavigationProp } from './onboardingTypes'
+import {
+  OnboardingNavigationProp,
+  OnboardingStackParamList,
+} from './onboardingTypes'
 import { wp } from '../../utils/layout'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
+type Route = RouteProp<
+  OnboardingStackParamList,
+  'AccountCreatePassphraseScreen'
+>
 const AccountCreatePassphraseScreen = () => {
   const { t } = useTranslation()
   const { createSecureAccount } = useAccountStorage()
   const { result: secureAccount } = useAsync(createSecureAccount, [])
   const navigation = useNavigation<OnboardingNavigationProp>()
+  const { params } = useRoute<Route>()
   const [wordIndex, setWordIndex] = useState(0)
   const [disabled, setDisabled] = useState(true)
   const [viewedWords, setViewedWords] = useState(new Array(12).fill(false))
@@ -43,8 +51,11 @@ const AccountCreatePassphraseScreen = () => {
 
   const navNext = useCallback(() => {
     if (!secureAccount) return
-    navigation.push('AccountEnterPassphraseScreen', secureAccount)
-  }, [navigation, secureAccount])
+    navigation.navigate('AccountEnterPassphraseScreen', {
+      ...secureAccount,
+      ...params,
+    })
+  }, [navigation, params, secureAccount])
 
   const renderItem = ({ item, index }: { item: string; index: number }) => {
     return (

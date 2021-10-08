@@ -7,7 +7,7 @@ import useAppState from 'react-native-appstate-hook'
 import * as SplashScreen from 'expo-splash-screen'
 import { useApolloClient } from './graphql/useApolloClient'
 import { theme, darkThemeColors, lightThemeColors } from './theme/theme'
-import NavigationRoot from './navigation/NavigationRoot'
+import RootNavigator from './navigation/RootNavigator'
 import { useAccountStorage } from './storage/AccountStorageProvider'
 import LockScreen from './features/lock/LockScreen'
 import SecurityScreen from './features/security/SecurityScreen'
@@ -48,7 +48,7 @@ const App = () => {
         <LockScreen>
           <>
             <NavigationContainer>
-              <NavigationRoot />
+              <RootNavigator />
             </NavigationContainer>
             <SecurityScreen
               visible={appState !== 'active' && appState !== 'unknown'}

@@ -11,14 +11,14 @@ export interface Account_account {
   __typename: 'AccountData'
   address: string
   balance: number
-  block: number
+  block: number | null
   dcBalance: number
   dcNonce: number
   nonce: number
   secBalance: number
   secNonce: number
-  speculativeNonce: number
-  speculativeSecNonce: number
+  speculativeNonce: number | null
+  speculativeSecNonce: number | null
   stakedBalance: number
 }
 

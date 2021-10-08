@@ -22,7 +22,7 @@ const ImportAccountConfirmScreen = () => {
   const [words, setWords] = useState<Array<string>>([])
   const navigation = useNavigation<OnboardingNavigationProp>()
   const {
-    params: { words: routeWords },
+    params: { words: routeWords, multiAccount },
   } = useRoute<Route>()
   const [wordIndex, setWordIndex] = useState(0)
 
@@ -31,8 +31,12 @@ const ImportAccountConfirmScreen = () => {
   }
 
   const navNext = useCallback(
-    () => navigation.push('AccountImportCompleteScreen', { words }),
-    [navigation, words],
+    () =>
+      navigation.navigate('AccountImportCompleteScreen', {
+        words,
+        multiAccount,
+      }),
+    [multiAccount, navigation, words],
   )
 
   useEffect(() => {

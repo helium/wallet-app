@@ -60,7 +60,7 @@ const AccountEnterPassphraseScreen = () => {
   const nextStep = useCallback(() => {
     setTimeout(() => {
       if (step === 2) {
-        navigation.push('AccountAssignScreen', params)
+        navigation.navigate('AccountAssignScreen', params)
       } else {
         carouselRef.current?.snapToItem(step + 1)
         setStep(step + 1)

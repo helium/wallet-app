@@ -8,24 +8,48 @@ import {
   OnboardingNavigationProp,
   OnboardingStackParamList,
 } from './onboardingTypes'
-import { AccountView } from '../../storage/AccountStorageProvider'
+import {
+  AccountView,
+  useAccountStorage,
+} from '../../storage/AccountStorageProvider'
+import { HomeNavigationProp } from '../home/homeTypes'
 
 type Route = RouteProp<OnboardingStackParamList, 'AccountAssignScreen'>
 const AccountAssignScreen = () => {
-  const navigation = useNavigation<OnboardingNavigationProp>()
-  const { params } = useRoute<Route>()
+  const onboardingNav = useNavigation<OnboardingNavigationProp>()
+  const homeNav = useNavigation<HomeNavigationProp>()
+  const {
+    params: { multiAccount, ...params },
+  } = useRoute<Route>()
   const [alias, setAlias] = useState('')
   const [color, setColor] = useState('')
+  const { updateViewType, upsertAccount } = useAccountStorage()
 
   const handlePress = useCallback(
     (viewType: AccountView) => () => {
-      navigation.navigate('AccountCreatePinScreen', {
+      if (multiAccount) {
+        updateViewType(viewType)
+        upsertAccount({ color, alias, ...params })
+        homeNav.navigate('Home')
+        return
+      }
+
+      onboardingNav.navigate('AccountCreatePinScreen', {
         pinReset: false,
         account: { ...params, color, alias },
         viewType,
       })
     },
-    [alias, color, navigation, params],
+    [
+      alias,
+      color,
+      multiAccount,
+      homeNav,
+      onboardingNav,
+      params,
+      updateViewType,
+      upsertAccount,
+    ],
   )
   return (
     <SafeAreaBox backgroundColor="primaryBackground" flex={1}>

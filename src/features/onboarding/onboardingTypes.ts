@@ -6,10 +6,17 @@ import {
 } from '../../storage/AccountStorageProvider'
 
 export type OnboardingStackParamList = {
-  Welcome: undefined
-  AccountCreatePassphraseScreen: undefined
-  AccountEnterPassphraseScreen: SecureAccount
-  AccountAssignScreen: SecureAccount
+  Welcome: undefined | { multiAccount: boolean }
+
+  AccountCreatePassphraseScreen: undefined | { multiAccount: boolean }
+  AccountEnterPassphraseScreen: SecureAccount & { multiAccount?: boolean }
+
+  AccountImportScreen: undefined | { multiAccount?: boolean }
+  ImportAccountConfirmScreen: { words: Array<string>; multiAccount?: boolean }
+  AccountImportCompleteScreen: { words: Array<string>; multiAccount?: boolean }
+
+  AccountAssignScreen: SecureAccount & { multiAccount?: boolean }
+
   AccountCreatePinScreen:
     | {
         pinReset?: boolean
@@ -23,9 +30,6 @@ export type OnboardingStackParamList = {
     account?: SecureAccount & CSAccount
     viewType?: AccountView
   }
-  AccountImportScreen: undefined
-  ImportAccountConfirmScreen: { words: Array<string> }
-  AccountImportCompleteScreen: { words: Array<string> }
 }
 
 export type OnboardingNavigationProp =

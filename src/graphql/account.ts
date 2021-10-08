@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client'
 
-export const DATA_QUERY = gql`
+export const ACCOUNT_WALLET_QUERY = gql`
   query Account($address: String, $cursor: String) {
     account(address: $address) {
       address
@@ -38,6 +38,24 @@ export const DATA_QUERY = gql`
           amount
         }
       }
+    }
+  }
+`
+
+export const ACCOUNTS_WALLET_QUERY = gql`
+  query Accounts($addresses: [String]) {
+    accounts(addresses: $addresses) {
+      address
+      balance
+      block
+      dcBalance
+      dcNonce
+      nonce
+      secBalance
+      secNonce
+      speculativeNonce
+      speculativeSecNonce
+      stakedBalance
     }
   }
 `

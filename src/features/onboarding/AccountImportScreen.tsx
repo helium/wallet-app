@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigation } from '@react-navigation/native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { OnboardingNavigationProp } from './onboardingTypes'
+import {
+  OnboardingNavigationProp,
+  OnboardingStackParamList,
+} from './onboardingTypes'
 import PassphraseAutocomplete, { TOTAL_WORDS } from './PassphraseAutocomplete'
 import SafeAreaBox from '../../components/SafeAreaBox'
 
+type Route = RouteProp<OnboardingStackParamList, 'AccountImportScreen'>
 const AccountImportScreen = () => {
+  const { params } = useRoute<Route>()
   const [words, setWords] = useState(new Array<string>())
 
   const navigation = useNavigation<OnboardingNavigationProp>()
@@ -27,7 +32,10 @@ const AccountImportScreen = () => {
     setWords((prevWords) => {
       const nextWords = [...prevWords, selectedWord]
       if (nextWords.length === TOTAL_WORDS) {
-        navigation.push('ImportAccountConfirmScreen', { words: nextWords })
+        navigation.navigate('ImportAccountConfirmScreen', {
+          words: nextWords,
+          ...params,
+        })
       }
       return nextWords
     })

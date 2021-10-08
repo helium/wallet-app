@@ -18,7 +18,7 @@ const AccountImportCompleteScreen = () => {
 
   const { createSecureAccount } = useAccountStorage()
   const {
-    params: { words },
+    params: { words, multiAccount },
   } = useRoute<Route>()
 
   useEffect(() => {
@@ -28,7 +28,10 @@ const AccountImportCompleteScreen = () => {
       try {
         const account = await createSecureAccount(words)
         timer = setTimeout(() => {
-          navigation.push('AccountAssignScreen', account)
+          navigation.navigate('AccountAssignScreen', {
+            ...account,
+            multiAccount,
+          })
         }, 2000)
       } catch (error) {
         timer = setTimeout(() => {
@@ -47,7 +50,7 @@ const AccountImportCompleteScreen = () => {
     return () => {
       clearTimeout(timer)
     }
-  }, [words, navigation, t, createSecureAccount])
+  }, [words, navigation, t, createSecureAccount, multiAccount])
 
   return (
     <SafeAreaBox

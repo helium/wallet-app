@@ -20,7 +20,7 @@ const AccountCreatePinScreen = () => {
 
   useEffect(() => {
     if (pin.length === 6) {
-      navigation.push('AccountConfirmPinScreen', {
+      navigation.navigate('AccountConfirmPinScreen', {
         ...params,
         pin,
       })

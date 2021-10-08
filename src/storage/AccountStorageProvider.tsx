@@ -51,7 +51,7 @@ const useAccountStorageHook = () => {
     status: 'on' | 'restored' | 'off'
   }>()
 
-  const restored = useMemo(() => !!secureAccounts, [secureAccounts])
+  const restored = useMemo(() => secureAccounts !== undefined, [secureAccounts])
 
   useAsync(async () => {
     const cloudAccounts = await getAccounts()
