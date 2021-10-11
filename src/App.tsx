@@ -5,12 +5,14 @@ import { ThemeProvider } from '@shopify/restyle'
 import { NavigationContainer } from '@react-navigation/native'
 import useAppState from 'react-native-appstate-hook'
 import * as SplashScreen from 'expo-splash-screen'
+import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { useApolloClient } from './graphql/useApolloClient'
 import { theme, darkThemeColors, lightThemeColors } from './theme/theme'
 import RootNavigator from './navigation/RootNavigator'
 import { useAccountStorage } from './storage/AccountStorageProvider'
 import LockScreen from './features/lock/LockScreen'
 import SecurityScreen from './features/security/SecurityScreen'
+import useMount from './utils/useMount'
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -31,6 +33,14 @@ const App = () => {
     }),
     [colorScheme],
   )
+
+  useMount(() => {
+    GoogleSignin.configure({
+      iosClientId:
+        '605970674117-ll6b47atjj62m8i7j698pojgrbdf3ko1.apps.googleusercontent.com',
+      scopes: ['https://www.googleapis.com/auth/drive.file'],
+    })
+  })
 
   useEffect(() => {
     if (!accountsRestored) return
