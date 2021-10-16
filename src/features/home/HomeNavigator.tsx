@@ -1,23 +1,23 @@
 import React, { memo } from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
-import Home from './Home'
-import MultiAccountNavigator from '../onboarding/MultiAccountNavigator'
+import AccountAssignScreen from '../onboarding/AccountAssignScreen'
+import AccountsScreen from '../account/AccountsScreen'
 
 const HomeStack = createStackNavigator()
 
 const HomeStackScreen = () => {
   return (
-    <HomeStack.Navigator screenOptions={{ presentation: 'modal' }}>
+    <HomeStack.Navigator
+      screenOptions={{ presentation: 'modal', headerShown: false }}
+    >
       <HomeStack.Screen
-        name="Home"
+        name="AccountsScreen"
         options={{ headerShown: false }}
-        component={Home}
+        component={AccountsScreen}
       />
-
       <HomeStack.Screen
-        name="AddAccount"
-        options={{ headerShown: false }}
-        component={MultiAccountNavigator}
+        name="AccountAssignScreen"
+        component={AccountAssignScreen}
       />
     </HomeStack.Navigator>
   )

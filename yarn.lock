@@ -1334,6 +1334,23 @@
   dependencies:
     cross-spawn "^6.0.5"
 
+"@gorhom/bottom-sheet@^4":
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/@gorhom/bottom-sheet/-/bottom-sheet-4.1.2.tgz#c648f47d0853fa3cf7279813dad6de8dbf2e6e72"
+  integrity sha512-nSKSkUDEzRaMTv1PN5CVy1aZLYvenDZrxtSQLB1JOb8qRF4jRqgJc3I2Hil9lB9MeyrtiC07a3Q2m/HccN1FxQ==
+  dependencies:
+    "@gorhom/portal" "^1.0.9"
+    invariant "^2.2.4"
+    nanoid "^3.1.20"
+    react-native-redash "^16.1.1"
+
+"@gorhom/portal@^1.0.9":
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/@gorhom/portal/-/portal-1.0.9.tgz#bd66e0e27e49fa3163b89c4c23661f31471a6343"
+  integrity sha512-tQUBKf1kDLK1l+0duYBxRqNMtdIrOAIp2H36Bc7/qUZXRxP1rUvj7EMmv6tdlKN/MzEiKPGx9wY0EmOYTjXIFQ==
+  dependencies:
+    nanoid "^3.1.23"
+
 "@graphql-typed-document-node/core@^3.0.0":
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/@graphql-typed-document-node/core/-/core-3.1.0.tgz#0eee6373e11418bfe0b5638f654df7a4ca6a3950"
@@ -2254,6 +2271,13 @@
   resolved "https://registry.yarnpkg.com/@types/q/-/q-1.5.5.tgz#75a2a8e7d8ab4b230414505d92335d1dcb53a6df"
   integrity sha512-L28j2FcJfSZOnL1WBjDYp2vUHCeIFlyYI/53EwD/rKUBQ7MtUUfbQWiyKJGpcnv4/WgrhWsFKrcPstcAt/J0tQ==
 
+"@types/react-addons-shallow-compare@^0.14.22":
+  version "0.14.22"
+  resolved "https://registry.yarnpkg.com/@types/react-addons-shallow-compare/-/react-addons-shallow-compare-0.14.22.tgz#25177d8ab88aedfc2937b434b09b1fcbc9c2eccd"
+  integrity sha512-krgFRorWtbVJLzpJsJD6O27Lew3YHuemVZbL9RFvq8TF1w9DbrHjiiLuIyWIL6AjunBkUrQlErfbUv1TYKiK9w==
+  dependencies:
+    "@types/react" "*"
+
 "@types/react-native-snap-carousel@^3.8.4":
   version "3.8.4"
   resolved "https://registry.yarnpkg.com/@types/react-native-snap-carousel/-/react-native-snap-carousel-3.8.4.tgz#0ffa154d29df2f09b4d2d1dd331fc678915918f7"
@@ -2459,6 +2483,11 @@ abort-controller@^3.0.0:
   integrity sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==
   dependencies:
     event-target-shim "^5.0.0"
+
+abs-svg-path@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/abs-svg-path/-/abs-svg-path-0.1.1.tgz#df601c8e8d2ba10d4a76d625e236a9a39c2723bf"
+  integrity sha1-32Acjo0roQ1KdtYl4japo5wnI78=
 
 absolute-path@^0.0.0:
   version "0.0.0"
@@ -3763,7 +3792,7 @@ color-string@^1.5.3, color-string@^1.6.0:
     color-name "^1.0.0"
     simple-swizzle "^0.2.2"
 
-color@^3.1.3:
+color@^3.0.0, color@^3.1.3:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/color/-/color-3.2.1.tgz#3544dc198caf4490c3ecc9a790b54fe9ff45e164"
   integrity sha512-aBl7dZI9ENN6fUGC7mWpMTPNHmWUSNan9tuWN6ahh5ZLNk9baLJOnSMlrQkHcrfFgz2/RigjUVAjdx36VcemKA==
@@ -4076,6 +4105,11 @@ date-fns@^1.27.2:
   version "1.30.1"
   resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-1.30.1.tgz#2e71bf0b119153dbb4cc4e88d9ea5acfb50dc05c"
   integrity sha512-hBSVCvSmWC+QypYObzwGOd9wqdDpOt+0wl0KbU+R+uuZBS1jN8VsD1ss3irQDknRj5NvxiTF6oj/nDRnN/UQNw==
+
+date-fns@^2.25.0:
+  version "2.25.0"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.25.0.tgz#8c5c8f1d958be3809a9a03f4b742eba894fc5680"
+  integrity sha512-ovYRFnTrbGPD4nqaEqescPEv1mNwvt+UTqI3Ay9SzNtey9NZnYu6E2qCcBBgJ6/2VF1zGGygpyTDITqpQQ5e+w==
 
 dayjs@^1.8.15:
   version "1.10.7"
@@ -7217,6 +7251,11 @@ merge2@^1.3.0:
   resolved "https://registry.yarnpkg.com/merge2/-/merge2-1.4.1.tgz#4368892f885e907455a6fd7dc55c0c9d404990ae"
   integrity sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==
 
+mersenne-twister@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/mersenne-twister/-/mersenne-twister-1.1.0.tgz#f916618ee43d7179efcf641bec4531eb9670978a"
+  integrity sha1-+RZhjuQ9cXnvz2Qb7EUx65Zwl4o=
+
 metro-babel-register@0.66.2:
   version "0.66.2"
   resolved "https://registry.yarnpkg.com/metro-babel-register/-/metro-babel-register-0.66.2.tgz#c6bbe36c7a77590687ccd74b425dc020d17d05af"
@@ -7634,6 +7673,11 @@ mz@^2.7.0:
     object-assign "^4.0.1"
     thenify-all "^1.0.0"
 
+nanoid@^3.1.20:
+  version "3.1.29"
+  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.1.29.tgz#214fb2d7a33e1a5bef4757b779dfaeb6a4e5aeb4"
+  integrity sha512-dW2pUSGZ8ZnCFIlBIA31SV8huOGCHb6OwzVCc7A69rb/a+SgPBwfmLvK5TKQ3INPbRkcI8a/Owo0XbiTNH19wg==
+
 nanoid@^3.1.23:
   version "3.1.28"
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.1.28.tgz#3c01bac14cb6c5680569014cc65a2f26424c6bd4"
@@ -7786,6 +7830,13 @@ normalize-path@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/normalize-path/-/normalize-path-3.0.0.tgz#0dcd69ff23a1c9b11fd0978316644a0388216a65"
   integrity sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==
+
+normalize-svg-path@^1.0.1:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/normalize-svg-path/-/normalize-svg-path-1.1.0.tgz#0e614eca23c39f0cffe821d6be6cd17e569a766c"
+  integrity sha512-r9KHKG2UUeB5LoTouwDzBy2VxXlHsiM6fyLQvnJa0S5hrhzqElH/CH7TUGhT1fVvIYBIKf3OpY4YJ4CK+iaqHg==
+  dependencies:
+    svg-arc-to-cubic-bezier "^3.0.0"
 
 normalize-url@^6.1.0:
   version "6.1.0"
@@ -8165,6 +8216,11 @@ parse-png@^2.1.0:
   dependencies:
     pngjs "^3.3.0"
 
+parse-svg-path@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/parse-svg-path/-/parse-svg-path-0.1.2.tgz#7a7ec0d1eb06fa5325c7d3e009b859a09b5d49eb"
+  integrity sha1-en7A0esG+lMlx9PgCbhZoJtdSes=
+
 parse-url@^6.0.0:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/parse-url/-/parse-url-6.0.0.tgz#f5dd262a7de9ec00914939220410b66cff09107d"
@@ -8432,7 +8488,7 @@ prompts@^2.0.1, prompts@^2.4.0:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
-prop-types@^15.6.1, prop-types@^15.6.2, prop-types@^15.7.2:
+prop-types@^15.6.2, prop-types@^15.7.2:
   version "15.7.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.7.2.tgz#52c41e75b8c87e72b9d9360e0206b99dcbffa6c5"
   integrity sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==
@@ -8590,6 +8646,14 @@ react-native-iphone-x-helper@^1.0.3:
   resolved "https://registry.yarnpkg.com/react-native-iphone-x-helper/-/react-native-iphone-x-helper-1.3.1.tgz#20c603e9a0e765fd6f97396638bdeb0e5a60b010"
   integrity sha512-HOf0jzRnq2/aFUcdCJ9w9JGzN3gdEg0zFE4FyYlp4jtidqU03D5X7ZegGKfT1EWteR0gPBGp9ye5T5FvSWi9Yg==
 
+react-native-jazzicon@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/react-native-jazzicon/-/react-native-jazzicon-0.1.2.tgz#af0bd041685644ce283c0a330e3cf639d470720a"
+  integrity sha512-kncAj+5LizALDJisDqj2DjkGUvChsrXNhzUnFof9TWRXfBHEhvUbp7DN++SkSgcNYATY02G6Yd5Cre9O6fTNsA==
+  dependencies:
+    color "^3.0.0"
+    mersenne-twister "^1.1.0"
+
 react-native-keyboard-aware-scroll-view@^0.9.4:
   version "0.9.4"
   resolved "https://registry.yarnpkg.com/react-native-keyboard-aware-scroll-view/-/react-native-keyboard-aware-scroll-view-0.9.4.tgz#83b356062123070c4b75f57d34dd276b9dd5796a"
@@ -8597,6 +8661,11 @@ react-native-keyboard-aware-scroll-view@^0.9.4:
   dependencies:
     prop-types "^15.6.2"
     react-native-iphone-x-helper "^1.0.3"
+
+react-native-linear-gradient@^2.5.6:
+  version "2.5.6"
+  resolved "https://registry.yarnpkg.com/react-native-linear-gradient/-/react-native-linear-gradient-2.5.6.tgz#96215cbc5ec7a01247a20890888aa75b834d44a0"
+  integrity sha512-HDwEaXcQIuXXCV70O+bK1rizFong3wj+5Q/jSyifKFLg0VWF95xh8XQgfzXwtq0NggL9vNjPKXa016KuFu+VFg==
 
 react-native-localize@^2.1.4:
   version "2.1.4"
@@ -8618,6 +8687,15 @@ react-native-reanimated@^2.2.2:
     mockdate "^3.0.2"
     string-hash-64 "^1.0.3"
 
+react-native-redash@^16.1.1:
+  version "16.2.2"
+  resolved "https://registry.yarnpkg.com/react-native-redash/-/react-native-redash-16.2.2.tgz#99ecb49810aab8ed778b6d8c8726a29117065d96"
+  integrity sha512-febggvSI93H796DS1ufNNf/8FQMw21UTiMYBRscmhzyIamcC194oNamW1UtbreRSC1OweKBDEbyxPSugiuncmQ==
+  dependencies:
+    abs-svg-path "^0.1.1"
+    normalize-svg-path "^1.0.1"
+    parse-svg-path "^0.1.2"
+
 react-native-safe-area-context@^3.3.2:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/react-native-safe-area-context/-/react-native-safe-area-context-3.3.2.tgz#9549a2ce580f2374edb05e49d661258d1b8bcaed"
@@ -8630,12 +8708,12 @@ react-native-screens@^3.8.0:
   dependencies:
     warn-once "^0.1.0"
 
-react-native-snap-carousel@^3.9.1:
-  version "3.9.1"
-  resolved "https://registry.yarnpkg.com/react-native-snap-carousel/-/react-native-snap-carousel-3.9.1.tgz#6fd9bd8839546c2c6043a41d2035afbc6fe0443e"
-  integrity sha512-xWEGusacIgK1YaDXLi7Gao2+ISLoGPVEBR8fcMf4tOOJQufutlNwkoLu0l6B8Qgsrre0nTxoVZikRgGRDWlLaQ==
+react-native-snap-carousel@^4.0.0-beta.6:
+  version "4.0.0-beta.6"
+  resolved "https://registry.yarnpkg.com/react-native-snap-carousel/-/react-native-snap-carousel-4.0.0-beta.6.tgz#cc73108f83cbcf227cd1c6367f17926e8451fd01"
+  integrity sha512-jr6Kesrn+/047FwL32JRwAL6/l4Soz2uw73rFM5LfoGTgZhPatUsw60eTE3bznqFewPhoFIKezYe2m3LypTnIA==
   dependencies:
-    prop-types "^15.6.1"
+    "@types/react-addons-shallow-compare" "^0.14.22"
     react-addons-shallow-compare "15.6.2"
 
 react-native-sodium@^0.3.8:
@@ -9763,6 +9841,11 @@ supports-hyperlinks@^2.0.0, supports-hyperlinks@^2.1.0:
   dependencies:
     has-flag "^4.0.0"
     supports-color "^7.0.0"
+
+svg-arc-to-cubic-bezier@^3.0.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/svg-arc-to-cubic-bezier/-/svg-arc-to-cubic-bezier-3.2.0.tgz#390c450035ae1c4a0104d90650304c3bc814abe6"
+  integrity sha512-djbJ/vZKZO+gPoSDThGNpKDO+o+bAeA4XQKovvkNCqnIS2t+S4qnLAGQhyyrulhCFRl1WWzAp0wUDV8PpTVU3g==
 
 svg-parser@^2.0.0:
   version "2.0.4"

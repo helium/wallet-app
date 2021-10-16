@@ -1,34 +1,34 @@
 import { createTheme } from '@shopify/restyle'
 
 const textVariants = {
+  h0: {
+    fontSize: 42,
+    lineHeight: 42,
+    color: 'primaryText',
+  },
   h1: {
-    fontSize: 40,
-    fontWeight: 'bold',
+    fontSize: 37,
+    lineHeight: 37,
     color: 'primaryText',
   },
   h2: {
     fontSize: 33,
-    fontWeight: 'bold',
     color: 'primaryText',
   },
   h3: {
     fontSize: 27,
-    fontWeight: 'bold',
     color: 'primaryText',
   },
   h4: {
     fontSize: 22,
-    fontWeight: 'bold',
     color: 'primaryText',
   },
   subtitle1: {
     fontSize: 20,
-    fontWeight: '500',
     color: 'primaryText',
   },
   subtitle2: {
-    fontSize: 17,
-    fontWeight: '500',
+    fontSize: 19,
     color: 'primaryText',
   },
   body1: {
@@ -40,23 +40,40 @@ const textVariants = {
     color: 'primaryText',
   },
   body3: {
-    fontSize: 11,
+    fontSize: 12,
     color: 'primaryText',
   },
 }
 
 const palette = {
-  charcoal: '#264653',
-  peacockGreen: '#2A9D8F',
-  yellow: '#E9C46A',
-  deepOrange: '#F4A261',
-  burntSienna: '#E76F51',
-  black: '#000000',
+  black500: '#3D435B',
+  black600: '#3B3E48',
+  black700: '#444755',
+  black800: '#131419',
+  black900: '#000000',
+
+  blueBright500: '#009FF9',
+
+  greenBright500: '#27EE76',
+
+  grey200: '#EFEFF0',
+  grey400: '#7E8399',
+  grey500: '#747A92',
+  grey600: '#565B6D',
+  grey700: '#5A5E6C',
+  grey800: '#54596F',
+  grey900: '#32343E',
+
+  purple500: '#B556FF',
+
+  orange500: '#FFB156',
+
+  red500: '#E43B70',
+
   white: '#FFFFFF',
   transparent: '#00000000',
   offWhite: '#F9FAFC',
   gold: '#FFD700',
-  red: '#EE2737',
   darkGrey: '#333333',
   grey: '#aeaeae',
 }
@@ -64,26 +81,32 @@ const palette = {
 export const lightThemeColors = {
   ...palette,
 
-  primary: palette.gold,
+  primary: palette.purple500,
   secondary: palette.grey,
-  primaryBackground: palette.white,
-  primaryText: palette.black,
-  error: palette.red,
-  surface: palette.offWhite,
+  primaryBackground: palette.grey200,
+  primaryText: palette.black800,
+  secondaryText: palette.grey400,
+  error: palette.red500,
+  surface: palette.white,
   surfaceText: palette.darkGrey,
+  surfaceSecondary: palette.white,
+  surfaceSecondaryText: palette.black500,
   surfaceContrast: palette.darkGrey,
   surfaceContrastText: palette.white,
 }
 export const darkThemeColors = {
   ...palette,
 
-  primary: palette.gold,
+  primary: palette.purple500,
   secondary: palette.darkGrey,
-  primaryBackground: palette.black,
+  primaryBackground: palette.black800,
   primaryText: palette.white,
-  error: palette.red,
-  surface: palette.darkGrey,
+  secondaryText: palette.grey400,
+  error: palette.red500,
+  surface: palette.grey600,
   surfaceText: palette.white,
+  surfaceSecondary: palette.grey900,
+  surfaceSecondaryText: palette.grey500,
   surfaceContrast: palette.white,
   surfaceContrastText: palette.darkGrey,
 }
@@ -92,10 +115,10 @@ export const theme = createTheme({
   colors: lightThemeColors,
   spacing: {
     n_xxxxl: -240,
-    n_xxxl: -120,
-    n_xxl: -60,
-    n_xl: -40,
-    n_lx: -32,
+    n_xxxl: -60,
+    n_xxl: -48,
+    n_xl: -32,
+    n_lx: -28,
     n_l: -24,
     n_lm: -20,
     n_m: -16,
@@ -108,15 +131,16 @@ export const theme = createTheme({
     xxxs: 1,
     xxs: 2,
     xs: 4,
+    sx: 6,
     s: 8,
     ms: 12,
     m: 16,
     lm: 20,
     l: 24,
-    lx: 32,
-    xl: 40,
-    xxl: 60,
-    xxxl: 120,
+    lx: 28,
+    xl: 32,
+    xxl: 48,
+    xxxl: 60,
     xxxxl: 240,
   },
   borderRadii: {
@@ -159,10 +183,11 @@ export const theme = createTheme({
   textVariants,
   inputVariants: {
     regular: {
-      backgroundColor: 'surface',
-      fontSize: 18,
-      color: 'primaryText',
-      borderRadius: 'm',
+      fontSize: textVariants.h1.fontSize,
+      color: 'purple500',
+      borderBottomColor: 'purple500',
+      borderBottomWidth: 2,
+      paddingBottom: 'xs',
     },
   },
 })
@@ -171,3 +196,15 @@ export type Theme = typeof theme
 export type TextVariant = keyof Theme['textVariants']
 export type Spacing = keyof Theme['spacing']
 export type Color = keyof Theme['colors']
+export type FontWeight =
+  | '500'
+  | 'bold'
+  | 'normal'
+  | '100'
+  | '200'
+  | '300'
+  | '400'
+  | '600'
+  | '700'
+  | '800'
+  | '900'

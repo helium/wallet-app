@@ -12,7 +12,8 @@
     "bump-minor": "npx react-native bump-version --skip-semver-for android --skip-code-for all --type minor",
     "bump-major": "npx react-native bump-version --skip-semver-for android --skip-code-for all --type major",
     "prettier": "prettier --write *.ts*",
-    "gen-types": "cd src/graphql && npx apollo client:download-schema --endpoint=http://localhost:4000/graphiql schema.json && npx apollo codegen:generate --localSchemaFile=schema.json --target=typescript --tagName=gql"
+    "gen-types": "cd src/graphql && npx apollo client:download-schema --endpoint=https://nova-wallet-api.herokuapp.com/api/graphiql schema.json && npx apollo codegen:generate --localSchemaFile=schema.json --target=typescript --tagName=gql",
+    "gen-types-local": "cd src/graphql && npx apollo client:download-schema --endpoint=http://localhost:4000/api/graphiql schema.json && npx apollo codegen:generate --localSchemaFile=schema.json --target=typescript --tagName=gql"
   },
   "husky": {
     "hooks": {
@@ -29,6 +30,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.4.13",
+    "@gorhom/bottom-sheet": "^4",
     "@helium/crypto-react-native": "^3.43.1",
     "@helium/currency": "^3.25.1",
     "@react-native-async-storage/async-storage": "^1.15.8",
@@ -38,6 +40,7 @@
     "@robinbobin/react-native-google-drive-api-wrapper": "^0.6.0",
     "@shopify/restyle": "^1.4.0",
     "apollo3-cache-persist": "^0.13.0",
+    "date-fns": "^2.25.0",
     "expo-haptics": "^10.1.0",
     "expo-local-authentication": "^11.1.1",
     "expo-secure-store": "^10.2.0",
@@ -54,13 +57,15 @@
     "react-native-config": "^1.4.4",
     "react-native-gesture-handler": "^1.10.3",
     "react-native-icloudstore": "^0.9.0",
+    "react-native-jazzicon": "^0.1.2",
     "react-native-keyboard-aware-scroll-view": "^0.9.4",
+    "react-native-linear-gradient": "^2.5.6",
     "react-native-localize": "^2.1.4",
     "react-native-navigation-bar-color": "^2.0.1",
     "react-native-reanimated": "^2.2.2",
     "react-native-safe-area-context": "^3.3.2",
     "react-native-screens": "^3.8.0",
-    "react-native-snap-carousel": "^3.9.1",
+    "react-native-snap-carousel": "^4.0.0-beta.6",
     "react-native-sodium": "^0.4.0",
     "react-native-svg": "^12.1.1",
     "react-native-unimodules": "^0.14.8",

@@ -7,6 +7,7 @@ import {
 } from './onboardingTypes'
 import ConfirmPinView from '../../components/ConfirmPinView'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { useOnboarding } from './OnboardingProvider'
 
 type Route = RouteProp<OnboardingStackParamList, 'AccountConfirmPinScreen'>
 
@@ -15,7 +16,8 @@ const AccountConfirmPinScreen = () => {
   const navigation = useNavigation<OnboardingNavigationProp>()
   const { params } = route
   const { t } = useTranslation()
-  const { updateViewType, upsertAccount, updatePin } = useAccountStorage()
+  const { upsertAccount, updatePin } = useAccountStorage()
+  const { reset } = useOnboarding()
 
   const pinSuccess = useCallback(
     (pin: string) => {
@@ -24,30 +26,21 @@ const AccountConfirmPinScreen = () => {
         return
       }
 
-      if (params.viewType) {
-        updateViewType(params.viewType)
-      }
       if (params.account) {
         upsertAccount(params.account)
+        reset()
       }
 
       updatePin(pin)
     },
-    [
-      params.account,
-      params.pinReset,
-      params.viewType,
-      updatePin,
-      updateViewType,
-      upsertAccount,
-    ],
+    [params.account, params.pinReset, reset, updatePin, upsertAccount],
   )
 
   return (
     <ConfirmPinView
       originalPin={params.pin}
-      title={t('account_setup.confirm_pin.title')}
-      subtitle={t('account_setup.confirm_pin.subtitle')}
+      title={t('accountSetup.confirmPin.title')}
+      subtitle={t('accountSetup.confirmPin.subtitle')}
       pinSuccess={pinSuccess}
       onCancel={navigation.goBack}
     />

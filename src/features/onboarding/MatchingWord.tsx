@@ -1,5 +1,5 @@
 import { capitalize } from 'lodash'
-import React from 'react'
+import React, { useCallback } from 'react'
 import TouchableOpacityBox, {
   TouchableOpacityBoxProps,
 } from '../../components/TouchableOpacityBox'
@@ -13,34 +13,39 @@ type WordProps = {
 
 type Props = Omit<TouchableOpacityBoxProps, 'children' | 'onPress'> & WordProps
 
-const MatchingWord = ({ fullWord, matchingText, onPress }: Props) => (
-  <TouchableOpacityBox
-    justifyContent="center"
-    alignContent="center"
-    marginRight="s"
-    paddingHorizontal={{ smallPhone: 'm', phone: 'ms' }}
-    borderRadius="m"
-    backgroundColor="surface"
-    onPress={() => onPress(fullWord)}
-    height={40}
-  >
-    <Text
-      variant="body1"
+const MatchingWord = ({ fullWord, matchingText, onPress }: Props) => {
+  const handlePress = useCallback(
+    (selectedWord: string) => () => onPress(selectedWord),
+    [onPress],
+  )
+  return (
+    <TouchableOpacityBox
       justifyContent="center"
       alignContent="center"
-      color="primary"
+      marginRight="s"
+      marginLeft={{ smallPhone: 'm', phone: 'ms' }}
+      paddingHorizontal={{ smallPhone: 'm', phone: 'ms' }}
+      paddingVertical="m"
+      onPress={handlePress(fullWord)}
     >
-      {capitalize(matchingText)}
       <Text
         variant="body1"
-        alignContent="center"
         justifyContent="center"
-        color="surfaceText"
+        alignContent="center"
+        color="purple500"
       >
-        {fullWord.slice(matchingText.length)}
+        {capitalize(matchingText)}
+        <Text
+          variant="body1"
+          alignContent="center"
+          justifyContent="center"
+          color="grey700"
+        >
+          {fullWord.slice(matchingText.length)}
+        </Text>
       </Text>
-    </Text>
-  </TouchableOpacityBox>
-)
+    </TouchableOpacityBox>
+  )
+}
 
 export default MatchingWord

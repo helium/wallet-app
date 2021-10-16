@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Modal, ScrollView } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import Close from '@assets/images/close.svg'
@@ -8,6 +8,7 @@ import TextInput from '../../components/TextInput'
 import Box from '../../components/Box'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
+import { useColors } from '../../theme/themeHooks'
 
 type Props = {
   onSelectWord: (fullWord: string, idx: number) => void
@@ -28,6 +29,7 @@ const ImportReplaceWordModal = ({
   const [matchingWords, setMatchingWords] = useState<Array<string>>([])
   const { t } = useTranslation()
   const ordinal = wordIdx <= TOTAL_WORDS ? t(`ordinals.${wordIdx}`) : ''
+  const { primaryText } = useColors()
 
   useEffect(() => {
     setMatchingWords(
@@ -35,10 +37,19 @@ const ImportReplaceWordModal = ({
     )
   }, [word])
 
-  const handleWordSelect = (selectedWord: string) => {
-    setWord('')
-    onSelectWord(selectedWord, wordIdx)
-  }
+  const handleWordSelect = useCallback(
+    (selectedWord: string) => {
+      setWord('')
+      onSelectWord(selectedWord, wordIdx)
+    },
+    [onSelectWord, wordIdx],
+  )
+
+  const handleSubmit = useCallback(() => {
+    if (matchingWords.length === 0) return
+
+    handleWordSelect(matchingWords[0])
+  }, [handleWordSelect, matchingWords])
 
   return (
     <Modal
@@ -55,50 +66,49 @@ const ImportReplaceWordModal = ({
         left={0}
         right={0}
         backgroundColor="primaryBackground"
-        opacity={0.9}
+        opacity={0.97}
       />
       <SafeAreaBox flex={1}>
         <TouchableOpacityBox onPress={onRequestClose} padding="l">
-          <Close color="white" height={24} width={24} />
+          <Close color={primaryText} height={24} width={24} />
         </TouchableOpacityBox>
-        <Box
-          marginTop={{ smallPhone: 'm', phone: 'xxl' }}
-          paddingHorizontal="lx"
-        >
+        <Box marginTop={{ smallPhone: 'l', phone: 'xxxl' }}>
+          <Box minHeight={53}>
+            <ScrollView
+              horizontal
+              keyboardShouldPersistTaps="always"
+              keyboardDismissMode="none"
+              showsHorizontalScrollIndicator={false}
+            >
+              {matchingWords.length <= 20 &&
+                matchingWords.map((matchingWord, idx) => (
+                  <MatchingWord
+                    // eslint-disable-next-line react/no-array-index-key
+                    key={`${matchingWord}.${idx}`}
+                    fullWord={matchingWord}
+                    matchingText={word.toLowerCase()}
+                    onPress={handleWordSelect}
+                  />
+                ))}
+            </ScrollView>
+          </Box>
           <TextInput
-            padding="m"
-            variant="regular"
-            placeholder={t('account_import.word_entry.placeholder', {
+            placeholder={t('accountImport.wordEntry.placeholder', {
               ordinal,
             })}
+            marginHorizontal="l"
+            variant="regular"
             onChangeText={setWord}
+            onSubmitEditing={handleSubmit}
             value={word}
             keyboardAppearance="dark"
             autoCorrect={false}
             autoCompleteType="off"
             blurOnSubmit={false}
             returnKeyType="next"
-            marginTop="l"
             marginBottom="s"
             autoFocus
           />
-          <ScrollView
-            horizontal
-            keyboardShouldPersistTaps="always"
-            keyboardDismissMode="none"
-            showsHorizontalScrollIndicator={false}
-          >
-            {matchingWords.length <= 20 &&
-              matchingWords.map((matchingWord, idx) => (
-                <MatchingWord
-                  // eslint-disable-next-line react/no-array-index-key
-                  key={`${matchingWord}.${idx}`}
-                  fullWord={matchingWord}
-                  matchingText={word.toLowerCase()}
-                  onPress={handleWordSelect}
-                />
-              ))}
-          </ScrollView>
         </Box>
       </SafeAreaBox>
     </Modal>

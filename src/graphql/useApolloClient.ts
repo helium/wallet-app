@@ -3,7 +3,15 @@ import { ApolloClient, InMemoryCache } from '@apollo/client'
 import { AsyncStorageWrapper, persistCache } from 'apollo3-cache-persist'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useAsync } from 'react-async-hook'
-import { Account_accountActivity } from './__generated__/Account'
+import {
+  AccountActivity_accountActivity,
+  AccountActivity_accountActivity_data,
+} from './__generated__/AccountActivity'
+
+type ActivityCache = {
+  cursor: string
+  data: Record<string, AccountActivity_accountActivity_data>
+}
 
 const cache = new InMemoryCache({
   typePolicies: {
@@ -11,15 +19,55 @@ const cache = new InMemoryCache({
       fields: {
         accountActivity: {
           keyArgs: ['address'],
-          merge(existing, incoming) {
-            const prev = existing as Account_accountActivity
-            const next = incoming as Account_accountActivity
-            const { cursor, data: nextData } = next
-            const joined = [...(nextData || []), ...(prev?.data || [])].filter(
-              (v, i, a) => a.findIndex((t) => t?.hash === v?.hash) === i, // filter dups
-            )
+          merge(existing, incoming, { args }) {
+            const { data: prevData } = (existing || {
+              data: {},
+              cursor: '',
+            }) as ActivityCache
 
-            return { cursor, data: joined }
+            const { cursor: nextCursor, data: incomingData } = (incoming || {
+              data: [],
+              cursor: '',
+            }) as AccountActivity_accountActivity
+
+            const prevDataArr = Object.values(
+              existing?.data || {},
+            ) as AccountActivity_accountActivity_data[]
+
+            if (!args?.cursor && prevDataArr.length && incomingData?.length) {
+              // There is no cursor and we have previously cached items
+              // In this scenario we're just checking to see if any new rewards have been added
+              const firstNewHash = incomingData[0].hash
+              const firstOldHash = prevDataArr[0].hash
+
+              if (firstNewHash !== firstOldHash) {
+                // We have a new item, wipe out cache and replace with new items
+                return {
+                  cursor: nextCursor,
+                  data: incomingData.reduce(
+                    (obj, item) => ({ ...obj, [item.hash]: item }),
+                    {},
+                  ),
+                }
+              }
+            }
+
+            return {
+              cursor: nextCursor,
+              data:
+                incomingData?.reduce(
+                  (obj, item) => ({ ...obj, [item.hash]: item }),
+                  prevData,
+                ) || {},
+            }
+          },
+          read(existing) {
+            if (existing) {
+              return {
+                cursor: existing.cursor,
+                data: Object.values(existing?.data || {}),
+              }
+            }
           },
         },
       },

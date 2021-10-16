@@ -86,10 +86,7 @@ const Home = () => {
 
   const handleAddAccount = useCallback(() => {
     navigation.navigate('AddAccount', {
-      screen: 'Welcome',
-      params: {
-        multiAccount: true,
-      },
+      screen: 'CreateImport',
     })
   }, [navigation])
 

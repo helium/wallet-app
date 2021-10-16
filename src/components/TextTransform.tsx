@@ -9,6 +9,7 @@ const components = {
   b: <Text fontWeight="700" />,
   errorText: <Text color="error" />,
   primaryText: <Text color="primaryText" />,
+  secondaryText: <Text color="secondaryText" />,
 }
 
 type Props = TextProps<Theme> & {

@@ -81,7 +81,7 @@ const ConfirmPinView = ({
   return (
     <Box
       flex={1}
-      paddingHorizontal="lx"
+      paddingHorizontal="xl"
       justifyContent="center"
       backgroundColor="primaryBackground"
       alignItems="center"

@@ -38,7 +38,7 @@ const TI = ({ variant, placeholderTextColor, ...rest }: Props) => {
     const color = findColor()
     if (!color) return
 
-    return tinycolor(color).setAlpha(0.6).toRgbString()
+    return tinycolor(color).setAlpha(0.3).toRgbString()
   }, [colors, placeholderTextColor])
 
   return (

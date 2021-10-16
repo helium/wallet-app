@@ -1,47 +1,36 @@
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import React, { useCallback, useEffect, useState } from 'react'
+import { useNavigation } from '@react-navigation/native'
+import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, StyleSheet } from 'react-native'
 import { upperFirst } from 'lodash'
 import Carousel, { Pagination } from 'react-native-snap-carousel'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
-import {
-  OnboardingNavigationProp,
-  OnboardingStackParamList,
-} from './onboardingTypes'
+import { OnboardingNavigationProp } from './onboardingTypes'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { wp } from '../../utils/layout'
 import ImportReplaceWordModal from './ImportReplaceWordModal'
 import SafeAreaBox from '../../components/SafeAreaBox'
+import { useOnboarding } from './OnboardingProvider'
 
-type Route = RouteProp<OnboardingStackParamList, 'ImportAccountConfirmScreen'>
 const ImportAccountConfirmScreen = () => {
   const { t } = useTranslation()
   const [selectedWordIdx, setSelectedWordIdx] = useState<number | null>(null)
-  const [words, setWords] = useState<Array<string>>([])
   const navigation = useNavigation<OnboardingNavigationProp>()
-  const {
-    params: { words: routeWords, multiAccount },
-  } = useRoute<Route>()
   const [wordIndex, setWordIndex] = useState(0)
+  const {
+    onboardingData: { words },
+    setOnboardingData,
+  } = useOnboarding()
 
   const onSnapToItem = (index: number) => {
     setWordIndex(index)
   }
 
   const navNext = useCallback(
-    () =>
-      navigation.navigate('AccountImportCompleteScreen', {
-        words,
-        multiAccount,
-      }),
-    [multiAccount, navigation, words],
+    () => navigation.navigate('AccountImportCompleteScreen'),
+    [navigation],
   )
-
-  useEffect(() => {
-    setWords(routeWords)
-  }, [routeWords])
 
   const clearSelection = () => setSelectedWordIdx(null)
 
@@ -50,10 +39,11 @@ const ImportAccountConfirmScreen = () => {
   const replaceWord = (newWord: string, idx: number) => {
     clearSelection()
 
-    setWords((prevWords) => {
-      const nextWords = [...prevWords]
+    setOnboardingData((prev) => {
+      const nextWords = [...prev.words]
       nextWords[idx] = newWord
-      return nextWords
+
+      return { ...prev, words: nextWords }
     })
   }
 
@@ -97,10 +87,10 @@ const ImportAccountConfirmScreen = () => {
           adjustsFontSizeToFit
           marginBottom="s"
         >
-          {t('account_import.confirm.title')}
+          {t('accountImport.confirm.title')}
         </Text>
         <Text variant="subtitle1" fontSize={20} maxFontSizeMultiplier={1.1}>
-          {t('account_import.confirm.subtitle')}
+          {t('accountImport.confirm.subtitle')}
         </Text>
       </Box>
       <Box marginHorizontal="n_lx" marginVertical="l">
@@ -129,7 +119,7 @@ const ImportAccountConfirmScreen = () => {
         height={60}
         justifyContent="flex-end"
       >
-        <Button onPress={navNext} title={t('account_import.confirm.next')} />
+        <Button onPress={navNext} title={t('accountImport.confirm.next')} />
       </Box>
       <ImportReplaceWordModal
         visible={selectedWordIdx !== null}

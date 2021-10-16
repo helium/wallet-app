@@ -25,6 +25,7 @@ import sleep from '../../utils/sleep'
 import useHaptic from '../../utils/useHaptic'
 import animateTransition from '../../utils/animateTransition'
 import TextTransform from '../../components/TextTransform'
+import { useOnboarding } from './OnboardingProvider'
 
 const testIndices = __DEV__
   ? [0, 1, 2]
@@ -49,12 +50,17 @@ const AccountEnterPassphraseScreen = () => {
   const { triggerNotification } = useHaptic()
   const navigation = useNavigation<OnboardingNavigationProp>()
   const { params } = useRoute<Route>()
+  const {
+    onboardingData: { secureAccount },
+  } = useOnboarding()
 
   const findTargetWord = useCallback(
     (pos: number) => {
-      return params.mnemonic[testIndices[pos]]
+      if (!secureAccount) return ''
+
+      return secureAccount.mnemonic[testIndices[pos]]
     },
-    [params.mnemonic],
+    [secureAccount],
   )
 
   const nextStep = useCallback(() => {
@@ -136,7 +142,7 @@ const AccountEnterPassphraseScreen = () => {
     <SafeAreaBox
       backgroundColor="primaryBackground"
       flex={1}
-      paddingHorizontal="lx"
+      paddingHorizontal="xl"
     >
       <Box flex={2} />
       <Text
@@ -145,7 +151,7 @@ const AccountEnterPassphraseScreen = () => {
         adjustsFontSizeToFit
         maxFontSizeMultiplier={1}
       >
-        {t('account_setup.confirm.title')}
+        {t('accountSetup.confirm.title')}
       </Text>
       <Box flex={0.5} />
       <TextTransform
@@ -155,7 +161,7 @@ const AccountEnterPassphraseScreen = () => {
           ordinal: t(`ordinals.${testIndices[step]}`),
         }}
         variant="subtitle2"
-        i18nKey="account_setup.confirm.subtitle"
+        i18nKey="accountSetup.confirm.subtitle"
       />
 
       <Box
@@ -181,7 +187,7 @@ const AccountEnterPassphraseScreen = () => {
       </Box>
       <Box flex={2} />
       <Button
-        title={t('account_setup.confirm.forgot')}
+        title={t('accountSetup.confirm.forgot')}
         onPress={navigation.goBack}
       />
     </SafeAreaBox>

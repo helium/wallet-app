@@ -1,34 +1,26 @@
 import { StackNavigationProp } from '@react-navigation/stack'
-import {
-  AccountView,
-  SecureAccount,
-  CSAccount,
-} from '../../storage/AccountStorageProvider'
+import { SecureAccount, CSAccount } from '../../storage/AccountStorageProvider'
 
 export type OnboardingStackParamList = {
-  Welcome: undefined | { multiAccount: boolean }
+  AccountCreatePassphraseScreen: undefined
+  AccountEnterPassphraseScreen: undefined
 
-  AccountCreatePassphraseScreen: undefined | { multiAccount: boolean }
-  AccountEnterPassphraseScreen: SecureAccount & { multiAccount?: boolean }
+  AccountImportScreen: undefined
+  ImportAccountConfirmScreen: undefined
+  AccountImportCompleteScreen: undefined
 
-  AccountImportScreen: undefined | { multiAccount?: boolean }
-  ImportAccountConfirmScreen: { words: Array<string>; multiAccount?: boolean }
-  AccountImportCompleteScreen: { words: Array<string>; multiAccount?: boolean }
-
-  AccountAssignScreen: SecureAccount & { multiAccount?: boolean }
+  AccountAssignScreen: undefined
 
   AccountCreatePinScreen:
     | {
         pinReset?: boolean
         account?: SecureAccount & CSAccount
-        viewType: AccountView
       }
     | undefined
   AccountConfirmPinScreen: {
     pin: string
     pinReset?: boolean
     account?: SecureAccount & CSAccount
-    viewType?: AccountView
   }
 }
 

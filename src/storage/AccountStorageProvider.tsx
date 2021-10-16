@@ -14,8 +14,9 @@ import { Keypair, Mnemonic } from '@helium/crypto-react-native'
 import * as SecureStore from 'expo-secure-store'
 
 export type CSAccount = {
-  color: string
   alias: string
+  address: string
+  jazzIcon: number
 }
 
 export type CSAccounts = Record<string, CSAccount>
@@ -82,6 +83,21 @@ const useAccountStorageHook = () => {
     }
   }, [])
 
+  const accountAddresses = useMemo(
+    () => Object.keys(accounts || {}),
+    [accounts],
+  )
+
+  const hasAccounts = useMemo(
+    () => !!accountAddresses.length,
+    [accountAddresses.length],
+  )
+
+  const sortedAccounts = useMemo(() => {
+    // TODO: We'll probably want to find a way to order the accounts
+    return accountAddresses.map((a) => (accounts || {})[a])
+  }, [accountAddresses, accounts])
+
   const getAccounts = useCallback(async (): Promise<CSAccounts> => {
     const csAccounts = await CloudStorage.getItem(CloudStorageKeys.ACCOUNTS)
     if (!csAccounts) return {}
@@ -106,9 +122,16 @@ const useAccountStorageHook = () => {
 
   const upsertAccount = useCallback(
     async (account: CSAccount & SecureAccount) => {
-      const { address, mnemonic, keypair, color, alias } = account
+      const { address, mnemonic, keypair, alias } = account
       const secureAccount = { mnemonic, keypair, address }
-      const nextAccounts = { ...accounts, [account.address]: { color, alias } }
+      const nextAccounts = {
+        ...accounts,
+        [account.address]: {
+          alias,
+          address: account.address,
+          jazzIcon: account.jazzIcon,
+        },
+      }
       setAccounts(nextAccounts)
       setSecureAccounts({
         ...secureAccounts,
@@ -172,6 +195,9 @@ const useAccountStorageHook = () => {
   return {
     viewType,
     accounts,
+    sortedAccounts,
+    hasAccounts,
+    accountAddresses,
     secureAccounts,
     upsertAccount,
     updateViewType,
@@ -186,6 +212,9 @@ const useAccountStorageHook = () => {
 const initialState = {
   viewType: 'unified' as AccountView,
   accounts: {},
+  hasAccounts: false,
+  accountAddresses: [],
+  sortedAccounts: [],
   secureAccounts: {},
   upsertAccount: async () => undefined,
   updateViewType: async () => undefined,

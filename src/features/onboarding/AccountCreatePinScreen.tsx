@@ -47,7 +47,7 @@ const AccountCreatePinScreen = () => {
     <Box
       backgroundColor="primaryBackground"
       flex={1}
-      paddingHorizontal="lx"
+      paddingHorizontal="xl"
       justifyContent="center"
       alignItems="center"
     >
@@ -59,11 +59,11 @@ const AccountCreatePinScreen = () => {
         numberOfLines={1}
         adjustsFontSizeToFit
       >
-        {t('account_setup.create_pin.title')}
+        {t('accountSetup.createPin.title')}
       </Text>
 
       <Text variant="body1" maxFontSizeMultiplier={1.2}>
-        {t('account_setup.create_pin.subtitle')}
+        {t('accountSetup.createPin.subtitle')}
       </Text>
       <PinDisplay length={pin.length} marginVertical="xl" />
       <Keypad

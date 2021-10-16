@@ -83,7 +83,7 @@ const LockScreen = ({ children }: Props) => {
             <ConfirmPinView
               originalPin={pin?.value || ''}
               title={t('auth.title')}
-              subtitle={t('auth.enter_current')}
+              subtitle={t('auth.enterCurrent')}
               pinSuccess={handleSuccess}
               onCancel={handleSignOut}
             />

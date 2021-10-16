@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { KeyboardAvoidingView, ScrollView, StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import MatchingWord from './MatchingWord'
 import wordlist from '../../constants/wordlists/english.json'
 import TextInput from '../../components/TextInput'
-import Text from '../../components/Text'
+import TextTransform from '../../components/TextTransform'
 import Box from '../../components/Box'
 
 type Props = {
@@ -22,75 +22,74 @@ const PassphraseAutocomplete = ({ onSelectWord, wordIdx }: Props) => {
 
   useEffect(() => {
     setMatchingWords(
-      wordlist.filter((w) => w.indexOf(word.toLowerCase()) === 0),
+      wordlist.filter((w) => w.indexOf(word.trim().toLowerCase()) === 0),
     )
   }, [word])
 
-  const handleWordSelect = (selectedWord: string) => {
-    setWord('')
-    onSelectWord(selectedWord, wordIdx)
-  }
+  const handleWordSelect = useCallback(
+    (selectedWord: string) => {
+      setWord('')
+      onSelectWord(selectedWord, wordIdx)
+    },
+    [onSelectWord, wordIdx],
+  )
+
+  const handleSubmit = useCallback(() => {
+    if (matchingWords.length === 0) return
+
+    handleWordSelect(matchingWords[0])
+  }, [handleWordSelect, matchingWords])
 
   return (
-    <KeyboardAvoidingView
-      keyboardVerticalOffset={38}
-      behavior="position"
-      style={styles.container}
-    >
-      <Box
-        marginTop={{ smallPhone: 'm', phone: 'xxl' }}
-        backgroundColor="primaryBackground"
-      >
-        <Text
-          marginTop="l"
-          variant="subtitle1"
-          fontSize={27}
-          numberOfLines={2}
+    <KeyboardAvoidingView behavior="position" style={styles.container}>
+      <>
+        <TextTransform
+          variant="h1"
+          numberOfLines={3}
           maxFontSizeMultiplier={1}
+          marginHorizontal="l"
           adjustsFontSizeToFit
-          marginBottom="s"
-        >
-          {t('account_import.word_entry.title')}
-        </Text>
-        <Text variant="body1" fontSize={20}>
-          {t('account_import.word_entry.subtitle')}
-        </Text>
+          paddingVertical="xxxl"
+          i18nKey={t('accountImport.wordEntry.title')}
+        />
 
+        <Box minHeight={53}>
+          <ScrollView
+            horizontal
+            keyboardShouldPersistTaps="always"
+            keyboardDismissMode="none"
+            showsHorizontalScrollIndicator={false}
+          >
+            {matchingWords.length <= 20 &&
+              matchingWords.map((matchingWord, idx) => (
+                <MatchingWord
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={`${matchingWord}.${idx}`}
+                  fullWord={matchingWord}
+                  matchingText={word.toLowerCase()}
+                  onPress={handleWordSelect}
+                />
+              ))}
+          </ScrollView>
+        </Box>
         <TextInput
-          variant="regular"
-          placeholder={t('account_import.word_entry.placeholder', {
+          placeholder={t('accountImport.wordEntry.placeholder', {
             ordinal,
           })}
-          padding="m"
+          marginHorizontal="l"
+          variant="regular"
           onChangeText={setWord}
+          onSubmitEditing={handleSubmit}
           value={word}
           keyboardAppearance="dark"
           autoCorrect={false}
           autoCompleteType="off"
           blurOnSubmit={false}
           returnKeyType="next"
-          marginTop="l"
           marginBottom="s"
           autoFocus
         />
-        <ScrollView
-          horizontal
-          keyboardShouldPersistTaps="always"
-          keyboardDismissMode="none"
-          showsHorizontalScrollIndicator={false}
-        >
-          {matchingWords.length <= 20 &&
-            matchingWords.map((matchingWord, idx) => (
-              <MatchingWord
-                // eslint-disable-next-line react/no-array-index-key
-                key={`${matchingWord}.${idx}`}
-                fullWord={matchingWord}
-                matchingText={word.toLowerCase()}
-                onPress={handleWordSelect}
-              />
-            ))}
-        </ScrollView>
-      </Box>
+      </>
     </KeyboardAvoidingView>
   )
 }

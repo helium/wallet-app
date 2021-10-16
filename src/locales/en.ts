@@ -24,10 +24,17 @@ export default {
     accountBalanceValue: 'Account Balance: {{balance}}',
     fetchMoreActivity: 'Fetch More Activity',
   },
-  account_setup: {
-    welcome: {
-      create_account: 'Create an Account',
-      import_account: 'Import Existing Account',
+  onboarding: {
+    import: '+ Import',
+    create: '+ New',
+  },
+  accountSetup: {
+    createImport: {
+      title: 'What would\nyou like to do?',
+      helperText:
+        'Coming from Helium App? Use the same 12\nwords to import a Wallet.',
+      create: 'Create a new Wallet',
+      import: 'Import a Wallet',
     },
     passphrase: {
       next: 'I have written these down',
@@ -37,21 +44,20 @@ export default {
       subtitle: 'Which word below was your <b>{{ordinal}} word?</b>',
       forgot: 'I forgot my words',
     },
-    create_pin: {
+    createPin: {
       title: 'Set PIN Code',
       subtitle: 'Let’s secure your account with a PIN Code.',
     },
-    confirm_pin: {
+    confirmPin: {
       title: 'Repeat PIN',
       subtitle: 'Re-enter your PIN',
     },
   },
-  account_import: {
-    word_entry: {
-      title: 'Enter Recovery\nSeed Phrase',
-      directions: 'Enter the <b>{{ordinal}}</b> Word',
+  accountImport: {
+    wordEntry: {
       placeholder: '{{ordinal}} word',
-      subtitle: 'Recovery Seed Phrases are not\ncase-sensitive',
+      title:
+        "Enter your\naccount's <secondaryText>12 word</secondaryText>\nsecurity key...",
     },
     confirm: {
       title: 'Please Confirm\nSeed Phrase',
@@ -68,14 +74,48 @@ export default {
       body: "This seed phrase doesn't correspond to a Helium account",
     },
   },
+  accountAssign: {
+    AccountNamePlaceholder: 'Account Name',
+  },
   auth: {
     title: 'Enter Your PIN',
     error: 'Incorrect PIN',
-    enter_current: 'Enter your current PIN to continue',
+    enterCurrent: 'Enter your current PIN to continue',
     signOut: 'Sign Out',
     signOutAlert: {
       title: 'Warning!',
       body: 'You are signing out of your account. Do you have your 12 recovery words? If you don’t, you will lose access to:\n\n- your Hotspots\n- your HNT\n- your Wallet',
     },
+  },
+  accountHeader: {
+    timeAgo: 'Updated {{formattedChange}}',
+    last24: 'Last 24h',
+  },
+  accountView: {
+    balance: 'Balance',
+    send: 'Send',
+    payment: 'Payment',
+    request: 'Request',
+    stake: 'Stake',
+    lock: 'Lock',
+  },
+  accountsScreen: {
+    myTransactions: 'My Transactions',
+  },
+  transactions: {
+    pending: 'Pending',
+    mining: 'Mining Rewards',
+    sent: 'Sent HNT',
+    stakeValidator: 'Stake HNT',
+    unstakeValidator: 'Unstake HNT',
+    transferValidator: 'Transfer Stake',
+    burnHNT: 'Burn HNT',
+    received: 'Received HNT',
+    added: 'Hotspot Added to Blockchain',
+    location: 'Confirm Location',
+    location_v2: 'Update Hotspot',
+    transfer: 'Hotspot Transfer',
+    transferSell: 'Transfer Hotspot (Sell)',
+    transferBuy: 'Transfer Hotspot (Buy)',
   },
 }

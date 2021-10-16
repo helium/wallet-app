@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { useAsync } from 'react-async-hook'
 import Carousel, { Pagination } from 'react-native-snap-carousel'
@@ -7,26 +7,20 @@ import { upperFirst } from 'lodash'
 import { Button } from 'react-native'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
-import {
-  OnboardingNavigationProp,
-  OnboardingStackParamList,
-} from './onboardingTypes'
+import { OnboardingNavigationProp } from './onboardingTypes'
 import { wp } from '../../utils/layout'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { useOnboarding } from './OnboardingProvider'
 
-type Route = RouteProp<
-  OnboardingStackParamList,
-  'AccountCreatePassphraseScreen'
->
 const AccountCreatePassphraseScreen = () => {
   const { t } = useTranslation()
   const { createSecureAccount } = useAccountStorage()
   const { result: secureAccount } = useAsync(createSecureAccount, [])
   const navigation = useNavigation<OnboardingNavigationProp>()
-  const { params } = useRoute<Route>()
   const [wordIndex, setWordIndex] = useState(0)
   const [disabled, setDisabled] = useState(true)
+  const { setOnboardingData } = useOnboarding()
   const [viewedWords, setViewedWords] = useState(new Array(12).fill(false))
 
   const onSnapToItem = useCallback(
@@ -51,11 +45,10 @@ const AccountCreatePassphraseScreen = () => {
 
   const navNext = useCallback(() => {
     if (!secureAccount) return
-    navigation.navigate('AccountEnterPassphraseScreen', {
-      ...secureAccount,
-      ...params,
-    })
-  }, [navigation, params, secureAccount])
+
+    setOnboardingData((prev) => ({ ...prev, secureAccount }))
+    navigation.navigate('AccountEnterPassphraseScreen')
+  }, [navigation, secureAccount, setOnboardingData])
 
   const renderItem = ({ item, index }: { item: string; index: number }) => {
     return (
@@ -107,7 +100,7 @@ const AccountCreatePassphraseScreen = () => {
       <Button
         disabled={disabled}
         onPress={navNext}
-        title={t('account_setup.passphrase.next')}
+        title={t('accountSetup.passphrase.next')}
       />
     </SafeAreaBox>
   )
