@@ -20,7 +20,10 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 })
 
 const App = () => {
-  LogBox.ignoreLogs(['EventEmitter.removeListener'])
+  LogBox.ignoreLogs([
+    'EventEmitter.removeListener',
+    'componentWillReceiveProps has been renamed',
+  ])
 
   const { appState } = useAppState()
   const { client, loading: loadingClient } = useApolloClient()

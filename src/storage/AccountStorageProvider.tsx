@@ -16,7 +16,6 @@ import * as SecureStore from 'expo-secure-store'
 export type CSAccount = {
   alias: string
   address: string
-  jazzIcon: number
 }
 
 export type CSAccounts = Record<string, CSAccount>
@@ -129,7 +128,6 @@ const useAccountStorageHook = () => {
         [account.address]: {
           alias,
           address: account.address,
-          jazzIcon: account.jazzIcon,
         },
       }
       setAccounts(nextAccounts)

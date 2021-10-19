@@ -1,6 +1,6 @@
 import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import Jazzicon from 'react-native-jazzicon'
+import AccountIcon from '../../components/AccountIcon'
 import Box from '../../components/Box'
 import Surface from '../../components/Surface'
 import Text from '../../components/Text'
@@ -18,7 +18,7 @@ const AccountHeader = ({ account }: Props) => {
 
   return (
     <Surface minHeight={88} alignItems="center" flexDirection="row" padding="l">
-      <Jazzicon size={40} seed={account.jazzIcon} />
+      <AccountIcon size={40} address={account.address} />
       <Box marginLeft="s" flex={1}>
         <Text variant="subtitle2">{account.alias}</Text>
         <Text variant="body3" color="secondaryText">

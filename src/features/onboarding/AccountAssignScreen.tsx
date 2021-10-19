@@ -3,7 +3,6 @@ import { useNavigation } from '@react-navigation/native'
 import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Jazzicon from 'react-native-jazzicon'
 import Box from '../../components/Box'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import TextInput from '../../components/TextInput'
@@ -13,6 +12,7 @@ import useMount from '../../utils/useMount'
 import FabButton from '../../components/FabButton'
 import { useSpacing } from '../../theme/themeHooks'
 import { useOnboarding } from './OnboardingProvider'
+import AccountIcon from '../../components/AccountIcon'
 
 const AccountAssignScreen = () => {
   const onboardingNav = useNavigation<OnboardingNavigationProp>()
@@ -26,7 +26,6 @@ const AccountAssignScreen = () => {
   const insets = useSafeAreaInsets()
   const spacing = useSpacing()
   const { upsertAccount, hasAccounts } = useAccountStorage()
-  const [jazzIcon] = useState(Math.round(Math.random() * 10000000))
 
   useMount(() => {
     setOnboardingData((prev) => ({ ...prev, onboardingType: 'assign' }))
@@ -36,7 +35,7 @@ const AccountAssignScreen = () => {
     if (!secureAccount) return
 
     if (hasAccounts) {
-      upsertAccount({ alias, jazzIcon, ...secureAccount })
+      upsertAccount({ alias, ...secureAccount })
       onboardingNav.popToTop()
       reset()
       return
@@ -44,17 +43,9 @@ const AccountAssignScreen = () => {
 
     onboardingNav.navigate('AccountCreatePinScreen', {
       pinReset: false,
-      account: { ...secureAccount, alias, jazzIcon },
+      account: { ...secureAccount, alias },
     })
-  }, [
-    secureAccount,
-    hasAccounts,
-    onboardingNav,
-    alias,
-    jazzIcon,
-    upsertAccount,
-    reset,
-  ])
+  }, [secureAccount, hasAccounts, onboardingNav, alias, upsertAccount, reset])
 
   return (
     <SafeAreaBox
@@ -68,7 +59,7 @@ const AccountAssignScreen = () => {
         style={styles.container}
       >
         <Box alignItems="center" flex={1}>
-          <Jazzicon size={84} seed={jazzIcon} />
+          <AccountIcon size={84} address={secureAccount?.address} />
 
           <TextInput
             onChangeText={setAlias}

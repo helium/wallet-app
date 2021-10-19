@@ -1,4 +1,3 @@
-import { useApolloClient, useLazyQuery } from '@apollo/client'
 import React, {
   memo,
   useCallback,
@@ -8,6 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
+import { useApolloClient, useQuery } from '@apollo/client'
 import { Carousel } from 'react-native-snap-carousel'
 import CogIco from '@assets/images/cog.svg'
 import AccountIco from '@assets/images/account.svg'
@@ -84,8 +84,7 @@ const AccountsScreen = () => {
   const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
   const { backgroundStyle: handleStyle } = useOpacity('black600', 1)
 
-  const { accounts, sortedAccounts, accountAddresses, signOut } =
-    useAccountStorage()
+  const { sortedAccounts, accountAddresses, signOut } = useAccountStorage()
   const prevSortedAccounts = usePrevious<CSAccount[] | undefined>(
     sortedAccounts,
   )
@@ -93,8 +92,15 @@ const AccountsScreen = () => {
   const [currentAccount, setCurrentAccount] = useState<CSAccount>()
   const { black700, primaryText } = useColors()
   const client = useApolloClient()
-  const [getAccountsData, { data: accountsData, error: accountsError }] =
-    useLazyQuery<Accounts, AccountsVariables>(ACCOUNTS_WALLET_QUERY)
+
+  const { data: accountsData, error: accountsError } = useQuery<
+    Accounts,
+    AccountsVariables
+  >(ACCOUNTS_WALLET_QUERY, {
+    variables: { addresses: accountAddresses },
+    fetchPolicy: 'cache-and-network',
+    skip: !accountAddresses,
+  })
 
   const {
     data: activityData,
@@ -132,14 +138,6 @@ const AccountsScreen = () => {
     sortedAccounts.length,
   ])
 
-  useEffect(() => {
-    if (!accountAddresses) return
-
-    getAccountsData({
-      variables: { addresses: accountAddresses },
-    })
-  }, [accountAddresses, accounts, getAccountsData])
-
   const handleSignOut = useCallback(() => {
     // TODO: Signout needs to be moved to a settings page
     // Will we reset the whole store or only certain queries?
@@ -150,7 +148,7 @@ const AccountsScreen = () => {
   const carouselData = useMemo(() => {
     return [
       ...sortedAccounts,
-      { alias: AccountImportCreate, address: AccountImportCreate, jazzIcon: 0 },
+      { alias: AccountImportCreate, address: AccountImportCreate },
     ]
   }, [sortedAccounts])
 
