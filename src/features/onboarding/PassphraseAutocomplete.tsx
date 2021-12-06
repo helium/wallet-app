@@ -83,7 +83,7 @@ const PassphraseAutocomplete = ({ onSelectWord, wordIdx }: Props) => {
           value={word}
           keyboardAppearance="dark"
           autoCorrect={false}
-          autoCompleteType="off"
+          autoComplete="off"
           blurOnSubmit={false}
           returnKeyType="next"
           marginBottom="s"

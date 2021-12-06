@@ -9,18 +9,21 @@ import Surface from '../../components/Surface'
 import Text from '../../components/Text'
 import { useColors } from '../../theme/themeHooks'
 import FabButton from '../../components/FabButton'
-import { Accounts_accounts } from '../../graphql/__generated__/Accounts'
+import { AccountData } from '../../generated/graphql'
 
+export type Action = 'send' | 'payment' | 'request' | 'stake' | 'lock'
 type Props = {
   address: string
-  accountData: Accounts_accounts | null | undefined
+  accountData: AccountData | null | undefined
   visible: boolean
   onLayoutChange?: (layout: LayoutRectangle) => void
+  onActionSelected: (type: Action) => void
 }
 const AccountView = ({
   accountData,
   visible: _visible,
   onLayoutChange,
+  onActionSelected,
   address: _address,
 }: Props) => {
   const { t } = useTranslation()
@@ -45,6 +48,13 @@ const AccountView = ({
       onLayoutChange?.(event.nativeEvent.layout)
     },
     [onLayoutChange],
+  )
+
+  const handleAction = useCallback(
+    (type: Action) => () => {
+      onActionSelected(type)
+    },
+    [onActionSelected],
   )
 
   return (
@@ -115,6 +125,7 @@ const AccountView = ({
           backgroundColorOpacityPressed={0.4}
           iconColor="blueBright500"
           title={t('accountView.send')}
+          onPress={handleAction('send')}
         />
         <FabButton
           icon="payment"
@@ -123,6 +134,7 @@ const AccountView = ({
           backgroundColorOpacityPressed={0.4}
           iconColor="orange500"
           title={t('accountView.payment')}
+          onPress={handleAction('payment')}
         />
         <FabButton
           icon="fatArrowDown"
@@ -131,6 +143,7 @@ const AccountView = ({
           backgroundColorOpacityPressed={0.4}
           iconColor="greenBright500"
           title={t('accountView.request')}
+          onPress={handleAction('request')}
         />
         <FabButton
           icon="stake"
@@ -139,6 +152,7 @@ const AccountView = ({
           backgroundColorOpacityPressed={0.4}
           iconColor="purple500"
           title={t('accountView.stake')}
+          onPress={handleAction('stake')}
         />
         <FabButton
           icon="lock"
@@ -147,6 +161,7 @@ const AccountView = ({
           backgroundColorOpacityPressed={0.4}
           iconColor="red500"
           title={t('accountView.lock')}
+          onPress={handleAction('lock')}
         />
       </Box>
     </Box>

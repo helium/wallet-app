@@ -2,7 +2,11 @@ import React, { useEffect, useMemo } from 'react'
 import { ApolloProvider } from '@apollo/client'
 import { Text, useColorScheme, LogBox } from 'react-native'
 import { ThemeProvider } from '@shopify/restyle'
-import { DarkTheme, NavigationContainer } from '@react-navigation/native'
+import {
+  DarkTheme,
+  LinkingOptions,
+  NavigationContainer,
+} from '@react-navigation/native'
 import useAppState from 'react-native-appstate-hook'
 import * as SplashScreen from 'expo-splash-screen'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
@@ -14,13 +18,29 @@ import LockScreen from './features/lock/LockScreen'
 import SecurityScreen from './features/security/SecurityScreen'
 import useMount from './utils/useMount'
 import OnboardingProvider from './features/onboarding/OnboardingProvider'
+import { RootNavigationProp } from './navigation/rootTypes'
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
 })
 
+const linking = {
+  prefixes: ['nova://'],
+  config: {
+    screens: {
+      HomeNavigator: {
+        initialRouteName: 'AccountsScreen',
+        screens: {
+          WifiPurchase: 'wifi',
+        },
+      },
+    },
+  },
+} as LinkingOptions<RootNavigationProp>
+
 const App = () => {
   LogBox.ignoreLogs([
+    'Module iCloudStorage',
     'EventEmitter.removeListener',
     'componentWillReceiveProps has been renamed',
   ])
@@ -78,7 +98,7 @@ const App = () => {
         <ApolloProvider client={client}>
           <LockScreen>
             <>
-              <NavigationContainer theme={navTheme}>
+              <NavigationContainer theme={navTheme} linking={linking}>
                 <RootNavigator />
               </NavigationContainer>
               <SecurityScreen

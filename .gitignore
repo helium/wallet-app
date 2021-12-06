@@ -65,3 +65,6 @@ buck-out/
 
 #
 .env
+
+*.hprof
+.expo

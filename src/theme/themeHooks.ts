@@ -3,7 +3,7 @@ import tinycolor from 'tinycolor2'
 import { ViewStyle } from 'react-native'
 import { useCallback, useMemo } from 'react'
 import { ww } from '../utils/layout'
-import { Color, Theme } from './theme'
+import { Color, Spacing, Theme } from './theme'
 
 export const useColors = () => {
   const { colors } = useTheme<Theme>()
@@ -61,6 +61,18 @@ export const useCreateOpacity = () => {
     backgroundStyle,
     colorStyle,
     color,
+  }
+}
+
+export const useHitSlop = (val: Spacing) => {
+  const { spacing } = useTheme<Theme>()
+  const slopSpacing = spacing[val]
+
+  return {
+    left: slopSpacing,
+    right: slopSpacing,
+    top: slopSpacing,
+    bottom: slopSpacing,
   }
 }
 

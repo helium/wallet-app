@@ -24,6 +24,7 @@ type Props = BoxProps<Theme> & {
   fontWeight?: FontWeight
   onPress?: ((event: GestureResponderEvent) => void) | null | undefined
   disabled?: boolean
+  selected?: boolean
 }
 
 const ButtonPressable = ({
@@ -42,6 +43,8 @@ const ButtonPressable = ({
   titleColorPressed,
   titleColorPressedOpacity = 1,
   disabled,
+  selected,
+  padding,
   ...boxProps
 }: Props) => {
   const { backgroundStyle, colorStyle, color } = useCreateOpacity()
@@ -81,7 +84,7 @@ const ButtonPressable = ({
 
   const getBackgroundColorStyle = useCallback(
     (pressed: boolean) => {
-      if (pressed) {
+      if (pressed || selected) {
         return backgroundStyle(
           backgroundColorPressed || backgroundColor || 'white',
           backgroundColorOpacityPressed,
@@ -98,19 +101,21 @@ const ButtonPressable = ({
       backgroundColorOpacityPressed,
       backgroundColorPressed,
       backgroundStyle,
+      selected,
     ],
   )
 
   return (
-    <Box overflow="hidden" {...boxProps}>
+    <Box overflow="hidden" {...boxProps} backgroundColor="white">
       <Pressable onPress={onPress} style={styles.pressable} disabled={disabled}>
         {({ pressed }) => (
           <Box
             height={boxProps.height}
             minHeight={boxProps.minHeight}
             maxHeight={boxProps.maxHeight}
-            padding="l"
-            width="100%"
+            padding={
+              boxProps.height || boxProps.maxHeight || padding ? padding : 'l'
+            }
             style={getBackgroundColorStyle(pressed)}
             flexDirection="row"
             justifyContent={Icon ? 'space-between' : 'center'}

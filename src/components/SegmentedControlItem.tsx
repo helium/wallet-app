@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { memo } from 'react'
-import { useColorScheme } from 'react-native'
+import { Spacing } from '../theme/theme'
 import ButtonPressable from './ButtonPressable'
 
 type Props = {
@@ -13,15 +13,16 @@ type Props = {
   minHeight?: number | string
   maxHeight?: number | string
   disabled: boolean
+  padding: Spacing
 }
 const SegmentedControlItem = ({
   isFirst,
   isLast,
   selected,
   onChange,
+  padding,
   ...props
 }: Props) => {
-  const colorScheme = useColorScheme()
   return (
     <ButtonPressable
       borderTopLeftRadius={isFirst ? 'xl' : 'none'}
@@ -31,17 +32,17 @@ const SegmentedControlItem = ({
       alignItems="center"
       justifyContent="center"
       flex={1}
-      backgroundColor="surface"
+      backgroundColor="surfaceSecondary"
       fontSize={19}
       fontWeight="400"
       backgroundColorPressed="white"
       backgroundColorOpacityPressed={0.3}
-      backgroundColorOpacity={colorScheme === 'light' ? 1 : 0.4}
       titleColor="primaryText"
       titleColorPressed="primaryText"
       titleColorOpacity={selected ? 1 : 0.3}
       titleColorPressedOpacity={0.7}
       onPress={onChange}
+      innerContainerProps={{ padding }}
       {...props}
     />
   )

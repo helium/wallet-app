@@ -67,7 +67,7 @@ const AccountAssignScreen = () => {
             value={alias}
             placeholder={t('accountAssign.AccountNamePlaceholder')}
             autoCorrect={false}
-            autoCompleteType="off"
+            autoComplete="off"
             marginTop="xl"
             autoCapitalize="words"
             width="100%"

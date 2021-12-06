@@ -3,14 +3,11 @@ import { ApolloClient, InMemoryCache } from '@apollo/client'
 import { AsyncStorageWrapper, persistCache } from 'apollo3-cache-persist'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useAsync } from 'react-async-hook'
-import {
-  AccountActivity_accountActivity,
-  AccountActivity_accountActivity_data,
-} from './__generated__/AccountActivity'
+import { ActivityData, Activity } from '../generated/graphql'
 
 type ActivityCache = {
   cursor: string
-  data: Record<string, AccountActivity_accountActivity_data>
+  data: Record<string, Activity>
 }
 
 const cache = new InMemoryCache({
@@ -28,11 +25,11 @@ const cache = new InMemoryCache({
             const { cursor: nextCursor, data: incomingData } = (incoming || {
               data: [],
               cursor: '',
-            }) as AccountActivity_accountActivity
+            }) as ActivityData
 
             const prevDataArr = Object.values(
               existing?.data || {},
-            ) as AccountActivity_accountActivity_data[]
+            ) as Activity[]
 
             if (!args?.cursor && prevDataArr.length && incomingData?.length) {
               // There is no cursor and we have previously cached items

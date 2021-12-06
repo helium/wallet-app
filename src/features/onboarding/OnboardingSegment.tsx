@@ -4,16 +4,18 @@ import * as React from 'react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import SegmentedControl from '../../components/SegmentedControl'
-import { Theme } from '../../theme/theme'
+import { Spacing, Theme } from '../../theme/theme'
 import { OnboardingOpt } from './OnboardingProvider'
 
 type Props = BoxProps<Theme> & {
+  padding?: Spacing
   onboardingType: OnboardingOpt
   onSegmentChange: (id: OnboardingOpt) => void
 }
 const OnboardingSegment = ({
   onboardingType,
   onSegmentChange,
+  padding,
   ...boxProps
 }: Props) => {
   const { t } = useTranslation()
@@ -29,6 +31,7 @@ const OnboardingSegment = ({
   return (
     <SegmentedControl
       {...boxProps}
+      padding={padding}
       onChange={onSegmentChange as (id: string) => void}
       selectedId={onboardingType}
       values={segmentData}

@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { useApolloClient, useQuery } from '@apollo/client'
+import { useApolloClient } from '@apollo/client'
 import { Carousel } from 'react-native-snap-carousel'
 import CogIco from '@assets/images/cog.svg'
 import AccountIco from '@assets/images/account.svg'
@@ -15,15 +15,9 @@ import { AnimatePresence } from 'moti'
 import { ActivityIndicator, LayoutRectangle } from 'react-native'
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { useTranslation } from 'react-i18next'
+import { useNavigation } from '@react-navigation/native'
 import Box from '../../components/Box'
 import FocusAwareStatusBar from '../../components/FocusAwareStatusBar'
-import { ACCOUNTS_WALLET_QUERY } from '../../graphql/account'
-import {
-  Accounts,
-  AccountsVariables,
-  Accounts_accounts,
-} from '../../graphql/__generated__/Accounts'
-import { AccountActivity_accountActivity_data } from '../../graphql/__generated__/AccountActivity'
 import {
   CSAccount,
   useAccountStorage,
@@ -37,10 +31,16 @@ import AccountHeader from './AccountHeader'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import usePrevious from '../../utils/usePrevious'
 import MotiBox from '../../components/MotiBox'
-import AccountView from './AccountView'
+import AccountView, { Action } from './AccountView'
 import Text from '../../components/Text'
 import TxnListItem from './TxnListItem'
 import useActivityList from './useActivityList'
+import { HomeNavigationProp } from '../home/homeTypes'
+import {
+  Activity,
+  AccountData,
+  useAccountsQuery,
+} from '../../generated/graphql'
 
 type AccountLayout = {
   accountViewStart: number
@@ -71,12 +71,13 @@ function layoutReducer(state: AccountLayout, action: AccountLayoutAction) {
   }
 }
 type Item = {
-  item: AccountActivity_accountActivity_data
+  item: Activity
   index: number
 }
 
 const AccountImportCreate = 'accountImportCreate'
 const AccountsScreen = () => {
+  const navigation = useNavigation<HomeNavigationProp>()
   const spacing = useSpacing()
   const { t } = useTranslation()
   const [state, dispatch] = useReducer(layoutReducer, initialState)
@@ -93,10 +94,7 @@ const AccountsScreen = () => {
   const { black700, primaryText } = useColors()
   const client = useApolloClient()
 
-  const { data: accountsData, error: accountsError } = useQuery<
-    Accounts,
-    AccountsVariables
-  >(ACCOUNTS_WALLET_QUERY, {
+  const { data: accountsData, error: accountsError } = useAccountsQuery({
     variables: { addresses: accountAddresses },
     fetchPolicy: 'cache-and-network',
     skip: !accountAddresses,
@@ -185,7 +183,7 @@ const AccountsScreen = () => {
     return accountsData?.accounts?.reduce((obj, val) => {
       if (!val) return obj
       return { ...obj, [val.address]: val }
-    }, {} as Record<string, Accounts_accounts>)
+    }, {} as Record<string, AccountData>)
   }, [accountsData])
 
   useEffect(() => {
@@ -210,12 +208,9 @@ const AccountsScreen = () => {
     return <Box height={1} width="100%" backgroundColor="primaryBackground" />
   }, [])
 
-  const keyExtractor = useCallback(
-    (item: AccountActivity_accountActivity_data) => {
-      return item.hash
-    },
-    [],
-  )
+  const keyExtractor = useCallback((item: Activity) => {
+    return item.hash
+  }, [])
 
   const header = useMemo(() => {
     return (
@@ -250,6 +245,26 @@ const AccountsScreen = () => {
     const itemWidth = sliderWidth - spacing.lx * 2
     return { sliderWidth, itemWidth }
   }, [spacing.lx])
+
+  const handleAccountViewLayoutChange = useCallback(
+    (layout: LayoutRectangle) =>
+      dispatch({
+        type: 'accountViewLayout',
+        layout,
+      }),
+    [],
+  )
+
+  const handleActionSelected = useCallback(
+    (type: Action) => {
+      switch (type) {
+        case 'payment':
+          navigation.navigate('PaymentScreen')
+          break
+      }
+    },
+    [navigation],
+  )
 
   return (
     <Box flex={1}>
@@ -348,12 +363,8 @@ const AccountsScreen = () => {
                 >
                   <AccountView
                     address={d.address}
-                    onLayoutChange={(layout) =>
-                      dispatch({
-                        type: 'accountViewLayout',
-                        layout,
-                      })
-                    }
+                    onLayoutChange={handleAccountViewLayoutChange}
+                    onActionSelected={handleActionSelected}
                     visible={visible}
                     accountData={accountWalletData?.[d.address]}
                   />
@@ -378,10 +389,7 @@ const AccountsScreen = () => {
               ListHeaderComponent={header}
               ListFooterComponent={footer}
               ItemSeparatorComponent={renderSeparator}
-              data={
-                activityData?.accountActivity?.data ||
-                ([] as AccountActivity_accountActivity_data[])
-              }
+              data={activityData?.accountActivity?.data || ([] as Activity[])}
               renderItem={renderFlatlistItem}
               keyExtractor={keyExtractor}
               onEndReached={requestMore}

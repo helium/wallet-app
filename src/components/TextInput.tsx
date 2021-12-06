@@ -25,7 +25,7 @@ type Props = React.ComponentProps<typeof TextInput> & {
   placeholderTextColor?: Color
 }
 
-const TI = ({ variant, placeholderTextColor, ...rest }: Props) => {
+const TI = ({ placeholderTextColor, ...rest }: Props) => {
   const colors = useColors()
 
   const getPlaceholderTextColor = useMemo(() => {
@@ -41,13 +41,7 @@ const TI = ({ variant, placeholderTextColor, ...rest }: Props) => {
     return tinycolor(color).setAlpha(0.3).toRgbString()
   }, [colors, placeholderTextColor])
 
-  return (
-    <TextInput
-      placeholderTextColor={getPlaceholderTextColor}
-      variant={variant}
-      {...rest}
-    />
-  )
+  return <TextInput placeholderTextColor={getPlaceholderTextColor} {...rest} />
 }
 
 export default TI

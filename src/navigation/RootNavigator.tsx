@@ -1,6 +1,9 @@
-import React, { memo, useEffect } from 'react'
+import React, { memo, useEffect, useMemo } from 'react'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
-import { createStackNavigator } from '@react-navigation/stack'
+import {
+  createStackNavigator,
+  StackNavigationOptions,
+} from '@react-navigation/stack'
 import { useColors } from '../theme/themeHooks'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import OnboardingParentNavigator from '../features/onboarding/OnboardingParentNavigator'
@@ -15,6 +18,13 @@ const RootNavigator = () => {
     changeNavigationBarColor(colors.primaryBackground, true, false)
   }, [colors.primaryBackground])
 
+  const screenOptions = useMemo(
+    (): StackNavigationOptions => ({
+      animationTypeForReplace: 'pop',
+    }),
+    [],
+  )
+
   return (
     <RootStack.Navigator
       screenOptions={{
@@ -26,17 +36,13 @@ const RootNavigator = () => {
         <RootStack.Screen
           name="HomeNavigator"
           component={HomeNavigator}
-          options={{
-            animationTypeForReplace: 'pop',
-          }}
+          options={screenOptions}
         />
       ) : (
         <RootStack.Screen
           name="OnboardingParent"
           component={OnboardingParentNavigator}
-          options={{
-            animationTypeForReplace: 'pop',
-          }}
+          options={screenOptions}
         />
       )}
     </RootStack.Navigator>
