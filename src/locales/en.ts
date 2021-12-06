@@ -3,6 +3,9 @@ export default {
     clear: 'Clear',
     cancel: 'Cancel',
     ok: 'OK',
+    next: 'Next',
+    total: 'Total',
+    fee: 'Fee',
   },
   ordinals: [
     '1st',
@@ -117,5 +120,17 @@ export default {
     transfer: 'Hotspot Transfer',
     transferSell: 'Transfer Hotspot (Sell)',
     transferBuy: 'Transfer Hotspot (Buy)',
+  },
+  payment: {
+    title: 'Send HNT',
+  },
+  wifi: {
+    howMuch: 'How much data',
+    data: 'Data',
+    minutes: 'Minutes',
+    confirmPayment: 'Confirm Payment',
+    done: 'Done',
+    change: 'Change',
+    remainingBalance: 'Remaining\nBalance',
   },
 }

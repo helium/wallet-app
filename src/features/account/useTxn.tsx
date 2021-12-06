@@ -16,9 +16,9 @@ import TxnReceive from '@assets/images/txnReceive.svg'
 import TxnSend from '@assets/images/txnSend.svg'
 import shortLocale from '../../utils/formatDistance'
 import { Color } from '../../theme/theme'
-import { AccountActivity_accountActivity_data } from '../../graphql/__generated__/AccountActivity'
 import { groupSeparator, decimalSeparator } from '../../utils/i18n'
 import { useColors } from '../../theme/themeHooks'
+import { Activity } from '../../generated/graphql'
 
 export const TxnTypeKeys = [
   'rewards_v1',
@@ -37,7 +37,7 @@ export const TxnTypeKeys = [
 type TxnType = typeof TxnTypeKeys[number]
 
 const useTxn = (
-  item: AccountActivity_accountActivity_data,
+  item: Activity,
   address: string,
   dateOpts?: { dateFormat?: string; now: Date },
 ) => {

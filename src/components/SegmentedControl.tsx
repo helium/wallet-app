@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { BoxProps, useResponsiveProp } from '@shopify/restyle'
 import React, { memo, useCallback, useMemo } from 'react'
-import { Theme } from '../theme/theme'
+import { Spacing, Theme } from '../theme/theme'
 import Box from './Box'
 import SegmentedControlItem from './SegmentedControlItem'
 
@@ -9,11 +9,13 @@ type Props = BoxProps<Theme> & {
   values: { id: string; title: string }[]
   selectedId: string
   onChange: (id: string) => void
+  padding?: Spacing
 }
 const SegmentedControl = ({
   values,
   selectedId,
   onChange,
+  padding,
   ...boxProps
 }: Props) => {
   const maxHeight = useResponsiveProp(boxProps.maxHeight)
@@ -43,6 +45,7 @@ const SegmentedControl = ({
             selected={values[index].id === selectedId}
             title={title}
             disabled={id === selectedId}
+            padding={padding || 'l'}
             {...heights}
           />
         </React.Fragment>

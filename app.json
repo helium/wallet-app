@@ -1,4 +1,7 @@
 {
   "name": "nova",
-  "displayName": "nova"
+  "displayName": "nova",
+  "expo": {
+    "scheme": "nova"
+  }
 }

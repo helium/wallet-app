@@ -1,4 +1,3 @@
-import { useQuery } from '@apollo/client'
 import {
   differenceInMinutes,
   formatDistanceToNowStrict,
@@ -7,11 +6,7 @@ import {
   subDays,
 } from 'date-fns'
 import { useEffect, useState } from 'react'
-import { ACCOUNTS_REWARDS_SUM_QUERY } from '../../graphql/account'
-import {
-  AccountRewardsSummary,
-  AccountRewardsSummaryVariables,
-} from '../../graphql/__generated__/AccountRewardsSummary'
+import { useAccountRewardsSummaryQuery } from '../../generated/graphql'
 import shortLocale from '../../utils/formatDistance'
 
 const getRewardsDates = () => {
@@ -32,30 +27,27 @@ export default (address?: string) => {
   const [rewardsChange, setRewardsChange] =
     useState<{ minutesAgo: number; change: number; formattedChange: string }>()
 
-  const { data: rewardsToday, error: errorToday } = useQuery<
-    AccountRewardsSummary,
-    AccountRewardsSummaryVariables
-  >(ACCOUNTS_REWARDS_SUM_QUERY, {
-    fetchPolicy: 'cache-first',
-    variables: {
-      address,
-      minTime: rewardsDates?.yesterday,
-      maxTime: rewardsDates?.now,
-    },
-    skip: !address || !rewardsDates,
-  })
-  const { data: rewardsYesterday, error: errorYesterday } = useQuery<
-    AccountRewardsSummary,
-    AccountRewardsSummaryVariables
-  >(ACCOUNTS_REWARDS_SUM_QUERY, {
-    fetchPolicy: 'cache-first',
-    variables: {
-      address,
-      minTime: rewardsDates?.twoDaysAgo,
-      maxTime: rewardsDates?.yesterday,
-    },
-    skip: !address || !rewardsDates,
-  })
+  const { data: rewardsToday, error: errorToday } =
+    useAccountRewardsSummaryQuery({
+      variables: {
+        address,
+        minTime: rewardsDates?.yesterday,
+        maxTime: rewardsDates?.now,
+      },
+      fetchPolicy: 'cache-first',
+      skip: !address || !rewardsDates,
+    })
+
+  const { data: rewardsYesterday, error: errorYesterday } =
+    useAccountRewardsSummaryQuery({
+      fetchPolicy: 'cache-first',
+      variables: {
+        address,
+        minTime: rewardsDates?.twoDaysAgo,
+        maxTime: rewardsDates?.yesterday,
+      },
+      skip: !address || !rewardsDates,
+    })
 
   useEffect(() => {
     if (!errorToday || !errorYesterday) return

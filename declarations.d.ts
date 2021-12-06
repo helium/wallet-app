@@ -128,6 +128,14 @@ declare module 'react-native-icloudstore' {
   export default iCloudStorage
 }
 
+declare module '*.graphql' {
+  import { DocumentNode } from 'graphql'
+
+  const Schema: DocumentNode
+
+  export = Schema
+}
+
 declare module '@robinbobin/react-native-google-drive-api-wrapper' {
   export class MimeTypes {
     static BINARY: string

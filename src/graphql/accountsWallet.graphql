@@ -1,0 +1,15 @@
+query Accounts($addresses: [String]) {
+  accounts(addresses: $addresses) {
+    address
+    balance
+    block
+    dcBalance
+    dcNonce
+    nonce
+    secBalance
+    secNonce
+    speculativeNonce
+    speculativeSecNonce
+    stakedBalance
+  }
+}

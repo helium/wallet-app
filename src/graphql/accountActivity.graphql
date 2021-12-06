@@ -1,0 +1,33 @@
+query AccountActivity($address: String, $cursor: String) {
+  accountActivity(address: $address, cursor: $cursor) {
+    cursor
+    data {
+      time
+      memo
+      type
+      hash
+      endEpoch
+      startEpoch
+      height
+      seller
+      amountToSeller
+      rewards {
+        account
+        amount
+        gateway
+        type
+      }
+      payer
+      nonce
+      fee
+      amount
+      stakingFee
+      stake
+      stakeAmount
+      payments {
+        payee
+        amount
+      }
+    }
+  }
+}

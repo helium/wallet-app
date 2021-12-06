@@ -1,6 +1,7 @@
 package com.nova.wallet;
-
-import com.nova.wallet.generated.BasePackageList;
+import android.content.res.Configuration;
+import expo.modules.ApplicationLifecycleDispatcher;
+import expo.modules.ReactNativeHostWrapper;
 
 import android.app.Application;
 import android.content.Context;
@@ -13,47 +14,35 @@ import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import java.util.Arrays;
-
-import org.unimodules.adapters.react.ModuleRegistryAdapter;
-import org.unimodules.adapters.react.ReactModuleRegistryProvider;
 
 import com.facebook.react.bridge.JSIModulePackage;
 import com.swmansion.reanimated.ReanimatedJSIModulePackage;
 
 public class MainApplication extends Application implements ReactApplication {
-    private final ReactModuleRegistryProvider mModuleRegistryProvider = new ReactModuleRegistryProvider(
-            new BasePackageList().getPackageList(), null);
-    private final ReactNativeHost mReactNativeHost = new ReactNativeHost(this) {
+  private final ReactNativeHost mReactNativeHost =
+      new ReactNativeHostWrapper(this, new ReactNativeHost(this) {
         @Override
         public boolean getUseDeveloperSupport() {
-            return BuildConfig.DEBUG;
+          return BuildConfig.DEBUG;
         }
 
         @Override
         protected List<ReactPackage> getPackages() {
-            @SuppressWarnings("UnnecessaryLocalVariable")
-            List<ReactPackage> packages = new PackageList(this).getPackages();
-            // Packages that cannot be autolinked yet can be added manually here, for
-            // example:
-            // packages.add(new MyReactNativePackage());
-            // Add unimodules
-            List<ReactPackage> unimodules = Arrays
-                    .<ReactPackage>asList(new ModuleRegistryAdapter(mModuleRegistryProvider));
-            packages.addAll(unimodules);
-            return packages;
+          @SuppressWarnings("UnnecessaryLocalVariable")
+          List<ReactPackage> packages = new PackageList(this).getPackages();
+          return packages;
         }
 
         @Override
         protected String getJSMainModuleName() {
-            return "index";
+          return "index";
         }
 
         @Override
         protected JSIModulePackage getJSIModulePackage() {
-            return new ReanimatedJSIModulePackage();
+          return new ReanimatedJSIModulePackage();
         }
-    };
+      });
 
     @Override
     public ReactNativeHost getReactNativeHost() {
@@ -65,7 +54,8 @@ public class MainApplication extends Application implements ReactApplication {
         super.onCreate();
         SoLoader.init(this, /* native exopackage */ false);
         initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
-    }
+        ApplicationLifecycleDispatcher.onApplicationCreate(this);
+  }
 
     /**
      * Loads Flipper in React Native templates. Call this in the onCreate method
@@ -96,4 +86,10 @@ public class MainApplication extends Application implements ReactApplication {
             }
         }
     }
+
+  @Override
+  public void onConfigurationChanged(Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+    ApplicationLifecycleDispatcher.onConfigurationChanged(this, newConfig);
+  }
 }

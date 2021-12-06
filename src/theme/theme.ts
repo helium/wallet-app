@@ -3,12 +3,10 @@ import { createTheme } from '@shopify/restyle'
 const textVariants = {
   h0: {
     fontSize: 42,
-    lineHeight: 42,
     color: 'primaryText',
   },
   h1: {
     fontSize: 37,
-    lineHeight: 37,
     color: 'primaryText',
   },
   h2: {
@@ -56,13 +54,15 @@ const palette = {
 
   greenBright500: '#27EE76',
 
+  grey100: '#F7F7F7',
   grey200: '#EFEFF0',
+  grey300: '#AEAEAE',
   grey400: '#7E8399',
   grey500: '#747A92',
   grey600: '#565B6D',
   grey700: '#5A5E6C',
   grey800: '#54596F',
-  grey900: '#32343E',
+  grey900: '#2C2E37',
 
   purple500: '#B556FF',
 
@@ -75,30 +75,29 @@ const palette = {
   offWhite: '#F9FAFC',
   gold: '#FFD700',
   darkGrey: '#333333',
-  grey: '#aeaeae',
 }
 
 export const lightThemeColors = {
   ...palette,
 
   primary: palette.purple500,
-  secondary: palette.grey,
+  secondary: palette.grey300,
   primaryBackground: palette.grey200,
   primaryText: palette.black800,
   secondaryText: palette.grey400,
   error: palette.red500,
   surface: palette.white,
-  surfaceText: palette.darkGrey,
-  surfaceSecondary: palette.white,
+  surfaceText: palette.grey700,
+  surfaceSecondary: palette.grey100,
   surfaceSecondaryText: palette.black500,
-  surfaceContrast: palette.darkGrey,
+  surfaceContrast: palette.grey600,
   surfaceContrastText: palette.white,
 }
 export const darkThemeColors = {
   ...palette,
 
   primary: palette.purple500,
-  secondary: palette.darkGrey,
+  secondary: palette.grey900,
   primaryBackground: palette.black800,
   primaryText: palette.white,
   secondaryText: palette.grey400,
@@ -108,7 +107,7 @@ export const darkThemeColors = {
   surfaceSecondary: palette.grey900,
   surfaceSecondaryText: palette.grey500,
   surfaceContrast: palette.white,
-  surfaceContrastText: palette.darkGrey,
+  surfaceContrastText: palette.grey900,
 }
 
 export const theme = createTheme({
@@ -196,6 +195,7 @@ export type Theme = typeof theme
 export type TextVariant = keyof Theme['textVariants']
 export type Spacing = keyof Theme['spacing']
 export type Color = keyof Theme['colors']
+export type BorderRadii = keyof Theme['borderRadii']
 export type FontWeight =
   | '500'
   | 'bold'

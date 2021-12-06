@@ -2,11 +2,11 @@ import React, { memo } from 'react'
 import { useAsync } from 'react-async-hook'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
-import { AccountActivity_accountActivity_data } from '../../graphql/__generated__/AccountActivity'
+import { Activity } from '../../generated/graphql'
 import useTxn from './useTxn'
 
 type Props = {
-  item: AccountActivity_accountActivity_data
+  item: Activity
   accountAddress?: string
   now: Date
 }

@@ -1,10 +1,20 @@
 import { StackNavigationProp } from '@react-navigation/stack'
 
 export type HomeStackParamList = {
-  Home: undefined
   AddAccount: {
     screen: 'CreateImport'
   }
+  AccountsScreen: undefined
+  AccountAssignScreen: undefined
+  PaymentScreen: undefined
+  WifiOnboard:
+    | {
+        key: string
+        name: string
+        params: undefined
+        path: string
+      }
+    | undefined
 }
 
 export type HomeNavigationProp = StackNavigationProp<HomeStackParamList>

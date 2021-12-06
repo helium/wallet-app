@@ -2,7 +2,6 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import { useLazyQuery } from '@apollo/client'
 import Balance, { CurrencyType } from '@helium/currency'
 import {
   GoogleSignin,
@@ -20,12 +19,8 @@ import {
   useAccountStorage,
 } from '../../storage/AccountStorageProvider'
 import { HomeNavigationProp } from './homeTypes'
-import { ACCOUNTS_WALLET_QUERY } from '../../graphql/account'
-import {
-  AccountsVariables,
-  Accounts,
-} from '../../graphql/__generated__/Accounts'
 import Box from '../../components/Box'
+import { useAccountsLazyQuery } from '../../generated/graphql'
 
 type GoogleError = { code: unknown }
 type File = { id: string; kind: string; mimeType: string; name: string }
@@ -39,10 +34,7 @@ const Home = () => {
   const [googleUser, setGoogleUser] = useState<GoogleUser>()
   const [downloadedAccounts, setDownloadedAccounts] = useState<CSAccounts>()
   const [files, setFiles] = useState<File[]>()
-  const [getData, { data }] = useLazyQuery<Accounts, AccountsVariables>(
-    ACCOUNTS_WALLET_QUERY,
-    { fetchPolicy: 'no-cache' },
-  )
+  const [getData, { data }] = useAccountsLazyQuery({ fetchPolicy: 'no-cache' })
 
   useEffect(() => {
     const accountAddresses = Object.keys(accounts || {})
