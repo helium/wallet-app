@@ -49,7 +49,7 @@ const PassphraseAutocomplete = ({ onSelectWord, wordIdx }: Props) => {
           maxFontSizeMultiplier={1}
           marginHorizontal="l"
           adjustsFontSizeToFit
-          paddingVertical="xxxl"
+          paddingVertical="l"
           i18nKey={t('accountImport.wordEntry.title')}
         />
 

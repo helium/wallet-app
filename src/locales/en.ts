@@ -30,6 +30,8 @@ export default {
   onboarding: {
     import: '+ Import',
     create: '+ New',
+    mainnet: 'Mainnet',
+    testnet: 'Testnet',
   },
   accountSetup: {
     createImport: {

@@ -12,7 +12,7 @@ const AccountImportCompleteScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<OnboardingNavigationProp>()
   const {
-    onboardingData: { words },
+    onboardingData: { words, netType },
     setOnboardingData,
   } = useOnboarding()
   const { showOKAlert } = useAlert()
@@ -24,7 +24,7 @@ const AccountImportCompleteScreen = () => {
 
     const genKeypair = async () => {
       try {
-        const account = await createSecureAccount(words)
+        const account = await createSecureAccount(words, netType)
         setOnboardingData((prev) => ({ ...prev, secureAccount: account }))
         navigation.navigate('AccountAssignScreen')
       } catch (error) {
@@ -44,6 +44,7 @@ const AccountImportCompleteScreen = () => {
     createSecureAccount,
     setOnboardingData,
     showOKAlert,
+    netType,
   ])
 
   return (

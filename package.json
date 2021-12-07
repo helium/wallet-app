@@ -35,8 +35,8 @@
   "dependencies": {
     "@apollo/client": "^3.5.5",
     "@gorhom/bottom-sheet": "^4",
-    "@helium/crypto-react-native": "^3.43.1",
-    "@helium/currency": "^3.25.1",
+    "@helium/crypto-react-native": "^3.50.0",
+    "@helium/currency": "^3.45.0",
     "@react-native-async-storage/async-storage": "~1.15.0",
     "@react-native-google-signin/google-signin": "^7.0.1",
     "@react-navigation/native": "^6.0.4",

@@ -1770,7 +1770,7 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
-"@helium/crypto-react-native@^3.43.1":
+"@helium/crypto-react-native@^3.50.0":
   version "3.50.0"
   resolved "https://registry.yarnpkg.com/@helium/crypto-react-native/-/crypto-react-native-3.50.0.tgz#a16547fc42db20121b7e20c94548ab24a974381b"
   integrity sha512-B8lEicGKwqc3IhM6OGuXEWgQ8Dyg/2eqwkU93K1PAAFCpSuhDfKy9Oja40hcBQacLusCWAxcKcycpP4c5hljEA==
@@ -1781,7 +1781,7 @@
     react-native-sodium "^0.3.8"
     safe-buffer "^5.2.1"
 
-"@helium/currency@^3.25.1":
+"@helium/currency@^3.45.0":
   version "3.45.0"
   resolved "https://registry.yarnpkg.com/@helium/currency/-/currency-3.45.0.tgz#326933225047601f447209fb9c77c6d4b114c381"
   integrity sha512-6hajnB+L5OQgbQJyGzzYrHlcpRnt1j9thjt+zKhLP672VgfqJWaBs5unI+yhqHvF3JPB2/DsLj3/oT4hL0z84A==
