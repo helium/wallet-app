@@ -15,6 +15,7 @@ import { AnimatePresence } from 'moti'
 import { ActivityIndicator, LayoutRectangle } from 'react-native'
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { useTranslation } from 'react-i18next'
+import { NetType } from '@helium/crypto-react-native'
 import { useNavigation } from '@react-navigation/native'
 import Box from '../../components/Box'
 import FocusAwareStatusBar from '../../components/FocusAwareStatusBar'
@@ -35,6 +36,7 @@ import AccountView, { Action } from './AccountView'
 import Text from '../../components/Text'
 import TxnListItem from './TxnListItem'
 import useActivityList from './useActivityList'
+import NetTypeSegment from '../onboarding/NetTypeSegment'
 import { HomeNavigationProp } from '../home/homeTypes'
 import {
   Activity,
@@ -90,6 +92,7 @@ const AccountsScreen = () => {
     sortedAccounts,
   )
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
+  const [netType, setNetType] = useState<number>(NetType.MAINNET)
   const [currentAccount, setCurrentAccount] = useState<CSAccount>()
   const { black700, primaryText } = useColors()
   const client = useApolloClient()
@@ -154,11 +157,19 @@ const AccountsScreen = () => {
     if (item.address === AccountImportCreate) {
       if (onboardingType === 'assign') return null
       return (
-        <OnboardingSegment
-          minHeight={88}
-          onSegmentChange={setOnboardingType}
-          onboardingType={onboardingType}
-        />
+        <>
+          <NetTypeSegment
+            netType={netType}
+            onSegmentChange={setNetType}
+            padding="m"
+          />
+          <OnboardingSegment
+            marginTop="s"
+            minHeight={88}
+            onSegmentChange={setOnboardingType}
+            onboardingType={onboardingType}
+          />
+        </>
       )
     }
     return <AccountHeader account={item} />
@@ -332,7 +343,10 @@ const AccountsScreen = () => {
                 opacity: 0,
               }}
             >
-              <MultiAccountNavigator onboardingType={onboardingType} />
+              <MultiAccountNavigator
+                onboardingType={onboardingType}
+                netType={netType}
+              />
             </MotiBox>
           )}
         </AnimatePresence>

@@ -16,11 +16,17 @@ import { useOnboarding } from './OnboardingProvider'
 const AccountCreatePassphraseScreen = () => {
   const { t } = useTranslation()
   const { createSecureAccount } = useAccountStorage()
-  const { result: secureAccount } = useAsync(createSecureAccount, [])
+  const {
+    onboardingData: { netType },
+    setOnboardingData,
+  } = useOnboarding()
+  const { result: secureAccount } = useAsync(
+    async () => createSecureAccount(null, netType),
+    [createSecureAccount, netType],
+  )
   const navigation = useNavigation<OnboardingNavigationProp>()
   const [wordIndex, setWordIndex] = useState(0)
   const [disabled, setDisabled] = useState(true)
-  const { setOnboardingData } = useOnboarding()
   const [viewedWords, setViewedWords] = useState(new Array(12).fill(false))
 
   const onSnapToItem = useCallback(

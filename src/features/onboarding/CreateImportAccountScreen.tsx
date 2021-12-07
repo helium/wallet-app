@@ -1,35 +1,47 @@
 import { useNavigation } from '@react-navigation/native'
-import React, { memo, useCallback } from 'react'
+import React, { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Plus from '@assets/images/plus.svg'
 import DownArrow from '@assets/images/downArrow.svg'
+import { NetType } from '@helium/crypto-react-native'
 import Box from '../../components/Box'
 import ImageBox from '../../components/ImageBox'
 import Text from '../../components/Text'
 import ButtonPressable from '../../components/ButtonPressable'
 import { OnboardingParentNavigationProp } from './onboardingParentTypes'
 import { useOnboarding } from './OnboardingProvider'
+import NetTypeSegment from './NetTypeSegment'
+import SafeAreaBox from '../../components/SafeAreaBox'
 
 const CreateImportAccountScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<OnboardingParentNavigationProp>()
   const { setOnboardingData } = useOnboarding()
+  const [netType, setNetType] = useState(NetType.MAINNET)
 
   const createAccount = useCallback(() => {
-    setOnboardingData((prev) => ({ ...prev, onboardingType: 'create' }))
+    setOnboardingData((prev) => ({
+      ...prev,
+      onboardingType: 'create',
+      netType,
+    }))
     navigation.navigate('OnboardingNavigator')
-  }, [navigation, setOnboardingData])
+  }, [navigation, netType, setOnboardingData])
 
   const importAccount = useCallback(() => {
-    setOnboardingData((prev) => ({ ...prev, onboardingType: 'import' }))
+    setOnboardingData((prev) => ({
+      ...prev,
+      onboardingType: 'import',
+      netType,
+    }))
     navigation.navigate('OnboardingNavigator')
-  }, [navigation, setOnboardingData])
+  }, [navigation, netType, setOnboardingData])
 
   return (
-    <Box
+    <SafeAreaBox
       flex={1}
-      justifyContent="center"
       backgroundColor="primaryBackground"
+      marginTop="l"
       paddingHorizontal="l"
     >
       <ImageBox
@@ -39,7 +51,10 @@ const CreateImportAccountScreen = () => {
         right={0}
         position="absolute"
       />
-      <Text variant="h1">{t('accountSetup.createImport.title')}</Text>
+      <NetTypeSegment netType={netType} onSegmentChange={setNetType} />
+      <Text variant="h1" marginTop="xxxl">
+        {t('accountSetup.createImport.title')}
+      </Text>
       <Box marginVertical="l" borderRadius="xl">
         <ButtonPressable
           borderTopLeftRadius="xl"
@@ -68,7 +83,7 @@ const CreateImportAccountScreen = () => {
       <Text variant="body2" textAlign="center">
         {t('accountSetup.createImport.helperText')}
       </Text>
-    </Box>
+    </SafeAreaBox>
   )
 }
 

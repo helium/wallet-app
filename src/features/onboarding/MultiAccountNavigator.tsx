@@ -11,13 +11,13 @@ import { OnboardingOpt, useOnboarding } from './OnboardingProvider'
 
 const MultiAccountStack = createStackNavigator<OnboardingStackParamList>()
 
-type Props = { onboardingType: OnboardingOpt }
-const MultiAccountNavigator = ({ onboardingType }: Props) => {
+type Props = { onboardingType: OnboardingOpt; netType: number }
+const MultiAccountNavigator = ({ onboardingType, netType }: Props) => {
   const { setOnboardingData } = useOnboarding()
 
   useEffect(() => {
-    setOnboardingData((prev) => ({ ...prev, onboardingType }))
-  }, [onboardingType, setOnboardingData])
+    setOnboardingData((prev) => ({ ...prev, onboardingType, netType }))
+  }, [netType, onboardingType, setOnboardingData])
 
   return (
     <MultiAccountStack.Navigator screenOptions={{ headerShown: false }}>

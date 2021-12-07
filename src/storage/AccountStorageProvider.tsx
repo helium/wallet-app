@@ -157,6 +157,7 @@ const useAccountStorageHook = () => {
   const createSecureAccount = useCallback(
     async (
       givenMnemonic: Mnemonic | Array<string> | null = null,
+      netType?: number,
     ): Promise<SecureAccount> => {
       let mnemonic: Mnemonic
       if (!givenMnemonic) {
@@ -166,7 +167,7 @@ const useAccountStorageHook = () => {
       } else {
         mnemonic = new Mnemonic(givenMnemonic)
       }
-      const { keypair, address } = await Keypair.fromMnemonic(mnemonic)
+      const { keypair, address } = await Keypair.fromMnemonic(mnemonic, netType)
 
       const secureAccount = { mnemonic: mnemonic.words, keypair }
 

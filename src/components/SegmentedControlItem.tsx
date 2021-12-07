@@ -13,7 +13,7 @@ type Props = {
   minHeight?: number | string
   maxHeight?: number | string
   disabled: boolean
-  padding: Spacing
+  padding?: Spacing
 }
 const SegmentedControlItem = ({
   isFirst,
