@@ -69,15 +69,15 @@ const WifiPurchase = () => {
     // TODO: Prices are just placeholder for now
     if (type === 'data') {
       return [
-        { val: 1, price: 10_000_000 },
-        { val: 5, price: 50_000_000 },
-        { val: 20, price: 200_000_000 },
+        { val: 1, price: 10000000 },
+        { val: 5, price: 50000000 },
+        { val: 20, price: 200000000 },
       ]
     }
     return [
-      { val: 300, price: 10_000_000 },
-      { val: 600, price: 20_000_000 },
-      { val: 1_000, price: 30_000_000 },
+      { val: 300, price: 10000000 },
+      { val: 600, price: 20000000 },
+      { val: 1000, price: 30000000 },
     ]
   }, [type])
 
