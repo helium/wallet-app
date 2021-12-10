@@ -1,44 +1,67 @@
 import { createTheme } from '@shopify/restyle'
 
+export const Font = {
+  italic: 'DMSans-Italic',
+  regular: 'DMSans-Regular',
+  mediumItalic: 'DMSans-MediumItalic',
+  medium: 'DMSans-Medium',
+  bold: 'DMSans-Bold',
+  boldItalic: 'DMSans-BoldItalic',
+}
+
 const textVariants = {
   h0: {
+    fontFamily: Font.regular,
     fontSize: 42,
     color: 'primaryText',
   },
   h1: {
+    fontFamily: Font.regular,
     fontSize: 37,
     color: 'primaryText',
   },
   h2: {
+    fontFamily: Font.regular,
     fontSize: 33,
     color: 'primaryText',
   },
   h3: {
+    fontFamily: Font.regular,
     fontSize: 27,
     color: 'primaryText',
   },
   h4: {
+    fontFamily: Font.regular,
     fontSize: 22,
     color: 'primaryText',
   },
   subtitle1: {
+    fontFamily: Font.regular,
     fontSize: 20,
     color: 'primaryText',
   },
   subtitle2: {
+    fontFamily: Font.regular,
     fontSize: 19,
     color: 'primaryText',
   },
   body1: {
+    fontFamily: Font.regular,
     fontSize: 17,
     color: 'primaryText',
   },
   body2: {
+    fontFamily: Font.regular,
     fontSize: 14,
     color: 'primaryText',
   },
   body3: {
+    fontFamily: Font.regular,
     fontSize: 12,
+    color: 'primaryText',
+  },
+  regular: {
+    fontFamily: Font.regular,
     color: 'primaryText',
   },
 }

@@ -43,6 +43,7 @@ const App = () => {
     'Module iCloudStorage',
     'EventEmitter.removeListener',
     'componentWillReceiveProps has been renamed',
+    'AsyncStorage has been extracted from react-native core and will be removed in a future release.',
   ])
 
   const { appState } = useAppState()
