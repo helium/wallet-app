@@ -15,16 +15,20 @@ import animateTransition from '../../utils/animateTransition'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import AccountIcon from '../../components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useAccountsQuery, useHeliumDataQuery } from '../../generated/graphql'
+import { useAccountQuery, useHeliumDataQuery } from '../../generated/graphql'
 
 type Route = RouteProp<HomeStackParamList, 'WifiPurchase'>
 const WifiPurchase = () => {
-  const { data } = useHeliumDataQuery()
-  const { sortedAccounts, accountAddresses } = useAccountStorage()
-  const { data: accountsData } = useAccountsQuery({
-    variables: { addresses: accountAddresses },
+  const { currentAccount } = useAccountStorage()
+  const { data } = useHeliumDataQuery({
+    variables: { address: currentAccount?.address },
+    fetchPolicy: 'network-only',
+    skip: !currentAccount?.address,
+  })
+  const { data: accountData } = useAccountQuery({
+    variables: { address: currentAccount?.address },
     fetchPolicy: 'cache-and-network',
-    skip: !accountAddresses,
+    skip: !currentAccount?.address,
   })
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const route = useRoute<Route>()
@@ -36,7 +40,6 @@ const WifiPurchase = () => {
   const [type, setType] = useState<'data' | 'minutes'>('data')
   const [viewState, setViewState] = useState<'select' | 'confirm'>('select')
   const [dataIndex, setDataIndex] = useState(0)
-  const [accountIndex] = useState(0)
 
   const segmentData = useMemo(
     () => [
@@ -54,12 +57,9 @@ const WifiPurchase = () => {
   )
 
   const accountBalance = useMemo(() => {
-    const accountData = accountsData?.accounts?.find(
-      (a) => a?.address === sortedAccounts[accountIndex].address,
-    )
-    if (!accountData) return
-    return new Balance(accountData.balance, CurrencyType.networkToken)
-  }, [accountIndex, accountsData, sortedAccounts])
+    if (!accountData?.account) return
+    return new Balance(accountData.account.balance, CurrencyType.networkToken)
+  }, [accountData])
 
   const onSegmentChange = useCallback((id: string) => {
     setType(id as 'data' | 'minutes')
@@ -213,12 +213,9 @@ const WifiPurchase = () => {
             flexDirection="row"
             alignItems="center"
           >
-            <AccountIcon
-              size={26}
-              address={sortedAccounts[accountIndex].address}
-            />
+            <AccountIcon size={26} address={currentAccount?.address} />
             <Text marginLeft="ms" variant="subtitle2" flex={1}>
-              {sortedAccounts[accountIndex].alias}
+              {currentAccount?.alias}
             </Text>
             <TouchableOpacityBox hitSlop={hitSlop}>
               <ChevronDown />

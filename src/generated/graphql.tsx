@@ -92,6 +92,7 @@ export type RootMutationType = {
 }
 
 export type RootMutationTypeSubmitTxnArgs = {
+  address?: InputMaybe<Scalars['String']>
   txn: Scalars['String']
 }
 
@@ -103,8 +104,6 @@ export type RootQueryType = {
   accountActivity?: Maybe<ActivityData>
   /** Get account rewards sum */
   accountRewardsSum?: Maybe<Sum>
-  /** Get accounts */
-  accounts?: Maybe<Array<Maybe<AccountData>>>
   /** Get current oracle price */
   currentOraclePrice?: Maybe<OraclePrice>
 }
@@ -124,8 +123,8 @@ export type RootQueryTypeAccountRewardsSumArgs = {
   minTime?: InputMaybe<Scalars['String']>
 }
 
-export type RootQueryTypeAccountsArgs = {
-  addresses?: InputMaybe<Array<InputMaybe<Scalars['String']>>>
+export type RootQueryTypeCurrentOraclePriceArgs = {
+  address?: InputMaybe<Scalars['String']>
 }
 
 export type Sum = {
@@ -238,38 +237,34 @@ export type AccountRewardsSummaryQuery = {
     | undefined
 }
 
-export type AccountsQueryVariables = Exact<{
-  addresses?: InputMaybe<
-    Array<InputMaybe<Scalars['String']>> | InputMaybe<Scalars['String']>
-  >
+export type AccountQueryVariables = Exact<{
+  address?: InputMaybe<Scalars['String']>
 }>
 
-export type AccountsQuery = {
+export type AccountQuery = {
   __typename?: 'RootQueryType'
-  accounts?:
-    | Array<
-        | {
-            __typename?: 'AccountData'
-            address: string
-            balance: number
-            block?: number | null | undefined
-            dcBalance: number
-            dcNonce: number
-            nonce: number
-            secBalance: number
-            secNonce: number
-            speculativeNonce?: number | null | undefined
-            speculativeSecNonce?: number | null | undefined
-            stakedBalance: number
-          }
-        | null
-        | undefined
-      >
+  account?:
+    | {
+        __typename?: 'AccountData'
+        address: string
+        balance: number
+        block?: number | null | undefined
+        dcBalance: number
+        dcNonce: number
+        nonce: number
+        secBalance: number
+        secNonce: number
+        speculativeNonce?: number | null | undefined
+        speculativeSecNonce?: number | null | undefined
+        stakedBalance: number
+      }
     | null
     | undefined
 }
 
-export type HeliumDataQueryVariables = Exact<{ [key: string]: never }>
+export type HeliumDataQueryVariables = Exact<{
+  address?: InputMaybe<Scalars['String']>
+}>
 
 export type HeliumDataQuery = {
   __typename?: 'RootQueryType'
@@ -441,9 +436,9 @@ export type AccountRewardsSummaryQueryResult = Apollo.QueryResult<
   AccountRewardsSummaryQuery,
   AccountRewardsSummaryQueryVariables
 >
-export const AccountsDocument = gql`
-  query Accounts($addresses: [String]) {
-    accounts(addresses: $addresses) {
+export const AccountDocument = gql`
+  query Account($address: String) {
+    account(address: $address) {
       address
       balance
       block
@@ -460,53 +455,51 @@ export const AccountsDocument = gql`
 `
 
 /**
- * __useAccountsQuery__
+ * __useAccountQuery__
  *
- * To run a query within a React component, call `useAccountsQuery` and pass it any options that fit your needs.
- * When your component renders, `useAccountsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useAccountQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAccountQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useAccountsQuery({
+ * const { data, loading, error } = useAccountQuery({
  *   variables: {
- *      addresses: // value for 'addresses'
+ *      address: // value for 'address'
  *   },
  * });
  */
-export function useAccountsQuery(
-  baseOptions?: Apollo.QueryHookOptions<AccountsQuery, AccountsQueryVariables>,
+export function useAccountQuery(
+  baseOptions?: Apollo.QueryHookOptions<AccountQuery, AccountQueryVariables>,
 ) {
   const options = { ...defaultOptions, ...baseOptions }
-  return Apollo.useQuery<AccountsQuery, AccountsQueryVariables>(
-    AccountsDocument,
+  return Apollo.useQuery<AccountQuery, AccountQueryVariables>(
+    AccountDocument,
     options,
   )
 }
-export function useAccountsLazyQuery(
+export function useAccountLazyQuery(
   baseOptions?: Apollo.LazyQueryHookOptions<
-    AccountsQuery,
-    AccountsQueryVariables
+    AccountQuery,
+    AccountQueryVariables
   >,
 ) {
   const options = { ...defaultOptions, ...baseOptions }
-  return Apollo.useLazyQuery<AccountsQuery, AccountsQueryVariables>(
-    AccountsDocument,
+  return Apollo.useLazyQuery<AccountQuery, AccountQueryVariables>(
+    AccountDocument,
     options,
   )
 }
-export type AccountsQueryHookResult = ReturnType<typeof useAccountsQuery>
-export type AccountsLazyQueryHookResult = ReturnType<
-  typeof useAccountsLazyQuery
->
-export type AccountsQueryResult = Apollo.QueryResult<
-  AccountsQuery,
-  AccountsQueryVariables
+export type AccountQueryHookResult = ReturnType<typeof useAccountQuery>
+export type AccountLazyQueryHookResult = ReturnType<typeof useAccountLazyQuery>
+export type AccountQueryResult = Apollo.QueryResult<
+  AccountQuery,
+  AccountQueryVariables
 >
 export const HeliumDataDocument = gql`
-  query HeliumData {
-    currentOraclePrice {
+  query HeliumData($address: String) {
+    currentOraclePrice(address: $address) {
       price
     }
   }
@@ -524,6 +517,7 @@ export const HeliumDataDocument = gql`
  * @example
  * const { data, loading, error } = useHeliumDataQuery({
  *   variables: {
+ *      address: // value for 'address'
  *   },
  * });
  */

@@ -46,8 +46,9 @@ const App = () => {
   ])
 
   const { appState } = useAppState()
-  const { client, loading: loadingClient } = useApolloClient()
   const { restored: accountsRestored } = useAccountStorage()
+
+  const { client, loading: loadingClient } = useApolloClient()
 
   const colorScheme = useColorScheme()
   const colorAdaptedTheme = useMemo(

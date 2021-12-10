@@ -1,8 +1,7 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import Balance, { CurrencyType } from '@helium/currency'
 import {
   GoogleSignin,
   statusCodes,
@@ -20,7 +19,6 @@ import {
 } from '../../storage/AccountStorageProvider'
 import { HomeNavigationProp } from './homeTypes'
 import Box from '../../components/Box'
-import { useAccountsLazyQuery } from '../../generated/graphql'
 
 type GoogleError = { code: unknown }
 type File = { id: string; kind: string; mimeType: string; name: string }
@@ -34,47 +32,6 @@ const Home = () => {
   const [googleUser, setGoogleUser] = useState<GoogleUser>()
   const [downloadedAccounts, setDownloadedAccounts] = useState<CSAccounts>()
   const [files, setFiles] = useState<File[]>()
-  const [getData, { data }] = useAccountsLazyQuery({ fetchPolicy: 'no-cache' })
-
-  useEffect(() => {
-    const accountAddresses = Object.keys(accounts || {})
-    if (!accountAddresses) return
-
-    getData({
-      variables: { addresses: accountAddresses },
-    })
-  }, [accounts, getData])
-
-  const displayVals = useMemo(() => {
-    if (!data?.accounts) return
-
-    const vals = data.accounts.reduce(
-      ({ hnt, dc, stakedHnt, hst }, val) => {
-        return {
-          hnt: new Balance(val?.balance || 0, CurrencyType.networkToken).plus(
-            hnt,
-          ),
-          dc: new Balance(val?.dcBalance || 0, CurrencyType.dataCredit).plus(
-            dc,
-          ),
-          stakedHnt: new Balance(
-            val?.stakedBalance || 0,
-            CurrencyType.networkToken,
-          ).plus(stakedHnt),
-          hst: new Balance(val?.secBalance || 0, CurrencyType.security).plus(
-            hst,
-          ),
-        }
-      },
-      {
-        hnt: new Balance(0, CurrencyType.networkToken),
-        dc: new Balance(0, CurrencyType.dataCredit),
-        stakedHnt: new Balance(0, CurrencyType.networkToken),
-        hst: new Balance(0, CurrencyType.security),
-      },
-    )
-    return vals
-  }, [data])
 
   const handleAddAccount = useCallback(() => {
     navigation.navigate('AddAccount', {
@@ -145,19 +102,6 @@ const Home = () => {
           marginTop="l"
         >{`Google Email: ${googleUser.user.email}`}</Text>
       )}
-      <Text variant="body1" marginTop="l">{`HNT: ${displayVals?.hnt.toString(
-        2,
-      )}`}</Text>
-      <Text variant="body1" marginTop="l">{`DC: ${displayVals?.dc.toString(
-        2,
-      )}`}</Text>
-      <Text
-        variant="body1"
-        marginTop="l"
-      >{`StakedHNT: ${displayVals?.stakedHnt.toString(2)}`}</Text>
-      <Text variant="body1" marginTop="l">{`HST: ${displayVals?.hst.toString(
-        2,
-      )}`}</Text>
       {downloadedAccounts && (
         <Text
           variant="body1"

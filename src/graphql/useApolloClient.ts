@@ -1,9 +1,11 @@
 import Config from 'react-native-config'
-import { ApolloClient, InMemoryCache } from '@apollo/client'
+import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client'
 import { AsyncStorageWrapper, persistCache } from 'apollo3-cache-persist'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useAsync } from 'react-async-hook'
+import { setContext } from '@apollo/client/link/context'
 import { ActivityData, Activity } from '../generated/graphql'
+import { useAccountStorage } from '../storage/AccountStorageProvider'
 
 type ActivityCache = {
   cursor: string
@@ -73,16 +75,47 @@ const cache = new InMemoryCache({
 })
 
 export const useApolloClient = () => {
+  const { getToken, currentAccount } = useAccountStorage()
+  const httpLink = createHttpLink({
+    uri: Config.GRAPH_URI,
+  })
+
   const { result: client, loading } = useAsync(async () => {
     await persistCache({
       cache,
       storage: new AsyncStorageWrapper(AsyncStorage),
     })
+
+    const authLink = setContext(async ({ variables }, { headers }) => {
+      const token = await getToken(variables?.address)
+
+      return {
+        headers: {
+          ...headers,
+          Authorization: token,
+        },
+      }
+    })
+
     return new ApolloClient({
-      uri: Config.GRAPH_URI,
+      link: authLink.concat(httpLink),
       cache,
     })
   }, [])
+
+  useAsync(async () => {
+    // Anytime the current account changes, the auth token needs to be updated
+    const authLink = setContext(async ({ variables }, { headers }) => {
+      const token = await getToken(variables?.address)
+      return {
+        headers: {
+          ...headers,
+          Authorization: token || '',
+        },
+      }
+    })
+    client?.setLink(authLink.concat(httpLink))
+  }, [currentAccount])
 
   return {
     client,
