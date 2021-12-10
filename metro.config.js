@@ -13,6 +13,7 @@ module.exports = (async () => {
           inlineRequires: true,
         },
       }),
+      plugins: ['@babel/plugin-proposal-numeric-separator'],
     },
     resolver: {
       assetExts: assetExts.filter((ext) => ext !== 'svg'),
