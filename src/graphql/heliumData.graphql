@@ -1,5 +1,5 @@
-query HeliumData {
-  currentOraclePrice {
+query HeliumData($address: String) {
+  currentOraclePrice(address: $address) {
     price
   }
 }

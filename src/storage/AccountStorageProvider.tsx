@@ -12,6 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useAsync } from 'react-async-hook'
 import { Keypair, Mnemonic } from '@helium/crypto-react-native'
 import * as SecureStore from 'expo-secure-store'
+import { sortBy, values } from 'lodash'
 
 export type CSAccount = {
   alias: string
@@ -39,10 +40,36 @@ export type SecureAccount = {
   mnemonic: string[]
   keypair: { pk: string; sk: string }
   address: string
+  apiToken?: string
 }
 export type SecureAccounts = Record<string, SecureAccount>
 
+const makeSignature = async (
+  token: { address: string; time: number },
+  keypair: Keypair,
+) => {
+  const stringifiedToken = JSON.stringify(token)
+  const buffer = await keypair.sign(stringifiedToken)
+
+  return buffer.toString('base64')
+}
+
+const makeWalletApiToken = async (address: string, keypair: Keypair) => {
+  const time = Math.floor(Date.now() / 1000)
+
+  const token = {
+    address,
+    time,
+  }
+
+  const signature = await makeSignature(token, keypair)
+
+  const signedToken = { ...token, signature }
+  return Buffer.from(JSON.stringify(signedToken)).toString('base64')
+}
+
 const useAccountStorageHook = () => {
+  const [currentAccount, setCurrentAccount] = useState<CSAccount>()
   const [accounts, setAccounts] = useState<CSAccounts>()
   const [secureAccounts, setSecureAccounts] = useState<SecureAccounts>()
   const [viewType, setViewType] = useState<AccountView>()
@@ -52,6 +79,49 @@ const useAccountStorageHook = () => {
   }>()
 
   const restored = useMemo(() => secureAccounts !== undefined, [secureAccounts])
+
+  const sortAccounts = useCallback((accts: CSAccounts) => {
+    // TODO: We'll probably want to find a better way to order the accounts
+    const acctList = values(accts)
+    return sortBy(acctList, 'alias') || []
+  }, [])
+
+  const getAccounts = useCallback(async (): Promise<CSAccounts> => {
+    const csAccounts = await CloudStorage.getItem(CloudStorageKeys.ACCOUNTS)
+    if (!csAccounts) return {}
+
+    return JSON.parse(csAccounts) as CSAccounts
+  }, [])
+
+  const getSecureAccount = useCallback(
+    async (address: string): Promise<SecureAccount | undefined> => {
+      let item: string | null = null
+      try {
+        item = await SecureStore.getItemAsync(address)
+      } catch (e) {
+        console.error(e)
+      }
+
+      if (!item) return
+      return JSON.parse(item) as SecureAccount
+    },
+    [],
+  )
+
+  const getToken = useCallback(
+    async (address?: string) => {
+      if (!address) {
+        return ''
+      }
+
+      let secureAccount = secureAccounts?.[address]
+      if (!secureAccount) {
+        secureAccount = await getSecureAccount(address)
+      }
+      return secureAccount?.apiToken || ''
+    },
+    [getSecureAccount, secureAccounts],
+  )
 
   useAsync(async () => {
     const cloudAccounts = await getAccounts()
@@ -92,37 +162,15 @@ const useAccountStorageHook = () => {
     [accountAddresses.length],
   )
 
-  const sortedAccounts = useMemo(() => {
-    // TODO: We'll probably want to find a way to order the accounts
-    return accountAddresses.map((a) => (accounts || {})[a])
-  }, [accountAddresses, accounts])
-
-  const getAccounts = useCallback(async (): Promise<CSAccounts> => {
-    const csAccounts = await CloudStorage.getItem(CloudStorageKeys.ACCOUNTS)
-    if (!csAccounts) return {}
-
-    return JSON.parse(csAccounts) as CSAccounts
-  }, [])
-
-  const getSecureAccount = useCallback(
-    async (address: string): Promise<SecureAccount | undefined> => {
-      let item: string | null = null
-      try {
-        item = await SecureStore.getItemAsync(address)
-      } catch (e) {
-        console.error(e)
-      }
-
-      if (!item) return
-      return JSON.parse(item) as SecureAccount
-    },
-    [],
+  const sortedAccounts = useMemo(
+    () => sortAccounts(accounts || {}),
+    [accounts, sortAccounts],
   )
 
   const upsertAccount = useCallback(
     async (account: CSAccount & SecureAccount) => {
-      const { address, mnemonic, keypair, alias } = account
-      const secureAccount = { mnemonic, keypair, address }
+      const { address, mnemonic, keypair, alias, apiToken } = account
+      const secureAccount = { mnemonic, keypair, address, apiToken }
       const nextAccounts = {
         ...accounts,
         [account.address]: {
@@ -169,7 +217,15 @@ const useAccountStorageHook = () => {
       }
       const { keypair, address } = await Keypair.fromMnemonic(mnemonic, netType)
 
-      const secureAccount = { mnemonic: mnemonic.words, keypair }
+      const apiToken = await makeWalletApiToken(
+        address.b58,
+        new Keypair(keypair),
+      )
+      const secureAccount = {
+        mnemonic: mnemonic.words,
+        keypair,
+        apiToken,
+      }
 
       return { address: address.b58, ...secureAccount }
     },
@@ -205,6 +261,10 @@ const useAccountStorageHook = () => {
     pin,
     updatePin,
     restored,
+    currentAccount,
+    getToken,
+    setCurrentAccount,
+    getSecureAccount,
   }
 }
 
@@ -226,6 +286,12 @@ const initialState = {
   pin: undefined,
   updatePin: async () => undefined,
   restored: false,
+  currentAccount: undefined,
+  setCurrentAccount: () => undefined,
+  getToken: (_address?: string) =>
+    new Promise<string>((resolve) => resolve('')),
+  getSecureAccount: () =>
+    new Promise<SecureAccount | undefined>((resolve) => resolve(undefined)),
 }
 
 const AccountStorageContext =

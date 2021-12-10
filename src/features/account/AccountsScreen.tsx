@@ -38,11 +38,7 @@ import TxnListItem from './TxnListItem'
 import useActivityList from './useActivityList'
 import NetTypeSegment from '../onboarding/NetTypeSegment'
 import { HomeNavigationProp } from '../home/homeTypes'
-import {
-  Activity,
-  AccountData,
-  useAccountsQuery,
-} from '../../generated/graphql'
+import { Activity, useAccountQuery } from '../../generated/graphql'
 
 type AccountLayout = {
   accountViewStart: number
@@ -87,20 +83,20 @@ const AccountsScreen = () => {
   const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
   const { backgroundStyle: handleStyle } = useOpacity('black600', 1)
 
-  const { sortedAccounts, accountAddresses, signOut } = useAccountStorage()
+  const { sortedAccounts, signOut, currentAccount, setCurrentAccount } =
+    useAccountStorage()
   const prevSortedAccounts = usePrevious<CSAccount[] | undefined>(
     sortedAccounts,
   )
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const [netType, setNetType] = useState<number>(NetType.MAINNET)
-  const [currentAccount, setCurrentAccount] = useState<CSAccount>()
   const { black700, primaryText } = useColors()
   const client = useApolloClient()
 
-  const { data: accountsData, error: accountsError } = useAccountsQuery({
-    variables: { addresses: accountAddresses },
+  const { data: accountData, error: accountsError } = useAccountQuery({
+    variables: { address: currentAccount?.address },
     fetchPolicy: 'cache-and-network',
-    skip: !accountAddresses,
+    skip: !currentAccount?.address,
   })
 
   const {
@@ -133,8 +129,8 @@ const AccountsScreen = () => {
       setOnboardingType('import')
     }
   }, [
-    accountAddresses,
     prevSortedAccounts,
+    setCurrentAccount,
     sortedAccounts,
     sortedAccounts.length,
   ])
@@ -179,7 +175,7 @@ const AccountsScreen = () => {
     (index: number) => {
       setCurrentAccount(carouselData[index])
     },
-    [carouselData],
+    [carouselData, setCurrentAccount],
   )
 
   const snapPoints = useMemo(() => {
@@ -190,17 +186,10 @@ const AccountsScreen = () => {
     return [mid, expanded]
   }, [spacing.l, state])
 
-  const accountWalletData = useMemo(() => {
-    return accountsData?.accounts?.reduce((obj, val) => {
-      if (!val) return obj
-      return { ...obj, [val.address]: val }
-    }, {} as Record<string, AccountData>)
-  }, [accountsData])
-
   useEffect(() => {
     if (currentAccount || !carouselData.length) return
     setCurrentAccount(carouselData[0])
-  }, [carouselData, currentAccount])
+  }, [carouselData, currentAccount, setCurrentAccount])
 
   const renderFlatlistItem = useCallback(
     ({ item }: Item) => {
@@ -298,7 +287,13 @@ const AccountsScreen = () => {
                 opacity: 0,
               }}
             >
-              <TouchableOpacityBox padding="l">
+              <TouchableOpacityBox
+                padding="l"
+                onPress={() => {
+                  // TODO: Remove eventually
+                  navigation.navigate('WifiOnboard')
+                }}
+              >
                 <CogIco color={black700} />
               </TouchableOpacityBox>
               <TouchableOpacityBox padding="l" onPress={handleSignOut}>
@@ -380,7 +375,7 @@ const AccountsScreen = () => {
                     onLayoutChange={handleAccountViewLayoutChange}
                     onActionSelected={handleActionSelected}
                     visible={visible}
-                    accountData={accountWalletData?.[d.address]}
+                    accountData={accountData?.account}
                   />
                 </MotiBox>
               )}

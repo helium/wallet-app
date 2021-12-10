@@ -1,5 +1,5 @@
-query Accounts($addresses: [String]) {
-  accounts(addresses: $addresses) {
+query Account($address: String) {
+  account(address: $address) {
     address
     balance
     block
