@@ -79,7 +79,6 @@
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
-    "@babel/plugin-proposal-numeric-separator": "^7.16.0",
     "@babel/runtime": "^7.12.5",
     "@graphql-codegen/cli": "2.3.0",
     "@graphql-codegen/typescript": "2.4.1",
