@@ -6,6 +6,7 @@ import { useAsync } from 'react-async-hook'
 import { setContext } from '@apollo/client/link/context'
 import { ActivityData, Activity } from '../generated/graphql'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
+import { AccountImportCreate } from '../features/account/AccountsScreen'
 
 type ActivityCache = {
   cursor: string
@@ -76,6 +77,7 @@ const cache = new InMemoryCache({
 
 export const useApolloClient = () => {
   const { getToken, currentAccount } = useAccountStorage()
+
   const httpLink = createHttpLink({
     uri: Config.GRAPH_URI,
   })
@@ -105,6 +107,7 @@ export const useApolloClient = () => {
 
   useAsync(async () => {
     // Anytime the current account changes, the auth token needs to be updated
+    if (currentAccount?.address === AccountImportCreate) return
     const authLink = setContext(async ({ variables }, { headers }) => {
       const token = await getToken(variables?.address)
       return {

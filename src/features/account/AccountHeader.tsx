@@ -1,6 +1,5 @@
-import React, { memo, useMemo } from 'react'
+import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Address, NetType } from '@helium/crypto-react-native'
 import AccountIcon from '../../components/AccountIcon'
 import Box from '../../components/Box'
 import Surface from '../../components/Surface'
@@ -17,17 +16,11 @@ const AccountHeader = ({ account }: Props) => {
     account.address,
   )
 
-  const netType = useMemo(() => {
-    return Address.fromB58(account.address)?.netType === NetType.TESTNET
-      ? `(${t('onboarding.testnet')})`
-      : ''
-  }, [account.address, t])
-
   return (
     <Surface minHeight={88} alignItems="center" flexDirection="row" padding="l">
       <AccountIcon size={40} address={account.address} />
       <Box marginLeft="s" flex={1}>
-        <Text variant="subtitle2">{`${account.alias} ${netType}`}</Text>
+        <Text variant="subtitle2">{account.alias}</Text>
         <Text variant="body3" color="secondaryText">
           {minutesAgo !== undefined
             ? t('accountHeader.timeAgo', { formattedChange })
