@@ -27,8 +27,12 @@ const AccountConfirmPinScreen = () => {
       }
 
       if (params.account) {
-        upsertAccount(params.account)
-        reset()
+        try {
+          upsertAccount(params.account)
+          reset()
+        } catch (e) {
+          console.error(e)
+        }
       }
 
       updatePin(pin)

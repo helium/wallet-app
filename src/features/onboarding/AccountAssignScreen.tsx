@@ -35,10 +35,15 @@ const AccountAssignScreen = () => {
     if (!secureAccount) return
 
     if (hasAccounts) {
-      upsertAccount({ alias, ...secureAccount })
-      onboardingNav.popToTop()
-      reset()
-      return
+      try {
+        upsertAccount({ alias, ...secureAccount })
+        onboardingNav.popToTop()
+        reset()
+        return
+      } catch (e) {
+        console.error(e)
+        return
+      }
     }
 
     onboardingNav.navigate('AccountCreatePinScreen', {
@@ -63,7 +68,7 @@ const AccountAssignScreen = () => {
 
           <TextInput
             onChangeText={setAlias}
-            variant="regular"
+            variant="underline"
             value={alias}
             placeholder={t('accountAssign.AccountNamePlaceholder')}
             autoCorrect={false}

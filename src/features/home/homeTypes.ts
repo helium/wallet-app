@@ -7,6 +7,7 @@ export type HomeStackParamList = {
   AccountsScreen: undefined
   AccountAssignScreen: undefined
   PaymentScreen: undefined
+  AddressBookNavigator: undefined
   WifiPurchase:
     | {
         key: string

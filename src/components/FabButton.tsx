@@ -7,6 +7,7 @@ import FatArrowUp from '@assets/images/arrowUp.svg'
 import Payment from '@assets/images/payment.svg'
 import Stake from '@assets/images/stake.svg'
 import Lock from '@assets/images/lock.svg'
+import Plus from '@assets/images/plus.svg'
 import { Color, FontWeight, Theme } from '../theme/theme'
 import { useColors, useCreateOpacity } from '../theme/themeHooks'
 import Box from './Box'
@@ -26,6 +27,7 @@ type Props = BoxProps<Theme> & {
     | 'arrowDown'
     | 'stake'
     | 'lock'
+    | 'add'
   innerContainerProps?: BoxProps<Theme>
   iconColor?: Color
   iconColorPressed?: Color
@@ -120,6 +122,8 @@ const ButtonPressable = ({
           return <Stake color={getIconColor(pressed)} />
         case 'lock':
           return <Lock color={getIconColor(pressed)} />
+        case 'add':
+          return <Plus color={getIconColor(pressed)} />
       }
     },
     [getIconColor, icon],

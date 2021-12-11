@@ -135,4 +135,21 @@ export default {
     change: 'Change',
     remainingBalance: 'Remaining\nBalance',
   },
+  addressBook: {
+    title: 'Address Book',
+    addNext: 'Add New...',
+    searchContacts: 'Search Contacts...',
+  },
+  addNewContact: {
+    title: 'Add New Contact',
+    addContact: 'Add Contact',
+    address: {
+      title: 'Enter Helium Address',
+      placeholder: 'e.g. 9h9h9r3hfi04nf0j083...',
+    },
+    nickname: {
+      title: 'Enter Nickname',
+      placeholder: 'e.g. Loki Laufeyson',
+    },
+  },
 }
