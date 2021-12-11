@@ -25,13 +25,14 @@ export type CSAccounts = Record<string, CSAccount>
 // https://developer.android.com/guide/topics/data/autobackup
 const CloudStorage = Platform.OS === 'ios' ? iCloudStorage : AsyncStorage
 
-const CloudStorageKeys = {
-  ACCOUNTS: 'accounts',
-  VIEW_TYPE: 'viewType',
+enum CloudStorageKeys {
+  ACCOUNTS = 'accounts',
+  CONTACTS = 'contacts',
+  VIEW_TYPE = 'viewType',
 }
 
-const SecureStorageKeys = {
-  PIN: 'pin',
+enum SecureStorageKeys {
+  PIN = 'pin',
 }
 
 export type AccountView = 'unified' | 'split'
@@ -68,10 +69,20 @@ const makeWalletApiToken = async (address: string, keypair: Keypair) => {
   return Buffer.from(JSON.stringify(signedToken)).toString('base64')
 }
 
+const getFromCloudStorage = async <T,>(
+  key: CloudStorageKeys,
+): Promise<T | undefined> => {
+  const item = await CloudStorage.getItem(key)
+  if (!item) return
+
+  return JSON.parse(item) as T
+}
+
 const useAccountStorageHook = () => {
   const [currentAccount, setCurrentAccount] = useState<CSAccount>()
   const [accounts, setAccounts] = useState<CSAccounts>()
   const [secureAccounts, setSecureAccounts] = useState<SecureAccounts>()
+  const [contacts, setContacts] = useState<CSAccount[]>([])
   const [viewType, setViewType] = useState<AccountView>()
   const [pin, setPin] = useState<{
     value: string
@@ -124,6 +135,11 @@ const useAccountStorageHook = () => {
   )
 
   useAsync(async () => {
+    const restoredContacts = await getFromCloudStorage<CSAccount[]>(
+      CloudStorageKeys.CONTACTS,
+    )
+    setContacts(restoredContacts || [])
+
     const cloudAccounts = await getAccounts()
     setAccounts(cloudAccounts)
 
@@ -171,6 +187,12 @@ const useAccountStorageHook = () => {
     async (account: CSAccount & SecureAccount) => {
       const { address, mnemonic, keypair, alias, apiToken } = account
       const secureAccount = { mnemonic, keypair, address, apiToken }
+
+      if (accountAddresses.find((a) => a === address)) {
+        console.error('Duplicate Address')
+        throw Error('Duplicate Address')
+      }
+
       const nextAccounts = {
         ...accounts,
         [account.address]: {
@@ -189,7 +211,20 @@ const useAccountStorageHook = () => {
       )
       return SecureStore.setItemAsync(address, JSON.stringify(secureAccount))
     },
-    [accounts, secureAccounts],
+    [accountAddresses, accounts, secureAccounts],
+  )
+
+  const addContact = useCallback(
+    async (account: CSAccount) => {
+      const filtered = contacts.filter((c) => c.address !== account.address)
+      const nextContacts = [...filtered, account]
+      setContacts(nextContacts)
+      return CloudStorage.setItem(
+        CloudStorageKeys.CONTACTS,
+        JSON.stringify(nextContacts),
+      )
+    },
+    [contacts],
   )
 
   const updateViewType = useCallback(async (nextViewType: AccountView) => {
@@ -243,6 +278,7 @@ const useAccountStorageHook = () => {
 
     setAccounts(undefined)
     setSecureAccounts(undefined)
+    setContacts([])
     setPin(undefined)
     setViewType(undefined)
   }, [secureAccounts])
@@ -265,6 +301,8 @@ const useAccountStorageHook = () => {
     getToken,
     setCurrentAccount,
     getSecureAccount,
+    contacts,
+    addContact,
   }
 }
 
@@ -292,6 +330,8 @@ const initialState = {
     new Promise<string>((resolve) => resolve('')),
   getSecureAccount: () =>
     new Promise<SecureAccount | undefined>((resolve) => resolve(undefined)),
+  contacts: [],
+  addContact: async () => undefined,
 }
 
 const AccountStorageContext =

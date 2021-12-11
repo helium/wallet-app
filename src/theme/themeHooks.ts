@@ -91,6 +91,11 @@ export const useTextVariants = () => {
   return textVariants
 }
 
+export const useInputVariants = () => {
+  const { inputVariants } = useTheme<Theme>()
+  return inputVariants
+}
+
 export const useBreakpoints = () => {
   const { breakpoints } = useTheme<Theme>()
   const width = ww

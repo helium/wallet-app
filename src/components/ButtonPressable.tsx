@@ -10,6 +10,7 @@ import Text from './Text'
 
 type Props = BoxProps<Theme> & {
   backgroundColor?: Color
+  backgroundColorDisabled?: Color
   backgroundColorOpacity?: number
   backgroundColorPressed?: Color
   backgroundColorOpacityPressed?: number
@@ -17,6 +18,7 @@ type Props = BoxProps<Theme> & {
   innerContainerProps?: BoxProps<Theme>
   title: string
   titleColor?: Color
+  titleColorDisabled?: Color
   titleColorOpacity?: number
   titleColorPressed?: Color
   titleColorPressedOpacity?: number
@@ -29,6 +31,7 @@ type Props = BoxProps<Theme> & {
 
 const ButtonPressable = ({
   backgroundColor,
+  backgroundColorDisabled,
   backgroundColorOpacity = 1,
   backgroundColorPressed,
   backgroundColorOpacityPressed = 1,
@@ -39,6 +42,7 @@ const ButtonPressable = ({
   onPress,
   title,
   titleColor,
+  titleColorDisabled,
   titleColorOpacity = 1,
   titleColorPressed,
   titleColorPressedOpacity = 1,
@@ -51,6 +55,9 @@ const ButtonPressable = ({
 
   const getTitleColor = useCallback(
     (pressed: boolean) => {
+      if (disabled && titleColorDisabled) {
+        return titleColorDisabled
+      }
       if (pressed && titleColorPressed) {
         return titleColorPressed
       }
@@ -59,7 +66,7 @@ const ButtonPressable = ({
       }
       return 'primaryText'
     },
-    [titleColor, titleColorPressed],
+    [disabled, titleColor, titleColorDisabled, titleColorPressed],
   )
 
   const getTitleColorStyle = useCallback(
@@ -84,6 +91,9 @@ const ButtonPressable = ({
 
   const getBackgroundColorStyle = useCallback(
     (pressed: boolean) => {
+      if (disabled && backgroundColorDisabled) {
+        return backgroundStyle(backgroundColorDisabled, backgroundColorOpacity)
+      }
       if (pressed || selected) {
         return backgroundStyle(
           backgroundColorPressed || backgroundColor || 'white',
@@ -97,11 +107,13 @@ const ButtonPressable = ({
     },
     [
       backgroundColor,
+      backgroundColorDisabled,
       backgroundColorOpacity,
       backgroundColorOpacityPressed,
       backgroundColorPressed,
       backgroundStyle,
       selected,
+      disabled,
     ],
   )
 

@@ -67,10 +67,13 @@ const textVariants = {
 }
 
 const palette = {
-  black500: '#3D435B',
-  black600: '#3B3E48',
-  black700: '#444755',
-  black800: '#131419',
+  black200: '#41434F',
+  black300: '#444755',
+  black400: '#3D435B',
+  black500: '#3B3E48',
+  black600: '#32343E',
+  black700: '#131419',
+  black800: '#1A1C22',
   black900: '#000000',
 
   blueBright500: '#009FF9',
@@ -106,7 +109,7 @@ export const lightThemeColors = {
   primary: palette.purple500,
   secondary: palette.grey300,
   primaryBackground: palette.grey200,
-  primaryText: palette.black800,
+  primaryText: palette.black700,
   secondaryText: palette.grey400,
   error: palette.red500,
   surface: palette.white,
@@ -115,6 +118,8 @@ export const lightThemeColors = {
   surfaceSecondaryText: palette.black500,
   surfaceContrast: palette.grey600,
   surfaceContrastText: palette.white,
+  plainInputBackground: palette.grey200,
+  regularInputBackground: palette.offWhite,
 }
 export const darkThemeColors = {
   ...palette,
@@ -127,10 +132,12 @@ export const darkThemeColors = {
   error: palette.red500,
   surface: palette.grey600,
   surfaceText: palette.white,
-  surfaceSecondary: palette.grey900,
+  surfaceSecondary: palette.black600,
   surfaceSecondaryText: palette.grey500,
   surfaceContrast: palette.white,
   surfaceContrastText: palette.grey900,
+  plainInputBackground: palette.black200,
+  regularInputBackground: palette.black800,
 }
 
 export const theme = createTheme({
@@ -204,7 +211,22 @@ export const theme = createTheme({
   },
   textVariants,
   inputVariants: {
+    plain: {
+      color: 'primaryText',
+      fontSize: 19,
+      paddingBottom: 'm',
+      paddingTop: 'm',
+      paddingHorizontal: 'xl',
+      backgroundColor: 'plainInputBackground',
+    },
     regular: {
+      color: 'primaryText',
+      fontSize: 19,
+      padding: 'm',
+      backgroundColor: 'regularInputBackground',
+      borderRadius: 'lm',
+    },
+    underline: {
       fontSize: textVariants.h1.fontSize,
       color: 'purple500',
       borderBottomColor: 'purple500',

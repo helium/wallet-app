@@ -97,7 +97,7 @@ const ImportReplaceWordModal = ({
               ordinal,
             })}
             marginHorizontal="l"
-            variant="regular"
+            variant="underline"
             onChangeText={setWord}
             onSubmitEditing={handleSubmit}
             value={word}

@@ -2,7 +2,10 @@ import { utils } from '@helium/crypto-react-native'
 import React, { memo, useMemo } from 'react'
 import Jazzicon, { IJazziconProps } from 'react-native-jazzicon'
 
-type Props = { address?: string } & Omit<IJazziconProps, 'seed'>
+type Props = { address?: string; size: number } & Omit<
+  IJazziconProps,
+  'seed' | 'size'
+>
 const AccountIcon = ({ address, ...jazzIconProps }: Props) => {
   const seed = useMemo(() => {
     if (!address) return

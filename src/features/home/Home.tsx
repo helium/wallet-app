@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
 import {
   GoogleSignin,
   statusCodes,
@@ -17,7 +16,6 @@ import {
   CSAccounts,
   useAccountStorage,
 } from '../../storage/AccountStorageProvider'
-import { HomeNavigationProp } from './homeTypes'
 import Box from '../../components/Box'
 
 type GoogleError = { code: unknown }
@@ -28,16 +26,15 @@ const FILE_NAME = 'NOVA_SETTINGS_DO_NOT_DELETE'
 const Home = () => {
   const { accounts, signOut } = useAccountStorage()
   const { t } = useTranslation()
-  const navigation = useNavigation<HomeNavigationProp>()
   const [googleUser, setGoogleUser] = useState<GoogleUser>()
   const [downloadedAccounts, setDownloadedAccounts] = useState<CSAccounts>()
   const [files, setFiles] = useState<File[]>()
 
   const handleAddAccount = useCallback(() => {
-    navigation.navigate('AddAccount', {
-      screen: 'CreateImport',
-    })
-  }, [navigation])
+    // navigation.navigate('AddAccount', {
+    //   screen: 'CreateImport',
+    // })
+  }, [])
 
   const handleGoogleSignIn = useCallback(async () => {
     try {

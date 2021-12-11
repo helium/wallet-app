@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { useMemo } from 'react'
+import React, { forwardRef, Ref, useMemo } from 'react'
 import {
   createRestyleComponent,
   VariantProps,
@@ -25,23 +25,31 @@ type Props = React.ComponentProps<typeof TextInput> & {
   placeholderTextColor?: Color
 }
 
-const TI = ({ placeholderTextColor, ...rest }: Props) => {
-  const colors = useColors()
+const TI = forwardRef(
+  ({ placeholderTextColor, ...rest }: Props, ref: Ref<RNTextInput>) => {
+    const colors = useColors()
 
-  const getPlaceholderTextColor = useMemo(() => {
-    const findColor = () => {
-      if (placeholderTextColor) return colors[placeholderTextColor]
+    const getPlaceholderTextColor = useMemo(() => {
+      const findColor = () => {
+        if (placeholderTextColor) return colors[placeholderTextColor]
 
-      return colors[theme.inputVariants.regular.color as Color]
-    }
+        return colors[theme.inputVariants.regular.color as Color]
+      }
 
-    const color = findColor()
-    if (!color) return
+      const color = findColor()
+      if (!color) return
 
-    return tinycolor(color).setAlpha(0.3).toRgbString()
-  }, [colors, placeholderTextColor])
+      return tinycolor(color).setAlpha(0.3).toRgbString()
+    }, [colors, placeholderTextColor])
 
-  return <TextInput placeholderTextColor={getPlaceholderTextColor} {...rest} />
-}
+    return (
+      <TextInput
+        placeholderTextColor={getPlaceholderTextColor}
+        ref={ref}
+        {...rest}
+      />
+    )
+  },
+)
 
 export default TI

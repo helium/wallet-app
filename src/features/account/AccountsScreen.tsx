@@ -81,7 +81,7 @@ const AccountsScreen = () => {
   const [state, dispatch] = useReducer(layoutReducer, initialState)
   const bottomSheetRef = useRef<BottomSheet>(null)
   const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
-  const { backgroundStyle: handleStyle } = useOpacity('black600', 1)
+  const { backgroundStyle: handleStyle } = useOpacity('black500', 1)
 
   const { sortedAccounts, signOut, currentAccount, setCurrentAccount } =
     useAccountStorage()
@@ -96,7 +96,9 @@ const AccountsScreen = () => {
   const { data: accountData, error: accountsError } = useAccountQuery({
     variables: { address: currentAccount?.address },
     fetchPolicy: 'cache-and-network',
-    skip: !currentAccount?.address,
+    skip:
+      !currentAccount?.address ||
+      AccountImportCreate === currentAccount.address,
   })
 
   const {
@@ -105,7 +107,11 @@ const AccountsScreen = () => {
     requestMore: fetchMoreActivity,
     loading: activityLoading,
     now,
-  } = useActivityList(currentAccount?.address)
+  } = useActivityList(
+    currentAccount?.address === AccountImportCreate
+      ? ''
+      : currentAccount?.address,
+  )
 
   useEffect(() => {
     if (!accountsError && !activityError) return
@@ -141,6 +147,10 @@ const AccountsScreen = () => {
     client.resetStore()
     signOut()
   }, [client, signOut])
+
+  const handleAddressBook = useCallback(() => {
+    navigation.push('AddressBookNavigator')
+  }, [navigation])
 
   const carouselData = useMemo(() => {
     return [
@@ -287,16 +297,10 @@ const AccountsScreen = () => {
                 opacity: 0,
               }}
             >
-              <TouchableOpacityBox
-                padding="l"
-                onPress={() => {
-                  // TODO: Remove eventually
-                  navigation.navigate('WifiOnboard')
-                }}
-              >
-                <CogIco color={black700} />
+              <TouchableOpacityBox padding="l">
+                <CogIco color={black700} onPress={handleSignOut} />
               </TouchableOpacityBox>
-              <TouchableOpacityBox padding="l" onPress={handleSignOut}>
+              <TouchableOpacityBox padding="l" onPress={handleAddressBook}>
                 <AccountIco color={black700} />
               </TouchableOpacityBox>
             </MotiBox>
