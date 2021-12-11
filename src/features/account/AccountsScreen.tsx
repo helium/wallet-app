@@ -7,15 +7,15 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { useApolloClient } from '@apollo/client'
 import { Carousel } from 'react-native-snap-carousel'
 import CogIco from '@assets/images/cog.svg'
 import AccountIco from '@assets/images/account.svg'
+import TestnetIcon from '@assets/images/testnetIcon.svg'
 import { AnimatePresence } from 'moti'
 import { ActivityIndicator, LayoutRectangle } from 'react-native'
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { useTranslation } from 'react-i18next'
-import { NetType } from '@helium/crypto-react-native'
+import { Address, NetType } from '@helium/crypto-react-native'
 import { useNavigation } from '@react-navigation/native'
 import Box from '../../components/Box'
 import FocusAwareStatusBar from '../../components/FocusAwareStatusBar'
@@ -39,6 +39,7 @@ import useActivityList from './useActivityList'
 import NetTypeSegment from '../onboarding/NetTypeSegment'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { Activity, useAccountQuery } from '../../generated/graphql'
+import SafeAreaBox from '../../components/SafeAreaBox'
 
 type AccountLayout = {
   accountViewStart: number
@@ -73,7 +74,7 @@ type Item = {
   index: number
 }
 
-const AccountImportCreate = 'accountImportCreate'
+export const AccountImportCreate = 'accountImportCreate'
 const AccountsScreen = () => {
   const navigation = useNavigation<HomeNavigationProp>()
   const spacing = useSpacing()
@@ -83,7 +84,7 @@ const AccountsScreen = () => {
   const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
   const { backgroundStyle: handleStyle } = useOpacity('black500', 1)
 
-  const { sortedAccounts, signOut, currentAccount, setCurrentAccount } =
+  const { sortedAccounts, currentAccount, setCurrentAccount } =
     useAccountStorage()
   const prevSortedAccounts = usePrevious<CSAccount[] | undefined>(
     sortedAccounts,
@@ -91,14 +92,13 @@ const AccountsScreen = () => {
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const [netType, setNetType] = useState<number>(NetType.MAINNET)
   const { black700, primaryText } = useColors()
-  const client = useApolloClient()
 
   const { data: accountData, error: accountsError } = useAccountQuery({
     variables: { address: currentAccount?.address },
     fetchPolicy: 'cache-and-network',
     skip:
       !currentAccount?.address ||
-      AccountImportCreate === currentAccount.address,
+      currentAccount?.address === AccountImportCreate,
   })
 
   const {
@@ -107,11 +107,12 @@ const AccountsScreen = () => {
     requestMore: fetchMoreActivity,
     loading: activityLoading,
     now,
-  } = useActivityList(
-    currentAccount?.address === AccountImportCreate
-      ? ''
-      : currentAccount?.address,
-  )
+  } = useActivityList({
+    address: currentAccount?.address,
+    skip:
+      !currentAccount?.address ||
+      currentAccount?.address === AccountImportCreate,
+  })
 
   useEffect(() => {
     if (!accountsError && !activityError) return
@@ -141,12 +142,14 @@ const AccountsScreen = () => {
     sortedAccounts.length,
   ])
 
-  const handleSignOut = useCallback(() => {
-    // TODO: Signout needs to be moved to a settings page
-    // Will we reset the whole store or only certain queries?
-    client.resetStore()
-    signOut()
-  }, [client, signOut])
+  const accountNetType = useMemo(() => {
+    if (
+      !currentAccount?.address ||
+      currentAccount?.address === AccountImportCreate
+    )
+      return NetType.MAINNET
+    return Address.fromB58(currentAccount.address)?.netType
+  }, [currentAccount])
 
   const handleAddressBook = useCallback(() => {
     navigation.push('AddressBookNavigator')
@@ -171,7 +174,7 @@ const AccountsScreen = () => {
           />
           <OnboardingSegment
             marginTop="s"
-            minHeight={88}
+            padding="m"
             onSegmentChange={setOnboardingType}
             onboardingType={onboardingType}
           />
@@ -280,31 +283,55 @@ const AccountsScreen = () => {
     <Box flex={1}>
       <FocusAwareStatusBar hidden />
 
-      <Box minHeight={75}>
+      <Box
+        minHeight={75}
+        opacity={currentAccount?.address === AccountImportCreate ? 0 : 100}
+      >
         <AnimatePresence>
-          {currentAccount?.address !== AccountImportCreate && (
-            <MotiBox
+          <MotiBox
+            from={{
+              opacity: 0,
+            }}
+            animate={{
+              opacity: 1,
+            }}
+            exit={{
+              opacity: 0,
+            }}
+          >
+            <SafeAreaBox
               flexDirection="row"
-              flex={1}
               justifyContent="space-between"
-              from={{
-                opacity: 0,
-              }}
-              animate={{
-                opacity: 1,
-              }}
-              exit={{
-                opacity: 0,
-              }}
+              alignItems="center"
             >
-              <TouchableOpacityBox padding="l">
-                <CogIco color={black700} onPress={handleSignOut} />
+              <TouchableOpacityBox
+                paddingHorizontal="l"
+                onPress={() => {
+                  // TODO: Remove eventually
+                  navigation.navigate('WifiPurchase')
+                }}
+              >
+                <CogIco color={black700} />
               </TouchableOpacityBox>
-              <TouchableOpacityBox padding="l" onPress={handleAddressBook}>
+              <Box
+                paddingHorizontal="l"
+                flexDirection="row"
+                alignItems="center"
+                visible={accountNetType === NetType.TESTNET}
+              >
+                <TestnetIcon color={black700} />
+                <Text marginLeft="xs" fontSize={20}>
+                  {t('onboarding.testnet')}
+                </Text>
+              </Box>
+              <TouchableOpacityBox
+                paddingHorizontal="l"
+                onPress={handleAddressBook}
+              >
                 <AccountIco color={black700} />
               </TouchableOpacityBox>
-            </MotiBox>
-          )}
+            </SafeAreaBox>
+          </MotiBox>
         </AnimatePresence>
       </Box>
       <Box marginTop={{ phone: 'ms', smallPhone: 'none' }}>
@@ -380,6 +407,7 @@ const AccountsScreen = () => {
                     onActionSelected={handleActionSelected}
                     visible={visible}
                     accountData={accountData?.account}
+                    netType={accountNetType}
                   />
                 </MotiBox>
               )}

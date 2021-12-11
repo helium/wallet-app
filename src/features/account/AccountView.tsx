@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import DC from '@assets/images/dc.svg'
 import Helium from '@assets/images/helium.svg'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import { NetType } from '@helium/crypto-react-native'
+import TestnetIcon from '@assets/images/testnetIcon.svg'
 import Box from '../../components/Box'
 import Surface from '../../components/Surface'
 import Text from '../../components/Text'
@@ -18,6 +20,7 @@ type Props = {
   visible: boolean
   onLayoutChange?: (layout: LayoutRectangle) => void
   onActionSelected: (type: Action) => void
+  netType: number
 }
 const AccountView = ({
   accountData,
@@ -25,6 +28,7 @@ const AccountView = ({
   onLayoutChange,
   onActionSelected,
   address: _address,
+  netType,
 }: Props) => {
   const { t } = useTranslation()
   const colors = useColors()
@@ -64,14 +68,26 @@ const AccountView = ({
       paddingTop="xxl"
       onLayout={handleLayout}
     >
-      <Text
-        variant="body3"
-        color="grey800"
+      <Box
+        flexDirection="row"
+        alignItems="center"
         marginHorizontal="xxs"
         marginBottom="s"
       >
-        {t('accountView.balance')}
-      </Text>
+        <Box
+          flexDirection="row"
+          alignItems="center"
+          visible={netType === NetType.TESTNET}
+        >
+          <TestnetIcon height={12} color={colors.grey800} />
+          <Text variant="body3" color="grey800">
+            {t('onboarding.testnet')}
+          </Text>
+        </Box>
+        <Text variant="body3" color="grey800" marginLeft="xs">
+          {t('accountView.balance')}
+        </Text>
+      </Box>
       {/* TODO: Make this convert to their currency of choice */}
       <Text variant="h0">{displayVals?.hnt.toString(2)}</Text>
       <Box flexDirection="row" marginTop="s">

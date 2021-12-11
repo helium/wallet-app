@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAccountActivityQuery } from '../../generated/graphql'
 
-export default (address?: string) => {
+export default ({ address, skip }: { address?: string; skip: boolean }) => {
   const { data, fetchMore, loading, error } = useAccountActivityQuery({
     variables: {
       cursor: '',
       address,
     },
     fetchPolicy: 'cache-and-network',
-    skip: !address,
+    skip,
     notifyOnNetworkStatusChange: true,
     pollInterval: 60000, // Every minute check for new activity
   })
