@@ -99,14 +99,16 @@ const App = () => {
       <ThemeProvider theme={colorAdaptedTheme}>
         <ApolloProvider client={client}>
           <LockScreen>
-            <>
-              <NavigationContainer theme={navTheme} linking={linking}>
-                <RootNavigator />
-              </NavigationContainer>
-              <SecurityScreen
-                visible={appState !== 'active' && appState !== 'unknown'}
-              />
-            </>
+            {accountsRestored && (
+              <>
+                <NavigationContainer theme={navTheme} linking={linking}>
+                  <RootNavigator />
+                </NavigationContainer>
+                <SecurityScreen
+                  visible={appState !== 'active' && appState !== 'unknown'}
+                />
+              </>
+            )}
           </LockScreen>
         </ApolloProvider>
       </ThemeProvider>
