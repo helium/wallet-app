@@ -50,9 +50,6 @@ const LockScreen = ({ children }: Props) => {
     localAuth()
   }, [handleSuccess, locked])
 
-  if (!locked) {
-  }
-
   return (
     <>
       {children}
