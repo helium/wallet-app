@@ -8,11 +8,13 @@ import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { useColors, useHitSlop } from '../../theme/themeHooks'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
+import { accountCurrencyType } from '../../utils/accountUtils'
 
 type Route = RouteProp<HomeStackParamList, 'PaymentScreen'>
 const PaymentScreen = () => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const route = useRoute<Route>()
+  const { address } = route.params
+  const currencyType = accountCurrencyType(address)
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const onRequestClose = useCallback(() => {
@@ -41,7 +43,7 @@ const PaymentScreen = () => {
           color="primaryText"
           maxFontSizeMultiplier={1}
         >
-          {t('payment.title')}
+          {t('payment.title', { ticker: currencyType.ticker })}
         </Text>
         <TouchableOpacityBox
           onPress={onRequestClose}

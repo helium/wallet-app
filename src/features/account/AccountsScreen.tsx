@@ -15,7 +15,7 @@ import { AnimatePresence } from 'moti'
 import { ActivityIndicator, LayoutRectangle } from 'react-native'
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { useTranslation } from 'react-i18next'
-import { Address, NetType } from '@helium/crypto-react-native'
+import { NetType } from '@helium/crypto-react-native'
 import { useNavigation } from '@react-navigation/native'
 import Box from '../../components/Box'
 import FocusAwareStatusBar from '../../components/FocusAwareStatusBar'
@@ -40,6 +40,7 @@ import NetTypeSegment from '../onboarding/NetTypeSegment'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { Activity, useAccountQuery } from '../../generated/graphql'
 import SafeAreaBox from '../../components/SafeAreaBox'
+import * as AccountUtils from '../../utils/accountUtils'
 
 type AccountLayout = {
   accountViewStart: number
@@ -148,7 +149,7 @@ const AccountsScreen = () => {
       currentAccount?.address === AccountImportCreate
     )
       return NetType.MAINNET
-    return Address.fromB58(currentAccount.address)?.netType
+    return AccountUtils.accountNetType(currentAccount?.address)
   }, [currentAccount])
 
   const handleAddressBook = useCallback(() => {
@@ -272,11 +273,13 @@ const AccountsScreen = () => {
     (type: Action) => {
       switch (type) {
         case 'payment':
-          navigation.navigate('PaymentScreen')
+          navigation.navigate('PaymentScreen', {
+            address: currentAccount?.address,
+          })
           break
       }
     },
-    [navigation],
+    [currentAccount, navigation],
   )
 
   return (

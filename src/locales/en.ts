@@ -110,12 +110,12 @@ export default {
   transactions: {
     pending: 'Pending',
     mining: 'Mining Rewards',
-    sent: 'Sent HNT',
-    stakeValidator: 'Stake HNT',
-    unstakeValidator: 'Unstake HNT',
+    sent: 'Sent {{ticker}}',
+    stakeValidator: 'Stake {{ticker}}',
+    unstakeValidator: 'Unstake {{ticker}}',
     transferValidator: 'Transfer Stake',
-    burnHNT: 'Burn HNT',
-    received: 'Received HNT',
+    burnHNT: 'Burn {{ticker}}',
+    received: 'Received {{ticker}}',
     added: 'Hotspot Added to Blockchain',
     location: 'Confirm Location',
     location_v2: 'Update Hotspot',
@@ -124,7 +124,7 @@ export default {
     transferBuy: 'Transfer Hotspot (Buy)',
   },
   payment: {
-    title: 'Send HNT',
+    title: 'Send {{ticker}}',
   },
   wifi: {
     howMuch: 'How much data',

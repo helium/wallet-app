@@ -19,6 +19,7 @@ import { Color } from '../../theme/theme'
 import { groupSeparator, decimalSeparator } from '../../utils/i18n'
 import { useColors } from '../../theme/themeHooks'
 import { Activity } from '../../generated/graphql'
+import { accountCurrencyType } from '../../utils/accountUtils'
 
 export const TxnTypeKeys = [
   'rewards_v1',
@@ -43,9 +44,14 @@ const useTxn = (
 ) => {
   const colors = useColors()
   const { t } = useTranslation()
+  const currencyType = accountCurrencyType(address)
 
-  const hntBalance = (v: number | undefined | null) =>
-    new Balance(v || 0, CurrencyType.networkToken)
+  const ticker = useMemo(() => currencyType.ticker, [currencyType.ticker])
+
+  const hntBalance = useCallback(
+    (v: number | undefined | null) => new Balance(v || 0, currencyType),
+    [currencyType],
+  )
 
   const dcBalance = (v: number | undefined | null) =>
     new Balance(v || 0, CurrencyType.dataCredit)
@@ -93,7 +99,9 @@ const useTxn = (
         return t('transactions.added')
       case 'payment_v1':
       case 'payment_v2':
-        return isSending ? t('transactions.sent') : t('transactions.received')
+        return isSending
+          ? t('transactions.sent', { ticker })
+          : t('transactions.received', { ticker })
       case 'assert_location_v1':
         return t('transactions.location')
       case 'assert_location_v2':
@@ -106,15 +114,15 @@ const useTxn = (
       case 'rewards_v2':
         return t('transactions.mining')
       case 'token_burn_v1':
-        return t('transactions.burnHNT')
+        return t('transactions.burnHNT', { ticker })
       case 'stake_validator_v1':
-        return t('transactions.stakeValidator')
+        return t('transactions.stakeValidator', { ticker })
       case 'unstake_validator_v1':
-        return t('transactions.unstakeValidator')
+        return t('transactions.unstakeValidator', { ticker })
       case 'transfer_validator_stake_v1':
         return t('transactions.transferValidator')
     }
-  }, [isSending, isSelling, t, item])
+  }, [item.type, t, isSending, ticker, isSelling])
 
   const detailIcon = useMemo(() => {
     // TODO: DetailIcon
@@ -318,6 +326,7 @@ const useTxn = (
   }, [
     address,
     formatAmount,
+    hntBalance,
     isSelling,
     item.amount,
     item.amountToSeller,
