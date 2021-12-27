@@ -12,6 +12,7 @@ import Text from '../../components/Text'
 import { useColors } from '../../theme/themeHooks'
 import FabButton from '../../components/FabButton'
 import { AccountData } from '../../generated/graphql'
+import { accountCurrencyType } from '../../utils/accountUtils'
 
 export type Action = 'send' | 'payment' | 'request' | 'stake' | 'lock'
 type Props = {
@@ -35,17 +36,15 @@ const AccountView = ({
 
   const displayVals = useMemo(() => {
     if (!accountData) return
+    const currencyType = accountCurrencyType(_address)
 
     return {
-      hnt: new Balance(accountData.balance || 0, CurrencyType.networkToken),
+      hnt: new Balance(accountData.balance || 0, currencyType),
       dc: new Balance(accountData.dcBalance || 0, CurrencyType.dataCredit),
-      stakedHnt: new Balance(
-        accountData.stakedBalance || 0,
-        CurrencyType.networkToken,
-      ),
+      stakedHnt: new Balance(accountData.stakedBalance || 0, currencyType),
       hst: new Balance(accountData.secBalance || 0, CurrencyType.security),
     }
-  }, [accountData])
+  }, [_address, accountData])
 
   const handleLayout = useCallback(
     (event: LayoutChangeEvent) => {
