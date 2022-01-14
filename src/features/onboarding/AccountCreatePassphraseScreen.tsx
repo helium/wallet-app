@@ -3,7 +3,7 @@ import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { useAsync } from 'react-async-hook'
 import Carousel, { Pagination } from 'react-native-snap-carousel'
-import { upperFirst } from 'lodash'
+import { upperCase } from 'lodash'
 import { Button } from 'react-native'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
@@ -57,9 +57,13 @@ const AccountCreatePassphraseScreen = () => {
   }, [navigation, secureAccount, setOnboardingData])
 
   const renderItem = ({ item, index }: { item: string; index: number }) => {
+    const isFirst = index === 0
+    const isLast = index + 1 === secureAccount?.mnemonic?.length
     return (
       <Box
         marginHorizontal="s"
+        marginLeft={isFirst ? 'l' : undefined}
+        marginRight={isLast ? 'l' : undefined}
         flex={1}
         overflow="hidden"
         backgroundColor="surface"
@@ -72,7 +76,7 @@ const AccountCreatePassphraseScreen = () => {
           index + 1
         }. `}</Text>
         <Text variant="h1" color="primaryText" maxFontSizeMultiplier={1}>
-          {upperFirst(item)}
+          {upperCase(item)}
         </Text>
       </Box>
     )
@@ -89,7 +93,11 @@ const AccountCreatePassphraseScreen = () => {
           sliderWidth={wp(100)}
           itemWidth={wp(90)}
           inactiveSlideScale={1}
-          onSnapToItem={onSnapToItem}
+          onScrollIndexChanged={onSnapToItem}
+          useExperimentalSnap
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore this is a new beta prop and enforces only scrolling one item at a time
+          disableIntervalMomentum
         />
       </Box>
       <Pagination

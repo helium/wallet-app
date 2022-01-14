@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { useState, memo } from 'react'
-import { upperFirst } from 'lodash'
+import { upperCase } from 'lodash'
 import CheckMark from '@assets/images/checkmark.svg'
 import Fail from '@assets/images/fail.svg'
 import Text from '../../components/Text'
@@ -77,7 +77,7 @@ const PhraseChip = ({
             selected || underlayShowing ? 'surfaceText' : 'surfaceContrastText'
           }
         >
-          {upperFirst(title)}
+          {upperCase(title)}
         </Text>
       </>
     </TouchableHighlightBox>

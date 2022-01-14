@@ -101,6 +101,7 @@ const ImportReplaceWordModal = ({
             onChangeText={setWord}
             onSubmitEditing={handleSubmit}
             value={word}
+            autoCapitalize="characters"
             keyboardAppearance="dark"
             autoCorrect={false}
             autoComplete="off"
