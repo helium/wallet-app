@@ -1,13 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
-import {
-  random,
-  shuffle,
-  uniq,
-  take,
-  reject,
-  sampleSize,
-  upperFirst,
-} from 'lodash'
+import { shuffle, uniq, take, reject, sampleSize, upperCase } from 'lodash'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import Carousel from 'react-native-snap-carousel'
@@ -26,10 +18,6 @@ import useHaptic from '../../utils/useHaptic'
 import animateTransition from '../../utils/animateTransition'
 import TextTransform from '../../components/TextTransform'
 import { useOnboarding } from './OnboardingProvider'
-
-const testIndices = __DEV__
-  ? [0, 1, 2]
-  : [random(0, 3), random(4, 7), random(8, 11)]
 
 const generateChallengeWords = (targetWord: string) =>
   shuffle(
@@ -58,14 +46,15 @@ const AccountEnterPassphraseScreen = () => {
     (pos: number) => {
       if (!secureAccount) return ''
 
-      return secureAccount.mnemonic[testIndices[pos]]
+      return secureAccount.mnemonic[pos]
     },
     [secureAccount],
   )
 
   const nextStep = useCallback(() => {
     setTimeout(() => {
-      if (step === 2) {
+      const mnemonicLength = secureAccount?.mnemonic?.length || 12
+      if (step === mnemonicLength - 1) {
         navigation.navigate('AccountAssignScreen', params)
       } else {
         carouselRef.current?.snapToItem(step + 1)
@@ -75,7 +64,7 @@ const AccountEnterPassphraseScreen = () => {
         setChallengeWords(generateChallengeWords(findTargetWord(step + 1)))
       }
     }, 1000)
-  }, [findTargetWord, navigation, params, step])
+  }, [findTargetWord, navigation, params, secureAccount, step])
 
   const onPressWord = useCallback(
     async (w: string) => {
@@ -130,7 +119,7 @@ const AccountEnterPassphraseScreen = () => {
             {`${index + 1}. `}
           </Text>
           <Text variant="h1" color="primaryText" maxFontSizeMultiplier={1}>
-            {step === index && word ? upperFirst(word) : '?????'}
+            {step === index && word ? upperCase(word) : '?????'}
           </Text>
         </Box>
       )
@@ -158,7 +147,7 @@ const AccountEnterPassphraseScreen = () => {
         numberOfLines={1}
         adjustsFontSizeToFit
         values={{
-          ordinal: t(`ordinals.${testIndices[step]}`),
+          ordinal: t(`ordinals.${step}`),
         }}
         variant="subtitle2"
         i18nKey="accountSetup.confirm.subtitle"

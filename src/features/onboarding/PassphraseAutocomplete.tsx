@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { KeyboardAvoidingView, ScrollView, StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import MatchingWord from './MatchingWord'
@@ -19,6 +19,7 @@ const PassphraseAutocomplete = ({ onSelectWord, wordIdx }: Props) => {
   const [matchingWords, setMatchingWords] = useState<Array<string>>([])
   const { t } = useTranslation()
   const ordinal = wordIdx < TOTAL_WORDS ? t(`ordinals.${wordIdx}`) : ''
+  const matchingListRef = useRef<ScrollView>(null)
 
   useEffect(() => {
     setMatchingWords(
@@ -34,11 +35,19 @@ const PassphraseAutocomplete = ({ onSelectWord, wordIdx }: Props) => {
     [onSelectWord, wordIdx],
   )
 
+  const onChangeText = useCallback((text) => {
+    matchingListRef?.current?.scrollTo({
+      y: 0,
+      animated: true,
+    })
+    setWord(text)
+  }, [])
+
   const handleSubmit = useCallback(() => {
-    if (matchingWords.length === 0) return
+    if (matchingWords.length === 0 || !word || word?.length === 1) return
 
     handleWordSelect(matchingWords[0])
-  }, [handleWordSelect, matchingWords])
+  }, [handleWordSelect, matchingWords, word])
 
   return (
     <KeyboardAvoidingView behavior="position" style={styles.container}>
@@ -55,6 +64,7 @@ const PassphraseAutocomplete = ({ onSelectWord, wordIdx }: Props) => {
 
         <Box minHeight={53}>
           <ScrollView
+            ref={matchingListRef}
             horizontal
             keyboardShouldPersistTaps="always"
             keyboardDismissMode="none"
@@ -78,7 +88,7 @@ const PassphraseAutocomplete = ({ onSelectWord, wordIdx }: Props) => {
           })}
           marginHorizontal="l"
           variant="underline"
-          onChangeText={setWord}
+          onChangeText={onChangeText}
           onSubmitEditing={handleSubmit}
           value={word}
           keyboardAppearance="dark"
@@ -88,6 +98,7 @@ const PassphraseAutocomplete = ({ onSelectWord, wordIdx }: Props) => {
           returnKeyType="next"
           marginBottom="s"
           autoFocus
+          autoCapitalize="characters"
         />
       </>
     </KeyboardAvoidingView>

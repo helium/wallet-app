@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/native'
 import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, StyleSheet } from 'react-native'
-import { upperFirst } from 'lodash'
+import { upperCase } from 'lodash'
 import Carousel, { Pagination } from 'react-native-snap-carousel'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
@@ -48,31 +48,39 @@ const ImportAccountConfirmScreen = () => {
   }
 
   const renderItem = useCallback(
-    ({ item, index }) => (
-      <TouchableOpacityBox
-        height={{ smallPhone: 84, phone: 114 }}
-        onPress={handleWordEdit(index)}
-      >
-        <Box
-          marginHorizontal="s"
-          flex={1}
-          overflow="hidden"
-          backgroundColor="surface"
-          paddingHorizontal="l"
-          alignItems="center"
-          flexDirection="row"
-          borderRadius="m"
+    ({ item, index }) => {
+      const isFirst = index === 0
+      const isLast = index + 1 === words?.length
+      return (
+        <TouchableOpacityBox
+          height={{ smallPhone: 84, phone: 114 }}
+          onPress={handleWordEdit(index)}
         >
-          <Text variant="h1" color="surfaceText" maxFontSizeMultiplier={1}>{`${
-            index + 1
-          }. `}</Text>
-          <Text variant="h1" color="surfaceText" maxFontSizeMultiplier={1}>
-            {upperFirst(item)}
-          </Text>
-        </Box>
-      </TouchableOpacityBox>
-    ),
-    [],
+          <Box
+            marginLeft={isFirst ? 'l' : undefined}
+            marginRight={isLast ? 'l' : undefined}
+            marginHorizontal="s"
+            flex={1}
+            overflow="hidden"
+            backgroundColor="surface"
+            paddingHorizontal="l"
+            alignItems="center"
+            flexDirection="row"
+            borderRadius="m"
+          >
+            <Text
+              variant="h1"
+              color="surfaceText"
+              maxFontSizeMultiplier={1}
+            >{`${index + 1}. `}</Text>
+            <Text variant="h1" color="surfaceText" maxFontSizeMultiplier={1}>
+              {upperCase(item)}
+            </Text>
+          </Box>
+        </TouchableOpacityBox>
+      )
+    },
+    [words.length],
   )
 
   return (
@@ -102,7 +110,11 @@ const ImportAccountConfirmScreen = () => {
           sliderWidth={wp(100)}
           itemWidth={wp(90)}
           inactiveSlideScale={1}
-          onSnapToItem={(i) => onSnapToItem(i)}
+          onScrollIndexChanged={(i) => onSnapToItem(i)}
+          useExperimentalSnap
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore this is a new beta prop and enforces only scrolling one item at a time
+          disableIntervalMomentum
         />
         <Pagination
           containerStyle={styles.dotContainer}
