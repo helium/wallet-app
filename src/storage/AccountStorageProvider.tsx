@@ -241,10 +241,11 @@ const useAccountStorageHook = () => {
     async (
       givenMnemonic: Mnemonic | Array<string> | null = null,
       netType?: number,
+      use24Words?: boolean,
     ): Promise<SecureAccount> => {
       let mnemonic: Mnemonic
       if (!givenMnemonic) {
-        mnemonic = await Mnemonic.create()
+        mnemonic = await Mnemonic.create(use24Words ? 24 : 12)
       } else if ('words' in givenMnemonic) {
         mnemonic = givenMnemonic
       } else {

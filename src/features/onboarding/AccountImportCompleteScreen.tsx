@@ -24,7 +24,11 @@ const AccountImportCompleteScreen = () => {
 
     const genKeypair = async () => {
       try {
-        const account = await createSecureAccount(words, netType)
+        const account = await createSecureAccount(
+          words,
+          netType,
+          words?.length === 24,
+        )
         setOnboardingData((prev) => ({ ...prev, secureAccount: account }))
         navigation.navigate('AccountAssignScreen')
       } catch (error) {

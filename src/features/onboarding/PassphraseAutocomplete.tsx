@@ -10,15 +10,18 @@ import Box from '../../components/Box'
 type Props = {
   onSelectWord: (fullWord: string, idx: number) => void
   wordIdx: number
+  totalWords: number
 }
 
-export const TOTAL_WORDS = 12
-
-const PassphraseAutocomplete = ({ onSelectWord, wordIdx }: Props) => {
+const PassphraseAutocomplete = ({
+  onSelectWord,
+  wordIdx,
+  totalWords,
+}: Props) => {
   const [word, setWord] = useState('')
   const [matchingWords, setMatchingWords] = useState<Array<string>>([])
   const { t } = useTranslation()
-  const ordinal = wordIdx < TOTAL_WORDS ? t(`ordinals.${wordIdx}`) : ''
+  const ordinal = wordIdx < totalWords ? t(`ordinals.${wordIdx}`) : ''
   const matchingListRef = useRef<ScrollView>(null)
 
   useEffect(() => {
@@ -59,7 +62,7 @@ const PassphraseAutocomplete = ({ onSelectWord, wordIdx }: Props) => {
           marginHorizontal="l"
           adjustsFontSizeToFit
           paddingVertical="l"
-          i18nKey={t('accountImport.wordEntry.title')}
+          i18nKey={t('accountImport.wordEntry.title', { totalWords })}
         />
 
         <Box minHeight={53}>

@@ -20,6 +20,18 @@ export default {
     '10th',
     '11th',
     '12th',
+    '13th',
+    '14th',
+    '15th',
+    '16th',
+    '17th',
+    '18th',
+    '19th',
+    '20th',
+    '21st',
+    '22nd',
+    '23rd',
+    '24th',
   ],
   placeholder: {
     enterAccountAddress: 'Enter Account Address',
@@ -62,12 +74,12 @@ export default {
     wordEntry: {
       placeholder: '{{ordinal}} word',
       title:
-        "Enter your\naccount's <secondaryText>12 word</secondaryText>\nsecurity key...",
+        "Enter your\naccount's <secondaryText>{{totalWords}} word</secondaryText>\nsecurity key...",
     },
     confirm: {
       title: 'Please Confirm\nSeed Phrase',
       subtitle:
-        'Here are the 12 words you’ve entered. Tap on any of them if you need to edit.',
+        'Here are the {{totalWords}} words you’ve entered. Tap on any of them if you need to edit.',
       next: 'Submit Seed Phrase',
     },
     complete: {
@@ -78,6 +90,7 @@ export default {
       title: 'Error',
       body: "This seed phrase doesn't correspond to a Helium account",
     },
+    restoreChoice: 'Restore {{totalWords}} Word Account',
   },
   accountAssign: {
     AccountNamePlaceholder: 'Account Name',

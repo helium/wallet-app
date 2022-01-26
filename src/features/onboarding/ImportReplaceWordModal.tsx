@@ -15,20 +15,20 @@ type Props = {
   wordIdx: number
   visible: boolean
   onRequestClose: () => void
+  totalWords: number
 }
-
-export const TOTAL_WORDS = 12
 
 const ImportReplaceWordModal = ({
   onSelectWord,
   wordIdx,
   visible,
   onRequestClose,
+  totalWords,
 }: Props) => {
   const [word, setWord] = useState('')
   const [matchingWords, setMatchingWords] = useState<Array<string>>([])
   const { t } = useTranslation()
-  const ordinal = wordIdx <= TOTAL_WORDS ? t(`ordinals.${wordIdx}`) : ''
+  const ordinal = wordIdx <= totalWords ? t(`ordinals.${wordIdx}`) : ''
   const { primaryText } = useColors()
 
   useEffect(() => {
