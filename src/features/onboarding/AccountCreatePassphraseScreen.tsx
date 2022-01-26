@@ -20,20 +20,20 @@ const AccountCreatePassphraseScreen = () => {
     onboardingData: { netType },
     setOnboardingData,
   } = useOnboarding()
-  const { result: secureAccount } = useAsync(
-    async () => createSecureAccount(null, netType),
-    [createSecureAccount, netType],
-  )
   const navigation = useNavigation<OnboardingNavigationProp>()
   const [wordIndex, setWordIndex] = useState(0)
   const [disabled, setDisabled] = useState(true)
-  const [viewedWords, setViewedWords] = useState(new Array(12).fill(false))
+  const [viewedWords, setViewedWords] = useState(new Array(24).fill(false))
+  const { result: secureAccount } = useAsync(
+    async () => createSecureAccount(null, netType, true),
+    [createSecureAccount, netType],
+  )
 
   const onSnapToItem = useCallback(
     (index: number) => {
       setWordIndex(index)
       setViewedWords(
-        Object.assign(new Array(12).fill(false), viewedWords, {
+        Object.assign(new Array(24).fill(false), viewedWords, {
           0: true,
           [index]: true,
         }),
@@ -108,6 +108,7 @@ const AccountCreatePassphraseScreen = () => {
           height: 6,
           borderRadius: 3,
         }}
+        dotContainerStyle={{ marginHorizontal: 3 }}
         inactiveDotOpacity={0.4}
         inactiveDotScale={1}
       />

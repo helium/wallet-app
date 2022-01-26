@@ -98,7 +98,7 @@ const ImportAccountConfirmScreen = () => {
           {t('accountImport.confirm.title')}
         </Text>
         <Text variant="subtitle1" fontSize={20} maxFontSizeMultiplier={1.1}>
-          {t('accountImport.confirm.subtitle')}
+          {t('accountImport.confirm.subtitle', { totalWords: words?.length })}
         </Text>
       </Box>
       <Box marginHorizontal="n_lx" marginVertical="l">
@@ -117,10 +117,11 @@ const ImportAccountConfirmScreen = () => {
           disableIntervalMomentum
         />
         <Pagination
-          containerStyle={styles.dotContainer}
+          containerStyle={styles.paginationContainer}
           dotsLength={words.length}
           activeDotIndex={wordIndex}
           dotStyle={styles.dots}
+          dotContainerStyle={styles.dotContainer}
           inactiveDotOpacity={0.4}
           inactiveDotScale={1}
         />
@@ -138,6 +139,7 @@ const ImportAccountConfirmScreen = () => {
         onRequestClose={clearSelection}
         onSelectWord={replaceWord}
         wordIdx={selectedWordIdx ?? 0}
+        totalWords={words?.length}
       />
     </SafeAreaBox>
   )
@@ -148,9 +150,9 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: 'white',
   },
-  dotContainer: { marginTop: 24 },
+  paginationContainer: { marginTop: 24 },
+  dotContainer: { marginHorizontal: 3 },
 })
 
 export default ImportAccountConfirmScreen
