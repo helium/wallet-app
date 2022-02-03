@@ -6,6 +6,7 @@ export default {
     next: 'Next',
     total: 'Total',
     fee: 'Fee',
+    copied: 'Copied',
   },
   ordinals: [
     '1st',
@@ -147,6 +148,10 @@ export default {
     youArePurchasing: 'You are purchasing...',
     change: 'Change',
     remainingBalance: 'Remaining\nBalance',
+    insufficientFunds: 'Insufficient Funds',
+    macFailed: 'Failed to enable mac',
+    authFailed: 'Failed to authorize',
+    burnFailed: 'Failed to burn',
   },
   addressBook: {
     title: 'Address Book',

@@ -1,45 +1,137 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import WifiLogo from '@assets/images/wifiLogo.svg'
 import ChevronDown from '@assets/images/chevronDown.svg'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Balance, { CurrencyType } from '@helium/currency'
+import Lock from '@assets/images/lockClosed.svg'
+import { LayoutChangeEvent, Platform } from 'react-native'
+import { useAsync } from 'react-async-hook'
+import { NetworkInfo } from 'react-native-network-info'
+import changeNavigationBarColor from 'react-native-navigation-bar-color'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import { useColors, useHitSlop } from '../../theme/themeHooks'
-import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
+import { HomeNavigationProp } from '../home/homeTypes'
 import SegmentedControl from '../../components/SegmentedControl'
 import ButtonPressable from '../../components/ButtonPressable'
-import animateTransition from '../../utils/animateTransition'
+import { useAnimateTransition } from '../../utils/animateTransition'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import AccountIcon from '../../components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useAccountQuery, useHeliumDataQuery } from '../../generated/graphql'
+import {
+  AccountsType,
+  useAccountSelector,
+} from '../../components/AccountSelector'
+import {
+  authorize,
+  enableMac,
+  getAccount,
+  getMacForIp,
+  ScAccount,
+  SessionType,
+  submitBurnTxn,
+} from '../../utils/httpClient/scManagerClient'
+import { useTransactions } from '../onboarding/TransactionProvider'
+import useAlert from '../../utils/useAlert'
+import SafeAreaBox from '../../components/SafeAreaBox'
 
-type Route = RouteProp<HomeStackParamList, 'WifiPurchase'>
+const TIMER_SECONDS = 15 * 60 // 15 minutes
 const WifiPurchase = () => {
   const { currentAccount } = useAccountStorage()
-  const { data } = useHeliumDataQuery({
-    variables: { address: currentAccount?.address },
-    fetchPolicy: 'network-only',
-    skip: !currentAccount?.address,
-  })
-  const { data: accountData } = useAccountQuery({
-    variables: { address: currentAccount?.address },
-    fetchPolicy: 'cache-and-network',
-    skip: !currentAccount?.address,
-  })
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const route = useRoute<Route>()
+  const [macEnabled, setMacEnabled] = useState(false)
+  const [scAccount, setScAccount] = useState<ScAccount>()
+  const { animate, isAnimating } = useAnimateTransition()
+
+  const { makeBurnTxn } = useTransactions()
   const navigation = useNavigation<HomeNavigationProp>()
   const { bottom } = useSafeAreaInsets()
   const { t } = useTranslation()
-  const { primaryText } = useColors()
+  const { primaryText, surfaceSecondary } = useColors()
   const hitSlop = useHitSlop('xl')
-  const [type, setType] = useState<'data' | 'minutes'>('data')
-  const [viewState, setViewState] = useState<'select' | 'confirm'>('select')
+  const [type, setType] = useState<SessionType>('data')
+  const [viewState, setViewState] = useState<'select' | 'confirm' | 'submit'>(
+    'select',
+  )
+  const [accountsType] = useState<AccountsType>('testnet')
   const [dataIndex, setDataIndex] = useState(0)
+  const [timerSeconds, setTimerSeconds] = useState(0)
+  const [iPAddress, setIPAddress] = useState<string | null>(null)
+  const [gatewayIPAddress, setGatewayIPAddress] = useState<string | null>(null)
+  const [wifiMac, setWifiMac] = useState<string>()
+  const [timerWidth, setTimerWidth] = useState(0)
+  const timerRef = useRef<NodeJS.Timeout>()
+  const { showAccountTypes } = useAccountSelector()
+  const { showOKAlert } = useAlert()
+
+  useEffect(() => {
+    changeNavigationBarColor(surfaceSecondary, true, false)
+  }, [surfaceSecondary])
+
+  useEffect(() => {
+    NetworkInfo.getGatewayIPAddress().then(setGatewayIPAddress)
+    NetworkInfo.getIPAddress().then(setIPAddress)
+  }, [])
+
+  const timeStr = useMemo(
+    () => new Date(timerSeconds * 1000).toISOString().substring(14, 19),
+    [timerSeconds],
+  )
+
+  useAsync(async () => {
+    if (!gatewayIPAddress || !iPAddress) return
+
+    try {
+      const mac = await getMacForIp(gatewayIPAddress, iPAddress)
+      setWifiMac(mac)
+      enableMac(gatewayIPAddress, mac).then(setMacEnabled)
+    } catch (e) {
+      console.error(e)
+      let errStr = ''
+      if (typeof e === 'string') {
+        errStr = e
+      } else if (e instanceof Error) {
+        errStr = e.message
+      }
+
+      await showOKAlert({
+        title: t('wifi.macFailed'),
+        message: errStr,
+      })
+      navigation.goBack()
+    }
+  }, [gatewayIPAddress, iPAddress])
+
+  useEffect(() => {
+    if (timerSeconds !== 0 || !macEnabled || !currentAccount?.address) return
+
+    getAccount(currentAccount?.address).then(setScAccount)
+  }, [currentAccount, macEnabled, timerSeconds])
+
+  useEffect(() => {
+    // if (!heliumDataLoading) return
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+      setTimerSeconds(TIMER_SECONDS)
+    }
+    timerRef.current = setInterval(() => {
+      setTimerSeconds((prevSeconds) => {
+        const nextSeconds = prevSeconds - 1
+        return nextSeconds > -1 ? nextSeconds : TIMER_SECONDS
+      })
+    }, 1000)
+  }, [])
+
+  useEffect(
+    () =>
+      navigation.addListener('blur', () => {
+        if (!timerRef.current) return
+        clearInterval(timerRef.current)
+      }),
+
+    [navigation],
+  )
 
   const segmentData = useMemo(
     () => [
@@ -57,29 +149,34 @@ const WifiPurchase = () => {
   )
 
   const accountBalance = useMemo(() => {
-    if (!accountData?.account) return
-    return new Balance(accountData.account.balance, CurrencyType.networkToken)
-  }, [accountData])
+    if (!scAccount?.user.balance) return
+
+    if (accountsType === 'testnet')
+      return new Balance(scAccount?.user.balance, CurrencyType.testNetworkToken)
+
+    return new Balance(scAccount?.user.balance, CurrencyType.networkToken)
+  }, [accountsType, scAccount])
 
   const onSegmentChange = useCallback((id: string) => {
-    setType(id as 'data' | 'minutes')
+    setType(id as 'data' | 'time')
   }, [])
 
   const amounts = useMemo(() => {
     // TODO: Prices are just placeholder for now
+    const multiplier = (scAccount?.price || 0) / 10000
     if (type === 'data') {
       return [
-        { val: 1, price: 10000000 },
-        { val: 5, price: 50000000 },
-        { val: 20, price: 200000000 },
+        { val: 1, price: multiplier },
+        { val: 5, price: 5 * multiplier },
+        { val: 20, price: 20 * multiplier },
       ]
     }
     return [
-      { val: 300, price: 10000000 },
-      { val: 600, price: 20000000 },
-      { val: 1000, price: 30000000 },
+      { val: 300, price: multiplier },
+      { val: 600, price: 2 * multiplier },
+      { val: 1000, price: 3 * multiplier },
     ]
-  }, [type])
+  }, [scAccount, type])
 
   const priceBalance = useMemo(() => {
     return new Balance(amounts[dataIndex].price, CurrencyType.dataCredit)
@@ -92,24 +189,152 @@ const WifiPurchase = () => {
     [],
   )
 
-  const handleCancel = useCallback(() => navigation.goBack(), [navigation])
+  const handleBurn = useCallback(async () => {
+    if (!currentAccount?.address || !scAccount?.user) return
+    try {
+      const txn = await makeBurnTxn({
+        payeeB58: scAccount.payee,
+        amount: priceBalance.integerBalance,
+        memo: scAccount?.user.memo,
+        nonce: scAccount.user.nonce + 1,
+        dcPayloadSize: scAccount.dcPayloadSize,
+        txnFeeMultiplier: scAccount.txnFeeMultiplier,
+      })
+      await submitBurnTxn(currentAccount.address, txn.toString())
+    } catch (e) {
+      console.error(e)
+      let errStr = ''
+      if (typeof e === 'string') {
+        errStr = e
+      } else if (e instanceof Error) {
+        errStr = e.message
+      }
+      await showOKAlert({
+        title: t('wifi.burnFailed'),
+        message: errStr,
+      })
+    }
+  }, [
+    currentAccount,
+    makeBurnTxn,
+    priceBalance.integerBalance,
+    scAccount,
+    showOKAlert,
+    t,
+  ])
+
+  const handleAuth = useCallback(async () => {
+    if (!currentAccount || !wifiMac) return
+    try {
+      await authorize(currentAccount.address, {
+        macAddr: wifiMac,
+        // TODO: This will come from the deep link from the FAS
+        accessPoint: '1YmdZQxX7zfA7g3dbx3rgTK46fjSNV3zDDUCMPBPXpwmxEWym8X',
+        type,
+        amount: amounts[dataIndex].val,
+      })
+    } catch (e) {
+      console.error(e)
+      let errStr = ''
+      if (typeof e === 'string') {
+        errStr = e
+      } else if (e instanceof Error) {
+        errStr = e.message
+      }
+      await showOKAlert({
+        title: t('wifi.burnFailed'),
+        message: errStr,
+      })
+    }
+  }, [amounts, currentAccount, dataIndex, showOKAlert, t, type, wifiMac])
+
+  const handleSubmit = useCallback(async () => {
+    if (!currentAccount?.address || !scAccount?.user || !wifiMac) return
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+    }
+
+    await Promise.all([handleBurn(), handleAuth()])
+
+    navigation.goBack()
+  }, [currentAccount, scAccount, wifiMac, handleBurn, handleAuth, navigation])
 
   const handleViewStateChange = useCallback(
-    (val: 'select' | 'confirm') => () => {
-      animateTransition('WifiPurchase.handleNext')
+    (val: 'select' | 'confirm' | 'submit') => () => {
+      animate('WifiPurchase.handleNext')
       setViewState(val)
+
+      if (val === 'submit') {
+        handleSubmit()
+      }
     },
-    [],
+    [animate, handleSubmit],
   )
 
   const oraclePrice = useMemo(() => {
-    if (!data?.currentOraclePrice?.price) return
+    if (!scAccount?.price) return
 
-    return new Balance(data.currentOraclePrice.price, CurrencyType.usd)
-  }, [data])
+    return new Balance(scAccount.price, CurrencyType.usd)
+  }, [scAccount])
+
+  const remainingBalance = useMemo(() => {
+    if (!accountBalance || !priceBalance || !oraclePrice) return
+    if (accountsType === 'testnet') {
+      return accountBalance.minus(priceBalance.toTestNetworkTokens(oraclePrice))
+    }
+    return accountBalance.minus(priceBalance.toTestNetworkTokens(oraclePrice))
+  }, [accountBalance, accountsType, oraclePrice, priceBalance])
+
+  const hasSufficientAccountBalance = useMemo(() => {
+    if (!remainingBalance) return false
+    return remainingBalance.integerBalance >= 0
+  }, [remainingBalance])
+
+  const handleTimerLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      if (timerWidth) return
+      setTimerWidth(event.nativeEvent.layout.width)
+    },
+    [timerWidth],
+  )
+
+  const submitDisabled = useMemo(() => {
+    return (
+      (!hasSufficientAccountBalance && viewState !== 'select') ||
+      !scAccount ||
+      viewState === 'submit'
+    )
+  }, [hasSufficientAccountBalance, scAccount, viewState])
+
+  const safeAreaEdges = useMemo(() => {
+    if (Platform.OS === 'android') return ['top'] as Edge[]
+    return [] as Edge[]
+  }, [])
+
+  const tokenPrice = useMemo(() => {
+    if (!oraclePrice) return ''
+    if (accountsType === 'testnet') {
+      return priceBalance.toTestNetworkTokens(oraclePrice).toString(4)
+    }
+    return priceBalance.toNetworkTokens(oraclePrice).toString(4)
+  }, [accountsType, oraclePrice, priceBalance])
+
+  const positiveButtonText = useMemo(() => {
+    if (viewState === 'select' || (isAnimating && Platform.OS === 'android')) {
+      // On android updating text while animating leads to layout bugs
+      return t('generic.next')
+    }
+    return t('wifi.confirmPayment')
+  }, [isAnimating, t, viewState])
 
   return (
-    <Box flex={1} alignItems="center" paddingTop="l">
+    <SafeAreaBox
+      flex={1}
+      alignItems="center"
+      paddingTop="l"
+      edges={safeAreaEdges}
+    >
       <WifiLogo color={primaryText} />
 
       {viewState === 'select' && (
@@ -160,7 +385,7 @@ const WifiPurchase = () => {
           </Box>
         </Box>
       )}
-      {viewState === 'confirm' && (
+      {viewState !== 'select' && (
         <Box
           justifyContent="center"
           flex={1}
@@ -190,11 +415,38 @@ const WifiPurchase = () => {
           <TouchableOpacityBox
             onPress={handleViewStateChange('select')}
             hitSlop={hitSlop}
+            disabled={viewState === 'submit'}
           >
             <Text variant="body1" color="secondaryText">
               {t('wifi.change')}
             </Text>
           </TouchableOpacityBox>
+        </Box>
+      )}
+      {viewState !== 'select' && (
+        <Box
+          paddingLeft="ms"
+          paddingVertical="xxs"
+          alignSelf="flex-end"
+          margin="m"
+          backgroundColor="surfaceSecondary"
+          borderRadius="round"
+          width={timerWidth || undefined}
+          flexDirection="row"
+          alignItems="center"
+          onLayout={handleTimerLayout}
+        >
+          <Lock color={primaryText} />
+          <Text
+            paddingRight="ms"
+            variant="body2"
+            color="primaryText"
+            marginLeft="xs"
+            textAlign="right"
+            numberOfLines={1}
+          >
+            {timeStr}
+          </Text>
         </Box>
       )}
       <Box
@@ -204,23 +456,22 @@ const WifiPurchase = () => {
         borderTopLeftRadius="xl"
         borderTopRightRadius="xl"
       >
-        {viewState === 'confirm' && (
-          <Box
+        {viewState !== 'select' && (
+          <TouchableOpacityBox
             paddingHorizontal="xl"
             paddingVertical="l"
             borderBottomColor="primaryBackground"
             borderBottomWidth={1}
             flexDirection="row"
             alignItems="center"
+            onPress={showAccountTypes(accountsType)}
           >
             <AccountIcon size={26} address={currentAccount?.address} />
             <Text marginLeft="ms" variant="subtitle2" flex={1}>
               {currentAccount?.alias}
             </Text>
-            <TouchableOpacityBox hitSlop={hitSlop}>
-              <ChevronDown />
-            </TouchableOpacityBox>
-          </Box>
+            <ChevronDown />
+          </TouchableOpacityBox>
         )}
         <Box paddingVertical="l" paddingHorizontal="xl">
           <Box
@@ -231,18 +482,24 @@ const WifiPurchase = () => {
             <Text variant="body1" color="primaryText">
               {t('generic.total')}
             </Text>
-            <Text variant="body1" color="primaryText" fontSize={25}>
-              {/* TODO: Convert to locale currency */}
-              {priceBalance.toUsd(oraclePrice).toString(2)}
-            </Text>
+            {accountsType === 'mainnet' && (
+              <Text variant="body1" color="primaryText" fontSize={25}>
+                {/* TODO: Convert to locale currency */}
+                {priceBalance.toUsd(oraclePrice).toString(2)}
+              </Text>
+            )}
+            {accountsType === 'testnet' && (
+              <Text variant="body1" color="primaryText" fontSize={25}>
+                {/* TODO: Convert to locale currency */}
+                $xx.00 USD
+              </Text>
+            )}
           </Box>
           <Text variant="body1" color="secondaryText" alignSelf="flex-end">
-            {oraclePrice
-              ? priceBalance.toNetworkTokens(oraclePrice).toString(4)
-              : ''}
+            {tokenPrice}
           </Text>
         </Box>
-        {viewState === 'confirm' && (
+        {viewState !== 'select' && (
           <Box
             paddingHorizontal="xl"
             paddingVertical="l"
@@ -258,47 +515,63 @@ const WifiPurchase = () => {
                 {t('wifi.remainingBalance')}
               </Text>
               <Text variant="body1" color="primaryText" fontSize={25}>
-                {accountBalance?.toString(3)}
+                {remainingBalance?.toString(3)}
               </Text>
             </Box>
-            <Text variant="body1" color="secondaryText" alignSelf="flex-end">
-              {/* TODO: Convert to locale currency */}
-              {accountBalance?.toUsd(oraclePrice).toString(2)}
-            </Text>
+            {hasSufficientAccountBalance && accountsType === 'testnet' && (
+              <Text variant="body1" color="secondaryText" alignSelf="flex-end">
+                {/* TODO: Convert to locale currency */}
+                {'(TNT) => Dollars'}
+              </Text>
+            )}
+            {hasSufficientAccountBalance && accountsType === 'mainnet' && (
+              <Text variant="body1" color="secondaryText" alignSelf="flex-end">
+                {/* TODO: Convert to locale currency */}
+                {remainingBalance?.toUsd(oraclePrice).toString(2)}
+              </Text>
+            )}
+
+            {!hasSufficientAccountBalance && (
+              <Text variant="body1" color="error" alignSelf="flex-end">
+                {t('wifi.insufficientFunds')}
+              </Text>
+            )}
           </Box>
         )}
         <Box flexDirection="row" paddingHorizontal="xl">
           <ButtonPressable
             title={t('generic.cancel')}
-            flex={viewState === 'confirm' ? undefined : 1}
+            flex={viewState !== 'select' ? undefined : 1}
             backgroundColor="surface"
             backgroundColorPressed="surfaceContrast"
             backgroundColorOpacityPressed={0.08}
             borderRadius="round"
             marginRight="s"
             padding="m"
-            onPress={handleCancel}
+            onPress={navigation.goBack}
           />
           <ButtonPressable
             padding="m"
-            title={
-              viewState === 'confirm'
-                ? t('wifi.confirmPayment')
-                : t('generic.next')
-            }
+            debounceDuration={300}
+            title={positiveButtonText}
             flex={1}
             backgroundColor="surfaceContrast"
+            backgroundColorDisabled="surfaceContrast"
+            backgroundColorDisabledOpacity={0.6}
             titleColor="surfaceContrastText"
             backgroundColorPressed="surface"
             titleColorPressed="surfaceText"
             backgroundColorOpacityPressed={0.08}
             borderRadius="round"
             marginLeft="s"
-            onPress={handleViewStateChange('confirm')}
+            onPress={handleViewStateChange(
+              viewState !== 'select' ? 'submit' : 'confirm',
+            )}
+            disabled={submitDisabled}
           />
         </Box>
       </Box>
-    </Box>
+    </SafeAreaBox>
   )
 }
 

@@ -12,7 +12,7 @@ const Dot = ({ filled }: Props) => {
       width={dotSize}
       height={dotSize}
       borderRadius="round"
-      backgroundColor={filled ? 'primary' : undefined}
+      backgroundColor={filled ? 'purple500' : undefined}
     />
   )
 }

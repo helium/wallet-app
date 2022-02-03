@@ -1,6 +1,13 @@
 import React, { useEffect, useMemo } from 'react'
 import { ApolloProvider } from '@apollo/client'
-import { Text, useColorScheme, LogBox } from 'react-native'
+import {
+  Text,
+  useColorScheme,
+  LogBox,
+  Platform,
+  StatusBar,
+  UIManager,
+} from 'react-native'
 import { ThemeProvider } from '@shopify/restyle'
 import {
   DarkTheme,
@@ -19,6 +26,9 @@ import SecurityScreen from './features/security/SecurityScreen'
 import useMount from './utils/useMount'
 import OnboardingProvider from './features/onboarding/OnboardingProvider'
 import { RootNavigationProp } from './navigation/rootTypes'
+import AccountSelector from './components/AccountSelector'
+import TransactionProvider from './features/onboarding/TransactionProvider'
+import SafeAreaBox from './components/SafeAreaBox'
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -46,10 +56,16 @@ const App = () => {
     'AsyncStorage has been extracted from react-native core and will be removed in a future release.',
   ])
 
+  if (Platform.OS === 'android') {
+    if (UIManager.setLayoutAnimationEnabledExperimental) {
+      UIManager.setLayoutAnimationEnabledExperimental(true)
+    }
+  }
+
   const { appState } = useAppState()
   const { restored: accountsRestored } = useAccountStorage()
 
-  const { client, loading: loadingClient } = useApolloClient()
+  const { client, clientReady, loading } = useApolloClient()
 
   const colorScheme = useColorScheme()
   const colorAdaptedTheme = useMemo(
@@ -90,29 +106,40 @@ const App = () => {
     SplashScreen.hideAsync()
   }, [accountsRestored])
 
-  if (!client || loadingClient) {
-    return <Text>Splash Screen</Text>
+  if (!client || loading) {
+    return (
+      <ThemeProvider theme={colorAdaptedTheme}>
+        <SafeAreaBox flex={1} backgroundColor="white">
+          <Text>Splash Screen</Text>
+        </SafeAreaBox>
+      </ThemeProvider>
+    )
   }
 
   return (
-    <OnboardingProvider>
-      <ThemeProvider theme={colorAdaptedTheme}>
+    <ThemeProvider theme={colorAdaptedTheme}>
+      <OnboardingProvider>
         <ApolloProvider client={client}>
-          <LockScreen>
-            {accountsRestored && (
-              <>
-                <NavigationContainer theme={navTheme} linking={linking}>
-                  <RootNavigator />
-                </NavigationContainer>
-                <SecurityScreen
-                  visible={appState !== 'active' && appState !== 'unknown'}
-                />
-              </>
-            )}
-          </LockScreen>
+          <TransactionProvider clientReady={clientReady}>
+            <LockScreen>
+              {accountsRestored && (
+                <AccountSelector>
+                  {Platform.OS === 'android' && (
+                    <StatusBar translucent backgroundColor="transparent" />
+                  )}
+                  <NavigationContainer theme={navTheme} linking={linking}>
+                    <RootNavigator />
+                  </NavigationContainer>
+                  <SecurityScreen
+                    visible={appState !== 'active' && appState !== 'unknown'}
+                  />
+                </AccountSelector>
+              )}
+            </LockScreen>
+          </TransactionProvider>
         </ApolloProvider>
-      </ThemeProvider>
-    </OnboardingProvider>
+      </OnboardingProvider>
+    </ThemeProvider>
   )
 }
 

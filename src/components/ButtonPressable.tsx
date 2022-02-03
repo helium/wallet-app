@@ -3,6 +3,7 @@ import { BoxProps } from '@shopify/restyle'
 import React, { FC, memo, useCallback } from 'react'
 import { GestureResponderEvent, Pressable, StyleSheet } from 'react-native'
 import { SvgProps } from 'react-native-svg'
+import { useDebouncedCallback } from 'use-debounce'
 import { Color, FontWeight, Theme } from '../theme/theme'
 import { useCreateOpacity } from '../theme/themeHooks'
 import Box from './Box'
@@ -12,6 +13,7 @@ type Props = BoxProps<Theme> & {
   backgroundColor?: Color
   backgroundColorDisabled?: Color
   backgroundColorOpacity?: number
+  backgroundColorDisabledOpacity?: number
   backgroundColorPressed?: Color
   backgroundColorOpacityPressed?: number
   Icon?: FC<SvgProps>
@@ -27,11 +29,13 @@ type Props = BoxProps<Theme> & {
   onPress?: ((event: GestureResponderEvent) => void) | null | undefined
   disabled?: boolean
   selected?: boolean
+  debounceDuration?: number
 }
 
 const ButtonPressable = ({
   backgroundColor,
   backgroundColorDisabled,
+  backgroundColorDisabledOpacity = 1,
   backgroundColorOpacity = 1,
   backgroundColorPressed,
   backgroundColorOpacityPressed = 1,
@@ -49,8 +53,26 @@ const ButtonPressable = ({
   disabled,
   selected,
   padding,
+  debounceDuration,
   ...boxProps
 }: Props) => {
+  const debouncedHandler = useDebouncedCallback(
+    (event: GestureResponderEvent) => onPress?.(event),
+    debounceDuration,
+    { leading: true, trailing: false },
+  )
+
+  const handlePress = useCallback(
+    (event: GestureResponderEvent) => {
+      if (debounceDuration) {
+        debouncedHandler(event)
+      } else {
+        onPress?.(event)
+      }
+    },
+    [debounceDuration, debouncedHandler, onPress],
+  )
+
   const { backgroundStyle, colorStyle, color } = useCreateOpacity()
 
   const getTitleColor = useCallback(
@@ -92,7 +114,10 @@ const ButtonPressable = ({
   const getBackgroundColorStyle = useCallback(
     (pressed: boolean) => {
       if (disabled && backgroundColorDisabled) {
-        return backgroundStyle(backgroundColorDisabled, backgroundColorOpacity)
+        return backgroundStyle(
+          backgroundColorDisabled,
+          backgroundColorDisabledOpacity,
+        )
       }
       if (pressed || selected) {
         return backgroundStyle(
@@ -106,20 +131,25 @@ const ButtonPressable = ({
       }
     },
     [
-      backgroundColor,
-      backgroundColorDisabled,
-      backgroundColorOpacity,
-      backgroundColorOpacityPressed,
-      backgroundColorPressed,
-      backgroundStyle,
-      selected,
       disabled,
+      backgroundColorDisabled,
+      selected,
+      backgroundColor,
+      backgroundStyle,
+      backgroundColorDisabledOpacity,
+      backgroundColorPressed,
+      backgroundColorOpacityPressed,
+      backgroundColorOpacity,
     ],
   )
 
   return (
-    <Box overflow="hidden" {...boxProps} backgroundColor="white">
-      <Pressable onPress={onPress} style={styles.pressable} disabled={disabled}>
+    <Box overflow="hidden" {...boxProps}>
+      <Pressable
+        onPress={handlePress}
+        style={styles.pressable}
+        disabled={disabled}
+      >
         {({ pressed }) => (
           <Box
             height={boxProps.height}
@@ -136,7 +166,8 @@ const ButtonPressable = ({
           >
             {title && (
               <Text
-                fontSize={fontSize || 21}
+                variant="body1"
+                fontSize={fontSize || 19}
                 fontWeight={fontWeight}
                 style={getTitleColorStyle(pressed)}
                 marginHorizontal="xs"

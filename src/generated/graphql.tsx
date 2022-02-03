@@ -92,7 +92,7 @@ export type RootMutationType = {
 }
 
 export type RootMutationTypeSubmitTxnArgs = {
-  address?: InputMaybe<Scalars['String']>
+  address: Scalars['String']
   txn: Scalars['String']
 }
 
@@ -106,25 +106,28 @@ export type RootQueryType = {
   accountRewardsSum?: Maybe<Sum>
   /** Get current oracle price */
   currentOraclePrice?: Maybe<OraclePrice>
+  /** Get txn config vars */
+  txnConfigVars?: Maybe<TxnConfigVars>
 }
 
 export type RootQueryTypeAccountArgs = {
-  address?: InputMaybe<Scalars['String']>
+  address: Scalars['String']
 }
 
 export type RootQueryTypeAccountActivityArgs = {
-  address?: InputMaybe<Scalars['String']>
+  address: Scalars['String']
   cursor?: InputMaybe<Scalars['String']>
+  filter?: InputMaybe<Scalars['String']>
 }
 
 export type RootQueryTypeAccountRewardsSumArgs = {
-  address?: InputMaybe<Scalars['String']>
+  address: Scalars['String']
   maxTime?: InputMaybe<Scalars['String']>
   minTime?: InputMaybe<Scalars['String']>
 }
 
 export type RootQueryTypeCurrentOraclePriceArgs = {
-  address?: InputMaybe<Scalars['String']>
+  address: Scalars['String']
 }
 
 export type Sum = {
@@ -150,13 +153,21 @@ export type SumMeta = {
   minTime: Scalars['String']
 }
 
+export type TxnConfigVars = {
+  __typename?: 'TxnConfigVars'
+  dcPayloadSize: Scalars['Int']
+  stakingFeeTxnAddGatewayV1: Scalars['Int']
+  stakingFeeTxnAssertLocationV1: Scalars['Int']
+  txnFeeMultiplier: Scalars['Int']
+}
+
 export type TxnHash = {
   __typename?: 'TxnHash'
   hash: Scalars['String']
 }
 
 export type AccountActivityQueryVariables = Exact<{
-  address?: InputMaybe<Scalars['String']>
+  address: Scalars['String']
   cursor?: InputMaybe<Scalars['String']>
 }>
 
@@ -212,7 +223,7 @@ export type AccountActivityQuery = {
 }
 
 export type AccountRewardsSummaryQueryVariables = Exact<{
-  address?: InputMaybe<Scalars['String']>
+  address: Scalars['String']
   minTime?: InputMaybe<Scalars['String']>
   maxTime?: InputMaybe<Scalars['String']>
 }>
@@ -238,7 +249,7 @@ export type AccountRewardsSummaryQuery = {
 }
 
 export type AccountQueryVariables = Exact<{
-  address?: InputMaybe<Scalars['String']>
+  address: Scalars['String']
 }>
 
 export type AccountQuery = {
@@ -263,7 +274,7 @@ export type AccountQuery = {
 }
 
 export type HeliumDataQueryVariables = Exact<{
-  address?: InputMaybe<Scalars['String']>
+  address: Scalars['String']
 }>
 
 export type HeliumDataQuery = {
@@ -274,8 +285,34 @@ export type HeliumDataQuery = {
     | undefined
 }
 
+export type SubmitTxnMutationVariables = Exact<{
+  address: Scalars['String']
+  txn: Scalars['String']
+}>
+
+export type SubmitTxnMutation = {
+  __typename?: 'RootMutationType'
+  submitTxn?: { __typename?: 'TxnHash'; hash: string } | null | undefined
+}
+
+export type TxnConfigVarsQueryVariables = Exact<{ [key: string]: never }>
+
+export type TxnConfigVarsQuery = {
+  __typename?: 'RootQueryType'
+  txnConfigVars?:
+    | {
+        __typename?: 'TxnConfigVars'
+        txnFeeMultiplier: number
+        stakingFeeTxnAddGatewayV1: number
+        stakingFeeTxnAssertLocationV1: number
+        dcPayloadSize: number
+      }
+    | null
+    | undefined
+}
+
 export const AccountActivityDocument = gql`
-  query AccountActivity($address: String, $cursor: String) {
+  query AccountActivity($address: String!, $cursor: String) {
     accountActivity(address: $address, cursor: $cursor) {
       cursor
       data {
@@ -328,7 +365,7 @@ export const AccountActivityDocument = gql`
  * });
  */
 export function useAccountActivityQuery(
-  baseOptions?: Apollo.QueryHookOptions<
+  baseOptions: Apollo.QueryHookOptions<
     AccountActivityQuery,
     AccountActivityQueryVariables
   >,
@@ -363,7 +400,7 @@ export type AccountActivityQueryResult = Apollo.QueryResult<
 >
 export const AccountRewardsSummaryDocument = gql`
   query AccountRewardsSummary(
-    $address: String
+    $address: String!
     $minTime: String
     $maxTime: String
   ) {
@@ -403,7 +440,7 @@ export const AccountRewardsSummaryDocument = gql`
  * });
  */
 export function useAccountRewardsSummaryQuery(
-  baseOptions?: Apollo.QueryHookOptions<
+  baseOptions: Apollo.QueryHookOptions<
     AccountRewardsSummaryQuery,
     AccountRewardsSummaryQueryVariables
   >,
@@ -437,7 +474,7 @@ export type AccountRewardsSummaryQueryResult = Apollo.QueryResult<
   AccountRewardsSummaryQueryVariables
 >
 export const AccountDocument = gql`
-  query Account($address: String) {
+  query Account($address: String!) {
     account(address: $address) {
       address
       balance
@@ -471,7 +508,7 @@ export const AccountDocument = gql`
  * });
  */
 export function useAccountQuery(
-  baseOptions?: Apollo.QueryHookOptions<AccountQuery, AccountQueryVariables>,
+  baseOptions: Apollo.QueryHookOptions<AccountQuery, AccountQueryVariables>,
 ) {
   const options = { ...defaultOptions, ...baseOptions }
   return Apollo.useQuery<AccountQuery, AccountQueryVariables>(
@@ -498,7 +535,7 @@ export type AccountQueryResult = Apollo.QueryResult<
   AccountQueryVariables
 >
 export const HeliumDataDocument = gql`
-  query HeliumData($address: String) {
+  query HeliumData($address: String!) {
     currentOraclePrice(address: $address) {
       price
     }
@@ -522,7 +559,7 @@ export const HeliumDataDocument = gql`
  * });
  */
 export function useHeliumDataQuery(
-  baseOptions?: Apollo.QueryHookOptions<
+  baseOptions: Apollo.QueryHookOptions<
     HeliumDataQuery,
     HeliumDataQueryVariables
   >,
@@ -552,4 +589,114 @@ export type HeliumDataLazyQueryHookResult = ReturnType<
 export type HeliumDataQueryResult = Apollo.QueryResult<
   HeliumDataQuery,
   HeliumDataQueryVariables
+>
+export const SubmitTxnDocument = gql`
+  mutation submitTxn($address: String!, $txn: String!) {
+    submitTxn(address: $address, txn: $txn) {
+      hash
+    }
+  }
+`
+export type SubmitTxnMutationFn = Apollo.MutationFunction<
+  SubmitTxnMutation,
+  SubmitTxnMutationVariables
+>
+
+/**
+ * __useSubmitTxnMutation__
+ *
+ * To run a mutation, you first call `useSubmitTxnMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSubmitTxnMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [submitTxnMutation, { data, loading, error }] = useSubmitTxnMutation({
+ *   variables: {
+ *      address: // value for 'address'
+ *      txn: // value for 'txn'
+ *   },
+ * });
+ */
+export function useSubmitTxnMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    SubmitTxnMutation,
+    SubmitTxnMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useMutation<SubmitTxnMutation, SubmitTxnMutationVariables>(
+    SubmitTxnDocument,
+    options,
+  )
+}
+export type SubmitTxnMutationHookResult = ReturnType<
+  typeof useSubmitTxnMutation
+>
+export type SubmitTxnMutationResult = Apollo.MutationResult<SubmitTxnMutation>
+export type SubmitTxnMutationOptions = Apollo.BaseMutationOptions<
+  SubmitTxnMutation,
+  SubmitTxnMutationVariables
+>
+export const TxnConfigVarsDocument = gql`
+  query txnConfigVars {
+    txnConfigVars {
+      txnFeeMultiplier
+      stakingFeeTxnAddGatewayV1
+      stakingFeeTxnAssertLocationV1
+      dcPayloadSize
+    }
+  }
+`
+
+/**
+ * __useTxnConfigVarsQuery__
+ *
+ * To run a query within a React component, call `useTxnConfigVarsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useTxnConfigVarsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useTxnConfigVarsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useTxnConfigVarsQuery(
+  baseOptions?: Apollo.QueryHookOptions<
+    TxnConfigVarsQuery,
+    TxnConfigVarsQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useQuery<TxnConfigVarsQuery, TxnConfigVarsQueryVariables>(
+    TxnConfigVarsDocument,
+    options,
+  )
+}
+export function useTxnConfigVarsLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    TxnConfigVarsQuery,
+    TxnConfigVarsQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useLazyQuery<TxnConfigVarsQuery, TxnConfigVarsQueryVariables>(
+    TxnConfigVarsDocument,
+    options,
+  )
+}
+export type TxnConfigVarsQueryHookResult = ReturnType<
+  typeof useTxnConfigVarsQuery
+>
+export type TxnConfigVarsLazyQueryHookResult = ReturnType<
+  typeof useTxnConfigVarsLazyQuery
+>
+export type TxnConfigVarsQueryResult = Apollo.QueryResult<
+  TxnConfigVarsQuery,
+  TxnConfigVarsQueryVariables
 >

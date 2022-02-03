@@ -9,6 +9,8 @@ import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { useColors, useHitSlop } from '../../theme/themeHooks'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import { accountCurrencyType } from '../../utils/accountUtils'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import CopyAddress from '../../components/CopyAddress'
 
 type Route = RouteProp<HomeStackParamList, 'PaymentScreen'>
 const PaymentScreen = () => {
@@ -22,6 +24,7 @@ const PaymentScreen = () => {
   }, [navigation])
   const { primaryText } = useColors()
   const hitSlop = useHitSlop('l')
+  const { currentAccount } = useAccountStorage()
 
   return (
     <Box backgroundColor="primaryBackground" flex={1}>
@@ -53,6 +56,7 @@ const PaymentScreen = () => {
           <Close color={primaryText} height={16} width={16} />
         </TouchableOpacityBox>
       </Box>
+      <CopyAddress address={currentAccount?.address || ''} />
     </Box>
   )
 }

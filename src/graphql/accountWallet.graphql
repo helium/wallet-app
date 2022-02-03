@@ -1,4 +1,4 @@
-query Account($address: String) {
+query Account($address: String!) {
   account(address: $address) {
     address
     balance
