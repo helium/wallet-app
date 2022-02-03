@@ -1,4 +1,4 @@
-query AccountActivity($address: String, $cursor: String) {
+query AccountActivity($address: String!, $cursor: String) {
   accountActivity(address: $address, cursor: $cursor) {
     cursor
     data {

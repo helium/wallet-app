@@ -1,5 +1,5 @@
 overwrite: true
-schema: 'http://localhost:4000/api/graphiql'
+schema: 'https://nova-wallet-api.herokuapp.com/api/graphiql'
 documents: 'src/**/*.graphql'
 generates:
   src/generated/graphql.tsx:

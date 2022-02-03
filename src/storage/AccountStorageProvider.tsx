@@ -10,7 +10,7 @@ import { Platform } from 'react-native'
 import iCloudStorage from 'react-native-icloudstore'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useAsync } from 'react-async-hook'
-import { Keypair, Mnemonic } from '@helium/crypto-react-native'
+import { Address, Keypair, Mnemonic } from '@helium/crypto-react-native'
 import * as SecureStore from 'expo-secure-store'
 import { sortBy, values } from 'lodash'
 
@@ -78,8 +78,16 @@ const getFromCloudStorage = async <T,>(
   return JSON.parse(item) as T
 }
 
+const sortAccounts = (accts: CSAccounts) => {
+  // TODO: We'll probably want to find a better way to order the accounts
+  const acctList = values(accts)
+  return sortBy(acctList, 'alias') || []
+}
+
 const useAccountStorageHook = () => {
-  const [currentAccount, setCurrentAccount] = useState<CSAccount>()
+  const [currentAccount, setCurrentAccount] = useState<
+    CSAccount | null | undefined
+  >(undefined)
   const [accounts, setAccounts] = useState<CSAccounts>()
   const [secureAccounts, setSecureAccounts] = useState<SecureAccounts>()
   const [contacts, setContacts] = useState<CSAccount[]>([])
@@ -91,11 +99,23 @@ const useAccountStorageHook = () => {
 
   const restored = useMemo(() => secureAccounts !== undefined, [secureAccounts])
 
-  const sortAccounts = useCallback((accts: CSAccounts) => {
-    // TODO: We'll probably want to find a better way to order the accounts
-    const acctList = values(accts)
-    return sortBy(acctList, 'alias') || []
-  }, [])
+  const accountAddresses = useMemo(
+    () => Object.keys(accounts || {}),
+    [accounts],
+  )
+
+  const hasAccounts = useMemo(
+    () => !!accountAddresses.length,
+    [accountAddresses.length],
+  )
+
+  const sortedAccounts = useMemo(() => sortAccounts(accounts || {}), [accounts])
+
+  const currentApiToken = useMemo(() => {
+    if (!currentAccount?.address) return
+    const secureAccount = secureAccounts?.[currentAccount.address]
+    return secureAccount?.apiToken
+  }, [currentAccount, secureAccounts])
 
   const getAccounts = useCallback(async (): Promise<CSAccounts> => {
     const csAccounts = await CloudStorage.getItem(CloudStorageKeys.ACCOUNTS)
@@ -107,6 +127,11 @@ const useAccountStorageHook = () => {
   const getSecureAccount = useCallback(
     async (address: string): Promise<SecureAccount | undefined> => {
       let item: string | null = null
+      const secureAccount = secureAccounts?.[address]
+      if (secureAccount) {
+        return secureAccount
+      }
+
       try {
         item = await SecureStore.getItemAsync(address)
       } catch (e) {
@@ -116,10 +141,25 @@ const useAccountStorageHook = () => {
       if (!item) return
       return JSON.parse(item) as SecureAccount
     },
-    [],
+    [secureAccounts],
   )
 
-  const getToken = useCallback(
+  const getKeypair = useCallback(async (): Promise<Keypair | undefined> => {
+    if (!currentAccount?.address) {
+      throw new Error('There is no currently selected account.')
+    }
+    const secureAccount = await getSecureAccount(currentAccount?.address)
+    if (!secureAccount) {
+      throw new Error(
+        `Secure account for ${currentAccount.address} could not be found`,
+      )
+    }
+
+    const netType = Address.fromB58(currentAccount.address)?.netType
+    return new Keypair(secureAccount.keypair, netType)
+  }, [currentAccount, getSecureAccount])
+
+  const getApiToken = useCallback(
     async (address?: string) => {
       if (!address) {
         return ''
@@ -142,6 +182,10 @@ const useAccountStorageHook = () => {
 
     const cloudAccounts = await getAccounts()
     setAccounts(cloudAccounts)
+    if (Object.keys(cloudAccounts).length) {
+      const [first] = sortAccounts(cloudAccounts)
+      setCurrentAccount(first)
+    }
 
     const csViewType = (await CloudStorage.getItem(
       CloudStorageKeys.VIEW_TYPE,
@@ -167,21 +211,6 @@ const useAccountStorageHook = () => {
       setPin({ value: '', status: 'off' })
     }
   }, [])
-
-  const accountAddresses = useMemo(
-    () => Object.keys(accounts || {}),
-    [accounts],
-  )
-
-  const hasAccounts = useMemo(
-    () => !!accountAddresses.length,
-    [accountAddresses.length],
-  )
-
-  const sortedAccounts = useMemo(
-    () => sortAccounts(accounts || {}),
-    [accounts, sortAccounts],
-  )
 
   const upsertAccount = useCallback(
     async (account: CSAccount & SecureAccount) => {
@@ -285,54 +314,59 @@ const useAccountStorageHook = () => {
   }, [secureAccounts])
 
   return {
-    viewType,
     accounts,
-    sortedAccounts,
-    hasAccounts,
     accountAddresses,
-    secureAccounts,
-    upsertAccount,
-    updateViewType,
-    signOut,
-    createSecureAccount,
-    pin,
-    updatePin,
-    restored,
-    currentAccount,
-    getToken,
-    setCurrentAccount,
-    getSecureAccount,
-    contacts,
     addContact,
+    contacts,
+    createSecureAccount,
+    currentAccount,
+    currentApiToken,
+    getApiToken,
+    getKeypair,
+    getSecureAccount,
+    hasAccounts,
+    pin,
+    restored,
+    secureAccounts,
+    setCurrentAccount,
+    signOut,
+    sortedAccounts,
+    updatePin,
+    updateViewType,
+    upsertAccount,
+    viewType,
   }
 }
 
 const initialState = {
-  viewType: 'unified' as AccountView,
   accounts: {},
-  hasAccounts: false,
   accountAddresses: [],
-  sortedAccounts: [],
-  secureAccounts: {},
-  upsertAccount: async () => undefined,
-  updateViewType: async () => undefined,
-  signOut: async () => undefined,
+  addContact: async () => undefined,
+  contacts: [],
   createSecureAccount: async () => ({
     mnemonic: [],
     keypair: { pk: '', sk: '' },
     address: '',
   }),
-  pin: undefined,
-  updatePin: async () => undefined,
-  restored: false,
   currentAccount: undefined,
-  setCurrentAccount: () => undefined,
-  getToken: (_address?: string) =>
+  currentApiToken: undefined,
+  getApiToken: (_address?: string) =>
     new Promise<string>((resolve) => resolve('')),
+  getKeypair: () =>
+    new Promise<Keypair | undefined>((resolve) => resolve(undefined)),
   getSecureAccount: () =>
     new Promise<SecureAccount | undefined>((resolve) => resolve(undefined)),
-  contacts: [],
-  addContact: async () => undefined,
+  hasAccounts: false,
+  pin: undefined,
+  restored: false,
+  secureAccounts: {},
+  setCurrentAccount: () => undefined,
+  signOut: async () => undefined,
+  sortedAccounts: [],
+  updatePin: async () => undefined,
+  updateViewType: async () => undefined,
+  upsertAccount: async () => undefined,
+  viewType: 'unified' as AccountView,
 }
 
 const AccountStorageContext =

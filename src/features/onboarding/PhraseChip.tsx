@@ -30,7 +30,7 @@ const PhraseChip = ({
 
   const getBackgroundColor = () => {
     if (fail) return 'error'
-    if (success) return 'primary'
+    if (success) return 'purple500'
     return 'surfaceContrast'
   }
 

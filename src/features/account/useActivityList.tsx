@@ -5,7 +5,7 @@ export default ({ address, skip }: { address?: string; skip: boolean }) => {
   const { data, fetchMore, loading, error } = useAccountActivityQuery({
     variables: {
       cursor: '',
-      address,
+      address: address || '',
     },
     fetchPolicy: 'cache-and-network',
     skip,

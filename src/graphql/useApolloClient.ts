@@ -4,9 +4,9 @@ import { AsyncStorageWrapper, persistCache } from 'apollo3-cache-persist'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useAsync } from 'react-async-hook'
 import { setContext } from '@apollo/client/link/context'
+import { useState } from 'react'
 import { ActivityData, Activity } from '../generated/graphql'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import { AccountImportCreate } from '../features/account/AccountsScreen'
 
 type ActivityCache = {
   cursor: string
@@ -76,7 +76,8 @@ const cache = new InMemoryCache({
 })
 
 export const useApolloClient = () => {
-  const { getToken, currentAccount } = useAccountStorage()
+  const { getApiToken, currentAccount } = useAccountStorage()
+  const [clientReady, setClientReady] = useState(false)
 
   const httpLink = createHttpLink({
     uri: Config.GRAPH_URI,
@@ -88,28 +89,23 @@ export const useApolloClient = () => {
       storage: new AsyncStorageWrapper(AsyncStorage),
     })
 
-    const authLink = setContext(async ({ variables }, { headers }) => {
-      const token = await getToken(variables?.address)
-
-      return {
-        headers: {
-          ...headers,
-          Authorization: token,
-        },
-      }
-    })
-
     return new ApolloClient({
-      link: authLink.concat(httpLink),
+      link: httpLink,
       cache,
     })
   }, [])
 
   useAsync(async () => {
     // Anytime the current account changes, the auth token needs to be updated
-    if (currentAccount?.address === AccountImportCreate) return
+    if (!currentAccount?.address) return
     const authLink = setContext(async ({ variables }, { headers }) => {
-      const token = await getToken(variables?.address)
+      // If the current query contains an address variable use that, otherwise current account
+      const address = variables?.address || currentAccount.address
+      const token = await getApiToken(address)
+
+      if (token) {
+        setClientReady(true)
+      }
       return {
         headers: {
           ...headers,
@@ -122,6 +118,7 @@ export const useApolloClient = () => {
 
   return {
     client,
+    clientReady,
     loading,
   }
 }

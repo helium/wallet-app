@@ -22,7 +22,10 @@ const HomeStackScreen = () => {
         component={AccountAssignScreen}
       />
       <HomeStack.Screen name="PaymentScreen" component={PaymentScreen} />
-      <HomeStack.Screen name="WifiOnboard" component={WifiOnboard} />
+      <HomeStack.Screen
+        name="WifiOnboard"
+        component={WifiOnboard}
+      />
       <HomeStack.Screen
         name="AddressBookNavigator"
         component={AddressBookNavigator}

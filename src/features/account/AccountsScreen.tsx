@@ -18,7 +18,6 @@ import { useTranslation } from 'react-i18next'
 import { NetType } from '@helium/crypto-react-native'
 import { useNavigation } from '@react-navigation/native'
 import Box from '../../components/Box'
-import FocusAwareStatusBar from '../../components/FocusAwareStatusBar'
 import {
   CSAccount,
   useAccountStorage,
@@ -41,6 +40,7 @@ import { HomeNavigationProp } from '../home/homeTypes'
 import { Activity, useAccountQuery } from '../../generated/graphql'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import * as AccountUtils from '../../utils/accountUtils'
+import { useAccountSelector } from '../../components/AccountSelector'
 
 type AccountLayout = {
   accountViewStart: number
@@ -75,7 +75,6 @@ type Item = {
   index: number
 }
 
-export const AccountImportCreate = 'accountImportCreate'
 const AccountsScreen = () => {
   const navigation = useNavigation<HomeNavigationProp>()
   const spacing = useSpacing()
@@ -84,7 +83,8 @@ const AccountsScreen = () => {
   const bottomSheetRef = useRef<BottomSheet>(null)
   const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
   const { backgroundStyle: handleStyle } = useOpacity('black500', 1)
-
+  const { black300, primaryText } = useColors()
+  const carouselRef = useRef<Carousel<CSAccount | null>>(null)
   const { sortedAccounts, currentAccount, setCurrentAccount } =
     useAccountStorage()
   const prevSortedAccounts = usePrevious<CSAccount[] | undefined>(
@@ -92,14 +92,14 @@ const AccountsScreen = () => {
   )
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const [netType, setNetType] = useState<number>(NetType.MAINNET)
-  const { black700, primaryText } = useColors()
+  const { show } = useAccountSelector()
 
   const { data: accountData, error: accountsError } = useAccountQuery({
-    variables: { address: currentAccount?.address },
+    variables: {
+      address: currentAccount?.address || '',
+    },
     fetchPolicy: 'cache-and-network',
-    skip:
-      !currentAccount?.address ||
-      currentAccount?.address === AccountImportCreate,
+    skip: !currentAccount?.address,
   })
 
   const {
@@ -110,9 +110,7 @@ const AccountsScreen = () => {
     now,
   } = useActivityList({
     address: currentAccount?.address,
-    skip:
-      !currentAccount?.address ||
-      currentAccount?.address === AccountImportCreate,
+    skip: !currentAccount?.address,
   })
 
   useEffect(() => {
@@ -143,14 +141,10 @@ const AccountsScreen = () => {
     sortedAccounts.length,
   ])
 
-  const accountNetType = useMemo(() => {
-    if (
-      !currentAccount?.address ||
-      currentAccount?.address === AccountImportCreate
-    )
-      return NetType.MAINNET
-    return AccountUtils.accountNetType(currentAccount?.address)
-  }, [currentAccount])
+  const accountNetType = useMemo(
+    () => AccountUtils.accountNetType(currentAccount?.address),
+    [currentAccount],
+  )
 
   const handleAddressBook = useCallback(() => {
     navigation.push('AddressBookNavigator')
@@ -159,12 +153,12 @@ const AccountsScreen = () => {
   const carouselData = useMemo(() => {
     return [
       ...sortedAccounts,
-      { alias: AccountImportCreate, address: AccountImportCreate },
+      null, // needed for account import/create state
     ]
   }, [sortedAccounts])
 
-  const renderCarouselItem = ({ item }: { item: CSAccount }) => {
-    if (item.address === AccountImportCreate) {
+  const renderCarouselItem = ({ item }: { item: CSAccount | null }) => {
+    if (!item) {
       if (onboardingType === 'assign') return null
       return (
         <>
@@ -199,11 +193,6 @@ const AccountsScreen = () => {
     if (mid <= 0 || expanded <= 0) return ['5%']
     return [mid, expanded]
   }, [spacing.l, state])
-
-  useEffect(() => {
-    if (currentAccount || !carouselData.length) return
-    setCurrentAccount(carouselData[0])
-  }, [carouselData, currentAccount, setCurrentAccount])
 
   const renderFlatlistItem = useCallback(
     ({ item }: Item) => {
@@ -277,19 +266,22 @@ const AccountsScreen = () => {
             address: currentAccount?.address,
           })
           break
+        case 'stake':
+          // TODO: Remove eventually
+          if (accountNetType !== NetType.TESTNET) return
+          navigation.navigate('WifiOnboard')
+          break
+        default:
+          show()
+          break
       }
     },
-    [currentAccount, navigation],
+    [accountNetType, currentAccount, navigation, show],
   )
 
   return (
     <Box flex={1}>
-      <FocusAwareStatusBar hidden />
-
-      <Box
-        minHeight={75}
-        opacity={currentAccount?.address === AccountImportCreate ? 0 : 100}
-      >
+      <Box minHeight={75} opacity={!currentAccount?.address ? 0 : 100}>
         <AnimatePresence>
           <MotiBox
             from={{
@@ -307,14 +299,8 @@ const AccountsScreen = () => {
               justifyContent="space-between"
               alignItems="center"
             >
-              <TouchableOpacityBox
-                paddingHorizontal="l"
-                onPress={() => {
-                  // TODO: Remove eventually
-                  navigation.navigate('WifiOnboard')
-                }}
-              >
-                <CogIco color={black700} />
+              <TouchableOpacityBox paddingHorizontal="l" onPress={() => {}}>
+                <CogIco color={black300} />
               </TouchableOpacityBox>
               <Box
                 paddingHorizontal="l"
@@ -322,8 +308,8 @@ const AccountsScreen = () => {
                 alignItems="center"
                 visible={accountNetType === NetType.TESTNET}
               >
-                <TestnetIcon color={black700} />
-                <Text marginLeft="xs" fontSize={20}>
+                <TestnetIcon color={black300} />
+                <Text marginLeft="xs" variant="subtitle1" color="black300">
                   {t('onboarding.testnet')}
                 </Text>
               </Box>
@@ -331,7 +317,7 @@ const AccountsScreen = () => {
                 paddingHorizontal="l"
                 onPress={handleAddressBook}
               >
-                <AccountIco color={black700} />
+                <AccountIco color={black300} />
               </TouchableOpacityBox>
             </SafeAreaBox>
           </MotiBox>
@@ -339,6 +325,7 @@ const AccountsScreen = () => {
       </Box>
       <Box marginTop={{ phone: 'ms', smallPhone: 'none' }}>
         <Carousel
+          ref={carouselRef}
           layout="default"
           vertical={false}
           data={carouselData}
@@ -355,7 +342,7 @@ const AccountsScreen = () => {
         }
       >
         <AnimatePresence>
-          {currentAccount?.address === AccountImportCreate && (
+          {!currentAccount?.address && (
             <MotiBox
               position="absolute"
               top={0}
@@ -382,14 +369,12 @@ const AccountsScreen = () => {
         {carouselData.map((d, i) => {
           if (i === carouselData.length - 1) return null
           const visible =
-            currentAccount &&
-            currentAccount?.address !== AccountImportCreate &&
-            currentAccount.address === d.address
+            currentAccount && currentAccount?.address === d?.address
           return (
-            <AnimatePresence key={d.address}>
+            <AnimatePresence key={d?.address}>
               {visible && (
                 <MotiBox
-                  key={d.address}
+                  key={d?.address || 'ImportCreate'}
                   position="absolute"
                   top={0}
                   left={0}
@@ -405,7 +390,7 @@ const AccountsScreen = () => {
                   }}
                 >
                   <AccountView
-                    address={d.address}
+                    address={d?.address || ''}
                     onLayoutChange={handleAccountViewLayoutChange}
                     onActionSelected={handleActionSelected}
                     visible={visible}
@@ -419,27 +404,25 @@ const AccountsScreen = () => {
         })}
       </Box>
       {/* TODO: Handle pending txns and filter? */}
-      {currentAccount &&
-        currentAccount?.address !== AccountImportCreate &&
-        snapPoints.length > 0 && (
-          <BottomSheet
-            ref={bottomSheetRef}
-            index={0}
-            snapPoints={snapPoints}
-            backgroundStyle={backgroundStyle}
-            handleIndicatorStyle={handleStyle}
-          >
-            <BottomSheetFlatList
-              ListHeaderComponent={header}
-              ListFooterComponent={footer}
-              ItemSeparatorComponent={renderSeparator}
-              data={activityData?.accountActivity?.data || ([] as Activity[])}
-              renderItem={renderFlatlistItem}
-              keyExtractor={keyExtractor}
-              onEndReached={requestMore}
-            />
-          </BottomSheet>
-        )}
+      {currentAccount && !!currentAccount?.address && snapPoints.length > 0 && (
+        <BottomSheet
+          ref={bottomSheetRef}
+          index={0}
+          snapPoints={snapPoints}
+          backgroundStyle={backgroundStyle}
+          handleIndicatorStyle={handleStyle}
+        >
+          <BottomSheetFlatList
+            ListHeaderComponent={header}
+            ListFooterComponent={footer}
+            ItemSeparatorComponent={renderSeparator}
+            data={activityData?.accountActivity?.data || ([] as Activity[])}
+            renderItem={renderFlatlistItem}
+            keyExtractor={keyExtractor}
+            onEndReached={requestMore}
+          />
+        </BottomSheet>
+      )}
     </Box>
   )
 }

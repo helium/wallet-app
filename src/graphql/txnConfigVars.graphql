@@ -1,0 +1,8 @@
+query txnConfigVars {
+  txnConfigVars {
+    txnFeeMultiplier
+    stakingFeeTxnAddGatewayV1
+    stakingFeeTxnAssertLocationV1
+    dcPayloadSize
+  }
+}

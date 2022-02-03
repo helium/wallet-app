@@ -30,7 +30,7 @@ export default (address?: string) => {
   const { data: rewardsToday, error: errorToday } =
     useAccountRewardsSummaryQuery({
       variables: {
-        address,
+        address: address || '',
         minTime: rewardsDates?.yesterday,
         maxTime: rewardsDates?.now,
       },
@@ -42,7 +42,7 @@ export default (address?: string) => {
     useAccountRewardsSummaryQuery({
       fetchPolicy: 'cache-first',
       variables: {
-        address,
+        address: address || '',
         minTime: rewardsDates?.twoDaysAgo,
         maxTime: rewardsDates?.yesterday,
       },

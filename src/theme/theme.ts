@@ -106,7 +106,7 @@ const palette = {
 export const lightThemeColors = {
   ...palette,
 
-  primary: palette.purple500,
+  primary: palette.white,
   secondary: palette.grey300,
   primaryBackground: palette.grey200,
   primaryText: palette.black700,
@@ -124,7 +124,7 @@ export const lightThemeColors = {
 export const darkThemeColors = {
   ...palette,
 
-  primary: palette.purple500,
+  primary: palette.black900,
   secondary: palette.grey900,
   primaryBackground: palette.black800,
   primaryText: palette.white,

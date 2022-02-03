@@ -1,5 +1,5 @@
 query AccountRewardsSummary(
-  $address: String
+  $address: String!
   $minTime: String
   $maxTime: String
 ) {
