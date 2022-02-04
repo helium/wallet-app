@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
-import { useCallback, useMemo } from 'react'
+import { memo, useCallback, useMemo } from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
 import AccountCreatePassphraseScreen from './AccountCreatePassphraseScreen'
 import { OnboardingStackParamList } from './onboardingTypes'
@@ -100,4 +100,4 @@ const OnboardingNavigator = () => {
   )
 }
 
-export default OnboardingNavigator
+export default memo(OnboardingNavigator)

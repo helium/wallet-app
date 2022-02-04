@@ -13,6 +13,7 @@ import { useAsync } from 'react-async-hook'
 import { Address, Keypair, Mnemonic } from '@helium/crypto-react-native'
 import * as SecureStore from 'expo-secure-store'
 import { sortBy, values } from 'lodash'
+import { SecureStorageKeys } from './AppStorageProvider'
 
 export type CSAccount = {
   alias: string
@@ -29,10 +30,6 @@ enum CloudStorageKeys {
   ACCOUNTS = 'accounts',
   CONTACTS = 'contacts',
   VIEW_TYPE = 'viewType',
-}
-
-enum SecureStorageKeys {
-  PIN = 'pin',
 }
 
 export type AccountView = 'unified' | 'split'
@@ -92,10 +89,6 @@ const useAccountStorageHook = () => {
   const [secureAccounts, setSecureAccounts] = useState<SecureAccounts>()
   const [contacts, setContacts] = useState<CSAccount[]>([])
   const [viewType, setViewType] = useState<AccountView>()
-  const [pin, setPin] = useState<{
-    value: string
-    status: 'on' | 'restored' | 'off'
-  }>()
 
   const restored = useMemo(() => secureAccounts !== undefined, [secureAccounts])
 
@@ -200,27 +193,12 @@ const useAccountStorageHook = () => {
     }, {})
 
     setSecureAccounts(nextSecureAccounts)
-
-    // TODO: When performing an account restore pin will not be restored.
-    // Find a way to detect when a restore happens and prompt user for a new pin
-    try {
-      const nextPin = await SecureStore.getItemAsync(SecureStorageKeys.PIN)
-      setPin({ value: nextPin || '', status: nextPin ? 'restored' : 'off' })
-    } catch (e) {
-      console.error(e)
-      setPin({ value: '', status: 'off' })
-    }
   }, [])
 
   const upsertAccount = useCallback(
     async (account: CSAccount & SecureAccount) => {
       const { address, mnemonic, keypair, alias, apiToken } = account
       const secureAccount = { mnemonic, keypair, address, apiToken }
-
-      if (accountAddresses.find((a) => a === address)) {
-        console.error('Duplicate Address')
-        throw Error('Duplicate Address')
-      }
 
       const nextAccounts = {
         ...accounts,
@@ -230,17 +208,18 @@ const useAccountStorageHook = () => {
         },
       }
       setAccounts(nextAccounts)
+      setCurrentAccount(account)
       setSecureAccounts({
         ...secureAccounts,
         [address]: secureAccount,
       })
-      CloudStorage.setItem(
+      await CloudStorage.setItem(
         CloudStorageKeys.ACCOUNTS,
         JSON.stringify(nextAccounts),
       )
       return SecureStore.setItemAsync(address, JSON.stringify(secureAccount))
     },
-    [accountAddresses, accounts, secureAccounts],
+    [accounts, secureAccounts],
   )
 
   const addContact = useCallback(
@@ -259,11 +238,6 @@ const useAccountStorageHook = () => {
   const updateViewType = useCallback(async (nextViewType: AccountView) => {
     setViewType(nextViewType)
     return CloudStorage.setItem(CloudStorageKeys.VIEW_TYPE, nextViewType)
-  }, [])
-
-  const updatePin = useCallback(async (nextPin: string) => {
-    setPin({ value: nextPin, status: nextPin ? 'on' : 'off' })
-    return SecureStore.setItemAsync(SecureStorageKeys.PIN, nextPin)
   }, [])
 
   const createSecureAccount = useCallback(
@@ -297,21 +271,46 @@ const useAccountStorageHook = () => {
     [],
   )
 
-  const signOut = useCallback(async () => {
-    await Promise.all([
-      ...Object.keys(secureAccounts || {}).map((key) =>
-        SecureStore.deleteItemAsync(key),
-      ),
-      SecureStore.deleteItemAsync(SecureStorageKeys.PIN),
-      CloudStorage.multiRemove(Object.values(CloudStorageKeys)),
-    ])
-
-    setAccounts(undefined)
-    setSecureAccounts(undefined)
-    setContacts([])
-    setPin(undefined)
-    setViewType(undefined)
-  }, [secureAccounts])
+  const signOut = useCallback(
+    async (address?: string) => {
+      if (address) {
+        // sign out of specific account
+        await SecureStore.deleteItemAsync(address)
+        let newAccounts: CSAccounts = {}
+        let newSecureAccounts: SecureAccounts = {}
+        if (accounts && accounts[address]) {
+          newAccounts = { ...accounts }
+          delete newAccounts[address]
+        }
+        if (secureAccounts && secureAccounts[address]) {
+          newSecureAccounts = { ...secureAccounts }
+          delete newSecureAccounts[address]
+        }
+        await CloudStorage.setItem(
+          CloudStorageKeys.ACCOUNTS,
+          JSON.stringify(accounts),
+        )
+        setAccounts(newAccounts)
+        setSecureAccounts(newSecureAccounts)
+        setCurrentAccount(accounts ? accounts[0] : undefined)
+      } else {
+        // sign out of all accounts
+        await Promise.all([
+          ...Object.keys(secureAccounts || {}).map((key) =>
+            SecureStore.deleteItemAsync(key),
+          ),
+          SecureStore.deleteItemAsync(SecureStorageKeys.PIN),
+          SecureStore.deleteItemAsync(SecureStorageKeys.LAST_IDLE),
+          CloudStorage.multiRemove(Object.values(CloudStorageKeys)),
+        ])
+        setAccounts({})
+        setSecureAccounts({})
+        setContacts([])
+        setViewType('unified')
+      }
+    },
+    [accounts, secureAccounts],
+  )
 
   return {
     accounts,
@@ -325,13 +324,11 @@ const useAccountStorageHook = () => {
     getKeypair,
     getSecureAccount,
     hasAccounts,
-    pin,
     restored,
     secureAccounts,
     setCurrentAccount,
     signOut,
     sortedAccounts,
-    updatePin,
     updateViewType,
     upsertAccount,
     viewType,
@@ -357,13 +354,11 @@ const initialState = {
   getSecureAccount: () =>
     new Promise<SecureAccount | undefined>((resolve) => resolve(undefined)),
   hasAccounts: false,
-  pin: undefined,
   restored: false,
   secureAccounts: {},
   setCurrentAccount: () => undefined,
   signOut: async () => undefined,
   sortedAccounts: [],
-  updatePin: async () => undefined,
   updateViewType: async () => undefined,
   upsertAccount: async () => undefined,
   viewType: 'unified' as AccountView,

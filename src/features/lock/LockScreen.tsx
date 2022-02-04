@@ -1,28 +1,61 @@
-import React, { memo, useCallback, useEffect, useState } from 'react'
+import React, { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as LocalAuthentication from 'expo-local-authentication'
 import { AnimatePresence } from 'moti'
+import useAppState from 'react-native-appstate-hook'
+import { useAsync } from 'react-async-hook'
+import * as SecureStore from 'expo-secure-store'
 import ConfirmPinView from '../../components/ConfirmPinView'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import useAlert from '../../utils/useAlert'
 import MotiBox from '../../components/MotiBox'
+import {
+  SecureStorageKeys,
+  useAppStorage,
+} from '../../storage/AppStorageProvider'
 
 type Props = { children: React.ReactNode }
 const LockScreen = ({ children }: Props) => {
   const { t } = useTranslation()
-  const { pin, signOut } = useAccountStorage()
-  const [locked, setLocked] = useState(false)
+  const { signOut, hasAccounts } = useAccountStorage()
+  const { appState } = useAppState()
+  const { pin, authInterval, locked, updateLocked } = useAppStorage()
   const { showOKCancelAlert } = useAlert()
 
-  useEffect(() => {
-    if (pin?.status === 'restored') {
-      setLocked(true)
+  // handle app state changes
+  useAsync(async () => {
+    if (locked || !pin || pin?.status === 'off' || !hasAccounts) return
+    if (appState === 'background' || appState === 'inactive') {
+      await SecureStore.setItemAsync(
+        SecureStorageKeys.LAST_IDLE,
+        Date.now().toString(),
+      )
+      return
     }
-  }, [pin, setLocked])
 
-  const handleSuccess = useCallback(() => {
-    setLocked(false)
-  }, [])
+    const lastIdleString = await SecureStore.getItemAsync(
+      SecureStorageKeys.LAST_IDLE,
+    )
+    if (!lastIdleString) return
+
+    const lastIdle = Number.parseInt(lastIdleString, 10)
+    const isActive = appState === 'active'
+    const now = Date.now()
+    const expiration = now - authInterval
+    const lastIdleExpired = lastIdle && expiration > lastIdle
+
+    // pin is required and last idle is past user interval, lock the screen
+    const shouldLock = isActive && lastIdleExpired
+
+    if (shouldLock) {
+      await SecureStore.deleteItemAsync(SecureStorageKeys.LAST_IDLE)
+      await updateLocked(true)
+    }
+  }, [appState, pin, authInterval, updateLocked, locked, hasAccounts])
+
+  const handleSuccess = useCallback(async () => {
+    await updateLocked(false)
+  }, [updateLocked])
 
   const handleSignOut = useCallback(async () => {
     const decision = await showOKCancelAlert({
@@ -30,12 +63,12 @@ const LockScreen = ({ children }: Props) => {
       message: t('auth.signOutAlert.body'),
     })
     if (decision) {
-      signOut()
-      setLocked(false)
+      await signOut()
+      await updateLocked(false)
     }
-  }, [showOKCancelAlert, signOut, t])
+  }, [updateLocked, showOKCancelAlert, signOut, t])
 
-  useEffect(() => {
+  useAsync(async () => {
     if (!locked) return
 
     const localAuth = async () => {
@@ -44,10 +77,10 @@ const LockScreen = ({ children }: Props) => {
       if (!isEnrolled || !hasHardware) return
 
       const { success } = await LocalAuthentication.authenticateAsync()
-      if (success) handleSuccess()
+      if (success) await handleSuccess()
     }
 
-    localAuth()
+    await localAuth()
   }, [handleSuccess, locked])
 
   return (

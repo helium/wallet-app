@@ -7,6 +7,8 @@ export default {
     total: 'Total',
     fee: 'Fee',
     copied: 'Copied',
+    back: 'Back',
+    skip: 'Skip',
   },
   ordinals: [
     '1st',
@@ -168,6 +170,50 @@ export default {
     nickname: {
       title: 'Enter Nickname',
       placeholder: 'e.g. Loki Laufeyson',
+    },
+  },
+  settings: {
+    title: 'Settings',
+    sections: {
+      account: {
+        title: '{{alias}} Account Settings',
+        alias: 'Account Alias',
+        revealWords: 'Reveal Words',
+        signOut: 'Sign Out',
+        signOutAlert: {
+          title: 'Sign Out of {{alias}}',
+          body: 'You are signing out of your account {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your HNT\n- your Wallet',
+        },
+      },
+      security: {
+        title: 'Security Settings',
+        enablePin: 'Enable PIN',
+        requirePin: 'Require PIN',
+        resetPin: 'Reset PIN',
+        requirePinForPayments: 'Require PIN for Payments',
+        authIntervals: {
+          immediately: 'Immediately',
+          after_1_min: 'After 1 minute',
+          after_5_min: 'After 5 minutes',
+          after_15_min: 'After 15 minutes',
+          after_1_hr: 'After 1 hour',
+          after_4_hr: 'After 4 hours',
+        },
+      },
+      app: {
+        title: 'App Settings',
+        convertHntToCurrency: 'Convert HNT to Currency',
+        language: 'Language',
+        currency: 'Currency',
+        version: 'App Version',
+      },
+    },
+    revealWords: {
+      title: 'Your {{numWords}} Word\nPassword',
+      subtitle:
+        'It is crucial you write all of these\n{{numWords}} words down, in order.\n\nHelium cannot recover these words.',
+      warning: 'Helium cannot recover these words',
+      next: 'I have written these down',
     },
   },
 }

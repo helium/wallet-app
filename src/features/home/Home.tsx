@@ -82,10 +82,12 @@ const Home = () => {
     gdrive.files.getJson(file.id).then(setDownloadedAccounts)
   }, [files])
 
+  const handleSignOut = useCallback(() => signOut(), [signOut])
+
   return (
     <SafeAreaBox padding="xl" backgroundColor="primaryBackground" flex={1}>
       <Box flexDirection="row" justifyContent="space-around">
-        <Button title={t('auth.signOut')} onPress={signOut} />
+        <Button title={t('auth.signOut')} onPress={handleSignOut} />
         <Button title="Add Account" onPress={handleAddAccount} />
         {!googleUser && (
           <Button title="Google Sign In" onPress={handleGoogleSignIn} />
