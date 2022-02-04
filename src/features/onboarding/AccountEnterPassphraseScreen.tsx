@@ -93,6 +93,11 @@ const AccountEnterPassphraseScreen = () => {
     setChallengeWords(generateChallengeWords(findTargetWord(step)))
   }, [findTargetWord, step])
 
+  const skip = useCallback(
+    () => navigation.navigate('AccountAssignScreen', params),
+    [navigation, params],
+  )
+
   useEffect(() => {
     resetState()
     const unsubscribe = navigation.addListener('blur', () => {
@@ -175,6 +180,7 @@ const AccountEnterPassphraseScreen = () => {
         ))}
       </Box>
       <Box flex={2} />
+      {__DEV__ && <Button title={t('generic.skip')} onPress={skip} />}
       <Button
         title={t('accountSetup.confirm.forgot')}
         onPress={navigation.goBack}

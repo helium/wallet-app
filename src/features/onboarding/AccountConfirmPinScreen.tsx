@@ -8,6 +8,7 @@ import {
 import ConfirmPinView from '../../components/ConfirmPinView'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useOnboarding } from './OnboardingProvider'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Route = RouteProp<OnboardingStackParamList, 'AccountConfirmPinScreen'>
 
@@ -16,28 +17,24 @@ const AccountConfirmPinScreen = () => {
   const navigation = useNavigation<OnboardingNavigationProp>()
   const { params } = route
   const { t } = useTranslation()
-  const { upsertAccount, updatePin } = useAccountStorage()
+  const { upsertAccount } = useAccountStorage()
+  const { updatePin } = useAppStorage()
   const { reset } = useOnboarding()
 
   const pinSuccess = useCallback(
-    (pin: string) => {
-      if (params.pinReset) {
-        // navigation.navigate('MoreScreen')
-        return
-      }
-
+    async (pin: string) => {
       if (params.account) {
         try {
-          upsertAccount(params.account)
+          await upsertAccount(params.account)
           reset()
         } catch (e) {
           console.error(e)
         }
       }
 
-      updatePin(pin)
+      await updatePin(pin)
     },
-    [params.account, params.pinReset, reset, updatePin, upsertAccount],
+    [params.account, reset, updatePin, upsertAccount],
   )
 
   return (

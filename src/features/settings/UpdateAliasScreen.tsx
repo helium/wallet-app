@@ -1,35 +1,34 @@
 import React, { memo, useCallback, useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
-import { useTranslation } from 'react-i18next'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useAsync } from 'react-async-hook'
 import Box from '../../components/Box'
-import SafeAreaBox from '../../components/SafeAreaBox'
 import TextInput from '../../components/TextInput'
-import { OnboardingNavigationProp } from './onboardingTypes'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import useMount from '../../utils/useMount'
+import {
+  SecureAccount,
+  useAccountStorage,
+} from '../../storage/AccountStorageProvider'
 import FabButton from '../../components/FabButton'
 import { useSpacing } from '../../theme/themeHooks'
-import { useOnboarding } from './OnboardingProvider'
 import AccountIcon from '../../components/AccountIcon'
+import { SettingsNavigationProp } from './settingsTypes'
+import BackScreen from '../../components/BackScreen'
 
-const AccountAssignScreen = () => {
-  const onboardingNav = useNavigation<OnboardingNavigationProp>()
-  const { t } = useTranslation()
+const UpdateAliasScreen = () => {
+  const navigation = useNavigation<SettingsNavigationProp>()
   const [alias, setAlias] = useState('')
-  const {
-    reset,
-    setOnboardingData,
-    onboardingData: { secureAccount },
-  } = useOnboarding()
   const insets = useSafeAreaInsets()
   const spacing = useSpacing()
-  const { upsertAccount, hasAccounts } = useAccountStorage()
+  const { upsertAccount, hasAccounts, currentAccount, getSecureAccount } =
+    useAccountStorage()
+  const [secureAccount, setSecureAccount] = useState<SecureAccount>()
 
-  useMount(() => {
-    setOnboardingData((prev) => ({ ...prev, onboardingType: 'assign' }))
-  })
+  useAsync(async () => {
+    if (!currentAccount) return
+    const account = await getSecureAccount(currentAccount?.address)
+    setSecureAccount(account)
+  }, [currentAccount, getSecureAccount])
 
   const handlePress = useCallback(async () => {
     if (!secureAccount) return
@@ -37,23 +36,16 @@ const AccountAssignScreen = () => {
     if (hasAccounts) {
       try {
         await upsertAccount({ alias, ...secureAccount })
-        onboardingNav.popToTop()
-        reset()
+        navigation.popToTop()
         return
       } catch (e) {
         console.error(e)
-        return
       }
     }
-
-    onboardingNav.navigate('AccountCreatePinScreen', {
-      pinReset: false,
-      account: { ...secureAccount, alias },
-    })
-  }, [secureAccount, hasAccounts, onboardingNav, alias, upsertAccount, reset])
+  }, [secureAccount, hasAccounts, upsertAccount, alias, navigation])
 
   return (
-    <SafeAreaBox
+    <BackScreen
       backgroundColor="primaryBackground"
       flex={1}
       paddingHorizontal={{ smallPhone: 'l', phone: 'xxxl' }}
@@ -70,7 +62,8 @@ const AccountAssignScreen = () => {
             onChangeText={setAlias}
             variant="underline"
             value={alias}
-            placeholder={t('accountAssign.AccountNamePlaceholder')}
+            autoFocus
+            placeholder={currentAccount?.alias}
             autoCorrect={false}
             autoComplete="off"
             marginTop="xl"
@@ -90,7 +83,7 @@ const AccountAssignScreen = () => {
           />
         </Box>
       </KeyboardAvoidingView>
-    </SafeAreaBox>
+    </BackScreen>
   )
 }
 
@@ -98,4 +91,4 @@ const styles = StyleSheet.create({
   container: { width: '100%', flex: 1 },
 })
 
-export default memo(AccountAssignScreen)
+export default memo(UpdateAliasScreen)

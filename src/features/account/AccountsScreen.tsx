@@ -83,7 +83,7 @@ const AccountsScreen = () => {
   const bottomSheetRef = useRef<BottomSheet>(null)
   const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
   const { backgroundStyle: handleStyle } = useOpacity('black500', 1)
-  const { black300, primaryText } = useColors()
+  const { primaryText, primaryIcon } = useColors()
   const carouselRef = useRef<Carousel<CSAccount | null>>(null)
   const { sortedAccounts, currentAccount, setCurrentAccount } =
     useAccountStorage()
@@ -279,6 +279,11 @@ const AccountsScreen = () => {
     [accountNetType, currentAccount, navigation, show],
   )
 
+  const navToSettings = useCallback(
+    () => navigation.navigate('SettingsNavigator'),
+    [navigation],
+  )
+
   return (
     <Box flex={1}>
       <Box minHeight={75} opacity={!currentAccount?.address ? 0 : 100}>
@@ -299,8 +304,11 @@ const AccountsScreen = () => {
               justifyContent="space-between"
               alignItems="center"
             >
-              <TouchableOpacityBox paddingHorizontal="l" onPress={() => {}}>
-                <CogIco color={black300} />
+              <TouchableOpacityBox
+                paddingHorizontal="l"
+                onPress={navToSettings}
+              >
+                <CogIco color={primaryIcon} />
               </TouchableOpacityBox>
               <Box
                 paddingHorizontal="l"
@@ -308,8 +316,8 @@ const AccountsScreen = () => {
                 alignItems="center"
                 visible={accountNetType === NetType.TESTNET}
               >
-                <TestnetIcon color={black300} />
-                <Text marginLeft="xs" variant="subtitle1" color="black300">
+                <TestnetIcon color={primaryIcon} />
+                <Text marginLeft="xs" variant="subtitle1" color="primaryIcon">
                   {t('onboarding.testnet')}
                 </Text>
               </Box>
@@ -317,7 +325,7 @@ const AccountsScreen = () => {
                 paddingHorizontal="l"
                 onPress={handleAddressBook}
               >
-                <AccountIco color={black300} />
+                <AccountIco color={primaryIcon} />
               </TouchableOpacityBox>
             </SafeAreaBox>
           </MotiBox>

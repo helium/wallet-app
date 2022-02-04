@@ -95,6 +95,9 @@ const palette = {
   orange500: '#FFB156',
 
   red500: '#E43B70',
+  red400: '#FF6666',
+  red300: '#F97570',
+  red200: '#F59CA2',
 
   white: '#FFFFFF',
   transparent: '#00000000',
@@ -110,6 +113,7 @@ export const lightThemeColors = {
   secondary: palette.grey300,
   primaryBackground: palette.grey200,
   primaryText: palette.black700,
+  primaryIcon: palette.black700,
   secondaryText: palette.grey400,
   error: palette.red500,
   surface: palette.white,
@@ -128,6 +132,7 @@ export const darkThemeColors = {
   secondary: palette.grey900,
   primaryBackground: palette.black800,
   primaryText: palette.white,
+  primaryIcon: palette.black600,
   secondaryText: palette.grey400,
   error: palette.red500,
   surface: palette.grey600,

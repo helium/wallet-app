@@ -1,5 +1,5 @@
 import { createStackNavigator } from '@react-navigation/stack'
-import React from 'react'
+import React, { memo } from 'react'
 import CreateImportAccountScreen from './CreateImportAccountScreen'
 import OnboardingNavigator from './OnboardingNavigator'
 
@@ -23,4 +23,4 @@ const OnboardingParentNavigator = () => {
     </OnboardingParentStack.Navigator>
   )
 }
-export default OnboardingParentNavigator
+export default memo(OnboardingParentNavigator)

@@ -18,6 +18,7 @@ export type HomeStackParamList = {
         path: string
       }
     | undefined
+  SettingsNavigator: undefined
 }
 
 export type HomeNavigationProp = StackNavigationProp<HomeStackParamList>

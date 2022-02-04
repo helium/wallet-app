@@ -19,7 +19,6 @@ export type OnboardingStackParamList = {
     | undefined
   AccountConfirmPinScreen: {
     pin: string
-    pinReset?: boolean
     account?: SecureAccount & CSAccount
   }
 }
