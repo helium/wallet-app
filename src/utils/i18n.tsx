@@ -9,8 +9,9 @@ import en from '../locales/en'
 const locales = RNLocalize.getLocales()
 
 const numberFormatSettings = RNLocalize.getNumberFormatSettings()
-export const groupSeparator = numberFormatSettings.groupingSeparator
-export const { decimalSeparator } = numberFormatSettings
+export const { decimalSeparator, groupingSeparator: groupSeparator } =
+  numberFormatSettings
+
 export const [currencyType] = RNLocalize.getCurrencies() || ['USD']
 export const usesMetricSystem = RNLocalize.usesMetricSystem()
 

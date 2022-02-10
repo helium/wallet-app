@@ -16,10 +16,10 @@ import TxnReceive from '@assets/images/txnReceive.svg'
 import TxnSend from '@assets/images/txnSend.svg'
 import shortLocale from '../../utils/formatDistance'
 import { Color } from '../../theme/theme'
-import { groupSeparator, decimalSeparator } from '../../utils/i18n'
 import { useColors } from '../../theme/themeHooks'
 import { Activity } from '../../generated/graphql'
 import { accountCurrencyType } from '../../utils/accountUtils'
+import { balanceToString } from '../../utils/Balance'
 
 export const TxnTypeKeys = [
   'rewards_v1',
@@ -216,7 +216,7 @@ const useTxn = (
       if (!amount) return ''
 
       if (amount?.floatBalance === 0) {
-        return amount.toString(undefined, { groupSeparator, decimalSeparator })
+        return balanceToString(amount)
       }
 
       // TODO: Convert between user currency and HNT
@@ -225,10 +225,7 @@ const useTxn = (
       // return `${prefix}${display}`
       // }
 
-      return `${prefix}${amount?.toString(4, {
-        groupSeparator,
-        decimalSeparator,
-      })}`
+      return `${prefix}${balanceToString(amount, { maxDecimalPlaces: 4 })}`
     },
     [],
   )

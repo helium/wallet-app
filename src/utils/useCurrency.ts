@@ -1,10 +1,5 @@
-import Balance, { CurrencyType, NetworkTokens } from '@helium/currency'
-import { round } from 'lodash'
 import { useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useDebouncedCallback } from 'use-debounce'
-import CurrencyFormatter from 'react-native-currency-format'
-import { decimalSeparator, groupSeparator, locale } from './i18n'
 
 export const SUPPORTED_CURRENCIES = {
   AED: 'United Arab Emirates Dirham',
@@ -49,147 +44,20 @@ export const SUPPORTED_CURRENCIES = {
   ZAR: 'South African Rand',
 } as Record<string, string>
 
+//  TODO: Merge this into BalanceProvider? Or Create a new provider?
 const useCurrency = () => {
-  const { t } = useTranslation()
-
-  // TODO
-  const currentPrices = { usd: 30 }
-  const currencyType = 'usd'
-  const convert = false
-
   const toggle = useCallback(() => {
     // TODO
     // dispatch(updateSetting({ key: 'convertHntToCurrency', value: !convert }))
   }, [])
-
-  const formatCurrency = useCallback(
-    async (value: number) => {
-      return CurrencyFormatter.format(value, currencyType)
-    },
-    [currencyType],
-  )
 
   const toggleConvertHntToCurrency = useDebouncedCallback(toggle, 700, {
     leading: true,
     trailing: false,
   })
 
-  const networkTokensToDataCredits = useCallback(
-    async (amount: Balance<NetworkTokens>) => {
-      // const result = await dispatch(fetchCurrentOraclePrice())
-      // const currentOracle = result?.payload as OraclePrice
-
-      const currentOracle = {
-        timestamp: '2022-01-21T23:57:08.000000Z',
-        price: new Balance(2502565000, CurrencyType.usd),
-        block: 1192320,
-      }
-      return amount.toDataCredits(currentOracle.price)
-    },
-    [],
-  )
-
-  const hntToDisplayVal = useCallback(
-    async (amount: number, maxDecimalPlaces = 2) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // TODO
-      const multiplier = currentPrices?.[currencyType.toLowerCase()] || 0
-      const showAsHnt = !convert || !multiplier
-
-      if (showAsHnt) {
-        return round(amount, maxDecimalPlaces).toLocaleString(locale)
-      }
-
-      const convertedValue = multiplier * amount
-      return formatCurrency(convertedValue)
-    },
-    [convert, currencyType, currentPrices, formatCurrency],
-  )
-
-  type StringReturn = (
-    balance: Balance<NetworkTokens>,
-    split?: false | undefined,
-    maxDecimalPlaces?: number,
-  ) => Promise<string>
-  type PartsReturn = (
-    balance: Balance<NetworkTokens>,
-    split?: true,
-    maxDecimalPlaces?: number,
-  ) => Promise<{ integerPart: string; decimalPart: string }>
-  const hntBalanceToDisplayVal = useCallback(
-    async (
-      balance: Balance<NetworkTokens>,
-      split?: boolean,
-      maxDecimalPlaces = 2,
-    ) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // TODO
-      const multiplier = currentPrices?.[currencyType.toLowerCase()] || 0
-
-      const showAsHnt = !convert || !multiplier
-
-      if (showAsHnt) {
-        if (split) {
-          let [intStr, decStr] = balance
-            .toString(undefined, {
-              decimalSeparator,
-              groupSeparator,
-              showTicker: false,
-            })
-            .split(decimalSeparator)
-
-          // when there is no network the toString method from helium js may not work properly
-          if (intStr === '[object Object]') {
-            const balString = balance?.floatBalance?.toString()
-            const [intPart, decPart] = balString.split('.')
-            intStr = intPart
-            decStr = decPart
-          }
-
-          const decimalPart = [
-            decimalSeparator,
-            decStr,
-            ' ',
-            CurrencyType.networkToken.ticker,
-          ].join('')
-
-          return { integerPart: intStr, decimalPart }
-        }
-
-        // when there is no network the toString method from helium js may not work properly
-        const stringBalance = balance.toString(maxDecimalPlaces, {
-          groupSeparator,
-          decimalSeparator,
-        })
-
-        return stringBalance === '[object Object]'
-          ? `${balance?.floatBalance?.toFixed(2)} HNT`
-          : stringBalance
-      }
-
-      try {
-        const convertedValue = multiplier * balance.floatBalance
-        const formattedValue: string = await formatCurrency(convertedValue)
-
-        if (split) {
-          const decimalPart = t('generic.hnt_to_currency', { currencyType })
-          return { integerPart: formattedValue, decimalPart }
-        }
-        return formattedValue
-      } catch (e) {
-        return ''
-      }
-    },
-    [convert, currencyType, currentPrices, formatCurrency, t],
-  ) as StringReturn & PartsReturn
-
   return {
-    networkTokensToDataCredits,
-    hntBalanceToDisplayVal,
     toggleConvertHntToCurrency,
-    hntToDisplayVal,
   }
 }
 

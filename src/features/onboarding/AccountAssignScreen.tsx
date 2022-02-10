@@ -13,6 +13,7 @@ import FabButton from '../../components/FabButton'
 import { useSpacing } from '../../theme/themeHooks'
 import { useOnboarding } from './OnboardingProvider'
 import AccountIcon from '../../components/AccountIcon'
+import { accountNetType } from '../../utils/accountUtils'
 
 const AccountAssignScreen = () => {
   const onboardingNav = useNavigation<OnboardingNavigationProp>()
@@ -36,7 +37,10 @@ const AccountAssignScreen = () => {
 
     if (hasAccounts) {
       try {
-        await upsertAccount({ alias, ...secureAccount })
+        await upsertAccount({
+          alias,
+          ...secureAccount,
+        })
         onboardingNav.popToTop()
         reset()
         return
@@ -48,7 +52,11 @@ const AccountAssignScreen = () => {
 
     onboardingNav.navigate('AccountCreatePinScreen', {
       pinReset: false,
-      account: { ...secureAccount, alias },
+      account: {
+        ...secureAccount,
+        alias,
+        netType: accountNetType(secureAccount.address),
+      },
     })
   }, [secureAccount, hasAccounts, onboardingNav, alias, upsertAccount, reset])
 

@@ -1,13 +1,6 @@
 import React, { useEffect, useMemo } from 'react'
 import { ApolloProvider } from '@apollo/client'
-import {
-  Text,
-  useColorScheme,
-  LogBox,
-  Platform,
-  StatusBar,
-  UIManager,
-} from 'react-native'
+import { Text, LogBox, Platform, StatusBar, UIManager } from 'react-native'
 import { ThemeProvider } from '@shopify/restyle'
 import {
   DarkTheme,
@@ -27,8 +20,9 @@ import useMount from './utils/useMount'
 import OnboardingProvider from './features/onboarding/OnboardingProvider'
 import { RootNavigationProp } from './navigation/rootTypes'
 import AccountSelector from './components/AccountSelector'
-import TransactionProvider from './features/onboarding/TransactionProvider'
+import TransactionProvider from './storage/TransactionProvider'
 import SafeAreaBox from './components/SafeAreaBox'
+import { BalanceProvider } from './utils/Balance'
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -47,6 +41,8 @@ const linking = {
     },
   },
 } as LinkingOptions<RootNavigationProp>
+
+const colorScheme = 'dark' as 'dark' | 'light'
 
 const App = () => {
   LogBox.ignoreLogs([
@@ -67,13 +63,14 @@ const App = () => {
 
   const { client, clientReady, loading } = useApolloClient()
 
-  const colorScheme = useColorScheme()
+  // TODO: Bring this back when we're ready to support dark/light mode
+  // const colorScheme = useColorScheme()
   const colorAdaptedTheme = useMemo(
     () => ({
       ...theme,
       colors: colorScheme === 'light' ? lightThemeColors : darkThemeColors,
     }),
-    [colorScheme],
+    [],
   )
 
   const navTheme = useMemo(
@@ -89,7 +86,7 @@ const App = () => {
       },
     }),
 
-    [colorScheme],
+    [],
   )
 
   useMount(() => {
@@ -120,23 +117,25 @@ const App = () => {
     <ThemeProvider theme={colorAdaptedTheme}>
       <OnboardingProvider>
         <ApolloProvider client={client}>
-          <TransactionProvider clientReady={clientReady}>
-            <LockScreen>
-              {accountsRestored && (
-                <AccountSelector>
-                  {Platform.OS === 'android' && (
-                    <StatusBar translucent backgroundColor="transparent" />
-                  )}
-                  <NavigationContainer theme={navTheme} linking={linking}>
-                    <RootNavigator />
-                  </NavigationContainer>
-                  <SecurityScreen
-                    visible={appState !== 'active' && appState !== 'unknown'}
-                  />
-                </AccountSelector>
-              )}
-            </LockScreen>
-          </TransactionProvider>
+          <BalanceProvider clientReady={clientReady}>
+            <TransactionProvider clientReady={clientReady}>
+              <LockScreen>
+                {accountsRestored && (
+                  <AccountSelector>
+                    {Platform.OS === 'android' && (
+                      <StatusBar translucent backgroundColor="transparent" />
+                    )}
+                    <NavigationContainer theme={navTheme} linking={linking}>
+                      <RootNavigator />
+                    </NavigationContainer>
+                    <SecurityScreen
+                      visible={appState !== 'active' && appState !== 'unknown'}
+                    />
+                  </AccountSelector>
+                )}
+              </LockScreen>
+            </TransactionProvider>
+          </BalanceProvider>
         </ApolloProvider>
       </OnboardingProvider>
     </ThemeProvider>

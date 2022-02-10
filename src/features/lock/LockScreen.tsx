@@ -116,6 +116,7 @@ const LockScreen = ({ children }: Props) => {
               subtitle={t('auth.enterCurrent')}
               pinSuccess={handleSuccess}
               onCancel={handleSignOut}
+              clearable
             />
           </MotiBox>
         )}

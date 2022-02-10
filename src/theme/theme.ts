@@ -36,13 +36,23 @@ const textVariants = {
     color: 'primaryText',
   },
   subtitle1: {
-    fontFamily: Font.regular,
+    fontFamily: Font.medium,
     fontSize: 20,
     color: 'primaryText',
   },
   subtitle2: {
-    fontFamily: Font.regular,
+    fontFamily: Font.medium,
     fontSize: 19,
+    color: 'primaryText',
+  },
+  subtitle3: {
+    fontFamily: Font.medium,
+    fontSize: 17,
+    color: 'primaryText',
+  },
+  subtitle4: {
+    fontFamily: Font.medium,
+    fontSize: 14,
     color: 'primaryText',
   },
   body1: {
@@ -189,7 +199,7 @@ export const theme = createTheme({
   },
   breakpoints: {
     smallPhone: 0,
-    phone: 400,
+    phone: 380,
     tablet: 768,
   },
   cardVariants: {
@@ -229,6 +239,13 @@ export const theme = createTheme({
       fontSize: 19,
       padding: 'm',
       backgroundColor: 'regularInputBackground',
+      borderRadius: 'lm',
+    },
+    transparent: {
+      color: 'primaryText',
+      fontSize: 19,
+      padding: 'm',
+      backgroundColor: 'transparent',
       borderRadius: 'lm',
     },
     underline: {

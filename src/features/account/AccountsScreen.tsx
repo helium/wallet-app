@@ -87,6 +87,7 @@ const AccountsScreen = () => {
   const carouselRef = useRef<Carousel<CSAccount | null>>(null)
   const { sortedAccounts, currentAccount, setCurrentAccount } =
     useAccountStorage()
+  const prevAccount = usePrevious(currentAccount)
   const prevSortedAccounts = usePrevious<CSAccount[] | undefined>(
     sortedAccounts,
   )
@@ -100,6 +101,8 @@ const AccountsScreen = () => {
     },
     fetchPolicy: 'cache-and-network',
     skip: !currentAccount?.address,
+    pollInterval: 10000,
+    // TODO: adjust this interval if needed
   })
 
   const {
@@ -156,6 +159,19 @@ const AccountsScreen = () => {
       null, // needed for account import/create state
     ]
   }, [sortedAccounts])
+
+  useEffect(() => {
+    if (
+      currentAccount?.address &&
+      prevAccount?.address !== currentAccount.address
+    ) {
+      const index = carouselData.findIndex(
+        (acct) => acct?.address === currentAccount.address,
+      )
+      if (index < 0) return
+      carouselRef.current?.snapToItem(index)
+    }
+  }, [carouselData, currentAccount, prevAccount])
 
   const renderCarouselItem = ({ item }: { item: CSAccount | null }) => {
     if (!item) {
@@ -261,12 +277,12 @@ const AccountsScreen = () => {
   const handleActionSelected = useCallback(
     (type: Action) => {
       switch (type) {
-        case 'payment':
+        case 'send':
           navigation.navigate('PaymentScreen', {
             address: currentAccount?.address,
           })
           break
-        case 'stake':
+        case 'payment':
           // TODO: Remove eventually
           if (accountNetType !== NetType.TESTNET) return
           navigation.navigate('WifiOnboard')
@@ -398,7 +414,6 @@ const AccountsScreen = () => {
                   }}
                 >
                   <AccountView
-                    address={d?.address || ''}
                     onLayoutChange={handleAccountViewLayoutChange}
                     onActionSelected={handleActionSelected}
                     visible={visible}

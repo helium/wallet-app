@@ -3,6 +3,7 @@ import React, {
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from 'react'
@@ -10,14 +11,21 @@ import { Platform } from 'react-native'
 import iCloudStorage from 'react-native-icloudstore'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useAsync } from 'react-async-hook'
-import { Address, Keypair, Mnemonic } from '@helium/crypto-react-native'
+import {
+  Address,
+  Keypair,
+  Mnemonic,
+  NetType,
+} from '@helium/crypto-react-native'
 import * as SecureStore from 'expo-secure-store'
 import { sortBy, values } from 'lodash'
 import { SecureStorageKeys } from './AppStorageProvider'
+import { accountNetType, AccountNetTypeOpt } from '../utils/accountUtils'
 
 export type CSAccount = {
   alias: string
   address: string
+  netType: NetType.NetType
 }
 
 export type CSAccounts = Record<string, CSAccount>
@@ -88,6 +96,7 @@ const useAccountStorageHook = () => {
   const [accounts, setAccounts] = useState<CSAccounts>()
   const [secureAccounts, setSecureAccounts] = useState<SecureAccounts>()
   const [contacts, setContacts] = useState<CSAccount[]>([])
+  const [currentContact, setCurrentContact] = useState<CSAccount>()
   const [viewType, setViewType] = useState<AccountView>()
 
   const restored = useMemo(() => secureAccounts !== undefined, [secureAccounts])
@@ -103,6 +112,53 @@ const useAccountStorageHook = () => {
   )
 
   const sortedAccounts = useMemo(() => sortAccounts(accounts || {}), [accounts])
+
+  const sortedTestnetAccounts = useMemo(
+    () => sortedAccounts.filter(({ netType }) => netType === NetType.TESTNET),
+    [sortedAccounts],
+  )
+
+  const sortedMainnetAccounts = useMemo(
+    () => sortedAccounts.filter(({ netType }) => netType === NetType.MAINNET),
+    [sortedAccounts],
+  )
+
+  const sortedAccountsForNetType = useCallback(
+    (netType: AccountNetTypeOpt) => {
+      if (netType === NetType.MAINNET) return sortedMainnetAccounts
+      if (netType === NetType.TESTNET) return sortedTestnetAccounts
+      return sortedAccounts
+    },
+    [sortedAccounts, sortedMainnetAccounts, sortedTestnetAccounts],
+  )
+
+  const testnetContacts = useMemo(
+    () => contacts.filter(({ netType }) => netType === NetType.TESTNET),
+    [contacts],
+  )
+
+  const mainnetContacts = useMemo(
+    () => contacts.filter(({ netType }) => netType === NetType.MAINNET),
+    [contacts],
+  )
+
+  const contactsForNetType = useCallback(
+    (netType: AccountNetTypeOpt) => {
+      if (netType === NetType.MAINNET) return mainnetContacts
+      if (netType === NetType.TESTNET) return testnetContacts
+      return contacts
+    },
+    [contacts, mainnetContacts, testnetContacts],
+  )
+
+  useEffect(() => {
+    if (!currentAccount || !currentContact) return
+
+    if (currentAccount?.netType !== currentContact?.netType) {
+      setCurrentContact(undefined)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentAccount])
 
   const currentApiToken = useMemo(() => {
     if (!currentAccount?.address) return
@@ -171,9 +227,22 @@ const useAccountStorageHook = () => {
     const restoredContacts = await getFromCloudStorage<CSAccount[]>(
       CloudStorageKeys.CONTACTS,
     )
+    // TODO: This can be removed eventually, it's needed for backwards compatability
+    restoredContacts?.forEach((acct) => {
+      // eslint-disable-next-line no-param-reassign
+      acct.netType = accountNetType(acct.address)
+    })
+
     setContacts(restoredContacts || [])
 
     const cloudAccounts = await getAccounts()
+
+    // TODO: This can be removed eventually, it's needed for backwards compatability
+    Object.keys(cloudAccounts).forEach((key) => {
+      const acct = cloudAccounts[key]
+      acct.netType = accountNetType(acct.address)
+    })
+
     setAccounts(cloudAccounts)
     if (Object.keys(cloudAccounts).length) {
       const [first] = sortAccounts(cloudAccounts)
@@ -196,19 +265,22 @@ const useAccountStorageHook = () => {
   }, [])
 
   const upsertAccount = useCallback(
-    async (account: CSAccount & SecureAccount) => {
+    async (account: Omit<CSAccount & SecureAccount, 'netType'>) => {
       const { address, mnemonic, keypair, alias, apiToken } = account
       const secureAccount = { mnemonic, keypair, address, apiToken }
 
-      const nextAccounts = {
+      const nextAccount: CSAccount = {
+        alias,
+        address: account.address,
+        netType: accountNetType(account.address),
+      }
+
+      const nextAccounts: CSAccounts = {
         ...accounts,
-        [account.address]: {
-          alias,
-          address: account.address,
-        },
+        [account.address]: nextAccount,
       }
       setAccounts(nextAccounts)
-      setCurrentAccount(account)
+      setCurrentAccount(nextAccount)
       setSecureAccounts({
         ...secureAccounts,
         [address]: secureAccount,
@@ -288,7 +360,7 @@ const useAccountStorageHook = () => {
         }
         await CloudStorage.setItem(
           CloudStorageKeys.ACCOUNTS,
-          JSON.stringify(accounts),
+          JSON.stringify(newAccounts),
         )
         setAccounts(newAccounts)
         setSecureAccounts(newSecureAccounts)
@@ -317,18 +389,26 @@ const useAccountStorageHook = () => {
     accountAddresses,
     addContact,
     contacts,
+    contactsForNetType,
     createSecureAccount,
     currentAccount,
     currentApiToken,
+    currentContact,
     getApiToken,
     getKeypair,
     getSecureAccount,
     hasAccounts,
+    mainnetContacts,
     restored,
     secureAccounts,
     setCurrentAccount,
+    setCurrentContact,
     signOut,
     sortedAccounts,
+    sortedAccountsForNetType,
+    sortedMainnetAccounts,
+    sortedTestnetAccounts,
+    testnetContacts,
     updateViewType,
     upsertAccount,
     viewType,
@@ -340,6 +420,7 @@ const initialState = {
   accountAddresses: [],
   addContact: async () => undefined,
   contacts: [],
+  contactsForNetType: () => [],
   createSecureAccount: async () => ({
     mnemonic: [],
     keypair: { pk: '', sk: '' },
@@ -347,6 +428,7 @@ const initialState = {
   }),
   currentAccount: undefined,
   currentApiToken: undefined,
+  currentContact: undefined,
   getApiToken: (_address?: string) =>
     new Promise<string>((resolve) => resolve('')),
   getKeypair: () =>
@@ -354,11 +436,17 @@ const initialState = {
   getSecureAccount: () =>
     new Promise<SecureAccount | undefined>((resolve) => resolve(undefined)),
   hasAccounts: false,
+  mainnetContacts: [],
   restored: false,
   secureAccounts: {},
   setCurrentAccount: () => undefined,
+  setCurrentContact: () => undefined,
   signOut: async () => undefined,
   sortedAccounts: [],
+  sortedAccountsForNetType: () => [],
+  sortedMainnetAccounts: [],
+  sortedTestnetAccounts: [],
+  testnetContacts: [],
   updateViewType: async () => undefined,
   upsertAccount: async () => undefined,
   viewType: 'unified' as AccountView,

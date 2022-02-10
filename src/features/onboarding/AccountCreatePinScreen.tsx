@@ -9,6 +9,7 @@ import {
   OnboardingNavigationProp,
   OnboardingStackParamList,
 } from './onboardingTypes'
+import { KeypadInput } from '../../components/KeypadButton'
 
 type Route = RouteProp<OnboardingStackParamList, 'AccountCreatePinScreen'>
 const AccountCreatePinScreen = () => {
@@ -35,12 +36,14 @@ const AccountCreatePinScreen = () => {
     return unsubscribe
   }, [navigation])
 
-  const handleBackspace = useCallback(() => {
-    setPin((val) => val.slice(0, -1))
-  }, [])
-
-  const handleNumber = useCallback((num: number) => {
-    setPin((val) => (val.length < 6 ? val + num : val))
+  const handlePress = useCallback((input?: KeypadInput) => {
+    if (typeof input === 'number') {
+      setPin((val) => (val.length < 6 ? val + input : val))
+    } else if (input === 'backspace') {
+      setPin((val) => val.slice(0, -1))
+    } else {
+      setPin('')
+    }
   }, [])
 
   return (
@@ -66,12 +69,7 @@ const AccountCreatePinScreen = () => {
         {t('accountSetup.createPin.subtitle')}
       </Text>
       <PinDisplay length={pin.length} marginVertical="xl" />
-      <Keypad
-        onBackspacePress={handleBackspace}
-        onNumberPress={handleNumber}
-        onCustomButtonPress={params?.pinReset ? navigation.goBack : undefined}
-        customButtonTitle={t('generic.cancel')}
-      />
+      <Keypad flex={2} customButtonType="cancel" onPress={handlePress} />
       <Box flex={1} />
     </Box>
   )

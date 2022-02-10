@@ -19,6 +19,7 @@ export type HomeStackParamList = {
       }
     | undefined
   SettingsNavigator: undefined
+  AddNewContact: undefined
 }
 
 export type HomeNavigationProp = StackNavigationProp<HomeStackParamList>

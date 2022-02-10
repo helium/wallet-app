@@ -1,120 +1,49 @@
-import React, { useCallback, useMemo } from 'react'
-import Backspace from '@assets/images/backspace.svg'
+import React, { useCallback } from 'react'
+import { BoxProps } from '@shopify/restyle'
 import useHaptic from '../utils/useHaptic'
 import Box from './Box'
-import Text from './Text'
-import TouchableCircle from './TouchableCircle'
-import { useColors } from '../theme/themeHooks'
+import KeypadButton, { KeypadCustomInput, KeypadInput } from './KeypadButton'
+import { Theme } from '../theme/theme'
 
 type Props = {
-  onNumberPress: (value: number) => void
-  onBackspacePress: () => void
-  onCustomButtonPress?: () => void
-  customButtonTitle?: string
-}
-const Key = ({
-  children,
-  onPressIn,
-}: {
-  children: React.ReactNode
-  onPressIn: () => void
-}) => {
+  onPress?: (value?: KeypadInput) => void
+  customButtonType?: KeypadCustomInput
+} & BoxProps<Theme>
+
+const Keypad = ({ onPress, customButtonType, ...boxProps }: Props) => {
   const { triggerImpact } = useHaptic()
 
-  const handlePressIn = useCallback(() => {
-    triggerImpact()
-    onPressIn()
-  }, [onPressIn, triggerImpact])
-
-  return (
-    <TouchableCircle
-      alignItems="center"
-      marginBottom="xs"
-      flexBasis="33%"
-      onPressIn={handlePressIn}
-    >
-      {children}
-    </TouchableCircle>
-  )
-}
-
-const Keypad = ({
-  onNumberPress,
-  onCustomButtonPress,
-  onBackspacePress,
-  customButtonTitle,
-}: Props) => {
-  const { triggerImpact } = useHaptic()
-  const colors = useColors()
-
-  const renderDynamicButton = useMemo(() => {
-    if (onCustomButtonPress && customButtonTitle) {
-      return (
-        <Key onPressIn={onCustomButtonPress}>
-          <Text
-            variant="h1"
-            fontSize={20}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            padding="s"
-          >
-            {customButtonTitle}
-          </Text>
-        </Key>
-      )
-    }
-    return <Box flexBasis="33%" />
-  }, [customButtonTitle, onCustomButtonPress])
-
-  const onPressIn = useCallback(
-    (value: number) => () => {
+  const handlePress = useCallback(
+    (value?: KeypadInput) => {
       triggerImpact()
-      onNumberPress(value)
+      onPress?.(value)
     },
-    [onNumberPress, triggerImpact],
+    [onPress, triggerImpact],
   )
-  const handleBackspace = useCallback(() => {
-    triggerImpact()
-    onBackspacePress()
-  }, [onBackspacePress, triggerImpact])
 
   return (
-    <Box
-      flexDirection="row"
-      flexWrap="wrap"
-      justifyContent="space-around"
-      alignContent="center"
-    >
-      {[...Array(9).keys()].map((idx) => (
-        <TouchableCircle
-          alignItems="center"
-          marginBottom="xs"
-          flexBasis="33%"
-          onPressIn={onPressIn(idx + 1)}
-          key={idx}
-        >
-          <Text variant="h1">{idx + 1}</Text>
-        </TouchableCircle>
-      ))}
-
-      {renderDynamicButton}
-
-      <TouchableCircle
-        alignItems="center"
-        marginBottom="xs"
-        flexBasis="33%"
-        onPressIn={onPressIn(0)}
-      >
-        <Text variant="h1">{0}</Text>
-      </TouchableCircle>
-      <TouchableCircle
-        alignItems="center"
-        marginBottom="xs"
-        flexBasis="33%"
-        onPressIn={handleBackspace}
-      >
-        <Backspace color={colors.primaryText} height={24} width={24} />
-      </TouchableCircle>
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    <Box flex={1} {...boxProps}>
+      <Box flex={1} flexDirection="row">
+        {[...Array(3).keys()].map((idx) => (
+          <KeypadButton value={idx + 1} onPress={handlePress} key={idx + 1} />
+        ))}
+      </Box>
+      <Box flex={1} flexDirection="row">
+        {[...Array(3).keys()].map((idx) => (
+          <KeypadButton value={idx + 4} onPress={handlePress} key={idx + 4} />
+        ))}
+      </Box>
+      <Box flex={1} flexDirection="row">
+        {[...Array(3).keys()].map((idx) => (
+          <KeypadButton value={idx + 7} onPress={handlePress} key={idx + 7} />
+        ))}
+      </Box>
+      <Box flex={1} flexDirection="row">
+        <KeypadButton value={customButtonType} onPress={handlePress} />
+        <KeypadButton value={0} onPress={handlePress} />
+        <KeypadButton value="backspace" onPress={handlePress} />
+      </Box>
     </Box>
   )
 }

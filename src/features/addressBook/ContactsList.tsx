@@ -12,12 +12,30 @@ import {
 import FabButton from '../../components/FabButton'
 import AccountIcon from '../../components/AccountIcon'
 import SearchInput from '../../components/SearchInput'
+import { AccountNetTypeOpt } from '../../utils/accountUtils'
 
-type Props = { onAddNew: () => void }
-const ContactsList = ({ onAddNew }: Props) => {
-  const { contacts } = useAccountStorage()
+type Props = {
+  onAddNew: () => void
+  handleFinished?: () => void
+  netTypeOpt?: AccountNetTypeOpt
+}
+const ContactsList = ({
+  onAddNew,
+  handleFinished,
+  netTypeOpt = 'all' as AccountNetTypeOpt,
+}: Props) => {
+  const { contacts, setCurrentContact, contactsForNetType } =
+    useAccountStorage()
   const { t } = useTranslation()
   const [searchTerm, setSearchTerm] = useState('')
+
+  const handleContactPressed = useCallback(
+    (item: CSAccount) => () => {
+      setCurrentContact(item)
+      handleFinished?.()
+    },
+    [handleFinished, setCurrentContact],
+  )
 
   const renderFlatlistItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
@@ -28,6 +46,7 @@ const ContactsList = ({ onAddNew }: Props) => {
           paddingVertical="ms"
           paddingHorizontal="xl"
           flexDirection="row"
+          onPress={handleContactPressed(item)}
           alignItems="center"
         >
           <AccountIcon size={40} address={item.address} />
@@ -37,7 +56,7 @@ const ContactsList = ({ onAddNew }: Props) => {
         </TouchableOpacityBox>
       )
     },
-    [],
+    [handleContactPressed],
   )
 
   const header = useMemo(() => {
@@ -77,7 +96,7 @@ const ContactsList = ({ onAddNew }: Props) => {
   }, [])
 
   const data = useMemo(() => {
-    let listData = contacts
+    let listData = contactsForNetType(netTypeOpt)
     if (searchTerm.trim()) {
       listData = new Fuse(contacts, {
         keys: ['alias'],
@@ -89,7 +108,7 @@ const ContactsList = ({ onAddNew }: Props) => {
         })
     }
     return listData.sort((a, b) => a.alias.localeCompare(b.alias))
-  }, [contacts, searchTerm])
+  }, [contacts, contactsForNetType, netTypeOpt, searchTerm])
 
   return (
     <FlatList

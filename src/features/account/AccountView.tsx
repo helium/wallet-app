@@ -1,5 +1,4 @@
-import Balance, { CurrencyType } from '@helium/currency'
-import React, { memo, useCallback, useMemo } from 'react'
+import React, { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import DC from '@assets/images/dc.svg'
 import Helium from '@assets/images/helium.svg'
@@ -12,11 +11,10 @@ import Text from '../../components/Text'
 import { useColors } from '../../theme/themeHooks'
 import FabButton from '../../components/FabButton'
 import { AccountData } from '../../generated/graphql'
-import { accountCurrencyType } from '../../utils/accountUtils'
+import { balanceToString, useAccountBalances } from '../../utils/Balance'
 
 export type Action = 'send' | 'payment' | 'request' | 'stake' | 'lock'
 type Props = {
-  address: string
   accountData: AccountData | null | undefined
   visible: boolean
   onLayoutChange?: (layout: LayoutRectangle) => void
@@ -28,23 +26,12 @@ const AccountView = ({
   visible: _visible,
   onLayoutChange,
   onActionSelected,
-  address: _address,
   netType,
 }: Props) => {
   const { t } = useTranslation()
   const colors = useColors()
 
-  const displayVals = useMemo(() => {
-    if (!accountData) return
-    const currencyType = accountCurrencyType(_address)
-
-    return {
-      hnt: new Balance(accountData.balance || 0, currencyType),
-      dc: new Balance(accountData.dcBalance || 0, CurrencyType.dataCredit),
-      stakedHnt: new Balance(accountData.stakedBalance || 0, currencyType),
-      hst: new Balance(accountData.secBalance || 0, CurrencyType.security),
-    }
-  }, [_address, accountData])
+  const displayVals = useAccountBalances(accountData)
 
   const handleLayout = useCallback(
     (event: LayoutChangeEvent) => {
@@ -88,7 +75,9 @@ const AccountView = ({
         </Text>
       </Box>
       {/* TODO: Make this convert to their currency of choice */}
-      <Text variant="h0">{displayVals?.hnt.toString(2)}</Text>
+      <Text variant="h0">
+        {balanceToString(displayVals?.hnt, { maxDecimalPlaces: 2 })}
+      </Text>
       <Box flexDirection="row" marginTop="s">
         <Surface
           flexDirection="row"
@@ -99,7 +88,10 @@ const AccountView = ({
         >
           <Helium color={colors.blueBright500} />
           <Text variant="body2" marginLeft="sx">
-            {displayVals?.stakedHnt.toString(2, { showTicker: false })}
+            {balanceToString(displayVals?.stakedHnt, {
+              maxDecimalPlaces: 2,
+              showTicker: false,
+            })}
           </Text>
         </Surface>
         <Surface
@@ -111,7 +103,10 @@ const AccountView = ({
         >
           <DC />
           <Text variant="body2" marginLeft="sx">
-            {displayVals?.hst.toString(2, { showTicker: false })}
+            {balanceToString(displayVals?.dc, {
+              maxDecimalPlaces: 2,
+              showTicker: false,
+            })}
           </Text>
         </Surface>
         <Surface
@@ -122,7 +117,10 @@ const AccountView = ({
         >
           <Helium color={colors.purple500} />
           <Text variant="body2" marginLeft="sx">
-            {displayVals?.hst.toString(2, { showTicker: false })}
+            {balanceToString(displayVals?.hst, {
+              maxDecimalPlaces: 2,
+              showTicker: false,
+            })}
           </Text>
         </Surface>
       </Box>
