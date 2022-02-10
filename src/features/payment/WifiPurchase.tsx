@@ -3,13 +3,14 @@ import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
 import WifiLogo from '@assets/images/wifiLogo.svg'
 import ChevronDown from '@assets/images/chevronDown.svg'
-import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Balance, { CurrencyType } from '@helium/currency'
 import Lock from '@assets/images/lockClosed.svg'
 import { LayoutChangeEvent, Platform } from 'react-native'
 import { useAsync } from 'react-async-hook'
 import { NetworkInfo } from 'react-native-network-info'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
+import { NetType } from '@helium/crypto-react-native'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import { useColors, useHitSlop } from '../../theme/themeHooks'
@@ -20,10 +21,7 @@ import { useAnimateTransition } from '../../utils/animateTransition'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import AccountIcon from '../../components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import {
-  AccountsType,
-  useAccountSelector,
-} from '../../components/AccountSelector'
+import { useAccountSelector } from '../../components/AccountSelector'
 import {
   authorize,
   enableMac,
@@ -33,9 +31,13 @@ import {
   SessionType,
   submitBurnTxn,
 } from '../../utils/httpClient/scManagerClient'
-import { useTransactions } from '../onboarding/TransactionProvider'
+import { useTransactions } from '../../storage/TransactionProvider'
 import useAlert from '../../utils/useAlert'
-import SafeAreaBox from '../../components/SafeAreaBox'
+import SafeAreaBox, {
+  useModalSafeAreaEdges,
+} from '../../components/SafeAreaBox'
+import { AccountNetTypeOpt } from '../../utils/accountUtils'
+import { balanceToString } from '../../utils/Balance'
 
 const TIMER_SECONDS = 15 * 60 // 15 minutes
 const WifiPurchase = () => {
@@ -54,7 +56,7 @@ const WifiPurchase = () => {
   const [viewState, setViewState] = useState<'select' | 'confirm' | 'submit'>(
     'select',
   )
-  const [accountsType] = useState<AccountsType>('testnet')
+  const [accountsType] = useState<AccountNetTypeOpt>(NetType.TESTNET)
   const [dataIndex, setDataIndex] = useState(0)
   const [timerSeconds, setTimerSeconds] = useState(0)
   const [iPAddress, setIPAddress] = useState<string | null>(null)
@@ -64,6 +66,7 @@ const WifiPurchase = () => {
   const timerRef = useRef<NodeJS.Timeout>()
   const { showAccountTypes } = useAccountSelector()
   const { showOKAlert } = useAlert()
+  const edges = useModalSafeAreaEdges()
 
   useEffect(() => {
     changeNavigationBarColor(surfaceSecondary, true, false)
@@ -151,7 +154,7 @@ const WifiPurchase = () => {
   const accountBalance = useMemo(() => {
     if (!scAccount?.user.balance) return
 
-    if (accountsType === 'testnet')
+    if (accountsType === NetType.TESTNET)
       return new Balance(scAccount?.user.balance, CurrencyType.testNetworkToken)
 
     return new Balance(scAccount?.user.balance, CurrencyType.networkToken)
@@ -280,7 +283,7 @@ const WifiPurchase = () => {
 
   const remainingBalance = useMemo(() => {
     if (!accountBalance || !priceBalance || !oraclePrice) return
-    if (accountsType === 'testnet') {
+    if (accountsType === NetType.TESTNET) {
       return accountBalance.minus(priceBalance.toTestNetworkTokens(oraclePrice))
     }
     return accountBalance.minus(priceBalance.toTestNetworkTokens(oraclePrice))
@@ -307,17 +310,16 @@ const WifiPurchase = () => {
     )
   }, [hasSufficientAccountBalance, scAccount, viewState])
 
-  const safeAreaEdges = useMemo(() => {
-    if (Platform.OS === 'android') return ['top'] as Edge[]
-    return [] as Edge[]
-  }, [])
-
   const tokenPrice = useMemo(() => {
     if (!oraclePrice) return ''
-    if (accountsType === 'testnet') {
-      return priceBalance.toTestNetworkTokens(oraclePrice).toString(4)
+    if (accountsType === NetType.TESTNET) {
+      return balanceToString(priceBalance.toTestNetworkTokens(oraclePrice), {
+        maxDecimalPlaces: 4,
+      })
     }
-    return priceBalance.toNetworkTokens(oraclePrice).toString(4)
+    return balanceToString(priceBalance.toNetworkTokens(oraclePrice), {
+      maxDecimalPlaces: 4,
+    })
   }, [accountsType, oraclePrice, priceBalance])
 
   const positiveButtonText = useMemo(() => {
@@ -329,12 +331,7 @@ const WifiPurchase = () => {
   }, [isAnimating, t, viewState])
 
   return (
-    <SafeAreaBox
-      flex={1}
-      alignItems="center"
-      paddingTop="l"
-      edges={safeAreaEdges}
-    >
+    <SafeAreaBox flex={1} alignItems="center" paddingTop="l" edges={edges}>
       <WifiLogo color={primaryText} />
 
       {viewState === 'select' && (
@@ -482,13 +479,15 @@ const WifiPurchase = () => {
             <Text variant="body1" color="primaryText">
               {t('generic.total')}
             </Text>
-            {accountsType === 'mainnet' && (
+            {accountsType === NetType.MAINNET && (
               <Text variant="body1" color="primaryText" fontSize={25}>
                 {/* TODO: Convert to locale currency */}
-                {priceBalance.toUsd(oraclePrice).toString(2)}
+                {balanceToString(priceBalance.toUsd(oraclePrice), {
+                  maxDecimalPlaces: 2,
+                })}
               </Text>
             )}
-            {accountsType === 'testnet' && (
+            {accountsType === NetType.TESTNET && (
               <Text variant="body1" color="primaryText" fontSize={25}>
                 {/* TODO: Convert to locale currency */}
                 $xx.00 USD
@@ -515,19 +514,23 @@ const WifiPurchase = () => {
                 {t('wifi.remainingBalance')}
               </Text>
               <Text variant="body1" color="primaryText" fontSize={25}>
-                {remainingBalance?.toString(3)}
+                {balanceToString(remainingBalance, {
+                  maxDecimalPlaces: 3,
+                })}
               </Text>
             </Box>
-            {hasSufficientAccountBalance && accountsType === 'testnet' && (
+            {hasSufficientAccountBalance && accountsType === NetType.TESTNET && (
               <Text variant="body1" color="secondaryText" alignSelf="flex-end">
                 {/* TODO: Convert to locale currency */}
                 {'(TNT) => Dollars'}
               </Text>
             )}
-            {hasSufficientAccountBalance && accountsType === 'mainnet' && (
+            {hasSufficientAccountBalance && accountsType === NetType.MAINNET && (
               <Text variant="body1" color="secondaryText" alignSelf="flex-end">
                 {/* TODO: Convert to locale currency */}
-                {remainingBalance?.toUsd(oraclePrice).toString(2)}
+                {balanceToString(remainingBalance?.toUsd(oraclePrice), {
+                  maxDecimalPlaces: 2,
+                })}
               </Text>
             )}
 

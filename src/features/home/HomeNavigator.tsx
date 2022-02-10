@@ -6,6 +6,7 @@ import PaymentScreen from '../payment/PaymentScreen'
 import WifiPurchase from '../payment/WifiPurchase'
 import AddressBookNavigator from '../addressBook/AddressBookNavigator'
 import SettingsNavigator from '../settings/SettingsNavigator'
+import AddNewContact from '../addressBook/AddNewContact'
 
 const HomeStack = createStackNavigator()
 
@@ -37,6 +38,7 @@ const HomeStackScreen = () => {
         component={SettingsNavigator}
         options={{ presentation: 'transparentModal' }}
       />
+      <HomeStack.Screen name="AddNewContact" component={AddNewContact} />
     </HomeStack.Navigator>
   )
 }

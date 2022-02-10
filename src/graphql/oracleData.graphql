@@ -1,4 +1,4 @@
-query HeliumData($address: String!) {
+query OracleData($address: String!) {
   currentOraclePrice(address: $address) {
     price
   }

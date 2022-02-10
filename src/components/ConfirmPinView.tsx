@@ -7,6 +7,7 @@ import Keypad from './Keypad'
 import useHaptic from '../utils/useHaptic'
 import Box from './Box'
 import TouchableOpacityBox from './TouchableOpacityBox'
+import { KeypadInput } from './KeypadButton'
 
 type Props = {
   originalPin: string
@@ -66,48 +67,59 @@ const ConfirmPinView = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pin])
 
-  const handleBackspace = useCallback(() => {
-    setPin((val) => val.slice(0, -1))
-  }, [])
-
-  const handleNumber = useCallback((num: number) => {
-    setPin((val) => (val.length < 6 ? val + num : val))
-  }, [])
-
-  const handleClear = useCallback(() => {
-    setPin('')
-  }, [])
+  const handlePress = useCallback(
+    (input?: KeypadInput) => {
+      if (typeof input === 'number') {
+        setPin((val) => (val.length < 6 ? val + input : val))
+      } else if (input === 'backspace') {
+        setPin((val) => val.slice(0, -1))
+      } else if (input === 'clear') {
+        setPin('')
+      } else {
+        onCancel?.()
+      }
+    },
+    [onCancel],
+  )
 
   return (
     <Box
+      backgroundColor="primaryBackground"
       flex={1}
       paddingHorizontal="xl"
       justifyContent="center"
-      backgroundColor="primaryBackground"
       alignItems="center"
     >
       <Box flex={1} />
-      <Text marginBottom="m" variant="h1" maxFontSizeMultiplier={1}>
+      <Text
+        marginBottom="m"
+        variant="h1"
+        maxFontSizeMultiplier={1}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+      >
         {title}
       </Text>
 
-      <Text variant="body1">{subtitle}</Text>
+      <Text variant="body1" maxFontSizeMultiplier={1.2}>
+        {subtitle}
+      </Text>
       <Animated.View style={{ transform: [{ translateX: shakeAnim.current }] }}>
         <PinDisplay length={pin.length} marginVertical="xl" />
       </Animated.View>
       <Keypad
-        customButtonTitle={clearable ? t('generic.clear') : t('generic.cancel')}
-        onCustomButtonPress={clearable ? handleClear : onCancel}
-        onBackspacePress={handleBackspace}
-        onNumberPress={handleNumber}
+        flex={2}
+        customButtonType={clearable ? 'clear' : 'cancel'}
+        onPress={handlePress}
       />
-      <Box flex={1} justifyContent="center">
+      <Box alignItems="center">
         {clearable && onCancel && (
           <TouchableOpacityBox padding="l" onPress={onCancel}>
             <Text variant="body1">{t('auth.signOut')}</Text>
           </TouchableOpacityBox>
         )}
       </Box>
+      <Box flex={1} />
     </Box>
   )
 }

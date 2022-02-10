@@ -6,6 +6,7 @@ import PinDisplay from '../../components/PinDisplay'
 import Keypad from '../../components/Keypad'
 import Box from '../../components/Box'
 import { SettingsNavigationProp } from './settingsTypes'
+import { KeypadInput } from '../../components/KeypadButton'
 
 const SettingsCreatePinScreen = () => {
   const { t } = useTranslation()
@@ -28,12 +29,14 @@ const SettingsCreatePinScreen = () => {
     })
   }, [navigation])
 
-  const handleBackspace = useCallback(() => {
-    setPin((val) => val.slice(0, -1))
-  }, [])
-
-  const handleNumber = useCallback((num: number) => {
-    setPin((val) => (val.length < 6 ? val + num : val))
+  const handlePress = useCallback((input?: KeypadInput) => {
+    if (typeof input === 'number') {
+      setPin((val) => (val.length < 6 ? val + input : val))
+    } else if (input === 'backspace') {
+      setPin((val) => val.slice(0, -1))
+    } else {
+      setPin('')
+    }
   }, [])
 
   return (
@@ -59,12 +62,7 @@ const SettingsCreatePinScreen = () => {
         {t('accountSetup.createPin.subtitle')}
       </Text>
       <PinDisplay length={pin.length} marginVertical="xl" />
-      <Keypad
-        onBackspacePress={handleBackspace}
-        onNumberPress={handleNumber}
-        onCustomButtonPress={navigation.goBack}
-        customButtonTitle={t('generic.cancel')}
-      />
+      <Keypad flex={2} customButtonType="cancel" onPress={handlePress} />
       <Box flex={1} />
     </Box>
   )

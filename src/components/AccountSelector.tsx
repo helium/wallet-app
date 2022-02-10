@@ -16,31 +16,31 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
 import { GestureResponderEvent } from 'react-native'
+import { NetType } from '@helium/crypto-react-native'
 import { CSAccount, useAccountStorage } from '../storage/AccountStorageProvider'
 import AccountIcon from './AccountIcon'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import { useColors, useOpacity, useSpacing } from '../theme/themeHooks'
 import Box from './Box'
-import { isMainnet, isTestnet } from '../utils/accountUtils'
+import { AccountNetTypeOpt } from '../utils/accountUtils'
 
 const initialState = {
-  show: (_type?: AccountsType) => undefined,
-  showAccountTypes: (_type: AccountsType) => () => undefined,
+  show: (_type?: AccountNetTypeOpt) => undefined,
+  showAccountTypes: (_type: AccountNetTypeOpt) => () => undefined,
   hide: () => undefined,
 }
-export type AccountsType = 'all' | 'testnet' | 'mainnet'
 type AccountSelectorActions = {
   show: () => void
   hide: () => void
-  showAccountTypes: (type: AccountsType) => () => void
+  showAccountTypes: (type: AccountNetTypeOpt) => () => void
 }
 const AccountSelectorContext =
   createContext<AccountSelectorActions>(initialState)
 const { Provider } = AccountSelectorContext
 
 const isGesture = (
-  x?: AccountsType | GestureResponderEvent,
+  x?: AccountNetTypeOpt | GestureResponderEvent,
 ): x is GestureResponderEvent =>
   !!x && typeof x === 'object' && 'bubbles' in (x as GestureResponderEvent)
 
@@ -49,16 +49,16 @@ const AccountSelector = ({ children }: { children: ReactNode }) => {
   const { primary } = useColors()
   const { backgroundStyle } = useOpacity('primaryBackground', 1)
   const { m } = useSpacing()
-  const [accountsType, setAccountsTypes] = useState<AccountsType>('all')
+  const [accountsType, setAccountsTypes] = useState<AccountNetTypeOpt>('all')
   const snapPoints = useMemo(() => ['60%', '80%'], [])
   const sheetHandleStyle = useMemo(() => ({ padding: m }), [m])
   const flatListStyle = useMemo(
-    () => ({ borderTopColor: 'black', borderTopWidth: 1 }),
-    [],
+    () => ({ borderTopColor: primary, borderTopWidth: 1 }),
+    [primary],
   )
 
-  const show = useCallback((x?: AccountsType | GestureResponderEvent) => {
-    let type: AccountsType = 'all'
+  const show = useCallback((x?: AccountNetTypeOpt | GestureResponderEvent) => {
+    let type: AccountNetTypeOpt = 'all'
     if (x && !isGesture(x)) {
       type = x
     }
@@ -67,7 +67,7 @@ const AccountSelector = ({ children }: { children: ReactNode }) => {
   }, [])
 
   const showAccountTypes = useCallback(
-    (type: AccountsType) => () => show(type),
+    (type: AccountNetTypeOpt) => () => show(type),
     [show],
   )
 
@@ -75,22 +75,21 @@ const AccountSelector = ({ children }: { children: ReactNode }) => {
     bottomSheetModalRef.current?.dismiss()
   }, [])
 
-  const { sortedAccounts, currentAccount, setCurrentAccount } =
+  const { sortedAccountsForNetType, currentAccount, setCurrentAccount } =
     useAccountStorage()
 
-  const data = useMemo(() => {
-    if (accountsType === 'all') return sortedAccounts
+  const data = useMemo(
+    () => sortedAccountsForNetType(accountsType),
 
-    return sortedAccounts.filter(({ address }) =>
-      accountsType === 'testnet' ? isTestnet(address) : isMainnet(address),
-    )
-  }, [accountsType, sortedAccounts])
+    [accountsType, sortedAccountsForNetType],
+  )
 
   const handleAccountPress = useCallback(
     (account: CSAccount) => () => {
       setCurrentAccount(account)
+      hide()
     },
-    [setCurrentAccount],
+    [hide, setCurrentAccount],
   )
 
   const keyExtractor = useCallback((item: CSAccount) => {
@@ -116,7 +115,7 @@ const AccountSelector = ({ children }: { children: ReactNode }) => {
           <AccountIcon size={40} address={account.address} />
           <Text variant="body1" marginLeft="ms" flex={1}>
             {`${account.alias}${
-              isTestnet(account.address) ? ' (Testnet)' : ''
+              account.netType === NetType.TESTNET ? ' (Testnet)' : ''
             }`}
           </Text>
           {isSelected && (

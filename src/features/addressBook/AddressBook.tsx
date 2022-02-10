@@ -18,7 +18,7 @@ const AddressBook = () => {
   const { primaryText } = useColors()
 
   const onRequestClose = useCallback(() => {
-    homeNav.navigate('AccountsScreen')
+    homeNav.goBack()
   }, [homeNav])
 
   const handleAddNewContact = useCallback(() => {

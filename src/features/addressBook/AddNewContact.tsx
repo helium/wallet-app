@@ -7,9 +7,11 @@ import {
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
   TextInput as RNTextInput,
+  Platform,
 } from 'react-native'
 import { Address } from '@helium/crypto-react-native'
 import Checkmark from '@assets/images/checkmark.svg'
+import { useKeyboard } from '@react-native-community/hooks'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -21,14 +23,19 @@ import ButtonPressable from '../../components/ButtonPressable'
 import AccountIcon from '../../components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { AddressBookNavigationProp } from './addressBookTypes'
+import { accountNetType } from '../../utils/accountUtils'
 
 const BUTTON_HEIGHT = 55
 const AddNewContact = () => {
+  const { keyboardShown } = useKeyboard()
   const { t } = useTranslation()
   const { primaryText } = useColors()
   const homeNav = useNavigation<HomeNavigationProp>()
   const addressBookNav = useNavigation<AddressBookNavigationProp>()
-  const { backgroundStyle } = useOpacity('surfaceSecondary', 0.4)
+  const { backgroundStyle } = useOpacity(
+    'surfaceSecondary',
+    keyboardShown ? 0.85 : 0.4,
+  )
   const { addContact } = useAccountStorage()
   const [nickname, setNickname] = useState('')
   const [address, setAddress] = useState('')
@@ -37,7 +44,7 @@ const AddNewContact = () => {
   const spacing = useSpacing()
 
   const onRequestClose = useCallback(() => {
-    homeNav.navigate('AccountsScreen')
+    homeNav.goBack()
   }, [homeNav])
 
   const addressIsValid = useMemo(() => {
@@ -46,8 +53,8 @@ const AddNewContact = () => {
   }, [address])
 
   const handleCreateNewContact = useCallback(() => {
-    addContact({ address, alias: nickname })
-    addressBookNav.navigate('AddressBook')
+    addContact({ address, alias: nickname, netType: accountNetType(address) })
+    addressBookNav.goBack()
   }, [addContact, address, addressBookNav, nickname])
 
   const handleKeydown = useCallback(
@@ -89,7 +96,7 @@ const AddNewContact = () => {
         )}
       </Box>
       <KeyboardAvoidingView
-        behavior="position"
+        behavior={Platform.OS === 'android' ? undefined : 'position'}
         keyboardVerticalOffset={-spacing.xxxl - BUTTON_HEIGHT}
       >
         <SafeAreaBox
@@ -135,7 +142,7 @@ const AddNewContact = () => {
             placeholder={t('addNewContact.nickname.placeholder')}
             onChangeText={setNickname}
             value={nickname}
-            autoCapitalize="sentences"
+            autoCapitalize="words"
             autoComplete="off"
             returnKeyType="done"
             autoCorrect={false}

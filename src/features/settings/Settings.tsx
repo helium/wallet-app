@@ -7,7 +7,7 @@ import Text from '../../components/Text'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { HomeNavigationProp } from '../home/homeTypes'
-import { useColors, useSpacing } from '../../theme/themeHooks'
+import { useColors, useHitSlop, useSpacing } from '../../theme/themeHooks'
 import Box from '../../components/Box'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
 import { useAppVersion } from '../../utils/useDevice'
@@ -26,6 +26,7 @@ const Settings = () => {
   const { primaryText } = useColors()
   const spacing = useSpacing()
   const version = useAppVersion()
+  const hitSlop = useHitSlop('xxl')
   const authIntervals = useAuthIntervals()
   const { currentAccount, signOut, accounts } = useAccountStorage()
   const { changeLanguage, language } = useLanguageStorage()
@@ -335,7 +336,11 @@ const Settings = () => {
         paddingTop="s"
       >
         <Text variant="h1">{t('settings.title')}</Text>
-        <TouchableOpacityBox onPress={onRequestClose}>
+        <TouchableOpacityBox
+          onPress={onRequestClose}
+          hitSlop={hitSlop}
+          paddingVertical="m"
+        >
           <Close color={primaryText} height={16} width={16} />
         </TouchableOpacityBox>
       </Box>

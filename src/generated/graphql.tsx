@@ -173,53 +173,41 @@ export type AccountActivityQueryVariables = Exact<{
 
 export type AccountActivityQuery = {
   __typename?: 'RootQueryType'
-  accountActivity?:
-    | {
-        __typename?: 'ActivityData'
-        cursor?: string | null | undefined
-        data?:
-          | Array<{
-              __typename?: 'Activity'
-              time: number
-              memo?: string | null | undefined
-              type: string
-              hash: string
-              endEpoch?: number | null | undefined
-              startEpoch?: number | null | undefined
-              height: number
-              seller?: string | null | undefined
-              amountToSeller?: number | null | undefined
-              payer?: string | null | undefined
-              nonce?: number | null | undefined
-              fee?: number | null | undefined
-              amount?: number | null | undefined
-              stakingFee?: number | null | undefined
-              stake?: number | null | undefined
-              stakeAmount?: number | null | undefined
-              rewards?:
-                | Array<{
-                    __typename?: 'Reward'
-                    account: string
-                    amount: number
-                    gateway: string
-                    type: string
-                  }>
-                | null
-                | undefined
-              payments?:
-                | Array<{
-                    __typename?: 'Payment'
-                    payee: string
-                    amount: number
-                  }>
-                | null
-                | undefined
-            }>
-          | null
-          | undefined
-      }
-    | null
-    | undefined
+  accountActivity?: {
+    __typename?: 'ActivityData'
+    cursor?: string | null
+    data?: Array<{
+      __typename?: 'Activity'
+      time: number
+      memo?: string | null
+      type: string
+      hash: string
+      endEpoch?: number | null
+      startEpoch?: number | null
+      height: number
+      seller?: string | null
+      amountToSeller?: number | null
+      payer?: string | null
+      nonce?: number | null
+      fee?: number | null
+      amount?: number | null
+      stakingFee?: number | null
+      stake?: number | null
+      stakeAmount?: number | null
+      rewards?: Array<{
+        __typename?: 'Reward'
+        account: string
+        amount: number
+        gateway: string
+        type: string
+      }> | null
+      payments?: Array<{
+        __typename?: 'Payment'
+        payee: string
+        amount: number
+      }> | null
+    }> | null
+  } | null
 }
 
 export type AccountRewardsSummaryQueryVariables = Exact<{
@@ -230,22 +218,19 @@ export type AccountRewardsSummaryQueryVariables = Exact<{
 
 export type AccountRewardsSummaryQuery = {
   __typename?: 'RootQueryType'
-  accountRewardsSum?:
-    | {
-        __typename?: 'Sum'
-        data: {
-          __typename?: 'SumData'
-          total: number
-          max: number
-          median: number
-          min: number
-          stddev: number
-          sum: number
-        }
-        meta: { __typename?: 'SumMeta'; maxTime: string; minTime: string }
-      }
-    | null
-    | undefined
+  accountRewardsSum?: {
+    __typename?: 'Sum'
+    data: {
+      __typename?: 'SumData'
+      total: number
+      max: number
+      median: number
+      min: number
+      stddev: number
+      sum: number
+    }
+    meta: { __typename?: 'SumMeta'; maxTime: string; minTime: string }
+  } | null
 }
 
 export type AccountQueryVariables = Exact<{
@@ -254,35 +239,29 @@ export type AccountQueryVariables = Exact<{
 
 export type AccountQuery = {
   __typename?: 'RootQueryType'
-  account?:
-    | {
-        __typename?: 'AccountData'
-        address: string
-        balance: number
-        block?: number | null | undefined
-        dcBalance: number
-        dcNonce: number
-        nonce: number
-        secBalance: number
-        secNonce: number
-        speculativeNonce?: number | null | undefined
-        speculativeSecNonce?: number | null | undefined
-        stakedBalance: number
-      }
-    | null
-    | undefined
+  account?: {
+    __typename?: 'AccountData'
+    address: string
+    balance: number
+    block?: number | null
+    dcBalance: number
+    dcNonce: number
+    nonce: number
+    secBalance: number
+    secNonce: number
+    speculativeNonce?: number | null
+    speculativeSecNonce?: number | null
+    stakedBalance: number
+  } | null
 }
 
-export type HeliumDataQueryVariables = Exact<{
+export type OracleDataQueryVariables = Exact<{
   address: Scalars['String']
 }>
 
-export type HeliumDataQuery = {
+export type OracleDataQuery = {
   __typename?: 'RootQueryType'
-  currentOraclePrice?:
-    | { __typename?: 'OraclePrice'; price: number }
-    | null
-    | undefined
+  currentOraclePrice?: { __typename?: 'OraclePrice'; price: number } | null
 }
 
 export type SubmitTxnMutationVariables = Exact<{
@@ -292,23 +271,20 @@ export type SubmitTxnMutationVariables = Exact<{
 
 export type SubmitTxnMutation = {
   __typename?: 'RootMutationType'
-  submitTxn?: { __typename?: 'TxnHash'; hash: string } | null | undefined
+  submitTxn?: { __typename?: 'TxnHash'; hash: string } | null
 }
 
 export type TxnConfigVarsQueryVariables = Exact<{ [key: string]: never }>
 
 export type TxnConfigVarsQuery = {
   __typename?: 'RootQueryType'
-  txnConfigVars?:
-    | {
-        __typename?: 'TxnConfigVars'
-        txnFeeMultiplier: number
-        stakingFeeTxnAddGatewayV1: number
-        stakingFeeTxnAssertLocationV1: number
-        dcPayloadSize: number
-      }
-    | null
-    | undefined
+  txnConfigVars?: {
+    __typename?: 'TxnConfigVars'
+    txnFeeMultiplier: number
+    stakingFeeTxnAddGatewayV1: number
+    stakingFeeTxnAssertLocationV1: number
+    dcPayloadSize: number
+  } | null
 }
 
 export const AccountActivityDocument = gql`
@@ -534,8 +510,8 @@ export type AccountQueryResult = Apollo.QueryResult<
   AccountQuery,
   AccountQueryVariables
 >
-export const HeliumDataDocument = gql`
-  query HeliumData($address: String!) {
+export const OracleDataDocument = gql`
+  query OracleData($address: String!) {
     currentOraclePrice(address: $address) {
       price
     }
@@ -543,52 +519,52 @@ export const HeliumDataDocument = gql`
 `
 
 /**
- * __useHeliumDataQuery__
+ * __useOracleDataQuery__
  *
- * To run a query within a React component, call `useHeliumDataQuery` and pass it any options that fit your needs.
- * When your component renders, `useHeliumDataQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useOracleDataQuery` and pass it any options that fit your needs.
+ * When your component renders, `useOracleDataQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useHeliumDataQuery({
+ * const { data, loading, error } = useOracleDataQuery({
  *   variables: {
  *      address: // value for 'address'
  *   },
  * });
  */
-export function useHeliumDataQuery(
+export function useOracleDataQuery(
   baseOptions: Apollo.QueryHookOptions<
-    HeliumDataQuery,
-    HeliumDataQueryVariables
+    OracleDataQuery,
+    OracleDataQueryVariables
   >,
 ) {
   const options = { ...defaultOptions, ...baseOptions }
-  return Apollo.useQuery<HeliumDataQuery, HeliumDataQueryVariables>(
-    HeliumDataDocument,
+  return Apollo.useQuery<OracleDataQuery, OracleDataQueryVariables>(
+    OracleDataDocument,
     options,
   )
 }
-export function useHeliumDataLazyQuery(
+export function useOracleDataLazyQuery(
   baseOptions?: Apollo.LazyQueryHookOptions<
-    HeliumDataQuery,
-    HeliumDataQueryVariables
+    OracleDataQuery,
+    OracleDataQueryVariables
   >,
 ) {
   const options = { ...defaultOptions, ...baseOptions }
-  return Apollo.useLazyQuery<HeliumDataQuery, HeliumDataQueryVariables>(
-    HeliumDataDocument,
+  return Apollo.useLazyQuery<OracleDataQuery, OracleDataQueryVariables>(
+    OracleDataDocument,
     options,
   )
 }
-export type HeliumDataQueryHookResult = ReturnType<typeof useHeliumDataQuery>
-export type HeliumDataLazyQueryHookResult = ReturnType<
-  typeof useHeliumDataLazyQuery
+export type OracleDataQueryHookResult = ReturnType<typeof useOracleDataQuery>
+export type OracleDataLazyQueryHookResult = ReturnType<
+  typeof useOracleDataLazyQuery
 >
-export type HeliumDataQueryResult = Apollo.QueryResult<
-  HeliumDataQuery,
-  HeliumDataQueryVariables
+export type OracleDataQueryResult = Apollo.QueryResult<
+  OracleDataQuery,
+  OracleDataQueryVariables
 >
 export const SubmitTxnDocument = gql`
   mutation submitTxn($address: String!, $txn: String!) {

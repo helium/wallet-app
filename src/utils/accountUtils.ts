@@ -1,6 +1,8 @@
 import { Address, NetType } from '@helium/crypto-react-native'
 import { CurrencyType } from '@helium/currency'
 
+export type AccountNetTypeOpt = 'all' | NetType.NetType
+
 export const accountCurrencyType = (address?: string) => {
   if (!address) return CurrencyType.default
   return accountNetType(address) === NetType.TESTNET

@@ -9,6 +9,9 @@ export default {
     copied: 'Copied',
     back: 'Back',
     skip: 'Skip',
+    confirm: 'Confirm',
+    error: 'Error',
+    success: 'Success',
   },
   ordinals: [
     '1st',
@@ -141,6 +144,22 @@ export default {
   },
   payment: {
     title: 'Send {{ticker}}',
+    selectContact: 'Select Contact',
+    enterMemo: 'Enter Memo (Optional)',
+    memoBytes: '{{used}}/{{total}} Bytes',
+    sendButton: 'Swipe to Send {{ticker}}',
+    fee: '+{{value}} Fee',
+    enterAmount: 'Enter {{ticker}} Amount',
+    max: 'Max',
+    submitError:
+      'There was an error submitting this transaction. Please try again.\n\n{{details}}',
+    submitSuccess: 'Your payment transaction has been submitted\n\n{{hash}}',
+  },
+  hntKeyboard: {
+    enterAmount: 'Enter {{ticker}} Amount',
+    fee: '+{{value}} Fee ⓘ',
+    validFor: 'valid for {{time}}',
+    hntAvailable: '{{amount}} Available',
   },
   wifi: {
     howMuch: 'How much data do you\nwish to purchase?',
