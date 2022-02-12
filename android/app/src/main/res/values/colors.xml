@@ -1,4 +1,4 @@
 <resources>
-  <color name="splashscreen_background">#AABBCC</color>
-  <color name="splashscreen_statusbar_color">#AABBCC</color>
+  <color name="splashscreen_background">#131419</color>
+  <color name="splashscreen_statusbar_color">#131419</color>
 </resources>

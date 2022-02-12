@@ -29,7 +29,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 })
 
 const linking = {
-  prefixes: ['nova://'],
+  prefixes: ['helium://'], // TODO: what do we want the new link prefix to be
   config: {
     screens: {
       HomeNavigator: {

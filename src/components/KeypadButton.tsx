@@ -81,6 +81,16 @@ const KeypadButton = ({ value, onPress }: Props) => {
               {t('generic.clear')}
             </Text>
           )
+        case 'cancel':
+          return (
+            <Text
+              variant="body1"
+              adjustsFontSizeToFit
+              color={pressed ? 'gold' : 'surfaceSecondaryText'}
+            >
+              {t('generic.cancel')}
+            </Text>
+          )
       }
     },
     [gold, surfaceSecondaryText, t, value],

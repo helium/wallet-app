@@ -43,13 +43,13 @@ const RevealWordsScreen = () => {
         <Text
           fontWeight="bold"
           fontSize={39}
-          color="primary"
+          color="purple500"
           maxFontSizeMultiplier={1}
         >{`${index + 1}. `}</Text>
         <Text
           fontWeight="bold"
           fontSize={39}
-          color="primary"
+          color="purple500"
           maxFontSizeMultiplier={1}
         >
           {upperCase(item)}
