@@ -1,4 +1,4 @@
-# Nova Wallet
+# Helium Wallet
 
 ## Running the app
 

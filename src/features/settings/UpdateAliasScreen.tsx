@@ -51,7 +51,7 @@ const UpdateAliasScreen = () => {
       paddingHorizontal={{ smallPhone: 'l', phone: 'xxxl' }}
     >
       <KeyboardAvoidingView
-        keyboardVerticalOffset={insets.top + spacing.l}
+        keyboardVerticalOffset={insets.top + spacing.xxl}
         behavior={Platform.OS === 'android' ? 'height' : 'padding'}
         style={styles.container}
       >

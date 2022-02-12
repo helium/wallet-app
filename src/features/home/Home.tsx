@@ -21,7 +21,7 @@ import Box from '../../components/Box'
 type GoogleError = { code: unknown }
 type File = { id: string; kind: string; mimeType: string; name: string }
 const gdrive = new GDrive()
-const FILE_NAME = 'NOVA_SETTINGS_DO_NOT_DELETE'
+const FILE_NAME = 'WALLET_SETTINGS_DO_NOT_DELETE'
 
 const Home = () => {
   const { accounts, signOut } = useAccountStorage()
