@@ -5,8 +5,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useAsync } from 'react-async-hook'
 import { setContext } from '@apollo/client/link/context'
 import { useState } from 'react'
+import { RetryLink } from '@apollo/client/link/retry'
 import { ActivityData, Activity } from '../generated/graphql'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
+
+const retryLink = new RetryLink()
 
 type ActivityCache = {
   cursor: string
@@ -17,8 +20,13 @@ const cache = new InMemoryCache({
   typePolicies: {
     Query: {
       fields: {
+        pendingTxns: {
+          merge(_existing, incoming) {
+            return incoming
+          },
+        },
         accountActivity: {
-          keyArgs: ['address'],
+          keyArgs: ['address', 'filter'],
           merge(existing, incoming, { args }) {
             const { data: prevData } = (existing || {
               data: {},
@@ -90,7 +98,7 @@ export const useApolloClient = () => {
     })
 
     return new ApolloClient({
-      link: httpLink,
+      link: httpLink.concat(retryLink),
       cache,
     })
   }, [])

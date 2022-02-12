@@ -44,18 +44,19 @@ export type Activity = {
   endEpoch?: Maybe<Scalars['Int']>
   fee?: Maybe<Scalars['Int']>
   hash: Scalars['String']
-  height: Scalars['Int']
+  height?: Maybe<Scalars['Int']>
   memo?: Maybe<Scalars['String']>
   nonce?: Maybe<Scalars['Int']>
   payer?: Maybe<Scalars['String']>
   payments?: Maybe<Array<Payment>>
+  pending?: Maybe<Scalars['Boolean']>
   rewards?: Maybe<Array<Reward>>
   seller?: Maybe<Scalars['String']>
   stake?: Maybe<Scalars['Int']>
   stakeAmount?: Maybe<Scalars['Int']>
   stakingFee?: Maybe<Scalars['Int']>
   startEpoch?: Maybe<Scalars['Int']>
-  time: Scalars['Int']
+  time?: Maybe<Scalars['Int']>
   type: Scalars['String']
 }
 
@@ -75,6 +76,7 @@ export type OraclePrice = {
 export type Payment = {
   __typename?: 'Payment'
   amount: Scalars['Int']
+  memo?: Maybe<Scalars['String']>
   payee: Scalars['String']
 }
 
@@ -94,6 +96,7 @@ export type RootMutationType = {
 export type RootMutationTypeSubmitTxnArgs = {
   address: Scalars['String']
   txn: Scalars['String']
+  txnJson?: InputMaybe<Scalars['String']>
 }
 
 export type RootQueryType = {
@@ -106,6 +109,8 @@ export type RootQueryType = {
   accountRewardsSum?: Maybe<Sum>
   /** Get current oracle price */
   currentOraclePrice?: Maybe<OraclePrice>
+  /** Get txn config vars */
+  pendingTxns?: Maybe<Array<Activity>>
   /** Get txn config vars */
   txnConfigVars?: Maybe<TxnConfigVars>
 }
@@ -127,6 +132,10 @@ export type RootQueryTypeAccountRewardsSumArgs = {
 }
 
 export type RootQueryTypeCurrentOraclePriceArgs = {
+  address: Scalars['String']
+}
+
+export type RootQueryTypePendingTxnsArgs = {
   address: Scalars['String']
 }
 
@@ -169,6 +178,7 @@ export type TxnHash = {
 export type AccountActivityQueryVariables = Exact<{
   address: Scalars['String']
   cursor?: InputMaybe<Scalars['String']>
+  filter?: InputMaybe<Scalars['String']>
 }>
 
 export type AccountActivityQuery = {
@@ -178,13 +188,13 @@ export type AccountActivityQuery = {
     cursor?: string | null
     data?: Array<{
       __typename?: 'Activity'
-      time: number
+      time?: number | null
       memo?: string | null
       type: string
       hash: string
       endEpoch?: number | null
       startEpoch?: number | null
-      height: number
+      height?: number | null
       seller?: string | null
       amountToSeller?: number | null
       payer?: string | null
@@ -204,6 +214,7 @@ export type AccountActivityQuery = {
       payments?: Array<{
         __typename?: 'Payment'
         payee: string
+        memo?: string | null
         amount: number
       }> | null
     }> | null
@@ -264,9 +275,51 @@ export type OracleDataQuery = {
   currentOraclePrice?: { __typename?: 'OraclePrice'; price: number } | null
 }
 
+export type PendingTxnsQueryVariables = Exact<{
+  address: Scalars['String']
+}>
+
+export type PendingTxnsQuery = {
+  __typename?: 'RootQueryType'
+  pendingTxns?: Array<{
+    __typename?: 'Activity'
+    pending?: boolean | null
+    time?: number | null
+    memo?: string | null
+    type: string
+    hash: string
+    endEpoch?: number | null
+    startEpoch?: number | null
+    height?: number | null
+    seller?: string | null
+    amountToSeller?: number | null
+    payer?: string | null
+    nonce?: number | null
+    fee?: number | null
+    amount?: number | null
+    stakingFee?: number | null
+    stake?: number | null
+    stakeAmount?: number | null
+    rewards?: Array<{
+      __typename?: 'Reward'
+      account: string
+      amount: number
+      gateway: string
+      type: string
+    }> | null
+    payments?: Array<{
+      __typename?: 'Payment'
+      payee: string
+      amount: number
+      memo?: string | null
+    }> | null
+  }> | null
+}
+
 export type SubmitTxnMutationVariables = Exact<{
   address: Scalars['String']
   txn: Scalars['String']
+  txnJson?: InputMaybe<Scalars['String']>
 }>
 
 export type SubmitTxnMutation = {
@@ -288,8 +341,8 @@ export type TxnConfigVarsQuery = {
 }
 
 export const AccountActivityDocument = gql`
-  query AccountActivity($address: String!, $cursor: String) {
-    accountActivity(address: $address, cursor: $cursor) {
+  query AccountActivity($address: String!, $cursor: String, $filter: String) {
+    accountActivity(address: $address, cursor: $cursor, filter: $filter) {
       cursor
       data {
         time
@@ -316,6 +369,7 @@ export const AccountActivityDocument = gql`
         stakeAmount
         payments {
           payee
+          memo
           amount
         }
       }
@@ -337,6 +391,7 @@ export const AccountActivityDocument = gql`
  *   variables: {
  *      address: // value for 'address'
  *      cursor: // value for 'cursor'
+ *      filter: // value for 'filter'
  *   },
  * });
  */
@@ -566,9 +621,92 @@ export type OracleDataQueryResult = Apollo.QueryResult<
   OracleDataQuery,
   OracleDataQueryVariables
 >
+export const PendingTxnsDocument = gql`
+  query pendingTxns($address: String!) {
+    pendingTxns(address: $address) {
+      pending
+      time
+      memo
+      type
+      hash
+      endEpoch
+      startEpoch
+      height
+      seller
+      amountToSeller
+      rewards {
+        account
+        amount
+        gateway
+        type
+      }
+      payer
+      nonce
+      fee
+      amount
+      stakingFee
+      stake
+      stakeAmount
+      payments {
+        payee
+        amount
+        memo
+      }
+    }
+  }
+`
+
+/**
+ * __usePendingTxnsQuery__
+ *
+ * To run a query within a React component, call `usePendingTxnsQuery` and pass it any options that fit your needs.
+ * When your component renders, `usePendingTxnsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = usePendingTxnsQuery({
+ *   variables: {
+ *      address: // value for 'address'
+ *   },
+ * });
+ */
+export function usePendingTxnsQuery(
+  baseOptions: Apollo.QueryHookOptions<
+    PendingTxnsQuery,
+    PendingTxnsQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useQuery<PendingTxnsQuery, PendingTxnsQueryVariables>(
+    PendingTxnsDocument,
+    options,
+  )
+}
+export function usePendingTxnsLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    PendingTxnsQuery,
+    PendingTxnsQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useLazyQuery<PendingTxnsQuery, PendingTxnsQueryVariables>(
+    PendingTxnsDocument,
+    options,
+  )
+}
+export type PendingTxnsQueryHookResult = ReturnType<typeof usePendingTxnsQuery>
+export type PendingTxnsLazyQueryHookResult = ReturnType<
+  typeof usePendingTxnsLazyQuery
+>
+export type PendingTxnsQueryResult = Apollo.QueryResult<
+  PendingTxnsQuery,
+  PendingTxnsQueryVariables
+>
 export const SubmitTxnDocument = gql`
-  mutation submitTxn($address: String!, $txn: String!) {
-    submitTxn(address: $address, txn: $txn) {
+  mutation submitTxn($address: String!, $txn: String!, $txnJson: String) {
+    submitTxn(address: $address, txn: $txn, txnJson: $txnJson) {
       hash
     }
   }
@@ -593,6 +731,7 @@ export type SubmitTxnMutationFn = Apollo.MutationFunction<
  *   variables: {
  *      address: // value for 'address'
  *      txn: // value for 'txn'
+ *      txnJson: // value for 'txnJson'
  *   },
  * });
  */

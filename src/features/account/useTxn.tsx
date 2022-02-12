@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 import {
+  addMinutes,
   format,
   formatDistance,
   formatDistanceToNow,
@@ -20,6 +21,7 @@ import { useColors } from '../../theme/themeHooks'
 import { Activity } from '../../generated/graphql'
 import { accountCurrencyType } from '../../utils/accountUtils'
 import { balanceToString } from '../../utils/Balance'
+import { decodeMemoString, DEFAULT_MEMO } from '../../components/MemoInput'
 
 export const TxnTypeKeys = [
   'rewards_v1',
@@ -30,6 +32,7 @@ export const TxnTypeKeys = [
   'assert_location_v1',
   'assert_location_v2',
   'transfer_hotspot_v1',
+  'transfer_hotspot_v2',
   'token_burn_v1',
   'unstake_validator_v1',
   'stake_validator_v1',
@@ -38,9 +41,9 @@ export const TxnTypeKeys = [
 type TxnType = typeof TxnTypeKeys[number]
 
 const useTxn = (
-  item: Activity,
-  address: string,
-  dateOpts?: { dateFormat?: string; now: Date },
+  item?: Activity,
+  address?: string,
+  dateOpts?: { dateFormat?: string; now?: Date },
 ) => {
   const colors = useColors()
   const { t } = useTranslation()
@@ -57,16 +60,17 @@ const useTxn = (
     new Balance(v || 0, CurrencyType.dataCredit)
 
   const isSending = useMemo(() => {
-    return item.payer === address
-  }, [address, item.payer])
+    return item?.payer === address
+  }, [address, item])
 
   const isSelling = useMemo(() => {
-    return item.seller === address
-  }, [address, item.seller])
+    return item?.seller === address
+  }, [address, item])
 
   const color = useMemo((): Color => {
-    switch (item.type as TxnType) {
+    switch (item?.type as TxnType) {
       case 'transfer_hotspot_v1':
+      case 'transfer_hotspot_v2':
       case 'add_gateway_v1':
         return 'orange500'
       case 'payment_v1':
@@ -90,11 +94,19 @@ const useTxn = (
   }, [isSending, item])
 
   const title = useMemo(() => {
-    if (!TxnTypeKeys.find((k) => k === item.type)) {
-      return startCase(item.type)
+    if (!TxnTypeKeys.find((k) => k === item?.type)) {
+      return startCase(item?.type)
     }
 
-    switch (item.type as TxnType) {
+    if (item?.pending) {
+      switch (item.type as TxnType) {
+        case 'payment_v1':
+        case 'payment_v2':
+          if (!isSending) return ''
+          return t('transactions.pending.sending')
+      }
+    }
+    switch (item?.type as TxnType) {
       case 'add_gateway_v1':
         return t('transactions.added')
       case 'payment_v1':
@@ -107,6 +119,7 @@ const useTxn = (
       case 'assert_location_v2':
         return t('transactions.location_v2')
       case 'transfer_hotspot_v1':
+      case 'transfer_hotspot_v2':
         return isSelling
           ? t('transactions.transferSell')
           : t('transactions.transferBuy')
@@ -122,42 +135,11 @@ const useTxn = (
       case 'transfer_validator_stake_v1':
         return t('transactions.transferValidator')
     }
-  }, [item.type, t, isSending, ticker, isSelling])
-
-  const detailIcon = useMemo(() => {
-    // TODO: DetailIcon
-    return isSending ? <TxnSend /> : <TxnReceive />
-    // switch (item.type as TxnType) {
-    // case 'stake_validator_v1':
-    // case 'unstake_validator_v1':
-    // case 'transfer_validator_stake_v1':
-    //   return <TransferStakeValidator width={40} />
-    // case 'transfer_hotspot_v1':
-    //   return <HotspotTransfer height={20} width={50} />
-    // case 'payment_v1':
-    // case 'payment_v2':
-    //   return isSending ? (
-    //     <SentHnt width={35} height={24} />
-    //   ) : (
-    //     <ReceivedHnt width={35} height={24} />
-    //   )
-    // case 'assert_location_v1':
-    // case 'assert_location_v2':
-    //   return <Location width={20} height={23} color="white" />
-    // case 'rewards_v1':
-    // case 'rewards_v2':
-    //   return <Rewards width={26} height={26} />
-    // case 'token_burn_v1':
-    //   return <Burn width={23} height={28} />
-    // case 'add_gateway_v1':
-    // default:
-    //   return <HotspotAdded width={20} height={20} />
-    // }
-  }, [isSending])
+  }, [item, t, isSending, ticker, isSelling])
 
   const listIcon = useMemo(() => {
     const iconColor = colors[color]
-    switch (item.type as TxnType) {
+    switch (item?.type as TxnType) {
       case 'stake_validator_v1':
         return <TxnSend color={iconColor} />
       case 'unstake_validator_v1':
@@ -180,15 +162,16 @@ const useTxn = (
       case 'token_burn_v1':
         return <TxnSend color={iconColor} />
       case 'transfer_hotspot_v1':
+      case 'transfer_hotspot_v2':
       case 'add_gateway_v1':
       default:
         return <TxnReceive color={iconColor} />
     }
-  }, [color, colors, isSending, item.type])
+  }, [color, colors, isSending, item])
 
   const isFee = useMemo(() => {
     // // TODO: Determine if TransferStakeV1 is a fee
-    const type = item.type as TxnType
+    const type = item?.type as TxnType
     if (type === 'payment_v1' || type === 'payment_v2') {
       return isSending
     }
@@ -201,12 +184,12 @@ const useTxn = (
       return false
     }
 
-    if (type === 'transfer_hotspot_v1') {
-      return item.seller === address
+    if (type === 'transfer_hotspot_v1' || type === 'transfer_hotspot_v2') {
+      return item?.seller === address
     }
 
     return true
-  }, [address, isSending, item.seller, item.type])
+  }, [address, isSending, item])
 
   const formatAmount = useCallback(
     async (
@@ -231,15 +214,15 @@ const useTxn = (
   )
 
   const fee = useMemo(async () => {
-    const type = item.type as TxnType
+    const type = item?.type as TxnType
     if (type === 'rewards_v1' || type === 'rewards_v2') {
       return ''
     }
 
-    if (type === 'transfer_hotspot_v1') {
+    if (type === 'transfer_hotspot_v1' || type === 'transfer_hotspot_v2') {
       if (!isSelling) return ''
 
-      return formatAmount('-', dcBalance(item.fee))
+      return formatAmount('-', dcBalance(item?.fee))
     }
 
     if (
@@ -248,16 +231,16 @@ const useTxn = (
       type === 'assert_location_v2' ||
       type === 'token_burn_v1'
     ) {
-      return formatAmount('-', dcBalance(item.fee))
+      return formatAmount('-', dcBalance(item?.fee))
     }
 
     if (type === 'payment_v1' || type === 'payment_v2') {
-      if (address !== item.payer) return ''
-      return formatAmount('-', dcBalance(item.fee))
+      if (address !== item?.payer) return ''
+      return formatAmount('-', dcBalance(item?.fee))
     }
 
     return ''
-  }, [address, formatAmount, isSelling, item.fee, item.payer, item.type])
+  }, [address, formatAmount, isSelling, item])
 
   // const feePayer = useMemo(() => {
   //   if (
@@ -271,6 +254,7 @@ const useTxn = (
   // }, [item])
 
   const amount = useCallback(() => {
+    if (!item) return new Promise<string>((resolve) => resolve(''))
     switch (item.type as TxnType) {
       case 'rewards_v1':
       case 'rewards_v2': {
@@ -282,6 +266,7 @@ const useTxn = (
         return formatAmount('+', rewardsAmount)
       }
       case 'transfer_hotspot_v1':
+      case 'transfer_hotspot_v2':
         return formatAmount(
           isSelling ? '+' : '-',
           hntBalance(item.amountToSeller),
@@ -320,28 +305,17 @@ const useTxn = (
         return formatAmount('+', hntBalance(payment?.amount))
       }
     }
-  }, [
-    address,
-    formatAmount,
-    hntBalance,
-    isSelling,
-    item.amount,
-    item.amountToSeller,
-    item.payer,
-    item.payments,
-    item.rewards,
-    item.stake,
-    item.stakeAmount,
-    item.stakingFee,
-    item.type,
-  ])
+  }, [address, formatAmount, hntBalance, isSelling, item])
 
   const time = useMemo(() => {
-    // TODO: Handle Pending
-    // const pending = item as PendingTransaction
-    // if (pending.status === 'pending') {
-    //   return t('transactions.pending')
-    // }
+    if (!item) return ''
+
+    if (!item.time) {
+      if (item.pending) {
+        return t('transactions.pending.inProcess')
+      }
+      return ''
+    }
     const val = fromUnixTime(item.time)
 
     if (!dateOpts?.dateFormat) {
@@ -353,20 +327,33 @@ const useTxn = (
       }
       return formatDistanceToNow(val, { locale: shortLocale, addSuffix: true })
     }
-    return format(val, dateOpts.dateFormat)
-  }, [dateOpts, item.time])
+
+    // Format is in utc
+    return `${format(
+      addMinutes(val, val.getTimezoneOffset()),
+      dateOpts.dateFormat,
+    )} UTC`
+  }, [dateOpts, item, t])
 
   const memo = useMemo(() => {
-    return item.memo
+    let memoRaw = item?.memo
+    const receivedPayment = item?.payments?.find((p) => p.payee === address)
+    if (receivedPayment) {
+      memoRaw = receivedPayment.memo
+    }
+    if (memoRaw === DEFAULT_MEMO) {
+      return ''
+    }
+
+    return decodeMemoString(memoRaw)
     // TODO: memo
-  }, [item.memo])
+  }, [address, item])
 
   return {
     memo,
     time,
     amount,
     fee,
-    detailIcon,
     listIcon,
     title,
     color,

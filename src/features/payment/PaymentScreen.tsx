@@ -142,20 +142,19 @@ const PaymentScreen = () => {
     if (!currentAccount?.address || !currentContact?.address || !paymentAmount)
       return
 
-    const txn = (
-      await makePaymentTxn([
-        {
-          address: currentContact?.address,
-          balanceAmount: paymentAmount,
-          memo: txnMemo,
-        },
-      ])
-    ).toString()
+    const { partialTxn, signedTxn } = await makePaymentTxn([
+      {
+        address: currentContact?.address,
+        balanceAmount: paymentAmount,
+        memo: txnMemo,
+      },
+    ])
 
     submitTxnMutation({
       variables: {
         address: currentAccount.address,
-        txn,
+        txnJson: JSON.stringify(partialTxn),
+        txn: signedTxn.toString(),
       },
     })
   }, [

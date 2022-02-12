@@ -5,6 +5,14 @@ import { useCallback, useMemo } from 'react'
 import { ww } from '../utils/layout'
 import { Color, Spacing, Theme } from './theme'
 
+const colorScheme = 'dark' as 'dark' | 'light'
+export const useColorScheme = () => {
+  // TODO: Use this hook from 'react-native' and revert back to device color scheme
+  // const colorScheme = useColorScheme()
+
+  return colorScheme
+}
+
 export const useColors = () => {
   const { colors } = useTheme<Theme>()
   return colors

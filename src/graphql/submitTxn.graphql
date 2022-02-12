@@ -1,5 +1,5 @@
-mutation submitTxn($address: String!, $txn: String!) {
-  submitTxn(address: $address, txn: $txn) {
+mutation submitTxn($address: String!, $txn: String!, $txnJson: String) {
+  submitTxn(address: $address, txn: $txn, txnJson: $txnJson) {
     hash
   }
 }

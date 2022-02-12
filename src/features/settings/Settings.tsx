@@ -18,6 +18,7 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { SettingsNavigationProp } from './settingsTypes'
 import { useLanguageStorage } from '../../storage/LanguageProvider'
+import { useApolloClient } from '../../graphql/useApolloClient'
 
 const Settings = () => {
   const { t } = useTranslation()
@@ -41,6 +42,7 @@ const Settings = () => {
     convertToCurrency,
     updateConvertToCurrency,
   } = useAppStorage()
+  const { client } = useApolloClient()
 
   const isPinRequired = useMemo(
     () => appPin !== undefined && appPin.status !== 'off',
@@ -143,6 +145,7 @@ const Settings = () => {
             ) {
               // last account is signing out, clear all storage then nav to onboarding
               await signOut()
+              client?.resetStore()
             } else {
               // sign out the specific account, then nav to home
               await signOut(currentAccount?.address)
@@ -152,7 +155,7 @@ const Settings = () => {
         },
       ],
     )
-  }, [t, currentAccount, accounts, signOut, homeNav])
+  }, [t, currentAccount, accounts, signOut, client, homeNav])
 
   const handleLanguageChange = useCallback(
     async (lng: string) => {

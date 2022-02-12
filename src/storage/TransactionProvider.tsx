@@ -7,7 +7,11 @@ import Balance, {
 import { PaymentV2, TokenBurnV1, Transaction } from '@helium/transactions'
 import React, { createContext, ReactNode, useContext, useEffect } from 'react'
 import { encodeMemoString } from '../components/MemoInput'
-import { useAccountQuery, useTxnConfigVarsQuery } from '../generated/graphql'
+import {
+  useAccountLazyQuery,
+  useAccountQuery,
+  useTxnConfigVarsQuery,
+} from '../generated/graphql'
 import { useAccountStorage } from './AccountStorageProvider'
 
 export const EMPTY_B58_ADDRESS = Address.fromB58(
@@ -20,26 +24,44 @@ export type SendDetails = {
   memo: string
 }
 
+type PartialPaymentTxn = {
+  type: string
+  payments: {
+    payee: string
+    memo: string | undefined
+    amount: number
+  }[]
+  payer: string | undefined
+  nonce: number | undefined
+  fee: number | undefined
+}
+
 const useTransactionHook = ({ clientReady }: { clientReady: boolean }) => {
   const { getKeypair, currentAccount } = useAccountStorage()
-  const { data, error } = useTxnConfigVarsQuery({
+  const { data: txnVarsData, error } = useTxnConfigVarsQuery({
     fetchPolicy: 'cache-and-network',
     skip: !clientReady,
+  })
+  const [fetchAccount] = useAccountLazyQuery({
+    variables: {
+      address: currentAccount?.address || '',
+    },
+    fetchPolicy: 'cache-and-network',
   })
 
   const { data: accountData } = useAccountQuery({
     variables: {
       address: currentAccount?.address || '',
     },
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'cache-only',
     skip: !currentAccount?.address || !clientReady,
   })
 
   useEffect(() => {
-    if (!data?.txnConfigVars) return
+    if (!txnVarsData?.txnConfigVars) return
 
-    Transaction.config(data.txnConfigVars)
-  }, [data, error])
+    Transaction.config(txnVarsData.txnConfigVars)
+  }, [txnVarsData, error])
 
   const makeBurnTxn = async ({
     payeeB58,
@@ -77,19 +99,41 @@ const useTransactionHook = ({ clientReady }: { clientReady: boolean }) => {
 
   const makePaymentTxn = async (
     paymentDetails: Array<SendDetails>,
-  ): Promise<PaymentV2> => {
+  ): Promise<{ partialTxn: PartialPaymentTxn; signedTxn: PaymentV2 }> => {
     const keypair = await getKeypair()
     if (!keypair) throw new Error('missing keypair')
-    const paymentTxn = new PaymentV2({
+
+    const { data: freshAccountData } = await fetchAccount()
+    if (typeof freshAccountData?.account?.speculativeNonce !== 'number') {
+      throw new Error(
+        'Could not find speculative nonce for the current account',
+      )
+    }
+
+    const txn = new PaymentV2({
       payer: keypair.address,
       payments: paymentDetails.map(({ address, balanceAmount, memo }) => ({
         payee: Address.fromB58(address),
         amount: balanceAmount.integerBalance,
         memo: encodeMemoString(memo),
       })),
-      nonce: (accountData?.account?.nonce || 0) + 1,
+      nonce: freshAccountData.account.speculativeNonce + 1,
     })
-    return paymentTxn.sign({ payer: keypair })
+
+    const txnJson = {
+      type: txn.type,
+      payments: txn.payments.map((p) => ({
+        payee: p.payee.b58,
+        memo: p.memo,
+        amount: p.amount,
+      })),
+      payer: txn.payer?.b58,
+      nonce: txn.nonce,
+      fee: txn.fee,
+    }
+    const signedTxn = await txn.sign({ payer: keypair })
+
+    return { signedTxn, partialTxn: txnJson }
   }
 
   const calculatePaymentTxnFee = async (paymentDetails: Array<SendDetails>) => {
@@ -136,8 +180,18 @@ const initialState = {
       ),
     ),
   makePaymentTxn: () =>
-    new Promise<PaymentV2>((resolve) =>
-      resolve(new PaymentV2({ payer: EMPTY_B58_ADDRESS, payments: [] })),
+    new Promise<{ partialTxn: PartialPaymentTxn; signedTxn: PaymentV2 }>(
+      (resolve) =>
+        resolve({
+          signedTxn: new PaymentV2({ payer: EMPTY_B58_ADDRESS, payments: [] }),
+          partialTxn: {
+            type: 'payment_v2',
+            payments: [],
+            payer: '',
+            nonce: 0,
+            fee: 0,
+          },
+        }),
     ),
 }
 

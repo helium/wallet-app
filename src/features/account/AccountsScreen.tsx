@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, {
   memo,
   useCallback,
@@ -37,10 +38,22 @@ import TxnListItem from './TxnListItem'
 import useActivityList from './useActivityList'
 import NetTypeSegment from '../onboarding/NetTypeSegment'
 import { HomeNavigationProp } from '../home/homeTypes'
-import { Activity, useAccountQuery } from '../../generated/graphql'
+import {
+  Activity,
+  useAccountLazyQuery,
+  useAccountQuery,
+} from '../../generated/graphql'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import * as AccountUtils from '../../utils/accountUtils'
 import { useAccountSelector } from '../../components/AccountSelector'
+import AccountActivityFilter, {
+  useActivityFilter,
+} from './AccountActivityFilter'
+import { useAppear } from '../../utils/useVisible'
+import {
+  useTransactionDetail,
+  withTransactionDetail,
+} from './TransactionDetail'
 
 type AccountLayout = {
   accountViewStart: number
@@ -80,6 +93,7 @@ const AccountsScreen = () => {
   const spacing = useSpacing()
   const { t } = useTranslation()
   const [state, dispatch] = useReducer(layoutReducer, initialState)
+  const filterState = useActivityFilter()
   const bottomSheetRef = useRef<BottomSheet>(null)
   const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
   const { backgroundStyle: handleStyle } = useOpacity('black500', 1)
@@ -94,6 +108,7 @@ const AccountsScreen = () => {
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const [netType, setNetType] = useState<number>(NetType.MAINNET)
   const { show } = useAccountSelector()
+  const { show: showTxnDetail } = useTransactionDetail()
 
   const { data: accountData, error: accountsError } = useAccountQuery({
     variables: {
@@ -101,9 +116,18 @@ const AccountsScreen = () => {
     },
     fetchPolicy: 'cache-and-network',
     skip: !currentAccount?.address,
-    pollInterval: 10000,
+    pollInterval: 30000,
     // TODO: adjust this interval if needed
   })
+
+  const [fetchAccount] = useAccountLazyQuery({
+    variables: {
+      address: currentAccount?.address || '',
+    },
+    fetchPolicy: 'cache-and-network',
+  })
+
+  useAppear(fetchAccount)
 
   const {
     data: activityData,
@@ -113,7 +137,7 @@ const AccountsScreen = () => {
     now,
   } = useActivityList({
     address: currentAccount?.address,
-    skip: !currentAccount?.address,
+    filter: filterState.filter,
   })
 
   useEffect(() => {
@@ -210,17 +234,30 @@ const AccountsScreen = () => {
     return [mid, expanded]
   }, [spacing.l, state])
 
+  const showTransactionDetail = useCallback(
+    (item: Activity) => {
+      showTxnDetail({
+        item,
+        accountAddress: currentAccount?.address || '',
+      })
+    },
+    [currentAccount, showTxnDetail],
+  )
+
   const renderFlatlistItem = useCallback(
-    ({ item }: Item) => {
+    ({ item, index }: Item) => {
+      const isLast = index === (activityData?.length || 0) - 1
       return (
         <TxnListItem
+          onPress={showTransactionDetail}
           item={item}
           accountAddress={currentAccount?.address}
           now={now}
+          isLast={isLast}
         />
       )
     },
-    [currentAccount, now],
+    [activityData.length, currentAccount, now, showTransactionDetail],
   )
 
   const renderSeparator = useCallback(() => {
@@ -231,29 +268,28 @@ const AccountsScreen = () => {
     return item.hash
   }, [])
 
-  const header = useMemo(() => {
-    return (
-      <Box borderBottomColor="primaryBackground" borderBottomWidth={1}>
+  const footer = useMemo(() => {
+    if (activityLoading) {
+      return (
+        <Box height={60} justifyContent="center">
+          <ActivityIndicator color={primaryText} />
+        </Box>
+      )
+    }
+    if (filterState.filter === 'all') {
+      return (
         <Text
           variant="body1"
           color="surfaceSecondaryText"
-          marginHorizontal="l"
-          marginBottom="m"
+          padding="l"
+          textAlign="center"
         >
-          {t('accountsScreen.myTransactions')}
+          {t('accountsScreen.allFilterFooter')}
         </Text>
-      </Box>
-    )
-  }, [t])
-
-  const footer = useMemo(() => {
-    if (!activityLoading) return null
-    return (
-      <Box height={60} justifyContent="center">
-        <ActivityIndicator color={primaryText} />
-      </Box>
-    )
-  }, [activityLoading, primaryText])
+      )
+    }
+    return null
+  }, [activityLoading, filterState.filter, primaryText, t])
 
   const requestMore = useCallback(() => {
     fetchMoreActivity()
@@ -426,7 +462,6 @@ const AccountsScreen = () => {
           )
         })}
       </Box>
-      {/* TODO: Handle pending txns and filter? */}
       {currentAccount && !!currentAccount?.address && snapPoints.length > 0 && (
         <BottomSheet
           ref={bottomSheetRef}
@@ -435,11 +470,11 @@ const AccountsScreen = () => {
           backgroundStyle={backgroundStyle}
           handleIndicatorStyle={handleStyle}
         >
+          <AccountActivityFilter {...filterState} />
           <BottomSheetFlatList
-            ListHeaderComponent={header}
             ListFooterComponent={footer}
             ItemSeparatorComponent={renderSeparator}
-            data={activityData?.accountActivity?.data || ([] as Activity[])}
+            data={activityData}
             renderItem={renderFlatlistItem}
             keyExtractor={keyExtractor}
             onEndReached={requestMore}
@@ -450,4 +485,4 @@ const AccountsScreen = () => {
   )
 }
 
-export default memo(AccountsScreen)
+export default memo(withTransactionDetail(AccountsScreen))
