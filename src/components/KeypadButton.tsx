@@ -3,7 +3,7 @@ import React, { useCallback } from 'react'
 import { Pressable } from 'react-native'
 import Backspace from '@assets/images/backspace.svg'
 import { useTranslation } from 'react-i18next'
-import { useColors, useOpacity } from '../theme/themeHooks'
+import { useColors, useHitSlop, useOpacity } from '../theme/themeHooks'
 import Box from './Box'
 import Text from './Text'
 import { decimalSeparator } from '../utils/i18n'
@@ -19,6 +19,7 @@ const KeypadButton = ({ value, onPress }: Props) => {
   const { backgroundStyle: goldBackgroundStyle } = useOpacity('gold', 0.29)
   const { gold, surfaceSecondaryText } = useColors()
   const { t } = useTranslation()
+  const hitSlop = useHitSlop('m')
 
   const getBackgroundColorStyle = useCallback(
     (pressed: boolean) => {
@@ -109,6 +110,7 @@ const KeypadButton = ({ value, onPress }: Props) => {
             borderRadius="round"
             maxWidth={80}
             maxHeight={80}
+            hitSlop={hitSlop}
           >
             {body(pressed)}
           </Box>

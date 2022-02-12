@@ -125,9 +125,36 @@ export default {
   },
   accountsScreen: {
     myTransactions: 'My Transactions',
+    allFilterFooter:
+      "You've reached the end of your recent activity.\nSelect a filter to view more.",
+    showFilters: 'Show Filters',
+    hideFilters: 'Hide Filters',
+    filterTypes: {
+      all: 'All\nTransactions',
+      mining: 'Mining\nRewards',
+      payment: 'Payments',
+      hotspotAndValidators: 'Hotspots &\nValidators',
+      burn: 'Burn\nTransactions',
+      pending: 'Pending\nTransactions',
+    },
+  },
+  transactionDetail: {
+    transaction: 'Transaction',
+    amount: 'Amount',
+    from: 'From',
+    date: 'Date',
+    block: 'Block',
+    amountToPayee: 'Amount to Payee {{index}}',
+    payee: 'Payee {{index}}',
+    memo: 'Memo',
+    hash: 'Hash',
   },
   transactions: {
-    pending: 'Pending',
+    pending: {
+      pending: 'Pending',
+      inProcess: 'In Process',
+      sending: 'Payment Sending...',
+    },
     mining: 'Mining Rewards',
     sent: 'Sent {{ticker}}',
     stakeValidator: 'Stake {{ticker}}',

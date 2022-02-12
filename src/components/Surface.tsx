@@ -1,9 +1,9 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { BoxProps } from '@shopify/restyle'
 import React, { memo, useMemo } from 'react'
-import { StyleProp, useColorScheme, ViewStyle } from 'react-native'
+import { StyleProp, ViewStyle } from 'react-native'
 import { Color, Theme } from '../theme/theme'
-import { useCreateOpacity } from '../theme/themeHooks'
+import { useColorScheme, useCreateOpacity } from '../theme/themeHooks'
 import Box from './Box'
 
 type Props = BoxProps<Theme> & {

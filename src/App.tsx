@@ -23,6 +23,7 @@ import AccountSelector from './components/AccountSelector'
 import TransactionProvider from './storage/TransactionProvider'
 import SafeAreaBox from './components/SafeAreaBox'
 import { BalanceProvider } from './utils/Balance'
+import { useColorScheme } from './theme/themeHooks'
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -41,8 +42,6 @@ const linking = {
     },
   },
 } as LinkingOptions<RootNavigationProp>
-
-const colorScheme = 'dark' as 'dark' | 'light'
 
 const App = () => {
   LogBox.ignoreLogs([
@@ -63,14 +62,13 @@ const App = () => {
 
   const { client, clientReady, loading } = useApolloClient()
 
-  // TODO: Bring this back when we're ready to support dark/light mode
-  // const colorScheme = useColorScheme()
+  const colorScheme = useColorScheme()
   const colorAdaptedTheme = useMemo(
     () => ({
       ...theme,
       colors: colorScheme === 'light' ? lightThemeColors : darkThemeColors,
     }),
-    [],
+    [colorScheme],
   )
 
   const navTheme = useMemo(
@@ -86,7 +84,7 @@ const App = () => {
       },
     }),
 
-    [],
+    [colorScheme],
   )
 
   useMount(() => {
@@ -113,6 +111,9 @@ const App = () => {
     )
   }
 
+  // TODO: Need to find a better way to not allow queries to fire until `clientReady` is true
+  // This is why we're seeing some query failures. The retry policy will make the user experience ok,
+  // but we be good to eliminate the extra queries.
   return (
     <ThemeProvider theme={colorAdaptedTheme}>
       <OnboardingProvider>

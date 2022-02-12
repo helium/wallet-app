@@ -51,3 +51,36 @@ const useVisible = (props?: Props) => {
 }
 
 export default useVisible
+
+type AppearProps = () => void
+
+export const useAppear = (callback: AppearProps) => {
+  // TODO: This hook needs some work to eliminate double querying
+  // Right now it will query when coming out of the background and again
+  // after face id is resolved. Face id causes the app state to go to
+  // `inactive`, so that may be useful.
+  const navigation = useNavigation()
+
+  useAppState({ onForeground: callback })
+
+  useMount(() => {
+    callback()
+  })
+
+  useEffect(
+    () => navigation.addListener('focus', callback),
+    [callback, navigation],
+  )
+}
+
+export const useDisappear = (callback: AppearProps) => {
+  const navigation = useNavigation()
+
+  useAppState({ onBackground: callback })
+
+  useEffect(
+    () => navigation.addListener('blur', callback),
+
+    [callback, navigation],
+  )
+}

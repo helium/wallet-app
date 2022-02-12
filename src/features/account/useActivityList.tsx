@@ -1,30 +1,90 @@
-import { useCallback, useEffect, useState } from 'react'
-import { useAccountActivityQuery } from '../../generated/graphql'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { differenceBy } from 'lodash'
+import {
+  useAccountActivityQuery,
+  usePendingTxnsLazyQuery,
+  usePendingTxnsQuery,
+} from '../../generated/graphql'
+import { FilterType } from './AccountActivityFilter'
+import { useAppear } from '../../utils/useVisible'
 
-export default ({ address, skip }: { address?: string; skip: boolean }) => {
-  const { data, fetchMore, loading, error } = useAccountActivityQuery({
+const AccountActivityAPIFilters = {
+  all: ['all'],
+  mining: ['rewards_v1', 'rewards_v2'],
+  payment: ['payment_v1', 'payment_v2'],
+  hotspotAndValidators: [
+    'add_gateway_v1',
+    'assert_location_v1',
+    'assert_location_v2',
+    'transfer_hotspot_v1',
+    'transfer_hotspot_v2',
+    'unstake_validator_v1',
+    'stake_validator_v1',
+    'transfer_validator_stake_v1',
+  ],
+  burn: ['token_burn_v1'],
+  pending: [],
+} as Record<FilterType, string[]>
+
+export default ({
+  address,
+  filter,
+}: {
+  address?: string
+  filter: FilterType
+}) => {
+  const {
+    data: activityData,
+    fetchMore,
+    loading,
+    error,
+  } = useAccountActivityQuery({
     variables: {
       cursor: '',
       address: address || '',
+      filter: AccountActivityAPIFilters[filter].join(','),
     },
-    fetchPolicy: 'cache-and-network',
-    skip,
-    notifyOnNetworkStatusChange: true,
-    pollInterval: 60000, // Every minute check for new activity
+    fetchPolicy: 'cache-first',
+    skip: !address || filter === 'pending',
+    // notifyOnNetworkStatusChange: true,
+    pollInterval: 30000,
   })
+
+  const { data: pendingData } = usePendingTxnsQuery({
+    variables: {
+      address: address || '',
+    },
+    fetchPolicy: 'network-only',
+    skip: !address,
+    pollInterval: 9000,
+  })
+
+  const [getPendingTxns] = usePendingTxnsLazyQuery({
+    variables: {
+      address: address || '',
+    },
+    fetchPolicy: 'network-only',
+  })
+
+  useAppear(getPendingTxns)
 
   const [now, setNow] = useState(new Date())
 
   const requestMore = useCallback(() => {
-    if (!data?.accountActivity?.cursor || !address) return
+    if (
+      !activityData?.accountActivity?.cursor ||
+      !address ||
+      filter === 'pending'
+    )
+      return
 
     fetchMore({
       variables: {
-        cursor: data.accountActivity?.cursor,
+        cursor: activityData.accountActivity?.cursor,
         address,
       },
     })
-  }, [address, data, fetchMore])
+  }, [address, activityData, fetchMore, filter])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -33,5 +93,30 @@ export default ({ address, skip }: { address?: string; skip: boolean }) => {
     return () => clearInterval(interval)
   }, [])
 
-  return { data, error, loading, requestMore, now }
+  const data = useMemo(() => {
+    const pending = pendingData?.pendingTxns || []
+    if (filter === 'pending') {
+      return pending
+    }
+    const dataForFilter = activityData?.accountActivity?.data || []
+
+    if (filter === 'all') {
+      return [...differenceBy(pending, dataForFilter, 'hash'), ...dataForFilter]
+    }
+
+    const filteredPending = pending.filter(({ type }) =>
+      AccountActivityAPIFilters[filter].includes(type),
+    )
+    const dedupedPending = differenceBy(filteredPending, dataForFilter, 'hash')
+
+    return [...dedupedPending, ...dataForFilter]
+  }, [activityData, filter, pendingData])
+
+  return {
+    data,
+    error,
+    loading,
+    requestMore,
+    now,
+  }
 }

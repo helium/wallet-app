@@ -58,8 +58,6 @@ const HNTKeyboardSelectorContext =
   createContext<HNTKeyboardSelectorActions>(initialState)
 const { Provider } = HNTKeyboardSelectorContext
 
-// TODO: This should be dynamic based on locale?
-
 const HNTKeyboardSelector = ({ children }: { children: ReactNode }) => {
   const { t } = useTranslation()
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)

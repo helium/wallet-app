@@ -85,6 +85,25 @@ const useBalanceHook = ({ clientReady }: { clientReady: boolean }) => {
     [currentAccount],
   )
 
+  const intToBalance = useCallback(
+    (opts: { intValue?: number; account?: CSAccount }) => {
+      let val = 0
+      let account = currentAccount
+      if (opts.intValue) {
+        val = opts.intValue
+      }
+      if (opts.account) {
+        account = opts.account
+      }
+      if (val === undefined || !account) {
+        console.error('Cannot convert int to balance')
+        return
+      }
+      return new Balance(val, accountCurrencyType(account?.address))
+    },
+    [currentAccount],
+  )
+
   const accountBalance = useCallback(
     (opts?: { intValue: number; account: CSAccount }) => {
       let val = accountData?.account?.balance
@@ -102,13 +121,20 @@ const useBalanceHook = ({ clientReady }: { clientReady: boolean }) => {
     [accountData, currentAccount],
   )
 
-  return { dcToTokens, floatToBalance, accountBalance, oracleDateTime }
+  return {
+    accountBalance,
+    dcToTokens,
+    floatToBalance,
+    intToBalance,
+    oracleDateTime,
+  }
 }
 
 const initialState = {
   accountBalance: () => undefined,
   dcToTokens: () => undefined,
   floatToBalance: () => undefined,
+  intToBalance: () => undefined,
   oracleDateTime: undefined,
 }
 

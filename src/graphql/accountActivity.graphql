@@ -1,5 +1,5 @@
-query AccountActivity($address: String!, $cursor: String) {
-  accountActivity(address: $address, cursor: $cursor) {
+query AccountActivity($address: String!, $cursor: String, $filter: String) {
+  accountActivity(address: $address, cursor: $cursor, filter: $filter) {
     cursor
     data {
       time
@@ -26,6 +26,7 @@ query AccountActivity($address: String!, $cursor: String) {
       stakeAmount
       payments {
         payee
+        memo
         amount
       }
     }

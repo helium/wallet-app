@@ -4,6 +4,7 @@ import Box from './Box'
 import Text from './Text'
 import TextInput from './TextInput'
 
+export const DEFAULT_MEMO = 'AAAAAAAAAAA='
 export const MEMO_MAX_BYTES = 8
 export const encodeMemoString = (utf8Input: string | undefined) => {
   if (!utf8Input) return undefined
