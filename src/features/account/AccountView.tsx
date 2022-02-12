@@ -79,50 +79,56 @@ const AccountView = ({
         {balanceToString(displayVals?.hnt, { maxDecimalPlaces: 2 })}
       </Text>
       <Box flexDirection="row" marginTop="s">
-        <Surface
-          flexDirection="row"
-          alignItems="center"
-          paddingVertical="sx"
-          marginRight="ms"
-          paddingHorizontal="ms"
-        >
-          <Helium color={colors.blueBright500} />
-          <Text variant="body2" marginLeft="sx">
-            {balanceToString(displayVals?.stakedHnt, {
-              maxDecimalPlaces: 2,
-              showTicker: false,
-            })}
-          </Text>
-        </Surface>
-        <Surface
-          flexDirection="row"
-          alignItems="center"
-          paddingVertical="sx"
-          marginRight="ms"
-          paddingHorizontal="ms"
-        >
-          <DC />
-          <Text variant="body2" marginLeft="sx">
-            {balanceToString(displayVals?.dc, {
-              maxDecimalPlaces: 2,
-              showTicker: false,
-            })}
-          </Text>
-        </Surface>
-        <Surface
-          flexDirection="row"
-          alignItems="center"
-          paddingVertical="sx"
-          paddingHorizontal="ms"
-        >
-          <Helium color={colors.purple500} />
-          <Text variant="body2" marginLeft="sx">
-            {balanceToString(displayVals?.hst, {
-              maxDecimalPlaces: 2,
-              showTicker: false,
-            })}
-          </Text>
-        </Surface>
+        {displayVals?.stakedHnt && displayVals.stakedHnt.integerBalance > 0 && (
+          <Surface
+            flexDirection="row"
+            alignItems="center"
+            paddingVertical="sx"
+            marginRight="ms"
+            paddingHorizontal="ms"
+          >
+            <Helium color={colors.blueBright500} />
+            <Text variant="body2" marginLeft="sx">
+              {balanceToString(displayVals?.stakedHnt, {
+                maxDecimalPlaces: 2,
+                showTicker: false,
+              })}
+            </Text>
+          </Surface>
+        )}
+        {displayVals?.dc && displayVals.dc.integerBalance > 0 && (
+          <Surface
+            flexDirection="row"
+            alignItems="center"
+            paddingVertical="sx"
+            marginRight="ms"
+            paddingHorizontal="ms"
+          >
+            <DC />
+            <Text variant="body2" marginLeft="sx">
+              {balanceToString(displayVals?.dc, {
+                maxDecimalPlaces: 2,
+                showTicker: false,
+              })}
+            </Text>
+          </Surface>
+        )}
+        {displayVals?.hst && displayVals.hst.integerBalance > 0 && (
+          <Surface
+            flexDirection="row"
+            alignItems="center"
+            paddingVertical="sx"
+            paddingHorizontal="ms"
+          >
+            <Helium color={colors.purple500} />
+            <Text variant="body2" marginLeft="sx">
+              {balanceToString(displayVals?.hst, {
+                maxDecimalPlaces: 2,
+                showTicker: false,
+              })}
+            </Text>
+          </Surface>
+        )}
       </Box>
 
       <Box

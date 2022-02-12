@@ -57,6 +57,7 @@ const TransactionLineItem = ({
         {icon}
 
         <Text
+          flexShrink={1}
           variant="body1"
           color={bodyColor || 'primaryText'}
           selectable
