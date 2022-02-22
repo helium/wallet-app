@@ -21,9 +21,9 @@ const TxnListItem = ({ item, accountAddress, now, isLast, onPress }: Props) => {
     color,
     time,
     memo: txnMemo,
-    amount,
+    getAmount,
   } = useTxn(item, accountAddress || '', { now })
-  const { result: amt } = useAsync(amount, [])
+  const { result: amt } = useAsync(getAmount, [])
 
   const handlePress = useCallback(() => {
     onPress(item)

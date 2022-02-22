@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   addMinutes,
   format,
@@ -15,13 +15,16 @@ import Balance, {
 import { startCase } from 'lodash'
 import TxnReceive from '@assets/images/txnReceive.svg'
 import TxnSend from '@assets/images/txnSend.svg'
+import { useAsync } from 'react-async-hook'
+import animalName from 'angry-purple-tiger'
 import shortLocale from '../../utils/formatDistance'
 import { Color } from '../../theme/theme'
 import { useColors } from '../../theme/themeHooks'
 import { Activity } from '../../generated/graphql'
-import { accountCurrencyType } from '../../utils/accountUtils'
+import { accountCurrencyType, ellipsizeAddress } from '../../utils/accountUtils'
 import { balanceToString } from '../../utils/Balance'
 import { decodeMemoString, DEFAULT_MEMO } from '../../components/MemoInput'
+import { useOnboarding } from '../onboarding/OnboardingProvider'
 
 export const TxnTypeKeys = [
   'rewards_v1',
@@ -47,13 +50,19 @@ const useTxn = (
 ) => {
   const colors = useColors()
   const { t } = useTranslation()
-  const currencyType = accountCurrencyType(address)
+  const { makers } = useOnboarding()
 
-  const ticker = useMemo(() => currencyType.ticker, [currencyType.ticker])
+  const ticker = useMemo(() => {
+    const currencyType = accountCurrencyType(address)
+    return currencyType.ticker
+  }, [address])
 
   const hntBalance = useCallback(
-    (v: number | undefined | null) => new Balance(v || 0, currencyType),
-    [currencyType],
+    (v: number | undefined | null) => {
+      const currencyType = accountCurrencyType(address)
+      return new Balance(v || 0, currencyType)
+    },
+    [address],
   )
 
   const dcBalance = (v: number | undefined | null) =>
@@ -64,26 +73,56 @@ const useTxn = (
   }, [address, item])
 
   const isSelling = useMemo(() => {
-    return item?.seller === address
+    if (item?.seller) return item?.seller === address // for transfer_v1
+    if (item?.owner) return item?.owner === address // transfer_v2
+    return false
   }, [address, item])
+
+  const isHotspotTxn = useMemo(
+    () =>
+      item?.type === 'assert_location_v1' ||
+      item?.type === 'assert_location_v2' ||
+      item?.type === 'add_gateway_v1' ||
+      item?.type === 'transfer_hotspot_v1' ||
+      item?.type === 'transfer_hotspot_v2',
+    [item],
+  )
+
+  const isValidatorTxn = useMemo(
+    () =>
+      item?.type === 'stake_validator_v1' ||
+      item?.type === 'transfer_validator_stake_v1' ||
+      item?.type === 'unstake_validator_v1',
+    [item],
+  )
+
+  const getHotspotName = useCallback(() => {
+    if (!isHotspotTxn || !item?.gateway) return ''
+    return animalName(item.gateway)
+  }, [isHotspotTxn, item])
+
+  const getValidatorName = useCallback(() => {
+    if (!isValidatorTxn || !item?.address) return ''
+    return animalName(item.address)
+  }, [isValidatorTxn, item])
 
   const color = useMemo((): Color => {
     switch (item?.type as TxnType) {
       case 'transfer_hotspot_v1':
       case 'transfer_hotspot_v2':
-      case 'add_gateway_v1':
         return 'orange500'
       case 'payment_v1':
       case 'payment_v2':
         return isSending ? 'blueBright500' : 'greenBright500'
+      case 'add_gateway_v1':
       case 'assert_location_v1':
       case 'assert_location_v2':
-        return 'orange500'
+        return 'greenBright500'
       case 'rewards_v1':
       case 'rewards_v2':
       case 'stake_validator_v1':
       case 'transfer_validator_stake_v1':
-        return 'purple500'
+        return 'greenBright500'
       case 'token_burn_v1':
         return 'orange500'
       case 'unstake_validator_v1':
@@ -185,11 +224,11 @@ const useTxn = (
     }
 
     if (type === 'transfer_hotspot_v1' || type === 'transfer_hotspot_v2') {
-      return item?.seller === address
+      return isSelling
     }
 
     return true
-  }, [address, isSending, item])
+  }, [isSelling, isSending, item])
 
   const formatAmount = useCallback(
     async (
@@ -213,7 +252,7 @@ const useTxn = (
     [],
   )
 
-  const fee = useMemo(async () => {
+  const getFee = useCallback(async () => {
     const type = item?.type as TxnType
     if (type === 'rewards_v1' || type === 'rewards_v2') {
       return ''
@@ -229,7 +268,10 @@ const useTxn = (
       type === 'add_gateway_v1' ||
       type === 'assert_location_v1' ||
       type === 'assert_location_v2' ||
-      type === 'token_burn_v1'
+      type === 'token_burn_v1' ||
+      type === 'stake_validator_v1' ||
+      type === 'unstake_validator_v1' ||
+      type === 'transfer_validator_stake_v1'
     ) {
       return formatAmount('-', dcBalance(item?.fee))
     }
@@ -242,18 +284,52 @@ const useTxn = (
     return ''
   }, [address, formatAmount, isSelling, item])
 
-  // const feePayer = useMemo(() => {
-  //   if (
-  //     item instanceof AddGatewayV1 ||
-  //     item instanceof AssertLocationV1 ||
-  //     item instanceof AssertLocationV2
-  //   ) {
-  //     return getMakerName(item.payer, makers)
-  //   }
-  //   return ''
-  // }, [item])
+  const getFeePayer = useCallback(() => {
+    const type = item?.type
+    if (
+      !item?.type ||
+      !item.payer ||
+      (type !== 'add_gateway_v1' &&
+        type !== 'assert_location_v1' &&
+        type !== 'assert_location_v2')
+    ) {
+      return ''
+    }
+    return (
+      makers.find(({ address: makerAddress }) => makerAddress === item.payer)
+        ?.name || ellipsizeAddress(item.payer)
+    )
+  }, [item, makers])
 
-  const amount = useCallback(() => {
+  const getAmountTitle = useCallback(async () => {
+    const feePayer = await getFeePayer()
+    if (!item) return ''
+    switch (item.type as TxnType) {
+      case 'transfer_hotspot_v1':
+        return t('transactions.amountToSeller')
+      case 'assert_location_v1':
+      case 'assert_location_v2':
+      case 'add_gateway_v1':
+        return t('transactions.feePaidBy', { feePayer })
+      case 'stake_validator_v1':
+        return t('transactions.stake')
+      case 'transfer_validator_stake_v1':
+      case 'unstake_validator_v1':
+        return t('transactions.stakeAmount')
+      case 'token_burn_v1':
+        return t('transactions.amount')
+      case 'payment_v1':
+      case 'payment_v2':
+      case 'rewards_v1':
+      case 'rewards_v2': {
+        return t('transactions.totalAmount')
+      }
+      default:
+        return ''
+    }
+  }, [getFeePayer, item, t])
+
+  const getAmount = useCallback(() => {
     if (!item) return new Promise<string>((resolve) => resolve(''))
     switch (item.type as TxnType) {
       case 'rewards_v1':
@@ -266,7 +342,6 @@ const useTxn = (
         return formatAmount('+', rewardsAmount)
       }
       case 'transfer_hotspot_v1':
-      case 'transfer_hotspot_v2':
         return formatAmount(
           isSelling ? '+' : '-',
           hntBalance(item.amountToSeller),
@@ -278,7 +353,7 @@ const useTxn = (
       case 'stake_validator_v1':
         return formatAmount('-', hntBalance(item.stake))
       case 'unstake_validator_v1':
-        return formatAmount('+', hntBalance(item.stakeAmount))
+        return formatAmount('-', hntBalance(item.stakeAmount))
       case 'transfer_validator_stake_v1':
         return formatAmount(
           item.payer === address ? '-' : '+',
@@ -305,6 +380,7 @@ const useTxn = (
         return formatAmount('+', hntBalance(payment?.amount))
       }
     }
+    return new Promise<string>((resolve) => resolve(''))
   }, [address, formatAmount, hntBalance, isSelling, item])
 
   const time = useMemo(() => {
@@ -346,19 +422,147 @@ const useTxn = (
     }
 
     return decodeMemoString(memoRaw)
-    // TODO: memo
   }, [address, item])
+
+  const getPaymentsReceived = useCallback(async () => {
+    const payments = item?.payments?.filter(({ payee }) => payee === address)
+    if (!payments) return []
+    const all = payments.map(async (p) => {
+      const balance = await formatAmount('+', hntBalance(p.amount))
+      return { amount: balance, payee: p.payee, memo: p.memo || '' }
+    })
+    return Promise.all(all)
+  }, [address, formatAmount, hntBalance, item])
+
+  const getPaymentsSent = useCallback(async () => {
+    if (item?.payer !== address || !item?.payments) {
+      return []
+    }
+    const all = item.payments.map(
+      async ({ amount: amt, payee, memo: paymentMemo }) => {
+        const balance = await formatAmount('-', hntBalance(amt))
+        return { amount: balance, payee, memo: paymentMemo || '' }
+      },
+    )
+
+    return Promise.all(all)
+  }, [address, formatAmount, hntBalance, item])
 
   return {
     memo,
     time,
-    amount,
-    fee,
+    getAmount,
+    getFee,
     listIcon,
     title,
     color,
     isFee,
+    getFeePayer,
+    getPaymentsReceived,
+    getPaymentsSent,
+    isHotspotTxn,
+    isValidatorTxn,
+    getHotspotName,
+    getValidatorName,
+    getAmountTitle,
   }
+}
+
+type Payment = {
+  amount: string
+  payee: string
+  memo: string
+}
+type TxnDetails = {
+  feePayer: string
+  icon?: JSX.Element
+  title: string
+  time: string
+  color: Color
+  fee: string
+  paymentsReceived: Payment[]
+  paymentsSent: Payment[]
+  amount: string
+  amountTitle: string
+  hotspotName: string
+  validatorName: string
+  isValidatorTxn: boolean
+  isHotspotTxn: boolean
+}
+export const useTxnDetails = (item?: Activity, address?: string) => {
+  const {
+    listIcon,
+    title,
+    time,
+    color,
+    getFeePayer,
+    getFee,
+    getPaymentsReceived,
+    getPaymentsSent,
+    getAmount,
+    getHotspotName,
+    getValidatorName,
+    isHotspotTxn,
+    isValidatorTxn,
+    getAmountTitle,
+  } = useTxn(item, address || '', {
+    dateFormat: 'dd MMMM yyyy HH:MM',
+  })
+
+  const [details, setDetails] = useState<TxnDetails>({
+    feePayer: '',
+    title: '',
+    time: '',
+    color: 'primaryText',
+    fee: '',
+    paymentsReceived: [],
+    paymentsSent: [],
+    amount: '',
+    amountTitle: '',
+    validatorName: '',
+    hotspotName: '',
+    isHotspotTxn: false,
+    isValidatorTxn: false,
+  })
+
+  useAsync(async () => {
+    const feePayer = await getFeePayer()
+    const fee = await getFee()
+    const paymentsReceived = await getPaymentsReceived()
+    const paymentsSent = await getPaymentsSent()
+    const amount = await getAmount()
+    const amountTitle = await getAmountTitle()
+    const validatorName = await getValidatorName()
+    const hotspotName = await getHotspotName()
+
+    setDetails({
+      feePayer,
+      icon: listIcon,
+      title,
+      time,
+      color,
+      fee,
+      paymentsReceived,
+      paymentsSent,
+      amount,
+      amountTitle,
+      validatorName,
+      hotspotName,
+      isHotspotTxn,
+      isValidatorTxn,
+    })
+  }, [
+    color,
+    getAmount,
+    getFee,
+    getFeePayer,
+    getPaymentsReceived,
+    getPaymentsSent,
+    listIcon,
+    time,
+    title,
+  ])
+  return details
 }
 
 export default useTxn

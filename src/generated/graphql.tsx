@@ -39,14 +39,27 @@ export type AccountData = {
 
 export type Activity = {
   __typename?: 'Activity'
+  address?: Maybe<Scalars['String']>
   amount?: Maybe<Scalars['Int']>
   amountToSeller?: Maybe<Scalars['Int']>
+  buyer?: Maybe<Scalars['String']>
+  elevation?: Maybe<Scalars['Float']>
   endEpoch?: Maybe<Scalars['Int']>
   fee?: Maybe<Scalars['Int']>
+  gain?: Maybe<Scalars['Float']>
+  gateway?: Maybe<Scalars['String']>
   hash: Scalars['String']
   height?: Maybe<Scalars['Int']>
+  lat?: Maybe<Scalars['Float']>
+  lng?: Maybe<Scalars['Float']>
+  location?: Maybe<Scalars['String']>
   memo?: Maybe<Scalars['String']>
+  newAddress?: Maybe<Scalars['String']>
+  newOwner?: Maybe<Scalars['String']>
   nonce?: Maybe<Scalars['Int']>
+  oldAddress?: Maybe<Scalars['String']>
+  oldOwner?: Maybe<Scalars['String']>
+  owner?: Maybe<Scalars['String']>
   payer?: Maybe<Scalars['String']>
   payments?: Maybe<Array<Payment>>
   pending?: Maybe<Scalars['Boolean']>
@@ -192,6 +205,19 @@ export type AccountActivityQuery = {
       memo?: string | null
       type: string
       hash: string
+      gateway?: string | null
+      address?: string | null
+      oldAddress?: string | null
+      newAddress?: string | null
+      oldOwner?: string | null
+      newOwner?: string | null
+      lat?: number | null
+      lng?: number | null
+      gain?: number | null
+      elevation?: number | null
+      location?: string | null
+      owner?: string | null
+      buyer?: string | null
       endEpoch?: number | null
       startEpoch?: number | null
       height?: number | null
@@ -349,6 +375,19 @@ export const AccountActivityDocument = gql`
         memo
         type
         hash
+        gateway
+        address
+        oldAddress
+        newAddress
+        oldOwner
+        newOwner
+        lat
+        lng
+        gain
+        elevation
+        location
+        owner
+        buyer
         endEpoch
         startEpoch
         height

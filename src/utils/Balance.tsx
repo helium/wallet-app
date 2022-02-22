@@ -77,7 +77,7 @@ const useBalanceHook = ({ clientReady }: { clientReady: boolean }) => {
         acct = currentAccount
       }
       if (!acct) {
-        console.error('Cannot convert float to balance for nil account')
+        console.warn('Cannot convert float to balance for nil account')
         return
       }
       return Balance.fromFloat(value, accountCurrencyType(acct.address))
@@ -96,7 +96,7 @@ const useBalanceHook = ({ clientReady }: { clientReady: boolean }) => {
         account = opts.account
       }
       if (val === undefined || !account) {
-        console.error('Cannot convert int to balance')
+        console.warn('Cannot convert int to balance')
         return
       }
       return new Balance(val, accountCurrencyType(account?.address))
@@ -113,7 +113,7 @@ const useBalanceHook = ({ clientReady }: { clientReady: boolean }) => {
         account = opts.account
       }
       if (val === undefined || !account) {
-        console.error('Cannot convert int to balance')
+        console.warn('Cannot convert int to balance')
         return
       }
       return new Balance(val, accountCurrencyType(account?.address))

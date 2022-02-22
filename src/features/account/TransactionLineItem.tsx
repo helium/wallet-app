@@ -11,18 +11,22 @@ import { Color } from '../../theme/theme'
 type Props = {
   title: string
   bodyText: string | number
+  bodyTextEnd?: string | number
   icon?: Element
   isAddress?: boolean
   navTo?: string
   bodyColor?: Color
+  bodyEndColor?: Color
 }
 const TransactionLineItem = ({
   title,
   bodyText,
+  bodyTextEnd,
   icon,
   isAddress,
   navTo,
   bodyColor,
+  bodyEndColor,
 }: Props) => {
   const { primaryText } = useColors()
   const hitSlop = useHitSlop('xl')
@@ -53,7 +57,7 @@ const TransactionLineItem = ({
       <Text variant="body2" color="secondaryText" marginBottom="xs">
         {title}
       </Text>
-      <Box flexDirection="row">
+      <Box flexDirection="row" alignItems="center">
         {icon}
 
         <Text
@@ -65,6 +69,19 @@ const TransactionLineItem = ({
         >
           {body}
         </Text>
+
+        {bodyTextEnd && (
+          <Text
+            flex={1}
+            textAlign="right"
+            variant="body1"
+            color={bodyEndColor || 'primaryText'}
+            selectable
+            marginLeft={icon ? 'xs' : 'none'}
+          >
+            {bodyTextEnd}
+          </Text>
+        )}
         {navTo && (
           <TouchableOpacityBox
             onPress={handleExplorerLink}

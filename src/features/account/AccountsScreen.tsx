@@ -144,10 +144,10 @@ const AccountsScreen = () => {
     if (!accountsError && !activityError) return
 
     if (accountsError) {
-      console.error(accountsError)
+      console.warn(accountsError)
     }
     if (activityError) {
-      console.error(activityError)
+      console.warn(activityError)
     }
   }, [accountsError, activityError])
 
