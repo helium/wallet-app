@@ -17,15 +17,19 @@ import {
 } from '@gorhom/bottom-sheet'
 import { Edge } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
+import { groupBy } from 'lodash'
+import animalName from 'angry-purple-tiger'
+import { LayoutChangeEvent, Platform } from 'react-native'
 import { Activity } from '../../generated/graphql'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import TransactionLineItem from './TransactionLineItem'
 import HandleBasic from '../../components/HandleBasic'
 import ExpoBlurBox from '../../components/ExpoBlurBox'
-import useTxn from './useTxn'
+import { useTxnDetails } from './useTxn'
 import { useBalance } from '../../utils/Balance'
 import { useExplorer } from '../../constants/urls'
 import { decodeMemoString, DEFAULT_MEMO } from '../../components/MemoInput'
+import { ellipsizeAddress } from '../../utils/accountUtils'
 
 const initialState = {
   show: () => undefined,
@@ -42,23 +46,38 @@ const { Provider } = TransactionDetailSelectorContext
 const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
   const { t } = useTranslation()
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-  const [item, setItem] = useState<DetailData>()
+  const [detailData, setDetailData] = useState<DetailData>()
+  const [contentHeight, setContentHeight] = useState(0)
 
   const { intToBalance } = useBalance()
-  const { item: txn, accountAddress } = item || {}
+  const { item: txn, accountAddress } = detailData || {}
 
-  const { listIcon, title, time, color } = useTxn(txn, accountAddress || '', {
-    dateFormat: 'dd MMMM yyyy HH:MM',
-  })
-
+  const {
+    feePayer,
+    icon,
+    title,
+    time,
+    color,
+    fee,
+    paymentsReceived,
+    paymentsSent,
+    amount,
+    amountTitle,
+    hotspotName,
+    validatorName,
+  } = useTxnDetails(txn, accountAddress || '')
   const explorerURL = useExplorer()
 
   const snapPoints = useMemo(() => {
-    return ['50%', '90%']
-  }, [])
+    let maxHeight: number | string = '90%'
+    if (contentHeight > 0) {
+      maxHeight = contentHeight
+    }
+    return ['50%', maxHeight]
+  }, [contentHeight])
 
   const show = useCallback((data: DetailData) => {
-    setItem(data)
+    setDetailData(data)
     bottomSheetModalRef.current?.present()
   }, [])
 
@@ -87,39 +106,43 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
         right={0}
         borderRadius="xl"
         overflow="hidden"
+        intensity={Platform.OS === 'android' ? 90 : 50}
+        tint={Platform.OS === 'android' ? 'dark' : 'default'}
       />
     )
   }, [])
 
   const handleComponent = useCallback(() => <HandleBasic />, [])
 
-  const payments = useMemo(() => {
-    if (txn?.payer !== accountAddress || !txn?.payments) {
-      return []
-    }
-    return txn.payments.map(({ amount: amt, payee, memo }) => {
-      const balance = intToBalance({ intValue: amt })
-      return { amount: `-${balance}`, payee, memo }
+  const rewards = useMemo(() => {
+    if (!txn?.rewards?.length) return null
+
+    const grouped = groupBy(txn.rewards, (reward) => {
+      if (reward.type === 'securities') return reward.type
+
+      return `${reward.gateway}.${reward.type}`
     })
-  }, [accountAddress, intToBalance, txn])
 
-  const paymentsReceived = useMemo(
-    () =>
-      (txn?.payments || []).reduce((acc, { payee, amount: amt, memo }) => {
-        if (payee !== accountAddress) {
-          return acc
-        }
-        const balance = intToBalance({ intValue: amt })
+    return Object.keys(grouped).map((key) => {
+      const group = grouped[key]
+      const totalAmount = group.reduce((sum, { amount: amt }) => sum + amt, 0)
+      const balance = intToBalance({ intValue: totalAmount })
+      const typeName = t(`transactions.rewardTypes.${group[0].type}`)
 
-        const next = [{ amount: `+${balance}`, payee, memo }, ...acc] as {
-          memo: string
-          amount: string
-          payee: string
-        }[]
-        return next
-      }, [] as Array<{ memo: string; amount: string; payee: string }>),
-    [accountAddress, intToBalance, txn],
-  )
+      return {
+        name:
+          key === 'securities'
+            ? t('transactions.securityTokens')
+            : animalName(group[0].gateway),
+        amount: balance,
+        type: typeName,
+      }
+    })
+  }, [intToBalance, t, txn])
+
+  const handleContentLayout = useCallback((e: LayoutChangeEvent) => {
+    setContentHeight(e.nativeEvent.layout.height)
+  }, [])
 
   return (
     <BottomSheetModalProvider>
@@ -133,24 +156,59 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
           handleComponent={handleComponent}
         >
           <BottomSheetScrollView>
-            <SafeAreaBox edges={safeEdges} paddingVertical="l">
+            <SafeAreaBox
+              edges={safeEdges}
+              paddingVertical="l"
+              onLayout={handleContentLayout}
+            >
               <TransactionLineItem
-                title={t('transactionDetail.transaction')}
+                title={t('transactions.transaction')}
                 bodyText={title}
-                icon={listIcon}
+                icon={icon}
               />
 
-              {payments.map(({ amount: amt, payee, memo }, index) => (
+              {!!hotspotName && (
+                <TransactionLineItem
+                  title={t('transactions.hotspot')}
+                  bodyText={hotspotName}
+                  navTo={`${explorerURL}/hotspots/${txn?.gateway}`}
+                />
+              )}
+              {!!validatorName && (
+                <TransactionLineItem
+                  title={t('transactions.validator')}
+                  bodyText={validatorName}
+                  navTo={`${explorerURL}/validators/${txn?.gateway}`}
+                />
+              )}
+
+              {!!txn?.buyer && (
+                <TransactionLineItem
+                  title={t('transactions.buyer')}
+                  bodyText={ellipsizeAddress(txn.buyer)}
+                  navTo={`${explorerURL}/accounts/${txn.buyer}`}
+                />
+              )}
+
+              {!!txn?.seller && (
+                <TransactionLineItem
+                  title={t('transactions.seller')}
+                  bodyText={ellipsizeAddress(txn.seller)}
+                  navTo={`${explorerURL}/accounts/${txn.seller}`}
+                />
+              )}
+
+              {paymentsSent.map(({ amount: amt, payee, memo }, index) => (
                 <React.Fragment key={`${index}.amountToPayee`}>
                   <TransactionLineItem
-                    title={t('transactionDetail.amountToPayee', {
+                    title={t('transactions.amountToPayee', {
                       index: index + 1,
                     })}
                     bodyText={amt}
                     bodyColor={color}
                   />
                   <TransactionLineItem
-                    title={t('transactionDetail.payee', {
+                    title={t('transactions.payee', {
                       index: index + 1,
                     })}
                     bodyText={payee}
@@ -159,7 +217,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                   />
                   {memo !== undefined && memo !== DEFAULT_MEMO && (
                     <TransactionLineItem
-                      title={t('transactionDetail.memo')}
+                      title={t('transactions.memo')}
                       bodyText={decodeMemoString(memo)}
                     />
                   )}
@@ -169,38 +227,109 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
               {paymentsReceived.map(({ amount: amt, payee, memo }, index) => (
                 <React.Fragment key={`${index}.amountToPayee`}>
                   <TransactionLineItem
-                    title={t('transactionDetail.amount')}
+                    title={t('transactions.amount')}
                     bodyText={amt}
                     bodyColor={color}
                   />
                   <TransactionLineItem
-                    title={t('transactionDetail.from')}
+                    title={t('transactions.from')}
                     bodyText={payee}
                     isAddress
                     navTo={`${explorerURL}/accounts/${payee}`}
                   />
                   {memo !== undefined && memo !== DEFAULT_MEMO && (
                     <TransactionLineItem
-                      title={t('transactionDetail.memo')}
+                      title={t('transactions.memo')}
                       bodyText={decodeMemoString(memo)}
                     />
                   )}
                 </React.Fragment>
               ))}
 
+              {rewards?.map((reward, index) => {
+                return (
+                  <TransactionLineItem
+                    key={`rewards.${index}`}
+                    title={reward.name}
+                    bodyTextEnd={reward.amount?.toString() || ''}
+                    bodyEndColor={color}
+                    bodyText={reward.type}
+                  />
+                )
+              })}
+
+              {!!amountTitle && (
+                <TransactionLineItem
+                  title={amountTitle}
+                  bodyText={amount}
+                  bodyColor={color}
+                />
+              )}
+
+              {!!fee && (
+                <TransactionLineItem
+                  title={
+                    feePayer
+                      ? t('transactions.txnFeePaidBy', { feePayer })
+                      : t('transactions.txnFee')
+                  }
+                  bodyText={fee}
+                />
+              )}
+
+              {!!txn?.owner && (
+                <TransactionLineItem
+                  title={t('transactions.owner')}
+                  bodyText={txn.owner}
+                  navTo={`${explorerURL}/accounts/${txn.owner}`}
+                />
+              )}
+
+              {!!txn?.oldOwner && (
+                <TransactionLineItem
+                  title={t('transactions.oldOwner')}
+                  bodyText={txn.oldOwner}
+                  navTo={`${explorerURL}/accounts/${txn.oldOwner}`}
+                />
+              )}
+
+              {!!txn?.oldAddress && (
+                <TransactionLineItem
+                  title={t('transactions.oldAddress')}
+                  bodyText={txn.oldAddress}
+                  navTo={`${explorerURL}/accounts/${txn.oldAddress}`}
+                />
+              )}
+
+              {!!txn?.newOwner && (
+                <TransactionLineItem
+                  title={t('transactions.newOwner')}
+                  bodyText={txn.newOwner}
+                  navTo={`${explorerURL}/accounts/${txn.newOwner}`}
+                />
+              )}
+
+              {!!txn?.newAddress && (
+                <TransactionLineItem
+                  title={t('transactions.newAddress')}
+                  bodyText={txn.newAddress}
+                  navTo={`${explorerURL}/accounts/${txn.newAddress}`}
+                />
+              )}
+
               <TransactionLineItem
-                title={t('transactionDetail.date')}
+                title={t('transactions.date')}
                 bodyText={time}
               />
 
               <TransactionLineItem
-                title={t('transactionDetail.block')}
+                title={t('transactions.block')}
                 bodyText={txn?.height || ''}
                 navTo={`${explorerURL}/blocks/${txn?.height}`}
               />
 
               <TransactionLineItem
-                title={t('transactionDetail.hash')}
+                title={t('transactions.hash')}
                 bodyText={txn?.hash || ''}
                 navTo={
                   txn?.pending ? undefined : `${explorerURL}/txns/${txn?.hash}`

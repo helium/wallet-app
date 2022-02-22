@@ -6,6 +6,19 @@ query AccountActivity($address: String!, $cursor: String, $filter: String) {
       memo
       type
       hash
+      gateway
+      address
+      oldAddress
+      newAddress
+      oldOwner
+      newOwner
+      lat
+      lng
+      gain
+      elevation
+      location
+      owner
+      buyer
       endEpoch
       startEpoch
       height

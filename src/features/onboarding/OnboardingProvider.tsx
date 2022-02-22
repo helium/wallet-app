@@ -3,9 +3,11 @@ import React, {
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useState,
 } from 'react'
 import { NetType } from '@helium/crypto-react-native'
+import OnboardingClient, { Maker } from '@helium/onboarding'
 import { CSAccount, SecureAccount } from '../../storage/AccountStorageProvider'
 
 export type OnboardingOpt = 'import' | 'create' | 'assign'
@@ -27,11 +29,17 @@ const useOnboardingHook = () => {
   const [onboardingData, setOnboardingData] =
     useState<OnboardingData>(initialState)
 
+  const [makers, setMakers] = useState<Maker[]>([])
+
   const reset = useCallback(() => {
     setOnboardingData(initialState)
   }, [initialState])
 
-  return { onboardingData, setOnboardingData, reset }
+  useEffect(() => {
+    new OnboardingClient().getMakers().then(({ data }) => setMakers(data || []))
+  }, [])
+
+  return { onboardingData, setOnboardingData, reset, makers }
 }
 
 const initialState = {
@@ -40,6 +48,7 @@ const initialState = {
     words: [] as string[],
     netType: NetType.MAINNET,
   },
+  makers: [] as Maker[],
   setOnboardingData: () => undefined,
   reset: () => undefined,
 }
