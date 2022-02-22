@@ -318,6 +318,9 @@ const AccountsScreen = () => {
             address: currentAccount?.address,
           })
           break
+        case 'request':
+          navigation.navigate('RequestScreen')
+          break
         case 'payment':
           // TODO: Remove eventually
           if (accountNetType !== NetType.TESTNET) return

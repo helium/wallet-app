@@ -9,6 +9,7 @@ export type HomeStackParamList = {
   PaymentScreen: {
     address?: string
   }
+  RequestScreen: undefined
   AddressBookNavigator: undefined
   WifiOnboard:
     | {

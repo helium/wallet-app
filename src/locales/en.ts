@@ -187,6 +187,9 @@ export default {
     fetchMoreActivity: 'Fetch More Activity',
     getAccountData: 'Get Account Data',
   },
+  request: {
+    title: 'Generate Request',
+  },
   settings: {
     revealWords: {
       next: 'I have written these down',
