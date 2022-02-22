@@ -7,6 +7,7 @@ import WifiPurchase from '../payment/WifiPurchase'
 import AddressBookNavigator from '../addressBook/AddressBookNavigator'
 import SettingsNavigator from '../settings/SettingsNavigator'
 import AddNewContact from '../addressBook/AddNewContact'
+import RequestScreen from '../request/RequestScreen'
 
 const HomeStack = createStackNavigator()
 
@@ -24,6 +25,7 @@ const HomeStackScreen = () => {
         component={AccountAssignScreen}
       />
       <HomeStack.Screen name="PaymentScreen" component={PaymentScreen} />
+      <HomeStack.Screen name="RequestScreen" component={RequestScreen} />
       <HomeStack.Screen
         name="WifiPurchase"
         component={WifiPurchase}
