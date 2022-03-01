@@ -3,6 +3,7 @@ import Balance, {
   CurrencyType,
   DataCredits,
   NetworkTokens,
+  TestNetworkTokens,
 } from '@helium/currency'
 import { PaymentV2, TokenBurnV1, Transaction } from '@helium/transactions'
 import React, { createContext, ReactNode, useContext, useEffect } from 'react'
@@ -19,8 +20,8 @@ export const EMPTY_B58_ADDRESS = Address.fromB58(
 )
 
 export type SendDetails = {
-  address: string
-  balanceAmount: Balance<NetworkTokens>
+  payee: string
+  balanceAmount: Balance<NetworkTokens> | Balance<TestNetworkTokens>
   memo: string
 }
 
@@ -112,11 +113,13 @@ const useTransactionHook = ({ clientReady }: { clientReady: boolean }) => {
 
     const txn = new PaymentV2({
       payer: keypair.address,
-      payments: paymentDetails.map(({ address, balanceAmount, memo }) => ({
-        payee: Address.fromB58(address),
-        amount: balanceAmount.integerBalance,
-        memo: encodeMemoString(memo),
-      })),
+      payments: paymentDetails.map(
+        ({ payee: address, balanceAmount, memo }) => ({
+          payee: Address.fromB58(address),
+          amount: balanceAmount.integerBalance,
+          memo: encodeMemoString(memo),
+        }),
+      ),
       nonce: freshAccountData.account.speculativeNonce + 1,
     })
 
@@ -144,15 +147,17 @@ const useTransactionHook = ({ clientReady }: { clientReady: boolean }) => {
     }
     const paymentTxn = new PaymentV2({
       payer: Address.fromB58(currentAccount.address),
-      payments: paymentDetails.map(({ address, balanceAmount, memo }) => ({
-        // if a payee address isn't supplied, we use a dummy address
-        payee:
-          address && Address.isValid(address)
-            ? Address.fromB58(address)
-            : EMPTY_B58_ADDRESS,
-        amount: balanceAmount.integerBalance,
-        memo: encodeMemoString(memo),
-      })),
+      payments: paymentDetails.map(
+        ({ payee: address, balanceAmount, memo }) => ({
+          // if a payee address isn't supplied, we use a dummy address
+          payee:
+            address && Address.isValid(address)
+              ? Address.fromB58(address)
+              : EMPTY_B58_ADDRESS,
+          amount: balanceAmount.integerBalance,
+          memo: encodeMemoString(memo),
+        }),
+      ),
       nonce: (accountData?.account?.nonce || 0) + 1,
     })
 

@@ -3,12 +3,13 @@ import ChevronDown from '@assets/images/chevronDown.svg'
 import { Keyboard, StyleSheet } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
 import TestnetIcon from '@assets/images/testnetIcon.svg'
+import { NetType } from '@helium/crypto-react-native'
 import { useColors, useHitSlop } from '../theme/themeHooks'
 import AccountIcon from './AccountIcon'
 import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
-import { Theme } from '../theme/theme'
+import { Spacing, Theme } from '../theme/theme'
 
 type Props = {
   onPress?: () => void
@@ -16,7 +17,9 @@ type Props = {
   title?: string
   subtitle?: string
   showBubbleArrow?: boolean
-  isTestnet?: boolean
+  netType?: NetType.NetType
+  innerHorizontalPadding?: Spacing
+  innerVerticalPadding?: Spacing
 } & BoxProps<Theme>
 
 const AccountButton = ({
@@ -25,7 +28,9 @@ const AccountButton = ({
   title,
   subtitle,
   showBubbleArrow,
-  isTestnet,
+  netType = NetType.MAINNET,
+  innerHorizontalPadding,
+  innerVerticalPadding,
   ...boxProps
 }: Props) => {
   const hitSlop = useHitSlop('l')
@@ -45,12 +50,12 @@ const AccountButton = ({
       {...boxProps}
     >
       <Box
-        backgroundColor="surfaceSecondary"
+        backgroundColor="secondary"
         borderRadius="xl"
         alignItems="center"
         flexDirection="row"
-        paddingHorizontal="l"
-        paddingVertical="m"
+        paddingHorizontal={innerHorizontalPadding || 'l'}
+        paddingVertical={innerVerticalPadding || 'm'}
       >
         <AccountIcon size={40} address={address} />
         <Box flex={1}>
@@ -58,7 +63,9 @@ const AccountButton = ({
             <Text marginLeft="ms" marginRight="xs" variant="subtitle2">
               {title}
             </Text>
-            {isTestnet && <TestnetIcon color={secondaryText} />}
+            {netType === NetType.TESTNET && (
+              <TestnetIcon color={secondaryText} />
+            )}
           </Box>
           {subtitle && (
             <Text marginLeft="ms" variant="body3" color="secondaryText">
@@ -70,7 +77,7 @@ const AccountButton = ({
       </Box>
       {showBubbleArrow && (
         <Box
-          backgroundColor="surfaceSecondary"
+          backgroundColor="secondary"
           alignSelf="center"
           style={styles.rotatedBox}
         />

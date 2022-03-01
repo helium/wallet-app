@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
 import Close from '@assets/images/close.svg'
 import { Alert, SectionList } from 'react-native'
+import Clipboard from '@react-native-community/clipboard'
+import Toast from 'react-native-simple-toast'
 import Text from '../../components/Text'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -19,6 +21,8 @@ import { useAppStorage } from '../../storage/AppStorageProvider'
 import { SettingsNavigationProp } from './settingsTypes'
 import { useLanguageStorage } from '../../storage/LanguageProvider'
 import { useApolloClient } from '../../graphql/useApolloClient'
+import useHaptic from '../../utils/useHaptic'
+import { ellipsizeAddress } from '../../utils/accountUtils'
 
 const Settings = () => {
   const { t } = useTranslation()
@@ -43,6 +47,7 @@ const Settings = () => {
     updateConvertToCurrency,
   } = useAppStorage()
   const { client } = useApolloClient()
+  const { triggerNavHaptic } = useHaptic()
 
   const isPinRequired = useMemo(
     () => appPin !== undefined && appPin.status !== 'off',
@@ -187,6 +192,19 @@ const Settings = () => {
     }
   }, [appPin, isPinRequired, settingsNav])
 
+  const handleCopyAddress = useCallback(() => {
+    if (!currentAccount?.address) return
+    Clipboard.setString(currentAccount.address)
+    Toast.showWithGravity(
+      t('generic.copied', {
+        target: ellipsizeAddress(currentAccount.address),
+      }),
+      Toast.SHORT,
+      Toast.TOP,
+    )
+    triggerNavHaptic()
+  }, [currentAccount, t, triggerNavHaptic])
+
   const SectionData = useMemo(() => {
     let pin: SettingsListItemType[] = [
       {
@@ -232,6 +250,10 @@ const Settings = () => {
           {
             title: t('settings.sections.account.revealWords'),
             onPress: handleRevealWords,
+          },
+          {
+            title: t('settings.sections.account.copyAddress'),
+            onPress: handleCopyAddress,
           },
           {
             title: t('settings.sections.account.signOut'),
@@ -288,6 +310,7 @@ const Settings = () => {
     convertToCurrency,
     currency,
     currentAccount,
+    handleCopyAddress,
     handleCurrencyTypeChange,
     handleIntervalSelected,
     handleLanguageChange,

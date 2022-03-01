@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { memo, useCallback } from 'react'
 import { BoxProps } from '@shopify/restyle'
 import useHaptic from '../utils/useHaptic'
 import Box from './Box'
@@ -15,8 +15,8 @@ const Keypad = ({ onPress, customButtonType, ...boxProps }: Props) => {
 
   const handlePress = useCallback(
     (value?: KeypadInput) => {
-      triggerImpact()
       onPress?.(value)
+      triggerImpact()
     },
     [onPress, triggerImpact],
   )
@@ -48,4 +48,4 @@ const Keypad = ({ onPress, customButtonType, ...boxProps }: Props) => {
   )
 }
 
-export default Keypad
+export default memo(Keypad)

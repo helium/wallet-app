@@ -7,9 +7,15 @@ export type HomeStackParamList = {
   }
   AccountsScreen: undefined
   AccountAssignScreen: undefined
-  PaymentScreen: {
-    address?: string
-  }
+  PaymentScreen:
+    | undefined
+    | {
+        payer?: string
+        payments?: string
+        payee?: string
+        amount?: string
+        memo?: string
+      }
   RequestScreen: undefined
   AddressBookNavigator: undefined
   WifiOnboard:

@@ -108,11 +108,12 @@ export default {
     cancel: 'Cancel',
     clear: 'Clear',
     confirm: 'Confirm',
-    copied: 'Copied',
+    copied: 'Copied {{target}}',
     error: 'Error',
     fee: 'Fee',
     next: 'Next',
     ok: 'OK',
+    share: 'Share',
     skip: 'Skip',
     success: 'Success',
     total: 'Total',
@@ -194,6 +195,13 @@ export default {
     getAccountData: 'Get Account Data',
   },
   request: {
+    amount: 'Amount (Optional)',
+    copied: 'Link has been copied to your clipboard',
+    enterAmount: 'Enter {{ticker}} Amount',
+    link: 'Link',
+    memo: 'Memo',
+    payee: 'Payee',
+    qr: 'QR',
     title: 'Generate Request',
   },
   settings: {
@@ -208,6 +216,7 @@ export default {
       account: {
         alias: 'Account Alias',
         revealWords: 'Reveal Words',
+        copyAddress: 'Copy Address',
         signOut: 'Sign Out',
         signOutAlert: {
           body: 'You are signing out of your account {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your HNT\n- your Wallet',
