@@ -39,11 +39,14 @@ import AccountIcon from './AccountIcon'
 import { CSAccount } from '../storage/AccountStorageProvider'
 import { KeypadInput } from './KeypadButton'
 import { decimalSeparator, groupSeparator, locale } from '../utils/i18n'
+import BackgroundFill from './BackgroundFill'
+import HandleBasic from './HandleBasic'
 
 const initialState = {
   show: () => undefined,
   hide: () => undefined,
   value: '',
+  visible: false,
 }
 type HNTKeyboardSelectorActions = {
   show: (opts: {
@@ -52,6 +55,7 @@ type HNTKeyboardSelectorActions = {
     containerHeight?: number
   }) => void
   hide: () => void
+  visible: boolean
   value: string
 }
 const HNTKeyboardSelectorContext =
@@ -62,7 +66,6 @@ const HNTKeyboardSelector = ({ children }: { children: ReactNode }) => {
   const { t } = useTranslation()
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
-  const { backgroundStyle: cancelBackgroundStyle } = useOpacity('error', 0.4)
   const [value, setValue] = useState('0')
   const [originalValue, setOriginalValue] = useState('')
   const [fee, setFee] = useState<Balance<DataCredits>>()
@@ -70,6 +73,7 @@ const HNTKeyboardSelector = ({ children }: { children: ReactNode }) => {
   const [payer, setPayer] = useState<CSAccount | null | undefined>()
   const [containerHeight, setContainerHeight] = useState(0)
   const [headerHeight, setHeaderHeight] = useState(0)
+  const [visible, setVisible] = useState(false)
   const { calculatePaymentTxnFee } = useTransactions()
   const { dcToTokens, oracleDateTime, floatToBalance, accountBalance } =
     useBalance()
@@ -110,16 +114,16 @@ const HNTKeyboardSelector = ({ children }: { children: ReactNode }) => {
   }, [dcToTokens, fee])
 
   useEffect(() => {
-    if (!currentAccountBalance) return
+    if (!currentAccountBalance || !payer) return
 
     calculatePaymentTxnFee([
       {
-        address: EMPTY_B58_ADDRESS.b58,
+        payee: EMPTY_B58_ADDRESS.b58,
         balanceAmount: currentAccountBalance,
         memo: '',
       },
     ]).then(setFee)
-  }, [calculatePaymentTxnFee, value, currentAccountBalance])
+  }, [calculatePaymentTxnFee, value, currentAccountBalance, payer])
 
   const show = useCallback(
     (opts: {
@@ -127,6 +131,7 @@ const HNTKeyboardSelector = ({ children }: { children: ReactNode }) => {
       payee?: CSAccount | null
       containerHeight?: number
     }) => {
+      setVisible(true)
       setPayer(opts.payer)
       setPayee(opts.payee)
       setContainerHeight(opts.containerHeight || 0)
@@ -177,10 +182,15 @@ const HNTKeyboardSelector = ({ children }: { children: ReactNode }) => {
               alignItems="center"
               marginTop={{ smallPhone: 'm', phone: 'xxl' }}
             >
-              <AccountIcon size={40} address={payer?.address} />
-              <Box padding="s">
-                <PaymentArrow />
-              </Box>
+              {payer && (
+                <>
+                  <AccountIcon size={40} address={payer?.address} />
+
+                  <Box padding="s">
+                    <PaymentArrow />
+                  </Box>
+                </>
+              )}
               <AccountIcon
                 size={40}
                 address={payee?.address || EMPTY_B58_ADDRESS.b58}
@@ -191,11 +201,13 @@ const HNTKeyboardSelector = ({ children }: { children: ReactNode }) => {
               marginTop="lm"
               marginBottom={{ smallPhone: 'none', phone: 'lm' }}
             >
-              {t('hntKeyboard.hntAvailable', {
-                amount: balanceToString(currentAccountBalance, {
-                  maxDecimalPlaces: 4,
-                }),
-              })}
+              {payer
+                ? t('hntKeyboard.hntAvailable', {
+                    amount: balanceToString(currentAccountBalance, {
+                      maxDecimalPlaces: 4,
+                    }),
+                  })
+                : ''}
             </Text>
           </Box>
         </Box>
@@ -212,6 +224,9 @@ const HNTKeyboardSelector = ({ children }: { children: ReactNode }) => {
   )
 
   const renderHandle = useCallback(() => {
+    if (!payer) {
+      return <HandleBasic marginTop="s" marginBottom="m" />
+    }
     return (
       <Box flexDirection="row" margin="m" marginBottom="none">
         <Box flex={1} />
@@ -251,16 +266,18 @@ const HNTKeyboardSelector = ({ children }: { children: ReactNode }) => {
         </Box>
       </Box>
     )
-  }, [handleSetMax, t, timeStr])
+  }, [handleSetMax, payer, t, timeStr])
 
   const hasSufficientBalance = useMemo(() => {
-    if (!feeAsTokens || !valueAsBalance || !currentAccountBalance) return
+    if (!payer) return true
+
+    if (!feeAsTokens || !valueAsBalance || !currentAccountBalance) return false
 
     return (
       (currentAccountBalance?.minus(feeAsTokens).minus(valueAsBalance))
         .integerBalance >= 0
     )
-  }, [currentAccountBalance, feeAsTokens, valueAsBalance])
+  }, [currentAccountBalance, feeAsTokens, payer, valueAsBalance])
 
   const handleConfirm = useCallback(() => {
     bottomSheetModalRef.current?.dismiss()
@@ -315,9 +332,11 @@ const HNTKeyboardSelector = ({ children }: { children: ReactNode }) => {
 
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
 
+  const handleDismiss = useCallback(() => setVisible(false), [])
+
   return (
     <BottomSheetModalProvider>
-      <Provider value={{ hide, show, value }}>
+      <Provider value={{ hide, show, value, visible }}>
         <BottomSheetModal
           onChange={handleChange}
           ref={bottomSheetModalRef}
@@ -326,6 +345,7 @@ const HNTKeyboardSelector = ({ children }: { children: ReactNode }) => {
           backdropComponent={renderBackdrop}
           handleComponent={renderHandle}
           snapPoints={snapPoints}
+          onDismiss={handleDismiss}
         >
           <SafeAreaBox
             flex={1}
@@ -342,18 +362,20 @@ const HNTKeyboardSelector = ({ children }: { children: ReactNode }) => {
             >
               {`${value || '0'} ${valueAsBalance?.type.ticker}`}
             </Text>
-            <Text
-              paddingHorizontal="m"
-              maxFontSizeMultiplier={1}
-              numberOfLines={1}
-              variant="body1"
-              color="secondaryText"
-              marginBottom="l"
-            >
-              {t('hntKeyboard.fee', {
-                value: balanceToString(feeAsTokens, { maxDecimalPlaces: 4 }),
-              })}
-            </Text>
+            {payer && (
+              <Text
+                paddingHorizontal="m"
+                maxFontSizeMultiplier={1}
+                numberOfLines={1}
+                variant="body1"
+                color="secondaryText"
+                marginBottom="l"
+              >
+                {t('hntKeyboard.fee', {
+                  value: balanceToString(feeAsTokens, { maxDecimalPlaces: 4 }),
+                })}
+              </Text>
+            )}
             <Keypad
               customButtonType="decimal"
               onPress={handlePress}
@@ -369,8 +391,9 @@ const HNTKeyboardSelector = ({ children }: { children: ReactNode }) => {
                 justifyContent="center"
                 flex={1}
                 marginRight="xs"
-                style={cancelBackgroundStyle}
+                overflow="hidden"
               >
+                <BackgroundFill backgroundColor="error" />
                 <Text variant="subtitle2" color="error">
                   {t('generic.cancel')}
                 </Text>

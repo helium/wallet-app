@@ -314,9 +314,7 @@ const AccountsScreen = () => {
     (type: Action) => {
       switch (type) {
         case 'send':
-          navigation.navigate('PaymentScreen', {
-            address: currentAccount?.address,
-          })
+          navigation.navigate('PaymentScreen')
           break
         case 'request':
           navigation.navigate('RequestScreen')
@@ -331,7 +329,7 @@ const AccountsScreen = () => {
           break
       }
     },
-    [accountNetType, currentAccount, navigation, show],
+    [accountNetType, navigation, show],
   )
 
   const navToSettings = useCallback(

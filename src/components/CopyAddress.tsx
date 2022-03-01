@@ -20,7 +20,7 @@ const CopyAddress = ({ address, ...boxProps }: Props) => {
     if (!address) return
     Toast.show(
       t('generic.copied', {
-        address: ellipsizeAddress(address),
+        target: ellipsizeAddress(address),
       }),
     )
   }, [address, t])

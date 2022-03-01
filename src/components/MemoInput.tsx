@@ -1,5 +1,7 @@
+import { BoxProps } from '@shopify/restyle'
 import React, { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Theme } from '../theme/theme'
 import Box from './Box'
 import Text from './Text'
 import TextInput from './TextInput'
@@ -40,17 +42,18 @@ export const useMemoValid = (txnMemo?: string) => {
 type Props = {
   onChangeText?: ((text: string) => void) | undefined
   value?: string | undefined
-}
-const MemoInput = ({ onChangeText, value }: Props) => {
+} & BoxProps<Theme>
+const MemoInput = ({ onChangeText, value, ...boxProps }: Props) => {
   const { t } = useTranslation()
   const { bytesUsed, valid } = useMemoValid(value)
 
   return (
     <Box
-      flex={1}
       justifyContent="center"
       flexDirection="row"
       alignItems="center"
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...boxProps}
     >
       <TextInput
         flex={1}
@@ -58,7 +61,7 @@ const MemoInput = ({ onChangeText, value }: Props) => {
         placeholder={t('payment.enterMemo')}
         onChangeText={onChangeText}
         value={value}
-        returnKeyType="next"
+        returnKeyType="done"
       />
       <Text
         variant="body3"

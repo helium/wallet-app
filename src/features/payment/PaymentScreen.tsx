@@ -1,4 +1,10 @@
-import React, { useCallback, useState, memo, useMemo, useEffect } from 'react'
+import React, {
+  useCallback,
+  useState,
+  memo as reactMemo,
+  useMemo,
+  useEffect,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import Close from '@assets/images/close.svg'
 import QR from '@assets/images/qr.svg'
@@ -6,7 +12,6 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import Balance, { DataCredits } from '@helium/currency'
 import { ActivityIndicator, Keyboard, LayoutChangeEvent } from 'react-native'
 import { useAsync } from 'react-async-hook'
-import { NetType } from '@helium/crypto-react-native'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -32,6 +37,7 @@ import {
 } from '../../components/HNTKeyboard'
 import {
   EMPTY_B58_ADDRESS,
+  SendDetails,
   useTransactions,
 } from '../../storage/TransactionProvider'
 import {
@@ -47,8 +53,7 @@ import { useAppStorage } from '../../storage/AppStorageProvider'
 type Route = RouteProp<HomeStackParamList, 'PaymentScreen'>
 const PaymentScreen = () => {
   const route = useRoute<Route>()
-  const { address } = route.params
-  const currencyType = accountCurrencyType(address)
+
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const { primaryText } = useColors()
@@ -56,8 +61,15 @@ const PaymentScreen = () => {
   const edges = useModalSafeAreaEdges()
   const [txnMemo, setTxnMemo] = useState('')
   const { valid: memoValid } = useMemoValid(txnMemo)
-  const { currentAccount, currentContact } = useAccountStorage()
-  const { updateLocked, requirePinForPayment } = useAppStorage()
+  const {
+    currentAccount,
+    currentContact,
+    accounts,
+    setCurrentAccount,
+    setCurrentContact,
+    contacts,
+  } = useAccountStorage()
+  const { updateLocked, requirePinForPayment, pin } = useAppStorage()
   const { show: showAccountSelector } = useAccountSelector()
   const { show: showAddressBook } = useAddressBookSelector()
   const { show: showHNTKeyboard, value: tokenValue } = useHNTKeyboardSelector()
@@ -78,8 +90,80 @@ const PaymentScreen = () => {
   const balances = useAccountBalances(accountData?.account)
   const [fee, setFee] = useState<Balance<DataCredits>>()
   const { calculatePaymentTxnFee, makePaymentTxn } = useTransactions()
-  const { dcToTokens, floatToBalance } = useBalance()
+  const { dcToTokens, floatToBalance, intToBalance } = useBalance()
   const { showOKAlert } = useAlert()
+
+  useEffect(() => {
+    if (!route.params) return
+    const {
+      params: { payer, payee, payments, amount, memo },
+    } = route
+
+    const account = accounts?.[payer || '']
+    if (account) {
+      setCurrentAccount(account)
+    }
+
+    let paymentsArr: Array<Partial<SendDetails>> = []
+    if (payments) {
+      paymentsArr = (
+        JSON.parse(payments) as Array<{
+          amount: string
+          memo: string
+          payee: string
+        }>
+      ).map((payment) => ({
+        payee: payment.payee,
+        memo: payment.memo,
+        balanceAmount: payment.amount
+          ? intToBalance({
+              intValue: parseInt(payment.amount, 10),
+              account,
+            })
+          : undefined,
+      }))
+    } else if (payee || amount || memo) {
+      paymentsArr = [
+        {
+          payee,
+          balanceAmount: amount
+            ? intToBalance({
+                intValue: parseInt(amount, 10),
+                account,
+              })
+            : undefined,
+          memo,
+        },
+      ]
+    }
+
+    // TODO: This is all placeholder for now.
+    // It will be updated in a separate PR when we switch
+    // the ui to support multi payment
+
+    if (paymentsArr.length) {
+      // TODO: Handle multi pay
+      const payment = paymentsArr[0]
+      if (!payment.payee) return
+      const contact = contacts.find(({ address }) => address === payment.payee)
+      if (!contact) return
+      // TODO: Handle a payee not being in your address book
+
+      setCurrentContact(contact)
+    }
+  }, [
+    accounts,
+    contacts,
+    intToBalance,
+    route,
+    setCurrentAccount,
+    setCurrentContact,
+  ])
+
+  const currencyType = useMemo(
+    () => accountCurrencyType(currentAccount?.address),
+    [currentAccount],
+  )
 
   const paymentAmount = useMemo(() => {
     const strippedVal = (tokenValue || '0')
@@ -96,9 +180,9 @@ const PaymentScreen = () => {
   }, [dcToTokens, fee])
 
   useEffect(() => {
-    if (!requirePinForPayment) return
+    if (!requirePinForPayment || !pin) return
     updateLocked(true)
-  }, [requirePinForPayment, updateLocked])
+  }, [pin, requirePinForPayment, updateLocked])
 
   useAsync(async () => {
     if (!submitError) return
@@ -127,7 +211,7 @@ const PaymentScreen = () => {
 
     calculatePaymentTxnFee([
       {
-        address: EMPTY_B58_ADDRESS.b58,
+        payee: EMPTY_B58_ADDRESS.b58,
         balanceAmount: paymentAmount,
         memo: '',
       },
@@ -144,7 +228,7 @@ const PaymentScreen = () => {
 
     const { partialTxn, signedTxn } = await makePaymentTxn([
       {
-        address: currentContact?.address,
+        payee: currentContact?.address,
         balanceAmount: paymentAmount,
         memo: txnMemo,
       },
@@ -252,10 +336,10 @@ const PaymentScreen = () => {
           title={currentAccount?.alias}
           subtitle={balanceToString(balances?.hnt, { maxDecimalPlaces: 2 })}
           address={currentAccount?.address}
+          netType={currentAccount?.netType}
           onPress={showAccountSelector}
           showBubbleArrow
           marginHorizontal="l"
-          isTestnet={currentAccount?.netType === NetType.TESTNET}
         />
 
         <AccountButton
@@ -271,12 +355,12 @@ const PaymentScreen = () => {
           address={currentContact?.address || EMPTY_B58_ADDRESS.b58}
           onPress={showAddressBook}
           marginHorizontal="l"
-          isTestnet={currentContact?.netType === NetType.TESTNET}
+          netType={currentContact?.netType}
         />
 
         <Box
           minHeight={148}
-          backgroundColor="surfaceSecondary"
+          backgroundColor="secondary"
           margin="l"
           borderRadius="xl"
         >
@@ -287,6 +371,7 @@ const PaymentScreen = () => {
           >
             {!tokenValue || tokenValue === '0' ? (
               <Text
+                color="secondaryText"
                 paddingHorizontal="m"
                 variant="subtitle2"
                 style={colorStyle}
@@ -315,7 +400,7 @@ const PaymentScreen = () => {
             )}
           </TouchableOpacityBox>
           <Box height={1} backgroundColor="primaryBackground" />
-          <MemoInput value={txnMemo} onChangeText={setTxnMemo} />
+          <MemoInput value={txnMemo} onChangeText={setTxnMemo} flex={1} />
         </Box>
         <Box
           flex={1}
@@ -350,5 +435,5 @@ const PaymentScreen = () => {
 }
 
 export default withHNTKeyboardProvider(
-  withAddressBookProvider(memo(PaymentScreen)),
+  withAddressBookProvider(reactMemo(PaymentScreen)),
 )

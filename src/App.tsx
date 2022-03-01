@@ -2,15 +2,10 @@ import React, { useEffect, useMemo } from 'react'
 import { ApolloProvider } from '@apollo/client'
 import { Text, LogBox, Platform, StatusBar, UIManager } from 'react-native'
 import { ThemeProvider } from '@shopify/restyle'
-import {
-  DarkTheme,
-  LinkingOptions,
-  NavigationContainer,
-} from '@react-navigation/native'
+import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import useAppState from 'react-native-appstate-hook'
 import * as SplashScreen from 'expo-splash-screen'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
-import * as Linking from 'expo-linking'
 import { useApolloClient } from './graphql/useApolloClient'
 import { theme, darkThemeColors, lightThemeColors } from './theme/theme'
 import RootNavigator from './navigation/RootNavigator'
@@ -19,31 +14,16 @@ import LockScreen from './features/lock/LockScreen'
 import SecurityScreen from './features/security/SecurityScreen'
 import useMount from './utils/useMount'
 import OnboardingProvider from './features/onboarding/OnboardingProvider'
-import { RootNavigationProp } from './navigation/rootTypes'
 import AccountSelector from './components/AccountSelector'
 import TransactionProvider from './storage/TransactionProvider'
 import SafeAreaBox from './components/SafeAreaBox'
 import { BalanceProvider } from './utils/Balance'
 import { useColorScheme } from './theme/themeHooks'
+import { linking } from './utils/linking'
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
 })
-const linking = {
-  prefixes: ['https://helium.com', Linking.createURL('/')],
-  config: {
-    screens: {
-      HomeNavigator: {
-        initialRouteName: 'AccountsScreen',
-        screens: {
-          WifiPurchase: 'wifi',
-          LinkWallet: 'link_wallet',
-          SignHotspot: 'sign_hotspot',
-        },
-      },
-    },
-  },
-} as LinkingOptions<RootNavigationProp>
 
 const App = () => {
   LogBox.ignoreLogs([

@@ -98,7 +98,7 @@ const KeypadButton = ({ value, onPress }: Props) => {
   )
   return (
     <Box flexBasis="33%" alignItems="center" justifyContent="center">
-      <Pressable onPress={handlePress} disabled={!value && value !== 0}>
+      <Pressable onPressIn={handlePress} disabled={!value && value !== 0}>
         {({ pressed }) => (
           <Box
             alignItems="center"
