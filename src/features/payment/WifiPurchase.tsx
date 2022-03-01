@@ -38,10 +38,12 @@ import SafeAreaBox, {
 } from '../../components/SafeAreaBox'
 import { AccountNetTypeOpt } from '../../utils/accountUtils'
 import { balanceToString } from '../../utils/Balance'
+import usePrevious from '../../utils/usePrevious'
 
 const TIMER_SECONDS = 15 * 60 // 15 minutes
 const WifiPurchase = () => {
   const { currentAccount } = useAccountStorage()
+  const prevAccount = usePrevious(currentAccount)
   const [macEnabled, setMacEnabled] = useState(false)
   const [scAccount, setScAccount] = useState<ScAccount>()
   const { animate, isAnimating } = useAnimateTransition()
@@ -107,10 +109,16 @@ const WifiPurchase = () => {
   }, [gatewayIPAddress, iPAddress])
 
   useEffect(() => {
-    if (timerSeconds !== 0 || !macEnabled || !currentAccount?.address) return
+    if (
+      (timerSeconds !== 0 && prevAccount === currentAccount) ||
+      !macEnabled ||
+      !currentAccount?.address
+    ) {
+      return
+    }
 
     getAccount(currentAccount?.address).then(setScAccount)
-  }, [currentAccount, macEnabled, timerSeconds])
+  }, [currentAccount, macEnabled, prevAccount, timerSeconds])
 
   useEffect(() => {
     // if (!heliumDataLoading) return
@@ -303,10 +311,10 @@ const WifiPurchase = () => {
   )
 
   const submitDisabled = useMemo(() => {
+    const balanceRequired = viewState !== 'select'
+
     return (
-      (!hasSufficientAccountBalance && viewState !== 'select') ||
-      !scAccount ||
-      viewState === 'submit'
+      (balanceRequired ? !hasSufficientAccountBalance : false) || !scAccount
     )
   }, [hasSufficientAccountBalance, scAccount, viewState])
 

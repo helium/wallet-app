@@ -8,6 +8,8 @@ import AddressBookNavigator from '../addressBook/AddressBookNavigator'
 import SettingsNavigator from '../settings/SettingsNavigator'
 import AddNewContact from '../addressBook/AddNewContact'
 import RequestScreen from '../request/RequestScreen'
+import LinkWallet from '../txnDelegatation/LinkWallet'
+import SignHotspot from '../txnDelegatation/SignHotspot'
 
 const HomeStack = createStackNavigator()
 
@@ -41,6 +43,16 @@ const HomeStackScreen = () => {
         options={{ presentation: 'transparentModal' }}
       />
       <HomeStack.Screen name="AddNewContact" component={AddNewContact} />
+      <HomeStack.Screen
+        name="LinkWallet"
+        component={LinkWallet}
+        options={{ presentation: 'transparentModal' }}
+      />
+      <HomeStack.Screen
+        name="SignHotspot"
+        component={SignHotspot}
+        options={{ presentation: 'transparentModal' }}
+      />
     </HomeStack.Navigator>
   )
 }

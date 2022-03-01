@@ -123,6 +123,12 @@ export default {
     hntAvailable: '{{amount}} Available',
     validFor: 'valid for {{time}}',
   },
+  linkWallet: {
+    body: 'By Linking Helium Wallet to {{appName}}, you can safely sign blockchain transactions without re-entering your seed phrase.',
+    no: 'No, Cancel',
+    title: 'Link Helium Wallet\nto {{appName}}?',
+    yes: 'Yes, Link my Wallet',
+  },
   wifi: {
     authFailed: 'Failed to authorize',
     burnFailed: 'Failed to burn',
@@ -233,6 +239,22 @@ export default {
       },
     },
     title: 'Settings',
+  },
+  signHotspot: {
+    elevation: 'Elevation:',
+    error: {
+      subtitle:
+        'Unable to add this Hotspot to the Helium Network. Contact {{maker}} to troubleshoot this issue.',
+      takeMeBack: 'Go Back to {{maker}}',
+      title: 'Invalid Link',
+    },
+    gain: 'Gain:',
+    location: 'Location:',
+    maker: 'Maker:',
+    name: 'Hotspot Name:',
+    owner: 'Owner:',
+    title: 'Add Hotspot to\nBlockchain?',
+    titleLocationOnly: 'Update Location?',
   },
   transactions: {
     added: 'Hotspot Added to Blockchain',

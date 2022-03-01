@@ -193,20 +193,23 @@ const useAccountStorageHook = () => {
     [secureAccounts],
   )
 
-  const getKeypair = useCallback(async (): Promise<Keypair | undefined> => {
-    if (!currentAccount?.address) {
-      throw new Error('There is no currently selected account.')
-    }
-    const secureAccount = await getSecureAccount(currentAccount?.address)
-    if (!secureAccount) {
-      throw new Error(
-        `Secure account for ${currentAccount.address} could not be found`,
-      )
-    }
+  const getKeypair = useCallback(
+    async (address?: string): Promise<Keypair | undefined> => {
+      if (!currentAccount?.address && !address) {
+        throw new Error('There is no currently selected account.')
+      }
 
-    const netType = Address.fromB58(currentAccount.address)?.netType
-    return new Keypair(secureAccount.keypair, netType)
-  }, [currentAccount, getSecureAccount])
+      const addy = address || currentAccount?.address || ''
+      const secureAccount = await getSecureAccount(addy)
+      if (!secureAccount) {
+        throw new Error(`Secure account for ${addy} could not be found`)
+      }
+
+      const netType = Address.fromB58(addy)?.netType
+      return new Keypair(secureAccount.keypair, netType)
+    },
+    [currentAccount, getSecureAccount],
+  )
 
   const getApiToken = useCallback(
     async (address?: string) => {
