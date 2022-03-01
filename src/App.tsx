@@ -10,6 +10,7 @@ import {
 import useAppState from 'react-native-appstate-hook'
 import * as SplashScreen from 'expo-splash-screen'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
+import * as Linking from 'expo-linking'
 import { useApolloClient } from './graphql/useApolloClient'
 import { theme, darkThemeColors, lightThemeColors } from './theme/theme'
 import RootNavigator from './navigation/RootNavigator'
@@ -28,15 +29,16 @@ import { useColorScheme } from './theme/themeHooks'
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
 })
-
 const linking = {
-  prefixes: ['helium://'], // TODO: what do we want the new link prefix to be
+  prefixes: ['https://helium.com', Linking.createURL('/')],
   config: {
     screens: {
       HomeNavigator: {
         initialRouteName: 'AccountsScreen',
         screens: {
           WifiOnboard: 'wifi',
+          LinkWallet: 'link_wallet',
+          SignHotspot: 'sign_hotspot',
         },
       },
     },

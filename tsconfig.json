@@ -13,6 +13,7 @@
     "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
+      "@helium/crypto": ["./node_modules/@helium/crypto-react-native"],
       "@assets": ["./src/assets"]
     },
     "resolveJsonModule": true,

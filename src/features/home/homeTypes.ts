@@ -1,3 +1,4 @@
+import { WalletLink } from '@helium/react-native-sdk'
 import { StackNavigationProp } from '@react-navigation/stack'
 
 export type HomeStackParamList = {
@@ -21,6 +22,8 @@ export type HomeStackParamList = {
     | undefined
   SettingsNavigator: undefined
   AddNewContact: undefined
+  LinkWallet: WalletLink.LinkWalletRequest
+  SignHotspot: WalletLink.SignHotspotRequest
 }
 
 export type HomeNavigationProp = StackNavigationProp<HomeStackParamList>
