@@ -1,3 +1,4 @@
+import { NetType } from '@helium/crypto-react-native'
 import Balance, {
   CurrencyType,
   DataCredits,
@@ -19,7 +20,7 @@ import {
   useOracleDataQuery,
 } from '../generated/graphql'
 import { CSAccount, useAccountStorage } from '../storage/AccountStorageProvider'
-import { accountCurrencyType, isTestnet } from './accountUtils'
+import { accountCurrencyType } from './accountUtils'
 import { decimalSeparator, groupSeparator } from './i18n'
 import usePrevious from './usePrevious'
 
@@ -54,7 +55,9 @@ const useBalanceHook = ({ clientReady }: { clientReady: boolean }) => {
   }, [data, error, loading, prevLoading])
 
   const dcToTokens = useCallback(
-    (priceBalance: Balance<DataCredits>) => {
+    (
+      priceBalance: Balance<DataCredits>,
+    ): Balance<TestNetworkTokens | NetworkTokens> | undefined => {
       if (!data?.currentOraclePrice?.price) return
 
       const {
@@ -62,7 +65,7 @@ const useBalanceHook = ({ clientReady }: { clientReady: boolean }) => {
       } = data
       const oraclePrice = new Balance(price, CurrencyType.usd)
 
-      if (isTestnet(currentAccount?.address || '')) {
+      if (currentAccount?.netType === NetType.TESTNET) {
         return priceBalance.toTestNetworkTokens(oraclePrice)
       }
       return priceBalance.toNetworkTokens(oraclePrice)
@@ -104,6 +107,11 @@ const useBalanceHook = ({ clientReady }: { clientReady: boolean }) => {
     [currentAccount],
   )
 
+  const zeroBalanceNetworkToken = useMemo(
+    () => new Balance(0, accountCurrencyType(currentAccount?.address)),
+    [currentAccount],
+  )
+
   const accountBalance = useCallback(
     (opts?: { intValue: number; account: CSAccount }) => {
       let val = accountData?.account?.balance
@@ -127,6 +135,7 @@ const useBalanceHook = ({ clientReady }: { clientReady: boolean }) => {
     floatToBalance,
     intToBalance,
     oracleDateTime,
+    zeroBalanceNetworkToken,
   }
 }
 
@@ -136,6 +145,7 @@ const initialState = {
   floatToBalance: () => undefined,
   intToBalance: () => undefined,
   oracleDateTime: undefined,
+  zeroBalanceNetworkToken: new Balance(0, CurrencyType.networkToken),
 }
 
 const BalanceContext =

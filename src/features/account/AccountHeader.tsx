@@ -5,6 +5,7 @@ import Box from '../../components/Box'
 import Surface from '../../components/Surface'
 import Text from '../../components/Text'
 import { CSAccount } from '../../storage/AccountStorageProvider'
+import { formatAccountAlias } from '../../utils/accountUtils'
 import useAccountRewardsSum from './useAccountRewardsSum'
 
 type Props = {
@@ -20,7 +21,7 @@ const AccountHeader = ({ account }: Props) => {
     <Surface minHeight={88} alignItems="center" flexDirection="row" padding="l">
       <AccountIcon size={40} address={account.address} />
       <Box marginLeft="s" flex={1}>
-        <Text variant="subtitle2">{account.alias}</Text>
+        <Text variant="subtitle2">{formatAccountAlias(account)}</Text>
         <Text variant="body3" color="secondaryText">
           {minutesAgo !== undefined
             ? t('accountHeader.timeAgo', { formattedChange })

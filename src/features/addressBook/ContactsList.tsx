@@ -10,53 +10,44 @@ import {
   useAccountStorage,
 } from '../../storage/AccountStorageProvider'
 import FabButton from '../../components/FabButton'
-import AccountIcon from '../../components/AccountIcon'
 import SearchInput from '../../components/SearchInput'
 import { AccountNetTypeOpt } from '../../utils/accountUtils'
+import AccountListItem from '../../components/AccountListItem'
 
 type Props = {
   onAddNew: () => void
-  handleFinished?: () => void
+  handleContactSelected?: (item: CSAccount) => void
   netTypeOpt?: AccountNetTypeOpt
+  address?: string
 }
 const ContactsList = ({
   onAddNew,
-  handleFinished,
+  handleContactSelected,
   netTypeOpt = 'all' as AccountNetTypeOpt,
+  address,
 }: Props) => {
-  const { contacts, setCurrentContact, contactsForNetType } =
-    useAccountStorage()
+  const { contacts, contactsForNetType } = useAccountStorage()
   const { t } = useTranslation()
   const [searchTerm, setSearchTerm] = useState('')
-
   const handleContactPressed = useCallback(
-    (item: CSAccount) => () => {
-      setCurrentContact(item)
-      handleFinished?.()
+    (item: CSAccount) => {
+      handleContactSelected?.(item)
     },
-    [handleFinished, setCurrentContact],
+    [handleContactSelected],
   )
 
   const renderFlatlistItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
-    ({ item }: { item: CSAccount; index: number }) => {
+    ({ item: account }: { item: CSAccount; index: number }) => {
       return (
-        <TouchableOpacityBox
-          minHeight={52}
-          paddingVertical="ms"
-          paddingHorizontal="xl"
-          flexDirection="row"
-          onPress={handleContactPressed(item)}
-          alignItems="center"
-        >
-          <AccountIcon size={40} address={item.address} />
-          <Text variant="body1" marginLeft="ms">
-            {item.alias}
-          </Text>
-        </TouchableOpacityBox>
+        <AccountListItem
+          selected={address === account.address}
+          account={account}
+          onPress={handleContactPressed}
+        />
       )
     },
-    [handleContactPressed],
+    [address, handleContactPressed],
   )
 
   const header = useMemo(() => {

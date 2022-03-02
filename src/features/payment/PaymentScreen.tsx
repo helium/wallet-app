@@ -4,77 +4,71 @@ import React, {
   memo as reactMemo,
   useMemo,
   useEffect,
+  useRef,
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import Close from '@assets/images/close.svg'
 import QR from '@assets/images/qr.svg'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import Balance, { DataCredits } from '@helium/currency'
-import { ActivityIndicator, Keyboard, LayoutChangeEvent } from 'react-native'
+import Balance, {
+  DataCredits,
+  NetworkTokens,
+  TestNetworkTokens,
+} from '@helium/currency'
+import { Keyboard, Platform } from 'react-native'
 import { useAsync } from 'react-async-hook'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { Address } from '@helium/crypto-react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { useColors, useHitSlop, useOpacity } from '../../theme/themeHooks'
+import { useColors, useHitSlop } from '../../theme/themeHooks'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
-import { accountCurrencyType, ellipsizeAddress } from '../../utils/accountUtils'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import {
+  accountCurrencyType,
+  formatAccountAlias,
+} from '../../utils/accountUtils'
+import {
+  CSAccount,
+  useAccountStorage,
+} from '../../storage/AccountStorageProvider'
 import { useAccountSelector } from '../../components/AccountSelector'
 import { useAccountQuery, useSubmitTxnMutation } from '../../generated/graphql'
 import AccountButton from '../../components/AccountButton'
-import {
-  useAddressBookSelector,
-  withAddressBookProvider,
+import AddressBookSelector, {
+  AddressBookRef,
 } from '../../components/AddressBookSelector'
-import SafeAreaBox, {
-  useModalSafeAreaEdges,
-} from '../../components/SafeAreaBox'
-import MemoInput, { useMemoValid } from '../../components/MemoInput'
-import SubmitButton from '../../components/SubmitButton'
-import {
-  useHNTKeyboardSelector,
-  withHNTKeyboardProvider,
-} from '../../components/HNTKeyboard'
-import {
-  EMPTY_B58_ADDRESS,
-  SendDetails,
-  useTransactions,
-} from '../../storage/TransactionProvider'
+import { useTransactions } from '../../storage/TransactionProvider'
 import {
   balanceToString,
   useBalance,
   useAccountBalances,
 } from '../../utils/Balance'
 import useAlert from '../../utils/useAlert'
-import TouchableWithoutFeedbackBox from '../../components/TouchableWithoutFeedbackBox'
-import { decimalSeparator, groupSeparator } from '../../utils/i18n'
 import { useAppStorage } from '../../storage/AppStorageProvider'
+import PaymentItem from './PaymentItem'
+import usePaymentsReducer from './usePaymentsReducer'
+import BackgroundFill from '../../components/BackgroundFill'
+import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
+import PaymentCard from './PaymentCard'
+import { getMemoStrValid } from '../../components/MemoInput'
 
 type Route = RouteProp<HomeStackParamList, 'PaymentScreen'>
 const PaymentScreen = () => {
   const route = useRoute<Route>()
+  const addressBookRef = useRef<AddressBookRef>(null)
+  const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
+  const [state, dispatch] = usePaymentsReducer()
 
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const { primaryText } = useColors()
   const hitSlop = useHitSlop('l')
-  const edges = useModalSafeAreaEdges()
-  const [txnMemo, setTxnMemo] = useState('')
-  const { valid: memoValid } = useMemoValid(txnMemo)
-  const {
-    currentAccount,
-    currentContact,
-    accounts,
-    setCurrentAccount,
-    setCurrentContact,
-    contacts,
-  } = useAccountStorage()
+  const { currentAccount, accounts, contacts, setCurrentAccount } =
+    useAccountStorage()
   const { updateLocked, requirePinForPayment, pin } = useAppStorage()
-  const { show: showAccountSelector } = useAccountSelector()
-  const { show: showAddressBook } = useAddressBookSelector()
-  const { show: showHNTKeyboard, value: tokenValue } = useHNTKeyboardSelector()
-  const [containerHeight, setContainerHeight] = useState(0)
-  const { colorStyle } = useOpacity('primaryText', 0.3)
+  const { showAccountTypes } = useAccountSelector()
   const { data: accountData } = useAccountQuery({
     variables: {
       address: currentAccount?.address || '',
@@ -90,11 +84,14 @@ const PaymentScreen = () => {
   const balances = useAccountBalances(accountData?.account)
   const [fee, setFee] = useState<Balance<DataCredits>>()
   const { calculatePaymentTxnFee, makePaymentTxn } = useTransactions()
-  const { dcToTokens, floatToBalance, intToBalance } = useBalance()
+  const { intToBalance, zeroBalanceNetworkToken, dcToTokens } = useBalance()
   const { showOKAlert } = useAlert()
+  const { top } = useSafeAreaInsets()
 
   useEffect(() => {
     if (!route.params) return
+
+    // Deep link handling
     const {
       params: { payer, payee, payments, amount, memo },
     } = route
@@ -102,82 +99,76 @@ const PaymentScreen = () => {
     const account = accounts?.[payer || '']
     if (account) {
       setCurrentAccount(account)
+      dispatch({ type: 'updatePayer', address: account.address })
     }
 
-    let paymentsArr: Array<Partial<SendDetails>> = []
+    let paymentsArr: Array<{ amount?: string; memo?: string; payee: string }> =
+      []
     if (payments) {
-      paymentsArr = (
-        JSON.parse(payments) as Array<{
-          amount: string
-          memo: string
-          payee: string
-        }>
-      ).map((payment) => ({
-        payee: payment.payee,
-        memo: payment.memo,
-        balanceAmount: payment.amount
-          ? intToBalance({
-              intValue: parseInt(payment.amount, 10),
-              account,
-            })
-          : undefined,
-      }))
-    } else if (payee || amount || memo) {
+      paymentsArr = JSON.parse(payments) as Array<{
+        amount?: string
+        memo: string
+        payee: string
+      }>
+    } else if (payee) {
       paymentsArr = [
         {
           payee,
-          balanceAmount: amount
-            ? intToBalance({
-                intValue: parseInt(amount, 10),
-                account,
-              })
-            : undefined,
+          amount,
           memo,
         },
       ]
     }
 
-    // TODO: This is all placeholder for now.
-    // It will be updated in a separate PR when we switch
-    // the ui to support multi payment
+    if (!paymentsArr.length) return
 
-    if (paymentsArr.length) {
-      // TODO: Handle multi pay
-      const payment = paymentsArr[0]
-      if (!payment.payee) return
-      const contact = contacts.find(({ address }) => address === payment.payee)
-      if (!contact) return
-      // TODO: Handle a payee not being in your address book
-
-      setCurrentContact(contact)
+    if (paymentsArr.find((p) => !Address.isValid(p.payee))) {
+      throw new Error('Invalid address found in deep link')
     }
-  }, [
-    accounts,
-    contacts,
-    intToBalance,
-    route,
-    setCurrentAccount,
-    setCurrentContact,
-  ])
 
-  const currencyType = useMemo(
-    () => accountCurrencyType(currentAccount?.address),
-    [currentAccount],
+    dispatch({
+      type: 'addLinkedPayments',
+      payer,
+      payments: paymentsArr.map((p) => {
+        const contact = contacts.find(({ address }) => address === p.payee)
+        return {
+          address: p.payee,
+          account: contact,
+          amount: p.amount,
+          memo: p.memo,
+        }
+      }),
+    })
+  }, [accounts, contacts, dispatch, intToBalance, route, setCurrentAccount])
+
+  const handleBalance = useCallback(
+    (opts: {
+      balance: Balance<NetworkTokens | TestNetworkTokens>
+      payee: string
+      index?: number
+    }) => {
+      if (opts.index === undefined) return
+
+      dispatch({
+        type: 'updateBalance',
+        value: opts.balance,
+        address: opts.payee,
+        index: opts.index,
+      })
+    },
+    [dispatch],
   )
-
-  const paymentAmount = useMemo(() => {
-    const strippedVal = (tokenValue || '0')
-      .replace(groupSeparator, '')
-      .replace(decimalSeparator, '.')
-    const numberVal = parseFloat(strippedVal)
-    return floatToBalance(numberVal)
-  }, [floatToBalance, tokenValue])
 
   const feeAsTokens = useMemo(() => {
     if (!fee) return
 
     return dcToTokens(fee)
   }, [dcToTokens, fee])
+
+  const currencyType = useMemo(
+    () => accountCurrencyType(currentAccount?.address),
+    [currentAccount],
+  )
 
   useEffect(() => {
     if (!requirePinForPayment || !pin) return
@@ -207,33 +198,56 @@ const PaymentScreen = () => {
   }, [showOKAlert, submitData?.submitTxn?.hash, t, navigation])
 
   useEffect(() => {
-    if (!paymentAmount) return
+    if (!currentAccount?.address) return
 
-    calculatePaymentTxnFee([
-      {
-        payee: EMPTY_B58_ADDRESS.b58,
-        balanceAmount: paymentAmount,
+    // If payer updates we need to alert the reducer.
+    // The net type may be different which would trigger a reset of the payees
+    dispatch({ type: 'updatePayer', address: currentAccount?.address })
+  }, [currentAccount, dispatch])
+
+  useEffect(() => {
+    if (!currentAccount?.address) return
+
+    calculatePaymentTxnFee(
+      state.payments.map((p) => ({
+        payee: currentAccount?.address,
+        balanceAmount: p.amount || zeroBalanceNetworkToken,
         memo: '',
-      },
-    ]).then(setFee)
-  }, [paymentAmount, calculatePaymentTxnFee])
+      })),
+    ).then(setFee)
+  }, [
+    calculatePaymentTxnFee,
+    currentAccount,
+    zeroBalanceNetworkToken,
+    state.payments,
+  ])
 
   const onRequestClose = useCallback(() => {
     navigation.goBack()
   }, [navigation])
 
+  const canAddPayee = useMemo(() => {
+    const lastPayee = state.payments[state.payments.length - 1]
+    return (
+      lastPayee.address &&
+      lastPayee.amount &&
+      lastPayee.amount.integerBalance > 0
+    )
+  }, [state.payments])
+
   const handleSubmit = useCallback(async () => {
-    if (!currentAccount?.address || !currentContact?.address || !paymentAmount)
-      return
-
-    const { partialTxn, signedTxn } = await makePaymentTxn([
-      {
-        payee: currentContact?.address,
-        balanceAmount: paymentAmount,
-        memo: txnMemo,
-      },
-    ])
-
+    if (!currentAccount?.address) return
+    const payments = state.payments.flatMap((p) => {
+      if (!p.address || !p.amount) return []
+      return [
+        {
+          payee: p.address,
+          balanceAmount: p.amount,
+          memo: p.memo || '',
+        },
+      ]
+    })
+    const { partialTxn, signedTxn } = await makePaymentTxn(payments)
     submitTxnMutation({
       variables: {
         address: currentAccount.address,
@@ -241,199 +255,214 @@ const PaymentScreen = () => {
         txn: signedTxn.toString(),
       },
     })
-  }, [
-    paymentAmount,
-    currentAccount,
-    currentContact,
-    makePaymentTxn,
-    submitTxnMutation,
-    txnMemo,
-  ])
+  }, [currentAccount, makePaymentTxn, state.payments, submitTxnMutation])
 
-  const isFormInvalid = useMemo(() => {
-    if (!paymentAmount) return true
-
-    const hasSufficientBalance =
-      !!accountData?.account?.balance &&
-      paymentAmount.integerBalance <= accountData.account.balance
-
+  const insufficientFunds = useMemo(() => {
+    if (!balances?.hnt.integerBalance || !feeAsTokens?.integerBalance) {
+      return true
+    }
     return (
-      !memoValid ||
-      !currentAccount?.address ||
-      !currentContact?.address ||
-      currentContact.address === currentAccount.address ||
-      paymentAmount?.integerBalance <= 0 ||
-      !hasSufficientBalance ||
-      !!submitData ||
-      !!submitError ||
-      submitLoading
+      balances?.hnt.integerBalance <
+      state.totalAmount.plus(feeAsTokens).integerBalance
     )
-  }, [
-    paymentAmount,
-    currentAccount,
-    currentContact,
-    memoValid,
-    accountData,
-    submitData,
-    submitError,
-    submitLoading,
-  ])
+  }, [balances, feeAsTokens, state.totalAmount])
 
-  const handleShowPaymentKeyboard = useCallback(() => {
-    Keyboard.dismiss()
-    showHNTKeyboard({
-      payee: currentContact,
-      payer: currentAccount,
-      containerHeight,
-    })
-  }, [containerHeight, currentAccount, currentContact, showHNTKeyboard])
+  const isFormValid = useMemo(() => {
+    if (!balances?.hnt.integerBalance || !feeAsTokens?.integerBalance) {
+      return false
+    }
 
-  const handleContainerLayout = useCallback(
-    (layout: LayoutChangeEvent) =>
-      setContainerHeight(layout.nativeEvent.layout.height),
+    const paymentsValid =
+      state.payments.length &&
+      state.payments.every((p) => {
+        const addressValid = p.address && Address.isValid(p.address)
+        const paymentValid = p.amount && p.amount.integerBalance > 0
+        const memoValid = getMemoStrValid(p.memo)
+        return addressValid && paymentValid && memoValid
+      })
+
+    return paymentsValid && !insufficientFunds
+  }, [balances, feeAsTokens, insufficientFunds, state.payments])
+
+  const handleAddressBookSelected = useCallback(
+    ({ address, index }: { address?: string | undefined; index: number }) => {
+      addressBookRef?.current?.showAddressBook({ address, index })
+    },
     [],
   )
 
+  const handleEditHNTAmount = useCallback(
+    ({ address, index }: { address?: string; index: number }) => {
+      Keyboard.dismiss()
+      hntKeyboardRef.current?.show({
+        payer: currentAccount,
+        payee: address,
+        balance: state.payments[index].amount,
+        index,
+        payments: state.payments,
+      })
+    },
+    [currentAccount, state.payments],
+  )
+
+  const handleEditMemo = useCallback(
+    ({
+      index,
+      memo,
+    }: {
+      address?: string | undefined
+      index: number
+      memo: string
+    }) => {
+      dispatch({ type: 'updateMemo', index, memo })
+    },
+    [dispatch],
+  )
+
+  const handleRemove = useCallback(
+    (index: number) => {
+      dispatch({ type: 'removePayment', index })
+    },
+    [dispatch],
+  )
+
+  const handleContactSelected = useCallback(
+    ({
+      contact,
+      index,
+    }: {
+      contact: CSAccount
+      prevAddress?: string
+      index?: number
+    }) => {
+      if (index === undefined) return
+      dispatch({
+        type: 'updatePayee',
+        contact,
+        index,
+        address: contact.address,
+      })
+    },
+    [dispatch],
+  )
+
+  const handleAddPayee = useCallback(() => {
+    dispatch({ type: 'addPayee' })
+  }, [dispatch])
+
+  const containerStyle = useMemo(
+    () => ({ marginTop: Platform.OS === 'android' ? top : undefined }),
+    [top],
+  )
+
   return (
-    <TouchableWithoutFeedbackBox flex={1} onPress={Keyboard.dismiss}>
-      <SafeAreaBox
-        backgroundColor="primaryBackground"
-        flex={1}
-        edges={edges}
-        onLayout={handleContainerLayout}
+    <HNTKeyboard ref={hntKeyboardRef} onConfirmBalance={handleBalance}>
+      <AddressBookSelector
+        ref={addressBookRef}
+        onContactSelected={handleContactSelected}
       >
         <Box
-          flexDirection="row"
-          justifyContent="space-between"
-          alignItems="center"
-          marginBottom="xxl"
-        >
-          <TouchableOpacityBox
-            onPress={onRequestClose}
-            padding="l"
-            hitSlop={hitSlop}
-          >
-            <QR color={primaryText} height={16} width={16} />
-          </TouchableOpacityBox>
-          <Text
-            variant="subtitle2"
-            textAlign="center"
-            color="primaryText"
-            maxFontSizeMultiplier={1}
-          >
-            {t('payment.title', { ticker: currencyType.ticker })}
-          </Text>
-          <TouchableOpacityBox
-            onPress={onRequestClose}
-            padding="l"
-            hitSlop={hitSlop}
-          >
-            <Close color={primaryText} height={16} width={16} />
-          </TouchableOpacityBox>
-        </Box>
-
-        <AccountButton
-          title={currentAccount?.alias}
-          subtitle={balanceToString(balances?.hnt, { maxDecimalPlaces: 2 })}
-          address={currentAccount?.address}
-          netType={currentAccount?.netType}
-          onPress={showAccountSelector}
-          showBubbleArrow
-          marginHorizontal="l"
-        />
-
-        <AccountButton
-          marginTop="l"
-          title={
-            currentContact ? currentContact.alias : t('payment.selectContact')
-          }
-          subtitle={
-            currentContact
-              ? ellipsizeAddress(currentContact.address)
-              : undefined
-          }
-          address={currentContact?.address || EMPTY_B58_ADDRESS.b58}
-          onPress={showAddressBook}
-          marginHorizontal="l"
-          netType={currentContact?.netType}
-        />
-
-        <Box
-          minHeight={148}
-          backgroundColor="secondary"
-          margin="l"
-          borderRadius="xl"
-        >
-          <TouchableOpacityBox
-            flex={1}
-            justifyContent="center"
-            onPress={handleShowPaymentKeyboard}
-          >
-            {!tokenValue || tokenValue === '0' ? (
-              <Text
-                color="secondaryText"
-                paddingHorizontal="m"
-                variant="subtitle2"
-                style={colorStyle}
-              >
-                {t('payment.enterAmount', {
-                  ticker: paymentAmount?.type.ticker,
-                })}
-              </Text>
-            ) : (
-              <>
-                <Text
-                  paddingHorizontal="m"
-                  variant="subtitle2"
-                  color="primaryText"
-                >
-                  {balanceToString(paymentAmount)}
-                </Text>
-                <Text paddingHorizontal="m" variant="body3" style={colorStyle}>
-                  {t('payment.fee', {
-                    value: balanceToString(feeAsTokens, {
-                      maxDecimalPlaces: 4,
-                    }),
-                  })}
-                </Text>
-              </>
-            )}
-          </TouchableOpacityBox>
-          <Box height={1} backgroundColor="primaryBackground" />
-          <MemoInput value={txnMemo} onChangeText={setTxnMemo} flex={1} />
-        </Box>
-        <Box
+          backgroundColor="primaryBackground"
           flex={1}
-          justifyContent="flex-end"
-          marginHorizontal="l"
-          position="relative"
+          style={containerStyle}
         >
-          <Box height={64}>
-            <SubmitButton
-              title={t('payment.sendButton', {
-                ticker: paymentAmount?.type.ticker,
-              })}
-              onSubmit={handleSubmit}
-              disabled={isFormInvalid}
-            />
-            {submitLoading && (
-              <Box
-                position="absolute"
-                top={0}
-                bottom={0}
-                justifyContent="center"
-                marginLeft="lm"
-              >
-                <ActivityIndicator color={primaryText} />
-              </Box>
-            )}
+          <Box
+            flexDirection="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <TouchableOpacityBox
+              onPress={onRequestClose}
+              padding="l"
+              hitSlop={hitSlop}
+            >
+              <QR color={primaryText} height={16} width={16} />
+            </TouchableOpacityBox>
+            <Text
+              variant="subtitle2"
+              textAlign="center"
+              color="primaryText"
+              maxFontSizeMultiplier={1}
+            >
+              {t('payment.title', { ticker: currencyType.ticker })}
+            </Text>
+            <TouchableOpacityBox
+              onPress={onRequestClose}
+              padding="l"
+              hitSlop={hitSlop}
+            >
+              <Close color={primaryText} height={16} width={16} />
+            </TouchableOpacityBox>
           </Box>
+
+          <KeyboardAwareScrollView
+            enableOnAndroid
+            enableResetScrollToCoords={false}
+            keyboardShouldPersistTaps="always"
+          >
+            <AccountButton
+              paddingTop="xxl"
+              title={formatAccountAlias(currentAccount)}
+              subtitle={balanceToString(balances?.hnt, { maxDecimalPlaces: 2 })}
+              address={currentAccount?.address}
+              netType={currentAccount?.netType}
+              onPress={showAccountTypes(
+                currentAccount?.netType !== undefined
+                  ? currentAccount.netType
+                  : 'all',
+              )}
+              showBubbleArrow
+              marginHorizontal="l"
+            />
+
+            {state.payments.map((p, index) => (
+              <PaymentItem
+                // eslint-disable-next-line react/no-array-index-key
+                key={index}
+                address={p.address}
+                account={p.account}
+                amount={p.amount}
+                fee={state.payments.length === 1 ? fee : undefined}
+                index={index}
+                onAddressBookSelected={handleAddressBookSelected}
+                onEditHNTAmount={handleEditHNTAmount}
+                memo={p.memo}
+                onEditMemo={handleEditMemo}
+                onRemove={state.payments.length > 1 ? handleRemove : undefined}
+              />
+            ))}
+            {canAddPayee && (
+              <TouchableOpacityBox
+                minHeight={75}
+                onPress={handleAddPayee}
+                borderRadius="xl"
+                overflow="hidden"
+                marginHorizontal="l"
+                marginVertical="l"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <BackgroundFill backgroundColor="surface" opacity={0.2} />
+                <Text variant="body1" color="surfaceSecondaryText">
+                  {t('payment.addRecipient')}
+                </Text>
+              </TouchableOpacityBox>
+            )}
+          </KeyboardAwareScrollView>
+
+          <PaymentCard
+            totalBalance={state.totalAmount}
+            feeTokenBalance={feeAsTokens}
+            disabled={!isFormValid}
+            onSubmit={handleSubmit}
+            submitLoading={submitLoading}
+            payments={state.payments}
+            insufficientFunds={insufficientFunds}
+          />
         </Box>
-      </SafeAreaBox>
-    </TouchableWithoutFeedbackBox>
+      </AddressBookSelector>
+    </HNTKeyboard>
   )
 }
 
-export default withHNTKeyboardProvider(
-  withAddressBookProvider(reactMemo(PaymentScreen)),
-)
+export default reactMemo(PaymentScreen)

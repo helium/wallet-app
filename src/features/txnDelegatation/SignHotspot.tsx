@@ -5,7 +5,6 @@ import { Linking } from 'react-native'
 import { AddGateway, WalletLink, Location } from '@helium/react-native-sdk'
 import animalHash from 'angry-purple-tiger'
 import { useAsync } from 'react-async-hook'
-import { NetType } from '@helium/crypto-react-native'
 import Box from '../../components/Box'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import Text from '../../components/Text'
@@ -14,6 +13,7 @@ import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import verifyAppLinkAuthToken from './verifyAppLinkAuthToken'
 import AccountIcon from '../../components/AccountIcon'
+import { formatAccountAlias } from '../../utils/accountUtils'
 
 type Route = RouteProp<HomeStackParamList, 'SignHotspot'>
 const SignHotspot = () => {
@@ -255,11 +255,7 @@ const SignHotspot = () => {
                 flex={1}
                 color="surfaceContrastText"
               >
-                {`${accounts[parsedToken.address].alias}${
-                  accounts[parsedToken.address].netType === NetType.TESTNET
-                    ? ' (Testnet)'
-                    : ''
-                }`}
+                {formatAccountAlias(accounts[parsedToken.address])}
               </Text>
             </Box>
           </>

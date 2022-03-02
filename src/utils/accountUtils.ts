@@ -25,3 +25,14 @@ export const isTestnet = (address: string) => {
 
 export const ellipsizeAddress = (address: string) =>
   [address.slice(0, 8), address.slice(-8)].join('...')
+
+export const formatAccountAlias = (
+  opts?: {
+    alias: string
+    netType?: NetType.NetType
+  } | null,
+) => {
+  if (!opts) return ''
+  const { alias, netType } = opts
+  return `${alias}${netType === NetType.TESTNET ? ' (Testnet)' : ''}`
+}

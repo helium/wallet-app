@@ -232,7 +232,7 @@ const useTxn = (
 
   const formatAmount = useCallback(
     async (
-      prefix: '-' | '+',
+      prefix: '-' | '+' | '',
       amount?: Balance<DataCredits | NetworkTokens>,
     ): Promise<string> => {
       if (!amount) return ''
@@ -362,10 +362,7 @@ const useTxn = (
       case 'token_burn_v1':
         return formatAmount('-', hntBalance(item.amount))
       case 'payment_v1':
-        return formatAmount(
-          item.payer === address ? '-' : '+',
-          hntBalance(item.amount),
-        )
+        return formatAmount('', hntBalance(item.amount))
       case 'payment_v2': {
         if (item.payer === address) {
           const paymentTotal =
@@ -373,7 +370,7 @@ const useTxn = (
               (sum, current) => sum.plus(hntBalance(current.amount)),
               hntBalance(0),
             ) || hntBalance(0)
-          return formatAmount('-', paymentTotal)
+          return formatAmount('', paymentTotal)
         }
 
         const payment = item.payments?.find((p) => p.payee === address)
@@ -440,7 +437,7 @@ const useTxn = (
     }
     const all = item.payments.map(
       async ({ amount: amt, payee, memo: paymentMemo }) => {
-        const balance = await formatAmount('-', hntBalance(amt))
+        const balance = await formatAmount('', hntBalance(amt))
         return { amount: balance, payee, memo: paymentMemo || '' }
       },
     )

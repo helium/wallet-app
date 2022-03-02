@@ -8,7 +8,6 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import Checkmark from '@assets/images/checkIco.svg'
 import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
@@ -16,14 +15,10 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
 import { GestureResponderEvent } from 'react-native'
-import { NetType } from '@helium/crypto-react-native'
 import { CSAccount, useAccountStorage } from '../storage/AccountStorageProvider'
-import AccountIcon from './AccountIcon'
-import Text from './Text'
-import TouchableOpacityBox from './TouchableOpacityBox'
 import { useColors, useOpacity, useSpacing } from '../theme/themeHooks'
-import Box from './Box'
 import { AccountNetTypeOpt } from '../utils/accountUtils'
+import AccountListItem from './AccountListItem'
 
 const initialState = {
   show: (_type?: AccountNetTypeOpt) => undefined,
@@ -59,7 +54,7 @@ const AccountSelector = ({ children }: { children: ReactNode }) => {
 
   const show = useCallback((x?: AccountNetTypeOpt | GestureResponderEvent) => {
     let type: AccountNetTypeOpt = 'all'
-    if (x && !isGesture(x)) {
+    if (x !== undefined && !isGesture(x)) {
       type = x
     }
     setAccountsTypes(type)
@@ -67,7 +62,9 @@ const AccountSelector = ({ children }: { children: ReactNode }) => {
   }, [])
 
   const showAccountTypes = useCallback(
-    (type: AccountNetTypeOpt) => () => show(type),
+    (type: AccountNetTypeOpt) => () => {
+      show(type)
+    },
     [show],
   )
 
@@ -85,7 +82,7 @@ const AccountSelector = ({ children }: { children: ReactNode }) => {
   )
 
   const handleAccountPress = useCallback(
-    (account: CSAccount) => () => {
+    (account: CSAccount) => {
       setCurrentAccount(account)
       hide()
     },
@@ -99,41 +96,16 @@ const AccountSelector = ({ children }: { children: ReactNode }) => {
   const renderFlatlistItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item: account }: { item: CSAccount; index: number }) => {
-      const isSelected = account.address === currentAccount?.address
       return (
-        <TouchableOpacityBox
-          minHeight={52}
-          paddingVertical="m"
-          paddingHorizontal="xl"
-          flexDirection="row"
-          alignItems="center"
-          borderBottomWidth={1}
-          borderColor="primary"
-          onPress={handleAccountPress(account)}
+        <AccountListItem
+          account={account}
+          selected={account.address === currentAccount?.address}
+          onPress={handleAccountPress}
           disabled={account.address === currentAccount?.address}
-        >
-          <AccountIcon size={40} address={account.address} />
-          <Text variant="body1" marginLeft="ms" flex={1}>
-            {`${account.alias}${
-              account.netType === NetType.TESTNET ? ' (Testnet)' : ''
-            }`}
-          </Text>
-          {isSelected && (
-            <Box
-              backgroundColor="surfaceContrast"
-              height={27}
-              width={27}
-              borderRadius="round"
-              justifyContent="center"
-              alignItems="center"
-            >
-              <Checkmark color={primary} />
-            </Box>
-          )}
-        </TouchableOpacityBox>
+        />
       )
     },
-    [currentAccount, handleAccountPress, primary],
+    [currentAccount, handleAccountPress],
   )
   const renderBackdrop = useCallback(
     (props) => (

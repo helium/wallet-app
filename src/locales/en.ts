@@ -176,9 +176,11 @@ export default {
     '24th',
   ],
   payment: {
+    addRecipient: '+ Add Recipient',
     enterAmount: 'Enter {{ticker}} Amount',
     enterMemo: 'Enter Memo (Optional)',
     fee: '+{{value}} Fee',
+    insufficientFunds: 'Insufficient Funds',
     max: 'Max',
     memoBytes: '{{used}}/{{total}} Bytes',
     selectContact: 'Select Contact',
@@ -187,6 +189,8 @@ export default {
       'There was an error submitting this transaction. Please try again.\n\n{{details}}',
     submitSuccess: 'Your payment transaction has been submitted\n\n{{hash}}',
     title: 'Send {{ticker}}',
+    total: 'Total',
+    totalRecipients: '{{total}} Recipients',
   },
   placeholder: {
     accountBalanceValue: 'Account Balance: {{balance}}',

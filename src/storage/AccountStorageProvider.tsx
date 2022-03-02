@@ -3,7 +3,6 @@ import React, {
   ReactNode,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from 'react'
@@ -96,7 +95,6 @@ const useAccountStorageHook = () => {
   const [accounts, setAccounts] = useState<CSAccounts>()
   const [secureAccounts, setSecureAccounts] = useState<SecureAccounts>()
   const [contacts, setContacts] = useState<CSAccount[]>([])
-  const [currentContact, setCurrentContact] = useState<CSAccount>()
   const [viewType, setViewType] = useState<AccountView>()
 
   const restored = useMemo(() => secureAccounts !== undefined, [secureAccounts])
@@ -125,8 +123,12 @@ const useAccountStorageHook = () => {
 
   const sortedAccountsForNetType = useCallback(
     (netType: AccountNetTypeOpt) => {
-      if (netType === NetType.MAINNET) return sortedMainnetAccounts
-      if (netType === NetType.TESTNET) return sortedTestnetAccounts
+      if (netType === NetType.MAINNET) {
+        return sortedMainnetAccounts
+      }
+      if (netType === NetType.TESTNET) {
+        return sortedTestnetAccounts
+      }
       return sortedAccounts
     },
     [sortedAccounts, sortedMainnetAccounts, sortedTestnetAccounts],
@@ -150,15 +152,6 @@ const useAccountStorageHook = () => {
     },
     [contacts, mainnetContacts, testnetContacts],
   )
-
-  useEffect(() => {
-    if (!currentAccount || !currentContact) return
-
-    if (currentAccount?.netType !== currentContact?.netType) {
-      setCurrentContact(undefined)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentAccount])
 
   const currentApiToken = useMemo(() => {
     if (!currentAccount?.address) return
@@ -396,7 +389,6 @@ const useAccountStorageHook = () => {
     createSecureAccount,
     currentAccount,
     currentApiToken,
-    currentContact,
     getApiToken,
     getKeypair,
     getSecureAccount,
@@ -405,7 +397,6 @@ const useAccountStorageHook = () => {
     restored,
     secureAccounts,
     setCurrentAccount,
-    setCurrentContact,
     signOut,
     sortedAccounts,
     sortedAccountsForNetType,
@@ -431,7 +422,6 @@ const initialState = {
   }),
   currentAccount: undefined,
   currentApiToken: undefined,
-  currentContact: undefined,
   getApiToken: (_address?: string) =>
     new Promise<string>((resolve) => resolve('')),
   getKeypair: () =>
@@ -443,7 +433,6 @@ const initialState = {
   restored: false,
   secureAccounts: {},
   setCurrentAccount: () => undefined,
-  setCurrentContact: () => undefined,
   signOut: async () => undefined,
   sortedAccounts: [],
   sortedAccountsForNetType: () => [],

@@ -13,3 +13,8 @@ export const useModalSafeAreaEdges = () => {
   if (Platform.OS === 'android') return ['top', 'bottom'] as Edge[]
   return ['bottom'] as Edge[]
 }
+
+export const useModalTopSafeAreaEdges = () => {
+  if (Platform.OS === 'android') return ['top'] as Edge[]
+  return undefined
+}
