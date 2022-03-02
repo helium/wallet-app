@@ -18,7 +18,15 @@ type Props = HeliumActionSheetItemType & {
 
 export const HeliumActionSheetItemHeight = 50
 
-const HeliumActionSheetItem = ({ label, onPress, selected, Icon }: Props) => {
+const HeliumActionSheetItem = ({
+  label,
+  onPress,
+  selected,
+  Icon,
+  labelShort: _labelShort,
+  value: _value,
+  action: _action,
+}: Props) => {
   const { purple500, surfaceSecondaryText } = useColors()
   return (
     <TouchableOpacityBox

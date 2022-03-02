@@ -15,6 +15,7 @@ export type HomeStackParamList = {
         payee?: string
         amount?: string
         memo?: string
+        netType?: string
       }
   RequestScreen: undefined
   AddressBookNavigator: undefined

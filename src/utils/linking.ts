@@ -13,16 +13,6 @@ export const PAYMENT_PATH = 'payment'
 //   scheme: 'https',
 // })
 
-// {
-//   screens: {
-//     Catalog: {
-//       path: 'item/:id',
-//       parse: {
-//         id: id => parseInt(id, 10),
-//       },
-//     },
-//   }
-// }
 export const linking = {
   prefixes: ['https://helium.com', LINK_SCHEME],
   config: {
@@ -34,38 +24,11 @@ export const linking = {
           LinkWallet: 'link_wallet',
           SignHotspot: 'sign_hotspot',
           PaymentScreen: 'payment',
-          // PaymentScreen: {
-          //   path: 'payment/:payer',
-          //   parse: {
-          //     payer: (payer) => console.log({ payer }),
-          //   },
-          // },
-          // PaymentScreen: {
-          //   path: 'payment',
-          //   parse: {
-          //     '*': (payments) => {
-          //       console.log('HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-          //       // console.log({ payments: qs.parse(payments)[0] })
-          //       return payments
-          //     },
-          //   },
-          // },
         },
       },
     },
   },
 } as LinkingOptions<RootNavigationProp>
-
-// {
-//   screens: {
-//     Catalog: {
-//       path: 'item/:id',
-//       parse: {
-//         id: id => parseInt(id, 10),
-//       },
-//     },
-//   }
-// }
 
 export const makePayRequestLink = ({
   payee,

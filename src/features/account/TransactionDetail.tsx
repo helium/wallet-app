@@ -27,7 +27,7 @@ import HandleBasic from '../../components/HandleBasic'
 import ExpoBlurBox from '../../components/ExpoBlurBox'
 import { useTxnDetails } from './useTxn'
 import { useBalance } from '../../utils/Balance'
-import { useExplorer } from '../../constants/urls'
+import { useExplorer, usePublicApi } from '../../constants/urls'
 import { decodeMemoString, DEFAULT_MEMO } from '../../components/MemoInput'
 import { ellipsizeAddress } from '../../utils/accountUtils'
 
@@ -67,6 +67,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
     validatorName,
   } = useTxnDetails(txn, accountAddress || '')
   const explorerURL = useExplorer()
+  const apiUrl = usePublicApi()
 
   const snapPoints = useMemo(() => {
     let maxHeight: number | string = '90%'
@@ -322,17 +323,21 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                 bodyText={time}
               />
 
-              <TransactionLineItem
-                title={t('transactions.block')}
-                bodyText={txn?.height || ''}
-                navTo={`${explorerURL}/blocks/${txn?.height}`}
-              />
+              {!txn?.pending && (
+                <TransactionLineItem
+                  title={t('transactions.block')}
+                  bodyText={txn?.height || ''}
+                  navTo={`${explorerURL}/blocks/${txn?.height}`}
+                />
+              )}
 
               <TransactionLineItem
                 title={t('transactions.hash')}
                 bodyText={txn?.hash || ''}
                 navTo={
-                  txn?.pending ? undefined : `${explorerURL}/txns/${txn?.hash}`
+                  txn?.pending
+                    ? `${apiUrl}/pending_transactions/${txn?.hash}`
+                    : `${explorerURL}/txns/${txn?.hash}`
                 }
               />
             </SafeAreaBox>

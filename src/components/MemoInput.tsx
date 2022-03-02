@@ -32,6 +32,16 @@ export const getMemoBytesLeft = (base64Memo?: string) => {
   }
 }
 
+export const getMemoStrValid = (memoStr?: string) => {
+  const base64Memo = encodeMemoString(memoStr)
+  if (!base64Memo) {
+    return true
+  }
+  const buff = Buffer.from(base64Memo, 'base64')
+  const size = buff.byteLength
+  return size <= MEMO_MAX_BYTES
+}
+
 export const useMemoValid = (txnMemo?: string) => {
   return useMemo(() => {
     const base64Memo = encodeMemoString(txnMemo)

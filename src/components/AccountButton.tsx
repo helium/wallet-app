@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { memo, useCallback } from 'react'
 import ChevronDown from '@assets/images/chevronDown.svg'
 import { Keyboard, StyleSheet } from 'react-native'
@@ -9,17 +10,17 @@ import AccountIcon from './AccountIcon'
 import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
-import { Spacing, Theme } from '../theme/theme'
+import { Theme } from '../theme/theme'
 
 type Props = {
-  onPress?: () => void
+  onPress?: (address?: string) => void
   address?: string
   title?: string
   subtitle?: string
   showBubbleArrow?: boolean
   netType?: NetType.NetType
-  innerHorizontalPadding?: Spacing
-  innerVerticalPadding?: Spacing
+  innerBoxProps?: BoxProps<Theme>
+  showChevron?: boolean
 } & BoxProps<Theme>
 
 const AccountButton = ({
@@ -29,8 +30,8 @@ const AccountButton = ({
   subtitle,
   showBubbleArrow,
   netType = NetType.MAINNET,
-  innerHorizontalPadding,
-  innerVerticalPadding,
+  innerBoxProps,
+  showChevron = true,
   ...boxProps
 }: Props) => {
   const hitSlop = useHitSlop('l')
@@ -38,15 +39,14 @@ const AccountButton = ({
 
   const handlePress = useCallback(() => {
     Keyboard.dismiss()
-    onPress?.()
-  }, [onPress])
+    onPress?.(address)
+  }, [address, onPress])
 
   return (
     <TouchableOpacityBox
       hitSlop={hitSlop}
       alignItems="center"
       onPress={handlePress}
-      // eslint-disable-next-line react/jsx-props-no-spreading
       {...boxProps}
     >
       <Box
@@ -54,8 +54,9 @@ const AccountButton = ({
         borderRadius="xl"
         alignItems="center"
         flexDirection="row"
-        paddingHorizontal={innerHorizontalPadding || 'l'}
-        paddingVertical={innerVerticalPadding || 'm'}
+        paddingHorizontal={innerBoxProps?.paddingHorizontal || 'l'}
+        paddingVertical={innerBoxProps?.paddingVertical || 'm'}
+        {...innerBoxProps}
       >
         <AccountIcon size={40} address={address} />
         <Box flex={1}>
@@ -73,7 +74,7 @@ const AccountButton = ({
             </Text>
           )}
         </Box>
-        <ChevronDown />
+        {showChevron && <ChevronDown />}
       </Box>
       {showBubbleArrow && (
         <Box

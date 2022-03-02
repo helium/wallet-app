@@ -13,6 +13,7 @@ import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import { useAccountSelector } from '../../components/AccountSelector'
 import AccountIcon from '../../components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { formatAccountAlias } from '../../utils/accountUtils'
 
 const makeAppLinkAuthToken = async (
   tokenOpts: WalletLink.LinkWalletRequest & {
@@ -104,7 +105,7 @@ const LinkWallet = () => {
       >
         <AccountIcon size={26} address={currentAccount?.address} />
         <Text marginLeft="ms" variant="subtitle2" flex={1}>
-          {currentAccount?.alias}
+          {formatAccountAlias(currentAccount)}
         </Text>
         <ChevronDown />
       </TouchableOpacityBox>
