@@ -1,7 +1,8 @@
 import { useTheme } from '@shopify/restyle'
 import tinycolor from 'tinycolor2'
-import { ViewStyle } from 'react-native'
+import { Platform, ViewStyle } from 'react-native'
 import { useCallback, useMemo } from 'react'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ww } from '../utils/layout'
 import { Color, Spacing, Theme } from './theme'
 
@@ -111,4 +112,28 @@ export const useBreakpoints = () => {
     smallPhone: breakpoints.phone > width,
     phone: breakpoints.phone <= width,
   }
+}
+
+export const useSafeVerticalPaddingStyle = (
+  platform: 'ios' | 'android' | 'all' = 'all',
+) => {
+  const { top, bottom } = useSafeAreaInsets()
+  return useMemo(() => {
+    if (platform === 'all' || Platform.OS === platform) {
+      return { paddingTop: top, paddingBottom: bottom }
+    }
+    return {}
+  }, [bottom, platform, top])
+}
+
+export const useSafeTopPaddingStyle = (
+  platform: 'ios' | 'android' | 'all' = 'all',
+) => {
+  const { top } = useSafeAreaInsets()
+  return useMemo(() => {
+    if (platform === 'all' || Platform.OS === platform) {
+      return { paddingTop: top }
+    }
+    return {}
+  }, [platform, top])
 }

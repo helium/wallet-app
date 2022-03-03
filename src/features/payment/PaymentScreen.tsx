@@ -16,7 +16,6 @@ import Balance, {
   TestNetworkTokens,
 } from '@helium/currency'
 import { Keyboard, Platform } from 'react-native'
-import { useAsync } from 'react-async-hook'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { Address } from '@helium/crypto-react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -45,14 +44,14 @@ import {
   useBalance,
   useAccountBalances,
 } from '../../utils/Balance'
-import useAlert from '../../utils/useAlert'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import PaymentItem from './PaymentItem'
-import usePaymentsReducer from './usePaymentsReducer'
+import usePaymentsReducer, { MAX_PAYMENTS } from './usePaymentsReducer'
 import BackgroundFill from '../../components/BackgroundFill'
 import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
 import PaymentCard from './PaymentCard'
 import { getMemoStrValid } from '../../components/MemoInput'
+import PaymentSubmit from './PaymentSubmit'
 
 type Route = RouteProp<HomeStackParamList, 'PaymentScreen'>
 const PaymentScreen = () => {
@@ -85,7 +84,6 @@ const PaymentScreen = () => {
   const [fee, setFee] = useState<Balance<DataCredits>>()
   const { calculatePaymentTxnFee, makePaymentTxn } = useTransactions()
   const { intToBalance, zeroBalanceNetworkToken, dcToTokens } = useBalance()
-  const { showOKAlert } = useAlert()
   const { top } = useSafeAreaInsets()
 
   useEffect(() => {
@@ -175,28 +173,6 @@ const PaymentScreen = () => {
     updateLocked(true)
   }, [pin, requirePinForPayment, updateLocked])
 
-  useAsync(async () => {
-    if (!submitError) return
-
-    await showOKAlert({
-      title: t('generic.error'),
-      message: t('payment.submitError', { details: submitError.message }),
-    })
-
-    navigation.goBack()
-  }, [showOKAlert, submitError, t, navigation])
-
-  useAsync(async () => {
-    if (!submitData?.submitTxn?.hash) return
-
-    await showOKAlert({
-      title: t('generic.success'),
-      message: t('payment.submitSuccess', { hash: submitData.submitTxn.hash }),
-    })
-
-    navigation.goBack()
-  }, [showOKAlert, submitData?.submitTxn?.hash, t, navigation])
-
   useEffect(() => {
     if (!currentAccount?.address) return
 
@@ -228,7 +204,9 @@ const PaymentScreen = () => {
 
   const canAddPayee = useMemo(() => {
     const lastPayee = state.payments[state.payments.length - 1]
+
     return (
+      state.payments.length < MAX_PAYMENTS &&
       lastPayee.address &&
       lastPayee.amount &&
       lastPayee.amount.integerBalance > 0
@@ -356,112 +334,126 @@ const PaymentScreen = () => {
   )
 
   return (
-    <HNTKeyboard ref={hntKeyboardRef} onConfirmBalance={handleBalance}>
-      <AddressBookSelector
-        ref={addressBookRef}
-        onContactSelected={handleContactSelected}
-      >
-        <Box
-          backgroundColor="primaryBackground"
-          flex={1}
-          style={containerStyle}
+    <>
+      <HNTKeyboard ref={hntKeyboardRef} onConfirmBalance={handleBalance}>
+        <AddressBookSelector
+          ref={addressBookRef}
+          onContactSelected={handleContactSelected}
         >
           <Box
-            flexDirection="row"
-            justifyContent="space-between"
-            alignItems="center"
+            backgroundColor="primaryBackground"
+            flex={1}
+            style={containerStyle}
           >
-            <TouchableOpacityBox
-              onPress={onRequestClose}
-              padding="l"
-              hitSlop={hitSlop}
+            <Box
+              flexDirection="row"
+              justifyContent="space-between"
+              alignItems="center"
             >
-              <QR color={primaryText} height={16} width={16} />
-            </TouchableOpacityBox>
-            <Text
-              variant="subtitle2"
-              textAlign="center"
-              color="primaryText"
-              maxFontSizeMultiplier={1}
-            >
-              {t('payment.title', { ticker: currencyType.ticker })}
-            </Text>
-            <TouchableOpacityBox
-              onPress={onRequestClose}
-              padding="l"
-              hitSlop={hitSlop}
-            >
-              <Close color={primaryText} height={16} width={16} />
-            </TouchableOpacityBox>
-          </Box>
-
-          <KeyboardAwareScrollView
-            enableOnAndroid
-            enableResetScrollToCoords={false}
-            keyboardShouldPersistTaps="always"
-          >
-            <AccountButton
-              paddingTop="xxl"
-              title={formatAccountAlias(currentAccount)}
-              subtitle={balanceToString(balances?.hnt, { maxDecimalPlaces: 2 })}
-              address={currentAccount?.address}
-              netType={currentAccount?.netType}
-              onPress={showAccountTypes(
-                currentAccount?.netType !== undefined
-                  ? currentAccount.netType
-                  : 'all',
-              )}
-              showBubbleArrow
-              marginHorizontal="l"
-            />
-
-            {state.payments.map((p, index) => (
-              <PaymentItem
-                // eslint-disable-next-line react/no-array-index-key
-                key={index}
-                address={p.address}
-                account={p.account}
-                amount={p.amount}
-                fee={state.payments.length === 1 ? fee : undefined}
-                index={index}
-                onAddressBookSelected={handleAddressBookSelected}
-                onEditHNTAmount={handleEditHNTAmount}
-                memo={p.memo}
-                onEditMemo={handleEditMemo}
-                onRemove={state.payments.length > 1 ? handleRemove : undefined}
-              />
-            ))}
-            {canAddPayee && (
               <TouchableOpacityBox
-                minHeight={75}
-                onPress={handleAddPayee}
-                borderRadius="xl"
-                overflow="hidden"
-                marginHorizontal="l"
-                marginVertical="l"
-                alignItems="center"
-                justifyContent="center"
+                onPress={onRequestClose}
+                padding="l"
+                hitSlop={hitSlop}
               >
-                <BackgroundFill backgroundColor="surface" opacity={0.2} />
-                <Text variant="body1" color="surfaceSecondaryText">
-                  {t('payment.addRecipient')}
-                </Text>
+                <QR color={primaryText} height={16} width={16} />
               </TouchableOpacityBox>
-            )}
-          </KeyboardAwareScrollView>
+              <Text
+                variant="subtitle2"
+                textAlign="center"
+                color="primaryText"
+                maxFontSizeMultiplier={1}
+              >
+                {t('payment.title', { ticker: currencyType.ticker })}
+              </Text>
+              <TouchableOpacityBox
+                onPress={onRequestClose}
+                padding="l"
+                hitSlop={hitSlop}
+              >
+                <Close color={primaryText} height={16} width={16} />
+              </TouchableOpacityBox>
+            </Box>
 
-          <PaymentCard
-            totalBalance={state.totalAmount}
-            feeTokenBalance={feeAsTokens}
-            disabled={!isFormValid}
-            onSubmit={handleSubmit}
-            submitLoading={submitLoading}
-            payments={state.payments}
-            insufficientFunds={insufficientFunds}
-          />
-        </Box>
-      </AddressBookSelector>
-    </HNTKeyboard>
+            <KeyboardAwareScrollView
+              enableOnAndroid
+              enableResetScrollToCoords={false}
+              keyboardShouldPersistTaps="always"
+            >
+              <AccountButton
+                paddingTop="xxl"
+                title={formatAccountAlias(currentAccount)}
+                subtitle={balanceToString(balances?.hnt, {
+                  maxDecimalPlaces: 2,
+                })}
+                address={currentAccount?.address}
+                netType={currentAccount?.netType}
+                onPress={showAccountTypes(
+                  currentAccount?.netType !== undefined
+                    ? currentAccount.netType
+                    : 'all',
+                )}
+                showBubbleArrow
+                marginHorizontal="l"
+              />
+
+              {state.payments.map((p, index) => (
+                <PaymentItem
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={index}
+                  address={p.address}
+                  account={p.account}
+                  amount={p.amount}
+                  fee={state.payments.length === 1 ? fee : undefined}
+                  index={index}
+                  onAddressBookSelected={handleAddressBookSelected}
+                  onEditHNTAmount={handleEditHNTAmount}
+                  memo={p.memo}
+                  onEditMemo={handleEditMemo}
+                  onRemove={
+                    state.payments.length > 1 ? handleRemove : undefined
+                  }
+                />
+              ))}
+              {canAddPayee && (
+                <TouchableOpacityBox
+                  minHeight={75}
+                  onPress={handleAddPayee}
+                  borderRadius="xl"
+                  overflow="hidden"
+                  marginHorizontal="l"
+                  marginVertical="l"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <BackgroundFill backgroundColor="surface" opacity={0.2} />
+                  <Text variant="body1" color="surfaceSecondaryText">
+                    {t('payment.addRecipient')}
+                  </Text>
+                </TouchableOpacityBox>
+              )}
+            </KeyboardAwareScrollView>
+
+            <PaymentCard
+              totalBalance={state.totalAmount}
+              feeTokenBalance={feeAsTokens}
+              disabled={!isFormValid}
+              onSubmit={handleSubmit}
+              payments={state.payments}
+              insufficientFunds={insufficientFunds}
+            />
+          </Box>
+        </AddressBookSelector>
+      </HNTKeyboard>
+      <PaymentSubmit
+        submitLoading={submitLoading}
+        submitSucceeded={!!submitData?.submitTxn?.hash}
+        submitError={submitError}
+        totalBalance={state.totalAmount}
+        payments={state.payments}
+        feeTokenBalance={feeAsTokens}
+        onRetry={handleSubmit}
+      />
+    </>
   )
 }
 

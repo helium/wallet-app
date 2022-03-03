@@ -7,7 +7,7 @@ import {
 } from '@helium/currency'
 import { useTranslation } from 'react-i18next'
 import { BoxProps } from '@shopify/restyle'
-import Close from '@assets/images/close.svg'
+import Remove from '@assets/images/remove.svg'
 import AccountButton from '../../components/AccountButton'
 import Box from '../../components/Box'
 import { CSAccount } from '../../storage/AccountStorageProvider'
@@ -50,7 +50,7 @@ const PaymentItem = ({
   const { colorStyle } = useOpacity('primaryText', 0.3)
   const { dcToTokens } = useBalance()
   const { t } = useTranslation()
-  const { primaryText } = useColors()
+  const { secondaryText } = useColors()
 
   const title = useMemo(() => {
     return account?.alias || address || t('payment.selectContact')
@@ -142,7 +142,7 @@ const PaymentItem = ({
             paddingHorizontal="l"
             onPress={handleRemove}
           >
-            <Close color={primaryText} />
+            <Remove color={secondaryText} />
           </TouchableOpacityBox>
         )}
       </Box>

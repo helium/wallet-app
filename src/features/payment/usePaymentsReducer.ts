@@ -55,6 +55,8 @@ type AddLinkedPayments = {
   payer?: string
 }
 
+export const MAX_PAYMENTS = 10
+
 const initialState = {
   payments: [{}] as Array<Payment>,
   payer: '',
@@ -80,6 +82,7 @@ function reducer(
     payer: string
     totalAmount: Balance<TestNetworkTokens | NetworkTokens>
     netType: NetType.NetType
+    error?: string
   },
   action:
     | UpdatePayeeAction
@@ -171,6 +174,8 @@ function reducer(
       }
     }
     case 'addPayee': {
+      if (state.payments.length >= MAX_PAYMENTS) return state
+
       return { ...state, payments: [...state.payments, {}] }
     }
     case 'addLinkedPayments': {
