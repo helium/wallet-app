@@ -1,7 +1,4 @@
-import { useCallback } from 'react'
-import { useDebouncedCallback } from 'use-debounce'
-
-export const SUPPORTED_CURRENCIES = {
+export default {
   AED: 'United Arab Emirates Dirham',
   ARS: 'Argentine Peso',
   AUD: 'Australian Dollar',
@@ -43,22 +40,3 @@ export const SUPPORTED_CURRENCIES = {
   XDR: 'IMF Special Drawing Rights',
   ZAR: 'South African Rand',
 } as Record<string, string>
-
-//  TODO: Merge this into BalanceProvider? Or Create a new provider?
-const useCurrency = () => {
-  const toggle = useCallback(() => {
-    // TODO
-    // dispatch(updateSetting({ key: 'convertHntToCurrency', value: !convert }))
-  }, [])
-
-  const toggleConvertHntToCurrency = useDebouncedCallback(toggle, 700, {
-    leading: true,
-    trailing: false,
-  })
-
-  return {
-    toggleConvertHntToCurrency,
-  }
-}
-
-export default useCurrency

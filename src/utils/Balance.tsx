@@ -14,19 +14,25 @@ import React, {
   useMemo,
   useState,
 } from 'react'
+import useAppState from 'react-native-appstate-hook'
+import CurrencyFormatter from 'react-native-currency-format'
 import {
   AccountData,
   useAccountQuery,
   useOracleDataQuery,
 } from '../generated/graphql'
 import { CSAccount, useAccountStorage } from '../storage/AccountStorageProvider'
+import { useAppStorage } from '../storage/AppStorageProvider'
 import { accountCurrencyType } from './accountUtils'
+import { CoinGeckoPrices, getCurrentPrices } from './coinGeckoClient'
 import { decimalSeparator, groupSeparator } from './i18n'
+import useMount from './useMount'
 import usePrevious from './usePrevious'
 
 export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
 const useBalanceHook = ({ clientReady }: { clientReady: boolean }) => {
   const { currentAccount } = useAccountStorage()
+  const { convertToCurrency, currency } = useAppStorage()
 
   const { data, loading, error } = useOracleDataQuery({
     variables: {
@@ -47,6 +53,18 @@ const useBalanceHook = ({ clientReady }: { clientReady: boolean }) => {
 
   const prevLoading = usePrevious(loading)
   const [oracleDateTime, setOracleDateTime] = useState<Date>()
+  const [coinGeckoPrices, setCoinGeckoPrices] = useState<CoinGeckoPrices>()
+
+  const updatePrices = useCallback(
+    () => getCurrentPrices().then(setCoinGeckoPrices),
+    [],
+  )
+
+  useMount(() => {
+    updatePrices()
+  })
+
+  useAppState({ onForeground: updatePrices })
 
   useEffect(() => {
     if (prevLoading && !loading && data && !error) {
@@ -129,6 +147,30 @@ const useBalanceHook = ({ clientReady }: { clientReady: boolean }) => {
     [accountData, currentAccount],
   )
 
+  const toPreferredCurrencyString = useCallback(
+    (
+      balance?: Balance<DataCredits | NetworkTokens | TestNetworkTokens>,
+      opts?: { maxDecimalPlaces?: number; showTicker?: boolean },
+    ): Promise<string> => {
+      const multiplier = coinGeckoPrices?.[currency.toLowerCase()] || 0
+
+      const showAsHnt =
+        !convertToCurrency ||
+        !multiplier ||
+        balance?.type.ticker === CurrencyType.dataCredit.ticker ||
+        balance?.type.ticker === CurrencyType.testNetworkToken.ticker
+
+      if (!showAsHnt) {
+        const convertedValue = multiplier * (balance?.floatBalance || 0)
+        return CurrencyFormatter.format(convertedValue, currency)
+      }
+      return new Promise<string>((resolve) =>
+        resolve(balanceToString(balance, opts)),
+      )
+    },
+    [coinGeckoPrices, convertToCurrency, currency],
+  )
+
   return {
     accountBalance,
     dcToTokens,
@@ -136,6 +178,7 @@ const useBalanceHook = ({ clientReady }: { clientReady: boolean }) => {
     intToBalance,
     oracleDateTime,
     zeroBalanceNetworkToken,
+    toPreferredCurrencyString,
   }
 }
 
@@ -146,6 +189,8 @@ const initialState = {
   intToBalance: () => undefined,
   oracleDateTime: undefined,
   zeroBalanceNetworkToken: new Balance(0, CurrencyType.networkToken),
+  toPreferredCurrencyString: () =>
+    new Promise<string>((resolve) => resolve('')),
 }
 
 const BalanceContext =

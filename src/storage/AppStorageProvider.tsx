@@ -116,6 +116,16 @@ const useAppStorageHook = () => {
     [],
   )
 
+  const toggleConvertToCurrency = useCallback(async () => {
+    setConvertToCurrency((prev) => {
+      SecureStore.setItemAsync(
+        SecureStorageKeys.CONVERT_TO_CURRENCY,
+        !prev ? 'true' : 'false',
+      )
+      return !prev
+    })
+  }, [])
+
   return {
     pin,
     updatePin,
@@ -129,6 +139,7 @@ const useAppStorageHook = () => {
     updateCurrency,
     convertToCurrency,
     updateConvertToCurrency,
+    toggleConvertToCurrency,
   }
 }
 
@@ -145,6 +156,7 @@ const initialState = {
   updateCurrency: async () => undefined,
   convertToCurrency: false,
   updateConvertToCurrency: async () => undefined,
+  toggleConvertToCurrency: async () => undefined,
 }
 
 const AppStorageContext =
