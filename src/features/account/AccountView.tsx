@@ -1,17 +1,23 @@
-import React, { memo, useCallback } from 'react'
+import React, { memo, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import DC from '@assets/images/dc.svg'
 import Helium from '@assets/images/helium.svg'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { NetType } from '@helium/crypto-react-native'
 import TestnetIcon from '@assets/images/testnetIcon.svg'
+import { TouchableOpacity } from 'react-native-gesture-handler'
 import Box from '../../components/Box'
 import Surface from '../../components/Surface'
 import Text from '../../components/Text'
 import { useColors } from '../../theme/themeHooks'
 import FabButton from '../../components/FabButton'
 import { AccountData } from '../../generated/graphql'
-import { balanceToString, useAccountBalances } from '../../utils/Balance'
+import {
+  balanceToString,
+  useAccountBalances,
+  useBalance,
+} from '../../utils/Balance'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 export type Action = 'send' | 'payment' | 'request' | 'stake' | 'lock'
 type Props = {
@@ -32,6 +38,9 @@ const AccountView = ({
   const colors = useColors()
 
   const displayVals = useAccountBalances(accountData)
+  const [balanceString, setBalanceString] = useState('')
+  const { toPreferredCurrencyString } = useBalance()
+  const { toggleConvertToCurrency } = useAppStorage()
 
   const handleLayout = useCallback(
     (event: LayoutChangeEvent) => {
@@ -46,6 +55,12 @@ const AccountView = ({
     },
     [onActionSelected],
   )
+
+  useEffect(() => {
+    toPreferredCurrencyString(displayVals?.hnt, { maxDecimalPlaces: 2 }).then(
+      setBalanceString,
+    )
+  }, [displayVals, toPreferredCurrencyString])
 
   return (
     <Box
@@ -74,10 +89,9 @@ const AccountView = ({
           {t('accountView.balance')}
         </Text>
       </Box>
-      {/* TODO: Make this convert to their currency of choice */}
-      <Text variant="h0">
-        {balanceToString(displayVals?.hnt, { maxDecimalPlaces: 2 })}
-      </Text>
+      <TouchableOpacity onPress={toggleConvertToCurrency}>
+        <Text variant="h0">{balanceString}</Text>
+      </TouchableOpacity>
       <Box flexDirection="row" marginTop="s">
         {displayVals?.stakedHnt && displayVals.stakedHnt.integerBalance > 0 && (
           <Surface

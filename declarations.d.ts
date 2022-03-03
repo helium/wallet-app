@@ -16,7 +16,7 @@ declare module 'angry-purple-tiger' {
 }
 
 declare module 'react-native-currency-format' {
-  export function format(value: number, currencyType: string): string
+  export function format(value: number, currencyType: string): Promise<string>
 }
 
 declare module 'react-native-icloudstore' {
