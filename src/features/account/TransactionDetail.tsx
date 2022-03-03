@@ -225,7 +225,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                 </React.Fragment>
               ))}
 
-              {paymentsReceived.map(({ amount: amt, payee, memo }, index) => (
+              {paymentsReceived.map(({ amount: amt, memo }, index) => (
                 <React.Fragment key={`${index}.amountToPayee`}>
                   <TransactionLineItem
                     title={t('transactions.amount')}
@@ -234,9 +234,13 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                   />
                   <TransactionLineItem
                     title={t('transactions.from')}
-                    bodyText={payee}
+                    bodyText={txn?.payer || ''}
                     isAddress
-                    navTo={`${explorerURL}/accounts/${payee}`}
+                    navTo={
+                      txn?.payer
+                        ? `${explorerURL}/accounts/${txn?.payer}`
+                        : undefined
+                    }
                   />
                   {memo !== undefined && memo !== DEFAULT_MEMO && (
                     <TransactionLineItem
