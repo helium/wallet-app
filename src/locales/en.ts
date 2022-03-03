@@ -113,6 +113,7 @@ export default {
     fee: 'Fee',
     next: 'Next',
     ok: 'OK',
+    retry: 'Retry',
     share: 'Share',
     skip: 'Skip',
     success: 'Success',
@@ -177,20 +178,25 @@ export default {
   ],
   payment: {
     addRecipient: '+ Add Recipient',
+    backToAccounts: 'Back to Accounts',
     enterAmount: 'Enter {{ticker}} Amount',
     enterMemo: 'Enter Memo (Optional)',
     fee: '+{{value}} Fee',
     insufficientFunds: 'Insufficient Funds',
     max: 'Max',
     memoBytes: '{{used}}/{{total}} Bytes',
+    pay: 'Pay',
     selectContact: 'Select Contact',
     sendButton: 'Swipe to Send {{ticker}}',
+    sending: 'Sending...',
     submitError:
       'There was an error submitting this transaction. Please try again.\n\n{{details}}',
-    submitSuccess: 'Your payment transaction has been submitted\n\n{{hash}}',
+    submitSuccess: 'Transaction\nSubmitted',
+    submitFailed: 'Transaction\nFailed',
     title: 'Send {{ticker}}',
     total: 'Total',
-    totalRecipients: '{{total}} Recipients',
+    totalRecipients_one: '{{count}} Recipient',
+    totalRecipients_other: '{{count}} Recipients',
   },
   placeholder: {
     accountBalanceValue: 'Account Balance: {{balance}}',
@@ -219,8 +225,8 @@ export default {
     sections: {
       account: {
         alias: 'Account Alias',
-        revealWords: 'Reveal Words',
         copyAddress: 'Copy Address',
+        revealWords: 'Reveal Words',
         signOut: 'Sign Out',
         signOutAlert: {
           body: 'You are signing out of your account {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your HNT\n- your Wallet',

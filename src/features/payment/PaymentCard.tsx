@@ -1,116 +1,119 @@
 import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
-import React, { memo, useMemo } from 'react'
+import React, { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActivityIndicator } from 'react-native'
-import AccountIcon from '../../components/AccountIcon'
+import { LayoutChangeEvent } from 'react-native'
+import BackgroundFill from '../../components/BackgroundFill'
 import Box from '../../components/Box'
 import SubmitButton from '../../components/SubmitButton'
 import Text from '../../components/Text'
-import { useColors } from '../../theme/themeHooks'
-import { balanceToString } from '../../utils/Balance'
+import TouchableOpacityBox from '../../components/TouchableOpacityBox'
+import animateTransition from '../../utils/animateTransition'
 import { Payment } from './PaymentItem'
+import PaymentSummary from './PaymentSummary'
 
 type Props = {
   totalBalance: Balance<TestNetworkTokens | NetworkTokens>
   feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
   onSubmit: () => void
   disabled: boolean
-  submitLoading: boolean
   insufficientFunds: boolean
   payments: Payment[]
 }
+
 const PaymentCard = ({
   totalBalance,
   feeTokenBalance,
   onSubmit,
   disabled,
-  submitLoading,
   payments,
   insufficientFunds,
 }: Props) => {
   const { t } = useTranslation()
-  const { primaryText } = useColors()
+  const [payEnabled, setPayEnabled] = useState(false)
+  const [height, setHeight] = useState(0)
 
-  const total = useMemo(() => balanceToString(totalBalance), [totalBalance])
-  const fee = useMemo(
-    () =>
-      feeTokenBalance
-        ? t('payment.fee', {
-            value: balanceToString(feeTokenBalance, {
-              maxDecimalPlaces: 4,
-            }),
-          })
-        : '',
-    [feeTokenBalance, t],
-  )
+  const handlePayPressed = useCallback(() => {
+    animateTransition('PaymentCard.payEnabled')
+    setPayEnabled(true)
+  }, [])
 
-  const showRecipients = useMemo(
-    () => payments.length > 1 && !disabled,
-    [disabled, payments.length],
-  )
-
-  const accountIcons = useMemo(
-    () =>
-      payments.map(({ address }, index) => (
-        <Box key={address} style={{ marginLeft: index * -4 }}>
-          <AccountIcon address={address} size={16} />
-        </Box>
-      )),
-    [payments],
+  const handleLayout = useCallback(
+    (e: LayoutChangeEvent) => {
+      if (height > 0) return
+      setHeight(e.nativeEvent.layout.height)
+    },
+    [height],
   )
 
   return (
     <Box
-      backgroundColor="secondary"
       borderTopLeftRadius="xl"
       borderTopRightRadius="xl"
       padding="l"
+      height={height || undefined}
+      onLayout={handleLayout}
+      overflow="hidden"
     >
-      <Box flexDirection="row" alignItems="center">
-        <Text variant="body1" color="primaryText" flex={1}>
-          {t('payment.total')}
-        </Text>
-        <Text variant="h3" color="primaryText">
-          {total}
-        </Text>
-      </Box>
+      <BackgroundFill backgroundColor="secondary" opacity={0.4} />
 
-      <Box flexDirection="row" alignItems="center">
-        {showRecipients && (
-          <>
-            {accountIcons}
-            <Text variant="body2" color="secondaryText" marginLeft="s">
-              {t('payment.totalRecipients', { total: payments.length })}
-            </Text>
-          </>
-        )}
-        {insufficientFunds && (
-          <Text variant="body2" color="error">
-            {t('payment.insufficientFunds')}
-          </Text>
-        )}
-        <Text variant="body2" color="secondaryText" flex={1} textAlign="right">
-          {fee}
-        </Text>
-      </Box>
+      <PaymentSummary
+        totalBalance={totalBalance}
+        feeTokenBalance={feeTokenBalance}
+        disabled={disabled}
+        payments={payments}
+        insufficientFunds={insufficientFunds}
+      />
       <Box marginTop="xxl">
-        <SubmitButton
-          title={t('payment.sendButton', {
-            ticker: totalBalance?.type.ticker,
-          })}
-          onSubmit={onSubmit}
-          disabled={disabled}
-        />
-        {submitLoading && (
-          <Box
-            position="absolute"
-            top={0}
-            bottom={0}
-            justifyContent="center"
-            marginLeft="lm"
-          >
-            <ActivityIndicator color={primaryText} />
-          </Box>
+        {!payEnabled ? (
+          <>
+            <Box flexDirection="row" marginTop="l">
+              <TouchableOpacityBox
+                flex={1}
+                minHeight={66}
+                justifyContent="center"
+                marginEnd="m"
+                borderRadius="round"
+                overflow="hidden"
+                backgroundColor="secondaryIcon"
+              >
+                <Text
+                  variant="subtitle1"
+                  textAlign="center"
+                  color="primaryText"
+                >
+                  {t('generic.cancel')}
+                </Text>
+              </TouchableOpacityBox>
+              <TouchableOpacityBox
+                flex={1}
+                minHeight={66}
+                backgroundColor={disabled ? 'secondary' : 'surfaceContrast'}
+                justifyContent="center"
+                alignItems="center"
+                onPress={handlePayPressed}
+                disabled={disabled}
+                borderRadius="round"
+                flexDirection="row"
+              >
+                <Text
+                  marginLeft="s"
+                  variant="subtitle1"
+                  textAlign="center"
+                  color={disabled ? 'surface' : 'secondary'}
+                >
+                  {t('payment.pay')}
+                </Text>
+              </TouchableOpacityBox>
+            </Box>
+          </>
+        ) : (
+          <SubmitButton
+            marginTop="l"
+            title={t('payment.sendButton', {
+              ticker: totalBalance?.type.ticker,
+            })}
+            onSubmit={onSubmit}
+          />
         )}
       </Box>
     </Box>

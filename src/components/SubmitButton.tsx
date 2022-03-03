@@ -12,17 +12,18 @@ type Props = {
   disabled?: boolean
 } & BoxProps<Theme>
 const SubmitButton = ({ onSubmit, title, disabled, ...boxProps }: Props) => {
-  const { surfaceSecondary, primaryText, secondaryText } = useColors()
+  const { surfaceSecondary, secondaryText, blueBright500, secondaryIcon } =
+    useColors()
   const icon = useMemo(
-    () => () => <SwipeIcon color={secondaryText} />,
-    [secondaryText],
+    () => () => <SwipeIcon color={blueBright500} />,
+    [blueBright500],
   )
 
   const styles = useMemo(
     () => ({
       titleStyles: {
         fontFamily: Font.regular,
-        color: disabled ? secondaryText : primaryText,
+        color: disabled ? secondaryText : blueBright500,
         fontSize: 19,
       },
       railStyles: {
@@ -31,20 +32,20 @@ const SubmitButton = ({ onSubmit, title, disabled, ...boxProps }: Props) => {
       },
     }),
 
-    [disabled, primaryText, secondaryText, surfaceSecondary],
+    [blueBright500, disabled, secondaryText, surfaceSecondary],
   )
 
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <Box backgroundColor="surfaceSecondary" borderRadius="round" {...boxProps}>
+    <Box backgroundColor="secondaryIcon" borderRadius="round" {...boxProps}>
       <SwipeButton
-        railBackgroundColor={surfaceSecondary}
+        railBackgroundColor={secondaryIcon}
         railStyles={styles.railStyles}
-        railBorderColor={surfaceSecondary}
+        railBorderColor={secondaryIcon}
         titleStyles={styles.titleStyles}
         titleMaxFontScale={1}
-        thumbIconBackgroundColor={disabled ? secondaryText : primaryText}
-        thumbIconBorderColor={secondaryText}
+        thumbIconBackgroundColor={secondaryIcon}
+        thumbIconBorderColor={blueBright500}
         title={title}
         onSwipeSuccess={onSubmit}
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment

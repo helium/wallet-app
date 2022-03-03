@@ -9,6 +9,8 @@ declare module '*.svg' {
   export default content
 }
 
+declare module '*.mp4'
+
 declare module 'angry-purple-tiger' {
   export default function fn(value: string): string
 }

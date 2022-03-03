@@ -27,7 +27,8 @@ import PaymentArrow from '@assets/images/paymentArrow.svg'
 import { LayoutChangeEvent } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { BoxProps } from '@shopify/restyle'
-import { useOpacity } from '../theme/themeHooks'
+import { floor } from 'lodash'
+import { useOpacity, useSafeTopPaddingStyle } from '../theme/themeHooks'
 import Keypad from './Keypad'
 import Box from './Box'
 import Text from './Text'
@@ -89,6 +90,8 @@ const HNTKeyboardSelector = forwardRef(
     const [paymentIndex, setPaymentIndex] = useState<number>()
     const [containerHeight, setContainerHeight] = useState(0)
     const [headerHeight, setHeaderHeight] = useState(0)
+    const containerStyle = useSafeTopPaddingStyle('android')
+
     const { calculatePaymentTxnFee } = useTransactions()
     const {
       dcToTokens,
@@ -218,8 +221,13 @@ const HNTKeyboardSelector = forwardRef(
       if (maxBalance.integerBalance < 0) {
         maxBalance = zeroBalanceNetworkToken
       }
-      const val = maxBalance.floatBalance
-        .toLocaleString(locale, { maximumFractionDigits: 10 })
+
+      const decimalPlaces = maxBalance.type.decimalPlaces.toNumber()
+
+      const val = floor(maxBalance.floatBalance, decimalPlaces)
+        .toLocaleString(locale, {
+          maximumFractionDigits: decimalPlaces,
+        })
         .replaceAll(groupSeparator, '')
         .replaceAll(decimalSeparator, '.')
 
@@ -247,7 +255,11 @@ const HNTKeyboardSelector = forwardRef(
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...props}
         >
-          <Box backgroundColor="primaryBackground" flex={1}>
+          <Box
+            backgroundColor="primaryBackground"
+            flex={1}
+            style={containerStyle}
+          >
             <Box padding="l" alignItems="center" onLayout={handleHeaderLayout}>
               <Text variant="subtitle2">
                 {t('hntKeyboard.enterAmount', {
@@ -288,6 +300,7 @@ const HNTKeyboardSelector = forwardRef(
         </BottomSheetBackdrop>
       ),
       [
+        containerStyle,
         currentAccountBalance,
         handleHeaderLayout,
         payeeAddress,
@@ -345,9 +358,9 @@ const HNTKeyboardSelector = forwardRef(
     const hasSufficientBalance = useMemo(() => {
       if (!payer) return true
 
-      if (!feeAsTokens || !valueAsBalance || !currentAccountBalance)
+      if (!feeAsTokens || !valueAsBalance || !currentAccountBalance) {
         return false
-
+      }
       return (
         (currentAccountBalance?.minus(feeAsTokens).minus(valueAsBalance))
           .integerBalance >= 0
