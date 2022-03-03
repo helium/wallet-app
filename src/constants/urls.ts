@@ -3,7 +3,7 @@ import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { isMainnet } from '../utils/accountUtils'
 
 export const EXPLORER_MAINNET_BASE_URL = 'https://explorer.helium.com'
-export const EXPLORER_TESTNET_BASE_URL = 'https://explorer.helium.wtf'
+export const EXPLORER_TESTNET_BASE_URL = 'https://testnet-explorer.helium.com/'
 
 export const PUBLIC_API_MAIN_URL = 'https://sharkfed.api.stakejoy.com/v1'
 export const PUBLIC_API_TEST_URL = 'https://testnet-api.helium.wtf/v1'
