@@ -159,7 +159,7 @@ const Settings = () => {
               client?.resetStore()
             } else {
               // sign out the specific account, then nav to home
-              await signOut(currentAccount?.address)
+              await signOut(currentAccount)
               homeNav.popToTop()
             }
           },

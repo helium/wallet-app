@@ -5,7 +5,6 @@ import Helium from '@assets/images/helium.svg'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { NetType } from '@helium/crypto-react-native'
 import TestnetIcon from '@assets/images/testnetIcon.svg'
-import { TouchableOpacity } from 'react-native-gesture-handler'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import { useColors } from '../../theme/themeHooks'
@@ -17,6 +16,7 @@ import {
   useBalance,
 } from '../../utils/Balance'
 import { useAppStorage } from '../../storage/AppStorageProvider'
+import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 
 export type Action = 'send' | 'payment' | 'request' | 'stake' | 'lock'
 type Props = {
@@ -92,12 +92,12 @@ const AccountView = ({
           {t('accountView.balance')}
         </Text>
       </Box>
-      <TouchableOpacity onPress={toggleConvertToCurrency}>
+      <TouchableOpacityBox onPress={toggleConvertToCurrency}>
         <Text variant="h0" color="primaryText">
-          {balanceString}
+          {balanceString || ' '}
         </Text>
-      </TouchableOpacity>
-      <Box flexDirection="row" marginTop="s">
+      </TouchableOpacityBox>
+      <Box flexDirection="row" marginTop="s" minHeight={31}>
         {displayVals?.stakedHnt && displayVals.stakedHnt.integerBalance > 0 && (
           <Box
             borderRadius="xl"

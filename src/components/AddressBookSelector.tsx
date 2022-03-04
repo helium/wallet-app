@@ -20,9 +20,10 @@ import { BoxProps } from '@shopify/restyle'
 import { useOpacity, useSpacing } from '../theme/themeHooks'
 import ContactsList from '../features/addressBook/ContactsList'
 import { HomeNavigationProp } from '../features/home/homeTypes'
-import { CSAccount, useAccountStorage } from '../storage/AccountStorageProvider'
+import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { Theme } from '../theme/theme'
 import Box from './Box'
+import { CSAccount } from '../storage/cloudStorage'
 
 export type AddressBookRef = {
   showAddressBook: (opts: { address?: string; index?: number }) => void

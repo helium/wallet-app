@@ -10,7 +10,6 @@ import { BoxProps } from '@shopify/restyle'
 import Remove from '@assets/images/remove.svg'
 import AccountButton from '../../components/AccountButton'
 import Box from '../../components/Box'
-import { CSAccount } from '../../storage/AccountStorageProvider'
 import { accountNetType, ellipsizeAddress } from '../../utils/accountUtils'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { useColors, useOpacity } from '../../theme/themeHooks'
@@ -18,6 +17,7 @@ import Text from '../../components/Text'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import MemoInput from '../../components/MemoInput'
 import { Theme } from '../../theme/theme'
+import { CSAccount } from '../../storage/cloudStorage'
 
 export type Payment = {
   address?: string

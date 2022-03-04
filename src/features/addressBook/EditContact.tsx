@@ -19,7 +19,6 @@ import { useColors, useOpacity, useSpacing } from '../../theme/themeHooks'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { HomeNavigationProp } from '../home/homeTypes'
 import TextInput from '../../components/TextInput'
-import ButtonPressable from '../../components/ButtonPressable'
 import AccountIcon from '../../components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import {
@@ -28,6 +27,7 @@ import {
 } from './addressBookTypes'
 import { accountNetType } from '../../utils/accountUtils'
 import useAlert from '../../utils/useAlert'
+import BackgroundFill from '../../components/BackgroundFill'
 
 type Route = RouteProp<AddressBookStackParamList, 'EditContact'>
 
@@ -168,41 +168,45 @@ const EditContact = () => {
             autoCorrect={false}
             ref={nicknameInput}
           />
-          <Box
-            flexDirection="row"
-            marginTop="xxxl"
-            marginHorizontal="xl"
-            justifyContent="space-between"
-          >
-            <ButtonPressable
-              width="48%"
-              backgroundColor="blueBright500"
-              height={BUTTON_HEIGHT}
-              backgroundColorDisabled="plainInputBackground"
-              titleColorDisabled="grey400"
-              fontSize={19}
-              backgroundColorOpacityPressed={0.7}
+          <Box flexDirection="row" marginTop="xxxl" marginHorizontal="xl">
+            <TouchableOpacityBox
+              flex={1}
+              minHeight={66}
+              justifyContent="center"
+              marginEnd="m"
               borderRadius="round"
-              title={t('editContact.save')}
+              onPress={handleDeleteContact}
+              overflow="hidden"
+            >
+              <BackgroundFill backgroundColor="error" />
+              <Text variant="subtitle1" textAlign="center" color="error">
+                {t('editContact.delete')}
+              </Text>
+            </TouchableOpacityBox>
+            <TouchableOpacityBox
+              flex={1}
+              minHeight={66}
+              backgroundColor="blueBright500"
+              justifyContent="center"
+              alignItems="center"
+              borderRadius="round"
               disabled={
                 !addressIsValid ||
                 !nickname ||
                 (nickname === contact.alias && address === contact.address)
               }
               onPress={handleSaveNewContact}
-            />
-            <ButtonPressable
-              width="48%"
-              backgroundColor="red500"
-              height={BUTTON_HEIGHT}
-              fontSize={19}
-              titleColor="red500"
-              backgroundColorOpacity={0.2}
-              backgroundColorOpacityPressed={0.4}
-              borderRadius="round"
-              title={t('editContact.delete')}
-              onPress={handleDeleteContact}
-            />
+              flexDirection="row"
+            >
+              <Text
+                marginLeft="s"
+                variant="subtitle1"
+                textAlign="center"
+                color="primaryText"
+              >
+                {t('editContact.save')}
+              </Text>
+            </TouchableOpacityBox>
           </Box>
         </SafeAreaBox>
       </KeyboardAvoidingView>

@@ -4,7 +4,7 @@ import { NetType } from '@helium/crypto-react-native'
 import AccountIcon from '../../components/AccountIcon'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
-import { CSAccount } from '../../storage/AccountStorageProvider'
+import { CSAccount } from '../../storage/cloudStorage'
 import { formatAccountAlias } from '../../utils/accountUtils'
 import useAccountRewardsSum from './useAccountRewardsSum'
 

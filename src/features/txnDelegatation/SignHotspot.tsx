@@ -14,6 +14,7 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import verifyAppLinkAuthToken from './verifyAppLinkAuthToken'
 import AccountIcon from '../../components/AccountIcon'
 import { formatAccountAlias } from '../../utils/accountUtils'
+import { getKeypair } from '../../storage/secureStorage'
 
 type Route = RouteProp<HomeStackParamList, 'SignHotspot'>
 const SignHotspot = () => {
@@ -27,7 +28,7 @@ const SignHotspot = () => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const [validated, setValidated] = useState<boolean>()
-  const { getKeypair, accounts } = useAccountStorage()
+  const { accounts, currentAccount } = useAccountStorage()
 
   const linkInvalid = useMemo(() => {
     return !addGatewayTxn && !assertLocationTxn
@@ -70,7 +71,7 @@ const SignHotspot = () => {
 
   const handleLink = useCallback(async () => {
     try {
-      const ownerKeypair = await getKeypair()
+      const ownerKeypair = await getKeypair(currentAccount?.address || '')
 
       const responseParams = {
         status: 'success',
@@ -103,7 +104,7 @@ const SignHotspot = () => {
     } catch (e) {
       // Logger.error(e)
     }
-  }, [callback, gatewayTxn, getKeypair, locationTxn])
+  }, [callback, currentAccount, gatewayTxn, locationTxn])
 
   const handleCancel = useCallback(async () => {
     callback({ status: 'user_cancelled' })

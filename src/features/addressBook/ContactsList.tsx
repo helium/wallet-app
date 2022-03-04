@@ -5,14 +5,12 @@ import Fuse from 'fuse.js'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import {
-  CSAccount,
-  useAccountStorage,
-} from '../../storage/AccountStorageProvider'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import FabButton from '../../components/FabButton'
 import SearchInput from '../../components/SearchInput'
 import { AccountNetTypeOpt } from '../../utils/accountUtils'
 import AccountListItem from '../../components/AccountListItem'
+import { CSAccount } from '../../storage/cloudStorage'
 
 type Props = {
   onAddNew: () => void

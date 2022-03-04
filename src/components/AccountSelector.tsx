@@ -15,10 +15,11 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
 import { GestureResponderEvent } from 'react-native'
-import { CSAccount, useAccountStorage } from '../storage/AccountStorageProvider'
+import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useColors, useOpacity, useSpacing } from '../theme/themeHooks'
 import { AccountNetTypeOpt } from '../utils/accountUtils'
 import AccountListItem from './AccountListItem'
+import { CSAccount } from '../storage/cloudStorage'
 
 const initialState = {
   show: (_type?: AccountNetTypeOpt) => undefined,

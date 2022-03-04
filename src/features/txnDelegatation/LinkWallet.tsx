@@ -14,6 +14,7 @@ import { useAccountSelector } from '../../components/AccountSelector'
 import AccountIcon from '../../components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { formatAccountAlias } from '../../utils/accountUtils'
+import { getKeypair } from '../../storage/secureStorage'
 
 const makeAppLinkAuthToken = async (
   tokenOpts: WalletLink.LinkWalletRequest & {
@@ -40,7 +41,7 @@ const LinkWallet = () => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const { show } = useAccountSelector()
-  const { currentAccount, getKeypair } = useAccountStorage()
+  const { currentAccount } = useAccountStorage()
 
   const callback = useCallback(
     async (responseParams: WalletLink.LinkWalletResponse) => {
@@ -58,7 +59,7 @@ const LinkWallet = () => {
 
   const handleLink = useCallback(async () => {
     if (!currentAccount?.address) return
-    const keypair = await getKeypair()
+    const keypair = await getKeypair(currentAccount.address)
     if (!keypair) return
 
     const time = getUnixTime(new Date())
@@ -74,7 +75,7 @@ const LinkWallet = () => {
       keypair,
     )
     callback({ token, status: 'success' })
-  }, [currentAccount, getKeypair, requestAppId, callbackUrl, appName, callback])
+  }, [currentAccount, requestAppId, callbackUrl, appName, callback])
 
   const handleCancel = useCallback(async () => {
     callback({ status: 'user_cancelled' })

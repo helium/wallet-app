@@ -49,7 +49,7 @@ const App = () => {
   const { restored: accountsRestored } = useAccountStorage()
   const { setOpenedNotification } = useNotificationStorage()
 
-  const { client, clientReady, loading } = useApolloClient()
+  const { client, loading } = useApolloClient()
 
   const colorScheme = useColorScheme()
   const colorAdaptedTheme = useMemo(
@@ -107,15 +107,12 @@ const App = () => {
     )
   }
 
-  // TODO: Need to find a better way to not allow queries to fire until `clientReady` is true
-  // This is why we're seeing some query failures. The retry policy will make the user experience ok,
-  // but we be good to eliminate the extra queries.
   return (
     <ThemeProvider theme={colorAdaptedTheme}>
       <OnboardingProvider>
         <ApolloProvider client={client}>
-          <BalanceProvider clientReady={clientReady}>
-            <TransactionProvider clientReady={clientReady}>
+          <BalanceProvider>
+            <TransactionProvider>
               <LockScreen>
                 {accountsRestored && (
                   <AccountSelector>

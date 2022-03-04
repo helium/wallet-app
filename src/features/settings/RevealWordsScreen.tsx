@@ -12,9 +12,10 @@ import { wp } from '../../utils/layout'
 import ButtonPressable from '../../components/ButtonPressable'
 import BackScreen from '../../components/BackScreen'
 import TextTransform from '../../components/TextTransform'
+import { getSecureAccount } from '../../storage/secureStorage'
 
 const RevealWordsScreen = () => {
-  const { currentAccount, getSecureAccount } = useAccountStorage()
+  const { currentAccount } = useAccountStorage()
   const { t } = useTranslation()
   const navigation = useNavigation()
   const [mnemonic, setMnemonic] = useState<string[]>()
@@ -23,7 +24,7 @@ const RevealWordsScreen = () => {
     if (!currentAccount || !currentAccount.address) return
     const secureAccount = await getSecureAccount(currentAccount.address)
     setMnemonic(secureAccount?.mnemonic)
-  }, [currentAccount, getSecureAccount])
+  }, [currentAccount])
 
   const renderItem = ({ item, index }: { item: string; index: number }) => {
     const isFirst = index === 0

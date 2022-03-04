@@ -4,15 +4,16 @@ import * as LocalAuthentication from 'expo-local-authentication'
 import { AnimatePresence } from 'moti'
 import useAppState from 'react-native-appstate-hook'
 import { useAsync } from 'react-async-hook'
-import * as SecureStore from 'expo-secure-store'
 import ConfirmPinView from '../../components/ConfirmPinView'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import useAlert from '../../utils/useAlert'
 import MotiBox from '../../components/MotiBox'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 import {
-  SecureStorageKeys,
-  useAppStorage,
-} from '../../storage/AppStorageProvider'
+  deleteSecureItem,
+  getSecureItem,
+  storeSecureItem,
+} from '../../storage/secureStorage'
 
 type Props = { children: React.ReactNode }
 const LockScreen = ({ children }: Props) => {
@@ -26,16 +27,12 @@ const LockScreen = ({ children }: Props) => {
   useAsync(async () => {
     if (locked || !pin || pin?.status === 'off' || !hasAccounts) return
     if (appState === 'background' || appState === 'inactive') {
-      await SecureStore.setItemAsync(
-        SecureStorageKeys.LAST_IDLE,
-        Date.now().toString(),
-      )
+      await storeSecureItem('lastIdle', Date.now().toString())
       return
     }
 
-    const lastIdleString = await SecureStore.getItemAsync(
-      SecureStorageKeys.LAST_IDLE,
-    )
+    const lastIdleString = await getSecureItem('lastIdle')
+
     if (!lastIdleString) return
 
     const lastIdle = Number.parseInt(lastIdleString, 10)
@@ -48,7 +45,7 @@ const LockScreen = ({ children }: Props) => {
     const shouldLock = isActive && lastIdleExpired
 
     if (shouldLock) {
-      await SecureStore.deleteItemAsync(SecureStorageKeys.LAST_IDLE)
+      await deleteSecureItem('lastIdle')
       await updateLocked(true)
     }
   }, [appState, pin, authInterval, updateLocked, locked, hasAccounts])

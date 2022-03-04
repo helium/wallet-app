@@ -6,7 +6,7 @@ import Balance, {
 } from '@helium/currency'
 import { useReducer } from 'react'
 import { decodeMemoString } from '../../components/MemoInput'
-import { CSAccount } from '../../storage/AccountStorageProvider'
+import { CSAccount } from '../../storage/cloudStorage'
 import { accountCurrencyType, accountNetType } from '../../utils/accountUtils'
 import { Payment } from './PaymentItem'
 

@@ -1,5 +1,5 @@
 import { StackNavigationProp } from '@react-navigation/stack'
-import { CSAccount } from '../../storage/AccountStorageProvider'
+import { CSAccount } from '../../storage/cloudStorage'
 
 export type AddressBookStackParamList = {
   AddressBook: undefined

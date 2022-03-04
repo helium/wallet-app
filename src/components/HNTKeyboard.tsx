@@ -41,13 +41,13 @@ import {
 import TouchableOpacityBox from './TouchableOpacityBox'
 import SafeAreaBox from './SafeAreaBox'
 import AccountIcon from './AccountIcon'
-import { CSAccount } from '../storage/AccountStorageProvider'
 import { KeypadInput } from './KeypadButton'
 import { decimalSeparator, groupSeparator, locale } from '../utils/i18n'
 import BackgroundFill from './BackgroundFill'
 import HandleBasic from './HandleBasic'
 import { Theme } from '../theme/theme'
 import { Payment } from '../features/payment/PaymentItem'
+import { CSAccount } from '../storage/cloudStorage'
 
 type ShowOptions = {
   payer?: CSAccount | null
