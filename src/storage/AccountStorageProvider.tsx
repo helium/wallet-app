@@ -303,6 +303,19 @@ const useAccountStorageHook = () => {
     [contacts],
   )
 
+  const deleteContact = useCallback(
+    async (address: string) => {
+      const filtered = contacts.filter((c) => c.address !== address)
+      const nextContacts = [...filtered]
+      setContacts(nextContacts)
+      return CloudStorage.setItem(
+        CloudStorageKeys.CONTACTS,
+        JSON.stringify(nextContacts),
+      )
+    },
+    [contacts],
+  )
+
   const updateViewType = useCallback(async (nextViewType: AccountView) => {
     setViewType(nextViewType)
     return CloudStorage.setItem(CloudStorageKeys.VIEW_TYPE, nextViewType)
@@ -384,6 +397,7 @@ const useAccountStorageHook = () => {
     accounts,
     accountAddresses,
     addContact,
+    deleteContact,
     contacts,
     contactsForNetType,
     createSecureAccount,
@@ -413,6 +427,7 @@ const initialState = {
   accounts: {},
   accountAddresses: [],
   addContact: async () => undefined,
+  deleteContact: async () => undefined,
   contacts: [],
   contactsForNetType: () => [],
   createSecureAccount: async () => ({

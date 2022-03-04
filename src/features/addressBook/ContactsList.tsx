@@ -90,7 +90,7 @@ const ContactsList = ({
     let listData = contactsForNetType(netTypeOpt)
     if (searchTerm.trim()) {
       listData = new Fuse(contacts, {
-        keys: ['alias'],
+        keys: ['alias', 'address'],
         threshold: 0.3,
       })
         .search(searchTerm)

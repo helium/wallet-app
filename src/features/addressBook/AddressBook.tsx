@@ -10,6 +10,7 @@ import { useColors } from '../../theme/themeHooks'
 import { HomeNavigationProp } from '../home/homeTypes'
 import ContactsList from './ContactsList'
 import { AddressBookNavigationProp } from './addressBookTypes'
+import { CSAccount } from '../../storage/AccountStorageProvider'
 
 const AddressBook = () => {
   const { t } = useTranslation()
@@ -24,6 +25,13 @@ const AddressBook = () => {
   const handleAddNewContact = useCallback(() => {
     addressNav.navigate('AddNewContact')
   }, [addressNav])
+
+  const handleEditContact = useCallback(
+    (contact: CSAccount) => {
+      addressNav.navigate('EditContact', { contact })
+    },
+    [addressNav],
+  )
 
   return (
     <SafeAreaBox flex={1}>
@@ -40,7 +48,10 @@ const AddressBook = () => {
           </TouchableOpacityBox>
         </Box>
       </Box>
-      <ContactsList onAddNew={handleAddNewContact} />
+      <ContactsList
+        onAddNew={handleAddNewContact}
+        handleContactSelected={handleEditContact}
+      />
     </SafeAreaBox>
   )
 }

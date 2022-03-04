@@ -101,6 +101,14 @@ export default {
     },
     title: 'Add New Contact',
   },
+  editContact: {
+    title: 'Edit Contact',
+    save: 'Save',
+    delete: 'Delete',
+    deleteConfirmTitle: 'Delete Contact?',
+    deleteConfirmMessage:
+      'Are you sure you want to delete your contact, {{alias}}?',
+  },
   addressBook: {
     addNext: 'Add New...',
     searchContacts: 'Search Contacts...',
