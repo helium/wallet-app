@@ -1,5 +1,6 @@
 import { Address, NetType } from '@helium/crypto-react-native'
 import { CurrencyType } from '@helium/currency'
+import Bcrypt from 'bcrypt-react-native'
 
 export type AccountNetTypeOpt = 'all' | NetType.NetType
 
@@ -21,6 +22,10 @@ export const isMainnet = (address: string) => {
 
 export const isTestnet = (address: string) => {
   return accountNetType(address) === NetType.TESTNET
+}
+
+export const isValidAccountHash = async (address: string, hash: string) => {
+  return Bcrypt.compareSync(address, hash)
 }
 
 export const ellipsizeAddress = (address: string) =>

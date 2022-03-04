@@ -72,6 +72,10 @@
 			<string>DMSans-MediumItalic.ttf</string>
 			<string>DMSans-Regular.ttf</string>
 		</array>
+        <key>UIBackgroundModes</key>
+        <array>
+            <string>remote-notification</string>
+        </array>
 		<key>UILaunchStoryboardName</key>
 		<string>LaunchScreen</string>
 		<key>NSBluetoothAlwaysUsageDescription</key>

@@ -18,6 +18,7 @@ import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { useTranslation } from 'react-i18next'
 import { NetType } from '@helium/crypto-react-native'
 import { useNavigation } from '@react-navigation/native'
+import { useAsync } from 'react-async-hook'
 import Box from '../../components/Box'
 import {
   CSAccount,
@@ -54,6 +55,14 @@ import {
   useTransactionDetail,
   withTransactionDetail,
 } from './TransactionDetail'
+import NotificationIcon from '../../components/NotificationIcon'
+import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
+import { useAppStorage } from '../../storage/AppStorageProvider'
+import {
+  HELIUM_UPDATES_ITEM,
+  WALLET_UPDATES_ITEM,
+} from '../notifications/notificationTypes'
+import { isValidAccountHash } from '../../utils/accountUtils'
 
 type AccountLayout = {
   accountViewStart: number
@@ -105,6 +114,9 @@ const AccountsScreen = () => {
   const prevSortedAccounts = usePrevious<CSAccount[] | undefined>(
     sortedAccounts,
   )
+  const { openedNotification, setOpenedNotification, updateSelectedList } =
+    useNotificationStorage()
+  const { locked } = useAppStorage()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const [netType, setNetType] = useState<number>(NetType.MAINNET)
   const { show } = useAccountSelector()
@@ -168,6 +180,38 @@ const AccountsScreen = () => {
     sortedAccounts.length,
   ])
 
+  useAsync(async () => {
+    if (openedNotification && !locked) {
+      const additionalData = openedNotification.additionalData as {
+        resource?: string
+        id?: number
+      }
+      const resource = additionalData?.resource
+      if (
+        resource === WALLET_UPDATES_ITEM ||
+        resource === HELIUM_UPDATES_ITEM
+      ) {
+        // helium or wallet update
+        await updateSelectedList(resource)
+      } else if (resource !== undefined) {
+        // account update, check hash against accounts
+        const index = (
+          await Promise.all(
+            sortedAccounts.map((a) => isValidAccountHash(a.address, resource)),
+          )
+        ).findIndex((result) => !!result)
+
+        const notifiedAccount = index > -1 ? sortedAccounts[index] : undefined
+
+        if (notifiedAccount && notifiedAccount.address) {
+          await updateSelectedList(notifiedAccount.address)
+        }
+      }
+      navigation.push('NotificationsNavigator')
+      setOpenedNotification(undefined)
+    }
+  }, [navigation, openedNotification, locked, setOpenedNotification])
+
   const accountNetType = useMemo(
     () => AccountUtils.accountNetType(currentAccount?.address),
     [currentAccount],
@@ -175,6 +219,10 @@ const AccountsScreen = () => {
 
   const handleAddressBook = useCallback(() => {
     navigation.push('AddressBookNavigator')
+  }, [navigation])
+
+  const handleNotificationsSelected = useCallback(() => {
+    navigation.push('NotificationsNavigator')
   }, [navigation])
 
   const carouselData = useMemo(() => {
@@ -374,12 +422,17 @@ const AccountsScreen = () => {
                   {t('onboarding.testnet')}
                 </Text>
               </Box>
-              <TouchableOpacityBox
-                paddingHorizontal="l"
-                onPress={handleAddressBook}
-              >
-                <AccountIco color={primaryIcon} />
-              </TouchableOpacityBox>
+              <Box flexDirection="row" paddingHorizontal="l">
+                <TouchableOpacityBox
+                  onPress={handleNotificationsSelected}
+                  marginRight="s"
+                >
+                  <NotificationIcon />
+                </TouchableOpacityBox>
+                <TouchableOpacityBox onPress={handleAddressBook}>
+                  <AccountIco color={primaryIcon} />
+                </TouchableOpacityBox>
+              </Box>
             </SafeAreaBox>
           </MotiBox>
         </AnimatePresence>

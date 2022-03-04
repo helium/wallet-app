@@ -1,8 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { memo } from 'react'
 import Close from '@assets/images/closeModal.svg'
-import {
-  DebouncedTouchableOpacityBox,
+import TouchableOpacityBox, {
   TouchableOpacityBoxProps,
 } from './TouchableOpacityBox'
 import { useColors } from '../theme/themeHooks'
@@ -10,9 +9,9 @@ import { useColors } from '../theme/themeHooks'
 const CloseButton = (props: TouchableOpacityBoxProps) => {
   const { white } = useColors()
   return (
-    <DebouncedTouchableOpacityBox padding="xs" {...props}>
+    <TouchableOpacityBox padding="xs" {...props}>
       <Close color={white} />
-    </DebouncedTouchableOpacityBox>
+    </TouchableOpacityBox>
   )
 }
 

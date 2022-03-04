@@ -18,6 +18,9 @@ import {
 } from '@helium/crypto-react-native'
 import * as SecureStore from 'expo-secure-store'
 import { sortBy, values } from 'lodash'
+import OneSignal from 'react-native-onesignal'
+import Config from 'react-native-config'
+import Bcrypt from 'bcrypt-react-native'
 import { SecureStorageKeys } from './AppStorageProvider'
 import { accountNetType, AccountNetTypeOpt } from '../utils/accountUtils'
 
@@ -219,6 +222,18 @@ const useAccountStorageHook = () => {
     [getSecureAccount, secureAccounts],
   )
 
+  const tagAccount = async (address: string) => {
+    const salt = Config.ONE_SIGNAL_ACCOUNT_TAG_SALT
+    const hash = await Bcrypt.hash(salt, address)
+    OneSignal.sendTag(hash, ' ')
+  }
+
+  const removeAccountTag = async (address: string) => {
+    const salt = Config.ONE_SIGNAL_ACCOUNT_TAG_SALT
+    const hash = await Bcrypt.hash(salt, address)
+    OneSignal.deleteTag(hash)
+  }
+
   useAsync(async () => {
     const restoredContacts = await getFromCloudStorage<CSAccount[]>(
       CloudStorageKeys.CONTACTS,
@@ -232,6 +247,9 @@ const useAccountStorageHook = () => {
     setContacts(restoredContacts || [])
 
     const cloudAccounts = await getAccounts()
+
+    // Tag each account for the onesignal user
+    Object.keys(cloudAccounts).forEach(tagAccount)
 
     // TODO: This can be removed eventually, it's needed for backwards compatability
     Object.keys(cloudAccounts).forEach((key) => {
@@ -285,6 +303,7 @@ const useAccountStorageHook = () => {
         CloudStorageKeys.ACCOUNTS,
         JSON.stringify(nextAccounts),
       )
+      await tagAccount(account.address)
       return SecureStore.setItemAsync(address, JSON.stringify(secureAccount))
     },
     [accounts, secureAccounts],
@@ -347,6 +366,8 @@ const useAccountStorageHook = () => {
         apiToken,
       }
 
+      await tagAccount(address.b58)
+
       return { address: address.b58, ...secureAccount }
     },
     [],
@@ -357,6 +378,7 @@ const useAccountStorageHook = () => {
       if (address) {
         // sign out of specific account
         await SecureStore.deleteItemAsync(address)
+        await removeAccountTag(address)
         let newAccounts: CSAccounts = {}
         let newSecureAccounts: SecureAccounts = {}
         if (accounts && accounts[address]) {
@@ -377,9 +399,10 @@ const useAccountStorageHook = () => {
       } else {
         // sign out of all accounts
         await Promise.all([
-          ...Object.keys(secureAccounts || {}).map((key) =>
-            SecureStore.deleteItemAsync(key),
-          ),
+          ...Object.keys(secureAccounts || {}).map((key) => {
+            removeAccountTag(key)
+            return SecureStore.deleteItemAsync(key)
+          }),
           SecureStore.deleteItemAsync(SecureStorageKeys.PIN),
           SecureStore.deleteItemAsync(SecureStorageKeys.LAST_IDLE),
           CloudStorage.multiRemove(Object.values(CloudStorageKeys)),

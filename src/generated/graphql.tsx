@@ -79,6 +79,20 @@ export type ActivityData = {
   data?: Maybe<Array<Activity>>
 }
 
+export type Notification = {
+  __typename?: 'Notification'
+  actionTitle?: Maybe<Scalars['String']>
+  actionUrl?: Maybe<Scalars['String']>
+  body: Scalars['String']
+  icon: Scalars['String']
+  id: Scalars['Int']
+  resource: Scalars['String']
+  time: Scalars['Int']
+  title: Scalars['String']
+  type: Scalars['String']
+  viewedAt?: Maybe<Scalars['String']>
+}
+
 export type OraclePrice = {
   __typename?: 'OraclePrice'
   block: Scalars['Int']
@@ -122,7 +136,9 @@ export type RootQueryType = {
   accountRewardsSum?: Maybe<Sum>
   /** Get current oracle price */
   currentOraclePrice?: Maybe<OraclePrice>
-  /** Get txn config vars */
+  /** Get notifications */
+  notifications?: Maybe<Array<Notification>>
+  /** Get pending txns */
   pendingTxns?: Maybe<Array<Activity>>
   /** Get txn config vars */
   txnConfigVars?: Maybe<TxnConfigVars>
@@ -146,6 +162,10 @@ export type RootQueryTypeAccountRewardsSumArgs = {
 
 export type RootQueryTypeCurrentOraclePriceArgs = {
   address: Scalars['String']
+}
+
+export type RootQueryTypeNotificationsArgs = {
+  resource: Scalars['String']
 }
 
 export type RootQueryTypePendingTxnsArgs = {
@@ -290,6 +310,27 @@ export type AccountQuery = {
     speculativeSecNonce?: number | null
     stakedBalance: number
   } | null
+}
+
+export type NotificationsQueryVariables = Exact<{
+  resource: Scalars['String']
+}>
+
+export type NotificationsQuery = {
+  __typename?: 'RootQueryType'
+  notifications?: Array<{
+    __typename?: 'Notification'
+    resource: string
+    body: string
+    icon: string
+    title: string
+    type: string
+    id: number
+    viewedAt?: string | null
+    time: number
+    actionTitle?: string | null
+    actionUrl?: string | null
+  }> | null
 }
 
 export type OracleDataQueryVariables = Exact<{
@@ -603,6 +644,73 @@ export type AccountLazyQueryHookResult = ReturnType<typeof useAccountLazyQuery>
 export type AccountQueryResult = Apollo.QueryResult<
   AccountQuery,
   AccountQueryVariables
+>
+export const NotificationsDocument = gql`
+  query Notifications($resource: String!) {
+    notifications(resource: $resource) {
+      resource
+      body
+      icon
+      title
+      type
+      id
+      viewedAt
+      time
+      actionTitle
+      actionUrl
+    }
+  }
+`
+
+/**
+ * __useNotificationsQuery__
+ *
+ * To run a query within a React component, call `useNotificationsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useNotificationsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useNotificationsQuery({
+ *   variables: {
+ *      resource: // value for 'resource'
+ *   },
+ * });
+ */
+export function useNotificationsQuery(
+  baseOptions: Apollo.QueryHookOptions<
+    NotificationsQuery,
+    NotificationsQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useQuery<NotificationsQuery, NotificationsQueryVariables>(
+    NotificationsDocument,
+    options,
+  )
+}
+export function useNotificationsLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    NotificationsQuery,
+    NotificationsQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useLazyQuery<NotificationsQuery, NotificationsQueryVariables>(
+    NotificationsDocument,
+    options,
+  )
+}
+export type NotificationsQueryHookResult = ReturnType<
+  typeof useNotificationsQuery
+>
+export type NotificationsLazyQueryHookResult = ReturnType<
+  typeof useNotificationsLazyQuery
+>
+export type NotificationsQueryResult = Apollo.QueryResult<
+  NotificationsQuery,
+  NotificationsQueryVariables
 >
 export const OracleDataDocument = gql`
   query OracleData($address: String!) {

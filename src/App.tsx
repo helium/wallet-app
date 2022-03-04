@@ -6,6 +6,8 @@ import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import useAppState from 'react-native-appstate-hook'
 import * as SplashScreen from 'expo-splash-screen'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
+import OneSignal, { OpenedEvent } from 'react-native-onesignal'
+import Config from 'react-native-config'
 import { useApolloClient } from './graphql/useApolloClient'
 import { theme, darkThemeColors, lightThemeColors } from './theme/theme'
 import RootNavigator from './navigation/RootNavigator'
@@ -21,6 +23,7 @@ import { BalanceProvider } from './utils/Balance'
 import { useColorScheme } from './theme/themeHooks'
 import { linking } from './utils/linking'
 import TestnetBanner from './components/TestnetBanner'
+import { useNotificationStorage } from './storage/NotificationStorageProvider'
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -33,6 +36,7 @@ const App = () => {
     'componentWillReceiveProps has been renamed',
     'AsyncStorage has been extracted from react-native core and will be removed in a future release.',
     'You are calling concat on a terminating link, which will have no effect',
+    "[react-native-gesture-handler] Seems like you're using an old API with gesture components",
   ])
 
   if (Platform.OS === 'android') {
@@ -43,6 +47,7 @@ const App = () => {
 
   const { appState } = useAppState()
   const { restored: accountsRestored } = useAccountStorage()
+  const { setOpenedNotification } = useNotificationStorage()
 
   const { client, clientReady, loading } = useApolloClient()
 
@@ -77,6 +82,13 @@ const App = () => {
         '605970674117-ll6b47atjj62m8i7j698pojgrbdf3ko1.apps.googleusercontent.com',
       scopes: ['https://www.googleapis.com/auth/drive.file'],
     })
+    OneSignal.setAppId(Config.ONE_SIGNAL_APP_ID)
+    OneSignal.setNotificationOpenedHandler((event: OpenedEvent) => {
+      setOpenedNotification(event.notification)
+    })
+    if (Platform.OS === 'ios') {
+      OneSignal.promptForPushNotificationsWithUserResponse(() => {})
+    }
   })
 
   useEffect(() => {

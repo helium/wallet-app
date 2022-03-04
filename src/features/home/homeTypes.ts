@@ -19,6 +19,7 @@ export type HomeStackParamList = {
       }
   RequestScreen: undefined
   AddressBookNavigator: undefined
+  NotificationsNavigator: undefined
   WifiPurchase:
     | {
         key: string

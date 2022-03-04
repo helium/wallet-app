@@ -4080,6 +4080,11 @@ base@^0.11.1:
     mixin-deep "^1.2.0"
     pascalcase "^0.1.1"
 
+bcrypt-react-native@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/bcrypt-react-native/-/bcrypt-react-native-1.1.1.tgz#a941aaadffc85d904b6a9e533a608b6e098c3126"
+  integrity sha512-te5hqMgS+8w4N5EMih0cWIUgfNeFP0mFWynf6Vmrxo1gUa2zv7hYNUbLyztd0xYuN3vW3qHG1maEUa8FOA42lw==
+
 big-integer@1.6.x:
   version "1.6.51"
   resolved "https://registry.yarnpkg.com/big-integer/-/big-integer-1.6.51.tgz#0df92a5d9880560d3ff2d5fd20245c889d130686"
@@ -10558,6 +10563,13 @@ react-native-network-info@^5.2.1:
   version "5.2.1"
   resolved "https://registry.yarnpkg.com/react-native-network-info/-/react-native-network-info-5.2.1.tgz#b701f10d4ed1aeadcfe77b197328d1ae846f6d3a"
   integrity sha512-iam74xXtrSqqZurCl1/bSjZ9jXcsJY84g7brx1/4uVGCY26c6m+4CArHNSHOsz5ATg2NQT+81sjNy0KlCPyK4g==
+
+react-native-onesignal@^4.3.7:
+  version "4.3.7"
+  resolved "https://registry.yarnpkg.com/react-native-onesignal/-/react-native-onesignal-4.3.7.tgz#488319cd1912958613feef81c83b2b720a38a88e"
+  integrity sha512-oBTja1n2puwF5XuYPbEaBpvaWGiV5lkVX+zWndQe/dRcIgtIEJzVZqeaqxZ3u30ImxFoyCXqUzup2BiuQFewFw==
+  dependencies:
+    invariant "^2.2.2"
 
 react-native-reanimated@^2.3.0:
   version "2.4.1"

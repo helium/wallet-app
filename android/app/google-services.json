@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "725980193513",
+    "project_id": "nova-wallet-app",
+    "storage_bucket": "nova-wallet-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:725980193513:android:25c27f8526aa6f45848678",
+        "android_client_info": {
+          "package_name": "com.helium.wallet.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "725980193513-olpagvj0vfs112qqrk68mrrnt2s3gfht.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWsvBmA_kUMIVYv57VNrTMWWvpvcjA8ic"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "725980193513-olpagvj0vfs112qqrk68mrrnt2s3gfht.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
