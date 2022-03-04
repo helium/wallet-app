@@ -1,8 +1,8 @@
 import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { NetType } from '@helium/crypto-react-native'
 import AccountIcon from '../../components/AccountIcon'
 import Box from '../../components/Box'
-import Surface from '../../components/Surface'
 import Text from '../../components/Text'
 import { CSAccount } from '../../storage/AccountStorageProvider'
 import { formatAccountAlias } from '../../utils/accountUtils'
@@ -18,7 +18,17 @@ const AccountHeader = ({ account }: Props) => {
   )
 
   return (
-    <Surface minHeight={88} alignItems="center" flexDirection="row" padding="l">
+    <Box
+      minHeight={88}
+      alignItems="center"
+      flexDirection="row"
+      padding="l"
+      borderRadius="xl"
+      overflow="hidden"
+      backgroundColor={
+        account.netType === NetType.TESTNET ? 'lividBrown' : 'secondary'
+      }
+    >
       <AccountIcon size={40} address={account.address} />
       <Box marginLeft="s" flex={1}>
         <Text variant="subtitle2">{formatAccountAlias(account)}</Text>
@@ -36,7 +46,7 @@ const AccountHeader = ({ account }: Props) => {
           {t('accountHeader.last24')}
         </Text>
       </Box>
-    </Surface>
+    </Box>
   )
 }
 

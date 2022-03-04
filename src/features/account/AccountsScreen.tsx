@@ -97,7 +97,7 @@ const AccountsScreen = () => {
   const bottomSheetRef = useRef<BottomSheet>(null)
   const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
   const { backgroundStyle: handleStyle } = useOpacity('black500', 1)
-  const { primaryText, primaryIcon } = useColors()
+  const { primaryText, primaryIcon, red500 } = useColors()
   const carouselRef = useRef<Carousel<CSAccount | null>>(null)
   const { sortedAccounts, currentAccount, setCurrentAccount } =
     useAccountStorage()
@@ -369,8 +369,8 @@ const AccountsScreen = () => {
                 alignItems="center"
                 visible={accountNetType === NetType.TESTNET}
               >
-                <TestnetIcon color={primaryIcon} />
-                <Text marginLeft="xs" variant="subtitle1" color="primaryIcon">
+                <TestnetIcon color={red500} />
+                <Text marginLeft="xs" variant="subtitle1" color="red500">
                   {t('onboarding.testnet')}
                 </Text>
               </Box>

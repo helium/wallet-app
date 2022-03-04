@@ -7,7 +7,6 @@ import { NetType } from '@helium/crypto-react-native'
 import TestnetIcon from '@assets/images/testnetIcon.svg'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import Box from '../../components/Box'
-import Surface from '../../components/Surface'
 import Text from '../../components/Text'
 import { useColors } from '../../theme/themeHooks'
 import FabButton from '../../components/FabButton'
@@ -80,21 +79,32 @@ const AccountView = ({
           alignItems="center"
           visible={netType === NetType.TESTNET}
         >
-          <TestnetIcon height={12} color={colors.grey800} />
-          <Text variant="body3" color="grey800">
+          <TestnetIcon height={12} color={colors.red500} />
+          <Text variant="body3" color="red500">
             {t('onboarding.testnet')}
           </Text>
         </Box>
-        <Text variant="body3" color="grey800" marginLeft="xs">
+        <Text
+          variant="body3"
+          color={netType === NetType.TESTNET ? 'red500' : 'grey800'}
+          marginLeft="xs"
+        >
           {t('accountView.balance')}
         </Text>
       </Box>
       <TouchableOpacity onPress={toggleConvertToCurrency}>
-        <Text variant="h0">{balanceString}</Text>
+        <Text variant="h0" color="primaryText">
+          {balanceString}
+        </Text>
       </TouchableOpacity>
       <Box flexDirection="row" marginTop="s">
         {displayVals?.stakedHnt && displayVals.stakedHnt.integerBalance > 0 && (
-          <Surface
+          <Box
+            borderRadius="xl"
+            overflow="hidden"
+            backgroundColor={
+              netType === NetType.TESTNET ? 'lividBrown' : 'surfaceSecondary'
+            }
             flexDirection="row"
             alignItems="center"
             paddingVertical="sx"
@@ -108,10 +118,15 @@ const AccountView = ({
                 showTicker: false,
               })}
             </Text>
-          </Surface>
+          </Box>
         )}
         {displayVals?.dc && displayVals.dc.integerBalance > 0 && (
-          <Surface
+          <Box
+            borderRadius="xl"
+            overflow="hidden"
+            backgroundColor={
+              netType === NetType.TESTNET ? 'lividBrown' : 'surfaceSecondary'
+            }
             flexDirection="row"
             alignItems="center"
             paddingVertical="sx"
@@ -125,10 +140,15 @@ const AccountView = ({
                 showTicker: false,
               })}
             </Text>
-          </Surface>
+          </Box>
         )}
         {displayVals?.hst && displayVals.hst.integerBalance > 0 && (
-          <Surface
+          <Box
+            borderRadius="xl"
+            overflow="hidden"
+            backgroundColor={
+              netType === NetType.TESTNET ? 'lividBrown' : 'surfaceSecondary'
+            }
             flexDirection="row"
             alignItems="center"
             paddingVertical="sx"
@@ -141,13 +161,13 @@ const AccountView = ({
                 showTicker: false,
               })}
             </Text>
-          </Surface>
+          </Box>
         )}
       </Box>
 
       <Box
         flexDirection="row"
-        justifyContent="space-between"
+        justifyContent="flex-start"
         marginTop="xxxl"
         marginBottom="l"
       >
@@ -162,6 +182,9 @@ const AccountView = ({
         />
         <FabButton
           icon="payment"
+          marginLeft="s"
+          titleMarginLeft="s"
+          visible={false}
           backgroundColor="orange500"
           backgroundColorOpacity={0.2}
           backgroundColorOpacityPressed={0.4}
@@ -171,6 +194,8 @@ const AccountView = ({
         />
         <FabButton
           icon="fatArrowDown"
+          marginLeft="s"
+          titleMarginLeft="s"
           backgroundColor="greenBright500"
           backgroundColorOpacity={0.2}
           backgroundColorOpacityPressed={0.4}
@@ -180,6 +205,9 @@ const AccountView = ({
         />
         <FabButton
           icon="stake"
+          marginLeft="s"
+          titleMarginLeft="s"
+          visible={false}
           backgroundColor="purple500"
           backgroundColorOpacity={0.2}
           backgroundColorOpacityPressed={0.4}
@@ -189,6 +217,9 @@ const AccountView = ({
         />
         <FabButton
           icon="lock"
+          marginLeft="s"
+          titleMarginLeft="s"
+          visible={false}
           backgroundColor="red500"
           backgroundColorOpacity={0.2}
           backgroundColorOpacityPressed={0.4}

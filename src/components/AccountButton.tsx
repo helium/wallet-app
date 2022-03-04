@@ -35,7 +35,7 @@ const AccountButton = ({
   ...boxProps
 }: Props) => {
   const hitSlop = useHitSlop('l')
-  const { secondaryText } = useColors()
+  const { red500 } = useColors()
 
   const handlePress = useCallback(() => {
     Keyboard.dismiss()
@@ -50,7 +50,9 @@ const AccountButton = ({
       {...boxProps}
     >
       <Box
-        backgroundColor="secondary"
+        backgroundColor={
+          netType === NetType.TESTNET ? 'lividBrown' : 'secondary'
+        }
         borderRadius="xl"
         alignItems="center"
         flexDirection="row"
@@ -60,13 +62,11 @@ const AccountButton = ({
       >
         <AccountIcon size={40} address={address} />
         <Box flex={1}>
-          <Box flexDirection="row">
+          <Box flexDirection="row" alignItems="center">
             <Text marginLeft="ms" marginRight="xs" variant="subtitle2">
               {title}
             </Text>
-            {netType === NetType.TESTNET && (
-              <TestnetIcon color={secondaryText} />
-            )}
+            {netType === NetType.TESTNET && <TestnetIcon color={red500} />}
           </Box>
           {subtitle && (
             <Text marginLeft="ms" variant="body3" color="secondaryText">
@@ -78,7 +78,9 @@ const AccountButton = ({
       </Box>
       {showBubbleArrow && (
         <Box
-          backgroundColor="secondary"
+          backgroundColor={
+            netType === NetType.TESTNET ? 'lividBrown' : 'secondary'
+          }
           alignSelf="center"
           style={styles.rotatedBox}
         />

@@ -124,13 +124,26 @@ const Settings = () => {
   )
 
   const handleSignOut = useCallback(() => {
+    const currentAddress = currentAccount?.address
+    const savedAccountAddresses = Object.keys(accounts || {})
+    const isLastAccount =
+      accounts &&
+      currentAddress &&
+      savedAccountAddresses.length === 1 &&
+      savedAccountAddresses.includes(currentAddress)
+
     Alert.alert(
       t('settings.sections.account.signOutAlert.title', {
         alias: currentAccount?.alias,
       }),
-      t('settings.sections.account.signOutAlert.body', {
-        alias: currentAccount?.alias,
-      }),
+      t(
+        `settings.sections.account.signOutAlert.${
+          isLastAccount ? 'bodyLastAccount' : 'body'
+        }`,
+        {
+          alias: currentAccount?.alias,
+        },
+      ),
       [
         {
           text: t('generic.cancel'),
@@ -140,14 +153,7 @@ const Settings = () => {
           text: t('settings.sections.account.signOut'),
           style: 'destructive',
           onPress: async () => {
-            const currentAddress = currentAccount?.address
-            const savedAccountAddresses = Object.keys(accounts || {})
-            if (
-              accounts &&
-              currentAddress &&
-              savedAccountAddresses.length === 1 &&
-              savedAccountAddresses.includes(currentAddress)
-            ) {
+            if (isLastAccount) {
               // last account is signing out, clear all storage then nav to onboarding
               await signOut()
               client?.resetStore()

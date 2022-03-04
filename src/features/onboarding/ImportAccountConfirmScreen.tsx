@@ -12,9 +12,11 @@ import { wp } from '../../utils/layout'
 import ImportReplaceWordModal from './ImportReplaceWordModal'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { useOnboarding } from './OnboardingProvider'
+import { useColors } from '../../theme/themeHooks'
 
 const ImportAccountConfirmScreen = () => {
   const { t } = useTranslation()
+  const colors = useColors()
   const [selectedWordIdx, setSelectedWordIdx] = useState<number | null>(null)
   const navigation = useNavigation<OnboardingNavigationProp>()
   const [wordIndex, setWordIndex] = useState(0)
@@ -62,7 +64,7 @@ const ImportAccountConfirmScreen = () => {
             marginHorizontal="s"
             flex={1}
             overflow="hidden"
-            backgroundColor="surface"
+            backgroundColor="surfaceSecondary"
             paddingHorizontal="l"
             alignItems="center"
             flexDirection="row"
@@ -120,7 +122,12 @@ const ImportAccountConfirmScreen = () => {
           containerStyle={styles.paginationContainer}
           dotsLength={words.length}
           activeDotIndex={wordIndex}
-          dotStyle={styles.dots}
+          dotStyle={{
+            width: 6,
+            height: 6,
+            borderRadius: 3,
+            backgroundColor: colors.primaryText,
+          }}
           dotContainerStyle={styles.dotContainer}
           inactiveDotOpacity={0.4}
           inactiveDotScale={1}
@@ -146,11 +153,6 @@ const ImportAccountConfirmScreen = () => {
 }
 
 const styles = StyleSheet.create({
-  dots: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
   paginationContainer: { marginTop: 24 },
   dotContainer: { marginHorizontal: 3 },
 })

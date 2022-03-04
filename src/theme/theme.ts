@@ -76,6 +76,10 @@ const textVariants = {
   },
 }
 
+/**
+ * Use https://www.hexdictionary.com/ to determine color names, for example https://www.hexdictionary.com/color/d23e72.
+ * https://elektrobild.org/tools/sort-colors can be used to sort colors.
+ */
 const palette = {
   black200: '#41434F',
   black300: '#444755',
@@ -85,8 +89,10 @@ const palette = {
   black700: '#131419',
   black800: '#1A1C22',
   black900: '#000000',
+  lividBrown: '#421B27',
 
   blueBright500: '#009FF9',
+  havelockBlue: '#0C93E5',
 
   darkGrey: '#333333',
 
@@ -114,6 +120,7 @@ const palette = {
   red300: '#F97570',
   red400: '#FF6666',
   red500: '#E43B70',
+  jazzberryJam: '#D23E72',
 
   transparent: '#00000000',
 
