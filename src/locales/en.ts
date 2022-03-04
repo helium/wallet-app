@@ -21,12 +21,16 @@ export default {
         'Here are the {{totalWords}} words you’ve entered. Tap on any of them if you need to edit.',
       title: 'Please Confirm\nSeed Phrase',
     },
-    restoreChoice: 'Restore {{totalWords}} Word Account',
+    restoreChoice: '{{totalWords}} Words',
     wordEntry: {
       placeholder: '{{ordinal}} word',
       title:
         "Enter your\naccount's <secondaryText>{{totalWords}} word</secondaryText>\nsecurity key...",
     },
+    title: 'Import\nAccount',
+    subTitle:
+      'To import your existing\nHNT account, enter its\n<havelockBlue>12</havelockBlue> or <jazzberryJam>24</jazzberryJam> word security key.',
+    pickKeyType: 'Pick Security Key Type:',
   },
   accountSetup: {
     confirm: {
@@ -51,7 +55,16 @@ export default {
     },
     passphrase: {
       next: 'I have written these down',
+      title: 'These words\nrepresent your\nprivate key',
+      subtitle1:
+        'Write the words down, keep it safe,\nand never share it with anyone.',
+      subtitle2: 'No one can recover these words.',
     },
+    title: 'Create\nNew Account',
+    subtitle1:
+      'Every new account is accessed via\n24 secure words (your ‘key’).',
+    subtitle2: 'Please ensure these are written\ndown and are kept safe.',
+    createButtonTitle: 'Create an Account',
   },
   accountsScreen: {
     allFilterFooter:
@@ -98,8 +111,8 @@ export default {
     error: 'Incorrect PIN',
     signOut: 'Sign Out',
     signOutAlert: {
-      body: 'You are signing out of your account. Do you have your 12 recovery words? If you don’t, you will lose access to:\n\n- your Hotspots\n- your HNT\n- your Wallet',
-      title: 'Warning!',
+      body: 'You are signing out of all your accounts. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your Address Book\n- your HNT\n- your Wallet',
+      title: 'Warning! Sign out of all accounts?',
     },
     title: 'Enter Your PIN',
   },
@@ -218,7 +231,7 @@ export default {
     revealWords: {
       next: 'I have written these down',
       subtitle:
-        'It is crucial you write all of these\n{{numWords}} words down, in order.\n\nHelium cannot recover these words.',
+        '<secondaryText>It is crucial you write all of these\n{{numWords}} words down, in order.</secondaryText><red500>\n\nHelium cannot recover these words.</red500>',
       title: 'Your {{numWords}} Word\nPassword',
       warning: 'Helium cannot recover these words',
     },
@@ -229,8 +242,10 @@ export default {
         revealWords: 'Reveal Words',
         signOut: 'Sign Out',
         signOutAlert: {
-          body: 'You are signing out of your account {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your HNT\n- your Wallet',
-          title: 'Sign Out of {{alias}}',
+          body: 'You are signing out of your account, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your HNT\n- your Wallet',
+          bodyLastAccount:
+            'You are signing out of your only account, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your Address Book\n- your HNT\n- your Wallet',
+          title: 'Sign Out of {{alias}}?',
         },
         title: '{{alias}} Account Settings',
       },

@@ -20,6 +20,7 @@ import SafeAreaBox from './components/SafeAreaBox'
 import { BalanceProvider } from './utils/Balance'
 import { useColorScheme } from './theme/themeHooks'
 import { linking } from './utils/linking'
+import TestnetBanner from './components/TestnetBanner'
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -31,6 +32,7 @@ const App = () => {
     'EventEmitter.removeListener',
     'componentWillReceiveProps has been renamed',
     'AsyncStorage has been extracted from react-native core and will be removed in a future release.',
+    'You are calling concat on a terminating link, which will have no effect',
   ])
 
   if (Platform.OS === 'android') {
@@ -114,6 +116,7 @@ const App = () => {
                     <SecurityScreen
                       visible={appState !== 'active' && appState !== 'unknown'}
                     />
+                    <TestnetBanner appstate={appState} />
                   </AccountSelector>
                 )}
               </LockScreen>

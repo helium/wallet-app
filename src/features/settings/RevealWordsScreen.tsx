@@ -11,6 +11,7 @@ import Box from '../../components/Box'
 import { wp } from '../../utils/layout'
 import ButtonPressable from '../../components/ButtonPressable'
 import BackScreen from '../../components/BackScreen'
+import TextTransform from '../../components/TextTransform'
 
 const RevealWordsScreen = () => {
   const { currentAccount, getSecureAccount } = useAccountStorage()
@@ -36,22 +37,14 @@ const RevealWordsScreen = () => {
         flex={1}
         overflow="hidden"
         backgroundColor="surfaceSecondary"
-        padding="l"
         alignItems="center"
+        justifyContent="center"
         flexDirection="row"
       >
-        <Text
-          fontWeight="bold"
-          fontSize={39}
-          color="purple500"
-          maxFontSizeMultiplier={1}
-        >{`${index + 1}. `}</Text>
-        <Text
-          fontWeight="bold"
-          fontSize={39}
-          color="purple500"
-          maxFontSizeMultiplier={1}
-        >
+        <Text fontSize={39} color="primaryText" maxFontSizeMultiplier={1}>{`${
+          index + 1
+        }. `}</Text>
+        <Text fontSize={39} color="primaryText" maxFontSizeMultiplier={1}>
           {upperCase(item)}
         </Text>
       </Card>
@@ -64,12 +57,17 @@ const RevealWordsScreen = () => {
       <Text variant="h1" maxFontSizeMultiplier={1}>
         {t('settings.revealWords.title', { numWords: mnemonic?.length })}
       </Text>
-      <Text variant="body1" maxFontSizeMultiplier={1} marginTop="m">
-        {t('settings.revealWords.subtitle', { numWords: mnemonic?.length })}
-      </Text>
+      <TextTransform
+        variant="body1"
+        maxFontSizeMultiplier={1}
+        marginTop="m"
+        i18nKey="settings.revealWords.subtitle"
+        values={{ numWords: mnemonic?.length }}
+        marginBottom="xl"
+      />
       <Box
         marginHorizontal="n_lx"
-        height={{ smallPhone: 94, phone: 114 }}
+        height={{ smallPhone: 80, phone: 100 }}
         marginVertical="l"
       >
         <Carousel
@@ -88,7 +86,8 @@ const RevealWordsScreen = () => {
       </Box>
       <Box flex={1} />
       <ButtonPressable
-        borderRadius="m"
+        height={60}
+        borderRadius="round"
         backgroundColor="surfaceSecondary"
         titleColor="primaryText"
         title={t('settings.revealWords.next')}

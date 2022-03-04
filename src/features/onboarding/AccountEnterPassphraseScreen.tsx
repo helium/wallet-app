@@ -3,7 +3,6 @@ import { shuffle, uniq, take, reject, sampleSize, upperCase } from 'lodash'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import Carousel from 'react-native-snap-carousel'
-import { Button } from 'react-native'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import wordlist from '../../constants/wordlists/english.json'
@@ -18,6 +17,7 @@ import useHaptic from '../../utils/useHaptic'
 import animateTransition from '../../utils/animateTransition'
 import TextTransform from '../../components/TextTransform'
 import { useOnboarding } from './OnboardingProvider'
+import ButtonPressable from '../../components/ButtonPressable'
 
 const generateChallengeWords = (targetWord: string) =>
   shuffle(
@@ -113,10 +113,12 @@ const AccountEnterPassphraseScreen = () => {
       return (
         <Box
           overflow="hidden"
-          borderRadius="m"
-          backgroundColor="surface"
+          borderRadius="xl"
+          marginVertical="m"
+          backgroundColor="surfaceSecondary"
           paddingHorizontal="l"
-          height={{ smallPhone: 90, phone: 114 }}
+          justifyContent="center"
+          height={{ smallPhone: 70, phone: 90 }}
           alignItems="center"
           flexDirection="row"
         >
@@ -144,6 +146,7 @@ const AccountEnterPassphraseScreen = () => {
         numberOfLines={2}
         adjustsFontSizeToFit
         maxFontSizeMultiplier={1}
+        lineHeight={37}
       >
         {t('accountSetup.confirm.title')}
       </Text>
@@ -158,13 +161,7 @@ const AccountEnterPassphraseScreen = () => {
         i18nKey="accountSetup.confirm.subtitle"
       />
 
-      <Box
-        height={{ smallPhone: 80, phone: 114 }}
-        borderRadius="m"
-        marginVertical="l"
-      >
-        {renderItem(step)}
-      </Box>
+      {renderItem(step)}
       <Box flex={1} />
       <Box flexDirection="row" flexWrap="wrap">
         {challengeWords.map((w) => (
@@ -180,10 +177,14 @@ const AccountEnterPassphraseScreen = () => {
         ))}
       </Box>
       <Box flex={2} />
-      {__DEV__ && <Button title={t('generic.skip')} onPress={skip} />}
-      <Button
-        title={t('accountSetup.confirm.forgot')}
-        onPress={navigation.goBack}
+      <ButtonPressable
+        height={50}
+        borderRadius="round"
+        borderBottomRightRadius="round"
+        backgroundColor="primaryBackground"
+        titleColor="primaryText"
+        title={__DEV__ ? t('generic.skip') : t('accountSetup.confirm.forgot')}
+        onPress={__DEV__ ? skip : navigation.goBack}
       />
     </SafeAreaBox>
   )

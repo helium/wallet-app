@@ -1,5 +1,5 @@
 import React, { memo, ReactText, useMemo } from 'react'
-import { Linking, Switch } from 'react-native'
+import { Linking, Platform, Switch } from 'react-native'
 import CarotRight from '@assets/images/carot-right.svg'
 import LinkImg from '@assets/images/link.svg'
 import { HeliumActionSheetItemType } from '../../components/HeliumActionSheetItem'
@@ -51,6 +51,7 @@ const SettingsListItem = ({
   isTop?: boolean
 }) => {
   const colors = useColors()
+  const isAndroid = useMemo(() => Platform.OS === 'android', [])
 
   const handlePress = () => {
     if (openUrl) {
@@ -67,6 +68,13 @@ const SettingsListItem = ({
     [colors],
   )
 
+  const thumbColor = useMemo(() => {
+    if (isAndroid) {
+      return colors.primaryText
+    }
+    return colors.primaryBackground
+  }, [colors.primaryBackground, colors.primaryText, isAndroid])
+
   const actionSheetTextProps = useMemo(
     () =>
       ({
@@ -75,6 +83,17 @@ const SettingsListItem = ({
         color: 'surfaceSecondaryText',
       } as TextProps),
     [],
+  )
+
+  const switchStyle = useMemo(
+    () =>
+      isAndroid
+        ? undefined
+        : {
+            transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
+            marginRight: -8,
+          },
+    [isAndroid],
   )
 
   let textColor: Color = 'primaryText'
@@ -118,14 +137,11 @@ const SettingsListItem = ({
       {openUrl && <LinkImg color={colors.surfaceSecondaryText} />}
       {onToggle && (
         <Switch
-          style={{
-            transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
-            marginRight: -8,
-          }}
+          style={switchStyle}
           value={value as boolean}
           onValueChange={onToggle}
           trackColor={trackColor}
-          thumbColor={colors.primaryBackground}
+          thumbColor={thumbColor}
           disabled={disabled}
         />
       )}

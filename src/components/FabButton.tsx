@@ -8,7 +8,7 @@ import Payment from '@assets/images/payment.svg'
 import Stake from '@assets/images/stake.svg'
 import Lock from '@assets/images/lock.svg'
 import Plus from '@assets/images/plus.svg'
-import { Color, FontWeight, Theme } from '../theme/theme'
+import { Color, FontWeight, Theme, Spacing } from '../theme/theme'
 import { useColors, useCreateOpacity } from '../theme/themeHooks'
 import Box from './Box'
 import Text from './Text'
@@ -24,7 +24,6 @@ type Props = BoxProps<Theme> & {
     | 'fatArrowUp'
     | 'fatArrowDown'
     | 'payment'
-    | 'arrowDown'
     | 'stake'
     | 'lock'
     | 'add'
@@ -37,6 +36,10 @@ type Props = BoxProps<Theme> & {
   size?: number
   disabled?: boolean
   title?: string
+  titleMarginLeft?: Spacing
+  titleMarginRight?: Spacing
+  titleMarginTop?: Spacing
+  titleMarginBottom?: Spacing
 }
 
 const ButtonPressable = ({
@@ -52,6 +55,11 @@ const ButtonPressable = ({
   size = 56,
   disabled,
   title,
+  visible = true,
+  titleMarginLeft,
+  titleMarginRight,
+  titleMarginTop,
+  titleMarginBottom,
   ...boxProps
 }: Props) => {
   const { backgroundStyle } = useCreateOpacity()
@@ -130,7 +138,7 @@ const ButtonPressable = ({
   )
 
   return (
-    <Box alignItems="center">
+    <Box alignItems="center" visible={visible}>
       <Box
         overflow="hidden"
         height={size}
@@ -158,7 +166,14 @@ const ButtonPressable = ({
         </Pressable>
       </Box>
       {title && (
-        <Text variant="body2" color="grey800" marginTop="s">
+        <Text
+          variant="body2"
+          color="grey800"
+          marginTop={titleMarginTop || 's'}
+          marginBottom={titleMarginBottom}
+          marginLeft={titleMarginLeft}
+          marginRight={titleMarginRight}
+        >
           {title}
         </Text>
       )}
