@@ -139,6 +139,7 @@ export default {
     skip: 'Skip',
     success: 'Success',
     total: 'Total',
+    account: 'Account',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',
@@ -352,5 +353,12 @@ export default {
     txnFeePaidBy: 'Transaction Fee paid by {{feePayer}}',
     unstakeValidator: 'Unstake {{ticker}}',
     validator: 'Validator',
+  },
+  notifications: {
+    title: 'Notifications',
+    walletUpdates: 'Wallet Updates',
+    heliumUpdates: 'Helium Updates',
+    accountUpdates: '{{title}} Updates',
+    emptyTitle: 'No Notifications',
   },
 }

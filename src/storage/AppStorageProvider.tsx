@@ -17,6 +17,7 @@ export enum SecureStorageKeys {
   CURRENCY = 'currency',
   CONVERT_TO_CURRENCY = 'covertToCurrency',
   LAST_IDLE = 'lastIdle',
+  SELECTED_LIST = 'selected_list',
 }
 
 const useAppStorageHook = () => {

@@ -146,6 +146,7 @@ export const lightThemeColors = {
   surfaceContrastText: palette.white,
   plainInputBackground: palette.grey200,
   regularInputBackground: palette.offWhite,
+  highlight: palette.blueBright500,
 }
 export const darkThemeColors = {
   ...palette,
@@ -166,6 +167,7 @@ export const darkThemeColors = {
   surfaceContrastText: palette.grey900,
   plainInputBackground: palette.black200,
   regularInputBackground: palette.black800,
+  highlight: palette.blueBright500,
 }
 
 export const theme = createTheme({

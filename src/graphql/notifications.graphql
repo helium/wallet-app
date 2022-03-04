@@ -1,0 +1,14 @@
+query Notifications($resource: String!) {
+  notifications(resource: $resource) {
+    resource
+    body
+    icon
+    title
+    type
+    id
+    viewedAt
+    time
+    actionTitle
+    actionUrl
+  }
+}

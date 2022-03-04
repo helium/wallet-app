@@ -7,13 +7,16 @@ import './src/utils/i18n'
 import AccountStorageProvider from './src/storage/AccountStorageProvider'
 import AppStorageProvider from './src/storage/AppStorageProvider'
 import LanguageProvider from './src/storage/LanguageProvider'
+import NotificationStorageProvider from './src/storage/NotificationStorageProvider'
 
 const render = () => {
   return (
     <LanguageProvider>
       <AppStorageProvider>
         <AccountStorageProvider>
-          <App />
+          <NotificationStorageProvider>
+            <App />
+          </NotificationStorageProvider>
         </AccountStorageProvider>
       </AppStorageProvider>
     </LanguageProvider>

@@ -7,6 +7,7 @@ import WifiOnboard from '../payment/WifiOnboard'
 import AddressBookNavigator from '../addressBook/AddressBookNavigator'
 import SettingsNavigator from '../settings/SettingsNavigator'
 import AddNewContact from '../addressBook/AddNewContact'
+import NotificationsNavigator from '../notifications/NotificationsNavigator'
 import RequestScreen from '../request/RequestScreen'
 import LinkWallet from '../txnDelegatation/LinkWallet'
 import SignHotspot from '../txnDelegatation/SignHotspot'
@@ -35,6 +36,11 @@ const HomeStackScreen = () => {
       <HomeStack.Screen
         name="AddressBookNavigator"
         component={AddressBookNavigator}
+        options={{ presentation: 'transparentModal' }}
+      />
+      <HomeStack.Screen
+        name="NotificationsNavigator"
+        component={NotificationsNavigator}
         options={{ presentation: 'transparentModal' }}
       />
       <HomeStack.Screen
