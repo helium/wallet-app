@@ -14,6 +14,7 @@ import {
   useTxnConfigVarsQuery,
 } from '../generated/graphql'
 import { useAccountStorage } from './AccountStorageProvider'
+import { getKeypair } from './secureStorage'
 
 export const EMPTY_B58_ADDRESS = Address.fromB58(
   '13PuqyWXzPYeXcF1B9ZRx7RLkEygeL374ZABiQdwRSNzASdA1sn',
@@ -37,11 +38,10 @@ type PartialPaymentTxn = {
   fee: number | undefined
 }
 
-const useTransactionHook = ({ clientReady }: { clientReady: boolean }) => {
-  const { getKeypair, currentAccount } = useAccountStorage()
+const useTransactionHook = () => {
+  const { currentAccount } = useAccountStorage()
   const { data: txnVarsData, error } = useTxnConfigVarsQuery({
     fetchPolicy: 'cache-and-network',
-    skip: !clientReady,
   })
   const [fetchAccount] = useAccountLazyQuery({
     variables: {
@@ -55,7 +55,7 @@ const useTransactionHook = ({ clientReady }: { clientReady: boolean }) => {
       address: currentAccount?.address || '',
     },
     fetchPolicy: 'cache-only',
-    skip: !currentAccount?.address || !clientReady,
+    skip: !currentAccount?.address,
   })
 
   useEffect(() => {
@@ -79,7 +79,7 @@ const useTransactionHook = ({ clientReady }: { clientReady: boolean }) => {
     dcPayloadSize?: number
     txnFeeMultiplier?: number
   }) => {
-    const keypair = await getKeypair()
+    const keypair = await getKeypair(currentAccount?.address || '')
     if (!keypair) throw new Error('missing keypair')
     const payee = Address.fromB58(payeeB58)
 
@@ -101,7 +101,7 @@ const useTransactionHook = ({ clientReady }: { clientReady: boolean }) => {
   const makePaymentTxn = async (
     paymentDetails: Array<SendDetails>,
   ): Promise<{ partialTxn: PartialPaymentTxn; signedTxn: PaymentV2 }> => {
-    const keypair = await getKeypair()
+    const keypair = await getKeypair(currentAccount?.address || '')
     if (!keypair) throw new Error('missing keypair')
 
     const { data: freshAccountData } = await fetchAccount()
@@ -204,16 +204,8 @@ const TransactionContext =
   createContext<ReturnType<typeof useTransactionHook>>(initialState)
 const { Provider } = TransactionContext
 
-const TransactionProvider = ({
-  children,
-  clientReady,
-}: {
-  children: ReactNode
-  clientReady: boolean
-}) => {
-  return (
-    <Provider value={useTransactionHook({ clientReady })}>{children}</Provider>
-  )
+const TransactionProvider = ({ children }: { children: ReactNode }) => {
+  return <Provider value={useTransactionHook()}>{children}</Provider>
 }
 
 export const useTransactions = () => useContext(TransactionContext)

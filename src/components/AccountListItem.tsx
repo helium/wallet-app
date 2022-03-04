@@ -2,11 +2,11 @@ import React, { memo, useCallback } from 'react'
 import Checkmark from '@assets/images/checkIco.svg'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import Text from './Text'
-import { CSAccount } from '../storage/AccountStorageProvider'
 import Box from './Box'
 import AccountIcon from './AccountIcon'
 import { useColors } from '../theme/themeHooks'
 import { formatAccountAlias } from '../utils/accountUtils'
+import { CSAccount } from '../storage/cloudStorage'
 
 type Props = {
   selected: boolean

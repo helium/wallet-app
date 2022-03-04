@@ -6,11 +6,10 @@ import React, {
   useState,
 } from 'react'
 import { useAsync } from 'react-async-hook'
-import * as SecureStore from 'expo-secure-store'
 import { OSNotification } from 'react-native-onesignal'
-import { SecureStorageKeys } from './AppStorageProvider'
 import { WALLET_UPDATES_ITEM } from '../features/notifications/notificationTypes'
 import { Notification } from '../generated/graphql'
+import { getSecureItem, storeSecureItem } from './secureStorage'
 
 const useNotificationStorageHook = () => {
   const [selectedList, setSelectedList] = useState<string>(WALLET_UPDATES_ITEM)
@@ -20,9 +19,7 @@ const useNotificationStorageHook = () => {
 
   useAsync(async () => {
     try {
-      const nextSelectedList = await SecureStore.getItemAsync(
-        SecureStorageKeys.SELECTED_LIST,
-      )
+      const nextSelectedList = await getSecureItem('selected_list')
 
       if (nextSelectedList) {
         setSelectedList(nextSelectedList)
@@ -34,10 +31,7 @@ const useNotificationStorageHook = () => {
 
   const updateSelectedList = useCallback(async (nextSelectedList: string) => {
     setSelectedList(nextSelectedList)
-    return SecureStore.setItemAsync(
-      SecureStorageKeys.SELECTED_LIST,
-      nextSelectedList,
-    )
+    storeSecureItem('selected_list', nextSelectedList)
   }, [])
 
   return {

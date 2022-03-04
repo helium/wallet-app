@@ -21,16 +21,16 @@ export default {
         'Here are the {{totalWords}} words you’ve entered. Tap on any of them if you need to edit.',
       title: 'Please Confirm\nSeed Phrase',
     },
+    pickKeyType: 'Pick Security Key Type:',
     restoreChoice: '{{totalWords}} Words',
+    subTitle:
+      'To import your existing\nHNT account, enter its\n<havelockBlue>12</havelockBlue> or <jazzberryJam>24</jazzberryJam> word security key.',
+    title: 'Import\nAccount',
     wordEntry: {
       placeholder: '{{ordinal}} word',
       title:
         "Enter your\naccount's <secondaryText>{{totalWords}} word</secondaryText>\nsecurity key...",
     },
-    title: 'Import\nAccount',
-    subTitle:
-      'To import your existing\nHNT account, enter its\n<havelockBlue>12</havelockBlue> or <jazzberryJam>24</jazzberryJam> word security key.',
-    pickKeyType: 'Pick Security Key Type:',
   },
   accountSetup: {
     confirm: {
@@ -42,6 +42,7 @@ export default {
       subtitle: 'Re-enter your PIN',
       title: 'Repeat PIN',
     },
+    createButtonTitle: 'Create an Account',
     createImport: {
       create: 'Create a new Wallet',
       helperText:
@@ -55,16 +56,15 @@ export default {
     },
     passphrase: {
       next: 'I have written these down',
-      title: 'These words\nrepresent your\nprivate key',
       subtitle1:
         'Write the words down, keep it safe,\nand never share it with anyone.',
       subtitle2: 'No one can recover these words.',
+      title: 'These words\nrepresent your\nprivate key',
     },
-    title: 'Create\nNew Account',
     subtitle1:
       'Every new account is accessed via\n24 secure words (your ‘key’).',
     subtitle2: 'Please ensure these are written\ndown and are kept safe.',
-    createButtonTitle: 'Create an Account',
+    title: 'Create\nNew Account',
   },
   accountsScreen: {
     allFilterFooter:
@@ -101,14 +101,6 @@ export default {
     },
     title: 'Add New Contact',
   },
-  editContact: {
-    title: 'Edit Contact',
-    save: 'Save',
-    delete: 'Delete',
-    deleteConfirmTitle: 'Delete Contact?',
-    deleteConfirmMessage:
-      'Are you sure you want to delete your contact, {{alias}}?',
-  },
   addressBook: {
     addNext: 'Add New...',
     searchContacts: 'Search Contacts...',
@@ -124,7 +116,16 @@ export default {
     },
     title: 'Enter Your PIN',
   },
+  editContact: {
+    delete: 'Delete',
+    deleteConfirmMessage:
+      'Are you sure you want to delete your contact, {{alias}}?',
+    deleteConfirmTitle: 'Delete Contact?',
+    save: 'Save',
+    title: 'Edit Contact',
+  },
   generic: {
+    account: 'Account',
     back: 'Back',
     cancel: 'Cancel',
     clear: 'Clear',
@@ -139,7 +140,6 @@ export default {
     skip: 'Skip',
     success: 'Success',
     total: 'Total',
-    account: 'Account',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',
@@ -165,6 +165,13 @@ export default {
     minutes: 'Minutes',
     remainingBalance: 'Remaining\nBalance',
     done: 'Done',
+  },
+  notifications: {
+    accountUpdates: '{{title}} Updates',
+    emptyTitle: 'No Notifications',
+    heliumUpdates: 'Helium Updates',
+    title: 'Notifications',
+    walletUpdates: 'Wallet Updates',
   },
   onboarding: {
     create: '+ New',
@@ -213,8 +220,8 @@ export default {
     sending: 'Sending...',
     submitError:
       'There was an error submitting this transaction. Please try again.\n\n{{details}}',
-    submitSuccess: 'Transaction\nSubmitted',
     submitFailed: 'Transaction\nFailed',
+    submitSuccess: 'Transaction\nSubmitted',
     title: 'Send {{ticker}}',
     total: 'Total',
     totalRecipients_one: '{{count}} Recipient',
@@ -353,12 +360,5 @@ export default {
     txnFeePaidBy: 'Transaction Fee paid by {{feePayer}}',
     unstakeValidator: 'Unstake {{ticker}}',
     validator: 'Validator',
-  },
-  notifications: {
-    title: 'Notifications',
-    walletUpdates: 'Wallet Updates',
-    heliumUpdates: 'Helium Updates',
-    accountUpdates: '{{title}} Updates',
-    emptyTitle: 'No Notifications',
   },
 }

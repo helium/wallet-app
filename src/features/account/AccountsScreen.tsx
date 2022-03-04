@@ -20,10 +20,7 @@ import { NetType } from '@helium/crypto-react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import Box from '../../components/Box'
-import {
-  CSAccount,
-  useAccountStorage,
-} from '../../storage/AccountStorageProvider'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useColors, useOpacity, useSpacing } from '../../theme/themeHooks'
 import { wh, wp } from '../../utils/layout'
 import MultiAccountNavigator from '../onboarding/MultiAccountNavigator'
@@ -63,6 +60,7 @@ import {
   WALLET_UPDATES_ITEM,
 } from '../notifications/notificationTypes'
 import { isValidAccountHash } from '../../utils/accountUtils'
+import { CSAccount } from '../../storage/cloudStorage'
 
 type AccountLayout = {
   accountViewStart: number
@@ -507,7 +505,11 @@ const AccountsScreen = () => {
                     onLayoutChange={handleAccountViewLayoutChange}
                     onActionSelected={handleActionSelected}
                     visible={visible}
-                    accountData={accountData?.account}
+                    accountData={
+                      accountData?.account?.address === currentAccount?.address
+                        ? accountData?.account
+                        : undefined
+                    }
                     netType={accountNetType}
                   />
                 </MotiBox>

@@ -2,13 +2,9 @@ import React, { memo, useCallback, useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useAsync } from 'react-async-hook'
 import Box from '../../components/Box'
 import TextInput from '../../components/TextInput'
-import {
-  SecureAccount,
-  useAccountStorage,
-} from '../../storage/AccountStorageProvider'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import FabButton from '../../components/FabButton'
 import { useSpacing } from '../../theme/themeHooks'
 import AccountIcon from '../../components/AccountIcon'
@@ -20,29 +16,19 @@ const UpdateAliasScreen = () => {
   const [alias, setAlias] = useState('')
   const insets = useSafeAreaInsets()
   const spacing = useSpacing()
-  const { upsertAccount, hasAccounts, currentAccount, getSecureAccount } =
-    useAccountStorage()
-  const [secureAccount, setSecureAccount] = useState<SecureAccount>()
-
-  useAsync(async () => {
-    if (!currentAccount) return
-    const account = await getSecureAccount(currentAccount?.address)
-    setSecureAccount(account)
-  }, [currentAccount, getSecureAccount])
+  const { upsertAccount, hasAccounts, currentAccount } = useAccountStorage()
 
   const handlePress = useCallback(async () => {
-    if (!secureAccount) return
-
-    if (hasAccounts) {
+    if (hasAccounts && currentAccount?.address) {
       try {
-        await upsertAccount({ alias, ...secureAccount })
+        await upsertAccount({ ...currentAccount, alias })
         navigation.popToTop()
         return
       } catch (e) {
         console.error(e)
       }
     }
-  }, [secureAccount, hasAccounts, upsertAccount, alias, navigation])
+  }, [hasAccounts, upsertAccount, currentAccount, alias, navigation])
 
   return (
     <BackScreen
@@ -56,7 +42,7 @@ const UpdateAliasScreen = () => {
         style={styles.container}
       >
         <Box alignItems="center" flex={1}>
-          <AccountIcon size={84} address={secureAccount?.address} />
+          <AccountIcon size={84} address={currentAccount?.address || ''} />
 
           <TextInput
             onChangeText={setAlias}

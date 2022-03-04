@@ -10,7 +10,7 @@ import { useColors } from '../../theme/themeHooks'
 import { HomeNavigationProp } from '../home/homeTypes'
 import ContactsList from './ContactsList'
 import { AddressBookNavigationProp } from './addressBookTypes'
-import { CSAccount } from '../../storage/AccountStorageProvider'
+import { CSAccount } from '../../storage/cloudStorage'
 
 const AddressBook = () => {
   const { t } = useTranslation()

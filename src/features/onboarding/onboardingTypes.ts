@@ -1,5 +1,6 @@
 import { StackNavigationProp } from '@react-navigation/stack'
-import { SecureAccount, CSAccount } from '../../storage/AccountStorageProvider'
+import { CSAccount } from '../../storage/cloudStorage'
+import { SecureAccount } from '../../storage/secureStorage'
 
 export type OnboardingStackParamList = {
   AccountCreatePassphraseScreen: undefined

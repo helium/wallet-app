@@ -21,8 +21,9 @@ import {
   useAccountQuery,
   useOracleDataQuery,
 } from '../generated/graphql'
-import { CSAccount, useAccountStorage } from '../storage/AccountStorageProvider'
+import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
+import { CSAccount } from '../storage/cloudStorage'
 import { accountCurrencyType } from './accountUtils'
 import { CoinGeckoPrices, getCurrentPrices } from './coinGeckoClient'
 import { decimalSeparator, groupSeparator } from './i18n'
@@ -30,7 +31,7 @@ import useMount from './useMount'
 import usePrevious from './usePrevious'
 
 export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
-const useBalanceHook = ({ clientReady }: { clientReady: boolean }) => {
+const useBalanceHook = () => {
   const { currentAccount } = useAccountStorage()
   const { convertToCurrency, currency } = useAppStorage()
 
@@ -41,7 +42,7 @@ const useBalanceHook = ({ clientReady }: { clientReady: boolean }) => {
     fetchPolicy: 'network-only',
     pollInterval: ORACLE_POLL_INTERVAL,
     notifyOnNetworkStatusChange: true,
-    skip: !clientReady || !currentAccount?.address,
+    skip: !currentAccount?.address,
   })
   const { data: accountData } = useAccountQuery({
     variables: {
@@ -152,6 +153,9 @@ const useBalanceHook = ({ clientReady }: { clientReady: boolean }) => {
       balance?: Balance<DataCredits | NetworkTokens | TestNetworkTokens>,
       opts?: { maxDecimalPlaces?: number; showTicker?: boolean },
     ): Promise<string> => {
+      if (!balance) {
+        return new Promise<string>((resolve) => resolve(''))
+      }
       const multiplier = coinGeckoPrices?.[currency.toLowerCase()] || 0
 
       const showAsHnt =
@@ -197,14 +201,8 @@ const BalanceContext =
   createContext<ReturnType<typeof useBalanceHook>>(initialState)
 const { Provider } = BalanceContext
 
-export const BalanceProvider = ({
-  children,
-  clientReady,
-}: {
-  children: ReactNode
-  clientReady: boolean
-}) => {
-  return <Provider value={useBalanceHook({ clientReady })}>{children}</Provider>
+export const BalanceProvider = ({ children }: { children: ReactNode }) => {
+  return <Provider value={useBalanceHook()}>{children}</Provider>
 }
 
 export const useBalance = () => useContext(BalanceContext)
@@ -233,5 +231,7 @@ export const useAccountBalances = (
       dc: new Balance(accountData.dcBalance || 0, CurrencyType.dataCredit),
       stakedHnt: new Balance(accountData.stakedBalance || 0, currencyType),
       hst: new Balance(accountData.secBalance || 0, CurrencyType.security),
+      address: accountData?.address,
+      hntBal: accountData.balance,
     }
   }, [accountData])

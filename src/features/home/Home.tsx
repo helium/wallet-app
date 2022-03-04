@@ -12,11 +12,9 @@ import {
 } from '@robinbobin/react-native-google-drive-api-wrapper'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import Text from '../../components/Text'
-import {
-  CSAccounts,
-  useAccountStorage,
-} from '../../storage/AccountStorageProvider'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import Box from '../../components/Box'
+import { CSAccounts } from '../../storage/cloudStorage'
 
 type GoogleError = { code: unknown }
 type File = { id: string; kind: string; mimeType: string; name: string }

@@ -28,10 +28,7 @@ import {
   accountCurrencyType,
   formatAccountAlias,
 } from '../../utils/accountUtils'
-import {
-  CSAccount,
-  useAccountStorage,
-} from '../../storage/AccountStorageProvider'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAccountSelector } from '../../components/AccountSelector'
 import { useAccountQuery, useSubmitTxnMutation } from '../../generated/graphql'
 import AccountButton from '../../components/AccountButton'
@@ -52,6 +49,7 @@ import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
 import PaymentCard from './PaymentCard'
 import { getMemoStrValid } from '../../components/MemoInput'
 import PaymentSubmit from './PaymentSubmit'
+import { CSAccount } from '../../storage/cloudStorage'
 
 type Route = RouteProp<HomeStackParamList, 'PaymentScreen'>
 const PaymentScreen = () => {

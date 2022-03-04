@@ -8,7 +8,8 @@ import React, {
 } from 'react'
 import { NetType } from '@helium/crypto-react-native'
 import OnboardingClient, { Maker } from '@helium/onboarding'
-import { CSAccount, SecureAccount } from '../../storage/AccountStorageProvider'
+import { CSAccount } from '../../storage/cloudStorage'
+import { SecureAccount } from '../../storage/secureStorage'
 
 export type OnboardingOpt = 'import' | 'create' | 'assign'
 

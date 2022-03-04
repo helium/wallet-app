@@ -6,19 +6,8 @@ import React, {
   useState,
 } from 'react'
 import { useAsync } from 'react-async-hook'
-import * as SecureStore from 'expo-secure-store'
 import { Intervals } from '../features/settings/useAuthIntervals'
-
-export enum SecureStorageKeys {
-  PIN = 'pin',
-  PIN_FOR_PAYMENT = 'pinForPayment',
-  AUTH_INTERVAL = 'authInterval',
-  LOCKED = 'locked',
-  CURRENCY = 'currency',
-  CONVERT_TO_CURRENCY = 'covertToCurrency',
-  LAST_IDLE = 'lastIdle',
-  SELECTED_LIST = 'selected_list',
-}
+import { getSecureItem, storeSecureItem } from './secureStorage'
 
 const useAppStorageHook = () => {
   const [pin, setPin] = useState<{
@@ -38,22 +27,12 @@ const useAppStorageHook = () => {
     // TODO: When performing an account restore pin will not be restored.
     // Find a way to detect when a restore happens and prompt user for a new pin
     try {
-      const nextPin = await SecureStore.getItemAsync(SecureStorageKeys.PIN)
-      const nextPinForPayment = await SecureStore.getItemAsync(
-        SecureStorageKeys.PIN_FOR_PAYMENT,
-      )
-      const nextAuthInterval = await SecureStore.getItemAsync(
-        SecureStorageKeys.AUTH_INTERVAL,
-      )
-      const nextLocked = await SecureStore.getItemAsync(
-        SecureStorageKeys.LOCKED,
-      )
-      const nextCurrency = await SecureStore.getItemAsync(
-        SecureStorageKeys.CURRENCY,
-      )
-      const nextConvertToCurrency = await SecureStore.getItemAsync(
-        SecureStorageKeys.CONVERT_TO_CURRENCY,
-      )
+      const nextPin = await getSecureItem('pin')
+      const nextPinForPayment = await getSecureItem('pinForPayment')
+      const nextAuthInterval = await getSecureItem('authInterval')
+      const nextLocked = await getSecureItem('locked')
+      const nextCurrency = await getSecureItem('currency')
+      const nextConvertToCurrency = await getSecureItem('convertToCurrency')
 
       setPin({ value: nextPin || '', status: nextPin ? 'restored' : 'off' })
       setRequirePinForPayment(nextPinForPayment === 'true')
@@ -71,46 +50,37 @@ const useAppStorageHook = () => {
 
   const updatePin = useCallback(async (nextPin: string) => {
     setPin({ value: nextPin, status: nextPin ? 'on' : 'off' })
-    return SecureStore.setItemAsync(SecureStorageKeys.PIN, nextPin)
+    return storeSecureItem('pin', nextPin)
   }, [])
 
   const updateLocked = useCallback(async (shouldLock: boolean) => {
     setLocked(shouldLock)
-    return SecureStore.setItemAsync(
-      SecureStorageKeys.LOCKED,
-      shouldLock ? 'true' : 'false',
-    )
+    return storeSecureItem('locked', shouldLock ? 'true' : 'false')
   }, [])
 
   const updateRequirePinForPayment = useCallback(
     async (pinRequired: boolean) => {
       setRequirePinForPayment(pinRequired)
-      return SecureStore.setItemAsync(
-        SecureStorageKeys.PIN_FOR_PAYMENT,
-        pinRequired ? 'true' : 'false',
-      )
+      return storeSecureItem('pinForPayment', pinRequired ? 'true' : 'false')
     },
     [],
   )
 
   const updateAuthInterval = useCallback(async (interval: Intervals) => {
     setAuthInterval(interval)
-    return SecureStore.setItemAsync(
-      SecureStorageKeys.AUTH_INTERVAL,
-      interval.toString(),
-    )
+    return storeSecureItem('authInterval', interval.toString())
   }, [])
 
   const updateCurrency = useCallback(async (nextCurrency: string) => {
     setCurrency(nextCurrency)
-    return SecureStore.setItemAsync(SecureStorageKeys.CURRENCY, nextCurrency)
+    return storeSecureItem('currency', nextCurrency)
   }, [])
 
   const updateConvertToCurrency = useCallback(
     async (nextConvertToCurrency: boolean) => {
       setConvertToCurrency(nextConvertToCurrency)
-      return SecureStore.setItemAsync(
-        SecureStorageKeys.CONVERT_TO_CURRENCY,
+      return storeSecureItem(
+        'convertToCurrency',
         nextConvertToCurrency ? 'true' : 'false',
       )
     },
@@ -119,10 +89,7 @@ const useAppStorageHook = () => {
 
   const toggleConvertToCurrency = useCallback(async () => {
     setConvertToCurrency((prev) => {
-      SecureStore.setItemAsync(
-        SecureStorageKeys.CONVERT_TO_CURRENCY,
-        !prev ? 'true' : 'false',
-      )
+      storeSecureItem('convertToCurrency', !prev ? 'true' : 'false')
       return !prev
     })
   }, [])
