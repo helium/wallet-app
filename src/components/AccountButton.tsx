@@ -68,7 +68,7 @@ const AccountButton = ({
             </Text>
             {netType === NetType.TESTNET && <TestnetIcon color={red500} />}
           </Box>
-          {subtitle && (
+          {!!subtitle && (
             <Text marginLeft="ms" variant="body3" color="secondaryText">
               {subtitle}
             </Text>

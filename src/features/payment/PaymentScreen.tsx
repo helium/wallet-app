@@ -23,10 +23,15 @@ import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { useColors, useHitSlop } from '../../theme/themeHooks'
-import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import {
-  accountCurrencyType,
+  HomeNavigationProp,
+  HomeStackParamList,
+  PaymentRouteParam,
+} from '../home/homeTypes'
+import {
+  accountNetType,
   formatAccountAlias,
+  networkCurrencyType,
 } from '../../utils/accountUtils'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAccountSelector } from '../../components/AccountSelector'
@@ -36,11 +41,7 @@ import AddressBookSelector, {
   AddressBookRef,
 } from '../../components/AddressBookSelector'
 import { useTransactions } from '../../storage/TransactionProvider'
-import {
-  balanceToString,
-  useBalance,
-  useAccountBalances,
-} from '../../utils/Balance'
+import { balanceToString, useBalance } from '../../utils/Balance'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import PaymentItem from './PaymentItem'
 import usePaymentsReducer, { MAX_PAYMENTS } from './usePaymentsReducer'
@@ -51,19 +52,66 @@ import { getMemoStrValid } from '../../components/MemoInput'
 import PaymentSubmit from './PaymentSubmit'
 import { CSAccount } from '../../storage/cloudStorage'
 
+type LinkedPayment = {
+  amount?: string
+  memo: string
+  payee: string
+}
+
+const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
+  if (opts.payments) {
+    return JSON.parse(opts.payments)
+  }
+  if (opts.payee) {
+    return [
+      {
+        payee: opts.payee,
+        amount: opts.amount,
+        memo: opts.memo || '',
+      },
+    ]
+  }
+  return []
+}
+
 type Route = RouteProp<HomeStackParamList, 'PaymentScreen'>
 const PaymentScreen = () => {
   const route = useRoute<Route>()
   const addressBookRef = useRef<AddressBookRef>(null)
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const [state, dispatch] = usePaymentsReducer()
 
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const { primaryText } = useColors()
   const hitSlop = useHitSlop('l')
-  const { currentAccount, accounts, contacts, setCurrentAccount } =
-    useAccountStorage()
+  const {
+    currentAccount,
+    accounts,
+    contacts,
+    setCurrentAccount,
+    sortedAccountsForNetType,
+  } = useAccountStorage()
+
+  const networkType = useMemo(() => {
+    if (!route.params) {
+      return accountNetType(currentAccount?.address)
+    }
+
+    const linkedPayments = parseLinkedPayments(route.params)
+    if (!linkedPayments?.length) return accountNetType()
+
+    return accountNetType(linkedPayments[0].payee)
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route])
+
+  const currencyType = useMemo(
+    () => networkCurrencyType(networkType),
+    [networkType],
+  )
+
+  const [state, dispatch] = usePaymentsReducer({ currencyType, networkType })
+
   const { updateLocked, requirePinForPayment, pin } = useAppStorage()
   const { showAccountTypes } = useAccountSelector()
   const { data: accountData } = useAccountQuery({
@@ -78,45 +126,44 @@ const PaymentScreen = () => {
     { data: submitData, loading: submitLoading, error: submitError },
   ] = useSubmitTxnMutation()
 
-  const balances = useAccountBalances(accountData?.account)
   const [fee, setFee] = useState<Balance<DataCredits>>()
   const { calculatePaymentTxnFee, makePaymentTxn } = useTransactions()
-  const { intToBalance, zeroBalanceNetworkToken, dcToTokens } = useBalance()
+  const { zeroBalanceNetworkToken, dcToTokens } = useBalance()
   const { top } = useSafeAreaInsets()
+
+  const accountHntBalance = useMemo(() => {
+    if (
+      !accountData?.account ||
+      accountData.account?.address !== currentAccount?.address
+    ) {
+      return
+    }
+    return new Balance(accountData.account?.balance || 0, currencyType)
+  }, [accountData, currencyType, currentAccount])
 
   useEffect(() => {
     if (!route.params) return
 
     // Deep link handling
     const {
-      params: { payer, payee, payments, amount, memo },
+      params: { payer },
     } = route
-
-    const account = accounts?.[payer || '']
-    if (account) {
-      setCurrentAccount(account)
-      dispatch({ type: 'updatePayer', address: account.address })
+    let nextAccount = accounts?.[payer || '']
+    if (!nextAccount) {
+      const acctsForNetType = sortedAccountsForNetType(networkType)
+      if (!acctsForNetType.length) {
+        // They don't have an account that can handle a payment for this network type
+        navigation.goBack()
+        return
+      }
+      const [firstAcct] = acctsForNetType
+      nextAccount = firstAcct
     }
+    setCurrentAccount(nextAccount)
 
-    let paymentsArr: Array<{ amount?: string; memo?: string; payee: string }> =
-      []
-    if (payments) {
-      paymentsArr = JSON.parse(payments) as Array<{
-        amount?: string
-        memo: string
-        payee: string
-      }>
-    } else if (payee) {
-      paymentsArr = [
-        {
-          payee,
-          amount,
-          memo,
-        },
-      ]
-    }
+    const paymentsArr = parseLinkedPayments(route.params)
 
-    if (!paymentsArr.length) return
+    if (!paymentsArr?.length) return
 
     if (paymentsArr.find((p) => !Address.isValid(p.payee))) {
       throw new Error('Invalid address found in deep link')
@@ -124,7 +171,6 @@ const PaymentScreen = () => {
 
     dispatch({
       type: 'addLinkedPayments',
-      payer,
       payments: paymentsArr.map((p) => {
         const contact = contacts.find(({ address }) => address === p.payee)
         return {
@@ -135,7 +181,8 @@ const PaymentScreen = () => {
         }
       }),
     })
-  }, [accounts, contacts, dispatch, intToBalance, route, setCurrentAccount])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route])
 
   const handleBalance = useCallback(
     (opts: {
@@ -143,16 +190,17 @@ const PaymentScreen = () => {
       payee: string
       index?: number
     }) => {
-      if (opts.index === undefined) return
+      if (opts.index === undefined || !currentAccount) return
 
       dispatch({
         type: 'updateBalance',
         value: opts.balance,
         address: opts.payee,
         index: opts.index,
+        payer: currentAccount.address,
       })
     },
-    [dispatch],
+    [currentAccount, dispatch],
   )
 
   const feeAsTokens = useMemo(() => {
@@ -160,11 +208,6 @@ const PaymentScreen = () => {
 
     return dcToTokens(fee)
   }, [dcToTokens, fee])
-
-  const currencyType = useMemo(
-    () => accountCurrencyType(currentAccount?.address),
-    [currentAccount],
-  )
 
   useEffect(() => {
     if (!requirePinForPayment || !pin) return
@@ -174,26 +217,18 @@ const PaymentScreen = () => {
   useEffect(() => {
     if (!currentAccount?.address) return
 
-    // If payer updates we need to alert the reducer.
-    // The net type may be different which would trigger a reset of the payees
-    dispatch({ type: 'updatePayer', address: currentAccount?.address })
-  }, [currentAccount, dispatch])
-
-  useEffect(() => {
-    if (!currentAccount?.address) return
-
-    calculatePaymentTxnFee(
-      state.payments.map((p) => ({
-        payee: currentAccount?.address,
-        balanceAmount: p.amount || zeroBalanceNetworkToken,
-        memo: '',
-      })),
-    ).then(setFee)
+    const payments = state.payments.map((p) => ({
+      payee: currentAccount?.address,
+      balanceAmount: p.amount || zeroBalanceNetworkToken,
+      memo: '',
+    }))
+    calculatePaymentTxnFee(payments).then(setFee)
   }, [
     calculatePaymentTxnFee,
     currentAccount,
     zeroBalanceNetworkToken,
     state.payments,
+    state,
   ])
 
   const onRequestClose = useCallback(() => {
@@ -203,7 +238,7 @@ const PaymentScreen = () => {
   const canAddPayee = useMemo(() => {
     const lastPayee = state.payments[state.payments.length - 1]
 
-    return (
+    return !!(
       state.payments.length < MAX_PAYMENTS &&
       lastPayee.address &&
       lastPayee.amount &&
@@ -234,17 +269,49 @@ const PaymentScreen = () => {
   }, [currentAccount, makePaymentTxn, state.payments, submitTxnMutation])
 
   const insufficientFunds = useMemo(() => {
-    if (!balances?.hnt.integerBalance || !feeAsTokens?.integerBalance) {
+    if (
+      !accountHntBalance?.integerBalance ||
+      feeAsTokens?.integerBalance === undefined ||
+      !state.totalAmount
+    ) {
       return true
     }
-    return (
-      balances?.hnt.integerBalance <
-      state.totalAmount.plus(feeAsTokens).integerBalance
-    )
-  }, [balances, feeAsTokens, state.totalAmount])
+    try {
+      return (
+        accountHntBalance.integerBalance <
+        state.totalAmount.plus(feeAsTokens).integerBalance
+      )
+    } catch (e) {
+      // if the screen was already open, then a deep link of a different net type
+      // is selected there will be a brief arithmetic error that can be ignored.
+      console.warn(e)
+      return false
+    }
+  }, [accountHntBalance, feeAsTokens, state])
+
+  const selfPay = useMemo(
+    () => state.payments.find((p) => p.address === currentAccount?.address),
+    [currentAccount, state.payments],
+  )
+
+  const errors = useMemo(() => {
+    const errStrings: string[] = []
+    if (insufficientFunds) {
+      errStrings.push(t('payment.insufficientFunds'))
+    }
+
+    if (selfPay) {
+      errStrings.push(t('payment.selfPay'))
+    }
+    return errStrings
+  }, [insufficientFunds, selfPay, t])
 
   const isFormValid = useMemo(() => {
-    if (!balances?.hnt.integerBalance || !feeAsTokens?.integerBalance) {
+    if (
+      selfPay ||
+      !accountHntBalance?.integerBalance ||
+      !feeAsTokens?.integerBalance
+    ) {
       return false
     }
 
@@ -258,7 +325,13 @@ const PaymentScreen = () => {
       })
 
     return paymentsValid && !insufficientFunds
-  }, [balances, feeAsTokens, insufficientFunds, state.payments])
+  }, [
+    accountHntBalance,
+    feeAsTokens,
+    insufficientFunds,
+    selfPay,
+    state.payments,
+  ])
 
   const handleAddressBookSelected = useCallback(
     ({ address, index }: { address?: string | undefined; index: number }) => {
@@ -311,15 +384,16 @@ const PaymentScreen = () => {
       prevAddress?: string
       index?: number
     }) => {
-      if (index === undefined) return
+      if (index === undefined || !currentAccount) return
       dispatch({
         type: 'updatePayee',
         contact,
         index,
         address: contact.address,
+        payer: currentAccount?.address,
       })
     },
-    [dispatch],
+    [dispatch, currentAccount],
   )
 
   const handleAddPayee = useCallback(() => {
@@ -330,6 +404,11 @@ const PaymentScreen = () => {
     () => ({ marginTop: Platform.OS === 'android' ? top : undefined }),
     [top],
   )
+
+  const handleShowAccounts = useCallback(showAccountTypes(networkType), [
+    networkType,
+    showAccountTypes,
+  ])
 
   return (
     <>
@@ -380,16 +459,12 @@ const PaymentScreen = () => {
               <AccountButton
                 paddingTop="xxl"
                 title={formatAccountAlias(currentAccount)}
-                subtitle={balanceToString(balances?.hnt, {
+                subtitle={balanceToString(accountHntBalance, {
                   maxDecimalPlaces: 2,
                 })}
                 address={currentAccount?.address}
                 netType={currentAccount?.netType}
-                onPress={showAccountTypes(
-                  currentAccount?.netType !== undefined
-                    ? currentAccount.netType
-                    : 'all',
-                )}
+                onPress={handleShowAccounts}
                 showBubbleArrow
                 marginHorizontal="l"
               />
@@ -398,6 +473,7 @@ const PaymentScreen = () => {
                 <PaymentItem
                   // eslint-disable-next-line react/no-array-index-key
                   key={index}
+                  hasError={p.address === currentAccount?.address}
                   address={p.address}
                   account={p.account}
                   amount={p.amount}
@@ -437,7 +513,7 @@ const PaymentScreen = () => {
               disabled={!isFormValid}
               onSubmit={handleSubmit}
               payments={state.payments}
-              insufficientFunds={insufficientFunds}
+              errors={errors}
             />
           </Box>
         </AddressBookSelector>

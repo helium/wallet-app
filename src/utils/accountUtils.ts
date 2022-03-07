@@ -11,6 +11,12 @@ export const accountCurrencyType = (address?: string) => {
     : CurrencyType.default
 }
 
+export const networkCurrencyType = (netType?: NetType.NetType) => {
+  return netType === NetType.TESTNET
+    ? CurrencyType.testNetworkToken
+    : CurrencyType.default
+}
+
 export const accountNetType = (address?: string) => {
   if (!address) return NetType.MAINNET
   return Address.fromB58(address)?.netType

@@ -1,5 +1,5 @@
-query Notifications($resource: String!) {
-  notifications(resource: $resource) {
+query Notifications($address: String!, $resource: String!) {
+  notifications(address: $address, resource: $resource) {
     resource
     body
     icon

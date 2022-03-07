@@ -216,6 +216,7 @@ export default {
     memoBytes: '{{used}}/{{total}} Bytes',
     pay: 'Pay',
     selectContact: 'Select Contact',
+    selfPay: 'Self Pay',
     sendButton: 'Swipe to Send {{ticker}}',
     sending: 'Sending...',
     submitError:
