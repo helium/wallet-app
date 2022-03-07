@@ -1,22 +1,21 @@
 import { WalletLink } from '@helium/react-native-sdk'
 import { StackNavigationProp } from '@react-navigation/stack'
 
+export type PaymentRouteParam = {
+  payer?: string
+  payments?: string
+  payee?: string
+  amount?: string
+  memo?: string
+  netType?: string
+}
 export type HomeStackParamList = {
   AddAccount: {
     screen: 'CreateImport'
   }
   AccountsScreen: undefined
   AccountAssignScreen: undefined
-  PaymentScreen:
-    | undefined
-    | {
-        payer?: string
-        payments?: string
-        payee?: string
-        amount?: string
-        memo?: string
-        netType?: string
-      }
+  PaymentScreen: undefined | PaymentRouteParam
   RequestScreen: undefined
   AddressBookNavigator: undefined
   NotificationsNavigator: undefined

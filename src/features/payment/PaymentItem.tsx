@@ -18,6 +18,7 @@ import { balanceToString, useBalance } from '../../utils/Balance'
 import MemoInput from '../../components/MemoInput'
 import { Theme } from '../../theme/theme'
 import { CSAccount } from '../../storage/cloudStorage'
+import BackgroundFill from '../../components/BackgroundFill'
 
 export type Payment = {
   address?: string
@@ -28,6 +29,7 @@ export type Payment = {
 
 type Props = {
   index: number
+  hasError?: boolean
   fee?: Balance<DataCredits>
   onAddressBookSelected: (opts: { address?: string; index: number }) => void
   onEditHNTAmount: (opts: { address?: string; index: number }) => void
@@ -45,6 +47,7 @@ const PaymentItem = ({
   onEditMemo,
   fee,
   memo,
+  hasError,
   onRemove,
 }: Props) => {
   const { colorStyle } = useOpacity('primaryText', 0.3)
@@ -110,7 +113,9 @@ const PaymentItem = ({
       marginHorizontal="l"
       backgroundColor="secondary"
       borderRadius="xl"
+      overflow="hidden"
     >
+      {hasError && <BackgroundFill backgroundColor="error" opacity={0.2} />}
       <Box flexDirection="row">
         {isDeepLink && address ? (
           <Text

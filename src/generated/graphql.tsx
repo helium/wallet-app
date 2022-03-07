@@ -165,10 +165,15 @@ export type RootQueryTypeCurrentOraclePriceArgs = {
 }
 
 export type RootQueryTypeNotificationsArgs = {
+  address: Scalars['String']
   resource: Scalars['String']
 }
 
 export type RootQueryTypePendingTxnsArgs = {
+  address: Scalars['String']
+}
+
+export type RootQueryTypeTxnConfigVarsArgs = {
   address: Scalars['String']
 }
 
@@ -313,6 +318,7 @@ export type AccountQuery = {
 }
 
 export type NotificationsQueryVariables = Exact<{
+  address: Scalars['String']
   resource: Scalars['String']
 }>
 
@@ -394,7 +400,9 @@ export type SubmitTxnMutation = {
   submitTxn?: { __typename?: 'TxnHash'; hash: string } | null
 }
 
-export type TxnConfigVarsQueryVariables = Exact<{ [key: string]: never }>
+export type TxnConfigVarsQueryVariables = Exact<{
+  address: Scalars['String']
+}>
 
 export type TxnConfigVarsQuery = {
   __typename?: 'RootQueryType'
@@ -646,8 +654,8 @@ export type AccountQueryResult = Apollo.QueryResult<
   AccountQueryVariables
 >
 export const NotificationsDocument = gql`
-  query Notifications($resource: String!) {
-    notifications(resource: $resource) {
+  query Notifications($address: String!, $resource: String!) {
+    notifications(address: $address, resource: $resource) {
       resource
       body
       icon
@@ -674,6 +682,7 @@ export const NotificationsDocument = gql`
  * @example
  * const { data, loading, error } = useNotificationsQuery({
  *   variables: {
+ *      address: // value for 'address'
  *      resource: // value for 'resource'
  *   },
  * });
@@ -903,8 +912,8 @@ export type SubmitTxnMutationOptions = Apollo.BaseMutationOptions<
   SubmitTxnMutationVariables
 >
 export const TxnConfigVarsDocument = gql`
-  query txnConfigVars {
-    txnConfigVars {
+  query txnConfigVars($address: String!) {
+    txnConfigVars(address: $address) {
       txnFeeMultiplier
       stakingFeeTxnAddGatewayV1
       stakingFeeTxnAssertLocationV1
@@ -925,11 +934,12 @@ export const TxnConfigVarsDocument = gql`
  * @example
  * const { data, loading, error } = useTxnConfigVarsQuery({
  *   variables: {
+ *      address: // value for 'address'
  *   },
  * });
  */
 export function useTxnConfigVarsQuery(
-  baseOptions?: Apollo.QueryHookOptions<
+  baseOptions: Apollo.QueryHookOptions<
     TxnConfigVarsQuery,
     TxnConfigVarsQueryVariables
   >,

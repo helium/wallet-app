@@ -1,13 +1,8 @@
 import { NetType } from '@helium/crypto-react-native'
-import Balance, {
-  CurrencyType,
-  NetworkTokens,
-  TestNetworkTokens,
-} from '@helium/currency'
+import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
 import { useReducer } from 'react'
 import { decodeMemoString } from '../../components/MemoInput'
 import { CSAccount } from '../../storage/cloudStorage'
-import { accountCurrencyType, accountNetType } from '../../utils/accountUtils'
 import { Payment } from './PaymentItem'
 
 type UpdatePayeeAction = {
@@ -15,6 +10,7 @@ type UpdatePayeeAction = {
   contact?: CSAccount
   address: string
   index: number
+  payer: string
 }
 
 type UpdateMemoAction = {
@@ -28,11 +24,7 @@ type UpdateBalanceAction = {
   address?: string
   index: number
   value?: Balance<NetworkTokens | TestNetworkTokens>
-}
-
-type UpdatePayer = {
-  type: 'updatePayer'
-  address: string
+  payer: string
 }
 
 type RemovePayment = {
@@ -52,43 +44,46 @@ type AddLinkedPayments = {
     amount: string | undefined
     memo: string | undefined
   }>
-  payer?: string
 }
 
 export const MAX_PAYMENTS = 10
 
-const initialState = {
-  payments: [{}] as Array<Payment>,
-  payer: '',
-  netType: NetType.MAINNET,
-  totalAmount: new Balance(0, CurrencyType.networkToken),
+type PaymentState = {
+  payments: Payment[]
+  totalAmount: Balance<TestNetworkTokens | NetworkTokens>
+  error?: string
+  currencyType: NetworkTokens | TestNetworkTokens
+  networkType: NetType.NetType
 }
+
+const initialState = (opts: {
+  currencyType: NetworkTokens | TestNetworkTokens
+  networkType: NetType.NetType
+}): PaymentState => ({
+  error: undefined,
+  payments: [{}] as Array<Payment>,
+  totalAmount: new Balance(0, opts.currencyType),
+  ...opts,
+})
 
 const paymentsSum = (
   payments: Payment[],
-  currencyType: NetworkTokens | TestNetworkTokens,
+  type: NetworkTokens | TestNetworkTokens,
 ) => {
   return payments.reduce((prev, current) => {
     if (!current.amount) {
       return prev
     }
     return prev.plus(current.amount)
-  }, new Balance(0, currencyType))
+  }, new Balance(0, type))
 }
 
 function reducer(
-  state: {
-    payments: Array<Payment>
-    payer: string
-    totalAmount: Balance<TestNetworkTokens | NetworkTokens>
-    netType: NetType.NetType
-    error?: string
-  },
+  state: PaymentState,
   action:
     | UpdatePayeeAction
     | UpdateMemoAction
     | UpdateBalanceAction
-    | UpdatePayer
     | AddPayee
     | AddLinkedPayments
     | RemovePayment,
@@ -104,10 +99,7 @@ function reducer(
         (p) => p.address === action.address,
       )
 
-      // 3. Disallow self pay
-      const selfPay = state.payer === action.address
-
-      if (addressesNotEqual || duplicateAddress || selfPay) {
+      if (addressesNotEqual || duplicateAddress) {
         return state
       }
 
@@ -150,58 +142,36 @@ function reducer(
           amount: action.value,
         }
       })
-      const currencyType = accountCurrencyType(state.payer)
-      const totalAmount = paymentsSum(nextPayments, currencyType)
+      const totalAmount = paymentsSum(nextPayments, state.currencyType)
       return { ...state, totalAmount, payments: nextPayments }
-    }
-    case 'updatePayer': {
-      const { payments, netType } = state
-      const { address } = action
-      const nextNetType = accountNetType(address)
-      const currencyType = accountCurrencyType(address)
-      let nextPayments = payments.filter((p) => p.address !== address)
-      if (!nextPayments.length || nextNetType !== netType) {
-        nextPayments = initialState.payments
-      }
-
-      const totalAmount = paymentsSum(nextPayments, currencyType)
-
-      return {
-        totalAmount,
-        payments: nextPayments,
-        payer: address,
-        netType: nextNetType,
-      }
     }
     case 'addPayee': {
       if (state.payments.length >= MAX_PAYMENTS) return state
 
       return { ...state, payments: [...state.payments, {}] }
     }
-    case 'addLinkedPayments': {
-      if (!action.payer && !action.payments.length) {
-        return state
-      }
 
-      const address = action.payer || action.payments[0].address
-      const nextNetType = accountNetType(address)
-      const currencyType = accountCurrencyType(address)
+    case 'addLinkedPayments': {
+      if (!action.payments.length) {
+        return initialState({
+          currencyType: state.currencyType,
+          networkType: state.networkType,
+        })
+      }
 
       const nextPayments: Payment[] = action.payments.map((p) => ({
         address: p.address,
         account: p.account,
         memo: decodeMemoString(p.memo),
         amount: p.amount
-          ? new Balance(parseInt(p.amount, 10), currencyType)
+          ? new Balance(parseInt(p.amount, 10), state.currencyType)
           : undefined,
       }))
-      const totalAmount = paymentsSum(nextPayments, currencyType)
+      const totalAmount = paymentsSum(nextPayments, state.currencyType)
 
       return {
         ...state,
-        payer: action.payer || '',
         payments: nextPayments,
-        netType: nextNetType,
         totalAmount,
       }
     }
@@ -210,11 +180,14 @@ function reducer(
         (_p, index) => index !== action.index,
       )
       if (!nextPayments.length) {
-        nextPayments = initialState.payments
+        nextPayments = []
       }
       return { ...state, payments: nextPayments }
     }
   }
 }
 
-export default () => useReducer(reducer, initialState)
+export default (opts: {
+  currencyType: NetworkTokens | TestNetworkTokens
+  networkType: NetType.NetType
+}) => useReducer(reducer, initialState(opts))

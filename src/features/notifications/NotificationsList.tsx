@@ -22,12 +22,14 @@ const NotificationsList = () => {
   const { t } = useTranslation()
   const navigator = useNavigation<NotificationsListNavigationProp>()
   const { selectedList, setSelectedNotification } = useNotificationStorage()
-  const { accounts } = useAccountStorage()
+  const { accounts, currentAccount } = useAccountStorage()
 
   const { data: notifications } = useNotificationsQuery({
     variables: {
+      address: currentAccount?.address || '',
       resource: selectedList,
     },
+    skip: !currentAccount?.address,
     fetchPolicy: 'cache-and-network',
   })
 

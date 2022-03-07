@@ -42,7 +42,10 @@ const useTransactionHook = () => {
   const { currentAccount } = useAccountStorage()
   const { data: txnVarsData, error } = useTxnConfigVarsQuery({
     fetchPolicy: 'cache-and-network',
+    variables: { address: currentAccount?.address || '' },
+    skip: !currentAccount?.address,
   })
+
   const [fetchAccount] = useAccountLazyQuery({
     variables: {
       address: currentAccount?.address || '',
@@ -145,19 +148,20 @@ const useTransactionHook = () => {
         'Cannot calculate payment txn fee. Current account not found',
       )
     }
+    const payments = paymentDetails.map(
+      ({ payee: address, balanceAmount, memo }) => ({
+        // if a payee address isn't supplied, we use a dummy address
+        payee:
+          address && Address.isValid(address)
+            ? Address.fromB58(address)
+            : EMPTY_B58_ADDRESS,
+        amount: balanceAmount.integerBalance,
+        memo: encodeMemoString(memo),
+      }),
+    )
     const paymentTxn = new PaymentV2({
       payer: Address.fromB58(currentAccount.address),
-      payments: paymentDetails.map(
-        ({ payee: address, balanceAmount, memo }) => ({
-          // if a payee address isn't supplied, we use a dummy address
-          payee:
-            address && Address.isValid(address)
-              ? Address.fromB58(address)
-              : EMPTY_B58_ADDRESS,
-          amount: balanceAmount.integerBalance,
-          memo: encodeMemoString(memo),
-        }),
-      ),
+      payments,
       nonce: (accountData?.account?.nonce || 0) + 1,
     })
 

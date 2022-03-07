@@ -11,7 +11,7 @@ type Props = {
   totalBalance: Balance<TestNetworkTokens | NetworkTokens>
   feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
   disabled?: boolean
-  insufficientFunds?: boolean
+  errors?: string[]
   payments: Payment[]
   alwaysShowRecipients?: boolean
 }
@@ -23,7 +23,7 @@ const PaymentSummary = ({
   feeTokenBalance,
   disabled = false,
   payments,
-  insufficientFunds,
+  errors,
   alwaysShowRecipients,
 }: Props) => {
   const { t } = useTranslation()
@@ -110,9 +110,9 @@ const PaymentSummary = ({
             </Text>
           </>
         )}
-        {insufficientFunds && (
+        {!!errors?.length && (
           <Text variant="body2" color="error">
-            {t('payment.insufficientFunds')}
+            {errors[0]}
           </Text>
         )}
         <Text variant="body2" color="secondaryText" flex={1} textAlign="right">

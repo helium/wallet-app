@@ -1,4 +1,5 @@
 import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
+import { useNavigation } from '@react-navigation/native'
 import React, { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent } from 'react-native'
@@ -16,7 +17,7 @@ type Props = {
   feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
   onSubmit: () => void
   disabled: boolean
-  insufficientFunds: boolean
+  errors?: string[]
   payments: Payment[]
 }
 
@@ -26,11 +27,12 @@ const PaymentCard = ({
   onSubmit,
   disabled,
   payments,
-  insufficientFunds,
+  errors,
 }: Props) => {
   const { t } = useTranslation()
   const [payEnabled, setPayEnabled] = useState(false)
   const [height, setHeight] = useState(0)
+  const nav = useNavigation()
 
   const handlePayPressed = useCallback(() => {
     animateTransition('PaymentCard.payEnabled')
@@ -61,7 +63,7 @@ const PaymentCard = ({
         feeTokenBalance={feeTokenBalance}
         disabled={disabled}
         payments={payments}
-        insufficientFunds={insufficientFunds}
+        errors={errors}
       />
       <Box marginTop="xxl">
         {!payEnabled ? (
@@ -75,6 +77,7 @@ const PaymentCard = ({
                 borderRadius="round"
                 overflow="hidden"
                 backgroundColor="secondaryIcon"
+                onPress={nav.goBack}
               >
                 <Text
                   variant="subtitle1"
