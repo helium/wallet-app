@@ -25,7 +25,15 @@ const AccountConfirmPinScreen = () => {
     async (pin: string) => {
       if (params.account) {
         try {
-          await upsertAccount(params.account)
+          await upsertAccount({
+            address: params.account.address,
+            alias: params.account.alias,
+            secureAccount: {
+              mnemonic: params.account.mnemonic,
+              keypair: params.account.keypair,
+              address: params.account.address,
+            },
+          })
           reset()
         } catch (e) {
           console.error(e)

@@ -39,7 +39,8 @@ const AccountAssignScreen = () => {
       try {
         await upsertAccount({
           alias,
-          ...secureAccount,
+          address: secureAccount.address,
+          secureAccount,
         })
         onboardingNav.popToTop()
         reset()
