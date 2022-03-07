@@ -55,6 +55,8 @@ const cache = new InMemoryCache({
                   ),
                 }
               }
+              // No new data, return what we have
+              return existing
             }
 
             return {
