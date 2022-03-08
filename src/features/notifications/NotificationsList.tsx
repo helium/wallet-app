@@ -2,7 +2,7 @@ import React, { memo, useCallback, useMemo } from 'react'
 import CarotRight from '@assets/images/carot-right.svg'
 import { useNavigation } from '@react-navigation/native'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
-import { formatDistance } from 'date-fns'
+import { formatDistanceToNow, parseISO } from 'date-fns'
 import { useTranslation } from 'react-i18next'
 import TouchableHighlightBox from '../../components/TouchableHighlightBox'
 import Box from '../../components/Box'
@@ -105,7 +105,7 @@ const NotificationsList = () => {
                 numberOfLines={2}
                 color={!viewed ? 'red500' : 'surfaceSecondaryText'}
               >
-                {formatDistance(item.time, new Date(), {
+                {formatDistanceToNow(parseISO(item.time), {
                   addSuffix: true,
                 })}
               </Text>

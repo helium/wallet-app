@@ -87,7 +87,7 @@ export type Notification = {
   icon: Scalars['String']
   id: Scalars['Int']
   resource: Scalars['String']
-  time: Scalars['Int']
+  time: Scalars['String']
   title: Scalars['String']
   type: Scalars['String']
   viewedAt?: Maybe<Scalars['String']>
@@ -333,7 +333,7 @@ export type NotificationsQuery = {
     type: string
     id: number
     viewedAt?: string | null
-    time: number
+    time: string
     actionTitle?: string | null
     actionUrl?: string | null
   }> | null
