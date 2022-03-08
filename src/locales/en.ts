@@ -227,6 +227,8 @@ export default {
     total: 'Total',
     totalRecipients_one: '{{count}} Recipient',
     totalRecipients_other: '{{count}} Recipients',
+    totalRecipients: '{{count}} Recipient',
+    totalRecipients_plural: '{{count}} Recipients',
   },
   placeholder: {
     accountBalanceValue: 'Account Balance: {{balance}}',
