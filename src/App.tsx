@@ -8,6 +8,7 @@ import * as SplashScreen from 'expo-splash-screen'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import OneSignal, { OpenedEvent } from 'react-native-onesignal'
 import Config from 'react-native-config'
+import * as Logger from './utils/logger'
 import { useApolloClient } from './graphql/useApolloClient'
 import { theme, darkThemeColors, lightThemeColors } from './theme/theme'
 import RootNavigator from './navigation/RootNavigator'
@@ -77,11 +78,14 @@ const App = () => {
   )
 
   useMount(() => {
+    // init GoogleSignin
     GoogleSignin.configure({
       iosClientId:
         '605970674117-ll6b47atjj62m8i7j698pojgrbdf3ko1.apps.googleusercontent.com',
       scopes: ['https://www.googleapis.com/auth/drive.file'],
     })
+
+    // init OneSignal
     OneSignal.setAppId(Config.ONE_SIGNAL_APP_ID)
     OneSignal.setNotificationOpenedHandler((event: OpenedEvent) => {
       setOpenedNotification(event.notification)
@@ -89,6 +93,9 @@ const App = () => {
     if (Platform.OS === 'ios') {
       OneSignal.promptForPushNotificationsWithUserResponse(() => {})
     }
+
+    // init Sentry
+    Logger.init()
   })
 
   useEffect(() => {
