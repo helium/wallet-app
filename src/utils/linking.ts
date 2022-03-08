@@ -5,16 +5,13 @@ import { encodeMemoString } from '../components/MemoInput'
 import { RootNavigationProp } from '../navigation/rootTypes'
 import { SendDetails } from '../storage/TransactionProvider'
 
-export const LINK_SCHEME = Linking.createURL('')
+export const APP_LINK_SCHEME = Linking.createURL('')
 export const PAYMENT_PATH = 'payment'
 
-// TODO: Create wallet site for linking
-// export const LINK_SCHEME = Linking.createURL('wallet.helium.com', {
-//   scheme: 'https',
-// })
+export const HELIUM_WALLET_LINK_SCHEME = 'https://wallet.helium.com/'
 
 export const linking = {
-  prefixes: ['https://helium.com', LINK_SCHEME],
+  prefixes: [APP_LINK_SCHEME, HELIUM_WALLET_LINK_SCHEME],
   config: {
     screens: {
       HomeNavigator: {
@@ -36,7 +33,7 @@ export const makePayRequestLink = ({
   memo,
 }: Partial<SendDetails>) => {
   return [
-    LINK_SCHEME + PAYMENT_PATH,
+    HELIUM_WALLET_LINK_SCHEME + PAYMENT_PATH,
     qs.stringify(
       {
         payee,
@@ -61,7 +58,7 @@ export const makeMultiPayRequestLink = ({
     memo: encodeMemoString(memo),
   }))
   return [
-    LINK_SCHEME + PAYMENT_PATH,
+    HELIUM_WALLET_LINK_SCHEME + PAYMENT_PATH,
     qs.stringify(
       { payer, payments: JSON.stringify(ironed) },
       { skipNulls: true },
