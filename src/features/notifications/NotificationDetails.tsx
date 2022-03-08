@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useEffect, useMemo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
-import { formatDistance } from 'date-fns'
+import { formatDistanceToNow, parseISO } from 'date-fns'
 import Text from '../../components/Text'
 import Box from '../../components/Box'
 import { NotificationsListStackParamList } from './notificationTypes'
@@ -37,7 +37,7 @@ const NotificationDetails = () => {
 
   const time = useMemo(
     () =>
-      formatDistance(notification.time, new Date(), {
+      formatDistanceToNow(parseISO(notification.time), {
         addSuffix: true,
       }),
     [notification],
