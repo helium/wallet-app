@@ -11,6 +11,7 @@ import NotificationsNavigator from '../notifications/NotificationsNavigator'
 import RequestScreen from '../request/RequestScreen'
 import LinkWallet from '../txnDelegatation/LinkWallet'
 import SignHotspot from '../txnDelegatation/SignHotspot'
+import PaymentQrScanner from '../payment/PaymentQrScanner'
 
 const HomeStack = createStackNavigator()
 
@@ -28,6 +29,7 @@ const HomeStackScreen = () => {
         component={AccountAssignScreen}
       />
       <HomeStack.Screen name="PaymentScreen" component={PaymentScreen} />
+      <HomeStack.Screen name="PaymentQrScanner" component={PaymentQrScanner} />
       <HomeStack.Screen name="RequestScreen" component={RequestScreen} />
       <HomeStack.Screen
         name="WifiOnboard"
