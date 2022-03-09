@@ -168,13 +168,17 @@ const useAccountStorageHook = () => {
         }
         await updateCloudAccounts(newAccounts)
         setAccounts(newAccounts)
-        setCurrentAccount(accounts ? accounts[0] : undefined)
+        setCurrentAccount(
+          newAccounts ? Object.values(newAccounts)[0] : undefined,
+        )
       } else {
         // sign out of all accounts
         await Promise.all([
           ...Object.keys(accounts || {}).map((key) => {
-            removeAccountTag(key)
             return SecureStore.deleteItemAsync(key)
+          }),
+          ...Object.keys(accounts || {}).map((key) => {
+            return removeAccountTag(key)
           }),
           ...signoutSecureStore(
             sortedAccounts.map(({ address: addr }) => addr),
