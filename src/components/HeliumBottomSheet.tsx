@@ -14,7 +14,7 @@ import Box from './Box'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import BlurBox from './BlurBox'
 import { ReAnimatedBox } from './AnimatedBox'
-import useVisible from '../utils/useVisible'
+import useDisappear from '../utils/useDisappear'
 
 type Props = BoxProps<Theme> & {
   children?: React.ReactNode
@@ -59,7 +59,7 @@ const HeliumBottomSheet = ({
     onClose()
   }, [onClose])
 
-  useVisible({ onDisappear: handleClose })
+  useDisappear(handleClose)
 
   useEffect(() => {
     if (isVisible) {
