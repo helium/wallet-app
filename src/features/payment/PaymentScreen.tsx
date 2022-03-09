@@ -203,6 +203,10 @@ const PaymentScreen = () => {
     [currentAccount, dispatch],
   )
 
+  const handleQrScan = useCallback(() => {
+    navigation.navigate('PaymentQrScanner')
+  }, [navigation])
+
   const feeAsTokens = useMemo(() => {
     if (!fee) return
 
@@ -428,7 +432,7 @@ const PaymentScreen = () => {
               alignItems="center"
             >
               <TouchableOpacityBox
-                onPress={onRequestClose}
+                onPress={handleQrScan}
                 padding="l"
                 hitSlop={hitSlop}
               >

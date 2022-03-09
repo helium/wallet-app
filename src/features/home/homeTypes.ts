@@ -16,6 +16,7 @@ export type HomeStackParamList = {
   AccountsScreen: undefined
   AccountAssignScreen: undefined
   PaymentScreen: undefined | PaymentRouteParam
+  PaymentQrScanner: undefined
   RequestScreen: undefined
   AddressBookNavigator: undefined
   NotificationsNavigator: undefined

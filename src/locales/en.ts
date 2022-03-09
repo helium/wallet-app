@@ -214,6 +214,11 @@ export default {
     insufficientFunds: 'Insufficient Funds',
     max: 'Max',
     memoBytes: '{{used}}/{{total}} Bytes',
+    qrScanFail: {
+      title: 'Unsupported QR Code',
+      message:
+        'This QR scanner supports payment transactions and wallet addresses.',
+    },
     pay: 'Pay',
     selectContact: 'Select Contact',
     selfPay: 'Self Pay',
