@@ -47,7 +47,7 @@ import { useAccountSelector } from '../../components/AccountSelector'
 import AccountActivityFilter, {
   useActivityFilter,
 } from './AccountActivityFilter'
-import { useAppear } from '../../utils/useVisible'
+import useAppear from '../../utils/useAppear'
 import {
   useTransactionDetail,
   withTransactionDetail,
@@ -130,14 +130,22 @@ const AccountsScreen = () => {
     // TODO: adjust this interval if needed
   })
 
-  const [fetchAccount] = useAccountLazyQuery({
+  const [fetchAccount, { error: lazyAccountError }] = useAccountLazyQuery({
     variables: {
       address: currentAccount?.address || '',
     },
     fetchPolicy: 'cache-and-network',
   })
 
-  useAppear(fetchAccount)
+  useAppear(() => {
+    if (!currentAccount?.address) return
+
+    fetchAccount({
+      variables: {
+        address: currentAccount?.address || '',
+      },
+    })
+  })
 
   const {
     data: activityData,
@@ -151,15 +159,19 @@ const AccountsScreen = () => {
   })
 
   useEffect(() => {
-    if (!accountsError && !activityError) return
+    if (!accountsError && !activityError && !lazyAccountError) return
 
     if (accountsError) {
-      console.warn(accountsError)
+      console.warn('accounts', accountsError)
     }
     if (activityError) {
-      console.warn(activityError)
+      console.warn('activity', activityError)
     }
-  }, [accountsError, activityError])
+
+    if (lazyAccountError) {
+      console.warn('lazyAccount', lazyAccountError)
+    }
+  }, [accountsError, activityError, lazyAccountError])
 
   useEffect(() => {
     if (

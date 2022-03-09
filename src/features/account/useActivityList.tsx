@@ -6,7 +6,7 @@ import {
   usePendingTxnsQuery,
 } from '../../generated/graphql'
 import { FilterType } from './AccountActivityFilter'
-import { useAppear } from '../../utils/useVisible'
+import useAppear from '../../utils/useAppear'
 
 const AccountActivityAPIFilters = {
   all: ['all'],
