@@ -15,13 +15,19 @@ import NotificationsListNavigator from './NotificationsListNavigator'
 import HandleBasic from '../../components/HandleBasic'
 import ButtonPressable from '../../components/ButtonPressable'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
+import useDisappear from '../../utils/useDisappear'
 
 const NotificationsScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<HomeNavigationProp>()
   const colors = useColors()
-  const { selectedNotification, setSelectedNotification } =
-    useNotificationStorage()
+  const {
+    selectedNotification,
+    setSelectedNotification,
+    onNotificationsClosed,
+  } = useNotificationStorage()
+
+  useDisappear(onNotificationsClosed)
 
   const handleComponent = useCallback(
     () => (

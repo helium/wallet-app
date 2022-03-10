@@ -2,7 +2,7 @@ import React, { memo, useCallback, useMemo } from 'react'
 import CarotRight from '@assets/images/carot-right.svg'
 import { useNavigation } from '@react-navigation/native'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
-import { formatDistanceToNow, parseISO } from 'date-fns'
+import { formatDistanceToNow, isBefore, parseISO } from 'date-fns'
 import { useTranslation } from 'react-i18next'
 import TouchableHighlightBox from '../../components/TouchableHighlightBox'
 import Box from '../../components/Box'
@@ -21,21 +21,23 @@ const NotificationsList = () => {
   const colors = useColors()
   const { t } = useTranslation()
   const navigator = useNavigation<NotificationsListNavigationProp>()
-  const { selectedList, setSelectedNotification } = useNotificationStorage()
+  const { selectedList, setSelectedNotification, lastViewedTimestamp } =
+    useNotificationStorage()
   const { accounts, currentAccount } = useAccountStorage()
 
   const { data: notifications } = useNotificationsQuery({
     variables: {
       address: currentAccount?.address || '',
-      resource: selectedList,
+      resource: selectedList || '',
     },
-    skip: !currentAccount?.address,
+    skip: !currentAccount?.address || !selectedList,
     fetchPolicy: 'cache-and-network',
   })
 
   const title = useMemo(() => {
     switch (selectedList) {
       case undefined:
+        return ''
       case WALLET_UPDATES_ITEM:
         return t('notifications.walletUpdates')
       case HELIUM_UPDATES_ITEM:
@@ -53,7 +55,9 @@ const NotificationsList = () => {
   const renderItem = useCallback(
     ({ index, item }) => {
       const isFirst = index === 0
-      const viewed = true // !!item.viewedAt
+      const viewed =
+        lastViewedTimestamp &&
+        isBefore(new Date(item.time), new Date(lastViewedTimestamp))
 
       const onItemSelected = () => {
         navigator.navigate('NotificationDetails', { notification: item })
@@ -84,7 +88,7 @@ const NotificationsList = () => {
                 )}
                 <Text
                   variant="body1"
-                  color="white"
+                  color={viewed ? 'secondaryText' : 'white'}
                   marginBottom="xs"
                   numberOfLines={1}
                   adjustsFontSizeToFit
@@ -120,6 +124,7 @@ const NotificationsList = () => {
     [
       colors.secondary,
       colors.surfaceSecondaryText,
+      lastViewedTimestamp,
       navigator,
       setSelectedNotification,
     ],
