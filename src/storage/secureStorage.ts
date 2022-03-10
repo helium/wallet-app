@@ -1,4 +1,9 @@
-import { Address, Keypair, Mnemonic } from '@helium/crypto-react-native'
+import {
+  Address,
+  Keypair,
+  Mnemonic,
+  NetType,
+} from '@helium/crypto-react-native'
 import * as SecureStore from 'expo-secure-store'
 import { CSAccount } from './cloudStorage'
 
@@ -20,11 +25,15 @@ export type SecureAccount = {
   address: string
 }
 
-export const createSecureAccount = async (
-  givenMnemonic: Mnemonic | Array<string> | null = null,
-  netType?: number,
-  use24Words?: boolean,
-): Promise<SecureAccount> => {
+export const createSecureAccount = async ({
+  givenMnemonic = null,
+  netType,
+  use24Words,
+}: {
+  givenMnemonic?: Mnemonic | Array<string> | null
+  netType: NetType.NetType
+  use24Words?: boolean
+}): Promise<SecureAccount> => {
   let mnemonic: Mnemonic
   if (!givenMnemonic) {
     mnemonic = await Mnemonic.create(use24Words ? 24 : 12)

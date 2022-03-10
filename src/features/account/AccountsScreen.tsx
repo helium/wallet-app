@@ -24,7 +24,7 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useColors, useOpacity, useSpacing } from '../../theme/themeHooks'
 import { wh, wp } from '../../utils/layout'
 import MultiAccountNavigator from '../onboarding/MultiAccountNavigator'
-import { OnboardingOpt } from '../onboarding/OnboardingProvider'
+import { OnboardingOpt, useOnboarding } from '../onboarding/OnboardingProvider'
 import OnboardingSegment from '../onboarding/OnboardingSegment'
 import AccountHeader from './AccountHeader'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -116,7 +116,9 @@ const AccountsScreen = () => {
     useNotificationStorage()
   const { locked } = useAppStorage()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
-  const [netType, setNetType] = useState<number>(NetType.MAINNET)
+  const {
+    onboardingData: { netType },
+  } = useOnboarding()
   const { show } = useAccountSelector()
   const { show: showTxnDetail } = useTransactionDetail()
 
@@ -260,11 +262,7 @@ const AccountsScreen = () => {
       if (onboardingType === 'assign') return null
       return (
         <>
-          <NetTypeSegment
-            netType={netType}
-            onSegmentChange={setNetType}
-            padding="m"
-          />
+          <NetTypeSegment justifyContent="center" paddingVertical="m" />
           <OnboardingSegment
             marginTop="s"
             padding="m"
@@ -414,6 +412,7 @@ const AccountsScreen = () => {
               flexDirection="row"
               justifyContent="space-between"
               alignItems="center"
+              paddingTop="s"
             >
               <TouchableOpacityBox
                 paddingHorizontal="l"
@@ -429,7 +428,7 @@ const AccountsScreen = () => {
               >
                 <TestnetIcon color={red500} />
                 <Text marginLeft="xs" variant="subtitle1" color="red500">
-                  {t('onboarding.testnet')}
+                  {t('generic.testnet')}
                 </Text>
               </Box>
               <Box flexDirection="row" paddingHorizontal="l">

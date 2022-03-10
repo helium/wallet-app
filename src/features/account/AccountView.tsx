@@ -81,7 +81,7 @@ const AccountView = ({
         >
           <TestnetIcon height={12} color={colors.red500} />
           <Text variant="body3" color="red500">
-            {t('onboarding.testnet')}
+            {t('generic.testnet')}
           </Text>
         </Box>
         <Text

@@ -11,6 +11,7 @@ import useAlert from '../../utils/useAlert'
 const AccountImportCompleteScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<OnboardingNavigationProp>()
+
   const {
     onboardingData: { words, netType },
     setOnboardingData,
@@ -24,11 +25,11 @@ const AccountImportCompleteScreen = () => {
 
     const genKeypair = async () => {
       try {
-        const account = await createSecureAccount(
-          words,
+        const account = await createSecureAccount({
+          givenMnemonic: words,
+          use24Words: words?.length === 24,
           netType,
-          words?.length === 24,
-        )
+        })
         setOnboardingData((prev) => ({ ...prev, secureAccount: account }))
         navigation.navigate('AccountAssignScreen')
       } catch (error) {

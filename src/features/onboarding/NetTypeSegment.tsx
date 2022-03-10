@@ -4,44 +4,104 @@ import * as React from 'react'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NetType } from '@helium/crypto-react-native'
-import SegmentedControl from '../../components/SegmentedControl'
-import { Spacing, Theme } from '../../theme/theme'
+import { Platform, Switch } from 'react-native'
+import { Theme } from '../../theme/theme'
+import TouchableOpacityBox from '../../components/TouchableOpacityBox'
+import Text from '../../components/Text'
+import Box from '../../components/Box'
+import { useColors, useHitSlop, useSpacing } from '../../theme/themeHooks'
+import { useOnboarding } from './OnboardingProvider'
 
-type Props = BoxProps<Theme> & {
-  netType: number
-  onSegmentChange: (netType: number) => void
-  padding?: Spacing
-}
-const NetTypeSegment = ({
-  netType,
-  onSegmentChange,
-  padding = 'l',
-  ...boxProps
-}: Props) => {
+type Props = BoxProps<Theme>
+const NetTypeSegment = (boxProps: Props) => {
   const { t } = useTranslation()
+  const { xs: switchMarginHorizontal } = useSpacing()
+  const colors = useColors()
+  const hitSlop = useHitSlop('l')
+  const { onboardingData, setOnboardingData } = useOnboarding()
 
-  const segmentData = useMemo(
-    () => [
-      { id: NetType.MAINNET.toString(), title: t('onboarding.mainnet') },
-      { id: NetType.TESTNET.toString(), title: t('onboarding.testnet') },
-    ],
-    [t],
+  const trackColor = useMemo(
+    () => ({ false: colors.secondaryText, true: colors.blueBright500 }),
+    [colors],
   )
 
-  const onChange = useCallback(
-    (id: string) => {
-      onSegmentChange(parseInt(id, 10))
+  const thumbColor = useMemo(() => {
+    if (Platform.OS === 'android') {
+      return colors.primaryText
+    }
+    return colors.primaryBackground
+  }, [colors.primaryBackground, colors.primaryText])
+
+  const switchStyles = useMemo(() => {
+    const container = { transform: [{ rotate: '180deg' }] }
+
+    const shared = {
+      marginHorizontal: switchMarginHorizontal,
+    }
+    const platform =
+      Platform.OS === 'android'
+        ? undefined
+        : { transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }
+
+    return { container, switch: { ...shared, ...platform } }
+  }, [switchMarginHorizontal])
+
+  const handleNetTypeChange = useCallback(
+    (nextNetType?: NetType.NetType) => () => {
+      setOnboardingData((prev) => {
+        let netType = nextNetType
+        if (netType === undefined) {
+          netType =
+            prev.netType === NetType.MAINNET ? NetType.TESTNET : NetType.MAINNET
+        }
+        return { ...prev, netType }
+      })
     },
-    [onSegmentChange],
+    [setOnboardingData],
   )
   return (
-    <SegmentedControl
-      {...boxProps}
-      onChange={onChange}
-      selectedId={netType.toString()}
-      values={segmentData}
-      padding={padding}
-    />
+    <Box flexDirection="row" alignItems="center" {...boxProps}>
+      <TouchableOpacityBox
+        onPress={handleNetTypeChange(NetType.MAINNET)}
+        paddingVertical="s"
+      >
+        <Text
+          variant="subtitle2"
+          color={
+            onboardingData.netType === NetType.MAINNET
+              ? 'primaryText'
+              : 'secondaryText'
+          }
+        >
+          {t('generic.mainnet')}
+        </Text>
+      </TouchableOpacityBox>
+      <Box style={switchStyles.container}>
+        <Switch
+          style={switchStyles.switch}
+          value={onboardingData.netType === NetType.MAINNET}
+          onValueChange={handleNetTypeChange()}
+          trackColor={trackColor}
+          thumbColor={thumbColor}
+          hitSlop={hitSlop}
+        />
+      </Box>
+      <TouchableOpacityBox
+        onPress={handleNetTypeChange(NetType.TESTNET)}
+        paddingVertical="s"
+      >
+        <Text
+          variant="subtitle2"
+          color={
+            onboardingData.netType === NetType.TESTNET
+              ? 'primaryText'
+              : 'secondaryText'
+          }
+        >
+          {t('generic.testnet')}
+        </Text>
+      </TouchableOpacityBox>
+    </Box>
   )
 }
 

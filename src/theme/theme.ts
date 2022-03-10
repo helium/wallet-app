@@ -13,6 +13,7 @@ const textVariants = {
   h0: {
     fontFamily: Font.regular,
     fontSize: 42,
+    lineHeight: 44,
     color: 'primaryText',
   },
   h1: {
@@ -153,7 +154,7 @@ export const darkThemeColors = {
 
   primary: palette.black900,
   secondary: palette.grey900,
-  primaryBackground: palette.black800,
+  primaryBackground: palette.black700,
   primaryText: palette.white,
   primaryIcon: palette.black600,
   secondaryIcon: palette.black300,
