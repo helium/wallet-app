@@ -19,9 +19,9 @@ const PaymentQrScanner = () => {
   const navigation = useNavigation()
 
   useEffect(() => {
-    Camera.requestCameraPermissionsAsync().then(({ status }) =>
-      setHasPermission(status === 'granted'),
-    )
+    Camera.requestCameraPermissionsAsync().then(({ status }) => {
+      setHasPermission(status === 'granted')
+    })
   }, [])
 
   const handleBarCodeScanned = useCallback(
@@ -59,9 +59,10 @@ const PaymentQrScanner = () => {
     [],
   )
 
-  if (!hasPermission === null) {
+  if (!hasPermission) {
     return <Box />
   }
+
   return (
     <Camera
       onBarCodeScanned={handleBarCodeScanned}
