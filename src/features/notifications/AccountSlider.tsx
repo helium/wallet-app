@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo, useRef } from 'react'
+import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 import WalletUpdate from '@assets/images/walletUpdateIcon.svg'
 import HeliumUpdate from '@assets/images/heliumUpdateIcon.svg'
 import { Carousel } from 'react-native-snap-carousel'
@@ -14,13 +14,20 @@ import { HELIUM_UPDATES_ITEM, WALLET_UPDATES_ITEM } from './notificationTypes'
 const AccountSlider = () => {
   const { accounts } = useAccountStorage()
   const carouselRef = useRef<Carousel<string | null>>(null)
-  const { selectedList, updateSelectedList } = useNotificationStorage()
+  const { selectedList, updateSelectedList, unreadLists } =
+    useNotificationStorage()
 
   const data = useMemo(() => {
     const accountsData = accounts ? Object.keys(accounts) : []
     const networkData = [WALLET_UPDATES_ITEM, HELIUM_UPDATES_ITEM]
-    return [...networkData, ...accountsData]
-  }, [accounts])
+    const fullList = [...networkData, ...accountsData]
+    const filteredList = fullList.filter((i) => !unreadLists.includes(i))
+    return [...unreadLists, ...filteredList]
+  }, [accounts, unreadLists])
+
+  useEffect(() => {
+    updateSelectedList(data[0])
+  }, [data, updateSelectedList])
 
   const onIconSelected = useCallback((index: number) => {
     carouselRef?.current?.snapToItem(index)
@@ -43,10 +50,10 @@ const AccountSlider = () => {
       else icon = <AccountIcon address={item} size={56} />
       return (
         <AccountSliderIcon
+          resource={item}
           icon={icon}
           index={index}
           onPress={onIconSelected}
-          hasUnread={false}
         />
       )
     },
@@ -57,7 +64,7 @@ const AccountSlider = () => {
     <Box height={56} marginBottom="l" marginTop="m">
       <Carousel
         ref={carouselRef}
-        firstItem={data.indexOf(selectedList)}
+        firstItem={selectedList ? data.indexOf(selectedList) : 0}
         onSnapToItem={onSnap}
         layout="default"
         containerCustomStyle={styles.carouselContainer}

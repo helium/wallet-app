@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo } from 'react'
+import React, { memo, useEffect, useMemo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { formatDistanceToNow, parseISO } from 'date-fns'
@@ -20,15 +20,16 @@ const NotificationDetails = () => {
   const prevSelectedList = usePrevious(selectedList)
 
   useEffect(() => {
+    return navigation.addListener('beforeRemove', () => {
+      setSelectedNotification(undefined)
+    })
+  }, [navigation, setSelectedNotification])
+
+  useEffect(() => {
     if (prevSelectedList && selectedList !== prevSelectedList) {
       navigation.goBack()
     }
   }, [navigation, selectedList, prevSelectedList])
-
-  const onBacKPress = useCallback(() => {
-    navigation.goBack()
-    setSelectedNotification(undefined)
-  }, [navigation, setSelectedNotification])
 
   const bodyStyle = useMemo(
     () => ({ paddingBottom: notification.actionTitle ? 90 : 0 }),
@@ -51,7 +52,7 @@ const NotificationDetails = () => {
       paddingTop="m"
     >
       <BackButton
-        onPress={onBacKPress}
+        onPress={navigation.goBack}
         color="surfaceSecondaryText"
         fontSize={18}
         paddingHorizontal="none"

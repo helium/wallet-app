@@ -166,6 +166,8 @@ export type RootQueryTypeCurrentOraclePriceArgs = {
 
 export type RootQueryTypeNotificationsArgs = {
   address: Scalars['String']
+  before?: InputMaybe<Scalars['Int']>
+  limit?: InputMaybe<Scalars['Int']>
   resource: Scalars['String']
 }
 
@@ -320,6 +322,8 @@ export type AccountQuery = {
 export type NotificationsQueryVariables = Exact<{
   address: Scalars['String']
   resource: Scalars['String']
+  before?: InputMaybe<Scalars['Int']>
+  limit?: InputMaybe<Scalars['Int']>
 }>
 
 export type NotificationsQuery = {
@@ -654,8 +658,18 @@ export type AccountQueryResult = Apollo.QueryResult<
   AccountQueryVariables
 >
 export const NotificationsDocument = gql`
-  query Notifications($address: String!, $resource: String!) {
-    notifications(address: $address, resource: $resource) {
+  query Notifications(
+    $address: String!
+    $resource: String!
+    $before: Int
+    $limit: Int
+  ) {
+    notifications(
+      address: $address
+      resource: $resource
+      before: $before
+      limit: $limit
+    ) {
       resource
       body
       icon
@@ -684,6 +698,8 @@ export const NotificationsDocument = gql`
  *   variables: {
  *      address: // value for 'address'
  *      resource: // value for 'resource'
+ *      before: // value for 'before'
+ *      limit: // value for 'limit'
  *   },
  * });
  */

@@ -18,6 +18,7 @@ const CloudStorage = Platform.OS === 'ios' ? iCloudStorage : AsyncStorage
 enum CloudStorageKeys {
   ACCOUNTS = 'accounts',
   CONTACTS = 'contacts',
+  LAST_VIEWED_NOTIFICATIONS = 'lastViewedNotifications',
 }
 
 export const sortAccounts = (accts: CSAccounts) => {
@@ -61,6 +62,19 @@ export const updateCloudAccounts = (accounts: CSAccounts) =>
 
 export const updateCloudContacts = (contacts: CSAccount[]) =>
   CloudStorage.setItem(CloudStorageKeys.CONTACTS, JSON.stringify(contacts))
+
+export const updateLastViewedNotifications = async (time: number) =>
+  CloudStorage.setItem(
+    CloudStorageKeys.LAST_VIEWED_NOTIFICATIONS,
+    time.toString(),
+  )
+
+export const getLastViewedNotifications = async () => {
+  const timeString = await CloudStorage.getItem(
+    CloudStorageKeys.LAST_VIEWED_NOTIFICATIONS,
+  )
+  return timeString ? Number.parseInt(timeString, 10) : undefined
+}
 
 export const signoutCloudStorage = () =>
   CloudStorage.multiRemove(Object.values(CloudStorageKeys))
