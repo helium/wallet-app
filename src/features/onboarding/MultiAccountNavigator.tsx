@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
 import { useEffect } from 'react'
+import { NetType } from '@helium/crypto-react-native'
 import AccountCreatePassphraseScreen from './AccountCreatePassphraseScreen'
 import { OnboardingStackParamList } from './onboardingTypes'
 import AccountEnterPassphraseScreen from './AccountEnterPassphraseScreen'
@@ -11,7 +12,7 @@ import { OnboardingOpt, useOnboarding } from './OnboardingProvider'
 
 const MultiAccountStack = createStackNavigator<OnboardingStackParamList>()
 
-type Props = { onboardingType: OnboardingOpt; netType: number }
+type Props = { onboardingType: OnboardingOpt; netType: NetType.NetType }
 const MultiAccountNavigator = ({ onboardingType, netType }: Props) => {
   const { setOnboardingData } = useOnboarding()
 

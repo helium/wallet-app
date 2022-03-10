@@ -46,7 +46,7 @@ export default {
     createImport: {
       create: 'Create a new Wallet',
       helperText:
-        'Coming from Helium App? Use the same 12\nwords to import a Wallet.',
+        'Coming from Helium App? Use the\nsame 12 words to import an Account.',
       import: 'Import a Wallet',
       title: 'What would\nyou like to do?',
     },
@@ -140,12 +140,19 @@ export default {
     skip: 'Skip',
     success: 'Success',
     total: 'Total',
+    mainnet: 'Mainnet',
+    testnet: 'Testnet',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',
     fee: '+{{value}} Fee ⓘ',
     hntAvailable: '{{amount}} Available',
     validFor: 'valid for {{time}}',
+  },
+  intro: {
+    title: 'The best wallet\nfor your HNT.',
+    subtitle: 'Setup should only take\na few minutes.',
+    tap: 'Tap to get started',
   },
   linkWallet: {
     body: 'By Linking Helium Wallet to {{appName}}, you can safely sign blockchain transactions without re-entering your seed phrase.',
@@ -176,8 +183,6 @@ export default {
   onboarding: {
     create: '+ New',
     import: '+ Import',
-    mainnet: 'Mainnet',
-    testnet: 'Testnet',
   },
   ordinals: [
     '1st',
@@ -214,12 +219,12 @@ export default {
     insufficientFunds: 'Insufficient Funds',
     max: 'Max',
     memoBytes: '{{used}}/{{total}} Bytes',
+    pay: 'Pay',
     qrScanFail: {
-      title: 'Unsupported QR Code',
       message:
         'This QR scanner supports payment transactions and wallet addresses.',
+      title: 'Unsupported QR Code',
     },
-    pay: 'Pay',
     selectContact: 'Select Contact',
     selfPay: 'Self Pay',
     sendButton: 'Swipe to Send {{ticker}}',
@@ -230,9 +235,9 @@ export default {
     submitSuccess: 'Transaction\nSubmitted',
     title: 'Send {{ticker}}',
     total: 'Total',
+    totalRecipients: '{{count}} Recipient',
     totalRecipients_one: '{{count}} Recipient',
     totalRecipients_other: '{{count}} Recipients',
-    totalRecipients: '{{count}} Recipient',
     totalRecipients_plural: '{{count}} Recipients',
   },
   placeholder: {

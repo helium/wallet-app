@@ -20,8 +20,8 @@ const AccountCreatePassphraseScreen = () => {
   const { createSecureAccount } = useAccountStorage()
   const colors = useColors()
   const {
-    onboardingData: { netType },
     setOnboardingData,
+    onboardingData: { netType },
   } = useOnboarding()
   const navigation = useNavigation<OnboardingNavigationProp>()
   const [wordIndex, setWordIndex] = useState(0)
@@ -29,7 +29,7 @@ const AccountCreatePassphraseScreen = () => {
   const [confirmedCreate, setConfirmedCreate] = useState(false)
   const [viewedWords, setViewedWords] = useState(new Array(24).fill(false))
   const { result: secureAccount } = useAsync(
-    async () => createSecureAccount(null, netType, true),
+    async () => createSecureAccount({ netType, use24Words: true }),
     [createSecureAccount, netType],
   )
 

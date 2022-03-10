@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react'
 import { ApolloProvider } from '@apollo/client'
-import { Text, LogBox, Platform, StatusBar, UIManager } from 'react-native'
+import { Text, LogBox, Platform, UIManager } from 'react-native'
 import { ThemeProvider } from '@shopify/restyle'
 import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import useAppState from 'react-native-appstate-hook'
@@ -8,6 +8,7 @@ import * as SplashScreen from 'expo-splash-screen'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import OneSignal, { OpenedEvent } from 'react-native-onesignal'
 import Config from 'react-native-config'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import * as Logger from './utils/logger'
 import { useApolloClient } from './graphql/useApolloClient'
 import { theme, darkThemeColors, lightThemeColors } from './theme/theme'
@@ -23,8 +24,8 @@ import SafeAreaBox from './components/SafeAreaBox'
 import { BalanceProvider } from './utils/Balance'
 import { useColorScheme } from './theme/themeHooks'
 import { linking } from './utils/linking'
-import TestnetBanner from './components/TestnetBanner'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
+import CustomStatusBar from './components/TestnetAwareStatusBar'
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -115,32 +116,33 @@ const App = () => {
   }
 
   return (
-    <ThemeProvider theme={colorAdaptedTheme}>
-      <OnboardingProvider>
-        <ApolloProvider client={client}>
-          <BalanceProvider>
-            <TransactionProvider>
-              <LockScreen>
-                {accountsRestored && (
-                  <AccountSelector>
-                    {Platform.OS === 'android' && (
-                      <StatusBar translucent backgroundColor="transparent" />
-                    )}
-                    <NavigationContainer theme={navTheme} linking={linking}>
-                      <RootNavigator />
-                    </NavigationContainer>
-                    <SecurityScreen
-                      visible={appState !== 'active' && appState !== 'unknown'}
-                    />
-                    <TestnetBanner appstate={appState} />
-                  </AccountSelector>
-                )}
-              </LockScreen>
-            </TransactionProvider>
-          </BalanceProvider>
-        </ApolloProvider>
-      </OnboardingProvider>
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider theme={colorAdaptedTheme}>
+        <OnboardingProvider>
+          <CustomStatusBar />
+          <ApolloProvider client={client}>
+            <BalanceProvider>
+              <TransactionProvider>
+                <LockScreen>
+                  {accountsRestored && (
+                    <AccountSelector>
+                      <NavigationContainer theme={navTheme} linking={linking}>
+                        <RootNavigator />
+                      </NavigationContainer>
+                      <SecurityScreen
+                        visible={
+                          appState !== 'active' && appState !== 'unknown'
+                        }
+                      />
+                    </AccountSelector>
+                  )}
+                </LockScreen>
+              </TransactionProvider>
+            </BalanceProvider>
+          </ApolloProvider>
+        </OnboardingProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
   )
 }
 
