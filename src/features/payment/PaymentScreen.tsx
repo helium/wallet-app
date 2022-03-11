@@ -42,7 +42,6 @@ import AddressBookSelector, {
 } from '../../components/AddressBookSelector'
 import { useTransactions } from '../../storage/TransactionProvider'
 import { balanceToString, useBalance } from '../../utils/Balance'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 import PaymentItem from './PaymentItem'
 import usePaymentsReducer, { MAX_PAYMENTS } from './usePaymentsReducer'
 import BackgroundFill from '../../components/BackgroundFill'
@@ -112,7 +111,6 @@ const PaymentScreen = () => {
 
   const [state, dispatch] = usePaymentsReducer({ currencyType, networkType })
 
-  const { updateLocked, requirePinForPayment, pin } = useAppStorage()
   const { showAccountTypes } = useAccountSelector()
   const { data: accountData } = useAccountQuery({
     variables: {
@@ -214,11 +212,6 @@ const PaymentScreen = () => {
   }, [dcToTokens, fee])
 
   useEffect(() => {
-    if (!requirePinForPayment || !pin) return
-    updateLocked(true)
-  }, [pin, requirePinForPayment, updateLocked])
-
-  useEffect(() => {
     if (!currentAccount?.address) return
 
     const payments = state.payments.map((p) => ({
@@ -242,10 +235,10 @@ const PaymentScreen = () => {
   const canAddPayee = useMemo(() => {
     const lastPayee = state.payments[state.payments.length - 1]
 
-    return !!(
+    return (
       state.payments.length < MAX_PAYMENTS &&
-      lastPayee.address &&
-      lastPayee.amount &&
+      !!lastPayee.address &&
+      !!lastPayee.amount &&
       lastPayee.amount.integerBalance > 0
     )
   }, [state.payments])

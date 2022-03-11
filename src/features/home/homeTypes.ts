@@ -32,6 +32,9 @@ export type HomeStackParamList = {
   AddNewContact: undefined
   LinkWallet: WalletLink.LinkWalletRequest
   SignHotspot: WalletLink.SignHotspotRequest
+  ConfirmPin: {
+    action: 'payment'
+  }
 }
 
 export type HomeNavigationProp = StackNavigationProp<HomeStackParamList>

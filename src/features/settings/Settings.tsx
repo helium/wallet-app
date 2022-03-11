@@ -244,9 +244,9 @@ const Settings = () => {
     }
     return [
       {
-        title: t('settings.sections.account.title', {
-          alias: currentAccount?.alias,
-        }),
+        title: `${currentAccount?.alias} ${t(
+          'settings.sections.account.title',
+        )}`,
         data: [
           {
             subtitle: t('settings.sections.account.alias'),
