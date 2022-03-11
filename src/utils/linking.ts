@@ -1,8 +1,10 @@
 import { Address } from '@helium/crypto-react-native'
+import Balance, { CurrencyType } from '@helium/currency'
 import { LinkingOptions } from '@react-navigation/native'
 import * as Linking from 'expo-linking'
 import qs from 'qs'
 import queryString from 'query-string'
+import BigNumber from 'bignumber.js'
 import { encodeMemoString } from '../components/MemoInput'
 import { PaymentRouteParam } from '../features/home/homeTypes'
 import { RootNavigationProp } from '../navigation/rootTypes'
@@ -83,6 +85,29 @@ export const parsePaymentLink = (
   ) {
     return parsed.query
   }
+
+  // Handle hotspot app payment format
+  try {
+    const parsedJson = JSON.parse(urlOrAddress)
+    if (parsedJson.type !== 'payment' || !parsedJson.amount) {
+      // This is not a hotspot app link
+      return
+    }
+
+    const { coefficient } = new Balance(0, CurrencyType.networkToken).type
+
+    const amount = new BigNumber(parseFloat(parsedJson.amount))
+      .dividedBy(coefficient)
+      .toString()
+
+    return {
+      payee: parsedJson.address || parsedJson.payee,
+      payer: parsedJson.payer,
+      amount,
+      memo: parsedJson.memo,
+      netType: parsedJson.netType,
+    }
+  } catch (e) {}
 }
 
 export default linking
