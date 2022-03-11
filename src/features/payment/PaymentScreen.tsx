@@ -35,7 +35,7 @@ import {
 } from '../../utils/accountUtils'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAccountSelector } from '../../components/AccountSelector'
-import { useAccountQuery, useSubmitTxnMutation } from '../../generated/graphql'
+import { useAccountQuery } from '../../generated/graphql'
 import AccountButton from '../../components/AccountButton'
 import AddressBookSelector, {
   AddressBookRef,
@@ -50,6 +50,7 @@ import PaymentCard from './PaymentCard'
 import { getMemoStrValid } from '../../components/MemoInput'
 import PaymentSubmit from './PaymentSubmit'
 import { CSAccount } from '../../storage/cloudStorage'
+import useSubmitTxn from '../../graphql/useSubmitTxn'
 
 type LinkedPayment = {
   amount?: string
@@ -119,13 +120,16 @@ const PaymentScreen = () => {
     fetchPolicy: 'cache-and-network',
     skip: !currentAccount?.address,
   })
-  const [
-    submitTxnMutation,
-    { data: submitData, loading: submitLoading, error: submitError },
-  ] = useSubmitTxnMutation()
+
+  const {
+    data: submitData,
+    loading: submitLoading,
+    error: submitError,
+    submit,
+  } = useSubmitTxn()
 
   const [fee, setFee] = useState<Balance<DataCredits>>()
-  const { calculatePaymentTxnFee, makePaymentTxn } = useTransactions()
+  const { calculatePaymentTxnFee } = useTransactions()
   const { zeroBalanceNetworkToken, dcToTokens } = useBalance()
   const { top } = useSafeAreaInsets()
 
@@ -243,8 +247,7 @@ const PaymentScreen = () => {
     )
   }, [state.payments])
 
-  const handleSubmit = useCallback(async () => {
-    if (!currentAccount?.address) return
+  const handleSubmit = useCallback(() => {
     const payments = state.payments.flatMap((p) => {
       if (!p.address || !p.amount) return []
       return [
@@ -255,15 +258,9 @@ const PaymentScreen = () => {
         },
       ]
     })
-    const { partialTxn, signedTxn } = await makePaymentTxn(payments)
-    submitTxnMutation({
-      variables: {
-        address: currentAccount.address,
-        txnJson: JSON.stringify(partialTxn),
-        txn: signedTxn.toString(),
-      },
-    })
-  }, [currentAccount, makePaymentTxn, state.payments, submitTxnMutation])
+
+    submit(payments)
+  }, [state.payments, submit])
 
   const insufficientFunds = useMemo(() => {
     if (

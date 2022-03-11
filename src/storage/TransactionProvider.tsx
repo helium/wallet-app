@@ -8,11 +8,7 @@ import Balance, {
 import { PaymentV2, TokenBurnV1, Transaction } from '@helium/transactions'
 import React, { createContext, ReactNode, useContext, useEffect } from 'react'
 import { encodeMemoString } from '../components/MemoInput'
-import {
-  useAccountLazyQuery,
-  useAccountQuery,
-  useTxnConfigVarsQuery,
-} from '../generated/graphql'
+import { useAccountQuery, useTxnConfigVarsQuery } from '../generated/graphql'
 import { useAccountStorage } from './AccountStorageProvider'
 import { getKeypair } from './secureStorage'
 
@@ -44,13 +40,6 @@ const useTransactionHook = () => {
     fetchPolicy: 'cache-and-network',
     variables: { address: currentAccount?.address || '' },
     skip: !currentAccount?.address,
-  })
-
-  const [fetchAccount] = useAccountLazyQuery({
-    variables: {
-      address: currentAccount?.address || '',
-    },
-    fetchPolicy: 'cache-and-network',
   })
 
   const { data: accountData } = useAccountQuery({
@@ -101,29 +90,23 @@ const useTransactionHook = () => {
     return tokenBurnTxn.sign({ payer: keypair })
   }
 
-  const makePaymentTxn = async (
-    paymentDetails: Array<SendDetails>,
-  ): Promise<{ partialTxn: PartialPaymentTxn; signedTxn: PaymentV2 }> => {
+  const makePaymentTxn = async (opts: {
+    paymentDetails: Array<SendDetails>
+    speculativeNonce: number
+  }): Promise<{ partialTxn: PartialPaymentTxn; signedTxn: PaymentV2 }> => {
     const keypair = await getKeypair(currentAccount?.address || '')
     if (!keypair) throw new Error('missing keypair')
 
-    const { data: freshAccountData } = await fetchAccount()
-    if (typeof freshAccountData?.account?.speculativeNonce !== 'number') {
-      throw new Error(
-        'Could not find speculative nonce for the current account',
-      )
-    }
-
     const txn = new PaymentV2({
       payer: keypair.address,
-      payments: paymentDetails.map(
+      payments: opts.paymentDetails.map(
         ({ payee: address, balanceAmount, memo }) => ({
           payee: Address.fromB58(address),
           amount: balanceAmount.integerBalance,
           memo: encodeMemoString(memo),
         }),
       ),
-      nonce: freshAccountData.account.speculativeNonce + 1,
+      nonce: opts.speculativeNonce + 1,
     })
 
     const txnJson = {

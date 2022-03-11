@@ -15,7 +15,7 @@ type Props = {
   totalBalance: Balance<TestNetworkTokens | NetworkTokens>
   feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
   payments: Payment[]
-  error?: ApolloError
+  error?: ApolloError | Error
   onRetry: () => void
 }
 
