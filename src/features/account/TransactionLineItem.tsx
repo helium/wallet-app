@@ -1,6 +1,8 @@
 import React, { memo, useCallback, useMemo } from 'react'
 import DetailArrow from '@assets/images/detailArrow.svg'
 import { Linking } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
+import { useTranslation } from 'react-i18next'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import { ellipsizeAddress } from '../../utils/accountUtils'
@@ -13,6 +15,8 @@ import {
 import { Color } from '../../theme/theme'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import useCopyAddress from '../../utils/useCopyAddress'
+import useAlert from '../../utils/useAlert'
+import { AddressBookNavigationProp } from '../addressBook/addressBookTypes'
 
 type Props = {
   title: string
@@ -39,6 +43,9 @@ const TransactionLineItem = ({
   const copyHitSlop = useVerticalHitSlop('s')
   const { contacts } = useAccountStorage()
   const copyAddress = useCopyAddress()
+  const navigation = useNavigation<AddressBookNavigationProp>()
+  const { showOKCancelAlert } = useAlert()
+  const { t } = useTranslation()
 
   const handleCopy = useCallback(
     (address: string | number) => () => {
@@ -69,6 +76,22 @@ const TransactionLineItem = ({
     return bodyText
   }, [aliasForContact, bodyText, isAddress])
 
+  const handleLongPress = useCallback(
+    (address: string | number) => async () => {
+      const addressToCopy = `${address}`
+      if (!addressToCopy || aliasForContact(addressToCopy)) return
+
+      const decision = await showOKCancelAlert({
+        title: t('transactions.addToAddressBook.title'),
+        message: t('transactions.addToAddressBook.message'),
+      })
+      if (!decision) return
+
+      navigation.navigate('AddNewContact', { address: addressToCopy })
+    },
+    [aliasForContact, navigation, showOKCancelAlert, t],
+  )
+
   const handleExplorerLink = useCallback(() => {
     if (!navTo) return
 
@@ -91,6 +114,7 @@ const TransactionLineItem = ({
         <TouchableOpacityBox
           hitSlop={copyHitSlop}
           onPress={handleCopy(bodyText)}
+          onLongPress={handleLongPress(bodyText)}
           disabled={!isAddress}
           minWidth={30}
         >
