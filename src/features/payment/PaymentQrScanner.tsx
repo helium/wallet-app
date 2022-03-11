@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { BarCodeScanningResult, Camera } from 'expo-camera'
-import { Linking, StyleSheet } from 'react-native'
+import { StyleSheet } from 'react-native'
 import { BarCodeScanner } from 'expo-barcode-scanner'
-import { Address } from '@helium/crypto-react-native'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
 import Box from '../../components/Box'
 import useHaptic from '../../utils/useHaptic'
-import { makePayRequestLink } from '../../utils/linking'
+import { parsePaymentLink } from '../../utils/linking'
 import useAlert from '../../utils/useAlert'
+import { HomeNavigationProp } from '../home/homeTypes'
 
 const PaymentQrScanner = () => {
   const [hasPermission, setHasPermission] = useState(false)
@@ -16,7 +16,7 @@ const PaymentQrScanner = () => {
   const { triggerNotification } = useHaptic()
   const { showOKAlert } = useAlert()
   const { t } = useTranslation()
-  const navigation = useNavigation()
+  const navigation = useNavigation<HomeNavigationProp>()
 
   useEffect(() => {
     Camera.requestCameraPermissionsAsync().then(({ status }) => {
@@ -30,22 +30,16 @@ const PaymentQrScanner = () => {
 
       setScanned(true)
 
-      let canOpen = false
-      try {
-        canOpen = await Linking.canOpenURL(result.data)
-      } catch (e) {}
-
-      if (canOpen) {
-        Linking.openURL(result.data)
+      const query = parsePaymentLink(result.data)
+      if (query) {
         triggerNotification('success')
-      } else if (Address.isValid(result.data)) {
-        const url = makePayRequestLink({ payee: result.data })
-        Linking.openURL(url)
+        navigation.navigate('PaymentScreen', query)
       } else {
         await showOKAlert({
           title: t('payment.qrScanFail.title'),
           message: t('payment.qrScanFail.message'),
         })
+        triggerNotification('error')
         navigation.goBack()
       }
     },

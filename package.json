@@ -82,6 +82,7 @@
     "moti": "^0.15.3",
     "patch-package": "^6.4.7",
     "qs": "^6.10.3",
+    "query-string": "^7.1.1",
     "react": "17.0.1",
     "react-async-hook": "^4.0.0",
     "react-i18next": "^11.12.0",
