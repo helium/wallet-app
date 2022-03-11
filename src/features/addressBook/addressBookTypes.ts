@@ -3,7 +3,7 @@ import { CSAccount } from '../../storage/cloudStorage'
 
 export type AddressBookStackParamList = {
   AddressBook: undefined
-  AddNewContact: undefined
+  AddNewContact: undefined | { address: string }
   EditContact: { contact: CSAccount }
 }
 

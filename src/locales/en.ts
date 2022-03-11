@@ -286,17 +286,17 @@ export default {
         version: 'App Version',
       },
       dev: {
-        title: 'Developer Settings',
         testnet: {
-          title: 'Enable Testnet',
-          helperText: 'To disable Testnet, signout of of\nall Testnet accounts',
           enablePrompt: {
-            title: 'Enable Testnet Access',
+            getTnt: 'Get TNT',
             message:
               'Importing and Creating Testnet accounts enabled. To acquire TNT (Testnet tokens), go to faucet.helium.wtf.',
-            getTnt: 'Get TNT',
+            title: 'Enable Testnet Access',
           },
+          helperText: 'To disable Testnet, signout of of\nall Testnet accounts',
+          title: 'Enable Testnet',
         },
+        title: 'Developer Settings',
       },
       security: {
         authIntervals: {
@@ -328,14 +328,18 @@ export default {
     location: 'Location:',
     maker: 'Maker:',
     name: 'Hotspot Name:',
+    newOwner: 'New Owner:',
     owner: 'Owner:',
     title: 'Add Hotspot to\nBlockchain?',
     titleLocationOnly: 'Update Location?',
     titleTransfer: 'Transfer Hotspot?',
-    newOwner: 'New Owner:',
   },
   transactions: {
     added: 'Hotspot Added to Blockchain',
+    addToAddressBook: {
+      message: 'Would you like to add this wallet to your address book?',
+      title: 'Add to Address Book',
+    },
     amount: 'Amount',
     amountToPayee: 'Amount to Payee {{index}}',
     amountToSeller: 'Amount to Seller',

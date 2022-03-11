@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigation } from '@react-navigation/native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import Close from '@assets/images/close.svg'
 import {
   KeyboardAvoidingView,
@@ -22,23 +22,30 @@ import TextInput from '../../components/TextInput'
 import ButtonPressable from '../../components/ButtonPressable'
 import AccountIcon from '../../components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { AddressBookNavigationProp } from './addressBookTypes'
+import {
+  AddressBookNavigationProp,
+  AddressBookStackParamList,
+} from './addressBookTypes'
 import { accountNetType } from '../../utils/accountUtils'
 
 const BUTTON_HEIGHT = 55
+
+type Route = RouteProp<AddressBookStackParamList, 'AddNewContact'>
+
 const AddNewContact = () => {
   const { keyboardShown } = useKeyboard()
   const { t } = useTranslation()
   const { primaryText } = useColors()
   const homeNav = useNavigation<HomeNavigationProp>()
   const addressBookNav = useNavigation<AddressBookNavigationProp>()
+  const route = useRoute<Route>()
   const { backgroundStyle } = useOpacity(
     'surfaceSecondary',
     keyboardShown ? 0.85 : 0.4,
   )
   const { addContact } = useAccountStorage()
   const [nickname, setNickname] = useState('')
-  const [address, setAddress] = useState('')
+  const [address, setAddress] = useState(route.params?.address || '')
   const nicknameInput = useRef<RNTextInput | null>(null)
   const { blueBright500 } = useColors()
   const spacing = useSpacing()
