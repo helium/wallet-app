@@ -109,9 +109,9 @@ export type Payment = {
 
 export type Reward = {
   __typename?: 'Reward'
-  account: Scalars['String']
+  account?: Maybe<Scalars['String']>
   amount: Scalars['Int']
-  gateway: Scalars['String']
+  gateway?: Maybe<Scalars['String']>
   type: Scalars['String']
 }
 
@@ -259,9 +259,9 @@ export type AccountActivityQuery = {
       stakeAmount?: number | null
       rewards?: Array<{
         __typename?: 'Reward'
-        account: string
+        account?: string | null
         amount: number
-        gateway: string
+        gateway?: string | null
         type: string
       }> | null
       payments?: Array<{
@@ -379,9 +379,9 @@ export type PendingTxnsQuery = {
     stakeAmount?: number | null
     rewards?: Array<{
       __typename?: 'Reward'
-      account: string
+      account?: string | null
       amount: number
-      gateway: string
+      gateway?: string | null
       type: string
     }> | null
     payments?: Array<{
