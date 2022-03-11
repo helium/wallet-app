@@ -85,6 +85,16 @@ export const useHitSlop = (val: Spacing) => {
   }
 }
 
+export const useVerticalHitSlop = (val: Spacing) => {
+  const { spacing } = useTheme<Theme>()
+  const slopSpacing = spacing[val]
+
+  return {
+    top: slopSpacing,
+    bottom: slopSpacing,
+  }
+}
+
 export const useSpacing = () => {
   const { spacing } = useTheme<Theme>()
   return spacing

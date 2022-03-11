@@ -16,6 +16,7 @@ export enum SecureStorageKeys {
   CONVERT_TO_CURRENCY = 'convertToCurrency',
   LAST_IDLE = 'lastIdle',
   SELECTED_LIST = 'selected_list',
+  ENABLE_TESTNET = 'enableTestnet',
 }
 type SecureStorageKeyTypes = `${SecureStorageKeys}`
 

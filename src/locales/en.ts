@@ -285,6 +285,19 @@ export default {
         title: 'App Settings',
         version: 'App Version',
       },
+      dev: {
+        title: 'Developer Settings',
+        testnet: {
+          title: 'Enable Testnet',
+          helperText: 'To disable Testnet, signout of of\nall Testnet accounts',
+          enablePrompt: {
+            title: 'Enable Testnet Access',
+            message:
+              'Importing and Creating Testnet accounts enabled. To acquire TNT (Testnet tokens), go to faucet.helium.wtf.',
+            getTnt: 'Get TNT',
+          },
+        },
+      },
       security: {
         authIntervals: {
           after_1_hr: 'After 1 hour',

@@ -11,6 +11,7 @@ import Text from '../../components/Text'
 import Box from '../../components/Box'
 import { useColors, useHitSlop, useSpacing } from '../../theme/themeHooks'
 import { useOnboarding } from './OnboardingProvider'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Props = BoxProps<Theme>
 const NetTypeSegment = (boxProps: Props) => {
@@ -19,6 +20,7 @@ const NetTypeSegment = (boxProps: Props) => {
   const colors = useColors()
   const hitSlop = useHitSlop('l')
   const { onboardingData, setOnboardingData } = useOnboarding()
+  const { enableTestnet } = useAppStorage()
 
   const trackColor = useMemo(
     () => ({ false: colors.secondaryText, true: colors.blueBright500 }),
@@ -59,6 +61,9 @@ const NetTypeSegment = (boxProps: Props) => {
     },
     [setOnboardingData],
   )
+
+  if (!enableTestnet) return null
+
   return (
     <Box flexDirection="row" alignItems="center" {...boxProps}>
       <TouchableOpacityBox
