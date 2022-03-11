@@ -129,12 +129,14 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
       const totalAmount = group.reduce((sum, { amount: amt }) => sum + amt, 0)
       const balance = intToBalance({ intValue: totalAmount })
       const typeName = t(`transactions.rewardTypes.${group[0].type}`)
-
+      let name = ''
+      if (group[0].gateway) {
+        name = animalName(group[0].gateway)
+      } else {
+        name = typeName
+      }
       return {
-        name:
-          key === 'securities'
-            ? t('transactions.securityTokens')
-            : animalName(group[0].gateway),
+        name,
         amount: balance,
         type: typeName,
       }
