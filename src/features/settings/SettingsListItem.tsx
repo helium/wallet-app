@@ -19,7 +19,8 @@ export type SelectProps = {
 
 export type SettingsListItemType = {
   title: string
-  subtitle?: string
+  label?: string
+  helperText?: string
   destructive?: boolean
   onPress?: () => void
   onToggle?: (value: boolean) => void
@@ -34,7 +35,8 @@ export type SettingsListItemType = {
 const SettingsListItem = ({
   item: {
     title,
-    subtitle,
+    label,
+    helperText,
     value,
     destructive,
     onToggle,
@@ -107,7 +109,7 @@ const SettingsListItem = ({
       justifyContent="space-between"
       backgroundColor="primaryBackground"
       alignItems="center"
-      height={56}
+      minHeight={56}
       paddingHorizontal="l"
       marginBottom="xxxs"
       onPress={handlePress}
@@ -118,17 +120,25 @@ const SettingsListItem = ({
       borderTopWidth={isTop ? 1 : 0}
     >
       {renderModal && renderModal()}
-      <Box flexDirection="column">
+      <Box flexDirection="column" paddingVertical="xs">
         <Text
           variant="body3"
           color="surfaceSecondaryText"
           marginBottom="xxs"
-          visible={subtitle !== undefined}
+          visible={label !== undefined}
         >
-          {subtitle}
+          {label}
         </Text>
         <Text variant="body1" color={textColor}>
           {title}
+        </Text>
+        <Text
+          variant="body3"
+          color="surfaceSecondaryText"
+          marginBottom="xxs"
+          visible={helperText !== undefined}
+        >
+          {helperText}
         </Text>
       </Box>
       {!onToggle && !select && onPress && (

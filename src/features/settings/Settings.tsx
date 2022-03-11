@@ -3,8 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
 import Close from '@assets/images/close.svg'
 import { Alert, SectionList } from 'react-native'
-import Clipboard from '@react-native-community/clipboard'
-import Toast from 'react-native-simple-toast'
 import Text from '../../components/Text'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -21,8 +19,7 @@ import { useAppStorage } from '../../storage/AppStorageProvider'
 import { SettingsNavigationProp } from './settingsTypes'
 import { useLanguageStorage } from '../../storage/LanguageProvider'
 import { useApolloClient } from '../../graphql/useApolloClient'
-import useHaptic from '../../utils/useHaptic'
-import { ellipsizeAddress } from '../../utils/accountUtils'
+import useCopyAddress from '../../utils/useCopyAddress'
 
 const Settings = () => {
   const { t } = useTranslation()
@@ -33,21 +30,24 @@ const Settings = () => {
   const version = useAppVersion()
   const hitSlop = useHitSlop('xxl')
   const authIntervals = useAuthIntervals()
-  const { currentAccount, signOut, accounts } = useAccountStorage()
+  const { currentAccount, signOut, accounts, sortedTestnetAccounts } =
+    useAccountStorage()
   const { changeLanguage, language } = useLanguageStorage()
   const {
+    authInterval,
+    convertToCurrency,
+    currency,
+    enableTestnet,
     pin: appPin,
     requirePinForPayment,
-    updateRequirePinForPayment,
-    authInterval,
     updateAuthInterval,
-    currency,
-    updateCurrency,
-    convertToCurrency,
     updateConvertToCurrency,
+    updateCurrency,
+    updateEnableTestnet,
+    updateRequirePinForPayment,
   } = useAppStorage()
   const { client } = useApolloClient()
-  const { triggerNavHaptic } = useHaptic()
+  const copyAddress = useCopyAddress()
 
   const isPinRequired = useMemo(
     () => appPin !== undefined && appPin.status !== 'off',
@@ -182,6 +182,29 @@ const Settings = () => {
     [updateCurrency],
   )
 
+  const handleToggleEnableTestnet = useCallback(async () => {
+    updateEnableTestnet(!enableTestnet)
+    if (enableTestnet) {
+      return
+    }
+
+    Alert.alert(
+      t('settings.sections.dev.testnet.enablePrompt.title'),
+      t('settings.sections.dev.testnet.enablePrompt.message'),
+      [
+        {
+          text: t('generic.cancel'),
+          style: 'destructive',
+          onPress: () => updateEnableTestnet(false),
+        },
+        {
+          text: t('generic.ok'),
+          style: 'default',
+        },
+      ],
+    )
+  }, [enableTestnet, t, updateEnableTestnet])
+
   const handleUpdateAlias = useCallback(
     () => settingsNav.push('UpdateAlias'),
     [settingsNav],
@@ -200,18 +223,13 @@ const Settings = () => {
 
   const handleCopyAddress = useCallback(() => {
     if (!currentAccount?.address) return
-    Clipboard.setString(currentAccount.address)
-    Toast.showWithGravity(
-      t('generic.copied', {
-        target: ellipsizeAddress(currentAccount.address),
-      }),
-      Toast.SHORT,
-      Toast.TOP,
-    )
-    triggerNavHaptic()
-  }, [currentAccount, t, triggerNavHaptic])
+    copyAddress(currentAccount.address)
+  }, [copyAddress, currentAccount])
 
-  const SectionData = useMemo(() => {
+  const SectionData = useMemo((): {
+    title: string
+    data: SettingsListItemType[]
+  }[] => {
     let pin: SettingsListItemType[] = [
       {
         title: t('settings.sections.security.enablePin'),
@@ -249,7 +267,7 @@ const Settings = () => {
         )}`,
         data: [
           {
-            subtitle: t('settings.sections.account.alias'),
+            label: t('settings.sections.account.alias'),
             title: currentAccount?.alias || '',
             onPress: handleUpdateAlias,
           },
@@ -309,6 +327,22 @@ const Settings = () => {
           },
         ] as SettingsListItemType[],
       },
+
+      {
+        title: t('settings.sections.dev.title'),
+        data: [
+          {
+            title: t('settings.sections.dev.testnet.title'),
+            value: enableTestnet,
+            onToggle: handleToggleEnableTestnet,
+            disabled: !!sortedTestnetAccounts.length && enableTestnet,
+            helperText:
+              sortedTestnetAccounts.length && enableTestnet
+                ? t('settings.sections.dev.testnet.helperText')
+                : undefined,
+          },
+        ],
+      },
     ]
   }, [
     authInterval,
@@ -316,6 +350,7 @@ const Settings = () => {
     convertToCurrency,
     currency,
     currentAccount,
+    enableTestnet,
     handleCopyAddress,
     handleCurrencyTypeChange,
     handleIntervalSelected,
@@ -325,10 +360,12 @@ const Settings = () => {
     handleResetPin,
     handleRevealWords,
     handleSignOut,
+    handleToggleEnableTestnet,
     handleUpdateAlias,
     isPinRequired,
     language,
     requirePinForPayment,
+    sortedTestnetAccounts.length,
     t,
     updateConvertToCurrency,
     version,

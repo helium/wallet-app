@@ -19,9 +19,10 @@ const useAppStorageHook = () => {
   const [authInterval, setAuthInterval] = useState<Intervals>(
     Intervals.IMMEDIATELY,
   )
-  const [locked, setLocked] = useState<boolean>(false)
-  const [currency, setCurrency] = useState<string>('USD')
-  const [convertToCurrency, setConvertToCurrency] = useState<boolean>(false)
+  const [currency, setCurrency] = useState('USD')
+  const [locked, setLocked] = useState(false)
+  const [convertToCurrency, setConvertToCurrency] = useState(false)
+  const [enableTestnet, setEnableTestnet] = useState(false)
 
   useAsync(async () => {
     // TODO: When performing an account restore pin will not be restored.
@@ -33,12 +34,15 @@ const useAppStorageHook = () => {
       const nextLocked = await getSecureItem('locked')
       const nextCurrency = await getSecureItem('currency')
       const nextConvertToCurrency = await getSecureItem('convertToCurrency')
+      const nextEnableTestnet = await getSecureItem('enableTestnet')
 
       setPin({ value: nextPin || '', status: nextPin ? 'restored' : 'off' })
       setRequirePinForPayment(nextPinForPayment === 'true')
       setLocked(nextLocked === 'true')
       setCurrency(nextCurrency || 'USD')
       setConvertToCurrency(nextConvertToCurrency === 'true')
+      setEnableTestnet(nextEnableTestnet === 'true')
+
       if (nextAuthInterval) {
         setAuthInterval(Number.parseInt(nextAuthInterval, 10))
       }
@@ -87,6 +91,17 @@ const useAppStorageHook = () => {
     [],
   )
 
+  const updateEnableTestnet = useCallback(
+    async (nextEnableTestnet: boolean) => {
+      setEnableTestnet(nextEnableTestnet)
+      return storeSecureItem(
+        'enableTestnet',
+        nextEnableTestnet ? 'true' : 'false',
+      )
+    },
+    [],
+  )
+
   const toggleConvertToCurrency = useCallback(async () => {
     setConvertToCurrency((prev) => {
       storeSecureItem('convertToCurrency', !prev ? 'true' : 'false')
@@ -95,36 +110,40 @@ const useAppStorageHook = () => {
   }, [])
 
   return {
-    pin,
-    updatePin,
-    requirePinForPayment,
-    updateRequirePinForPayment,
     authInterval,
-    updateAuthInterval,
-    locked,
-    updateLocked,
-    currency,
-    updateCurrency,
     convertToCurrency,
-    updateConvertToCurrency,
+    currency,
+    enableTestnet,
+    locked,
+    pin,
+    requirePinForPayment,
     toggleConvertToCurrency,
+    updateAuthInterval,
+    updateConvertToCurrency,
+    updateCurrency,
+    updateEnableTestnet,
+    updateLocked,
+    updatePin,
+    updateRequirePinForPayment,
   }
 }
 
 const initialState = {
-  pin: undefined,
-  updatePin: async () => undefined,
-  requirePinForPayment: false,
-  updateRequirePinForPayment: async () => undefined,
   authInterval: Intervals.IMMEDIATELY,
-  updateAuthInterval: async () => undefined,
-  locked: false,
-  updateLocked: async () => undefined,
-  currency: 'USD',
-  updateCurrency: async () => undefined,
   convertToCurrency: false,
-  updateConvertToCurrency: async () => undefined,
+  currency: 'USD',
+  enableTestnet: false,
+  locked: false,
+  pin: undefined,
+  requirePinForPayment: false,
   toggleConvertToCurrency: async () => undefined,
+  updateAuthInterval: async () => undefined,
+  updateConvertToCurrency: async () => undefined,
+  updateCurrency: async () => undefined,
+  updateEnableTestnet: async () => undefined,
+  updateLocked: async () => undefined,
+  updatePin: async () => undefined,
+  updateRequirePinForPayment: async () => undefined,
 }
 
 const AppStorageContext =

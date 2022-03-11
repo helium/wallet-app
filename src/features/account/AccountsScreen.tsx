@@ -20,7 +20,12 @@ import { NetType } from '@helium/crypto-react-native'
 import { useNavigation } from '@react-navigation/native'
 import Box from '../../components/Box'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useColors, useOpacity, useSpacing } from '../../theme/themeHooks'
+import {
+  useColors,
+  useOpacity,
+  useSpacing,
+  useVerticalHitSlop,
+} from '../../theme/themeHooks'
 import { wh, wp } from '../../utils/layout'
 import MultiAccountNavigator from '../onboarding/MultiAccountNavigator'
 import { OnboardingOpt, useOnboarding } from '../onboarding/OnboardingProvider'
@@ -96,6 +101,7 @@ const AccountsScreen = () => {
   const [state, dispatch] = useReducer(layoutReducer, initialState)
   const filterState = useActivityFilter()
   const bottomSheetRef = useRef<BottomSheet>(null)
+  const verticalHitSlop = useVerticalHitSlop('l')
   const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
   const { backgroundStyle: handleStyle } = useOpacity('black500', 1)
   const { primaryText, primaryIcon, red500 } = useColors()
@@ -387,6 +393,7 @@ const AccountsScreen = () => {
               paddingTop="s"
             >
               <TouchableOpacityBox
+                hitSlop={verticalHitSlop}
                 paddingHorizontal="l"
                 onPress={navToSettings}
               >
@@ -405,12 +412,16 @@ const AccountsScreen = () => {
               </Box>
               <Box flexDirection="row" paddingHorizontal="l">
                 <TouchableOpacityBox
+                  hitSlop={verticalHitSlop}
                   onPress={handleNotificationsSelected}
                   marginRight="s"
                 >
                   <NotificationIcon />
                 </TouchableOpacityBox>
-                <TouchableOpacityBox onPress={handleAddressBook}>
+                <TouchableOpacityBox
+                  onPress={handleAddressBook}
+                  hitSlop={verticalHitSlop}
+                >
                   <AccountIco color={primaryIcon} />
                 </TouchableOpacityBox>
               </Box>

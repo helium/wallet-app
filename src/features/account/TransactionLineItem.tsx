@@ -5,8 +5,14 @@ import Box from '../../components/Box'
 import Text from '../../components/Text'
 import { ellipsizeAddress } from '../../utils/accountUtils'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { useColors, useHitSlop } from '../../theme/themeHooks'
+import {
+  useColors,
+  useHitSlop,
+  useVerticalHitSlop,
+} from '../../theme/themeHooks'
 import { Color } from '../../theme/theme'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import useCopyAddress from '../../utils/useCopyAddress'
 
 type Props = {
   title: string
@@ -29,17 +35,39 @@ const TransactionLineItem = ({
   bodyEndColor,
 }: Props) => {
   const { primaryText } = useColors()
-  const hitSlop = useHitSlop('xl')
+  const linkHitSlop = useHitSlop('s')
+  const copyHitSlop = useVerticalHitSlop('s')
+  const { contacts } = useAccountStorage()
+  const copyAddress = useCopyAddress()
+
+  const handleCopy = useCallback(
+    (address: string | number) => () => {
+      const addressToCopy = `${address}`
+      if (!addressToCopy) return
+
+      copyAddress(addressToCopy)
+    },
+    [copyAddress],
+  )
+
+  const aliasForContact = useCallback(
+    (address) => {
+      const contact = contacts.find((c) => c.address === address)
+      return contact?.alias
+    },
+    [contacts],
+  )
 
   const body = useMemo(() => {
     if (typeof bodyText === 'number') {
       return bodyText.toLocaleString()
     }
     if (isAddress) {
-      return ellipsizeAddress(bodyText)
+      const alias = aliasForContact(bodyText)
+      return alias || ellipsizeAddress(bodyText)
     }
     return bodyText
-  }, [bodyText, isAddress])
+  }, [aliasForContact, bodyText, isAddress])
 
   const handleExplorerLink = useCallback(() => {
     if (!navTo) return
@@ -60,15 +88,21 @@ const TransactionLineItem = ({
       <Box flexDirection="row" alignItems="center">
         {icon}
 
-        <Text
-          flexShrink={1}
-          variant="body1"
-          color={bodyColor || 'primaryText'}
-          selectable
-          marginLeft={icon ? 'xs' : 'none'}
+        <TouchableOpacityBox
+          hitSlop={copyHitSlop}
+          onPress={handleCopy(bodyText)}
+          disabled={!isAddress}
+          minWidth={30}
         >
-          {body}
-        </Text>
+          <Text
+            flexShrink={1}
+            variant="body1"
+            color={bodyColor || 'primaryText'}
+            marginLeft={icon ? 'xs' : 'none'}
+          >
+            {body}
+          </Text>
+        </TouchableOpacityBox>
 
         {bodyTextEnd && (
           <Text
@@ -76,7 +110,6 @@ const TransactionLineItem = ({
             textAlign="right"
             variant="body1"
             color={bodyEndColor || 'primaryText'}
-            selectable
             marginLeft={icon ? 'xs' : 'none'}
           >
             {bodyTextEnd}
@@ -85,7 +118,7 @@ const TransactionLineItem = ({
         {navTo && (
           <TouchableOpacityBox
             onPress={handleExplorerLink}
-            hitSlop={hitSlop}
+            hitSlop={linkHitSlop}
             paddingLeft="s"
           >
             <DetailArrow color={primaryText} />
