@@ -60,6 +60,7 @@
     "apollo3-cache-persist": "^0.13.0",
     "base-64": "^1.0.0",
     "bcrypt-react-native": "^1.1.1",
+    "bignumber.js": "^9.0.2",
     "buffer": "^6.0.3",
     "camelcase-keys": "^7.0.1",
     "date-fns": "^2.25.0",
