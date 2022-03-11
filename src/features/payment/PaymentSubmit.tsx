@@ -11,7 +11,7 @@ import PaymentError from './PaymentError'
 
 type Props = {
   submitLoading: boolean
-  submitError?: ApolloError
+  submitError?: ApolloError | Error
   submitSucceeded?: boolean
   totalBalance: Balance<TestNetworkTokens | NetworkTokens>
   feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
@@ -29,7 +29,7 @@ const PaymentSubmit = ({
   onRetry,
 }: Props) => {
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<ApolloError>()
+  const [error, setError] = useState<ApolloError | Error>()
   const [succeeded, setSucceeded] = useState(false)
   const [videoFinished, setVideoFinished] = useState(false)
 

@@ -1,9 +1,17 @@
 import Config from 'react-native-config'
-import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client'
+import {
+  ApolloClient,
+  createHttpLink,
+  from,
+  InMemoryCache,
+  ServerError,
+  ServerParseError,
+} from '@apollo/client'
 import { AsyncStorageWrapper, persistCache } from 'apollo3-cache-persist'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useAsync } from 'react-async-hook'
 import { RetryLink } from '@apollo/client/link/retry'
+import { onError } from '@apollo/client/link/error'
 import { ActivityData, Activity } from '../generated/graphql'
 
 const retryLink = new RetryLink()
@@ -82,6 +90,20 @@ const cache = new InMemoryCache({
   },
 })
 
+const errorLink = onError(({ networkError }) => {
+  if (networkError) {
+    if ((networkError as ServerParseError).statusCode) {
+      // eslint-disable-next-line no-param-reassign
+      networkError.message = `Status Code - ${
+        (networkError as ServerError).statusCode
+      }`
+    } else if (!networkError.message) {
+      // eslint-disable-next-line no-param-reassign
+      networkError.message = 'Something went wrong'
+    }
+  }
+})
+
 export const useApolloClient = () => {
   const httpLink = createHttpLink({
     uri: Config.GRAPH_URI,
@@ -94,8 +116,9 @@ export const useApolloClient = () => {
     })
 
     return new ApolloClient({
-      link: httpLink.concat(retryLink),
+      link: from([errorLink, httpLink, retryLink]),
       cache,
+      defaultOptions: { mutate: { errorPolicy: 'all' } },
     })
   }, [])
 
