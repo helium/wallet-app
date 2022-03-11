@@ -2,7 +2,12 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Linking } from 'react-native'
-import { AddGateway, WalletLink, Location } from '@helium/react-native-sdk'
+import {
+  AddGateway,
+  WalletLink,
+  Location,
+  Transfer,
+} from '@helium/react-native-sdk'
 import animalHash from 'angry-purple-tiger'
 import { useAsync } from 'react-async-hook'
 import Box from '../../components/Box'
@@ -19,10 +24,11 @@ import { getKeypair } from '../../storage/secureStorage'
 type Route = RouteProp<HomeStackParamList, 'SignHotspot'>
 const SignHotspot = () => {
   const {
-    params: { token, addGatewayTxn, assertLocationTxn } = {
+    params: { token, addGatewayTxn, assertLocationTxn, transferHotspotTxn } = {
       token: '',
       addGatewayTxn: '',
       assertLocationTxn: '',
+      transferHotspotTxn: '',
     },
   } = useRoute<Route>()
   const navigation = useNavigation<HomeNavigationProp>()
@@ -31,8 +37,8 @@ const SignHotspot = () => {
   const { accounts, currentAccount } = useAccountStorage()
 
   const linkInvalid = useMemo(() => {
-    return !addGatewayTxn && !assertLocationTxn
-  }, [addGatewayTxn, assertLocationTxn])
+    return !addGatewayTxn && !assertLocationTxn && !transferHotspotTxn
+  }, [addGatewayTxn, assertLocationTxn, transferHotspotTxn])
 
   const parsedToken = useMemo(() => {
     if (!token) return
@@ -69,13 +75,26 @@ const SignHotspot = () => {
     return Location.txnFromString(assertLocationTxn)
   }, [assertLocationTxn])
 
+  const transferTxn = useMemo(() => {
+    if (!transferHotspotTxn) return
+    return Transfer.txnFromString(transferHotspotTxn)
+  }, [transferHotspotTxn])
+
+  const gatewayAddress = useMemo(
+    () =>
+      gatewayTxn?.gateway?.b58 ||
+      locationTxn?.gateway?.b58 ||
+      transferTxn?.gateway?.b58,
+    [gatewayTxn, locationTxn, transferTxn],
+  )
+
   const handleLink = useCallback(async () => {
     try {
       const ownerKeypair = await getKeypair(currentAccount?.address || '')
 
       const responseParams = {
         status: 'success',
-        gatewayAddress: gatewayTxn?.gateway?.b58 || locationTxn?.gateway?.b58,
+        gatewayAddress,
       } as WalletLink.SignHotspotResponse
 
       if (gatewayTxn) {
@@ -100,11 +119,36 @@ const SignHotspot = () => {
         responseParams.assertTxn = txnOwnerSigned.toString()
       }
 
+      if (transferTxn) {
+        if (!ownerKeypair) {
+          callback({ status: 'token_not_found' })
+          throw new Error('Failed to sign transfer txn')
+        }
+
+        const txnTransferSigned = await transferTxn.sign({
+          owner: ownerKeypair,
+        })
+
+        if (!txnTransferSigned.gateway?.b58) {
+          callback({ status: 'gateway_not_found' })
+          throw new Error('Failed to sign transfer txn')
+        }
+
+        responseParams.transferTxn = txnTransferSigned.toString()
+      }
+
       callback(responseParams)
     } catch (e) {
       // Logger.error(e)
     }
-  }, [callback, currentAccount, gatewayTxn, locationTxn])
+  }, [
+    callback,
+    currentAccount,
+    gatewayAddress,
+    gatewayTxn,
+    locationTxn,
+    transferTxn,
+  ])
 
   const handleCancel = useCallback(async () => {
     callback({ status: 'user_cancelled' })
@@ -115,15 +159,25 @@ const SignHotspot = () => {
   }, [callback])
 
   const name = useMemo(() => {
-    if (!gatewayTxn?.gateway?.b58 && !locationTxn?.gateway?.b58) return
-    return animalHash(
-      gatewayTxn?.gateway?.b58 || locationTxn?.gateway?.b58 || '',
-    )
-  }, [gatewayTxn, locationTxn])
+    if (!gatewayAddress) return
+    return animalHash(gatewayAddress || '')
+  }, [gatewayAddress])
 
   const location = useMemo(() => {
     return locationTxn?.location
   }, [locationTxn])
+
+  const title = useMemo(() => {
+    if (gatewayTxn) {
+      return t('signHotspot.title')
+    }
+    if (locationTxn) {
+      return t('signHotspot.titleLocationOnly')
+    }
+    if (transferTxn) {
+      return t('signHotspot.titleTransfer')
+    }
+  }, [gatewayTxn, locationTxn, t, transferTxn])
 
   useAsync(async () => {
     if (!parsedToken) return
@@ -184,7 +238,7 @@ const SignHotspot = () => {
       justifyContent="center"
     >
       <Text variant="h1" color="primaryText">
-        {t(gatewayTxn ? 'signHotspot.title' : 'signHotspot.titleLocationOnly')}
+        {title}
       </Text>
 
       <Box
@@ -243,6 +297,20 @@ const SignHotspot = () => {
             </Box>
           )}
         </Box>
+        {transferTxn?.newOwner !== undefined && (
+          <>
+            <Text variant="body1" color="surfaceContrastText">
+              {t('signHotspot.newOwner')}
+            </Text>
+            <Text
+              variant="subtitle1"
+              color="surfaceContrastText"
+              marginBottom="m"
+            >
+              {transferTxn.newOwner.b58}
+            </Text>
+          </>
+        )}
         {!!parsedToken?.address && accounts?.[parsedToken.address] && (
           <>
             <Text variant="body1" color="surfaceContrastText">

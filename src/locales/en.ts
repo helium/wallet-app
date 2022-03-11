@@ -318,6 +318,8 @@ export default {
     owner: 'Owner:',
     title: 'Add Hotspot to\nBlockchain?',
     titleLocationOnly: 'Update Location?',
+    titleTransfer: 'Transfer Hotspot?',
+    newOwner: 'New Owner:',
   },
   transactions: {
     added: 'Hotspot Added to Blockchain',
