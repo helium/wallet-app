@@ -18,7 +18,6 @@ import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { useTranslation } from 'react-i18next'
 import { NetType } from '@helium/crypto-react-native'
 import { useNavigation } from '@react-navigation/native'
-import { useAsync } from 'react-async-hook'
 import Box from '../../components/Box'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useColors, useOpacity, useSpacing } from '../../theme/themeHooks'
@@ -55,11 +54,6 @@ import {
 import NotificationIcon from '../../components/NotificationIcon'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
-import {
-  HELIUM_UPDATES_ITEM,
-  WALLET_UPDATES_ITEM,
-} from '../notifications/notificationTypes'
-import { isValidAccountHash } from '../../utils/accountUtils'
 import { CSAccount } from '../../storage/cloudStorage'
 
 type AccountLayout = {
@@ -112,8 +106,7 @@ const AccountsScreen = () => {
   const prevSortedAccounts = usePrevious<CSAccount[] | undefined>(
     sortedAccounts,
   )
-  const { openedNotification, setOpenedNotification, updateSelectedList } =
-    useNotificationStorage()
+  const { openedNotification } = useNotificationStorage()
   const { locked } = useAppStorage()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const {
@@ -192,37 +185,12 @@ const AccountsScreen = () => {
     sortedAccounts.length,
   ])
 
-  useAsync(async () => {
+  useEffect(() => {
     if (openedNotification && !locked) {
-      const additionalData = openedNotification.additionalData as {
-        resource?: string
-        id?: number
-      }
-      const resource = additionalData?.resource
-      if (
-        resource === WALLET_UPDATES_ITEM ||
-        resource === HELIUM_UPDATES_ITEM
-      ) {
-        // helium or wallet update
-        await updateSelectedList(resource)
-      } else if (resource !== undefined) {
-        // account update, check hash against accounts
-        const index = (
-          await Promise.all(
-            sortedAccounts.map((a) => isValidAccountHash(a.address, resource)),
-          )
-        ).findIndex((result) => !!result)
-
-        const notifiedAccount = index > -1 ? sortedAccounts[index] : undefined
-
-        if (notifiedAccount && notifiedAccount.address) {
-          await updateSelectedList(notifiedAccount.address)
-        }
-      }
+      // navigate to notifications if we are coming from tapping a push
       navigation.push('NotificationsNavigator')
-      setOpenedNotification(undefined)
     }
-  }, [navigation, openedNotification, locked, setOpenedNotification])
+  }, [navigation, openedNotification, locked])
 
   const accountNetType = useMemo(
     () => AccountUtils.accountNetType(currentAccount?.address),
