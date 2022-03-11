@@ -12,6 +12,7 @@ import RequestScreen from '../request/RequestScreen'
 import LinkWallet from '../txnDelegatation/LinkWallet'
 import SignHotspot from '../txnDelegatation/SignHotspot'
 import PaymentQrScanner from '../payment/PaymentQrScanner'
+import ConfirmPinScreen from '../../components/ConfirmPinScreen'
 
 const HomeStack = createStackNavigator()
 
@@ -28,6 +29,7 @@ const HomeStackScreen = () => {
         name="AccountAssignScreen"
         component={AccountAssignScreen}
       />
+      <HomeStack.Screen name="ConfirmPin" component={ConfirmPinScreen} />
       <HomeStack.Screen name="PaymentScreen" component={PaymentScreen} />
       <HomeStack.Screen name="PaymentQrScanner" component={PaymentQrScanner} />
       <HomeStack.Screen name="RequestScreen" component={RequestScreen} />

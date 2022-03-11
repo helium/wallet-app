@@ -107,7 +107,7 @@ const AccountsScreen = () => {
     sortedAccounts,
   )
   const { openedNotification } = useNotificationStorage()
-  const { locked } = useAppStorage()
+  const { locked, requirePinForPayment } = useAppStorage()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const {
     onboardingData: { netType },
@@ -338,7 +338,11 @@ const AccountsScreen = () => {
     (type: Action) => {
       switch (type) {
         case 'send':
-          navigation.navigate('PaymentScreen')
+          if (requirePinForPayment) {
+            navigation.navigate('ConfirmPin', { action: 'payment' })
+          } else {
+            navigation.navigate('PaymentScreen')
+          }
           break
         case 'request':
           navigation.navigate('RequestScreen')
@@ -353,7 +357,7 @@ const AccountsScreen = () => {
           break
       }
     },
-    [accountNetType, navigation, show],
+    [accountNetType, navigation, requirePinForPayment, show],
   )
 
   const navToSettings = useCallback(

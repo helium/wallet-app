@@ -276,7 +276,7 @@ export default {
             'You are signing out of your only account, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your Address Book\n- your HNT\n- your Wallet',
           title: 'Sign Out of {{alias}}?',
         },
-        title: '{{alias}} Account Settings',
+        title: 'Account Settings',
       },
       app: {
         convertHntToCurrency: 'Convert HNT to Currency',
