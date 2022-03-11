@@ -1,13 +1,15 @@
+import { Address } from '@helium/crypto-react-native'
 import { LinkingOptions } from '@react-navigation/native'
 import * as Linking from 'expo-linking'
 import qs from 'qs'
+import queryString from 'query-string'
 import { encodeMemoString } from '../components/MemoInput'
+import { PaymentRouteParam } from '../features/home/homeTypes'
 import { RootNavigationProp } from '../navigation/rootTypes'
 import { SendDetails } from '../storage/TransactionProvider'
 
 export const APP_LINK_SCHEME = Linking.createURL('')
 export const PAYMENT_PATH = 'payment'
-
 export const HELIUM_WALLET_LINK_SCHEME = 'https://wallet.helium.com/'
 
 export const linking = {
@@ -64,6 +66,23 @@ export const makeMultiPayRequestLink = ({
       { skipNulls: true },
     ),
   ].join('?')
+}
+
+export const parsePaymentLink = (
+  urlOrAddress: string,
+): PaymentRouteParam | undefined => {
+  if (Address.isValid(urlOrAddress)) {
+    const url = makePayRequestLink({ payee: urlOrAddress })
+    return queryString.parseUrl(url).query
+  }
+
+  const parsed = queryString.parseUrl(urlOrAddress)
+  if (
+    parsed.url === `${HELIUM_WALLET_LINK_SCHEME}payment` ||
+    parsed.url === `${APP_LINK_SCHEME}payment`
+  ) {
+    return parsed.query
+  }
 }
 
 export default linking
