@@ -4,6 +4,7 @@ import AddressBook from './AddressBook'
 import AddNewContact from './AddNewContact'
 import { useOpacity } from '../../theme/themeHooks'
 import EditContact from './EditContact'
+import AddressQrScanner from './AddressQrScanner'
 
 const AddressBookStack = createNativeStackNavigator()
 
@@ -19,6 +20,10 @@ const AddressBookNavigator = () => {
       <AddressBookStack.Screen name="AddressBook" component={AddressBook} />
       <AddressBookStack.Screen name="AddNewContact" component={AddNewContact} />
       <AddressBookStack.Screen name="EditContact" component={EditContact} />
+      <AddressBookStack.Screen
+        name="ScanAddress"
+        component={AddressQrScanner}
+      />
     </AddressBookStack.Navigator>
   )
 }

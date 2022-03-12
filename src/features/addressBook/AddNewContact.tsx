@@ -1,4 +1,11 @@
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import Close from '@assets/images/close.svg'
@@ -11,6 +18,7 @@ import {
 } from 'react-native'
 import { Address } from '@helium/crypto-react-native'
 import Checkmark from '@assets/images/checkmark.svg'
+import QR from '@assets/images/qr.svg'
 import { useKeyboard } from '@react-native-community/hooks'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
@@ -27,6 +35,7 @@ import {
   AddressBookStackParamList,
 } from './addressBookTypes'
 import { accountNetType } from '../../utils/accountUtils'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 const BUTTON_HEIGHT = 55
 
@@ -35,7 +44,6 @@ type Route = RouteProp<AddressBookStackParamList, 'AddNewContact'>
 const AddNewContact = () => {
   const { keyboardShown } = useKeyboard()
   const { t } = useTranslation()
-  const { primaryText } = useColors()
   const homeNav = useNavigation<HomeNavigationProp>()
   const addressBookNav = useNavigation<AddressBookNavigationProp>()
   const route = useRoute<Route>()
@@ -47,7 +55,8 @@ const AddNewContact = () => {
   const [nickname, setNickname] = useState('')
   const [address, setAddress] = useState(route.params?.address || '')
   const nicknameInput = useRef<RNTextInput | null>(null)
-  const { blueBright500 } = useColors()
+  const { blueBright500, primaryText } = useColors()
+  const { scannedAddress, setScannedAddress } = useAppStorage()
   const spacing = useSpacing()
 
   const onRequestClose = useCallback(() => {
@@ -76,6 +85,17 @@ const AddNewContact = () => {
   const handleAddressChange = useCallback((text: string) => {
     setAddress(text.trim())
   }, [])
+
+  const handleScanAddress = useCallback(() => {
+    addressBookNav.push('ScanAddress')
+  }, [addressBookNav])
+
+  useEffect(() => {
+    if (scannedAddress && Address.isValid(scannedAddress)) {
+      setAddress(scannedAddress)
+      setScannedAddress(undefined)
+    }
+  }, [scannedAddress, setScannedAddress])
 
   return (
     <SafeAreaBox flex={1} edges={['top']}>
@@ -119,7 +139,13 @@ const AddNewContact = () => {
             marginHorizontal="xl"
           >
             <Text variant="body1">{t('addNewContact.address.title')}</Text>
-            {addressIsValid && <Checkmark color={blueBright500} />}
+            {addressIsValid ? (
+              <Checkmark color={blueBright500} />
+            ) : (
+              <TouchableOpacityBox onPress={handleScanAddress}>
+                <QR color={primaryText} />
+              </TouchableOpacityBox>
+            )}
           </Box>
           <TextInput
             variant="plain"

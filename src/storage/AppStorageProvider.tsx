@@ -23,6 +23,7 @@ const useAppStorageHook = () => {
   const [locked, setLocked] = useState(false)
   const [convertToCurrency, setConvertToCurrency] = useState(false)
   const [enableTestnet, setEnableTestnet] = useState(false)
+  const [scannedAddress, setScannedAddress] = useState<string>()
 
   useAsync(async () => {
     // TODO: When performing an account restore pin will not be restored.
@@ -116,6 +117,8 @@ const useAppStorageHook = () => {
     enableTestnet,
     locked,
     pin,
+    scannedAddress,
+    setScannedAddress,
     requirePinForPayment,
     toggleConvertToCurrency,
     updateAuthInterval,
@@ -136,6 +139,8 @@ const initialState = {
   locked: false,
   pin: undefined,
   requirePinForPayment: false,
+  scannedAddress: undefined,
+  setScannedAddress: () => undefined,
   toggleConvertToCurrency: async () => undefined,
   updateAuthInterval: async () => undefined,
   updateConvertToCurrency: async () => undefined,
