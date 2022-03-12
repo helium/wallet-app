@@ -5,6 +5,7 @@ export type AddressBookStackParamList = {
   AddressBook: undefined
   AddNewContact: undefined | { address: string }
   EditContact: { contact: CSAccount }
+  ScanAddress: undefined
 }
 
 export type AddressBookNavigationProp =

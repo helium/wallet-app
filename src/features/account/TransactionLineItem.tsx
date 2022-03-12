@@ -117,6 +117,7 @@ const TransactionLineItem = ({
           onLongPress={handleLongPress(bodyText)}
           disabled={!isAddress}
           minWidth={30}
+          maxWidth="90%"
         >
           <Text
             flexShrink={1}
@@ -140,13 +141,20 @@ const TransactionLineItem = ({
           </Text>
         )}
         {navTo && (
-          <TouchableOpacityBox
-            onPress={handleExplorerLink}
-            hitSlop={linkHitSlop}
-            paddingLeft="s"
+          <Box
+            flex={1}
+            width="100%"
+            flexDirection="row"
+            justifyContent="flex-end"
           >
-            <DetailArrow color={primaryText} />
-          </TouchableOpacityBox>
+            <TouchableOpacityBox
+              onPress={handleExplorerLink}
+              hitSlop={linkHitSlop}
+              paddingLeft="s"
+            >
+              <DetailArrow color={primaryText} />
+            </TouchableOpacityBox>
+          </Box>
         )}
       </Box>
     </Box>

@@ -145,6 +145,17 @@ const useAccountStorageHook = () => {
     [contacts],
   )
 
+  const editContact = useCallback(
+    async (oldAddress: string, updatedAccount: CSAccount) => {
+      const filtered = contacts.filter((c) => c.address !== oldAddress)
+      const nextContacts = [...filtered, updatedAccount]
+      setContacts(nextContacts)
+
+      return updateCloudContacts(nextContacts)
+    },
+    [contacts],
+  )
+
   const deleteContact = useCallback(
     async (address: string) => {
       const filtered = contacts.filter((c) => c.address !== address)
@@ -166,10 +177,11 @@ const useAccountStorageHook = () => {
           newAccounts = { ...accounts }
           delete newAccounts[account.address]
         }
+        const newAccountValues = Object.values(newAccounts)
         await updateCloudAccounts(newAccounts)
         setAccounts(newAccounts)
         setCurrentAccount(
-          newAccounts ? Object.values(newAccounts)[0] : undefined,
+          newAccountValues?.length ? newAccountValues[0] : undefined,
         )
       } else {
         // sign out of all accounts
@@ -187,6 +199,7 @@ const useAccountStorageHook = () => {
         ])
         setAccounts({})
         setContacts([])
+        setCurrentAccount(undefined)
       }
     },
     [accounts, sortedAccounts],
@@ -196,6 +209,7 @@ const useAccountStorageHook = () => {
     accounts,
     accountAddresses,
     addContact,
+    editContact,
     deleteContact,
     contacts,
     contactsForNetType,
@@ -219,6 +233,7 @@ const initialState = {
   accounts: {},
   accountAddresses: [],
   addContact: async () => undefined,
+  editContact: async () => undefined,
   deleteContact: async () => undefined,
   contacts: [],
   contactsForNetType: () => [],

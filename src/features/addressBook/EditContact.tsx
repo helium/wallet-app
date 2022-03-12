@@ -1,4 +1,11 @@
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import Close from '@assets/images/close.svg'
@@ -11,6 +18,7 @@ import {
 } from 'react-native'
 import { Address } from '@helium/crypto-react-native'
 import Checkmark from '@assets/images/checkmark.svg'
+import QR from '@assets/images/qr.svg'
 import { useKeyboard } from '@react-native-community/hooks'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
@@ -28,6 +36,7 @@ import {
 import { accountNetType } from '../../utils/accountUtils'
 import useAlert from '../../utils/useAlert'
 import BackgroundFill from '../../components/BackgroundFill'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Route = RouteProp<AddressBookStackParamList, 'EditContact'>
 
@@ -44,12 +53,13 @@ const EditContact = () => {
     'surfaceSecondary',
     keyboardShown ? 0.85 : 0.4,
   )
-  const { addContact, deleteContact } = useAccountStorage()
+  const { editContact, deleteContact } = useAccountStorage()
+  const { scannedAddress, setScannedAddress } = useAppStorage()
   const [nickname, setNickname] = useState(contact.alias)
   const [address, setAddress] = useState(contact.address)
   const { showOKCancelAlert } = useAlert()
   const nicknameInput = useRef<RNTextInput | null>(null)
-  const { blueBright500 } = useColors()
+  const { blueBright500, white } = useColors()
   const spacing = useSpacing()
 
   const onRequestClose = useCallback(() => {
@@ -62,9 +72,13 @@ const EditContact = () => {
   }, [address])
 
   const handleSaveNewContact = useCallback(() => {
-    addContact({ address, alias: nickname, netType: accountNetType(address) })
+    editContact(contact.address, {
+      address,
+      alias: nickname,
+      netType: accountNetType(address),
+    })
     addressBookNav.goBack()
-  }, [addContact, address, addressBookNav, nickname])
+  }, [editContact, contact.address, address, nickname, addressBookNav])
 
   const handleDeleteContact = useCallback(async () => {
     const decision = await showOKCancelAlert({
@@ -86,9 +100,20 @@ const EditContact = () => {
     [],
   )
 
+  const handleScanAddress = useCallback(() => {
+    addressBookNav.push('ScanAddress')
+  }, [addressBookNav])
+
   const handleAddressChange = useCallback((text: string) => {
     setAddress(text.trim())
   }, [])
+
+  useEffect(() => {
+    if (scannedAddress && Address.isValid(scannedAddress)) {
+      setAddress(scannedAddress)
+      setScannedAddress(undefined)
+    }
+  }, [scannedAddress, setScannedAddress])
 
   return (
     <SafeAreaBox flex={1} edges={['top']}>
@@ -132,7 +157,13 @@ const EditContact = () => {
             marginHorizontal="xl"
           >
             <Text variant="body1">{t('addNewContact.address.title')}</Text>
-            {addressIsValid && <Checkmark color={blueBright500} />}
+            {addressIsValid ? (
+              <Checkmark color={blueBright500} />
+            ) : (
+              <TouchableOpacityBox onPress={handleScanAddress}>
+                <QR color={white} />
+              </TouchableOpacityBox>
+            )}
           </Box>
           <TextInput
             variant="plain"

@@ -5,7 +5,7 @@ import Text from './Text'
 import Box from './Box'
 import AccountIcon from './AccountIcon'
 import { useColors } from '../theme/themeHooks'
-import { formatAccountAlias } from '../utils/accountUtils'
+import { ellipsizeAddress, formatAccountAlias } from '../utils/accountUtils'
 import { CSAccount } from '../storage/cloudStorage'
 
 type Props = {
@@ -30,9 +30,14 @@ const AccountListItem = ({ selected, account, onPress, disabled }: Props) => {
       disabled={disabled}
     >
       <AccountIcon size={40} address={account.address} />
-      <Text variant="body1" marginLeft="ms" flex={1}>
-        {formatAccountAlias(account)}
-      </Text>
+      <Box flexDirection="column" justifyContent="center">
+        <Text variant="body1" marginLeft="ms" flex={1}>
+          {formatAccountAlias(account)}
+        </Text>
+        <Text variant="body3" marginLeft="ms" flex={1} color="secondaryText">
+          {ellipsizeAddress(account.address)}
+        </Text>
+      </Box>
       {selected && (
         <Box
           backgroundColor="surfaceContrast"
