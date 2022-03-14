@@ -89,23 +89,36 @@ export const parsePaymentLink = (
   // Handle hotspot app payment format
   try {
     const parsedJson = JSON.parse(urlOrAddress)
-    if (parsedJson.type !== 'payment' || !parsedJson.amount) {
+    if (
+      parsedJson.type !== 'payment' ||
+      (!parsedJson.amount && !parsedJson.payees)
+    ) {
       // This is not a hotspot app link
       return
     }
 
     const { coefficient } = new Balance(0, CurrencyType.networkToken).type
 
-    const amount = new BigNumber(parseFloat(parsedJson.amount))
-      .dividedBy(coefficient)
-      .toString()
+    if (parsedJson.amount) {
+      const amount = new BigNumber(parseFloat(parsedJson.amount))
+        .dividedBy(coefficient)
+        .toString()
 
-    return {
-      payee: parsedJson.address || parsedJson.payee,
-      payer: parsedJson.payer,
-      amount,
-      memo: parsedJson.memo,
-      netType: parsedJson.netType,
+      return {
+        payee: parsedJson.address || parsedJson.payee,
+        payer: parsedJson.payer,
+        amount,
+        memo: parsedJson.memo,
+      }
+    }
+    if (parsedJson.payees) {
+      const payments = Object.keys(parsedJson.payees).map((address) => {
+        const amount = new BigNumber(parseFloat(parsedJson.payees[address]))
+          .dividedBy(coefficient)
+          .toString()
+        return { amount, payee: address }
+      })
+      return { payments: JSON.stringify(payments) }
     }
   } catch (e) {}
 }

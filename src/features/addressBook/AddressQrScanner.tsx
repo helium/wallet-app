@@ -11,7 +11,6 @@ import useAlert from '../../utils/useAlert'
 import { HomeNavigationProp } from '../home/homeTypes'
 import BackScreen from '../../components/BackScreen'
 import { useAppStorage } from '../../storage/AppStorageProvider'
-import { parsePaymentLink } from '../../utils/linking'
 
 const PaymentQrScanner = () => {
   const [hasPermission, setHasPermission] = useState(false)
@@ -29,22 +28,20 @@ const PaymentQrScanner = () => {
   }, [])
 
   const handleBarCodeScanned = useCallback(
-    async (result: BarCodeScanningResult) => {
+    async ({ data: address }: BarCodeScanningResult) => {
       if (scanned) return
       setScanned(true)
 
-      const query = parsePaymentLink(result.data)
-
-      if (query?.payee && Address.isValid(query.payee)) {
-        setScannedAddress(query.payee)
+      if (Address.isValid(address)) {
+        setScannedAddress(address)
         triggerNotification('success')
         navigation.goBack()
       } else {
-        await showOKAlert({
-          title: t('payment.qrScanFail.title'),
-          message: t('payment.qrScanFail.message'),
-        })
         triggerNotification('error')
+        await showOKAlert({
+          title: t('addressBook.qrScanFail.title'),
+          message: t('addressBook.qrScanFail.message'),
+        })
         navigation.goBack()
       }
     },
