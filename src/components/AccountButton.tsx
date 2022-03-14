@@ -3,9 +3,8 @@ import React, { memo, useCallback } from 'react'
 import ChevronDown from '@assets/images/chevronDown.svg'
 import { Keyboard, StyleSheet } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
-import TestnetIcon from '@assets/images/testnetIcon.svg'
 import { NetType } from '@helium/crypto-react-native'
-import { useColors, useHitSlop } from '../theme/themeHooks'
+import { useHitSlop } from '../theme/themeHooks'
 import AccountIcon from './AccountIcon'
 import Box from './Box'
 import Text from './Text'
@@ -35,7 +34,6 @@ const AccountButton = ({
   ...boxProps
 }: Props) => {
   const hitSlop = useHitSlop('l')
-  const { red500 } = useColors()
 
   const handlePress = useCallback(() => {
     Keyboard.dismiss()
@@ -62,12 +60,9 @@ const AccountButton = ({
       >
         <AccountIcon size={40} address={address} />
         <Box flex={1}>
-          <Box flexDirection="row" alignItems="center">
-            <Text marginLeft="ms" marginRight="xs" variant="subtitle2">
-              {title}
-            </Text>
-            {netType === NetType.TESTNET && <TestnetIcon color={red500} />}
-          </Box>
+          <Text marginLeft="ms" marginRight="xs" variant="subtitle2">
+            {title}
+          </Text>
           {!!subtitle && (
             <Text marginLeft="ms" variant="body3" color="secondaryText">
               {subtitle}

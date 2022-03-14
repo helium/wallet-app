@@ -30,11 +30,11 @@ const AccountListItem = ({ selected, account, onPress, disabled }: Props) => {
       disabled={disabled}
     >
       <AccountIcon size={40} address={account.address} />
-      <Box flexDirection="column" justifyContent="center">
-        <Text variant="body1" marginLeft="ms" flex={1}>
+      <Box flexDirection="column" justifyContent="center" flex={1}>
+        <Text variant="body1" marginLeft="ms">
           {formatAccountAlias(account)}
         </Text>
-        <Text variant="body3" marginLeft="ms" flex={1} color="secondaryText">
+        <Text variant="body3" marginLeft="ms" color="secondaryText">
           {ellipsizeAddress(account.address)}
         </Text>
       </Box>

@@ -399,10 +399,13 @@ const PaymentScreen = () => {
     [top],
   )
 
-  const handleShowAccounts = useCallback(showAccountTypes(networkType), [
-    networkType,
-    showAccountTypes,
-  ])
+  const handleShowAccounts = useCallback(() => {
+    if (sortedAccountsForNetType(networkType).length <= 1) {
+      return
+    }
+
+    showAccountTypes(networkType)()
+  }, [networkType, showAccountTypes, sortedAccountsForNetType])
 
   return (
     <>
@@ -456,6 +459,7 @@ const PaymentScreen = () => {
                 subtitle={balanceToString(accountHntBalance, {
                   maxDecimalPlaces: 2,
                 })}
+                showChevron={sortedAccountsForNetType(networkType).length > 1}
                 address={currentAccount?.address}
                 netType={currentAccount?.netType}
                 onPress={handleShowAccounts}
