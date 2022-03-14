@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo } from 'react'
+import React, { memo, useCallback, useEffect, useMemo } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import TriangleTop from '@assets/images/boxTriangleTop.svg'
 import BottomSheet from '@gorhom/bottom-sheet'
@@ -15,7 +15,6 @@ import NotificationsListNavigator from './NotificationsListNavigator'
 import HandleBasic from '../../components/HandleBasic'
 import ButtonPressable from '../../components/ButtonPressable'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
-import useDisappear from '../../utils/useDisappear'
 
 const NotificationsScreen = () => {
   const { t } = useTranslation()
@@ -27,7 +26,9 @@ const NotificationsScreen = () => {
     onNotificationsClosed,
   } = useNotificationStorage()
 
-  useDisappear(onNotificationsClosed)
+  useEffect(() => {
+    return navigation.addListener('beforeRemove', onNotificationsClosed)
+  }, [navigation, onNotificationsClosed, setSelectedNotification])
 
   const handleComponent = useCallback(
     () => (
