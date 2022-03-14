@@ -105,6 +105,10 @@ export default {
     addNext: 'Add New...',
     searchContacts: 'Search Contacts...',
     title: 'Address Book',
+    qrScanFail: {
+      message: 'This QR scanner supports wallet addresses only.',
+      title: 'Unsupported QR Code',
+    },
   },
   auth: {
     enterCurrent: 'Enter your current PIN to continue',
