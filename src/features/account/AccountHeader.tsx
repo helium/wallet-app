@@ -31,7 +31,9 @@ const AccountHeader = ({ account }: Props) => {
     >
       <AccountIcon size={40} address={account.address} />
       <Box marginLeft="s" flex={1}>
-        <Text variant="subtitle2">{formatAccountAlias(account)}</Text>
+        <Text variant="subtitle2" numberOfLines={1}>
+          {formatAccountAlias(account)}
+        </Text>
         <Text variant="body3" color="secondaryText">
           {minutesAgo !== undefined
             ? t('accountHeader.timeAgo', { formattedChange })

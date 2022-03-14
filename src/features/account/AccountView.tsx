@@ -4,7 +4,6 @@ import DC from '@assets/images/dc.svg'
 import Helium from '@assets/images/helium.svg'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { NetType } from '@helium/crypto-react-native'
-import TestnetIcon from '@assets/images/testnetIcon.svg'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import { useColors } from '../../theme/themeHooks'
@@ -79,7 +78,6 @@ const AccountView = ({
           alignItems="center"
           visible={netType === NetType.TESTNET}
         >
-          <TestnetIcon height={12} color={colors.red500} />
           <Text variant="body3" color="red500">
             {t('generic.testnet')}
           </Text>

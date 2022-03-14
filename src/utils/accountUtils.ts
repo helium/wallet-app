@@ -45,5 +45,5 @@ export const formatAccountAlias = (
 ) => {
   if (!opts) return ''
   const { alias, netType } = opts
-  return `${alias}${netType === NetType.TESTNET ? ' (Testnet)' : ''}`
+  return `${netType === NetType.TESTNET ? '🚧 ' : ''}${alias}`
 }

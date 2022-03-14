@@ -11,7 +11,6 @@ import React, {
 import { Carousel } from 'react-native-snap-carousel'
 import CogIco from '@assets/images/cog.svg'
 import AccountIco from '@assets/images/account.svg'
-import TestnetIcon from '@assets/images/testnetIcon.svg'
 import { AnimatePresence } from 'moti'
 import { ActivityIndicator, LayoutRectangle } from 'react-native'
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet'
@@ -104,7 +103,7 @@ const AccountsScreen = () => {
   const verticalHitSlop = useVerticalHitSlop('l')
   const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
   const { backgroundStyle: handleStyle } = useOpacity('black500', 1)
-  const { primaryText, primaryIcon, red500 } = useColors()
+  const { primaryText, primaryIcon } = useColors()
   const carouselRef = useRef<Carousel<CSAccount | null>>(null)
   const { sortedAccounts, currentAccount, setCurrentAccount } =
     useAccountStorage()
@@ -405,9 +404,8 @@ const AccountsScreen = () => {
                 alignItems="center"
                 visible={accountNetType === NetType.TESTNET}
               >
-                <TestnetIcon color={red500} />
                 <Text marginLeft="xs" variant="subtitle1" color="red500">
-                  {t('generic.testnet')}
+                  🚧 {t('generic.testnet')} 🚧
                 </Text>
               </Box>
               <Box flexDirection="row" paddingHorizontal="l">
