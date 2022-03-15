@@ -103,12 +103,12 @@ export default {
   },
   addressBook: {
     addNext: 'Add New...',
-    searchContacts: 'Search Contacts...',
-    title: 'Address Book',
     qrScanFail: {
       message: 'This QR scanner supports wallet addresses only.',
       title: 'Unsupported QR Code',
     },
+    searchContacts: 'Search Contacts...',
+    title: 'Address Book',
   },
   auth: {
     enterCurrent: 'Enter your current PIN to continue',
@@ -249,6 +249,14 @@ export default {
     enterAccountAddress: 'Enter Account Address',
     fetchMoreActivity: 'Fetch More Activity',
     getAccountData: 'Get Account Data',
+  },
+  qrScanner: {
+    deniedAlert: {
+      message:
+        'Camera permissions denied. To re-enable, go to your phone’s settings.',
+      ok: 'Go to Settings',
+      title: 'Camera Disabled',
+    },
   },
   request: {
     amount: 'Amount (Optional)',
