@@ -110,6 +110,9 @@ export default {
     searchContacts: 'Search Contacts...',
     title: 'Address Book',
   },
+  statusBanner: {
+    description: 'Last updated {{date}}. Tap for info.',
+  },
   auth: {
     enterCurrent: 'Enter your current PIN to continue',
     error: 'Incorrect PIN',

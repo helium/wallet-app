@@ -59,6 +59,7 @@ import NotificationIcon from '../../components/NotificationIcon'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
+import StatusBanner from '../StatusPage/StatusBanner'
 
 type AccountLayout = {
   accountViewStart: number
@@ -370,21 +371,26 @@ const AccountsScreen = () => {
     [navigation],
   )
 
+  const fadeSettings = useMemo(
+    () => ({
+      from: {
+        opacity: 0,
+      },
+      animate: {
+        opacity: 1,
+      },
+      exit: {
+        opacity: 0,
+      },
+    }),
+    [],
+  )
+
   return (
     <Box flex={1}>
       <Box minHeight={75} opacity={!currentAccount?.address ? 0 : 100}>
         <AnimatePresence>
-          <MotiBox
-            from={{
-              opacity: 0,
-            }}
-            animate={{
-              opacity: 1,
-            }}
-            exit={{
-              opacity: 0,
-            }}
-          >
+          <MotiBox {...fadeSettings}>
             <SafeAreaBox
               flexDirection="row"
               justifyContent="space-between"
@@ -453,15 +459,7 @@ const AccountsScreen = () => {
               bottom={0}
               left={0}
               right={0}
-              from={{
-                opacity: 0,
-              }}
-              animate={{
-                opacity: 1,
-              }}
-              exit={{
-                opacity: 0,
-              }}
+              {...fadeSettings}
             >
               <MultiAccountNavigator
                 onboardingType={onboardingType}
@@ -483,15 +481,7 @@ const AccountsScreen = () => {
                   top={0}
                   left={0}
                   right={0}
-                  from={{
-                    opacity: 0,
-                  }}
-                  animate={{
-                    opacity: 1,
-                  }}
-                  exit={{
-                    opacity: 0,
-                  }}
+                  {...fadeSettings}
                 >
                   <AccountView
                     onLayoutChange={handleAccountViewLayoutChange}
@@ -529,6 +519,8 @@ const AccountsScreen = () => {
           />
         </BottomSheet>
       )}
+
+      <StatusBanner />
     </Box>
   )
 }
