@@ -22,18 +22,11 @@ public class MainActivity extends ReactActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-  }
 
-  @Override
-  protected void onPause() {
-    super.onPause();
-    getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
-  }
-
-  @Override
-  protected void onResume() {
-    super.onResume();
-    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+    getWindow().setFlags(
+        WindowManager.LayoutParams.FLAG_SECURE,
+        WindowManager.LayoutParams.FLAG_SECURE
+    );
   }
 
   @Override
