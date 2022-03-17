@@ -1,6 +1,7 @@
 export default {
   accountAssign: {
     AccountNamePlaceholder: 'Account Name',
+    setDefault: 'Set as Default Account',
   },
   accountHeader: {
     last24: 'Last 24h',
@@ -327,6 +328,15 @@ export default {
         requirePinForPayments: 'Require PIN for Payments',
         resetPin: 'Reset PIN',
         title: 'Security Settings',
+      },
+      defaultAccount: {
+        title: 'Default Account',
+        enableTitle: 'Update Default Account?',
+        enableMessage:
+          'This will update your default account from {{aliasOld}} to {{aliasNew}}. You can update this in Settings later if you change your mind.',
+        disableTitle: 'Default Account Required',
+        disableMessage:
+          'Wallet app requires a default account. Select a different account by tapping its account settings to set as default.',
       },
     },
     title: 'Settings',
