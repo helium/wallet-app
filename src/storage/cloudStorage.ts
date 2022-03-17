@@ -19,12 +19,27 @@ enum CloudStorageKeys {
   ACCOUNTS = 'accounts',
   CONTACTS = 'contacts',
   LAST_VIEWED_NOTIFICATIONS = 'lastViewedNotifications',
+  DEFAULT_ACCOUNT_ADDRESS = 'defaultAccountAddress',
 }
 
-export const sortAccounts = (accts: CSAccounts) => {
-  // TODO: We'll probably want to find a better way to order the accounts
+export const sortAccounts = (
+  accts: CSAccounts,
+  defaultAddress: string | undefined | null,
+) => {
   const acctList = values(accts)
-  return sortBy(acctList, 'alias') || []
+  const sortedByAlias = sortBy(acctList, 'alias') || []
+  if (defaultAddress) {
+    const defaultAccount = sortedByAlias.find(
+      (a) => a.address === defaultAddress,
+    )
+    if (defaultAccount) {
+      // put default at beginning
+      const filtered = sortedByAlias.filter((a) => a.address !== defaultAddress)
+      filtered.unshift(defaultAccount)
+      return filtered
+    }
+  }
+  return sortedByAlias
 }
 const getAccounts = async (): Promise<CSAccounts> => {
   const csAccounts = await CloudStorage.getItem(CloudStorageKeys.ACCOUNTS)
@@ -38,10 +53,11 @@ export const restoreAccounts = async () => {
     CloudStorageKeys.CONTACTS,
   )
   const csAccounts = await getAccounts()
+  const defaultAccountAddress = await getCloudDefaultAccountAddress()
 
   let currentAccount: CSAccount | null = null
   if (Object.keys(csAccounts).length) {
-    const [first] = sortAccounts(csAccounts)
+    const [first] = sortAccounts(csAccounts, defaultAccountAddress)
     currentAccount = first
   }
 
@@ -74,6 +90,19 @@ export const getLastViewedNotifications = async () => {
     CloudStorageKeys.LAST_VIEWED_NOTIFICATIONS,
   )
   return timeString ? Number.parseInt(timeString, 10) : undefined
+}
+
+export const setCloudDefaultAccountAddress = async (
+  address: string | undefined,
+) => {
+  if (!address) {
+    return CloudStorage.removeItem(CloudStorageKeys.DEFAULT_ACCOUNT_ADDRESS)
+  }
+  return CloudStorage.setItem(CloudStorageKeys.DEFAULT_ACCOUNT_ADDRESS, address)
+}
+
+export const getCloudDefaultAccountAddress = async () => {
+  return CloudStorage.getItem(CloudStorageKeys.DEFAULT_ACCOUNT_ADDRESS)
 }
 
 export const signoutCloudStorage = () =>

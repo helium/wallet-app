@@ -3,6 +3,7 @@ import { useNavigation } from '@react-navigation/native'
 import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import CheckBox from '@react-native-community/checkbox'
 import Box from '../../components/Box'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import TextInput from '../../components/TextInput'
@@ -10,10 +11,11 @@ import { OnboardingNavigationProp } from './onboardingTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import useMount from '../../utils/useMount'
 import FabButton from '../../components/FabButton'
-import { useSpacing } from '../../theme/themeHooks'
+import { useColors, useSpacing } from '../../theme/themeHooks'
 import { useOnboarding } from './OnboardingProvider'
 import AccountIcon from '../../components/AccountIcon'
 import { accountNetType } from '../../utils/accountUtils'
+import Text from '../../components/Text'
 
 const AccountAssignScreen = () => {
   const onboardingNav = useNavigation<OnboardingNavigationProp>()
@@ -26,7 +28,10 @@ const AccountAssignScreen = () => {
   } = useOnboarding()
   const insets = useSafeAreaInsets()
   const spacing = useSpacing()
-  const { upsertAccount, hasAccounts } = useAccountStorage()
+  const colors = useColors()
+  const { upsertAccount, hasAccounts, updateDefaultAccountAddress } =
+    useAccountStorage()
+  const [setAsDefault, toggleSetAsDefault] = useState(false)
 
   useMount(() => {
     setOnboardingData((prev) => ({ ...prev, onboardingType: 'assign' }))
@@ -42,6 +47,9 @@ const AccountAssignScreen = () => {
           address: secureAccount.address,
           secureAccount,
         })
+        if (setAsDefault) {
+          await updateDefaultAccountAddress(secureAccount.address)
+        }
         onboardingNav.popToTop()
         reset()
         return
@@ -59,7 +67,21 @@ const AccountAssignScreen = () => {
         netType: accountNetType(secureAccount.address),
       },
     })
-  }, [secureAccount, hasAccounts, onboardingNav, alias, upsertAccount, reset])
+  }, [
+    secureAccount,
+    hasAccounts,
+    onboardingNav,
+    alias,
+    upsertAccount,
+    setAsDefault,
+    reset,
+    updateDefaultAccountAddress,
+  ])
+
+  const onCheckboxToggled = useCallback(
+    (newValue) => toggleSetAsDefault(newValue),
+    [],
+  )
 
   return (
     <SafeAreaBox
@@ -86,6 +108,37 @@ const AccountAssignScreen = () => {
             autoCapitalize="words"
             width="100%"
           />
+
+          <Box
+            flexDirection="row"
+            alignItems="center"
+            marginTop="xl"
+            opacity={hasAccounts ? 100 : 0}
+          >
+            <CheckBox
+              disabled={!hasAccounts}
+              value={setAsDefault}
+              tintColors={{
+                true: colors.purple500,
+                false: colors.surfaceSecondary,
+              }}
+              onCheckColor={colors.purple500}
+              onTintColor={colors.purple500}
+              tintColor={colors.surfaceSecondary}
+              onAnimationType="fill"
+              offAnimationType="fill"
+              boxType="square"
+              onValueChange={onCheckboxToggled}
+            />
+
+            <Text
+              variant="body1"
+              color="secondaryText"
+              marginLeft={Platform.OS === 'ios' ? 'm' : 's'}
+            >
+              {t('accountAssign.setDefault')}
+            </Text>
+          </Box>
 
           <Box flex={1} />
 

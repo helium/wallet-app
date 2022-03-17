@@ -370,6 +370,8 @@ PODS:
     - React-perflogger (= 0.66.4)
   - RNCAsyncStorage (1.16.2):
     - React-Core
+  - RNCCheckbox (0.5.12):
+    - React-Core
   - RNCClipboard (1.5.1):
     - React-Core
   - RNDeviceInfo (8.4.9):
@@ -496,6 +498,7 @@ DEPENDENCIES:
   - React-runtimeexecutor (from `../node_modules/react-native/ReactCommon/runtimeexecutor`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
+  - "RNCCheckbox (from `../node_modules/@react-native-community/checkbox`)"
   - "RNCClipboard (from `../node_modules/@react-native-community/clipboard`)"
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
@@ -647,6 +650,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
+  RNCCheckbox:
+    :path: "../node_modules/@react-native-community/checkbox"
   RNCClipboard:
     :path: "../node_modules/@react-native-community/clipboard"
   RNDeviceInfo:
@@ -741,6 +746,7 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: dec32ee6f2e2a26e13e58152271535fadff5455a
   ReactCommon: 57b69f6383eafcbd7da625bfa6003810332313c4
   RNCAsyncStorage: 7ebe0ebbb533d9336de2734866d172cce6515fce
+  RNCCheckbox: ed1b4ca295475b41e7251ebae046360a703b6eb5
   RNCClipboard: 41d8d918092ae8e676f18adada19104fa3e68495
   RNDeviceInfo: 4944cf8787b9c5bffaf301fda68cc1a2ec003341
   RNGestureHandler: bf572f552ea324acd5b5464b8d30755b2d8c1de6

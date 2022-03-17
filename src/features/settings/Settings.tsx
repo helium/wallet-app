@@ -20,6 +20,7 @@ import { SettingsNavigationProp } from './settingsTypes'
 import { useLanguageStorage } from '../../storage/LanguageProvider'
 import { useApolloClient } from '../../graphql/useApolloClient'
 import useCopyAddress from '../../utils/useCopyAddress'
+import useAlert from '../../utils/useAlert'
 
 const Settings = () => {
   const { t } = useTranslation()
@@ -30,8 +31,14 @@ const Settings = () => {
   const version = useAppVersion()
   const hitSlop = useHitSlop('xxl')
   const authIntervals = useAuthIntervals()
-  const { currentAccount, signOut, accounts, sortedTestnetAccounts } =
-    useAccountStorage()
+  const {
+    currentAccount,
+    signOut,
+    accounts,
+    sortedTestnetAccounts,
+    defaultAccountAddress,
+    updateDefaultAccountAddress,
+  } = useAccountStorage()
   const { changeLanguage, language } = useLanguageStorage()
   const {
     authInterval,
@@ -48,6 +55,12 @@ const Settings = () => {
   } = useAppStorage()
   const { client } = useApolloClient()
   const copyAddress = useCopyAddress()
+  const { showOKAlert, showOKCancelAlert } = useAlert()
+
+  const isDefaultAccount = useMemo(
+    () => defaultAccountAddress === currentAccount?.address,
+    [currentAccount, defaultAccountAddress],
+  )
 
   const isPinRequired = useMemo(
     () => appPin !== undefined && appPin.status !== 'off',
@@ -103,6 +116,45 @@ const Settings = () => {
       }
     },
     [settingsNav, appPin, isPinRequired],
+  )
+
+  const handleSetDefaultAccount = useCallback(
+    async (value?: boolean) => {
+      if (!isDefaultAccount && value && currentAccount && accounts) {
+        // toggling on
+        const oldAccount = Object.values(accounts).find(
+          (a) => a.address === defaultAccountAddress,
+        )
+        const decision = await showOKCancelAlert({
+          title: t('settings.sections.defaultAccount.enableTitle'),
+          message: t('settings.sections.defaultAccount.enableMessage', {
+            aliasOld: oldAccount?.alias,
+            aliasNew: currentAccount.alias,
+          }),
+        })
+        if (decision) {
+          await updateDefaultAccountAddress(currentAccount.address)
+        }
+      }
+
+      if (isDefaultAccount && !value) {
+        // toggling off
+        await showOKAlert({
+          title: t('settings.sections.defaultAccount.disableTitle'),
+          message: t('settings.sections.defaultAccount.disableMessage'),
+        })
+      }
+    },
+    [
+      accounts,
+      currentAccount,
+      defaultAccountAddress,
+      isDefaultAccount,
+      showOKAlert,
+      showOKCancelAlert,
+      t,
+      updateDefaultAccountAddress,
+    ],
   )
 
   const handlePinForPayment = useCallback(
@@ -272,6 +324,11 @@ const Settings = () => {
             onPress: handleUpdateAlias,
           },
           {
+            title: t('settings.sections.defaultAccount.title'),
+            onToggle: handleSetDefaultAccount,
+            value: isDefaultAccount,
+          },
+          {
             title: t('settings.sections.account.revealWords'),
             onPress: handleRevealWords,
           },
@@ -359,9 +416,11 @@ const Settings = () => {
     handlePinRequired,
     handleResetPin,
     handleRevealWords,
+    handleSetDefaultAccount,
     handleSignOut,
     handleToggleEnableTestnet,
     handleUpdateAlias,
+    isDefaultAccount,
     isPinRequired,
     language,
     requirePinForPayment,

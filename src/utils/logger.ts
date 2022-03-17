@@ -14,7 +14,7 @@ export const init = () => {
   })
 }
 
-export const setUser = (userAddress: string) => {
+export const setUser = (userAddress: string | undefined) => {
   if (__DEV__) return
   Sentry.setUser({ username: userAddress })
 }

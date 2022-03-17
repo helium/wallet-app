@@ -46,6 +46,7 @@
     "@helium/transactions": "^3.49.1",
     "@react-native-async-storage/async-storage": "^1.16.2",
     "@react-native-community/blur": "^3.6.0",
+    "@react-native-community/checkbox": "^0.5.12",
     "@react-native-community/clipboard": "^1.5.1",
     "@react-native-community/hooks": "^2.8.1",
     "@react-native-community/netinfo": "^7.1.9",

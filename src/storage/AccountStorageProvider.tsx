@@ -21,13 +21,16 @@ import {
 import {
   CSAccount,
   CSAccounts,
+  getCloudDefaultAccountAddress,
   restoreAccounts,
+  setCloudDefaultAccountAddress,
   signoutCloudStorage,
   sortAccounts,
   updateCloudAccounts,
   updateCloudContacts,
 } from './cloudStorage'
 import { removeAccountTag, tagAccount } from './oneSignalStorage'
+import * as Logger from '../utils/logger'
 
 const useAccountStorageHook = () => {
   const [currentAccount, setCurrentAccount] = useState<
@@ -35,6 +38,7 @@ const useAccountStorageHook = () => {
   >(undefined)
   const [accounts, setAccounts] = useState<CSAccounts>()
   const [contacts, setContacts] = useState<CSAccount[]>([])
+  const [defaultAccountAddress, setDefaultAccountAddress] = useState<string>()
 
   const { result: restoredAccounts } = useAsync(restoreAccounts, [])
 
@@ -45,6 +49,24 @@ const useAccountStorageHook = () => {
     setCurrentAccount(restoredAccounts.current)
     setContacts(restoredAccounts.contacts)
   }, [restoredAccounts])
+
+  useAsync(async () => {
+    if (!accounts || Object.values(accounts)?.length === 0) return
+
+    const restoredAddress = await getCloudDefaultAccountAddress()
+    if (!restoredAddress) {
+      // set default account to first in list
+      const firstAccount = Object.values(accounts)[0]
+      const firstAddress = firstAccount.address
+      await setCloudDefaultAccountAddress(firstAddress)
+      setDefaultAccountAddress(firstAddress)
+      Logger.setUser(firstAddress)
+    } else {
+      // restore default account
+      setDefaultAccountAddress(restoredAddress)
+      Logger.setUser(restoredAddress)
+    }
+  }, [accounts])
 
   const restored = useMemo(() => accounts !== undefined, [accounts])
 
@@ -58,7 +80,10 @@ const useAccountStorageHook = () => {
     [accountAddresses.length],
   )
 
-  const sortedAccounts = useMemo(() => sortAccounts(accounts || {}), [accounts])
+  const sortedAccounts = useMemo(
+    () => sortAccounts(accounts || {}, defaultAccountAddress),
+    [accounts, defaultAccountAddress],
+  )
 
   const sortedTestnetAccounts = useMemo(
     () => sortedAccounts.filter(({ netType }) => netType === NetType.TESTNET),
@@ -166,6 +191,15 @@ const useAccountStorageHook = () => {
     [contacts],
   )
 
+  const updateDefaultAccountAddress = useCallback(
+    async (address: string | undefined) => {
+      await setCloudDefaultAccountAddress(address)
+      setDefaultAccountAddress(address)
+      Logger.setUser(address)
+    },
+    [],
+  )
+
   const signOut = useCallback(
     async (account?: CSAccount | null) => {
       if (account?.address) {
@@ -178,11 +212,15 @@ const useAccountStorageHook = () => {
           delete newAccounts[account.address]
         }
         const newAccountValues = Object.values(newAccounts)
+        const newCurrentAccount = newAccountValues?.length
+          ? newAccountValues[0]
+          : undefined
         await updateCloudAccounts(newAccounts)
         setAccounts(newAccounts)
-        setCurrentAccount(
-          newAccountValues?.length ? newAccountValues[0] : undefined,
-        )
+        setCurrentAccount(newCurrentAccount)
+        if (account?.address === defaultAccountAddress) {
+          await updateDefaultAccountAddress(newCurrentAccount?.address)
+        }
       } else {
         // sign out of all accounts
         await Promise.all([
@@ -196,13 +234,19 @@ const useAccountStorageHook = () => {
             sortedAccounts.map(({ address: addr }) => addr),
           ),
           signoutCloudStorage(),
+          updateDefaultAccountAddress(undefined),
         ])
         setAccounts({})
         setContacts([])
         setCurrentAccount(undefined)
       }
     },
-    [accounts, sortedAccounts],
+    [
+      accounts,
+      defaultAccountAddress,
+      sortedAccounts,
+      updateDefaultAccountAddress,
+    ],
   )
 
   return {
@@ -211,6 +255,8 @@ const useAccountStorageHook = () => {
     addContact,
     editContact,
     deleteContact,
+    defaultAccountAddress,
+    updateDefaultAccountAddress,
     contacts,
     contactsForNetType,
     createSecureAccount,
@@ -235,6 +281,8 @@ const initialState = {
   addContact: async () => undefined,
   editContact: async () => undefined,
   deleteContact: async () => undefined,
+  defaultAccountAddress: undefined,
+  updateDefaultAccountAddress: async () => undefined,
   contacts: [],
   contactsForNetType: () => [],
   createSecureAccount: async () => ({
