@@ -8,6 +8,7 @@ import { HomeNavigationProp } from '../home/homeTypes'
 import BackScreen from '../../components/BackScreen'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import QrScanner from '../../components/QrScanner'
+import { parsePaymentLink } from '../../utils/linking'
 
 const PaymentQrScanner = () => {
   const { triggerNotification } = useHaptic()
@@ -17,9 +18,19 @@ const PaymentQrScanner = () => {
   const navigation = useNavigation<HomeNavigationProp>()
 
   const handleBarCodeScanned = useCallback(
-    async (address: string) => {
-      if (Address.isValid(address)) {
-        setScannedAddress(address)
+    async (data: string) => {
+      // scanned qr is an address string
+      if (Address.isValid(data)) {
+        setScannedAddress(data)
+        triggerNotification('success')
+        navigation.goBack()
+        return
+      }
+
+      // scanned qr is a payment link
+      const query = parsePaymentLink(data)
+      if (query?.payee && Address.isValid(query.payee)) {
+        setScannedAddress(query.payee)
         triggerNotification('success')
         navigation.goBack()
       } else {

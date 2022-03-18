@@ -79,6 +79,44 @@ export type ActivityData = {
   data?: Maybe<Array<Activity>>
 }
 
+export type Geocode = {
+  __typename?: 'Geocode'
+  cityId: Scalars['String']
+  longCity: Scalars['String']
+  longCountry: Scalars['String']
+  longState: Scalars['String']
+  longStreet: Scalars['String']
+  shortCity: Scalars['String']
+  shortCountry: Scalars['String']
+  shortState: Scalars['String']
+  shortStreet: Scalars['String']
+}
+
+export type Hotspot = {
+  __typename?: 'Hotspot'
+  address: Scalars['String']
+  block: Scalars['Int']
+  blockAdded: Scalars['Int']
+  elevation: Scalars['Int']
+  gain: Scalars['Int']
+  geocode: Geocode
+  lastChangeBlock: Scalars['Int']
+  lastPocChallenge: Scalars['Int']
+  lat: Scalars['Float']
+  lng: Scalars['Float']
+  location: Scalars['String']
+  locationHex: Scalars['String']
+  mode: Scalars['String']
+  name: Scalars['String']
+  nonce: Scalars['Int']
+  owner: Scalars['String']
+  payer: Scalars['String']
+  rewardScale: Scalars['Float']
+  speculativeNonce: Scalars['Int']
+  status: Status
+  timestampAdded: Scalars['String']
+}
+
 export type Notification = {
   __typename?: 'Notification'
   actionTitle?: Maybe<Scalars['String']>
@@ -105,6 +143,13 @@ export type Payment = {
   amount: Scalars['Int']
   memo?: Maybe<Scalars['String']>
   payee: Scalars['String']
+}
+
+export type Penalty = {
+  __typename?: 'Penalty'
+  amount: Scalars['Float']
+  height: Scalars['Int']
+  type: Scalars['String']
 }
 
 export type Reward = {
@@ -136,12 +181,18 @@ export type RootQueryType = {
   accountRewardsSum?: Maybe<Sum>
   /** Get current oracle price */
   currentOraclePrice?: Maybe<OraclePrice>
+  /** Get hotspot */
+  hotspot: Hotspot
+  /** Get is hotspot or validator */
+  isHotspotOrValidator: Scalars['Boolean']
   /** Get notifications */
   notifications?: Maybe<Array<Notification>>
   /** Get pending txns */
   pendingTxns?: Maybe<Array<Activity>>
   /** Get txn config vars */
   txnConfigVars?: Maybe<TxnConfigVars>
+  /** Get validator */
+  validator: Validator
 }
 
 export type RootQueryTypeAccountArgs = {
@@ -164,6 +215,15 @@ export type RootQueryTypeCurrentOraclePriceArgs = {
   address: Scalars['String']
 }
 
+export type RootQueryTypeHotspotArgs = {
+  address: Scalars['String']
+  hotspotAddress: Scalars['String']
+}
+
+export type RootQueryTypeIsHotspotOrValidatorArgs = {
+  address: Scalars['String']
+}
+
 export type RootQueryTypeNotificationsArgs = {
   address: Scalars['String']
   before?: InputMaybe<Scalars['Int']>
@@ -177,6 +237,19 @@ export type RootQueryTypePendingTxnsArgs = {
 
 export type RootQueryTypeTxnConfigVarsArgs = {
   address: Scalars['String']
+}
+
+export type RootQueryTypeValidatorArgs = {
+  address: Scalars['String']
+  validatorAddress: Scalars['String']
+}
+
+export type Status = {
+  __typename?: 'Status'
+  height: Scalars['String']
+  listenAddrs?: Maybe<Array<Scalars['String']>>
+  online: Scalars['String']
+  timestamp: Scalars['String']
 }
 
 export type Sum = {
@@ -213,6 +286,23 @@ export type TxnConfigVars = {
 export type TxnHash = {
   __typename?: 'TxnHash'
   hash: Scalars['String']
+}
+
+export type Validator = {
+  __typename?: 'Validator'
+  address: Scalars['String']
+  block: Scalars['Int']
+  blockAdded: Scalars['Int']
+  consensusGroups: Scalars['Int']
+  lastHeartbeat: Scalars['Int']
+  name: Scalars['String']
+  owner: Scalars['String']
+  penalties?: Maybe<Array<Penalty>>
+  penalty: Scalars['Float']
+  stake: Scalars['Int']
+  stakeStatus: Scalars['String']
+  status: Status
+  versionHeartbeat: Scalars['Int']
 }
 
 export type AccountActivityQueryVariables = Exact<{
@@ -319,6 +409,25 @@ export type AccountQuery = {
   } | null
 }
 
+export type HotspotQueryVariables = Exact<{
+  address: Scalars['String']
+  hotspotAddress: Scalars['String']
+}>
+
+export type HotspotQuery = {
+  __typename?: 'RootQueryType'
+  hotspot: { __typename?: 'Hotspot'; address: string }
+}
+
+export type IsHotspotOrValidatorQueryVariables = Exact<{
+  address: Scalars['String']
+}>
+
+export type IsHotspotOrValidatorQuery = {
+  __typename?: 'RootQueryType'
+  isHotspotOrValidator: boolean
+}
+
 export type NotificationsQueryVariables = Exact<{
   address: Scalars['String']
   resource: Scalars['String']
@@ -417,6 +526,16 @@ export type TxnConfigVarsQuery = {
     stakingFeeTxnAssertLocationV1: number
     dcPayloadSize: number
   } | null
+}
+
+export type ValidatorQueryVariables = Exact<{
+  address: Scalars['String']
+  validatorAddress: Scalars['String']
+}>
+
+export type ValidatorQuery = {
+  __typename?: 'RootQueryType'
+  validator: { __typename?: 'Validator'; address: string }
 }
 
 export const AccountActivityDocument = gql`
@@ -656,6 +775,114 @@ export type AccountLazyQueryHookResult = ReturnType<typeof useAccountLazyQuery>
 export type AccountQueryResult = Apollo.QueryResult<
   AccountQuery,
   AccountQueryVariables
+>
+export const HotspotDocument = gql`
+  query hotspot($address: String!, $hotspotAddress: String!) {
+    hotspot(address: $address, hotspotAddress: $hotspotAddress) {
+      address
+    }
+  }
+`
+
+/**
+ * __useHotspotQuery__
+ *
+ * To run a query within a React component, call `useHotspotQuery` and pass it any options that fit your needs.
+ * When your component renders, `useHotspotQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useHotspotQuery({
+ *   variables: {
+ *      address: // value for 'address'
+ *      hotspotAddress: // value for 'hotspotAddress'
+ *   },
+ * });
+ */
+export function useHotspotQuery(
+  baseOptions: Apollo.QueryHookOptions<HotspotQuery, HotspotQueryVariables>,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useQuery<HotspotQuery, HotspotQueryVariables>(
+    HotspotDocument,
+    options,
+  )
+}
+export function useHotspotLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    HotspotQuery,
+    HotspotQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useLazyQuery<HotspotQuery, HotspotQueryVariables>(
+    HotspotDocument,
+    options,
+  )
+}
+export type HotspotQueryHookResult = ReturnType<typeof useHotspotQuery>
+export type HotspotLazyQueryHookResult = ReturnType<typeof useHotspotLazyQuery>
+export type HotspotQueryResult = Apollo.QueryResult<
+  HotspotQuery,
+  HotspotQueryVariables
+>
+export const IsHotspotOrValidatorDocument = gql`
+  query isHotspotOrValidator($address: String!) {
+    isHotspotOrValidator(address: $address)
+  }
+`
+
+/**
+ * __useIsHotspotOrValidatorQuery__
+ *
+ * To run a query within a React component, call `useIsHotspotOrValidatorQuery` and pass it any options that fit your needs.
+ * When your component renders, `useIsHotspotOrValidatorQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useIsHotspotOrValidatorQuery({
+ *   variables: {
+ *      address: // value for 'address'
+ *   },
+ * });
+ */
+export function useIsHotspotOrValidatorQuery(
+  baseOptions: Apollo.QueryHookOptions<
+    IsHotspotOrValidatorQuery,
+    IsHotspotOrValidatorQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useQuery<
+    IsHotspotOrValidatorQuery,
+    IsHotspotOrValidatorQueryVariables
+  >(IsHotspotOrValidatorDocument, options)
+}
+export function useIsHotspotOrValidatorLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    IsHotspotOrValidatorQuery,
+    IsHotspotOrValidatorQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useLazyQuery<
+    IsHotspotOrValidatorQuery,
+    IsHotspotOrValidatorQueryVariables
+  >(IsHotspotOrValidatorDocument, options)
+}
+export type IsHotspotOrValidatorQueryHookResult = ReturnType<
+  typeof useIsHotspotOrValidatorQuery
+>
+export type IsHotspotOrValidatorLazyQueryHookResult = ReturnType<
+  typeof useIsHotspotOrValidatorLazyQuery
+>
+export type IsHotspotOrValidatorQueryResult = Apollo.QueryResult<
+  IsHotspotOrValidatorQuery,
+  IsHotspotOrValidatorQueryVariables
 >
 export const NotificationsDocument = gql`
   query Notifications(
@@ -987,4 +1214,58 @@ export type TxnConfigVarsLazyQueryHookResult = ReturnType<
 export type TxnConfigVarsQueryResult = Apollo.QueryResult<
   TxnConfigVarsQuery,
   TxnConfigVarsQueryVariables
+>
+export const ValidatorDocument = gql`
+  query validator($address: String!, $validatorAddress: String!) {
+    validator(address: $address, validatorAddress: $validatorAddress) {
+      address
+    }
+  }
+`
+
+/**
+ * __useValidatorQuery__
+ *
+ * To run a query within a React component, call `useValidatorQuery` and pass it any options that fit your needs.
+ * When your component renders, `useValidatorQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useValidatorQuery({
+ *   variables: {
+ *      address: // value for 'address'
+ *      validatorAddress: // value for 'validatorAddress'
+ *   },
+ * });
+ */
+export function useValidatorQuery(
+  baseOptions: Apollo.QueryHookOptions<ValidatorQuery, ValidatorQueryVariables>,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useQuery<ValidatorQuery, ValidatorQueryVariables>(
+    ValidatorDocument,
+    options,
+  )
+}
+export function useValidatorLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    ValidatorQuery,
+    ValidatorQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useLazyQuery<ValidatorQuery, ValidatorQueryVariables>(
+    ValidatorDocument,
+    options,
+  )
+}
+export type ValidatorQueryHookResult = ReturnType<typeof useValidatorQuery>
+export type ValidatorLazyQueryHookResult = ReturnType<
+  typeof useValidatorLazyQuery
+>
+export type ValidatorQueryResult = Apollo.QueryResult<
+  ValidatorQuery,
+  ValidatorQueryVariables
 >

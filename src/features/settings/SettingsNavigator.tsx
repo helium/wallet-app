@@ -6,6 +6,7 @@ import SettingsConfirmPinScreen from './SettingsConfirmPinScreen'
 import SettingsCreatePinScreen from './SettingsCreatePinScreen'
 import RevealWordsScreen from './RevealWordsScreen'
 import UpdateAliasScreen from './UpdateAliasScreen'
+import ShareAddressScreen from './ShareAddressScreen'
 
 const SettingsStack = createNativeStackNavigator()
 
@@ -31,6 +32,10 @@ const SettingsNavigator = () => {
       />
       <SettingsStack.Screen name="RevealWords" component={RevealWordsScreen} />
       <SettingsStack.Screen name="UpdateAlias" component={UpdateAliasScreen} />
+      <SettingsStack.Screen
+        name="ShareAddress"
+        component={ShareAddressScreen}
+      />
     </SettingsStack.Navigator>
   )
 }

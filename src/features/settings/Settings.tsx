@@ -278,6 +278,10 @@ const Settings = () => {
     copyAddress(currentAccount.address)
   }, [copyAddress, currentAccount])
 
+  const handleShareAddress = useCallback(() => {
+    settingsNav.navigate('ShareAddress')
+  }, [settingsNav])
+
   const SectionData = useMemo((): {
     title: string
     data: SettingsListItemType[]
@@ -335,6 +339,10 @@ const Settings = () => {
           {
             title: t('settings.sections.account.copyAddress'),
             onPress: handleCopyAddress,
+          },
+          {
+            title: t('settings.sections.account.shareAddress'),
+            onPress: handleShareAddress,
           },
           {
             title: t('settings.sections.account.signOut'),
@@ -417,6 +425,7 @@ const Settings = () => {
     handleResetPin,
     handleRevealWords,
     handleSetDefaultAccount,
+    handleShareAddress,
     handleSignOut,
     handleToggleEnableTestnet,
     handleUpdateAlias,

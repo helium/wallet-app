@@ -1,0 +1,3 @@
+query isHotspotOrValidator($address: String!) {
+  isHotspotOrValidator(address: $address)
+}
