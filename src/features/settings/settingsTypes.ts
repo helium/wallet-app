@@ -9,6 +9,7 @@ export type SettingsStackParamList = {
   SettingsCreatePin: undefined
   RevealWords: undefined
   UpdateAlias: undefined
+  ShareAddress: undefined
 }
 
 export type SettingsNavigationProp = StackNavigationProp<SettingsStackParamList>

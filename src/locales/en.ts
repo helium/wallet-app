@@ -102,6 +102,8 @@ export default {
       title: 'Enter Nickname',
     },
     title: 'Add New Contact',
+    notValidAddress: 'Not a valid Helium Wallet Address.',
+    loadFailed: 'Cannot validate address. Please try again.',
   },
   addressBook: {
     addNext: 'Add New...',
@@ -149,6 +151,7 @@ export default {
     testnet: 'Testnet',
     total: 'Total',
     tryAgain: 'Try Again',
+    copy: 'Copy',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',
@@ -342,6 +345,7 @@ export default {
       account: {
         alias: 'Account Alias',
         copyAddress: 'Copy Address',
+        shareAddress: 'Share Address',
         revealWords: 'Reveal Words',
         signOut: 'Sign Out',
         signOutAlert: {
@@ -395,6 +399,9 @@ export default {
         disableTitle: 'Default Account Required',
         disableMessage:
           'Wallet app requires a default account. Select a different account by tapping its account settings to set as default.',
+      },
+      shareAddress: {
+        copiedToClipboard: 'Copied {{address}} to clipboard',
       },
     },
     title: 'Settings',

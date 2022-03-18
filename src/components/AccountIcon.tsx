@@ -1,4 +1,4 @@
-import { utils } from '@helium/crypto-react-native'
+import { utils, Address } from '@helium/crypto-react-native'
 import React, { memo, useMemo } from 'react'
 import Jazzicon, { IJazziconProps } from 'react-native-jazzicon'
 
@@ -8,7 +8,7 @@ type Props = { address?: string; size: number } & Omit<
 >
 const AccountIcon = ({ address, ...jazzIconProps }: Props) => {
   const seed = useMemo(() => {
-    if (!address) return
+    if (!address || !Address.isValid(address)) return
 
     const hexVal = utils.bs58ToBin(address).toString('hex')
     return parseInt(hexVal.slice(-8), 16)
