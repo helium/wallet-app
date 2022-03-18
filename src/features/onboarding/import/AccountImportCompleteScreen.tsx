@@ -1,16 +1,16 @@
 import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
-import Text from '../../components/Text'
-import SafeAreaBox from '../../components/SafeAreaBox'
-import { OnboardingNavigationProp } from './onboardingTypes'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useOnboarding } from './OnboardingProvider'
-import useAlert from '../../utils/useAlert'
+import Text from '../../../components/Text'
+import SafeAreaBox from '../../../components/SafeAreaBox'
+import { useAccountStorage } from '../../../storage/AccountStorageProvider'
+import { useOnboarding } from '../OnboardingProvider'
+import useAlert from '../../../utils/useAlert'
+import { ImportAccountNavigationProp } from './importAccountNavTypes'
 
 const AccountImportCompleteScreen = () => {
   const { t } = useTranslation()
-  const navigation = useNavigation<OnboardingNavigationProp>()
+  const navigation = useNavigation<ImportAccountNavigationProp>()
 
   const {
     onboardingData: { words, netType },

@@ -70,7 +70,7 @@ export const getKeypair = async (
 ): Promise<Keypair | undefined> => {
   const secureAccount = await getSecureAccount(address)
   if (!secureAccount) {
-    throw new Error(`Secure account for ${address} could not be found`)
+    return
   }
 
   const netType = Address.fromB58(address)?.netType

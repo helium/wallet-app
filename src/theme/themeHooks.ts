@@ -100,6 +100,20 @@ export const useSpacing = () => {
   return spacing
 }
 
+export const usePaddingStyle = (
+  padding: Spacing,
+  edges: ('top' | 'bottom' | 'left' | 'right')[],
+) => {
+  const { spacing } = useTheme<Theme>()
+  const amount = spacing[padding]
+  return {
+    paddingTop: edges.includes('top') ? amount : undefined,
+    paddingBottom: edges.includes('bottom') ? amount : undefined,
+    paddingLeft: edges.includes('left') ? amount : undefined,
+    paddingRight: edges.includes('right') ? amount : undefined,
+  } as ViewStyle
+}
+
 export const useBorderRadii = () => {
   const { borderRadii } = useTheme<Theme>()
   return borderRadii

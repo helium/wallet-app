@@ -1,9 +1,4 @@
 PODS:
-  - AppAuth (1.4.0):
-    - AppAuth/Core (= 1.4.0)
-    - AppAuth/ExternalUserAgent (= 1.4.0)
-  - AppAuth/Core (1.4.0)
-  - AppAuth/ExternalUserAgent (1.4.0)
   - BCrypt (1.0.0)
   - bcrypt-react-native (1.1.1):
     - BCrypt
@@ -61,14 +56,6 @@ PODS:
     - ReactCommon/turbomodule/core (= 0.66.4)
   - fmt (6.2.1)
   - glog (0.3.5)
-  - GoogleSignIn (6.1.0):
-    - AppAuth (~> 1.4)
-    - GTMAppAuth (~> 1.0)
-    - GTMSessionFetcher/Core (~> 1.1)
-  - GTMAppAuth (1.2.2):
-    - AppAuth/Core (~> 1.4)
-    - GTMSessionFetcher/Core (~> 1.5)
-  - GTMSessionFetcher/Core (1.7.0)
   - helium-react-native-sdk (0.2.1):
     - React-Core
   - MultiplatformBleAdapter (0.1.9)
@@ -368,18 +355,15 @@ PODS:
     - React-jsi (= 0.66.4)
     - React-logger (= 0.66.4)
     - React-perflogger (= 0.66.4)
-  - RNCAsyncStorage (1.16.2):
+  - RNCAsyncStorage (1.16.3):
     - React-Core
   - RNCCheckbox (0.5.12):
     - React-Core
   - RNCClipboard (1.5.1):
     - React-Core
-  - RNDeviceInfo (8.4.9):
+  - RNDeviceInfo (8.5.0):
     - React-Core
-  - RNGestureHandler (2.2.0):
-    - React-Core
-  - RNGoogleSignin (7.1.0):
-    - GoogleSignIn (~> 6.1.0)
+  - RNGestureHandler (2.3.2):
     - React-Core
   - RNICloudStore (0.1.0):
     - React
@@ -416,14 +400,14 @@ PODS:
   - RNScreens (3.8.0):
     - React-Core
     - React-RCTImage
-  - RNSentry (3.3.0):
+  - RNSentry (3.3.3):
     - React-Core
-    - Sentry (= 7.10.0)
+    - Sentry (= 7.10.2)
   - RNSVG (12.1.1):
     - React
-  - Sentry (7.10.0):
-    - Sentry/Core (= 7.10.0)
-  - Sentry/Core (7.10.0)
+  - Sentry (7.10.2):
+    - Sentry/Core (= 7.10.2)
+  - Sentry/Core (7.10.2)
   - Toast (4.0.0)
   - Yoga (1.14.0)
   - ZXingObjC/Core (3.6.5)
@@ -502,7 +486,6 @@ DEPENDENCIES:
   - "RNCClipboard (from `../node_modules/@react-native-community/clipboard`)"
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
-  - "RNGoogleSignin (from `../node_modules/@react-native-google-signin/google-signin`)"
   - RNICloudStore (from `../node_modules/react-native-icloudstore`)
   - RNLocalize (from `../node_modules/react-native-localize`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
@@ -513,12 +496,8 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
-    - AppAuth
     - BCrypt
     - fmt
-    - GoogleSignIn
-    - GTMAppAuth
-    - GTMSessionFetcher
     - MultiplatformBleAdapter
     - OneSignalXCFramework
     - Sentry
@@ -658,8 +637,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-device-info"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
-  RNGoogleSignin:
-    :path: "../node_modules/@react-native-google-signin/google-signin"
   RNICloudStore:
     :path: "../node_modules/react-native-icloudstore"
   RNLocalize:
@@ -676,7 +653,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  AppAuth: 31bcec809a638d7bd2f86ea8a52bd45f6e81e7c7
   BCrypt: 712b656110e5020d319c547e4d8f3053ded82b2a
   bcrypt-react-native: 399775585257ae6c8717370a1119c7da0113e3bf
   boost: a7c83b31436843459a1961bfd74b96033dc77234
@@ -703,9 +679,6 @@ SPEC CHECKSUMS:
   FBReactNativeSpec: fe08c1cd7e2e205718d77ad14b34957cce949b58
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 43737235ae6a21de4f45297f4f73b6420fc2ecb2
-  GoogleSignIn: c90b5bec45e780f54c6a8e1e3c182a86e3dda69d
-  GTMAppAuth: ad5c2b70b9a8689e1a04033c9369c4915bfcbe89
-  GTMSessionFetcher: 43748f93435c2aa068b1cbe39655aaf600652e91
   helium-react-native-sdk: a5d944abc798ec30baace942cf1e9298c82ba782
   MultiplatformBleAdapter: 5a6a897b006764392f9cef785e4360f54fb9477d
   OneSignalXCFramework: fe027712118f2862ab193b72270487f11450ea63
@@ -745,19 +718,18 @@ SPEC CHECKSUMS:
   React-RCTVibration: e3ffca672dd3772536cb844274094b0e2c31b187
   React-runtimeexecutor: dec32ee6f2e2a26e13e58152271535fadff5455a
   ReactCommon: 57b69f6383eafcbd7da625bfa6003810332313c4
-  RNCAsyncStorage: 7ebe0ebbb533d9336de2734866d172cce6515fce
+  RNCAsyncStorage: 13d3b40c7fae0796d10b23fbec382e7a76807a0f
   RNCCheckbox: ed1b4ca295475b41e7251ebae046360a703b6eb5
   RNCClipboard: 41d8d918092ae8e676f18adada19104fa3e68495
-  RNDeviceInfo: 4944cf8787b9c5bffaf301fda68cc1a2ec003341
-  RNGestureHandler: bf572f552ea324acd5b5464b8d30755b2d8c1de6
-  RNGoogleSignin: 233fdfa02522216c19bf02a1e6c60b60a75ffb4c
+  RNDeviceInfo: a674f06c5a5bd496aebb809cbc3be61cfd612a65
+  RNGestureHandler: 6e757e487a4834e7280e98e9bac66d2d9c575e9c
   RNICloudStore: bc6e225811637c09bd1eb055d6cd7448e61cd451
   RNLocalize: 6571ea792a7dcb6d217c98c14d9147e9417cef62
   RNReanimated: e8afbe2a9e08e9e778ea72ddb1a8533445812621
   RNScreens: 6e1ea5787989f92b0671049b808aef64fa1ef98c
-  RNSentry: 143980f2f98320eaaf10ccf7235dfc7f68b5ffa5
+  RNSentry: e18c74a900defb174302793c5bedbbe8bcb1120e
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
-  Sentry: 6ff0eac197e699126c024993eba40a7462e92941
+  Sentry: 7bf9bfe713692cf87812e55f0999260494ba7982
   Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
   Yoga: e7dc4e71caba6472ff48ad7d234389b91dadc280
   ZXingObjC: fdbb269f25dd2032da343e06f10224d62f537bdb

@@ -1,9 +1,9 @@
 import { upperCase } from 'lodash'
 import React, { useCallback } from 'react'
+import Text from '../../../components/Text'
 import TouchableOpacityBox, {
   TouchableOpacityBoxProps,
-} from '../../components/TouchableOpacityBox'
-import Text from '../../components/Text'
+} from '../../../components/TouchableOpacityBox'
 
 type WordProps = {
   fullWord: string

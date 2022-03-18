@@ -3,12 +3,12 @@ import React, { useState, memo } from 'react'
 import { upperCase } from 'lodash'
 import CheckMark from '@assets/images/checkmark.svg'
 import Fail from '@assets/images/fail.svg'
-import Text from '../../components/Text'
+import Text from '../../../components/Text'
 import TouchableHighlightBox, {
   TouchableHighlightBoxProps,
-} from '../../components/TouchableHighlightBox'
-import { useColors } from '../../theme/themeHooks'
-import Box from '../../components/Box'
+} from '../../../components/TouchableHighlightBox'
+import { useColors } from '../../../theme/themeHooks'
+import Box from '../../../components/Box'
 
 type Props = Omit<TouchableHighlightBoxProps, 'children'> & {
   title: string

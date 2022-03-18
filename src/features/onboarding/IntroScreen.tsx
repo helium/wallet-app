@@ -10,7 +10,7 @@ import AccountIcon from '../../components/AccountIcon'
 import { createSecureAccount, SecureAccount } from '../../storage/secureStorage'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { OnboardingParentNavigationProp } from './onboardingParentTypes'
+import { OnboardingNavigationProp } from './onboardingTypes'
 import useMount from '../../utils/useMount'
 import { useOnboarding } from './OnboardingProvider'
 
@@ -26,7 +26,7 @@ const IntroScreen = () => {
   const { result: accounts } = useAsync(() => accountPromises, [])
   const { t } = useTranslation()
   const hitSlop = useHitSlop('l')
-  const navigation = useNavigation<OnboardingParentNavigationProp>()
+  const navigation = useNavigation<OnboardingNavigationProp>()
 
   const handleTap = useCallback(() => {
     navigation.navigate('CreateImport')

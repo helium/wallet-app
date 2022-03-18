@@ -11,10 +11,7 @@ import { NetType } from '@helium/crypto-react-native'
 import { CSAccount } from '../../storage/cloudStorage'
 import { SecureAccount } from '../../storage/secureStorage'
 
-export type OnboardingOpt = 'import' | 'create' | 'assign'
-
 type OnboardingData = {
-  onboardingType: OnboardingOpt
   account?: CSAccount
   secureAccount?: SecureAccount
   words: string[]
@@ -23,7 +20,6 @@ type OnboardingData = {
 
 const useOnboardingHook = () => {
   const initialState = {
-    onboardingType: 'import',
     words: [],
     netType: NetType.MAINNET,
   } as OnboardingData
@@ -51,7 +47,6 @@ const useOnboardingHook = () => {
 const initialState = {
   makers: [] as Maker[],
   onboardingData: {
-    onboardingType: 'import' as OnboardingOpt,
     words: [] as string[],
     netType: NetType.MAINNET,
   },

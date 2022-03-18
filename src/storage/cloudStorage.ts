@@ -4,10 +4,16 @@ import { Platform } from 'react-native'
 import iCloudStorage from 'react-native-icloudstore'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
+export type LedgerDevice = {
+  id: string
+  name: string
+}
+
 export type CSAccount = {
   alias: string
   address: string
   netType: NetType.NetType
+  ledgerDevice?: LedgerDevice
 }
 export type CSAccounts = Record<string, CSAccount>
 

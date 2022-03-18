@@ -90,10 +90,7 @@ const palette = {
   black700: '#131419',
   black800: '#1A1C22',
   black900: '#000000',
-  lividBrown: '#421B27',
-
   blueBright500: '#009FF9',
-  havelockBlue: '#0C93E5',
 
   darkGrey: '#333333',
 
@@ -111,6 +108,12 @@ const palette = {
   grey800: '#54596F',
   grey900: '#2C2E37',
 
+  havelockBlue: '#0C93E5',
+
+  jazzberryJam: '#D23E72',
+
+  lividBrown: '#421B27',
+
   offWhite: '#F9FAFC',
 
   orange500: '#FFB156',
@@ -121,13 +124,11 @@ const palette = {
   red300: '#F97570',
   red400: '#FF6666',
   red500: '#E43B70',
-  jazzberryJam: '#D23E72',
 
   transparent: '#00000000',
 
   white: '#FFFFFF',
 }
-
 export const lightThemeColors = {
   ...palette,
 

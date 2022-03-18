@@ -5,17 +5,26 @@ import Text from '../../components/Text'
 import PinDisplay from '../../components/PinDisplay'
 import Keypad from '../../components/Keypad'
 import Box from '../../components/Box'
-import {
-  OnboardingNavigationProp,
-  OnboardingStackParamList,
-} from './onboardingTypes'
 import { KeypadInput } from '../../components/KeypadButton'
+import {
+  CreateAccountNavigationProp,
+  CreateAccountStackParamList,
+} from './create/createAccountNavTypes'
+import {
+  ImportAccountNavigationProp,
+  ImportAccountStackParamList,
+} from './import/importAccountNavTypes'
 
-type Route = RouteProp<OnboardingStackParamList, 'AccountCreatePinScreen'>
+type Route = RouteProp<
+  CreateAccountStackParamList & ImportAccountStackParamList,
+  'AccountCreatePinScreen'
+>
 const AccountCreatePinScreen = () => {
   const { t } = useTranslation()
   const { params } = useRoute<Route>()
-  const navigation = useNavigation<OnboardingNavigationProp>()
+  const navigation = useNavigation<
+    CreateAccountNavigationProp & ImportAccountNavigationProp
+  >()
 
   const [pin, setPin] = useState('')
 

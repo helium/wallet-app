@@ -7,23 +7,26 @@ import CheckBox from '@react-native-community/checkbox'
 import Box from '../../components/Box'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import TextInput from '../../components/TextInput'
-import { OnboardingNavigationProp } from './onboardingTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import useMount from '../../utils/useMount'
 import FabButton from '../../components/FabButton'
 import { useColors, useSpacing } from '../../theme/themeHooks'
 import { useOnboarding } from './OnboardingProvider'
 import AccountIcon from '../../components/AccountIcon'
 import { accountNetType } from '../../utils/accountUtils'
 import Text from '../../components/Text'
+import { ImportAccountNavigationProp } from './import/importAccountNavTypes'
+import { CreateAccountNavigationProp } from './create/createAccountNavTypes'
+import { HomeNavigationProp } from '../home/homeTypes'
 
 const AccountAssignScreen = () => {
-  const onboardingNav = useNavigation<OnboardingNavigationProp>()
+  const onboardingNav = useNavigation<
+    ImportAccountNavigationProp & CreateAccountNavigationProp
+  >()
+  const homeNav = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const [alias, setAlias] = useState('')
   const {
     reset,
-    setOnboardingData,
     onboardingData: { secureAccount },
   } = useOnboarding()
   const insets = useSafeAreaInsets()
@@ -32,10 +35,6 @@ const AccountAssignScreen = () => {
   const { upsertAccount, hasAccounts, updateDefaultAccountAddress } =
     useAccountStorage()
   const [setAsDefault, toggleSetAsDefault] = useState(false)
-
-  useMount(() => {
-    setOnboardingData((prev) => ({ ...prev, onboardingType: 'assign' }))
-  })
 
   const handlePress = useCallback(async () => {
     if (!secureAccount) return
@@ -50,7 +49,7 @@ const AccountAssignScreen = () => {
         if (setAsDefault) {
           await updateDefaultAccountAddress(secureAccount.address)
         }
-        onboardingNav.popToTop()
+        homeNav.navigate('AccountsScreen')
         reset()
         return
       } catch (e) {
@@ -74,6 +73,7 @@ const AccountAssignScreen = () => {
     alias,
     upsertAccount,
     setAsDefault,
+    homeNav,
     reset,
     updateDefaultAccountAddress,
   ])
@@ -88,6 +88,7 @@ const AccountAssignScreen = () => {
       backgroundColor="primaryBackground"
       flex={1}
       paddingHorizontal={{ smallPhone: 'l', phone: 'xxxl' }}
+      paddingVertical={Platform.OS === 'android' ? 'xxl' : undefined}
     >
       <KeyboardAvoidingView
         keyboardVerticalOffset={insets.top + spacing.l}

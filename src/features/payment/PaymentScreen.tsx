@@ -19,6 +19,7 @@ import { Keyboard, Platform } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { Address } from '@helium/crypto-react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { PaymentV1 } from '@helium/transactions'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -40,7 +41,7 @@ import AccountButton from '../../components/AccountButton'
 import AddressBookSelector, {
   AddressBookRef,
 } from '../../components/AddressBookSelector'
-import { useTransactions } from '../../storage/TransactionProvider'
+import { SendDetails, useTransactions } from '../../storage/TransactionProvider'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import PaymentItem from './PaymentItem'
 import usePaymentsReducer, { MAX_PAYMENTS } from './usePaymentsReducer'
@@ -126,6 +127,7 @@ const PaymentScreen = () => {
     loading: submitLoading,
     error: submitError,
     submit,
+    submitLedger,
   } = useSubmitTxn()
 
   const [fee, setFee] = useState<Balance<DataCredits>>()
@@ -232,11 +234,11 @@ const PaymentScreen = () => {
     state,
   ])
 
-  const onRequestClose = useCallback(() => {
-    navigation.goBack()
-  }, [navigation])
-
   const canAddPayee = useMemo(() => {
+    if (currentAccount?.ledgerDevice) {
+      // Only single payee is supported for ledger devices
+      return false
+    }
     const lastPayee = state.payments[state.payments.length - 1]
 
     return (
@@ -245,22 +247,34 @@ const PaymentScreen = () => {
       !!lastPayee.amount &&
       lastPayee.amount.integerBalance > 0
     )
-  }, [state.payments])
+  }, [currentAccount, state.payments])
 
-  const handleSubmit = useCallback(() => {
-    const payments = state.payments.flatMap((p) => {
-      if (!p.address || !p.amount) return []
-      return [
-        {
-          payee: p.address,
-          balanceAmount: p.amount,
-          memo: p.memo || '',
-        },
-      ]
-    })
+  const payments = useMemo(
+    (): Array<SendDetails> =>
+      state.payments.flatMap((p) => {
+        if (!p.address || !p.amount) return []
+        return [
+          {
+            payee: p.address,
+            balanceAmount: p.amount,
+            memo: p.memo || '',
+          },
+        ]
+      }),
+    [state.payments],
+  )
 
-    submit(payments)
-  }, [state.payments, submit])
+  const handleSubmit = useCallback(
+    (opts?: { txn: PaymentV1; txnJson: string }) => {
+      if (!opts) {
+        submit(payments)
+      } else {
+        // This is a ledger device
+        submitLedger(opts)
+      }
+    },
+    [payments, submit, submitLedger],
+  )
 
   const insufficientFunds = useMemo(() => {
     if (
@@ -290,6 +304,15 @@ const PaymentScreen = () => {
 
   const errors = useMemo(() => {
     const errStrings: string[] = []
+    // TODO: Remove this when payment support is merged into ledger sdk
+    if (currentAccount?.ledgerDevice) {
+      errStrings.push(t('payment.ledgerPaymentNotSupported'))
+    }
+
+    if (!!currentAccount?.ledgerDevice && state.payments.length > 1) {
+      // ledger payments are limited to one payee
+      errStrings.push(t('payment.ledgerTooManyRecipients'))
+    }
     if (insufficientFunds) {
       errStrings.push(t('payment.insufficientFunds'))
     }
@@ -298,13 +321,17 @@ const PaymentScreen = () => {
       errStrings.push(t('payment.selfPay'))
     }
     return errStrings
-  }, [insufficientFunds, selfPay, t])
+  }, [currentAccount, insufficientFunds, selfPay, state.payments.length, t])
 
   const isFormValid = useMemo(() => {
+    // TODO: Remove this when payment support is merged into ledger sdk
+    if (currentAccount?.ledgerDevice) return false
+
     if (
       selfPay ||
       !accountHntBalance?.integerBalance ||
-      !feeAsTokens?.integerBalance
+      !feeAsTokens?.integerBalance ||
+      (!!currentAccount?.ledgerDevice && state.payments.length > 1) // ledger payments are limited to one payee
     ) {
       return false
     }
@@ -321,6 +348,7 @@ const PaymentScreen = () => {
     return paymentsValid && !insufficientFunds
   }, [
     accountHntBalance,
+    currentAccount,
     feeAsTokens,
     insufficientFunds,
     selfPay,
@@ -440,7 +468,7 @@ const PaymentScreen = () => {
                 {t('payment.title', { ticker: currencyType.ticker })}
               </Text>
               <TouchableOpacityBox
-                onPress={onRequestClose}
+                onPress={navigation.goBack}
                 padding="l"
                 hitSlop={hitSlop}
               >
@@ -484,6 +512,7 @@ const PaymentScreen = () => {
                   onRemove={
                     state.payments.length > 1 ? handleRemove : undefined
                   }
+                  hideMemo={!!currentAccount?.ledgerDevice}
                 />
               ))}
               {canAddPayee && (
@@ -510,7 +539,7 @@ const PaymentScreen = () => {
               feeTokenBalance={feeAsTokens}
               disabled={!isFormValid}
               onSubmit={handleSubmit}
-              payments={state.payments}
+              payments={payments}
               errors={errors}
             />
           </Box>

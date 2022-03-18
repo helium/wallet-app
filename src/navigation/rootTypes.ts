@@ -9,7 +9,7 @@ export type RootStackParamList = {
       LinkWallet: string
     }
   }
-  OnboardingParent: undefined
+  OnboardingNavigator: undefined
 }
 
 export type RootNavigationProp = StackNavigationProp<RootStackParamList>

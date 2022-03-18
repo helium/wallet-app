@@ -1,3 +1,4 @@
+import './polyfill'
 import React, { useEffect, useMemo } from 'react'
 import { ApolloProvider } from '@apollo/client'
 import { Text, LogBox, Platform, UIManager } from 'react-native'
@@ -5,7 +6,6 @@ import { ThemeProvider } from '@shopify/restyle'
 import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import useAppState from 'react-native-appstate-hook'
 import * as SplashScreen from 'expo-splash-screen'
-import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import OneSignal, { OpenedEvent } from 'react-native-onesignal'
 import Config from 'react-native-config'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
@@ -79,13 +79,6 @@ const App = () => {
   )
 
   useMount(() => {
-    // init GoogleSignin
-    GoogleSignin.configure({
-      iosClientId:
-        '605970674117-ll6b47atjj62m8i7j698pojgrbdf3ko1.apps.googleusercontent.com',
-      scopes: ['https://www.googleapis.com/auth/drive.file'],
-    })
-
     // init OneSignal
     OneSignal.setAppId(Config.ONE_SIGNAL_APP_ID)
     OneSignal.setNotificationOpenedHandler((event: OpenedEvent) => {

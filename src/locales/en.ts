@@ -49,6 +49,7 @@ export default {
       helperText:
         'Coming from Helium App? Use the\nsame 12 words to import an Account.',
       import: 'Import a Wallet',
+      ledger: 'Pair with Ledger',
       title: 'What would\nyou like to do?',
     },
     createPin: {
@@ -111,9 +112,6 @@ export default {
     searchContacts: 'Search Contacts...',
     title: 'Address Book',
   },
-  statusBanner: {
-    description: 'Last updated {{date}}. Tap for info.',
-  },
   auth: {
     enterCurrent: 'Enter your current PIN to continue',
     error: 'Incorrect PIN',
@@ -150,6 +148,7 @@ export default {
     success: 'Success',
     testnet: 'Testnet',
     total: 'Total',
+    tryAgain: 'Try Again',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',
@@ -161,6 +160,61 @@ export default {
     subtitle: 'Setup should only take\na few minutes.',
     tap: 'Tap to get started',
     title: 'The best wallet\nfor your HNT.',
+  },
+  ledger: {
+    connectError: {
+      steps: [
+        'Check Bluetooth is enabled',
+        'Open your Ledger device.',
+        'Open Helium app on Ledger Device',
+      ],
+      subtitle:
+        'Please check that your Ledger\nDevice is connected to this phone.\n\nIf not, follow these steps:',
+      title: 'Pairing Failed',
+    },
+    pairStart: {
+      pair: 'Pair with Ledger',
+      subtitle:
+        'Tap the button below to\nsearch for nearby Ledger\nWallets to link with.',
+      title: 'Pair Ledger\nto Wallet',
+    },
+    payment: {
+      subtitle:
+        'Please verify the payment transaction on your Ledger device {{name}}',
+      title: 'Ledger Approval',
+    },
+    scan: {
+      connectionError: 'Ledger Connection Error',
+      permissionDialog: {
+        later: 'Ask Me Later',
+        message:
+          'Location permission is needed to enable a bluetooth connection',
+        title: 'Location Permission',
+      },
+      subtitle:
+        'Please make sure your\nLedger is unlocked with\nbluetooth enabled',
+      title: 'Looking\nfor Devices',
+    },
+    show: {
+      alias: 'Ledger Account',
+      help: 'Verify that the address shown on the Ledger device matches.',
+      next: 'Import Account',
+      subtitle:
+        'This Ledger device can authorize transactions for the below Helium Account. ',
+      title: 'Account Found',
+    },
+    start: {
+      help: 'How does it work?',
+      next: 'Pair with Ledger',
+      subtitle:
+        'Please make sure your Ledger is unlocked with Bluetooth enabled',
+      title: 'Pair with Ledger',
+    },
+    success: {
+      next: 'View Account',
+      subtitle: 'Your Ledger account is now available in your Helium Wallet.',
+      title: 'Ledger Paired Successfully',
+    },
   },
   linkWallet: {
     body: 'By Linking Helium Wallet to {{appName}}, you can safely sign blockchain transactions without re-entering your seed phrase.',
@@ -189,8 +243,9 @@ export default {
     walletUpdates: 'Wallet Updates',
   },
   onboarding: {
-    create: '+ New',
-    import: '+ Import',
+    create: 'New',
+    import: 'Import',
+    ledger: 'Ledger',
   },
   ordinals: [
     '1st',
@@ -225,6 +280,9 @@ export default {
     enterMemo: 'Enter Memo (Optional)',
     fee: '+{{value}} Fee',
     insufficientFunds: 'Insufficient Funds',
+    ledgerPaymentNotSupported: 'Ledger payments not\nyet supported. 🔜',
+    ledgerTooManyRecipients:
+      'Ledger payment transactions\nare limited to 1 recipient.',
     max: 'Max',
     memoBytes: '{{used}}/{{total}} Bytes',
     pay: 'Pay',
@@ -358,6 +416,9 @@ export default {
     title: 'Add Hotspot to\nBlockchain?',
     titleLocationOnly: 'Update Location?',
     titleTransfer: 'Transfer Hotspot?',
+  },
+  statusBanner: {
+    description: 'Last updated {{date}}. Tap for info.',
   },
   transactions: {
     added: 'Hotspot Added to Blockchain',

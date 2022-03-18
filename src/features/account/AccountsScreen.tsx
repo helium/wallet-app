@@ -26,9 +26,11 @@ import {
   useVerticalHitSlop,
 } from '../../theme/themeHooks'
 import { wh, wp } from '../../utils/layout'
-import MultiAccountNavigator from '../onboarding/MultiAccountNavigator'
-import { OnboardingOpt, useOnboarding } from '../onboarding/OnboardingProvider'
-import OnboardingSegment from '../onboarding/OnboardingSegment'
+import MultiAccountNavigator from '../onboarding/multiAccount/MultiAccountNavigator'
+import { useOnboarding } from '../onboarding/OnboardingProvider'
+import OnboardingSegment, {
+  OnboardingOpt,
+} from '../onboarding/multiAccount/OnboardingSegment'
 import AccountHeader from './AccountHeader'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import usePrevious from '../../utils/usePrevious'
@@ -114,12 +116,12 @@ const AccountsScreen = () => {
   )
   const { openedNotification } = useNotificationStorage()
   const { locked, requirePinForPayment } = useAppStorage()
-  const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const {
     onboardingData: { netType },
   } = useOnboarding()
   const { show } = useAccountSelector()
   const { show: showTxnDetail } = useTransactionDetail()
+  const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
 
   const { data: accountData, error: accountsError } = useAccountQuery({
     variables: {
@@ -182,7 +184,6 @@ const AccountsScreen = () => {
       // We have a new account, snap to it
       const newAccount = sortedAccounts[sortedAccounts.length - 1]
       setCurrentAccount(newAccount)
-      setOnboardingType('import')
     }
   }, [
     prevSortedAccounts,
@@ -233,7 +234,6 @@ const AccountsScreen = () => {
 
   const renderCarouselItem = ({ item }: { item: CSAccount | null }) => {
     if (!item) {
-      if (onboardingType === 'assign') return null
       return (
         <>
           <NetTypeSegment justifyContent="center" paddingVertical="m" />
@@ -386,6 +386,13 @@ const AccountsScreen = () => {
     [],
   )
 
+  useEffect(() => {
+    if (!currentAccount?.address || onboardingType === 'import') return
+
+    // Set onboarding back to import when navigating away
+    setOnboardingType('import')
+  }, [currentAccount, onboardingType])
+
   return (
     <Box flex={1}>
       <Box minHeight={75} opacity={!currentAccount?.address ? 0 : 100}>
@@ -461,10 +468,7 @@ const AccountsScreen = () => {
               right={0}
               {...fadeSettings}
             >
-              <MultiAccountNavigator
-                onboardingType={onboardingType}
-                netType={netType}
-              />
+              <MultiAccountNavigator netType={netType} />
             </MotiBox>
           )}
         </AnimatePresence>

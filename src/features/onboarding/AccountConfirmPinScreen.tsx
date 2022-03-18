@@ -1,16 +1,18 @@
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native'
-import {
-  OnboardingNavigationProp,
-  OnboardingStackParamList,
-} from './onboardingTypes'
+import { OnboardingNavigationProp } from './onboardingTypes'
 import ConfirmPinView from '../../components/ConfirmPinView'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useOnboarding } from './OnboardingProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
+import { CreateAccountStackParamList } from './create/createAccountNavTypes'
+import { ImportAccountStackParamList } from './import/importAccountNavTypes'
 
-type Route = RouteProp<OnboardingStackParamList, 'AccountConfirmPinScreen'>
+type Route = RouteProp<
+  CreateAccountStackParamList & ImportAccountStackParamList,
+  'AccountConfirmPinScreen'
+>
 
 const AccountConfirmPinScreen = () => {
   const route = useRoute<Route>()

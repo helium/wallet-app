@@ -35,6 +35,7 @@ type Props = {
   onEditHNTAmount: (opts: { address?: string; index: number }) => void
   onEditMemo: (opts: { address?: string; index: number; memo: string }) => void
   onRemove?: (index: number) => void
+  hideMemo?: boolean
 } & Payment
 
 const PaymentItem = ({
@@ -49,6 +50,7 @@ const PaymentItem = ({
   memo,
   hasError,
   onRemove,
+  hideMemo,
 }: Props) => {
   const { colorStyle } = useOpacity('primaryText', 0.3)
   const { dcToTokens } = useBalance()
@@ -198,13 +200,17 @@ const PaymentItem = ({
             )}
           </TouchableOpacityBox>
 
-          <Box height={1} backgroundColor="primaryBackground" />
+          {!hideMemo && (
+            <>
+              <Box height={1} backgroundColor="primaryBackground" />
 
-          <MemoInput
-            value={memo}
-            onChangeText={handleEditMemo}
-            minHeight={80}
-          />
+              <MemoInput
+                value={memo}
+                onChangeText={handleEditMemo}
+                minHeight={80}
+              />
+            </>
+          )}
         </>
       )}
     </Box>
