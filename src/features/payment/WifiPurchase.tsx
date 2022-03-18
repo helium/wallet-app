@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
-import WifiLogo from '@assets/images/wifiLogo.svg'
 import ChevronDown from '@assets/images/chevronDown.svg'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Balance, { CurrencyType } from '@helium/currency'
@@ -340,8 +339,6 @@ const WifiPurchase = () => {
 
   return (
     <SafeAreaBox flex={1} alignItems="center" paddingTop="l" edges={edges}>
-      <WifiLogo color={primaryText} />
-
       {viewState === 'select' && (
         <Box
           justifyContent="center"
