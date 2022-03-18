@@ -3,21 +3,21 @@ import { shuffle, uniq, take, reject, sampleSize, upperCase } from 'lodash'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import Carousel from 'react-native-snap-carousel'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
-import wordlist from '../../constants/wordlists/english.json'
+import Box from '../../../components/Box'
+import Text from '../../../components/Text'
+import wordlist from '../../../constants/wordlists/english.json'
 import PhraseChip from './PhraseChip'
+import SafeAreaBox from '../../../components/SafeAreaBox'
+import sleep from '../../../utils/sleep'
+import useHaptic from '../../../utils/useHaptic'
+import animateTransition from '../../../utils/animateTransition'
+import TextTransform from '../../../components/TextTransform'
+import { useOnboarding } from '../OnboardingProvider'
+import ButtonPressable from '../../../components/ButtonPressable'
 import {
-  OnboardingNavigationProp,
-  OnboardingStackParamList,
-} from './onboardingTypes'
-import SafeAreaBox from '../../components/SafeAreaBox'
-import sleep from '../../utils/sleep'
-import useHaptic from '../../utils/useHaptic'
-import animateTransition from '../../utils/animateTransition'
-import TextTransform from '../../components/TextTransform'
-import { useOnboarding } from './OnboardingProvider'
-import ButtonPressable from '../../components/ButtonPressable'
+  CreateAccountNavigationProp,
+  CreateAccountStackParamList,
+} from './createAccountNavTypes'
 
 const generateChallengeWords = (targetWord: string) =>
   shuffle(
@@ -27,7 +27,10 @@ const generateChallengeWords = (targetWord: string) =>
   )
 
 type CarouselItemData = number
-type Route = RouteProp<OnboardingStackParamList, 'AccountEnterPassphraseScreen'>
+type Route = RouteProp<
+  CreateAccountStackParamList,
+  'AccountEnterPassphraseScreen'
+>
 const AccountEnterPassphraseScreen = () => {
   const [step, setStep] = useState(0)
   const [word, setWord] = useState<string | null>(null)
@@ -36,7 +39,7 @@ const AccountEnterPassphraseScreen = () => {
   const carouselRef = useRef<Carousel<CarouselItemData>>(null)
   const { t } = useTranslation()
   const { triggerNotification } = useHaptic()
-  const navigation = useNavigation<OnboardingNavigationProp>()
+  const navigation = useNavigation<CreateAccountNavigationProp>()
   const { params } = useRoute<Route>()
   const {
     onboardingData: { secureAccount },

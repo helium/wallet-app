@@ -3,7 +3,6 @@
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
-#import "RNGoogleSignin.h"
 #import <React/RCTLinkingManager.h>
 
 #ifdef FB_SONARKIT_ENABLED
@@ -62,10 +61,6 @@ static void InitializeFlipper(UIApplication *application) {
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif
 }
-
-// - (BOOL)application:(UIApplication *)application openURL:(nonnull NSURL *)url options:(nonnull NSDictionary<NSString *,id> *)options {
-//   return [RNGoogleSignin application:application openURL:url options:options];
-// }
 
 - (BOOL)application:(UIApplication *)application
    openURL:(NSURL *)url

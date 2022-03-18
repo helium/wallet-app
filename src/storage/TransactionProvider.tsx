@@ -5,7 +5,12 @@ import Balance, {
   NetworkTokens,
   TestNetworkTokens,
 } from '@helium/currency'
-import { PaymentV2, TokenBurnV1, Transaction } from '@helium/transactions'
+import {
+  PaymentV1,
+  PaymentV2,
+  TokenBurnV1,
+  Transaction,
+} from '@helium/transactions'
 import React, { createContext, ReactNode, useContext, useEffect } from 'react'
 import { encodeMemoString } from '../components/MemoInput'
 import { useAccountQuery, useTxnConfigVarsQuery } from '../generated/graphql'
@@ -20,18 +25,6 @@ export type SendDetails = {
   payee: string
   balanceAmount: Balance<NetworkTokens> | Balance<TestNetworkTokens>
   memo: string
-}
-
-type PartialPaymentTxn = {
-  type: string
-  payments: {
-    payee: string
-    memo: string | undefined
-    amount: number
-  }[]
-  payer: string | undefined
-  nonce: number | undefined
-  fee: number | undefined
 }
 
 const useTransactionHook = () => {
@@ -93,12 +86,19 @@ const useTransactionHook = () => {
   const makePaymentTxn = async (opts: {
     paymentDetails: Array<SendDetails>
     speculativeNonce: number
-  }): Promise<{ partialTxn: PartialPaymentTxn; signedTxn: PaymentV2 }> => {
-    const keypair = await getKeypair(currentAccount?.address || '')
-    if (!keypair) throw new Error('missing keypair')
+  }): Promise<{
+    txnJson: string
+    signedTxn?: PaymentV2
+    unsignedTxn: PaymentV2
+  }> => {
+    if (!currentAccount?.address) {
+      throw new Error('No account selected for payment')
+    }
+
+    const keypair = await getKeypair(currentAccount?.address)
 
     const txn = new PaymentV2({
-      payer: keypair.address,
+      payer: Address.fromB58(currentAccount.address),
       payments: opts.paymentDetails.map(
         ({ payee: address, balanceAmount, memo }) => ({
           payee: Address.fromB58(address),
@@ -120,9 +120,40 @@ const useTransactionHook = () => {
       nonce: txn.nonce,
       fee: txn.fee,
     }
-    const signedTxn = await txn.sign({ payer: keypair })
+    let signedTxn: PaymentV2 | undefined
+    if (keypair) {
+      signedTxn = await txn.sign({ payer: keypair })
+    }
+    return { signedTxn, txnJson: JSON.stringify(txnJson), unsignedTxn: txn }
+  }
 
-    return { signedTxn, partialTxn: txnJson }
+  const makeLedgerPaymentTxn = async (opts: {
+    paymentDetails: Array<SendDetails>
+    speculativeNonce: number
+  }): Promise<{ txnJson: string; unsignedTxn: PaymentV1 }> => {
+    if (!currentAccount?.address) {
+      throw new Error('No account selected for payment')
+    }
+
+    const [payment] = opts.paymentDetails
+
+    const txn = new PaymentV1({
+      payer: Address.fromB58(currentAccount.address),
+      nonce: opts.speculativeNonce + 1,
+      payee: Address.fromB58(payment.payee),
+      amount: payment.balanceAmount.integerBalance,
+    })
+
+    const txnJson = {
+      type: txn.type,
+      payee: txn.payee?.b58 || '',
+      amount: txn.amount,
+      payer: txn.payer?.b58,
+      nonce: txn.nonce,
+      fee: txn.fee,
+    }
+
+    return { txnJson: JSON.stringify(txnJson), unsignedTxn: txn }
   }
 
   const calculatePaymentTxnFee = async (paymentDetails: Array<SendDetails>) => {
@@ -151,7 +182,12 @@ const useTransactionHook = () => {
     return new Balance(paymentTxn.fee || 0, CurrencyType.dataCredit)
   }
 
-  return { makeBurnTxn, calculatePaymentTxnFee, makePaymentTxn }
+  return {
+    makeBurnTxn,
+    calculatePaymentTxnFee,
+    makePaymentTxn,
+    makeLedgerPaymentTxn,
+  }
 }
 
 const initialState = {
@@ -171,19 +207,27 @@ const initialState = {
         }),
       ),
     ),
+  makeLedgerPaymentTxn: () =>
+    new Promise<{
+      txnJson: string
+      unsignedTxn: PaymentV1
+    }>((resolve) =>
+      resolve({
+        unsignedTxn: new PaymentV1({ payer: EMPTY_B58_ADDRESS }),
+        txnJson: '',
+      }),
+    ),
   makePaymentTxn: () =>
-    new Promise<{ partialTxn: PartialPaymentTxn; signedTxn: PaymentV2 }>(
-      (resolve) =>
-        resolve({
-          signedTxn: new PaymentV2({ payer: EMPTY_B58_ADDRESS, payments: [] }),
-          partialTxn: {
-            type: 'payment_v2',
-            payments: [],
-            payer: '',
-            nonce: 0,
-            fee: 0,
-          },
-        }),
+    new Promise<{
+      txnJson: string
+      signedTxn: PaymentV2
+      unsignedTxn: PaymentV2
+    }>((resolve) =>
+      resolve({
+        unsignedTxn: new PaymentV2({ payer: EMPTY_B58_ADDRESS, payments: [] }),
+        signedTxn: new PaymentV2({ payer: EMPTY_B58_ADDRESS, payments: [] }),
+        txnJson: '',
+      }),
     ),
 }
 

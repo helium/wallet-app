@@ -1,24 +1,28 @@
 import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
+import { PaymentV1 } from '@helium/transactions'
 import { useNavigation } from '@react-navigation/native'
-import React, { memo, useCallback, useState } from 'react'
+import React, { memo, useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent } from 'react-native'
 import BackgroundFill from '../../components/BackgroundFill'
 import Box from '../../components/Box'
+import LedgerPayment, { LedgerPaymentRef } from '../../components/LedgerPayment'
 import SubmitButton from '../../components/SubmitButton'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { SendDetails } from '../../storage/TransactionProvider'
 import animateTransition from '../../utils/animateTransition'
-import { Payment } from './PaymentItem'
+import useAlert from '../../utils/useAlert'
 import PaymentSummary from './PaymentSummary'
 
 type Props = {
   totalBalance: Balance<TestNetworkTokens | NetworkTokens>
   feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
-  onSubmit: () => void
+  onSubmit: (opts?: { txn: PaymentV1; txnJson: string }) => void
   disabled: boolean
   errors?: string[]
-  payments: Payment[]
+  payments: SendDetails[]
 }
 
 const PaymentCard = ({
@@ -33,11 +37,28 @@ const PaymentCard = ({
   const [payEnabled, setPayEnabled] = useState(false)
   const [height, setHeight] = useState(0)
   const nav = useNavigation()
+  const ledgerPaymentRef = useRef<LedgerPaymentRef>(null)
+  const { showOKAlert } = useAlert()
+  const { currentAccount } = useAccountStorage()
+  const [options, setOptions] = useState<{
+    txn: PaymentV1
+    txnJson: string
+  }>()
 
   const handlePayPressed = useCallback(() => {
-    animateTransition('PaymentCard.payEnabled')
-    setPayEnabled(true)
-  }, [])
+    if (!currentAccount?.ledgerDevice) {
+      animateTransition('PaymentCard.payEnabled')
+      setPayEnabled(true)
+    } else {
+      // is ledger device
+      ledgerPaymentRef.current?.show({
+        payments,
+        ledgerDevice: currentAccount.ledgerDevice,
+        address: currentAccount.address,
+        speculativeNonce: 0,
+      })
+    }
+  }, [currentAccount, payments])
 
   const handleLayout = useCallback(
     (e: LayoutChangeEvent) => {
@@ -46,80 +67,105 @@ const PaymentCard = ({
     },
     [height],
   )
+  const handleConfirm = useCallback(
+    (opts: { txn: PaymentV1; txnJson: string }) => {
+      setPayEnabled(true)
+      setOptions(opts)
+    },
+    [],
+  )
+
+  const handleSubmit = useCallback(() => {
+    onSubmit(options)
+  }, [onSubmit, options])
+
+  const handleLedgerError = useCallback(
+    (error: Error) => {
+      showOKAlert({ title: t('generic.error'), message: error.toString() })
+    },
+    [showOKAlert, t],
+  )
 
   return (
-    <Box
-      borderTopLeftRadius="xl"
-      borderTopRightRadius="xl"
-      padding="l"
-      height={height || undefined}
-      onLayout={handleLayout}
-      overflow="hidden"
+    <LedgerPayment
+      ref={ledgerPaymentRef}
+      onConfirm={handleConfirm}
+      onError={handleLedgerError}
     >
-      <BackgroundFill backgroundColor="secondary" opacity={0.4} />
+      <Box
+        borderTopLeftRadius="xl"
+        borderTopRightRadius="xl"
+        padding="l"
+        height={height || undefined}
+        onLayout={handleLayout}
+        overflow="hidden"
+        minHeight={240}
+      >
+        <BackgroundFill backgroundColor="secondary" opacity={0.4} />
 
-      <PaymentSummary
-        totalBalance={totalBalance}
-        feeTokenBalance={feeTokenBalance}
-        disabled={disabled}
-        payments={payments}
-        errors={errors}
-      />
-      <Box marginTop="xxl">
-        {!payEnabled ? (
-          <>
-            <Box flexDirection="row" marginTop="l">
-              <TouchableOpacityBox
-                flex={1}
-                minHeight={66}
-                justifyContent="center"
-                marginEnd="m"
-                borderRadius="round"
-                overflow="hidden"
-                backgroundColor="secondaryIcon"
-                onPress={nav.goBack}
-              >
-                <Text
-                  variant="subtitle1"
-                  textAlign="center"
-                  color="primaryText"
+        <PaymentSummary
+          totalBalance={totalBalance}
+          feeTokenBalance={feeTokenBalance}
+          disabled={disabled}
+          payments={payments}
+          errors={errors}
+        />
+        <Box flex={1} justifyContent="flex-end">
+          {!payEnabled ? (
+            <>
+              <Box flexDirection="row" marginTop="l">
+                <TouchableOpacityBox
+                  flex={1}
+                  minHeight={66}
+                  justifyContent="center"
+                  marginEnd="m"
+                  borderRadius="round"
+                  overflow="hidden"
+                  backgroundColor="secondaryIcon"
+                  onPress={nav.goBack}
                 >
-                  {t('generic.cancel')}
-                </Text>
-              </TouchableOpacityBox>
-              <TouchableOpacityBox
-                flex={1}
-                minHeight={66}
-                backgroundColor={disabled ? 'secondary' : 'surfaceContrast'}
-                justifyContent="center"
-                alignItems="center"
-                onPress={handlePayPressed}
-                disabled={disabled}
-                borderRadius="round"
-                flexDirection="row"
-              >
-                <Text
-                  marginLeft="s"
-                  variant="subtitle1"
-                  textAlign="center"
-                  color={disabled ? 'surface' : 'secondary'}
+                  <Text
+                    variant="subtitle1"
+                    textAlign="center"
+                    color="primaryText"
+                  >
+                    {t('generic.cancel')}
+                  </Text>
+                </TouchableOpacityBox>
+                <TouchableOpacityBox
+                  flex={1}
+                  minHeight={66}
+                  backgroundColor={disabled ? 'secondary' : 'surfaceContrast'}
+                  justifyContent="center"
+                  alignItems="center"
+                  onPress={handlePayPressed}
+                  disabled={disabled}
+                  borderRadius="round"
+                  flexDirection="row"
                 >
-                  {t('payment.pay')}
-                </Text>
-              </TouchableOpacityBox>
-            </Box>
-          </>
-        ) : (
-          <SubmitButton
-            marginTop="l"
-            title={t('payment.sendButton', {
-              ticker: totalBalance?.type.ticker,
-            })}
-            onSubmit={onSubmit}
-          />
-        )}
+                  <Text
+                    marginLeft="s"
+                    variant="subtitle1"
+                    textAlign="center"
+                    color={disabled ? 'surface' : 'secondary'}
+                  >
+                    {t('payment.pay')}
+                  </Text>
+                </TouchableOpacityBox>
+              </Box>
+            </>
+          ) : (
+            <SubmitButton
+              marginTop="l"
+              title={t('payment.sendButton', {
+                ticker: totalBalance?.type.ticker,
+              })}
+              onSubmit={handleSubmit}
+            />
+          )}
+        </Box>
       </Box>
-    </Box>
+    </LedgerPayment>
   )
 }
 

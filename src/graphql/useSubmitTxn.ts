@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
+import { PaymentV1 } from '@helium/transactions'
 import { useTransactions } from '../storage/TransactionProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAccountLazyQuery, useSubmitTxnMutation } from '../generated/graphql'
@@ -46,14 +47,18 @@ export default () => {
 
           return
         }
-        const { partialTxn, signedTxn } = await makePaymentTxn({
+        const { txnJson, signedTxn } = await makePaymentTxn({
           paymentDetails: payments,
           speculativeNonce: freshAccountData.account.speculativeNonce,
         })
 
+        if (!signedTxn) {
+          throw new Error('Failed to sign transaction')
+        }
+
         const variables = {
           address: currentAccount.address,
-          txnJson: JSON.stringify(partialTxn),
+          txnJson,
           txn: signedTxn.toString(),
         }
 
@@ -63,8 +68,25 @@ export default () => {
     [currentAccount, fetchAccount, makePaymentTxn, submitTxnMutation],
   )
 
+  const submitLedger = useCallback(
+    async ({ txn, txnJson }: { txn: PaymentV1; txnJson: string }) => {
+      if (!currentAccount?.address) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+
+      const variables = {
+        address: currentAccount.address,
+        txnJson,
+        txn: txn.toString(),
+      }
+
+      submitTxnMutation({ variables })
+    },
+    [currentAccount, submitTxnMutation],
+  )
   return {
     submit,
+    submitLedger,
     data,
     error: accountError || submitError || nonceError,
     loading: accountLoading || submitLoading,

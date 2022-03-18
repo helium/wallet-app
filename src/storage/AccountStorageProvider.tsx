@@ -22,6 +22,7 @@ import {
   CSAccount,
   CSAccounts,
   getCloudDefaultAccountAddress,
+  LedgerDevice,
   restoreAccounts,
   setCloudDefaultAccountAddress,
   signoutCloudStorage,
@@ -131,16 +132,19 @@ const useAccountStorageHook = () => {
     async ({
       alias,
       address,
+      ledgerDevice,
       secureAccount,
     }: {
       alias: string
       address: string
+      ledgerDevice?: LedgerDevice
       secureAccount?: SecureAccount
     }) => {
       const nextAccount: CSAccount = {
         alias,
         address,
         netType: accountNetType(address),
+        ledgerDevice,
       }
 
       const nextAccounts: CSAccounts = {

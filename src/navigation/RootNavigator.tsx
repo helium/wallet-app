@@ -6,7 +6,7 @@ import {
 } from '@react-navigation/native-stack'
 import { useColors } from '../theme/themeHooks'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import OnboardingParentNavigator from '../features/onboarding/OnboardingParentNavigator'
+import OnboardingNavigator from '../features/onboarding/OnboardingNavigator'
 import HomeNavigator from '../features/home/HomeNavigator'
 
 const RootNavigator = () => {
@@ -39,8 +39,8 @@ const RootNavigator = () => {
         />
       ) : (
         <RootStack.Screen
-          name="OnboardingParent"
-          component={OnboardingParentNavigator}
+          name="OnboardingNavigator"
+          component={OnboardingNavigator}
           options={screenOptions}
         />
       )}

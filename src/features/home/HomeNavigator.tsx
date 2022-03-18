@@ -13,6 +13,10 @@ import LinkWallet from '../txnDelegatation/LinkWallet'
 import SignHotspot from '../txnDelegatation/SignHotspot'
 import PaymentQrScanner from '../payment/PaymentQrScanner'
 import ConfirmPinScreen from '../../components/ConfirmPinScreen'
+import AddressQrScanner from '../addressBook/AddressQrScanner'
+import CreateAccountNavigator from '../onboarding/create/CreateAccountNavigator'
+import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
+import LedgerNavigator from '../ledger/LedgerNavigator'
 
 const HomeStack = createStackNavigator()
 
@@ -63,6 +67,17 @@ const HomeStackScreen = () => {
         component={SignHotspot}
         options={{ presentation: 'transparentModal' }}
       />
+      <HomeStack.Screen name="ScanAddress" component={AddressQrScanner} />
+
+      <HomeStack.Screen
+        name="CreateAccount"
+        component={CreateAccountNavigator}
+      />
+      <HomeStack.Screen
+        name="ImportAccount"
+        component={ImportAccountNavigator}
+      />
+      <HomeStack.Screen name="LedgerNavigator" component={LedgerNavigator} />
     </HomeStack.Navigator>
   )
 }

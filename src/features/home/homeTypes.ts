@@ -10,16 +10,14 @@ export type PaymentRouteParam = {
   netType?: string
 }
 export type HomeStackParamList = {
-  AddAccount: {
-    screen: 'CreateImport'
-  }
   AccountsScreen: undefined
   AccountAssignScreen: undefined
+  ConfirmPin: {
+    action: 'payment'
+  }
   PaymentScreen: undefined | PaymentRouteParam
   PaymentQrScanner: undefined
   RequestScreen: undefined
-  AddressBookNavigator: undefined
-  NotificationsNavigator: undefined
   WifiPurchase:
     | {
         key: string
@@ -28,13 +26,18 @@ export type HomeStackParamList = {
         path: string
       }
     | undefined
+  AddressBookNavigator: undefined
+  NotificationsNavigator: undefined
   SettingsNavigator: undefined
   AddNewContact: undefined
   LinkWallet: WalletLink.LinkWalletRequest
   SignHotspot: WalletLink.SignHotspotRequest
-  ConfirmPin: {
-    action: 'payment'
-  }
+  CreateAccount: undefined
+  ImportAccount:
+    | undefined
+    | { wordCount: 12 | 24 }
+    | { screen: 'AccountImportScreen'; params: { wordCount: 12 | 24 } }
+  LedgerNavigator: undefined
 }
 
 export type HomeNavigationProp = StackNavigationProp<HomeStackParamList>
