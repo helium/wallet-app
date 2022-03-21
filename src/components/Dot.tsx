@@ -8,7 +8,7 @@ const Dot = ({ filled }: Props) => {
     <Box
       borderWidth={1}
       marginHorizontal="xs"
-      borderColor="surfaceSecondaryText"
+      borderColor={filled ? 'purple500' : 'surfaceSecondaryText'}
       width={dotSize}
       height={dotSize}
       borderRadius="round"

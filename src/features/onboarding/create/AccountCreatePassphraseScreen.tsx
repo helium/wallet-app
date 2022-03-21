@@ -4,25 +4,27 @@ import { useTranslation } from 'react-i18next'
 import { useAsync } from 'react-async-hook'
 import Carousel, { Pagination } from 'react-native-snap-carousel'
 import { upperCase } from 'lodash'
-import { Platform } from 'react-native'
+import Close from '@assets/images/close.svg'
 import Box from '../../../components/Box'
 import Text from '../../../components/Text'
 import { wp } from '../../../utils/layout'
-import SafeAreaBox from '../../../components/SafeAreaBox'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import { useOnboarding } from '../OnboardingProvider'
 import ButtonPressable from '../../../components/ButtonPressable'
 import { useColors } from '../../../theme/themeHooks'
 import { CreateAccountNavigationProp } from './createAccountNavTypes'
+import TouchableOpacityBox from '../../../components/TouchableOpacityBox'
+import { OnboardingNavigationProp } from '../onboardingTypes'
 
 const AccountCreatePassphraseScreen = () => {
   const { t } = useTranslation()
-  const { createSecureAccount } = useAccountStorage()
+  const { createSecureAccount, hasAccounts } = useAccountStorage()
   const colors = useColors()
   const {
     setOnboardingData,
     onboardingData: { netType },
   } = useOnboarding()
+  const parentNav = useNavigation<OnboardingNavigationProp>()
   const navigation = useNavigation<CreateAccountNavigationProp>()
   const [wordIndex, setWordIndex] = useState(0)
   const [disabled, setDisabled] = useState(true)
@@ -51,6 +53,14 @@ const AccountCreatePassphraseScreen = () => {
 
     setDisabled(false)
   }, [viewedWords])
+
+  const navToTop = useCallback(() => {
+    if (hasAccounts) {
+      parentNav.popToTop()
+    } else {
+      parentNav.navigate('CreateImport')
+    }
+  }, [hasAccounts, parentNav])
 
   const navNext = useCallback(() => {
     if (!secureAccount) return
@@ -87,71 +97,76 @@ const AccountCreatePassphraseScreen = () => {
   }
 
   return (
-    <SafeAreaBox
-      flex={1}
-      backgroundColor="primaryBackground"
-      paddingVertical={Platform.OS === 'android' ? 'xxl' : undefined}
-    >
-      <Box flex={1} justifyContent="space-between" flexDirection="column">
-        <Box>
-          <Text variant="h1" textAlign="center" lineHeight={37}>
-            {t('accountSetup.passphrase.title')}
-          </Text>
-          <Text
-            variant="body1"
-            color="secondaryText"
-            textAlign="center"
-            marginTop="m"
-          >
-            {t('accountSetup.passphrase.subtitle1')}
-          </Text>
-          <Text variant="body1" color="red500" textAlign="center" marginTop="m">
-            {t('accountSetup.passphrase.subtitle2')}
-          </Text>
-          <Box height={{ smallPhone: 80, phone: 100 }} marginTop="l">
-            <Carousel
-              layout="default"
-              vertical={false}
-              data={secureAccount?.mnemonic || []}
-              renderItem={renderItem}
-              sliderWidth={wp(100)}
-              itemWidth={wp(90)}
-              inactiveSlideScale={1}
-              onScrollIndexChanged={onSnapToItem}
-              useExperimentalSnap
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore this is a new beta prop and enforces only scrolling one item at a time
-              disableIntervalMomentum
-            />
-          </Box>
-          <Pagination
-            dotsLength={secureAccount?.mnemonic.length || 0}
-            activeDotIndex={wordIndex}
-            dotStyle={{
-              width: 6,
-              height: 6,
-              borderRadius: 3,
-              backgroundColor: colors.primaryText,
-            }}
-            dotContainerStyle={{ marginHorizontal: 3 }}
-            inactiveDotOpacity={0.4}
-            inactiveDotScale={1}
+    <Box flex={1}>
+      <TouchableOpacityBox padding="l" onPress={navToTop} alignItems="flex-end">
+        <Close color={colors.primaryText} height={16} width={16} />
+      </TouchableOpacityBox>
+      <Box flex={1} justifyContent="center">
+        <Text variant="h1" textAlign="center" lineHeight={37}>
+          {t('accountSetup.passphrase.title')}
+        </Text>
+        <Text
+          variant="subtitle1"
+          color="secondaryText"
+          textAlign="center"
+          marginTop="m"
+        >
+          {t('accountSetup.passphrase.subtitle1')}
+        </Text>
+        <Text
+          variant="subtitle1"
+          color="red500"
+          textAlign="center"
+          marginTop="m"
+        >
+          {t('accountSetup.passphrase.subtitle2')}
+        </Text>
+        <Box height={{ smallPhone: 80, phone: 100 }} marginTop="l">
+          <Carousel
+            layout="default"
+            vertical={false}
+            data={secureAccount?.mnemonic || []}
+            renderItem={renderItem}
+            sliderWidth={wp(100)}
+            itemWidth={wp(90)}
+            inactiveSlideScale={1}
+            onScrollIndexChanged={onSnapToItem}
+            useExperimentalSnap
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore this is a new beta prop and enforces only scrolling one item at a time
+            disableIntervalMomentum
           />
         </Box>
+        <Pagination
+          dotsLength={secureAccount?.mnemonic.length || 0}
+          activeDotIndex={wordIndex}
+          dotStyle={{
+            width: 6,
+            height: 6,
+            borderRadius: 3,
+            backgroundColor: colors.primaryText,
+          }}
+          dotContainerStyle={{ marginHorizontal: 3 }}
+          inactiveDotOpacity={0.4}
+          inactiveDotScale={1}
+        />
+      </Box>
+      <Box opacity={disabled ? 0 : 100}>
         <ButtonPressable
           height={60}
+          disabled={disabled}
           marginHorizontal="xl"
           marginBottom="m"
           borderRadius="round"
           borderBottomRightRadius="round"
           backgroundColor="havelockBlue"
+          backgroundColorPressed="surface"
           titleColor="black900"
-          visible={!disabled}
           onPress={navNext}
           title={t('accountSetup.passphrase.next')}
         />
       </Box>
-    </SafeAreaBox>
+    </Box>
   )
 }
 

@@ -56,6 +56,11 @@ const textVariants = {
     fontSize: 14,
     color: 'primaryText',
   },
+  body0: {
+    fontFamily: Font.regular,
+    fontSize: 21,
+    color: 'primaryText',
+  },
   body1: {
     fontFamily: Font.regular,
     fontSize: 17,
@@ -81,6 +86,7 @@ const textVariants = {
  * Use https://www.hexdictionary.com/ to determine color names, for example https://www.hexdictionary.com/color/d23e72.
  * https://elektrobild.org/tools/sort-colors can be used to sort colors.
  */
+
 const palette = {
   black200: '#41434F',
   black300: '#444755',
@@ -90,9 +96,14 @@ const palette = {
   black700: '#131419',
   black800: '#1A1C22',
   black900: '#000000',
+
   blueBright500: '#009FF9',
 
   darkGrey: '#333333',
+
+  electricViolet: '#DD0FFF',
+
+  flamenco: '#FF800B',
 
   gold: '#FFD700',
 
@@ -101,6 +112,7 @@ const palette = {
   grey100: '#F7F7F7',
   grey200: '#EFEFF0',
   grey300: '#AEAEAE',
+  grey350: '#828282',
   grey400: '#7E8399',
   grey500: '#747A92',
   grey600: '#565B6D',
@@ -114,9 +126,13 @@ const palette = {
 
   lividBrown: '#421B27',
 
+  malachite: '#14D111',
+
   offWhite: '#F9FAFC',
 
   orange500: '#FFB156',
+
+  persianRose: '#FF2DB7',
 
   purple500: '#B556FF',
 
@@ -126,6 +142,8 @@ const palette = {
   red500: '#E43B70',
 
   transparent: '#00000000',
+
+  turquoise: '#2BD7E2',
 
   white: '#FFFFFF',
 }
@@ -164,7 +182,7 @@ export const darkThemeColors = {
   surface: palette.grey600,
   surfaceText: palette.white,
   surfaceSecondary: palette.black600,
-  surfaceSecondaryText: palette.grey500,
+  surfaceSecondaryText: palette.grey300,
   surfaceContrast: palette.white,
   surfaceContrastText: palette.grey900,
   plainInputBackground: palette.black200,

@@ -92,7 +92,7 @@ const AccountAssignScreen = () => {
     >
       <KeyboardAvoidingView
         keyboardVerticalOffset={insets.top + spacing.l}
-        behavior={Platform.OS === 'android' ? 'height' : 'padding'}
+        behavior={Platform.OS === 'android' ? undefined : 'padding'}
         style={styles.container}
       >
         <Box alignItems="center" flex={1}>

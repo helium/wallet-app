@@ -80,8 +80,6 @@ const HeliumActionSheet = ({
     setModalVisible(false)
   }, [])
 
-  const keyExtractor = useCallback((item) => item.value, [])
-
   const buttonTitle = useMemo(() => {
     if (initialValue && !selectedValue) {
       return initialValue
@@ -110,6 +108,8 @@ const HeliumActionSheet = ({
     },
     [closeOnSelect, handleClose, onValueSelected],
   )
+
+  const keyExtractor = useCallback((item) => item.value, [])
 
   const renderItem = useCallback(
     ({ index, item: { label, value, Icon, action } }: ListItem) => {
