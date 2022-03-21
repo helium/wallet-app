@@ -7,8 +7,6 @@ import { memo } from 'react'
 import { ImportAccountStackParamList } from './importAccountNavTypes'
 import AccountImportStartScreen from './AccountImportStartScreen'
 import AccountImportScreen from './AccountImportScreen'
-import ImportAccountConfirmScreen from './ImportAccountConfirmScreen'
-import AccountImportCompleteScreen from './AccountImportCompleteScreen'
 import AccountAssignScreen from '../AccountAssignScreen'
 import AccountCreatePinScreen from '../AccountCreatePinScreen'
 import AccountConfirmPinScreen from '../AccountConfirmPinScreen'
@@ -35,14 +33,6 @@ const ImportAccountNavigator = () => {
       <ImportAccountStack.Screen
         name="AccountImportScreen"
         component={AccountImportScreen}
-      />
-      <ImportAccountStack.Screen
-        name="ImportAccountConfirmScreen"
-        component={ImportAccountConfirmScreen}
-      />
-      <ImportAccountStack.Screen
-        name="AccountImportCompleteScreen"
-        component={AccountImportCompleteScreen}
       />
       <ImportAccountStack.Screen
         name="AccountAssignScreen"

@@ -22,7 +22,6 @@ const MatchingWord = ({ fullWord, matchingText, onPress }: Props) => {
     <TouchableOpacityBox
       justifyContent="center"
       alignContent="center"
-      marginRight="s"
       marginLeft={{ smallPhone: 'm', phone: 'ms' }}
       paddingHorizontal={{ smallPhone: 'm', phone: 'ms' }}
       paddingVertical="m"
@@ -32,14 +31,14 @@ const MatchingWord = ({ fullWord, matchingText, onPress }: Props) => {
         variant="body1"
         justifyContent="center"
         alignContent="center"
-        color="purple500"
+        color="primaryText"
       >
         {upperCase(matchingText)}
         <Text
           variant="body1"
           alignContent="center"
           justifyContent="center"
-          color="grey700"
+          color="secondaryText"
         >
           {upperCase(fullWord.slice(matchingText.length))}
         </Text>

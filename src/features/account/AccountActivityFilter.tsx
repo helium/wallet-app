@@ -125,6 +125,8 @@ const AccountActivityFilter = ({ visible, filter, toggle, change }: Props) => {
     [filter, handleChange, hitSlop, t],
   )
 
+  const keyExtractor = useCallback((item) => item, [])
+
   return (
     <Box borderBottomWidth={1}>
       <Box flexDirection="row" justifyContent="space-between" paddingBottom="m">
@@ -158,6 +160,7 @@ const AccountActivityFilter = ({ visible, filter, toggle, change }: Props) => {
           <FlatList
             data={FilterTypeKeys}
             renderItem={renderItem}
+            keyExtractor={keyExtractor}
             horizontal
             showsHorizontalScrollIndicator={false}
           />

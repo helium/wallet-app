@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { useState, memo } from 'react'
+import React, { useState, memo, useCallback } from 'react'
 import { upperCase } from 'lodash'
 import CheckMark from '@assets/images/checkmark.svg'
 import Fail from '@assets/images/fail.svg'
@@ -9,6 +9,7 @@ import TouchableHighlightBox, {
 } from '../../../components/TouchableHighlightBox'
 import { useColors } from '../../../theme/themeHooks'
 import Box from '../../../components/Box'
+import { Color } from '../../../theme/theme'
 
 type Props = Omit<TouchableHighlightBoxProps, 'children'> & {
   title: string
@@ -25,34 +26,39 @@ const PhraseChip = ({
   disabled,
   ...props
 }: Props) => {
-  const { surface } = useColors()
+  const { surface, primary } = useColors()
   const [underlayShowing, setUnderlayShowing] = useState(false)
 
-  const getBackgroundColor = () => {
+  const getBackgroundColor = useCallback((): Color => {
     if (fail) return 'error'
-    if (success) return 'purple500'
-    return 'surfaceContrast'
-  }
+    if (success) return 'greenBright500'
+    return 'surfaceSecondary'
+  }, [fail, success])
 
   const getIcon = () => {
-    if (success) return <CheckMark color="white" />
+    if (success) return <CheckMark color={primary} />
 
-    if (fail) return <Fail />
+    if (fail) return <Fail color={primary} />
 
     return null
   }
 
+  const handleUnderlayChange = useCallback(
+    (val: boolean) => () => setUnderlayShowing(val),
+    [],
+  )
+
   return (
     <TouchableHighlightBox
       backgroundColor={getBackgroundColor()}
-      borderRadius="l"
-      paddingVertical="m"
+      borderRadius="lm"
+      paddingVertical="s"
       maxWidth="30%"
       justifyContent="center"
       underlayColor={surface}
       disabled={selected || disabled}
-      onHideUnderlay={() => setUnderlayShowing(false)}
-      onShowUnderlay={() => setUnderlayShowing(true)}
+      onHideUnderlay={handleUnderlayChange(false)}
+      onShowUnderlay={handleUnderlayChange(true)}
       {...props}
     >
       <>
@@ -72,9 +78,9 @@ const PhraseChip = ({
           numberOfLines={1}
           adjustsFontSizeToFit
           opacity={fail || success ? 0 : 1}
-          variant="body1"
+          variant="body0"
           color={
-            selected || underlayShowing ? 'surfaceText' : 'surfaceContrastText'
+            selected || underlayShowing ? 'primaryText' : 'surfaceSecondaryText'
           }
         >
           {upperCase(title)}

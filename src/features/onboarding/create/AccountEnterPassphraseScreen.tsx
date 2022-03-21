@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { shuffle, uniq, take, reject, sampleSize, upperCase } from 'lodash'
+import { shuffle, uniq, take, reject, sampleSize } from 'lodash'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import Carousel from 'react-native-snap-carousel'
@@ -11,13 +11,12 @@ import SafeAreaBox from '../../../components/SafeAreaBox'
 import sleep from '../../../utils/sleep'
 import useHaptic from '../../../utils/useHaptic'
 import animateTransition from '../../../utils/animateTransition'
-import TextTransform from '../../../components/TextTransform'
 import { useOnboarding } from '../OnboardingProvider'
-import ButtonPressable from '../../../components/ButtonPressable'
 import {
   CreateAccountNavigationProp,
   CreateAccountStackParamList,
 } from './createAccountNavTypes'
+import TouchableOpacityBox from '../../../components/TouchableOpacityBox'
 
 const generateChallengeWords = (targetWord: string) =>
   shuffle(
@@ -111,62 +110,44 @@ const AccountEnterPassphraseScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigation])
 
-  const renderItem = useCallback(
-    (index: number) => {
-      return (
-        <Box
-          overflow="hidden"
-          borderRadius="xl"
-          marginVertical="m"
-          backgroundColor="surfaceSecondary"
-          paddingHorizontal="l"
-          justifyContent="center"
-          height={{ smallPhone: 70, phone: 90 }}
-          alignItems="center"
-          flexDirection="row"
-        >
-          <Text variant="h1" color="primaryText" maxFontSizeMultiplier={1}>
-            {`${index + 1}. `}
-          </Text>
-          <Text variant="h1" color="primaryText" maxFontSizeMultiplier={1}>
-            {step === index && word ? upperCase(word) : '?????'}
-          </Text>
-        </Box>
-      )
-    },
-    [step, word],
-  )
-
   return (
     <SafeAreaBox
       backgroundColor="primaryBackground"
       flex={1}
       paddingHorizontal="xl"
+      justifyContent="center"
     >
-      <Box flex={2} />
       <Text
         variant="h1"
         numberOfLines={2}
         adjustsFontSizeToFit
         maxFontSizeMultiplier={1}
-        lineHeight={37}
+        lineHeight={39}
+        marginBottom="m"
       >
         {t('accountSetup.confirm.title')}
       </Text>
-      <Box flex={0.5} />
-      <TextTransform
+      <Text
         numberOfLines={1}
         adjustsFontSizeToFit
-        values={{
+        variant="body0"
+        lineHeight={21}
+        color="secondaryText"
+      >
+        {t('accountSetup.confirm.subtitle')}
+      </Text>
+      <Text
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        variant="body0"
+        lineHeight={21}
+        marginBottom="m"
+      >
+        {t('accountSetup.confirm.subtitleOrdinal', {
           ordinal: t(`ordinals.${step}`),
-        }}
-        variant="subtitle2"
-        i18nKey="accountSetup.confirm.subtitle"
-      />
-
-      {renderItem(step)}
-      <Box flex={1} />
-      <Box flexDirection="row" flexWrap="wrap">
+        })}
+      </Text>
+      <Box flexDirection="row" flexWrap="wrap" marginTop="m">
         {challengeWords.map((w) => (
           <PhraseChip
             marginRight="s"
@@ -179,16 +160,14 @@ const AccountEnterPassphraseScreen = () => {
           />
         ))}
       </Box>
-      <Box flex={2} />
-      <ButtonPressable
-        height={50}
-        borderRadius="round"
-        borderBottomRightRadius="round"
-        backgroundColor="primaryBackground"
-        titleColor="primaryText"
-        title={__DEV__ ? t('generic.skip') : t('accountSetup.confirm.forgot')}
+      <TouchableOpacityBox
         onPress={__DEV__ ? skip : navigation.goBack}
-      />
+        paddingVertical="xl"
+      >
+        <Text color="primaryText" variant="body0">
+          {__DEV__ ? t('generic.skip') : t('accountSetup.confirm.forgot')}
+        </Text>
+      </TouchableOpacityBox>
     </SafeAreaBox>
   )
 }

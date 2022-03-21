@@ -29,15 +29,16 @@ export default {
     title: 'Import\nAccount',
     wordEntry: {
       placeholder: '{{ordinal}} word',
-      title:
-        "Enter your\naccount's <secondaryText>{{totalWords}} word</secondaryText>\nsecurity key...",
+      title: "Enter your\naccount's {{totalWords}}\nsecurity words.",
+      word: 'Word {{ordinal}}',
     },
   },
   accountSetup: {
     confirm: {
-      forgot: 'I forgot my words',
-      subtitle: 'Which word below was your <b>{{ordinal}} word?</b>',
-      title: 'Confirm\nYour Words',
+      forgot: 'I forgot my words...',
+      subtitle: 'Which word below was your',
+      subtitleOrdinal: '{{ordinal}} word?',
+      title: 'Confirm\nyour Words...',
     },
     confirmPin: {
       subtitle: 'Re-enter your PIN',
@@ -64,8 +65,9 @@ export default {
       title: 'These words\nrepresent your\nprivate key',
     },
     subtitle1:
-      'Every new account is accessed via\n24 secure words (your ‘key’).',
-    subtitle2: 'Please ensure these are written\ndown and are kept safe.',
+      'Every new account is accessed via 24 secure words (your ‘key’).',
+    subtitle2:
+      'Make sure these words are written down in the correct order and never share them with anyone or enter into a website or app.',
     title: 'Create\nNew Account',
   },
   accountsScreen: {
