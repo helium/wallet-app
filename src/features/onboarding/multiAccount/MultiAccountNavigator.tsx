@@ -9,6 +9,7 @@ import { useOnboarding } from '../OnboardingProvider'
 import AccountImportStartScreen from '../import/AccountImportStartScreen'
 import PairStart from '../../ledger/PairStart'
 import MultiAccountImportStartScreen from './MultiAccountImportStartScreen'
+import NetTypeSegment from '../NetTypeSegment'
 
 const MultiAccountStack = createStackNavigator<MultiAccountStackParamList>()
 
@@ -21,17 +22,20 @@ const MultiAccountNavigator = ({ netType }: Props) => {
   }, [netType, setOnboardingData])
 
   return (
-    <MultiAccountStack.Navigator screenOptions={{ headerShown: false }}>
-      <MultiAccountStack.Screen
-        name="AccountImportStartScreen"
-        component={AccountImportStartScreen}
-      />
-      <MultiAccountStack.Screen
-        name="AccountCreateStart"
-        component={MultiAccountImportStartScreen}
-      />
-      <MultiAccountStack.Screen name="LedgerStart" component={PairStart} />
-    </MultiAccountStack.Navigator>
+    <>
+      <NetTypeSegment justifyContent="center" paddingVertical="m" />
+      <MultiAccountStack.Navigator screenOptions={{ headerShown: false }}>
+        <MultiAccountStack.Screen
+          name="AccountImportStartScreen"
+          component={AccountImportStartScreen}
+        />
+        <MultiAccountStack.Screen
+          name="AccountCreateStart"
+          component={MultiAccountImportStartScreen}
+        />
+        <MultiAccountStack.Screen name="LedgerStart" component={PairStart} />
+      </MultiAccountStack.Navigator>
+    </>
   )
 }
 

@@ -12,7 +12,11 @@ import { Carousel } from 'react-native-snap-carousel'
 import CogIco from '@assets/images/cog.svg'
 import AccountIco from '@assets/images/account.svg'
 import { AnimatePresence } from 'moti'
-import { ActivityIndicator, LayoutRectangle } from 'react-native'
+import {
+  ActivityIndicator,
+  LayoutChangeEvent,
+  LayoutRectangle,
+} from 'react-native'
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { useTranslation } from 'react-i18next'
 import { NetType } from '@helium/crypto-react-native'
@@ -25,7 +29,7 @@ import {
   useSpacing,
   useVerticalHitSlop,
 } from '../../theme/themeHooks'
-import { wh, wp } from '../../utils/layout'
+import { wp } from '../../utils/layout'
 import MultiAccountNavigator from '../onboarding/multiAccount/MultiAccountNavigator'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import OnboardingSegment, {
@@ -39,7 +43,6 @@ import AccountView, { Action } from './AccountView'
 import Text from '../../components/Text'
 import TxnListItem from './TxnListItem'
 import useActivityList from './useActivityList'
-import NetTypeSegment from '../onboarding/NetTypeSegment'
 import { HomeNavigationProp } from '../home/homeTypes'
 import {
   Activity,
@@ -66,18 +69,25 @@ import StatusBanner from '../StatusPage/StatusBanner'
 type AccountLayout = {
   accountViewStart: number
   accountViewHeight: number
+  screenHeight: number
 }
+
+type LayoutType = 'accountViewLayout' | 'containerLayout' | 'screenLayout'
 type AccountLayoutAction = {
-  type: 'accountViewLayout' | 'containerLayout'
+  type: LayoutType
   layout: LayoutRectangle
 }
 const initialState = {
   accountViewStart: 0,
   accountViewHeight: 0,
+  screenHeight: 0,
 } as AccountLayout
 
 function layoutReducer(state: AccountLayout, action: AccountLayoutAction) {
   switch (action.type) {
+    case 'screenLayout': {
+      return { ...state, screenHeight: action.layout.height }
+    }
     case 'containerLayout': {
       return {
         ...state,
@@ -235,15 +245,12 @@ const AccountsScreen = () => {
   const renderCarouselItem = ({ item }: { item: CSAccount | null }) => {
     if (!item) {
       return (
-        <>
-          <NetTypeSegment justifyContent="center" paddingVertical="m" />
-          <OnboardingSegment
-            marginTop="s"
-            padding="m"
-            onSegmentChange={setOnboardingType}
-            onboardingType={onboardingType}
-          />
-        </>
+        <OnboardingSegment
+          marginTop="s"
+          padding="m"
+          onSegmentChange={setOnboardingType}
+          onboardingType={onboardingType}
+        />
       )
     }
     return <AccountHeader account={item} />
@@ -257,8 +264,9 @@ const AccountsScreen = () => {
   )
 
   const snapPoints = useMemo(() => {
-    const mid = wh - state.accountViewStart - state.accountViewHeight
-    const expanded = wh - state.accountViewStart - spacing.l
+    const { screenHeight, accountViewStart, accountViewHeight } = state
+    const mid = screenHeight - accountViewStart - accountViewHeight
+    const expanded = screenHeight - accountViewStart - spacing.l
 
     if (mid <= 0 || expanded <= 0) return ['5%']
     return [mid, expanded]
@@ -331,15 +339,6 @@ const AccountsScreen = () => {
     return { sliderWidth, itemWidth }
   }, [spacing.lx])
 
-  const handleAccountViewLayoutChange = useCallback(
-    (layout: LayoutRectangle) =>
-      dispatch({
-        type: 'accountViewLayout',
-        layout,
-      }),
-    [],
-  )
-
   const handleActionSelected = useCallback(
     (type: Action) => {
       switch (type) {
@@ -393,8 +392,15 @@ const AccountsScreen = () => {
     setOnboardingType('import')
   }, [currentAccount, onboardingType])
 
+  const handleLayout = useCallback(
+    (type: LayoutType) => (e: LayoutChangeEvent) => {
+      dispatch({ type, layout: e.nativeEvent.layout })
+    },
+    [],
+  )
+
   return (
-    <Box flex={1}>
+    <Box flex={1} onLayout={handleLayout('screenLayout')}>
       <Box minHeight={75} opacity={!currentAccount?.address ? 0 : 100}>
         <AnimatePresence>
           <MotiBox {...fadeSettings}>
@@ -440,7 +446,7 @@ const AccountsScreen = () => {
           </MotiBox>
         </AnimatePresence>
       </Box>
-      <Box marginTop={{ phone: 'ms', smallPhone: 'none' }}>
+      <Box>
         <Carousel
           ref={carouselRef}
           layout="default"
@@ -452,12 +458,7 @@ const AccountsScreen = () => {
           onSnapToItem={onSnapToItem}
         />
       </Box>
-      <Box
-        flex={1}
-        onLayout={(e) =>
-          dispatch({ type: 'containerLayout', layout: e.nativeEvent.layout })
-        }
-      >
+      <Box flex={1} onLayout={handleLayout('containerLayout')}>
         <AnimatePresence>
           {!currentAccount?.address && (
             <MotiBox
@@ -488,7 +489,7 @@ const AccountsScreen = () => {
                   {...fadeSettings}
                 >
                   <AccountView
-                    onLayoutChange={handleAccountViewLayoutChange}
+                    onLayout={handleLayout('accountViewLayout')}
                     onActionSelected={handleActionSelected}
                     visible={visible}
                     accountData={

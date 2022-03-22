@@ -41,6 +41,7 @@ const KeypadButton = ({ value, onPress }: Props) => {
             variant="h1"
             minimumFontScale={0.7}
             adjustsFontSizeToFit
+            numberOfLines={1}
             color={pressed ? 'gold' : 'surfaceSecondaryText'}
           >
             {value}
@@ -66,6 +67,7 @@ const KeypadButton = ({ value, onPress }: Props) => {
             <Text
               variant="h1"
               adjustsFontSizeToFit
+              numberOfLines={1}
               color={pressed ? 'gold' : 'surfaceSecondaryText'}
             >
               {decimalSeparator}
@@ -77,6 +79,7 @@ const KeypadButton = ({ value, onPress }: Props) => {
               variant="body1"
               width="100%"
               adjustsFontSizeToFit
+              numberOfLines={1}
               color={pressed ? 'gold' : 'surfaceSecondaryText'}
             >
               {t('generic.clear')}
@@ -87,6 +90,7 @@ const KeypadButton = ({ value, onPress }: Props) => {
             <Text
               variant="body1"
               adjustsFontSizeToFit
+              numberOfLines={1}
               color={pressed ? 'gold' : 'surfaceSecondaryText'}
             >
               {t('generic.cancel')}
