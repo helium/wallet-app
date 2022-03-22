@@ -1,9 +1,10 @@
-import React, { memo, useCallback, useEffect, useState } from 'react'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import DC from '@assets/images/dc.svg'
 import Helium from '@assets/images/helium.svg'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import { LayoutChangeEvent } from 'react-native'
 import { NetType } from '@helium/crypto-react-native'
+import { ResponsiveValue } from '@shopify/restyle'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import { useColors } from '../../theme/themeHooks'
@@ -16,19 +17,20 @@ import {
 } from '../../utils/Balance'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
+import { Spacing, Theme } from '../../theme/theme'
 
 export type Action = 'send' | 'payment' | 'request' | 'stake' | 'lock'
 type Props = {
   accountData: AccountData | null | undefined
   visible: boolean
-  onLayoutChange?: (layout: LayoutRectangle) => void
+  onLayout?: (layout: LayoutChangeEvent) => void
   onActionSelected: (type: Action) => void
   netType: number
 }
 const AccountView = ({
   accountData,
   visible: _visible,
-  onLayoutChange,
+  onLayout,
   onActionSelected,
   netType,
 }: Props) => {
@@ -39,13 +41,6 @@ const AccountView = ({
   const [balanceString, setBalanceString] = useState('')
   const { toPreferredCurrencyString } = useBalance()
   const { toggleConvertToCurrency } = useAppStorage()
-
-  const handleLayout = useCallback(
-    (event: LayoutChangeEvent) => {
-      onLayoutChange?.(event.nativeEvent.layout)
-    },
-    [onLayoutChange],
-  )
 
   const handleAction = useCallback(
     (type: Action) => () => {
@@ -60,17 +55,26 @@ const AccountView = ({
     )
   }, [displayVals, toPreferredCurrencyString])
 
+  const buttonsTopMargin = useMemo(
+    (): ResponsiveValue<Spacing, Theme> => ({
+      smallPhone: 'l',
+      phone: 'xxl',
+    }),
+    [],
+  )
+
   return (
     <Box
       paddingHorizontal="lx"
       marginHorizontal="xs"
-      paddingTop="xxl"
-      onLayout={handleLayout}
+      paddingTop="l"
+      onLayout={onLayout}
     >
       <Box
         flexDirection="row"
         alignItems="center"
         marginHorizontal="xxs"
+        marginTop="l"
         marginBottom="s"
       >
         <Box
@@ -91,11 +95,16 @@ const AccountView = ({
         </Text>
       </Box>
       <TouchableOpacityBox onPress={toggleConvertToCurrency}>
-        <Text variant="h0" color="primaryText">
+        <Text
+          variant="h0"
+          color="primaryText"
+          numberOfLines={1}
+          adjustsFontSizeToFit
+        >
           {balanceString || ' '}
         </Text>
       </TouchableOpacityBox>
-      <Box flexDirection="row" marginTop="s" minHeight={31}>
+      <Box flexDirection="row" marginTop="s">
         {displayVals?.stakedHnt && displayVals.stakedHnt.integerBalance > 0 && (
           <Box
             borderRadius="xl"
@@ -166,7 +175,7 @@ const AccountView = ({
       <Box
         flexDirection="row"
         justifyContent="flex-start"
-        marginTop="xxxl"
+        marginTop={buttonsTopMargin}
         marginBottom="l"
       >
         <FabButton
