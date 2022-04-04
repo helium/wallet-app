@@ -407,6 +407,13 @@ export default {
       },
     },
     title: 'Settings',
+    confirmSignout: {
+      title: 'Confirm Your\nWords To Sign Out',
+      forgotAlert: {
+        title: 'Reveal Words',
+        body: 'Would you like to reveal your accounts words?',
+      },
+    },
   },
   signHotspot: {
     elevation: 'Elevation:',

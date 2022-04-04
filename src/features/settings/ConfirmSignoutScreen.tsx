@@ -1,0 +1,126 @@
+import React, { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigation } from '@react-navigation/native'
+import { ActivityIndicator, Alert } from 'react-native'
+import { useAsync } from 'react-async-hook'
+import useAlert from '../../utils/useAlert'
+import ConfirmWordsScreen from '../onboarding/create/ConfirmWordsScreen'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { useApolloClient } from '../../graphql/useApolloClient'
+import { HomeNavigationProp } from '../home/homeTypes'
+import { useAppStorage } from '../../storage/AppStorageProvider'
+import { SettingsNavigationProp } from './settingsTypes'
+import { getSecureAccount } from '../../storage/secureStorage'
+import BackScreen from '../../components/BackScreen'
+import { useColors } from '../../theme/themeHooks'
+import Box from '../../components/Box'
+
+const ConfirmSignoutScreen = () => {
+  const { t } = useTranslation()
+  const navigation = useNavigation<
+    HomeNavigationProp & SettingsNavigationProp
+  >()
+  const { showOKCancelAlert } = useAlert()
+  const { currentAccount, signOut, accounts } = useAccountStorage()
+  const { pin } = useAppStorage()
+  const { client } = useApolloClient()
+  const colors = useColors()
+
+  const [mnemonic, setMnemonic] = useState<string[]>()
+
+  useAsync(async () => {
+    if (!currentAccount || !currentAccount.address) return
+    const secureAccount = await getSecureAccount(currentAccount.address)
+    setMnemonic(secureAccount?.mnemonic)
+  }, [currentAccount])
+
+  const isPinRequired = useMemo(
+    () => pin !== undefined && pin.status !== 'off',
+    [pin],
+  )
+
+  const onWordsConfirmed = useCallback(() => {
+    navigation.goBack()
+    const currentAddress = currentAccount?.address
+    const savedAccountAddresses = Object.keys(accounts || {})
+    const isLastAccount =
+      accounts &&
+      currentAddress &&
+      savedAccountAddresses.length === 1 &&
+      savedAccountAddresses.includes(currentAddress)
+
+    Alert.alert(
+      t('settings.sections.account.signOutAlert.title', {
+        alias: currentAccount?.alias,
+      }),
+      t(
+        `settings.sections.account.signOutAlert.${
+          isLastAccount ? 'bodyLastAccount' : 'body'
+        }`,
+        {
+          alias: currentAccount?.alias,
+        },
+      ),
+      [
+        {
+          text: t('generic.cancel'),
+          style: 'cancel',
+        },
+        {
+          text: t('settings.sections.account.signOut'),
+          style: 'destructive',
+          onPress: async () => {
+            if (isLastAccount) {
+              // last account is signing out, clear all storage then nav to onboarding
+              await signOut()
+              client?.resetStore()
+            } else {
+              // sign out the specific account, then nav to home
+              await signOut(currentAccount)
+              navigation.popToTop()
+            }
+          },
+        },
+      ],
+    )
+  }, [accounts, client, currentAccount, navigation, signOut, t])
+
+  const onForgotWords = useCallback(async () => {
+    navigation.goBack()
+    const decision = await showOKCancelAlert({
+      title: t('settings.confirmSignout.forgotAlert.title'),
+      message: t('settings.confirmSignout.forgotAlert.body'),
+    })
+    if (!decision) return
+
+    if (isPinRequired) {
+      navigation.push('SettingsConfirmPin', {
+        pin: pin?.value || '',
+        action: 'revealWords',
+      })
+    } else {
+      navigation.push('RevealWords')
+    }
+  }, [isPinRequired, navigation, pin, showOKCancelAlert, t])
+
+  if (!mnemonic) return null
+
+  return (
+    <BackScreen padding="none">
+      {mnemonic ? (
+        <ConfirmWordsScreen
+          title={t('settings.confirmSignout.title')}
+          mnemonic={mnemonic}
+          onComplete={onWordsConfirmed}
+          onForgotWords={onForgotWords}
+        />
+      ) : (
+        <Box flex={1} justifyContent="center" alignItems="center">
+          <ActivityIndicator color={colors.primaryText} />
+        </Box>
+      )}
+    </BackScreen>
+  )
+}
+
+export default ConfirmSignoutScreen
