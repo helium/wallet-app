@@ -18,7 +18,6 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { SettingsNavigationProp } from './settingsTypes'
 import { useLanguageStorage } from '../../storage/LanguageProvider'
-import { useApolloClient } from '../../graphql/useApolloClient'
 import useCopyAddress from '../../utils/useCopyAddress'
 import useAlert from '../../utils/useAlert'
 
@@ -33,7 +32,6 @@ const Settings = () => {
   const authIntervals = useAuthIntervals()
   const {
     currentAccount,
-    signOut,
     accounts,
     sortedTestnetAccounts,
     defaultAccountAddress,
@@ -53,7 +51,6 @@ const Settings = () => {
     updateEnableTestnet,
     updateRequirePinForPayment,
   } = useAppStorage()
-  const { client } = useApolloClient()
   const copyAddress = useCopyAddress()
   const { showOKAlert, showOKCancelAlert } = useAlert()
 
@@ -176,49 +173,8 @@ const Settings = () => {
   )
 
   const handleSignOut = useCallback(() => {
-    const currentAddress = currentAccount?.address
-    const savedAccountAddresses = Object.keys(accounts || {})
-    const isLastAccount =
-      accounts &&
-      currentAddress &&
-      savedAccountAddresses.length === 1 &&
-      savedAccountAddresses.includes(currentAddress)
-
-    Alert.alert(
-      t('settings.sections.account.signOutAlert.title', {
-        alias: currentAccount?.alias,
-      }),
-      t(
-        `settings.sections.account.signOutAlert.${
-          isLastAccount ? 'bodyLastAccount' : 'body'
-        }`,
-        {
-          alias: currentAccount?.alias,
-        },
-      ),
-      [
-        {
-          text: t('generic.cancel'),
-          style: 'cancel',
-        },
-        {
-          text: t('settings.sections.account.signOut'),
-          style: 'destructive',
-          onPress: async () => {
-            if (isLastAccount) {
-              // last account is signing out, clear all storage then nav to onboarding
-              await signOut()
-              client?.resetStore()
-            } else {
-              // sign out the specific account, then nav to home
-              await signOut(currentAccount)
-              homeNav.popToTop()
-            }
-          },
-        },
-      ],
-    )
-  }, [t, currentAccount, accounts, signOut, client, homeNav])
+    settingsNav.push('ConfirmSignout')
+  }, [settingsNav])
 
   const handleLanguageChange = useCallback(
     async (lng: string) => {

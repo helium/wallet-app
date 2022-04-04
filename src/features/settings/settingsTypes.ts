@@ -10,6 +10,7 @@ export type SettingsStackParamList = {
   RevealWords: undefined
   UpdateAlias: undefined
   ShareAddress: undefined
+  ConfirmSignout: undefined
 }
 
 export type SettingsNavigationProp = StackNavigationProp<SettingsStackParamList>
