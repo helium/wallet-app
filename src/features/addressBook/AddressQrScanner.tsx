@@ -5,12 +5,11 @@ import { Address } from '@helium/crypto-react-native'
 import useHaptic from '../../utils/useHaptic'
 import useAlert from '../../utils/useAlert'
 import { HomeNavigationProp } from '../home/homeTypes'
-import BackScreen from '../../components/BackScreen'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import QrScanner from '../../components/QrScanner'
 import { parsePaymentLink } from '../../utils/linking'
 
-const PaymentQrScanner = () => {
+const AddressQrScanner = () => {
   const { triggerNotification } = useHaptic()
   const { setScannedAddress } = useAppStorage()
   const { showOKAlert } = useAlert()
@@ -45,10 +44,6 @@ const PaymentQrScanner = () => {
     [navigation, setScannedAddress, showOKAlert, t, triggerNotification],
   )
 
-  return (
-    <BackScreen>
-      <QrScanner onBarCodeScanned={handleBarCodeScanned} />
-    </BackScreen>
-  )
+  return <QrScanner onBarCodeScanned={handleBarCodeScanned} />
 }
-export default PaymentQrScanner
+export default AddressQrScanner

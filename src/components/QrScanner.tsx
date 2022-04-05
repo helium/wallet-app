@@ -7,6 +7,7 @@ import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import Box from './Box'
 import useAlert from '../utils/useAlert'
+import BackScreen from './BackScreen'
 
 type Props = { onBarCodeScanned: (data: string) => void }
 const QrScanner = ({ onBarCodeScanned }: Props) => {
@@ -60,16 +61,22 @@ const QrScanner = ({ onBarCodeScanned }: Props) => {
   )
 
   if (!hasPermission) {
-    return <Box />
+    return (
+      <BackScreen>
+        <Box />
+      </BackScreen>
+    )
   }
 
   return (
-    <Camera
-      onBarCodeScanned={handleBarCodeScanned}
-      barCodeScannerSettings={barCodeScannerSettings}
-      style={StyleSheet.absoluteFillObject}
-      ratio="16:9"
-    />
+    <BackScreen>
+      <Camera
+        onBarCodeScanned={handleBarCodeScanned}
+        barCodeScannerSettings={barCodeScannerSettings}
+        style={StyleSheet.absoluteFillObject}
+        ratio="16:9"
+      />
+    </BackScreen>
   )
 }
 export default QrScanner

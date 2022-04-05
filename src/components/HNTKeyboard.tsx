@@ -190,7 +190,6 @@ const HNTKeyboardSelector = forwardRef(
         const val = opts.balance?.floatBalance
           .toLocaleString(locale, { maximumFractionDigits: 10 })
           .replaceAll(groupSeparator, '')
-          .replaceAll(decimalSeparator, '.')
         setValue(val || '0')
 
         bottomSheetModalRef.current?.present()
@@ -229,7 +228,6 @@ const HNTKeyboardSelector = forwardRef(
           maximumFractionDigits: decimalPlaces,
         })
         .replaceAll(groupSeparator, '')
-        .replaceAll(decimalSeparator, '.')
 
       setValue(val)
     }, [

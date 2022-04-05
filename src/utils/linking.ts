@@ -91,7 +91,7 @@ export const parsePaymentLink = (
     const parsedJson = JSON.parse(urlOrAddress)
     if (
       parsedJson.type !== 'payment' ||
-      (!parsedJson.amount && !parsedJson.payees)
+      (parsedJson.amount === undefined && !parsedJson.payees)
     ) {
       // This is not a hotspot app link
       return
@@ -99,24 +99,30 @@ export const parsePaymentLink = (
 
     const { coefficient } = new Balance(0, CurrencyType.networkToken).type
 
-    if (parsedJson.amount) {
-      const amount = new BigNumber(parseFloat(parsedJson.amount))
-        .dividedBy(coefficient)
-        .toString()
-
+    if (parsedJson.amount !== undefined) {
+      const amount =
+        typeof parsedJson.amount === 'string'
+          ? parseFloat(parsedJson.amount)
+          : parsedJson.amount
       return {
         payee: parsedJson.address || parsedJson.payee,
         payer: parsedJson.payer,
-        amount,
+        amount: new BigNumber(amount).dividedBy(coefficient).toString(),
         memo: parsedJson.memo,
       }
     }
     if (parsedJson.payees) {
       const payments = Object.keys(parsedJson.payees).map((address) => {
-        const amount = new BigNumber(parseFloat(parsedJson.payees[address]))
-          .dividedBy(coefficient)
-          .toString()
-        return { amount, payee: address }
+        const payeeData = parsedJson.payees[address]
+        const amount =
+          typeof payeeData === 'object' ? payeeData.amount : payeeData
+        const amountFloat =
+          typeof amount === 'string' ? parseFloat(amount) : amount
+        return {
+          amount: new BigNumber(amountFloat).dividedBy(coefficient).toString(),
+          payee: address,
+          memo: typeof payeeData === 'object' ? payeeData.memo : undefined,
+        }
       })
       return { payments: JSON.stringify(payments) }
     }
