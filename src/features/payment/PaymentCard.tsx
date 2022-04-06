@@ -20,9 +20,9 @@ type Props = {
   totalBalance: Balance<TestNetworkTokens | NetworkTokens>
   feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
   onSubmit: (opts?: { txn: PaymentV1; txnJson: string }) => void
-  disabled: boolean
+  disabled?: boolean
   errors?: string[]
-  payments: SendDetails[]
+  payments?: SendDetails[]
 }
 
 const PaymentCard = ({
@@ -52,7 +52,7 @@ const PaymentCard = ({
     } else {
       // is ledger device
       ledgerPaymentRef.current?.show({
-        payments,
+        payments: payments || [],
         ledgerDevice: currentAccount.ledgerDevice,
         address: currentAccount.address,
         speculativeNonce: 0,

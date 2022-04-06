@@ -1,5 +1,4 @@
 import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
-import { useNavigation } from '@react-navigation/native'
 import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import SuccessIcon from '@assets/images/paymentSuccess.svg'
@@ -14,10 +13,17 @@ type Props = {
   totalBalance: Balance<TestNetworkTokens | NetworkTokens>
   feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
   payments: Payment[]
+  onSuccess: () => void
+  actionTitle: string
 }
 
-const PaymentSuccess = ({ totalBalance, feeTokenBalance, payments }: Props) => {
-  const navigation = useNavigation()
+const PaymentSuccess = ({
+  totalBalance,
+  feeTokenBalance,
+  payments,
+  onSuccess,
+  actionTitle,
+}: Props) => {
   const { t } = useTranslation()
   return (
     <Box flex={1} justifyContent="flex-end">
@@ -43,14 +49,14 @@ const PaymentSuccess = ({ totalBalance, feeTokenBalance, payments }: Props) => {
         <TouchableOpacityBox
           marginTop="xxl"
           marginBottom="m"
-          onPress={navigation.goBack}
+          onPress={onSuccess}
           backgroundColor="blueBright500"
           paddingVertical="m"
           borderRadius="round"
           alignItems="center"
         >
           <Text variant="body1" color="black900">
-            {t('payment.backToAccounts')}
+            {actionTitle}
           </Text>
         </TouchableOpacityBox>
       </Box>

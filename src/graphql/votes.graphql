@@ -1,0 +1,27 @@
+query votes($address: String!) {
+  votes(address: $address) {
+    active {
+      ...Vote
+    }
+    closed {
+      ...Vote
+    }
+  }
+}
+
+fragment Vote on Vote {
+  id
+  name
+  description
+  tags {
+    primary
+    secondary
+  }
+  outcomes {
+    value
+    address
+  }
+  deadline
+  timeRemaining
+  blocksRemaining
+}

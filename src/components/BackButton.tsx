@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React from 'react'
+import React, { useMemo } from 'react'
 import { BoxProps } from '@shopify/restyle'
 import { useTranslation } from 'react-i18next'
 import Text from './Text'
@@ -17,14 +17,14 @@ type Props = BoxProps<Theme> & {
 
 const BackButton = ({
   color = 'primaryText',
-  fontSize = 22,
+  fontSize = 19,
   onPress,
   paddingHorizontal = 'lx',
   ...props
 }: Props) => {
   const { t } = useTranslation()
-  const arrowSize = (16 / 22) * fontSize
   const colors = useColors()
+  const arrowSize = useMemo(() => (16 / 22) * fontSize, [fontSize])
 
   return (
     <TouchableOpacityBox
@@ -40,7 +40,7 @@ const BackButton = ({
       <Text
         marginLeft="xs"
         color={color}
-        variant="h1"
+        variant="medium"
         fontSize={fontSize}
         maxFontSizeMultiplier={1.1}
       >

@@ -553,6 +553,8 @@ const PaymentScreen = () => {
         payments={state.payments}
         feeTokenBalance={feeAsTokens}
         onRetry={handleSubmit}
+        onSuccess={navigation.popToTop}
+        actionTitle={t('payment.backToAccounts')}
       />
     </>
   )

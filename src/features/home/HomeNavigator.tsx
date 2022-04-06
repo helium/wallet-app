@@ -17,6 +17,7 @@ import AddressQrScanner from '../addressBook/AddressQrScanner'
 import CreateAccountNavigator from '../onboarding/create/CreateAccountNavigator'
 import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
 import LedgerNavigator from '../ledger/LedgerNavigator'
+import VoteNavigator from '../vote/VoteNavigator'
 
 const HomeStack = createStackNavigator()
 
@@ -78,6 +79,7 @@ const HomeStackScreen = () => {
         component={ImportAccountNavigator}
       />
       <HomeStack.Screen name="LedgerNavigator" component={LedgerNavigator} />
+      <HomeStack.Screen name="VoteNavigator" component={VoteNavigator} />
     </HomeStack.Navigator>
   )
 }

@@ -17,6 +17,7 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import useCopyAddress from '../../utils/useCopyAddress'
 import useAlert from '../../utils/useAlert'
 import { AddressBookNavigationProp } from '../addressBook/addressBookTypes'
+import { locale } from '../../utils/i18n'
 
 type Props = {
   title: string
@@ -67,7 +68,7 @@ const TransactionLineItem = ({
 
   const body = useMemo(() => {
     if (typeof bodyText === 'number') {
-      return bodyText.toLocaleString()
+      return bodyText.toLocaleString(locale)
     }
     if (isAddress) {
       const alias = aliasForContact(bodyText)

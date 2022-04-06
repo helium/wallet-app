@@ -78,7 +78,12 @@ const textVariants = {
   },
   regular: {
     fontFamily: Font.regular,
-    color: 'primaryText',
+  },
+  medium: {
+    fontFamily: Font.medium,
+  },
+  bold: {
+    fontFamily: Font.bold,
   },
 }
 
@@ -88,6 +93,8 @@ const textVariants = {
  */
 
 const palette = {
+  aquaMarine: '#69DBB3',
+
   black200: '#41434F',
   black300: '#444755',
   black400: '#3D435B',
@@ -98,6 +105,10 @@ const palette = {
   black900: '#000000',
 
   blueBright500: '#009FF9',
+
+  blueRibbon: '#484CF6',
+
+  caribbeanGreen: '#27DCB7',
 
   darkGrey: '#333333',
 
@@ -136,6 +147,8 @@ const palette = {
 
   purple500: '#B556FF',
 
+  purpleHeart: '#3E42E5',
+
   red200: '#F59CA2',
   red300: '#F97570',
   red400: '#FF6666',
@@ -147,6 +160,7 @@ const palette = {
 
   white: '#FFFFFF',
 }
+
 export const lightThemeColors = {
   ...palette,
 

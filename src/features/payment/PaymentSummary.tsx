@@ -12,7 +12,7 @@ type Props = {
   feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
   disabled?: boolean
   errors?: string[]
-  payments: Payment[]
+  payments?: Payment[]
   alwaysShowRecipients?: boolean
 }
 
@@ -22,7 +22,7 @@ const PaymentSummary = ({
   totalBalance,
   feeTokenBalance,
   disabled = false,
-  payments,
+  payments = [],
   errors,
   alwaysShowRecipients,
 }: Props) => {
@@ -102,7 +102,7 @@ const PaymentSummary = ({
       </Box>
 
       <Box flexDirection="row" alignItems="center">
-        {showRecipients && (
+        {showRecipients && payments.length > 0 && (
           <>
             {accountIcons}
             <Text variant="body2" color="secondaryText" marginLeft="s">

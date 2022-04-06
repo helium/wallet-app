@@ -1,0 +1,3 @@
+query blockHeight($address: String!) {
+  blockHeight(address: $address)
+}

@@ -71,6 +71,7 @@ const MemoInput = ({ onChangeText, value, ...boxProps }: Props) => {
         placeholder={t('payment.enterMemo')}
         onChangeText={onChangeText}
         value={value}
+        editable={!!onChangeText}
         returnKeyType="done"
       />
       <Text

@@ -15,8 +15,10 @@ type Props = {
   submitSucceeded?: boolean
   totalBalance: Balance<TestNetworkTokens | NetworkTokens>
   feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
-  payments: Payment[]
+  payments?: Payment[]
   onRetry: () => void
+  onSuccess: () => void
+  actionTitle: string
 }
 
 const PaymentSubmit = ({
@@ -25,8 +27,10 @@ const PaymentSubmit = ({
   submitSucceeded,
   totalBalance,
   feeTokenBalance,
-  payments,
+  payments = [],
   onRetry,
+  onSuccess,
+  actionTitle,
 }: Props) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<ApolloError | Error>()
@@ -88,6 +92,8 @@ const PaymentSubmit = ({
           totalBalance={totalBalance}
           feeTokenBalance={feeTokenBalance}
           payments={payments}
+          onSuccess={onSuccess}
+          actionTitle={actionTitle}
         />
       )
     }
@@ -104,10 +110,12 @@ const PaymentSubmit = ({
       )
     }
   }, [
+    actionTitle,
     feeTokenBalance,
     handleRetry,
     handleVideoEnded,
     loading,
+    onSuccess,
     payments,
     submitError,
     succeeded,

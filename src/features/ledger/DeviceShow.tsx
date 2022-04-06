@@ -1,7 +1,6 @@
 import React, { useCallback, memo, useState, useMemo } from 'react'
 import { ActivityIndicator, Image } from 'react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import { useTranslation } from 'react-i18next'
 import { useAsync } from 'react-async-hook'
 import Ledger from '@assets/images/ledger.svg'
@@ -16,7 +15,7 @@ import {
 } from './ledgerNavigatorTypes'
 import AccountIcon from '../../components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { getLedgerAddress } from '../../utils/heliumLedger'
+import { getLedgerAddress, useLedger } from '../../utils/heliumLedger'
 import { useColors } from '../../theme/themeHooks'
 import SafeAreaBox from '../../components/SafeAreaBox'
 
@@ -29,34 +28,21 @@ const DeviceShow = () => {
   const { primaryText } = useColors()
 
   const { upsertAccount } = useAccountStorage()
+  const { transport, getTransport } = useLedger()
 
-  const [transport, setTransport] = useState<TransportBLE | null>(null)
   const [address, setAddress] = useState<string | undefined>()
 
   useAsync(async () => {
-    const newTransport = await TransportBLE.open(ledgerDevice.id)
-    newTransport.on('disconnect', () => {
-      // Intentionally for the sake of simplicity we use a transport local state
-      // and remove it on disconnect.
-      // A better way is to pass in the device.id and handle the connection internally.
-      setTransport(null)
-    })
-    setTransport(newTransport)
-  }, [])
-
-  useAsync(async () => {
-    if (!transport) return
-
     try {
-      const addressB58 = await getLedgerAddress(transport)
+      const ledgerTransport = await getTransport(ledgerDevice.id)
+      const addressB58 = await getLedgerAddress(ledgerTransport)
       setAddress(addressB58)
-      transport.close()
     } catch (error) {
       // in this case, user is likely not on Helium app
       console.error(error)
       navigation.navigate('DeviceScan', { error: error as Error })
     }
-  }, [transport])
+  }, [getTransport, ledgerDevice.id, navigation])
 
   const alias = useMemo(() => {
     if (!address) return ''
