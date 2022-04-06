@@ -92,6 +92,7 @@ export default {
     request: 'Request',
     send: 'Send',
     stake: 'Stake',
+    vote: 'Vote',
   },
   addNewContact: {
     addContact: 'Add Contact',
@@ -99,13 +100,13 @@ export default {
       placeholder: 'e.g. 9h9h9r3hfi04nf0j083...',
       title: 'Enter Helium Address',
     },
+    loadFailed: 'Cannot validate address. Please try again.',
     nickname: {
       placeholder: 'e.g. Loki Laufeyson',
       title: 'Enter Nickname',
     },
-    title: 'Add New Contact',
     notValidAddress: 'Not a valid Helium Wallet Address.',
-    loadFailed: 'Cannot validate address. Please try again.',
+    title: 'Add New Contact',
   },
   addressBook: {
     addNext: 'Add New...',
@@ -141,6 +142,7 @@ export default {
     clear: 'Clear',
     confirm: 'Confirm',
     copied: 'Copied {{target}}',
+    copy: 'Copy',
     error: 'Error',
     fee: 'Fee',
     mainnet: 'Mainnet',
@@ -153,7 +155,6 @@ export default {
     testnet: 'Testnet',
     total: 'Total',
     tryAgain: 'Try Again',
-    copy: 'Copy',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',
@@ -347,8 +348,8 @@ export default {
       account: {
         alias: 'Account Alias',
         copyAddress: 'Copy Address',
-        shareAddress: 'Share Address',
         revealWords: 'Reveal Words',
+        shareAddress: 'Share Address',
         signOut: 'Sign Out',
         signOutAlert: {
           body: 'You are signing out of your account, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your HNT\n- your Wallet',
@@ -364,6 +365,15 @@ export default {
         language: 'Language',
         title: 'App Settings',
         version: 'App Version',
+      },
+      defaultAccount: {
+        disableMessage:
+          'Wallet app requires a default account. Select a different account by tapping its account settings to set as default.',
+        disableTitle: 'Default Account Required',
+        enableMessage:
+          'This will update your default account from {{aliasOld}} to {{aliasNew}}. You can update this in Settings later if you change your mind.',
+        enableTitle: 'Update Default Account?',
+        title: 'Default Account',
       },
       dev: {
         testnet: {
@@ -392,15 +402,6 @@ export default {
         requirePinForPayments: 'Require PIN for Payments',
         resetPin: 'Reset PIN',
         title: 'Security Settings',
-      },
-      defaultAccount: {
-        title: 'Default Account',
-        enableTitle: 'Update Default Account?',
-        enableMessage:
-          'This will update your default account from {{aliasOld}} to {{aliasNew}}. You can update this in Settings later if you change your mind.',
-        disableTitle: 'Default Account Required',
-        disableMessage:
-          'Wallet app requires a default account. Select a different account by tapping its account settings to set as default.',
       },
       shareAddress: {
         copiedToClipboard: 'Copied {{address}} to clipboard',
@@ -494,5 +495,59 @@ export default {
     txnFeePaidBy: 'Transaction Fee paid by {{feePayer}}',
     unstakeValidator: 'Unstake {{ticker}}',
     validator: 'Validator',
+  },
+  vote: {
+    active: 'Active Votes',
+    against: 'Against',
+    backToVoting: 'Back to Voting',
+    blocksLeft: 'Blocks left',
+    blocksSinceVote: 'Blocks\nsince Vote',
+    body: 'To cast a vote, submit a burn transaction using the wallet of your choosing. Total cost of a burn transaction is {{dcValue}} or approximately {{usdValue}}.',
+    burnTitle: 'Burn {{ticker}}',
+    closed: 'Closed Votes',
+    deadline: 'Deadline',
+    estimatedTimeRemaining: 'Est. Time Remaining',
+    estimatedTimeRemainingNewline: 'Est. Time\nRemaining',
+    finalResults: 'Final Results',
+    for: 'For',
+    preliminaryResults: 'Preliminary Results',
+    subtitle:
+      '<primaryText>Welcome to Helium Vote</primaryText>\n\nVote <greenBright500>For</greenBright500> or <blueBright500>Against</blueBright500> proposed Helium Improvement Proposals by burning HNT.',
+    swipeToVote: 'Swipe to Vote',
+    title: 'Helium Vote',
+    totalVotes: 'Total\nVotes',
+    tutorial: {
+      goToVote: 'Go To Vote',
+      slides: [
+        {
+          body: 'Helium Vote is where the\nHelium Community comes\ntogether to make decisions\non the Network.',
+          title: 'Helium Vote',
+        },
+        {
+          body: 'Each Vote is driven by a\nHelium Improvement\nProposal (HIP).',
+          title: 'HIPs',
+        },
+        {
+          body: 'Each HIP will have two\nvoting choices. Vote <greenBright500>For</greenBright500> or\n<blueBright500>Against</blueBright500> by submitting a\nburn transaction.\n\nBurn transactions have a\nsmall fee.',
+          title: 'How to Vote',
+        },
+        {
+          body: 'Your <primaryText>Vote Power</primaryText>\nis determined by the amount of\nHNT in the account at the\nend of the vote.',
+          title: 'Vote Power',
+        },
+        {
+          body: '<caribbeanGreen>Get your voice heard.</caribbeanGreen>\n\nVote on Active Votes or\nbrowse Closed Votes.',
+          title: 'Ready to Vote?',
+        },
+      ],
+    },
+    vote: 'Vote',
+    voteClosed: 'Vote\nClosed',
+    voteCount: '{{totalVotes}} Votes',
+    voteOptions: 'Vote Options',
+    votes: 'Votes',
+    votingAs: 'Voting as {{alias}} with {{hnt}} Voting Power',
+    votingClosed: 'Voting Closed',
+    votingClosedNewline: 'Voting\nClosed',
   },
 }

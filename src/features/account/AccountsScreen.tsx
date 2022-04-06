@@ -357,6 +357,11 @@ const AccountsScreen = () => {
           if (accountNetType !== NetType.TESTNET) return
           navigation.navigate('WifiPurchase')
           break
+
+        case 'vote':
+          navigation.navigate('VoteNavigator')
+          break
+
         default:
           show()
           break

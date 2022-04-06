@@ -20,7 +20,7 @@ import Ledger from '@assets/images/ledger.svg'
 import { useColors, useOpacity } from '../theme/themeHooks'
 import SafeAreaBox from './SafeAreaBox'
 import HandleBasic from './HandleBasic'
-import { signLedgerPayment } from '../utils/heliumLedger'
+import { signLedgerPayment, useLedger } from '../utils/heliumLedger'
 import { SendDetails, useTransactions } from '../storage/TransactionProvider'
 import { useAccountLazyQuery } from '../generated/graphql'
 import useDisappear from '../utils/useDisappear'
@@ -53,7 +53,7 @@ const LedgerPaymentSelector = forwardRef(
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { primaryText } = useColors()
     const [options, setOptions] = useState<ShowOptions>()
-    const [transport, setTransport] = useState<TransportBLE>()
+    const { getTransport } = useLedger()
     const { makeLedgerPaymentTxn } = useTransactions()
     const [fetchAccount] = useAccountLazyQuery({
       fetchPolicy: 'cache-and-network',
@@ -62,38 +62,23 @@ const LedgerPaymentSelector = forwardRef(
       return [600]
     }, [])
 
-    const connectLedger = useCallback(async (deviceID: string) => {
-      const newTransport = await TransportBLE.open(deviceID)
-      newTransport.on('disconnect', () => {
-        setTransport(undefined)
-      })
-      setTransport(newTransport)
-      return newTransport
-    }, [])
-
-    useDisappear(() => {
-      if (transport) {
-        transport.close()
-      }
-    })
-
     const show = useCallback(
       async (opts: ShowOptions) => {
         setOptions(opts)
         bottomSheetModalRef.current?.present()
         try {
           // TODO: Bring this back when payment support is merged into ledger sdk
-          // const { data: accountData } = await fetchAccount({
-          //   variables: { address: opts.address },
-          // })
-          // const nextTransport = await connectLedger(opts.ledgerDevice.id)
-          // const { txnJson, unsignedTxn } = await makeLedgerPaymentTxn({
-          //   paymentDetails: opts.payments,
-          //   speculativeNonce: (accountData?.account?.speculativeNonce || 0,
-          // })
-          // const payment = await signLedgerPayment(nextTransport, unsignedTxn)
-          // onConfirm({ txn: payment, txnJson })
-          // bottomSheetModalRef.current?.dismiss()
+          //   const { data: accountData } = await fetchAccount({
+          //     variables: { address: opts.address },
+          //   })
+          //   const nextTransport = await getTransport(opts.ledgerDevice.id)
+          //   const { txnJson, unsignedTxn } = await makeLedgerPaymentTxn({
+          //     paymentDetails: opts.payments,
+          //     speculativeNonce: accountData?.account?.speculativeNonce || 0,
+          //   })
+          //   const payment = await signLedgerPayment(nextTransport, unsignedTxn)
+          //   onConfirm({ txn: payment, txnJson })
+          //   bottomSheetModalRef.current?.dismiss()
         } catch (error) {
           // in this case, user is likely not on Helium app
           console.error(error)

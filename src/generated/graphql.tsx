@@ -179,6 +179,8 @@ export type RootQueryType = {
   accountActivity?: Maybe<ActivityData>
   /** Get account rewards sum */
   accountRewardsSum?: Maybe<Sum>
+  /** Get Current Block Height */
+  blockHeight: Scalars['Int']
   /** Get current oracle price */
   currentOraclePrice?: Maybe<OraclePrice>
   /** Get hotspot */
@@ -193,6 +195,10 @@ export type RootQueryType = {
   txnConfigVars?: Maybe<TxnConfigVars>
   /** Get validator */
   validator: Validator
+  /** Get vote result */
+  voteResult: VoteResult
+  /** Get votes */
+  votes: Votes
 }
 
 export type RootQueryTypeAccountArgs = {
@@ -209,6 +215,10 @@ export type RootQueryTypeAccountRewardsSumArgs = {
   address: Scalars['String']
   maxTime?: InputMaybe<Scalars['String']>
   minTime?: InputMaybe<Scalars['String']>
+}
+
+export type RootQueryTypeBlockHeightArgs = {
+  address: Scalars['String']
 }
 
 export type RootQueryTypeCurrentOraclePriceArgs = {
@@ -242,6 +252,15 @@ export type RootQueryTypeTxnConfigVarsArgs = {
 export type RootQueryTypeValidatorArgs = {
   address: Scalars['String']
   validatorAddress: Scalars['String']
+}
+
+export type RootQueryTypeVoteResultArgs = {
+  address: Scalars['String']
+  id: Scalars['String']
+}
+
+export type RootQueryTypeVotesArgs = {
+  address: Scalars['String']
 }
 
 export type Status = {
@@ -303,6 +322,44 @@ export type Validator = {
   stakeStatus: Scalars['String']
   status: Status
   versionHeartbeat: Scalars['Int']
+}
+
+export type Vote = {
+  __typename?: 'Vote'
+  blocksRemaining: Scalars['Int']
+  deadline: Scalars['Int']
+  description: Scalars['String']
+  id: Scalars['String']
+  name: Scalars['String']
+  outcomes: Array<VoteOutcome>
+  tags: VoteTags
+  timeRemaining: Scalars['Int']
+}
+
+export type VoteOutcome = {
+  __typename?: 'VoteOutcome'
+  address: Scalars['String']
+  hntVoted?: Maybe<Scalars['Int']>
+  uniqueWallets?: Maybe<Scalars['Int']>
+  value: Scalars['String']
+}
+
+export type VoteResult = {
+  __typename?: 'VoteResult'
+  outcomes: Array<VoteOutcome>
+  timestamp: Scalars['Int']
+}
+
+export type VoteTags = {
+  __typename?: 'VoteTags'
+  primary?: Maybe<Scalars['String']>
+  secondary?: Maybe<Scalars['String']>
+}
+
+export type Votes = {
+  __typename?: 'Votes'
+  active: Array<Vote>
+  closed: Array<Vote>
 }
 
 export type AccountActivityQueryVariables = Exact<{
@@ -407,6 +464,15 @@ export type AccountQuery = {
     speculativeSecNonce?: number | null
     stakedBalance: number
   } | null
+}
+
+export type BlockHeightQueryVariables = Exact<{
+  address: Scalars['String']
+}>
+
+export type BlockHeightQuery = {
+  __typename?: 'RootQueryType'
+  blockHeight: number
 }
 
 export type HotspotQueryVariables = Exact<{
@@ -538,6 +604,113 @@ export type ValidatorQuery = {
   validator: { __typename?: 'Validator'; address: string }
 }
 
+export type VoteResultQueryVariables = Exact<{
+  address: Scalars['String']
+  id: Scalars['String']
+}>
+
+export type VoteResultQuery = {
+  __typename?: 'RootQueryType'
+  voteResult: {
+    __typename?: 'VoteResult'
+    timestamp: number
+    outcomes: Array<{
+      __typename?: 'VoteOutcome'
+      value: string
+      hntVoted?: number | null
+      uniqueWallets?: number | null
+      address: string
+    }>
+  }
+}
+
+export type VotesQueryVariables = Exact<{
+  address: Scalars['String']
+}>
+
+export type VotesQuery = {
+  __typename?: 'RootQueryType'
+  votes: {
+    __typename?: 'Votes'
+    active: Array<{
+      __typename?: 'Vote'
+      id: string
+      name: string
+      description: string
+      deadline: number
+      timeRemaining: number
+      blocksRemaining: number
+      tags: {
+        __typename?: 'VoteTags'
+        primary?: string | null
+        secondary?: string | null
+      }
+      outcomes: Array<{
+        __typename?: 'VoteOutcome'
+        value: string
+        address: string
+      }>
+    }>
+    closed: Array<{
+      __typename?: 'Vote'
+      id: string
+      name: string
+      description: string
+      deadline: number
+      timeRemaining: number
+      blocksRemaining: number
+      tags: {
+        __typename?: 'VoteTags'
+        primary?: string | null
+        secondary?: string | null
+      }
+      outcomes: Array<{
+        __typename?: 'VoteOutcome'
+        value: string
+        address: string
+      }>
+    }>
+  }
+}
+
+export type VoteFragment = {
+  __typename?: 'Vote'
+  id: string
+  name: string
+  description: string
+  deadline: number
+  timeRemaining: number
+  blocksRemaining: number
+  tags: {
+    __typename?: 'VoteTags'
+    primary?: string | null
+    secondary?: string | null
+  }
+  outcomes: Array<{
+    __typename?: 'VoteOutcome'
+    value: string
+    address: string
+  }>
+}
+
+export const VoteFragmentDoc = gql`
+  fragment Vote on Vote {
+    id
+    name
+    description
+    tags {
+      primary
+      secondary
+    }
+    outcomes {
+      value
+      address
+    }
+    deadline
+    timeRemaining
+    blocksRemaining
+  }
+`
 export const AccountActivityDocument = gql`
   query AccountActivity($address: String!, $cursor: String, $filter: String) {
     accountActivity(address: $address, cursor: $cursor, filter: $filter) {
@@ -775,6 +948,60 @@ export type AccountLazyQueryHookResult = ReturnType<typeof useAccountLazyQuery>
 export type AccountQueryResult = Apollo.QueryResult<
   AccountQuery,
   AccountQueryVariables
+>
+export const BlockHeightDocument = gql`
+  query blockHeight($address: String!) {
+    blockHeight(address: $address)
+  }
+`
+
+/**
+ * __useBlockHeightQuery__
+ *
+ * To run a query within a React component, call `useBlockHeightQuery` and pass it any options that fit your needs.
+ * When your component renders, `useBlockHeightQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useBlockHeightQuery({
+ *   variables: {
+ *      address: // value for 'address'
+ *   },
+ * });
+ */
+export function useBlockHeightQuery(
+  baseOptions: Apollo.QueryHookOptions<
+    BlockHeightQuery,
+    BlockHeightQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useQuery<BlockHeightQuery, BlockHeightQueryVariables>(
+    BlockHeightDocument,
+    options,
+  )
+}
+export function useBlockHeightLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    BlockHeightQuery,
+    BlockHeightQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useLazyQuery<BlockHeightQuery, BlockHeightQueryVariables>(
+    BlockHeightDocument,
+    options,
+  )
+}
+export type BlockHeightQueryHookResult = ReturnType<typeof useBlockHeightQuery>
+export type BlockHeightLazyQueryHookResult = ReturnType<
+  typeof useBlockHeightLazyQuery
+>
+export type BlockHeightQueryResult = Apollo.QueryResult<
+  BlockHeightQuery,
+  BlockHeightQueryVariables
 >
 export const HotspotDocument = gql`
   query hotspot($address: String!, $hotspotAddress: String!) {
@@ -1268,4 +1495,121 @@ export type ValidatorLazyQueryHookResult = ReturnType<
 export type ValidatorQueryResult = Apollo.QueryResult<
   ValidatorQuery,
   ValidatorQueryVariables
+>
+export const VoteResultDocument = gql`
+  query voteResult($address: String!, $id: String!) {
+    voteResult(address: $address, id: $id) {
+      outcomes {
+        value
+        hntVoted
+        uniqueWallets
+        address
+      }
+      timestamp
+    }
+  }
+`
+
+/**
+ * __useVoteResultQuery__
+ *
+ * To run a query within a React component, call `useVoteResultQuery` and pass it any options that fit your needs.
+ * When your component renders, `useVoteResultQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useVoteResultQuery({
+ *   variables: {
+ *      address: // value for 'address'
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useVoteResultQuery(
+  baseOptions: Apollo.QueryHookOptions<
+    VoteResultQuery,
+    VoteResultQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useQuery<VoteResultQuery, VoteResultQueryVariables>(
+    VoteResultDocument,
+    options,
+  )
+}
+export function useVoteResultLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    VoteResultQuery,
+    VoteResultQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useLazyQuery<VoteResultQuery, VoteResultQueryVariables>(
+    VoteResultDocument,
+    options,
+  )
+}
+export type VoteResultQueryHookResult = ReturnType<typeof useVoteResultQuery>
+export type VoteResultLazyQueryHookResult = ReturnType<
+  typeof useVoteResultLazyQuery
+>
+export type VoteResultQueryResult = Apollo.QueryResult<
+  VoteResultQuery,
+  VoteResultQueryVariables
+>
+export const VotesDocument = gql`
+  query votes($address: String!) {
+    votes(address: $address) {
+      active {
+        ...Vote
+      }
+      closed {
+        ...Vote
+      }
+    }
+  }
+  ${VoteFragmentDoc}
+`
+
+/**
+ * __useVotesQuery__
+ *
+ * To run a query within a React component, call `useVotesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useVotesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useVotesQuery({
+ *   variables: {
+ *      address: // value for 'address'
+ *   },
+ * });
+ */
+export function useVotesQuery(
+  baseOptions: Apollo.QueryHookOptions<VotesQuery, VotesQueryVariables>,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useQuery<VotesQuery, VotesQueryVariables>(
+    VotesDocument,
+    options,
+  )
+}
+export function useVotesLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<VotesQuery, VotesQueryVariables>,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useLazyQuery<VotesQuery, VotesQueryVariables>(
+    VotesDocument,
+    options,
+  )
+}
+export type VotesQueryHookResult = ReturnType<typeof useVotesQuery>
+export type VotesLazyQueryHookResult = ReturnType<typeof useVotesLazyQuery>
+export type VotesQueryResult = Apollo.QueryResult<
+  VotesQuery,
+  VotesQueryVariables
 >

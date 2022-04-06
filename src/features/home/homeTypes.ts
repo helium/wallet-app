@@ -38,6 +38,7 @@ export type HomeStackParamList = {
     | { wordCount: 12 | 24 }
     | { screen: 'AccountImportScreen'; params: { wordCount: 12 | 24 } }
   LedgerNavigator: undefined
+  VoteNavigator: undefined
 }
 
 export type HomeNavigationProp = StackNavigationProp<HomeStackParamList>

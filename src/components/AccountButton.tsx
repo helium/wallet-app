@@ -45,6 +45,7 @@ const AccountButton = ({
       hitSlop={hitSlop}
       alignItems="center"
       onPress={handlePress}
+      disabled={!onPress}
       {...boxProps}
     >
       <Box

@@ -1,0 +1,11 @@
+query voteResult($address: String!, $id: String!) {
+  voteResult(address: $address, id: $id) {
+    outcomes {
+      value
+      hntVoted
+      uniqueWallets
+      address
+    }
+    timestamp
+  }
+}

@@ -56,6 +56,7 @@ const useTransactionHook = () => {
     memo,
     dcPayloadSize,
     txnFeeMultiplier,
+    shouldSign = true,
   }: {
     amount: number
     payeeB58: string
@@ -63,6 +64,7 @@ const useTransactionHook = () => {
     memo: string
     dcPayloadSize?: number
     txnFeeMultiplier?: number
+    shouldSign?: boolean
   }) => {
     const keypair = await getKeypair(currentAccount?.address || '')
     if (!keypair) throw new Error('missing keypair')
@@ -72,7 +74,7 @@ const useTransactionHook = () => {
       Transaction.config({ dcPayloadSize, txnFeeMultiplier })
     }
 
-    const tokenBurnTxn = new TokenBurnV1({
+    const txn = new TokenBurnV1({
       payer: keypair.address,
       payee,
       amount,
@@ -80,7 +82,22 @@ const useTransactionHook = () => {
       memo,
     })
 
-    return tokenBurnTxn.sign({ payer: keypair })
+    const txnJson = {
+      type: txn.type,
+      payee: txn.payee?.b58 || '',
+      amount: txn.amount,
+      payer: txn.payer?.b58,
+      nonce: txn.nonce,
+      fee: txn.fee,
+      memo: txn.memo,
+    }
+
+    if (!shouldSign) {
+      return { txnJson: JSON.stringify(txnJson), unsignedTxn: txn }
+    }
+
+    const signedTxn = await txn.sign({ payer: keypair })
+    return { signedTxn, txnJson: JSON.stringify(txnJson), unsignedTxn: txn }
   }
 
   const makePaymentTxn = async (opts: {
@@ -196,16 +213,21 @@ const initialState = {
       resolve(new Balance(0, CurrencyType.dataCredit)),
     ),
   makeBurnTxn: () =>
-    new Promise<TokenBurnV1>((resolve) =>
-      resolve(
-        new TokenBurnV1({
+    new Promise<{
+      txnJson: string
+      signedTxn?: TokenBurnV1
+      unsignedTxn: TokenBurnV1
+    }>((resolve) =>
+      resolve({
+        unsignedTxn: new TokenBurnV1({
           payer: EMPTY_B58_ADDRESS,
           payee: EMPTY_B58_ADDRESS,
           amount: 0,
           nonce: 0,
           memo: '',
         }),
-      ),
+        txnJson: '',
+      }),
     ),
   makeLedgerPaymentTxn: () =>
     new Promise<{

@@ -6,8 +6,11 @@ import React, {
   useState,
 } from 'react'
 import { useAsync } from 'react-async-hook'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Intervals } from '../features/settings/useAuthIntervals'
 import { getSecureItem, storeSecureItem } from './secureStorage'
+
+const VOTE_TUTORIAL_SHOWN = 'voteTutorialShown'
 
 const useAppStorageHook = () => {
   const [pin, setPin] = useState<{
@@ -24,6 +27,7 @@ const useAppStorageHook = () => {
   const [convertToCurrency, setConvertToCurrency] = useState(false)
   const [enableTestnet, setEnableTestnet] = useState(false)
   const [scannedAddress, setScannedAddress] = useState<string>()
+  const [voteTutorialShown, setVoteTutorialShown] = useState(false)
 
   useAsync(async () => {
     // TODO: When performing an account restore pin will not be restored.
@@ -36,6 +40,7 @@ const useAppStorageHook = () => {
       const nextCurrency = await getSecureItem('currency')
       const nextConvertToCurrency = await getSecureItem('convertToCurrency')
       const nextEnableTestnet = await getSecureItem('enableTestnet')
+      const nextVoteShown = await AsyncStorage.getItem(VOTE_TUTORIAL_SHOWN)
 
       setPin({ value: nextPin || '', status: nextPin ? 'restored' : 'off' })
       setRequirePinForPayment(nextPinForPayment === 'true')
@@ -43,6 +48,7 @@ const useAppStorageHook = () => {
       setCurrency(nextCurrency || 'USD')
       setConvertToCurrency(nextConvertToCurrency === 'true')
       setEnableTestnet(nextEnableTestnet === 'true')
+      setVoteTutorialShown(nextVoteShown === 'true')
 
       if (nextAuthInterval) {
         setAuthInterval(Number.parseInt(nextAuthInterval, 10))
@@ -110,6 +116,11 @@ const useAppStorageHook = () => {
     })
   }, [])
 
+  const setVoteTutorialCompleted = useCallback(() => {
+    setVoteTutorialShown(true)
+    return AsyncStorage.setItem(VOTE_TUTORIAL_SHOWN, 'true')
+  }, [])
+
   return {
     authInterval,
     convertToCurrency,
@@ -119,6 +130,7 @@ const useAppStorageHook = () => {
     pin,
     scannedAddress,
     setScannedAddress,
+    setVoteTutorialCompleted,
     requirePinForPayment,
     toggleConvertToCurrency,
     updateAuthInterval,
@@ -128,6 +140,7 @@ const useAppStorageHook = () => {
     updateLocked,
     updatePin,
     updateRequirePinForPayment,
+    voteTutorialShown,
   }
 }
 
@@ -141,6 +154,7 @@ const initialState = {
   requirePinForPayment: false,
   scannedAddress: undefined,
   setScannedAddress: () => undefined,
+  setVoteTutorialCompleted: () => new Promise<void>((resolve) => resolve()),
   toggleConvertToCurrency: async () => undefined,
   updateAuthInterval: async () => undefined,
   updateConvertToCurrency: async () => undefined,
@@ -149,6 +163,7 @@ const initialState = {
   updateLocked: async () => undefined,
   updatePin: async () => undefined,
   updateRequirePinForPayment: async () => undefined,
+  voteTutorialShown: false,
 }
 
 const AppStorageContext =

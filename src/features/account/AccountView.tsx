@@ -18,8 +18,9 @@ import {
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { Spacing, Theme } from '../../theme/theme'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
-export type Action = 'send' | 'payment' | 'request' | 'stake' | 'lock'
+export type Action = 'send' | 'payment' | 'request' | 'stake' | 'lock' | 'vote'
 type Props = {
   accountData: AccountData | null | undefined
   visible: boolean
@@ -41,6 +42,7 @@ const AccountView = ({
   const [balanceString, setBalanceString] = useState('')
   const { toPreferredCurrencyString } = useBalance()
   const { toggleConvertToCurrency } = useAppStorage()
+  const { currentAccount } = useAccountStorage()
 
   const handleAction = useCallback(
     (type: Action) => () => {
@@ -198,6 +200,19 @@ const AccountView = ({
           iconColor="orange500"
           title={t('accountView.payment')}
           onPress={handleAction('payment')}
+        />
+        <FabButton
+          icon="vote"
+          marginLeft="s"
+          titleMarginLeft="s"
+          // only show for mainnet
+          visible={currentAccount?.netType === NetType.MAINNET}
+          backgroundColor="orange500"
+          backgroundColorOpacity={0.2}
+          backgroundColorOpacityPressed={0.4}
+          iconColor="orange500"
+          title={t('accountView.vote')}
+          onPress={handleAction('vote')}
         />
         <FabButton
           icon="fatArrowDown"

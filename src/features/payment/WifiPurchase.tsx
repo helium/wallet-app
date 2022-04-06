@@ -210,7 +210,13 @@ const WifiPurchase = () => {
         dcPayloadSize: scAccount.dcPayloadSize,
         txnFeeMultiplier: scAccount.txnFeeMultiplier,
       })
-      await submitBurnTxn(currentAccount.address, txn.toString())
+
+      if (!txn.signedTxn) {
+        // TODO: Eventually will need to handle ledger devices
+        return
+      }
+
+      await submitBurnTxn(currentAccount.address, txn.signedTxn.toString())
     } catch (e) {
       console.error(e)
       let errStr = ''
