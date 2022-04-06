@@ -18,6 +18,7 @@ export type HomeStackParamList = {
   PaymentScreen: undefined | PaymentRouteParam
   PaymentQrScanner: undefined
   RequestScreen: undefined
+  OnboardData: undefined
   WifiOnboard:
     | {
         key: string

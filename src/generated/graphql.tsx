@@ -79,6 +79,11 @@ export type ActivityData = {
   data?: Maybe<Array<Activity>>
 }
 
+export type FeatureFlags = {
+  __typename?: 'FeatureFlags'
+  mobileEnabled: Scalars['Boolean']
+}
+
 export type Geocode = {
   __typename?: 'Geocode'
   cityId: Scalars['String']
@@ -183,6 +188,8 @@ export type RootQueryType = {
   blockHeight: Scalars['Int']
   /** Get current oracle price */
   currentOraclePrice?: Maybe<OraclePrice>
+  /** Get feature flags */
+  featureFlags: FeatureFlags
   /** Get hotspot */
   hotspot: Hotspot
   /** Get is hotspot or validator */
@@ -222,6 +229,10 @@ export type RootQueryTypeBlockHeightArgs = {
 }
 
 export type RootQueryTypeCurrentOraclePriceArgs = {
+  address: Scalars['String']
+}
+
+export type RootQueryTypeFeatureFlagsArgs = {
   address: Scalars['String']
 }
 
@@ -473,6 +484,15 @@ export type BlockHeightQueryVariables = Exact<{
 export type BlockHeightQuery = {
   __typename?: 'RootQueryType'
   blockHeight: number
+}
+
+export type FeatureFlagsQueryVariables = Exact<{
+  address: Scalars['String']
+}>
+
+export type FeatureFlagsQuery = {
+  __typename?: 'RootQueryType'
+  featureFlags: { __typename?: 'FeatureFlags'; mobileEnabled: boolean }
 }
 
 export type HotspotQueryVariables = Exact<{
@@ -1002,6 +1022,64 @@ export type BlockHeightLazyQueryHookResult = ReturnType<
 export type BlockHeightQueryResult = Apollo.QueryResult<
   BlockHeightQuery,
   BlockHeightQueryVariables
+>
+export const FeatureFlagsDocument = gql`
+  query FeatureFlags($address: String!) {
+    featureFlags(address: $address) {
+      mobileEnabled
+    }
+  }
+`
+
+/**
+ * __useFeatureFlagsQuery__
+ *
+ * To run a query within a React component, call `useFeatureFlagsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useFeatureFlagsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useFeatureFlagsQuery({
+ *   variables: {
+ *      address: // value for 'address'
+ *   },
+ * });
+ */
+export function useFeatureFlagsQuery(
+  baseOptions: Apollo.QueryHookOptions<
+    FeatureFlagsQuery,
+    FeatureFlagsQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useQuery<FeatureFlagsQuery, FeatureFlagsQueryVariables>(
+    FeatureFlagsDocument,
+    options,
+  )
+}
+export function useFeatureFlagsLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    FeatureFlagsQuery,
+    FeatureFlagsQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useLazyQuery<FeatureFlagsQuery, FeatureFlagsQueryVariables>(
+    FeatureFlagsDocument,
+    options,
+  )
+}
+export type FeatureFlagsQueryHookResult = ReturnType<
+  typeof useFeatureFlagsQuery
+>
+export type FeatureFlagsLazyQueryHookResult = ReturnType<
+  typeof useFeatureFlagsLazyQuery
+>
+export type FeatureFlagsQueryResult = Apollo.QueryResult<
+  FeatureFlagsQuery,
+  FeatureFlagsQueryVariables
 >
 export const HotspotDocument = gql`
   query hotspot($address: String!, $hotspotAddress: String!) {

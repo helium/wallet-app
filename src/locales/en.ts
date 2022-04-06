@@ -93,6 +93,7 @@ export default {
     send: 'Send',
     stake: 'Stake',
     vote: 'Vote',
+    fiveG: '5G',
   },
   addNewContact: {
     addContact: 'Add Contact',
@@ -549,5 +550,17 @@ export default {
     votingAs: 'Voting as {{alias}} with {{hnt}} Voting Power',
     votingClosed: 'Voting Closed',
     votingClosedNewline: 'Voting\nClosed',
+  },
+  onboardData: {
+    title: 'lorem',
+    install: 'Install',
+    carousel: {
+      item1:
+        'lorem',
+      item2:
+        'lorem',
+      item3:
+        'When you’re outside of Helium 5G coverage, roam on T-Mobile network, available nationwide for just $10 per 10GB.',
+    },
   },
 }

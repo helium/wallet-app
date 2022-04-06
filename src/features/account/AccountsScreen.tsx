@@ -357,11 +357,12 @@ const AccountsScreen = () => {
           if (accountNetType !== NetType.TESTNET) return
           navigation.navigate('WifiOnboard')
           break
-
         case 'vote':
           navigation.navigate('VoteNavigator')
           break
-
+        case '5G':
+          navigation.navigate('OnboardData')
+          break
         default:
           show()
           break
