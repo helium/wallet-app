@@ -93,6 +93,7 @@ export default {
     send: 'Send',
     stake: 'Stake',
     vote: 'Vote',
+    fiveG: '5G',
   },
   addNewContact: {
     addContact: 'Add Contact',
@@ -549,5 +550,17 @@ export default {
     votingAs: 'Voting as {{alias}} with {{hnt}} Voting Power',
     votingClosed: 'Voting Closed',
     votingClosedNewline: 'Voting\nClosed',
+  },
+  purchaseData: {
+    title: 'FreedomFi 5G Network',
+    install: 'Install eSIM',
+    carousel: {
+      item1:
+        'A new 5G Wireless Network for the People’s Network.\n\n\nFree data (that’s right) when connecting to 5G Hotspots.',
+      item2:
+        'Visit FreedomFi.com to sign up.\n\n\nAlready signed up? Get started by installing the eSIM.\n\n\nClick the link in your email.',
+      item3:
+        'When you’re outside of Helium 5G coverage, roam on T-Mobile network, available nationwide for just $10 per 10GB.',
+    },
   },
 }

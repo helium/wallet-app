@@ -9,7 +9,7 @@ import Box from '../../components/Box'
 import Text from '../../components/Text'
 import { useColors } from '../../theme/themeHooks'
 import FabButton from '../../components/FabButton'
-import { AccountData } from '../../generated/graphql'
+import { AccountData, useFeatureFlagsQuery } from '../../generated/graphql'
 import {
   balanceToString,
   useAccountBalances,
@@ -20,7 +20,14 @@ import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { Spacing, Theme } from '../../theme/theme'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
-export type Action = 'send' | 'payment' | 'request' | 'stake' | 'lock' | 'vote'
+export type Action =
+  | 'send'
+  | 'payment'
+  | 'request'
+  | 'stake'
+  | 'lock'
+  | 'vote'
+  | '5G'
 type Props = {
   accountData: AccountData | null | undefined
   visible: boolean
@@ -43,6 +50,14 @@ const AccountView = ({
   const { toPreferredCurrencyString } = useBalance()
   const { toggleConvertToCurrency } = useAppStorage()
   const { currentAccount } = useAccountStorage()
+
+  const { data: featureFlagData } = useFeatureFlagsQuery({
+    variables: {
+      address: currentAccount?.address || '',
+    },
+    fetchPolicy: 'network-only',
+    skip: !currentAccount?.address,
+  })
 
   const handleAction = useCallback(
     (type: Action) => () => {
@@ -188,6 +203,18 @@ const AccountView = ({
           iconColor="blueBright500"
           title={t('accountView.send')}
           onPress={handleAction('send')}
+        />
+        <FabButton
+          icon="payment"
+          marginLeft="s"
+          titleMarginLeft="s"
+          visible={!!featureFlagData?.featureFlags?.mobileEnabled}
+          backgroundColor="orange500"
+          backgroundColorOpacity={0.2}
+          backgroundColorOpacityPressed={0.4}
+          iconColor="orange500"
+          title={t('accountView.fiveG')}
+          onPress={handleAction('5G')}
         />
         <FabButton
           icon="payment"
