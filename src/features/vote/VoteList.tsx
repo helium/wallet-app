@@ -27,6 +27,7 @@ const VoteList = () => {
   const { data: voteData } = useVotesQuery({
     variables: { address: currentAccount?.address || '' },
     skip: !currentAccount?.address,
+    fetchPolicy: 'cache-and-network',
   })
   const [fee, setFee] = useState<Balance<DataCredits>>()
   const { makeBurnTxn } = useTransactions()
@@ -42,6 +43,7 @@ const VoteList = () => {
       amount: 0,
       memo: encodeMemoString('1') || '',
       nonce: 1,
+      shouldSign: false,
     }).then((b) =>
       setFee(new Balance(b.unsignedTxn.fee, CurrencyType.dataCredit)),
     )

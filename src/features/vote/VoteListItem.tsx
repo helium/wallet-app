@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { addMilliseconds, formatDistanceToNow } from 'date-fns'
+import { addMinutes, formatDistanceToNow } from 'date-fns'
 import { orderBy } from 'lodash'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
@@ -20,7 +20,7 @@ const VoteListItem = ({ index: _index, vote, onPress }: Props) => {
     tags: { primary, secondary },
     name,
     description,
-    timeRemaining,
+    blocksRemaining,
   } = vote
   const { t } = useTranslation()
   const { currentAccount } = useAccountStorage()
@@ -30,11 +30,10 @@ const VoteListItem = ({ index: _index, vote, onPress }: Props) => {
   })
 
   const timeStr = useMemo(() => {
-    if (timeRemaining <= 0) return t('vote.votingClosed')
-
-    const endDate = addMilliseconds(new Date(), timeRemaining)
-    return formatDistanceToNow(endDate)
-  }, [t, timeRemaining])
+    if (blocksRemaining <= 0) return t('vote.votingClosed')
+    const deadlineDate = addMinutes(new Date(), blocksRemaining)
+    return formatDistanceToNow(deadlineDate)
+  }, [blocksRemaining, t])
 
   const totalVotes = useMemo(() => {
     if (!voteResultData?.voteResult.outcomes) return ' '

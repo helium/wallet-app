@@ -49,15 +49,7 @@ const useTransactionHook = () => {
     Transaction.config(txnVarsData.txnConfigVars)
   }, [txnVarsData, error])
 
-  const makeBurnTxn = async ({
-    payeeB58,
-    amount,
-    nonce,
-    memo,
-    dcPayloadSize,
-    txnFeeMultiplier,
-    shouldSign = true,
-  }: {
+  const makeBurnTxn = async (opts: {
     amount: number
     payeeB58: string
     nonce: number
@@ -66,8 +58,19 @@ const useTransactionHook = () => {
     txnFeeMultiplier?: number
     shouldSign?: boolean
   }) => {
-    const keypair = await getKeypair(currentAccount?.address || '')
-    if (!keypair) throw new Error('missing keypair')
+    const {
+      payeeB58,
+      amount,
+      nonce,
+      memo,
+      dcPayloadSize,
+      txnFeeMultiplier,
+      shouldSign = true,
+    } = opts
+    if (!currentAccount?.address) {
+      throw new Error('No account selected for payment')
+    }
+
     const payee = Address.fromB58(payeeB58)
 
     if (dcPayloadSize && txnFeeMultiplier) {
@@ -75,7 +78,7 @@ const useTransactionHook = () => {
     }
 
     const txn = new TokenBurnV1({
-      payer: keypair.address,
+      payer: Address.fromB58(currentAccount.address),
       payee,
       amount,
       nonce,
@@ -92,7 +95,9 @@ const useTransactionHook = () => {
       memo: txn.memo,
     }
 
-    if (!shouldSign) {
+    const keypair = await getKeypair(currentAccount?.address || '')
+
+    if (!shouldSign || !keypair) {
       return { txnJson: JSON.stringify(txnJson), unsignedTxn: txn }
     }
 

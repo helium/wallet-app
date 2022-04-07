@@ -344,7 +344,6 @@ export type Vote = {
   name: Scalars['String']
   outcomes: Array<VoteOutcome>
   tags: VoteTags
-  timeRemaining: Scalars['Int']
 }
 
 export type VoteOutcome = {
@@ -658,7 +657,6 @@ export type VotesQuery = {
       name: string
       description: string
       deadline: number
-      timeRemaining: number
       blocksRemaining: number
       tags: {
         __typename?: 'VoteTags'
@@ -677,7 +675,6 @@ export type VotesQuery = {
       name: string
       description: string
       deadline: number
-      timeRemaining: number
       blocksRemaining: number
       tags: {
         __typename?: 'VoteTags'
@@ -699,7 +696,6 @@ export type VoteFragment = {
   name: string
   description: string
   deadline: number
-  timeRemaining: number
   blocksRemaining: number
   tags: {
     __typename?: 'VoteTags'
@@ -727,7 +723,6 @@ export const VoteFragmentDoc = gql`
       address
     }
     deadline
-    timeRemaining
     blocksRemaining
   }
 `
