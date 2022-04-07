@@ -46,7 +46,7 @@ export default ({
     },
     fetchPolicy: 'cache-first',
     skip: !address || filter === 'pending',
-    // notifyOnNetworkStatusChange: true,
+    notifyOnNetworkStatusChange: true,
     pollInterval: 30000,
   })
 
