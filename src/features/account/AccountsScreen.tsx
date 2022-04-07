@@ -12,11 +12,7 @@ import { Carousel } from 'react-native-snap-carousel'
 import CogIco from '@assets/images/cog.svg'
 import AccountIco from '@assets/images/account.svg'
 import { AnimatePresence } from 'moti'
-import {
-  ActivityIndicator,
-  LayoutChangeEvent,
-  LayoutRectangle,
-} from 'react-native'
+import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { useTranslation } from 'react-i18next'
 import { NetType } from '@helium/crypto-react-native'
@@ -116,7 +112,7 @@ const AccountsScreen = () => {
   const verticalHitSlop = useVerticalHitSlop('l')
   const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
   const { backgroundStyle: handleStyle } = useOpacity('black500', 1)
-  const { primaryText, primaryIcon } = useColors()
+  const { primaryIcon } = useColors()
   const carouselRef = useRef<Carousel<CSAccount | null>>(null)
   const { sortedAccounts, currentAccount, setCurrentAccount } =
     useAccountStorage()
@@ -307,13 +303,6 @@ const AccountsScreen = () => {
   }, [])
 
   const footer = useMemo(() => {
-    if (activityLoading) {
-      return (
-        <Box height={60} justifyContent="center">
-          <ActivityIndicator color={primaryText} />
-        </Box>
-      )
-    }
     if (filterState.filter === 'all') {
       return (
         <Text
@@ -327,7 +316,7 @@ const AccountsScreen = () => {
       )
     }
     return null
-  }, [activityLoading, filterState.filter, primaryText, t])
+  }, [filterState.filter, t])
 
   const requestMore = useCallback(() => {
     fetchMoreActivity()
@@ -519,7 +508,10 @@ const AccountsScreen = () => {
           backgroundStyle={backgroundStyle}
           handleIndicatorStyle={handleStyle}
         >
-          <AccountActivityFilter {...filterState} />
+          <AccountActivityFilter
+            activityLoading={activityLoading}
+            {...filterState}
+          />
           <BottomSheetFlatList
             ListFooterComponent={footer}
             ItemSeparatorComponent={renderSeparator}

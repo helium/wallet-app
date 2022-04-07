@@ -1,10 +1,11 @@
 import React, { memo, useCallback, useReducer } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native-gesture-handler'
+import { ActivityIndicator } from 'react-native'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { useHitSlop } from '../../theme/themeHooks'
+import { useColors, useHitSlop } from '../../theme/themeHooks'
 import animateTransition from '../../utils/animateTransition'
 
 const FilterTypeKeys = [
@@ -66,10 +67,18 @@ export const useActivityFilter = () => {
 type Props = ActivityFilter & {
   toggle: () => void
   change: (filter: FilterType) => void
+  activityLoading?: boolean
 }
-const AccountActivityFilter = ({ visible, filter, toggle, change }: Props) => {
+const AccountActivityFilter = ({
+  visible,
+  filter,
+  toggle,
+  change,
+  activityLoading,
+}: Props) => {
   const { t } = useTranslation()
   const hitSlop = useHitSlop('l')
+  const { surfaceSecondaryText } = useColors()
 
   const handleToggle = useCallback(() => {
     animateTransition('AccountActivityFilter.visible')
@@ -130,13 +139,21 @@ const AccountActivityFilter = ({ visible, filter, toggle, change }: Props) => {
   return (
     <Box borderBottomWidth={1}>
       <Box flexDirection="row" justifyContent="space-between" paddingBottom="m">
-        <Text
-          variant="body2"
-          color="surfaceSecondaryText"
-          paddingHorizontal="l"
-        >
-          {t('accountsScreen.myTransactions')}
-        </Text>
+        <Box flexDirection="row">
+          <Text
+            variant="body2"
+            color="surfaceSecondaryText"
+            paddingLeft="l"
+            paddingRight="m"
+          >
+            {t('accountsScreen.myTransactions')}
+          </Text>
+          <ActivityIndicator
+            size="small"
+            color={surfaceSecondaryText}
+            animating={activityLoading}
+          />
+        </Box>
 
         <TouchableOpacityBox
           paddingHorizontal="l"
