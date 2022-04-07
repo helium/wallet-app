@@ -1,12 +1,13 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import Balance, { CurrencyType } from '@helium/currency'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { addMilliseconds, formatDistanceToNow } from 'date-fns'
+import { addMinutes, formatDistanceToNow } from 'date-fns'
 import React, { memo as reactMemo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useAsync } from 'react-async-hook'
 import { orderBy } from 'lodash'
+import { LayoutChangeEvent } from 'react-native'
 import BackButton from '../../components/BackButton'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
@@ -33,7 +34,6 @@ const VoteShow = () => {
         tags: { primary, secondary },
         name,
         description,
-        timeRemaining,
         blocksRemaining,
         deadline,
       },
@@ -52,9 +52,10 @@ const VoteShow = () => {
   })
 
   const [formattedTime, setFormattedTime] = useState('')
+  const [outcomesTitleHeight, setOutcomesTitleHeight] = useState<number>()
   const [voteOutcome, setVoteOutcome] = useState<VoteOutcome>()
 
-  const voteOpen = useMemo(() => timeRemaining > 0, [timeRemaining])
+  const voteOpen = useMemo(() => blocksRemaining > 0, [blocksRemaining])
 
   const sortedOutcomes = useMemo(() => {
     if (!outcomes) return []
@@ -94,9 +95,9 @@ const VoteShow = () => {
       return
     }
 
-    const endDate = addMilliseconds(new Date(), timeRemaining)
-    setFormattedTime(formatDistanceToNow(endDate))
-  }, [timeRemaining, timestamp, voteOpen])
+    const deadlineDate = addMinutes(new Date(), blocksRemaining)
+    setFormattedTime(formatDistanceToNow(deadlineDate))
+  }, [timestamp, voteOpen, blocksRemaining])
 
   const handleToggle = useCallback(
     (vt: VoteOutcome) => () => {
@@ -108,6 +109,10 @@ const VoteShow = () => {
     },
     [],
   )
+
+  const handleOutcomesTitleLayout = useCallback((event: LayoutChangeEvent) => {
+    setOutcomesTitleHeight(event.nativeEvent.layout.height)
+  }, [])
 
   const handleVoteSelected = useCallback(() => {
     if (!voteOutcome || !currentAccount) return
@@ -188,64 +193,81 @@ const VoteShow = () => {
         <Box
           backgroundColor="secondary"
           paddingHorizontal="lx"
-          paddingVertical="s"
+          paddingVertical="ms"
           marginVertical="lm"
           justifyContent="space-between"
           flexDirection="row"
         >
           <Box>
-            <Text
-              variant="body2"
-              color="secondaryText"
+            <Box
+              height={outcomesTitleHeight}
+              justifyContent="center"
               marginBottom="s"
-              numberOfLines={2}
             >
-              {voteOpen ? t('vote.deadline') : t('vote.votingClosedNewline')}
-            </Text>
+              <Text variant="body2" color="secondaryText" numberOfLines={2}>
+                {voteOpen ? t('vote.deadline') : t('vote.votingClosedNewline')}
+              </Text>
+            </Box>
             <Text variant="body2" color="primaryText">
               {deadline.toLocaleString(locale)}
             </Text>
           </Box>
           <Box>
-            <Text
-              variant="body2"
-              color="secondaryText"
-              numberOfLines={2}
+            <Box
+              height={outcomesTitleHeight}
+              justifyContent="center"
               marginBottom="s"
-              textAlign="center"
             >
-              {voteOpen ? t('vote.blocksLeft') : t('vote.blocksSinceVote')}
-            </Text>
+              <Text
+                variant="body2"
+                color="secondaryText"
+                numberOfLines={2}
+                textAlign="center"
+              >
+                {voteOpen ? t('vote.blocksLeft') : t('vote.blocksSinceVote')}
+              </Text>
+            </Box>
             <Text variant="body2" color="primaryText" textAlign="center">
               {Math.abs(blocksRemaining).toLocaleString(locale)}
             </Text>
           </Box>
           <Box>
-            <Text
-              variant="body2"
-              color="secondaryText"
-              numberOfLines={2}
+            <Box
+              height={outcomesTitleHeight}
+              justifyContent="center"
               marginBottom="s"
-              textAlign="center"
             >
-              {voteOpen
-                ? t('vote.estimatedTimeRemainingNewline')
-                : t('vote.voteClosed')}
-            </Text>
+              <Text
+                variant="body2"
+                color="secondaryText"
+                numberOfLines={2}
+                textAlign="center"
+              >
+                {voteOpen
+                  ? t('vote.estimatedTimeRemainingNewline')
+                  : t('vote.voteClosed')}
+              </Text>
+            </Box>
             <Text variant="body2" color="primaryText" textAlign="center">
               {formattedTime}
             </Text>
           </Box>
           <Box>
-            <Text
-              variant="body2"
-              color="secondaryText"
-              numberOfLines={2}
+            <Box
+              height={outcomesTitleHeight}
+              justifyContent="center"
               marginBottom="s"
-              textAlign="right"
             >
-              {t('vote.totalVotes')}
-            </Text>
+              <Text
+                variant="body2"
+                color="secondaryText"
+                numberOfLines={2}
+                onLayout={handleOutcomesTitleLayout}
+                textAlign="right"
+              >
+                {t('vote.totalVotes')}
+              </Text>
+            </Box>
             <Text variant="body2" color="primaryText" textAlign="right">
               {totalVotes.toLocaleString(locale)}
             </Text>

@@ -3,6 +3,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import Balance, { CurrencyType, DataCredits } from '@helium/currency'
@@ -10,6 +11,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { NetType } from '@helium/crypto-react-native'
+import { TokenBurnV1 } from '@helium/transactions'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import { useOpacity } from '../../theme/themeHooks'
@@ -28,7 +30,8 @@ import PaymentSubmit from '../payment/PaymentSubmit'
 import BackgroundFill from '../../components/BackgroundFill'
 import PaymentSummary from '../payment/PaymentSummary'
 import SubmitButton from '../../components/SubmitButton'
-import { signLedgerBurn, useLedger } from '../../utils/heliumLedger'
+import LedgerVote, { LedgerVoteRef } from './LedgerVote'
+import useAlert from '../../utils/useAlert'
 
 type Route = RouteProp<VoteNavigatorStackParamList, 'VoteBurn'>
 const VoteBurn = () => {
@@ -36,12 +39,13 @@ const VoteBurn = () => {
     params: { voteOutcome, account, memo },
   } = useRoute<Route>()
   const { t } = useTranslation()
+  const ledgerPaymentRef = useRef<LedgerVoteRef>(null)
   const navigation = useNavigation<VoteNavigatorNavigationProp>()
   const { colorStyle } = useOpacity('primaryText', 0.3)
   const { dcToTokens } = useBalance()
   const [fee, setFee] = useState<Balance<DataCredits>>()
   const { makeBurnTxn } = useTransactions()
-  const { getTransport } = useLedger()
+  const { showOKAlert } = useAlert()
   const { data: accountData } = useAccountQuery({
     variables: {
       address: account.address,
@@ -69,6 +73,7 @@ const VoteBurn = () => {
       amount: 0,
       memo,
       nonce: 1,
+      shouldSign: false,
     }).then((b) =>
       setFee(new Balance(b.unsignedTxn.fee, CurrencyType.dataCredit)),
     )
@@ -91,31 +96,56 @@ const VoteBurn = () => {
       shouldSign: !account.ledgerDevice,
     })
 
-    let signedBurnTxn = signedTxn
-    if (account.ledgerDevice) {
-      const nextTransport = await getTransport(account.ledgerDevice.id)
-      signedBurnTxn = await signLedgerBurn(nextTransport, unsignedTxn)
+    if (!account.ledgerDevice) {
+      if (!signedTxn) return
+      const variables = {
+        address: account.address,
+        txnJson,
+        txn: signedTxn.toString(),
+      }
+
+      submitTxnMutation({ variables })
+    } else {
+      // Show ledger modal
+      ledgerPaymentRef.current?.show({
+        unsignedTxn,
+        ledgerDevice: account.ledgerDevice,
+        txnJson,
+      })
     }
-
-    if (!signedBurnTxn) return
-
-    const variables = {
-      address: account.address,
-      txnJson,
-      txn: signedBurnTxn.toString(),
-    }
-
-    submitTxnMutation({ variables })
   }, [
     account,
     accountData,
     balance.integerBalance,
-    getTransport,
     makeBurnTxn,
     memo,
     submitTxnMutation,
     voteOutcome.address,
   ])
+
+  const ledgerPaymentConfirmed = useCallback(
+    ({ txn: signedTxn, txnJson }: { txn: TokenBurnV1; txnJson: string }) => {
+      const variables = {
+        address: account.address,
+        txnJson,
+        txn: signedTxn.toString(),
+      }
+
+      submitTxnMutation({ variables })
+    },
+    [account.address, submitTxnMutation],
+  )
+
+  const handleLedgerError = useCallback(
+    async (error: Error) => {
+      await showOKAlert({
+        title: t('generic.error'),
+        message: error.toString(),
+      })
+      navigation.goBack()
+    },
+    [navigation, showOKAlert, t],
+  )
 
   const insufficientFunds = useMemo(() => {
     if (!accountData?.account?.balance || !feeAsTokens?.integerBalance)
@@ -139,7 +169,11 @@ const VoteBurn = () => {
   }, [errors.length, memo])
 
   return (
-    <>
+    <LedgerVote
+      ref={ledgerPaymentRef}
+      onConfirm={ledgerPaymentConfirmed}
+      onError={handleLedgerError}
+    >
       <Box flex={1}>
         <Box flexDirection="row" alignItems="center">
           <Box flex={1}>
@@ -244,7 +278,7 @@ const VoteBurn = () => {
         onSuccess={navigation.popToTop}
         actionTitle={t('vote.backToVoting')}
       />
-    </>
+    </LedgerVote>
   )
 }
 export default reactMemo(VoteBurn)

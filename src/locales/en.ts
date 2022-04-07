@@ -498,6 +498,11 @@ export default {
     validator: 'Validator',
   },
   vote: {
+    ledger: {
+      subtitle:
+        'Please verify the burn transaction on your Ledger device {{name}}',
+      title: 'Ledger Approval',
+    },
     active: 'Active Votes',
     against: 'Against',
     backToVoting: 'Back to Voting',
