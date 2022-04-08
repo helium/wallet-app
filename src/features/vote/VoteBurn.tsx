@@ -85,7 +85,7 @@ const VoteBurn = () => {
     return dcToTokens(fee)
   }, [dcToTokens, fee])
 
-  const balance = useMemo(() => new Balance(0, CurrencyType.networkToken), [])
+  const balance = useMemo(() => new Balance(1, CurrencyType.networkToken), [])
 
   const handleSubmit = useCallback(async () => {
     const { signedTxn, txnJson, unsignedTxn } = await makeBurnTxn({
