@@ -81,6 +81,11 @@ const useAccountStorageHook = () => {
     [accountAddresses.length],
   )
 
+  const reachedAccountLimit = useMemo(
+    () => accountAddresses?.length >= 10,
+    [accountAddresses.length],
+  )
+
   const sortedAccounts = useMemo(
     () => sortAccounts(accounts || {}, defaultAccountAddress),
     [accounts, defaultAccountAddress],
@@ -266,6 +271,7 @@ const useAccountStorageHook = () => {
     createSecureAccount,
     currentAccount,
     hasAccounts,
+    reachedAccountLimit,
     mainnetContacts,
     restored,
     setCurrentAccount,
@@ -296,6 +302,7 @@ const initialState = {
   }),
   currentAccount: undefined,
   hasAccounts: false,
+  reachedAccountLimit: false,
   mainnetContacts: [],
   restored: false,
   setCurrentAccount: () => undefined,

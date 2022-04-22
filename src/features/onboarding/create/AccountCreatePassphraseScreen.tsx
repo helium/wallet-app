@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, memo } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { useAsync } from 'react-async-hook'
@@ -153,14 +153,13 @@ const AccountCreatePassphraseScreen = () => {
       </Box>
       <Box opacity={disabled ? 0 : 100}>
         <ButtonPressable
-          height={60}
           disabled={disabled}
           marginHorizontal="xl"
-          marginBottom="m"
+          marginBottom="xl"
           borderRadius="round"
           borderBottomRightRadius="round"
           backgroundColor="havelockBlue"
-          backgroundColorPressed="surface"
+          backgroundColorOpacityPressed={0.7}
           titleColor="black900"
           onPress={navNext}
           title={t('accountSetup.passphrase.next')}
@@ -170,4 +169,4 @@ const AccountCreatePassphraseScreen = () => {
   )
 }
 
-export default AccountCreatePassphraseScreen
+export default memo(AccountCreatePassphraseScreen)

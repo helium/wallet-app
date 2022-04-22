@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { memo, useCallback, useEffect } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { Image } from 'react-native'
@@ -15,7 +15,7 @@ const AccountImportStartScreen = () => {
   const { setOnboardingData } = useOnboarding()
   const navigation = useNavigation<ImportAccountNavigationProp>()
   const homeNav = useNavigation<HomeNavigationProp>()
-  const { hasAccounts } = useAccountStorage()
+  const { hasAccounts, reachedAccountLimit } = useAccountStorage()
   const { t } = useTranslation()
 
   useEffect(() => {
@@ -53,24 +53,27 @@ const AccountImportStartScreen = () => {
           {t('accountImport.title')}
         </Text>
         <TextTransform
-          variant="body1"
+          variant="subtitle1"
           textAlign="center"
           color="secondaryText"
           i18nKey="accountImport.subTitle"
         />
       </Box>
       <Text
-        variant="body1"
+        variant={reachedAccountLimit ? 'body1' : 'subtitle1'}
         textAlign="center"
         marginBottom="l"
-        color="secondaryText"
+        marginHorizontal="l"
+        color={reachedAccountLimit ? 'error' : 'secondaryText'}
+        fontWeight={reachedAccountLimit ? '500' : undefined}
       >
-        {t('accountImport.pickKeyType')}
+        {reachedAccountLimit
+          ? t('accountImport.accountLimit')
+          : t('accountImport.pickKeyType')}
       </Text>
       <Box flexDirection="row" marginBottom="xxl" marginHorizontal="l">
         <ButtonPressable
           width="50%"
-          height={60}
           marginRight="xxs"
           borderTopLeftRadius="round"
           borderBottomLeftRadius="round"
@@ -78,10 +81,14 @@ const AccountImportStartScreen = () => {
           titleColor="black900"
           title={t('accountImport.restoreChoice', { totalWords: 12 })}
           onPress={navNext(12)}
+          titleColorDisabled="black800"
+          backgroundColorOpacityPressed={0.7}
+          backgroundColorDisabled="havelockBlue"
+          backgroundColorDisabledOpacity={0.4}
+          disabled={reachedAccountLimit}
         />
         <ButtonPressable
           width="50%"
-          height={60}
           marginLeft="xxs"
           borderTopRightRadius="round"
           borderBottomRightRadius="round"
@@ -89,10 +96,15 @@ const AccountImportStartScreen = () => {
           titleColor="black900"
           title={t('accountImport.restoreChoice', { totalWords: 24 })}
           onPress={navNext(24)}
+          titleColorDisabled="black800"
+          backgroundColorOpacityPressed={0.7}
+          backgroundColorDisabled="jazzberryJam"
+          backgroundColorDisabledOpacity={0.4}
+          disabled={reachedAccountLimit}
         />
       </Box>
     </Box>
   )
 }
 
-export default AccountImportStartScreen
+export default memo(AccountImportStartScreen)
