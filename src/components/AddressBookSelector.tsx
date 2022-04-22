@@ -102,6 +102,7 @@ const AddressBookSelector = forwardRef(
               handleContactSelected={handleContactSelected}
               netTypeOpt={currentAccount?.netType}
               address={address}
+              insideBottomSheet
             />
           </BottomSheetModal>
           {children}

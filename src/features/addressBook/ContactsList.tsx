@@ -2,6 +2,7 @@ import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native'
 import Fuse from 'fuse.js'
+import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -17,12 +18,14 @@ type Props = {
   handleContactSelected?: (item: CSAccount) => void
   netTypeOpt?: AccountNetTypeOpt
   address?: string
+  insideBottomSheet?: boolean
 }
 const ContactsList = ({
   onAddNew,
   handleContactSelected,
   netTypeOpt = 'all' as AccountNetTypeOpt,
   address,
+  insideBottomSheet,
 }: Props) => {
   const { contacts, contactsForNetType } = useAccountStorage()
   const { t } = useTranslation()
@@ -98,6 +101,17 @@ const ContactsList = ({
     }
     return listData.sort((a, b) => a.alias.localeCompare(b.alias))
   }, [contacts, contactsForNetType, netTypeOpt, searchTerm])
+
+  if (insideBottomSheet) {
+    return (
+      <BottomSheetFlatList
+        ListHeaderComponent={header}
+        data={data}
+        renderItem={renderFlatlistItem}
+        keyExtractor={keyExtractor}
+      />
+    )
+  }
 
   return (
     <FlatList
