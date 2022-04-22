@@ -1,13 +1,15 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import CreateAccount from '@assets/images/createAccount.svg'
 import Box from '../../../components/Box'
 import Text from '../../../components/Text'
 import ButtonPressable from '../../../components/ButtonPressable'
+import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 
 type Props = { onCreate: () => void }
 const AccountCreateStart = ({ onCreate }: Props) => {
   const { t } = useTranslation()
+  const { reachedAccountLimit } = useAccountStorage()
 
   return (
     <Box flex={1} marginHorizontal="lx">
@@ -17,9 +19,7 @@ const AccountCreateStart = ({ onCreate }: Props) => {
           {t('accountSetup.title')}
         </Text>
         <Text
-          variant="body1"
-          fontSize={21}
-          lineHeight={23}
+          variant="subtitle1"
           textAlign="center"
           color="secondaryText"
           marginVertical="m"
@@ -27,28 +27,39 @@ const AccountCreateStart = ({ onCreate }: Props) => {
           {t('accountSetup.subtitle1')}
         </Text>
         <Text
-          variant="body1"
-          fontSize={21}
-          lineHeight={23}
+          variant="subtitle1"
           textAlign="center"
           color="greenBright500"
+          visible={!reachedAccountLimit}
         >
           {t('accountSetup.subtitle2')}
         </Text>
       </Box>
+      <Text
+        visible={reachedAccountLimit}
+        variant="body1"
+        textAlign="center"
+        color="error"
+        fontWeight="500"
+        marginBottom="l"
+      >
+        {t('accountImport.accountLimit')}
+      </Text>
       <ButtonPressable
-        height={60}
+        disabled={reachedAccountLimit}
         marginBottom="m"
         borderRadius="round"
-        borderBottomRightRadius="round"
-        backgroundColor="surfaceSecondary"
-        backgroundColorPressed="surface"
         titleColor="greenBright500"
         title={t('accountSetup.createButtonTitle')}
+        backgroundColor="surfaceSecondary"
+        backgroundColorOpacityPressed={0.7}
+        backgroundColorDisabled="surfaceSecondary"
+        backgroundColorDisabledOpacity={0.5}
+        titleColorDisabled="black500"
         onPress={onCreate}
       />
     </Box>
   )
 }
 
-export default AccountCreateStart
+export default memo(AccountCreateStart)

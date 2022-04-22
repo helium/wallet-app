@@ -54,6 +54,7 @@ const ButtonPressable = ({
   selected,
   padding,
   debounceDuration,
+  height = 60,
   ...boxProps
 }: Props) => {
   const debouncedHandler = useDebouncedCallback(
@@ -152,12 +153,10 @@ const ButtonPressable = ({
       >
         {({ pressed }) => (
           <Box
-            height={boxProps.height}
+            height={height}
             minHeight={boxProps.minHeight}
             maxHeight={boxProps.maxHeight}
-            padding={
-              boxProps.height || boxProps.maxHeight || padding ? padding : 'l'
-            }
+            padding={height || boxProps.maxHeight || padding ? padding : 'l'}
             style={getBackgroundColorStyle(pressed)}
             flexDirection="row"
             justifyContent={Icon ? 'space-between' : 'center'}

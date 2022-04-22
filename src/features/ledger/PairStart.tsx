@@ -5,15 +5,16 @@ import { useNavigation } from '@react-navigation/native'
 import Box from '../../components/Box'
 import { useColors } from '../../theme/themeHooks'
 import Text from '../../components/Text'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import BackgroundFill from '../../components/BackgroundFill'
 import { HomeNavigationProp } from '../home/homeTypes'
 import SafeAreaBox from '../../components/SafeAreaBox'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import ButtonPressable from '../../components/ButtonPressable'
 
 const PairStart = () => {
   const { primaryText } = useColors()
   const { t } = useTranslation()
   const navigation = useNavigation<HomeNavigationProp>()
+  const { reachedAccountLimit } = useAccountStorage()
 
   const handleStart = useCallback(() => {
     navigation.navigate('LedgerNavigator')
@@ -37,20 +38,29 @@ const PairStart = () => {
           </Text>
         </Box>
       </Box>
-      <TouchableOpacityBox
+      <Text
+        visible={reachedAccountLimit}
+        variant="body1"
+        textAlign="center"
+        marginHorizontal="l"
+        color="error"
+        fontWeight="500"
+        marginBottom="l"
+      >
+        {t('accountImport.accountLimit')}
+      </Text>
+      <ButtonPressable
+        disabled={reachedAccountLimit}
         borderRadius="round"
-        overflow="hidden"
-        minHeight={66}
-        padding="m"
-        justifyContent="center"
         onPress={handleStart}
         marginBottom="m"
-      >
-        <BackgroundFill backgroundColor="surfaceContrast" opacity={0.2} />
-        <Text variant="subtitle1" textAlign="center">
-          {t('ledger.pairStart.pair')}
-        </Text>
-      </TouchableOpacityBox>
+        backgroundColor="surfaceSecondary"
+        backgroundColorOpacityPressed={0.7}
+        backgroundColorDisabled="surfaceSecondary"
+        backgroundColorDisabledOpacity={0.5}
+        titleColorDisabled="black500"
+        title={t('ledger.pairStart.pair')}
+      />
     </SafeAreaBox>
   )
 }

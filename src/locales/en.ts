@@ -23,6 +23,8 @@ export default {
       title: 'Please Confirm\nSeed Phrase',
     },
     pickKeyType: 'Pick Security Key Type:',
+    accountLimit:
+      'You have reached the account limit.\nTo add another account, sign out of a wallet account and try again.',
     restoreChoice: '{{totalWords}} Words',
     subTitle:
       'To import your existing\nHNT account, enter its\n<havelockBlue>12</havelockBlue> or <jazzberryJam>24</jazzberryJam> word security key.',
@@ -565,7 +567,7 @@ export default {
       item2:
         'lorem',
       item3:
-        'When you’re outside of Helium 5G coverage, roam on T-Mobile network, available nationwide for just $10 per 10GB.',
+        'lorem',
     },
   },
 }
