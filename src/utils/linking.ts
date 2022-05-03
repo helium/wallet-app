@@ -14,6 +14,11 @@ export const APP_LINK_SCHEME = Linking.createURL('')
 export const PAYMENT_PATH = 'payment'
 export const HELIUM_WALLET_LINK_SCHEME = 'https://wallet.helium.com/'
 
+const formatMemo = (memo: string | undefined, isUtf8: boolean) => {
+  if (!memo) return undefined
+  return isUtf8 ? encodeMemoString(memo) : memo
+}
+
 export const linking = {
   prefixes: [APP_LINK_SCHEME, HELIUM_WALLET_LINK_SCHEME],
   config: {
@@ -108,7 +113,7 @@ export const parsePaymentLink = (
         payee: parsedJson.address || parsedJson.payee,
         payer: parsedJson.payer,
         amount: new BigNumber(amount).dividedBy(coefficient).toString(),
-        memo: parsedJson.memo,
+        memo: formatMemo(parsedJson.memo, parsedJson.utf8Memo),
       }
     }
     if (parsedJson.payees) {
@@ -121,7 +126,10 @@ export const parsePaymentLink = (
         return {
           amount: new BigNumber(amountFloat).dividedBy(coefficient).toString(),
           payee: address,
-          memo: typeof payeeData === 'object' ? payeeData.memo : undefined,
+          memo:
+            typeof payeeData === 'object'
+              ? formatMemo(payeeData.memo, parsedJson.utf8Memo)
+              : undefined,
         }
       })
       return { payments: JSON.stringify(payments) }
