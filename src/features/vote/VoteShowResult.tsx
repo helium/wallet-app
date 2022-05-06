@@ -52,14 +52,16 @@ const VoteShowResult = ({
         <Box flex={percentOfVote} backgroundColor={color} />
         <Box flex={1 - percentOfVote} backgroundColor="secondary" />
       </Box>
-      <Text variant="body1">{`${value} (${percentOfVote.toLocaleString(locale, {
-        maximumFractionDigits: 2,
-      })}%)`}</Text>
+      <Text variant="body1">
+        {`${value} (${(percentOfVote * 100).toLocaleString(locale, {
+          maximumFractionDigits: 2,
+        })}%)`}
+      </Text>
       <Box flexDirection="row" justifyContent="space-between">
         <Text variant="body2" color="secondaryText">
           {totalHntStr}
         </Text>
-        {uniqueWallets && (
+        {!!uniqueWallets && (
           <Text variant="body2" color="secondaryText">
             {t('vote.voteCount', {
               totalVotes: uniqueWallets.toLocaleString(locale),

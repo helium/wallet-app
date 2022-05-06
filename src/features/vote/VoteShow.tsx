@@ -129,7 +129,7 @@ const VoteShow = () => {
   }, [currentAccount, navigation, outcomes, voteOutcome])
 
   const accountHnt = useMemo(() => {
-    if (!accountData?.account?.balance) return ' '
+    if (!accountData?.account?.balance) return '0'
     return balanceToString(
       new Balance(accountData.account.balance, CurrencyType.networkToken),
       {
