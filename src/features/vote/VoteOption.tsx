@@ -37,6 +37,8 @@ const VoteOption = ({
 
   const backgroundColor = useMemo(() => voteAccentColors[index], [index])
 
+  const canVote = useMemo(() => hnt !== '0', [hnt])
+
   return (
     <Box
       backgroundColor="secondary"
@@ -68,17 +70,28 @@ const VoteOption = ({
       </TouchableOpacityBox>
       {expanded && (
         <Box>
-          <Text variant="body1" fontSize={16} maxWidth="90%">
-            {t('vote.votingAs', { alias, hnt })}
+          <Text
+            variant="body1"
+            fontSize={16}
+            maxWidth="90%"
+            marginTop="s"
+            color={canVote ? 'primaryText' : 'error'}
+          >
+            {canVote ? t('vote.votingAs', { alias, hnt }) : t('vote.noHNT')}
           </Text>
           <TouchableOpacityBox
             onPress={voteSelected}
-            backgroundColor={backgroundColor}
+            disabled={!canVote}
+            backgroundColor={canVote ? backgroundColor : 'surface'}
             marginVertical="lm"
             borderRadius="xl"
             paddingVertical="m"
           >
-            <Text variant="subtitle1" textAlign="center">
+            <Text
+              variant="subtitle1"
+              textAlign="center"
+              color={canVote ? 'primaryText' : 'secondaryText'}
+            >
               {t('vote.vote')}
             </Text>
           </TouchableOpacityBox>

@@ -555,6 +555,7 @@ export default {
     voteOptions: 'Vote Options',
     votes: 'Votes',
     votingAs: 'Voting as {{alias}} with {{hnt}} Voting Power',
+    noHNT: 'You must hold HNT to vote.',
     votingClosed: 'Voting Closed',
     votingClosedNewline: 'Voting\nClosed',
   },
