@@ -19,6 +19,7 @@ export type HomeStackParamList = {
   PaymentQrScanner: undefined
   RequestScreen: undefined
   OnboardData: undefined
+  DappLoginScreen: { uri: string; callback: string }
   WifiOnboard:
     | {
         key: string

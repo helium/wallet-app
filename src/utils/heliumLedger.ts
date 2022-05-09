@@ -29,13 +29,14 @@ export const signLedgerBurn = async (
   burnV1: TokenBurnV1,
 ) => {
   const helium = new AppHelium(transport)
-  const { txn } = await helium.signTokenBurnV1(burnV1, 0)
-  return txn
+  return helium.signTokenBurnV1(burnV1, 0)
 }
 
 export const useLedger = () => {
-  const [transport, setTransport] =
-    useState<{ transport: TransportBLE; deviceId: string }>()
+  const [transport, setTransport] = useState<{
+    transport: TransportBLE
+    deviceId: string
+  }>()
 
   const getTransport = useCallback(
     async (nextDeviceId: string) => {

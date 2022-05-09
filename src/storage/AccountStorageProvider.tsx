@@ -9,7 +9,7 @@ import React, {
 } from 'react'
 import { useAsync } from 'react-async-hook'
 import * as SecureStore from 'expo-secure-store'
-import { NetType } from '@helium/crypto-react-native'
+import { NetTypes as NetType } from '@helium/address'
 import { accountNetType, AccountNetTypeOpt } from '../utils/accountUtils'
 import {
   createSecureAccount,

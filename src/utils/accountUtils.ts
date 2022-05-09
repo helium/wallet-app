@@ -1,4 +1,4 @@
-import { Address, NetType } from '@helium/crypto-react-native'
+import Address, { NetTypes as NetType } from '@helium/address'
 import { CurrencyType } from '@helium/currency'
 import Bcrypt from 'bcrypt-react-native'
 

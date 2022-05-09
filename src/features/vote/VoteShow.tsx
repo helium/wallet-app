@@ -119,7 +119,6 @@ const VoteShow = () => {
 
     const index = outcomes.findIndex((v) => v === voteOutcome)
 
-    // TODO: Is this memo right?
     const memo = encodeMemoString(index.toString()) || ''
     navigation.navigate('VoteBurn', {
       voteOutcome,

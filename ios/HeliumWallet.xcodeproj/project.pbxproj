@@ -12,6 +12,7 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		1A7DAB918483F1C2761BA7A4 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 296757835722BB74360F9FEF /* ExpoModulesProvider.swift */; };
+		2601D3EAA67A391778EF2AEA /* libPods-HeliumWallet-HeliumWalletTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0063E03FEB1A92DDD375DE90 /* libPods-HeliumWallet-HeliumWalletTests.a */; };
 		45330C4A223536223298B2A3 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645194928E31AE79BE70ED88 /* ExpoModulesProvider.swift */; };
 		508E6F6D26FA22F400774B67 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 508E6F6C26FA22F400774B67 /* File.swift */; };
 		50D1D6AC2763AAA2009D52C0 /* DMSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50D1D6A62763AAA2009D52C0 /* DMSans-Bold.ttf */; };
@@ -20,13 +21,12 @@
 		50D1D6AF2763AAA2009D52C0 /* DMSans-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50D1D6A92763AAA2009D52C0 /* DMSans-MediumItalic.ttf */; };
 		50D1D6B02763AAA2009D52C0 /* DMSans-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50D1D6AA2763AAA2009D52C0 /* DMSans-Italic.ttf */; };
 		50D1D6B12763AAA2009D52C0 /* DMSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50D1D6AB2763AAA2009D52C0 /* DMSans-Regular.ttf */; };
-		6264FB4479EA96F12CDD098B /* libPods-OneSignalNotificationServiceExtension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F10300FE98584A6842A8CEDF /* libPods-OneSignalNotificationServiceExtension.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		9609D00027F4DE8D00CE3F93 /* RCTDateModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 9609CFFF27F4DE8D00CE3F93 /* RCTDateModule.m */; };
 		96E4147327BEE4C300CE6EC1 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E4147227BEE4C300CE6EC1 /* NotificationService.swift */; };
 		96E4147727BEE4C300CE6EC1 /* OneSignalNotificationServiceExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 96E4147027BEE4C300CE6EC1 /* OneSignalNotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		EA7E17F6163A0250F1D1F9F8 /* libPods-HeliumWallet-HeliumWalletTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A978D6C8BC6C07321270CA40 /* libPods-HeliumWallet-HeliumWalletTests.a */; };
-		FC3FCD7DCE07E25E33BCC5B7 /* libPods-HeliumWallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 439B256FF4833840F6AB51D7 /* libPods-HeliumWallet.a */; };
+		A2BD82C1DF61A4FB5B5DE128 /* libPods-HeliumWallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 51C26B5CCD1FF94E56922AA3 /* libPods-HeliumWallet.a */; };
+		F2B1EA2E1762843C4603C181 /* libPods-OneSignalNotificationServiceExtension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A2EFF6A36DF8BEFBCF279F7 /* libPods-OneSignalNotificationServiceExtension.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +61,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0063E03FEB1A92DDD375DE90 /* libPods-HeliumWallet-HeliumWalletTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HeliumWallet-HeliumWalletTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356EE1AD99517003FC87E /* HeliumWalletTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HeliumWalletTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* HeliumWalletTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HeliumWalletTests.m; sourceTree = "<group>"; };
@@ -70,10 +71,9 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = HeliumWallet/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = HeliumWallet/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = HeliumWallet/main.m; sourceTree = "<group>"; };
-		247877F34C58938A0CE96577 /* Pods-HeliumWallet-HeliumWalletTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HeliumWallet-HeliumWalletTests.debug.xcconfig"; path = "Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests.debug.xcconfig"; sourceTree = "<group>"; };
 		296757835722BB74360F9FEF /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-HeliumWallet-HeliumWalletTests/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		349D62229756A54FF28DB0E2 /* Pods-HeliumWallet-HeliumWalletTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HeliumWallet-HeliumWalletTests.release.xcconfig"; path = "Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests.release.xcconfig"; sourceTree = "<group>"; };
-		439B256FF4833840F6AB51D7 /* libPods-HeliumWallet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HeliumWallet.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2BAAC46CF6D0027FB858A8A1 /* Pods-HeliumWallet-HeliumWalletTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HeliumWallet-HeliumWalletTests.release.xcconfig"; path = "Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests.release.xcconfig"; sourceTree = "<group>"; };
+		3A2EFF6A36DF8BEFBCF279F7 /* libPods-OneSignalNotificationServiceExtension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-OneSignalNotificationServiceExtension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		508E6F6B26FA22F400774B67 /* HeliumWallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "HeliumWallet-Bridging-Header.h"; sourceTree = "<group>"; };
 		508E6F6C26FA22F400774B67 /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		50D1D6A42763AA88009D52C0 /* fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fonts; path = ../src/assets/fonts; sourceTree = "<group>"; };
@@ -83,9 +83,12 @@
 		50D1D6A92763AAA2009D52C0 /* DMSans-MediumItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "DMSans-MediumItalic.ttf"; path = "../src/assets/fonts/DMSans-MediumItalic.ttf"; sourceTree = "<group>"; };
 		50D1D6AA2763AAA2009D52C0 /* DMSans-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "DMSans-Italic.ttf"; path = "../src/assets/fonts/DMSans-Italic.ttf"; sourceTree = "<group>"; };
 		50D1D6AB2763AAA2009D52C0 /* DMSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "DMSans-Regular.ttf"; path = "../src/assets/fonts/DMSans-Regular.ttf"; sourceTree = "<group>"; };
+		51C26B5CCD1FF94E56922AA3 /* libPods-HeliumWallet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HeliumWallet.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5209E6D9BD07C08BE5AB2ECD /* Pods-HeliumWallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HeliumWallet.debug.xcconfig"; path = "Target Support Files/Pods-HeliumWallet/Pods-HeliumWallet.debug.xcconfig"; sourceTree = "<group>"; };
+		5E9978CB26AB349B02198229 /* Pods-HeliumWallet-HeliumWalletTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HeliumWallet-HeliumWalletTests.debug.xcconfig"; path = "Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests.debug.xcconfig"; sourceTree = "<group>"; };
 		645194928E31AE79BE70ED88 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-HeliumWallet/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = HeliumWallet/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		8F81EB4CFCC818E3BBADC0BA /* Pods-HeliumWallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HeliumWallet.debug.xcconfig"; path = "Target Support Files/Pods-HeliumWallet/Pods-HeliumWallet.debug.xcconfig"; sourceTree = "<group>"; };
+		8795C4CD0401A841BF4536BE /* Pods-OneSignalNotificationServiceExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OneSignalNotificationServiceExtension.debug.xcconfig"; path = "Target Support Files/Pods-OneSignalNotificationServiceExtension/Pods-OneSignalNotificationServiceExtension.debug.xcconfig"; sourceTree = "<group>"; };
 		9609CFFE27F4DE6200CE3F93 /* RCTDateModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTDateModule.h; sourceTree = "<group>"; };
 		9609CFFF27F4DE8D00CE3F93 /* RCTDateModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTDateModule.m; sourceTree = "<group>"; };
 		96B459B126FE4DF20068E844 /* HeliumWallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = HeliumWallet.entitlements; path = HeliumWallet/HeliumWallet.entitlements; sourceTree = "<group>"; };
@@ -93,12 +96,9 @@
 		96E4147227BEE4C300CE6EC1 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		96E4147427BEE4C300CE6EC1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		96E4147C27BEE61400CE6EC1 /* OneSignalNotificationServiceExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OneSignalNotificationServiceExtension.entitlements; sourceTree = "<group>"; };
-		A09BCB4CCFFF82B38BF07968 /* Pods-OneSignalNotificationServiceExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OneSignalNotificationServiceExtension.release.xcconfig"; path = "Target Support Files/Pods-OneSignalNotificationServiceExtension/Pods-OneSignalNotificationServiceExtension.release.xcconfig"; sourceTree = "<group>"; };
-		A978D6C8BC6C07321270CA40 /* libPods-HeliumWallet-HeliumWalletTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HeliumWallet-HeliumWalletTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		BCCE4E5107CE571C0AC55A3E /* Pods-OneSignalNotificationServiceExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OneSignalNotificationServiceExtension.debug.xcconfig"; path = "Target Support Files/Pods-OneSignalNotificationServiceExtension/Pods-OneSignalNotificationServiceExtension.debug.xcconfig"; sourceTree = "<group>"; };
+		CE0965612F8108144DD1B385 /* Pods-HeliumWallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HeliumWallet.release.xcconfig"; path = "Target Support Files/Pods-HeliumWallet/Pods-HeliumWallet.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		F10300FE98584A6842A8CEDF /* libPods-OneSignalNotificationServiceExtension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-OneSignalNotificationServiceExtension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		F87A18DF896A355ED10B5EFB /* Pods-HeliumWallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HeliumWallet.release.xcconfig"; path = "Target Support Files/Pods-HeliumWallet/Pods-HeliumWallet.release.xcconfig"; sourceTree = "<group>"; };
+		FEC90C12984CABC717C53EFA /* Pods-OneSignalNotificationServiceExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OneSignalNotificationServiceExtension.release.xcconfig"; path = "Target Support Files/Pods-OneSignalNotificationServiceExtension/Pods-OneSignalNotificationServiceExtension.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,7 +106,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EA7E17F6163A0250F1D1F9F8 /* libPods-HeliumWallet-HeliumWalletTests.a in Frameworks */,
+				2601D3EAA67A391778EF2AEA /* libPods-HeliumWallet-HeliumWalletTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -114,7 +114,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FC3FCD7DCE07E25E33BCC5B7 /* libPods-HeliumWallet.a in Frameworks */,
+				A2BD82C1DF61A4FB5B5DE128 /* libPods-HeliumWallet.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -122,7 +122,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6264FB4479EA96F12CDD098B /* libPods-OneSignalNotificationServiceExtension.a in Frameworks */,
+				F2B1EA2E1762843C4603C181 /* libPods-OneSignalNotificationServiceExtension.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -177,9 +177,9 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				439B256FF4833840F6AB51D7 /* libPods-HeliumWallet.a */,
-				A978D6C8BC6C07321270CA40 /* libPods-HeliumWallet-HeliumWalletTests.a */,
-				F10300FE98584A6842A8CEDF /* libPods-OneSignalNotificationServiceExtension.a */,
+				51C26B5CCD1FF94E56922AA3 /* libPods-HeliumWallet.a */,
+				0063E03FEB1A92DDD375DE90 /* libPods-HeliumWallet-HeliumWalletTests.a */,
+				3A2EFF6A36DF8BEFBCF279F7 /* libPods-OneSignalNotificationServiceExtension.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -254,12 +254,12 @@
 		E233CBF5F47BEE60B243DCF8 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				8F81EB4CFCC818E3BBADC0BA /* Pods-HeliumWallet.debug.xcconfig */,
-				F87A18DF896A355ED10B5EFB /* Pods-HeliumWallet.release.xcconfig */,
-				247877F34C58938A0CE96577 /* Pods-HeliumWallet-HeliumWalletTests.debug.xcconfig */,
-				349D62229756A54FF28DB0E2 /* Pods-HeliumWallet-HeliumWalletTests.release.xcconfig */,
-				BCCE4E5107CE571C0AC55A3E /* Pods-OneSignalNotificationServiceExtension.debug.xcconfig */,
-				A09BCB4CCFFF82B38BF07968 /* Pods-OneSignalNotificationServiceExtension.release.xcconfig */,
+				5209E6D9BD07C08BE5AB2ECD /* Pods-HeliumWallet.debug.xcconfig */,
+				CE0965612F8108144DD1B385 /* Pods-HeliumWallet.release.xcconfig */,
+				5E9978CB26AB349B02198229 /* Pods-HeliumWallet-HeliumWalletTests.debug.xcconfig */,
+				2BAAC46CF6D0027FB858A8A1 /* Pods-HeliumWallet-HeliumWalletTests.release.xcconfig */,
+				8795C4CD0401A841BF4536BE /* Pods-OneSignalNotificationServiceExtension.debug.xcconfig */,
+				FEC90C12984CABC717C53EFA /* Pods-OneSignalNotificationServiceExtension.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -271,12 +271,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "HeliumWalletTests" */;
 			buildPhases = (
-				B28EFBA2CF614E1B5621482E /* [CP] Check Pods Manifest.lock */,
+				358570EBFCEB223415AA5A7A /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
-				57BFB43F5EE1FF73B3CB465E /* [CP] Embed Pods Frameworks */,
-				465354ABF9B8ED7591F93BA0 /* [CP] Copy Pods Resources */,
+				C60272A190FCC813CA8BE4E0 /* [CP] Embed Pods Frameworks */,
+				F018945A4099A069457F5BE4 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -292,16 +292,16 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "HeliumWallet" */;
 			buildPhases = (
-				731447E966D4AF0826EF1AF7 /* [CP] Check Pods Manifest.lock */,
+				774877EBA43C4047722D7029 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				96E4147B27BEE4C300CE6EC1 /* Embed App Extensions */,
-				C36F64601A43BF9D7ECF6CD4 /* [CP] Embed Pods Frameworks */,
-				B504C340F04CC0B00E016034 /* [CP] Copy Pods Resources */,
 				38B945B7FBA14044AD36549D /* Upload Debug Symbols to Sentry */,
+				2995E648A8890EE7D5AB6EFF /* [CP] Embed Pods Frameworks */,
+				EF3013515C23F03D05FDF9E2 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -317,7 +317,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 96E4147827BEE4C300CE6EC1 /* Build configuration list for PBXNativeTarget "OneSignalNotificationServiceExtension" */;
 			buildPhases = (
-				0E22E9DF119C79410F6A40BF /* [CP] Check Pods Manifest.lock */,
+				EC7C2406F221D334626B2BF1 /* [CP] Check Pods Manifest.lock */,
 				96E4146C27BEE4C300CE6EC1 /* Sources */,
 				96E4146D27BEE4C300CE6EC1 /* Frameworks */,
 				96E4146E27BEE4C300CE6EC1 /* Resources */,
@@ -419,99 +419,24 @@
 			shellPath = /bin/sh;
 			shellScript = "export SENTRY_PROPERTIES=sentry.properties\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nset -e\n\nexport NODE_BINARY=node\n../node_modules/@sentry/cli/bin/sentry-cli react-native xcode ../node_modules/react-native/scripts/react-native-xcode.sh\n";
 		};
-		0E22E9DF119C79410F6A40BF /* [CP] Check Pods Manifest.lock */ = {
+		2995E648A8890EE7D5AB6EFF /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-OneSignalNotificationServiceExtension-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		38B945B7FBA14044AD36549D /* Upload Debug Symbols to Sentry */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Upload Debug Symbols to Sentry";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "export SENTRY_PROPERTIES=sentry.properties\n../node_modules/@sentry/cli/bin/sentry-cli upload-dsym";
-		};
-		465354ABF9B8ED7591F93BA0 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		57BFB43F5EE1FF73B3CB465E /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet/Pods-HeliumWallet-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet/Pods-HeliumWallet-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet/Pods-HeliumWallet-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		731447E966D4AF0826EF1AF7 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-HeliumWallet-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		B28EFBA2CF614E1B5621482E /* [CP] Check Pods Manifest.lock */ = {
+		358570EBFCEB223415AA5A7A /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -533,7 +458,82 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		B504C340F04CC0B00E016034 /* [CP] Copy Pods Resources */ = {
+		38B945B7FBA14044AD36549D /* Upload Debug Symbols to Sentry */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Upload Debug Symbols to Sentry";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export SENTRY_PROPERTIES=sentry.properties\n../node_modules/@sentry/cli/bin/sentry-cli upload-dsym";
+		};
+		774877EBA43C4047722D7029 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-HeliumWallet-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C60272A190FCC813CA8BE4E0 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		EC7C2406F221D334626B2BF1 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-OneSignalNotificationServiceExtension-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		EF3013515C23F03D05FDF9E2 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -550,21 +550,21 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet/Pods-HeliumWallet-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C36F64601A43BF9D7ECF6CD4 /* [CP] Embed Pods Frameworks */ = {
+		F018945A4099A069457F5BE4 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet/Pods-HeliumWallet-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			name = "[CP] Embed Pods Frameworks";
+			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet/Pods-HeliumWallet-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet/Pods-HeliumWallet-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FD10A7F022414F080027D42C /* Start Packager */ = {
@@ -636,7 +636,7 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 247877F34C58938A0CE96577 /* Pods-HeliumWallet-HeliumWalletTests.debug.xcconfig */;
+			baseConfigurationReference = 5E9978CB26AB349B02198229 /* Pods-HeliumWallet-HeliumWalletTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -664,7 +664,7 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 349D62229756A54FF28DB0E2 /* Pods-HeliumWallet-HeliumWalletTests.release.xcconfig */;
+			baseConfigurationReference = 2BAAC46CF6D0027FB858A8A1 /* Pods-HeliumWallet-HeliumWalletTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -689,7 +689,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8F81EB4CFCC818E3BBADC0BA /* Pods-HeliumWallet.debug.xcconfig */;
+			baseConfigurationReference = 5209E6D9BD07C08BE5AB2ECD /* Pods-HeliumWallet.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -723,7 +723,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F87A18DF896A355ED10B5EFB /* Pods-HeliumWallet.release.xcconfig */;
+			baseConfigurationReference = CE0965612F8108144DD1B385 /* Pods-HeliumWallet.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -878,7 +878,7 @@
 		};
 		96E4147927BEE4C300CE6EC1 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BCCE4E5107CE571C0AC55A3E /* Pods-OneSignalNotificationServiceExtension.debug.xcconfig */;
+			baseConfigurationReference = 8795C4CD0401A841BF4536BE /* Pods-OneSignalNotificationServiceExtension.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -921,7 +921,7 @@
 		};
 		96E4147A27BEE4C300CE6EC1 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A09BCB4CCFFF82B38BF07968 /* Pods-OneSignalNotificationServiceExtension.release.xcconfig */;
+			baseConfigurationReference = FEC90C12984CABC717C53EFA /* Pods-OneSignalNotificationServiceExtension.release.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;

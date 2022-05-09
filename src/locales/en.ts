@@ -8,6 +8,8 @@ export default {
     timeAgo: 'Updated {{formattedChange}}',
   },
   accountImport: {
+    accountLimit:
+      'You have reached the account limit.\nTo add another account, sign out of a wallet account and try again.',
     alert: {
       body: "This seed phrase doesn't correspond to a Helium account",
       title: 'Error',
@@ -23,8 +25,6 @@ export default {
       title: 'Please Confirm\nSeed Phrase',
     },
     pickKeyType: 'Pick Security Key Type:',
-    accountLimit:
-      'You have reached the account limit.\nTo add another account, sign out of a wallet account and try again.',
     restoreChoice: '{{totalWords}} Words',
     subTitle:
       'To import your existing\nHNT account, enter its\n<havelockBlue>12</havelockBlue> or <jazzberryJam>24</jazzberryJam> word security key.',
@@ -89,13 +89,13 @@ export default {
   },
   accountView: {
     balance: 'Balance',
+    fiveG: '5G',
     lock: 'Lock',
     payment: 'Payment',
     request: 'Request',
     send: 'Send',
     stake: 'Stake',
     vote: 'Vote',
-    fiveG: '5G',
   },
   addNewContact: {
     addContact: 'Add Contact',
@@ -129,6 +129,24 @@ export default {
       title: 'Warning! Sign out of all accounts?',
     },
     title: 'Enter Your PIN',
+  },
+  dappLogin: {
+    account: {
+      subtitle: 'Which account do you want to authenticate with Crowdspot?',
+      title: 'Choose your\nAccount',
+    },
+    connect: {
+      continue: 'Continue',
+      subtitle: 'Authenticate Crowdspot\nwith your Helium Wallet?',
+      title: 'Connect to {{name}}?',
+    },
+    error: 'Failed to verify {{app}}',
+    ledger: {
+      subtitle:
+        'You must sign burn transaction to login to {{app}}. Please verify the burn transaction on your Ledger device {{name}}',
+      title: 'Ledger Approval',
+    },
+    login: 'Login',
   },
   editContact: {
     delete: 'Delete',
@@ -321,6 +339,18 @@ export default {
     fetchMoreActivity: 'Fetch More Activity',
     getAccountData: 'Get Account Data',
   },
+  onboardData: {
+    title: 'lorem',
+    install: 'Install',
+    carousel: {
+      item1:
+        'lorem',
+      item2:
+        'lorem',
+      item3:
+        'lorem',
+    },
+  },
   qrScanner: {
     deniedAlert: {
       message:
@@ -340,6 +370,13 @@ export default {
     title: 'Generate Request',
   },
   settings: {
+    confirmSignout: {
+      forgotAlert: {
+        body: 'Would you like to reveal your accounts words?',
+        title: 'Reveal Words',
+      },
+      title: 'Confirm Your\nWords To Sign Out',
+    },
     revealWords: {
       next: 'I have written these down',
       subtitle:
@@ -411,13 +448,6 @@ export default {
       },
     },
     title: 'Settings',
-    confirmSignout: {
-      title: 'Confirm Your\nWords To Sign Out',
-      forgotAlert: {
-        title: 'Reveal Words',
-        body: 'Would you like to reveal your accounts words?',
-      },
-    },
   },
   signHotspot: {
     elevation: 'Elevation:',
@@ -500,11 +530,6 @@ export default {
     validator: 'Validator',
   },
   vote: {
-    ledger: {
-      subtitle:
-        'Please verify the burn transaction on your Ledger device {{name}}',
-      title: 'Ledger Approval',
-    },
     active: 'Active Votes',
     against: 'Against',
     backToVoting: 'Back to Voting',
@@ -518,6 +543,12 @@ export default {
     estimatedTimeRemainingNewline: 'Est. Time\nRemaining',
     finalResults: 'Final Results',
     for: 'For',
+    ledger: {
+      subtitle:
+        'Please verify the burn transaction on your Ledger device {{name}}',
+      title: 'Ledger Approval',
+    },
+    noHNT: 'You must hold HNT to vote.',
     preliminaryResults: 'Preliminary Results',
     subtitle:
       '<primaryText>Welcome to Helium Vote</primaryText>\n\nVote <greenBright500>For</greenBright500> or <blueBright500>Against</blueBright500> proposed Helium Improvement Proposals by burning HNT.',
@@ -555,20 +586,7 @@ export default {
     voteOptions: 'Vote Options',
     votes: 'Votes',
     votingAs: 'Voting as {{alias}} with {{hnt}} Voting Power',
-    noHNT: 'You must hold HNT to vote.',
     votingClosed: 'Voting Closed',
     votingClosedNewline: 'Voting\nClosed',
-  },
-  onboardData: {
-    title: 'lorem',
-    install: 'Install',
-    carousel: {
-      item1:
-        'lorem',
-      item2:
-        'lorem',
-      item3:
-        'lorem',
-    },
   },
 }

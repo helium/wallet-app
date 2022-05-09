@@ -1,4 +1,4 @@
-import { NetType } from '@helium/crypto-react-native'
+import { NetTypes as NetType } from '@helium/address'
 import React, { useMemo } from 'react'
 import { StatusBar } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'

@@ -1,4 +1,4 @@
-import { NetType } from '@helium/crypto-react-native'
+import { NetTypes as NetType } from '@helium/address'
 import { sortBy, values } from 'lodash'
 import { Platform } from 'react-native'
 import iCloudStorage from 'react-native-icloudstore'

@@ -7,7 +7,7 @@ import React, {
   useState,
 } from 'react'
 import OnboardingClient, { Maker } from '@helium/onboarding'
-import { NetType } from '@helium/crypto-react-native'
+import { NetTypes as NetType } from '@helium/address'
 import { CSAccount } from '../../storage/cloudStorage'
 import { SecureAccount } from '../../storage/secureStorage'
 
