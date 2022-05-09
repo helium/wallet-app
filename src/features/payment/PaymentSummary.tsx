@@ -57,6 +57,7 @@ const PaymentSummary = ({
     if (payments.length > MAX_ACCOUNT_ICONS) {
       icons.push(
         <Box
+          key="ellipsis"
           style={{ marginLeft: MAX_ACCOUNT_ICONS * -4 }}
           width={16}
           borderRadius="round"

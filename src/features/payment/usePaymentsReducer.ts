@@ -182,7 +182,8 @@ function reducer(
       if (!nextPayments.length) {
         nextPayments = []
       }
-      return { ...state, payments: nextPayments }
+      const totalAmount = paymentsSum(nextPayments, state.currencyType)
+      return { ...state, payments: nextPayments, totalAmount }
     }
   }
 }
