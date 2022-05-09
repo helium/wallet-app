@@ -51,7 +51,13 @@ const StatusBanner = () => {
 
   const icon = useCallback(() => {
     return (
-      <TouchableOpacityBox onPress={hideMessage} padding="s" hitSlop={hitSlop}>
+      <TouchableOpacityBox
+        onPress={hideMessage}
+        padding="s"
+        hitSlop={hitSlop}
+        alignItems="flex-end"
+        flex={1}
+      >
         <Close color={primaryText} width={30} height={30} />
       </TouchableOpacityBox>
     )
