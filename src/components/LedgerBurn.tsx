@@ -7,21 +7,19 @@ import React, {
   useImperativeHandle,
   useMemo,
   useRef,
-  useState,
 } from 'react'
 import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet'
-import { useTranslation } from 'react-i18next'
 import { Edge } from 'react-native-safe-area-context'
 import { TokenBurnV1 } from '@helium/transactions'
 import Ledger from '@assets/images/ledger.svg'
-import { useColors, useOpacity } from '../../theme/themeHooks'
-import { signLedgerBurn, useLedger } from '../../utils/heliumLedger'
-import { LedgerDevice } from '../../storage/cloudStorage'
-import HandleBasic from '../../components/HandleBasic'
-import SafeAreaBox from '../../components/SafeAreaBox'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
-import * as Logger from '../../utils/logger'
+import { useColors, useOpacity } from '../theme/themeHooks'
+import { signLedgerBurn, useLedger } from '../utils/heliumLedger'
+import { LedgerDevice } from '../storage/cloudStorage'
+import HandleBasic from './HandleBasic'
+import SafeAreaBox from './SafeAreaBox'
+import Box from './Box'
+import Text from './Text'
+import * as Logger from '../utils/logger'
 
 type ShowOptions = {
   ledgerDevice: LedgerDevice
@@ -29,7 +27,7 @@ type ShowOptions = {
   txnJson: string
 }
 
-export type LedgerVoteRef = {
+export type LedgerBurnRef = {
   show: (opts: ShowOptions) => void
   hide: () => void
 }
@@ -38,15 +36,18 @@ type Props = {
   children: ReactNode
   onConfirm: (opts: { txn: TokenBurnV1; txnJson: string }) => void
   onError: (error: Error) => void
+  title: string
+  subtitle: string
 }
-const LedgerVote = forwardRef(
-  ({ children, onConfirm, onError }: Props, ref: Ref<LedgerVoteRef>) => {
+const LedgerBurn = forwardRef(
+  (
+    { children, onConfirm, onError, title, subtitle }: Props,
+    ref: Ref<LedgerBurnRef>,
+  ) => {
     useImperativeHandle(ref, () => ({ show, hide }))
-    const { t } = useTranslation()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { primaryText } = useColors()
-    const [options, setOptions] = useState<ShowOptions>()
     const { getTransport } = useLedger()
     const snapPoints = useMemo(() => {
       return [600]
@@ -54,12 +55,12 @@ const LedgerVote = forwardRef(
 
     const show = useCallback(
       async (opts: ShowOptions) => {
-        setOptions(opts)
         bottomSheetModalRef.current?.present()
         try {
           const nextTransport = await getTransport(opts.ledgerDevice.id)
-          const payment = await signLedgerBurn(nextTransport, opts.unsignedTxn)
-          onConfirm({ txn: payment, txnJson: opts.txnJson })
+          const { txn } = await signLedgerBurn(nextTransport, opts.unsignedTxn)
+
+          onConfirm({ txn, txnJson: opts.txnJson })
           bottomSheetModalRef.current?.dismiss()
         } catch (error) {
           // in this case, user is likely not on Helium app
@@ -114,12 +115,10 @@ const LedgerVote = forwardRef(
               <Ledger width={100} height={100} color={primaryText} />
             </Box>
             <Text variant="h1" marginBottom="l">
-              {t('vote.ledger.title')}
+              {title}
             </Text>
             <Text variant="subtitle1" color="secondaryText">
-              {t('vote.ledger.subtitle', {
-                name: options?.ledgerDevice.name,
-              })}
+              {subtitle}
             </Text>
           </SafeAreaBox>
         </BottomSheetModal>
@@ -129,4 +128,4 @@ const LedgerVote = forwardRef(
   },
 )
 
-export default memo(LedgerVote)
+export default memo(LedgerBurn)

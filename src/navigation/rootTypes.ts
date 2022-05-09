@@ -7,6 +7,7 @@ export type RootStackParamList = {
       PaymentScreen: string
       WifiPurchase: string
       LinkWallet: string
+      DappLogin: string
     }
   }
   OnboardingNavigator: undefined

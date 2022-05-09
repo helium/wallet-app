@@ -1,4 +1,4 @@
-import { Address } from '@helium/crypto-react-native'
+import Address from '@helium/address'
 import Balance, {
   CurrencyType,
   DataCredits,

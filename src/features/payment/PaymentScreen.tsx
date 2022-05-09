@@ -17,7 +17,7 @@ import Balance, {
 } from '@helium/currency'
 import { Keyboard, Platform } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { Address } from '@helium/crypto-react-native'
+import Address from '@helium/address'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { PaymentV1 } from '@helium/transactions'
 import Box from '../../components/Box'

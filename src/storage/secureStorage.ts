@@ -1,9 +1,5 @@
-import {
-  Address,
-  Keypair,
-  Mnemonic,
-  NetType,
-} from '@helium/crypto-react-native'
+import { Keypair, Mnemonic } from '@helium/crypto-react-native'
+import Address, { NetTypes as NetType } from '@helium/address'
 import * as SecureStore from 'expo-secure-store'
 import { CSAccount } from './cloudStorage'
 

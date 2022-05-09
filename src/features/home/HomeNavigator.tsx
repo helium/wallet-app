@@ -19,6 +19,7 @@ import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
 import LedgerNavigator from '../ledger/LedgerNavigator'
 import VoteNavigator from '../vote/VoteNavigator'
 import PurchaseDataScreen from '../purchaseData/PurchaseDataScreen'
+import DappLoginScreen from '../dappLogin/DappLoginScreen'
 
 const HomeStack = createStackNavigator()
 
@@ -44,6 +45,7 @@ const HomeStackScreen = () => {
         name="WifiPurchase"
         component={WifiPurchase}
       />
+      <HomeStack.Screen name="DappLoginScreen" component={DappLoginScreen} />
       <HomeStack.Screen
         name="AddressBookNavigator"
         component={AddressBookNavigator}

@@ -4,7 +4,7 @@ import {
   StackNavigationProp,
 } from '@react-navigation/stack'
 import { useEffect } from 'react'
-import { NetType } from '@helium/crypto-react-native'
+import { NetTypes as NetType } from '@helium/address'
 import { useOnboarding } from '../OnboardingProvider'
 import AccountImportStartScreen from '../import/AccountImportStartScreen'
 import PairStart from '../../ledger/PairStart'

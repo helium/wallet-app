@@ -1,4 +1,4 @@
-import { NetType } from '@helium/crypto-react-native'
+import { NetTypes as NetType } from '@helium/address'
 import Balance, {
   CurrencyType,
   DataCredits,
@@ -39,7 +39,7 @@ const useBalanceHook = () => {
     variables: {
       address: currentAccount?.address || '',
     },
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'cache-and-network',
     pollInterval: ORACLE_POLL_INTERVAL,
     notifyOnNetworkStatusChange: true,
     skip: !currentAccount?.address,

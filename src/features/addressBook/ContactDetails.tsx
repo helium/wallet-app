@@ -16,7 +16,7 @@ import {
   TextInput as RNTextInput,
   Platform,
 } from 'react-native'
-import { Address } from '@helium/crypto-react-native'
+import Address from '@helium/address'
 import Checkmark from '@assets/images/checkmark.svg'
 import { useKeyboard } from '@react-native-community/hooks'
 import Box from '../../components/Box'

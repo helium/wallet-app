@@ -93,6 +93,7 @@ const ContactsList = ({
       listData = new Fuse(contacts, {
         keys: ['alias', 'address'],
         threshold: 0.3,
+        fieldNormWeight: 1,
       })
         .search(searchTerm)
         .map((result) => {

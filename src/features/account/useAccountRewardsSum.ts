@@ -22,10 +22,16 @@ const getRewardsDates = () => {
 }
 
 export default (address?: string) => {
-  const [rewardsDates, setRewardsDates] =
-    useState<{ twoDaysAgo: string; yesterday: string; now: string }>()
-  const [rewardsChange, setRewardsChange] =
-    useState<{ minutesAgo: number; change: number; formattedChange: string }>()
+  const [rewardsDates, setRewardsDates] = useState<{
+    twoDaysAgo: string
+    yesterday: string
+    now: string
+  }>()
+  const [rewardsChange, setRewardsChange] = useState<{
+    minutesAgo: number
+    change: number
+    formattedChange: string
+  }>()
 
   const { data: rewardsToday, error: errorToday } =
     useAccountRewardsSummaryQuery({

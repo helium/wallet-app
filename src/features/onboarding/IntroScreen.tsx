@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react'
 import Helium from '@assets/images/helium.svg'
-import { NetType } from '@helium/crypto-react-native'
+import { NetTypes as NetType } from '@helium/address'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'

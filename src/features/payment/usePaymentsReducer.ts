@@ -1,4 +1,4 @@
-import { NetType } from '@helium/crypto-react-native'
+import { NetTypes as NetType } from '@helium/address'
 import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
 import { useReducer } from 'react'
 import { decodeMemoString } from '../../components/MemoInput'

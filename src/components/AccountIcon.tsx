@@ -1,4 +1,4 @@
-import { utils, Address } from '@helium/crypto-react-native'
+import Address, { utils } from '@helium/address'
 import React, { memo, useMemo } from 'react'
 import Jazzicon, { IJazziconProps } from 'react-native-jazzicon'
 

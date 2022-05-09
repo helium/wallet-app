@@ -1,4 +1,4 @@
-import { Address } from '@helium/crypto-react-native'
+import Address from '@helium/address'
 import Balance, { CurrencyType } from '@helium/currency'
 import { LinkingOptions } from '@react-navigation/native'
 import * as Linking from 'expo-linking'
@@ -30,6 +30,7 @@ export const linking = {
           LinkWallet: 'link_wallet',
           SignHotspot: 'sign_hotspot',
           PaymentScreen: 'payment',
+          DappLoginScreen: 'dapp_login',
         },
       },
     },

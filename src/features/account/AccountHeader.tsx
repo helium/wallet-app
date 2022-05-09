@@ -1,6 +1,6 @@
 import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { NetType } from '@helium/crypto-react-native'
+import { NetTypes as NetType } from '@helium/address'
 import AccountIcon from '../../components/AccountIcon'
 import Box from '../../components/Box'
 import Text from '../../components/Text'

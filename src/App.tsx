@@ -9,6 +9,7 @@ import * as SplashScreen from 'expo-splash-screen'
 import OneSignal, { OpenedEvent } from 'react-native-onesignal'
 import Config from 'react-native-config'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import * as Logger from './utils/logger'
 import { useApolloClient } from './graphql/useApolloClient'
 import { theme, darkThemeColors, lightThemeColors } from './theme/theme'
@@ -26,6 +27,7 @@ import { useColorScheme } from './theme/themeHooks'
 import { linking } from './utils/linking'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
 import CustomStatusBar from './components/TestnetAwareStatusBar'
+import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -39,6 +41,7 @@ const App = () => {
     'AsyncStorage has been extracted from react-native core and will be removed in a future release.',
     'You are calling concat on a terminating link, which will have no effect',
     "[react-native-gesture-handler] Seems like you're using an old API with gesture components",
+    'console.error: {"context":"client"} {"context":"client/pairing"} Unauthorized pairing update request',
   ])
 
   if (Platform.OS === 'android') {
@@ -109,33 +112,40 @@ const App = () => {
   }
 
   return (
-    <SafeAreaProvider>
-      <ThemeProvider theme={colorAdaptedTheme}>
-        <OnboardingProvider>
-          <CustomStatusBar />
-          <ApolloProvider client={client}>
-            <BalanceProvider>
-              <TransactionProvider>
-                <LockScreen>
-                  {accountsRestored && (
-                    <AccountSelector>
-                      <NavigationContainer theme={navTheme} linking={linking}>
-                        <RootNavigator />
-                      </NavigationContainer>
-                      <SecurityScreen
-                        visible={
-                          appState !== 'active' && appState !== 'unknown'
-                        }
-                      />
-                    </AccountSelector>
-                  )}
-                </LockScreen>
-              </TransactionProvider>
-            </BalanceProvider>
-          </ApolloProvider>
-        </OnboardingProvider>
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <ThemeProvider theme={colorAdaptedTheme}>
+          <OnboardingProvider>
+            <CustomStatusBar />
+            <ApolloProvider client={client}>
+              <BalanceProvider>
+                <TransactionProvider>
+                  <LockScreen>
+                    <WalletConnectProvider>
+                      {accountsRestored && (
+                        <AccountSelector>
+                          <NavigationContainer
+                            theme={navTheme}
+                            linking={linking}
+                          >
+                            <RootNavigator />
+                          </NavigationContainer>
+                          <SecurityScreen
+                            visible={
+                              appState !== 'active' && appState !== 'unknown'
+                            }
+                          />
+                        </AccountSelector>
+                      )}
+                    </WalletConnectProvider>
+                  </LockScreen>
+                </TransactionProvider>
+              </BalanceProvider>
+            </ApolloProvider>
+          </OnboardingProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   )
 }
 
