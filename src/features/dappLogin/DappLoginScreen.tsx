@@ -62,7 +62,12 @@ const DappLoginScreen = () => {
     }
   }, [pairClient, params.callback, params.uri])
 
-  useDisappear(() => reset())
+  useDisappear(() => {
+    if (navigation.canGoBack()) {
+      navigation.goBack()
+    }
+    reset()
+  })
 
   const handleDeny = useCallback(async () => {
     await denyPair()

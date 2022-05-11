@@ -13,6 +13,9 @@ import Config from 'react-native-config'
 const useWalletConnectHook = () => {
   const [walletClient, setWalletClient] = useState<WalletConnectClient>()
   const [loginProposal, setLoginProposal] = useState<SessionTypes.Proposal>()
+  const [connectionState, setConnectionState] = useState<
+    'undetermined' | 'approved' | 'denied'
+  >('undetermined')
   const [loginRequestEvent, setLoginRequestEvent] =
     useState<SessionTypes.RequestEvent>()
 
@@ -46,13 +49,6 @@ const useWalletConnectHook = () => {
         )
 
         client.on(
-          CLIENT_EVENTS.session.created,
-          async (_session: SessionTypes.Created) => {
-            // session created succesfully
-          },
-        )
-
-        client.on(
           CLIENT_EVENTS.session.request,
           async (requestEvent: SessionTypes.RequestEvent) => {
             if (requestEvent.request.method !== 'personal_sign') return
@@ -67,7 +63,7 @@ const useWalletConnectHook = () => {
     [walletClient],
   )
 
-  const approvePair = useCallback((): Promise<
+  const approvePair = useCallback(async (): Promise<
     SessionTypes.Settled | undefined
   > => {
     if (!loginProposal || !walletClient) return new Promise(() => {})
@@ -79,15 +75,32 @@ const useWalletConnectHook = () => {
       },
       metadata,
     }
-    return walletClient.approve({ proposal: loginProposal, response })
+    const nextApprovalResponse = await walletClient.approve({
+      proposal: loginProposal,
+      response,
+    })
+
+    setConnectionState('approved')
+
+    return nextApprovalResponse
   }, [loginProposal, walletClient])
 
-  const denyPair = useCallback(() => {
+  const denyPair = useCallback(async () => {
     if (!loginProposal || !walletClient) return
-    return walletClient.reject({ proposal: loginProposal })
+    const nextDenyResponse = await walletClient.reject({
+      proposal: loginProposal,
+    })
+
+    setConnectionState('denied')
+
+    return nextDenyResponse
   }, [loginProposal, walletClient])
 
-  const reset = useCallback(() => {
+  const reset = useCallback(async () => {
+    if (connectionState === 'undetermined') {
+      await denyPair()
+    }
+
     if (walletClient && loginRequestEvent) {
       const { topic } = loginRequestEvent
       walletClient?.disconnect({
@@ -101,7 +114,8 @@ const useWalletConnectHook = () => {
     setWalletClient(undefined)
     setLoginProposal(undefined)
     setLoginRequestEvent(undefined)
-  }, [loginRequestEvent, walletClient])
+    setConnectionState('undetermined')
+  }, [connectionState, denyPair, loginRequestEvent, walletClient])
 
   const login = useCallback(
     (opts: { txn: string; address: string }) => {
@@ -136,7 +150,7 @@ const initialState = {
   pairClient: () => new Promise<void>((resolve) => resolve()),
   approvePair: () => new Promise<undefined>((resolve) => resolve(undefined)),
   denyPair: () => new Promise<void>((resolve) => resolve()),
-  reset: () => {},
+  reset: () => new Promise<void>((resolve) => resolve()),
   login: () => new Promise<void>((resolve) => resolve()),
   loginProposal: undefined,
   loginRequestEvent: undefined,
