@@ -34,7 +34,7 @@ const DappLoginScreen = () => {
     loginRequestEvent,
     approvePair,
     denyPair,
-    reset,
+    disconnect,
     login,
   } = useWalletConnect()
   const { t } = useTranslation()
@@ -66,7 +66,7 @@ const DappLoginScreen = () => {
     if (navigation.canGoBack()) {
       navigation.goBack()
     }
-    reset()
+    disconnect()
   })
 
   const handleDeny = useCallback(async () => {
@@ -134,7 +134,7 @@ const DappLoginScreen = () => {
 
     navigation.goBack()
 
-    if (await Linking.canOpenURL(params.callback)) {
+    if (params.callback && (await Linking.canOpenURL(params.callback))) {
       Linking.openURL(params.callback)
     }
   }, [
