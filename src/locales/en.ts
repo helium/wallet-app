@@ -396,6 +396,8 @@ export default {
           bodyLastAccount:
             'You are signing out of your only account, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your Address Book\n- your HNT\n- your Wallet',
           title: 'Sign Out of {{alias}}?',
+          iCloudMessage:
+            '\n\nAny device using the same iCloud account will also be signed out.',
         },
         title: 'Account Settings',
       },
@@ -588,5 +590,27 @@ export default {
     votingAs: 'Voting as {{alias}} with {{hnt}} Voting Power',
     votingClosed: 'Voting Closed',
     votingClosedNewline: 'Voting\nClosed',
+  },
+  restoreAccount: {
+    missing: 'Account has no private key. Tap to restore.',
+    alert: {
+      title: 'Restore Account',
+      message: 'Does your account {{address}} have 12 or 24 security words?',
+      button12: '12 Words',
+      button24: '24 Words',
+    },
+    errorAlert: {
+      title: 'Error Restoring Account',
+      message:
+        'The words you entered do not match the account you are restoring.',
+    },
+    missingAlert: {
+      title: 'Private Key Not Found',
+      message:
+        'Your private key for account {{address}} is missing and must be restored.',
+      button1: 'Restore 12 Words',
+      button2: 'Restore 24 Words',
+      button3: "Don't Show Again",
+    },
   },
 }

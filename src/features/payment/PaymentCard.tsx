@@ -15,6 +15,7 @@ import { SendDetails } from '../../storage/TransactionProvider'
 import animateTransition from '../../utils/animateTransition'
 import useAlert from '../../utils/useAlert'
 import PaymentSummary from './PaymentSummary'
+import { checkSecureAccount } from '../../storage/secureStorage'
 
 type Props = {
   totalBalance: Balance<TestNetworkTokens | NetworkTokens>
@@ -45,8 +46,13 @@ const PaymentCard = ({
     txnJson: string
   }>()
 
-  const handlePayPressed = useCallback(() => {
+  const handlePayPressed = useCallback(async () => {
     if (!currentAccount?.ledgerDevice) {
+      const hasSecureAccount = await checkSecureAccount(
+        currentAccount?.address,
+        true,
+      )
+      if (!hasSecureAccount) return
       animateTransition('PaymentCard.payEnabled')
       setPayEnabled(true)
     } else {

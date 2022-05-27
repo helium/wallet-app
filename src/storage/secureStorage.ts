@@ -1,7 +1,11 @@
 import { Keypair, Mnemonic } from '@helium/crypto-react-native'
 import Address, { NetTypes as NetType } from '@helium/address'
 import * as SecureStore from 'expo-secure-store'
+import { Alert } from 'react-native'
 import { CSAccount } from './cloudStorage'
+import i18n from '../utils/i18n'
+import { navToImportAccount } from '../navigation/NavigationHelper'
+import { ellipsizeAddress } from '../utils/accountUtils'
 
 export enum SecureStorageKeys {
   PIN = 'pin',
@@ -13,6 +17,7 @@ export enum SecureStorageKeys {
   LAST_IDLE = 'lastIdle',
   SELECTED_LIST = 'selected_list',
   ENABLE_TESTNET = 'enableTestnet',
+  HIDE_PRIVATE_KEY_ALERT = 'hidePrivateKeyAlert',
 }
 type SecureStorageKeyTypes = `${SecureStorageKeys}`
 
@@ -49,9 +54,76 @@ export const createSecureAccount = async ({
   return { address: address.b58, ...secureAccount }
 }
 
+export const checkSecureAccount = async (
+  address: string | undefined,
+  forceShow?: boolean,
+): Promise<boolean> => {
+  const { t } = i18n
+  if (!address) return false
+  try {
+    const secureAccount = await SecureStore.getItemAsync(address)
+    if (!secureAccount) {
+      const skipAlert = await getSecureItem(
+        SecureStorageKeys.HIDE_PRIVATE_KEY_ALERT,
+      )
+      if (skipAlert === 'true' && !forceShow) return false
+      Alert.alert(
+        t('restoreAccount.missingAlert.title'),
+        t('restoreAccount.missingAlert.message', {
+          address: ellipsizeAddress(address),
+        }),
+        [
+          {
+            text: t('restoreAccount.missingAlert.button1'),
+            onPress: () => {
+              navToImportAccount({
+                screen: 'AccountImportScreen',
+                params: {
+                  wordCount: 12,
+                  restoringAccount: true,
+                  accountAddress: address,
+                },
+              })
+            },
+          },
+          {
+            text: t('restoreAccount.missingAlert.button2'),
+            onPress: () => {
+              navToImportAccount({
+                screen: 'AccountImportScreen',
+                params: {
+                  wordCount: 24,
+                  restoringAccount: true,
+                  accountAddress: address,
+                },
+              })
+            },
+          },
+          {
+            text: forceShow
+              ? t('generic.cancel')
+              : t('restoreAccount.missingAlert.button3'),
+            style: forceShow ? 'cancel' : 'destructive',
+            onPress: () => {
+              if (forceShow) return
+              storeSecureItem(SecureStorageKeys.HIDE_PRIVATE_KEY_ALERT, 'true')
+            },
+          },
+        ],
+      )
+      return false
+    }
+    return true
+  } catch (e) {
+    console.error(e)
+    return false
+  }
+}
+
 export const getSecureAccount = async (
-  address: string,
+  address: string | undefined,
 ): Promise<SecureAccount | undefined> => {
+  if (!address) return
   try {
     const item = await SecureStore.getItemAsync(address)
     if (!item) return

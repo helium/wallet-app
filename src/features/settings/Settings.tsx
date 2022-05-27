@@ -2,7 +2,7 @@ import React, { memo, ReactText, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
 import Close from '@assets/images/close.svg'
-import { Alert, SectionList } from 'react-native'
+import { Alert, Platform, SectionList } from 'react-native'
 import Text from '../../components/Text'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -20,6 +20,11 @@ import { SettingsNavigationProp } from './settingsTypes'
 import { useLanguageStorage } from '../../storage/LanguageProvider'
 import useCopyAddress from '../../utils/useCopyAddress'
 import useAlert from '../../utils/useAlert'
+import {
+  checkSecureAccount,
+  getSecureAccount,
+} from '../../storage/secureStorage'
+import { useApolloClient } from '../../graphql/useApolloClient'
 
 const Settings = () => {
   const { t } = useTranslation()
@@ -36,6 +41,7 @@ const Settings = () => {
     sortedTestnetAccounts,
     defaultAccountAddress,
     updateDefaultAccountAddress,
+    signOut,
   } = useAccountStorage()
   const { changeLanguage, language } = useLanguageStorage()
   const {
@@ -51,6 +57,7 @@ const Settings = () => {
     updateEnableTestnet,
     updateRequirePinForPayment,
   } = useAppStorage()
+  const { client } = useApolloClient()
   const copyAddress = useCopyAddress()
   const { showOKAlert, showOKCancelAlert } = useAlert()
 
@@ -172,9 +179,59 @@ const Settings = () => {
     [requirePinForPayment, updateRequirePinForPayment, settingsNav, appPin],
   )
 
-  const handleSignOut = useCallback(() => {
-    settingsNav.push('ConfirmSignout')
-  }, [settingsNav])
+  const handleSignOut = useCallback(async () => {
+    const secureAccount = await getSecureAccount(currentAccount?.address)
+    if (!secureAccount || !!currentAccount?.ledgerDevice) {
+      const currentAddress = currentAccount?.address
+      const savedAccountAddresses = Object.keys(accounts || {})
+      const isLastAccount =
+        accounts &&
+        currentAddress &&
+        savedAccountAddresses.length === 1 &&
+        savedAccountAddresses.includes(currentAddress)
+      const iCloudMessage =
+        Platform.OS === 'ios'
+          ? t('settings.sections.account.signOutAlert.iCloudMessage')
+          : ''
+
+      Alert.alert(
+        t('settings.sections.account.signOutAlert.title', {
+          alias: currentAccount?.alias,
+        }),
+        t(
+          `settings.sections.account.signOutAlert.${
+            isLastAccount ? 'bodyLastAccount' : 'body'
+          }`,
+          {
+            alias: currentAccount?.alias,
+          },
+        ) + iCloudMessage,
+        [
+          {
+            text: t('generic.cancel'),
+            style: 'cancel',
+          },
+          {
+            text: t('settings.sections.account.signOut'),
+            style: 'destructive',
+            onPress: async () => {
+              if (isLastAccount) {
+                // last account is signing out, clear all storage then nav to onboarding
+                await signOut()
+                client?.resetStore()
+              } else {
+                // sign out the specific account, then nav to home
+                await signOut(currentAccount)
+                homeNav.popToTop()
+              }
+            },
+          },
+        ],
+      )
+    } else {
+      settingsNav.push('ConfirmSignout')
+    }
+  }, [accounts, client, currentAccount, homeNav, settingsNav, signOut, t])
 
   const handleLanguageChange = useCallback(
     async (lng: string) => {
@@ -218,7 +275,12 @@ const Settings = () => {
     [settingsNav],
   )
 
-  const handleRevealWords = useCallback(() => {
+  const handleRevealWords = useCallback(async () => {
+    const hasSecureAccount = await checkSecureAccount(
+      currentAccount?.address,
+      true,
+    )
+    if (!hasSecureAccount) return
     if (isPinRequired) {
       settingsNav.push('SettingsConfirmPin', {
         pin: appPin?.value || '',
@@ -227,7 +289,7 @@ const Settings = () => {
     } else {
       settingsNav.push('RevealWords')
     }
-  }, [appPin, isPinRequired, settingsNav])
+  }, [appPin, currentAccount, isPinRequired, settingsNav])
 
   const handleCopyAddress = useCallback(() => {
     if (!currentAccount?.address) return

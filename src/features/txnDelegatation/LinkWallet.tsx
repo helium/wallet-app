@@ -14,7 +14,7 @@ import { useAccountSelector } from '../../components/AccountSelector'
 import AccountIcon from '../../components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { formatAccountAlias } from '../../utils/accountUtils'
-import { getKeypair } from '../../storage/secureStorage'
+import { checkSecureAccount, getKeypair } from '../../storage/secureStorage'
 
 const makeAppLinkAuthToken = async (
   tokenOpts: WalletLink.LinkWalletRequest & {
@@ -60,7 +60,10 @@ const LinkWallet = () => {
   const handleLink = useCallback(async () => {
     if (!currentAccount?.address) return
     const keypair = await getKeypair(currentAccount.address)
-    if (!keypair) return
+    if (!keypair) {
+      await checkSecureAccount(currentAccount?.address, true)
+      return
+    }
 
     const time = getUnixTime(new Date())
     const token = await makeAppLinkAuthToken(
