@@ -28,6 +28,7 @@ import { linking } from './utils/linking'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
 import CustomStatusBar from './components/TestnetAwareStatusBar'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
+import { navigationRef } from './navigation/NavigationHelper'
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -127,6 +128,7 @@ const App = () => {
                           <NavigationContainer
                             theme={navTheme}
                             linking={linking}
+                            ref={navigationRef}
                           >
                             <RootNavigator />
                           </NavigationContainer>

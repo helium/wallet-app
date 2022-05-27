@@ -32,6 +32,7 @@ import PaymentSummary from '../payment/PaymentSummary'
 import SubmitButton from '../../components/SubmitButton'
 import useAlert from '../../utils/useAlert'
 import LedgerBurn, { LedgerBurnRef } from '../../components/LedgerBurn'
+import { checkSecureAccount } from '../../storage/secureStorage'
 
 type Route = RouteProp<VoteNavigatorStackParamList, 'VoteBurn'>
 const VoteBurn = () => {
@@ -97,7 +98,8 @@ const VoteBurn = () => {
     })
 
     if (!account.ledgerDevice) {
-      if (!signedTxn) return
+      const hasSecureAccount = await checkSecureAccount(account.address, true)
+      if (!signedTxn || !hasSecureAccount) return
       const variables = {
         address: account.address,
         txnJson,

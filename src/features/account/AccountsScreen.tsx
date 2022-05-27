@@ -61,6 +61,7 @@ import { useNotificationStorage } from '../../storage/NotificationStorageProvide
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
 import StatusBanner from '../StatusPage/StatusBanner'
+import { checkSecureAccount } from '../../storage/secureStorage'
 
 type AccountLayout = {
   accountViewStart: number
@@ -155,6 +156,11 @@ const AccountsScreen = () => {
       },
     })
   })
+
+  useEffect(() => {
+    if (!currentAccount || !!currentAccount.ledgerDevice) return
+    checkSecureAccount(currentAccount.address)
+  }, [currentAccount])
 
   const {
     data: activityData,
@@ -331,30 +337,36 @@ const AccountsScreen = () => {
   const handleActionSelected = useCallback(
     (type: Action) => {
       switch (type) {
-        case 'send':
+        case 'send': {
           if (requirePinForPayment) {
             navigation.navigate('ConfirmPin', { action: 'payment' })
           } else {
             navigation.navigate('PaymentScreen')
           }
           break
-        case 'request':
+        }
+        case 'request': {
           navigation.navigate('RequestScreen')
           break
-        case 'payment':
+        }
+        case 'payment': {
           // TODO: Remove eventually
           if (accountNetType !== NetType.TESTNET) return
           navigation.navigate('WifiPurchase')
           break
-        case 'vote':
+        }
+        case 'vote': {
           navigation.navigate('VoteNavigator')
           break
-        case '5G':
+        }
+        case '5G': {
           navigation.navigate('PurchaseData')
           break
-        default:
+        }
+        default: {
           show()
           break
+        }
       }
     },
     [accountNetType, navigation, requirePinForPayment, show],

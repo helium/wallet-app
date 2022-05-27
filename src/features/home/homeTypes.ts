@@ -38,7 +38,14 @@ export type HomeStackParamList = {
   ImportAccount:
     | undefined
     | { wordCount: 12 | 24 }
-    | { screen: 'AccountImportScreen'; params: { wordCount: 12 | 24 } }
+    | {
+        screen: 'AccountImportScreen'
+        params: {
+          wordCount: 12 | 24
+          restoringAccount?: boolean
+          accountAddress?: string
+        }
+      }
   LedgerNavigator: undefined
   VoteNavigator: undefined
 }

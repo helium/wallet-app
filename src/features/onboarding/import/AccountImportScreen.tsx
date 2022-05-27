@@ -41,13 +41,14 @@ const AccountImportScreen = () => {
   const {
     setOnboardingData,
     onboardingData: { netType },
+    reset,
   } = useOnboarding()
-  const { hasAccounts } = useAccountStorage()
+  const { upsertAccount, hasAccounts, accounts } = useAccountStorage()
   const navigation = useNavigation<ImportAccountNavigationProp>()
   const parentNav = useNavigation<OnboardingNavigationProp>()
   const flatlistRef = useRef<FlatList>(null)
   const {
-    params: { wordCount },
+    params: { wordCount, restoringAccount, accountAddress },
   } = useRoute<Route>()
   const colors = useColors()
   const { t } = useTranslation()
@@ -111,15 +112,54 @@ const AccountImportScreen = () => {
         use24Words: words?.length === 24,
         netType,
       })
-      setOnboardingData((prev) => ({ ...prev, secureAccount: account }))
-      navigation.navigate('AccountAssignScreen')
+      if (restoringAccount) {
+        if (!accounts || !accountAddress) {
+          await showOKAlert({
+            title: t('restoreAccount.errorAlert.title'),
+            message: t('restoreAccount.errorAlert.message'),
+          })
+          return
+        }
+        const restoredAccount = Object.values(accounts).find(
+          (a) => a.address === account.address,
+        )
+        if (!restoredAccount || accountAddress !== restoredAccount.address) {
+          await showOKAlert({
+            title: t('restoreAccount.errorAlert.title'),
+            message: t('restoreAccount.errorAlert.message'),
+          })
+          return
+        }
+        await upsertAccount({
+          alias: restoredAccount.alias,
+          address: account.address,
+          secureAccount: account,
+        })
+        reset()
+        navigation.popToTop()
+      } else {
+        setOnboardingData((prev) => ({ ...prev, secureAccount: account }))
+        navigation.navigate('AccountAssignScreen')
+      }
     } catch (error) {
       await showOKAlert({
         title: t('accountImport.alert.title'),
         message: t('accountImport.alert.body'),
       })
     }
-  }, [words, netType, setOnboardingData, navigation, showOKAlert, t])
+  }, [
+    words,
+    netType,
+    restoringAccount,
+    accounts,
+    accountAddress,
+    upsertAccount,
+    reset,
+    navigation,
+    showOKAlert,
+    t,
+    setOnboardingData,
+  ])
 
   const keyExtractor = useCallback((_item, index) => index, [])
 

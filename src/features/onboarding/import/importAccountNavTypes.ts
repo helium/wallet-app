@@ -4,7 +4,11 @@ import { SecureAccount } from '../../../storage/secureStorage'
 
 export type ImportAccountStackParamList = {
   AccountImportStartScreen: undefined
-  AccountImportScreen: { wordCount: 12 | 24 }
+  AccountImportScreen: {
+    wordCount: 12 | 24
+    restoringAccount?: boolean
+    accountAddress?: string
+  }
   AccountAssignScreen: undefined
   AccountCreatePinScreen:
     | {
