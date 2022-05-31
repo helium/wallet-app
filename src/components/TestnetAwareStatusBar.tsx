@@ -6,7 +6,7 @@ import { useAppState } from '@react-native-community/hooks'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { Color } from '../theme/theme'
-import { useColors } from '../theme/themeHooks'
+import { useColors, useColorScheme } from '../theme/themeHooks'
 import Box from './Box'
 import { useOnboarding } from '../features/onboarding/OnboardingProvider'
 
@@ -14,6 +14,7 @@ type Props = { backgroundColor?: Color }
 const CustomStatusBar = ({ backgroundColor = 'red500' }: Props) => {
   const insets = useSafeAreaInsets()
   const colors = useColors()
+  const theme = useColorScheme()
   const { currentAccount } = useAccountStorage()
   const {
     onboardingData: { netType },
@@ -29,7 +30,13 @@ const CustomStatusBar = ({ backgroundColor = 'red500' }: Props) => {
       !locked,
     [appState, currentAccount, locked, netType],
   )
-  if (!isTestnet) return null
+  if (!isTestnet)
+    return (
+      <StatusBar
+        animated
+        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+      />
+    )
 
   return (
     <Box
