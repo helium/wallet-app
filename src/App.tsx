@@ -26,7 +26,7 @@ import { BalanceProvider } from './utils/Balance'
 import { useColorScheme } from './theme/themeHooks'
 import { linking } from './utils/linking'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
-import CustomStatusBar from './components/TestnetAwareStatusBar'
+import TestnetAwareStatusBar from './components/TestnetAwareStatusBar'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
 import { navigationRef } from './navigation/NavigationHelper'
 
@@ -117,7 +117,7 @@ const App = () => {
       <SafeAreaProvider>
         <ThemeProvider theme={colorAdaptedTheme}>
           <OnboardingProvider>
-            <CustomStatusBar />
+            <TestnetAwareStatusBar />
             <ApolloProvider client={client}>
               <BalanceProvider>
                 <TransactionProvider>
