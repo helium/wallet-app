@@ -42,7 +42,7 @@ const DeviceShow = () => {
       console.error(error)
       navigation.navigate('DeviceScan', { error: error as Error })
     }
-  }, [getTransport, ledgerDevice.id, navigation])
+  }, [ledgerDevice.id])
 
   const alias = useMemo(() => {
     if (!address) return ''
