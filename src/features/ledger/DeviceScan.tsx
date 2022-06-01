@@ -163,7 +163,6 @@ const DeviceScan = () => {
       sub.current.unsubscribe()
     }
 
-    setDevices([])
     setRefreshing(false)
     startScan()
   }, [startScan])
