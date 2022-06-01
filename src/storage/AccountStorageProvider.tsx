@@ -156,14 +156,13 @@ const useAccountStorageHook = () => {
         ...accounts,
         [address]: nextAccount,
       }
+      if (secureAccount) {
+        await storeSecureAccount(secureAccount)
+      }
       setAccounts(nextAccounts)
       setCurrentAccount(nextAccount)
       await updateCloudAccounts(nextAccounts)
-
       await tagAccount(address)
-      if (secureAccount) {
-        return storeSecureAccount(secureAccount)
-      }
     },
     [accounts],
   )
