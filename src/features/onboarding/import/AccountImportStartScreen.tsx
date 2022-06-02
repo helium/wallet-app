@@ -1,7 +1,8 @@
-import React, { memo, useCallback, useEffect } from 'react'
+import React, { memo, useCallback, useEffect, useMemo } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { Image } from 'react-native'
+import { Edge } from 'react-native-safe-area-context'
 import Text from '../../../components/Text'
 import Box from '../../../components/Box'
 import { useOnboarding } from '../OnboardingProvider'
@@ -10,6 +11,8 @@ import TextTransform from '../../../components/TextTransform'
 import { ImportAccountNavigationProp } from './importAccountNavTypes'
 import { HomeNavigationProp } from '../../home/homeTypes'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
+import FinePrint from '../../../components/FinePrint'
+import SafeAreaBox from '../../../components/SafeAreaBox'
 
 const AccountImportStartScreen = () => {
   const { setOnboardingData } = useOnboarding()
@@ -40,8 +43,10 @@ const AccountImportStartScreen = () => {
     [hasAccounts, homeNav, navigation],
   )
 
+  const edges = useMemo((): Edge[] => ['bottom'], [])
+
   return (
-    <Box flex={1} flexDirection="column">
+    <SafeAreaBox flex={1} flexDirection="column" edges={edges}>
       <Box flex={1} justifyContent="center" alignItems="center">
         <Image source={require('@assets/images/fingerprint.png')} />
         <Text
@@ -71,7 +76,7 @@ const AccountImportStartScreen = () => {
           ? t('accountImport.accountLimit')
           : t('accountImport.pickKeyType')}
       </Text>
-      <Box flexDirection="row" marginBottom="xxl" marginHorizontal="l">
+      <Box flexDirection="row" marginHorizontal="l">
         <ButtonPressable
           width="50%"
           marginRight="xxs"
@@ -103,7 +108,8 @@ const AccountImportStartScreen = () => {
           disabled={reachedAccountLimit}
         />
       </Box>
-    </Box>
+      <FinePrint marginHorizontal="xl" marginTop="l" justifyContent="center" />
+    </SafeAreaBox>
   )
 }
 

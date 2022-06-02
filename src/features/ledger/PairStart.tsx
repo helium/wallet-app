@@ -9,6 +9,7 @@ import { HomeNavigationProp } from '../home/homeTypes'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import ButtonPressable from '../../components/ButtonPressable'
+import FinePrint from '../../components/FinePrint'
 
 const PairStart = () => {
   const { primaryText } = useColors()
@@ -53,7 +54,6 @@ const PairStart = () => {
         disabled={reachedAccountLimit}
         borderRadius="round"
         onPress={handleStart}
-        marginBottom="m"
         backgroundColor="surfaceSecondary"
         backgroundColorOpacityPressed={0.7}
         backgroundColorDisabled="surfaceSecondary"
@@ -61,6 +61,7 @@ const PairStart = () => {
         titleColorDisabled="black500"
         title={t('ledger.pairStart.pair')}
       />
+      <FinePrint marginTop="l" justifyContent="center" />
     </SafeAreaBox>
   )
 }
