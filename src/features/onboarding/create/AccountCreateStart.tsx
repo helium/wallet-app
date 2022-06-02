@@ -5,6 +5,7 @@ import Box from '../../../components/Box'
 import Text from '../../../components/Text'
 import ButtonPressable from '../../../components/ButtonPressable'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
+import FinePrint from '../../../components/FinePrint'
 
 type Props = { onCreate: () => void }
 const AccountCreateStart = ({ onCreate }: Props) => {
@@ -47,7 +48,6 @@ const AccountCreateStart = ({ onCreate }: Props) => {
       </Text>
       <ButtonPressable
         disabled={reachedAccountLimit}
-        marginBottom="m"
         borderRadius="round"
         titleColor="greenBright500"
         title={t('accountSetup.createButtonTitle')}
@@ -58,6 +58,7 @@ const AccountCreateStart = ({ onCreate }: Props) => {
         titleColorDisabled="black500"
         onPress={onCreate}
       />
+      <FinePrint marginTop="l" justifyContent="center" />
     </Box>
   )
 }

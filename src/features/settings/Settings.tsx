@@ -2,7 +2,7 @@ import React, { memo, ReactText, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
 import Close from '@assets/images/close.svg'
-import { Alert, Platform, SectionList } from 'react-native'
+import { Alert, Linking, Platform, SectionList } from 'react-native'
 import Text from '../../components/Text'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -25,6 +25,7 @@ import {
   getSecureAccount,
 } from '../../storage/secureStorage'
 import { useApolloClient } from '../../graphql/useApolloClient'
+import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
 
 const Settings = () => {
   const { t } = useTranslation()
@@ -423,6 +424,19 @@ const Settings = () => {
               sortedTestnetAccounts.length && enableTestnet
                 ? t('settings.sections.dev.testnet.helperText')
                 : undefined,
+          },
+        ],
+      },
+      {
+        title: t('settings.sections.finePrint.title'),
+        data: [
+          {
+            title: t('settings.sections.finePrint.privacyPolicy'),
+            onPress: () => Linking.openURL(PRIVACY_POLICY),
+          },
+          {
+            title: t('settings.sections.finePrint.termsOfService'),
+            onPress: () => Linking.openURL(TERMS_OF_SERVICE),
           },
         ],
       },

@@ -176,6 +176,8 @@ export default {
     testnet: 'Testnet',
     total: 'Total',
     tryAgain: 'Try Again',
+    and: 'and',
+    period: '.',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',
@@ -430,6 +432,11 @@ export default {
         },
         title: 'Developer Settings',
       },
+      finePrint: {
+        title: 'The Fine Print',
+        privacyPolicy: 'Privacy Policy',
+        termsOfService: 'Terms of Service',
+      },
       security: {
         authIntervals: {
           after_1_hr: 'After 1 hour',
@@ -612,5 +619,8 @@ export default {
       button2: 'Restore 24 Words',
       button3: "Don't Show Again",
     },
+  },
+  finePrint: {
+    body: 'By continuing, you agree to the',
   },
 }
