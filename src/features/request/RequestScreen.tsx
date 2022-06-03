@@ -104,12 +104,16 @@ const RequestScreen = () => {
   const link = useMemo(() => {
     if (!currentAccount?.address || !memoValid) return ''
 
+    if (!paymentAmount?.floatBalance && !txnMemo && requestType === 'qr') {
+      return currentAccount.address
+    }
+
     return makePayRequestLink({
       payee: currentAccount.address,
       memo: txnMemo,
       balanceAmount: paymentAmount,
     })
-  }, [currentAccount, paymentAmount, txnMemo, memoValid])
+  }, [currentAccount, memoValid, paymentAmount, requestType, txnMemo])
 
   const [qrLink] = useDebounce(link, 500)
 
