@@ -117,7 +117,6 @@ const AccountsScreen = () => {
   const carouselRef = useRef<Carousel<CSAccount | null>>(null)
   const { sortedAccounts, currentAccount, setCurrentAccount } =
     useAccountStorage()
-  const prevAccount = usePrevious(currentAccount)
   const prevSortedAccounts = usePrevious<CSAccount[] | undefined>(
     sortedAccounts,
   )
@@ -231,18 +230,15 @@ const AccountsScreen = () => {
     ]
   }, [sortedAccounts])
 
+  // if carouselData or currentAccount changes, snap to the currentAccount's index
   useEffect(() => {
-    if (
-      currentAccount?.address &&
-      prevAccount?.address !== currentAccount.address
-    ) {
-      const index = carouselData.findIndex(
-        (acct) => acct?.address === currentAccount.address,
-      )
-      if (index < 0) return
-      carouselRef.current?.snapToItem(index)
-    }
-  }, [carouselData, currentAccount, prevAccount])
+    if (!currentAccount?.address) return
+    const index = carouselData.findIndex(
+      (acct) => acct?.address === currentAccount?.address,
+    )
+    if (index < 0) return
+    carouselRef.current?.snapToItem(index)
+  }, [carouselData, currentAccount])
 
   const renderCarouselItem = ({ item }: { item: CSAccount | null }) => {
     if (!item) {
