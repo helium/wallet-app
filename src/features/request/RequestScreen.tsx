@@ -24,6 +24,7 @@ import { useDebounce } from 'use-debounce'
 import { useKeyboard } from '@react-native-community/hooks'
 import { BoxProps } from '@shopify/restyle'
 import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
+import { NetTypes as NetType } from '@helium/address'
 import Text from '../../components/Text'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import SafeAreaBox, {
@@ -254,7 +255,11 @@ const RequestScreen = () => {
           <Box flex={1} />
 
           <Box
-            backgroundColor="secondary"
+            backgroundColor={
+              currentAccount?.netType === NetType.TESTNET
+                ? 'lividBrown'
+                : 'secondary'
+            }
             flexDirection="column"
             marginBottom="l"
             padding="lm"
