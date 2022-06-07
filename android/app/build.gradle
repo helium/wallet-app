@@ -12,6 +12,7 @@ apply plugin: "com.android.application"
 apply plugin: 'com.google.gms.google-services'
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 
+import groovy.json.JsonSlurper
 import com.android.build.OutputFile
 
 /**
@@ -138,6 +139,12 @@ def enableHermes = project.ext.react.get("enableHermes", false);
 
 def nativeArchitectures = project.getProperties().get("reactNativeDebugArchitectures")
 
+def getAppVersion() {
+    def inputFile = file("$rootDir/../package.json")
+    def jsonPackage = new JsonSlurper().parseText(inputFile.text)
+    return jsonPackage["version"]
+}
+
 android {
     ndkVersion rootProject.ext.ndkVersion
 
@@ -148,7 +155,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0"
+        versionName getAppVersion()
     }
     splits {
         abi {
