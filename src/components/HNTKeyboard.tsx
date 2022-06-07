@@ -137,11 +137,6 @@ const HNTKeyboardSelector = forwardRef(
       return floatToBalance(numberVal)
     }, [floatToBalance, value])
 
-    const currentAccountBalance = useMemo(
-      () => accountBalance(),
-      [accountBalance],
-    )
-
     const feeAsTokens = useMemo(() => {
       if (!fee) return
 
@@ -171,7 +166,7 @@ const HNTKeyboardSelector = forwardRef(
     }, [
       calculatePaymentTxnFee,
       value,
-      currentAccountBalance,
+      accountBalance,
       payer,
       getNextPayments,
       zeroBalanceNetworkToken,
@@ -202,7 +197,7 @@ const HNTKeyboardSelector = forwardRef(
     }, [])
 
     const handleSetMax = useCallback(() => {
-      if (!currentAccountBalance || !feeAsTokens) return
+      if (!accountBalance || !feeAsTokens) return
 
       const currentAmount = getNextPayments()
         .filter((_v, index) => index !== paymentIndex || 0) // Remove the payment being updated
@@ -213,9 +208,7 @@ const HNTKeyboardSelector = forwardRef(
           return prev.plus(current.amount)
         }, zeroBalanceNetworkToken)
 
-      let maxBalance = currentAccountBalance
-        .minus(currentAmount)
-        .minus(feeAsTokens)
+      let maxBalance = accountBalance.minus(currentAmount).minus(feeAsTokens)
 
       if (maxBalance.integerBalance < 0) {
         maxBalance = zeroBalanceNetworkToken
@@ -231,7 +224,7 @@ const HNTKeyboardSelector = forwardRef(
 
       setValue(val)
     }, [
-      currentAccountBalance,
+      accountBalance,
       feeAsTokens,
       getNextPayments,
       paymentIndex,
@@ -287,7 +280,7 @@ const HNTKeyboardSelector = forwardRef(
               >
                 {payer
                   ? t('hntKeyboard.hntAvailable', {
-                      amount: balanceToString(currentAccountBalance, {
+                      amount: balanceToString(accountBalance, {
                         maxDecimalPlaces: 4,
                       }),
                     })
@@ -299,7 +292,7 @@ const HNTKeyboardSelector = forwardRef(
       ),
       [
         containerStyle,
-        currentAccountBalance,
+        accountBalance,
         handleHeaderLayout,
         payeeAddress,
         payer,
@@ -356,14 +349,14 @@ const HNTKeyboardSelector = forwardRef(
     const hasSufficientBalance = useMemo(() => {
       if (!payer) return true
 
-      if (!feeAsTokens || !valueAsBalance || !currentAccountBalance) {
+      if (!feeAsTokens || !valueAsBalance || !accountBalance) {
         return false
       }
       return (
-        (currentAccountBalance?.minus(feeAsTokens).minus(valueAsBalance))
+        (accountBalance?.minus(feeAsTokens).minus(valueAsBalance))
           .integerBalance >= 0
       )
-    }, [currentAccountBalance, feeAsTokens, payer, valueAsBalance])
+    }, [accountBalance, feeAsTokens, payer, valueAsBalance])
 
     const handleConfirm = useCallback(() => {
       bottomSheetModalRef.current?.dismiss()

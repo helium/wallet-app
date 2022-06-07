@@ -1,9 +1,11 @@
 import React, { memo } from 'react'
-import { createStackNavigator } from '@react-navigation/stack'
+import {
+  createStackNavigator,
+  StackNavigationOptions,
+} from '@react-navigation/stack'
 import AccountAssignScreen from '../onboarding/AccountAssignScreen'
 import AccountsScreen from '../account/AccountsScreen'
 import PaymentScreen from '../payment/PaymentScreen'
-import WifiPurchase from '../payment/WifiPurchase'
 import AddressBookNavigator from '../addressBook/AddressBookNavigator'
 import SettingsNavigator from '../settings/SettingsNavigator'
 import AddNewContact from '../addressBook/AddNewContact'
@@ -18,19 +20,23 @@ import CreateAccountNavigator from '../onboarding/create/CreateAccountNavigator'
 import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
 import LedgerNavigator from '../ledger/LedgerNavigator'
 import VoteNavigator from '../vote/VoteNavigator'
-import PurchaseDataScreen from '../purchaseData/PurchaseDataScreen'
 import DappLoginScreen from '../dappLogin/DappLoginScreen'
+import InternetNavigator from '../internet/InternetNavigator'
 
 const HomeStack = createStackNavigator()
 
+const screenOptions = {
+  presentation: 'transparentModal',
+} as StackNavigationOptions
+
+const navigatorScreenOptions = {
+  presentation: 'modal',
+  headerShown: false,
+} as StackNavigationOptions
+
 const HomeStackScreen = () => {
   return (
-    <HomeStack.Navigator
-      screenOptions={{
-        presentation: 'modal',
-        headerShown: false,
-      }}
-    >
+    <HomeStack.Navigator screenOptions={navigatorScreenOptions}>
       <HomeStack.Screen name="AccountsScreen" component={AccountsScreen} />
       <HomeStack.Screen
         name="AccountAssignScreen"
@@ -40,37 +46,33 @@ const HomeStackScreen = () => {
       <HomeStack.Screen name="PaymentScreen" component={PaymentScreen} />
       <HomeStack.Screen name="PaymentQrScanner" component={PaymentQrScanner} />
       <HomeStack.Screen name="RequestScreen" component={RequestScreen} />
-      <HomeStack.Screen name="PurchaseData" component={PurchaseDataScreen} />
-      <HomeStack.Screen
-        name="WifiPurchase"
-        component={WifiPurchase}
-      />
+      <HomeStack.Screen name="Internet" component={InternetNavigator} />
       <HomeStack.Screen name="DappLoginScreen" component={DappLoginScreen} />
       <HomeStack.Screen
         name="AddressBookNavigator"
         component={AddressBookNavigator}
-        options={{ presentation: 'transparentModal' }}
+        options={screenOptions}
       />
       <HomeStack.Screen
         name="NotificationsNavigator"
         component={NotificationsNavigator}
-        options={{ presentation: 'transparentModal' }}
+        options={screenOptions}
       />
       <HomeStack.Screen
         name="SettingsNavigator"
         component={SettingsNavigator}
-        options={{ presentation: 'transparentModal' }}
+        options={screenOptions}
       />
       <HomeStack.Screen name="AddNewContact" component={AddNewContact} />
       <HomeStack.Screen
         name="LinkWallet"
         component={LinkWallet}
-        options={{ presentation: 'transparentModal' }}
+        options={screenOptions}
       />
       <HomeStack.Screen
         name="SignHotspot"
         component={SignHotspot}
-        options={{ presentation: 'transparentModal' }}
+        options={screenOptions}
       />
       <HomeStack.Screen name="ScanAddress" component={AddressQrScanner} />
 

@@ -1,5 +1,10 @@
 query FeatureFlags($address: String!) {
   featureFlags(address: $address) {
     mobileEnabled
+    wifiBurnPayee
+    wifiBurnMemo
+    wifiEnabled
+    wifiProfile
+    stripePublishableKey
   }
 }

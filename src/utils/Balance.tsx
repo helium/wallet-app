@@ -5,6 +5,7 @@ import Balance, {
   NetworkTokens,
   TestNetworkTokens,
 } from '@helium/currency'
+import { round } from 'lodash'
 import React, {
   createContext,
   ReactNode,
@@ -18,12 +19,13 @@ import useAppState from 'react-native-appstate-hook'
 import CurrencyFormatter from 'react-native-currency-format'
 import {
   AccountData,
+  useAccountLazyQuery,
   useAccountQuery,
+  useOracleDataLazyQuery,
   useOracleDataQuery,
 } from '../generated/graphql'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
-import { CSAccount } from '../storage/cloudStorage'
 import { accountCurrencyType } from './accountUtils'
 import { CoinGeckoPrices, getCurrentPrices } from './coinGeckoClient'
 import { decimalSeparator, groupSeparator } from './i18n'
@@ -35,7 +37,11 @@ const useBalanceHook = () => {
   const { currentAccount } = useAccountStorage()
   const { convertToCurrency, currency } = useAppStorage()
 
-  const { data, loading, error } = useOracleDataQuery({
+  const {
+    data: oracleData,
+    loading: loadingOracle,
+    error,
+  } = useOracleDataQuery({
     variables: {
       address: currentAccount?.address || '',
     },
@@ -44,6 +50,7 @@ const useBalanceHook = () => {
     notifyOnNetworkStatusChange: true,
     skip: !currentAccount?.address,
   })
+  const [fetchOracle] = useOracleDataLazyQuery()
   const { data: accountData } = useAccountQuery({
     variables: {
       address: currentAccount?.address || '',
@@ -51,77 +58,94 @@ const useBalanceHook = () => {
     fetchPolicy: 'cache-only',
     skip: !currentAccount?.address,
   })
+  const [fetchAccountData] = useAccountLazyQuery()
 
-  const prevLoading = usePrevious(loading)
+  const prevLoadingOracle = usePrevious(loadingOracle)
   const [oracleDateTime, setOracleDateTime] = useState<Date>()
   const [coinGeckoPrices, setCoinGeckoPrices] = useState<CoinGeckoPrices>()
 
-  const updatePrices = useCallback(
+  const updateCoinGeckoPrices = useCallback(
     () => getCurrentPrices().then(setCoinGeckoPrices),
     [],
   )
 
   useMount(() => {
-    updatePrices()
+    updateCoinGeckoPrices()
   })
 
-  useAppState({ onForeground: updatePrices })
+  useAppState({ onForeground: updateCoinGeckoPrices })
+
+  const updateVars = useCallback(() => {
+    updateCoinGeckoPrices()
+
+    if (!currentAccount?.address) return
+
+    fetchOracle({
+      variables: {
+        address: currentAccount.address,
+      },
+    })
+
+    fetchAccountData({
+      variables: {
+        address: currentAccount.address,
+      },
+    })
+  }, [currentAccount, fetchAccountData, fetchOracle, updateCoinGeckoPrices])
+
+  const oraclePrice = useMemo(() => {
+    if (!oracleData?.currentOraclePrice) return
+
+    const {
+      currentOraclePrice: { price },
+    } = oracleData
+    return new Balance(price, CurrencyType.usd)
+  }, [oracleData])
 
   useEffect(() => {
-    if (prevLoading && !loading && data && !error) {
+    if (prevLoadingOracle && !loadingOracle && oracleData && !error) {
       setOracleDateTime(new Date())
     }
-  }, [data, error, loading, prevLoading])
+  }, [oracleData, error, loadingOracle, prevLoadingOracle])
 
   const dcToTokens = useCallback(
     (
-      priceBalance: Balance<DataCredits>,
+      dcBalance: Balance<DataCredits>,
     ): Balance<TestNetworkTokens | NetworkTokens> | undefined => {
-      if (!data?.currentOraclePrice?.price) return
-
-      const {
-        currentOraclePrice: { price },
-      } = data
-      const oraclePrice = new Balance(price, CurrencyType.usd)
+      if (!oraclePrice) return
 
       if (currentAccount?.netType === NetType.TESTNET) {
-        return priceBalance.toTestNetworkTokens(oraclePrice)
+        return dcBalance.toTestNetworkTokens(oraclePrice)
       }
-      return priceBalance.toNetworkTokens(oraclePrice)
+      return dcBalance.toNetworkTokens(oraclePrice)
     },
-    [currentAccount, data],
+    [currentAccount, oraclePrice],
   )
 
   const floatToBalance = useCallback(
-    (value: number, account?: CSAccount | null) => {
-      let acct = account
-      if (!acct) {
-        acct = currentAccount
-      }
-      if (!acct) {
+    (value: number) => {
+      if (!currentAccount) {
         console.warn('Cannot convert float to balance for nil account')
         return
       }
-      return Balance.fromFloat(value, accountCurrencyType(acct.address))
+      return Balance.fromFloat(
+        value,
+        accountCurrencyType(currentAccount.address),
+      )
     },
     [currentAccount],
   )
 
   const intToBalance = useCallback(
-    (opts: { intValue?: number; account?: CSAccount }) => {
-      let val = 0
-      let account = currentAccount
-      if (opts.intValue) {
-        val = opts.intValue
-      }
-      if (opts.account) {
-        account = opts.account
-      }
-      if (val === undefined || !account) {
+    (opts: { intValue?: number }) => {
+      if (!opts.intValue === undefined || !currentAccount) {
         console.warn('Cannot convert int to balance')
         return
       }
-      return new Balance(val, accountCurrencyType(account?.address))
+      return new Balance(
+        opts.intValue,
+        accountCurrencyType(currentAccount.address),
+      )
     },
     [currentAccount],
   )
@@ -131,22 +155,16 @@ const useBalanceHook = () => {
     [currentAccount],
   )
 
-  const accountBalance = useCallback(
-    (opts?: { intValue: number; account: CSAccount }) => {
-      let val = accountData?.account?.balance
-      let account = currentAccount
-      if (opts) {
-        val = opts.intValue
-        account = opts.account
-      }
-      if (val === undefined || !account) {
-        console.warn('Cannot convert int to balance')
-        return
-      }
-      return new Balance(val, accountCurrencyType(account?.address))
-    },
-    [accountData, currentAccount],
-  )
+  const accountBalance = useMemo(() => {
+    if (accountData?.account?.balance === undefined || !currentAccount) {
+      console.warn('Cannot convert int to balance')
+      return
+    }
+    return new Balance(
+      accountData?.account?.balance,
+      accountCurrencyType(currentAccount.address),
+    )
+  }, [accountData, currentAccount])
 
   const toPreferredCurrencyString = useCallback(
     (
@@ -175,26 +193,59 @@ const useBalanceHook = () => {
     [coinGeckoPrices, convertToCurrency, currency],
   )
 
+  const toCurrencyString = useCallback(
+    (balance?: Balance<NetworkTokens | TestNetworkTokens>): Promise<string> => {
+      if (!balance) {
+        return new Promise<string>((resolve) => resolve(''))
+      }
+      const multiplier = coinGeckoPrices?.[currency.toLowerCase()] || 0
+
+      const convertedValue = multiplier * (balance?.floatBalance || 0)
+      return CurrencyFormatter.format(convertedValue, currency)
+    },
+    [coinGeckoPrices, currency],
+  )
+
+  const toUsd = useCallback(
+    (balance?: Balance<NetworkTokens | TestNetworkTokens>): number => {
+      if (!balance) {
+        return 0
+      }
+      const multiplier = coinGeckoPrices?.usd || 0
+
+      return round(multiplier * (balance?.floatBalance || 0), 2)
+    },
+    [coinGeckoPrices],
+  )
+
   return {
     accountBalance,
     dcToTokens,
     floatToBalance,
     intToBalance,
     oracleDateTime,
-    zeroBalanceNetworkToken,
+    oraclePrice,
+    toCurrencyString,
     toPreferredCurrencyString,
+    toUsd,
+    updateVars,
+    zeroBalanceNetworkToken,
   }
 }
 
 const initialState = {
-  accountBalance: () => undefined,
+  accountBalance: undefined,
   dcToTokens: () => undefined,
   floatToBalance: () => undefined,
   intToBalance: () => undefined,
   oracleDateTime: undefined,
-  zeroBalanceNetworkToken: new Balance(0, CurrencyType.networkToken),
+  oraclePrice: undefined,
+  toCurrencyString: () => new Promise<string>((resolve) => resolve('')),
   toPreferredCurrencyString: () =>
     new Promise<string>((resolve) => resolve('')),
+  toUsd: () => 0,
+  updateVars: () => undefined,
+  zeroBalanceNetworkToken: new Balance(0, CurrencyType.networkToken),
 }
 
 const BalanceContext =

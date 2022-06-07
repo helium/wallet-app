@@ -20,9 +20,9 @@ export type HomeStackParamList = {
   RequestScreen: undefined
   PurchaseData: undefined
   DappLoginScreen: { uri: string; callback: string }
-  WifiPurchase:
+  Internet:
     | {
-        key: string
+        key?: string
         name: string
         params: undefined
         path: string

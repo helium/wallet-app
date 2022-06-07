@@ -1,3 +1,4 @@
+/* eslint-disable func-names */
 import { Buffer } from 'buffer'
 
 global.Buffer = Buffer

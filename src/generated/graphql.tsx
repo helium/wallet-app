@@ -82,6 +82,11 @@ export type ActivityData = {
 export type FeatureFlags = {
   __typename?: 'FeatureFlags'
   mobileEnabled: Scalars['Boolean']
+  stripePublishableKey: Scalars['String']
+  wifiBurnMemo?: Maybe<Scalars['String']>
+  wifiBurnPayee?: Maybe<Scalars['String']>
+  wifiEnabled: Scalars['Boolean']
+  wifiProfile?: Maybe<Scalars['String']>
 }
 
 export type Geocode = {
@@ -198,6 +203,8 @@ export type RootQueryType = {
   notifications?: Maybe<Array<Notification>>
   /** Get pending txns */
   pendingTxns?: Maybe<Array<Activity>>
+  /** Get Stripe Params */
+  stripeParams: StripeParams
   /** Get txn config vars */
   txnConfigVars?: Maybe<TxnConfigVars>
   /** Get validator */
@@ -256,6 +263,12 @@ export type RootQueryTypePendingTxnsArgs = {
   address: Scalars['String']
 }
 
+export type RootQueryTypeStripeParamsArgs = {
+  address: Scalars['String']
+  amount?: InputMaybe<Scalars['Int']>
+  customerId?: InputMaybe<Scalars['String']>
+}
+
 export type RootQueryTypeTxnConfigVarsArgs = {
   address: Scalars['String']
 }
@@ -280,6 +293,13 @@ export type Status = {
   listenAddrs?: Maybe<Array<Scalars['String']>>
   online: Scalars['String']
   timestamp: Scalars['String']
+}
+
+export type StripeParams = {
+  __typename?: 'StripeParams'
+  customerId: Scalars['String']
+  ephemeralSecret: Scalars['String']
+  paymentSecret: Scalars['String']
 }
 
 export type Sum = {
@@ -491,7 +511,15 @@ export type FeatureFlagsQueryVariables = Exact<{
 
 export type FeatureFlagsQuery = {
   __typename?: 'RootQueryType'
-  featureFlags: { __typename?: 'FeatureFlags'; mobileEnabled: boolean }
+  featureFlags: {
+    __typename?: 'FeatureFlags'
+    mobileEnabled: boolean
+    wifiBurnPayee?: string | null
+    wifiBurnMemo?: string | null
+    wifiEnabled: boolean
+    wifiProfile?: string | null
+    stripePublishableKey: string
+  }
 }
 
 export type HotspotQueryVariables = Exact<{
@@ -585,6 +613,21 @@ export type PendingTxnsQuery = {
       memo?: string | null
     }> | null
   }> | null
+}
+
+export type StripeParamsQueryVariables = Exact<{
+  address: Scalars['String']
+  amount: Scalars['Int']
+}>
+
+export type StripeParamsQuery = {
+  __typename?: 'RootQueryType'
+  stripeParams: {
+    __typename?: 'StripeParams'
+    customerId: string
+    ephemeralSecret: string
+    paymentSecret: string
+  }
 }
 
 export type SubmitTxnMutationVariables = Exact<{
@@ -1022,6 +1065,11 @@ export const FeatureFlagsDocument = gql`
   query FeatureFlags($address: String!) {
     featureFlags(address: $address) {
       mobileEnabled
+      wifiBurnPayee
+      wifiBurnMemo
+      wifiEnabled
+      wifiProfile
+      stripePublishableKey
     }
   }
 `
@@ -1402,6 +1450,67 @@ export type PendingTxnsLazyQueryHookResult = ReturnType<
 export type PendingTxnsQueryResult = Apollo.QueryResult<
   PendingTxnsQuery,
   PendingTxnsQueryVariables
+>
+export const StripeParamsDocument = gql`
+  query stripeParams($address: String!, $amount: Int!) {
+    stripeParams(address: $address, amount: $amount) {
+      customerId
+      ephemeralSecret
+      paymentSecret
+    }
+  }
+`
+
+/**
+ * __useStripeParamsQuery__
+ *
+ * To run a query within a React component, call `useStripeParamsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useStripeParamsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useStripeParamsQuery({
+ *   variables: {
+ *      address: // value for 'address'
+ *      amount: // value for 'amount'
+ *   },
+ * });
+ */
+export function useStripeParamsQuery(
+  baseOptions: Apollo.QueryHookOptions<
+    StripeParamsQuery,
+    StripeParamsQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useQuery<StripeParamsQuery, StripeParamsQueryVariables>(
+    StripeParamsDocument,
+    options,
+  )
+}
+export function useStripeParamsLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    StripeParamsQuery,
+    StripeParamsQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useLazyQuery<StripeParamsQuery, StripeParamsQueryVariables>(
+    StripeParamsDocument,
+    options,
+  )
+}
+export type StripeParamsQueryHookResult = ReturnType<
+  typeof useStripeParamsQuery
+>
+export type StripeParamsLazyQueryHookResult = ReturnType<
+  typeof useStripeParamsLazyQuery
+>
+export type StripeParamsQueryResult = Apollo.QueryResult<
+  StripeParamsQuery,
+  StripeParamsQueryVariables
 >
 export const SubmitTxnDocument = gql`
   mutation submitTxn($address: String!, $txn: String!, $txnJson: String) {

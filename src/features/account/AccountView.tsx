@@ -22,12 +22,13 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
 export type Action =
   | 'send'
-  | 'payment'
   | 'request'
   | 'stake'
   | 'lock'
   | 'vote'
   | '5G'
+  | 'internet'
+
 type Props = {
   accountData: AccountData | null | undefined
   visible: boolean
@@ -35,6 +36,7 @@ type Props = {
   onActionSelected: (type: Action) => void
   netType: number
 }
+
 const AccountView = ({
   accountData,
   visible: _visible,
@@ -220,13 +222,13 @@ const AccountView = ({
           icon="payment"
           marginLeft="s"
           titleMarginLeft="s"
-          visible={false}
+          visible={!!featureFlagData?.featureFlags?.wifiEnabled}
           backgroundColor="orange500"
           backgroundColorOpacity={0.2}
           backgroundColorOpacityPressed={0.4}
           iconColor="orange500"
-          title={t('accountView.payment')}
-          onPress={handleAction('payment')}
+          title={t('accountView.internet')}
+          onPress={handleAction('internet')}
         />
         <FabButton
           icon="vote"

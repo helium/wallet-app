@@ -90,6 +90,7 @@ export default {
   accountView: {
     balance: 'Balance',
     fiveG: '5G',
+    internet: 'Internet',
     lock: 'Lock',
     payment: 'Payment',
     request: 'Request',
@@ -156,8 +157,12 @@ export default {
     save: 'Save',
     title: 'Edit Contact',
   },
+  finePrint: {
+    body: 'By continuing, you agree to the',
+  },
   generic: {
     account: 'Account',
+    and: 'and',
     back: 'Back',
     cancel: 'Cancel',
     clear: 'Clear',
@@ -169,6 +174,7 @@ export default {
     mainnet: 'Mainnet',
     next: 'Next',
     ok: 'OK',
+    period: '.',
     retry: 'Retry',
     share: 'Share',
     skip: 'Skip',
@@ -176,14 +182,50 @@ export default {
     testnet: 'Testnet',
     total: 'Total',
     tryAgain: 'Try Again',
-    and: 'and',
-    period: '.',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',
     fee: '+{{value}} Fee ⓘ',
     hntAvailable: '{{amount}} Available',
     validFor: 'valid for {{time}}',
+  },
+  internet: {
+    authFailed: 'Failed to authorize',
+    burnFailed: 'Failed to burn',
+    change: 'Change',
+    chooseProvider: {
+      subtitle: 'Use HNT or Credit Card to connect\nto Wi-Fi',
+      title: 'Pay for Wi-Fi',
+    },
+    confirmPayment: 'Confirm Payment',
+    creditCardPlaceholder: 'Card Number',
+    data: 'Data',
+    howMuch: 'How much data do you\nwish to purchase?',
+    insufficientFunds: 'Insufficient Funds',
+    macFailed: 'Failed to enable mac',
+    remainingBalance: 'Remaining\nBalance',
+    wifiProfile: {
+      download: 'Download Profile',
+      instructions: {
+        android: [
+          'Download Profile',
+          'Install NOVA WiFi Profile.',
+          'Follow the prompts to finish setup.',
+        ],
+        ios: [
+          'Download the Profile. A pop-up will open asking if you want Settings to be opened.',
+          'Select <b>Allow</b>.',
+          'Select <b>Install</>.',
+          'Enter your Apple passcode',
+          'Select <b>Install</b>',
+          'On the Profile Installed screen, select <b>Done</b>.',
+        ],
+        title: 'Install the WiFi Profile on your phone:',
+      },
+      subtitle: 'Payment Complete',
+      title: 'Nova WiFi',
+    },
+    youArePurchasing: 'You are purchasing...',
   },
   intro: {
     subtitle: 'Setup should only take\na few minutes.',
@@ -250,19 +292,6 @@ export default {
     no: 'No, Cancel',
     title: 'Link Helium Wallet\nto {{appName}}?',
     yes: 'Yes, Link my Wallet',
-  },
-  wifi: {
-    authFailed: 'Failed to authorize',
-    burnFailed: 'Failed to burn',
-    change: 'Change',
-    confirmPayment: 'Confirm Payment',
-    data: 'Data',
-    howMuch: 'How much data do you\nwish to purchase?',
-    insufficientFunds: 'Insufficient Funds',
-    macFailed: 'Failed to enable mac',
-    minutes: 'Minutes',
-    remainingBalance: 'Remaining\nBalance',
-    youArePurchasing: 'You are purchasing...',
   },
   notifications: {
     accountUpdates: '{{title}} Updates',
@@ -342,8 +371,6 @@ export default {
     getAccountData: 'Get Account Data',
   },
   purchaseData: {
-    title: 'FreedomFi 5G Network',
-    install: 'Install eSIM',
     carousel: {
       item1:
         'A new 5G Wireless Network for the People’s Network.\n\n\nFree data (that’s right) when connecting to 5G Hotspots.',
@@ -352,6 +379,8 @@ export default {
       item3:
         'When you’re outside of Helium 5G coverage, roam on other networks, available nationwide.',
     },
+    install: 'Install eSIM',
+    title: 'FreedomFi 5G Network',
   },
   qrScanner: {
     deniedAlert: {
@@ -370,6 +399,28 @@ export default {
     payee: 'Payee',
     qr: 'QR',
     title: 'Generate Request',
+  },
+  restoreAccount: {
+    alert: {
+      button12: '12 Words',
+      button24: '24 Words',
+      message: 'Does your account {{address}} have 12 or 24 security words?',
+      title: 'Restore Account',
+    },
+    errorAlert: {
+      message:
+        'The words you entered do not match the account you are restoring.',
+      title: 'Error Restoring Account',
+    },
+    missing: 'Account has no private key. Tap to restore.',
+    missingAlert: {
+      button1: 'Restore 12 Words',
+      button2: 'Restore 24 Words',
+      button3: "Don't Show Again",
+      message:
+        'Your private key for account {{address}} is missing and must be restored.',
+      title: 'Private Key Not Found',
+    },
   },
   settings: {
     confirmSignout: {
@@ -397,9 +448,9 @@ export default {
           body: 'You are signing out of your account, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your HNT\n- your Wallet',
           bodyLastAccount:
             'You are signing out of your only account, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your Address Book\n- your HNT\n- your Wallet',
-          title: 'Sign Out of {{alias}}?',
           iCloudMessage:
             '\n\nAny device using the same iCloud account will also be signed out.',
+          title: 'Sign Out of {{alias}}?',
         },
         title: 'Account Settings',
       },
@@ -433,9 +484,9 @@ export default {
         title: 'Developer Settings',
       },
       finePrint: {
-        title: 'The Fine Print',
         privacyPolicy: 'Privacy Policy',
         termsOfService: 'Terms of Service',
+        title: 'The Fine Print',
       },
       security: {
         authIntervals: {
@@ -597,30 +648,5 @@ export default {
     votingAs: 'Voting as {{alias}} with {{hnt}} Voting Power',
     votingClosed: 'Voting Closed',
     votingClosedNewline: 'Voting\nClosed',
-  },
-  restoreAccount: {
-    missing: 'Account has no private key. Tap to restore.',
-    alert: {
-      title: 'Restore Account',
-      message: 'Does your account {{address}} have 12 or 24 security words?',
-      button12: '12 Words',
-      button24: '24 Words',
-    },
-    errorAlert: {
-      title: 'Error Restoring Account',
-      message:
-        'The words you entered do not match the account you are restoring.',
-    },
-    missingAlert: {
-      title: 'Private Key Not Found',
-      message:
-        'Your private key for account {{address}} is missing and must be restored.',
-      button1: 'Restore 12 Words',
-      button2: 'Restore 24 Words',
-      button3: "Don't Show Again",
-    },
-  },
-  finePrint: {
-    body: 'By continuing, you agree to the',
   },
 }

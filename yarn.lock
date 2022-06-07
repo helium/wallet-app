@@ -1212,7 +1212,7 @@
     xcode "^3.0.1"
     xml2js "^0.4.23"
 
-"@expo/config-plugins@4.1.4", "@expo/config-plugins@^4.0.2":
+"@expo/config-plugins@4.1.4", "@expo/config-plugins@^4.0.2", "@expo/config-plugins@^4.1.4":
   version "4.1.4"
   resolved "https://registry.yarnpkg.com/@expo/config-plugins/-/config-plugins-4.1.4.tgz#08e1a6314dc0f96cd165a748b5997b5ec75a84d0"
   integrity sha512-fkOjXnSieQfVSWVLKhst0DnCAyeHksvWky1CldFCQllhDB1HHBiP09Z8pamVB783n3qr/1HNZiSp6k2iUcaSoA==
@@ -2964,6 +2964,13 @@
     "@stablelib/keyagreement" "^1.0.1"
     "@stablelib/random" "^1.0.1"
     "@stablelib/wipe" "^1.0.1"
+
+"@stripe/stripe-react-native@^0.11.0":
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/@stripe/stripe-react-native/-/stripe-react-native-0.11.0.tgz#f5ffccf0551f7cedec014cb7250c333332f5cfe3"
+  integrity sha512-FhDMspDMuoqoZ/oF/UZZO5R89oBV18kPIwUHZ6uFYC467P5LTZ2fdMvSk0lsNLK7HadnZejwfnIcdh7I558Pfg==
+  dependencies:
+    "@expo/config-plugins" "^4.1.4"
 
 "@svgr/babel-plugin-add-jsx-attribute@^4.2.0":
   version "4.2.0"

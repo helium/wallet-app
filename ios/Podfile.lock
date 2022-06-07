@@ -413,6 +413,27 @@ PODS:
   - Sentry (7.11.0):
     - Sentry/Core (= 7.11.0)
   - Sentry/Core (7.11.0)
+  - Stripe (22.4.0):
+    - Stripe/Stripe3DS2 (= 22.4.0)
+    - StripeApplePay (= 22.4.0)
+    - StripeCore (= 22.4.0)
+    - StripeUICore (= 22.4.0)
+  - stripe-react-native (0.11.0):
+    - React-Core
+    - Stripe (~> 22.4.0)
+    - StripeFinancialConnections (~> 22.4.0)
+  - Stripe/Stripe3DS2 (22.4.0):
+    - StripeApplePay (= 22.4.0)
+    - StripeCore (= 22.4.0)
+    - StripeUICore (= 22.4.0)
+  - StripeApplePay (22.4.0):
+    - StripeCore (= 22.4.0)
+  - StripeCore (22.4.0)
+  - StripeFinancialConnections (22.4.0):
+    - StripeCore (= 22.4.0)
+    - StripeUICore (= 22.4.0)
+  - StripeUICore (22.4.0):
+    - StripeCore (= 22.4.0)
   - TcpSockets (3.3.2):
     - React
   - Toast (4.0.0)
@@ -502,6 +523,7 @@ DEPENDENCIES:
   - RNScreens (from `../node_modules/react-native-screens`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNSVG (from `../node_modules/react-native-svg`)
+  - "stripe-react-native (from `../node_modules/@stripe/stripe-react-native`)"
   - TcpSockets (from `../node_modules/react-native-tcp`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -512,6 +534,11 @@ SPEC REPOS:
     - MultiplatformBleAdapter
     - OneSignalXCFramework
     - Sentry
+    - Stripe
+    - StripeApplePay
+    - StripeCore
+    - StripeFinancialConnections
+    - StripeUICore
     - Toast
     - ZXingObjC
 
@@ -666,6 +693,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@sentry/react-native"
   RNSVG:
     :path: "../node_modules/react-native-svg"
+  stripe-react-native:
+    :path: "../node_modules/@stripe/stripe-react-native"
   TcpSockets:
     :path: "../node_modules/react-native-tcp"
   Yoga:
@@ -697,11 +726,11 @@ SPEC CHECKSUMS:
   FBLazyVector: e5569e42a1c79ca00521846c223173a57aca1fe1
   FBReactNativeSpec: fe08c1cd7e2e205718d77ad14b34957cce949b58
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  glog: 43737235ae6a21de4f45297f4f73b6420fc2ecb2
+  glog: 5337263514dd6f09803962437687240c5dc39aa4
   helium-react-native-sdk: 7498f9d209889e903f3f12b0e297c396f62bbd51
   MultiplatformBleAdapter: 5a6a897b006764392f9cef785e4360f54fb9477d
   OneSignalXCFramework: 4efd7bd68c2b14920955b3f14b5b75bbf8fb662c
-  RCT-Folly: e2636706cc3fded205cf0d380428ec0ea7455f80
+  RCT-Folly: a21c126816d8025b547704b777a2ba552f3d9fa9
   RCTRequired: 4bf86c70714490bca4bf2696148638284622644b
   RCTTypeSafety: c475a7059eb77935fa53d2c17db299893f057d5d
   React: f64af14e3f2c50f6f2c91a5fd250e4ff1b3c3459
@@ -752,6 +781,12 @@ SPEC CHECKSUMS:
   RNSentry: 2cd1daa124b0d9fd0dfc2cb6094fdd168cb579bc
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   Sentry: 0c5cd63d714187b4a39c331c1f0eb04ba7868341
+  Stripe: a925dfa9a7e51aa8f782f428abc10cb828b45a85
+  stripe-react-native: 20e9f0b042410610ea989becb9a15468f1f9ae86
+  StripeApplePay: 369857bafe8baf02e31b47478db1574febd2a2f3
+  StripeCore: a94d2823817c97c79fce60884ab9027a2da798c1
+  StripeFinancialConnections: 269658b79f639c2d6b7d513235d469418b04c2dd
+  StripeUICore: a8e24a6c91a5c99075c7a490d45695fb912876e8
   TcpSockets: 14306fb79f9750ea7d2ddd02d8bed182abb01797
   Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
   Yoga: e7dc4e71caba6472ff48ad7d234389b91dadc280
