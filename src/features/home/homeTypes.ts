@@ -20,9 +20,9 @@ export type HomeStackParamList = {
   RequestScreen: undefined
   OnboardData: undefined
   DappLoginScreen: { uri: string; callback: string }
-  WifiOnboard:
+  Internet:
     | {
-        key: string
+        key?: string
         name: string
         params: undefined
         path: string

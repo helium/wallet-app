@@ -5,7 +5,7 @@ export type RootStackParamList = {
     initialRouteName: string
     screens: {
       PaymentScreen: string
-      WifiOnboard: string
+      InternetOnboard: string
       LinkWallet: string
       DappLogin: string
     }

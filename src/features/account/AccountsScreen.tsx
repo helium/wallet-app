@@ -25,7 +25,7 @@ import {
   useSpacing,
   useVerticalHitSlop,
 } from '../../theme/themeHooks'
-import { wp } from '../../utils/layout'
+import { wh, wp } from '../../utils/layout'
 import MultiAccountNavigator from '../onboarding/multiAccount/MultiAccountNavigator'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import OnboardingSegment, {
@@ -62,6 +62,8 @@ import { useAppStorage } from '../../storage/AppStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
 import StatusBanner from '../StatusPage/StatusBanner'
 import { checkSecureAccount } from '../../storage/secureStorage'
+import InternetChooseProvider from '../internet/InternetChooseProvider'
+import { Moti } from '../../config/animationConfig'
 
 type AccountLayout = {
   accountViewStart: number
@@ -128,6 +130,7 @@ const AccountsScreen = () => {
   const { show } = useAccountSelector()
   const { show: showTxnDetail } = useTransactionDetail()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
+  const [showInternetProviders, setShowInternetProviders] = useState(false)
 
   const { data: accountData, error: accountsError } = useAccountQuery({
     variables: {
@@ -231,6 +234,13 @@ const AccountsScreen = () => {
   }, [sortedAccounts])
 
   // if carouselData or currentAccount changes, snap to the currentAccount's index
+  const updateShowInternetProviders = useCallback(
+    (showProviders: boolean) => () => {
+      setShowInternetProviders(showProviders)
+    },
+    [],
+  )
+
   useEffect(() => {
     if (!currentAccount?.address) return
     const index = carouselData.findIndex(
@@ -266,7 +276,7 @@ const AccountsScreen = () => {
     const mid = screenHeight - accountViewStart - accountViewHeight
     const expanded = screenHeight - accountViewStart - spacing.l
 
-    if (mid <= 0 || expanded <= 0) return ['5%']
+    if (mid <= 0 || expanded <= 0) return [5]
     return [mid, expanded]
   }, [spacing.l, state])
 
@@ -345,10 +355,9 @@ const AccountsScreen = () => {
           navigation.navigate('RequestScreen')
           break
         }
-        case 'payment': {
-          // TODO: Remove eventually
-          if (accountNetType !== NetType.TESTNET) return
-          navigation.navigate('WifiOnboard')
+        case 'internet': {
+          // navigation.navigate('InternetOnboard')
+          setShowInternetProviders(true)
           break
         }
         case 'vote': {
@@ -365,27 +374,12 @@ const AccountsScreen = () => {
         }
       }
     },
-    [accountNetType, navigation, requirePinForPayment, show],
+    [navigation, requirePinForPayment, show],
   )
 
   const navToSettings = useCallback(
     () => navigation.navigate('SettingsNavigator'),
     [navigation],
-  )
-
-  const fadeSettings = useMemo(
-    () => ({
-      from: {
-        opacity: 0,
-      },
-      animate: {
-        opacity: 1,
-      },
-      exit: {
-        opacity: 0,
-      },
-    }),
-    [],
   )
 
   useEffect(() => {
@@ -406,7 +400,7 @@ const AccountsScreen = () => {
     <Box flex={1} onLayout={handleLayout('screenLayout')}>
       <Box minHeight={75} opacity={!currentAccount?.address ? 0 : 100}>
         <AnimatePresence>
-          <MotiBox {...fadeSettings}>
+          <MotiBox {...Moti.fade}>
             <SafeAreaBox
               flexDirection="row"
               justifyContent="space-between"
@@ -470,7 +464,7 @@ const AccountsScreen = () => {
               bottom={0}
               left={0}
               right={0}
-              {...fadeSettings}
+              {...Moti.fade}
             >
               <MultiAccountNavigator netType={netType} />
             </MotiBox>
@@ -489,7 +483,7 @@ const AccountsScreen = () => {
                   top={0}
                   left={0}
                   right={0}
-                  {...fadeSettings}
+                  {...Moti.fade}
                 >
                   <AccountView
                     onLayout={handleLayout('accountViewLayout')}
@@ -532,6 +526,12 @@ const AccountsScreen = () => {
       )}
 
       <StatusBanner />
+
+      <InternetChooseProvider
+        visible={showInternetProviders}
+        top={snapPoints.length > 1 ? wh - snapPoints[1] : 0}
+        onClose={updateShowInternetProviders(false)}
+      />
     </Box>
   )
 }

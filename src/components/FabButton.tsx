@@ -9,6 +9,7 @@ import Stake from '@assets/images/stake.svg'
 import Lock from '@assets/images/lock.svg'
 import Plus from '@assets/images/plus.svg'
 import Vote from '@assets/images/vote.svg'
+import Close from '@assets/images/close.svg'
 import { Color, FontWeight, Theme, Spacing } from '../theme/theme'
 import { useColors, useCreateOpacity } from '../theme/themeHooks'
 import Box from './Box'
@@ -29,6 +30,7 @@ type Props = BoxProps<Theme> & {
     | 'lock'
     | 'add'
     | 'vote'
+    | 'close'
   innerContainerProps?: BoxProps<Theme>
   iconColor?: Color
   iconColorPressed?: Color
@@ -136,6 +138,8 @@ const ButtonPressable = ({
           return <Plus color={getIconColor(pressed)} />
         case 'vote':
           return <Vote color={getIconColor(pressed)} />
+        case 'close':
+          return <Close color={getIconColor(pressed)} />
       }
     },
     [getIconColor, icon],

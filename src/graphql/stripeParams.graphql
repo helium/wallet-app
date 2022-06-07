@@ -1,0 +1,7 @@
+query stripeParams($address: String!, $amount: Int!) {
+  stripeParams(address: $address, amount: $amount) {
+    customerId
+    ephemeralSecret
+    paymentSecret
+  }
+}

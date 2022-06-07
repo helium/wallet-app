@@ -26,7 +26,7 @@ export const linking = {
       HomeNavigator: {
         initialRouteName: 'AccountsScreen',
         screens: {
-          WifiOnboard: 'wifi',
+          InternetOnboard: 'internet',
           LinkWallet: 'link_wallet',
           SignHotspot: 'sign_hotspot',
           PaymentScreen: 'payment',
