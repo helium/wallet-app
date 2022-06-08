@@ -53,17 +53,17 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
   const { item: txn, accountAddress } = detailData || {}
 
   const {
-    feePayer,
-    icon,
-    title,
-    time,
-    color,
-    fee,
-    paymentsReceived,
-    paymentsSent,
     amount,
     amountTitle,
+    color,
+    fee,
+    feePayer,
     hotspotName,
+    icon,
+    paymentsReceived,
+    paymentsSent,
+    time,
+    title,
     validatorName,
   } = useTxnDetails(txn, accountAddress || '')
   const explorerURL = useExplorer()

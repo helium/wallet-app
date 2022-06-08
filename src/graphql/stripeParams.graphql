@@ -1,7 +1,18 @@
-query stripeParams($address: String!, $amount: Int!) {
-  stripeParams(address: $address, amount: $amount) {
+query stripeParams(
+  $address: String!
+  $amount: Int!
+  $burnTxn: [Int!]!
+  $customerId: String
+) {
+  stripeParams(
+    address: $address
+    amount: $amount
+    burnTxn: $burnTxn
+    customerId: $customerId
+  ) {
     customerId
     ephemeralSecret
     paymentSecret
+    burnSignature
   }
 }
