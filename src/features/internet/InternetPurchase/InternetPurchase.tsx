@@ -41,6 +41,8 @@ import {
   useFeatureFlagsQuery,
   useStripeParamsLazyQuery,
   useSubmitTxnMutation,
+  useAccountLazyQuery,
+  StripeParamsQueryVariables,
 } from '../../../generated/graphql'
 import { checkSecureAccount } from '../../../storage/secureStorage'
 import { encodeMemoString } from '../../../components/MemoInput'
@@ -82,7 +84,7 @@ const InternetPurchase = () => {
   const [usCents, setUsCents] = useState(0)
   const [creditCardDetails, setCreditCardDetails] =
     useState<CardFieldInput.Details>()
-
+  const [fetchAccount] = useAccountLazyQuery()
   const [fetchStripeParams, { loading: loadingPaymentIntent }] =
     useStripeParamsLazyQuery()
   const { confirmPayment, loading: loadingPayment } = useConfirmPayment()
@@ -173,11 +175,10 @@ const InternetPurchase = () => {
       if (!tokenCost) throw Error('Token cost missing')
 
       const txn = await makeBurnTxn({
-        // TODO: Make payee configurable via api. One for testnet, one for mainnet
         payeeB58: flags?.featureFlags.wifiBurnPayee || '',
         amount: tokenCost.integerBalance,
         memo: encodeMemoString(flags?.featureFlags.wifiBurnMemo || '') || '',
-        nonce: accountData.account.nonce + 1,
+        nonce: (accountData.account.speculativeNonce || 0) + 1,
       })
       if (!currentAccount.ledgerDevice) {
         const hasSecureAccount = await checkSecureAccount(
@@ -254,18 +255,44 @@ const InternetPurchase = () => {
   }, [updateViewState, viewState])
 
   const handleStripePayment = useCallback(async () => {
+    // The idea here is that a helium backed wallet will sign and submit the burn txn after the stripe payment is complete
+    // The txn burn is created app-side and the signing is done server-side.
+
     let error = ''
     try {
-      if (!currentAccount) throw new Error('Account missing')
+      if (!currentAccount || !flags?.featureFlags.wifiFaucetB58) {
+        throw new Error('Account Data missing')
+      }
+      if (!tokenCost) throw Error('Token cost missing')
+
+      const acct = await fetchAccount({
+        variables: { address: flags.featureFlags.wifiFaucetB58 },
+      })
+
+      const { unsignedTxn: burnTxn, txnJson: burnTxnJson } = await makeBurnTxn({
+        payeeB58: flags?.featureFlags.wifiBurnPayee || '',
+        amount: tokenCost.integerBalance,
+        memo: encodeMemoString(flags?.featureFlags.wifiBurnMemo || '') || '',
+        nonce: (acct.data?.account?.speculativeNonce || 0) + 1,
+        payerB58: flags.featureFlags.wifiFaucetB58,
+        shouldSign: false,
+      })
+
+      const stripeVars = {
+        address: currentAccount.address,
+        amount: usCents,
+        burnTxn: Array.from(burnTxn.message()),
+      } as StripeParamsQueryVariables
 
       const { data, error: stripeParamsError } = await fetchStripeParams({
-        variables: { address: currentAccount.address, amount: usCents },
+        variables: stripeVars,
       })
+
       if (!data || stripeParamsError) {
         throw stripeParamsError || new Error('Could not fetch Stripe Params')
       }
       const {
-        stripeParams: { paymentSecret },
+        stripeParams: { paymentSecret, burnSignature },
       } = data
 
       const stripeResponse = await confirmPayment(paymentSecret, {
@@ -274,6 +301,21 @@ const InternetPurchase = () => {
 
       if (stripeResponse?.error?.localizedMessage) {
         throw new Error(stripeResponse.error.localizedMessage)
+      }
+
+      // Add the signature to the existing burn txn
+      burnTxn.signature = Uint8Array.from(burnSignature)
+
+      const variables = {
+        address: flags.featureFlags.wifiBurnPayee || '',
+        txnJson: burnTxnJson,
+        txn: burnTxn.toString(),
+      }
+      const response = await submitTxnMutation({ variables })
+
+      const errMsgs = response.errors?.map((e) => e.message).join('\n')
+      if (errMsgs || !response.data) {
+        throw new Error(errMsgs || 'Burn txn submission failed')
       }
     } catch (e) {
       Logger.error(e)
@@ -296,11 +338,16 @@ const InternetPurchase = () => {
   }, [
     confirmPayment,
     currentAccount,
+    fetchAccount,
     fetchStripeParams,
-    updateViewState,
+    flags,
+    makeBurnTxn,
     navigation,
     showOKAlert,
+    submitTxnMutation,
     t,
+    tokenCost,
+    updateViewState,
     usCents,
   ])
 

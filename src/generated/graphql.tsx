@@ -86,6 +86,7 @@ export type FeatureFlags = {
   wifiBurnMemo?: Maybe<Scalars['String']>
   wifiBurnPayee?: Maybe<Scalars['String']>
   wifiEnabled: Scalars['Boolean']
+  wifiFaucetB58?: Maybe<Scalars['String']>
   wifiProfile?: Maybe<Scalars['String']>
 }
 
@@ -265,7 +266,8 @@ export type RootQueryTypePendingTxnsArgs = {
 
 export type RootQueryTypeStripeParamsArgs = {
   address: Scalars['String']
-  amount?: InputMaybe<Scalars['Int']>
+  amount: Scalars['Int']
+  burnTxn: Array<Scalars['Int']>
   customerId?: InputMaybe<Scalars['String']>
 }
 
@@ -297,6 +299,7 @@ export type Status = {
 
 export type StripeParams = {
   __typename?: 'StripeParams'
+  burnSignature: Array<Scalars['Int']>
   customerId: Scalars['String']
   ephemeralSecret: Scalars['String']
   paymentSecret: Scalars['String']
@@ -517,6 +520,7 @@ export type FeatureFlagsQuery = {
     wifiBurnPayee?: string | null
     wifiBurnMemo?: string | null
     wifiEnabled: boolean
+    wifiFaucetB58?: string | null
     wifiProfile?: string | null
     stripePublishableKey: string
   }
@@ -618,6 +622,8 @@ export type PendingTxnsQuery = {
 export type StripeParamsQueryVariables = Exact<{
   address: Scalars['String']
   amount: Scalars['Int']
+  burnTxn: Array<Scalars['Int']> | Scalars['Int']
+  customerId?: InputMaybe<Scalars['String']>
 }>
 
 export type StripeParamsQuery = {
@@ -627,6 +633,7 @@ export type StripeParamsQuery = {
     customerId: string
     ephemeralSecret: string
     paymentSecret: string
+    burnSignature: Array<number>
   }
 }
 
@@ -1068,6 +1075,7 @@ export const FeatureFlagsDocument = gql`
       wifiBurnPayee
       wifiBurnMemo
       wifiEnabled
+      wifiFaucetB58
       wifiProfile
       stripePublishableKey
     }
@@ -1452,11 +1460,22 @@ export type PendingTxnsQueryResult = Apollo.QueryResult<
   PendingTxnsQueryVariables
 >
 export const StripeParamsDocument = gql`
-  query stripeParams($address: String!, $amount: Int!) {
-    stripeParams(address: $address, amount: $amount) {
+  query stripeParams(
+    $address: String!
+    $amount: Int!
+    $burnTxn: [Int!]!
+    $customerId: String
+  ) {
+    stripeParams(
+      address: $address
+      amount: $amount
+      burnTxn: $burnTxn
+      customerId: $customerId
+    ) {
       customerId
       ephemeralSecret
       paymentSecret
+      burnSignature
     }
   }
 `
@@ -1475,6 +1494,8 @@ export const StripeParamsDocument = gql`
  *   variables: {
  *      address: // value for 'address'
  *      amount: // value for 'amount'
+ *      burnTxn: // value for 'burnTxn'
+ *      customerId: // value for 'customerId'
  *   },
  * });
  */

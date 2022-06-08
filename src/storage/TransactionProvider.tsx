@@ -57,6 +57,7 @@ const useTransactionHook = () => {
     dcPayloadSize?: number
     txnFeeMultiplier?: number
     shouldSign?: boolean
+    payerB58?: string
   }) => {
     const {
       payeeB58,
@@ -65,9 +66,10 @@ const useTransactionHook = () => {
       memo,
       dcPayloadSize,
       txnFeeMultiplier,
+      payerB58,
       shouldSign = true,
     } = opts
-    if (!currentAccount?.address) {
+    if (!currentAccount?.address && !payerB58) {
       throw new Error('No account selected for payment')
     }
 
@@ -78,7 +80,7 @@ const useTransactionHook = () => {
     }
 
     const txn = new TokenBurnV1({
-      payer: Address.fromB58(currentAccount.address),
+      payer: Address.fromB58(payerB58 || currentAccount?.address || ''),
       payee,
       amount,
       nonce,

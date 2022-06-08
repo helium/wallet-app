@@ -4,6 +4,7 @@ query FeatureFlags($address: String!) {
     wifiBurnPayee
     wifiBurnMemo
     wifiEnabled
+    wifiFaucetB58
     wifiProfile
     stripePublishableKey
   }
