@@ -118,7 +118,10 @@ export const useApolloClient = () => {
     return new ApolloClient({
       link: from([errorLink, httpLink, retryLink]),
       cache,
-      defaultOptions: { mutate: { errorPolicy: 'all' } },
+      defaultOptions: {
+        mutate: { errorPolicy: 'all' },
+        query: { fetchPolicy: 'network-only' },
+      },
     })
   }, [])
 

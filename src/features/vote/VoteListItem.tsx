@@ -27,6 +27,7 @@ const VoteListItem = ({ index: _index, vote, onPress }: Props) => {
   const { data: voteResultData } = useVoteResultQuery({
     variables: { address: currentAccount?.address || '', id: vote.id },
     skip: !currentAccount?.address,
+    fetchPolicy: 'cache-and-network',
   })
 
   const timeStr = useMemo(() => {
