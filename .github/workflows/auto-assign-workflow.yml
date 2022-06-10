@@ -1,0 +1,10 @@
+name: nova-wallet-auto-assign
+on: pull_request
+jobs:
+  auto-assign:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: kentaro-m/auto-assign-action@v1.2.1
