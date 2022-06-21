@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import Crowdspot from '@assets/images/crowdspot.svg'
 import CrowdspotEllipsis from '@assets/images/crowdspot-ellipsis.svg'
 import { NetTypes as NetType, NetTypes } from '@helium/address'
+import { ActivityIndicator } from 'react-native'
 import AccountButton from '../../components/AccountButton'
 import { useAccountSelector } from '../../components/AccountSelector'
 import Box from '../../components/Box'
@@ -10,13 +11,20 @@ import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import AccountIcon from '../../components/AccountIcon'
+import { useColors } from '../../theme/themeHooks'
 
-type Props = { onLogin: () => void; appName: string; onCancel: () => void }
-const DappLogin = ({ onLogin, onCancel, appName }: Props) => {
+type Props = {
+  onLogin: () => void
+  appName: string
+  onCancel: () => void
+  loading: boolean
+}
+const DappLogin = ({ onLogin, onCancel, appName, loading }: Props) => {
   const { currentAccount, setCurrentAccount, sortedMainnetAccounts } =
     useAccountStorage()
   const { t } = useTranslation()
   const { showAccountTypes } = useAccountSelector()
+  const colors = useColors()
 
   useEffect(() => {
     if (currentAccount?.netType !== NetType.MAINNET) {
@@ -84,16 +92,21 @@ const DappLogin = ({ onLogin, onCancel, appName }: Props) => {
           alignItems="center"
           onPress={onLogin}
           borderRadius="round"
+          disabled={loading}
           flexDirection="row"
         >
-          <Text
-            marginLeft="s"
-            variant="subtitle1"
-            textAlign="center"
-            color="secondary"
-          >
-            {t('dappLogin.login')}
-          </Text>
+          {loading ? (
+            <ActivityIndicator color={colors.surfaceContrastText} />
+          ) : (
+            <Text
+              marginLeft="s"
+              variant="subtitle1"
+              textAlign="center"
+              color="secondary"
+            >
+              {t('dappLogin.login')}
+            </Text>
+          )}
         </TouchableOpacityBox>
       </Box>
     </Box>
