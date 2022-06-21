@@ -5,70 +5,72 @@ import React, {
   useContext,
   useState,
 } from 'react'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import WalletConnectClient, { CLIENT_EVENTS } from '@walletconnect/client'
-import { PairingTypes, SessionTypes } from '@walletconnect/types'
+import SignClient from '@walletconnect/sign-client'
+import {
+  PairingTypes,
+  SessionTypes,
+  SignClientTypes,
+} from '@walletconnect/types'
 import Config from 'react-native-config'
 import * as Logger from '../../utils/logger'
 
 const breadcrumbOpts = { category: 'Wallet Connect' }
 
+const NAMESPACE = 'helium'
+const MAINNET = `${NAMESPACE}:mainnet`
+type ConnectionState =
+  | 'undetermined'
+  | 'proposal'
+  | 'allowed'
+  | 'denied'
+  | 'approving'
+  | 'approved'
 const useWalletConnectHook = () => {
-  const [walletClient, setWalletClient] = useState<WalletConnectClient>()
-  const [loginProposal, setLoginProposal] = useState<SessionTypes.Proposal>()
-  const [connectionState, setConnectionState] = useState<
-    'undetermined' | 'approved' | 'denied'
-  >('undetermined')
-  const [loginRequestEvent, setLoginRequestEvent] =
-    useState<SessionTypes.RequestEvent>()
+  const [signClient, setSignClient] = useState<SignClient>()
+  const [sessionProposal, setSessionProposal] =
+    useState<SignClientTypes.EventArguments['session_proposal']>()
+  const [connectionState, setConnectionState] =
+    useState<ConnectionState>('undetermined')
+  const [loginRequest, setLoginRequest] =
+    useState<SignClientTypes.EventArguments['session_request']>()
+  const [approvalRequest, setApprovalRequest] = useState<{ topic: string }>()
 
   const pairClient = useCallback(
-    async (uri: string): Promise<PairingTypes.Settled | void> => {
+    async (uri: string): Promise<PairingTypes.Struct | void> => {
       Logger.breadcrumb('pair client requested', breadcrumbOpts)
 
       try {
-        let client = walletClient
+        let client = signClient
         if (!client) {
           Logger.breadcrumb('Begin Initialize Client', breadcrumbOpts)
 
-          client = await WalletConnectClient.init({
-            controller: true,
+          client = await SignClient.init({
             projectId: Config.WALLET_CONNECT_PROJECT_ID,
             relayUrl: 'wss://relay.walletconnect.com',
             metadata: {
               name: 'Helium Wallet',
               description: 'Helium Wallet',
               url: Config.WALLET_CONNECT_METADATA_URL,
-              icons: ['https://walletconnect.com/walletconnect-logo.png'],
-            },
-            storageOptions: {
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              asyncStorage: AsyncStorage,
+              icons: [],
             },
           })
 
           Logger.breadcrumb('Client initialized', breadcrumbOpts)
 
-          setWalletClient(client)
+          setSignClient(client)
 
-          client.on(
-            CLIENT_EVENTS.session.proposal,
-            async (proposal: SessionTypes.Proposal) => {
-              Logger.breadcrumb('Login proposal created', breadcrumbOpts)
-              setLoginProposal(proposal)
-            },
-          )
+          client.on('session_proposal', async (proposal) => {
+            Logger.breadcrumb('Session proposal created', breadcrumbOpts)
+            setSessionProposal(proposal)
+            setConnectionState('proposal')
+          })
 
-          client.on(
-            CLIENT_EVENTS.session.request,
-            async (requestEvent: SessionTypes.RequestEvent) => {
-              if (requestEvent.request.method !== 'personal_sign') return
+          client.on('session_request', async (loginReqEvent) => {
+            if (loginReqEvent.params.request.method !== 'personal_sign') return
 
-              Logger.breadcrumb('Login request event created', breadcrumbOpts)
-              setLoginRequestEvent(requestEvent)
-            },
-          )
+            Logger.breadcrumb('Login request event created', breadcrumbOpts)
+            setLoginRequest(loginReqEvent)
+          })
         } else {
           Logger.breadcrumb('Client already initialized', breadcrumbOpts)
         }
@@ -83,58 +85,74 @@ const useWalletConnectHook = () => {
         throw err
       }
     },
-    [walletClient],
+    [setLoginRequest, signClient],
   )
 
-  const approvePair = useCallback(async (): Promise<
-    SessionTypes.Settled | undefined
-  > => {
-    Logger.breadcrumb('approvePair', breadcrumbOpts)
+  const approvePair = useCallback(
+    async (
+      address: string,
+    ): Promise<
+      | {
+          topic: string
+          acknowledged: () => Promise<SessionTypes.Struct>
+        }
+      | undefined
+    > => {
+      Logger.breadcrumb('approvePair', breadcrumbOpts)
 
-    try {
-      if (!loginProposal || !walletClient) {
-        Logger.breadcrumb(
-          `Approve pair requested, but client not ready. ${JSON.stringify({
-            loginProposal: !!loginProposal,
-            walletClient: !!walletClient,
-          })}`,
-          breadcrumbOpts,
-        )
-        return await new Promise(() => {})
+      setConnectionState('approving')
+
+      try {
+        if (!sessionProposal || !signClient) {
+          Logger.breadcrumb(
+            `Approve pair requested, but client not ready. ${JSON.stringify({
+              loginProposal: !!sessionProposal,
+              walletClient: !!signClient,
+            })}`,
+            breadcrumbOpts,
+          )
+          return await new Promise(() => {})
+        }
+
+        const nextApprovalResponse = await signClient.approve({
+          id: sessionProposal.id,
+          namespaces: {
+            [NAMESPACE]: {
+              accounts: [`${MAINNET}:${address}`],
+              methods: ['personal_sign'],
+              events: [],
+            },
+          },
+        })
+
+        setConnectionState('approved')
+
+        Logger.breadcrumb('approvePair - success', breadcrumbOpts)
+        setApprovalRequest(nextApprovalResponse)
+        return nextApprovalResponse
+      } catch (err) {
+        Logger.breadcrumb('approvePair - fail', breadcrumbOpts)
+        Logger.error(err)
+        throw err
       }
+    },
+    [sessionProposal, signClient],
+  )
 
-      const { proposer } = loginProposal
-      const { metadata } = proposer
-      const response: SessionTypes.ResponseInput = {
-        state: {
-          accounts: [],
-        },
-        metadata,
-      }
-      const nextApprovalResponse = await walletClient.approve({
-        proposal: loginProposal,
-        response,
-      })
+  const allowLogin = useCallback(() => {
+    Logger.breadcrumb('allowLogin', breadcrumbOpts)
 
-      setConnectionState('approved')
-
-      Logger.breadcrumb('approvePair - success', breadcrumbOpts)
-      return nextApprovalResponse
-    } catch (err) {
-      Logger.breadcrumb('approvePair - fail', breadcrumbOpts)
-      Logger.error(err)
-      throw err
-    }
-  }, [loginProposal, walletClient])
+    setConnectionState('allowed')
+  }, [])
 
   const denyPair = useCallback(async () => {
     Logger.breadcrumb('denyPair', breadcrumbOpts)
 
-    if (!loginProposal || !walletClient) {
+    if (!sessionProposal || !signClient) {
       Logger.breadcrumb(
         `Deny pair requested, but client not ready. ${JSON.stringify({
-          loginProposal: !!loginProposal,
-          walletClient: !!walletClient,
+          loginProposal: !!sessionProposal,
+          walletClient: !!signClient,
         })}`,
         breadcrumbOpts,
       )
@@ -142,8 +160,9 @@ const useWalletConnectHook = () => {
     }
 
     Logger.breadcrumb('denyPair - begin client reject', breadcrumbOpts)
-    const nextDenyResponse = await walletClient.reject({
-      proposal: loginProposal,
+    const nextDenyResponse = await signClient.reject({
+      id: sessionProposal.id,
+      reason: { code: 1000, message: 'denied by user' },
     })
 
     Logger.breadcrumb('denyPair - client reject success', breadcrumbOpts)
@@ -151,7 +170,7 @@ const useWalletConnectHook = () => {
     setConnectionState('denied')
 
     return nextDenyResponse
-  }, [loginProposal, walletClient])
+  }, [sessionProposal, signClient])
 
   const disconnect = useCallback(async () => {
     Logger.breadcrumb('disconnect', breadcrumbOpts)
@@ -161,56 +180,77 @@ const useWalletConnectHook = () => {
         await denyPair()
       }
 
-      if (walletClient && loginRequestEvent) {
-        Logger.breadcrumb('disconnect wallet client - begin', breadcrumbOpts)
-        const { topic } = loginRequestEvent
-        await walletClient.disconnect({
-          topic,
-          reason: {
-            code: 1,
-            message: 'finished',
-          },
-        })
-
-        Logger.breadcrumb('disconnect wallet client - success', breadcrumbOpts)
+      if (signClient) {
+        if (loginRequest?.topic || approvalRequest?.topic) {
+          Logger.breadcrumb('disconnect wallet client - begin', breadcrumbOpts)
+          await signClient.disconnect({
+            topic: loginRequest?.topic || approvalRequest?.topic || '',
+            reason: {
+              code: 1,
+              message: 'finished',
+            },
+          })
+          Logger.breadcrumb(
+            'disconnect wallet client - success',
+            breadcrumbOpts,
+          )
+        } else if (
+          sessionProposal?.id &&
+          connectionState !== 'undetermined' &&
+          connectionState !== 'denied'
+        ) {
+          signClient.reject({
+            id: sessionProposal.id,
+            reason: { code: 2000, message: 'Login Process Closed' },
+          })
+        }
       }
-      setWalletClient(undefined)
-      setLoginProposal(undefined)
-      setLoginRequestEvent(undefined)
+      setSignClient(undefined)
+      setSessionProposal(undefined)
+      setLoginRequest(undefined)
+      setApprovalRequest(undefined)
       setConnectionState('undetermined')
     } catch (err) {
       Logger.breadcrumb('disconnect - fail', breadcrumbOpts)
       Logger.error(err)
       throw err
     }
-  }, [connectionState, denyPair, loginRequestEvent, walletClient])
+  }, [
+    approvalRequest,
+    connectionState,
+    denyPair,
+    loginRequest,
+    sessionProposal,
+    signClient,
+  ])
 
   const login = useCallback(
     async (opts: { txn: string; address: string }) => {
       Logger.breadcrumb('login', breadcrumbOpts)
 
       try {
-        if (!loginRequestEvent || !walletClient) {
+        if (!loginRequest || !signClient) {
           Logger.breadcrumb(
             `Login requested, but client not ready. ${JSON.stringify({
-              loginProposal: !!loginProposal,
-              walletClient: !!walletClient,
+              loginProposal: !!sessionProposal,
+              walletClient: !!signClient,
             })}`,
             breadcrumbOpts,
           )
           return
         }
 
-        const { topic, request } = loginRequestEvent
+        const { topic } = loginRequest
+
         const responseBody = {
           topic,
           response: {
-            id: request.id,
+            id: loginRequest.id,
             jsonrpc: '2.0',
             result: opts,
           },
         }
-        await walletClient.respond(responseBody)
+        await signClient.respond(responseBody)
         Logger.breadcrumb('login - success', breadcrumbOpts)
       } catch (err) {
         Logger.breadcrumb('login - fail', breadcrumbOpts)
@@ -218,28 +258,32 @@ const useWalletConnectHook = () => {
         throw err
       }
     },
-    [loginProposal, loginRequestEvent, walletClient],
+    [sessionProposal, loginRequest, signClient],
   )
 
   return {
-    pairClient,
-    loginProposal,
-    loginRequestEvent,
+    allowLogin,
     approvePair,
+    connectionState,
     denyPair,
     disconnect,
     login,
+    sessionProposal,
+    loginRequest,
+    pairClient,
   }
 }
 
 const initialState = {
-  pairClient: () => new Promise<void>((resolve) => resolve()),
   approvePair: () => new Promise<undefined>((resolve) => resolve(undefined)),
+  allowLogin: () => undefined,
+  connectionState: 'undetermined' as ConnectionState,
   denyPair: () => new Promise<void>((resolve) => resolve()),
   disconnect: () => new Promise<void>((resolve) => resolve()),
   login: () => new Promise<void>((resolve) => resolve()),
-  loginProposal: undefined,
-  loginRequestEvent: undefined,
+  sessionProposal: undefined,
+  loginRequest: undefined,
+  pairClient: () => new Promise<void>((resolve) => resolve()),
 }
 
 const WalletConnectContext =

@@ -29,13 +29,15 @@ const DappLoginScreen = () => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { params } = route
   const {
-    pairClient,
-    loginProposal,
-    loginRequestEvent,
+    allowLogin,
     approvePair,
+    connectionState,
     denyPair,
     disconnect,
     login,
+    loginRequest,
+    sessionProposal,
+    pairClient,
   } = useWalletConnect()
   const { t } = useTranslation()
   const colors = useColors()
@@ -43,8 +45,9 @@ const DappLoginScreen = () => {
   const { makeBurnTxn } = useTransactions()
   const { primaryText } = useColors()
   const { showOKAlert } = useAlert()
-  const ledgerPaymentRef = useRef<LedgerBurnRef>(null)
+  const ledgerRef = useRef<LedgerBurnRef>(null)
   const hasRequestedPair = useRef(false)
+  const ledgerShown = useRef(false)
 
   useAsync(async () => {
     if (params.uri.includes('wc:') && !hasRequestedPair.current) {
@@ -54,7 +57,7 @@ const DappLoginScreen = () => {
       } catch (error) {
         showOKAlert({
           title: t('dappLogin.error', {
-            app: loginProposal?.proposer.metadata.name,
+            app: sessionProposal?.params.proposer.metadata.name,
           }),
           message: (error as Error).toString(),
         })
@@ -62,30 +65,25 @@ const DappLoginScreen = () => {
     }
   }, [pairClient, params.callback, params.uri])
 
-  useDisappear(() => {
+  const goBack = useCallback(() => {
     if (navigation.canGoBack()) {
       navigation.goBack()
     }
+  }, [navigation])
+
+  useDisappear(() => {
+    goBack()
     disconnect()
   })
 
   const handleDeny = useCallback(async () => {
     await denyPair()
-    navigation.goBack()
-  }, [denyPair, navigation])
+    goBack()
+  }, [denyPair, goBack])
 
-  const handleApprove = useDebouncedCallback(
-    async () => {
-      try {
-        await approvePair()
-      } catch (error) {
-        showOKAlert({
-          title: t('dappLogin.error', {
-            app: loginProposal?.proposer.metadata.name,
-          }),
-          message: (error as Error).toString(),
-        })
-      }
+  const handleAllowLogin = useDebouncedCallback(
+    () => {
+      allowLogin()
     },
     1000,
     {
@@ -95,7 +93,22 @@ const DappLoginScreen = () => {
   )
 
   const handleLogin = useCallback(async () => {
-    if (!currentAccount) return
+    if (!currentAccount?.address) return
+
+    try {
+      await approvePair(currentAccount.address)
+    } catch (error) {
+      showOKAlert({
+        title: t('dappLogin.error', {
+          app: sessionProposal?.params.proposer.metadata.name,
+        }),
+        message: (error as Error).toString(),
+      })
+    }
+  }, [approvePair, currentAccount, sessionProposal, showOKAlert, t])
+
+  useAsync(async () => {
+    if (!currentAccount?.address || !loginRequest) return
 
     const isLedger = !!currentAccount.ledgerDevice
 
@@ -108,7 +121,11 @@ const DappLoginScreen = () => {
     })
 
     if (isLedger && currentAccount.ledgerDevice) {
-      ledgerPaymentRef.current?.show({
+      if (ledgerShown.current) return
+
+      ledgerShown.current = true
+
+      ledgerRef.current?.show({
         unsignedTxn,
         ledgerDevice: currentAccount.ledgerDevice,
         txnJson,
@@ -126,13 +143,13 @@ const DappLoginScreen = () => {
     } catch (error) {
       showOKAlert({
         title: t('dappLogin.error', {
-          app: loginProposal?.proposer.metadata.name,
+          app: sessionProposal?.params.proposer.metadata.name,
         }),
         message: (error as Error).toString(),
       })
     }
 
-    navigation.goBack()
+    goBack()
 
     if (params.callback && (await Linking.canOpenURL(params.callback))) {
       Linking.openURL(params.callback)
@@ -140,7 +157,7 @@ const DappLoginScreen = () => {
   }, [
     currentAccount,
     login,
-    loginProposal,
+    sessionProposal,
     makeBurnTxn,
     navigation,
     params.callback,
@@ -148,7 +165,7 @@ const DappLoginScreen = () => {
     t,
   ])
 
-  const ledgerPaymentConfirmed = useCallback(
+  const ledgerConfirmed = useCallback(
     async ({ txn: signedTxn }: { txn: TokenBurnV1; txnJson: string }) => {
       if (!currentAccount) return
 
@@ -157,9 +174,9 @@ const DappLoginScreen = () => {
         address: currentAccount.address,
       })
 
-      navigation.goBack()
+      goBack()
     },
-    [currentAccount, login, navigation],
+    [currentAccount, goBack, login],
   )
 
   const handleLedgerError = useCallback(
@@ -168,25 +185,25 @@ const DappLoginScreen = () => {
         title: t('generic.error'),
         message: error.toString(),
       })
-      navigation.goBack()
+      goBack()
     },
-    [navigation, showOKAlert, t],
+    [goBack, showOKAlert, t],
   )
 
   const body = useMemo(() => {
-    if (!loginProposal) {
+    if (!sessionProposal || connectionState === 'undetermined') {
       return (
         <SafeAreaBox backgroundColor="primaryBackground">
           <ActivityIndicator color={primaryText} />
         </SafeAreaBox>
       )
     }
-    if (!loginRequestEvent) {
+    if (connectionState === 'proposal') {
       return (
         <DappConnect
-          onApprove={handleApprove}
+          onApprove={handleAllowLogin}
           onDeny={handleDeny}
-          appName={loginProposal.proposer.metadata.name}
+          appName={sessionProposal.params.proposer.metadata.name}
         />
       )
     }
@@ -194,29 +211,30 @@ const DappLoginScreen = () => {
     return (
       <DappAccount
         onLogin={handleLogin}
-        appName={loginProposal.proposer.metadata.name}
-        onCancel={navigation.goBack}
+        appName={sessionProposal.params.proposer.metadata.name}
+        onCancel={goBack}
+        loading={connectionState !== 'allowed'}
       />
     )
   }, [
-    handleApprove,
+    connectionState,
+    handleAllowLogin,
     handleDeny,
     handleLogin,
-    loginProposal,
-    loginRequestEvent,
-    navigation.goBack,
+    sessionProposal,
+    goBack,
     primaryText,
   ])
 
   return (
     <LedgerBurn
-      ref={ledgerPaymentRef}
-      onConfirm={ledgerPaymentConfirmed}
+      ref={ledgerRef}
+      onConfirm={ledgerConfirmed}
       onError={handleLedgerError}
       title={t('dappLogin.ledger.title')}
       subtitle={t('dappLogin.ledger.subtitle', {
         name: currentAccount?.ledgerDevice?.name,
-        app: loginProposal?.proposer.metadata.name,
+        app: sessionProposal?.params.proposer.metadata.name,
       })}
     >
       <SafeAreaBox
@@ -225,7 +243,7 @@ const DappLoginScreen = () => {
         flex={1}
       >
         <TouchableOpacityBox
-          onPress={navigation.goBack}
+          onPress={goBack}
           alignSelf="flex-end"
           justifyContent="center"
           paddingHorizontal="m"
