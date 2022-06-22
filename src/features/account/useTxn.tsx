@@ -413,6 +413,8 @@ const useTxn = (
     const receivedPayment = item?.payments?.find((p) => p.payee === address)
     if (receivedPayment) {
       memoRaw = receivedPayment.memo
+    } else if (item?.payments?.length) {
+      memoRaw = item.payments.find((p) => !!p.memo)?.memo || ''
     }
     if (memoRaw === DEFAULT_MEMO) {
       return ''

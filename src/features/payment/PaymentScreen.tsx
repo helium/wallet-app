@@ -19,7 +19,7 @@ import { Keyboard, Platform } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import Address from '@helium/address'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { PaymentV1 } from '@helium/transactions'
+import { PaymentV2 } from '@helium/transactions'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -265,7 +265,7 @@ const PaymentScreen = () => {
   )
 
   const handleSubmit = useCallback(
-    (opts?: { txn: PaymentV1; txnJson: string }) => {
+    (opts?: { txn: PaymentV2; txnJson: string }) => {
       if (!opts) {
         submit(payments)
       } else {
@@ -304,10 +304,6 @@ const PaymentScreen = () => {
 
   const errors = useMemo(() => {
     const errStrings: string[] = []
-    // TODO: Remove this when payment support is merged into ledger sdk
-    if (currentAccount?.ledgerDevice) {
-      errStrings.push(t('payment.ledgerPaymentNotSupported'))
-    }
 
     if (!!currentAccount?.ledgerDevice && state.payments.length > 1) {
       // ledger payments are limited to one payee
@@ -324,9 +320,6 @@ const PaymentScreen = () => {
   }, [currentAccount, insufficientFunds, selfPay, state.payments.length, t])
 
   const isFormValid = useMemo(() => {
-    // TODO: Remove this when payment support is merged into ledger sdk
-    if (currentAccount?.ledgerDevice) return false
-
     if (
       selfPay ||
       !accountHntBalance?.integerBalance ||
@@ -512,7 +505,6 @@ const PaymentScreen = () => {
                   onRemove={
                     state.payments.length > 1 ? handleRemove : undefined
                   }
-                  hideMemo={!!currentAccount?.ledgerDevice}
                 />
               ))}
               {canAddPayee && (

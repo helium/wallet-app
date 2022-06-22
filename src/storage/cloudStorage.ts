@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 export type LedgerDevice = {
   id: string
   name: string
+  type: 'usb' | 'bluetooth'
 }
 
 export type CSAccount = {

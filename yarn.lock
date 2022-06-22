@@ -1878,7 +1878,7 @@
   resolved "https://registry.yarnpkg.com/@helium/react-native-sdk/-/react-native-sdk-0.2.3.tgz#6b8cdd9aa7c85348ee3bdd88c51c53dd0851c3ad"
   integrity sha512-Mkeh5tRzcviUchqEq9vdBmBzxmYZDyMzT2IbQ7SRrTtw3fcJuwoN5XI3NZCwPQBvBRMMDaFXt1DVvyXzfhd1Qg==
 
-"@helium/transactions@4.1.0", "@helium/transactions@^3.62.0":
+"@helium/transactions@4.1.0", "@helium/transactions@^4.1.0":
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/@helium/transactions/-/transactions-4.1.0.tgz#a5fc8b35a9359109bb6459f1b49c57b57c054267"
   integrity sha512-hBv3mA9dkdl4yEepB1myt7+T4ShQFnpK26EsCp5oYAugn9jNPtT1nQfWtSZMGVgqmn//TGPxzP9ZnSOVW7k1fQ==
@@ -2161,24 +2161,40 @@
     rxjs "6"
     semver "^7.3.5"
 
+"@ledgerhq/devices@^6.27.2-nightly.0":
+  version "6.27.2-nightly.0"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/devices/-/devices-6.27.2-nightly.0.tgz#f5c825e68d6b9515e5683812817441a05aa30278"
+  integrity sha512-eCeyd5bYe2tkRc1HQn42f3BX9TI+T1wH1tHEWhYtv2G3LHYGu1bP4aJjvtkJz/Rg6fZGQu7tkgHINABSozjqSA==
+  dependencies:
+    "@ledgerhq/errors" "^6.10.1-nightly.0"
+    "@ledgerhq/logs" "^6.10.1-nightly.0"
+    rxjs "6"
+    semver "^7.3.5"
+
 "@ledgerhq/errors@^6.10.0":
   version "6.10.0"
   resolved "https://registry.yarnpkg.com/@ledgerhq/errors/-/errors-6.10.0.tgz#dda9127b65f653fbb2f74a55e8f0e550d69de6e4"
   integrity sha512-fQFnl2VIXh9Yd41lGjReCeK+Q2hwxQJvLZfqHnKqWapTz68NHOv5QcI0OHuZVNEbv0xhgdLhi5b65kgYeQSUVg==
 
-"@ledgerhq/hw-app-helium@^6.27.1":
-  version "6.27.1"
-  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-app-helium/-/hw-app-helium-6.27.1.tgz#da34a1051f4d2cb46434940780240fe8735f9fb3"
-  integrity sha512-5zjG71J89Q2ZfWNDolLaAItMJ+PAe95aguVjoCkX/7UjLHS6ZBQ8NtPjanUy39/jN11UDFyLF8uuQUZQpe6jPg==
+"@ledgerhq/errors@^6.10.1-nightly.0":
+  version "6.10.1-nightly.0"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/errors/-/errors-6.10.1-nightly.0.tgz#f219ec19fcc91f85b9a6e09b6be645a914a76860"
+  integrity sha512-xVM/sjVw60cgldaGAJjlS49nEbVmHWgCkCa4LkH3A3OMMrrQsR1CCZ+/cn7mYmVjNUlcQdW/oCJzDUiLdb7dVg==
+
+"@ledgerhq/hw-app-helium@6.28.0-nightly.0":
+  version "6.28.0-nightly.0"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-app-helium/-/hw-app-helium-6.28.0-nightly.0.tgz#b12a656ef327b5cf9d22c8d9233fa071e91ab864"
+  integrity sha512-JeItdPOprkwsGIIvOZPtHRReB7iAza0N2ny4ST6ffCY+oo4zlOzMJDqLAnsmnYkVHiljAbTKchr13yESBn9lUg==
   dependencies:
     "@helium/address" "^4.0.0"
     "@helium/proto" "^1.5.0"
-    "@helium/transactions" "^3.62.0"
-    "@ledgerhq/errors" "^6.10.0"
-    "@ledgerhq/hw-transport" "^6.27.1"
-    "@ledgerhq/logs" "^6.10.0"
+    "@helium/transactions" "^4.1.0"
+    "@ledgerhq/errors" "^6.10.1-nightly.0"
+    "@ledgerhq/hw-transport" "^6.27.2-nightly.0"
+    "@ledgerhq/logs" "^6.10.1-nightly.0"
     bignumber.js "^9.0.1"
     bip32-path "^0.4.2"
+    long "^5.2.0"
 
 "@ledgerhq/hw-transport-mocker@^6.27.1":
   version "6.27.1"
@@ -2197,12 +2213,37 @@
     "@ledgerhq/errors" "^6.10.0"
     events "^3.3.0"
 
+"@ledgerhq/hw-transport@^6.27.2-nightly.0":
+  version "6.27.2-nightly.0"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport/-/hw-transport-6.27.2-nightly.0.tgz#9bd32927277b48e341d8e945fd841c7836e47856"
+  integrity sha512-1CYLqF3kZj1FtVuKtJZpNSQ2/ha7i5jHnnYrp8a4J26Ri02/+IA8e1Ls0mAohS6JIlnrM463HdwsfacVYQYC8A==
+  dependencies:
+    "@ledgerhq/devices" "^6.27.2-nightly.0"
+    "@ledgerhq/errors" "^6.10.1-nightly.0"
+    events "^3.3.0"
+
 "@ledgerhq/logs@^6.10.0":
   version "6.10.0"
   resolved "https://registry.yarnpkg.com/@ledgerhq/logs/-/logs-6.10.0.tgz#c012c1ecc1a0e53d50e6af381618dca5268461c1"
   integrity sha512-lLseUPEhSFUXYTKj6q7s2O3s2vW2ebgA11vMAlKodXGf5AFw4zUoEbTz9CoFOC9jS6xY4Qr8BmRnxP/odT4Uuw==
 
-"@ledgerhq/react-native-hw-transport-ble@^6.25.1":
+"@ledgerhq/logs@^6.10.1-nightly.0":
+  version "6.10.1-nightly.0"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/logs/-/logs-6.10.1-nightly.0.tgz#d87889a5fa30c93ed615d6fae0ffdefeb93e2a72"
+  integrity sha512-hwoUwlC7le37kQ72W8hAzVq070zuY6IEpssYNXDTr3pEfc3cprTAgEnaBsb0jXQGiLdONPvxc7nPp8nSyGD3hQ==
+
+"@ledgerhq/react-native-hid@^6.28.3":
+  version "6.28.3"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/react-native-hid/-/react-native-hid-6.28.3.tgz#b7f217d0aa45f15ad3daaffad1f6afb326b19aae"
+  integrity sha512-3KKA0qUfAhyk9qQr5uIxzS7IqqhISylFM+WqtlJqObjPHYBnvrUzPkRo4pbJ3XF/kjLjdOlrhTFf0Ij3AM3ZzQ==
+  dependencies:
+    "@ledgerhq/devices" "^6.27.1"
+    "@ledgerhq/errors" "^6.10.0"
+    "@ledgerhq/hw-transport" "^6.27.1"
+    "@ledgerhq/logs" "^6.10.0"
+    rxjs "6"
+
+"@ledgerhq/react-native-hw-transport-ble@^6.27.1":
   version "6.27.1"
   resolved "https://registry.yarnpkg.com/@ledgerhq/react-native-hw-transport-ble/-/react-native-hw-transport-ble-6.27.1.tgz#bfd1a6a61a338e9baf1d4a4da36a88b873c2e369"
   integrity sha512-tHd9BfqWvCMstfgKiL/nAzJti7PAzCO1jWrvswim3wyV5ItZ+mOnfVM4t+pIGZUMQa309i6NaPcjQ2iUNZGdBA==
@@ -4663,7 +4704,7 @@ binary-extensions@^2.0.0:
 bip32-path@^0.4.2:
   version "0.4.2"
   resolved "https://registry.yarnpkg.com/bip32-path/-/bip32-path-0.4.2.tgz#5db0416ad6822712f077836e2557b8697c0c7c99"
-  integrity sha1-XbBBataCJxLwd4NuJVe4aXwMfJk=
+  integrity sha512-ZBMCELjJfcNMkz5bDuJ1WrYvjlhEF5k6mQ8vUr4N7MbVRsXei7ZOg8VhhwMfNiW68NWmLkgkc6WvTickrLGprQ==
 
 bl@~0.8.1:
   version "0.8.2"

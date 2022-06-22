@@ -34,15 +34,20 @@ const DeviceShow = () => {
 
   useAsync(async () => {
     try {
-      const ledgerTransport = await getTransport(ledgerDevice.id)
+      const ledgerTransport = await getTransport(
+        ledgerDevice.id,
+        ledgerDevice.type,
+      )
+      if (!ledgerTransport) return
       const addressB58 = await getLedgerAddress(ledgerTransport)
       setAddress(addressB58)
     } catch (error) {
+      if (address) return
       // in this case, user is likely not on Helium app
       console.error(error)
       navigation.navigate('DeviceScan', { error: error as Error })
     }
-  }, [ledgerDevice.id])
+  }, [])
 
   const alias = useMemo(() => {
     if (!address) return ''
@@ -115,6 +120,7 @@ const DeviceShow = () => {
                 color="secondaryText"
                 selectable
                 numberOfLines={2}
+                adjustsFontSizeToFit
                 maxFontSizeMultiplier={1.2}
               >
                 {address}

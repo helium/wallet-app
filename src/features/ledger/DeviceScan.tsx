@@ -207,6 +207,7 @@ const DeviceScan = () => {
         ledgerDevice: {
           id: device.id,
           name: device.localName || device.name || '',
+          type: 'bluetooth',
         },
       })
     },
