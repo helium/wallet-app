@@ -31,6 +31,7 @@ const Settings = () => {
   const { t } = useTranslation()
   const homeNav = useNavigation<HomeNavigationProp>()
   const settingsNav = useNavigation<SettingsNavigationProp>()
+  const { client } = useApolloClient()
   const { primaryText } = useColors()
   const spacing = useSpacing()
   const version = useAppVersion()
@@ -58,7 +59,6 @@ const Settings = () => {
     updateEnableTestnet,
     updateRequirePinForPayment,
   } = useAppStorage()
-  const { client } = useApolloClient()
   const copyAddress = useCopyAddress()
   const { showOKAlert, showOKCancelAlert } = useAlert()
 

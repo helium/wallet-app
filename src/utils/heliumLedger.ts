@@ -1,31 +1,31 @@
-import { PaymentV1, TokenBurnV1 } from '@helium/transactions'
+import { PaymentV2, TokenBurnV1 } from '@helium/transactions'
 import AppHelium from '@ledgerhq/hw-app-helium'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import TransportHID from '@ledgerhq/react-native-hid'
 import { useCallback, useState } from 'react'
 import useDisappear from './useDisappear'
 
 const mainNetPath = "44'/904'/0'/0/0" // HD derivation path
 
-export const getLedgerAddress = async (transport: TransportBLE) => {
+export const getLedgerAddress = async (
+  transport: TransportBLE | TransportHID,
+) => {
   const helium = new AppHelium(transport)
   const { address } = await helium.getAddress(mainNetPath, true, 0)
   return address
 }
 
 export const signLedgerPayment = async (
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  transport: TransportBLE,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  paymentV1: PaymentV1,
+  transport: TransportBLE | TransportHID,
+  paymentV2: PaymentV2,
 ) => {
-  // TODO: Bring this back when payment support is merged into ledger sdk
-  // const helium = new AppHelium(transport)
-  // const { txn } = await helium.signPaymentV1(paymentV1, 0)
-  // return txn
+  const helium = new AppHelium(transport)
+  const { txn } = await helium.signPaymentV2(paymentV2, 0)
+  return txn
 }
 
 export const signLedgerBurn = async (
-  transport: TransportBLE,
+  transport: TransportBLE | TransportHID,
   burnV1: TokenBurnV1,
 ) => {
   const helium = new AppHelium(transport)
@@ -34,17 +34,30 @@ export const signLedgerBurn = async (
 
 export const useLedger = () => {
   const [transport, setTransport] = useState<{
-    transport: TransportBLE
+    transport: TransportBLE | TransportHID
     deviceId: string
   }>()
 
   const getTransport = useCallback(
-    async (nextDeviceId: string) => {
+    async (nextDeviceId: string, type: 'usb' | 'bluetooth') => {
       if (transport?.deviceId === nextDeviceId) {
-        return transport
+        return transport.transport
       }
 
-      const newTransport = await TransportBLE.open(nextDeviceId)
+      let newTransport: TransportBLE | TransportHID | null = null
+      if (type === 'usb') {
+        await TransportHID.create()
+        const devices = await TransportHID.list()
+        const device = devices.find(
+          (d) => d.deviceId === parseInt(nextDeviceId, 10),
+        )
+        if (!device) return
+        newTransport = await TransportHID.open(device)
+      } else {
+        newTransport = await TransportBLE.open(nextDeviceId)
+      }
+      if (!newTransport) return
+
       newTransport.on('disconnect', () => {
         // Intentionally for the sake of simplicity we use a transport local state
         // and remove it on disconnect.

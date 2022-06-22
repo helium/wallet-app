@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
-import { PaymentV1 } from '@helium/transactions'
+import { PaymentV2 } from '@helium/transactions'
 import { useTransactions } from '../storage/TransactionProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAccountLazyQuery, useSubmitTxnMutation } from '../generated/graphql'
@@ -69,7 +69,7 @@ export default () => {
   )
 
   const submitLedger = useCallback(
-    async ({ txn, txnJson }: { txn: PaymentV1; txnJson: string }) => {
+    async ({ txn, txnJson }: { txn: PaymentV2; txnJson: string }) => {
       if (!currentAccount?.address) {
         throw new Error('There must be an account selected to submit a txn')
       }

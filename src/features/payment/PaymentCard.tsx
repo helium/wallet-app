@@ -1,5 +1,5 @@
 import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
-import { PaymentV1 } from '@helium/transactions'
+import { PaymentV2 } from '@helium/transactions'
 import { useNavigation } from '@react-navigation/native'
 import React, { memo, useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -20,7 +20,7 @@ import { checkSecureAccount } from '../../storage/secureStorage'
 type Props = {
   totalBalance: Balance<TestNetworkTokens | NetworkTokens>
   feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
-  onSubmit: (opts?: { txn: PaymentV1; txnJson: string }) => void
+  onSubmit: (opts?: { txn: PaymentV2; txnJson: string }) => void
   disabled?: boolean
   errors?: string[]
   payments?: SendDetails[]
@@ -42,7 +42,7 @@ const PaymentCard = ({
   const { showOKAlert } = useAlert()
   const { currentAccount } = useAccountStorage()
   const [options, setOptions] = useState<{
-    txn: PaymentV1
+    txn: PaymentV2
     txnJson: string
   }>()
 
@@ -74,7 +74,7 @@ const PaymentCard = ({
     [height],
   )
   const handleConfirm = useCallback(
-    (opts: { txn: PaymentV1; txnJson: string }) => {
+    (opts: { txn: PaymentV2; txnJson: string }) => {
       setPayEnabled(true)
       setOptions(opts)
     },

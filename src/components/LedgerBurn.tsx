@@ -12,6 +12,7 @@ import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet'
 import { Edge } from 'react-native-safe-area-context'
 import { TokenBurnV1 } from '@helium/transactions'
 import Ledger from '@assets/images/ledger.svg'
+import { useTranslation } from 'react-i18next'
 import { useColors, useOpacity } from '../theme/themeHooks'
 import { signLedgerBurn, useLedger } from '../utils/heliumLedger'
 import { LedgerDevice } from '../storage/cloudStorage'
@@ -20,6 +21,7 @@ import SafeAreaBox from './SafeAreaBox'
 import Box from './Box'
 import Text from './Text'
 import * as Logger from '../utils/logger'
+import useAlert from '../utils/useAlert'
 
 type ShowOptions = {
   ledgerDevice: LedgerDevice
@@ -47,6 +49,8 @@ const LedgerBurn = forwardRef(
     useImperativeHandle(ref, () => ({ show, hide }))
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
+    const { showOKAlert } = useAlert()
+    const { t } = useTranslation()
     const { primaryText } = useColors()
     const { getTransport } = useLedger()
     const snapPoints = useMemo(() => {
@@ -57,10 +61,19 @@ const LedgerBurn = forwardRef(
       async (opts: ShowOptions) => {
         bottomSheetModalRef.current?.present()
         try {
-          const nextTransport = await getTransport(opts.ledgerDevice.id)
-          const { txn } = await signLedgerBurn(nextTransport, opts.unsignedTxn)
-
-          onConfirm({ txn, txnJson: opts.txnJson })
+          const nextTransport = await getTransport(
+            opts.ledgerDevice.id,
+            opts.ledgerDevice.type,
+          )
+          if (!nextTransport) {
+            showOKAlert({
+              title: t('ledger.deviceNotFound.title'),
+              message: t('addressBook.deviceNotFound.message'),
+            })
+            return
+          }
+          const payment = await signLedgerBurn(nextTransport, opts.unsignedTxn)
+          onConfirm({ txn: payment.txn, txnJson: opts.txnJson })
           bottomSheetModalRef.current?.dismiss()
         } catch (error) {
           // in this case, user is likely not on Helium app
@@ -69,7 +82,7 @@ const LedgerBurn = forwardRef(
           bottomSheetModalRef.current?.dismiss()
         }
       },
-      [getTransport, onConfirm, onError],
+      [getTransport, onConfirm, onError, showOKAlert, t],
     )
 
     const hide = useCallback(() => {

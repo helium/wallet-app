@@ -233,6 +233,11 @@ export default {
     title: 'The best wallet\nfor your HNT.',
   },
   ledger: {
+    deviceNotFound: {
+      message:
+        'Could not find your ledger device. Please make sure it is connected and the Helium app is open.',
+      title: 'Device Not Found',
+    },
     connectError: {
       steps: [
         'Check Bluetooth is enabled',
@@ -254,6 +259,11 @@ export default {
         'Please verify the payment transaction on your Ledger device {{name}}',
       title: 'Ledger Approval',
     },
+    chooseType: {
+      title: 'How is your device connected?',
+      bluetooth: { title: 'Bluetooth', types: 'Nano X' },
+      usb: { title: 'USB Cable', types: 'Nano S, Nano S Plus, Nano X' },
+    },
     scan: {
       connectionError: 'Ledger Connection Error',
       permissionDialog: {
@@ -262,6 +272,8 @@ export default {
           'Location permission is needed to enable a bluetooth connection',
         title: 'Location Permission',
       },
+      subtitleUsb:
+        'Please make sure your\nLedger is unlocked and\nconnected via USB',
       subtitle:
         'Please make sure your\nLedger is unlocked with\nbluetooth enabled',
       title: 'Looking\nfor Devices',
@@ -338,7 +350,6 @@ export default {
     enterMemo: 'Enter Memo (Optional)',
     fee: '+{{value}} Fee',
     insufficientFunds: 'Insufficient Funds',
-    ledgerPaymentNotSupported: 'Ledger payments not\nyet supported. 🔜',
     ledgerTooManyRecipients:
       'Ledger payment transactions\nare limited to 1 recipient.',
     max: 'Max',
