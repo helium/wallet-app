@@ -20,6 +20,7 @@ import { useColors, useOpacity, useSpacing } from '../theme/themeHooks'
 import { AccountNetTypeOpt } from '../utils/accountUtils'
 import AccountListItem from './AccountListItem'
 import { CSAccount } from '../storage/cloudStorage'
+import useBackHandler from '../utils/useBackHandler'
 
 const initialState = {
   show: (_type?: AccountNetTypeOpt) => undefined,
@@ -52,15 +53,20 @@ const AccountSelector = ({ children }: { children: ReactNode }) => {
     () => ({ borderTopColor: primary, borderTopWidth: 1 }),
     [primary],
   )
+  const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
 
-  const show = useCallback((x?: AccountNetTypeOpt | GestureResponderEvent) => {
-    let type: AccountNetTypeOpt = 'all'
-    if (x !== undefined && !isGesture(x)) {
-      type = x
-    }
-    setAccountsTypes(type)
-    bottomSheetModalRef.current?.present()
-  }, [])
+  const show = useCallback(
+    (x?: AccountNetTypeOpt | GestureResponderEvent) => {
+      let type: AccountNetTypeOpt = 'all'
+      if (x !== undefined && !isGesture(x)) {
+        type = x
+      }
+      setAccountsTypes(type)
+      bottomSheetModalRef.current?.present()
+      setIsShowing(true)
+    },
+    [setIsShowing],
+  )
 
   const showAccountTypes = useCallback(
     (type: AccountNetTypeOpt) => () => {
@@ -129,6 +135,7 @@ const AccountSelector = ({ children }: { children: ReactNode }) => {
           backdropComponent={renderBackdrop}
           snapPoints={snapPoints}
           handleStyle={sheetHandleStyle}
+          onDismiss={handleDismiss}
         >
           <BottomSheetFlatList
             data={data}

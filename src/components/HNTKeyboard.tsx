@@ -48,6 +48,7 @@ import HandleBasic from './HandleBasic'
 import { Theme } from '../theme/theme'
 import { Payment } from '../features/payment/PaymentItem'
 import { CSAccount } from '../storage/cloudStorage'
+import useBackHandler from '../utils/useBackHandler'
 
 type ShowOptions = {
   payer?: CSAccount | null
@@ -91,6 +92,7 @@ const HNTKeyboardSelector = forwardRef(
     const [containerHeight, setContainerHeight] = useState(0)
     const [headerHeight, setHeaderHeight] = useState(0)
     const containerStyle = useSafeTopPaddingStyle('android')
+    const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
 
     const { calculatePaymentTxnFee } = useTransactions()
     const {
@@ -188,8 +190,9 @@ const HNTKeyboardSelector = forwardRef(
         setValue(val || '0')
 
         bottomSheetModalRef.current?.present()
+        setIsShowing(true)
       },
-      [handleVisible],
+      [handleVisible, setIsShowing],
     )
 
     const hide = useCallback(() => {
@@ -420,10 +423,10 @@ const HNTKeyboardSelector = forwardRef(
 
     const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
 
-    const handleDismiss = useCallback(
-      () => handleVisible?.(false),
-      [handleVisible],
-    )
+    const handleModalDismiss = useCallback(() => {
+      handleDismiss()
+      handleVisible?.(false)
+    }, [handleDismiss, handleVisible])
 
     return (
       <BottomSheetModalProvider>
@@ -436,7 +439,7 @@ const HNTKeyboardSelector = forwardRef(
             backdropComponent={renderBackdrop}
             handleComponent={renderHandle}
             snapPoints={snapPoints}
-            onDismiss={handleDismiss}
+            onDismiss={handleModalDismiss}
           >
             <SafeAreaBox
               flex={1}

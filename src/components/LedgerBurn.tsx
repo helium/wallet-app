@@ -22,6 +22,7 @@ import Box from './Box'
 import Text from './Text'
 import * as Logger from '../utils/logger'
 import useAlert from '../utils/useAlert'
+import useBackHandler from '../utils/useBackHandler'
 
 type ShowOptions = {
   ledgerDevice: LedgerDevice
@@ -56,10 +57,12 @@ const LedgerBurn = forwardRef(
     const snapPoints = useMemo(() => {
       return [600]
     }, [])
+    const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
 
     const show = useCallback(
       async (opts: ShowOptions) => {
         bottomSheetModalRef.current?.present()
+        setIsShowing(true)
         try {
           const nextTransport = await getTransport(
             opts.ledgerDevice.id,
@@ -82,7 +85,7 @@ const LedgerBurn = forwardRef(
           bottomSheetModalRef.current?.dismiss()
         }
       },
-      [getTransport, onConfirm, onError, showOKAlert, t],
+      [getTransport, onConfirm, onError, setIsShowing, showOKAlert, t],
     )
 
     const hide = useCallback(() => {
@@ -116,6 +119,7 @@ const LedgerBurn = forwardRef(
           backdropComponent={renderBackdrop}
           handleComponent={renderHandle}
           snapPoints={snapPoints}
+          onDismiss={handleDismiss}
         >
           <SafeAreaBox
             flex={1}

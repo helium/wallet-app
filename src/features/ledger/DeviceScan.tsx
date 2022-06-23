@@ -30,6 +30,7 @@ import LedgerConnectSteps from './LedgerConnectSteps'
 import { useColors, useOpacity } from '../../theme/themeHooks'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import * as Logger from '../../utils/logger'
+import useBackHandler from '../../utils/useBackHandler'
 
 enum DeviceModelId {
   blue = 'blue',
@@ -78,6 +79,7 @@ const DeviceScan = () => {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const sub = useRef<Subscription>()
   const [contentHeight, setContentHeight] = useState(0)
+  const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
 
   useEffect(() => {
     if (!route.params?.error) {
@@ -168,15 +170,17 @@ const DeviceScan = () => {
   }, [startScan])
 
   const clearError = useCallback(() => {
+    handleDismiss()
     setError(undefined)
     reload()
-  }, [reload])
+  }, [handleDismiss, reload])
 
   useEffect(() => {
     if (!error) return
 
     bottomSheetModalRef.current?.present()
-  }, [error])
+    setIsShowing(true)
+  }, [error, setIsShowing])
 
   useAsync(async () => {
     let previousAvailable: boolean | undefined
