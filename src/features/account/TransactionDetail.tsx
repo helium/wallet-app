@@ -30,6 +30,7 @@ import { useBalance } from '../../utils/Balance'
 import { useExplorer, usePublicApi } from '../../constants/urls'
 import { decodeMemoString, DEFAULT_MEMO } from '../../components/MemoInput'
 import { ellipsizeAddress } from '../../utils/accountUtils'
+import useBackHandler from '../../utils/useBackHandler'
 
 const initialState = {
   show: () => undefined,
@@ -48,6 +49,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const [detailData, setDetailData] = useState<DetailData>()
   const [contentHeight, setContentHeight] = useState(0)
+  const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
 
   const { intToBalance } = useBalance()
   const { item: txn, accountAddress } = detailData || {}
@@ -77,10 +79,14 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
     return ['50%', maxHeight]
   }, [contentHeight])
 
-  const show = useCallback((data: DetailData) => {
-    setDetailData(data)
-    bottomSheetModalRef.current?.present()
-  }, [])
+  const show = useCallback(
+    (data: DetailData) => {
+      setDetailData(data)
+      bottomSheetModalRef.current?.present()
+      setIsShowing(true)
+    },
+    [setIsShowing],
+  )
 
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
 
@@ -157,6 +163,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
           backdropComponent={renderBackdrop}
           backgroundComponent={backgroundComponent}
           handleComponent={handleComponent}
+          onDismiss={handleDismiss}
         >
           <BottomSheetScrollView>
             <SafeAreaBox

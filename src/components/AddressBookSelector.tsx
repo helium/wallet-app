@@ -23,6 +23,7 @@ import { HomeNavigationProp } from '../features/home/homeTypes'
 import { Theme } from '../theme/theme'
 import Box from './Box'
 import { CSAccount } from '../storage/cloudStorage'
+import useBackHandler from '../utils/useBackHandler'
 
 export type AddressBookRef = {
   showAddressBook: (opts: { address?: string; index?: number }) => void
@@ -50,14 +51,16 @@ const AddressBookSelector = forwardRef(
     const homeNav = useNavigation<HomeNavigationProp>()
     const [address, setAddress] = useState<string>()
     const [index, setIndex] = useState<number>()
+    const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
 
     const showAddressBook = useCallback(
       (opts: { address?: string; index?: number }) => {
         setAddress(opts.address)
         setIndex(opts.index)
         bottomSheetModalRef.current?.present()
+        setIsShowing(true)
       },
-      [],
+      [setIsShowing],
     )
 
     const handleContactSelected = useCallback(
@@ -94,6 +97,7 @@ const AddressBookSelector = forwardRef(
             backdropComponent={renderBackdrop}
             snapPoints={snapPoints}
             handleStyle={sheetHandleStyle}
+            onDismiss={handleDismiss}
           >
             <ContactsList
               showMyAccounts

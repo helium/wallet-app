@@ -24,6 +24,7 @@ import Text from './Text'
 import Box from './Box'
 import { LedgerDevice } from '../storage/cloudStorage'
 import useAlert from '../utils/useAlert'
+import useBackHandler from '../utils/useBackHandler'
 
 type ShowOptions = {
   payments: SendDetails[]
@@ -59,11 +60,13 @@ const LedgerPaymentSelector = forwardRef(
     const snapPoints = useMemo(() => {
       return [600]
     }, [])
+    const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
 
     const show = useCallback(
       async (opts: ShowOptions) => {
         setOptions(opts)
         bottomSheetModalRef.current?.present()
+        setIsShowing(true)
         try {
           const { data: accountData } = await fetchAccount({
             variables: { address: opts.address },
@@ -100,6 +103,7 @@ const LedgerPaymentSelector = forwardRef(
         makePaymentTxn,
         onConfirm,
         onError,
+        setIsShowing,
         showOKAlert,
         t,
       ],
@@ -136,6 +140,7 @@ const LedgerPaymentSelector = forwardRef(
           backdropComponent={renderBackdrop}
           handleComponent={renderHandle}
           snapPoints={snapPoints}
+          onDismiss={handleDismiss}
         >
           <SafeAreaBox
             flex={1}
