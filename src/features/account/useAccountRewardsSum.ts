@@ -30,6 +30,7 @@ export default (address?: string) => {
   const [rewardsChange, setRewardsChange] = useState<{
     minutesAgo: number
     change: number
+    tokenChange: number
     formattedChange: string
   }>()
 
@@ -105,6 +106,7 @@ export default (address?: string) => {
       return Math.round(percentage * 100) / 100
     }
 
+    const tokenChange = today - yesterday
     const change = percentageChange(today, yesterday)
     const minutesAgo = differenceInMinutes(
       new Date(),
@@ -119,7 +121,7 @@ export default (address?: string) => {
       },
     )
 
-    setRewardsChange({ change, minutesAgo, formattedChange })
+    setRewardsChange({ change, minutesAgo, formattedChange, tokenChange })
   }, [rewardsToday, rewardsYesterday, rewardsDates])
 
   return { ...rewardsChange }
