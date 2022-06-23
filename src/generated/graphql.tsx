@@ -60,6 +60,7 @@ export type Activity = {
   oldAddress?: Maybe<Scalars['String']>
   oldOwner?: Maybe<Scalars['String']>
   owner?: Maybe<Scalars['String']>
+  payee?: Maybe<Scalars['String']>
   payer?: Maybe<Scalars['String']>
   payments?: Maybe<Array<Payment>>
   pending?: Maybe<Scalars['Boolean']>
@@ -163,6 +164,76 @@ export type Penalty = {
   type: Scalars['String']
 }
 
+export type Prices = {
+  __typename?: 'Prices'
+  hnt: Pricing
+}
+
+export type Pricing = {
+  __typename?: 'Pricing'
+  aed?: Maybe<Scalars['Float']>
+  ars?: Maybe<Scalars['Float']>
+  aud?: Maybe<Scalars['Float']>
+  bch?: Maybe<Scalars['Float']>
+  bdt?: Maybe<Scalars['Float']>
+  bhd?: Maybe<Scalars['Float']>
+  bits?: Maybe<Scalars['Float']>
+  bmd?: Maybe<Scalars['Float']>
+  bnb?: Maybe<Scalars['Float']>
+  brl?: Maybe<Scalars['Float']>
+  btc?: Maybe<Scalars['Float']>
+  cad?: Maybe<Scalars['Float']>
+  chf?: Maybe<Scalars['Float']>
+  clp?: Maybe<Scalars['Float']>
+  cny?: Maybe<Scalars['Float']>
+  czk?: Maybe<Scalars['Float']>
+  dkk?: Maybe<Scalars['Float']>
+  dot?: Maybe<Scalars['Float']>
+  eos?: Maybe<Scalars['Float']>
+  eth?: Maybe<Scalars['Float']>
+  eur?: Maybe<Scalars['Float']>
+  gbp?: Maybe<Scalars['Float']>
+  hkd?: Maybe<Scalars['Float']>
+  huf?: Maybe<Scalars['Float']>
+  idr?: Maybe<Scalars['Float']>
+  ils?: Maybe<Scalars['Float']>
+  inr?: Maybe<Scalars['Float']>
+  jpy?: Maybe<Scalars['Float']>
+  krw?: Maybe<Scalars['Float']>
+  kwd?: Maybe<Scalars['Float']>
+  link?: Maybe<Scalars['Float']>
+  lkr?: Maybe<Scalars['Float']>
+  ltc?: Maybe<Scalars['Float']>
+  mmk?: Maybe<Scalars['Float']>
+  mxn?: Maybe<Scalars['Float']>
+  myr?: Maybe<Scalars['Float']>
+  ngn?: Maybe<Scalars['Float']>
+  nok?: Maybe<Scalars['Float']>
+  nzd?: Maybe<Scalars['Float']>
+  php?: Maybe<Scalars['Float']>
+  pkr?: Maybe<Scalars['Float']>
+  pln?: Maybe<Scalars['Float']>
+  rub?: Maybe<Scalars['Float']>
+  sar?: Maybe<Scalars['Float']>
+  sats?: Maybe<Scalars['Float']>
+  sek?: Maybe<Scalars['Float']>
+  sgd?: Maybe<Scalars['Float']>
+  thb?: Maybe<Scalars['Float']>
+  try?: Maybe<Scalars['Float']>
+  twd?: Maybe<Scalars['Float']>
+  uah?: Maybe<Scalars['Float']>
+  usd?: Maybe<Scalars['Float']>
+  vef?: Maybe<Scalars['Float']>
+  vnd?: Maybe<Scalars['Float']>
+  xag?: Maybe<Scalars['Float']>
+  xau?: Maybe<Scalars['Float']>
+  xdr?: Maybe<Scalars['Float']>
+  xlm?: Maybe<Scalars['Float']>
+  xrp?: Maybe<Scalars['Float']>
+  yfi?: Maybe<Scalars['Float']>
+  zar?: Maybe<Scalars['Float']>
+}
+
 export type Reward = {
   __typename?: 'Reward'
   account?: Maybe<Scalars['String']>
@@ -204,6 +275,8 @@ export type RootQueryType = {
   notifications?: Maybe<Array<Notification>>
   /** Get pending txns */
   pendingTxns?: Maybe<Array<Activity>>
+  /** Get coin gecko prices */
+  pricing?: Maybe<Prices>
   /** Get Stripe Params */
   stripeParams: StripeParams
   /** Get txn config vars */
@@ -261,6 +334,10 @@ export type RootQueryTypeNotificationsArgs = {
 }
 
 export type RootQueryTypePendingTxnsArgs = {
+  address: Scalars['String']
+}
+
+export type RootQueryTypePricingArgs = {
   address: Scalars['String']
 }
 
@@ -437,6 +514,7 @@ export type AccountActivityQuery = {
       stakingFee?: number | null
       stake?: number | null
       stakeAmount?: number | null
+      payee?: string | null
       rewards?: Array<{
         __typename?: 'Reward'
         account?: string | null
@@ -816,6 +894,7 @@ export const AccountActivityDocument = gql`
         stakingFee
         stake
         stakeAmount
+        payee
         payments {
           payee
           memo

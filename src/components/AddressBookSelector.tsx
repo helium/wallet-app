@@ -20,7 +20,6 @@ import { BoxProps } from '@shopify/restyle'
 import { useOpacity, useSpacing } from '../theme/themeHooks'
 import ContactsList from '../features/addressBook/ContactsList'
 import { HomeNavigationProp } from '../features/home/homeTypes'
-import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { Theme } from '../theme/theme'
 import Box from './Box'
 import { CSAccount } from '../storage/cloudStorage'
@@ -49,7 +48,6 @@ const AddressBookSelector = forwardRef(
     const snapPoints = useMemo(() => ['70%', '90%'], [])
     const sheetHandleStyle = useMemo(() => ({ padding: m }), [m])
     const homeNav = useNavigation<HomeNavigationProp>()
-    const { currentAccount } = useAccountStorage()
     const [address, setAddress] = useState<string>()
     const [index, setIndex] = useState<number>()
 
@@ -98,9 +96,9 @@ const AddressBookSelector = forwardRef(
             handleStyle={sheetHandleStyle}
           >
             <ContactsList
+              showMyAccounts
               onAddNew={handleAddNewContact}
               handleContactSelected={handleContactSelected}
-              netTypeOpt={currentAccount?.netType}
               address={address}
               insideBottomSheet
             />

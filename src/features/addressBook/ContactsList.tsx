@@ -3,31 +3,34 @@ import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native'
 import Fuse from 'fuse.js'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
+import { NetTypes } from '@helium/address'
+import { sortBy, unionBy } from 'lodash'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import FabButton from '../../components/FabButton'
 import SearchInput from '../../components/SearchInput'
-import { AccountNetTypeOpt } from '../../utils/accountUtils'
 import AccountListItem from '../../components/AccountListItem'
 import { CSAccount } from '../../storage/cloudStorage'
 
 type Props = {
   onAddNew: () => void
   handleContactSelected?: (item: CSAccount) => void
-  netTypeOpt?: AccountNetTypeOpt
   address?: string
   insideBottomSheet?: boolean
+  showMyAccounts?: boolean
 }
 const ContactsList = ({
   onAddNew,
   handleContactSelected,
-  netTypeOpt = 'all' as AccountNetTypeOpt,
   address,
   insideBottomSheet,
+  showMyAccounts = false,
 }: Props) => {
-  const { contacts, contactsForNetType } = useAccountStorage()
+  const { contactsForNetType, currentAccount, sortedAccountsForNetType } =
+    useAccountStorage()
+
   const { t } = useTranslation()
   const [searchTerm, setSearchTerm] = useState('')
   const handleContactPressed = useCallback(
@@ -87,10 +90,31 @@ const ContactsList = ({
     return item.address
   }, [])
 
+  const allContacts = useMemo(() => {
+    const contacts = contactsForNetType(
+      currentAccount?.netType || NetTypes.MAINNET,
+    )
+
+    if (!showMyAccounts) return contacts
+
+    const accounts = sortedAccountsForNetType(
+      currentAccount?.netType || NetTypes.MAINNET,
+    )
+    return sortBy(
+      unionBy(contacts, accounts, ({ address: addr }) => addr),
+      ({ alias }) => alias,
+    )
+  }, [
+    contactsForNetType,
+    currentAccount,
+    showMyAccounts,
+    sortedAccountsForNetType,
+  ])
+
   const data = useMemo(() => {
-    let listData = contactsForNetType(netTypeOpt)
+    let listData = allContacts
     if (searchTerm.trim()) {
-      listData = new Fuse(contacts, {
+      listData = new Fuse(allContacts, {
         keys: ['alias', 'address'],
         threshold: 0.3,
         fieldNormWeight: 1,
@@ -101,7 +125,7 @@ const ContactsList = ({
         })
     }
     return listData.sort((a, b) => a.alias.localeCompare(b.alias))
-  }, [contacts, contactsForNetType, netTypeOpt, searchTerm])
+  }, [allContacts, searchTerm])
 
   if (insideBottomSheet) {
     return (

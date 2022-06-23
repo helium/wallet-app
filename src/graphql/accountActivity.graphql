@@ -37,6 +37,7 @@ query AccountActivity($address: String!, $cursor: String, $filter: String) {
       stakingFee
       stake
       stakeAmount
+      payee
       payments {
         payee
         memo
