@@ -201,6 +201,15 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                 />
               )}
 
+              {!!txn?.payee && (
+                <TransactionLineItem
+                  title={t('transactions.payee', { index: '' })}
+                  bodyText={txn.payee}
+                  isAddress
+                  navTo={`${explorerURL}/accounts/${txn.payee}`}
+                />
+              )}
+
               {paymentsSent.map(({ amount: amt, payee, memo }, index) => (
                 <React.Fragment key={`${index}.amountToPayee`}>
                   <TransactionLineItem

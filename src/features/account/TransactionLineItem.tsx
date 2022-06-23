@@ -18,6 +18,7 @@ import useCopyAddress from '../../utils/useCopyAddress'
 import useAlert from '../../utils/useAlert'
 import { AddressBookNavigationProp } from '../addressBook/addressBookTypes'
 import { locale } from '../../utils/i18n'
+import AccountIcon from '../../components/AccountIcon'
 
 type Props = {
   title: string
@@ -42,7 +43,7 @@ const TransactionLineItem = ({
   const { primaryText } = useColors()
   const linkHitSlop = useHitSlop('s')
   const copyHitSlop = useVerticalHitSlop('s')
-  const { contacts } = useAccountStorage()
+  const { contacts, sortedAccounts } = useAccountStorage()
   const copyAddress = useCopyAddress()
   const navigation = useNavigation<AddressBookNavigationProp>()
   const { showOKCancelAlert } = useAlert()
@@ -58,12 +59,13 @@ const TransactionLineItem = ({
     [copyAddress],
   )
 
-  const aliasForContact = useCallback(
+  const account = useCallback(
     (address) => {
       const contact = contacts.find((c) => c.address === address)
-      return contact?.alias
+      if (contact) return contact
+      return sortedAccounts.find((c) => c.address === address)
     },
-    [contacts],
+    [contacts, sortedAccounts],
   )
 
   const body = useMemo(() => {
@@ -71,16 +73,16 @@ const TransactionLineItem = ({
       return bodyText.toLocaleString(locale)
     }
     if (isAddress) {
-      const alias = aliasForContact(bodyText)
+      const alias = account(bodyText)?.alias
       return alias || ellipsizeAddress(bodyText)
     }
     return bodyText
-  }, [aliasForContact, bodyText, isAddress])
+  }, [account, bodyText, isAddress])
 
   const handleLongPress = useCallback(
     (address: string | number) => async () => {
       const addressToCopy = `${address}`
-      if (!addressToCopy || aliasForContact(addressToCopy)) return
+      if (!addressToCopy || account(addressToCopy)?.alias) return
 
       const decision = await showOKCancelAlert({
         title: t('transactions.addToAddressBook.title'),
@@ -90,7 +92,7 @@ const TransactionLineItem = ({
 
       navigation.navigate('AddNewContact', { address: addressToCopy })
     },
-    [aliasForContact, navigation, showOKCancelAlert, t],
+    [account, navigation, showOKCancelAlert, t],
   )
 
   const handleExplorerLink = useCallback(() => {
@@ -119,7 +121,13 @@ const TransactionLineItem = ({
           disabled={!isAddress}
           minWidth={30}
           maxWidth="90%"
+          flexDirection="row"
         >
+          {isAddress && typeof bodyText === 'string' && (
+            <Box marginRight="xs" justifyContent="center">
+              <AccountIcon size={16} address={bodyText} />
+            </Box>
+          )}
           <Text
             flexShrink={1}
             variant="body1"
