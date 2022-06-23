@@ -18,6 +18,7 @@ export enum SecureStorageKeys {
   SELECTED_LIST = 'selected_list',
   ENABLE_TESTNET = 'enableTestnet',
   HIDE_PRIVATE_KEY_ALERT = 'hidePrivateKeyAlert',
+  SHOW_NUMERIC_CHANGE = 'showNumericChange',
 }
 type SecureStorageKeyTypes = `${SecureStorageKeys}`
 

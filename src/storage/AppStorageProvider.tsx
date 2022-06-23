@@ -28,6 +28,7 @@ const useAppStorageHook = () => {
   const [enableTestnet, setEnableTestnet] = useState(false)
   const [scannedAddress, setScannedAddress] = useState<string>()
   const [voteTutorialShown, setVoteTutorialShown] = useState(false)
+  const [showNumericChange, setShowNumericChange] = useState(false)
 
   useAsync(async () => {
     // TODO: When performing an account restore pin will not be restored.
@@ -41,6 +42,7 @@ const useAppStorageHook = () => {
       const nextConvertToCurrency = await getSecureItem('convertToCurrency')
       const nextEnableTestnet = await getSecureItem('enableTestnet')
       const nextVoteShown = await AsyncStorage.getItem(VOTE_TUTORIAL_SHOWN)
+      const nextShowNumericChange = await getSecureItem('showNumericChange')
 
       setPin({ value: nextPin || '', status: nextPin ? 'restored' : 'off' })
       setRequirePinForPayment(nextPinForPayment === 'true')
@@ -49,6 +51,7 @@ const useAppStorageHook = () => {
       setConvertToCurrency(nextConvertToCurrency === 'true')
       setEnableTestnet(nextEnableTestnet === 'true')
       setVoteTutorialShown(nextVoteShown === 'true')
+      setShowNumericChange(nextShowNumericChange === 'true')
 
       if (nextAuthInterval) {
         setAuthInterval(Number.parseInt(nextAuthInterval, 10))
@@ -121,6 +124,11 @@ const useAppStorageHook = () => {
     return AsyncStorage.setItem(VOTE_TUTORIAL_SHOWN, 'true')
   }, [])
 
+  const updateShowNumericChange = useCallback(async (useNumeric: boolean) => {
+    setShowNumericChange(useNumeric)
+    return storeSecureItem('showNumericChange', useNumeric ? 'true' : 'false')
+  }, [])
+
   return {
     authInterval,
     convertToCurrency,
@@ -141,6 +149,8 @@ const useAppStorageHook = () => {
     updatePin,
     updateRequirePinForPayment,
     voteTutorialShown,
+    showNumericChange,
+    updateShowNumericChange,
   }
 }
 
@@ -164,6 +174,8 @@ const initialState = {
   updatePin: async () => undefined,
   updateRequirePinForPayment: async () => undefined,
   voteTutorialShown: false,
+  updateShowNumericChange: async () => undefined,
+  showNumericChange: false,
 }
 
 const AppStorageContext =
