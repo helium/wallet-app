@@ -1,4 +1,9 @@
-import React, { memo as reactMemo, useCallback, useMemo } from 'react'
+import React, {
+  memo as reactMemo,
+  useCallback,
+  useEffect,
+  useMemo,
+} from 'react'
 import {
   Balance,
   DataCredits,
@@ -6,9 +11,15 @@ import {
   TestNetworkTokens,
 } from '@helium/currency'
 import { useTranslation } from 'react-i18next'
-import { BoxProps } from '@shopify/restyle'
 import Remove from '@assets/images/remove.svg'
-import AccountButton from '../../components/AccountButton'
+import ContactIcon from '@assets/images/account.svg'
+import {
+  ActivityIndicator,
+  Keyboard,
+  NativeSyntheticEvent,
+  TextInputFocusEventData,
+} from 'react-native'
+import Address from '@helium/address'
 import Box from '../../components/Box'
 import { accountNetType, ellipsizeAddress } from '../../utils/accountUtils'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -16,8 +27,10 @@ import { useColors, useOpacity } from '../../theme/themeHooks'
 import Text from '../../components/Text'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import MemoInput from '../../components/MemoInput'
-import { Theme } from '../../theme/theme'
 import { CSAccount } from '../../storage/cloudStorage'
+import TextInput from '../../components/TextInput'
+import { useIsHotspotOrValidatorQuery } from '../../generated/graphql'
+import AccountIcon from '../../components/AccountIcon'
 import BackgroundFill from '../../components/BackgroundFill'
 
 export type Payment = {
@@ -25,6 +38,7 @@ export type Payment = {
   account?: CSAccount
   amount?: Balance<NetworkTokens | TestNetworkTokens>
   memo?: string
+  hasError?: boolean
 }
 
 type Props = {
@@ -34,9 +48,19 @@ type Props = {
   onAddressBookSelected: (opts: { address?: string; index: number }) => void
   onEditHNTAmount: (opts: { address?: string; index: number }) => void
   onEditMemo: (opts: { address?: string; index: number; memo: string }) => void
+  onEditAddress: (opts: { index: number; address: string }) => void
+  handleAddressError: (opts: {
+    index: number
+    address: string
+    isHotspotOrValidator: boolean
+  }) => void
   onRemove?: (index: number) => void
+  onUpdateError?: (index: number, hasError: boolean) => void
   hideMemo?: boolean
+  ticker?: string
 } & Payment
+
+const ITEM_HEIGHT = 80
 
 const PaymentItem = ({
   address,
@@ -46,20 +70,58 @@ const PaymentItem = ({
   onAddressBookSelected,
   onEditHNTAmount,
   onEditMemo,
+  onEditAddress,
+  handleAddressError,
+  onUpdateError,
   fee,
   memo,
   hasError,
   onRemove,
   hideMemo,
+  ticker,
 }: Props) => {
   const { colorStyle } = useOpacity('primaryText', 0.3)
   const { dcToTokens } = useBalance()
   const { t } = useTranslation()
   const { secondaryText } = useColors()
 
-  const title = useMemo(() => {
-    return account?.alias || address || t('payment.selectContact')
-  }, [account, address, t])
+  const { error, loading, data } = useIsHotspotOrValidatorQuery({
+    variables: {
+      address: address || '',
+    },
+    skip: !address || !Address.isValid(address),
+  })
+
+  const addressIsHotspot = useMemo(
+    () => data?.isHotspotOrValidator === true,
+    [data],
+  )
+
+  const addressIsWrongNetType = useMemo(
+    () =>
+      address !== undefined &&
+      address !== '' &&
+      accountNetType(address) !== account?.netType,
+    [account, address],
+  )
+
+  useEffect(() => {
+    if (!onUpdateError) return
+    onUpdateError(
+      index,
+      addressIsHotspot ||
+        addressIsWrongNetType ||
+        error !== undefined ||
+        loading,
+    )
+  }, [
+    addressIsHotspot,
+    addressIsWrongNetType,
+    error,
+    index,
+    loading,
+    onUpdateError,
+  ])
 
   const feeAsTokens = useMemo(() => {
     if (!fee) return
@@ -67,12 +129,10 @@ const PaymentItem = ({
     return dcToTokens(fee)
   }, [dcToTokens, fee])
 
-  const handleAddressBookSelected = useCallback(
-    (addy?: string) => {
-      onAddressBookSelected({ address: addy, index })
-    },
-    [index, onAddressBookSelected],
-  )
+  const handleAddressBookSelected = useCallback(() => {
+    Keyboard.dismiss()
+    onAddressBookSelected({ index })
+  }, [index, onAddressBookSelected])
 
   const handleEditAmount = useCallback(() => {
     onEditHNTAmount({ address, index })
@@ -85,29 +145,40 @@ const PaymentItem = ({
     [address, index, onEditMemo],
   )
 
+  const handleEditAddress = useCallback(
+    (text?: string) => {
+      onEditAddress({ address: text || '', index })
+    },
+    [index, onEditAddress],
+  )
+
+  const handleAddressBlur = useCallback(
+    (event?: NativeSyntheticEvent<TextInputFocusEventData>) => {
+      const text = event?.nativeEvent.text
+      handleAddressError({
+        address: text || '',
+        index,
+        isHotspotOrValidator: addressIsHotspot,
+      })
+    },
+    [addressIsHotspot, handleAddressError, index],
+  )
+
   const handleRemove = useCallback(() => {
     onRemove?.(index)
   }, [index, onRemove])
 
-  const netType = useMemo(() => {
-    if (account?.netType) {
-      return account.netType
-    }
-    return accountNetType(address)
-  }, [account, address])
-
-  const innerBoxProps = useMemo(
-    () =>
-      ({
-        borderRadius: 'none',
-        backgroundColor: undefined,
-      } as BoxProps<Theme>),
-    [],
-  )
   const isDeepLink = useMemo(
     () => address && !account?.address,
     [account, address],
   )
+
+  const AddressIcon = useCallback(() => {
+    if (address && Address.isValid(address)) {
+      return <AccountIcon address={address} size={25} />
+    }
+    return <ContactIcon color={secondaryText} />
+  }, [address, secondaryText])
 
   return (
     <Box
@@ -130,23 +201,60 @@ const PaymentItem = ({
             {ellipsizeAddress(address)}
           </Text>
         ) : (
-          <AccountButton
-            flex={1}
-            showChevron={false}
-            title={title}
-            subtitle={
-              account?.address ? ellipsizeAddress(account.address) : undefined
-            }
-            address={address || account?.address}
-            onPress={handleAddressBookSelected}
-            netType={netType}
-            innerBoxProps={innerBoxProps}
-          />
+          <Box flex={1} minHeight={ITEM_HEIGHT}>
+            <Text
+              marginHorizontal="m"
+              marginTop="s"
+              variant="body3"
+              color="secondaryText"
+            >
+              {account?.alias}
+            </Text>
+            <Box
+              flexDirection="row"
+              justifyContent="space-between"
+              alignItems="center"
+              marginRight="m"
+            >
+              <TextInput
+                variant="transparent"
+                flex={1}
+                placeholder={t('payment.enterAddress')}
+                value={address}
+                onChangeText={handleEditAddress}
+                onBlur={handleAddressBlur}
+                autoCapitalize="none"
+                numberOfLines={1}
+                multiline={false}
+                autoComplete="off"
+                autoCorrect={false}
+                returnKeyType="done"
+              />
+              {loading ? (
+                <ActivityIndicator size="small" color={secondaryText} />
+              ) : (
+                <TouchableOpacityBox onPress={handleAddressBookSelected}>
+                  <AddressIcon />
+                </TouchableOpacityBox>
+              )}
+            </Box>
+            <Text
+              opacity={
+                error || data?.isHotspotOrValidator || hasError ? 100 : 0
+              }
+              marginHorizontal="m"
+              variant="body3"
+              marginBottom="xxs"
+              color="red500"
+            >
+              {error ? t('generic.loadFailed') : t('generic.notValidAddress')}
+            </Text>
+          </Box>
         )}
         {!!onRemove && (
           <TouchableOpacityBox
             justifyContent="center"
-            paddingHorizontal="l"
+            paddingRight="m"
             onPress={handleRemove}
           >
             <Remove color={secondaryText} />
@@ -154,63 +262,52 @@ const PaymentItem = ({
         )}
       </Box>
 
-      {(address || account?.address) && (
+      <Box height={1} backgroundColor="primaryBackground" />
+
+      <TouchableOpacityBox
+        minHeight={ITEM_HEIGHT}
+        justifyContent="center"
+        onPress={handleEditAmount}
+      >
+        {!amount || amount?.integerBalance === 0 ? (
+          <Text
+            color="secondaryText"
+            paddingHorizontal="m"
+            variant="subtitle2"
+            fontWeight="100"
+            style={colorStyle}
+          >
+            {t('payment.enterAmount', {
+              ticker,
+            })}
+          </Text>
+        ) : (
+          <>
+            <Text paddingHorizontal="m" variant="subtitle2" color="primaryText">
+              {balanceToString(amount)}
+            </Text>
+            {fee && (
+              <Text paddingHorizontal="m" variant="body3" style={colorStyle}>
+                {t('payment.fee', {
+                  value: balanceToString(feeAsTokens, {
+                    maxDecimalPlaces: 4,
+                  }),
+                })}
+              </Text>
+            )}
+          </>
+        )}
+      </TouchableOpacityBox>
+
+      {!hideMemo && (
         <>
           <Box height={1} backgroundColor="primaryBackground" />
 
-          <TouchableOpacityBox
-            minHeight={80}
-            justifyContent="center"
-            onPress={handleEditAmount}
-          >
-            {!amount || amount?.integerBalance === 0 ? (
-              <Text
-                color="secondaryText"
-                paddingHorizontal="m"
-                variant="subtitle2"
-                style={colorStyle}
-              >
-                {t('payment.enterAmount', {
-                  ticker: amount?.type.ticker,
-                })}
-              </Text>
-            ) : (
-              <>
-                <Text
-                  paddingHorizontal="m"
-                  variant="subtitle2"
-                  color="primaryText"
-                >
-                  {balanceToString(amount)}
-                </Text>
-                {fee && (
-                  <Text
-                    paddingHorizontal="m"
-                    variant="body3"
-                    style={colorStyle}
-                  >
-                    {t('payment.fee', {
-                      value: balanceToString(feeAsTokens, {
-                        maxDecimalPlaces: 4,
-                      }),
-                    })}
-                  </Text>
-                )}
-              </>
-            )}
-          </TouchableOpacityBox>
-
-          {!hideMemo && (
-            <>
-              <Box height={1} backgroundColor="primaryBackground" />
-
-              <MemoInput
-                value={memo}
-                onChangeText={handleEditMemo}
-                minHeight={80}
-              />
-            </>
-          )}
+          <MemoInput
+            value={memo}
+            onChangeText={handleEditMemo}
+            minHeight={ITEM_HEIGHT}
+          />
         </>
       )}
     </Box>

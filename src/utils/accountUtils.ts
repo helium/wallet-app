@@ -18,7 +18,7 @@ export const networkCurrencyType = (netType?: NetType.NetType) => {
 }
 
 export const accountNetType = (address?: string) => {
-  if (!address) return NetType.MAINNET
+  if (!address || !Address.isValid(address)) return NetType.MAINNET
   return Address.fromB58(address)?.netType
 }
 

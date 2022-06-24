@@ -209,9 +209,7 @@ const ContactDetails = ({ action, contact }: Props) => {
             marginVertical="xs"
             color="red500"
           >
-            {error
-              ? t('addNewContact.loadFailed')
-              : t('addNewContact.notValidAddress')}
+            {error ? t('generic.loadFailed') : t('generic.notValidAddress')}
           </Text>
           <Box
             flexDirection="row"

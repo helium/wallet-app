@@ -20,6 +20,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import Address from '@helium/address'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { PaymentV2 } from '@helium/transactions'
+import { unionBy } from 'lodash'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -302,6 +303,15 @@ const PaymentScreen = () => {
     [currentAccount, state.payments],
   )
 
+  const wrongNetTypePay = useMemo(
+    () =>
+      state.payments.find((p) => {
+        if (!p.address || !Address.isValid(p.address)) return false
+        return accountNetType(p.address) !== currentAccount?.netType
+      }),
+    [currentAccount, state.payments],
+  )
+
   const errors = useMemo(() => {
     const errStrings: string[] = []
 
@@ -316,8 +326,19 @@ const PaymentScreen = () => {
     if (selfPay) {
       errStrings.push(t('payment.selfPay'))
     }
+
+    if (wrongNetTypePay) {
+      errStrings.push(t('payment.wrongNetType'))
+    }
     return errStrings
-  }, [currentAccount, insufficientFunds, selfPay, state.payments.length, t])
+  }, [
+    currentAccount,
+    insufficientFunds,
+    selfPay,
+    state.payments.length,
+    t,
+    wrongNetTypePay,
+  ])
 
   const isFormValid = useMemo(() => {
     if (
@@ -335,7 +356,7 @@ const PaymentScreen = () => {
         const addressValid = p.address && Address.isValid(p.address)
         const paymentValid = p.amount && p.amount.integerBalance > 0
         const memoValid = getMemoStrValid(p.memo)
-        return addressValid && paymentValid && memoValid
+        return addressValid && paymentValid && memoValid && !p.hasError
       })
 
     return paymentsValid && !insufficientFunds
@@ -388,6 +409,65 @@ const PaymentScreen = () => {
       dispatch({ type: 'removePayment', index })
     },
     [dispatch],
+  )
+
+  const handleSetPaymentError = useCallback(
+    (index: number, hasError: boolean) => {
+      if (index === undefined) return
+
+      dispatch({
+        type: 'updateError',
+        index,
+        hasError,
+      })
+    },
+    [dispatch],
+  )
+
+  const handleAddressError = useCallback(
+    ({
+      index,
+      address,
+      isHotspotOrValidator,
+    }: {
+      index: number
+      address: string
+      isHotspotOrValidator: boolean
+    }) => {
+      if (isHotspotOrValidator) {
+        handleSetPaymentError(index, true)
+        return
+      }
+      const invalidAddress = !!address && !Address.isValid(address)
+      const wrongNetType =
+        address !== undefined &&
+        address !== '' &&
+        accountNetType(address) !== networkType
+      handleSetPaymentError(index, invalidAddress || wrongNetType)
+    },
+    [handleSetPaymentError, networkType],
+  )
+
+  const handleEditAddress = useCallback(
+    ({ index, address }: { index: number; address: string }) => {
+      if (index === undefined || !currentAccount) return
+
+      const allAccounts = unionBy(
+        contacts,
+        Object.values(accounts || {}),
+        ({ address: addr }) => addr,
+      )
+      let contact = allAccounts.find((c) => c.address === address)
+      if (!contact) contact = { address, netType: networkType, alias: '' }
+      dispatch({
+        type: 'updatePayee',
+        index,
+        address,
+        contact,
+        payer: currentAccount?.address,
+      })
+    },
+    [accounts, contacts, currentAccount, dispatch, networkType],
   )
 
   const handleContactSelected = useCallback(
@@ -492,7 +572,7 @@ const PaymentScreen = () => {
                 <PaymentItem
                   // eslint-disable-next-line react/no-array-index-key
                   key={index}
-                  hasError={p.address === currentAccount?.address}
+                  hasError={p.address === currentAccount?.address || p.hasError}
                   address={p.address}
                   account={p.account}
                   amount={p.amount}
@@ -502,6 +582,10 @@ const PaymentScreen = () => {
                   onEditHNTAmount={handleEditHNTAmount}
                   memo={p.memo}
                   onEditMemo={handleEditMemo}
+                  onEditAddress={handleEditAddress}
+                  handleAddressError={handleAddressError}
+                  onUpdateError={handleSetPaymentError}
+                  ticker={currencyType.ticker}
                   onRemove={
                     state.payments.length > 1 ? handleRemove : undefined
                   }
