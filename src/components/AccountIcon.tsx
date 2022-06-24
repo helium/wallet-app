@@ -1,6 +1,6 @@
-import Address, { utils } from '@helium/address'
 import React, { memo, useMemo } from 'react'
 import Jazzicon, { IJazziconProps } from 'react-native-jazzicon'
+import { getJazzSeed } from '../utils/accountUtils'
 
 type Props = { address?: string; size: number } & Omit<
   IJazziconProps,
@@ -8,10 +8,7 @@ type Props = { address?: string; size: number } & Omit<
 >
 const AccountIcon = ({ address, ...jazzIconProps }: Props) => {
   const seed = useMemo(() => {
-    if (!address || !Address.isValid(address)) return
-
-    const hexVal = utils.bs58ToBin(address).toString('hex')
-    return parseInt(hexVal.slice(-8), 16)
+    return getJazzSeed(address)
   }, [address])
 
   // eslint-disable-next-line react/jsx-props-no-spreading

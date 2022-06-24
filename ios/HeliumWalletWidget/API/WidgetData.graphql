@@ -1,0 +1,61 @@
+query widgetData(
+  $address: String!
+  $minTime: String
+  $midTime: String
+  $maxTime: String
+) {
+  pricing(address: $address) {
+    hnt {
+      usd
+    }
+  }
+  account(address: $address) {
+    address
+    balance
+    block
+    dcBalance
+    dcNonce
+    nonce
+    secBalance
+    secNonce
+    speculativeNonce
+    speculativeSecNonce
+    stakedBalance
+  }
+  prevRewards: accountRewardsSum(
+    address: $address
+    minTime: $minTime
+    maxTime: $midTime
+  ) {
+    data {
+      total
+      max
+      median
+      min
+      stddev
+      sum
+    }
+    meta {
+      maxTime
+      minTime
+    }
+  }
+  currentRewards: accountRewardsSum(
+    address: $address
+    minTime: $midTime
+    maxTime: $maxTime
+  ) {
+    data {
+      total
+      max
+      median
+      min
+      stddev
+      sum
+    }
+    meta {
+      maxTime
+      minTime
+    }
+  }
+}

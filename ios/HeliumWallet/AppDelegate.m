@@ -4,6 +4,7 @@
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
 #import <React/RCTLinkingManager.h>
+#import <HeliumWallet-Swift.h>
 
 #ifdef FB_SONARKIT_ENABLED
 #import <FlipperKit/FlipperClient.h>
@@ -75,6 +76,12 @@ static void InitializeFlipper(UIApplication *application) {
  return [RCTLinkingManager application:application
                   continueUserActivity:userActivity
                     restorationHandler:restorationHandler];
+}
+
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+    if (@available(iOS 14.0, *)) {
+        [WidgetKitHelper reloadAllWidgets];
+    }
 }
 
 @end

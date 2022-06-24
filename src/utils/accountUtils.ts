@@ -1,4 +1,4 @@
-import Address, { NetTypes as NetType } from '@helium/address'
+import Address, { NetTypes as NetType, utils } from '@helium/address'
 import { CurrencyType } from '@helium/currency'
 import Bcrypt from 'bcrypt-react-native'
 
@@ -46,4 +46,11 @@ export const formatAccountAlias = (
   if (!opts) return ''
   const { alias, netType } = opts
   return `${netType === NetType.TESTNET ? '🚧 ' : ''}${alias}`
+}
+
+export const getJazzSeed = (address: string | undefined) => {
+  if (!address || !Address.isValid(address)) return
+
+  const hexVal = utils.bs58ToBin(address).toString('hex')
+  return parseInt(hexVal.slice(-8), 16)
 }
