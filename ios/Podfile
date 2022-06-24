@@ -55,3 +55,12 @@ end
 target 'OneSignalNotificationServiceExtension' do
   pod 'OneSignalXCFramework', '>= 3.0', '< 4.0'
 end
+
+target 'HeliumWalletWidgetExtension' do
+  pod "Apollo"
+  pod 'react-native-config/Extension', :path => '../node_modules/react-native-config'
+end
+
+# target 'HeliuWalletWatch WatchKit Extension' do
+#  pod "Apollo"
+# end

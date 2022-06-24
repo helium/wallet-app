@@ -30,6 +30,7 @@ export const linking = {
           LinkWallet: 'link_wallet',
           SignHotspot: 'sign_hotspot',
           PaymentScreen: 'payment',
+          RequestScreen: 'request',
           DappLoginScreen: 'dapp_login',
         },
       },

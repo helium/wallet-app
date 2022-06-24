@@ -12,11 +12,13 @@ import { Carousel } from 'react-native-snap-carousel'
 import CogIco from '@assets/images/cog.svg'
 import AccountIco from '@assets/images/account.svg'
 import { AnimatePresence } from 'moti'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import { LayoutChangeEvent, LayoutRectangle, Platform } from 'react-native'
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { useTranslation } from 'react-i18next'
 import { NetTypes as NetType } from '@helium/address'
 import { useNavigation } from '@react-navigation/native'
+import { useAsync } from 'react-async-hook'
+import SharedGroupPreferences from 'react-native-shared-group-preferences'
 import Box from '../../components/Box'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import {
@@ -64,6 +66,7 @@ import StatusBanner from '../StatusPage/StatusBanner'
 import { checkSecureAccount } from '../../storage/secureStorage'
 import InternetChooseProvider from '../internet/InternetChooseProvider'
 import { Moti } from '../../config/animationConfig'
+import { getJazzSeed, isTestnet } from '../../utils/accountUtils'
 
 type AccountLayout = {
   accountViewStart: number
@@ -106,6 +109,7 @@ type Item = {
 }
 
 const AccountsScreen = () => {
+  const widgetGroup = 'group.com.helium.mobile.wallet.widget'
   const navigation = useNavigation<HomeNavigationProp>()
   const spacing = useSpacing()
   const { t } = useTranslation()
@@ -117,8 +121,12 @@ const AccountsScreen = () => {
   const { backgroundStyle: handleStyle } = useOpacity('black500', 1)
   const { primaryIcon } = useColors()
   const carouselRef = useRef<Carousel<CSAccount | null>>(null)
-  const { sortedAccounts, currentAccount, setCurrentAccount } =
-    useAccountStorage()
+  const {
+    sortedAccounts,
+    currentAccount,
+    setCurrentAccount,
+    defaultAccountAddress,
+  } = useAccountStorage()
   const prevSortedAccounts = usePrevious<CSAccount[] | undefined>(
     sortedAccounts,
   )
@@ -395,6 +403,28 @@ const AccountsScreen = () => {
     },
     [],
   )
+
+  // Hook that is used for helium balance widget.
+  useAsync(async () => {
+    if (Platform.OS === 'ios') {
+      const defaultAccount = sortedAccounts.find(
+        (account) => account.address === defaultAccountAddress,
+      )
+
+      const jazzSeed = getJazzSeed(defaultAccountAddress)
+
+      await SharedGroupPreferences.setItem(
+        'heliumWalletWidgetKey',
+        {
+          isTestnet: isTestnet(defaultAccountAddress ?? ''),
+          jazzSeed,
+          defaultAccountAddress,
+          defaultAccountAlias: defaultAccount?.alias,
+        },
+        widgetGroup,
+      )
+    }
+  }, [defaultAccountAddress, sortedAccounts])
 
   return (
     <Box flex={1} onLayout={handleLayout('screenLayout')}>

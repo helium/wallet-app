@@ -24,3 +24,9 @@ or
 ```shell
 yarn android
 ```
+
+### Generating graphql files
+
+```shell
+yarn gen-types:all
+```

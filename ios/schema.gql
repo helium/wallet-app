@@ -1,0 +1,329 @@
+schema {
+  query: RootQueryType
+  mutation: RootMutationType
+}
+type AccountData {
+  address: String!
+  balance: Int!
+  block: Int
+  dcBalance: Int!
+  dcNonce: Int!
+  nonce: Int!
+  secBalance: Int!
+  secNonce: Int!
+  speculativeNonce: Int
+  speculativeSecNonce: Int
+  stakedBalance: Int!
+}
+type Activity {
+  address: String
+  amount: Int
+  amountToSeller: Int
+  buyer: String
+  elevation: Float
+  endEpoch: Int
+  fee: Int
+  gain: Float
+  gateway: String
+  hash: String!
+  height: Int
+  lat: Float
+  lng: Float
+  location: String
+  memo: String
+  newAddress: String
+  newOwner: String
+  nonce: Int
+  oldAddress: String
+  oldOwner: String
+  owner: String
+  payee: String
+  payer: String
+  payments: [Payment!]
+  pending: Boolean
+  rewards: [Reward!]
+  seller: String
+  stake: Int
+  stakeAmount: Int
+  stakingFee: Int
+  startEpoch: Int
+  time: Int
+  type: String!
+}
+type ActivityData {
+  cursor: String
+  data: [Activity!]
+}
+type FeatureFlags {
+  mobileEnabled: Boolean!
+  stripePublishableKey: String!
+  wifiBurnMemo: String
+  wifiBurnPayee: String
+  wifiEnabled: Boolean!
+  wifiFaucetB58: String
+  wifiProfile: String
+}
+type Geocode {
+  cityId: String!
+  longCity: String!
+  longCountry: String!
+  longState: String!
+  longStreet: String!
+  shortCity: String!
+  shortCountry: String!
+  shortState: String!
+  shortStreet: String!
+}
+type Hotspot {
+  address: String!
+  block: Int!
+  blockAdded: Int!
+  elevation: Int!
+  gain: Int!
+  geocode: Geocode!
+  lastChangeBlock: Int!
+  lastPocChallenge: Int!
+  lat: Float!
+  lng: Float!
+  location: String!
+  locationHex: String!
+  mode: String!
+  name: String!
+  nonce: Int!
+  owner: String!
+  payer: String!
+  rewardScale: Float!
+  speculativeNonce: Int!
+  status: Status!
+  timestampAdded: String!
+}
+type RootMutationType {
+  submitTxn(address: String!, txn: String!, txnJson: String): TxnHash
+}
+type Notification {
+  actionTitle: String
+  actionUrl: String
+  body: String!
+  icon: String!
+  id: Int!
+  resource: String!
+  time: String!
+  title: String!
+  type: String!
+  viewedAt: String
+}
+type OraclePrice {
+  block: Int!
+  price: Float!
+  timestamp: String!
+}
+type Payment {
+  amount: Int!
+  memo: String
+  payee: String!
+}
+type Penalty {
+  amount: Float!
+  height: Int!
+  type: String!
+}
+type Prices {
+  hnt: Pricing!
+}
+type Pricing {
+  aed: Float
+  ars: Float
+  aud: Float
+  bch: Float
+  bdt: Float
+  bhd: Float
+  bits: Float
+  bmd: Float
+  bnb: Float
+  brl: Float
+  btc: Float
+  cad: Float
+  chf: Float
+  clp: Float
+  cny: Float
+  czk: Float
+  dkk: Float
+  dot: Float
+  eos: Float
+  eth: Float
+  eur: Float
+  gbp: Float
+  hkd: Float
+  huf: Float
+  idr: Float
+  ils: Float
+  inr: Float
+  jpy: Float
+  krw: Float
+  kwd: Float
+  link: Float
+  lkr: Float
+  ltc: Float
+  mmk: Float
+  mxn: Float
+  myr: Float
+  ngn: Float
+  nok: Float
+  nzd: Float
+  php: Float
+  pkr: Float
+  pln: Float
+  rub: Float
+  sar: Float
+  sats: Float
+  sek: Float
+  sgd: Float
+  thb: Float
+  try: Float
+  twd: Float
+  uah: Float
+  usd: Float
+  vef: Float
+  vnd: Float
+  xag: Float
+  xau: Float
+  xdr: Float
+  xlm: Float
+  xrp: Float
+  yfi: Float
+  zar: Float
+}
+type RootQueryType {
+  "Get account"
+  account(address: String!): AccountData
+  "Get account activity"
+  accountActivity(
+    address: String!
+    cursor: String
+    filter: String = "all"
+  ): ActivityData
+  "Get account rewards sum"
+  accountRewardsSum(address: String!, maxTime: String, minTime: String): Sum
+  "Get Current Block Height"
+  blockHeight(address: String!): Int!
+  "Get current oracle price"
+  currentOraclePrice(address: String!): OraclePrice
+  "Get feature flags"
+  featureFlags(address: String!): FeatureFlags!
+  "Get hotspot"
+  hotspot(address: String!, hotspotAddress: String!): Hotspot!
+  "Get is hotspot or validator"
+  isHotspotOrValidator(address: String!): Boolean!
+  "Get notifications"
+  notifications(
+    address: String!
+    before: Int
+    limit: Int
+    resource: String!
+  ): [Notification!]
+  "Get pending txns"
+  pendingTxns(address: String!): [Activity!]
+  "Get coin gecko prices"
+  pricing(address: String!): Prices
+  "Get Stripe Params"
+  stripeParams(
+    address: String!
+    amount: Int!
+    burnTxn: [Int!]!
+    customerId: String
+  ): StripeParams!
+  "Get txn config vars"
+  txnConfigVars(address: String!): TxnConfigVars
+  "Get validator"
+  validator(address: String!, validatorAddress: String!): Validator!
+  "Get vote result"
+  voteResult(address: String!, id: String!): VoteResult!
+  "Get votes"
+  votes(address: String!): Votes!
+}
+type Reward {
+  account: String
+  amount: Int!
+  gateway: String
+  type: String!
+}
+type Status {
+  height: String!
+  listenAddrs: [String!]
+  online: String!
+  timestamp: String!
+}
+type StripeParams {
+  burnSignature: [Int!]!
+  customerId: String!
+  ephemeralSecret: String!
+  paymentSecret: String!
+}
+type Sum {
+  data: SumData!
+  meta: SumMeta!
+}
+type SumData {
+  avg: Float!
+  max: Float!
+  median: Float!
+  min: Float!
+  stddev: Float!
+  sum: Int!
+  total: Float!
+}
+type SumMeta {
+  maxTime: String!
+  minTime: String!
+}
+type TxnConfigVars {
+  dcPayloadSize: Int!
+  stakingFeeTxnAddGatewayV1: Int!
+  stakingFeeTxnAssertLocationV1: Int!
+  txnFeeMultiplier: Int!
+}
+type TxnHash {
+  hash: String!
+}
+type Validator {
+  address: String!
+  block: Int!
+  blockAdded: Int!
+  consensusGroups: Int!
+  lastHeartbeat: Int!
+  name: String!
+  owner: String!
+  penalties: [Penalty!]
+  penalty: Float!
+  stake: Int!
+  stakeStatus: String!
+  status: Status!
+  versionHeartbeat: Int!
+}
+type Vote {
+  blocksRemaining: Int!
+  deadline: Int!
+  description: String!
+  id: String!
+  name: String!
+  outcomes: [VoteOutcome!]!
+  tags: VoteTags!
+}
+type VoteOutcome {
+  address: String!
+  hntVoted: Int
+  uniqueWallets: Int
+  value: String!
+}
+type VoteResult {
+  outcomes: [VoteOutcome!]!
+  timestamp: Int!
+}
+type VoteTags {
+  primary: String
+  secondary: String
+}
+type Votes {
+  active: [Vote!]!
+  closed: [Vote!]!
+}

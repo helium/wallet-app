@@ -69,6 +69,10 @@
 	<string>Allow Location</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Allow Location</string>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>ConfigurationIntent</string>
+	</array>
 	<key>UIAppFonts</key>
 	<array>
 		<string>DMSans-Bold.ttf</string>

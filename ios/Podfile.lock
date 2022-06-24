@@ -1,4 +1,7 @@
 PODS:
+  - Apollo (0.51.2):
+    - Apollo/Core (= 0.51.2)
+  - Apollo/Core (0.51.2)
   - BCrypt (1.0.0)
   - bcrypt-react-native (1.1.1):
     - BCrypt
@@ -267,6 +270,7 @@ PODS:
     - react-native-config/App (= 1.4.5)
   - react-native-config/App (1.4.5):
     - React-Core
+  - react-native-config/Extension (1.4.5)
   - react-native-currency-format (1.0.19):
     - React
   - react-native-get-random-values (1.8.0):
@@ -375,6 +379,8 @@ PODS:
     - React-Core
   - RNOS (1.2.6):
     - React
+  - RNReactNativeSharedGroupPreferences (1.1.23):
+    - React
   - RNReanimated (2.8.0):
     - DoubleConversion
     - FBLazyVector
@@ -445,6 +451,7 @@ PODS:
     - ZXingObjC/Core
 
 DEPENDENCIES:
+  - Apollo
   - bcrypt-react-native (from `../node_modules/bcrypt-react-native`)
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
@@ -488,6 +495,7 @@ DEPENDENCIES:
   - react-native-ble-plx (from `../node_modules/react-native-ble-plx`)
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
   - react-native-config (from `../node_modules/react-native-config`)
+  - react-native-config/Extension (from `../node_modules/react-native-config`)
   - react-native-currency-format (from `../node_modules/react-native-currency-format`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
@@ -519,6 +527,7 @@ DEPENDENCIES:
   - RNICloudStore (from `../node_modules/react-native-icloudstore`)
   - RNLocalize (from `../node_modules/react-native-localize`)
   - RNOS (from `../node_modules/react-native-os`)
+  - RNReactNativeSharedGroupPreferences (from `../node_modules/react-native-shared-group-preferences`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
@@ -529,6 +538,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - Apollo
     - BCrypt
     - fmt
     - MultiplatformBleAdapter
@@ -685,6 +695,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-localize"
   RNOS:
     :path: "../node_modules/react-native-os"
+  RNReactNativeSharedGroupPreferences:
+    :path: "../node_modules/react-native-shared-group-preferences"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -701,6 +713,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
+  Apollo: e5bc805c3f3556c18edc4eae4e2ea4723cea2318
   BCrypt: 712b656110e5020d319c547e4d8f3053ded82b2a
   bcrypt-react-native: 399775585257ae6c8717370a1119c7da0113e3bf
   boost: a7c83b31436843459a1961bfd74b96033dc77234
@@ -726,11 +739,11 @@ SPEC CHECKSUMS:
   FBLazyVector: e5569e42a1c79ca00521846c223173a57aca1fe1
   FBReactNativeSpec: fe08c1cd7e2e205718d77ad14b34957cce949b58
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  glog: 43737235ae6a21de4f45297f4f73b6420fc2ecb2
+  glog: 5337263514dd6f09803962437687240c5dc39aa4
   helium-react-native-sdk: 7498f9d209889e903f3f12b0e297c396f62bbd51
   MultiplatformBleAdapter: 5a6a897b006764392f9cef785e4360f54fb9477d
   OneSignalXCFramework: 4efd7bd68c2b14920955b3f14b5b75bbf8fb662c
-  RCT-Folly: e2636706cc3fded205cf0d380428ec0ea7455f80
+  RCT-Folly: a21c126816d8025b547704b777a2ba552f3d9fa9
   RCTRequired: 4bf86c70714490bca4bf2696148638284622644b
   RCTTypeSafety: c475a7059eb77935fa53d2c17db299893f057d5d
   React: f64af14e3f2c50f6f2c91a5fd250e4ff1b3c3459
@@ -776,6 +789,7 @@ SPEC CHECKSUMS:
   RNICloudStore: bc6e225811637c09bd1eb055d6cd7448e61cd451
   RNLocalize: cbcb55d0e19c78086ea4eea20e03fe8000bbbced
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
+  RNReactNativeSharedGroupPreferences: de0121a4224c267bc7e9fb16c398f3f087c8da81
   RNReanimated: 58b57be69a237fb02ec8099d25171057638cf41a
   RNScreens: 6e1ea5787989f92b0671049b808aef64fa1ef98c
   RNSentry: 2cd1daa124b0d9fd0dfc2cb6094fdd168cb579bc
@@ -792,6 +806,6 @@ SPEC CHECKSUMS:
   Yoga: e7dc4e71caba6472ff48ad7d234389b91dadc280
   ZXingObjC: fdbb269f25dd2032da343e06f10224d62f537bdb
 
-PODFILE CHECKSUM: 716896d6cb0ca89d476d96d88cd22bd7eccd8024
+PODFILE CHECKSUM: 430392a652b7a65f4d07203cded7abd03c04a2b3
 
 COCOAPODS: 1.11.3

@@ -1,0 +1,20 @@
+/* 
+  Localizable.strings
+  HeliumWallet
+
+  Created by Luis Perrone on 6/8/22.
+  
+*/
+
+"Wallet_Title" = "My Wallet";
+"Balance_Widget_Title" = "Helium Balance Widget";
+"Balance_Widget_Description" = "Track your daily earnings and current balance in your default account.";
+
+"Wallet_Widget_Title" = "Helium Tokens Widget";
+"Wallet_Widget_Description" = "View balances for all helium tokens in your default account.";
+"Wallet_Widget_Last_24h" = "Last 24h";
+"Wallet_Widget_Balance" = "Balance";
+"TESTNET_Wallet_Widget_Balance" = "Testnet Balance";
+"Wallet_Widget_Send" = "Send";
+"Wallet_Widget_Request" = "Request";
+"Wallet_Widget_Non_Transferable" = "Non Transferable";
