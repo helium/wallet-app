@@ -109,7 +109,6 @@ export default {
       placeholder: 'e.g. Loki Laufeyson',
       title: 'Enter Nickname',
     },
-    notValidAddress: 'Not a valid Helium Wallet Address.',
     title: 'Add New Contact',
   },
   addressBook: {
@@ -182,6 +181,8 @@ export default {
     testnet: 'Testnet',
     total: 'Total',
     tryAgain: 'Try Again',
+    notValidAddress: 'Not a valid Helium Wallet Address.',
+    loadFailed: 'Cannot validate address. Please try again.',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',
@@ -347,6 +348,7 @@ export default {
     addRecipient: '+ Add Recipient',
     backToAccounts: 'Back to Accounts',
     enterAmount: 'Enter {{ticker}} Amount',
+    enterAddress: 'Enter Address',
     enterMemo: 'Enter Memo (Optional)',
     fee: '+{{value}} Fee',
     insufficientFunds: 'Insufficient Funds',
@@ -362,6 +364,7 @@ export default {
     },
     selectContact: 'Select Contact',
     selfPay: 'Self Pay',
+    wrongNetType: 'Wrong Net Type',
     sendButton: 'Swipe to Send {{ticker}}',
     sending: 'Sending...',
     submitError:

@@ -32,6 +32,12 @@ type RemovePayment = {
   index: number
 }
 
+type UpdateErrorAction = {
+  type: 'updateError'
+  hasError: boolean
+  index: number
+}
+
 type AddPayee = {
   type: 'addPayee'
 }
@@ -84,6 +90,7 @@ function reducer(
     | UpdatePayeeAction
     | UpdateMemoAction
     | UpdateBalanceAction
+    | UpdateErrorAction
     | AddPayee
     | AddLinkedPayments
     | RemovePayment,
@@ -126,6 +133,20 @@ function reducer(
         return {
           ...p,
           memo: action.memo,
+        }
+      })
+      return { ...state, payments: nextPayments }
+    }
+    case 'updateError': {
+      const { payments } = state
+
+      const nextPayments = payments.map((p, index) => {
+        if (index !== action.index) {
+          return p
+        }
+        return {
+          ...p,
+          hasError: action.hasError,
         }
       })
       return { ...state, payments: nextPayments }
