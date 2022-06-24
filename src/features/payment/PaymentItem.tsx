@@ -58,6 +58,7 @@ type Props = {
   onUpdateError?: (index: number, hasError: boolean) => void
   hideMemo?: boolean
   ticker?: string
+  netType?: number
 } & Payment
 
 const ITEM_HEIGHT = 80
@@ -79,6 +80,7 @@ const PaymentItem = ({
   onRemove,
   hideMemo,
   ticker,
+  netType,
 }: Props) => {
   const { colorStyle } = useOpacity('primaryText', 0.3)
   const { dcToTokens } = useBalance()
@@ -101,8 +103,8 @@ const PaymentItem = ({
     () =>
       address !== undefined &&
       address !== '' &&
-      accountNetType(address) !== account?.netType,
-    [account, address],
+      accountNetType(address) !== netType,
+    [address, netType],
   )
 
   useEffect(() => {

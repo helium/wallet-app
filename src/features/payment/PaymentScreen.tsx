@@ -589,6 +589,7 @@ const PaymentScreen = () => {
                   onRemove={
                     state.payments.length > 1 ? handleRemove : undefined
                   }
+                  netType={networkType}
                 />
               ))}
               {canAddPayee && (
