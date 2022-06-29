@@ -57,17 +57,13 @@ enum Utils {
         return isTestnet ? "TestnetColor" : "surfaceColor"
     }
 
-    static func getBalanceLabel(isTestnet: Bool) -> String {
-        return isTestnet ? "Testnet Balance" : "Balance"
-    }
-
     static func renderConstructionEmoji(isTestnet: Bool) -> String {
         return isTestnet ? "🚧" : ""
     }
 
     // Mock account details.
     static func mockAccountDetails() -> DefaultAccountDetails {
-        let assets: [HeliumAsset] = [HeliumAsset(name: "Helium", symbol: "HNT", balance: 9_000_000_000_000_000, price: 11.72, percentChange: "3.24%"), HeliumAsset(name: "Data Credits", symbol: "DC", balance: 33850, price: 0.00001, percentChange: ""), HeliumAsset(name: "Mobile", symbol: "MOBILE", balance: 3_000_000_000_000, price: 4.72, percentChange: "8.24%")]
+        let assets: [HeliumAsset] = [HeliumAsset(name: "Helium", symbol: "HNT", balance: 9_000_000_000_000_000, price: 11.72, percentChange: "3.24%"), HeliumAsset(name: "Data Credits", symbol: "DC", balance: 33850, price: 0.00001, percentChange: "")]
 
         let accountDetails = DefaultAccountDetails(accountName: "Satoshi", accountAddress: "13M8dUbxymE3xtiAXszRkGMmezMhBS8Li7wEsMojLdb4Sdxc4wc", jazzSeed: 71, isTestnet: false, totalFiatBalance: 96000.52, totalHNTBalance: 1_969_009_293_847_000_000, totalPercentChange: "16.27%", assets: assets)
         return accountDetails

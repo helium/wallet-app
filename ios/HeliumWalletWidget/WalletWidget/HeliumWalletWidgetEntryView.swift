@@ -48,7 +48,7 @@ struct HeliumWalletWidget: Widget {
     }
 }
 
-// NOTE: Uncomment this to run preview with SwiftUI
+// DEBUGGING: Uncomment this to run preview with SwiftUI
 
 // extension WidgetFamily: EnvironmentKey {
 //
