@@ -3,9 +3,13 @@ import React, { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Linking } from 'react-native'
 import { getUnixTime } from 'date-fns'
-import { Keypair, WalletLink } from '@helium/react-native-sdk'
 import { getBundleId } from 'react-native-device-info'
 import ChevronDown from '@assets/images/chevronDown.svg'
+import {
+  createLinkWalletCallbackUrl,
+  LinkWalletResponse,
+  makeAppLinkAuthToken,
+} from '@helium/wallet-link'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -15,23 +19,6 @@ import AccountIcon from '../../components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { formatAccountAlias } from '../../utils/accountUtils'
 import { checkSecureAccount, getKeypair } from '../../storage/secureStorage'
-
-const makeAppLinkAuthToken = async (
-  tokenOpts: WalletLink.LinkWalletRequest & {
-    signingAppId: string
-    time: number
-    address: string
-  },
-  keypair: Keypair,
-) => {
-  const stringifiedToken = JSON.stringify(tokenOpts)
-  const buffer = await keypair.sign(stringifiedToken)
-
-  const signature = buffer.toString('base64')
-
-  const signedToken = { ...tokenOpts, signature }
-  return Buffer.from(JSON.stringify(signedToken)).toString('base64')
-}
 
 type Route = RouteProp<HomeStackParamList, 'LinkWallet'>
 const LinkWallet = () => {
@@ -44,8 +31,8 @@ const LinkWallet = () => {
   const { currentAccount } = useAccountStorage()
 
   const callback = useCallback(
-    async (responseParams: WalletLink.LinkWalletResponse) => {
-      const url = WalletLink.createLinkWalletCallbackUrl(
+    async (responseParams: LinkWalletResponse) => {
+      const url = createLinkWalletCallbackUrl(
         callbackUrl,
         currentAccount?.address || '',
         responseParams,

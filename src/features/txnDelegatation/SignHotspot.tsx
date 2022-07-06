@@ -2,21 +2,21 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Linking } from 'react-native'
-import {
-  AddGateway,
-  WalletLink,
-  Location,
-  Transfer,
-} from '@helium/react-native-sdk'
+import { AddGateway, Location, Transfer } from '@helium/react-native-sdk'
 import animalHash from 'angry-purple-tiger'
 import { useAsync } from 'react-async-hook'
+import {
+  verifyWalletLinkToken,
+  parseWalletLinkToken,
+  SignHotspotResponse,
+  createSignHotspotCallbackUrl,
+} from '@helium/wallet-link'
 import Box from '../../components/Box'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import verifyAppLinkAuthToken from './verifyAppLinkAuthToken'
 import AccountIcon from '../../components/AccountIcon'
 import { formatAccountAlias } from '../../utils/accountUtils'
 import { getKeypair } from '../../storage/secureStorage'
@@ -42,13 +42,13 @@ const SignHotspot = () => {
 
   const parsedToken = useMemo(() => {
     if (!token) return
-    return WalletLink.parseWalletLinkToken(token)
+    return parseWalletLinkToken(token)
   }, [token])
 
   const callback = useCallback(
-    async (responseParams: WalletLink.SignHotspotResponse) => {
+    async (responseParams: SignHotspotResponse) => {
       if (!parsedToken?.callbackUrl) return
-      const url = WalletLink.createSignHotspotCallbackUrl(
+      const url = createSignHotspotCallbackUrl(
         parsedToken.callbackUrl,
         responseParams,
       )
@@ -95,7 +95,7 @@ const SignHotspot = () => {
       const responseParams = {
         status: 'success',
         gatewayAddress,
-      } as WalletLink.SignHotspotResponse
+      } as SignHotspotResponse
 
       if (gatewayTxn) {
         const txnOwnerSigned = await gatewayTxn.sign({
@@ -182,13 +182,7 @@ const SignHotspot = () => {
   useAsync(async () => {
     if (!parsedToken) return
 
-    const keypair = await getKeypair(parsedToken.address)
-    if (!keypair) {
-      setValidated(false)
-      return
-    }
-
-    verifyAppLinkAuthToken(parsedToken, keypair)
+    verifyWalletLinkToken(parsedToken)
       .then((valid) => {
         setValidated(valid)
       })

@@ -1,4 +1,4 @@
-import { WalletLink } from '@helium/react-native-sdk'
+import { LinkWalletRequest, SignHotspotRequest } from '@helium/wallet-link'
 import { StackNavigationProp } from '@react-navigation/stack'
 
 export type PaymentRouteParam = {
@@ -32,8 +32,8 @@ export type HomeStackParamList = {
   NotificationsNavigator: undefined
   SettingsNavigator: undefined
   AddNewContact: undefined
-  LinkWallet: WalletLink.LinkWalletRequest
-  SignHotspot: WalletLink.SignHotspotRequest
+  LinkWallet: LinkWalletRequest
+  SignHotspot: SignHotspotRequest
   CreateAccount: undefined
   ImportAccount:
     | undefined
