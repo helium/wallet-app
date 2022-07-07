@@ -21,6 +21,7 @@ import Address from '@helium/address'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { PaymentV2 } from '@helium/transactions'
 import { unionBy } from 'lodash'
+import Toast from 'react-native-simple-toast'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -153,18 +154,24 @@ const PaymentScreen = () => {
     const {
       params: { payer },
     } = route
-    let nextAccount = accounts?.[payer || '']
-    if (!nextAccount) {
+    const payerAccount = accounts?.[payer || '']
+    if (payerAccount) {
+      setCurrentAccount(payerAccount)
+    } else {
+      // Deep link didnt specify a payer
       const acctsForNetType = sortedAccountsForNetType(networkType)
       if (!acctsForNetType.length) {
         // They don't have an account that can handle a payment for this network type
+        Toast.show(t('payment.netTypeQrError'))
         navigation.goBack()
         return
       }
-      const [firstAcct] = acctsForNetType
-      nextAccount = firstAcct
+      if (!currentAccount || currentAccount.netType !== networkType) {
+        // If an account of the same netType isn't already selected, set selected account to the first for the net type
+        const [firstAcct] = acctsForNetType
+        setCurrentAccount(firstAcct)
+      }
     }
-    setCurrentAccount(nextAccount)
 
     const paymentsArr = parseLinkedPayments(route.params)
 

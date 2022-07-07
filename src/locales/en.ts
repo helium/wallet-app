@@ -377,6 +377,7 @@ export default {
     totalRecipients_one: '{{count}} Recipient',
     totalRecipients_other: '{{count}} Recipients',
     totalRecipients_plural: '{{count}} Recipients',
+    netTypeQrError: "No accounts support the scanned address's network type.",
   },
   placeholder: {
     accountBalanceValue: 'Account Balance: {{balance}}',
