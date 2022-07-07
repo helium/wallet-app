@@ -157,7 +157,6 @@ const useBalanceHook = () => {
 
   const accountBalance = useMemo(() => {
     if (accountData?.account?.balance === undefined || !currentAccount) {
-      console.warn('Cannot convert int to balance')
       return
     }
     return new Balance(
