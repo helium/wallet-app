@@ -9,6 +9,7 @@ import BackButton from '../../components/BackButton'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import NotificationDetailBanner from './NotificationDetailBanner'
 import usePrevious from '../../utils/usePrevious'
+import parseMarkup from '../../utils/parseMarkup'
 
 type Route = RouteProp<NotificationsListStackParamList, 'NotificationDetails'>
 
@@ -72,7 +73,7 @@ const NotificationDetails = () => {
           style={bodyStyle}
           marginBottom="xl"
         >
-          {notification.body}
+          {parseMarkup(notification.body)}
         </Text>
       </BottomSheetScrollView>
     </Box>

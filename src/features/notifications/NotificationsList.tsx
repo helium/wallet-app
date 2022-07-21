@@ -16,6 +16,7 @@ import {
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useNotificationsQuery } from '../../generated/graphql'
+import parseMarkup from '../../utils/parseMarkup'
 
 const NotificationsList = () => {
   const colors = useColors()
@@ -102,7 +103,7 @@ const NotificationsList = () => {
                 color="surfaceSecondaryText"
                 marginBottom="xs"
               >
-                {item.body}
+                {parseMarkup(item.body)}
               </Text>
               <Text
                 variant="body3"
