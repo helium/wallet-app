@@ -1,5 +1,4 @@
-import React, { memo, useCallback } from 'react'
-import { useAsync } from 'react-async-hook'
+import React, { memo, useCallback, useMemo } from 'react'
 import Pending from '@assets/images/pending.svg'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
@@ -23,7 +22,7 @@ const TxnListItem = ({ item, accountAddress, now, isLast, onPress }: Props) => {
     memo: txnMemo,
     getAmount,
   } = useTxn(item, accountAddress || '', { now })
-  const { result: amt } = useAsync(getAmount, [])
+  const amt = useMemo(() => getAmount(), [getAmount])
 
   const handlePress = useCallback(() => {
     onPress(item)
@@ -53,13 +52,13 @@ const TxnListItem = ({ item, accountAddress, now, isLast, onPress }: Props) => {
             <Pending />
           </Box>
         )}
-        <Box flex={1} justifyContent="center" paddingVertical="m">
+        <Box justifyContent="center" paddingVertical="m" flex={1}>
           <Text variant="body2">{title}</Text>
           <Text variant="body2" color="grey500">
             {time}
           </Text>
         </Box>
-        <Box paddingEnd="l" paddingVertical="m">
+        <Box paddingEnd="l" paddingVertical="m" maxWidth="55%">
           <Text variant="body2" color={color} textAlign="right">
             {amt}
           </Text>

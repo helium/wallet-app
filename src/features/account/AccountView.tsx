@@ -1,24 +1,18 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import DC from '@assets/images/dc.svg'
-import Helium from '@assets/images/helium.svg'
 import { LayoutChangeEvent } from 'react-native'
 import { NetTypes as NetType } from '@helium/address'
 import { ResponsiveValue } from '@shopify/restyle'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
-import { useColors } from '../../theme/themeHooks'
 import FabButton from '../../components/FabButton'
 import { AccountData, useFeatureFlagsQuery } from '../../generated/graphql'
-import {
-  balanceToString,
-  useAccountBalances,
-  useBalance,
-} from '../../utils/Balance'
+import { useAccountBalances, useBalance } from '../../utils/Balance'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { Spacing, Theme } from '../../theme/theme'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import BalancePill from './BalancePill'
 
 export type Action =
   | 'send'
@@ -45,7 +39,6 @@ const AccountView = ({
   netType,
 }: Props) => {
   const { t } = useTranslation()
-  const colors = useColors()
 
   const displayVals = useAccountBalances(accountData)
   const [balanceString, setBalanceString] = useState('')
@@ -123,72 +116,12 @@ const AccountView = ({
           {balanceString || ' '}
         </Text>
       </TouchableOpacityBox>
-      <Box flexDirection="row" marginTop="s">
-        {displayVals?.stakedHnt && displayVals.stakedHnt.integerBalance > 0 && (
-          <Box
-            borderRadius="xl"
-            overflow="hidden"
-            backgroundColor={
-              netType === NetType.TESTNET ? 'lividBrown' : 'surfaceSecondary'
-            }
-            flexDirection="row"
-            alignItems="center"
-            paddingVertical="sx"
-            marginRight="ms"
-            paddingHorizontal="ms"
-          >
-            <Helium color={colors.blueBright500} />
-            <Text variant="body2" marginLeft="sx">
-              {balanceToString(displayVals?.stakedHnt, {
-                maxDecimalPlaces: 2,
-                showTicker: false,
-              })}
-            </Text>
-          </Box>
-        )}
-        {displayVals?.dc && displayVals.dc.integerBalance > 0 && (
-          <Box
-            borderRadius="xl"
-            overflow="hidden"
-            backgroundColor={
-              netType === NetType.TESTNET ? 'lividBrown' : 'surfaceSecondary'
-            }
-            flexDirection="row"
-            alignItems="center"
-            paddingVertical="sx"
-            marginRight="ms"
-            paddingHorizontal="ms"
-          >
-            <DC />
-            <Text variant="body2" marginLeft="sx">
-              {balanceToString(displayVals?.dc, {
-                maxDecimalPlaces: 2,
-                showTicker: false,
-              })}
-            </Text>
-          </Box>
-        )}
-        {displayVals?.hst && displayVals.hst.integerBalance > 0 && (
-          <Box
-            borderRadius="xl"
-            overflow="hidden"
-            backgroundColor={
-              netType === NetType.TESTNET ? 'lividBrown' : 'surfaceSecondary'
-            }
-            flexDirection="row"
-            alignItems="center"
-            paddingVertical="sx"
-            paddingHorizontal="ms"
-          >
-            <Helium color={colors.purple500} />
-            <Text variant="body2" marginLeft="sx">
-              {balanceToString(displayVals?.hst, {
-                maxDecimalPlaces: 2,
-                showTicker: false,
-              })}
-            </Text>
-          </Box>
-        )}
+
+      <Box flexDirection="row" flexWrap="wrap">
+        <BalancePill balance={displayVals?.dc} netType={netType} />
+        <BalancePill balance={displayVals?.stakedHnt} netType={netType} />
+        <BalancePill balance={displayVals?.hst} netType={netType} />
+        <BalancePill balance={displayVals?.mobile} netType={netType} />
       </Box>
 
       <Box

@@ -10,8 +10,8 @@ import useAppear from '../../utils/useAppear'
 
 const AccountActivityAPIFilters = {
   all: ['all'],
-  mining: ['rewards_v1', 'rewards_v2'],
-  payment: ['payment_v1', 'payment_v2'],
+  mining: ['rewards_v1', 'rewards_v2', 'subnetwork_rewards_v1'],
+  payment: ['payment_v1', 'payment_v2', 'token_redeem_v1'],
   hotspotAndValidators: [
     'add_gateway_v1',
     'assert_location_v1',

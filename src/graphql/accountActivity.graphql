@@ -19,6 +19,8 @@ query AccountActivity($address: String!, $cursor: String, $filter: String) {
       location
       owner
       buyer
+      tokenType
+      account
       endEpoch
       startEpoch
       height
@@ -42,6 +44,7 @@ query AccountActivity($address: String!, $cursor: String, $filter: String) {
         payee
         memo
         amount
+        tokenType
       }
     }
   }
