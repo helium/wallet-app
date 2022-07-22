@@ -68,8 +68,13 @@ const PassphraseAutocomplete = ({
   const handleSubmit = useCallback(() => {
     if (matchingWords.length === 0 || !word || word?.length === 1) return
 
+    if (complete) {
+      onSubmit()
+      return
+    }
+
     handleWordSelect(matchingWords[0])
-  }, [handleWordSelect, matchingWords, word])
+  }, [complete, handleWordSelect, matchingWords, onSubmit, word])
 
   const inputStyle = useMemo(() => {
     return { color: accentValue, borderBottomColor: accentValue }

@@ -29,6 +29,8 @@ export type AccountData = {
   block?: Maybe<Scalars['Int']>
   dcBalance: Scalars['Int']
   dcNonce: Scalars['Int']
+  iotBalance?: Maybe<Scalars['Int']>
+  mobileBalance?: Maybe<Scalars['Int']>
   nonce: Scalars['Int']
   secBalance: Scalars['Int']
   secNonce: Scalars['Int']
@@ -39,6 +41,7 @@ export type AccountData = {
 
 export type Activity = {
   __typename?: 'Activity'
+  account?: Maybe<Scalars['String']>
   address?: Maybe<Scalars['String']>
   amount?: Maybe<Scalars['Int']>
   amountToSeller?: Maybe<Scalars['Int']>
@@ -71,6 +74,7 @@ export type Activity = {
   stakingFee?: Maybe<Scalars['Int']>
   startEpoch?: Maybe<Scalars['Int']>
   time?: Maybe<Scalars['Int']>
+  tokenType?: Maybe<Scalars['Int']>
   type: Scalars['String']
 }
 
@@ -155,6 +159,7 @@ export type Payment = {
   amount: Scalars['Int']
   memo?: Maybe<Scalars['String']>
   payee: Scalars['String']
+  tokenType?: Maybe<Scalars['Int']>
 }
 
 export type Penalty = {
@@ -502,6 +507,8 @@ export type AccountActivityQuery = {
       location?: string | null
       owner?: string | null
       buyer?: string | null
+      tokenType?: number | null
+      account?: string | null
       endEpoch?: number | null
       startEpoch?: number | null
       height?: number | null
@@ -527,6 +534,7 @@ export type AccountActivityQuery = {
         payee: string
         memo?: string | null
         amount: number
+        tokenType?: number | null
       }> | null
     }> | null
   } | null
@@ -574,6 +582,8 @@ export type AccountQuery = {
     speculativeNonce?: number | null
     speculativeSecNonce?: number | null
     stakedBalance: number
+    mobileBalance?: number | null
+    iotBalance?: number | null
   } | null
 }
 
@@ -876,6 +886,8 @@ export const AccountActivityDocument = gql`
         location
         owner
         buyer
+        tokenType
+        account
         endEpoch
         startEpoch
         height
@@ -899,6 +911,7 @@ export const AccountActivityDocument = gql`
           payee
           memo
           amount
+          tokenType
         }
       }
     }
@@ -1046,6 +1059,8 @@ export const AccountDocument = gql`
       speculativeNonce
       speculativeSecNonce
       stakedBalance
+      mobileBalance
+      iotBalance
     }
   }
 `

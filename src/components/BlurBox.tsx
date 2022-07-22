@@ -1,11 +1,11 @@
 import { createBox } from '@shopify/restyle'
-import { BlurView, BlurViewProperties } from '@react-native-community/blur'
+import { BlurView, BlurViewProps } from '@react-native-community/blur'
 
 import { Theme } from '../theme/theme'
 
 const BlurBox = createBox<
   Theme,
-  BlurViewProperties & {
+  BlurViewProps & {
     children?: React.ReactNode
   }
 >(BlurView)

@@ -19,18 +19,18 @@ import { Edge } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import { groupBy } from 'lodash'
 import animalName from 'angry-purple-tiger'
-import { LayoutChangeEvent, Platform } from 'react-native'
+import { LayoutChangeEvent } from 'react-native'
 import { Activity } from '../../generated/graphql'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import TransactionLineItem from './TransactionLineItem'
 import HandleBasic from '../../components/HandleBasic'
-import ExpoBlurBox from '../../components/ExpoBlurBox'
 import { useTxnDetails } from './useTxn'
 import { useBalance } from '../../utils/Balance'
 import { useExplorer, usePublicApi } from '../../constants/urls'
 import { decodeMemoString, DEFAULT_MEMO } from '../../components/MemoInput'
 import { ellipsizeAddress } from '../../utils/accountUtils'
 import useBackHandler from '../../utils/useBackHandler'
+import BlurBox from '../../components/BlurBox'
 
 const initialState = {
   show: () => undefined,
@@ -105,7 +105,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
 
   const backgroundComponent = useCallback(() => {
     return (
-      <ExpoBlurBox
+      <BlurBox
         position="absolute"
         top={0}
         bottom={0}
@@ -113,8 +113,6 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
         right={0}
         borderRadius="xl"
         overflow="hidden"
-        intensity={Platform.OS === 'android' ? 90 : 50}
-        tint={Platform.OS === 'android' ? 'dark' : 'default'}
       />
     )
   }, [])
@@ -122,7 +120,9 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
   const handleComponent = useCallback(() => <HandleBasic />, [])
 
   const rewards = useMemo(() => {
-    if (!txn?.rewards?.length) return null
+    if (!txn?.rewards?.length || txn.type === 'subnetwork_rewards_v1') {
+      return null
+    }
 
     const grouped = groupBy(txn.rewards, (reward) => {
       if (reward.type === 'securities') return reward.type

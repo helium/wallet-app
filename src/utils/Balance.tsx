@@ -2,6 +2,8 @@ import { NetTypes as NetType } from '@helium/address'
 import Balance, {
   CurrencyType,
   DataCredits,
+  IotTokens,
+  MobileTokens,
   NetworkTokens,
   TestNetworkTokens,
 } from '@helium/currency'
@@ -258,7 +260,9 @@ export const BalanceProvider = ({ children }: { children: ReactNode }) => {
 export const useBalance = () => useContext(BalanceContext)
 
 export const balanceToString = (
-  balance?: Balance<DataCredits | NetworkTokens | TestNetworkTokens>,
+  balance?: Balance<
+    DataCredits | NetworkTokens | TestNetworkTokens | MobileTokens | IotTokens
+  >,
   opts?: { maxDecimalPlaces?: number; showTicker?: boolean },
 ) => {
   if (!balance) return ''
@@ -278,6 +282,7 @@ export const useAccountBalances = (
 
     return {
       hnt: new Balance(accountData.balance || 0, currencyType),
+      mobile: new Balance(accountData.mobileBalance || 0, CurrencyType.mobile),
       dc: new Balance(accountData.dcBalance || 0, CurrencyType.dataCredit),
       stakedHnt: new Balance(accountData.stakedBalance || 0, currencyType),
       hst: new Balance(accountData.secBalance || 0, CurrencyType.security),

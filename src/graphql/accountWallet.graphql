@@ -11,5 +11,7 @@ query Account($address: String!) {
     speculativeNonce
     speculativeSecNonce
     stakedBalance
+    mobileBalance
+    iotBalance
   }
 }
