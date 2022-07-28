@@ -61,7 +61,8 @@ class Network {
 
                 let hntAsset = HeliumAsset(name: "Helium", symbol: "HNT", balance: response.data?.account?.balance ?? 0, price: response.data?.pricing?.hnt.usd ?? 0.0, percentChange: percentChangeString)
                 let dcAsset = HeliumAsset(name: "Data Credits", symbol: "DC", balance: response.data?.account?.dcBalance ?? 0, price: 0.00001, percentChange: "0")
-                let accountDetails = DefaultAccountDetails(accountName: parsedWidgetData.defaultAccountAlias, accountAddress: parsedWidgetData.defaultAccountAddress, jazzSeed: parsedWidgetData.jazzSeed, isTestnet: parsedWidgetData.isTestnet, totalFiatBalance: Utils.calculateFiatBalance(assetPrice: response.data?.pricing?.hnt.usd ?? 0.0, assetBalance: response.data?.account?.balance ?? 0), totalHNTBalance: response.data?.account?.balance ?? 0, totalPercentChange: percentChangeString, assets: [hntAsset, dcAsset])
+                let mobileAsset = HeliumAsset(name: "Mobile", symbol: "MOBILE", balance: response.data?.account?.mobileBalance ?? 0, price: 0, percentChange: "")
+                let accountDetails = DefaultAccountDetails(accountName: parsedWidgetData.defaultAccountAlias, accountAddress: parsedWidgetData.defaultAccountAddress, jazzSeed: parsedWidgetData.jazzSeed, isTestnet: parsedWidgetData.isTestnet, totalFiatBalance: Utils.calculateFiatBalance(assetPrice: response.data?.pricing?.hnt.usd ?? 0.0, assetBalance: response.data?.account?.balance ?? 0), totalHNTBalance: response.data?.account?.balance ?? 0, totalPercentChange: percentChangeString, assets: [hntAsset, dcAsset, mobileAsset])
                 completion(nil, accountDetails)
             case let .failure(error):
                 completion(error, nil)
