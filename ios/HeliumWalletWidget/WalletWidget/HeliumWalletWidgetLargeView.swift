@@ -19,7 +19,8 @@ func assetPriceConversion(_ symbol: String) -> String {
     case "DC":
         return String(localized: "Wallet_Widget_Non_Transferable",
                       comment: "Helium wallet widget non transferable label.")
-
+    case "MOBILE":
+        return ""
     default:
         return "HNT"
     }
@@ -46,10 +47,10 @@ struct AssetListItemView: View {
                     .bold()
                     .font(.system(size: 12.0)).foregroundColor(.white)
                 HStack(spacing: 4) {
-                    if assetPrice != "" {
+                    if assetPrice != "" && symbolName != "MOBILE" {
                         Text(assetPrice).lineLimit(1).font(.system(size: 10.0)).foregroundColor(.white).opacity(0.6)
                     }
-                    if symbolName == "HNT" || symbolName == "MOBILE" {
+                    if symbolName == "HNT" {
                         Text(percentChange).font(.system(size: 8.0)).foregroundColor(Color(symbolName == "HNT" ? "malachite" : "azure-radiance"))
                     }
                 }

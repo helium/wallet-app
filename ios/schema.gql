@@ -8,6 +8,8 @@ type AccountData {
   block: Int
   dcBalance: Int!
   dcNonce: Int!
+  iotBalance: Int
+  mobileBalance: Int
   nonce: Int!
   secBalance: Int!
   secNonce: Int!
@@ -16,6 +18,7 @@ type AccountData {
   stakedBalance: Int!
 }
 type Activity {
+  account: String
   address: String
   amount: Int
   amountToSeller: Int
@@ -48,6 +51,7 @@ type Activity {
   stakingFee: Int
   startEpoch: Int
   time: Int
+  tokenType: TokenType
   type: String!
 }
 type ActivityData {
@@ -121,6 +125,7 @@ type Payment {
   amount: Int!
   memo: String
   payee: String!
+  tokenType: TokenType
 }
 type Penalty {
   amount: Float!
@@ -197,11 +202,7 @@ type RootQueryType {
   "Get account"
   account(address: String!): AccountData
   "Get account activity"
-  accountActivity(
-    address: String!
-    cursor: String
-    filter: String = "all"
-  ): ActivityData
+  accountActivity(address: String!, cursor: String, filter: String = "all"): ActivityData
   "Get account rewards sum"
   accountRewardsSum(address: String!, maxTime: String, minTime: String): Sum
   "Get Current Block Height"
@@ -215,23 +216,13 @@ type RootQueryType {
   "Get is hotspot or validator"
   isHotspotOrValidator(address: String!): Boolean!
   "Get notifications"
-  notifications(
-    address: String!
-    before: Int
-    limit: Int
-    resource: String!
-  ): [Notification!]
+  notifications(address: String!, before: Int, limit: Int, resource: String!): [Notification!]
   "Get pending txns"
   pendingTxns(address: String!): [Activity!]
   "Get coin gecko prices"
   pricing(address: String!): Prices
   "Get Stripe Params"
-  stripeParams(
-    address: String!
-    amount: Int!
-    burnTxn: [Int!]!
-    customerId: String
-  ): StripeParams!
+  stripeParams(address: String!, amount: Int!, burnTxn: [Int!]!, customerId: String): StripeParams!
   "Get txn config vars"
   txnConfigVars(address: String!): TxnConfigVars
   "Get validator"
@@ -326,4 +317,14 @@ type VoteTags {
 type Votes {
   active: [Vote!]!
   closed: [Vote!]!
+}
+enum TokenType {
+  "Helium Network Token"
+  hnt
+  "Helium Security Token"
+  hst
+  "IOT Subnetwork Token"
+  iot
+  "MOBILE Subnetwork Token"
+  mobile
 }

@@ -22,6 +22,8 @@ public final class WidgetDataQuery: GraphQLQuery {
             balance
             block
             dcBalance
+            mobileBalance
+            iotBalance
             dcNonce
             nonce
             secBalance
@@ -243,6 +245,8 @@ public final class WidgetDataQuery: GraphQLQuery {
                     GraphQLField("balance", type: .nonNull(.scalar(Int.self))),
                     GraphQLField("block", type: .scalar(Int.self)),
                     GraphQLField("dcBalance", type: .nonNull(.scalar(Int.self))),
+                    GraphQLField("mobileBalance", type: .scalar(Int.self)),
+                    GraphQLField("iotBalance", type: .scalar(Int.self)),
                     GraphQLField("dcNonce", type: .nonNull(.scalar(Int.self))),
                     GraphQLField("nonce", type: .nonNull(.scalar(Int.self))),
                     GraphQLField("secBalance", type: .nonNull(.scalar(Int.self))),
@@ -259,8 +263,8 @@ public final class WidgetDataQuery: GraphQLQuery {
                 resultMap = unsafeResultMap
             }
 
-            public init(address: String, balance: Int, block: Int? = nil, dcBalance: Int, dcNonce: Int, nonce: Int, secBalance: Int, secNonce: Int, speculativeNonce: Int? = nil, speculativeSecNonce: Int? = nil, stakedBalance: Int) {
-                self.init(unsafeResultMap: ["__typename": "AccountData", "address": address, "balance": balance, "block": block, "dcBalance": dcBalance, "dcNonce": dcNonce, "nonce": nonce, "secBalance": secBalance, "secNonce": secNonce, "speculativeNonce": speculativeNonce, "speculativeSecNonce": speculativeSecNonce, "stakedBalance": stakedBalance])
+            public init(address: String, balance: Int, block: Int? = nil, dcBalance: Int, mobileBalance: Int? = nil, iotBalance: Int? = nil, dcNonce: Int, nonce: Int, secBalance: Int, secNonce: Int, speculativeNonce: Int? = nil, speculativeSecNonce: Int? = nil, stakedBalance: Int) {
+                self.init(unsafeResultMap: ["__typename": "AccountData", "address": address, "balance": balance, "block": block, "dcBalance": dcBalance, "mobileBalance": mobileBalance, "iotBalance": iotBalance, "dcNonce": dcNonce, "nonce": nonce, "secBalance": secBalance, "secNonce": secNonce, "speculativeNonce": speculativeNonce, "speculativeSecNonce": speculativeSecNonce, "stakedBalance": stakedBalance])
             }
 
             public var __typename: String {
@@ -305,6 +309,24 @@ public final class WidgetDataQuery: GraphQLQuery {
                 }
                 set {
                     resultMap.updateValue(newValue, forKey: "dcBalance")
+                }
+            }
+
+            public var mobileBalance: Int? {
+                get {
+                    return resultMap["mobileBalance"] as? Int
+                }
+                set {
+                    resultMap.updateValue(newValue, forKey: "mobileBalance")
+                }
+            }
+
+            public var iotBalance: Int? {
+                get {
+                    return resultMap["iotBalance"] as? Int
+                }
+                set {
+                    resultMap.updateValue(newValue, forKey: "iotBalance")
                 }
             }
 
