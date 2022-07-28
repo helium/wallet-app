@@ -83,7 +83,7 @@ const PaymentItem = ({
   netType,
 }: Props) => {
   const { colorStyle } = useOpacity('primaryText', 0.3)
-  const { dcToTokens } = useBalance()
+  const { dcToNetworkTokens } = useBalance()
   const { t } = useTranslation()
   const { secondaryText } = useColors()
 
@@ -128,8 +128,8 @@ const PaymentItem = ({
   const feeAsTokens = useMemo(() => {
     if (!fee) return
 
-    return dcToTokens(fee)
-  }, [dcToTokens, fee])
+    return dcToNetworkTokens(fee)
+  }, [dcToNetworkTokens, fee])
 
   const handleAddressBookSelected = useCallback(() => {
     Keyboard.dismiss()

@@ -1,9 +1,19 @@
-import { NetTypes as NetType } from '@helium/address'
-import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
+import Balance, {
+  IotTokens,
+  MobileTokens,
+  NetworkTokens,
+  TestNetworkTokens,
+} from '@helium/currency'
 import { useReducer } from 'react'
 import { decodeMemoString } from '../../components/MemoInput'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Payment } from './PaymentItem'
+
+type PaymentCurrencyType =
+  | NetworkTokens
+  | TestNetworkTokens
+  | IotTokens
+  | MobileTokens
 
 type UpdatePayeeAction = {
   type: 'updatePayee'
@@ -23,7 +33,7 @@ type UpdateBalanceAction = {
   type: 'updateBalance'
   address?: string
   index: number
-  value?: Balance<NetworkTokens | TestNetworkTokens>
+  value?: Balance<PaymentCurrencyType>
   payer: string
 }
 
@@ -42,6 +52,11 @@ type AddPayee = {
   type: 'addPayee'
 }
 
+type ChangeToken = {
+  type: 'changeToken'
+  currencyType: PaymentCurrencyType
+}
+
 type AddLinkedPayments = {
   type: 'addLinkedPayments'
   payments: Array<{
@@ -56,15 +71,13 @@ export const MAX_PAYMENTS = 10
 
 type PaymentState = {
   payments: Payment[]
-  totalAmount: Balance<TestNetworkTokens | NetworkTokens>
+  totalAmount: Balance<PaymentCurrencyType>
   error?: string
-  currencyType: NetworkTokens | TestNetworkTokens
-  networkType: NetType.NetType
+  currencyType: PaymentCurrencyType
 }
 
 const initialState = (opts: {
-  currencyType: NetworkTokens | TestNetworkTokens
-  networkType: NetType.NetType
+  currencyType: PaymentCurrencyType
 }): PaymentState => ({
   error: undefined,
   payments: [{}] as Array<Payment>,
@@ -72,10 +85,7 @@ const initialState = (opts: {
   ...opts,
 })
 
-const paymentsSum = (
-  payments: Payment[],
-  type: NetworkTokens | TestNetworkTokens,
-) => {
+const paymentsSum = (payments: Payment[], type: PaymentCurrencyType) => {
   return payments.reduce((prev, current) => {
     if (!current.amount) {
       return prev
@@ -93,7 +103,8 @@ function reducer(
     | UpdateErrorAction
     | AddPayee
     | AddLinkedPayments
-    | RemovePayment,
+    | RemovePayment
+    | ChangeToken,
 ) {
   switch (action.type) {
     case 'updatePayee': {
@@ -172,11 +183,16 @@ function reducer(
       return { ...state, payments: [...state.payments, {}] }
     }
 
+    case 'changeToken': {
+      return initialState({
+        currencyType: action.currencyType,
+      })
+    }
+
     case 'addLinkedPayments': {
       if (!action.payments.length) {
         return initialState({
           currencyType: state.currencyType,
-          networkType: state.networkType,
         })
       }
 
@@ -209,7 +225,5 @@ function reducer(
   }
 }
 
-export default (opts: {
-  currencyType: NetworkTokens | TestNetworkTokens
-  networkType: NetType.NetType
-}) => useReducer(reducer, initialState(opts))
+export default (opts: { currencyType: PaymentCurrencyType }) =>
+  useReducer(reducer, initialState(opts))

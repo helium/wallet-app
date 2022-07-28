@@ -1,4 +1,4 @@
-import { NetTypes as NetType } from '@helium/address'
+import { NetTypes } from '@helium/address'
 import Balance, {
   CurrencyType,
   DataCredits,
@@ -21,6 +21,7 @@ import useAppState from 'react-native-appstate-hook'
 import CurrencyFormatter from 'react-native-currency-format'
 import {
   AccountData,
+  TokenType,
   useAccountLazyQuery,
   useAccountQuery,
   useOracleDataLazyQuery,
@@ -57,7 +58,7 @@ const useBalanceHook = () => {
     variables: {
       address: currentAccount?.address || '',
     },
-    fetchPolicy: 'cache-only',
+    fetchPolicy: 'cache-and-network',
     skip: !currentAccount?.address,
   })
   const [fetchAccountData] = useAccountLazyQuery()
@@ -110,13 +111,13 @@ const useBalanceHook = () => {
     }
   }, [oracleData, error, loadingOracle, prevLoadingOracle])
 
-  const dcToTokens = useCallback(
+  const dcToNetworkTokens = useCallback(
     (
       dcBalance: Balance<DataCredits>,
     ): Balance<TestNetworkTokens | NetworkTokens> | undefined => {
       if (!oraclePrice) return
 
-      if (currentAccount?.netType === NetType.TESTNET) {
+      if (currentAccount?.netType === NetTypes.TESTNET) {
         return dcBalance.toTestNetworkTokens(oraclePrice)
       }
       return dcBalance.toNetworkTokens(oraclePrice)
@@ -124,18 +125,41 @@ const useBalanceHook = () => {
     [currentAccount, oraclePrice],
   )
 
+  const currencyTypeFromTokenType = useCallback(
+    (type: TokenType | null | undefined) => {
+      switch (type) {
+        case TokenType.Hst:
+          return CurrencyType.security
+        case TokenType.Iot:
+          return CurrencyType.iot
+        case TokenType.Mobile:
+          return CurrencyType.mobile
+        case TokenType.Hnt:
+        default:
+          if (currentAccount?.netType === NetTypes.TESTNET)
+            return CurrencyType.testNetworkToken
+          return CurrencyType.networkToken
+      }
+    },
+    [currentAccount],
+  )
+
   const floatToBalance = useCallback(
-    (value: number) => {
+    (value: number, tokenType: TokenType) => {
       if (!currentAccount) {
         console.warn('Cannot convert float to balance for nil account')
         return
       }
-      return Balance.fromFloat(
-        value,
-        accountCurrencyType(currentAccount.address),
-      )
+      return Balance.fromFloat(value, currencyTypeFromTokenType(tokenType))
     },
-    [currentAccount],
+    [currencyTypeFromTokenType, currentAccount],
+  )
+
+  const bonesToBalance = useCallback(
+    (v: number | undefined | null, tokenType: TokenType | null | undefined) => {
+      return new Balance(v || 0, currencyTypeFromTokenType(tokenType))
+    },
+    [currencyTypeFromTokenType],
   )
 
   const intToBalance = useCallback(
@@ -152,12 +176,7 @@ const useBalanceHook = () => {
     [currentAccount],
   )
 
-  const zeroBalanceNetworkToken = useMemo(
-    () => new Balance(0, accountCurrencyType(currentAccount?.address)),
-    [currentAccount],
-  )
-
-  const accountBalance = useMemo(() => {
+  const accountNetworkBalance = useMemo(() => {
     if (accountData?.account?.balance === undefined || !currentAccount) {
       return
     }
@@ -165,6 +184,17 @@ const useBalanceHook = () => {
       accountData?.account?.balance,
       accountCurrencyType(currentAccount.address),
     )
+  }, [accountData, currentAccount])
+
+  const accountMobileBalance = useMemo(() => {
+    if (
+      accountData?.account?.mobileBalance === undefined ||
+      accountData.account.mobileBalance === null ||
+      !currentAccount
+    ) {
+      return
+    }
+    return new Balance(accountData.account.mobileBalance, CurrencyType.mobile)
   }, [accountData, currentAccount])
 
   const toPreferredCurrencyString = useCallback(
@@ -220,8 +250,11 @@ const useBalanceHook = () => {
   )
 
   return {
-    accountBalance,
-    dcToTokens,
+    accountNetworkBalance,
+    accountMobileBalance,
+    bonesToBalance,
+    currencyTypeFromTokenType,
+    dcToNetworkTokens,
     floatToBalance,
     intToBalance,
     oracleDateTime,
@@ -230,13 +263,15 @@ const useBalanceHook = () => {
     toPreferredCurrencyString,
     toUsd,
     updateVars,
-    zeroBalanceNetworkToken,
   }
 }
 
 const initialState = {
-  accountBalance: undefined,
-  dcToTokens: () => undefined,
+  accountNetworkBalance: undefined,
+  accountMobileBalance: undefined,
+  bonesToBalance: () => new Balance(0, CurrencyType.networkToken),
+  currencyTypeFromTokenType: () => CurrencyType.networkToken,
+  dcToNetworkTokens: () => undefined,
   floatToBalance: () => undefined,
   intToBalance: () => undefined,
   oracleDateTime: undefined,
@@ -246,7 +281,6 @@ const initialState = {
     new Promise<string>((resolve) => resolve('')),
   toUsd: () => 0,
   updateVars: () => undefined,
-  zeroBalanceNetworkToken: new Balance(0, CurrencyType.networkToken),
 }
 
 const BalanceContext =

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { differenceBy } from 'lodash'
 import {
+  useAccountActivityLazyQuery,
   useAccountActivityQuery,
   usePendingTxnsLazyQuery,
   usePendingTxnsQuery,
@@ -65,8 +66,23 @@ export default ({
     },
     fetchPolicy: 'network-only',
   })
-
   useAppear(getPendingTxns)
+
+  const [getTxns, { loading: loadingActivityLazy }] =
+    useAccountActivityLazyQuery({
+      variables: {
+        cursor: '',
+        address: address || '',
+        filter: AccountActivityAPIFilters[filter].join(','),
+      },
+      notifyOnNetworkStatusChange: true,
+      fetchPolicy: 'cache-first',
+    })
+
+  useEffect(() => {
+    if (!address || filter === 'pending') return
+    getTxns()
+  }, [address, filter, getTxns])
 
   const [now, setNow] = useState(new Date())
 
@@ -115,7 +131,7 @@ export default ({
   return {
     data,
     error,
-    loading,
+    loading: loading || loadingActivityLazy,
     requestMore,
     now,
   }

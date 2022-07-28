@@ -1,14 +1,37 @@
 import Address, { NetTypes as NetType, utils } from '@helium/address'
 import { CurrencyType } from '@helium/currency'
 import Bcrypt from 'bcrypt-react-native'
+import { TokenType } from '../generated/graphql'
 
 export type AccountNetTypeOpt = 'all' | NetType.NetType
 
-export const accountCurrencyType = (address?: string) => {
+export const accountCurrencyType = (
+  address?: string,
+  tokenType?: TokenType,
+) => {
   if (!address) return CurrencyType.default
-  return accountNetType(address) === NetType.TESTNET
-    ? CurrencyType.testNetworkToken
-    : CurrencyType.default
+  if (!tokenType) {
+    return accountNetType(address) === NetType.TESTNET
+      ? CurrencyType.testNetworkToken
+      : CurrencyType.default
+  }
+
+  // If token type is passed in, we need to check if to return testnet token or default token
+  switch (tokenType) {
+    default:
+    case TokenType.Hnt:
+      return accountNetType(address) === NetType.TESTNET
+        ? CurrencyType.testNetworkToken
+        : CurrencyType.default
+    case TokenType.Hst:
+      return CurrencyType.security
+    case TokenType.Iot:
+      // TODO: Add testnet IOT token
+      return CurrencyType.iot
+    case TokenType.Mobile:
+      // TODO: Add testnet Mobile token
+      return CurrencyType.mobile
+  }
 }
 
 export const networkCurrencyType = (netType?: NetType.NetType) => {

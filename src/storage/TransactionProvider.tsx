@@ -8,7 +8,11 @@ import Balance, {
 import { PaymentV2, TokenBurnV1, Transaction } from '@helium/transactions'
 import React, { createContext, ReactNode, useContext, useEffect } from 'react'
 import { encodeMemoString } from '../components/MemoInput'
-import { useAccountQuery, useTxnConfigVarsQuery } from '../generated/graphql'
+import {
+  TokenType,
+  useAccountQuery,
+  useTxnConfigVarsQuery,
+} from '../generated/graphql'
 import { useAccountStorage } from './AccountStorageProvider'
 import { getKeypair } from './secureStorage'
 
@@ -106,6 +110,7 @@ const useTransactionHook = () => {
     paymentDetails: Array<SendDetails>
     speculativeNonce: number
     isLedger?: boolean
+    tokenType: TokenType
   }): Promise<{
     txnJson: string
     signedTxn?: PaymentV2
@@ -128,6 +133,7 @@ const useTransactionHook = () => {
           payee: Address.fromB58(address),
           amount: balanceAmount.integerBalance,
           memo: encodeMemoString(memo),
+          tokenType: opts.tokenType || 'hnt',
         }),
       ),
       nonce: opts.speculativeNonce + 1,
@@ -155,7 +161,10 @@ const useTransactionHook = () => {
     return { signedTxn, txnJson: JSON.stringify(txnJson), unsignedTxn: txn }
   }
 
-  const calculatePaymentTxnFee = async (paymentDetails: Array<SendDetails>) => {
+  const calculatePaymentTxnFee = async (
+    paymentDetails: Array<SendDetails>,
+    tokenType: TokenType,
+  ) => {
     if (!currentAccount?.address) {
       throw new Error(
         'Cannot calculate payment txn fee. Current account not found',
@@ -170,6 +179,7 @@ const useTransactionHook = () => {
             : EMPTY_B58_ADDRESS,
         amount: balanceAmount.integerBalance,
         memo: encodeMemoString(memo),
+        tokenType: tokenType || 'hnt',
       }),
     )
     const paymentTxn = new PaymentV2({

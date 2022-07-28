@@ -19,7 +19,7 @@ import SafeAreaBox from './SafeAreaBox'
 import HandleBasic from './HandleBasic'
 import { signLedgerPayment, useLedger } from '../utils/heliumLedger'
 import { SendDetails, useTransactions } from '../storage/TransactionProvider'
-import { useAccountLazyQuery } from '../generated/graphql'
+import { TokenType, useAccountLazyQuery } from '../generated/graphql'
 import Text from './Text'
 import Box from './Box'
 import { LedgerDevice } from '../storage/cloudStorage'
@@ -42,9 +42,13 @@ type Props = {
   children: ReactNode
   onConfirm: (opts: { txn: PaymentV2; txnJson: string }) => void
   onError: (error: Error) => void
+  tokenType: TokenType
 }
 const LedgerPaymentSelector = forwardRef(
-  ({ children, onConfirm, onError }: Props, ref: Ref<LedgerPaymentRef>) => {
+  (
+    { children, onConfirm, onError, tokenType }: Props,
+    ref: Ref<LedgerPaymentRef>,
+  ) => {
     useImperativeHandle(ref, () => ({ show, hide }))
     const { showOKAlert } = useAlert()
     const { t } = useTranslation()
@@ -86,6 +90,7 @@ const LedgerPaymentSelector = forwardRef(
             paymentDetails: opts.payments,
             speculativeNonce: accountData?.account?.speculativeNonce || 0,
             isLedger: true,
+            tokenType,
           })
           const payment = await signLedgerPayment(nextTransport, unsignedTxn)
           onConfirm({ txn: payment, txnJson })
@@ -106,6 +111,7 @@ const LedgerPaymentSelector = forwardRef(
         setIsShowing,
         showOKAlert,
         t,
+        tokenType,
       ],
     )
 

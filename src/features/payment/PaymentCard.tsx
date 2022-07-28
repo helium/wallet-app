@@ -16,6 +16,7 @@ import animateTransition from '../../utils/animateTransition'
 import useAlert from '../../utils/useAlert'
 import PaymentSummary from './PaymentSummary'
 import { checkSecureAccount } from '../../storage/secureStorage'
+import { TokenType } from '../../generated/graphql'
 
 type Props = {
   totalBalance: Balance<TestNetworkTokens | NetworkTokens>
@@ -24,6 +25,7 @@ type Props = {
   disabled?: boolean
   errors?: string[]
   payments?: SendDetails[]
+  tokenType: TokenType
 }
 
 const PaymentCard = ({
@@ -31,6 +33,7 @@ const PaymentCard = ({
   feeTokenBalance,
   onSubmit,
   disabled,
+  tokenType,
   payments,
   errors,
 }: Props) => {
@@ -97,6 +100,7 @@ const PaymentCard = ({
       ref={ledgerPaymentRef}
       onConfirm={handleConfirm}
       onError={handleLedgerError}
+      tokenType={tokenType}
     >
       <Box
         borderTopLeftRadius="xl"

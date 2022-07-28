@@ -43,7 +43,7 @@ const VoteBurn = () => {
   const ledgerPaymentRef = useRef<LedgerBurnRef>(null)
   const navigation = useNavigation<VoteNavigatorNavigationProp>()
   const { colorStyle } = useOpacity('primaryText', 0.3)
-  const { dcToTokens } = useBalance()
+  const { dcToNetworkTokens } = useBalance()
   const [fee, setFee] = useState<Balance<DataCredits>>()
   const { makeBurnTxn } = useTransactions()
   const { showOKAlert } = useAlert()
@@ -83,8 +83,8 @@ const VoteBurn = () => {
   const feeAsTokens = useMemo(() => {
     if (!fee) return
 
-    return dcToTokens(fee)
-  }, [dcToTokens, fee])
+    return dcToNetworkTokens(fee)
+  }, [dcToNetworkTokens, fee])
 
   const balance = useMemo(() => new Balance(1, CurrencyType.networkToken), [])
 
