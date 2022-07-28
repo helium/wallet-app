@@ -99,7 +99,7 @@ const ContactsList = ({
 
     const accounts = sortedAccountsForNetType(
       currentAccount?.netType || NetTypes.MAINNET,
-    )
+    ).filter((c) => c.address !== currentAccount?.address)
     return sortBy(
       unionBy(contacts, accounts, ({ address: addr }) => addr),
       ({ alias }) => alias,

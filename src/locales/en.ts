@@ -170,8 +170,10 @@ export default {
     copy: 'Copy',
     error: 'Error',
     fee: 'Fee',
+    loadFailed: 'Cannot validate address. Please try again.',
     mainnet: 'Mainnet',
     next: 'Next',
+    notValidAddress: 'Not a valid Helium Wallet Address.',
     ok: 'OK',
     period: '.',
     retry: 'Retry',
@@ -181,8 +183,6 @@ export default {
     testnet: 'Testnet',
     total: 'Total',
     tryAgain: 'Try Again',
-    notValidAddress: 'Not a valid Helium Wallet Address.',
-    loadFailed: 'Cannot validate address. Please try again.',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',
@@ -234,10 +234,16 @@ export default {
     title: 'The best wallet\nfor your HNT.',
   },
   ledger: {
-    deviceNotFound: {
-      message:
-        'Could not find your ledger device. Please make sure it is connected and the Helium app is open.',
-      title: 'Device Not Found',
+    chooseType: {
+      bluetooth: {
+        title: 'Bluetooth',
+        types: 'Nano X',
+      },
+      title: 'How is your device connected?',
+      usb: {
+        title: 'USB Cable',
+        types: 'Nano S, Nano S Plus, Nano X',
+      },
     },
     connectError: {
       steps: [
@@ -248,6 +254,11 @@ export default {
       subtitle:
         'Please check that your Ledger\nDevice is connected to this phone.\n\nIf not, follow these steps:',
       title: 'Pairing Failed',
+    },
+    deviceNotFound: {
+      message:
+        'Could not find your ledger device. Please make sure it is connected and the Helium app is open.',
+      title: 'Device Not Found',
     },
     pairStart: {
       pair: 'Pair with Ledger',
@@ -260,11 +271,6 @@ export default {
         'Please verify the payment transaction on your Ledger device {{name}}',
       title: 'Ledger Approval',
     },
-    chooseType: {
-      title: 'How is your device connected?',
-      bluetooth: { title: 'Bluetooth', types: 'Nano X' },
-      usb: { title: 'USB Cable', types: 'Nano S, Nano S Plus, Nano X' },
-    },
     scan: {
       connectionError: 'Ledger Connection Error',
       permissionDialog: {
@@ -273,10 +279,10 @@ export default {
           'Location permission is needed to enable a bluetooth connection',
         title: 'Location Permission',
       },
-      subtitleUsb:
-        'Please make sure your\nLedger is unlocked and\nconnected via USB',
       subtitle:
         'Please make sure your\nLedger is unlocked with\nbluetooth enabled',
+      subtitleUsb:
+        'Please make sure your\nLedger is unlocked and\nconnected via USB',
       title: 'Looking\nfor Devices',
     },
     show: {
@@ -347,8 +353,8 @@ export default {
   payment: {
     addRecipient: '+ Add Recipient',
     backToAccounts: 'Back to Accounts',
-    enterAmount: 'Enter {{ticker}} Amount',
     enterAddress: 'Enter Address',
+    enterAmount: 'Enter {{ticker}} Amount',
     enterMemo: 'Enter Memo (Optional)',
     fee: '+{{value}} Fee',
     insufficientFunds: 'Insufficient Funds',
@@ -356,6 +362,12 @@ export default {
       'Ledger payment transactions\nare limited to 1 recipient.',
     max: 'Max',
     memoBytes: '{{used}}/{{total}} Bytes',
+    mobilePrompt: {
+      message:
+        "Sending MOBILE has a small transaction fee that's paid from your HNT balance. If you have a 0 HNT balance, the payment will not succeed.",
+      title: 'MOBILE Payment',
+    },
+    netTypeQrError: "No accounts support the scanned address's network type.",
     pay: 'Pay',
     qrScanFail: {
       message:
@@ -364,7 +376,6 @@ export default {
     },
     selectContact: 'Select Contact',
     selfPay: 'Self Pay',
-    wrongNetType: 'Wrong Net Type',
     sendButton: 'Swipe to Send {{ticker}}',
     sending: 'Sending...',
     submitError:
@@ -377,7 +388,7 @@ export default {
     totalRecipients_one: '{{count}} Recipient',
     totalRecipients_other: '{{count}} Recipients',
     totalRecipients_plural: '{{count}} Recipients',
-    netTypeQrError: "No accounts support the scanned address's network type.",
+    wrongNetType: 'Wrong Net Type',
   },
   placeholder: {
     accountBalanceValue: 'Account Balance: {{balance}}',
@@ -562,10 +573,12 @@ export default {
     from: 'From',
     hash: 'Hash',
     hotspot: 'Hotspot',
+    iotRewards: 'IOT Rewards',
     location: 'Confirm Location',
     location_v2: 'Update Location',
     memo: 'Memo',
     mining: 'Mining Rewards',
+    mobileRewards: 'Mobile Rewards',
     newAddress: 'New Address',
     newOwner: 'New Owner',
     oldAddress: 'Old Address',
@@ -593,8 +606,6 @@ export default {
     stakeAmount: 'Stake Amount',
     stakeValidator: 'Stake {{ticker}}',
     stakingFee: 'Staking Fee',
-    mobileRewards: 'Mobile Rewards',
-    iotRewards: 'IOT Rewards',
     tokens: 'Tokens',
     totalAmount: 'Total Amount',
     transaction: 'Transaction',

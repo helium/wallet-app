@@ -3,7 +3,11 @@ import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
 import { PaymentV2 } from '@helium/transactions'
 import { useTransactions } from '../storage/TransactionProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import { useAccountLazyQuery, useSubmitTxnMutation } from '../generated/graphql'
+import {
+  TokenType,
+  useAccountLazyQuery,
+  useSubmitTxnMutation,
+} from '../generated/graphql'
 
 export default () => {
   const { makePaymentTxn } = useTransactions()
@@ -31,6 +35,7 @@ export default () => {
         balanceAmount: Balance<NetworkTokens | TestNetworkTokens>
         memo: string
       }[],
+      tokenType: TokenType,
     ) => {
       if (!currentAccount) {
         throw new Error('There must be an account selected to submit a txn')
@@ -50,6 +55,7 @@ export default () => {
         const { txnJson, signedTxn } = await makePaymentTxn({
           paymentDetails: payments,
           speculativeNonce: freshAccountData.account.speculativeNonce,
+          tokenType,
         })
 
         if (!signedTxn) {

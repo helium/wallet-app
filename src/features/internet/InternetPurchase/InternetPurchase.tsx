@@ -78,8 +78,13 @@ const InternetPurchase = () => {
   const [dataIndex, setDataIndex] = useState(0)
   const { showOKAlert } = useAlert()
   const timerRef = useRef<TimerRef>(null)
-  const { toCurrencyString, toUsd, accountBalance, dcToTokens, updateVars } =
-    useBalance()
+  const {
+    toCurrencyString,
+    toUsd,
+    accountNetworkBalance,
+    dcToNetworkTokens,
+    updateVars,
+  } = useBalance()
   const [currencyString, setCurrencyString] = useState('')
   const [usCents, setUsCents] = useState(0)
   const [creditCardDetails, setCreditCardDetails] =
@@ -134,7 +139,10 @@ const InternetPurchase = () => {
     [dataPrices, dataIndex],
   )
 
-  const tokenCost = useMemo(() => dcToTokens(dcCost), [dcCost, dcToTokens])
+  const tokenCost = useMemo(
+    () => dcToNetworkTokens(dcCost),
+    [dcCost, dcToNetworkTokens],
+  )
 
   useEffect(() => {
     toCurrencyString(tokenCost).then(setCurrencyString)
@@ -142,11 +150,11 @@ const InternetPurchase = () => {
   }, [toCurrencyString, toUsd, tokenCost])
 
   const remainingBalance = useMemo(() => {
-    if (!accountBalance) return
+    if (!accountNetworkBalance) return
 
     if (!tokenCost) return
-    return accountBalance.minus(tokenCost)
-  }, [accountBalance, tokenCost])
+    return accountNetworkBalance.minus(tokenCost)
+  }, [accountNetworkBalance, tokenCost])
 
   const tokenPrice = useMemo(() => {
     return balanceToString(tokenCost, {

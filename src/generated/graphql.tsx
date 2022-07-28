@@ -74,7 +74,7 @@ export type Activity = {
   stakingFee?: Maybe<Scalars['Int']>
   startEpoch?: Maybe<Scalars['Int']>
   time?: Maybe<Scalars['Int']>
-  tokenType?: Maybe<Scalars['Int']>
+  tokenType?: Maybe<TokenType>
   type: Scalars['String']
 }
 
@@ -159,7 +159,7 @@ export type Payment = {
   amount: Scalars['Int']
   memo?: Maybe<Scalars['String']>
   payee: Scalars['String']
-  tokenType?: Maybe<Scalars['Int']>
+  tokenType?: Maybe<TokenType>
 }
 
 export type Penalty = {
@@ -410,6 +410,17 @@ export type SumMeta = {
   minTime: Scalars['String']
 }
 
+export enum TokenType {
+  /** Helium Network Token */
+  Hnt = 'hnt',
+  /** Helium Security Token */
+  Hst = 'hst',
+  /** IOT Subnetwork Token */
+  Iot = 'iot',
+  /** MOBILE Subnetwork Token */
+  Mobile = 'mobile',
+}
+
 export type TxnConfigVars = {
   __typename?: 'TxnConfigVars'
   dcPayloadSize: Scalars['Int']
@@ -507,7 +518,7 @@ export type AccountActivityQuery = {
       location?: string | null
       owner?: string | null
       buyer?: string | null
-      tokenType?: number | null
+      tokenType?: TokenType | null
       account?: string | null
       endEpoch?: number | null
       startEpoch?: number | null
@@ -534,7 +545,7 @@ export type AccountActivityQuery = {
         payee: string
         memo?: string | null
         amount: number
-        tokenType?: number | null
+        tokenType?: TokenType | null
       }> | null
     }> | null
   } | null

@@ -43,6 +43,7 @@ import BackgroundFill from '../../components/BackgroundFill'
 import animateTransition from '../../utils/animateTransition'
 import { Theme } from '../../theme/theme'
 import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
+import { TokenType } from '../../generated/graphql'
 
 const QR_CONTAINER_SIZE = 220
 
@@ -154,6 +155,7 @@ const RequestScreen = () => {
 
   return (
     <HNTKeyboard
+      tokenType={TokenType.Hnt}
       ref={hntKeyboardRef}
       onConfirmBalance={handleBalance}
       handleVisible={setHNTKeyboardVisible}

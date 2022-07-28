@@ -13,13 +13,12 @@ import TxnReceive from '@assets/images/txnReceive.svg'
 import TxnSend from '@assets/images/txnSend.svg'
 import { useAsync } from 'react-async-hook'
 import animalName from 'angry-purple-tiger'
-import { TokenType } from '@helium/transactions'
 import shortLocale from '../../utils/formatDistance'
 import { Color } from '../../theme/theme'
 import { useColors } from '../../theme/themeHooks'
-import { Activity } from '../../generated/graphql'
+import { Activity, TokenType } from '../../generated/graphql'
 import { accountCurrencyType, ellipsizeAddress } from '../../utils/accountUtils'
-import { balanceToString } from '../../utils/Balance'
+import { balanceToString, useBalance } from '../../utils/Balance'
 import { decodeMemoString, DEFAULT_MEMO } from '../../components/MemoInput'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 
@@ -47,25 +46,20 @@ const useTxn = (
   dateOpts?: { dateFormat?: string; now?: Date },
 ) => {
   const colors = useColors()
+  const { bonesToBalance } = useBalance()
   const { t } = useTranslation()
   const { makers } = useOnboarding()
 
   const ticker = useMemo(() => {
-    const currencyType = accountCurrencyType(address)
-    return currencyType.ticker
-  }, [address])
-
-  const tokenBalance = useCallback(
-    (v: number | undefined | null, tokenType: TokenType | null | undefined) => {
-      if (tokenType === TokenType.hnt || !tokenType) {
-        const currencyType = accountCurrencyType(address)
-        return new Balance(v || 0, currencyType)
+    // Get the ticker from the item if it's available
+    if (item?.payments?.length) {
+      const firstPaymentTokenType = item.payments[0].tokenType
+      if (firstPaymentTokenType) {
+        return accountCurrencyType(address, firstPaymentTokenType).ticker
       }
-
-      return new Balance(v || 0, CurrencyType.fromTokenType(tokenType))
-    },
-    [address],
-  )
+    }
+    return accountCurrencyType(address).ticker
+  }, [address, item])
 
   const dcBalance = (v: number | undefined | null) =>
     new Balance(v || 0, CurrencyType.dataCredit)
@@ -189,7 +183,7 @@ const useTxn = (
       case 'transfer_validator_stake_v1':
         return t('transactions.transferValidator')
       case 'subnetwork_rewards_v1':
-        return TokenType.iot === item?.tokenType
+        return item?.tokenType === 'iot'
           ? t('transactions.iotRewards')
           : t('transactions.mobileRewards')
     }
@@ -348,72 +342,72 @@ const useTxn = (
         const rewardsAmount =
           item.rewards?.reduce(
             (sum, current) =>
-              sum.plus(tokenBalance(current.amount, TokenType.hnt)),
-            tokenBalance(0, TokenType.hnt),
-          ) || tokenBalance(0, TokenType.hnt)
+              sum.plus(bonesToBalance(current.amount, TokenType.Hnt)),
+            bonesToBalance(0, TokenType.Hnt),
+          ) || bonesToBalance(0, TokenType.Hnt)
         return formatAmount('+', rewardsAmount)
       }
       case 'subnetwork_rewards_v1': {
-        const tokenType = item.tokenType as TokenType
+        const { tokenType } = item
         const rewardsAmount =
           item.rewards?.reduce((sum, current) => {
             if (current.account !== address) return sum
             return sum.plus(
-              tokenBalance(current.amount, tokenType || TokenType.mobile),
+              bonesToBalance(current.amount, tokenType || TokenType.Mobile),
             )
-          }, tokenBalance(0, tokenType || TokenType.mobile)) ||
-          tokenBalance(0, tokenType || TokenType.mobile)
+          }, bonesToBalance(0, tokenType || TokenType.Mobile)) ||
+          bonesToBalance(0, tokenType || TokenType.Mobile)
         return formatAmount('+', rewardsAmount)
       }
       case 'transfer_hotspot_v1':
         return formatAmount(
           isSelling ? '+' : '-',
-          tokenBalance(item.amountToSeller, TokenType.hnt),
+          bonesToBalance(item.amountToSeller, TokenType.Hnt),
         )
       case 'assert_location_v1':
       case 'assert_location_v2':
       case 'add_gateway_v1':
         return formatAmount('-', dcBalance(item.stakingFee))
       case 'stake_validator_v1':
-        return formatAmount('-', tokenBalance(item.stake, TokenType.hnt))
+        return formatAmount('-', bonesToBalance(item.stake, TokenType.Hnt))
       case 'unstake_validator_v1':
-        return formatAmount('-', tokenBalance(item.stakeAmount, TokenType.hnt))
+        return formatAmount(
+          '-',
+          bonesToBalance(item.stakeAmount, TokenType.Hnt),
+        )
       case 'transfer_validator_stake_v1':
         return formatAmount(
           item.payer === address ? '-' : '+',
-          tokenBalance(item.stakeAmount, TokenType.hnt),
+          bonesToBalance(item.stakeAmount, TokenType.Hnt),
         )
       case 'token_burn_v1':
-        return formatAmount('-', tokenBalance(item.amount, TokenType.hnt))
+        return formatAmount('-', bonesToBalance(item.amount, TokenType.Hnt))
       case 'payment_v1':
-        return formatAmount('', tokenBalance(item.amount, TokenType.hnt))
+        return formatAmount('', bonesToBalance(item.amount, TokenType.Hnt))
       case 'payment_v2': {
         if (item.payer === address) {
           const paymentTotals = item.payments?.reduce(
             (sums, current) => {
-              const tokenType: TokenType = current.tokenType || TokenType.hnt
+              const tokenType: TokenType = current.tokenType || TokenType.Hnt
               return {
                 ...sums,
                 [tokenType]: sums[tokenType].plus(
-                  tokenBalance(current.amount, tokenType),
+                  bonesToBalance(current.amount, tokenType),
                 ),
               }
             },
             {
-              [TokenType.hnt]: tokenBalance(0, TokenType.hnt),
-              [TokenType.iot]: tokenBalance(0, TokenType.iot),
-              [TokenType.mobile]: tokenBalance(0, TokenType.mobile),
+              [TokenType.Hnt]: bonesToBalance(0, TokenType.Hnt),
+              [TokenType.Iot]: bonesToBalance(0, TokenType.Iot),
+              [TokenType.Mobile]: bonesToBalance(0, TokenType.Mobile),
             } as Record<TokenType, Balance<AnyCurrencyType>>,
           )
           if (!paymentTotals) return ''
           return Object.keys(paymentTotals)
             .flatMap((p) => {
-              const total = paymentTotals[parseInt(p, 10) as TokenType]
+              const total = paymentTotals[p as TokenType]
               if (total.integerBalance === 0) return []
-              const amt = formatAmount(
-                '',
-                paymentTotals[parseInt(p, 10) as TokenType],
-              )
+              const amt = formatAmount('', paymentTotals[p as TokenType])
               return [amt]
             })
             .join(', ')
@@ -421,12 +415,12 @@ const useTxn = (
 
         return `+${item.payments
           ?.filter((p) => p.payee === address)
-          .map((p) => formatAmount('', tokenBalance(p.amount, p.tokenType)))
+          .map((p) => formatAmount('', bonesToBalance(p.amount, p.tokenType)))
           .join(', ')}`
       }
     }
     return new Promise<string>((resolve) => resolve(''))
-  }, [item, formatAmount, isSelling, address, tokenBalance])
+  }, [item, formatAmount, isSelling, address, bonesToBalance])
 
   const time = useMemo(() => {
     if (!item) return ''
@@ -477,12 +471,12 @@ const useTxn = (
     const all = payments.map(async (p) => {
       const balance = await formatAmount(
         '+',
-        tokenBalance(p.amount, p.tokenType),
+        bonesToBalance(p.amount, p.tokenType),
       )
       return { amount: balance, payee: p.payee, memo: p.memo || '' }
     })
     return Promise.all(all)
-  }, [address, formatAmount, item, tokenBalance])
+  }, [address, formatAmount, item, bonesToBalance])
 
   const getPaymentsSent = useCallback(async () => {
     if (item?.payer !== address || !item?.payments) {
@@ -490,13 +484,13 @@ const useTxn = (
     }
     const all = item.payments.map(
       async ({ amount: amt, payee, memo: paymentMemo, tokenType }) => {
-        const balance = await formatAmount('', tokenBalance(amt, tokenType))
+        const balance = await formatAmount('', bonesToBalance(amt, tokenType))
         return { amount: balance, payee, memo: paymentMemo || '' }
       },
     )
 
     return Promise.all(all)
-  }, [address, formatAmount, item, tokenBalance])
+  }, [address, formatAmount, item, bonesToBalance])
 
   return {
     memo,

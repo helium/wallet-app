@@ -22,6 +22,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { PaymentV2 } from '@helium/transactions'
 import { unionBy } from 'lodash'
 import Toast from 'react-native-simple-toast'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useAsync } from 'react-async-hook'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -31,14 +33,10 @@ import {
   HomeStackParamList,
   PaymentRouteParam,
 } from '../home/homeTypes'
-import {
-  accountNetType,
-  formatAccountAlias,
-  networkCurrencyType,
-} from '../../utils/accountUtils'
+import { accountNetType, formatAccountAlias } from '../../utils/accountUtils'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAccountSelector } from '../../components/AccountSelector'
-import { useAccountQuery } from '../../generated/graphql'
+import { TokenType } from '../../generated/graphql'
 import AccountButton from '../../components/AccountButton'
 import AddressBookSelector, {
   AddressBookRef,
@@ -54,6 +52,8 @@ import { getMemoStrValid } from '../../components/MemoInput'
 import PaymentSubmit from './PaymentSubmit'
 import { CSAccount } from '../../storage/cloudStorage'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
+import PaymentTypeSelector from './PaymentTypeSelector'
+import useAlert from '../../utils/useAlert'
 
 type LinkedPayment = {
   amount?: string
@@ -82,6 +82,15 @@ const PaymentScreen = () => {
   const route = useRoute<Route>()
   const addressBookRef = useRef<AddressBookRef>(null)
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
+  const {
+    dcToNetworkTokens,
+    bonesToBalance,
+    currencyTypeFromTokenType,
+    accountNetworkBalance,
+    accountMobileBalance,
+  } = useBalance()
+
+  const { showOKAlert } = useAlert()
 
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
@@ -94,6 +103,20 @@ const PaymentScreen = () => {
     setCurrentAccount,
     sortedAccountsForNetType,
   } = useAccountStorage()
+  const [tokenType, setTokenType] = useState<TokenType>(TokenType.Hnt)
+
+  useAsync(async () => {
+    if (tokenType !== TokenType.Mobile) return
+
+    const mobilePromptShown = await AsyncStorage.getItem('mobilePaymentPrompt')
+    if (mobilePromptShown === 'true') return
+
+    await showOKAlert({
+      title: t('payment.mobilePrompt.title'),
+      message: t('payment.mobilePrompt.message'),
+    })
+    AsyncStorage.setItem('mobilePaymentPrompt', 'true')
+  }, [tokenType])
 
   const networkType = useMemo(() => {
     if (!route.params) {
@@ -109,20 +132,13 @@ const PaymentScreen = () => {
   }, [route])
 
   const currencyType = useMemo(
-    () => networkCurrencyType(networkType),
-    [networkType],
+    () => currencyTypeFromTokenType(tokenType),
+    [currencyTypeFromTokenType, tokenType],
   )
 
-  const [state, dispatch] = usePaymentsReducer({ currencyType, networkType })
+  const [state, dispatch] = usePaymentsReducer({ currencyType })
 
   const { showAccountTypes } = useAccountSelector()
-  const { data: accountData } = useAccountQuery({
-    variables: {
-      address: currentAccount?.address || '',
-    },
-    fetchPolicy: 'cache-and-network',
-    skip: !currentAccount?.address,
-  })
 
   const {
     data: submitData,
@@ -134,18 +150,7 @@ const PaymentScreen = () => {
 
   const [fee, setFee] = useState<Balance<DataCredits>>()
   const { calculatePaymentTxnFee } = useTransactions()
-  const { zeroBalanceNetworkToken, dcToTokens } = useBalance()
   const { top } = useSafeAreaInsets()
-
-  const accountHntBalance = useMemo(() => {
-    if (
-      !accountData?.account ||
-      accountData.account?.address !== currentAccount?.address
-    ) {
-      return
-    }
-    return new Balance(accountData.account?.balance || 0, currencyType)
-  }, [accountData, currencyType, currentAccount])
 
   useEffect(() => {
     if (!route.params) return
@@ -222,24 +227,25 @@ const PaymentScreen = () => {
   const feeAsTokens = useMemo(() => {
     if (!fee) return
 
-    return dcToTokens(fee)
-  }, [dcToTokens, fee])
+    return dcToNetworkTokens(fee)
+  }, [dcToNetworkTokens, fee])
 
   useEffect(() => {
     if (!currentAccount?.address) return
 
     const payments = state.payments.map((p) => ({
       payee: currentAccount?.address,
-      balanceAmount: p.amount || zeroBalanceNetworkToken,
+      balanceAmount: p.amount || bonesToBalance(0, TokenType.Hnt),
       memo: '',
     }))
-    calculatePaymentTxnFee(payments).then(setFee)
+    calculatePaymentTxnFee(payments, tokenType).then(setFee)
   }, [
     calculatePaymentTxnFee,
     currentAccount,
-    zeroBalanceNetworkToken,
     state.payments,
     state,
+    bonesToBalance,
+    tokenType,
   ])
 
   const canAddPayee = useMemo(() => {
@@ -275,26 +281,37 @@ const PaymentScreen = () => {
   const handleSubmit = useCallback(
     (opts?: { txn: PaymentV2; txnJson: string }) => {
       if (!opts) {
-        submit(payments)
+        submit(payments, tokenType)
       } else {
         // This is a ledger device
         submitLedger(opts)
       }
     },
-    [payments, submit, submitLedger],
+    [payments, submit, submitLedger, tokenType],
   )
 
   const insufficientFunds = useMemo(() => {
     if (
-      !accountHntBalance?.integerBalance ||
+      !accountNetworkBalance ||
+      !accountMobileBalance ||
       feeAsTokens?.integerBalance === undefined ||
       !state.totalAmount
     ) {
       return true
     }
     try {
+      if (tokenType === TokenType.Mobile) {
+        // If paying with mobile, they need to have enough mobile to cover the payment
+        // and enough hnt to cover the fee
+        const hasEnoughHnt =
+          accountNetworkBalance.minus(feeAsTokens).integerBalance >= 0
+        const hasEnoughMobile =
+          accountMobileBalance.minus(state.totalAmount).integerBalance >= 0
+        return !hasEnoughHnt || !hasEnoughMobile
+      }
+
       return (
-        accountHntBalance.integerBalance <
+        accountNetworkBalance.integerBalance <
         state.totalAmount.plus(feeAsTokens).integerBalance
       )
     } catch (e) {
@@ -303,7 +320,13 @@ const PaymentScreen = () => {
       console.warn(e)
       return false
     }
-  }, [accountHntBalance, feeAsTokens, state])
+  }, [
+    accountMobileBalance,
+    accountNetworkBalance,
+    feeAsTokens,
+    state.totalAmount,
+    tokenType,
+  ])
 
   const selfPay = useMemo(
     () => state.payments.find((p) => p.address === currentAccount?.address),
@@ -350,7 +373,6 @@ const PaymentScreen = () => {
   const isFormValid = useMemo(() => {
     if (
       selfPay ||
-      !accountHntBalance?.integerBalance ||
       !feeAsTokens?.integerBalance ||
       (!!currentAccount?.ledgerDevice && state.payments.length > 1) // ledger payments are limited to one payee
     ) {
@@ -367,14 +389,7 @@ const PaymentScreen = () => {
       })
 
     return paymentsValid && !insufficientFunds
-  }, [
-    accountHntBalance,
-    currentAccount,
-    feeAsTokens,
-    insufficientFunds,
-    selfPay,
-    state.payments,
-  ])
+  }, [currentAccount, feeAsTokens, insufficientFunds, selfPay, state.payments])
 
   const handleAddressBookSelected = useCallback(
     ({ address, index }: { address?: string | undefined; index: number }) => {
@@ -515,9 +530,24 @@ const PaymentScreen = () => {
     showAccountTypes(networkType)()
   }, [networkType, showAccountTypes, sortedAccountsForNetType])
 
+  const handleTokenTypeChange = useCallback(
+    (tt: TokenType) => {
+      setTokenType(tt)
+      dispatch({
+        type: 'changeToken',
+        currencyType: currencyTypeFromTokenType(tt),
+      })
+    },
+    [currencyTypeFromTokenType, dispatch],
+  )
+
   return (
     <>
-      <HNTKeyboard ref={hntKeyboardRef} onConfirmBalance={handleBalance}>
+      <HNTKeyboard
+        ref={hntKeyboardRef}
+        onConfirmBalance={handleBalance}
+        tokenType={tokenType}
+      >
         <AddressBookSelector
           ref={addressBookRef}
           onContactSelected={handleContactSelected}
@@ -561,12 +591,22 @@ const PaymentScreen = () => {
               enableResetScrollToCoords={false}
               keyboardShouldPersistTaps="always"
             >
+              <PaymentTypeSelector
+                paddingTop="xl"
+                onChangeTokenType={handleTokenTypeChange}
+                tokenType={tokenType}
+              />
               <AccountButton
                 paddingTop="xxl"
                 title={formatAccountAlias(currentAccount)}
-                subtitle={balanceToString(accountHntBalance, {
-                  maxDecimalPlaces: 2,
-                })}
+                subtitle={balanceToString(
+                  tokenType === 'hnt'
+                    ? accountNetworkBalance
+                    : accountMobileBalance,
+                  {
+                    maxDecimalPlaces: 2,
+                  },
+                )}
                 showChevron={sortedAccountsForNetType(networkType).length > 1}
                 address={currentAccount?.address}
                 netType={currentAccount?.netType}
@@ -619,6 +659,7 @@ const PaymentScreen = () => {
             </KeyboardAwareScrollView>
 
             <PaymentCard
+              tokenType={tokenType}
               totalBalance={state.totalAmount}
               feeTokenBalance={feeAsTokens}
               disabled={!isFormValid}

@@ -49,6 +49,7 @@ import { Theme } from '../theme/theme'
 import { Payment } from '../features/payment/PaymentItem'
 import { CSAccount } from '../storage/cloudStorage'
 import useBackHandler from '../utils/useBackHandler'
+import { TokenType } from '../generated/graphql'
 
 type ShowOptions = {
   payer?: CSAccount | null
@@ -65,6 +66,7 @@ export type HNTKeyboardRef = {
 }
 
 type Props = {
+  tokenType: TokenType
   children: ReactNode
   handleVisible?: (visible: boolean) => void
   onConfirmBalance: (opts: {
@@ -75,7 +77,13 @@ type Props = {
 } & BoxProps<Theme>
 const HNTKeyboardSelector = forwardRef(
   (
-    { children, onConfirmBalance, handleVisible, ...boxProps }: Props,
+    {
+      children,
+      onConfirmBalance,
+      handleVisible,
+      tokenType,
+      ...boxProps
+    }: Props,
     ref: Ref<HNTKeyboardRef>,
   ) => {
     useImperativeHandle(ref, () => ({ show, hide }))
@@ -96,13 +104,22 @@ const HNTKeyboardSelector = forwardRef(
 
     const { calculatePaymentTxnFee } = useTransactions()
     const {
-      dcToTokens,
+      dcToNetworkTokens,
       oracleDateTime,
       floatToBalance,
-      accountBalance,
-      zeroBalanceNetworkToken,
+      accountNetworkBalance,
+      accountMobileBalance,
+      bonesToBalance,
     } = useBalance()
     const [timeStr, setTimeStr] = useState('')
+
+    const balanceForTokenType = useMemo(
+      () =>
+        tokenType === TokenType.Hnt
+          ? accountNetworkBalance
+          : accountMobileBalance,
+      [accountMobileBalance, accountNetworkBalance, tokenType],
+    )
 
     const snapPoints = useMemo(() => {
       const sheetHeight = containerHeight - headerHeight
@@ -136,14 +153,14 @@ const HNTKeyboardSelector = forwardRef(
         .replaceAll(groupSeparator, '')
         .replaceAll(decimalSeparator, '.')
       const numberVal = parseFloat(stripped)
-      return floatToBalance(numberVal)
-    }, [floatToBalance, value])
+      return floatToBalance(numberVal, tokenType)
+    }, [floatToBalance, tokenType, value])
 
     const feeAsTokens = useMemo(() => {
       if (!fee) return
 
-      return dcToTokens(fee)
-    }, [dcToTokens, fee])
+      return dcToNetworkTokens(fee)
+    }, [dcToNetworkTokens, fee])
 
     const getNextPayments = useCallback(() => {
       if (payments && paymentIndex !== undefined) {
@@ -161,17 +178,17 @@ const HNTKeyboardSelector = forwardRef(
       const nextPayments = getNextPayments()
       const mapped = nextPayments.map((p) => ({
         payee: p.address || '',
-        balanceAmount: p.amount || zeroBalanceNetworkToken,
+        balanceAmount: p.amount || bonesToBalance(0, tokenType),
         memo: '',
       }))
-      calculatePaymentTxnFee(mapped).then(setFee)
+      calculatePaymentTxnFee(mapped, tokenType).then(setFee)
     }, [
       calculatePaymentTxnFee,
       value,
-      accountBalance,
       payer,
       getNextPayments,
-      zeroBalanceNetworkToken,
+      bonesToBalance,
+      tokenType,
     ])
 
     const show = useCallback(
@@ -200,7 +217,8 @@ const HNTKeyboardSelector = forwardRef(
     }, [])
 
     const handleSetMax = useCallback(() => {
-      if (!accountBalance || !feeAsTokens) return
+      if (!accountNetworkBalance || !accountMobileBalance || !feeAsTokens)
+        return
 
       const currentAmount = getNextPayments()
         .filter((_v, index) => index !== paymentIndex || 0) // Remove the payment being updated
@@ -209,12 +227,19 @@ const HNTKeyboardSelector = forwardRef(
             return prev
           }
           return prev.plus(current.amount)
-        }, zeroBalanceNetworkToken)
+        }, bonesToBalance(0, tokenType))
 
-      let maxBalance = accountBalance.minus(currentAmount).minus(feeAsTokens)
+      let maxBalance: Balance<NetworkTokens | TestNetworkTokens> | undefined
+      if (tokenType === TokenType.Hnt) {
+        maxBalance = accountNetworkBalance
+          .minus(currentAmount)
+          .minus(feeAsTokens)
+      } else {
+        maxBalance = accountMobileBalance.minus(currentAmount)
+      }
 
       if (maxBalance.integerBalance < 0) {
-        maxBalance = zeroBalanceNetworkToken
+        maxBalance = bonesToBalance(0, tokenType)
       }
 
       const decimalPlaces = maxBalance.type.decimalPlaces.toNumber()
@@ -227,11 +252,13 @@ const HNTKeyboardSelector = forwardRef(
 
       setValue(val)
     }, [
-      accountBalance,
+      accountMobileBalance,
+      accountNetworkBalance,
+      bonesToBalance,
       feeAsTokens,
       getNextPayments,
       paymentIndex,
-      zeroBalanceNetworkToken,
+      tokenType,
     ])
 
     const handleHeaderLayout = useCallback(
@@ -283,7 +310,7 @@ const HNTKeyboardSelector = forwardRef(
               >
                 {payer
                   ? t('hntKeyboard.hntAvailable', {
-                      amount: balanceToString(accountBalance, {
+                      amount: balanceToString(balanceForTokenType, {
                         maxDecimalPlaces: 4,
                       }),
                     })
@@ -294,8 +321,8 @@ const HNTKeyboardSelector = forwardRef(
         </BottomSheetBackdrop>
       ),
       [
+        balanceForTokenType,
         containerStyle,
-        accountBalance,
         handleHeaderLayout,
         payeeAddress,
         payer,
@@ -352,14 +379,36 @@ const HNTKeyboardSelector = forwardRef(
     const hasSufficientBalance = useMemo(() => {
       if (!payer) return true
 
-      if (!feeAsTokens || !valueAsBalance || !accountBalance) {
+      if (
+        !feeAsTokens ||
+        !valueAsBalance ||
+        !accountNetworkBalance ||
+        !accountMobileBalance
+      ) {
         return false
       }
+
+      if (tokenType === TokenType.Mobile) {
+        // If paying with mobile, they need to have enough mobile to cover the payment
+        // and enough hnt to cover the fee
+        const hasEnoughHnt =
+          accountNetworkBalance.minus(feeAsTokens).integerBalance >= 0
+        const hasEnoughMobile =
+          accountMobileBalance.minus(valueAsBalance).integerBalance >= 0
+        return hasEnoughHnt && hasEnoughMobile
+      }
       return (
-        (accountBalance?.minus(feeAsTokens).minus(valueAsBalance))
+        accountNetworkBalance.minus(feeAsTokens).minus(valueAsBalance)
           .integerBalance >= 0
       )
-    }, [accountBalance, feeAsTokens, payer, valueAsBalance])
+    }, [
+      accountMobileBalance,
+      accountNetworkBalance,
+      feeAsTokens,
+      payer,
+      tokenType,
+      valueAsBalance,
+    ])
 
     const handleConfirm = useCallback(() => {
       bottomSheetModalRef.current?.dismiss()
