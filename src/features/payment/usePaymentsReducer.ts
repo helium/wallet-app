@@ -78,6 +78,7 @@ type PaymentState = {
 
 const initialState = (opts: {
   currencyType: PaymentCurrencyType
+  payments?: Payment[]
 }): PaymentState => ({
   error: undefined,
   payments: [{}] as Array<Payment>,
@@ -184,8 +185,21 @@ function reducer(
     }
 
     case 'changeToken': {
+      const { payments } = state
+
+      // When changing the token, we need to reset the payments but keep the payee
+      const newPayments = payments.map((payment) => {
+        return {
+          ...payment,
+          amount: undefined,
+          memo: undefined,
+          hasError: undefined,
+        }
+      })
+
       return initialState({
         currencyType: action.currencyType,
+        payments: newPayments,
       })
     }
 

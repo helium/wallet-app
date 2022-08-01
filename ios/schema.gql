@@ -202,7 +202,11 @@ type RootQueryType {
   "Get account"
   account(address: String!): AccountData
   "Get account activity"
-  accountActivity(address: String!, cursor: String, filter: String = "all"): ActivityData
+  accountActivity(
+    address: String!
+    cursor: String
+    filter: String = "all"
+  ): ActivityData
   "Get account rewards sum"
   accountRewardsSum(address: String!, maxTime: String, minTime: String): Sum
   "Get Current Block Height"
@@ -216,13 +220,23 @@ type RootQueryType {
   "Get is hotspot or validator"
   isHotspotOrValidator(address: String!): Boolean!
   "Get notifications"
-  notifications(address: String!, before: Int, limit: Int, resource: String!): [Notification!]
+  notifications(
+    address: String!
+    before: Int
+    limit: Int
+    resource: String!
+  ): [Notification!]
   "Get pending txns"
   pendingTxns(address: String!): [Activity!]
   "Get coin gecko prices"
   pricing(address: String!): Prices
   "Get Stripe Params"
-  stripeParams(address: String!, amount: Int!, burnTxn: [Int!]!, customerId: String): StripeParams!
+  stripeParams(
+    address: String!
+    amount: Int!
+    burnTxn: [Int!]!
+    customerId: String
+  ): StripeParams!
   "Get txn config vars"
   txnConfigVars(address: String!): TxnConfigVars
   "Get validator"

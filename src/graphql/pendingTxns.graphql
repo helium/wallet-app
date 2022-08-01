@@ -27,6 +27,7 @@ query pendingTxns($address: String!) {
       payee
       amount
       memo
+      tokenType
     }
   }
 }
