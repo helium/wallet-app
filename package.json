@@ -46,7 +46,7 @@
     "@helium/onboarding": "^4.6.2",
     "@helium/proto-ble": "^4.0.0",
     "@helium/react-native-sdk": "^1.0.0",
-    "@helium/transactions": "^4.7.0",
+    "@helium/transactions": "^4.7.1",
     "@helium/wallet-link": "^4.7.0",
     "@ledgerhq/hw-app-helium": "6.28.0-nightly.0",
     "@ledgerhq/react-native-hid": "^6.28.3",
@@ -208,7 +208,7 @@
   },
   "resolutions": {
     "@types/react": "^17",
-    "@helium/transactions": "4.7.0"
+    "@helium/transactions": "4.7.1"
   },
   "jest": {
     "preset": "react-native",

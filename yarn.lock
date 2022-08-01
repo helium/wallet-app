@@ -2023,6 +2023,17 @@
     long "^4.0.0"
     path "^0.12.7"
 
+"@helium/transactions@^4.7.1":
+  version "4.7.1"
+  resolved "https://registry.yarnpkg.com/@helium/transactions/-/transactions-4.7.1.tgz#337afc4ccb4db0cdee1a65f65e92a1a21e3a74ee"
+  integrity sha512-GJ57VJs+YoU8bG7eWcN2iafMZPbwDQ4rv9n6KnQKClpzvBRnWmICA88RoSns6OBgia/f6vB0Qo/nqnyS0tX0yg==
+  dependencies:
+    "@helium/address" "^4.6.2"
+    "@helium/proto" "^1.6.0"
+    "@types/libsodium-wrappers" "^0.7.8"
+    long "^4.0.0"
+    path "^0.12.7"
+
 "@helium/wallet-link@^4.7.0":
   version "4.7.0"
   resolved "https://registry.yarnpkg.com/@helium/wallet-link/-/wallet-link-4.7.0.tgz#cb860f44ead177680082dae8f6251900a59118c4"
