@@ -145,6 +145,7 @@ const useTransactionHook = () => {
         payee: p.payee.b58,
         memo: p.memo,
         amount: p.amount,
+        token_type: opts.tokenType || 'hnt',
       })),
       payer: txn.payer?.b58,
       nonce: txn.nonce,
