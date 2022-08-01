@@ -714,6 +714,7 @@ export type PendingTxnsQuery = {
       payee: string
       amount: number
       memo?: string | null
+      tokenType?: TokenType | null
     }> | null
   }> | null
 }
@@ -1511,6 +1512,7 @@ export const PendingTxnsDocument = gql`
         payee
         amount
         memo
+        tokenType
       }
     }
   }
