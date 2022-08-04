@@ -90,6 +90,7 @@ const TransactionLineItem = ({
 
   const handleLongPress = useCallback(
     (address: string | number) => async () => {
+      if (!isAddress) return
       const addressToCopy = `${address}`
       if (!addressToCopy || account(addressToCopy)?.alias) return
 
@@ -101,7 +102,7 @@ const TransactionLineItem = ({
 
       navigation.navigate('AddNewContact', { address: addressToCopy })
     },
-    [account, navigation, showOKCancelAlert, t],
+    [account, isAddress, navigation, showOKCancelAlert, t],
   )
 
   const handleExplorerLink = useCallback(() => {
