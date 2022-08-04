@@ -3,18 +3,17 @@ import { useTranslation } from 'react-i18next'
 import Clipboard from '@react-native-community/clipboard'
 import Toast from 'react-native-simple-toast'
 import useHaptic from './useHaptic'
-import { ellipsizeAddress } from './accountUtils'
 
 export default () => {
   const { triggerNavHaptic } = useHaptic()
   const { t } = useTranslation()
 
   const showToast = useCallback(
-    (address: string) => {
-      if (!address) return
+    (message: string) => {
+      if (!message) return
       Toast.show(
         t('generic.copied', {
-          target: ellipsizeAddress(address),
+          target: message,
         }),
       )
     },
@@ -22,11 +21,12 @@ export default () => {
   )
 
   return useCallback(
-    (address: string) => {
-      if (!address) return
+    ({ copyText, message }: { copyText: string; message?: string }) => {
+      if (!copyText) return
 
-      Clipboard.setString(address)
-      showToast(address)
+      Clipboard.setString(copyText)
+      const toastMessage = message ?? copyText
+      showToast(toastMessage)
       triggerNavHaptic()
     },
     [showToast, triggerNavHaptic],
