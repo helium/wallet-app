@@ -14,7 +14,7 @@ import {
 } from '../../theme/themeHooks'
 import { Color } from '../../theme/theme'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import useCopyAddress from '../../utils/useCopyAddress'
+import useCopyText from '../../utils/useCopyText'
 import useAlert from '../../utils/useAlert'
 import { AddressBookNavigationProp } from '../addressBook/addressBookTypes'
 import { locale } from '../../utils/i18n'
@@ -44,19 +44,28 @@ const TransactionLineItem = ({
   const linkHitSlop = useHitSlop('s')
   const copyHitSlop = useVerticalHitSlop('s')
   const { contacts, sortedAccounts } = useAccountStorage()
-  const copyAddress = useCopyAddress()
+  const copyText = useCopyText()
   const navigation = useNavigation<AddressBookNavigationProp>()
   const { showOKCancelAlert } = useAlert()
   const { t } = useTranslation()
 
   const handleCopy = useCallback(
     (address: string | number) => () => {
-      const addressToCopy = `${address}`
-      if (!addressToCopy) return
-
-      copyAddress(addressToCopy)
+      if (isAddress) {
+        const addressToCopy = `${address}`
+        if (!addressToCopy) return
+        copyText({
+          message: ellipsizeAddress(addressToCopy),
+          copyText: addressToCopy,
+        })
+      } else if (navTo) {
+        copyText({
+          copyText: navTo,
+          message: 'url',
+        })
+      }
     },
-    [copyAddress],
+    [copyText, isAddress, navTo],
   )
 
   const account = useCallback(
@@ -118,7 +127,7 @@ const TransactionLineItem = ({
           hitSlop={copyHitSlop}
           onPress={handleCopy(bodyText)}
           onLongPress={handleLongPress(bodyText)}
-          disabled={!isAddress}
+          disabled={!isAddress && !navTo}
           minWidth={30}
           maxWidth="90%"
           flexDirection="row"

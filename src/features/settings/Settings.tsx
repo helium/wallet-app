@@ -18,7 +18,7 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { SettingsNavigationProp } from './settingsTypes'
 import { useLanguageStorage } from '../../storage/LanguageProvider'
-import useCopyAddress from '../../utils/useCopyAddress'
+import useCopyText from '../../utils/useCopyText'
 import useAlert from '../../utils/useAlert'
 import {
   checkSecureAccount,
@@ -26,6 +26,7 @@ import {
 } from '../../storage/secureStorage'
 import { useApolloClient } from '../../graphql/useApolloClient'
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
+import { ellipsizeAddress } from '../../utils/accountUtils'
 
 const Settings = () => {
   const { t } = useTranslation()
@@ -59,7 +60,7 @@ const Settings = () => {
     updateEnableTestnet,
     updateRequirePinForPayment,
   } = useAppStorage()
-  const copyAddress = useCopyAddress()
+  const copyText = useCopyText()
   const { showOKAlert, showOKCancelAlert } = useAlert()
 
   const isDefaultAccount = useMemo(
@@ -294,8 +295,11 @@ const Settings = () => {
 
   const handleCopyAddress = useCallback(() => {
     if (!currentAccount?.address) return
-    copyAddress(currentAccount.address)
-  }, [copyAddress, currentAccount])
+    copyText({
+      message: ellipsizeAddress(currentAccount?.address),
+      copyText: currentAccount?.address,
+    })
+  }, [copyText, currentAccount])
 
   const handleShareAddress = useCallback(() => {
     settingsNav.navigate('ShareAddress')
