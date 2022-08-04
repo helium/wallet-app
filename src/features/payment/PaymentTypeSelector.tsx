@@ -9,6 +9,8 @@ import { Theme } from '../../theme/theme'
 import Text from '../../components/Text'
 import { useColors } from '../../theme/themeHooks'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { accountCurrencyType } from '../../utils/accountUtils'
 
 type Props = {
   onChangeTokenType: (tokenType: TokenType) => void
@@ -24,24 +26,37 @@ const TokenTypeItem = ({
   selected: boolean
   onPress: (tokenType: TokenType) => void
 }) => {
+  const { currentAccount } = useAccountStorage()
   const colors = useColors()
-  const color = useMemo(
-    () => (selected ? 'primaryText' : 'secondaryIcon'),
-    [selected],
+  const color = useCallback(
+    (isIcon = true) => {
+      const selectedColor =
+        tokenType === TokenType.Mobile && isIcon
+          ? 'blueBright500'
+          : 'primaryText'
+      return selected ? selectedColor : 'secondaryIcon'
+    },
+    [selected, tokenType],
   )
   const handlePress = useCallback(
     () => onPress(tokenType),
     [onPress, tokenType],
   )
+
+  const title = useMemo(
+    () => accountCurrencyType(currentAccount?.address, tokenType).ticker,
+    [currentAccount, tokenType],
+  )
+
   return (
     <TouchableOpacityBox alignItems="center" onPress={handlePress}>
       {tokenType === TokenType.Hnt ? (
-        <TokenHNT color={colors[color]} />
+        <TokenHNT color={colors[color()]} />
       ) : (
-        <TokenMOBILE color={colors[color]} />
+        <TokenMOBILE color={colors[color()]} />
       )}
-      <Text variant="body3" marginTop="xs" color={color}>
-        {tokenType.toUpperCase()}
+      <Text variant="body3" marginTop="xs" color={color(false)}>
+        {title}
       </Text>
       {selected && (
         <Box
