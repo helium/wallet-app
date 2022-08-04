@@ -2012,18 +2012,7 @@
   resolved "https://registry.yarnpkg.com/@helium/react-native-sdk/-/react-native-sdk-1.0.0.tgz#41024fa99859490bd8a0b717f52acc11ae72f114"
   integrity sha512-Qi1Nnp/q2hsz2D7aeuM6LxXhNX8NrHz1U+PoQslwK2XfqPFZEYb4uAzjXDKlc+JBWPiF96GMJywv/ofxlZ9XLg==
 
-"@helium/transactions@4.7.0", "@helium/transactions@^4.1.0", "@helium/transactions@^4.7.0":
-  version "4.7.0"
-  resolved "https://registry.yarnpkg.com/@helium/transactions/-/transactions-4.7.0.tgz#a2c77d364d37ac2249b158011e1a40b8964ec6f3"
-  integrity sha512-BQflpksFqbb5XUp8ti3DTanIGuP4Cmpa4FmBaQuiBASvQGJAnD+7q+M5GqOIOEB/24EdZhyHjKt1FPtkLB8bGQ==
-  dependencies:
-    "@helium/address" "^4.6.2"
-    "@helium/proto" "^1.6.0"
-    "@types/libsodium-wrappers" "^0.7.8"
-    long "^4.0.0"
-    path "^0.12.7"
-
-"@helium/transactions@^4.7.1":
+"@helium/transactions@4.7.1", "@helium/transactions@^4.1.0", "@helium/transactions@^4.7.0", "@helium/transactions@^4.7.1":
   version "4.7.1"
   resolved "https://registry.yarnpkg.com/@helium/transactions/-/transactions-4.7.1.tgz#337afc4ccb4db0cdee1a65f65e92a1a21e3a74ee"
   integrity sha512-GJ57VJs+YoU8bG7eWcN2iafMZPbwDQ4rv9n6KnQKClpzvBRnWmICA88RoSns6OBgia/f6vB0Qo/nqnyS0tX0yg==
