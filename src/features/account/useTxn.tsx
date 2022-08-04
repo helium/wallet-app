@@ -335,7 +335,8 @@ const useTxn = (
   }, [getFeePayer, item, t])
 
   const getAmount = useCallback(() => {
-    if (!item) return new Promise<string>((resolve) => resolve(''))
+    if (!item) return ''
+
     switch (item.type as TxnType) {
       case 'rewards_v1':
       case 'rewards_v2': {
@@ -419,7 +420,8 @@ const useTxn = (
           .join(', ')}`
       }
     }
-    return new Promise<string>((resolve) => resolve(''))
+
+    return ''
   }, [item, formatAmount, isSelling, address, bonesToBalance])
 
   const time = useMemo(() => {
