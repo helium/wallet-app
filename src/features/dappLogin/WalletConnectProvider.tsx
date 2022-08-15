@@ -5,6 +5,7 @@ import React, {
   useContext,
   useState,
 } from 'react'
+import '@walletconnect/react-native-compat'
 import SignClient from '@walletconnect/sign-client'
 import {
   PairingTypes,

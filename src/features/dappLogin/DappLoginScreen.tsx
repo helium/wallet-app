@@ -154,16 +154,7 @@ const DappLoginScreen = () => {
     if (params.callback && (await Linking.canOpenURL(params.callback))) {
       Linking.openURL(params.callback)
     }
-  }, [
-    currentAccount,
-    login,
-    sessionProposal,
-    makeBurnTxn,
-    navigation,
-    params.callback,
-    showOKAlert,
-    t,
-  ])
+  }, [currentAccount, loginRequest])
 
   const ledgerConfirmed = useCallback(
     async ({ txn: signedTxn }: { txn: TokenBurnV1; txnJson: string }) => {
