@@ -84,12 +84,14 @@ const App = () => {
 
   useMount(() => {
     // init OneSignal
-    OneSignal.setAppId(Config.ONE_SIGNAL_APP_ID)
-    OneSignal.setNotificationOpenedHandler((event: OpenedEvent) => {
-      setOpenedNotification(event.notification)
-    })
-    if (Platform.OS === 'ios') {
-      OneSignal.promptForPushNotificationsWithUserResponse(() => {})
+    if (Config.ONE_SIGNAL_APP_ID) {
+      OneSignal.setAppId(Config.ONE_SIGNAL_APP_ID)
+      OneSignal.setNotificationOpenedHandler((event: OpenedEvent) => {
+        setOpenedNotification(event.notification)
+      })
+      if (Platform.OS === 'ios') {
+        OneSignal.promptForPushNotificationsWithUserResponse(() => {})
+      }
     }
 
     // init Sentry

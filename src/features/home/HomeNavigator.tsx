@@ -26,7 +26,7 @@ import InternetNavigator from '../internet/InternetNavigator'
 const HomeStack = createStackNavigator()
 
 const screenOptions = {
-  presentation: 'transparentModal',
+  presentation: 'modal',
 } as StackNavigationOptions
 
 const navigatorScreenOptions = {

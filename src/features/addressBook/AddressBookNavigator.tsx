@@ -15,6 +15,7 @@ const AddressBookNavigator = () => {
       screenOptions={{
         headerShown: false,
         contentStyle: backgroundStyle,
+        presentation: 'modal',
       }}
     >
       <AddressBookStack.Screen name="AddressBook" component={AddressBook} />
