@@ -463,6 +463,16 @@ export default {
       title: 'Your {{numWords}} Word\nPassword',
       warning: 'Helium cannot recover these words',
     },
+    revealPrivateKey: {
+      title: 'Your Private Key',
+      subtitle:
+        '<secondaryText>Do not share your private key!</secondaryText><red500>\n\nIf someone has your private key they will have full control of your wallet!</red500>',
+      done: 'Done',
+      tap: 'Tap to reveal your private key',
+      alertTitle: 'Are you sure?',
+      alertMessage:
+        "This will access and display your private key from your device's secure storage",
+    },
     sections: {
       account: {
         alias: 'Account Alias',
@@ -478,7 +488,7 @@ export default {
             '\n\nAny device using the same iCloud account will also be signed out.',
           title: 'Sign Out of {{alias}}?',
         },
-        title: 'Account Settings',
+        title: '{{alias}} Account Settings',
       },
       app: {
         convertHntToCurrency: 'Convert HNT to Currency',
@@ -495,6 +505,11 @@ export default {
           'This will update your default account from {{aliasOld}} to {{aliasNew}}. You can update this in Settings later if you change your mind.',
         enableTitle: 'Update Default Account?',
         title: 'Default Account',
+      },
+      backup: {
+        title: '{{alias}} Account Backup',
+        revealWords: 'Reveal Words',
+        revealPrivateKey: 'Reveal Private Key',
       },
       dev: {
         testnet: {
