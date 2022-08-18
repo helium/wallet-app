@@ -31,6 +31,9 @@ const SettingsConfirmPinScreen = () => {
       case 'revealWords':
         navigation.replace('RevealWords')
         break
+      case 'revealPrivateKey':
+        navigation.replace('RevealPrivateKey')
+        break
       case 'disablePaymentPin':
         await updateRequirePinForPayment(false)
         navigation.popToTop()
@@ -50,6 +53,7 @@ const SettingsConfirmPinScreen = () => {
       case 'remove':
       case 'reset':
       case 'revealWords':
+      case 'revealPrivateKey':
       case 'disablePaymentPin':
         return t('auth.title')
       case 'create':
@@ -63,6 +67,7 @@ const SettingsConfirmPinScreen = () => {
       case 'remove':
       case 'reset':
       case 'revealWords':
+      case 'revealPrivateKey':
       case 'disablePaymentPin':
         return t('auth.enterCurrent')
       case 'create':

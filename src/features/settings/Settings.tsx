@@ -293,6 +293,22 @@ const Settings = () => {
     }
   }, [appPin, currentAccount, isPinRequired, settingsNav])
 
+  const handleRevealPrivateKey = useCallback(async () => {
+    const hasSecureAccount = await checkSecureAccount(
+      currentAccount?.address,
+      true,
+    )
+    if (!hasSecureAccount) return
+    if (isPinRequired) {
+      settingsNav.push('SettingsConfirmPin', {
+        pin: appPin?.value || '',
+        action: 'revealPrivateKey',
+      })
+    } else {
+      settingsNav.push('RevealPrivateKey')
+    }
+  }, [appPin, currentAccount, isPinRequired, settingsNav])
+
   const handleCopyAddress = useCallback(() => {
     if (!currentAccount?.address) return
     copyText({
@@ -341,9 +357,9 @@ const Settings = () => {
     }
     return [
       {
-        title: `${currentAccount?.alias} ${t(
-          'settings.sections.account.title',
-        )}`,
+        title: t('settings.sections.account.title', {
+          alias: currentAccount?.alias,
+        }),
         data: [
           {
             label: t('settings.sections.account.alias'),
@@ -354,10 +370,6 @@ const Settings = () => {
             title: t('settings.sections.defaultAccount.title'),
             onToggle: handleSetDefaultAccount,
             value: isDefaultAccount,
-          },
-          {
-            title: t('settings.sections.account.revealWords'),
-            onPress: handleRevealWords,
           },
           {
             title: t('settings.sections.account.copyAddress'),
@@ -371,6 +383,21 @@ const Settings = () => {
             title: t('settings.sections.account.signOut'),
             onPress: handleSignOut,
             destructive: true,
+          },
+        ],
+      },
+      {
+        title: t('settings.sections.backup.title', {
+          alias: currentAccount?.alias,
+        }),
+        data: [
+          {
+            title: t('settings.sections.backup.revealWords'),
+            onPress: handleRevealWords,
+          },
+          {
+            title: t('settings.sections.backup.revealPrivateKey'),
+            onPress: handleRevealPrivateKey,
           },
         ],
       },
@@ -459,6 +486,7 @@ const Settings = () => {
     handlePinForPayment,
     handlePinRequired,
     handleResetPin,
+    handleRevealPrivateKey,
     handleRevealWords,
     handleSetDefaultAccount,
     handleShareAddress,

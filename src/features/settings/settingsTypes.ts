@@ -4,10 +4,17 @@ export type SettingsStackParamList = {
   Settings: undefined
   SettingsConfirmPin: {
     pin: string
-    action?: 'remove' | 'create' | 'reset' | 'revealWords' | 'disablePaymentPin'
+    action?:
+      | 'remove'
+      | 'create'
+      | 'reset'
+      | 'revealWords'
+      | 'revealPrivateKey'
+      | 'disablePaymentPin'
   }
   SettingsCreatePin: undefined
   RevealWords: undefined
+  RevealPrivateKey: undefined
   UpdateAlias: undefined
   ShareAddress: undefined
   ConfirmSignout: undefined

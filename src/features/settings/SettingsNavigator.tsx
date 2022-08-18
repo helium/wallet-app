@@ -8,6 +8,7 @@ import RevealWordsScreen from './RevealWordsScreen'
 import UpdateAliasScreen from './UpdateAliasScreen'
 import ShareAddressScreen from './ShareAddressScreen'
 import ConfirmSignoutScreen from './ConfirmSignoutScreen'
+import RevealPrivateKeyScreen from './RevealPrivateKeyScreen'
 
 const SettingsStack = createNativeStackNavigator()
 
@@ -32,6 +33,10 @@ const SettingsNavigator = () => {
         options={{ presentation: 'modal' }}
       />
       <SettingsStack.Screen name="RevealWords" component={RevealWordsScreen} />
+      <SettingsStack.Screen
+        name="RevealPrivateKey"
+        component={RevealPrivateKeyScreen}
+      />
       <SettingsStack.Screen name="UpdateAlias" component={UpdateAliasScreen} />
       <SettingsStack.Screen
         name="ShareAddress"
