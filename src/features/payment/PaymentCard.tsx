@@ -64,6 +64,7 @@ const PaymentCard = ({
         payments: payments || [],
         ledgerDevice: currentAccount.ledgerDevice,
         address: currentAccount.address,
+        accountIndex: currentAccount.accountIndex || 0,
         speculativeNonce: 0,
       })
     }

@@ -57,8 +57,14 @@ export const isValidAccountHash = async (address: string, hash: string) => {
   return Bcrypt.compareSync(address, hash)
 }
 
-export const ellipsizeAddress = (address: string) =>
-  [address.slice(0, 8), address.slice(-8)].join('...')
+type EllipsizeOpts = {
+  numChars?: number
+}
+
+export const ellipsizeAddress = (address: string, options?: EllipsizeOpts) => {
+  const numChars = options?.numChars || 8
+  return [address.slice(0, numChars), address.slice(-numChars)].join('...')
+}
 
 export const formatAccountAlias = (
   opts?: {

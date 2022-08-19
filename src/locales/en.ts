@@ -10,6 +10,8 @@ export default {
   accountImport: {
     accountLimit:
       'You have reached the account limit.\nTo add another account, sign out of a wallet account and try again.',
+    accountLimitLedger:
+      'You have reached the account limit.\nTo add another account, uncheck an account and try again.',
     alert: {
       body: "This seed phrase doesn't correspond to a Helium account",
       title: 'Error',
@@ -247,6 +249,7 @@ export default {
     },
     connectError: {
       steps: [
+        'Check network connection',
         'Check Bluetooth is enabled',
         'Open your Ledger device.',
         'Open Helium app on Ledger Device',
@@ -288,10 +291,17 @@ export default {
     show: {
       alias: 'Ledger Account',
       help: 'Verify that the address shown on the Ledger device matches.',
-      next: 'Import Account',
+      next: 'Import Account(s)',
+      close: 'Close',
       subtitle:
         'This Ledger device can authorize transactions for the below Helium Account. ',
-      title: 'Account Found',
+      title: 'Select Accounts',
+      addNewAccount: 'Add New Account',
+      accountsAlreadyLinked: 'Accounts Already Linked ({{count}})',
+      selectAll: 'Select All',
+      deselectAll: 'Deselect All',
+      emptyAccount:
+        "Can't add a new account before you've recieved assets on your {{account}}",
     },
     start: {
       help: 'How does it work?',

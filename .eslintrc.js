@@ -29,6 +29,7 @@ module.exports = {
     'no-console': [2, { allow: ['warn', 'error'] }],
     '@typescript-eslint/no-use-before-define': 'off',
     'default-case': 'off',
+    'react/jsx-props-no-spreading': 'off',
     quotes: [
       'error',
       'single',

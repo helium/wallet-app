@@ -56,6 +56,7 @@ const LedgerConnectSteps = ({ onLayout, error, onRetry }: Props) => {
       </Text>
       <TouchableOpacityBox
         marginTop="xl"
+        marginBottom="l"
         onPress={onRetry}
         backgroundColor="surface"
         padding="l"
