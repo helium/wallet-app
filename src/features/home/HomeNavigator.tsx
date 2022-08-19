@@ -84,7 +84,11 @@ const HomeStackScreen = () => {
         name="ImportAccount"
         component={ImportAccountNavigator}
       />
-      <HomeStack.Screen name="LedgerNavigator" component={LedgerNavigator} />
+      <HomeStack.Screen
+        name="LedgerNavigator"
+        component={LedgerNavigator}
+        options={{ presentation: 'card' }}
+      />
       <HomeStack.Screen name="VoteNavigator" component={VoteNavigator} />
     </HomeStack.Navigator>
   )

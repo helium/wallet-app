@@ -30,6 +30,7 @@ type ShowOptions = {
   payments: SendDetails[]
   ledgerDevice: LedgerDevice
   address: string
+  accountIndex: number
   speculativeNonce: number
 }
 
@@ -92,7 +93,11 @@ const LedgerPaymentSelector = forwardRef(
             isLedger: true,
             tokenType,
           })
-          const payment = await signLedgerPayment(nextTransport, unsignedTxn)
+          const payment = await signLedgerPayment(
+            nextTransport,
+            unsignedTxn,
+            opts.accountIndex,
+          )
           onConfirm({ txn: payment, txnJson })
           bottomSheetModalRef.current?.dismiss()
         } catch (error) {

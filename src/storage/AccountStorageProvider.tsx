@@ -167,6 +167,49 @@ const useAccountStorageHook = () => {
     [accounts],
   )
 
+  const upsertAccounts = useCallback(
+    async (
+      accountBulk: {
+        alias: string
+        address: string
+        ledgerDevice?: LedgerDevice
+        ledgerIndex?: number
+      }[],
+    ) => {
+      const bulkAccounts = accountBulk.reduce((prev, curr) => {
+        const accountIndex = curr.ledgerIndex || 0
+        return {
+          ...prev,
+          [curr.address]: {
+            alias: curr.alias,
+            address: curr.address,
+            netType: accountNetType(curr.address),
+            ledgerDevice: curr.ledgerDevice,
+            accountIndex,
+          },
+        }
+      }, {})
+
+      const nextAccounts: CSAccounts = {
+        ...accounts,
+        ...bulkAccounts,
+      }
+
+      setAccounts(nextAccounts)
+      setCurrentAccount(
+        nextAccounts[accountBulk[accountBulk.length - 1].address],
+      )
+      await updateCloudAccounts(nextAccounts)
+
+      // eslint-disable-next-line no-restricted-syntax
+      for (const addr of Object.keys(bulkAccounts)) {
+        // eslint-disable-next-line no-await-in-loop
+        await tagAccount(addr)
+      }
+    },
+    [accounts],
+  )
+
   const addContact = useCallback(
     async (account: CSAccount) => {
       const filtered = contacts.filter((c) => c.address !== account.address)
@@ -281,6 +324,7 @@ const useAccountStorageHook = () => {
     sortedTestnetAccounts,
     testnetContacts,
     upsertAccount,
+    upsertAccounts,
   }
 }
 
@@ -312,6 +356,7 @@ const initialState = {
   sortedTestnetAccounts: [],
   testnetContacts: [],
   upsertAccount: async () => undefined,
+  upsertAccounts: async () => undefined,
 }
 
 const AccountStorageContext =

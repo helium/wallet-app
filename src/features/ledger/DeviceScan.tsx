@@ -18,7 +18,9 @@ import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetModalProvider,
+  BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
+import BackButton from '../../components/BackButton'
 import Text from '../../components/Text'
 import Box from '../../components/Box'
 import {
@@ -28,7 +30,6 @@ import {
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import LedgerConnectSteps from './LedgerConnectSteps'
 import { useColors, useOpacity } from '../../theme/themeHooks'
-import SafeAreaBox from '../../components/SafeAreaBox'
 import * as Logger from '../../utils/logger'
 import useBackHandler from '../../utils/useBackHandler'
 
@@ -258,12 +259,12 @@ const DeviceScan = () => {
 
   return (
     <BottomSheetModalProvider>
-      <SafeAreaBox
-        flex={1}
-        backgroundColor="primaryBackground"
-        marginTop="l"
-        paddingHorizontal="l"
-      >
+      <Box flex={1} backgroundColor="primaryBackground" paddingHorizontal="l">
+        <BackButton
+          marginTop="m"
+          paddingHorizontal="s"
+          onPress={navigation.goBack}
+        />
         <Box
           flex={1}
           justifyContent="flex-end"
@@ -298,7 +299,7 @@ const DeviceScan = () => {
             refreshing={refreshing}
           />
         </Box>
-      </SafeAreaBox>
+      </Box>
       <BottomSheetModal
         ref={bottomSheetModalRef}
         index={0}
@@ -307,11 +308,13 @@ const DeviceScan = () => {
         backgroundStyle={backgroundStyle}
         onDismiss={clearError}
       >
-        <LedgerConnectSteps
-          onLayout={handleContentLayout}
-          error={error}
-          onRetry={handleRetry}
-        />
+        <BottomSheetScrollView>
+          <LedgerConnectSteps
+            onLayout={handleContentLayout}
+            error={error}
+            onRetry={handleRetry}
+          />
+        </BottomSheetScrollView>
       </BottomSheetModal>
     </BottomSheetModalProvider>
   )

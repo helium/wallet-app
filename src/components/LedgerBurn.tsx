@@ -28,6 +28,7 @@ type ShowOptions = {
   ledgerDevice: LedgerDevice
   unsignedTxn: TokenBurnV1
   txnJson: string
+  accountIndex: number
 }
 
 export type LedgerBurnRef = {
@@ -75,7 +76,11 @@ const LedgerBurn = forwardRef(
             })
             return
           }
-          const payment = await signLedgerBurn(nextTransport, opts.unsignedTxn)
+          const payment = await signLedgerBurn(
+            nextTransport,
+            opts.unsignedTxn,
+            opts.accountIndex,
+          )
           onConfirm({ txn: payment.txn, txnJson: opts.txnJson })
           bottomSheetModalRef.current?.dismiss()
         } catch (error) {

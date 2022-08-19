@@ -112,6 +112,7 @@ const VoteBurn = () => {
       ledgerPaymentRef.current?.show({
         unsignedTxn,
         ledgerDevice: account.ledgerDevice,
+        accountIndex: account.accountIndex || 0,
         txnJson,
       })
     }

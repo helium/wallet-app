@@ -128,6 +128,7 @@ const DappLoginScreen = () => {
       ledgerRef.current?.show({
         unsignedTxn,
         ledgerDevice: currentAccount.ledgerDevice,
+        accountIndex: currentAccount.accountIndex || 0,
         txnJson,
       })
       return
