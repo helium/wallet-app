@@ -10,6 +10,7 @@ import OneSignal, { OpenedEvent } from 'react-native-onesignal'
 import Config from 'react-native-config'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { PortalProvider } from '@gorhom/portal'
 import * as Logger from './utils/logger'
 import { useApolloClient } from './graphql/useApolloClient'
 import { theme, darkThemeColors, lightThemeColors } from './theme/theme'
@@ -118,35 +119,37 @@ const App = () => {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <ThemeProvider theme={colorAdaptedTheme}>
-          <OnboardingProvider>
-            <TestnetAwareStatusBar />
-            <ApolloProvider client={client}>
-              <BalanceProvider>
-                <TransactionProvider>
-                  <LockScreen>
-                    <WalletConnectProvider>
-                      {accountsRestored && (
-                        <AccountSelector>
-                          <NavigationContainer
-                            theme={navTheme}
-                            linking={linking}
-                            ref={navigationRef}
-                          >
-                            <RootNavigator />
-                          </NavigationContainer>
-                          <SecurityScreen
-                            visible={
-                              appState !== 'active' && appState !== 'unknown'
-                            }
-                          />
-                        </AccountSelector>
-                      )}
-                    </WalletConnectProvider>
-                  </LockScreen>
-                </TransactionProvider>
-              </BalanceProvider>
-            </ApolloProvider>
-          </OnboardingProvider>
+          <PortalProvider>
+            <OnboardingProvider>
+              <TestnetAwareStatusBar />
+              <ApolloProvider client={client}>
+                <BalanceProvider>
+                  <TransactionProvider>
+                    <LockScreen>
+                      <WalletConnectProvider>
+                        {accountsRestored && (
+                          <AccountSelector>
+                            <NavigationContainer
+                              theme={navTheme}
+                              linking={linking}
+                              ref={navigationRef}
+                            >
+                              <RootNavigator />
+                            </NavigationContainer>
+                            <SecurityScreen
+                              visible={
+                                appState !== 'active' && appState !== 'unknown'
+                              }
+                            />
+                          </AccountSelector>
+                        )}
+                      </WalletConnectProvider>
+                    </LockScreen>
+                  </TransactionProvider>
+                </BalanceProvider>
+              </ApolloProvider>
+            </OnboardingProvider>
+          </PortalProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

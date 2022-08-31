@@ -1,7 +1,12 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { BoxProps } from '@shopify/restyle'
 import React, { memo, useCallback } from 'react'
-import { GestureResponderEvent, Pressable, StyleSheet } from 'react-native'
+import {
+  GestureResponderEvent,
+  Pressable,
+  StyleSheet,
+  ViewStyle,
+} from 'react-native'
 import ArrowDown from '@assets/images/downArrow.svg'
 import FatArrowUp from '@assets/images/arrowUp.svg'
 import Payment from '@assets/images/payment.svg'
@@ -10,27 +15,33 @@ import Lock from '@assets/images/lock.svg'
 import Plus from '@assets/images/plus.svg'
 import Vote from '@assets/images/vote.svg'
 import Close from '@assets/images/close.svg'
-import { Color, FontWeight, Theme, Spacing } from '../theme/theme'
+import Dots from '@assets/images/dots.svg'
+import Filter from '@assets/images/filter.svg'
+import { Color, FontWeight, Theme } from '../theme/theme'
 import { useColors, useCreateOpacity } from '../theme/themeHooks'
 import Box from './Box'
 import Text from './Text'
+
+type IconName =
+  | 'arrowDown'
+  | 'arrowRight'
+  | 'fatArrowUp'
+  | 'fatArrowDown'
+  | 'payment'
+  | 'stake'
+  | 'lock'
+  | 'add'
+  | 'vote'
+  | 'close'
+  | 'dots'
+  | 'filter'
 
 type Props = BoxProps<Theme> & {
   backgroundColor?: Color
   backgroundColorOpacity?: number
   backgroundColorPressed?: Color
   backgroundColorOpacityPressed?: number
-  icon:
-    | 'arrowDown'
-    | 'arrowRight'
-    | 'fatArrowUp'
-    | 'fatArrowDown'
-    | 'payment'
-    | 'stake'
-    | 'lock'
-    | 'add'
-    | 'vote'
-    | 'close'
+  icon?: IconName
   innerContainerProps?: BoxProps<Theme>
   iconColor?: Color
   iconColorPressed?: Color
@@ -40,10 +51,7 @@ type Props = BoxProps<Theme> & {
   size?: number
   disabled?: boolean
   title?: string
-  titleMarginLeft?: Spacing
-  titleMarginRight?: Spacing
-  titleMarginTop?: Spacing
-  titleMarginBottom?: Spacing
+  reverse?: boolean
 }
 
 const ButtonPressable = ({
@@ -60,30 +68,10 @@ const ButtonPressable = ({
   disabled,
   title,
   visible = true,
-  titleMarginLeft,
-  titleMarginRight,
-  titleMarginTop,
-  titleMarginBottom,
+  reverse = false,
   ...boxProps
 }: Props) => {
   const { backgroundStyle } = useCreateOpacity()
-  const colors = useColors()
-
-  const getIconColor = useCallback(
-    (pressed: boolean) => {
-      const color = () => {
-        if (pressed && iconColorPressed) {
-          return iconColorPressed
-        }
-        if (iconColor) {
-          return iconColor
-        }
-        return 'primaryText'
-      }
-      return colors[color()]
-    },
-    [colors, iconColor, iconColorPressed],
-  )
 
   const getBackgroundColorStyle = useCallback(
     (pressed: boolean) => {
@@ -107,53 +95,9 @@ const ButtonPressable = ({
     ],
   )
 
-  const getIcon = useCallback(
-    (pressed: boolean) => {
-      switch (icon) {
-        case 'arrowRight':
-          return (
-            <ArrowDown
-              color={getIconColor(pressed)}
-              style={{ transform: [{ rotate: '270deg' }] }}
-            />
-          )
-        case 'arrowDown':
-          return <ArrowDown color={getIconColor(pressed)} />
-        case 'fatArrowUp':
-          return <FatArrowUp color={getIconColor(pressed)} />
-        case 'fatArrowDown':
-          return (
-            <FatArrowUp
-              color={getIconColor(pressed)}
-              style={{ transform: [{ rotate: '180deg' }] }}
-            />
-          )
-        case 'payment':
-          return <Payment color={getIconColor(pressed)} />
-        case 'stake':
-          return <Stake color={getIconColor(pressed)} />
-        case 'lock':
-          return <Lock color={getIconColor(pressed)} />
-        case 'add':
-          return <Plus color={getIconColor(pressed)} />
-        case 'vote':
-          return <Vote color={getIconColor(pressed)} />
-        case 'close':
-          return <Close color={getIconColor(pressed)} />
-      }
-    },
-    [getIconColor, icon],
-  )
-
-  return (
-    <Box alignItems="center" visible={visible}>
-      <Box
-        overflow="hidden"
-        height={size}
-        width={size}
-        {...boxProps}
-        borderRadius="round"
-      >
+  if (title) {
+    return (
+      <Box visible={visible} marginHorizontal="s">
         <Pressable
           onPress={onPress}
           style={styles.pressable}
@@ -163,30 +107,160 @@ const ButtonPressable = ({
             <Box
               style={getBackgroundColorStyle(pressed)}
               height={size}
-              width={size}
               alignItems="center"
               justifyContent="center"
+              flexDirection={reverse ? 'row-reverse' : 'row'}
+              paddingHorizontal="m"
+              borderRadius="round"
               {...containerProps}
             >
-              {getIcon(pressed)}
+              {icon && (
+                <Box paddingHorizontal="xs">
+                  <FabIcon
+                    icon={icon}
+                    pressed={pressed}
+                    color={iconColor}
+                    colorPressed={iconColorPressed}
+                  />
+                </Box>
+              )}
+              <Text
+                variant="subtitle2"
+                color={iconColor}
+                paddingHorizontal="xs"
+              >
+                {title}
+              </Text>
             </Box>
           )}
         </Pressable>
       </Box>
-      {title && (
-        <Text
-          variant="body2"
-          color="grey800"
-          marginTop={titleMarginTop || 's'}
-          marginBottom={titleMarginBottom}
-          marginLeft={titleMarginLeft}
-          marginRight={titleMarginRight}
-        >
-          {title}
-        </Text>
-      )}
+    )
+  }
+
+  return (
+    <Box
+      overflow="hidden"
+      height={size}
+      width={size}
+      {...boxProps}
+      borderRadius="round"
+      visible={visible}
+    >
+      <Pressable onPress={onPress} style={styles.pressable} disabled={disabled}>
+        {({ pressed }) => (
+          <FabButtonCircle
+            pressed={pressed}
+            size={size}
+            icon={icon}
+            iconColor={iconColor}
+            iconColorPressed={iconColorPressed}
+            props={containerProps}
+            style={getBackgroundColorStyle(pressed)}
+          />
+        )}
+      </Pressable>
     </Box>
   )
+}
+
+type FabButtonCircleProps = {
+  pressed: boolean
+  size?: number
+  icon?: IconName
+  iconColor?: Color
+  iconColorPressed?: Color
+  props?: BoxProps<Theme>
+  style?: ViewStyle
+}
+
+const FabButtonCircle = ({
+  pressed,
+  size,
+  icon,
+  iconColor,
+  iconColorPressed,
+  props,
+  style,
+}: FabButtonCircleProps) => {
+  return (
+    <Box
+      style={style}
+      height={size}
+      width={size}
+      alignItems="center"
+      justifyContent="center"
+      {...props}
+    >
+      <FabIcon
+        icon={icon}
+        pressed={pressed}
+        color={iconColor}
+        colorPressed={iconColorPressed}
+      />
+    </Box>
+  )
+}
+
+type IconProps = {
+  icon?: IconName
+  pressed: boolean
+  color?: Color
+  colorPressed?: Color
+}
+
+const FabIcon = ({ icon, pressed, color, colorPressed }: IconProps) => {
+  const colors = useColors()
+
+  const getIconColor = useCallback(() => {
+    if (pressed && colorPressed) {
+      return colors[colorPressed]
+    }
+
+    if (color) {
+      return colors[color]
+    }
+
+    return colors.primaryText
+  }, [color, colorPressed, colors, pressed])
+
+  switch (icon) {
+    case 'arrowRight':
+      return (
+        <ArrowDown
+          color={getIconColor()}
+          style={{ transform: [{ rotate: '270deg' }] }}
+        />
+      )
+    case 'arrowDown':
+      return <ArrowDown color={getIconColor()} />
+    case 'fatArrowUp':
+      return <FatArrowUp color={getIconColor()} />
+    case 'fatArrowDown':
+      return (
+        <FatArrowUp
+          color={getIconColor()}
+          style={{ transform: [{ rotate: '180deg' }] }}
+        />
+      )
+    case 'payment':
+      return <Payment color={getIconColor()} />
+    case 'stake':
+      return <Stake color={getIconColor()} />
+    case 'lock':
+      return <Lock color={getIconColor()} />
+    case 'add':
+      return <Plus color={getIconColor()} />
+    case 'vote':
+      return <Vote color={getIconColor()} />
+    case 'close':
+      return <Close color={getIconColor()} />
+    case 'filter':
+      return <Filter color={getIconColor()} />
+    default:
+    case 'dots':
+      return <Dots color={getIconColor()} />
+  }
 }
 
 const styles = StyleSheet.create({ pressable: { width: '100%' } })

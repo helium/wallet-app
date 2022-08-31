@@ -1,5 +1,6 @@
 import { LinkWalletRequest, SignHotspotRequest } from '@helium/wallet-link'
 import { StackNavigationProp } from '@react-navigation/stack'
+import { TokenType } from '../../generated/graphql'
 
 export type PaymentRouteParam = {
   payer?: string
@@ -8,9 +9,11 @@ export type PaymentRouteParam = {
   amount?: string
   memo?: string
   netType?: string
+  defaultTokenType?: TokenType
 }
 export type HomeStackParamList = {
   AccountsScreen: undefined
+  AccountTokenScreen: { tokenType: TokenType }
   AccountAssignScreen: undefined
   ConfirmPin: {
     action: 'payment'

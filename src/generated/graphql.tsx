@@ -411,6 +411,8 @@ export type SumMeta = {
 }
 
 export enum TokenType {
+  /** Data Credit */
+  Dc = 'dc',
   /** Helium Network Token */
   Hnt = 'hnt',
   /** Helium Security Token */

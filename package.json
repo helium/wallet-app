@@ -39,6 +39,7 @@
   "dependencies": {
     "@apollo/client": "~3.5.5",
     "@gorhom/bottom-sheet": "^4.1.5",
+    "@gorhom/portal": "^1.0.14",
     "@helium/address": "^4.6.2",
     "@helium/crypto-react-native": "^4.6.2",
     "@helium/currency": "^4.7.3",
