@@ -22,6 +22,7 @@ import LedgerNavigator from '../ledger/LedgerNavigator'
 import VoteNavigator from '../vote/VoteNavigator'
 import DappLoginScreen from '../dappLogin/DappLoginScreen'
 import InternetNavigator from '../internet/InternetNavigator'
+import AccountTokenScreen from '../account/AccountTokenScreen'
 
 const HomeStack = createStackNavigator()
 
@@ -38,6 +39,11 @@ const HomeStackScreen = () => {
   return (
     <HomeStack.Navigator screenOptions={navigatorScreenOptions}>
       <HomeStack.Screen name="AccountsScreen" component={AccountsScreen} />
+      <HomeStack.Screen
+        name="AccountTokenScreen"
+        component={AccountTokenScreen}
+        options={{ presentation: 'card' }}
+      />
       <HomeStack.Screen
         name="AccountAssignScreen"
         component={AccountAssignScreen}

@@ -36,9 +36,7 @@ const TxnListItem = ({ item, accountAddress, now, isLast, onPress }: Props) => {
       flexDirection="row"
       onPress={handlePress}
     >
-      <Box paddingLeft="l" paddingRight="s">
-        {listIcon}
-      </Box>
+      <Box paddingRight="s">{listIcon}</Box>
       <Box flex={1} flexDirection="row">
         {item.pending && (
           <Box
@@ -58,7 +56,7 @@ const TxnListItem = ({ item, accountAddress, now, isLast, onPress }: Props) => {
             {time}
           </Text>
         </Box>
-        <Box paddingEnd="l" paddingVertical="m" maxWidth="55%">
+        <Box paddingVertical="m" maxWidth="55%">
           <Text variant="body2" color={color} textAlign="right">
             {amt}
           </Text>

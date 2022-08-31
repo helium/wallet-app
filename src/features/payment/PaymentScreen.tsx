@@ -103,7 +103,9 @@ const PaymentScreen = () => {
     setCurrentAccount,
     sortedAccountsForNetType,
   } = useAccountStorage()
-  const [tokenType, setTokenType] = useState<TokenType>(TokenType.Hnt)
+  const [tokenType, setTokenType] = useState<TokenType>(
+    route.params?.defaultTokenType || TokenType.Hnt,
+  )
 
   useAsync(async () => {
     if (tokenType !== TokenType.Mobile) return
