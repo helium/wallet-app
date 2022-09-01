@@ -286,7 +286,7 @@ PODS:
     - React-Core
   - react-native-network-info (5.2.1):
     - React
-  - react-native-onesignal (4.4.0):
+  - react-native-onesignal (4.4.1):
     - OneSignalXCFramework (= 3.11.2)
     - React (< 1.0.0, >= 0.13.0)
   - react-native-randombytes (3.6.1):
@@ -418,14 +418,8 @@ PODS:
   - RNScreens (3.8.0):
     - React-Core
     - React-RCTImage
-  - RNSentry (3.4.3):
-    - React-Core
-    - Sentry (= 7.11.0)
   - RNSVG (12.1.1):
     - React
-  - Sentry (7.11.0):
-    - Sentry/Core (= 7.11.0)
-  - Sentry/Core (7.11.0)
   - Stripe (22.5.1):
     - Stripe/Stripe3DS2 (= 22.5.1)
     - StripeApplePay (= 22.5.1)
@@ -536,7 +530,6 @@ DEPENDENCIES:
   - RNReactNativeSharedGroupPreferences (from `../node_modules/react-native-shared-group-preferences`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
-  - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNSVG (from `../node_modules/react-native-svg`)
   - "stripe-react-native (from `../node_modules/@stripe/stripe-react-native`)"
   - TcpSockets (from `../node_modules/react-native-tcp`)
@@ -549,7 +542,6 @@ SPEC REPOS:
     - fmt
     - MultiplatformBleAdapter
     - OneSignalXCFramework
-    - Sentry
     - Stripe
     - StripeApplePay
     - StripeCore
@@ -705,8 +697,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../node_modules/react-native-screens"
-  RNSentry:
-    :path: "../node_modules/@sentry/react-native"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   stripe-react-native:
@@ -742,11 +732,11 @@ SPEC CHECKSUMS:
   FBLazyVector: e5569e42a1c79ca00521846c223173a57aca1fe1
   FBReactNativeSpec: fe08c1cd7e2e205718d77ad14b34957cce949b58
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  glog: 5337263514dd6f09803962437687240c5dc39aa4
+  glog: 43737235ae6a21de4f45297f4f73b6420fc2ecb2
   helium-react-native-sdk: 32c0a7e3abc733a7f3d291013b2db31475fc6980
   MultiplatformBleAdapter: 5a6a897b006764392f9cef785e4360f54fb9477d
   OneSignalXCFramework: 81ceac017a290f23793443323090cfbe888f74ea
-  RCT-Folly: a21c126816d8025b547704b777a2ba552f3d9fa9
+  RCT-Folly: e2636706cc3fded205cf0d380428ec0ea7455f80
   RCTRequired: 4bf86c70714490bca4bf2696148638284622644b
   RCTTypeSafety: c475a7059eb77935fa53d2c17db299893f057d5d
   React: f64af14e3f2c50f6f2c91a5fd250e4ff1b3c3459
@@ -765,7 +755,7 @@ SPEC CHECKSUMS:
   react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
   react-native-netinfo: c023b7c36ff34e3b607d1446002b5b39089a860b
   react-native-network-info: d1290ffc0bd0709e11436f5b8d7f605dcc5c4530
-  react-native-onesignal: dd51f7c4771983f0169a6f06df12a4cf096ca28e
+  react-native-onesignal: e1f82b98767a9014d2c46f395b083330cfa29cea
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-safe-area-context: 584dc04881deb49474363f3be89e4ca0e854c057
   react-native-simple-toast: 8ee5d23f0b92b935ab7434cdb65159ce12dfb4b7
@@ -795,9 +785,7 @@ SPEC CHECKSUMS:
   RNReactNativeSharedGroupPreferences: de0121a4224c267bc7e9fb16c398f3f087c8da81
   RNReanimated: 11e6e30bbc49079b7f0c321ac5830e6d113d0224
   RNScreens: 6e1ea5787989f92b0671049b808aef64fa1ef98c
-  RNSentry: 85f6525b5fe8d2ada065858026b338605b3c09da
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
-  Sentry: 0c5cd63d714187b4a39c331c1f0eb04ba7868341
   Stripe: 2b2decd03146e08a350960966d41f3028c2eac29
   stripe-react-native: c90947c1f02761d11622dcb3cd3bd8683916b36b
   StripeApplePay: b14f06ac6fc24b56704c1e598149ed0cc45e166f

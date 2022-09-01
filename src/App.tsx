@@ -11,7 +11,6 @@ import Config from 'react-native-config'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { PortalProvider } from '@gorhom/portal'
-import * as Logger from './utils/logger'
 import { useApolloClient } from './graphql/useApolloClient'
 import { theme, darkThemeColors, lightThemeColors } from './theme/theme'
 import RootNavigator from './navigation/RootNavigator'
@@ -94,9 +93,6 @@ const App = () => {
         OneSignal.promptForPushNotificationsWithUserResponse(() => {})
       }
     }
-
-    // init Sentry
-    Logger.init()
   })
 
   useEffect(() => {

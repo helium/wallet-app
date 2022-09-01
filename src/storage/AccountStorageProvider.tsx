@@ -31,7 +31,6 @@ import {
   updateCloudContacts,
 } from './cloudStorage'
 import { removeAccountTag, tagAccount } from './oneSignalStorage'
-import * as Logger from '../utils/logger'
 
 const useAccountStorageHook = () => {
   const [currentAccount, setCurrentAccount] = useState<
@@ -61,11 +60,9 @@ const useAccountStorageHook = () => {
       const firstAddress = firstAccount.address
       await setCloudDefaultAccountAddress(firstAddress)
       setDefaultAccountAddress(firstAddress)
-      Logger.setUser(firstAddress)
     } else {
       // restore default account
       setDefaultAccountAddress(restoredAddress)
-      Logger.setUser(restoredAddress)
     }
   }, [accounts])
 
@@ -246,7 +243,6 @@ const useAccountStorageHook = () => {
     async (address: string | undefined) => {
       await setCloudDefaultAccountAddress(address)
       setDefaultAccountAddress(address)
-      Logger.setUser(address)
     },
     [],
   )
