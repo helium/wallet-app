@@ -16,6 +16,16 @@ const getComponents = (variant?: ResponsiveValue<TextVariant, Theme>) => ({
   greenBright500: <Text color="greenBright500" variant={variant} />,
   blueBright500: <Text color="blueBright500" variant={variant} />,
   caribbeanGreen: <Text color="caribbeanGreen" variant={variant} />,
+  codeHighlight: (
+    <Text
+      color="grey500"
+      fontWeight="300"
+      style={{
+        backgroundColor: '#D9D9D9',
+      }}
+      variant={variant}
+    />
+  ),
 })
 
 type Props = TextProps<Theme> & {

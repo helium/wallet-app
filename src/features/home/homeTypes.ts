@@ -51,6 +51,7 @@ export type HomeStackParamList = {
       }
   LedgerNavigator: undefined
   VoteNavigator: undefined
+  CLIAccountNavigator: undefined
 }
 
 export type HomeNavigationProp = StackNavigationProp<HomeStackParamList>

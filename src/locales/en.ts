@@ -16,6 +16,22 @@ export default {
       body: "This seed phrase doesn't correspond to a Helium account",
       title: 'Error',
     },
+    cli: {
+      import: {
+        title: 'Import CLI',
+        body: 'Generate a password-secured QR code in <codeHighlight>helium-wallet-rs</codeHighlight> by typing <codeHighlight>export</codeHighlight>',
+        buttonText: 'Scan QR Code',
+      },
+      password: {
+        title: 'Decrypting Wallet...',
+        body: 'Enter the password used to encrypt the CLI Wallet to complete import.',
+        buttonText: 'Decrypt and Import',
+      },
+      alert: {
+        body: 'Invalid Password',
+        title: 'Password entered is invalid. Please try again.',
+      },
+    },
     complete: {
       subtitle: 'This will just take a moment.',
       title: 'Recovering Account...',
