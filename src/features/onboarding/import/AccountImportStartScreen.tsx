@@ -43,6 +43,13 @@ const AccountImportStartScreen = () => {
     [hasAccounts, homeNav, navigation],
   )
 
+  const cliExport = useCallback(
+    () => () => {
+      homeNav.navigate('CLIAccountNavigator')
+    },
+    [homeNav],
+  )
+
   const edges = useMemo((): Edge[] => ['bottom'], [])
 
   return (
@@ -78,7 +85,7 @@ const AccountImportStartScreen = () => {
       </Text>
       <Box flexDirection="row" marginHorizontal="l">
         <ButtonPressable
-          width="50%"
+          width="33%"
           marginRight="xxs"
           borderTopLeftRadius="round"
           borderBottomLeftRadius="round"
@@ -93,14 +100,27 @@ const AccountImportStartScreen = () => {
           disabled={reachedAccountLimit}
         />
         <ButtonPressable
-          width="50%"
+          width="33%"
           marginLeft="xxs"
-          borderTopRightRadius="round"
-          borderBottomRightRadius="round"
           backgroundColor="jazzberryJam"
           titleColor="black900"
           title={t('accountImport.restoreChoice', { totalWords: 24 })}
           onPress={navNext(24)}
+          titleColorDisabled="black800"
+          backgroundColorOpacityPressed={0.7}
+          backgroundColorDisabled="jazzberryJam"
+          backgroundColorDisabledOpacity={0.4}
+          disabled={reachedAccountLimit}
+        />
+        <ButtonPressable
+          width="33%"
+          marginLeft="xxs"
+          borderTopRightRadius="round"
+          borderBottomRightRadius="round"
+          backgroundColor="grey350"
+          titleColor="black900"
+          title="CLI"
+          onPress={cliExport()}
           titleColorDisabled="black800"
           backgroundColorOpacityPressed={0.7}
           backgroundColorDisabled="jazzberryJam"

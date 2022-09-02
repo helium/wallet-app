@@ -18,6 +18,7 @@ import ConfirmPinScreen from '../../components/ConfirmPinScreen'
 import AddressQrScanner from '../addressBook/AddressQrScanner'
 import CreateAccountNavigator from '../onboarding/create/CreateAccountNavigator'
 import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
+import CLIAccountNavigator from '../onboarding/cli-import/CLIAccountNavigator'
 import LedgerNavigator from '../ledger/LedgerNavigator'
 import VoteNavigator from '../vote/VoteNavigator'
 import DappLoginScreen from '../dappLogin/DappLoginScreen'
@@ -94,6 +95,10 @@ const HomeStackScreen = () => {
         name="LedgerNavigator"
         component={LedgerNavigator}
         options={{ presentation: 'card' }}
+      />
+      <HomeStack.Screen
+        name="CLIAccountNavigator"
+        component={CLIAccountNavigator}
       />
       <HomeStack.Screen name="VoteNavigator" component={VoteNavigator} />
     </HomeStack.Navigator>

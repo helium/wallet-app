@@ -6,6 +6,7 @@ export type OnboardingStackParamList = {
   CreateAccount: undefined
   ImportAccount: undefined
   LedgerNavigator: undefined
+  CLIAccountNavigator: undefined
 }
 
 export type OnboardingNavigationProp =
