@@ -34,6 +34,7 @@ export default () => {
         payee: string
         balanceAmount: Balance<NetworkTokens | TestNetworkTokens>
         memo: string
+        max?: boolean
       }[],
       tokenType: TokenType,
     ) => {

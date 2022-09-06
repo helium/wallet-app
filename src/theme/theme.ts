@@ -133,7 +133,7 @@ const palette = {
 
   havelockBlue: '#0C93E5',
 
-  jazzberryJam: '#D23E72',
+  jazzberryJam: '#D3366D',
 
   lividBrown: '#421B27',
 

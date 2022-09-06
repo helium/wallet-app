@@ -389,7 +389,7 @@ export default {
     enterAmount: 'Enter {{ticker}} Amount',
     enterMemo: 'Enter Memo (Optional)',
     fee: '+{{value}} Fee',
-    insufficientFunds: 'Insufficient Funds',
+    insufficientFunds: 'Insufficient {{token}}',
     ledgerTooManyRecipients:
       'Ledger payment transactions\nare limited to 1 recipient.',
     max: 'Max',

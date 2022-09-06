@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, {
   forwardRef,
   memo,
@@ -16,23 +15,18 @@ import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
-import Balance, {
-  DataCredits,
-  NetworkTokens,
-  TestNetworkTokens,
-} from '@helium/currency'
+import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
 import { useTranslation } from 'react-i18next'
-import { differenceInMilliseconds } from 'date-fns'
 import PaymentArrow from '@assets/images/paymentArrow.svg'
 import { LayoutChangeEvent } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { BoxProps } from '@shopify/restyle'
 import { floor } from 'lodash'
+import { differenceInMilliseconds } from 'date-fns'
 import { useOpacity, useSafeTopPaddingStyle } from '../theme/themeHooks'
 import Keypad from './Keypad'
 import Box from './Box'
 import Text from './Text'
-import { useTransactions } from '../storage/TransactionProvider'
 import {
   balanceToString,
   ORACLE_POLL_INTERVAL,
@@ -46,10 +40,10 @@ import { decimalSeparator, groupSeparator, locale } from '../utils/i18n'
 import BackgroundFill from './BackgroundFill'
 import HandleBasic from './HandleBasic'
 import { Theme } from '../theme/theme'
-import { Payment } from '../features/payment/PaymentItem'
 import { CSAccount } from '../storage/cloudStorage'
 import useBackHandler from '../utils/useBackHandler'
 import { TokenType } from '../generated/graphql'
+import { Payment } from '../features/payment/PaymentItem'
 
 type ShowOptions = {
   payer?: CSAccount | null
@@ -67,11 +61,12 @@ export type HNTKeyboardRef = {
 
 type Props = {
   tokenType: TokenType
+  networkFee?: Balance<NetworkTokens | TestNetworkTokens>
   children: ReactNode
   handleVisible?: (visible: boolean) => void
   onConfirmBalance: (opts: {
     balance: Balance<TestNetworkTokens | NetworkTokens>
-    payee: string
+    payee?: string
     index?: number
   }) => void
 } & BoxProps<Theme>
@@ -82,6 +77,7 @@ const HNTKeyboardSelector = forwardRef(
       onConfirmBalance,
       handleVisible,
       tokenType,
+      networkFee,
       ...boxProps
     }: Props,
     ref: Ref<HNTKeyboardRef>,
@@ -92,19 +88,16 @@ const HNTKeyboardSelector = forwardRef(
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const [value, setValue] = useState('0')
     const [originalValue, setOriginalValue] = useState('')
-    const [fee, setFee] = useState<Balance<DataCredits>>()
     const [payee, setPayee] = useState<CSAccount | string | null | undefined>()
-    const [payer, setPayer] = useState<CSAccount | null | undefined>()
     const [payments, setPayments] = useState<Payment[]>()
+    const [payer, setPayer] = useState<CSAccount | null | undefined>()
     const [paymentIndex, setPaymentIndex] = useState<number>()
     const [containerHeight, setContainerHeight] = useState(0)
     const [headerHeight, setHeaderHeight] = useState(0)
     const containerStyle = useSafeTopPaddingStyle('android')
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
 
-    const { calculatePaymentTxnFee } = useTransactions()
     const {
-      dcToNetworkTokens,
       oracleDateTime,
       floatToBalance,
       accountNetworkBalance,
@@ -156,11 +149,16 @@ const HNTKeyboardSelector = forwardRef(
       return floatToBalance(numberVal, tokenType)
     }, [floatToBalance, tokenType, value])
 
-    const feeAsTokens = useMemo(() => {
-      if (!fee) return
+    const hasMaxDecimals = useMemo(() => {
+      if (!valueAsBalance) return false
+      const valueString = value
+        .replaceAll(groupSeparator, '')
+        .replaceAll(decimalSeparator, '.')
+      if (!valueString.includes('.')) return false
 
-      return dcToNetworkTokens(fee)
-    }, [dcToNetworkTokens, fee])
+      const [, decimals] = valueString.split('.')
+      return decimals.length >= valueAsBalance?.type.decimalPlaces.toNumber()
+    }, [value, valueAsBalance])
 
     const getNextPayments = useCallback(() => {
       if (payments && paymentIndex !== undefined) {
@@ -173,23 +171,6 @@ const HNTKeyboardSelector = forwardRef(
       }
       return [{ amount: valueAsBalance, address: payeeAddress }]
     }, [payeeAddress, paymentIndex, payments, valueAsBalance])
-
-    useEffect(() => {
-      const nextPayments = getNextPayments()
-      const mapped = nextPayments.map((p) => ({
-        payee: p.address || '',
-        balanceAmount: p.amount || bonesToBalance(0, tokenType),
-        memo: '',
-      }))
-      calculatePaymentTxnFee(mapped, tokenType).then(setFee)
-    }, [
-      calculatePaymentTxnFee,
-      value,
-      payer,
-      getNextPayments,
-      bonesToBalance,
-      tokenType,
-    ])
 
     const show = useCallback(
       (opts: ShowOptions) => {
@@ -216,9 +197,14 @@ const HNTKeyboardSelector = forwardRef(
       bottomSheetModalRef.current?.dismiss()
     }, [])
 
+    const handleHeaderLayout = useCallback(
+      (layout: LayoutChangeEvent) =>
+        setHeaderHeight(layout.nativeEvent.layout.height),
+      [],
+    )
+
     const handleSetMax = useCallback(() => {
-      if (!accountNetworkBalance || !accountMobileBalance || !feeAsTokens)
-        return
+      if (!accountNetworkBalance || !accountMobileBalance || !networkFee) return
 
       const currentAmount = getNextPayments()
         .filter((_v, index) => index !== paymentIndex || 0) // Remove the payment being updated
@@ -233,7 +219,7 @@ const HNTKeyboardSelector = forwardRef(
       if (tokenType === TokenType.Hnt) {
         maxBalance = accountNetworkBalance
           .minus(currentAmount)
-          .minus(feeAsTokens)
+          .minus(networkFee)
       } else {
         maxBalance = accountMobileBalance.minus(currentAmount)
       }
@@ -255,17 +241,11 @@ const HNTKeyboardSelector = forwardRef(
       accountMobileBalance,
       accountNetworkBalance,
       bonesToBalance,
-      feeAsTokens,
+      networkFee,
       getNextPayments,
       paymentIndex,
       tokenType,
     ])
-
-    const handleHeaderLayout = useCallback(
-      (layout: LayoutChangeEvent) =>
-        setHeaderHeight(layout.nativeEvent.layout.height),
-      [],
-    )
 
     const renderBackdrop = useCallback(
       (props) => (
@@ -301,7 +281,9 @@ const HNTKeyboardSelector = forwardRef(
                     </Box>
                   </>
                 )}
-                <AccountIcon size={40} address={payeeAddress} />
+                {payeeAddress && (
+                  <AccountIcon size={40} address={payeeAddress || '1'} />
+                )}
               </Box>
               <Text
                 variant="body2"
@@ -380,7 +362,7 @@ const HNTKeyboardSelector = forwardRef(
       if (!payer) return true
 
       if (
-        !feeAsTokens ||
+        !networkFee ||
         !valueAsBalance ||
         !accountNetworkBalance ||
         !accountMobileBalance
@@ -392,19 +374,19 @@ const HNTKeyboardSelector = forwardRef(
         // If paying with mobile, they need to have enough mobile to cover the payment
         // and enough hnt to cover the fee
         const hasEnoughHnt =
-          accountNetworkBalance.minus(feeAsTokens).integerBalance >= 0
+          accountNetworkBalance.minus(networkFee).integerBalance >= 0
         const hasEnoughMobile =
           accountMobileBalance.minus(valueAsBalance).integerBalance >= 0
         return hasEnoughHnt && hasEnoughMobile
       }
       return (
-        accountNetworkBalance.minus(feeAsTokens).minus(valueAsBalance)
+        accountNetworkBalance.minus(networkFee).minus(valueAsBalance)
           .integerBalance >= 0
       )
     }, [
       accountMobileBalance,
       accountNetworkBalance,
-      feeAsTokens,
+      networkFee,
       payer,
       tokenType,
       valueAsBalance,
@@ -413,7 +395,7 @@ const HNTKeyboardSelector = forwardRef(
     const handleConfirm = useCallback(() => {
       bottomSheetModalRef.current?.dismiss()
 
-      if (!payeeAddress || !valueAsBalance) return
+      if (!valueAsBalance) return
 
       onConfirmBalance({
         balance: valueAsBalance,
@@ -439,14 +421,18 @@ const HNTKeyboardSelector = forwardRef(
       setValue((prevVal) => prevVal.substring(0, prevVal.length - 1) || '0')
     }, [])
 
-    const handleNumber = useCallback((nextDigit: number) => {
-      setValue((prevVal) => {
-        if (prevVal !== '0') {
-          return `${prevVal}${nextDigit}`
-        }
-        return nextDigit.toString()
-      })
-    }, [])
+    const handleNumber = useCallback(
+      (nextDigit: number) => {
+        if (hasMaxDecimals) return
+        setValue((prevVal) => {
+          if (prevVal !== '0') {
+            return `${prevVal}${nextDigit}`
+          }
+          return nextDigit.toString()
+        })
+      },
+      [hasMaxDecimals],
+    )
 
     const handlePress = useCallback(
       (input?: KeypadInput) => {
@@ -505,7 +491,7 @@ const HNTKeyboardSelector = forwardRef(
               >
                 {`${value || '0'} ${valueAsBalance?.type.ticker}`}
               </Text>
-              {payer && (
+              {payer && networkFee && (
                 <Text
                   paddingHorizontal="m"
                   maxFontSizeMultiplier={1}
@@ -515,7 +501,7 @@ const HNTKeyboardSelector = forwardRef(
                   marginBottom="l"
                 >
                   {t('hntKeyboard.fee', {
-                    value: balanceToString(feeAsTokens, {
+                    value: balanceToString(networkFee, {
                       maxDecimalPlaces: 4,
                     }),
                   })}

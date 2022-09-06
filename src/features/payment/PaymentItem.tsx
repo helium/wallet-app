@@ -20,6 +20,7 @@ import {
   TextInputFocusEventData,
 } from 'react-native'
 import Address from '@helium/address'
+import { toUpper } from 'lodash'
 import Box from '../../components/Box'
 import { accountNetType, ellipsizeAddress } from '../../utils/accountUtils'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -39,6 +40,7 @@ export type Payment = {
   amount?: Balance<NetworkTokens | TestNetworkTokens>
   memo?: string
   hasError?: boolean
+  max?: boolean
 }
 
 type Props = {
@@ -46,7 +48,8 @@ type Props = {
   hasError?: boolean
   fee?: Balance<DataCredits>
   onAddressBookSelected: (opts: { address?: string; index: number }) => void
-  onEditHNTAmount: (opts: { address?: string; index: number }) => void
+  onEditAmount: (opts: { address?: string; index: number }) => void
+  onToggleMax: (opts: { address?: string; index: number }) => void
   onEditMemo: (opts: { address?: string; index: number; memo: string }) => void
   onEditAddress: (opts: { index: number; address: string }) => void
   handleAddressError: (opts: {
@@ -64,23 +67,25 @@ type Props = {
 const ITEM_HEIGHT = 80
 
 const PaymentItem = ({
-  address,
   account,
+  address,
   amount,
-  index,
-  onAddressBookSelected,
-  onEditHNTAmount,
-  onEditMemo,
-  onEditAddress,
-  handleAddressError,
-  onUpdateError,
   fee,
-  memo,
+  handleAddressError,
   hasError,
-  onRemove,
   hideMemo,
-  ticker,
+  index,
+  max,
+  memo,
   netType,
+  onAddressBookSelected,
+  onEditAddress,
+  onEditAmount,
+  onEditMemo,
+  onRemove,
+  onToggleMax,
+  onUpdateError,
+  ticker,
 }: Props) => {
   const { colorStyle } = useOpacity('primaryText', 0.3)
   const { dcToNetworkTokens } = useBalance()
@@ -137,8 +142,12 @@ const PaymentItem = ({
   }, [index, onAddressBookSelected])
 
   const handleEditAmount = useCallback(() => {
-    onEditHNTAmount({ address, index })
-  }, [address, index, onEditHNTAmount])
+    onEditAmount({ address, index })
+  }, [address, index, onEditAmount])
+
+  const handleToggleMax = useCallback(() => {
+    onToggleMax({ address, index })
+  }, [address, index, onToggleMax])
 
   const handleEditMemo = useCallback(
     (text?: string) => {
@@ -266,27 +275,37 @@ const PaymentItem = ({
 
       <Box height={1} backgroundColor="primaryBackground" />
 
-      <TouchableOpacityBox
-        minHeight={ITEM_HEIGHT}
-        justifyContent="center"
-        onPress={handleEditAmount}
-      >
+      <Box flexDirection="row" minHeight={ITEM_HEIGHT}>
         {!amount || amount?.integerBalance === 0 ? (
-          <Text
-            color="secondaryText"
-            paddingHorizontal="m"
-            variant="subtitle2"
-            fontWeight="100"
-            style={colorStyle}
-          >
-            {t('payment.enterAmount', {
-              ticker,
-            })}
-          </Text>
-        ) : (
           <>
+            <TouchableOpacityBox
+              onPress={handleEditAmount}
+              flex={1}
+              justifyContent="center"
+            >
+              <Text
+                color="secondaryText"
+                padding="m"
+                variant="subtitle2"
+                fontWeight="100"
+                style={colorStyle}
+              >
+                {t('payment.enterAmount', {
+                  ticker,
+                })}
+              </Text>
+            </TouchableOpacityBox>
+          </>
+        ) : (
+          <TouchableOpacityBox
+            justifyContent="center"
+            onPress={handleEditAmount}
+            flex={1}
+          >
             <Text paddingHorizontal="m" variant="subtitle2" color="primaryText">
-              {balanceToString(amount)}
+              {balanceToString(amount, {
+                maxDecimalPlaces: amount.type.decimalPlaces.toNumber(),
+              })}
             </Text>
             {fee && (
               <Text paddingHorizontal="m" variant="body3" style={colorStyle}>
@@ -297,9 +316,24 @@ const PaymentItem = ({
                 })}
               </Text>
             )}
-          </>
+          </TouchableOpacityBox>
         )}
-      </TouchableOpacityBox>
+
+        <TouchableOpacityBox
+          onPress={handleToggleMax}
+          backgroundColor={max ? 'jazzberryJam' : 'surface'}
+          borderRadius="round"
+          paddingVertical="xs"
+          paddingHorizontal="ms"
+          marginRight="ms"
+          marginVertical="l"
+          justifyContent="center"
+          disabled
+          visible={false} // TODO: Enable once send max is fixed on the chain
+        >
+          <Text variant="body3">{toUpper(t('payment.max'))}</Text>
+        </TouchableOpacityBox>
+      </Box>
 
       {!hideMemo && (
         <>
