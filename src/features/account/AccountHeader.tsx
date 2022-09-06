@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo, useState } from 'react'
+import React, { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NetTypes as NetType } from '@helium/address'
 import { useNavigation } from '@react-navigation/native'
@@ -7,18 +7,12 @@ import AccountIcon from '../../components/AccountIcon'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import { CSAccount } from '../../storage/cloudStorage'
-import {
-  ellipsizeAddress,
-  formatAccountAlias,
-  networkCurrencyType,
-} from '../../utils/accountUtils'
-import useAccountRewardsSum from './useAccountRewardsSum'
+import { ellipsizeAddress, formatAccountAlias } from '../../utils/accountUtils'
 import { getSecureAccount } from '../../storage/secureStorage'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { HomeNavigationProp } from '../home/homeTypes'
 import useAppear from '../../utils/useAppear'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Props = {
   account: CSAccount
@@ -26,10 +20,7 @@ type Props = {
 const AccountHeader = ({ account }: Props) => {
   const { t } = useTranslation()
   const navigation = useNavigation<HomeNavigationProp>()
-  const { change, minutesAgo, formattedChange, tokenChange } =
-    useAccountRewardsSum(account.address)
   const { setOnboardingData } = useOnboarding()
-  const { showNumericChange, updateShowNumericChange } = useAppStorage()
   const [isRestoredAccount, setIsRestoredAccount] = useState(false)
 
   useAppear(async () => {
@@ -40,16 +31,6 @@ const AccountHeader = ({ account }: Props) => {
     const secureAccount = await getSecureAccount(account.address)
     setIsRestoredAccount(secureAccount === undefined)
   })
-
-  const ticker = useMemo(
-    () => networkCurrencyType(account.netType).ticker,
-    [account.netType],
-  )
-
-  const hadPositiveChange = useMemo(
-    () => !tokenChange || tokenChange >= 0,
-    [tokenChange],
-  )
 
   const restoreAccount = useCallback(() => {
     setOnboardingData((prev) => ({ ...prev, netType: account.netType }))
@@ -87,11 +68,6 @@ const AccountHeader = ({ account }: Props) => {
     )
   }, [account.address, account.netType, navigation, setOnboardingData, t])
 
-  const toggleChangeType = useCallback(
-    () => updateShowNumericChange(!showNumericChange),
-    [showNumericChange, updateShowNumericChange],
-  )
-
   return (
     <TouchableOpacityBox
       disabled={!isRestoredAccount}
@@ -112,13 +88,12 @@ const AccountHeader = ({ account }: Props) => {
           <Text variant="subtitle2" numberOfLines={1}>
             {formatAccountAlias(account)}
           </Text>
-          <Text variant="body3" color="secondaryText">
-            {minutesAgo !== undefined
-              ? t('accountHeader.timeAgo', { formattedChange })
-              : ''}
+          <Text variant="body3" color="secondaryText" mt="xxs">
+            {ellipsizeAddress(account.address)}
           </Text>
         </Box>
-        <TouchableOpacityBox marginLeft="s" onPress={toggleChangeType}>
+        {/* TODO replace with total fiat % change */}
+        {/* <TouchableOpacityBox marginLeft="s" onPress={toggleChangeType}>
           {showNumericChange ? (
             <Text
               variant="subtitle2"
@@ -138,7 +113,7 @@ const AccountHeader = ({ account }: Props) => {
           <Text variant="body3" color="secondaryText" textAlign="right">
             {t('accountHeader.last24')}
           </Text>
-        </TouchableOpacityBox>
+        </TouchableOpacityBox> */}
       </Box>
       <Text
         variant="body3"

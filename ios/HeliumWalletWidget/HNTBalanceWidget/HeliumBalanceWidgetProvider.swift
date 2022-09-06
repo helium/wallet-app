@@ -22,8 +22,14 @@ struct ParsedBalanceWidgetData {
     var price: Double
 }
 
+class BalanceEntryCache {
+    var previousEntry: BalanceWidgetEntry?
+}
+
 // Helium Balance Widget Provider that determines placeholder, snapshot, and timeline for this widget.
 struct HNTBalanceWidgetProvider: IntentTimelineProvider {
+    private let entryCache = BalanceEntryCache()
+
     func placeholder(in _: Context) -> BalanceWidgetEntry {
         BalanceWidgetEntry(date: Date(), configuration: ConfigurationIntent(), hntPrice: 50.41234, hntDailyEarnings: 54.37, balance: 1_500_000)
     }
@@ -42,11 +48,11 @@ struct HNTBalanceWidgetProvider: IntentTimelineProvider {
                 let data = savedData.data(using: .utf8)
                 if let parsedData = try? decoder.decode(HeliumWalletWidgetData.self, from: data!) {
                     // Fetch balance data from nova wallet API.
-                    Network().fetchBalanceData(parsedWidgetData: parsedData) { error, parsedBalanceWidgetData in
+                    Network().fetchBalanceData(parsedWidgetData: parsedData) { _, parsedBalanceWidgetData in
                         let nextRefresh = Calendar.current.date(byAdding: .minute, value: 15, to: entryDate)!
 
-                        if error == nil {
-                            let entry = BalanceWidgetEntry(date: nextRefresh, configuration: configuration, hntPrice: parsedBalanceWidgetData!.price, hntDailyEarnings: parsedBalanceWidgetData!.total, balance: parsedBalanceWidgetData!.balance)
+                        if let parsedBalanceWidgetData = parsedBalanceWidgetData {
+                            let entry = BalanceWidgetEntry(date: nextRefresh, configuration: configuration, hntPrice: parsedBalanceWidgetData.price, hntDailyEarnings: parsedBalanceWidgetData.total, balance: parsedBalanceWidgetData.balance)
                             let timeline = Timeline(entries: [entry], policy: .atEnd)
                             completion(timeline)
                         } else {
@@ -60,7 +66,9 @@ struct HNTBalanceWidgetProvider: IntentTimelineProvider {
             } else {
                 let nextRefresh = Calendar.current.date(byAdding: .minute, value: 5, to: entryDate)!
                 let entry = BalanceWidgetEntry(date: nextRefresh, configuration: configuration, hntPrice: 0, hntDailyEarnings: 0, balance: 0)
-                let timeline = Timeline(entries: [entry], policy: .atEnd)
+                let fallback = entryCache.previousEntry ?? entry
+                let timeline = Timeline(entries: [fallback], policy: .atEnd)
+                entryCache.previousEntry = entry
                 completion(timeline)
             }
         }
