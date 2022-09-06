@@ -23,7 +23,6 @@ struct HeliumAsset {
     let symbol: String
     let balance: Int
     let price: Double
-    let percentChange: String
 }
 
 // Default Account details including all held assets.
@@ -34,7 +33,6 @@ struct DefaultAccountDetails {
     let isTestnet: Bool
     let totalFiatBalance: Double
     let totalHNTBalance: Int
-    let totalPercentChange: String
     let assets: [HeliumAsset]
 }
 
@@ -45,8 +43,13 @@ struct WalletWidgetEntry: TimelineEntry {
     var accountDetails: DefaultAccountDetails
 }
 
+class EntryCache {
+    var previousEntry: WalletWidgetEntry?
+}
+
 // Helium Wallet Widget Provider
 struct Provider: IntentTimelineProvider {
+    private let entryCache = EntryCache()
     func placeholder(in _: Context) -> WalletWidgetEntry {
         WalletWidgetEntry(date: Date(), configuration: ConfigurationIntent(), accountDetails: Utils.mockAccountDetails())
     }
@@ -66,13 +69,15 @@ struct Provider: IntentTimelineProvider {
 
                 // Decode widget data being injected via app groups. (https://github.com/KjellConnelly/react-native-shared-group-preferences)
                 if let parsedData = try? decoder.decode(HeliumWalletWidgetData.self, from: data!) {
+                    let fallback = entryCache.previousEntry?.accountDetails ?? Utils.emptyAccountDetails()
                     // Fetch data from nova-wallet-api
-                    Network().fetchWalletData(parsedWidgetData: parsedData) { _, defaultAccountDetails in
+                    Network().fetchWalletData(parsedWidgetData: parsedData, fallback: fallback) { _, defaultAccountDetails in
                         if let defaultAccountDetails = defaultAccountDetails {
                             // Refresh every 15 mins
                             let nextRefresh = Calendar.current.date(byAdding: .minute, value: 15, to: entryDate)!
                             let entry = WalletWidgetEntry(date: nextRefresh, configuration: configuration, accountDetails: defaultAccountDetails)
                             let timeline = Timeline(entries: [entry], policy: .atEnd)
+                            entryCache.previousEntry = entry
                             completion(timeline)
                         }
                     }
@@ -81,7 +86,8 @@ struct Provider: IntentTimelineProvider {
                 // If not found refresh in 5 mins
                 let nextRefresh = Calendar.current.date(byAdding: .minute, value: 5, to: entryDate)!
                 let entry = WalletWidgetEntry(date: nextRefresh, configuration: configuration, accountDetails: Utils.emptyAccountDetails())
-                let timeline = Timeline(entries: [entry], policy: .atEnd)
+                let fallback = entryCache.previousEntry ?? entry
+                let timeline = Timeline(entries: [fallback], policy: .atEnd)
                 completion(timeline)
             }
         }

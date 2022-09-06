@@ -56,16 +56,6 @@ struct HeliumWalletWidgetMediumView: View {
                         }
 
                         Spacer()
-
-                        VStack {
-                            Text(entry.accountDetails.totalPercentChange)
-                                .bold()
-                                .font(.system(size: 12.0)).foregroundColor(Color(red: 20 / 255, green: 209 / 255, blue: 17 / 255))
-                            Text(String(localized: "Wallet_Widget_Last_24h",
-                                        comment: "Helium wallet widget last 24hr label."))
-                                .bold()
-                                .font(.system(size: 10.0)).foregroundColor(.white).opacity(0.6)
-                        }
                     }.padding(8.0)
                 }.clipShape(Rectangle()).background(Color(Utils.getSurfaceColorName(isTestnet: entry.accountDetails.isTestnet))).cornerRadius(8.0)
 

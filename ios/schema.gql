@@ -341,4 +341,6 @@ enum TokenType {
   iot
   "MOBILE Subnetwork Token"
   mobile
+  "Data Credit"
+  dc
 }

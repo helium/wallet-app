@@ -32,7 +32,6 @@ struct AssetListItemView: View {
     var assetBalance: String
     var symbolName: String
     var assetPrice: String
-    var percentChange: String
     var isTestnet: Bool
 
     @ViewBuilder
@@ -50,8 +49,10 @@ struct AssetListItemView: View {
                     if assetPrice != "" && symbolName != "MOBILE" {
                         Text(assetPrice).lineLimit(1).font(.system(size: 10.0)).foregroundColor(.white).opacity(0.6)
                     }
-                    if symbolName == "HNT" {
-                        Text(percentChange).font(.system(size: 8.0)).foregroundColor(Color(symbolName == "HNT" ? "malachite" : "azure-radiance"))
+
+                    if symbolName == "MOBILE" {
+                        Text(String(localized: "Wallet_Widget_Mobile_Genesis",
+                                    comment: "Helium wallet widget MOBILE Genesis label.")).lineLimit(1).font(.system(size: 10.0)).foregroundColor(.white).opacity(0.6)
                     }
                 }
             }
@@ -130,16 +131,6 @@ struct HeliumWalletWidgetLargeView: View {
                             }
 
                             Spacer()
-
-                            VStack {
-                                Text(entry.accountDetails.totalPercentChange)
-                                    .bold()
-                                    .font(.system(size: 12.0)).foregroundColor(Color(red: 20 / 255, green: 209 / 255, blue: 17 / 255))
-                                Text(String(localized: "Wallet_Widget_Last_24h",
-                                            comment: "Helium wallet widget last 24hr label."))
-                                    .bold()
-                                    .font(.system(size: 10.0)).foregroundColor(.white).opacity(0.6)
-                            }
                         }.padding(8.0)
                     }.clipShape(Rectangle()).background(Color(Utils.getSurfaceColorName(isTestnet: entry.accountDetails.isTestnet))).cornerRadius(8.0)
                     Spacer().frame(width: 12.0)
@@ -173,7 +164,7 @@ struct HeliumWalletWidgetLargeView: View {
                 VStack(spacing: 0) {
                     Divider()
                     ForEach(0 ..< assets.count, id: \.self) { i in
-                        AssetListItemView(imageName: Utils.getCoinImageName(assets[i].symbol), assetBalance: Utils.getCurrentBalance(asset: assets[i]), symbolName: assets[i].symbol, assetPrice: "$\(String(format: "%.2f", getCurrentAssetPrice(assets[i]))) \(assetPriceConversion(assets[i].symbol))", percentChange: assets[i].percentChange, isTestnet: entry.accountDetails.isTestnet)
+                        AssetListItemView(imageName: Utils.getCoinImageName(assets[i].symbol), assetBalance: Utils.getCurrentBalance(asset: assets[i]), symbolName: assets[i].symbol, assetPrice: "$\(String(format: "%.2f", getCurrentAssetPrice(assets[i]))) \(assetPriceConversion(assets[i].symbol))", isTestnet: entry.accountDetails.isTestnet)
                     }
                 }
             }.padding(0.0)

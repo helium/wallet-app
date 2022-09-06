@@ -11,15 +11,15 @@ import Foundation
 extension Double {
     var kmFormatted: String {
         if self >= 10000, self <= 999_999 {
-            return String(format: "%.1fK", locale: Locale.current, self / 1000).replacingOccurrences(of: ".0", with: "")
+            return String(format: "%.2fK", locale: Locale.current, self / 1000).replacingOccurrences(of: ".0", with: "")
         }
 
         if self > 999_999, self <= 999_999_999 {
-            return String(format: "%.1fM", locale: Locale.current, self / 1_000_000).replacingOccurrences(of: ".0", with: "")
+            return String(format: "%.2fM", locale: Locale.current, self / 1_000_000).replacingOccurrences(of: ".0", with: "")
         }
 
         if self > 999_999_999 {
-            return String(format: "%.1fB", locale: Locale.current, self / 1_000_000_000).replacingOccurrences(of: ".0", with: "")
+            return String(format: "%.2fB", locale: Locale.current, self / 1_000_000_000).replacingOccurrences(of: ".0", with: "")
         }
 
         return String(format: "%.2f", locale: Locale.current, self)
@@ -63,16 +63,16 @@ enum Utils {
 
     // Mock account details.
     static func mockAccountDetails() -> DefaultAccountDetails {
-        let assets: [HeliumAsset] = [HeliumAsset(name: "Helium", symbol: "HNT", balance: 9_000_000_000_000_000, price: 11.72, percentChange: "3.24%"), HeliumAsset(name: "Data Credits", symbol: "DC", balance: 33850, price: 0.00001, percentChange: ""), HeliumAsset(name: "Mobile", symbol: "MOBILE", balance: 10000, price: 1.00, percentChange: "")]
+        let assets: [HeliumAsset] = [HeliumAsset(name: "Helium", symbol: "HNT", balance: 9_000_000_000_000_000, price: 11.72), HeliumAsset(name: "Data Credits", symbol: "DC", balance: 33850, price: 0.00001), HeliumAsset(name: "Mobile", symbol: "MOBILE", balance: 10000, price: 1.00)]
 
-        let accountDetails = DefaultAccountDetails(accountName: "Satoshi", accountAddress: "13M8dUbxymE3xtiAXszRkGMmezMhBS8Li7wEsMojLdb4Sdxc4wc", jazzSeed: 71, isTestnet: false, totalFiatBalance: 96000.52, totalHNTBalance: 1_969_009_293_847_000_000, totalPercentChange: "16.27%", assets: assets)
+        let accountDetails = DefaultAccountDetails(accountName: "Satoshi", accountAddress: "13M8dUbxymE3xtiAXszRkGMmezMhBS8Li7wEsMojLdb4Sdxc4wc", jazzSeed: 71, isTestnet: false, totalFiatBalance: 96000.52, totalHNTBalance: 1_969_009_293_847_000_000, assets: assets)
         return accountDetails
     }
 
     // Empty account details for when Network issues occur
     static func emptyAccountDetails() -> DefaultAccountDetails {
         let assets: [HeliumAsset] = []
-        let accountDetails = DefaultAccountDetails(accountName: "", accountAddress: "", jazzSeed: 0, isTestnet: false, totalFiatBalance: 0, totalHNTBalance: 0, totalPercentChange: "0%", assets: assets)
+        let accountDetails = DefaultAccountDetails(accountName: "", accountAddress: "", jazzSeed: 0, isTestnet: false, totalFiatBalance: 0, totalHNTBalance: 0, assets: assets)
         return accountDetails
     }
 
