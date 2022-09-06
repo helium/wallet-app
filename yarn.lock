@@ -2087,10 +2087,10 @@
   resolved "https://registry.yarnpkg.com/@helium/react-native-sdk/-/react-native-sdk-1.0.0.tgz#41024fa99859490bd8a0b717f52acc11ae72f114"
   integrity sha512-Qi1Nnp/q2hsz2D7aeuM6LxXhNX8NrHz1U+PoQslwK2XfqPFZEYb4uAzjXDKlc+JBWPiF96GMJywv/ofxlZ9XLg==
 
-"@helium/transactions@4.7.1", "@helium/transactions@^4.1.0", "@helium/transactions@^4.7.5":
-  version "4.7.1"
-  resolved "https://registry.yarnpkg.com/@helium/transactions/-/transactions-4.7.1.tgz#337afc4ccb4db0cdee1a65f65e92a1a21e3a74ee"
-  integrity sha512-GJ57VJs+YoU8bG7eWcN2iafMZPbwDQ4rv9n6KnQKClpzvBRnWmICA88RoSns6OBgia/f6vB0Qo/nqnyS0tX0yg==
+"@helium/transactions@4.7.5", "@helium/transactions@^4.1.0", "@helium/transactions@^4.7.5":
+  version "4.7.5"
+  resolved "https://registry.yarnpkg.com/@helium/transactions/-/transactions-4.7.5.tgz#a50d3e59524e038dfdd0e35b64468e1c312c3a1d"
+  integrity sha512-SCJI9lYVUTec9Ub60TpYcMEKmdiTV4qjib8yh63C4l1ACM5sHMSHoJwKSVxpjEEA8q+j6fnEBBEnJMtTSoK9/Q==
   dependencies:
     "@helium/address" "^4.6.2"
     "@helium/proto" "^1.6.0"

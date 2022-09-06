@@ -1,18 +1,9 @@
 import Address from '@helium/address'
-import Balance, {
-  CurrencyType,
-  DataCredits,
-  NetworkTokens,
-  TestNetworkTokens,
-} from '@helium/currency'
+import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
 import { PaymentV2, TokenBurnV1, Transaction } from '@helium/transactions'
 import React, { createContext, ReactNode, useContext, useEffect } from 'react'
 import { encodeMemoString } from '../components/MemoInput'
-import {
-  TokenType,
-  useAccountQuery,
-  useTxnConfigVarsQuery,
-} from '../generated/graphql'
+import { TokenType, useTxnConfigVarsQuery } from '../generated/graphql'
 import { useAccountStorage } from './AccountStorageProvider'
 import { getKeypair } from './secureStorage'
 
@@ -24,6 +15,7 @@ export type SendDetails = {
   payee: string
   balanceAmount: Balance<NetworkTokens> | Balance<TestNetworkTokens>
   memo: string
+  max?: boolean
 }
 
 const useTransactionHook = () => {
@@ -31,14 +23,6 @@ const useTransactionHook = () => {
   const { data: txnVarsData, error } = useTxnConfigVarsQuery({
     fetchPolicy: 'cache-and-network',
     variables: { address: currentAccount?.address || '' },
-    skip: !currentAccount?.address,
-  })
-
-  const { data: accountData } = useAccountQuery({
-    variables: {
-      address: currentAccount?.address || '',
-    },
-    fetchPolicy: 'cache-only',
     skip: !currentAccount?.address,
   })
 
@@ -129,8 +113,9 @@ const useTransactionHook = () => {
     const txn = new PaymentV2({
       payer: Address.fromB58(currentAccount.address),
       payments: opts.paymentDetails.map(
-        ({ payee: address, balanceAmount, memo }) => ({
+        ({ payee: address, balanceAmount, memo, max }) => ({
           payee: Address.fromB58(address),
+          max,
           amount: balanceAmount.integerBalance,
           memo: encodeMemoString(memo),
           tokenType: opts.tokenType || 'hnt',
@@ -146,6 +131,7 @@ const useTransactionHook = () => {
         memo: p.memo,
         amount: p.amount,
         token_type: opts.tokenType || 'hnt',
+        max: p.max,
       })),
       payer: txn.payer?.b58,
       nonce: txn.nonce,
@@ -162,48 +148,13 @@ const useTransactionHook = () => {
     return { signedTxn, txnJson: JSON.stringify(txnJson), unsignedTxn: txn }
   }
 
-  const calculatePaymentTxnFee = async (
-    paymentDetails: Array<SendDetails>,
-    tokenType: TokenType,
-  ) => {
-    if (!currentAccount?.address) {
-      throw new Error(
-        'Cannot calculate payment txn fee. Current account not found',
-      )
-    }
-    const payments = paymentDetails.map(
-      ({ payee: address, balanceAmount, memo }) => ({
-        // if a payee address isn't supplied, we use a dummy address
-        payee:
-          address && Address.isValid(address)
-            ? Address.fromB58(address)
-            : EMPTY_B58_ADDRESS,
-        amount: balanceAmount.integerBalance,
-        memo: encodeMemoString(memo),
-        tokenType: tokenType || 'hnt',
-      }),
-    )
-    const paymentTxn = new PaymentV2({
-      payer: Address.fromB58(currentAccount.address),
-      payments,
-      nonce: (accountData?.account?.nonce || 0) + 1,
-    })
-
-    return new Balance(paymentTxn.fee || 0, CurrencyType.dataCredit)
-  }
-
   return {
     makeBurnTxn,
-    calculatePaymentTxnFee,
     makePaymentTxn,
   }
 }
 
 const initialState = {
-  calculatePaymentTxnFee: () =>
-    new Promise<Balance<DataCredits>>((resolve) =>
-      resolve(new Balance(0, CurrencyType.dataCredit)),
-    ),
   makeBurnTxn: () =>
     new Promise<{
       txnJson: string

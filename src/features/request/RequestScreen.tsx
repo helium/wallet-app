@@ -72,7 +72,7 @@ const RequestScreen = () => {
   const handleBalance = useCallback(
     (opts: {
       balance: Balance<NetworkTokens | TestNetworkTokens>
-      payee: string
+      payee?: string
       index?: number
     }) => {
       setPaymentAmount(opts.balance)

@@ -10,11 +10,7 @@ import { useTranslation } from 'react-i18next'
 import Close from '@assets/images/close.svg'
 import QR from '@assets/images/qr.svg'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import Balance, {
-  DataCredits,
-  NetworkTokens,
-  TestNetworkTokens,
-} from '@helium/currency'
+import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
 import { Keyboard, Platform } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import Address from '@helium/address'
@@ -41,7 +37,7 @@ import AccountButton from '../../components/AccountButton'
 import AddressBookSelector, {
   AddressBookRef,
 } from '../../components/AddressBookSelector'
-import { SendDetails, useTransactions } from '../../storage/TransactionProvider'
+import { SendDetails } from '../../storage/TransactionProvider'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import PaymentItem from './PaymentItem'
 import usePaymentsReducer, { MAX_PAYMENTS } from './usePaymentsReducer'
@@ -83,11 +79,10 @@ const PaymentScreen = () => {
   const addressBookRef = useRef<AddressBookRef>(null)
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
   const {
-    dcToNetworkTokens,
-    bonesToBalance,
     currencyTypeFromTokenType,
     accountNetworkBalance,
     accountMobileBalance,
+    oraclePrice,
   } = useBalance()
 
   const { showOKAlert } = useAlert()
@@ -138,7 +133,13 @@ const PaymentScreen = () => {
     [currencyTypeFromTokenType, tokenType],
   )
 
-  const [state, dispatch] = usePaymentsReducer({ currencyType })
+  const [state, dispatch] = usePaymentsReducer({
+    currencyType,
+    oraclePrice,
+    accountMobileBalance,
+    accountNetworkBalance,
+    netType: networkType,
+  })
 
   const { showAccountTypes } = useAccountSelector()
 
@@ -150,8 +151,6 @@ const PaymentScreen = () => {
     submitLedger,
   } = useSubmitTxn()
 
-  const [fee, setFee] = useState<Balance<DataCredits>>()
-  const { calculatePaymentTxnFee } = useTransactions()
   const { top } = useSafeAreaInsets()
 
   useEffect(() => {
@@ -206,7 +205,7 @@ const PaymentScreen = () => {
   const handleBalance = useCallback(
     (opts: {
       balance: Balance<NetworkTokens | TestNetworkTokens>
-      payee: string
+      payee?: string
       index?: number
     }) => {
       if (opts.index === undefined || !currentAccount) return
@@ -225,30 +224,6 @@ const PaymentScreen = () => {
   const handleQrScan = useCallback(() => {
     navigation.navigate('PaymentQrScanner')
   }, [navigation])
-
-  const feeAsTokens = useMemo(() => {
-    if (!fee) return
-
-    return dcToNetworkTokens(fee)
-  }, [dcToNetworkTokens, fee])
-
-  useEffect(() => {
-    if (!currentAccount?.address) return
-
-    const payments = state.payments.map((p) => ({
-      payee: currentAccount?.address,
-      balanceAmount: p.amount || bonesToBalance(0, TokenType.Hnt),
-      memo: '',
-    }))
-    calculatePaymentTxnFee(payments, tokenType).then(setFee)
-  }, [
-    calculatePaymentTxnFee,
-    currentAccount,
-    state.payments,
-    state,
-    bonesToBalance,
-    tokenType,
-  ])
 
   const canAddPayee = useMemo(() => {
     if (currentAccount?.ledgerDevice) {
@@ -274,6 +249,7 @@ const PaymentScreen = () => {
             payee: p.address,
             balanceAmount: p.amount,
             memo: p.memo || '',
+            max: p.max,
           },
         ]
       }),
@@ -292,40 +268,45 @@ const PaymentScreen = () => {
     [payments, submit, submitLedger, tokenType],
   )
 
-  const insufficientFunds = useMemo(() => {
-    if (
-      !accountNetworkBalance ||
-      !accountMobileBalance ||
-      feeAsTokens?.integerBalance === undefined ||
-      !state.totalAmount
-    ) {
-      return true
+  const insufficientFunds = useMemo((): [
+    value: boolean,
+    errorTicker: string,
+  ] => {
+    if (!accountNetworkBalance || !accountMobileBalance || !state.totalAmount) {
+      return [true, '']
     }
+    if (state.networkFee?.integerBalance === undefined) return [false, '']
     try {
       if (tokenType === TokenType.Mobile) {
         // If paying with mobile, they need to have enough mobile to cover the payment
         // and enough hnt to cover the fee
-        const hasEnoughHnt =
-          accountNetworkBalance.minus(feeAsTokens).integerBalance >= 0
+        const hasEnoughNetwork =
+          accountNetworkBalance.minus(state.networkFee).integerBalance >= 0
         const hasEnoughMobile =
           accountMobileBalance.minus(state.totalAmount).integerBalance >= 0
-        return !hasEnoughHnt || !hasEnoughMobile
+        if (!hasEnoughNetwork) return [true, accountNetworkBalance.type.ticker]
+        if (!hasEnoughMobile) return [true, accountMobileBalance.type.ticker]
       }
 
-      return (
+      const hasEnoughNetwork =
         accountNetworkBalance.integerBalance <
-        state.totalAmount.plus(feeAsTokens).integerBalance
-      )
+        state.totalAmount.plus(state.networkFee).integerBalance
+      return [
+        hasEnoughNetwork,
+        hasEnoughNetwork ? '' : accountNetworkBalance.type.ticker,
+      ]
     } catch (e) {
       // if the screen was already open, then a deep link of a different net type
       // is selected there will be a brief arithmetic error that can be ignored.
-      console.warn(e)
-      return false
+      if (__DEV__) {
+        console.warn(e)
+      }
+      return [false, '']
     }
   }, [
     accountMobileBalance,
     accountNetworkBalance,
-    feeAsTokens,
+    state.networkFee,
     state.totalAmount,
     tokenType,
   ])
@@ -351,8 +332,10 @@ const PaymentScreen = () => {
       // ledger payments are limited to one payee
       errStrings.push(t('payment.ledgerTooManyRecipients'))
     }
-    if (insufficientFunds) {
-      errStrings.push(t('payment.insufficientFunds'))
+    if (insufficientFunds[0]) {
+      errStrings.push(
+        t('payment.insufficientFunds', { token: insufficientFunds[1] }),
+      )
     }
 
     if (selfPay) {
@@ -375,7 +358,7 @@ const PaymentScreen = () => {
   const isFormValid = useMemo(() => {
     if (
       selfPay ||
-      !feeAsTokens?.integerBalance ||
+      !state.networkFee?.integerBalance ||
       (!!currentAccount?.ledgerDevice && state.payments.length > 1) // ledger payments are limited to one payee
     ) {
       return false
@@ -390,8 +373,14 @@ const PaymentScreen = () => {
         return addressValid && paymentValid && memoValid && !p.hasError
       })
 
-    return paymentsValid && !insufficientFunds
-  }, [currentAccount, feeAsTokens, insufficientFunds, selfPay, state.payments])
+    return paymentsValid && !insufficientFunds[0]
+  }, [
+    currentAccount,
+    insufficientFunds,
+    selfPay,
+    state.networkFee,
+    state.payments,
+  ])
 
   const handleAddressBookSelected = useCallback(
     ({ address, index }: { address?: string | undefined; index: number }) => {
@@ -400,7 +389,7 @@ const PaymentScreen = () => {
     [],
   )
 
-  const handleEditHNTAmount = useCallback(
+  const handleEditAmount = useCallback(
     ({ address, index }: { address?: string; index: number }) => {
       Keyboard.dismiss()
       hntKeyboardRef.current?.show({
@@ -412,6 +401,13 @@ const PaymentScreen = () => {
       })
     },
     [currentAccount, state.payments],
+  )
+
+  const handleToggleMax = useCallback(
+    ({ index }: { index: number }) => {
+      dispatch({ type: 'toggleMax', index })
+    },
+    [dispatch],
   )
 
   const handleEditMemo = useCallback(
@@ -512,7 +508,7 @@ const PaymentScreen = () => {
         payer: currentAccount?.address,
       })
     },
-    [dispatch, currentAccount],
+    [currentAccount, dispatch],
   )
 
   const handleAddPayee = useCallback(() => {
@@ -549,6 +545,7 @@ const PaymentScreen = () => {
         ref={hntKeyboardRef}
         onConfirmBalance={handleBalance}
         tokenType={tokenType}
+        networkFee={state.networkFee}
       >
         <AddressBookSelector
           ref={addressBookRef}
@@ -605,9 +602,6 @@ const PaymentScreen = () => {
                   tokenType === 'hnt'
                     ? accountNetworkBalance
                     : accountMobileBalance,
-                  {
-                    maxDecimalPlaces: 2,
-                  },
                 )}
                 showChevron={sortedAccountsForNetType(networkType).length > 1}
                 address={currentAccount?.address}
@@ -625,11 +619,13 @@ const PaymentScreen = () => {
                   address={p.address}
                   account={p.account}
                   amount={p.amount}
-                  fee={state.payments.length === 1 ? fee : undefined}
+                  max={p.max}
+                  memo={p.memo}
+                  fee={state.payments.length === 1 ? state.dcFee : undefined}
                   index={index}
                   onAddressBookSelected={handleAddressBookSelected}
-                  onEditHNTAmount={handleEditHNTAmount}
-                  memo={p.memo}
+                  onEditAmount={handleEditAmount}
+                  onToggleMax={handleToggleMax}
                   onEditMemo={handleEditMemo}
                   onEditAddress={handleEditAddress}
                   handleAddressError={handleAddressError}
@@ -663,7 +659,7 @@ const PaymentScreen = () => {
             <PaymentCard
               tokenType={tokenType}
               totalBalance={state.totalAmount}
-              feeTokenBalance={feeAsTokens}
+              feeTokenBalance={state.networkFee}
               disabled={!isFormValid}
               onSubmit={handleSubmit}
               payments={payments}
@@ -678,7 +674,7 @@ const PaymentScreen = () => {
         submitError={submitError}
         totalBalance={state.totalAmount}
         payments={state.payments}
-        feeTokenBalance={feeAsTokens}
+        feeTokenBalance={state.networkFee}
         onRetry={handleSubmit}
         onSuccess={navigation.popToTop}
         actionTitle={t('payment.backToAccounts')}

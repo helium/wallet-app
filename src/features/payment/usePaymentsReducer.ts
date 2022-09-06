@@ -1,12 +1,19 @@
+import Address, { NetTypes } from '@helium/address'
 import Balance, {
+  CurrencyType,
+  DataCredits,
   IotTokens,
   MobileTokens,
   NetworkTokens,
   TestNetworkTokens,
+  USDollars,
 } from '@helium/currency'
+import { PaymentV2 } from '@helium/transactions'
+import BigNumber from 'bignumber.js'
 import { useReducer } from 'react'
 import { decodeMemoString } from '../../components/MemoInput'
 import { CSAccount } from '../../storage/cloudStorage'
+import { EMPTY_B58_ADDRESS } from '../../storage/TransactionProvider'
 import { Payment } from './PaymentItem'
 
 type PaymentCurrencyType =
@@ -48,6 +55,11 @@ type UpdateErrorAction = {
   index: number
 }
 
+type ToggleMax = {
+  type: 'toggleMax'
+  index: number
+}
+
 type AddPayee = {
   type: 'addPayee'
 }
@@ -74,15 +86,30 @@ type PaymentState = {
   totalAmount: Balance<PaymentCurrencyType>
   error?: string
   currencyType: PaymentCurrencyType
+  oraclePrice?: Balance<USDollars>
+  netType: NetTypes.NetType
+  networkFee?: Balance<TestNetworkTokens | NetworkTokens>
+  dcFee?: Balance<DataCredits>
+  accountMobileBalance?: Balance<MobileTokens>
+  accountNetworkBalance?: Balance<TestNetworkTokens | NetworkTokens>
 }
 
 const initialState = (opts: {
   currencyType: PaymentCurrencyType
   payments?: Payment[]
+  netType: NetTypes.NetType
+  oraclePrice?: Balance<USDollars>
+  accountMobileBalance?: Balance<MobileTokens>
+  accountNetworkBalance?: Balance<TestNetworkTokens | NetworkTokens>
 }): PaymentState => ({
   error: undefined,
   payments: [{}] as Array<Payment>,
   totalAmount: new Balance(0, opts.currencyType),
+  ...calculateFee([{}], {
+    currencyType: opts.currencyType,
+    oraclePrice: opts.oraclePrice,
+    netType: opts.netType,
+  }),
   ...opts,
 })
 
@@ -95,6 +122,90 @@ const paymentsSum = (payments: Payment[], type: PaymentCurrencyType) => {
   }, new Balance(0, type))
 }
 
+const calculateFee = (
+  payments: Payment[],
+  opts: {
+    currencyType: PaymentCurrencyType
+    oraclePrice?: Balance<USDollars>
+    netType: NetTypes.NetType
+  },
+) => {
+  const { currencyType, oraclePrice, netType } = opts
+  const mapped = payments.map(({ amount: balanceAmount, address }) => ({
+    payee: address ? Address.fromB58(address) : EMPTY_B58_ADDRESS,
+    amount: balanceAmount?.integerBalance || 0,
+    memo: '',
+    tokenType: currencyType.ticker,
+  }))
+  const paymentTxn = new PaymentV2({
+    payer: EMPTY_B58_ADDRESS,
+    payments: mapped,
+    nonce: 1,
+  })
+
+  const dcFee = new Balance(paymentTxn.fee || 0, CurrencyType.dataCredit)
+  let networkFee =
+    netType === NetTypes.TESTNET
+      ? dcFee.toTestNetworkTokens(oraclePrice)
+      : dcFee.toNetworkTokens(oraclePrice)
+
+  networkFee = new Balance(
+    networkFee.bigInteger
+      .precision(
+        networkFee.type.decimalPlaces.toNumber() - 1,
+        BigNumber.ROUND_UP,
+      )
+      .toNumber(),
+    networkFee.type,
+  )
+  return {
+    dcFee,
+    networkFee,
+  }
+}
+
+const recalculate = (payments: Payment[], state: PaymentState) => {
+  const accountBalance = getAccountBalance(state)
+  const { networkFee, dcFee } = calculateFee(payments, state)
+
+  const maxPayment = payments.find((p) => p.max)
+  const totalAmount = paymentsSum(payments, state.currencyType)
+  if (!maxPayment) {
+    return { networkFee, dcFee, payments, totalAmount }
+  }
+  const prevPaymentAmount =
+    maxPayment?.amount ?? new Balance(0, state.currencyType)
+
+  const totalMinusPrevPayment = totalAmount.minus(prevPaymentAmount)
+  let maxBalance = accountBalance?.minus(totalMinusPrevPayment)
+
+  if (state.currencyType.ticker !== CurrencyType.mobile.ticker) {
+    maxBalance = maxBalance?.minus(networkFee)
+  }
+
+  if ((maxBalance?.integerBalance ?? 0) < 0) {
+    maxBalance = new Balance(0, state.currencyType)
+  }
+
+  maxPayment.amount = maxBalance
+
+  return {
+    networkFee,
+    dcFee,
+    payments,
+    totalAmount: paymentsSum(payments, state.currencyType),
+  }
+}
+
+const getAccountBalance = ({
+  accountMobileBalance,
+  accountNetworkBalance,
+  currencyType,
+}: PaymentState) =>
+  currencyType.ticker === CurrencyType.mobile.ticker
+    ? accountMobileBalance
+    : accountNetworkBalance
+
 function reducer(
   state: PaymentState,
   action:
@@ -105,7 +216,8 @@ function reducer(
     | AddPayee
     | AddLinkedPayments
     | RemovePayment
-    | ChangeToken,
+    | ChangeToken
+    | ToggleMax,
 ) {
   switch (action.type) {
     case 'updatePayee': {
@@ -133,7 +245,7 @@ function reducer(
           account: action.contact,
         }
       })
-      return { ...state, payments: nextPayments }
+      return { ...state, ...recalculate(nextPayments, state) }
     }
     case 'updateMemo': {
       const { payments } = state
@@ -173,15 +285,15 @@ function reducer(
         return {
           ...p,
           amount: action.value,
+          max: false,
         }
       })
-      const totalAmount = paymentsSum(nextPayments, state.currencyType)
-      return { ...state, totalAmount, payments: nextPayments }
+      return { ...state, ...recalculate(nextPayments, state) }
     }
     case 'addPayee': {
       if (state.payments.length >= MAX_PAYMENTS) return state
 
-      return { ...state, payments: [...state.payments, {}] }
+      return { ...state, ...recalculate([...state.payments, {}], state) }
     }
 
     case 'changeToken': {
@@ -191,6 +303,7 @@ function reducer(
       const newPayments = payments.map((payment) => {
         return {
           ...payment,
+          max: false,
           amount: undefined,
           memo: undefined,
           hasError: undefined,
@@ -200,6 +313,10 @@ function reducer(
       return initialState({
         currencyType: action.currencyType,
         payments: newPayments,
+        oraclePrice: state.oraclePrice,
+        accountMobileBalance: state.accountMobileBalance,
+        accountNetworkBalance: state.accountNetworkBalance,
+        netType: state.netType,
       })
     }
 
@@ -207,6 +324,10 @@ function reducer(
       if (!action.payments.length) {
         return initialState({
           currencyType: state.currencyType,
+          oraclePrice: state.oraclePrice,
+          accountMobileBalance: state.accountMobileBalance,
+          accountNetworkBalance: state.accountNetworkBalance,
+          netType: state.netType,
         })
       }
 
@@ -220,8 +341,11 @@ function reducer(
       }))
       const totalAmount = paymentsSum(nextPayments, state.currencyType)
 
+      const fees = calculateFee(nextPayments, state)
+
       return {
         ...state,
+        ...fees,
         payments: nextPayments,
         totalAmount,
       }
@@ -233,11 +357,31 @@ function reducer(
       if (!nextPayments.length) {
         nextPayments = []
       }
-      const totalAmount = paymentsSum(nextPayments, state.currencyType)
-      return { ...state, payments: nextPayments, totalAmount }
+      return { ...state, ...recalculate(nextPayments, state) }
+    }
+    case 'toggleMax': {
+      let { payments } = state
+
+      const nextMax = !payments[action.index].max
+      payments = payments.map((p, index) => {
+        const isTarget = action.index === index
+        const wasMax = p.max
+        return {
+          ...p,
+          max: isTarget ? nextMax : false,
+          amount: wasMax || (isTarget && !wasMax) ? undefined : p.amount,
+        }
+      })
+
+      return { ...state, ...recalculate(payments, state) }
     }
   }
 }
 
-export default (opts: { currencyType: PaymentCurrencyType }) =>
-  useReducer(reducer, initialState(opts))
+export default (opts: {
+  netType: NetTypes.NetType
+  currencyType: PaymentCurrencyType
+  oraclePrice?: Balance<USDollars>
+  accountMobileBalance?: Balance<MobileTokens>
+  accountNetworkBalance?: Balance<TestNetworkTokens | NetworkTokens>
+}) => useReducer(reducer, initialState(opts))
