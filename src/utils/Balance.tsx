@@ -226,12 +226,15 @@ const useBalanceHook = () => {
 
   const toCurrencyString = useCallback(
     (balance?: Balance<NetworkTokens | TestNetworkTokens>): Promise<string> => {
-      if (!balance) {
-        return new Promise<string>((resolve) => resolve(''))
+      const defaultResponse = new Promise<string>((resolve) => resolve(''))
+      if (!balance || balance?.floatBalance === undefined) {
+        return defaultResponse
       }
-      const multiplier = coinGeckoPrices?.[currency.toLowerCase()] || 0
 
-      const convertedValue = multiplier * (balance?.floatBalance || 0)
+      const multiplier = coinGeckoPrices?.[currency.toLowerCase()] || 0
+      if (!multiplier) return defaultResponse
+
+      const convertedValue = multiplier * balance.floatBalance
       return CurrencyFormatter.format(convertedValue, currency)
     },
     [coinGeckoPrices, currency],

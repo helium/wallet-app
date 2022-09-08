@@ -296,6 +296,7 @@ const AccountTokenBalance = ({
       color="primaryText"
       numberOfLines={1}
       adjustsFontSizeToFit
+      marginHorizontal="m"
       textAlign="center"
     >
       {balance}
