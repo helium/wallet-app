@@ -21,7 +21,10 @@ const AccountBalance = ({ accountData }: Props) => {
   )
 
   useEffect(() => {
-    if (accountNetType !== NetTypes.MAINNET) return
+    if (accountNetType !== NetTypes.MAINNET) {
+      setBalanceString('')
+      return
+    }
 
     toCurrencyString(balances?.hnt?.plus(balances.stakedHnt)).then(
       setBalanceString,
@@ -36,7 +39,7 @@ const AccountBalance = ({ accountData }: Props) => {
       adjustsFontSizeToFit
       textAlign="center"
     >
-      {balanceString || '-'}
+      {balanceString || ' '}
     </Text>
   )
 }
