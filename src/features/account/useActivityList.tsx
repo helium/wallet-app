@@ -45,7 +45,7 @@ export default ({
       address: address || '',
       filter: AccountActivityAPIFilters[filter].join(','),
     },
-    fetchPolicy: 'cache-first',
+    fetchPolicy: 'cache-and-network',
     skip: !address || filter === 'pending',
     notifyOnNetworkStatusChange: true,
     pollInterval: 30000,

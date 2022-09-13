@@ -6,6 +6,7 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import BackScreen from '../../components/BackScreen'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
+import ListItem from '../../components/ListItem'
 import {
   AccountData,
   Activity,
@@ -25,19 +26,22 @@ import {
 import { HomeStackParamList } from '../home/homeTypes'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import FabButton from '../../components/FabButton'
-import ActionSheet from '../../components/ActionSheet'
+import BlurActionSheet from '../../components/BlurActionSheet'
 
 type Route = RouteProp<HomeStackParamList, 'AccountTokenScreen'>
+
 const AccountTokenScreen = () => {
   const { t } = useTranslation()
   const route = useRoute<Route>()
   const { currentAccount } = useAccountStorage()
-
   const [filtersOpen, setFiltersOpen] = useState(false)
 
-  const toggleFiltersOpen = useCallback(() => {
-    setFiltersOpen(!filtersOpen)
-  }, [filtersOpen])
+  const toggleFiltersOpen = useCallback(
+    (open) => () => {
+      setFiltersOpen(open)
+    },
+    [],
+  )
 
   const {
     data: accountData,
@@ -64,6 +68,26 @@ const AccountTokenScreen = () => {
     address: currentAccount?.address,
     filter: filterState.filter,
   })
+
+  const filteredTxns = useMemo(() => {
+    if (filterState.filter === 'payment') {
+      return activityData.filter(
+        (txn) =>
+          txn.payments &&
+          txn.payments.some((p) =>
+            route.params.tokenType === TokenType.Hnt
+              ? !p.tokenType || p.tokenType === TokenType.Hnt
+              : p.tokenType === route.params.tokenType,
+          ),
+      )
+    }
+
+    return activityData.filter((txn: Activity) =>
+      route.params.tokenType === TokenType.Hnt
+        ? !txn.tokenType || txn.tokenType === TokenType.Hnt
+        : txn.tokenType === route.params.tokenType,
+    )
+  }, [activityData, filterState.filter, route.params.tokenType])
 
   const { show: showTxnDetail } = useTransactionDetail()
 
@@ -97,7 +121,7 @@ const AccountTokenScreen = () => {
           backgroundColor="surface"
           backgroundColorOpacity={0}
           backgroundColorOpacityPressed={0.4}
-          onPress={toggleFiltersOpen}
+          onPress={toggleFiltersOpen(true)}
         />
       </Box>
     )
@@ -122,7 +146,7 @@ const AccountTokenScreen = () => {
         </Box>
       )
     },
-    [activityData, currentAccount, now, showTransactionDetail],
+    [currentAccount, activityData, now, showTransactionDetail],
   )
 
   const renderSectionFooter = useCallback(() => {
@@ -160,110 +184,105 @@ const AccountTokenScreen = () => {
 
   const setFilter = useCallback(
     (filterType: FilterType) => () => {
-      filterState.change(filterType)
       setFiltersOpen(false)
+      filterState.change(filterType)
     },
     [filterState],
   )
 
-  const filters = useMemo(() => {
-    return [
-      <FabButton
-        key="all"
-        title={t('accountsScreen.filterTypes.all')}
-        onPress={setFilter('all')}
-        backgroundColor="purple500"
-        iconColor="purple500"
-        backgroundColorOpacity={0.2}
-        backgroundColorOpacityPressed={0.5}
-      />,
-      <FabButton
-        key="payment"
-        title={t('accountsScreen.filterTypes.payment')}
-        onPress={setFilter('payment')}
-        backgroundColor="blueBright500"
-        iconColor="blueBright500"
-        backgroundColorOpacity={0.2}
-        backgroundColorOpacityPressed={0.5}
-      />,
-      <FabButton
-        key="mining"
-        title={t('accountsScreen.filterTypes.mining')}
-        onPress={setFilter('mining')}
-        backgroundColor="greenBright500"
-        iconColor="greenBright500"
-        backgroundColorOpacity={0.2}
-        backgroundColorOpacityPressed={0.5}
-      />,
-      <FabButton
-        key="burn"
-        title={t('accountsScreen.filterTypes.burn')}
-        onPress={setFilter('burn')}
-        backgroundColor="orange500"
-        iconColor="orange500"
-        backgroundColorOpacity={0.2}
-        backgroundColorOpacityPressed={0.5}
-      />,
-      <FabButton
-        key="hotspotAndValidators"
-        title={t('accountsScreen.filterTypes.hotspotAndValidators')}
-        onPress={setFilter('hotspotAndValidators')}
-        backgroundColor="jazzberryJam"
-        iconColor="jazzberryJam"
-        backgroundColorOpacity={0.2}
-        backgroundColorOpacityPressed={0.5}
-      />,
-      <FabButton
-        key="pending"
-        title={t('accountsScreen.filterTypes.pending')}
-        onPress={setFilter('pending')}
-        backgroundColor="persianRose"
-        iconColor="persianRose"
-        backgroundColorOpacity={0.2}
-        backgroundColorOpacityPressed={0.5}
-      />,
-    ]
-  }, [setFilter, t])
-
-  return (
-    <BackScreen padding="none">
-      <SectionList
-        ListHeaderComponent={
+  const filters = useCallback(
+    () => (
+      <>
+        <ListItem
+          key="all"
+          title={t('accountsScreen.filterTypes.all')}
+          selected={filterState.filter === 'all'}
+          onPress={setFilter('all')}
+        />
+        <ListItem
+          key="payment"
+          title={t('accountsScreen.filterTypes.payment')}
+          onPress={setFilter('payment')}
+          selected={filterState.filter === 'payment'}
+        />
+        <ListItem
+          key="mining"
+          title={t('accountsScreen.filterTypes.mining')}
+          onPress={setFilter('mining')}
+          selected={filterState.filter === 'mining'}
+        />
+        {route.params.tokenType === TokenType.Hnt && (
           <>
-            <Box alignItems="center" marginTop="xxl" marginBottom="m">
-              <TokenIcon tokenType={route.params.tokenType} size={50} />
-            </Box>
-            <AccountTokenBalance
-              accountData={accountData?.account}
-              tokenType={route.params.tokenType}
+            <ListItem
+              key="burn"
+              title={t('accountsScreen.filterTypes.burn')}
+              onPress={setFilter('burn')}
+              selected={filterState.filter === 'burn'}
             />
-            <AccountTokenCurrencyBalance
-              accountData={accountData?.account}
-              tokenType={route.params.tokenType}
-              variant="h4"
-              color="secondaryText"
-              textAlign="center"
+            <ListItem
+              key="hotspotAndValidators"
+              title={t('accountsScreen.filterTypes.hotspotAndValidators')}
+              onPress={setFilter('hotspotAndValidators')}
+              selected={filterState.filter === 'hotspotAndValidators'}
             />
-            <AccountActionBar
-              accountData={accountData?.account}
-              tokenType={route.params.tokenType}
+            <ListItem
+              key="pending"
+              title={t('accountsScreen.filterTypes.pending')}
+              onPress={setFilter('pending')}
+              selected={filterState.filter === 'pending'}
             />
           </>
-        }
-        sections={[{ title: 'Activity', data: activityData }]}
-        renderSectionHeader={renderSectionHeader}
-        renderSectionFooter={renderSectionFooter}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        onEndReached={fetchMoreActivity}
-        onEndReachedThreshold={0.01}
-      />
-      <ActionSheet
-        actions={filters}
+        )}
+      </>
+    ),
+    [filterState, route.params.tokenType, setFilter, t],
+  )
+
+  return (
+    <>
+      <BackScreen padding="none">
+        <SectionList
+          ListHeaderComponent={
+            <>
+              <Box alignItems="center" marginTop="xxl" marginBottom="m">
+                <TokenIcon tokenType={route.params.tokenType} size={50} />
+              </Box>
+              <AccountTokenBalance
+                accountData={accountData?.account}
+                tokenType={route.params.tokenType}
+              />
+              <AccountTokenCurrencyBalance
+                accountData={accountData?.account}
+                tokenType={route.params.tokenType}
+                variant="h4"
+                color="secondaryText"
+                textAlign="center"
+              />
+              <AccountActionBar
+                accountData={accountData?.account}
+                tokenType={route.params.tokenType}
+              />
+            </>
+          }
+          sections={[
+            { title: t('accountsScreen.activity'), data: filteredTxns },
+          ]}
+          renderSectionHeader={renderSectionHeader}
+          renderSectionFooter={renderSectionFooter}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+          onEndReached={fetchMoreActivity}
+          onEndReachedThreshold={0.01}
+        />
+      </BackScreen>
+      <BlurActionSheet
+        title={t('accountsScreen.filterTransactions')}
         open={filtersOpen}
-        onClose={toggleFiltersOpen}
-      />
-    </BackScreen>
+        onClose={toggleFiltersOpen(false)}
+      >
+        {filters()}
+      </BlurActionSheet>
+    </>
   )
 }
 
@@ -298,6 +317,7 @@ const AccountTokenBalance = ({
       adjustsFontSizeToFit
       marginHorizontal="m"
       textAlign="center"
+      marginHorizontal="l"
     >
       {balance}
     </Text>

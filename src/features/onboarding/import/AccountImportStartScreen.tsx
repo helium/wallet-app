@@ -102,6 +102,7 @@ const AccountImportStartScreen = () => {
         <ButtonPressable
           width="33%"
           marginLeft="xxs"
+          marginRight="xxs"
           backgroundColor="jazzberryJam"
           titleColor="black900"
           title={t('accountImport.restoreChoice', { totalWords: 24 })}
@@ -119,7 +120,7 @@ const AccountImportStartScreen = () => {
           borderBottomRightRadius="round"
           backgroundColor="grey350"
           titleColor="black900"
-          title="CLI"
+          title={t('accountImport.cliImport')}
           onPress={cliExport()}
           titleColorDisabled="black800"
           backgroundColorOpacityPressed={0.7}

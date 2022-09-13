@@ -115,7 +115,7 @@ const AccountTokenList = ({
           flexDirection="row"
           alignItems="center"
           paddingHorizontal="l"
-          paddingVertical="l"
+          paddingVertical="m"
           borderBottomColor="primaryBackground"
           borderBottomWidth={1}
         >

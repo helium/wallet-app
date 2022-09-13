@@ -123,6 +123,7 @@ const CLIPasswordScreen = () => {
           width="100%"
           keyboardAppearance="dark"
           style={inputStyle}
+          secureTextEntry
         />
       </Box>
 

@@ -44,6 +44,7 @@ export default {
     },
     pickKeyType: 'Pick Security Key Type:',
     restoreChoice: '{{totalWords}} Words',
+    cliImport: 'CLI',
     subTitle:
       'To import your existing\nHNT account, enter its\n<havelockBlue>12</havelockBlue> or <jazzberryJam>24</jazzberryJam> word security key.',
     title: 'Import\nAccount',
@@ -101,10 +102,12 @@ export default {
       payment: 'Payments',
       pending: 'Pending Transactions',
     },
+    filterTransactions: 'Filter Transactions',
     hideFilters: 'Hide Filters',
     myTransactions: 'My Transactions',
     showFilters: 'Show Filters',
     tokens: 'Tokens',
+    activity: 'Activity',
   },
   accountView: {
     balance: 'Balance',
