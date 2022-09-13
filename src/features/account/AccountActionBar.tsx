@@ -56,7 +56,6 @@ const AccountActionBar = ({ accountData, tokenType }: Props) => {
             navigation.navigate('ConfirmPin', { action: 'payment' })
           } else {
             navigation.navigate('PaymentScreen', {
-              payer: accountData?.address,
               defaultTokenType: tokenType,
             })
           }
@@ -85,7 +84,7 @@ const AccountActionBar = ({ accountData, tokenType }: Props) => {
         }
       }
     },
-    [accountData, navigation, requirePinForPayment, tokenType],
+    [navigation, requirePinForPayment, tokenType],
   )
 
   const toggleActionSheet = useCallback(() => {

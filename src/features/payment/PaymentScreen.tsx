@@ -116,7 +116,7 @@ const PaymentScreen = () => {
   }, [tokenType])
 
   const networkType = useMemo(() => {
-    if (!route.params) {
+    if (!route.params || !route.params.payer) {
       return accountNetType(currentAccount?.address)
     }
 
