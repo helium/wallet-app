@@ -1,12 +1,10 @@
 import { BoxProps } from '@shopify/restyle'
 import React, { memo, useMemo } from 'react'
-import PoweredByStripe from '@assets/images/poweredByStripe.svg'
 import Text from '../../../components/Text'
 import TouchableOpacityBox from '../../../components/TouchableOpacityBox'
 import { Theme } from '../../../theme/theme'
-import Box from '../../../components/Box'
 
-export const PaymentOptions = ['hnt', 'usd'] as const
+export const PaymentOptions = ['hnt'] as const
 export type PaymentOptionType = typeof PaymentOptions[number]
 
 type Props = {
@@ -24,8 +22,6 @@ const InternetPaymentTab = ({
     switch (option) {
       case 'hnt':
         return 'HNT'
-      case 'usd':
-        return 'Card'
     }
   }, [option])
 
@@ -43,11 +39,6 @@ const InternetPaymentTab = ({
       alignItems="center"
     >
       <Text variant="body1">{title}</Text>
-      {option === 'usd' && selected && (
-        <Box marginLeft="s">
-          <PoweredByStripe />
-        </Box>
-      )}
     </TouchableOpacityBox>
   )
 }

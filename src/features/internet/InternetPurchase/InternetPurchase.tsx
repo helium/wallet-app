@@ -13,12 +13,6 @@ import Balance, { CurrencyType } from '@helium/currency'
 import { ActivityIndicator, Platform } from 'react-native'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
 import { NetTypes as NetType } from '@helium/address'
-import {
-  CardFieldInput,
-  StripeProvider,
-  useConfirmPayment,
-} from '@stripe/stripe-react-native'
-import { ApolloError } from '@apollo/client'
 import Box from '../../../components/Box'
 import { useColors } from '../../../theme/themeHooks'
 import ButtonPressable from '../../../components/ButtonPressable'
@@ -35,20 +29,15 @@ import InternetSelectDataAmount from './InternetSelectDataAmount'
 import InternetSelectedAmount from './InternetSelectedAmount'
 import CountdownTimer, { TimerRef } from '../../../components/CountdownTimer'
 import InternetPaymentTab, { PaymentOptions } from './InternetPaymentTab'
-import InternetUsdPurchase from './InternetUsdPurchase'
 import {
   useAccountQuery,
   useFeatureFlagsQuery,
-  useStripeParamsLazyQuery,
   useSubmitTxnMutation,
-  useAccountLazyQuery,
-  StripeParamsQueryVariables,
 } from '../../../generated/graphql'
 import { checkSecureAccount } from '../../../storage/secureStorage'
 import { encodeMemoString } from '../../../components/MemoInput'
 import { InternetNavigationProp } from '../internetTypes'
 import usePrevious from '../../../utils/usePrevious'
-import IOSKeyboardAwareScrollView from '../../../components/IOSKeyboardAwareScrollView'
 import useAppear from '../../../utils/useAppear'
 import * as Logger from '../../../utils/logger'
 
@@ -70,9 +59,9 @@ const InternetPurchase = () => {
   const { bottom } = useSafeAreaInsets()
   const { t } = useTranslation()
   const colors = useColors()
-  const [viewState, setViewState] = useState<
-    'select' | 'hnt' | 'usd' | 'submit_hnt' | 'submit_usd'
-  >('select')
+  const [viewState, setViewState] = useState<'select' | 'hnt' | 'submit_hnt'>(
+    'select',
+  )
   const prevViewState = usePrevious(viewState)
   const [accountsType] = useState<AccountNetTypeOpt>(NetType.TESTNET)
   const [dataIndex, setDataIndex] = useState(0)
@@ -86,13 +75,6 @@ const InternetPurchase = () => {
     updateVars,
   } = useBalance()
   const [currencyString, setCurrencyString] = useState('')
-  const [usCents, setUsCents] = useState(0)
-  const [creditCardDetails, setCreditCardDetails] =
-    useState<CardFieldInput.Details>()
-  const [fetchAccount] = useAccountLazyQuery()
-  const [fetchStripeParams, { loading: loadingPaymentIntent }] =
-    useStripeParamsLazyQuery()
-  const { confirmPayment, loading: loadingPayment } = useConfirmPayment()
 
   const { data: accountData } = useAccountQuery({
     variables: {
@@ -146,7 +128,6 @@ const InternetPurchase = () => {
 
   useEffect(() => {
     toCurrencyString(tokenCost).then(setCurrencyString)
-    setUsCents(toUsd(tokenCost) * 100)
   }, [toCurrencyString, toUsd, tokenCost])
 
   const remainingBalance = useMemo(() => {
@@ -167,7 +148,7 @@ const InternetPurchase = () => {
   }, [])
 
   const updateViewState = useCallback(
-    (val: 'select' | 'usd' | 'hnt' | 'submit_hnt' | 'submit_usd') => () => {
+    (val: 'select' | 'hnt' | 'submit_hnt') => () => {
       animate('InternetPurchase.handleNext')
       setViewState(val)
     },
@@ -255,132 +236,20 @@ const InternetPurchase = () => {
         updateViewState('submit_hnt')()
         break
       }
-      case 'usd': {
-        updateViewState('submit_usd')()
-        break
-      }
     }
   }, [updateViewState, viewState])
 
-  const handleStripePayment = useCallback(async () => {
-    // The idea here is that a helium backed wallet will sign and submit the burn txn after the stripe payment is complete
-    // The txn burn is created app-side and the signing is done server-side.
-
-    let error = ''
-    try {
-      if (!currentAccount || !flags?.featureFlags.wifiFaucetB58) {
-        throw new Error('Account Data missing')
-      }
-      if (!tokenCost) throw Error('Token cost missing')
-
-      const acct = await fetchAccount({
-        variables: { address: flags.featureFlags.wifiFaucetB58 },
-      })
-
-      const { unsignedTxn: burnTxn, txnJson: burnTxnJson } = await makeBurnTxn({
-        payeeB58: flags?.featureFlags.wifiBurnPayee || '',
-        amount: tokenCost.integerBalance,
-        memo: encodeMemoString(flags?.featureFlags.wifiBurnMemo || '') || '',
-        nonce: (acct.data?.account?.speculativeNonce || 0) + 1,
-        payerB58: flags.featureFlags.wifiFaucetB58,
-        shouldSign: false,
-      })
-
-      const stripeVars = {
-        address: currentAccount.address,
-        amount: usCents,
-        burnTxn: Array.from(burnTxn.message()),
-      } as StripeParamsQueryVariables
-
-      const { data, error: stripeParamsError } = await fetchStripeParams({
-        variables: stripeVars,
-      })
-
-      if (!data || stripeParamsError) {
-        throw stripeParamsError || new Error('Could not fetch Stripe Params')
-      }
-      const {
-        stripeParams: { paymentSecret, burnSignature },
-      } = data
-
-      const stripeResponse = await confirmPayment(paymentSecret, {
-        paymentMethodType: 'Card',
-      })
-
-      if (stripeResponse?.error?.localizedMessage) {
-        throw new Error(stripeResponse.error.localizedMessage)
-      }
-
-      // Add the signature to the existing burn txn
-      burnTxn.signature = Uint8Array.from(burnSignature)
-
-      const variables = {
-        address: flags.featureFlags.wifiBurnPayee || '',
-        txnJson: burnTxnJson,
-        txn: burnTxn.toString(),
-      }
-      const response = await submitTxnMutation({ variables })
-
-      const errMsgs = response.errors?.map((e) => e.message).join('\n')
-      if (errMsgs || !response.data) {
-        throw new Error(errMsgs || 'Burn txn submission failed')
-      }
-    } catch (e) {
-      Logger.error(e)
-      if (e instanceof Error) {
-        error = e.toString()
-      } else if (e instanceof ApolloError) {
-        error = e.message
-      }
-    }
-    if (error) {
-      showOKAlert({
-        title: t('generic.error'),
-        message: error,
-      })
-      updateViewState('usd')()
-      return
-    }
-
-    navigation.navigate('WifiProfileInstructions')
-  }, [
-    confirmPayment,
-    currentAccount,
-    fetchAccount,
-    fetchStripeParams,
-    flags,
-    makeBurnTxn,
-    navigation,
-    showOKAlert,
-    submitTxnMutation,
-    t,
-    tokenCost,
-    updateViewState,
-    usCents,
-  ])
-
   useEffect(() => {
-    if (
-      (viewState !== 'submit_hnt' && viewState !== 'submit_usd') ||
-      prevViewState === viewState
-    ) {
+    if (viewState !== 'submit_hnt' || prevViewState === viewState) {
       return
     }
 
     if (!currentAccount?.address) return
     timerRef.current?.clear()
-    if (viewState === 'submit_usd') {
-      handleStripePayment()
-    } else if (viewState === 'submit_hnt') {
+    if (viewState === 'submit_hnt') {
       handleBurn()
     }
-  }, [
-    currentAccount,
-    handleBurn,
-    handleStripePayment,
-    prevViewState,
-    viewState,
-  ])
+  }, [currentAccount, handleBurn, prevViewState, viewState])
 
   const hasSufficientAccountBalance = useMemo(() => {
     if (!remainingBalance) return false
@@ -388,24 +257,8 @@ const InternetPurchase = () => {
   }, [remainingBalance])
 
   const submitDisabled = useMemo(() => {
-    if (viewState === 'usd') {
-      return (
-        loadingPayment ||
-        loadingPaymentIntent ||
-        !creditCardDetails ||
-        creditCardDetails.validNumber !== 'Valid' ||
-        creditCardDetails.validExpiryDate !== 'Valid' ||
-        creditCardDetails.validCVC !== 'Valid'
-      )
-    }
     return viewState === 'hnt' && !hasSufficientAccountBalance
-  }, [
-    creditCardDetails,
-    hasSufficientAccountBalance,
-    loadingPayment,
-    loadingPaymentIntent,
-    viewState,
-  ])
+  }, [hasSufficientAccountBalance, viewState])
 
   const positiveButtonText = useMemo(() => {
     if (viewState === 'select' || (isAnimating && Platform.OS === 'android')) {
@@ -421,126 +274,111 @@ const InternetPurchase = () => {
     [],
   )
 
-  const isSubmitting = useMemo(
-    () => viewState === 'submit_hnt' || viewState === 'submit_usd',
-    [viewState],
-  )
+  const isSubmitting = useMemo(() => viewState === 'submit_hnt', [viewState])
 
   return (
-    <StripeProvider
-      publishableKey={flags?.featureFlags.stripePublishableKey || ''}
+    <SafeAreaBox
+      flex={1}
+      alignItems="center"
+      paddingTop="l"
+      edges={safeAreaEdges}
     >
-      <IOSKeyboardAwareScrollView scrollEnabled={viewState === 'usd'}>
-        <SafeAreaBox
-          flex={1}
-          alignItems="center"
-          paddingTop="l"
-          edges={safeAreaEdges}
-        >
-          <InternetSelectDataAmount
-            amounts={dataPrices}
-            selectedIndex={dataIndex}
-            onSelect={handleAmountChange}
-            visible={viewState === 'select'}
-          />
-          <InternetSelectedAmount
-            visible={viewState !== 'select'}
-            onChange={updateViewState('select')}
-            amount={dataPrices[dataIndex].val}
-            disabled={viewState === 'submit_hnt' || viewState === 'submit_usd'}
-          />
+      <InternetSelectDataAmount
+        amounts={dataPrices}
+        selectedIndex={dataIndex}
+        onSelect={handleAmountChange}
+        visible={viewState === 'select'}
+      />
+      <InternetSelectedAmount
+        visible={viewState !== 'select'}
+        onChange={updateViewState('select')}
+        amount={dataPrices[dataIndex].val}
+        disabled={viewState === 'submit_hnt'}
+      />
 
-          <CountdownTimer
-            flex={1}
-            marginTop="ms"
-            visible={viewState !== 'select'}
-            onExpired={updatePricing}
-            ref={timerRef}
-          />
-          <Box flexDirection="row" width="100%">
-            {(viewState === 'hnt' || viewState === 'usd') &&
-              PaymentOptions.map((opt) => (
-                <InternetPaymentTab
-                  option={opt}
-                  key={opt}
-                  selected={viewState === opt}
-                  onPress={updateViewState(opt)}
-                />
-              ))}
+      <CountdownTimer
+        flex={1}
+        marginTop="ms"
+        visible={viewState !== 'select'}
+        onExpired={updatePricing}
+        ref={timerRef}
+      />
+      <Box flexDirection="row" width="100%">
+        {viewState === 'hnt' &&
+          PaymentOptions.map((opt) => (
+            <InternetPaymentTab
+              option={opt}
+              key={opt}
+              selected={viewState === opt}
+              onPress={updateViewState(opt)}
+            />
+          ))}
+      </Box>
+
+      <Box
+        style={bottomStyle}
+        width="100%"
+        backgroundColor="surfaceSecondary"
+        borderTopLeftRadius="xl"
+        borderTopRightRadius="xl"
+        borderRadius={Platform.OS === 'ios' ? 'xl' : undefined}
+      >
+        <InternetPurchaseLineItem
+          visible={viewState === 'select'}
+          paddingVertical="l"
+          paddingHorizontal="xl"
+          title={t('generic.total')}
+          value={currencyString}
+          subValue={tokenPrice}
+        />
+
+        <InternetTokenPurchase
+          currencyString={currencyString}
+          accountsType={accountsType}
+          tokenCost={tokenCost}
+          visible={viewState === 'hnt' || viewState === 'submit_hnt'}
+          remainingBalance={remainingBalance}
+          hasSufficientBalance={hasSufficientAccountBalance}
+        />
+
+        {isSubmitting ? (
+          <Box alignItems="center" justifyContent="center" height={60}>
+            <ActivityIndicator size={26} color={colors.primaryText} />
           </Box>
-
-          <Box
-            style={bottomStyle}
-            width="100%"
-            backgroundColor="surfaceSecondary"
-            borderTopLeftRadius="xl"
-            borderTopRightRadius="xl"
-            borderRadius={Platform.OS === 'ios' ? 'xl' : undefined}
-          >
-            <InternetPurchaseLineItem
-              visible={viewState === 'select'}
-              paddingVertical="l"
-              paddingHorizontal="xl"
-              title={t('generic.total')}
-              value={currencyString}
-              subValue={tokenPrice}
+        ) : (
+          <Box flexDirection="row" paddingHorizontal="xl">
+            <ButtonPressable
+              title={t('generic.cancel')}
+              flex={viewState !== 'select' ? undefined : 1}
+              backgroundColor="surface"
+              backgroundColorPressed="surfaceContrast"
+              backgroundColorOpacityPressed={0.08}
+              borderRadius="round"
+              marginRight="s"
+              padding="m"
+              onPress={navigation.goBack}
             />
-
-            <InternetTokenPurchase
-              currencyString={currencyString}
-              accountsType={accountsType}
-              tokenCost={tokenCost}
-              visible={viewState === 'hnt' || viewState === 'submit_hnt'}
-              remainingBalance={remainingBalance}
-              hasSufficientBalance={hasSufficientAccountBalance}
+            <ButtonPressable
+              padding="m"
+              debounceDuration={300}
+              title={positiveButtonText}
+              flex={1}
+              backgroundColor="surfaceContrast"
+              backgroundColorDisabled="surfaceContrast"
+              backgroundColorDisabledOpacity={0.6}
+              titleColor="surfaceContrastText"
+              backgroundColorPressed="surface"
+              titleColorPressed="surfaceText"
+              backgroundColorOpacityPressed={0.08}
+              borderRadius="round"
+              marginLeft="s"
+              onPress={handlePositiveButtonPress}
+              disabled={submitDisabled}
             />
-
-            <InternetUsdPurchase
-              usd={currencyString}
-              visible={viewState === 'usd' || viewState === 'submit_usd'}
-              onCardChange={setCreditCardDetails}
-            />
-
-            {isSubmitting ? (
-              <Box alignItems="center" justifyContent="center" height={60}>
-                <ActivityIndicator size={26} color={colors.primaryText} />
-              </Box>
-            ) : (
-              <Box flexDirection="row" paddingHorizontal="xl">
-                <ButtonPressable
-                  title={t('generic.cancel')}
-                  flex={viewState !== 'select' ? undefined : 1}
-                  backgroundColor="surface"
-                  backgroundColorPressed="surfaceContrast"
-                  backgroundColorOpacityPressed={0.08}
-                  borderRadius="round"
-                  marginRight="s"
-                  padding="m"
-                  onPress={navigation.goBack}
-                />
-                <ButtonPressable
-                  padding="m"
-                  debounceDuration={300}
-                  title={positiveButtonText}
-                  flex={1}
-                  backgroundColor="surfaceContrast"
-                  backgroundColorDisabled="surfaceContrast"
-                  backgroundColorDisabledOpacity={0.6}
-                  titleColor="surfaceContrastText"
-                  backgroundColorPressed="surface"
-                  titleColorPressed="surfaceText"
-                  backgroundColorOpacityPressed={0.08}
-                  borderRadius="round"
-                  marginLeft="s"
-                  onPress={handlePositiveButtonPress}
-                  disabled={submitDisabled}
-                />
-              </Box>
-            )}
           </Box>
-        </SafeAreaBox>
-      </IOSKeyboardAwareScrollView>
-    </StripeProvider>
+        )}
+      </Box>
+    </SafeAreaBox>
   )
 }
 
