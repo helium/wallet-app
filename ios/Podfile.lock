@@ -420,27 +420,6 @@ PODS:
     - React-RCTImage
   - RNSVG (12.1.1):
     - React
-  - Stripe (22.5.1):
-    - Stripe/Stripe3DS2 (= 22.5.1)
-    - StripeApplePay (= 22.5.1)
-    - StripeCore (= 22.5.1)
-    - StripeUICore (= 22.5.1)
-  - stripe-react-native (0.14.0):
-    - React-Core
-    - Stripe (~> 22.5.1)
-    - StripeFinancialConnections (~> 22.5.1)
-  - Stripe/Stripe3DS2 (22.5.1):
-    - StripeApplePay (= 22.5.1)
-    - StripeCore (= 22.5.1)
-    - StripeUICore (= 22.5.1)
-  - StripeApplePay (22.5.1):
-    - StripeCore (= 22.5.1)
-  - StripeCore (22.5.1)
-  - StripeFinancialConnections (22.5.1):
-    - StripeCore (= 22.5.1)
-    - StripeUICore (= 22.5.1)
-  - StripeUICore (22.5.1):
-    - StripeCore (= 22.5.1)
   - TcpSockets (3.3.2):
     - React
   - Toast (4.0.0)
@@ -531,7 +510,6 @@ DEPENDENCIES:
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
-  - "stripe-react-native (from `../node_modules/@stripe/stripe-react-native`)"
   - TcpSockets (from `../node_modules/react-native-tcp`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -542,11 +520,6 @@ SPEC REPOS:
     - fmt
     - MultiplatformBleAdapter
     - OneSignalXCFramework
-    - Stripe
-    - StripeApplePay
-    - StripeCore
-    - StripeFinancialConnections
-    - StripeUICore
     - Toast
     - ZXingObjC
 
@@ -699,8 +672,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNSVG:
     :path: "../node_modules/react-native-svg"
-  stripe-react-native:
-    :path: "../node_modules/@stripe/stripe-react-native"
   TcpSockets:
     :path: "../node_modules/react-native-tcp"
   Yoga:
@@ -786,12 +757,6 @@ SPEC CHECKSUMS:
   RNReanimated: 11e6e30bbc49079b7f0c321ac5830e6d113d0224
   RNScreens: 6e1ea5787989f92b0671049b808aef64fa1ef98c
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
-  Stripe: 2b2decd03146e08a350960966d41f3028c2eac29
-  stripe-react-native: c90947c1f02761d11622dcb3cd3bd8683916b36b
-  StripeApplePay: b14f06ac6fc24b56704c1e598149ed0cc45e166f
-  StripeCore: 4833738f2ca4336712f279f3c2867a0a7eb67c93
-  StripeFinancialConnections: 982115b82af429968d8aa78d329a42ed7ba3feab
-  StripeUICore: 08c1efbd7e3c54ee7fa74334a37a1d4c08ba944d
   TcpSockets: 14306fb79f9750ea7d2ddd02d8bed182abb01797
   Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
   Yoga: e7dc4e71caba6472ff48ad7d234389b91dadc280
