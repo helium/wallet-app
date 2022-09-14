@@ -11,15 +11,15 @@ import Foundation
 extension Double {
     var kmFormatted: String {
         if self >= 10000, self <= 999_999 {
-            return String(format: "%.2fK", locale: Locale.current, self / 1000).replacingOccurrences(of: ".0", with: "")
+            return String(format: "%.2fK", locale: Locale.current, self / 1000).replacingOccurrences(of: ".00", with: "")
         }
 
         if self > 999_999, self <= 999_999_999 {
-            return String(format: "%.2fM", locale: Locale.current, self / 1_000_000).replacingOccurrences(of: ".0", with: "")
+            return String(format: "%.2fM", locale: Locale.current, self / 1_000_000).replacingOccurrences(of: ".00", with: "")
         }
 
         if self > 999_999_999 {
-            return String(format: "%.2fB", locale: Locale.current, self / 1_000_000_000).replacingOccurrences(of: ".0", with: "")
+            return String(format: "%.2fB", locale: Locale.current, self / 1_000_000_000).replacingOccurrences(of: ".00", with: "")
         }
 
         return String(format: "%.2f", locale: Locale.current, self)
@@ -33,15 +33,15 @@ extension Int {
 
     var kmFormatted: String {
         if self >= 10000, self <= 999_999 {
-            return String(format: "%.1fK", locale: Locale.current, Double(self) / Double(1000)).replacingOccurrences(of: ".0", with: "")
+            return String(format: "%.2fK", locale: Locale.current, Double(self) / Double(1000)).replacingOccurrences(of: ".00", with: "")
         }
 
         if self > 999_999, self <= 999_999_999 {
-            return String(format: "%.1fM", locale: Locale.current, Double(self) / Double(1_000_000)).replacingOccurrences(of: ".0", with: "")
+            return String(format: "%.2fM", locale: Locale.current, Double(self) / Double(1_000_000)).replacingOccurrences(of: ".00", with: "")
         }
 
         if self > 999_999_999 {
-            return String(format: "%.1fB", locale: Locale.current, Double(self) / Double(1_000_000_000)).replacingOccurrences(of: ".0", with: "")
+            return String(format: "%.2fB", locale: Locale.current, Double(self) / Double(1_000_000_000)).replacingOccurrences(of: ".00", with: "")
         }
 
         return String(self)
