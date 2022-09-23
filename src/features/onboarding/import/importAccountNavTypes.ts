@@ -20,6 +20,7 @@ export type ImportAccountStackParamList = {
     pin: string
     account?: SecureAccount & CSAccount
   }
+  CLIAccountNavigator: undefined
 }
 
 export type ImportAccountNavigationProp =

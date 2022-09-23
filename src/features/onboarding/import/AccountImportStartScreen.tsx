@@ -45,9 +45,13 @@ const AccountImportStartScreen = () => {
 
   const cliExport = useCallback(
     () => () => {
-      homeNav.navigate('CLIAccountNavigator')
+      if (hasAccounts) {
+        homeNav.navigate('CLIAccountNavigator')
+      } else {
+        navigation.navigate('CLIAccountNavigator')
+      }
     },
-    [homeNav],
+    [hasAccounts, homeNav, navigation],
   )
 
   const edges = useMemo((): Edge[] => ['bottom'], [])
