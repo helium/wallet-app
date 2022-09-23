@@ -11,6 +11,7 @@ import AccountAssignScreen from '../AccountAssignScreen'
 import AccountCreatePinScreen from '../AccountCreatePinScreen'
 import AccountConfirmPinScreen from '../AccountConfirmPinScreen'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
+import CLIAccountNavigator from '../cli-import/CLIAccountNavigator'
 
 const ImportAccountStack = createStackNavigator<ImportAccountStackParamList>()
 const ImportAccountNavigator = () => {
@@ -45,6 +46,10 @@ const ImportAccountNavigator = () => {
       <ImportAccountStack.Screen
         name="AccountConfirmPinScreen"
         component={AccountConfirmPinScreen}
+      />
+      <ImportAccountStack.Screen
+        name="CLIAccountNavigator"
+        component={CLIAccountNavigator}
       />
     </ImportAccountStack.Navigator>
   )
