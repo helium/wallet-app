@@ -71,7 +71,7 @@ const NotificationsList = () => {
           borderTopWidth={isFirst ? 1 : 0}
           borderBottomWidth={1}
           borderColor="primaryBackground"
-          underlayColor={colors.secondary}
+          underlayColor={colors.surfaceSecondary}
           onPress={onItemSelected}
         >
           <Box flexDirection="row" justifyContent="space-between" padding="m">
@@ -123,7 +123,7 @@ const NotificationsList = () => {
       )
     },
     [
-      colors.secondary,
+      colors.surfaceSecondary,
       colors.surfaceSecondaryText,
       lastViewedTimestamp,
       navigator,

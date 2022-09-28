@@ -29,6 +29,7 @@ import { useNotificationStorage } from './storage/NotificationStorageProvider'
 import TestnetAwareStatusBar from './components/TestnetAwareStatusBar'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
 import { navigationRef } from './navigation/NavigationHelper'
+import globalStyles from './theme/globalStyles'
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -112,12 +113,11 @@ const App = () => {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={globalStyles.container}>
       <SafeAreaProvider>
         <ThemeProvider theme={colorAdaptedTheme}>
           <PortalProvider>
             <OnboardingProvider>
-              <TestnetAwareStatusBar />
               <ApolloProvider client={client}>
                 <BalanceProvider>
                   <TransactionProvider>
@@ -130,6 +130,7 @@ const App = () => {
                               linking={linking}
                               ref={navigationRef}
                             >
+                              <TestnetAwareStatusBar />
                               <RootNavigator />
                             </NavigationContainer>
                             <SecurityScreen

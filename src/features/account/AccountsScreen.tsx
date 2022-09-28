@@ -1,26 +1,14 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useReducer,
-  useState,
-} from 'react'
-import { AnimatePresence } from 'moti'
-import { LayoutChangeEvent, LayoutRectangle, Platform } from 'react-native'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { Platform } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import SharedGroupPreferences from 'react-native-shared-group-preferences'
+import Animated from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from '../../components/Box'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useSpacing } from '../../theme/themeHooks'
-import { wh } from '../../utils/layout'
-import MultiAccountNavigator from '../onboarding/multiAccount/MultiAccountNavigator'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
-import { OnboardingOpt } from '../onboarding/multiAccount/OnboardingSegment'
 import usePrevious from '../../utils/usePrevious'
-import MotiBox from '../../components/MotiBox'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useAccountLazyQuery, useAccountQuery } from '../../generated/graphql'
 import useAppear from '../../utils/useAppear'
@@ -30,56 +18,20 @@ import { useAppStorage } from '../../storage/AppStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
 import StatusBanner from '../StatusPage/StatusBanner'
 import { checkSecureAccount } from '../../storage/secureStorage'
-import InternetChooseProvider from '../internet/InternetChooseProvider'
-import { Moti } from '../../config/animationConfig'
 import { getJazzSeed, isTestnet } from '../../utils/accountUtils'
-import AccountsCarousel from './AccountsCarousel'
 import AccountsTopNav from './AccountsTopNav'
 import AccountTokenList from './AccountTokenList'
 import AccountActionBar from './AccountActionBar'
 import AccountBalance from './AccountBalance'
-
-type AccountLayout = {
-  accountViewStart: number
-  accountViewHeight: number
-  screenHeight: number
-}
-
-type LayoutType = 'accountViewLayout' | 'containerLayout' | 'screenLayout'
-type AccountLayoutAction = {
-  type: LayoutType
-  layout: LayoutRectangle
-}
-const initialState = {
-  accountViewStart: 0,
-  accountViewHeight: 0,
-  screenHeight: 0,
-} as AccountLayout
-
-function layoutReducer(state: AccountLayout, action: AccountLayoutAction) {
-  switch (action.type) {
-    case 'screenLayout': {
-      return { ...state, screenHeight: action.layout.height }
-    }
-    case 'containerLayout': {
-      return {
-        ...state,
-        accountViewStart: action.layout.y,
-      }
-    }
-    case 'accountViewLayout':
-      return {
-        ...state,
-        accountViewHeight: action.layout.height,
-      }
-  }
-}
+import ConnectedWallets from './ConnectedWallets'
+import useLayoutHeight from '../../utils/useLayoutHeight'
+import { OnboardingOpt } from '../onboarding/onboardingTypes'
+import globalStyles from '../../theme/globalStyles'
+import { FadeInSlow } from '../../components/FadeInOut'
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
   const navigation = useNavigation<HomeNavigationProp>()
-  const spacing = useSpacing()
-  const [state, dispatch] = useReducer(layoutReducer, initialState)
   const {
     sortedAccounts,
     currentAccount,
@@ -89,13 +41,17 @@ const AccountsScreen = () => {
   const prevSortedAccounts = usePrevious<CSAccount[] | undefined>(
     sortedAccounts,
   )
+  const [navLayoutHeight, setNavLayoutHeight] = useLayoutHeight()
   const { openedNotification } = useNotificationStorage()
   const { locked } = useAppStorage()
-  const {
-    onboardingData: { netType },
-  } = useOnboarding()
+  const { reset } = useOnboarding()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
-  const [showInternetProviders, setShowInternetProviders] = useState(false)
+  const [walletsVisible, setWalletsVisible] = useState(false)
+  const { top } = useSafeAreaInsets()
+
+  useAppear(() => {
+    reset()
+  })
 
   const { data: accountData, error: accountsError } = useAccountQuery({
     variables: {
@@ -168,35 +124,12 @@ const AccountsScreen = () => {
     }
   }, [navigation, openedNotification, locked])
 
-  const updateShowInternetProviders = useCallback(
-    (showProviders: boolean) => () => {
-      setShowInternetProviders(showProviders)
-    },
-    [],
-  )
-
-  const snapPoints = useMemo(() => {
-    const { screenHeight, accountViewStart, accountViewHeight } = state
-    const mid = screenHeight - accountViewStart - accountViewHeight
-    const expanded = screenHeight - accountViewStart - spacing.l
-
-    if (mid <= 0 || expanded <= 0) return [5]
-    return [mid, expanded]
-  }, [spacing.l, state])
-
   useEffect(() => {
     if (!currentAccount?.address || onboardingType === 'import') return
 
     // Set onboarding back to import when navigating away
     setOnboardingType('import')
   }, [currentAccount, onboardingType])
-
-  const handleLayout = useCallback(
-    (type: LayoutType) => (e: LayoutChangeEvent) => {
-      dispatch({ type, layout: e.nativeEvent.layout })
-    },
-    [],
-  )
 
   // Hook that is used for helium balance widget.
   useAsync(async () => {
@@ -220,65 +153,41 @@ const AccountsScreen = () => {
     }
   }, [defaultAccountAddress, sortedAccounts])
 
+  const toggleWalletsVisible = useCallback(() => {
+    setWalletsVisible((v) => !v)
+  }, [])
+
+  const handleAddNew = useCallback(() => {
+    navigation.navigate('AddNewAccountNavigator')
+    setWalletsVisible(false)
+  }, [navigation])
+
   return (
-    <Box flex={1} onLayout={handleLayout('screenLayout')}>
-      <Box minHeight={75} opacity={!currentAccount?.address ? 0 : 100}>
-        <AnimatePresence>
-          <MotiBox {...Moti.fade}>
-            <AccountsTopNav />
-          </MotiBox>
-        </AnimatePresence>
-      </Box>
-      <Box>
-        <AccountsCarousel />
-      </Box>
-      <Box flex={1} onLayout={handleLayout('containerLayout')}>
-        <AnimatePresence>
-          {!currentAccount?.address && (
-            <MotiBox
-              position="absolute"
-              top={0}
-              bottom={0}
-              left={0}
-              right={0}
-              {...Moti.fade}
-            >
-              <MultiAccountNavigator netType={netType} />
-            </MotiBox>
-          )}
-        </AnimatePresence>
-        <AnimatePresence>
-          {currentAccount?.address && (
-            <MotiBox
-              position="absolute"
-              top={0}
-              bottom={0}
-              left={0}
-              right={0}
-              {...Moti.fade}
-            >
-              <AccountTokenList
-                accountData={accountData?.account}
-                loading={accountLoading}
-                ListHeaderComponent={
-                  <Box paddingTop="xxl" backgroundColor="primaryBackground">
-                    <AccountBalance accountData={accountData?.account} />
-                    <AccountActionBar accountData={accountData?.account} />
-                  </Box>
-                }
-              />
-            </MotiBox>
-          )}
-        </AnimatePresence>
-      </Box>
-
-      <StatusBanner />
-
-      <InternetChooseProvider
-        visible={showInternetProviders}
-        top={snapPoints.length > 1 ? wh - snapPoints[1] : 0}
-        onClose={updateShowInternetProviders(false)}
+    <Box flex={1}>
+      <AccountsTopNav
+        onPressWallet={toggleWalletsVisible}
+        onLayout={setNavLayoutHeight}
       />
+      {walletsVisible && (
+        <ConnectedWallets
+          onClose={toggleWalletsVisible}
+          onAddNew={handleAddNew}
+          topOffset={navLayoutHeight + top}
+        />
+      )}
+      {currentAccount?.address && (accountData?.account || accountLoading) && (
+        <Animated.View style={globalStyles.container} entering={FadeInSlow}>
+          <Box flex={1} justifyContent="center">
+            <AccountBalance accountData={accountData?.account} />
+            <AccountActionBar />
+          </Box>
+          <AccountTokenList
+            accountData={accountData?.account}
+            loading={accountLoading}
+          />
+        </Animated.View>
+      )}
+      <StatusBanner />
     </Box>
   )
 }

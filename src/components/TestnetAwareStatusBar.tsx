@@ -25,7 +25,7 @@ const CustomStatusBar = ({ backgroundColor = 'red500' }: Props) => {
   const isTestnet = useMemo(
     () =>
       (currentAccount?.netType === NetType.TESTNET ||
-        (!currentAccount && netType === NetType.TESTNET)) &&
+        netType === NetType.TESTNET) &&
       appState === 'active' &&
       !locked,
     [appState, currentAccount, locked, netType],
@@ -35,6 +35,7 @@ const CustomStatusBar = ({ backgroundColor = 'red500' }: Props) => {
       <StatusBar
         animated
         barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor={colors.primaryBackground}
       />
     )
 

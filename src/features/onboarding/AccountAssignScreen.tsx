@@ -108,6 +108,7 @@ const AccountAssignScreen = () => {
             marginTop="xl"
             autoCapitalize="words"
             width="100%"
+            autoFocus
           />
 
           <Box

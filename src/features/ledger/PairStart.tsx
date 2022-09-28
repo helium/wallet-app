@@ -5,16 +5,16 @@ import { useNavigation } from '@react-navigation/native'
 import Box from '../../components/Box'
 import { useColors } from '../../theme/themeHooks'
 import Text from '../../components/Text'
-import { HomeNavigationProp } from '../home/homeTypes'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import ButtonPressable from '../../components/ButtonPressable'
 import FinePrint from '../../components/FinePrint'
+import { AddNewAccountNavigationProp } from '../home/addNewAccount/addNewAccountTypes'
 
 const PairStart = () => {
   const { primaryText } = useColors()
   const { t } = useTranslation()
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<AddNewAccountNavigationProp>()
   const { reachedAccountLimit } = useAccountStorage()
 
   const handleStart = useCallback(() => {

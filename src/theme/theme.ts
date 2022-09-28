@@ -95,12 +95,14 @@ const textVariants = {
 const palette = {
   aquaMarine: '#69DBB3',
 
-  black200: '#41434F',
+  black200: '#414141',
   black300: '#444755',
   black400: '#3D435B',
   black500: '#3B3E48',
   black600: '#32343E',
+  black650: '#242424',
   black700: '#131419',
+  black750: '#1A1A1A',
   black800: '#1A1C22',
   black900: '#000000',
 
@@ -133,7 +135,7 @@ const palette = {
 
   havelockBlue: '#0C93E5',
 
-  jazzberryJam: '#D3366D',
+  jazzberryJam: '#D23E72',
 
   lividBrown: '#421B27',
 
@@ -181,13 +183,14 @@ export const lightThemeColors = {
   plainInputBackground: palette.grey200,
   regularInputBackground: palette.offWhite,
   highlight: palette.blueBright500,
+  testnet: palette.red500,
 }
 export const darkThemeColors = {
   ...palette,
 
   primary: palette.black900,
-  secondary: palette.grey900,
-  primaryBackground: palette.black700,
+  secondary: palette.black750,
+  primaryBackground: palette.black900,
   primaryText: palette.white,
   primaryIcon: palette.black600,
   secondaryIcon: palette.black300,
@@ -195,13 +198,14 @@ export const darkThemeColors = {
   error: palette.red500,
   surface: palette.grey600,
   surfaceText: palette.white,
-  surfaceSecondary: palette.black600,
+  surfaceSecondary: palette.black650,
   surfaceSecondaryText: palette.grey300,
   surfaceContrast: palette.white,
   surfaceContrastText: palette.grey900,
   plainInputBackground: palette.black200,
   regularInputBackground: palette.black800,
   highlight: palette.blueBright500,
+  testnet: palette.red500,
 }
 
 export const theme = createTheme({
@@ -243,6 +247,7 @@ export const theme = createTheme({
     m: 8,
     lm: 10,
     l: 12,
+    lx: 16,
     xl: 20,
     round: 1000,
   },

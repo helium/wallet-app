@@ -9,15 +9,15 @@ import { useOnboarding } from '../OnboardingProvider'
 import ButtonPressable from '../../../components/ButtonPressable'
 import TextTransform from '../../../components/TextTransform'
 import { ImportAccountNavigationProp } from './importAccountNavTypes'
-import { HomeNavigationProp } from '../../home/homeTypes'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import FinePrint from '../../../components/FinePrint'
 import SafeAreaBox from '../../../components/SafeAreaBox'
+import { AddNewAccountNavigationProp } from '../../home/addNewAccount/addNewAccountTypes'
 
 const AccountImportStartScreen = () => {
   const { setOnboardingData } = useOnboarding()
   const navigation = useNavigation<ImportAccountNavigationProp>()
-  const homeNav = useNavigation<HomeNavigationProp>()
+  const addNewAcctNav = useNavigation<AddNewAccountNavigationProp>()
   const { hasAccounts, reachedAccountLimit } = useAccountStorage()
   const { t } = useTranslation()
 
@@ -32,7 +32,7 @@ const AccountImportStartScreen = () => {
   const navNext = useCallback(
     (wordCount: 12 | 24) => () => {
       if (hasAccounts) {
-        homeNav.navigate('ImportAccount', {
+        addNewAcctNav.navigate('ImportAccount', {
           screen: 'AccountImportScreen',
           params: { wordCount },
         })
@@ -40,18 +40,18 @@ const AccountImportStartScreen = () => {
         navigation.navigate('AccountImportScreen', { wordCount })
       }
     },
-    [hasAccounts, homeNav, navigation],
+    [hasAccounts, addNewAcctNav, navigation],
   )
 
   const cliExport = useCallback(
     () => () => {
       if (hasAccounts) {
-        homeNav.navigate('CLIAccountNavigator')
+        addNewAcctNav.navigate('CLIAccountNavigator')
       } else {
         navigation.navigate('CLIAccountNavigator')
       }
     },
-    [hasAccounts, homeNav, navigation],
+    [hasAccounts, addNewAcctNav, navigation],
   )
 
   const edges = useMemo((): Edge[] => ['bottom'], [])

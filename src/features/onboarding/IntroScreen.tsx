@@ -4,6 +4,7 @@ import { NetTypes as NetType } from '@helium/address'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
+import Animated from 'react-native-reanimated'
 import Box from '../../components/Box'
 import { useColors, useHitSlop } from '../../theme/themeHooks'
 import AccountIcon from '../../components/AccountIcon'
@@ -13,6 +14,8 @@ import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { OnboardingNavigationProp } from './onboardingTypes'
 import useMount from '../../utils/useMount'
 import { useOnboarding } from './OnboardingProvider'
+import globalStyles from '../../theme/globalStyles'
+import { FadeInSlow } from '../../components/FadeInOut'
 
 const accountPromises: Promise<SecureAccount[]> = Promise.all([
   createSecureAccount({ netType: NetType.TESTNET }),
@@ -39,7 +42,7 @@ const IntroScreen = () => {
   if (!accounts) return null
 
   return (
-    <Box flex={1}>
+    <Animated.View entering={FadeInSlow} style={globalStyles.container}>
       <Box flex={1} marginBottom={{ smallPhone: 'xl', phone: 'xxl' }}>
         <Box marginTop="n_lm" marginLeft="n_lm">
           <AccountIcon size={140} address={accounts[0].address} />
@@ -100,7 +103,7 @@ const IntroScreen = () => {
           </TouchableOpacityBox>
         </Box>
       </Box>
-    </Box>
+    </Animated.View>
   )
 }
 

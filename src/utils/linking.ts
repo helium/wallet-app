@@ -23,17 +23,11 @@ export const linking = {
   prefixes: [APP_LINK_SCHEME, HELIUM_WALLET_LINK_SCHEME],
   config: {
     screens: {
-      HomeNavigator: {
-        initialRouteName: 'AccountsScreen',
-        screens: {
-          InternetOnboard: 'internet',
-          LinkWallet: 'link_wallet',
-          SignHotspot: 'sign_hotspot',
-          PaymentScreen: 'payment',
-          RequestScreen: 'request',
-          DappLoginScreen: 'dapp_login',
-        },
-      },
+      LinkWallet: 'link_wallet',
+      SignHotspot: 'sign_hotspot',
+      PaymentScreen: 'payment',
+      RequestScreen: 'request',
+      DappLoginScreen: 'dapp_login',
     },
   },
 } as LinkingOptions<RootNavigationProp>
