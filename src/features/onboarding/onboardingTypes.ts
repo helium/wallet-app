@@ -11,3 +11,5 @@ export type OnboardingStackParamList = {
 
 export type OnboardingNavigationProp =
   StackNavigationProp<OnboardingStackParamList>
+
+export type OnboardingOpt = 'import' | 'create' | 'ledger'

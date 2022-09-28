@@ -3,10 +3,6 @@ export default {
     AccountNamePlaceholder: 'Account Name',
     setDefault: 'Set as Default Account',
   },
-  accountHeader: {
-    last24: 'Last 24h',
-    timeAgo: 'Updated {{formattedChange}}',
-  },
   accountImport: {
     accountLimit:
       'You have reached the account limit.\nTo add another account, sign out of a wallet account and try again.',
@@ -112,7 +108,6 @@ export default {
   accountView: {
     balance: 'Balance',
     fiveG: '5G',
-    internet: 'Internet',
     lock: 'Lock',
     payment: 'Payment',
     request: 'Request',
@@ -123,6 +118,9 @@ export default {
     securityTokens: 'Security Tokens',
     nonTransferable: 'Non-Transferable',
     testnetTokens: 'Testnet Tokens',
+  },
+  addNewAccount: {
+    title: 'Add New Account',
   },
   addNewContact: {
     addContact: 'Add Contact',
@@ -155,6 +153,10 @@ export default {
       title: 'Warning! Sign out of all accounts?',
     },
     title: 'Enter Your PIN',
+  },
+  connectedWallets: {
+    add: 'Add New Account',
+    addTestnet: 'Add New Testnet Account',
   },
   dappLogin: {
     account: {
@@ -216,44 +218,6 @@ export default {
     fee: '+{{value}} Fee ⓘ',
     hntAvailable: '{{amount}} Available',
     validFor: 'valid for {{time}}',
-  },
-  internet: {
-    authFailed: 'Failed to authorize',
-    burnFailed: 'Failed to burn',
-    change: 'Change',
-    chooseProvider: {
-      subtitle: 'Use HNT or Credit Card to connect\nto Wi-Fi',
-      title: 'Pay for Wi-Fi',
-    },
-    confirmPayment: 'Confirm Payment',
-    creditCardPlaceholder: 'Card Number',
-    data: 'Data',
-    howMuch: 'How much data do you\nwish to purchase?',
-    insufficientFunds: 'Insufficient Funds',
-    macFailed: 'Failed to enable mac',
-    remainingBalance: 'Remaining\nBalance',
-    wifiProfile: {
-      download: 'Download Profile',
-      instructions: {
-        android: [
-          'Download Profile',
-          'Install NOVA WiFi Profile.',
-          'Follow the prompts to finish setup.',
-        ],
-        ios: [
-          'Download the Profile. A pop-up will open asking if you want Settings to be opened.',
-          'Select <b>Allow</b>.',
-          'Select <b>Install</>.',
-          'Enter your Apple passcode',
-          'Select <b>Install</b>',
-          'On the Profile Installed screen, select <b>Done</b>.',
-        ],
-        title: 'Install the WiFi Profile on your phone:',
-      },
-      subtitle: 'Payment Complete',
-      title: 'Nova WiFi',
-    },
-    youArePurchasing: 'You are purchasing...',
   },
   intro: {
     subtitle: 'Setup should only take\na few minutes.',

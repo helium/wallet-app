@@ -258,10 +258,7 @@ const AccountTokenScreen = () => {
                 color="secondaryText"
                 textAlign="center"
               />
-              <AccountActionBar
-                accountData={accountData?.account}
-                tokenType={route.params.tokenType}
-              />
+              <AccountActionBar tokenType={route.params.tokenType} />
             </>
           }
           sections={[

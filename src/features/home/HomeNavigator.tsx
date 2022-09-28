@@ -16,14 +16,11 @@ import SignHotspot from '../txnDelegatation/SignHotspot'
 import PaymentQrScanner from '../payment/PaymentQrScanner'
 import ConfirmPinScreen from '../../components/ConfirmPinScreen'
 import AddressQrScanner from '../addressBook/AddressQrScanner'
-import CreateAccountNavigator from '../onboarding/create/CreateAccountNavigator'
-import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
-import CLIAccountNavigator from '../onboarding/cli-import/CLIAccountNavigator'
-import LedgerNavigator from '../ledger/LedgerNavigator'
 import VoteNavigator from '../vote/VoteNavigator'
 import DappLoginScreen from '../dappLogin/DappLoginScreen'
-import InternetNavigator from '../internet/InternetNavigator'
 import AccountTokenScreen from '../account/AccountTokenScreen'
+import AddNewAccountNavigator from './addNewAccount/AddNewAccountNavigator'
+import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
 
 const HomeStack = createStackNavigator()
 
@@ -36,6 +33,8 @@ const navigatorScreenOptions = {
   headerShown: false,
 } as StackNavigationOptions
 
+const cardPresentation = { presentation: 'card' } as StackNavigationOptions
+
 const HomeStackScreen = () => {
   return (
     <HomeStack.Navigator screenOptions={navigatorScreenOptions}>
@@ -43,7 +42,7 @@ const HomeStackScreen = () => {
       <HomeStack.Screen
         name="AccountTokenScreen"
         component={AccountTokenScreen}
-        options={{ presentation: 'card' }}
+        options={cardPresentation}
       />
       <HomeStack.Screen
         name="AccountAssignScreen"
@@ -53,7 +52,6 @@ const HomeStackScreen = () => {
       <HomeStack.Screen name="PaymentScreen" component={PaymentScreen} />
       <HomeStack.Screen name="PaymentQrScanner" component={PaymentQrScanner} />
       <HomeStack.Screen name="RequestScreen" component={RequestScreen} />
-      <HomeStack.Screen name="Internet" component={InternetNavigator} />
       <HomeStack.Screen name="DappLoginScreen" component={DappLoginScreen} />
       <HomeStack.Screen
         name="AddressBookNavigator"
@@ -84,23 +82,17 @@ const HomeStackScreen = () => {
       <HomeStack.Screen name="ScanAddress" component={AddressQrScanner} />
 
       <HomeStack.Screen
-        name="CreateAccount"
-        component={CreateAccountNavigator}
+        name="AddNewAccountNavigator"
+        component={AddNewAccountNavigator}
+        options={screenOptions}
       />
+
+      <HomeStack.Screen name="VoteNavigator" component={VoteNavigator} />
+
       <HomeStack.Screen
-        name="ImportAccount"
+        name="ReImportAccountNavigator"
         component={ImportAccountNavigator}
       />
-      <HomeStack.Screen
-        name="LedgerNavigator"
-        component={LedgerNavigator}
-        options={{ presentation: 'card' }}
-      />
-      <HomeStack.Screen
-        name="CLIAccountNavigator"
-        component={CLIAccountNavigator}
-      />
-      <HomeStack.Screen name="VoteNavigator" component={VoteNavigator} />
     </HomeStack.Navigator>
   )
 }

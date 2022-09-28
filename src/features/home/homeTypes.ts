@@ -23,22 +23,14 @@ export type HomeStackParamList = {
   RequestScreen: undefined
   PurchaseData: undefined
   DappLoginScreen: { uri: string; callback: string }
-  Internet:
-    | {
-        key?: string
-        name: string
-        params: undefined
-        path: string
-      }
-    | undefined
   AddressBookNavigator: undefined
   NotificationsNavigator: undefined
   SettingsNavigator: undefined
   AddNewContact: undefined
   LinkWallet: LinkWalletRequest
   SignHotspot: SignHotspotRequest
-  CreateAccount: undefined
-  ImportAccount:
+  AddNewAccountNavigator: undefined
+  ReImportAccountNavigator:
     | undefined
     | { wordCount: 12 | 24 }
     | {
@@ -49,9 +41,7 @@ export type HomeStackParamList = {
           accountAddress?: string
         }
       }
-  LedgerNavigator: undefined
   VoteNavigator: undefined
-  CLIAccountNavigator: undefined
 }
 
 export type HomeNavigationProp = StackNavigationProp<HomeStackParamList>
