@@ -168,13 +168,6 @@ const AccountsScreen = () => {
         onPressWallet={toggleWalletsVisible}
         onLayout={setNavLayoutHeight}
       />
-      {walletsVisible && (
-        <ConnectedWallets
-          onClose={toggleWalletsVisible}
-          onAddNew={handleAddNew}
-          topOffset={navLayoutHeight + top}
-        />
-      )}
       {currentAccount?.address && (accountData?.account || accountLoading) && (
         <Animated.View style={globalStyles.container} entering={FadeInSlow}>
           <Box flex={1} justifyContent="center">
@@ -186,6 +179,13 @@ const AccountsScreen = () => {
             loading={accountLoading}
           />
         </Animated.View>
+      )}
+      {walletsVisible && (
+        <ConnectedWallets
+          onClose={toggleWalletsVisible}
+          onAddNew={handleAddNew}
+          topOffset={navLayoutHeight + top}
+        />
       )}
       <StatusBanner />
     </Box>
