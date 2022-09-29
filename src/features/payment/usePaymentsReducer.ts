@@ -132,7 +132,10 @@ const calculateFee = (
 ) => {
   const { currencyType, oraclePrice, netType } = opts
   const mapped = payments.map(({ amount: balanceAmount, address }) => ({
-    payee: address ? Address.fromB58(address) : EMPTY_B58_ADDRESS,
+    payee:
+      address && Address.isValid(address)
+        ? Address.fromB58(address)
+        : EMPTY_B58_ADDRESS,
     amount: balanceAmount?.integerBalance || 0,
     memo: '',
     tokenType: currencyType.ticker,
