@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDebouncedCallback } from 'use-debounce/lib'
+import { toUpper } from 'lodash'
 import Box from '../../components/Box'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
@@ -88,10 +89,12 @@ const AccountsScreen = () => {
     fetchPolicy: 'cache-and-network',
   })
 
+  const { currency } = useAppStorage()
+
   const { data } = useAccountBalanceHistoryQuery({
     variables: {
       address: currentAccount?.address || '',
-      type: CurrencyType.Usd,
+      type: toUpper(currency) as CurrencyType,
     },
     skip: !currentAccount?.address,
   })
