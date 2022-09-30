@@ -82,6 +82,7 @@ const AccountTokenCurrencyBalance = ({
       color={color}
       numberOfLines={1}
       adjustsFontSizeToFit
+      maxFontSizeMultiplier={1.3}
       textAlign={textAlign}
     >
       {balanceString}

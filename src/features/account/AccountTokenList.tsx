@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import Balance, {
   DataCredits,
   MobileTokens,
@@ -11,7 +11,13 @@ import { useNavigation } from '@react-navigation/native'
 import Arrow from '@assets/images/listItemRight.svg'
 import { FlatList } from 'react-native-gesture-handler'
 import { LayoutChangeEvent } from 'react-native'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
+import Animated, {
+  FadeIn,
+  FadeOut,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated'
 import { useAccountBalances } from '../../utils/Balance'
 import { AccountData, TokenType } from '../../generated/graphql'
 import Box from '../../components/Box'
@@ -34,12 +40,14 @@ type Props = {
   loading?: boolean
 }
 
+const ITEM_HEIGHT = 78
 const AccountTokenList = ({ accountData, loading = false }: Props) => {
   const displayVals = useAccountBalances(accountData)
   const navigation = useNavigation<HomeNavigationProp>()
   const [listItemHeight, setListItemHeight] = useLayoutHeight()
   const breakpoints = useBreakpoints()
-  const { xxl: bottomSpace } = useSpacing()
+  const { xxxl: bottomSpace } = useSpacing()
+  const height = useSharedValue(0)
 
   const tokens = useMemo((): {
     type: TokenType
@@ -121,7 +129,7 @@ const AccountTokenList = ({ accountData, loading = false }: Props) => {
             onLayout={handleItemLayout}
             onPress={handleNavigation(token)}
             flexDirection="row"
-            minHeight={78}
+            minHeight={ITEM_HEIGHT}
             alignItems="center"
             paddingHorizontal="l"
             paddingVertical="m"
@@ -131,10 +139,18 @@ const AccountTokenList = ({ accountData, loading = false }: Props) => {
             <TokenIcon tokenType={token.type} />
             <Box flex={1} paddingHorizontal="m">
               <Box flexDirection="row">
-                <Text variant="body1" color="primaryText">
+                <Text
+                  variant="body1"
+                  color="primaryText"
+                  maxFontSizeMultiplier={1.3}
+                >
                   {token.balance?.toString(7, { showTicker: false })}
                 </Text>
-                <Text variant="body1" color="secondaryText">
+                <Text
+                  variant="body1"
+                  color="secondaryText"
+                  maxFontSizeMultiplier={1.3}
+                >
                   {` ${token?.balance?.type.ticker}${
                     token.staked ? ' Staked' : ''
                   }`}
@@ -170,9 +186,9 @@ const AccountTokenList = ({ accountData, loading = false }: Props) => {
       <Animated.View entering={FadeIn} exiting={FadeOut} key={key}>
         <Box
           flexDirection="row"
+          height={ITEM_HEIGHT}
           alignItems="center"
           paddingHorizontal="l"
-          paddingVertical="l"
           borderBottomColor="primaryBackground"
           borderBottomWidth={1}
         >
@@ -197,19 +213,29 @@ const AccountTokenList = ({ accountData, loading = false }: Props) => {
     )
   }
 
-  const maxHeight = useMemo(() => {
+  useEffect(() => {
+    let nextHeight = 0
     if (loading) {
-      return 89 * maxVisibleTokens + bottomSpace
+      nextHeight = ITEM_HEIGHT * maxVisibleTokens + bottomSpace
+    } else if (!listItemHeight) {
+      nextHeight = ITEM_HEIGHT * tokens.length + bottomSpace
+    } else {
+      nextHeight =
+        listItemHeight * Math.min(tokens.length, maxVisibleTokens) + bottomSpace
     }
+    height.value = withTiming(nextHeight, { duration: 700 })
+  }, [
+    bottomSpace,
+    height.value,
+    listItemHeight,
+    loading,
+    maxVisibleTokens,
+    tokens.length,
+  ])
 
-    if (!listItemHeight) {
-      return 78 * tokens.length + bottomSpace
-    }
-
-    return (
-      listItemHeight * Math.min(tokens.length, maxVisibleTokens) + bottomSpace
-    )
-  }, [bottomSpace, listItemHeight, loading, maxVisibleTokens, tokens.length])
+  const listStyle = useAnimatedStyle(() => {
+    return { height: height.value }
+  })
 
   const keyExtractor = useCallback((item: Token) => {
     if (item.staked) {
@@ -218,17 +244,25 @@ const AccountTokenList = ({ accountData, loading = false }: Props) => {
     return item.type
   }, [])
 
-  const listStyle = useMemo(() => ({ maxHeight }), [maxHeight])
+  const contentContainerStyle = useMemo(
+    () => ({
+      paddingBottom: bottomSpace,
+    }),
+    [bottomSpace],
+  )
 
   return (
-    <FlatList
-      style={listStyle}
-      data={tokens}
-      renderItem={renderItem}
-      ListHeaderComponent={renderHeader}
-      ListFooterComponent={renderFooter}
-      keyExtractor={keyExtractor}
-    />
+    <Animated.View style={listStyle}>
+      <FlatList
+        scrollEnabled={tokens.length > maxVisibleTokens}
+        data={tokens}
+        contentContainerStyle={contentContainerStyle}
+        renderItem={renderItem}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
+        keyExtractor={keyExtractor}
+      />
+    </Animated.View>
   )
 }
 

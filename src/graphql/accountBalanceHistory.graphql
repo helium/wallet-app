@@ -1,0 +1,17 @@
+query accountBalanceHistory($address: String!, $type: CurrencyType!) {
+  accountBalanceHistory(address: $address, currencyType: $type) {
+    hntBalance
+    stakedHntBalance
+    iotBalance
+    mobileBalance
+    date
+    hntPrice
+    balance
+  }
+
+  currentPrices(address: $address, currencyType: $type) {
+    hnt
+    mobile
+    iot
+  }
+}
