@@ -8,7 +8,6 @@ import Text from '../../components/Text'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import ButtonPressable from '../../components/ButtonPressable'
-import FinePrint from '../../components/FinePrint'
 import { AddNewAccountNavigationProp } from '../home/addNewAccount/addNewAccountTypes'
 
 const PairStart = () => {
@@ -54,14 +53,16 @@ const PairStart = () => {
         disabled={reachedAccountLimit}
         borderRadius="round"
         onPress={handleStart}
-        backgroundColor="surfaceSecondary"
+        backgroundColor="primaryText"
         backgroundColorOpacityPressed={0.7}
         backgroundColorDisabled="surfaceSecondary"
         backgroundColorDisabledOpacity={0.5}
         titleColorDisabled="black500"
+        titleColor="primary"
+        fontWeight="500"
         title={t('ledger.pairStart.pair')}
+        marginBottom="l"
       />
-      <FinePrint marginTop="l" justifyContent="center" />
     </SafeAreaBox>
   )
 }

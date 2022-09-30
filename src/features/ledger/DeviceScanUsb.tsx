@@ -85,7 +85,7 @@ const DeviceScanUsb = () => {
   return (
     <SafeAreaBox
       flex={1}
-      backgroundColor="primaryBackground"
+      backgroundColor="secondary"
       marginTop="l"
       paddingHorizontal="l"
     >

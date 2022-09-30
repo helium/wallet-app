@@ -198,7 +198,7 @@ const AccountImportScreen = () => {
   )
 
   return (
-    <Box flex={1}>
+    <Box flex={1} backgroundColor="secondary">
       <TouchableOpacityBox padding="l" onPress={navToTop} alignItems="flex-end">
         <Close color={colors.primaryText} height={16} width={16} />
       </TouchableOpacityBox>

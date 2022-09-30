@@ -1,22 +1,39 @@
-import React, { memo } from 'react'
+import React, { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import CreateAccount from '@assets/images/createAccount.svg'
+import { useNavigation } from '@react-navigation/native'
 import Box from '../../../components/Box'
 import Text from '../../../components/Text'
 import ButtonPressable from '../../../components/ButtonPressable'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
-import FinePrint from '../../../components/FinePrint'
+import CloseButton from '../../../components/CloseButton'
+import { CreateAccountNavigationProp } from './createAccountNavTypes'
+import SafeAreaBox from '../../../components/SafeAreaBox'
 
-type Props = { onCreate: () => void }
-const AccountCreateStart = ({ onCreate }: Props) => {
+type Props = { onCreate: () => void; inline?: boolean }
+const AccountCreateStart = ({ onCreate, inline }: Props) => {
   const { t } = useTranslation()
   const { reachedAccountLimit } = useAccountStorage()
+  const navigation = useNavigation<CreateAccountNavigationProp>()
+
+  const onClose = useCallback(() => {
+    navigation.goBack()
+  }, [navigation])
 
   return (
-    <Box flex={1} marginHorizontal="lx">
+    <SafeAreaBox flex={1} backgroundColor="secondary" paddingHorizontal="l">
+      <Box width="100%" alignItems="flex-end" visible={!inline}>
+        <CloseButton onPress={onClose} />
+      </Box>
       <Box justifyContent="center" alignItems="center" flex={1}>
         <CreateAccount />
-        <Text variant="h2" textAlign="center" lineHeight={34} marginTop="l">
+        <Text
+          variant="h1"
+          fontSize={44}
+          textAlign="center"
+          lineHeight={44}
+          marginTop="l"
+        >
           {t('accountSetup.title')}
         </Text>
         <Text
@@ -49,17 +66,18 @@ const AccountCreateStart = ({ onCreate }: Props) => {
       <ButtonPressable
         disabled={reachedAccountLimit}
         borderRadius="round"
-        titleColor="greenBright500"
+        titleColor="secondary"
+        fontWeight="500"
         title={t('accountSetup.createButtonTitle')}
-        backgroundColor="surfaceSecondary"
+        backgroundColor="greenBright500"
         backgroundColorOpacityPressed={0.7}
         backgroundColorDisabled="surfaceSecondary"
         backgroundColorDisabledOpacity={0.5}
         titleColorDisabled="black500"
+        marginBottom="l"
         onPress={onCreate}
       />
-      <FinePrint marginTop="l" justifyContent="center" />
-    </Box>
+    </SafeAreaBox>
   )
 }
 

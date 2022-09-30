@@ -62,12 +62,12 @@ const AddNewAccountScreen = () => {
         <Box flex={1}>
           {selectedOption === 'create' && (
             <FadeInOut style={globalStyles.container}>
-              <AccountCreateStart onCreate={handleCreate} />
+              <AccountCreateStart onCreate={handleCreate} inline />
             </FadeInOut>
           )}
           {selectedOption === 'import' && (
             <FadeInOut style={globalStyles.container}>
-              <AccountImportStartScreen />
+              <AccountImportStartScreen inline />
             </FadeInOut>
           )}
           {selectedOption === 'ledger' && (

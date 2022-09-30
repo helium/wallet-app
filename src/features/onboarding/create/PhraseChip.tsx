@@ -32,7 +32,7 @@ const PhraseChip = ({
   const getBackgroundColor = useCallback((): Color => {
     if (fail) return 'error'
     if (success) return 'greenBright500'
-    return 'surfaceSecondary'
+    return 'transparent10'
   }, [fail, success])
 
   const getIcon = () => {

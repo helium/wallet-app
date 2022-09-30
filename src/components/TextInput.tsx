@@ -9,7 +9,7 @@ import {
 import { TextInput as RNTextInput } from 'react-native'
 import tinycolor from 'tinycolor2'
 import { Color, theme, Theme } from '../theme/theme'
-import { useColors } from '../theme/themeHooks'
+import { useColors, useInputVariants } from '../theme/themeHooks'
 
 const TextInputBox = createBox<Theme, React.ComponentProps<typeof RNTextInput>>(
   RNTextInput,
@@ -23,11 +23,17 @@ const TextInput = createRestyleComponent<
 
 type Props = React.ComponentProps<typeof TextInput> & {
   placeholderTextColor?: Color
+  textColor?: Color
+  fontSize?: number
 }
 
 const TI = forwardRef(
-  ({ placeholderTextColor, ...rest }: Props, ref: Ref<RNTextInput>) => {
+  (
+    { placeholderTextColor, textColor, fontSize, ...rest }: Props,
+    ref: Ref<RNTextInput>,
+  ) => {
     const colors = useColors()
+    const inputVariants = useInputVariants()
 
     const getPlaceholderTextColor = useMemo(() => {
       const findColor = () => {
@@ -42,8 +48,17 @@ const TI = forwardRef(
       return tinycolor(color).setAlpha(0.3).toRgbString()
     }, [colors, placeholderTextColor])
 
+    const getTextColor = useMemo(() => {
+      if (textColor) return colors[textColor]
+      return colors.primaryText
+    }, [colors, textColor])
+
     return (
       <TextInput
+        style={{
+          color: getTextColor,
+          fontSize: fontSize || inputVariants.regular.fontSize,
+        }}
         placeholderTextColor={getPlaceholderTextColor}
         ref={ref}
         {...rest}

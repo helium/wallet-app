@@ -1,7 +1,8 @@
 export default {
   accountAssign: {
     AccountNamePlaceholder: 'Account Name',
-    setDefault: 'Set as Default Account',
+    setDefault: 'Set as Default',
+    title: 'Name this account',
   },
   accountImport: {
     accountLimit:
@@ -36,13 +37,13 @@ export default {
       next: 'Submit Seed Phrase',
       subtitle:
         'Here are the {{totalWords}} words you’ve entered. Tap on any of them if you need to edit.',
-      title: 'Please Confirm\nSeed Phrase',
+      title: 'Please confirm your seed phrase',
     },
     pickKeyType: 'Pick Security Key Type:',
     restoreChoice: '{{totalWords}} Words',
     cliImport: 'CLI',
     subTitle:
-      'To import your existing\nHNT account, enter its\n<havelockBlue>12</havelockBlue> or <jazzberryJam>24</jazzberryJam> word security key.',
+      'To import your existing Helium account, enter its <havelockBlue>12</havelockBlue> or <jazzberryJam>24</jazzberryJam> word security key.',
     title: 'Import\nAccount',
     wordEntry: {
       placeholder: '{{ordinal}} word',
@@ -52,10 +53,10 @@ export default {
   },
   accountSetup: {
     confirm: {
-      forgot: 'I forgot my words...',
+      forgot: 'I forgot my words',
       subtitle: 'Which word below was your',
-      subtitleOrdinal: '{{ordinal}} word?',
-      title: 'Confirm\nyour Words...',
+      subtitleOrdinal: 'What was\nWord {{ordinal}}?',
+      title: 'Please confirm your words',
     },
     confirmPin: {
       subtitle: 'Re-enter your PIN',
@@ -77,15 +78,15 @@ export default {
     passphrase: {
       next: 'I have written these down',
       subtitle1:
-        'Write the words down, keep it safe,\nand never share it with anyone.',
-      subtitle2: 'No one can recover these words.',
-      title: 'These words\nrepresent your\nprivate key',
+        'These words represent your private key. Write them down and never share with anyone.',
+      subtitle2: 'No one can recover these words',
+      title: 'Keep these\nwords safe',
     },
     subtitle1:
-      'Every new account is accessed via 24 secure words (your ‘key’).',
+      'Every new account is accessed via 24 secure words - your ‘key’.',
     subtitle2:
-      'Make sure these words are written down in the correct order and never share them with anyone or enter into a website or app.',
-    title: 'Create\nNew Account',
+      'Please ensure these are written down, kept safe, and never shared.',
+    title: 'Create New\nAccount',
   },
   accountsScreen: {
     allFilterFooter:
@@ -221,8 +222,8 @@ export default {
   },
   intro: {
     subtitle: 'Setup should only take\na few minutes.',
-    tap: 'Tap to get started',
-    title: 'The best wallet\nfor your HNT.',
+    tap: 'Get Started',
+    title: 'Welcome to\nHelium Wallet',
   },
   ledger: {
     chooseType: {
