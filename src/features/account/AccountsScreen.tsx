@@ -3,14 +3,25 @@ import { Platform } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import SharedGroupPreferences from 'react-native-shared-group-preferences'
-import Animated from 'react-native-reanimated'
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useDebouncedCallback } from 'use-debounce/lib'
 import Box from '../../components/Box'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import usePrevious from '../../utils/usePrevious'
 import { HomeNavigationProp } from '../home/homeTypes'
-import { useAccountLazyQuery, useAccountQuery } from '../../generated/graphql'
+import {
+  AccountBalance as AccountBalanceType,
+  CurrencyType,
+  useAccountBalanceHistoryQuery,
+  useAccountLazyQuery,
+  useAccountQuery,
+} from '../../generated/graphql'
 import useAppear from '../../utils/useAppear'
 import { withTransactionDetail } from './TransactionDetail'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
@@ -21,13 +32,14 @@ import { checkSecureAccount } from '../../storage/secureStorage'
 import { getJazzSeed, isTestnet } from '../../utils/accountUtils'
 import AccountsTopNav from './AccountsTopNav'
 import AccountTokenList from './AccountTokenList'
-import AccountActionBar from './AccountActionBar'
-import AccountBalance from './AccountBalance'
+import AccountView from './AccountView'
 import ConnectedWallets from './ConnectedWallets'
 import useLayoutHeight from '../../utils/useLayoutHeight'
 import { OnboardingOpt } from '../onboarding/onboardingTypes'
 import globalStyles from '../../theme/globalStyles'
 import { FadeInSlow } from '../../components/FadeInOut'
+import AccountBalanceChart from './AccountBalanceChart'
+import useDisappear from '../../utils/useDisappear'
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
@@ -47,10 +59,16 @@ const AccountsScreen = () => {
   const { reset } = useOnboarding()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const [walletsVisible, setWalletsVisible] = useState(false)
+  const [selectedBalance, setSelectedBalance] = useState<AccountBalanceType>()
   const { top } = useSafeAreaInsets()
+  const chartFlex = useSharedValue(0)
 
   useAppear(() => {
     reset()
+  })
+
+  useDisappear(() => {
+    setSelectedBalance(undefined)
   })
 
   const { data: accountData, error: accountsError } = useAccountQuery({
@@ -69,6 +87,29 @@ const AccountsScreen = () => {
     },
     fetchPolicy: 'cache-and-network',
   })
+
+  const { data } = useAccountBalanceHistoryQuery({
+    variables: {
+      address: currentAccount?.address || '',
+      type: CurrencyType.Usd,
+    },
+    skip: !currentAccount?.address,
+  })
+
+  const showChart = useMemo(
+    () => (data?.accountBalanceHistory?.length || 0) >= 2,
+    [data],
+  )
+  const prevShowChart = usePrevious(showChart)
+
+  const chartValues = useMemo(() => {
+    // Need to have at least a two days of data to display
+    if (!data?.accountBalanceHistory || !showChart) return
+
+    return data.accountBalanceHistory?.map((bh) => {
+      return { y: bh.balance, info: bh }
+    })
+  }, [data, showChart])
 
   useAppear(() => {
     if (!currentAccount?.address) return
@@ -153,14 +194,45 @@ const AccountsScreen = () => {
     }
   }, [defaultAccountAddress, sortedAccounts])
 
+  useEffect(() => {
+    if (!showChart && prevShowChart) {
+      chartFlex.value = withTiming(0, { duration: 700 })
+    } else if (showChart && !prevShowChart) {
+      chartFlex.value = withTiming(100, { duration: 700 })
+    }
+  }, [chartFlex.value, chartValues, prevShowChart, showChart])
+
   const toggleWalletsVisible = useCallback(() => {
     setWalletsVisible((v) => !v)
+    setSelectedBalance(undefined)
   }, [])
+
+  const handleBalanceHistorySelected = useDebouncedCallback(
+    (accountBalance?: AccountBalanceType) => {
+      setSelectedBalance(accountBalance)
+    },
+    100,
+    {
+      leading: false,
+      trailing: true,
+    },
+  )
 
   const handleAddNew = useCallback(() => {
     navigation.navigate('AddNewAccountNavigator')
     setWalletsVisible(false)
   }, [navigation])
+
+  const style = useAnimatedStyle(() => {
+    return {
+      flex: chartFlex.value,
+      justifyContent: 'center',
+    }
+  })
+
+  const onTouchStart = useCallback(() => {
+    handleBalanceHistorySelected(undefined)
+  }, [handleBalanceHistorySelected])
 
   return (
     <Box flex={1}>
@@ -170,10 +242,30 @@ const AccountsScreen = () => {
       />
       {currentAccount?.address && (accountData?.account || accountLoading) && (
         <Animated.View style={globalStyles.container} entering={FadeInSlow}>
-          <Box flex={1} justifyContent="center">
-            <AccountBalance accountData={accountData?.account} />
-            <AccountActionBar />
+          <Box flex={100} justifyContent="center">
+            <AccountView
+              accountData={accountData?.account}
+              hntPrice={data?.currentPrices?.hnt}
+              selectedBalance={selectedBalance}
+            />
           </Box>
+          <Animated.View style={style}>
+            <Box
+              flex={1}
+              onTouchStart={onTouchStart}
+              backgroundColor="primaryBackground"
+            />
+            <AccountBalanceChart
+              chartValues={chartValues || []}
+              onHistorySelected={handleBalanceHistorySelected}
+              selectedBalance={selectedBalance}
+            />
+            <Box
+              flex={1}
+              onTouchStart={onTouchStart}
+              backgroundColor="primaryBackground"
+            />
+          </Animated.View>
           <AccountTokenList
             accountData={accountData?.account}
             loading={accountLoading}

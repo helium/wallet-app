@@ -6,6 +6,5 @@ query FeatureFlags($address: String!) {
     wifiEnabled
     wifiFaucetB58
     wifiProfile
-    stripePublishableKey
   }
 }

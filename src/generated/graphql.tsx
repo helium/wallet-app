@@ -22,6 +22,17 @@ export type Scalars = {
   Float: number
 }
 
+export type AccountBalance = {
+  __typename?: 'AccountBalance'
+  balance: Scalars['Float']
+  date: Scalars['String']
+  hntBalance: Scalars['Int']
+  hntPrice: Scalars['Float']
+  iotBalance: Scalars['Int']
+  mobileBalance: Scalars['Int']
+  stakedHntBalance: Scalars['Int']
+}
+
 export type AccountData = {
   __typename?: 'AccountData'
   address: Scalars['String']
@@ -84,10 +95,80 @@ export type ActivityData = {
   data?: Maybe<Array<Activity>>
 }
 
+export enum CurrencyType {
+  Aed = 'AED',
+  Ars = 'ARS',
+  Aud = 'AUD',
+  Bch = 'BCH',
+  Bdt = 'BDT',
+  Bhd = 'BHD',
+  Bits = 'BITS',
+  Bmd = 'BMD',
+  Bnb = 'BNB',
+  Brl = 'BRL',
+  Btc = 'BTC',
+  Cad = 'CAD',
+  Chf = 'CHF',
+  Clp = 'CLP',
+  Cny = 'CNY',
+  Czk = 'CZK',
+  Dkk = 'DKK',
+  Dot = 'DOT',
+  Eos = 'EOS',
+  Eth = 'ETH',
+  Eur = 'EUR',
+  Gbp = 'GBP',
+  Hkd = 'HKD',
+  Huf = 'HUF',
+  Idr = 'IDR',
+  Ils = 'ILS',
+  Inr = 'INR',
+  Jpy = 'JPY',
+  Krw = 'KRW',
+  Kwd = 'KWD',
+  Link = 'LINK',
+  Lkr = 'LKR',
+  Ltc = 'LTC',
+  Mmk = 'MMK',
+  Mxn = 'MXN',
+  Myr = 'MYR',
+  Ngn = 'NGN',
+  Nok = 'NOK',
+  Nzd = 'NZD',
+  Php = 'PHP',
+  Pkr = 'PKR',
+  Pln = 'PLN',
+  Rub = 'RUB',
+  Sar = 'SAR',
+  Sats = 'SATS',
+  Sek = 'SEK',
+  Sgd = 'SGD',
+  Thb = 'THB',
+  Try = 'TRY',
+  Twd = 'TWD',
+  Uah = 'UAH',
+  Usd = 'USD',
+  Vef = 'VEF',
+  Vnd = 'VND',
+  Xag = 'XAG',
+  Xau = 'XAU',
+  Xdr = 'XDR',
+  Xlm = 'XLM',
+  Xrp = 'XRP',
+  Yfi = 'YFI',
+  Zar = 'ZAR',
+}
+
+export type CurrentPrices = {
+  __typename?: 'CurrentPrices'
+  hnt: Scalars['Float']
+  iot: Scalars['Float']
+  mobile: Scalars['Float']
+}
+
 export type FeatureFlags = {
   __typename?: 'FeatureFlags'
   mobileEnabled: Scalars['Boolean']
-  stripePublishableKey: Scalars['String']
   wifiBurnMemo?: Maybe<Scalars['String']>
   wifiBurnPayee?: Maybe<Scalars['String']>
   wifiEnabled: Scalars['Boolean']
@@ -264,12 +345,16 @@ export type RootQueryType = {
   account?: Maybe<AccountData>
   /** Get account activity */
   accountActivity?: Maybe<ActivityData>
+  /** Get account balance history */
+  accountBalanceHistory?: Maybe<Array<AccountBalance>>
   /** Get account rewards sum */
   accountRewardsSum?: Maybe<Sum>
   /** Get Current Block Height */
   blockHeight: Scalars['Int']
   /** Get current oracle price */
   currentOraclePrice?: Maybe<OraclePrice>
+  /** Get current price */
+  currentPrices?: Maybe<CurrentPrices>
   /** Get feature flags */
   featureFlags: FeatureFlags
   /** Get hotspot */
@@ -280,10 +365,11 @@ export type RootQueryType = {
   notifications?: Maybe<Array<Notification>>
   /** Get pending txns */
   pendingTxns?: Maybe<Array<Activity>>
-  /** Get coin gecko prices */
+  /**
+   * Get coin gecko prices
+   * @deprecated Use other price queries and specify currency type
+   */
   pricing?: Maybe<Prices>
-  /** Get Stripe Params */
-  stripeParams: StripeParams
   /** Get txn config vars */
   txnConfigVars?: Maybe<TxnConfigVars>
   /** Get validator */
@@ -304,6 +390,11 @@ export type RootQueryTypeAccountActivityArgs = {
   filter?: InputMaybe<Scalars['String']>
 }
 
+export type RootQueryTypeAccountBalanceHistoryArgs = {
+  address: Scalars['String']
+  currencyType: CurrencyType
+}
+
 export type RootQueryTypeAccountRewardsSumArgs = {
   address: Scalars['String']
   maxTime?: InputMaybe<Scalars['String']>
@@ -316,6 +407,11 @@ export type RootQueryTypeBlockHeightArgs = {
 
 export type RootQueryTypeCurrentOraclePriceArgs = {
   address: Scalars['String']
+}
+
+export type RootQueryTypeCurrentPricesArgs = {
+  address: Scalars['String']
+  currencyType: CurrencyType
 }
 
 export type RootQueryTypeFeatureFlagsArgs = {
@@ -346,13 +442,6 @@ export type RootQueryTypePricingArgs = {
   address: Scalars['String']
 }
 
-export type RootQueryTypeStripeParamsArgs = {
-  address: Scalars['String']
-  amount: Scalars['Int']
-  burnTxn: Array<Scalars['Int']>
-  customerId?: InputMaybe<Scalars['String']>
-}
-
 export type RootQueryTypeTxnConfigVarsArgs = {
   address: Scalars['String']
 }
@@ -377,14 +466,6 @@ export type Status = {
   listenAddrs?: Maybe<Array<Scalars['String']>>
   online: Scalars['String']
   timestamp: Scalars['String']
-}
-
-export type StripeParams = {
-  __typename?: 'StripeParams'
-  burnSignature: Array<Scalars['Int']>
-  customerId: Scalars['String']
-  ephemeralSecret: Scalars['String']
-  paymentSecret: Scalars['String']
 }
 
 export type Sum = {
@@ -553,6 +634,31 @@ export type AccountActivityQuery = {
   } | null
 }
 
+export type AccountBalanceHistoryQueryVariables = Exact<{
+  address: Scalars['String']
+  type: CurrencyType
+}>
+
+export type AccountBalanceHistoryQuery = {
+  __typename?: 'RootQueryType'
+  accountBalanceHistory?: Array<{
+    __typename?: 'AccountBalance'
+    hntBalance: number
+    stakedHntBalance: number
+    iotBalance: number
+    mobileBalance: number
+    date: string
+    hntPrice: number
+    balance: number
+  }> | null
+  currentPrices?: {
+    __typename?: 'CurrentPrices'
+    hnt: number
+    mobile: number
+    iot: number
+  } | null
+}
+
 export type AccountRewardsSummaryQueryVariables = Exact<{
   address: Scalars['String']
   minTime?: InputMaybe<Scalars['String']>
@@ -623,7 +729,6 @@ export type FeatureFlagsQuery = {
     wifiEnabled: boolean
     wifiFaucetB58?: string | null
     wifiProfile?: string | null
-    stripePublishableKey: string
   }
 }
 
@@ -719,24 +824,6 @@ export type PendingTxnsQuery = {
       tokenType?: TokenType | null
     }> | null
   }> | null
-}
-
-export type StripeParamsQueryVariables = Exact<{
-  address: Scalars['String']
-  amount: Scalars['Int']
-  burnTxn: Array<Scalars['Int']> | Scalars['Int']
-  customerId?: InputMaybe<Scalars['String']>
-}>
-
-export type StripeParamsQuery = {
-  __typename?: 'RootQueryType'
-  stripeParams: {
-    __typename?: 'StripeParams'
-    customerId: string
-    ephemeralSecret: string
-    paymentSecret: string
-    burnSignature: Array<number>
-  }
 }
 
 export type SubmitTxnMutationVariables = Exact<{
@@ -984,6 +1071,76 @@ export type AccountActivityQueryResult = Apollo.QueryResult<
   AccountActivityQuery,
   AccountActivityQueryVariables
 >
+export const AccountBalanceHistoryDocument = gql`
+  query accountBalanceHistory($address: String!, $type: CurrencyType!) {
+    accountBalanceHistory(address: $address, currencyType: $type) {
+      hntBalance
+      stakedHntBalance
+      iotBalance
+      mobileBalance
+      date
+      hntPrice
+      balance
+    }
+    currentPrices(address: $address, currencyType: $type) {
+      hnt
+      mobile
+      iot
+    }
+  }
+`
+
+/**
+ * __useAccountBalanceHistoryQuery__
+ *
+ * To run a query within a React component, call `useAccountBalanceHistoryQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAccountBalanceHistoryQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAccountBalanceHistoryQuery({
+ *   variables: {
+ *      address: // value for 'address'
+ *      type: // value for 'type'
+ *   },
+ * });
+ */
+export function useAccountBalanceHistoryQuery(
+  baseOptions: Apollo.QueryHookOptions<
+    AccountBalanceHistoryQuery,
+    AccountBalanceHistoryQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useQuery<
+    AccountBalanceHistoryQuery,
+    AccountBalanceHistoryQueryVariables
+  >(AccountBalanceHistoryDocument, options)
+}
+export function useAccountBalanceHistoryLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    AccountBalanceHistoryQuery,
+    AccountBalanceHistoryQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useLazyQuery<
+    AccountBalanceHistoryQuery,
+    AccountBalanceHistoryQueryVariables
+  >(AccountBalanceHistoryDocument, options)
+}
+export type AccountBalanceHistoryQueryHookResult = ReturnType<
+  typeof useAccountBalanceHistoryQuery
+>
+export type AccountBalanceHistoryLazyQueryHookResult = ReturnType<
+  typeof useAccountBalanceHistoryLazyQuery
+>
+export type AccountBalanceHistoryQueryResult = Apollo.QueryResult<
+  AccountBalanceHistoryQuery,
+  AccountBalanceHistoryQueryVariables
+>
 export const AccountRewardsSummaryDocument = gql`
   query AccountRewardsSummary(
     $address: String!
@@ -1185,7 +1342,6 @@ export const FeatureFlagsDocument = gql`
       wifiEnabled
       wifiFaucetB58
       wifiProfile
-      stripePublishableKey
     }
   }
 `
@@ -1567,80 +1723,6 @@ export type PendingTxnsLazyQueryHookResult = ReturnType<
 export type PendingTxnsQueryResult = Apollo.QueryResult<
   PendingTxnsQuery,
   PendingTxnsQueryVariables
->
-export const StripeParamsDocument = gql`
-  query stripeParams(
-    $address: String!
-    $amount: Int!
-    $burnTxn: [Int!]!
-    $customerId: String
-  ) {
-    stripeParams(
-      address: $address
-      amount: $amount
-      burnTxn: $burnTxn
-      customerId: $customerId
-    ) {
-      customerId
-      ephemeralSecret
-      paymentSecret
-      burnSignature
-    }
-  }
-`
-
-/**
- * __useStripeParamsQuery__
- *
- * To run a query within a React component, call `useStripeParamsQuery` and pass it any options that fit your needs.
- * When your component renders, `useStripeParamsQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useStripeParamsQuery({
- *   variables: {
- *      address: // value for 'address'
- *      amount: // value for 'amount'
- *      burnTxn: // value for 'burnTxn'
- *      customerId: // value for 'customerId'
- *   },
- * });
- */
-export function useStripeParamsQuery(
-  baseOptions: Apollo.QueryHookOptions<
-    StripeParamsQuery,
-    StripeParamsQueryVariables
-  >,
-) {
-  const options = { ...defaultOptions, ...baseOptions }
-  return Apollo.useQuery<StripeParamsQuery, StripeParamsQueryVariables>(
-    StripeParamsDocument,
-    options,
-  )
-}
-export function useStripeParamsLazyQuery(
-  baseOptions?: Apollo.LazyQueryHookOptions<
-    StripeParamsQuery,
-    StripeParamsQueryVariables
-  >,
-) {
-  const options = { ...defaultOptions, ...baseOptions }
-  return Apollo.useLazyQuery<StripeParamsQuery, StripeParamsQueryVariables>(
-    StripeParamsDocument,
-    options,
-  )
-}
-export type StripeParamsQueryHookResult = ReturnType<
-  typeof useStripeParamsQuery
->
-export type StripeParamsLazyQueryHookResult = ReturnType<
-  typeof useStripeParamsLazyQuery
->
-export type StripeParamsQueryResult = Apollo.QueryResult<
-  StripeParamsQuery,
-  StripeParamsQueryVariables
 >
 export const SubmitTxnDocument = gql`
   mutation submitTxn($address: String!, $txn: String!, $txnJson: String) {

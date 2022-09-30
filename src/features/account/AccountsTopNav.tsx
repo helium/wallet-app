@@ -80,7 +80,14 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
         onPress={onPressWallet}
       >
         <AccountIcon address={currentAccount?.address} size={25} />
-        <Text variant="subtitle1" marginLeft="m" marginRight="xs">
+        <Text
+          variant="subtitle1"
+          marginLeft="m"
+          marginRight="xs"
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          maxFontSizeMultiplier={1.3}
+        >
           {currentAccount?.alias}
         </Text>
         <CarotDown color={primaryText} />

@@ -60,7 +60,6 @@ type ActivityData {
 }
 type FeatureFlags {
   mobileEnabled: Boolean!
-  stripePublishableKey: String!
   wifiBurnMemo: String
   wifiBurnPayee: String
   wifiEnabled: Boolean!
@@ -230,13 +229,6 @@ type RootQueryType {
   pendingTxns(address: String!): [Activity!]
   "Get coin gecko prices"
   pricing(address: String!): Prices
-  "Get Stripe Params"
-  stripeParams(
-    address: String!
-    amount: Int!
-    burnTxn: [Int!]!
-    customerId: String
-  ): StripeParams!
   "Get txn config vars"
   txnConfigVars(address: String!): TxnConfigVars
   "Get validator"
@@ -257,12 +249,6 @@ type Status {
   listenAddrs: [String!]
   online: String!
   timestamp: String!
-}
-type StripeParams {
-  burnSignature: [Int!]!
-  customerId: String!
-  ephemeralSecret: String!
-  paymentSecret: String!
 }
 type Sum {
   data: SumData!

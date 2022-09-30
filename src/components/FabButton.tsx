@@ -128,6 +128,7 @@ const ButtonPressable = ({
                 variant="subtitle2"
                 color={iconColor}
                 paddingHorizontal="xs"
+                maxFontSizeMultiplier={1.3}
               >
                 {title}
               </Text>
