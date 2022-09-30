@@ -11,6 +11,7 @@ import useHaptic from '../../../utils/useHaptic'
 import animateTransition from '../../../utils/animateTransition'
 import TouchableOpacityBox from '../../../components/TouchableOpacityBox'
 import { CreateAccountNavigationProp } from './createAccountNavTypes'
+import CloseButton from '../../../components/CloseButton'
 
 type Props = {
   title?: string
@@ -69,7 +70,6 @@ const ConfirmWordsScreen = ({
         await sleep(1000)
         setWord(null)
         setChallengeWords(Account.generateChallengeWords(findTargetWord(step)))
-        animateTransition('AccountEnterPassphraseScreen.OnPressWord')
       }
     },
     [findTargetWord, nextStep, step, triggerNotification],
@@ -120,58 +120,71 @@ const ConfirmWordsScreen = ({
     [challengeWords, correct, onPressWord, word],
   )
 
+  const onClose = useCallback(() => {
+    navigation.goBack()
+  }, [navigation])
+
   return (
-    <SafeAreaBox
-      backgroundColor="primaryBackground"
-      flex={1}
-      paddingHorizontal="xl"
-      justifyContent="center"
-    >
-      <Text
-        variant="h1"
-        numberOfLines={2}
-        adjustsFontSizeToFit
-        maxFontSizeMultiplier={1}
-        lineHeight={39}
-        marginBottom="m"
-      >
-        {title || t('accountSetup.confirm.title')}
-      </Text>
-      <Text
-        numberOfLines={1}
-        adjustsFontSizeToFit
-        variant="body0"
-        lineHeight={21}
-        color="secondaryText"
-      >
-        {t('accountSetup.confirm.subtitle')}
-      </Text>
-      <Text
-        numberOfLines={1}
-        adjustsFontSizeToFit
-        variant="body0"
-        lineHeight={21}
-        marginBottom="m"
-      >
-        {t('accountSetup.confirm.subtitleOrdinal', {
-          ordinal: t(`ordinals.${step}`),
-        })}
-      </Text>
-      <Box flexDirection="row" flexWrap="wrap" marginTop="m">
-        {challengeWordChips}
+    <SafeAreaBox flex={1} backgroundColor="secondary" paddingHorizontal="xl">
+      <Box width="100%" alignItems="flex-end">
+        <CloseButton onPress={onClose} />
       </Box>
-      <TouchableOpacityBox onPress={onPressForgot} paddingVertical="xl">
-        <Text color="primaryText" variant="body0">
-          {t('accountSetup.confirm.forgot')}
+      <Box flex={1} justifyContent="center" alignItems="center">
+        <Text
+          variant="h4"
+          adjustsFontSizeToFit
+          maxFontSizeMultiplier={1}
+          marginBottom="m"
+          textAlign="center"
+          color="secondaryText"
+        >
+          {title || t('accountSetup.confirm.title')}
         </Text>
-      </TouchableOpacityBox>
-      {__DEV__ && (
-        <TouchableOpacityBox onPress={onSkip}>
-          <Text color="primaryText" variant="body0">
-            {t('generic.skip')}
+        <Text
+          adjustsFontSizeToFit
+          variant="h1"
+          fontSize={44}
+          lineHeight={44}
+          marginVertical="m"
+          textAlign="center"
+        >
+          {t('accountSetup.confirm.subtitleOrdinal', {
+            ordinal: step + 1,
+          })}
+        </Text>
+        <Box
+          flexDirection="row"
+          flexWrap="wrap"
+          marginTop="m"
+          justifyContent="center"
+        >
+          {challengeWordChips}
+        </Box>
+        <TouchableOpacityBox onPress={onPressForgot} paddingVertical="xxxl">
+          <Text
+            variant="h4"
+            adjustsFontSizeToFit
+            maxFontSizeMultiplier={1}
+            textAlign="center"
+            color="secondaryText"
+          >
+            {t('accountSetup.confirm.forgot')}
           </Text>
         </TouchableOpacityBox>
-      )}
+        {__DEV__ && (
+          <TouchableOpacityBox onPress={onSkip}>
+            <Text
+              variant="h4"
+              adjustsFontSizeToFit
+              maxFontSizeMultiplier={1}
+              textAlign="center"
+              color="secondaryText"
+            >
+              {t('generic.skip')}
+            </Text>
+          </TouchableOpacityBox>
+        )}
+      </Box>
     </SafeAreaBox>
   )
 }

@@ -2,6 +2,7 @@ import React, { memo, useCallback, useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useTranslation } from 'react-i18next'
 import Box from '../../components/Box'
 import TextInput from '../../components/TextInput'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
@@ -10,6 +11,7 @@ import { useSpacing } from '../../theme/themeHooks'
 import AccountIcon from '../../components/AccountIcon'
 import { SettingsNavigationProp } from './settingsTypes'
 import BackScreen from '../../components/BackScreen'
+import Text from '../../components/Text'
 
 const UpdateAliasScreen = () => {
   const navigation = useNavigation<SettingsNavigationProp>()
@@ -17,6 +19,7 @@ const UpdateAliasScreen = () => {
   const insets = useSafeAreaInsets()
   const spacing = useSpacing()
   const { upsertAccount, hasAccounts, currentAccount } = useAccountStorage()
+  const { t } = useTranslation()
 
   const handlePress = useCallback(async () => {
     if (hasAccounts && currentAccount?.address) {
@@ -34,28 +37,39 @@ const UpdateAliasScreen = () => {
     <BackScreen
       backgroundColor="primaryBackground"
       flex={1}
-      paddingHorizontal={{ smallPhone: 'l', phone: 'xxxl' }}
+      paddingHorizontal="xl"
     >
       <KeyboardAvoidingView
-        keyboardVerticalOffset={insets.top + spacing.xxl}
+        keyboardVerticalOffset={insets.top + spacing.xxxl + spacing.xxl}
         behavior={Platform.OS === 'android' ? 'height' : 'padding'}
         style={styles.container}
       >
         <Box alignItems="center" flex={1}>
-          <AccountIcon size={84} address={currentAccount?.address || ''} />
-
-          <TextInput
-            onChangeText={setAlias}
-            variant="underline"
-            value={alias}
-            autoFocus
-            placeholder={currentAccount?.alias}
-            autoCorrect={false}
-            autoComplete="off"
-            marginTop="xl"
-            autoCapitalize="words"
+          <Text variant="h1" textAlign="center" fontSize={44} lineHeight={44}>
+            {t('accountAssign.title')}
+          </Text>
+          <Box
+            backgroundColor="transparent10"
+            borderRadius="xl"
+            padding="m"
             width="100%"
-          />
+            marginTop="xl"
+            flexDirection="row"
+          >
+            <AccountIcon size={40} address={currentAccount?.address || ''} />
+            <TextInput
+              textColor="primaryText"
+              onChangeText={setAlias}
+              value={alias}
+              fontSize={24}
+              placeholder={currentAccount?.alias}
+              autoCorrect={false}
+              autoComplete="off"
+              autoCapitalize="words"
+              marginLeft="m"
+              marginRight="xl"
+            />
+          </Box>
 
           <Box flex={1} />
 
@@ -63,7 +77,8 @@ const UpdateAliasScreen = () => {
             onPress={handlePress}
             icon="arrowRight"
             disabled={!alias}
-            backgroundColor="surface"
+            backgroundColor="primaryText"
+            iconColor="primary"
             backgroundColorPressed="surfaceContrast"
             backgroundColorOpacityPressed={0.1}
           />

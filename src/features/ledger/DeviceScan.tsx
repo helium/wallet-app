@@ -259,7 +259,7 @@ const DeviceScan = () => {
 
   return (
     <BottomSheetModalProvider>
-      <Box flex={1} backgroundColor="primaryBackground" paddingHorizontal="l">
+      <Box flex={1} backgroundColor="secondary" paddingHorizontal="l">
         <BackButton
           marginTop="m"
           paddingHorizontal="s"

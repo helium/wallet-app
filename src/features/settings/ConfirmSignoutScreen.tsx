@@ -11,7 +11,6 @@ import { HomeNavigationProp } from '../home/homeTypes'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { SettingsNavigationProp } from './settingsTypes'
 import { getSecureAccount } from '../../storage/secureStorage'
-import BackScreen from '../../components/BackScreen'
 import { useColors } from '../../theme/themeHooks'
 import Box from '../../components/Box'
 
@@ -110,7 +109,7 @@ const ConfirmSignoutScreen = () => {
   if (!mnemonic) return null
 
   return (
-    <BackScreen padding="none">
+    <Box padding="none" flex={1}>
       {mnemonic ? (
         <ConfirmWordsScreen
           title={t('settings.confirmSignout.title')}
@@ -123,7 +122,7 @@ const ConfirmSignoutScreen = () => {
           <ActivityIndicator color={colors.primaryText} />
         </Box>
       )}
-    </BackScreen>
+    </Box>
   )
 }
 

@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo } from 'react'
-import { useNavigation } from '@react-navigation/native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { Image } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
@@ -10,16 +10,20 @@ import ButtonPressable from '../../../components/ButtonPressable'
 import TextTransform from '../../../components/TextTransform'
 import { ImportAccountNavigationProp } from './importAccountNavTypes'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
-import FinePrint from '../../../components/FinePrint'
 import SafeAreaBox from '../../../components/SafeAreaBox'
+import CloseButton from '../../../components/CloseButton'
+import { MultiAccountStackParamList } from '../multiAccount/MultiAccountNavigatorTypes'
 import { AddNewAccountNavigationProp } from '../../home/addNewAccount/addNewAccountTypes'
 
-const AccountImportStartScreen = () => {
+type Route = RouteProp<MultiAccountStackParamList, 'AccountImportStartScreen'>
+
+const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
   const { setOnboardingData } = useOnboarding()
   const navigation = useNavigation<ImportAccountNavigationProp>()
   const addNewAcctNav = useNavigation<AddNewAccountNavigationProp>()
   const { hasAccounts, reachedAccountLimit } = useAccountStorage()
   const { t } = useTranslation()
+  const { params } = useRoute<Route>()
 
   useEffect(() => {
     return navigation.addListener('focus', () => {
@@ -43,6 +47,10 @@ const AccountImportStartScreen = () => {
     [hasAccounts, addNewAcctNav, navigation],
   )
 
+  const onClose = useCallback(() => {
+    navigation.goBack()
+  }, [navigation])
+
   const cliExport = useCallback(
     () => () => {
       if (hasAccounts) {
@@ -56,15 +64,34 @@ const AccountImportStartScreen = () => {
 
   const edges = useMemo((): Edge[] => ['bottom'], [])
 
+  const isInline = useMemo(() => {
+    return inline || params?.inline
+  }, [inline, params])
+
   return (
-    <SafeAreaBox flex={1} flexDirection="column" edges={edges}>
-      <Box flex={1} justifyContent="center" alignItems="center">
+    <SafeAreaBox
+      flex={1}
+      flexDirection="column"
+      edges={edges}
+      backgroundColor="secondary"
+    >
+      {isInline ? null : (
+        <CloseButton alignSelf="flex-end" padding="l" onPress={onClose} />
+      )}
+      <Box
+        flex={1}
+        justifyContent="center"
+        alignItems="center"
+        paddingHorizontal="l"
+      >
         <Image source={require('@assets/images/fingerprint.png')} />
         <Text
-          variant="h2"
-          marginVertical="m"
+          variant="h1"
+          fontSize={44}
+          marginTop="l"
+          marginBottom="s"
           textAlign="center"
-          lineHeight={34}
+          lineHeight={44}
         >
           {t('accountImport.title')}
         </Text>
@@ -87,10 +114,9 @@ const AccountImportStartScreen = () => {
           ? t('accountImport.accountLimit')
           : t('accountImport.pickKeyType')}
       </Text>
-      <Box flexDirection="row" marginHorizontal="l">
+      <Box flexDirection="row" marginHorizontal="l" marginBottom="l">
         <ButtonPressable
           width="33%"
-          marginRight="xxs"
           borderTopLeftRadius="round"
           borderBottomLeftRadius="round"
           backgroundColor="havelockBlue"
@@ -101,6 +127,7 @@ const AccountImportStartScreen = () => {
           backgroundColorOpacityPressed={0.7}
           backgroundColorDisabled="havelockBlue"
           backgroundColorDisabledOpacity={0.4}
+          fontWeight="500"
           disabled={reachedAccountLimit}
         />
         <ButtonPressable
@@ -115,11 +142,11 @@ const AccountImportStartScreen = () => {
           backgroundColorOpacityPressed={0.7}
           backgroundColorDisabled="jazzberryJam"
           backgroundColorDisabledOpacity={0.4}
+          fontWeight="500"
           disabled={reachedAccountLimit}
         />
         <ButtonPressable
           width="33%"
-          marginLeft="xxs"
           borderTopRightRadius="round"
           borderBottomRightRadius="round"
           backgroundColor="grey350"
@@ -130,10 +157,10 @@ const AccountImportStartScreen = () => {
           backgroundColorOpacityPressed={0.7}
           backgroundColorDisabled="jazzberryJam"
           backgroundColorDisabledOpacity={0.4}
+          fontWeight="500"
           disabled={reachedAccountLimit}
         />
       </Box>
-      <FinePrint marginHorizontal="xl" marginTop="l" justifyContent="center" />
     </SafeAreaBox>
   )
 }

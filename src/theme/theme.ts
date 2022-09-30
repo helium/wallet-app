@@ -104,7 +104,7 @@ const palette = {
   black700: '#131419',
   black750: '#1A1A1A',
   black800: '#1A1C22',
-  black900: '#000000',
+  black900: '#0E0E0E',
 
   blueBright500: '#009FF9',
 
@@ -126,7 +126,7 @@ const palette = {
   grey200: '#EFEFF0',
   grey300: '#AEAEAE',
   grey350: '#828282',
-  grey400: '#7E8399',
+  grey400: '#666666',
   grey500: '#747A92',
   grey600: '#565B6D',
   grey700: '#5A5E6C',
@@ -157,6 +157,7 @@ const palette = {
   red500: '#E43B70',
 
   transparent: '#00000000',
+  transparent10: '#FFFFFF1A',
 
   turquoise: '#2BD7E2',
 

@@ -84,32 +84,46 @@ const AccountAssignScreen = () => {
   )
 
   return (
-    <SafeAreaBox
-      backgroundColor="primaryBackground"
-      flex={1}
-      paddingHorizontal={{ smallPhone: 'l', phone: 'xxxl' }}
-      paddingVertical={Platform.OS === 'android' ? 'xxl' : undefined}
-    >
+    <SafeAreaBox backgroundColor="secondary" flex={1} paddingHorizontal="xl">
       <KeyboardAvoidingView
         keyboardVerticalOffset={insets.top + spacing.l}
         behavior={Platform.OS === 'android' ? undefined : 'padding'}
         style={styles.container}
       >
         <Box alignItems="center" flex={1}>
-          <AccountIcon size={84} address={secureAccount?.address} />
-
-          <TextInput
-            onChangeText={setAlias}
-            variant="underline"
-            value={alias}
-            placeholder={t('accountAssign.AccountNamePlaceholder')}
-            autoCorrect={false}
-            autoComplete="off"
+          <Text
+            variant="h1"
+            textAlign="center"
+            fontSize={44}
+            lineHeight={44}
             marginTop="xl"
-            autoCapitalize="words"
+          >
+            {t('accountAssign.title')}
+          </Text>
+
+          <Box
+            backgroundColor="transparent10"
+            borderRadius="xl"
+            padding="m"
             width="100%"
-            autoFocus
-          />
+            marginTop="xl"
+            flexDirection="row"
+          >
+            <AccountIcon size={40} address={secureAccount?.address} />
+            <TextInput
+              textColor="primaryText"
+              onChangeText={setAlias}
+              value={alias}
+              fontSize={24}
+              placeholder={t('accountAssign.AccountNamePlaceholder')}
+              autoCorrect={false}
+              autoComplete="off"
+              autoCapitalize="words"
+              marginLeft="m"
+              marginRight="xl"
+              autoFocus
+            />
+          </Box>
 
           <Box
             flexDirection="row"
@@ -120,13 +134,15 @@ const AccountAssignScreen = () => {
             <CheckBox
               disabled={!hasAccounts}
               value={setAsDefault}
+              style={{ height: 20, width: 20 }}
               tintColors={{
-                true: colors.purple500,
-                false: colors.surfaceSecondary,
+                true: colors.primaryText,
+                false: colors.transparent10,
               }}
-              onCheckColor={colors.purple500}
-              onTintColor={colors.purple500}
-              tintColor={colors.surfaceSecondary}
+              onCheckColor={colors.secondary}
+              onTintColor={colors.primaryText}
+              tintColor={colors.transparent10}
+              onFillColor={colors.primaryText}
               onAnimationType="fill"
               offAnimationType="fill"
               boxType="square"
@@ -135,8 +151,8 @@ const AccountAssignScreen = () => {
 
             <Text
               variant="body1"
-              color="secondaryText"
-              marginLeft={Platform.OS === 'ios' ? 'm' : 's'}
+              color={setAsDefault ? 'primaryText' : 'secondaryText'}
+              marginLeft="m"
             >
               {t('accountAssign.setDefault')}
             </Text>
@@ -147,8 +163,9 @@ const AccountAssignScreen = () => {
           <FabButton
             onPress={handlePress}
             icon="arrowRight"
+            iconColor="primary"
             disabled={!alias}
-            backgroundColor="surface"
+            backgroundColor="primaryText"
             backgroundColorPressed="surfaceContrast"
             backgroundColorOpacityPressed={0.1}
           />

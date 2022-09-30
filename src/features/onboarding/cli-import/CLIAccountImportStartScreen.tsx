@@ -25,36 +25,39 @@ const CLIAccountImportStartScreen = () => {
   }, [navigation])
 
   return (
-    <SafeAreaBox flex={1} edges={edges} marginHorizontal="l">
-      <Box width="100%" alignItems="flex-end" paddingVertical="l">
-        <CloseButton onPress={onClose} />
-      </Box>
-      <Box flexGrow={1} alignItems="center">
-        <Terminal width={98} height={98} />
+    <SafeAreaBox flex={1} edges={edges} backgroundColor="secondary">
+      <Box flex={1} marginHorizontal="l">
+        <Box width="100%" alignItems="flex-end" paddingTop="l">
+          <CloseButton onPress={onClose} />
+        </Box>
+        <Box flexGrow={1} alignItems="center">
+          <Terminal width={98} height={98} />
 
-        <Text variant="h2" color="white" marginTop="l" textAlign="center">
-          {t('accountImport.cli.import.title')}
-        </Text>
+          <Text variant="h2" color="white" marginTop="l" textAlign="center">
+            {t('accountImport.cli.import.title')}
+          </Text>
 
-        <TextTransform
-          marginTop="l"
-          variant="subtitle1"
-          textAlign="center"
-          color="grey500"
-          i18nKey="accountImport.cli.import.body"
-        />
-      </Box>
+          <TextTransform
+            marginTop="l"
+            variant="subtitle1"
+            textAlign="center"
+            color="grey500"
+            i18nKey="accountImport.cli.import.body"
+          />
+        </Box>
 
-      <Box width="100%">
-        <ButtonPressable
-          marginTop="m"
-          borderRadius="round"
-          backgroundColor="blueBright500"
-          backgroundColorOpacityPressed={0.7}
-          onPress={handleNext}
-          title={t('accountImport.cli.import.buttonText')}
-          marginBottom="m"
-        />
+        <Box width="100%">
+          <ButtonPressable
+            marginTop="m"
+            borderRadius="round"
+            backgroundColor="white"
+            titleColor="primaryBackground"
+            backgroundColorOpacityPressed={0.7}
+            onPress={handleNext}
+            title={t('accountImport.cli.import.buttonText')}
+            marginBottom="m"
+          />
+        </Box>
       </Box>
     </SafeAreaBox>
   )
