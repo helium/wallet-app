@@ -186,7 +186,7 @@ const PaymentItem = ({
 
   const AddressIcon = useCallback(() => {
     if (address && Address.isValid(address)) {
-      return <AccountIcon address={address} size={25} />
+      return <AccountIcon address={address} size={40} />
     }
     return <ContactIcon color={secondaryText} />
   }, [address, secondaryText])
@@ -212,54 +212,60 @@ const PaymentItem = ({
             {ellipsizeAddress(address)}
           </Text>
         ) : (
-          <Box flex={1} minHeight={ITEM_HEIGHT}>
-            <Text
-              marginHorizontal="m"
-              marginTop="s"
-              variant="body3"
-              color="secondaryText"
-            >
-              {account?.alias}
-            </Text>
-            <Box
-              flexDirection="row"
-              justifyContent="space-between"
-              alignItems="center"
-              marginRight="m"
-            >
-              <TextInput
-                variant="transparent"
-                flex={1}
-                placeholder={t('payment.enterAddress')}
-                value={address}
-                onChangeText={handleEditAddress}
-                onBlur={handleAddressBlur}
-                autoCapitalize="none"
-                numberOfLines={1}
-                multiline={false}
-                autoComplete="off"
-                autoCorrect={false}
-                returnKeyType="done"
-              />
-              {loading ? (
-                <ActivityIndicator size="small" color={secondaryText} />
-              ) : (
-                <TouchableOpacityBox onPress={handleAddressBookSelected}>
-                  <AddressIcon />
-                </TouchableOpacityBox>
-              )}
+          <Box flex={1} minHeight={ITEM_HEIGHT} justifyContent="center">
+            <Box>
+              <Box
+                flexDirection="row"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <Box flex={1} marginTop="s">
+                  <Text />
+                  <Box position="absolute" top={10} left={0}>
+                    <Text marginStart="m" variant="body3" color="secondaryText">
+                      {account?.alias}
+                    </Text>
+                  </Box>
+                  <TextInput
+                    variant="transparent"
+                    flex={1}
+                    placeholder={t('payment.enterAddress')}
+                    value={address}
+                    onChangeText={handleEditAddress}
+                    onBlur={handleAddressBlur}
+                    autoCapitalize="none"
+                    numberOfLines={1}
+                    multiline={false}
+                    autoComplete="off"
+                    autoCorrect={false}
+                    returnKeyType="done"
+                  />
+                  <Text
+                    opacity={
+                      error || data?.isHotspotOrValidator || hasError ? 100 : 0
+                    }
+                    marginHorizontal="m"
+                    variant="body3"
+                    marginBottom="xxs"
+                    color="red500"
+                  >
+                    {error
+                      ? t('generic.loadFailed')
+                      : t('generic.notValidAddress')}
+                  </Text>
+                </Box>
+                {loading ? (
+                  <ActivityIndicator size="small" color={secondaryText} />
+                ) : (
+                  <TouchableOpacityBox
+                    marginEnd="l"
+                    onPress={handleAddressBookSelected}
+                  >
+                    <AddressIcon />
+                  </TouchableOpacityBox>
+                )}
+              </Box>
             </Box>
-            <Text
-              opacity={
-                error || data?.isHotspotOrValidator || hasError ? 100 : 0
-              }
-              marginHorizontal="m"
-              variant="body3"
-              marginBottom="xxs"
-              color="red500"
-            >
-              {error ? t('generic.loadFailed') : t('generic.notValidAddress')}
-            </Text>
           </Box>
         )}
         {!!onRemove && (
@@ -321,17 +327,21 @@ const PaymentItem = ({
 
         <TouchableOpacityBox
           onPress={handleToggleMax}
-          backgroundColor={max ? 'jazzberryJam' : 'surface'}
-          borderRadius="round"
+          backgroundColor={max ? 'white' : 'transparent'}
+          borderColor={max ? 'transparent' : 'surface'}
+          borderWidth={1.5}
+          borderRadius="m"
           paddingVertical="xs"
           paddingHorizontal="ms"
           marginRight="ms"
           marginVertical="l"
           justifyContent="center"
           disabled
-          visible={false} // TODO: Enable once send max is fixed on the chain
+          visible={false} // TODO: Enable once we move to solana (will need some rework)
         >
-          <Text variant="body3">{toUpper(t('payment.max'))}</Text>
+          <Text variant="body3" color={max ? 'black900' : 'secondaryText'}>
+            {toUpper(t('payment.max'))}
+          </Text>
         </TouchableOpacityBox>
       </Box>
 
@@ -339,11 +349,9 @@ const PaymentItem = ({
         <>
           <Box height={1} backgroundColor="primaryBackground" />
 
-          <MemoInput
-            value={memo}
-            onChangeText={handleEditMemo}
-            minHeight={ITEM_HEIGHT}
-          />
+          <Box justifyContent="center" minHeight={ITEM_HEIGHT}>
+            <MemoInput value={memo} onChangeText={handleEditMemo} />
+          </Box>
         </>
       )}
     </Box>

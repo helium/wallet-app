@@ -110,7 +110,8 @@ const PaymentCard = ({
         height={height || undefined}
         onLayout={handleLayout}
         overflow="hidden"
-        minHeight={240}
+        minHeight={232}
+        backgroundColor="secondary"
       >
         <BackgroundFill backgroundColor="secondary" opacity={0.4} />
 
@@ -124,7 +125,7 @@ const PaymentCard = ({
         <Box flex={1} justifyContent="flex-end">
           {!payEnabled ? (
             <>
-              <Box flexDirection="row" marginTop="l">
+              <Box flexDirection="row" marginTop="l" marginBottom="m">
                 <TouchableOpacityBox
                   flex={1}
                   minHeight={66}
@@ -135,18 +136,15 @@ const PaymentCard = ({
                   backgroundColor="secondaryIcon"
                   onPress={nav.goBack}
                 >
-                  <Text
-                    variant="subtitle1"
-                    textAlign="center"
-                    color="primaryText"
-                  >
+                  <Text variant="subtitle1" textAlign="center" color="grey600">
                     {t('generic.cancel')}
                   </Text>
                 </TouchableOpacityBox>
                 <TouchableOpacityBox
                   flex={1}
                   minHeight={66}
-                  backgroundColor={disabled ? 'secondary' : 'surfaceContrast'}
+                  backgroundColor="surfaceContrast"
+                  opacity={disabled ? 0.6 : 1}
                   justifyContent="center"
                   alignItems="center"
                   onPress={handlePayPressed}
@@ -158,7 +156,7 @@ const PaymentCard = ({
                     marginLeft="s"
                     variant="subtitle1"
                     textAlign="center"
-                    color={disabled ? 'surface' : 'secondary'}
+                    color={disabled ? 'secondaryText' : 'surfaceContrastText'}
                   >
                     {t('payment.pay')}
                   </Text>

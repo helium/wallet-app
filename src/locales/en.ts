@@ -420,7 +420,7 @@ export default {
     amount: 'Amount (Optional)',
     copied: 'Link has been copied to your clipboard',
     enterAmount: 'Enter {{ticker}} Amount',
-    link: 'Link',
+    link: 'Deeplink',
     memo: 'Memo',
     payee: 'Payee',
     qr: 'QR',

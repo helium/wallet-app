@@ -18,14 +18,14 @@ const AddressExtra = ({
   const colors = useColors()
 
   if (addressLoading) {
-    return <ActivityIndicator color="grey500" />
+    return <ActivityIndicator color="black500" />
   }
   if (isValidAddress) {
     return <Checkmark color={colors.blueBright500} />
   }
   return (
     <TouchableOpacityBox onPress={onScanPress}>
-      <QR width={16} color={colors.grey500} />
+      <QR width={16} color={colors.white} />
     </TouchableOpacityBox>
   )
 }

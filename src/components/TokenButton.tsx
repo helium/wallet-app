@@ -1,15 +1,33 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { memo, useCallback } from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 import ChevronDown from '@assets/images/chevronDown.svg'
 import { Keyboard, StyleSheet } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
 import { NetTypes as NetType } from '@helium/address'
-import { useHitSlop } from '../theme/themeHooks'
-import AccountIcon from './AccountIcon'
+import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
+import TokenHNT from '@assets/images/tokenHNT.svg'
+import { useColors, useHitSlop } from '../theme/themeHooks'
 import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import { Theme } from '../theme/theme'
+import { TokenType } from '../generated/graphql'
+
+const TokenTypeItem = ({ tokenType }: { tokenType: TokenType }) => {
+  const colors = useColors()
+  const color = useMemo(() => {
+    return TokenType.Mobile === tokenType ? 'blueBright500' : 'white'
+  }, [tokenType])
+
+  return (
+    <Box alignItems="center">
+      {tokenType === TokenType.Hnt ? (
+        <TokenHNT color={colors[color]} />
+      ) : (
+        <TokenMOBILE color={colors[color]} />
+      )}
+    </Box>
+  )
+}
 
 type Props = {
   onPress?: (address?: string) => void
@@ -19,11 +37,10 @@ type Props = {
   showBubbleArrow?: boolean
   netType?: NetType.NetType
   innerBoxProps?: BoxProps<Theme>
-  showChevron?: boolean
-  accountIconSize?: number
+  tokenType: TokenType
 } & BoxProps<Theme>
 
-const AccountButton = ({
+const TokenButton = ({
   onPress,
   address,
   title,
@@ -31,8 +48,7 @@ const AccountButton = ({
   showBubbleArrow,
   netType = NetType.MAINNET,
   innerBoxProps,
-  showChevron = true,
-  accountIconSize = 28,
+  tokenType,
   ...boxProps
 }: Props) => {
   const hitSlop = useHitSlop('l')
@@ -61,18 +77,18 @@ const AccountButton = ({
         paddingVertical={innerBoxProps?.paddingVertical || 'm'}
         {...innerBoxProps}
       >
-        <AccountIcon size={accountIconSize} address={address} />
+        <TokenTypeItem tokenType={tokenType} />
         <Box flex={1}>
+          <Text marginLeft="ms" marginRight="xs" variant="subtitle2">
+            {title}
+          </Text>
           {!!subtitle && (
             <Text marginLeft="ms" variant="body3" color="secondaryText">
               {subtitle}
             </Text>
           )}
-          <Text marginLeft="ms" marginRight="xs" variant="subtitle2">
-            {title}
-          </Text>
         </Box>
-        {showChevron && <ChevronDown />}
+        <ChevronDown />
       </Box>
       {showBubbleArrow && (
         <Box
@@ -96,4 +112,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default memo(AccountButton)
+export default memo(TokenButton)

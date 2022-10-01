@@ -203,6 +203,8 @@ const HNTKeyboardSelector = forwardRef(
       [],
     )
 
+    const [maxEnabled, setMaxEnabled] = useState(false)
+
     const handleSetMax = useCallback(() => {
       if (!accountNetworkBalance || !accountMobileBalance || !networkFee) return
 
@@ -236,15 +238,17 @@ const HNTKeyboardSelector = forwardRef(
         })
         .replaceAll(groupSeparator, '')
 
-      setValue(val)
+      setValue(maxEnabled ? '0' : val)
+      setMaxEnabled((m) => !m)
     }, [
-      accountMobileBalance,
       accountNetworkBalance,
-      bonesToBalance,
+      accountMobileBalance,
       networkFee,
       getNextPayments,
-      paymentIndex,
+      bonesToBalance,
       tokenType,
+      maxEnabled,
+      paymentIndex,
     ])
 
     const renderBackdrop = useCallback(
@@ -328,17 +332,20 @@ const HNTKeyboardSelector = forwardRef(
           />
           <Box flex={1} alignItems="flex-end">
             <TouchableOpacityBox
-              backgroundColor="error"
               marginBottom="s"
               onPress={handleSetMax}
-              borderRadius="round"
+              backgroundColor={maxEnabled ? 'white' : 'transparent'}
+              borderColor={maxEnabled ? 'transparent' : 'surface'}
+              borderWidth={1.5}
+              borderRadius="m"
+              paddingVertical="xs"
+              paddingHorizontal="ms"
             >
               <Text
                 variant="subtitle3"
-                minWidth={58}
-                color="surfaceSecondary"
                 textAlign="center"
                 alignSelf="flex-end"
+                color={maxEnabled ? 'black900' : 'secondaryText'}
               >
                 {t('payment.max')}
               </Text>
@@ -356,7 +363,7 @@ const HNTKeyboardSelector = forwardRef(
           </Box>
         </Box>
       )
-    }, [handleSetMax, payer, t, timeStr])
+    }, [handleSetMax, maxEnabled, payer, t, timeStr])
 
     const hasSufficientBalance = useMemo(() => {
       if (!payer) return true

@@ -8,7 +8,9 @@ import Animated, {
 import { useVerticalHitSlop } from '../theme/themeHooks'
 import Box from './Box'
 import Text from './Text'
-import TouchableOpacityBox from './TouchableOpacityBox'
+import TouchableOpacityBox, {
+  TouchableOpacityBoxProps,
+} from './TouchableOpacityBox'
 
 const TabBarItem = ({
   title,
@@ -46,8 +48,14 @@ type Props = {
   tabBarOptions: Array<{ title: string; value: string }>
   selectedValue: string
   onItemSelected: (value: string) => void
-}
-const TabBar = ({ tabBarOptions, selectedValue, onItemSelected }: Props) => {
+} & TouchableOpacityBoxProps
+
+const TabBar = ({
+  tabBarOptions,
+  selectedValue,
+  onItemSelected,
+  ...rest
+}: Props) => {
   const hitSlop = useVerticalHitSlop('l')
   const [itemRects, setItemRects] = useState<Record<string, LayoutRectangle>>()
 
@@ -89,7 +97,12 @@ const TabBar = ({ tabBarOptions, selectedValue, onItemSelected }: Props) => {
 
   return (
     <Box>
-      <Box flexDirection="row" justifyContent="center" paddingVertical="ms">
+      <Box
+        flexDirection="row"
+        justifyContent="center"
+        paddingVertical="ms"
+        {...rest}
+      >
         {tabBarOptions.map((o) => (
           <TabBarItem
             key={o.value}

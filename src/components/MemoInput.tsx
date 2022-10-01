@@ -62,7 +62,6 @@ const MemoInput = ({ onChangeText, value, ...boxProps }: Props) => {
       justifyContent="center"
       flexDirection="row"
       alignItems="center"
-      // eslint-disable-next-line react/jsx-props-no-spreading
       {...boxProps}
     >
       <TextInput
@@ -74,16 +73,14 @@ const MemoInput = ({ onChangeText, value, ...boxProps }: Props) => {
         editable={!!onChangeText}
         returnKeyType="done"
       />
-      <Text
-        variant="body3"
-        color={valid ? 'secondaryText' : 'error'}
-        marginRight="m"
-      >
-        {t('payment.memoBytes', {
-          used: bytesUsed,
-          total: MEMO_MAX_BYTES,
-        })}
-      </Text>
+      <Box position="absolute" top={0} right={0}>
+        <Text variant="body3" color={valid ? 'white' : 'error'} marginRight="m">
+          {t('payment.memoBytes', {
+            used: bytesUsed,
+            total: MEMO_MAX_BYTES,
+          })}
+        </Text>
+      </Box>
     </Box>
   )
 }
