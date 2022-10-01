@@ -72,7 +72,7 @@ const ContactsList = ({
         >
           <FabButton
             icon="add"
-            backgroundColor="grey900"
+            backgroundColor="black750"
             iconColor="white"
             size={40}
             disabled

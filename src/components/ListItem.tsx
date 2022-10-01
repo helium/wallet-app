@@ -3,7 +3,9 @@ import CheckMarkFill from '@assets/images/checkmarkFill.svg'
 import Box from './Box'
 import Text from './Text'
 import { useColors } from '../theme/themeHooks'
-import TouchableOpacityBox from './TouchableOpacityBox'
+import TouchableOpacityBox, {
+  TouchableOpacityBoxProps,
+} from './TouchableOpacityBox'
 
 export type ListItemProps = {
   Icon?: React.ReactNode
@@ -14,7 +16,7 @@ export type ListItemProps = {
   selected?: boolean
   disabled?: boolean
   hasDivider?: boolean
-}
+} & TouchableOpacityBoxProps
 
 const ListItem = ({
   Icon,
@@ -25,6 +27,7 @@ const ListItem = ({
   selected,
   disabled,
   hasDivider = true,
+  ...rest
 }: ListItemProps) => {
   const colors = useColors()
 
@@ -43,8 +46,9 @@ const ListItem = ({
       borderBottomColor="black900"
       borderBottomWidth={hasDivider ? 1 : 0}
       onPress={handlePress}
+      {...rest}
     >
-      {Icon && { Icon }}
+      {Icon && Icon}
       <Box flexGrow={1} justifyContent="center">
         <Text variant="subtitle2" marginStart="l">
           {title}
@@ -55,7 +59,7 @@ const ListItem = ({
         {selected ? (
           <CheckMarkFill color={colors.white} opacity={disabled ? 0.6 : 1.0} />
         ) : null}
-        {SecondaryIcon && { SecondaryIcon }}
+        {SecondaryIcon && SecondaryIcon}
       </Box>
     </TouchableOpacityBox>
   )

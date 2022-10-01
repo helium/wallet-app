@@ -20,6 +20,7 @@ import { unionBy } from 'lodash'
 import Toast from 'react-native-simple-toast'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useAsync } from 'react-async-hook'
+import TokenButton from '../../components/TokenButton'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -32,6 +33,7 @@ import {
 import { accountNetType, formatAccountAlias } from '../../utils/accountUtils'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAccountSelector } from '../../components/AccountSelector'
+import TokenSelector, { TokenSelectorRef } from '../../components/TokenSelector'
 import { TokenType } from '../../generated/graphql'
 import AccountButton from '../../components/AccountButton'
 import AddressBookSelector, {
@@ -48,7 +50,6 @@ import { getMemoStrValid } from '../../components/MemoInput'
 import PaymentSubmit from './PaymentSubmit'
 import { CSAccount } from '../../storage/cloudStorage'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
-import PaymentTypeSelector from './PaymentTypeSelector'
 import useAlert from '../../utils/useAlert'
 
 type LinkedPayment = {
@@ -77,6 +78,7 @@ type Route = RouteProp<HomeStackParamList, 'PaymentScreen'>
 const PaymentScreen = () => {
   const route = useRoute<Route>()
   const addressBookRef = useRef<AddressBookRef>(null)
+  const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
   const {
     currencyTypeFromTokenType,
@@ -382,6 +384,22 @@ const PaymentScreen = () => {
     state.payments,
   ])
 
+  const handleTokenTypeSelected = useCallback(() => {
+    tokenSelectorRef?.current?.showTokens()
+  }, [])
+
+  const onTokenSelected = useCallback(
+    (token: TokenType) => {
+      setTokenType(token)
+
+      dispatch({
+        type: 'changeToken',
+        currencyType: currencyTypeFromTokenType(token),
+      })
+    },
+    [currencyTypeFromTokenType, dispatch],
+  )
+
   const handleAddressBookSelected = useCallback(
     ({ address, index }: { address?: string | undefined; index: number }) => {
       addressBookRef?.current?.showAddressBook({ address, index })
@@ -528,17 +546,6 @@ const PaymentScreen = () => {
     showAccountTypes(networkType)()
   }, [networkType, showAccountTypes, sortedAccountsForNetType])
 
-  const handleTokenTypeChange = useCallback(
-    (tt: TokenType) => {
-      setTokenType(tt)
-      dispatch({
-        type: 'changeToken',
-        currencyType: currencyTypeFromTokenType(tt),
-      })
-    },
-    [currencyTypeFromTokenType, dispatch],
-  )
-
   return (
     <>
       <HNTKeyboard
@@ -551,121 +558,142 @@ const PaymentScreen = () => {
           ref={addressBookRef}
           onContactSelected={handleContactSelected}
         >
-          <Box
-            backgroundColor="primaryBackground"
-            flex={1}
-            style={containerStyle}
+          <TokenSelector
+            ref={tokenSelectorRef}
+            onTokenSelected={onTokenSelected}
           >
             <Box
-              flexDirection="row"
-              justifyContent="space-between"
-              alignItems="center"
+              backgroundColor="secondaryBackground"
+              flex={1}
+              style={containerStyle}
+              borderTopStartRadius="xxl"
+              borderTopEndRadius="xxl"
             >
-              <TouchableOpacityBox
-                onPress={handleQrScan}
-                padding="l"
-                hitSlop={hitSlop}
+              <Box
+                flexDirection="row"
+                justifyContent="space-between"
+                alignItems="center"
               >
-                <QR color={primaryText} height={16} width={16} />
-              </TouchableOpacityBox>
-              <Text
-                variant="subtitle2"
-                textAlign="center"
-                color="primaryText"
-                maxFontSizeMultiplier={1}
-              >
-                {t('payment.title', { ticker: currencyType.ticker })}
-              </Text>
-              <TouchableOpacityBox
-                onPress={navigation.goBack}
-                padding="l"
-                hitSlop={hitSlop}
-              >
-                <Close color={primaryText} height={16} width={16} />
-              </TouchableOpacityBox>
-            </Box>
-
-            <KeyboardAwareScrollView
-              enableOnAndroid
-              enableResetScrollToCoords={false}
-              keyboardShouldPersistTaps="always"
-            >
-              <PaymentTypeSelector
-                paddingTop="xl"
-                onChangeTokenType={handleTokenTypeChange}
-                tokenType={tokenType}
-              />
-              <AccountButton
-                paddingTop="xxl"
-                title={formatAccountAlias(currentAccount)}
-                subtitle={balanceToString(
-                  tokenType === 'hnt'
-                    ? accountNetworkBalance
-                    : accountMobileBalance,
-                )}
-                showChevron={sortedAccountsForNetType(networkType).length > 1}
-                address={currentAccount?.address}
-                netType={currentAccount?.netType}
-                onPress={handleShowAccounts}
-                showBubbleArrow
-                marginHorizontal="l"
-              />
-
-              {state.payments.map((p, index) => (
-                <PaymentItem
-                  // eslint-disable-next-line react/no-array-index-key
-                  key={index}
-                  hasError={p.address === currentAccount?.address || p.hasError}
-                  address={p.address}
-                  account={p.account}
-                  amount={p.amount}
-                  max={p.max}
-                  memo={p.memo}
-                  fee={state.payments.length === 1 ? state.dcFee : undefined}
-                  index={index}
-                  onAddressBookSelected={handleAddressBookSelected}
-                  onEditAmount={handleEditAmount}
-                  onToggleMax={handleToggleMax}
-                  onEditMemo={handleEditMemo}
-                  onEditAddress={handleEditAddress}
-                  handleAddressError={handleAddressError}
-                  onUpdateError={handleSetPaymentError}
-                  ticker={currencyType.ticker}
-                  onRemove={
-                    state.payments.length > 1 ? handleRemove : undefined
-                  }
-                  netType={networkType}
-                />
-              ))}
-              {canAddPayee && (
                 <TouchableOpacityBox
-                  minHeight={75}
-                  onPress={handleAddPayee}
-                  borderRadius="xl"
-                  overflow="hidden"
-                  marginHorizontal="l"
-                  marginVertical="l"
-                  alignItems="center"
-                  justifyContent="center"
+                  onPress={handleQrScan}
+                  padding="l"
+                  hitSlop={hitSlop}
                 >
-                  <BackgroundFill backgroundColor="surface" opacity={0.2} />
-                  <Text variant="body1" color="surfaceSecondaryText">
-                    {t('payment.addRecipient')}
-                  </Text>
+                  <QR color={primaryText} height={16} width={16} />
                 </TouchableOpacityBox>
-              )}
-            </KeyboardAwareScrollView>
+                <Text
+                  variant="subtitle2"
+                  textAlign="center"
+                  color="primaryText"
+                  maxFontSizeMultiplier={1}
+                >
+                  Send
+                </Text>
+                <TouchableOpacityBox
+                  onPress={navigation.goBack}
+                  padding="l"
+                  hitSlop={hitSlop}
+                >
+                  <Close color={primaryText} height={16} width={16} />
+                </TouchableOpacityBox>
+              </Box>
 
-            <PaymentCard
-              tokenType={tokenType}
-              totalBalance={state.totalAmount}
-              feeTokenBalance={state.networkFee}
-              disabled={!isFormValid}
-              onSubmit={handleSubmit}
-              payments={payments}
-              errors={errors}
-            />
-          </Box>
+              <KeyboardAwareScrollView
+                enableOnAndroid
+                enableResetScrollToCoords={false}
+                keyboardShouldPersistTaps="always"
+              >
+                <AccountButton
+                  accountIconSize={40}
+                  paddingTop="l"
+                  title={formatAccountAlias(currentAccount)}
+                  subtitle="Sender Account"
+                  showChevron={sortedAccountsForNetType(networkType).length > 1}
+                  address={currentAccount?.address}
+                  netType={currentAccount?.netType}
+                  onPress={handleShowAccounts}
+                  showBubbleArrow
+                  marginHorizontal="l"
+                />
+
+                <TokenButton
+                  paddingTop="l"
+                  title={t('payment.title', { ticker: currencyType.ticker })}
+                  subtitle={balanceToString(
+                    tokenType === 'hnt'
+                      ? accountNetworkBalance
+                      : accountMobileBalance,
+                  )}
+                  address={currentAccount?.address}
+                  netType={currentAccount?.netType}
+                  onPress={handleTokenTypeSelected}
+                  showBubbleArrow
+                  marginHorizontal="l"
+                  tokenType={tokenType}
+                />
+
+                {state.payments.map((p, index) => (
+                  <>
+                    <PaymentItem
+                      // eslint-disable-next-line react/no-array-index-key
+                      key={index}
+                      hasError={
+                        p.address === currentAccount?.address || p.hasError
+                      }
+                      address={p.address}
+                      account={p.account}
+                      amount={p.amount}
+                      max={p.max}
+                      memo={p.memo}
+                      fee={
+                        state.payments.length === 1 ? state.dcFee : undefined
+                      }
+                      index={index}
+                      onAddressBookSelected={handleAddressBookSelected}
+                      onEditAmount={handleEditAmount}
+                      onToggleMax={handleToggleMax}
+                      onEditMemo={handleEditMemo}
+                      onEditAddress={handleEditAddress}
+                      handleAddressError={handleAddressError}
+                      onUpdateError={handleSetPaymentError}
+                      ticker={currencyType.ticker}
+                      onRemove={
+                        state.payments.length > 1 ? handleRemove : undefined
+                      }
+                      netType={networkType}
+                    />
+                  </>
+                ))}
+                {canAddPayee && (
+                  <TouchableOpacityBox
+                    minHeight={75}
+                    onPress={handleAddPayee}
+                    borderRadius="xl"
+                    overflow="hidden"
+                    marginHorizontal="l"
+                    marginVertical="l"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <BackgroundFill backgroundColor="surface" opacity={0.2} />
+                    <Text variant="body1" color="surfaceSecondaryText">
+                      {t('payment.addRecipient')}
+                    </Text>
+                  </TouchableOpacityBox>
+                )}
+              </KeyboardAwareScrollView>
+
+              <PaymentCard
+                tokenType={tokenType}
+                totalBalance={state.totalAmount}
+                feeTokenBalance={state.networkFee}
+                disabled={!isFormValid}
+                onSubmit={handleSubmit}
+                payments={payments}
+                errors={errors}
+              />
+            </Box>
+          </TokenSelector>
         </AddressBookSelector>
       </HNTKeyboard>
       <PaymentSubmit

@@ -25,6 +25,7 @@ import { useKeyboard } from '@react-native-community/hooks'
 import { BoxProps } from '@shopify/restyle'
 import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
 import { NetTypes as NetType } from '@helium/address'
+import TabBar from '../../components/TabBar'
 import Text from '../../components/Text'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import SafeAreaBox, {
@@ -80,12 +81,9 @@ const RequestScreen = () => {
     [setPaymentAmount],
   )
 
-  const handleRequestTypePress = useCallback(
-    (type: RequestType) => () => {
-      setRequestType(type)
-    },
-    [],
-  )
+  const handleRequestTypePress = useCallback((type: string) => {
+    setRequestType(type as RequestType)
+  }, [])
 
   const handleShowPaymentKeyboard = useCallback(() => {
     Keyboard.dismiss()
@@ -161,61 +159,26 @@ const RequestScreen = () => {
       handleVisible={setHNTKeyboardVisible}
     >
       <SafeAreaBox
-        marginHorizontal="l"
-        backgroundColor="primaryBackground"
+        backgroundColor="secondaryBackground"
         flex={1}
         edges={edges}
         onLayout={handleContainerLayout}
+        borderWidth={1}
+        borderTopStartRadius="xxl"
+        borderTopEndRadius="xxl"
       >
         <Text variant="subtitle2" paddingTop="l" textAlign="center">
           {t('request.title')}
         </Text>
-        <Box
-          flexDirection="row"
-          borderRadius="round"
-          minHeight={42}
+        <TabBar
+          tabBarOptions={[
+            { title: t('request.qr'), value: 'qr' },
+            { title: t('request.link'), value: 'link' },
+          ]}
+          selectedValue={requestType}
+          onItemSelected={handleRequestTypePress}
           marginTop="l"
-          marginHorizontal="xxxl"
-          overflow="hidden"
-        >
-          <TouchableOpacityBox
-            alignItems="center"
-            justifyContent="center"
-            onPress={handleRequestTypePress('qr')}
-            backgroundColor={
-              requestType === 'qr' ? 'surfaceContrast' : 'secondary'
-            }
-            flex={1}
-          >
-            <Text
-              variant="body1"
-              color={
-                requestType === 'qr' ? 'surfaceContrastText' : 'secondaryText'
-              }
-            >
-              {t('request.qr')}
-            </Text>
-          </TouchableOpacityBox>
-          <Box width={2} />
-          <TouchableOpacityBox
-            alignItems="center"
-            onPress={handleRequestTypePress('link')}
-            justifyContent="center"
-            backgroundColor={
-              requestType === 'link' ? 'surfaceContrast' : 'secondary'
-            }
-            flex={1}
-          >
-            <Text
-              variant="body1"
-              color={
-                requestType === 'link' ? 'surfaceContrastText' : 'secondaryText'
-              }
-            >
-              {t('request.link')}
-            </Text>
-          </TouchableOpacityBox>
-        </Box>
+        />
         <KeyboardAwareScrollView
           contentContainerStyle={styles.container}
           enableOnAndroid
@@ -226,6 +189,7 @@ const RequestScreen = () => {
               onPress={copyLink}
               backgroundColor="secondary"
               borderRadius="xl"
+              marginHorizontal="l"
             >
               <Text
                 variant="body1"
@@ -241,7 +205,7 @@ const RequestScreen = () => {
             <Box
               height={QR_CONTAINER_SIZE}
               aspectRatio={1}
-              backgroundColor="secondary"
+              backgroundColor="white"
               padding="l"
               borderRadius="xl"
               alignSelf="center"
@@ -267,8 +231,9 @@ const RequestScreen = () => {
             padding="lm"
             marginTop={keyboardShown ? 'l' : undefined}
             borderRadius="xl"
+            marginHorizontal="l"
           >
-            <Text variant="body3" color="secondaryText">
+            <Text variant="body3" color="white">
               {t('request.payee')}
             </Text>
             <AccountButton
@@ -290,7 +255,7 @@ const RequestScreen = () => {
               justifyContent="center"
               onPress={handleShowPaymentKeyboard}
             >
-              <Text variant="body3" color="secondaryText">
+              <Text variant="body3" color="white">
                 {t('request.amount')}
               </Text>
               {!paymentAmount || paymentAmount.integerBalance === 0 ? (
@@ -313,12 +278,12 @@ const RequestScreen = () => {
               marginVertical="ms"
             />
 
-            <Text variant="body3" color="secondaryText">
+            <Text variant="body3" color="white">
               {t('request.memo')}
             </Text>
             <MemoInput value={txnMemo} onChangeText={setTxnMemo} margin="n_m" />
           </Box>
-          <Box flexDirection="row" marginTop="l">
+          <Box flexDirection="row" marginTop="l" marginHorizontal="l">
             <TouchableOpacityBox
               flex={1}
               minHeight={66}
