@@ -5,25 +5,19 @@ import { NetTypes } from '@helium/address'
 import * as AccountUtils from '../../utils/accountUtils'
 import { useAccountBalances, useBalance } from '../../utils/Balance'
 import { AccountData, TokenType } from '../../generated/graphql'
-import Text from '../../components/Text'
-import { Color, TextVariant } from '../../theme/theme'
+import Text, { TextProps } from '../../components/Text'
 
 type Props = {
   accountData?: AccountData | null
   tokenType: TokenType
   staked?: boolean
-  variant: TextVariant
-  color: Color
-  textAlign?: 'left' | 'center'
-}
+} & TextProps
 
 const AccountTokenCurrencyBalance = ({
   accountData,
   tokenType,
   staked = false,
-  variant,
-  color,
-  textAlign = 'left',
+  ...textProps
 }: Props) => {
   const { t } = useTranslation()
   const [balanceString, setBalanceString] = useState('')
@@ -78,14 +72,12 @@ const AccountTokenCurrencyBalance = ({
 
   return (
     <Text
-      variant={variant}
-      color={color}
       numberOfLines={1}
       adjustsFontSizeToFit
       maxFontSizeMultiplier={1.3}
-      textAlign={textAlign}
+      {...textProps}
     >
-      {balanceString}
+      {balanceString || ' '}
     </Text>
   )
 }

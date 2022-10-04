@@ -1,7 +1,7 @@
 import './polyfill'
 import React, { useEffect, useMemo } from 'react'
 import { ApolloProvider } from '@apollo/client'
-import { Text, LogBox, Platform, UIManager } from 'react-native'
+import { Text, LogBox, Platform } from 'react-native'
 import { ThemeProvider } from '@shopify/restyle'
 import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import useAppState from 'react-native-appstate-hook'
@@ -45,12 +45,6 @@ const App = () => {
     "[react-native-gesture-handler] Seems like you're using an old API with gesture components",
     'console.error: {"context":"client"} {"context":"client/pairing"} Unauthorized pairing update request',
   ])
-
-  if (Platform.OS === 'android') {
-    if (UIManager.setLayoutAnimationEnabledExperimental) {
-      UIManager.setLayoutAnimationEnabledExperimental(true)
-    }
-  }
 
   const { appState } = useAppState()
   const { restored: accountsRestored } = useAccountStorage()

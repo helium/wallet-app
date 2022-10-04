@@ -103,7 +103,7 @@ const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
       >
         {supportedCurrencies[currency]}
       </Text>
-      <FadeInOut>
+      {!balanceString && (
         <Text
           maxFontSizeMultiplier={1.3}
           variant="h0"
@@ -112,9 +112,23 @@ const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
           adjustsFontSizeToFit
           textAlign="center"
         >
-          {balanceString || ''}
+          {' '}
         </Text>
-      </FadeInOut>
+      )}
+      {!!balanceString && (
+        <FadeInOut>
+          <Text
+            maxFontSizeMultiplier={1.3}
+            variant="h0"
+            color="primaryText"
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            textAlign="center"
+          >
+            {balanceString}
+          </Text>
+        </FadeInOut>
+      )}
       <Text
         variant="body3"
         textAlign="center"

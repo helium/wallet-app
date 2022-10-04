@@ -105,6 +105,7 @@ const palette = {
   black750: '#1A1A1A',
   black800: '#1A1C22',
   black900: '#0E0E0E',
+  black: '#000000',
 
   blueBright500: '#009FF9',
 
@@ -190,8 +191,8 @@ export const lightThemeColors = {
 export const darkThemeColors = {
   ...palette,
   primary: palette.black900,
-  secondary: palette.black600,
-  primaryBackground: palette.black900,
+  secondary: palette.black750,
+  primaryBackground: palette.black,
   secondaryBackground: palette.black750,
   primaryText: palette.white,
   primaryIcon: palette.black600,

@@ -55,7 +55,6 @@ const NotificationDetails = () => {
       <BackButton
         onPress={navigation.goBack}
         color="surfaceSecondaryText"
-        fontSize={18}
         paddingHorizontal="none"
         marginBottom="m"
       />
