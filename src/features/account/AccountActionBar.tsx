@@ -13,9 +13,10 @@ export type Action = 'send' | 'request' | 'stake' | 'lock' | 'vote' | '5G'
 type Props = {
   tokenType?: TokenType
   onLayout?: (event: LayoutChangeEvent) => void
+  compact?: boolean
 }
 
-const AccountActionBar = ({ tokenType, onLayout }: Props) => {
+const AccountActionBar = ({ tokenType, onLayout, compact }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const { requirePinForPayment } = useAppStorage()
@@ -58,11 +59,11 @@ const AccountActionBar = ({ tokenType, onLayout }: Props) => {
     <Box
       flexDirection="row"
       justifyContent="center"
-      marginHorizontal="s"
+      marginHorizontal={compact ? undefined : 's'}
       onLayout={onLayout}
-      width="100%"
+      width={compact ? undefined : '100%'}
     >
-      <Box flex={1}>
+      <Box flex={compact ? undefined : 1}>
         <FabButton
           icon="fatArrowDown"
           marginLeft="s"
@@ -70,25 +71,28 @@ const AccountActionBar = ({ tokenType, onLayout }: Props) => {
           backgroundColorOpacity={0.2}
           backgroundColorOpacityPressed={0.4}
           iconColor="greenBright500"
-          title={t('accountView.request')}
+          title={compact ? undefined : t('accountView.request')}
+          marginRight={compact ? 'm' : undefined}
           onPress={handleAction('request')}
         />
       </Box>
-      <FabButton
-        icon="vote"
-        backgroundColor="purple500"
-        backgroundColorOpacity={0.3}
-        backgroundColorOpacityPressed={0.5}
-        onPress={handleAction('vote')}
-      />
-      <Box flex={1}>
+      {!compact && (
+        <FabButton
+          icon="vote"
+          backgroundColor="purple500"
+          backgroundColorOpacity={0.3}
+          backgroundColorOpacityPressed={0.5}
+          onPress={handleAction('vote')}
+        />
+      )}
+      <Box flex={compact ? undefined : 1}>
         <FabButton
           icon="fatArrowUp"
           backgroundColor="blueBright500"
           backgroundColorOpacity={0.2}
           backgroundColorOpacityPressed={0.4}
           iconColor="blueBright500"
-          title={t('accountView.send')}
+          title={compact ? undefined : t('accountView.send')}
           onPress={handleAction('send')}
           reverse
         />

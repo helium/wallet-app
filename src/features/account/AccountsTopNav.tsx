@@ -65,7 +65,7 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
         paddingVertical="ms"
         paddingHorizontal="l"
         onPress={navToSettings}
-        width={barButtonsRightWidth || 86}
+        width={barButtonsRightWidth || 94}
       >
         <CogIco color={primaryIcon} />
       </TouchableOpacityBox>

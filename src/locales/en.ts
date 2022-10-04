@@ -14,21 +14,22 @@ export default {
       title: 'Error',
     },
     cli: {
-      import: {
-        title: 'Import CLI',
-        body: 'Generate a password-secured QR code in <codeHighlight>helium-wallet-rs</codeHighlight> by typing <codeHighlight>export</codeHighlight>',
-        buttonText: 'Scan QR Code',
-      },
-      password: {
-        title: 'Decrypting Wallet...',
-        body: 'Enter the password used to encrypt the CLI Wallet to complete import.',
-        buttonText: 'Decrypt and Import',
-      },
       alert: {
         body: 'Invalid Password',
         title: 'Password entered is invalid. Please try again.',
       },
+      import: {
+        body: 'Generate a password-secured QR code in <codeHighlight>helium-wallet-rs</codeHighlight> by typing <codeHighlight>export</codeHighlight>',
+        buttonText: 'Scan QR Code',
+        title: 'Import CLI',
+      },
+      password: {
+        body: 'Enter the password used to encrypt the CLI Wallet to complete import.',
+        buttonText: 'Decrypt and Import',
+        title: 'Decrypting Wallet...',
+      },
     },
+    cliImport: 'CLI',
     complete: {
       subtitle: 'This will just take a moment.',
       title: 'Recovering Account...',
@@ -41,7 +42,6 @@ export default {
     },
     pickKeyType: 'Pick Security Key Type:',
     restoreChoice: '{{totalWords}} Words',
-    cliImport: 'CLI',
     subTitle:
       'To import your existing Helium account, enter its <havelockBlue>12</havelockBlue> or <jazzberryJam>24</jazzberryJam> word security key.',
     title: 'Import\nAccount',
@@ -89,8 +89,11 @@ export default {
     title: 'Create New\nAccount',
   },
   accountsScreen: {
+    activity: 'Activity',
     allFilterFooter:
       "You've reached the end of your activity.\nSelect a different filter to view more.",
+    filter: 'Filter',
+    filterTransactions: 'Filter Transactions',
     filterTypes: {
       all: 'All Activity (24h)',
       burn: 'Burn Transactions',
@@ -99,26 +102,25 @@ export default {
       payment: 'Payments',
       pending: 'Pending Transactions',
     },
-    filterTransactions: 'Filter Transactions',
     hideFilters: 'Hide Filters',
     myTransactions: 'My Transactions',
     showFilters: 'Show Filters',
+    title: 'My {{tokenType}}',
     tokens: 'Tokens',
-    activity: 'Activity',
   },
   accountView: {
     balance: 'Balance',
     fiveG: '5G',
+    genesis: 'In Genesis',
     lock: 'Lock',
+    nonTransferable: 'Non-Transferable',
     payment: 'Payment',
     request: 'Request',
+    securityTokens: 'Security Tokens',
     send: 'Send',
     stake: 'Stake',
-    vote: 'Vote',
-    genesis: 'In Genesis',
-    securityTokens: 'Security Tokens',
-    nonTransferable: 'Non-Transferable',
     testnetTokens: 'Testnet Tokens',
+    vote: 'Vote',
   },
   addNewAccount: {
     title: 'Add New Account',
@@ -279,19 +281,19 @@ export default {
       title: 'Looking\nfor Devices',
     },
     show: {
-      alias: 'Ledger Account',
-      help: 'Verify that the address shown on the Ledger device matches.',
-      next: 'Import Account(s)',
-      close: 'Close',
-      subtitle:
-        'This Ledger device can authorize transactions for the below Helium Account. ',
-      title: 'Select Accounts',
-      addNewAccount: 'Add New Account',
       accountsAlreadyLinked: 'Accounts Already Linked ({{count}})',
-      selectAll: 'Select All',
+      addNewAccount: 'Add New Account',
+      alias: 'Ledger Account',
+      close: 'Close',
       deselectAll: 'Deselect All',
       emptyAccount:
         "Can't add a new account before you've recieved assets on your {{account}}",
+      help: 'Verify that the address shown on the Ledger device matches.',
+      next: 'Import Account(s)',
+      selectAll: 'Select All',
+      subtitle:
+        'This Ledger device can authorize transactions for the below Helium Account. ',
+      title: 'Select Accounts',
     },
     start: {
       help: 'How does it work?',
@@ -456,22 +458,22 @@ export default {
       },
       title: 'Confirm Your\nWords To Sign Out',
     },
+    revealPrivateKey: {
+      alertMessage:
+        "This will access and display your private key from your device's secure storage",
+      alertTitle: 'Are you sure?',
+      done: 'Done',
+      subtitle:
+        '<secondaryText>Do not share your private key!</secondaryText><red500>\n\nIf someone has your private key they will have full control of your wallet!</red500>',
+      tap: 'Tap to reveal your private key',
+      title: 'Your Private Key',
+    },
     revealWords: {
       next: 'I have written these down',
       subtitle:
         '<secondaryText>It is crucial you write all of these\n{{numWords}} words down, in order.</secondaryText><red500>\n\nHelium cannot recover these words.</red500>',
       title: 'Your {{numWords}} Word\nPassword',
       warning: 'Helium cannot recover these words',
-    },
-    revealPrivateKey: {
-      title: 'Your Private Key',
-      subtitle:
-        '<secondaryText>Do not share your private key!</secondaryText><red500>\n\nIf someone has your private key they will have full control of your wallet!</red500>',
-      done: 'Done',
-      tap: 'Tap to reveal your private key',
-      alertTitle: 'Are you sure?',
-      alertMessage:
-        "This will access and display your private key from your device's secure storage",
     },
     sections: {
       account: {
@@ -497,6 +499,11 @@ export default {
         title: 'App Settings',
         version: 'App Version',
       },
+      backup: {
+        revealPrivateKey: 'Reveal Private Key',
+        revealWords: 'Reveal Words',
+        title: '{{alias}} Account Backup',
+      },
       defaultAccount: {
         disableMessage:
           'Wallet app requires a default account. Select a different account by tapping its account settings to set as default.',
@@ -505,11 +512,6 @@ export default {
           'This will update your default account from {{aliasOld}} to {{aliasNew}}. You can update this in Settings later if you change your mind.',
         enableTitle: 'Update Default Account?',
         title: 'Default Account',
-      },
-      backup: {
-        title: '{{alias}} Account Backup',
-        revealWords: 'Reveal Words',
-        revealPrivateKey: 'Reveal Private Key',
       },
       dev: {
         testnet: {
