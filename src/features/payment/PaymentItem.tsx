@@ -17,7 +17,7 @@ import {
   ActivityIndicator,
   Keyboard,
   NativeSyntheticEvent,
-  TextInputFocusEventData,
+  TextInputEndEditingEventData,
 } from 'react-native'
 import Address from '@helium/address'
 import { toUpper } from 'lodash'
@@ -164,7 +164,7 @@ const PaymentItem = ({
   )
 
   const handleAddressBlur = useCallback(
-    (event?: NativeSyntheticEvent<TextInputFocusEventData>) => {
+    (event?: NativeSyntheticEvent<TextInputEndEditingEventData>) => {
       const text = event?.nativeEvent.text
       handleAddressError({
         address: text || '',
@@ -232,7 +232,7 @@ const PaymentItem = ({
                     placeholder={t('payment.enterAddress')}
                     value={address}
                     onChangeText={handleEditAddress}
-                    onBlur={handleAddressBlur}
+                    onEndEditing={handleAddressBlur}
                     autoCapitalize="none"
                     numberOfLines={1}
                     multiline={false}
