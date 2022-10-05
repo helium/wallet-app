@@ -168,6 +168,7 @@ const AccountsScreen = () => {
           jazzSeed,
           defaultAccountAddress,
           defaultAccountAlias: defaultAccount?.alias,
+          currencyType: currency,
         },
         widgetGroup,
       )

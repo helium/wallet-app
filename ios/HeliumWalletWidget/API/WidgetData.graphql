@@ -1,5 +1,6 @@
 query widgetData(
   $address: String!
+  $type: CurrencyType!
   $minTime: String
   $midTime: String
   $maxTime: String
@@ -59,5 +60,21 @@ query widgetData(
       maxTime
       minTime
     }
+  }
+
+  accountBalanceHistory(address: $address, currencyType: $type) {
+    hntBalance
+    stakedHntBalance
+    iotBalance
+    mobileBalance
+    date
+    hntPrice
+    balance
+  }
+
+  currentPrices(address: $address, currencyType: $type) {
+    hnt
+    mobile
+    iot
   }
 }

@@ -63,17 +63,22 @@ enum Utils {
 
     // Mock account details.
     static func mockAccountDetails() -> DefaultAccountDetails {
-        let assets: [HeliumAsset] = [HeliumAsset(name: "Helium", symbol: "HNT", balance: 9_000_000_000_000_000, price: 11.72), HeliumAsset(name: "Data Credits", symbol: "DC", balance: 33850, price: 0.00001), HeliumAsset(name: "Mobile", symbol: "MOBILE", balance: 10000, price: 1.00)]
+        let assets: [HeliumAsset] = [HeliumAsset(name: "Helium", symbol: "HNT", balance: 9_504_123_000_000_000, price: 11.72), HeliumAsset(name: "Mobile", symbol: "MOBILE", balance: 119_992_453_143_221, price: 1.00), HeliumAsset(name: "Data Credits", symbol: "DC", balance: 33850, price: 0.00001)]
 
-        let accountDetails = DefaultAccountDetails(accountName: "Satoshi", accountAddress: "13M8dUbxymE3xtiAXszRkGMmezMhBS8Li7wEsMojLdb4Sdxc4wc", jazzSeed: 71, isTestnet: false, totalFiatBalance: 96000.52, totalHNTBalance: 1_969_009_293_847_000_000, assets: assets)
+        let accountDetails = DefaultAccountDetails(accountName: "Satoshi", accountAddress: "13M8dUbxymE3xtiAXszRkGMmezMhBS8Li7wEsMojLdb4Sdxc4wc", jazzSeed: 71, isTestnet: false, totalFiatBalance: 96231.52, totalHNTBalance: 1_969_009_293_847_000_000, assets: assets, chartValues: [])
         return accountDetails
     }
 
     // Empty account details for when Network issues occur
     static func emptyAccountDetails() -> DefaultAccountDetails {
         let assets: [HeliumAsset] = []
-        let accountDetails = DefaultAccountDetails(accountName: "", accountAddress: "", jazzSeed: 0, isTestnet: false, totalFiatBalance: 0, totalHNTBalance: 0, assets: assets)
+        let accountDetails = DefaultAccountDetails(accountName: "", accountAddress: "", jazzSeed: 0, isTestnet: false, totalFiatBalance: 0, totalHNTBalance: 0, assets: assets, chartValues: [0.0, 0.0])
         return accountDetails
+    }
+
+    static func emptyHNTBalanceWidgetDetails() -> BalanceWidgetEntry {
+        let entry = BalanceWidgetEntry(date: Date(), configuration: ConfigurationIntent(), hntPrice: 0, hntDailyEarnings: 0, balance: 0)
+        return entry
     }
 
     // Get coin image name.

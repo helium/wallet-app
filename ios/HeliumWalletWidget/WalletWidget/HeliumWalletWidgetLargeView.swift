@@ -5,6 +5,7 @@
 //  Created by Luis Perrone on 6/9/22.
 //
 
+import Charts
 import Intents
 import SwiftUI
 import WidgetKit
@@ -38,9 +39,10 @@ struct AssetListItemView: View {
     var body: some View {
         let size = symbolName == "DC" ? 12.0 : 20.0
         HStack(spacing: 0) {
-            imageName == "data-credits-logo" ? Spacer().frame(width: 10) : Spacer().frame(width: 6)
+            imageName == "data-credits-logo" ? Spacer().frame(width: 20) : Spacer().frame(width: 16)
             Image(imageName).resizable().frame(width: size, height: size)
             Spacer().frame(width: 6)
+
             VStack(alignment: .leading) {
                 Text("\(assetBalance) \(symbolName)")
                     .bold()
@@ -59,7 +61,7 @@ struct AssetListItemView: View {
             Spacer()
             Image("right-arrow").resizable().frame(width: 5, height: 10)
             Spacer().frame(width: 16)
-        }.frame(width: .infinity, height: 40).background(Color(Utils.getSurfaceColorName(isTestnet: isTestnet))).clipShape(Rectangle())
+        }.frame(width: .infinity, height: 40).background(.clear).clipShape(Rectangle())
     }
 }
 
@@ -91,6 +93,41 @@ struct SendButton: View {
     }
 }
 
+private struct CompositeChartDemo: View {
+    @State var data4: [CGFloat] = (0 ..< 100).map { _ in .random(in: 0.4 ... 1.0) }
+    @State var data5: [CGFloat] = (0 ..< 100).map { _ in .random(in: 0.1 ... 0.3) }
+    @State var data6: [CGFloat] = (0 ..< 100).map { _ in .random(in: 0.3 ... 0.4) }
+
+    var body: some View {
+        ZStack {
+            Chart(data: data4)
+                .chartStyle(
+                    LineChartStyle(.quadCurve, lineColor: .purple, lineWidth: 3)
+                )
+
+            Chart(data: data4)
+                .chartStyle(
+                    AreaChartStyle(.quadCurve, fill:
+                        LinearGradient(gradient: .init(colors: [Color.purple.opacity(0.8), Color.purple.opacity(0.2)]), startPoint: .top, endPoint: .bottom))
+                )
+
+            Chart(data: data5)
+                .chartStyle(
+                    ColumnChartStyle(column: Color.white.opacity(0.5), spacing: 2)
+                )
+
+            Chart(data: data6)
+                .chartStyle(
+                    LineChartStyle(.line, lineColor: Color.white.opacity(0.2), lineWidth: 3)
+                )
+        }
+        .padding()
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(16)
+        .padding()
+    }
+}
+
 /**
  * Get fiat amount from current asset balance
  */
@@ -109,34 +146,11 @@ struct HeliumWalletWidgetLargeView: View {
     @ViewBuilder
     var body: some View {
         let assets = entry.accountDetails.assets
+        let data = entry.accountDetails.chartValues.count > 1 ? entry.accountDetails.chartValues : [1.0, 1.0]
 
         VStack {
             VStack(alignment: .center, spacing: 4) {
-                Spacer().frame(height: 8.0)
-
-                HStack {
-                    Spacer().frame(width: 12.0)
-                    HStack {
-                        HStack {
-                            HStack {
-                                VStack(spacing: 0) {
-                                    Image(uiImage: generateImage(jazzSeed: entry.accountDetails.jazzSeed)).resizable()
-                                        .frame(width: 38, height: 38)
-                                }.frame(width: 38, height: 38).clipShape(Circle())
-                                VStack(alignment: .leading) {
-                                    Text("\(Utils.renderConstructionEmoji(isTestnet: entry.accountDetails.isTestnet)) \(entry.accountDetails.accountName)")
-                                        .bold().lineLimit(1)
-                                        .font(.system(size: 12.0)).foregroundColor(.white)
-                                }
-                            }
-
-                            Spacer()
-                        }.padding(8.0)
-                    }.clipShape(Rectangle()).background(Color(Utils.getSurfaceColorName(isTestnet: entry.accountDetails.isTestnet))).cornerRadius(8.0)
-                    Spacer().frame(width: 12.0)
-                }
-
-                Spacer().frame(height: 8.0)
+                Spacer().frame(height: 16.0)
 
                 HStack(spacing: 4) {
                     if entry.accountDetails.isTestnet { Image("testnet-balance-logo").resizable().frame(width: 9, height: 10)
@@ -161,12 +175,29 @@ struct HeliumWalletWidgetLargeView: View {
                 }
                 Spacer()
 
+                Spacer().frame(height: 4.0)
+
+                ZStack {
+                    Chart(data: data)
+                        .chartStyle(
+                            LineChartStyle(.quadCurve, lineColor: Color("LineColor"), lineWidth: 1)
+                        )
+
+                    Chart(data: data)
+                        .chartStyle(
+                            AreaChartStyle(.quadCurve, fill:
+                                LinearGradient(gradient: .init(colors: [Color.white.opacity(0.2), Color.white.opacity(0.01)]), startPoint: .top, endPoint: .bottom))
+                        )
+                }.padding(.leading, 16).padding(.trailing, 16)
+
                 VStack(spacing: 0) {
-                    Divider()
-                    ForEach(0 ..< assets.count, id: \.self) { i in
+                    Divider().padding(.leading, 16).padding(.trailing, 16)
+                    ForEach(0 ..< 2, id: \.self) { i in
                         AssetListItemView(imageName: Utils.getCoinImageName(assets[i].symbol), assetBalance: Utils.getCurrentBalance(asset: assets[i]), symbolName: assets[i].symbol, assetPrice: "$\(String(format: "%.2f", getCurrentAssetPrice(assets[i]))) \(assetPriceConversion(assets[i].symbol))", isTestnet: entry.accountDetails.isTestnet)
                     }
+                    Spacer().frame(height: 8.0)
                 }
+
             }.padding(0.0)
         }.background(Color("WidgetBackground"))
     }
