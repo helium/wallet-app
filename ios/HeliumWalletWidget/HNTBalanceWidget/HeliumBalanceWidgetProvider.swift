@@ -3,9 +3,9 @@ import SwiftUI
 import WidgetKit
 
 struct BalanceWidgetData: Decodable {
-    var hntPrice: Double
-    var token: String
-    var accountAddress: String
+    let hntPrice: Double
+    let token: String
+    let accountAddress: String
 }
 
 struct BalanceWidgetEntry: TimelineEntry {
@@ -47,10 +47,10 @@ struct HNTBalanceWidgetProvider: IntentTimelineProvider {
                 let decoder = JSONDecoder()
                 let data = savedData.data(using: .utf8)
                 if let parsedData = try? decoder.decode(HeliumWalletWidgetData.self, from: data!) {
+                    let fallback = entryCache.previousEntry ?? Utils.emptyHNTBalanceWidgetDetails()
                     // Fetch balance data from nova wallet API.
-                    Network().fetchBalanceData(parsedWidgetData: parsedData) { _, parsedBalanceWidgetData in
+                    Network().fetchBalanceData(parsedWidgetData: parsedData, fallback: fallback) { _, parsedBalanceWidgetData in
                         let nextRefresh = Calendar.current.date(byAdding: .minute, value: 15, to: entryDate)!
-
                         if let parsedBalanceWidgetData = parsedBalanceWidgetData {
                             let entry = BalanceWidgetEntry(date: nextRefresh, configuration: configuration, hntPrice: parsedBalanceWidgetData.price, hntDailyEarnings: parsedBalanceWidgetData.total, balance: parsedBalanceWidgetData.balance)
                             let timeline = Timeline(entries: [entry], policy: .atEnd)

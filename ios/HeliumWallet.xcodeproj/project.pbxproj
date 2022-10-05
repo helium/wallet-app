@@ -49,6 +49,7 @@
 		9DB500B8285D341D009C8341 /* HeliumBalanceWidgetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB500B4285D341D009C8341 /* HeliumBalanceWidgetProvider.swift */; };
 		9DB50127285D885B009C8341 /* SmallWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB50126285D885B009C8341 /* SmallWidgetViews.swift */; };
 		9DBB0EED2862867000561AF8 /* WidgetKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DBB0EEC2862867000561AF8 /* WidgetKitHelper.swift */; };
+		9DCA365F28E6781D000F2A66 /* Charts in Frameworks */ = {isa = PBXBuildFile; productRef = 9DCA365E28E6781D000F2A66 /* Charts */; };
 		9DE3051C28510B8E00E46F9B /* HeliumWalletWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE3051B28510B8E00E46F9B /* HeliumWalletWidgetBundle.swift */; };
 		9DE3051E28510E3900E46F9B /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE3051D28510E3900E46F9B /* Utils.swift */; };
 		9DE305212851187D00E46F9B /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9DE305232851187D00E46F9B /* Localizable.strings */; };
@@ -216,6 +217,7 @@
 				9D7DB3B02850EC14004D9409 /* SwiftUI.framework in Frameworks */,
 				9D7DB3AF2850EC14004D9409 /* WidgetKit.framework in Frameworks */,
 				8AAF318D745430ECB7CA2F13 /* libPods-HeliumWalletWidgetExtension.a in Frameworks */,
+				9DCA365F28E6781D000F2A66 /* Charts in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -485,6 +487,8 @@
 				9D7DB3BB2850EC15004D9409 /* PBXTargetDependency */,
 			);
 			name = HeliumWallet;
+			packageProductDependencies = (
+			);
 			productName = HeliumWallet;
 			productReference = 13B07F961A680F5B00A75B9A /* HeliumWallet.app */;
 			productType = "com.apple.product-type.application";
@@ -521,6 +525,9 @@
 			dependencies = (
 			);
 			name = HeliumWalletWidgetExtension;
+			packageProductDependencies = (
+				9DCA365E28E6781D000F2A66 /* Charts */,
+			);
 			productName = HeliumWalletWidgetExtension;
 			productReference = 9D7DB3AE2850EC14004D9409 /* HeliumWalletWidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -560,6 +567,9 @@
 				ko,
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
+			packageReferences = (
+				9DCA365B28E67516000F2A66 /* XCRemoteSwiftPackageReference "swiftui-charts" */,
+			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -1239,6 +1249,7 @@
 			baseConfigurationReference = 46C7DF11B665F49D75AB9C2F /* Pods-HeliumWalletWidgetExtension.debug.xcconfig */;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1259,7 +1270,6 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = HeliumWalletWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = HeliumWalletWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1287,6 +1297,7 @@
 			baseConfigurationReference = 94C89126300318BDA66EB727 /* Pods-HeliumWalletWidgetExtension.release.xcconfig */;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1307,7 +1318,6 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = HeliumWalletWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = HeliumWalletWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1379,6 +1389,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9DCA365B28E67516000F2A66 /* XCRemoteSwiftPackageReference "swiftui-charts" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/spacenation/swiftui-charts";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9DCA365E28E6781D000F2A66 /* Charts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9DCA365B28E67516000F2A66 /* XCRemoteSwiftPackageReference "swiftui-charts" */;
+			productName = Charts;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 83CBB9F71A601CBA00E9B192 /* Project object */;
 }

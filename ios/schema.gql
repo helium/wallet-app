@@ -2,6 +2,15 @@ schema {
   query: RootQueryType
   mutation: RootMutationType
 }
+type AccountBalance {
+  balance: Float!
+  date: String!
+  hntBalance: Int!
+  hntPrice: Float!
+  iotBalance: Int!
+  mobileBalance: Int!
+  stakedHntBalance: Int!
+}
 type AccountData {
   address: String!
   balance: Int!
@@ -57,6 +66,11 @@ type Activity {
 type ActivityData {
   cursor: String
   data: [Activity!]
+}
+type CurrentPrices {
+  hnt: Float!
+  iot: Float!
+  mobile: Float!
 }
 type FeatureFlags {
   mobileEnabled: Boolean!
@@ -201,17 +215,17 @@ type RootQueryType {
   "Get account"
   account(address: String!): AccountData
   "Get account activity"
-  accountActivity(
-    address: String!
-    cursor: String
-    filter: String = "all"
-  ): ActivityData
+  accountActivity(address: String!, cursor: String, filter: String = "all"): ActivityData
+  "Get account balance history"
+  accountBalanceHistory(address: String!, currencyType: CurrencyType!): [AccountBalance!]
   "Get account rewards sum"
   accountRewardsSum(address: String!, maxTime: String, minTime: String): Sum
   "Get Current Block Height"
   blockHeight(address: String!): Int!
   "Get current oracle price"
   currentOraclePrice(address: String!): OraclePrice
+  "Get current price"
+  currentPrices(address: String!, currencyType: CurrencyType!): CurrentPrices
   "Get feature flags"
   featureFlags(address: String!): FeatureFlags!
   "Get hotspot"
@@ -219,16 +233,11 @@ type RootQueryType {
   "Get is hotspot or validator"
   isHotspotOrValidator(address: String!): Boolean!
   "Get notifications"
-  notifications(
-    address: String!
-    before: Int
-    limit: Int
-    resource: String!
-  ): [Notification!]
+  notifications(address: String!, before: Int, limit: Int, resource: String!): [Notification!]
   "Get pending txns"
   pendingTxns(address: String!): [Activity!]
   "Get coin gecko prices"
-  pricing(address: String!): Prices
+  pricing(address: String!): Prices @deprecated(reason: "Use other price queries and specify currency type")
   "Get txn config vars"
   txnConfigVars(address: String!): TxnConfigVars
   "Get validator"
@@ -317,6 +326,69 @@ type VoteTags {
 type Votes {
   active: [Vote!]!
   closed: [Vote!]!
+}
+enum CurrencyType {
+  AED
+  ARS
+  AUD
+  BCH
+  BDT
+  BHD
+  BITS
+  BMD
+  BNB
+  BRL
+  BTC
+  CAD
+  CHF
+  CLP
+  CNY
+  CZK
+  DKK
+  DOT
+  EOS
+  ETH
+  EUR
+  GBP
+  HKD
+  HUF
+  IDR
+  ILS
+  INR
+  JPY
+  KRW
+  KWD
+  LINK
+  LKR
+  LTC
+  MMK
+  MXN
+  MYR
+  NGN
+  NOK
+  NZD
+  PHP
+  PKR
+  PLN
+  RUB
+  SAR
+  SATS
+  SEK
+  SGD
+  THB
+  TRY
+  TWD
+  UAH
+  USD
+  VEF
+  VND
+  XAG
+  XAU
+  XDR
+  XLM
+  XRP
+  YFI
+  ZAR
 }
 enum TokenType {
   "Helium Network Token"

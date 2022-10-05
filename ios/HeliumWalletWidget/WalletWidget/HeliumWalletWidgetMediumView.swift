@@ -5,6 +5,7 @@
 //  Created by Luis Perrone on 6/9/22.
 //
 
+import Charts
 import Intents
 import SwiftUI
 import WidgetKit
@@ -26,7 +27,7 @@ struct AssetPillView: View {
                 .bold()
                 .font(.system(size: 10.0)).foregroundColor(.white)
             Spacer().frame(width: 6)
-        }.frame(height: 25).background(Color(Utils.getSurfaceColorName(isTestnet: isTestnet))).clipShape(Rectangle()).cornerRadius(12.5)
+        }.frame(height: 25).background(.clear).clipShape(Rectangle()).cornerRadius(12.5)
     }
 }
 
@@ -37,61 +38,62 @@ struct HeliumWalletWidgetMediumView: View {
     @ViewBuilder
     var body: some View {
         let assets = entry.accountDetails.assets
+        let data = entry.accountDetails.chartValues.count > 1 ? entry.accountDetails.chartValues : [1.0, 1.0]
 
-        VStack {
-            VStack(alignment: .leading, spacing: 0) {
-                Rectangle().frame(height: 8.0).foregroundColor(.clear)
-                HStack {
+        HStack {
+            VStack {
+                VStack(alignment: .leading, spacing: 0) {
+                    Spacer().frame(height: 4)
+
                     HStack {
-                        HStack {
-                            VStack(spacing: 0) {
-                                Image(uiImage: generateImage(jazzSeed: entry.accountDetails.jazzSeed)).resizable()
-                                    .frame(width: 38, height: 38)
-                            }.frame(width: 38, height: 38).clipShape(Circle())
-                            VStack(alignment: .leading) {
-                                Text("\(Utils.renderConstructionEmoji(isTestnet: entry.accountDetails.isTestnet)) \(entry.accountDetails.accountName)")
-                                    .bold().lineLimit(1)
-                                    .font(.system(size: 12.0)).foregroundColor(.white)
+                        VStack(alignment: .leading, spacing: 0) {
+                            HStack(spacing: 4) {
+                                Spacer().frame(width: 8)
+                                if entry.accountDetails.isTestnet { Image("testnet-balance-logo").resizable().frame(width: 9, height: 10)
+                                }
+                                Text(String(localized: !entry.accountDetails.isTestnet ? "Wallet_Widget_Balance" : "TESTNET_Wallet_Widget_Balance",
+                                            comment: "Helium wallet widget balance label."))
+                                    .font(.system(size: 12.0)).foregroundColor(.white).opacity(0.6)
+                                Spacer()
+                            }
+                            Spacer().frame(height: 4)
+                            HStack {
+                                Spacer().frame(width: 8)
+                                Text("$\(entry.accountDetails.totalFiatBalance.kmFormatted)").bold()
+                                    .font(.system(size: 24.0)).foregroundColor(.white)
+
+                                VStack {
+                                    Spacer().frame(height: 8)
+                                    Text("\(entry.accountDetails.totalHNTBalance.fromBones.kmFormatted) \(Utils.networkTokenLabel(isTestnet: entry.accountDetails.isTestnet))")
+                                        .lineLimit(1).font(.system(size: 12.0)).foregroundColor(.white).opacity(0.6)
+                                }
+
+                                Spacer()
                             }
                         }
-
-                        Spacer()
-                    }.padding(8.0)
-                }.clipShape(Rectangle()).background(Color(Utils.getSurfaceColorName(isTestnet: entry.accountDetails.isTestnet))).cornerRadius(8.0)
-
-                Spacer().frame(height: 4)
-
-                HStack {
-                    VStack(alignment: .leading, spacing: 0) {
-                        HStack(spacing: 4) {
-                            if entry.accountDetails.isTestnet { Image("testnet-balance-logo").resizable().frame(width: 9, height: 10)
+                        VStack(alignment: .leading, spacing: 4) {
+                            ForEach(0 ..< 2, id: \.self) { i in
+                                AssetPillView(imageName: Utils.getCoinImageName(assets[i].symbol), assetBalance: Utils.getCurrentBalance(asset: assets[i]), isTestnet: entry.accountDetails.isTestnet)
                             }
-                            Text(String(localized: !entry.accountDetails.isTestnet ? "Wallet_Widget_Balance" : "TESTNET_Wallet_Widget_Balance",
-                                        comment: "Helium wallet widget balance label."))
-                                .font(.system(size: 12.0)).foregroundColor(.white).opacity(0.6)
-                            Spacer()
-                        }
-                        Spacer().frame(height: 4)
-                        HStack {
-                            Text("$\(entry.accountDetails.totalFiatBalance.kmFormatted)").bold()
-                                .font(.system(size: 24.0)).foregroundColor(.white)
-
-                            Spacer()
-                            Text("\(entry.accountDetails.totalHNTBalance.fromBones.kmFormatted) \(Utils.networkTokenLabel(isTestnet: entry.accountDetails.isTestnet))")
-                                .lineLimit(1).font(.system(size: 12.0)).foregroundColor(.white).opacity(0.6)
-                        }
+                        }.padding(.top, 0).padding(.trailing, 0)
                     }
+                    Spacer()
                 }
 
                 Spacer().frame(height: 6)
 
-                HStack(spacing: 8) {
-                    ForEach(0 ..< assets.count, id: \.self) { i in
-                        AssetPillView(imageName: Utils.getCoinImageName(assets[i].symbol), assetBalance: Utils.getCurrentBalance(asset: assets[i]), isTestnet: entry.accountDetails.isTestnet)
-                    }
-                    Spacer()
+                ZStack {
+                    Chart(data: data)
+                        .chartStyle(
+                            LineChartStyle(.quadCurve, lineColor: Color("LineColor"), lineWidth: 1)
+                        )
+
+                    Chart(data: data)
+                        .chartStyle(
+                            AreaChartStyle(.quadCurve, fill:
+                                LinearGradient(gradient: .init(colors: [Color.white.opacity(0.2), Color.white.opacity(0.01)]), startPoint: .top, endPoint: .bottom))
+                        )
                 }
-                Spacer()
             }.padding(12.0)
         }.background(Color("WidgetBackground"))
     }

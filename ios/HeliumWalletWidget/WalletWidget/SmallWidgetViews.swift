@@ -43,7 +43,7 @@ struct AccountImageView: View {
             VStack(spacing: 0) {
                 Image(uiImage: jazzIcon).resizable()
                     .frame(width: size, height: size)
-            }.frame(width: 38, height: 38).background(Color(red: 46 / 255, green: 48 / 255, blue: 58 / 255)).clipShape(Circle())
+            }.frame(width: 38, height: 38).background(Color(red: 33 / 255, green: 33 / 255, blue: 33 / 255)).clipShape(Circle())
             Text(accountName)
                 .bold().lineLimit(1)
                 .font(.system(size: 10.0)).foregroundColor(.white)
@@ -68,7 +68,7 @@ struct AssetView: View {
             VStack(spacing: 0) {
                 Image(imageName).resizable()
                     .frame(width: size, height: size)
-            }.frame(width: 40, height: 40).background(Color(Utils.getSurfaceColorName(isTestnet: isTestNet))).clipShape(Circle())
+            }.frame(width: 40, height: 40).background(Color(red: 33 / 255, green: 33 / 255, blue: 33 / 255)).clipShape(Circle())
             Text(text)
 
                 .bold().lineLimit(1)
@@ -103,11 +103,15 @@ struct SmallWidgetContainer: View {
             HStack {
                 Spacer()
                 CustomView(content: {
-                    AssetView(imageName: Utils.getCoinImageName(asset2.symbol), assetBalance: Utils.getCurrentBalance(asset: asset2), isTestNet: accountDetails.isTestnet)
+                    if let asset = asset3 {
+                        AssetView(imageName: Utils.getCoinImageName(asset.symbol), assetBalance: Utils.getCurrentBalance(asset: asset), isTestNet: accountDetails.isTestnet)
+                    } else {
+                        AssetView(imageName: "", title: "", isTestNet: accountDetails.isTestnet)
+                    }
                 }).frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                 Spacer()
                 CustomView(content: {
-                    if let asset = asset3 {
+                    if let asset = asset2 {
                         AssetView(imageName: Utils.getCoinImageName(asset.symbol), assetBalance: Utils.getCurrentBalance(asset: asset), isTestNet: accountDetails.isTestnet)
                     } else {
                         AssetView(imageName: "", title: "", isTestNet: accountDetails.isTestnet)

@@ -15,6 +15,7 @@ struct HeliumWalletWidgetData: Decodable {
     let jazzSeed: Int
     let defaultAccountAlias: String
     let isTestnet: Bool
+    let currencyType: String
 }
 
 // Struct for each asset held by account.
@@ -34,6 +35,7 @@ struct DefaultAccountDetails {
     let totalFiatBalance: Double
     let totalHNTBalance: Int
     let assets: [HeliumAsset]
+    let chartValues: [Double]
 }
 
 // WidgetEntry extending from TimelineEntry in order to refresh based on date.

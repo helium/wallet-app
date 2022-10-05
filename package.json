@@ -19,7 +19,7 @@
     "bump-major": "npx react-native bump-version --skip-semver-for android --skip-code-for all --type major",
     "prettier": "prettier --write *.ts*",
     "gen-types": "graphql-codegen --config codegen.yml",
-    "gen-types:ios": "rover graph introspect https://wallet-api.helium.com/api/graphiql > ios/schema.gql && ios/Pods/Apollo/scripts/run-bundled-codegen.sh codegen:generate --target=swift --includes='./**/WidgetData.graphql' --localSchemaFile='ios/schema.gql' ios/HeliumWalletWidget/API/API.swift && npx swiftformat .",
+    "gen-types:ios": "rover graph introspect https://wallet-api.helium.com/api/graphiql > ios/schema.gql && ios/Pods/Apollo/scripts/run-bundled-codegen.sh codegen:generate --target=swift --includes='./**/WidgetData.graphql' --localSchemaFile='ios/schema.gql' ios/HeliumWalletWidget/API/API.swift && npx swiftformat --swiftversion 4 .",
     "gen-types:all": "yarn gen-types && yarn gen-types:ios",
     "prepare": "husky install"
   },
