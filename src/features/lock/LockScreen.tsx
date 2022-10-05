@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react'
+import React, { memo, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as LocalAuthentication from 'expo-local-authentication'
 import { AnimatePresence } from 'moti'
@@ -14,6 +14,7 @@ import {
   getSecureItem,
   storeSecureItem,
 } from '../../storage/secureStorage'
+import usePrevious from '../../utils/usePrevious'
 
 type Props = { children: React.ReactNode }
 const LockScreen = ({ children }: Props) => {
@@ -21,7 +22,22 @@ const LockScreen = ({ children }: Props) => {
   const { signOut, hasAccounts } = useAccountStorage()
   const { appState } = useAppState()
   const { pin, authInterval, locked, updateLocked } = useAppStorage()
+  const prevLocked = usePrevious(locked)
   const { showOKCancelAlert } = useAlert()
+
+  useEffect(() => {
+    if (locked === prevLocked || !prevLocked) return
+
+    // clear idle when app is unlocked
+    storeSecureItem('lastIdle', Date.now().toString())
+  }, [locked, prevLocked])
+
+  useEffect(() => {
+    // clear idle when pin is turned off
+    if (pin?.status === 'off') {
+      deleteSecureItem('lastIdle')
+    }
+  }, [authInterval, locked, pin, prevLocked])
 
   // handle app state changes
   useAsync(async () => {
