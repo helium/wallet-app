@@ -31,6 +31,7 @@ const VoteShow = () => {
   const {
     params: {
       vote: {
+        id,
         tags: { primary, secondary },
         name,
         description,
@@ -42,7 +43,7 @@ const VoteShow = () => {
   } = useRoute<Route>()
   const { t } = useTranslation()
   const navigation = useNavigation<VoteNavigatorNavigationProp>()
-  const { currentAccount } = useAccountStorage()
+  const { upsertAccount, currentAccount } = useAccountStorage()
   const { data: accountData } = useAccountQuery({
     variables: {
       address: currentAccount?.address || '',
@@ -81,6 +82,23 @@ const VoteShow = () => {
       ),
     [outcomes],
   )
+
+  useAsync(async () => {
+    if (voteOpen && currentAccount?.address) {
+      const voteIdsSeen = currentAccount.voteIdsSeen || []
+      try {
+        await upsertAccount({
+          ...currentAccount,
+          voteIdsSeen: voteIdsSeen.includes(id)
+            ? voteIdsSeen
+            : [...voteIdsSeen, id],
+        })
+        return
+      } catch (e) {
+        console.error(e)
+      }
+    }
+  }, [voteOpen])
 
   useAsync(async () => {
     if (!voteOpen) {
