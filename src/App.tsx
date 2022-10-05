@@ -1,16 +1,16 @@
 import './polyfill'
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { ApolloProvider } from '@apollo/client'
-import { Text, LogBox, Platform } from 'react-native'
+import { LogBox, Platform } from 'react-native'
 import { ThemeProvider } from '@shopify/restyle'
 import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import useAppState from 'react-native-appstate-hook'
-import * as SplashScreen from 'expo-splash-screen'
 import OneSignal, { OpenedEvent } from 'react-native-onesignal'
 import Config from 'react-native-config'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { PortalProvider } from '@gorhom/portal'
+import * as SplashLib from 'expo-splash-screen'
 import { useApolloClient } from './graphql/useApolloClient'
 import { theme, darkThemeColors, lightThemeColors } from './theme/theme'
 import RootNavigator from './navigation/RootNavigator'
@@ -21,7 +21,6 @@ import useMount from './utils/useMount'
 import OnboardingProvider from './features/onboarding/OnboardingProvider'
 import AccountSelector from './components/AccountSelector'
 import TransactionProvider from './storage/TransactionProvider'
-import SafeAreaBox from './components/SafeAreaBox'
 import { BalanceProvider } from './utils/Balance'
 import { useColorScheme } from './theme/themeHooks'
 import { linking } from './utils/linking'
@@ -30,8 +29,9 @@ import TestnetAwareStatusBar from './components/TestnetAwareStatusBar'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
 import { navigationRef } from './navigation/NavigationHelper'
 import globalStyles from './theme/globalStyles'
+import SplashScreen from './components/SplashScreen'
 
-SplashScreen.preventAutoHideAsync().catch(() => {
+SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
 })
 
@@ -50,7 +50,7 @@ const App = () => {
   const { restored: accountsRestored } = useAccountStorage()
   const { setOpenedNotification } = useNotificationStorage()
 
-  const { client, loading } = useApolloClient()
+  const { client } = useApolloClient()
 
   const colorScheme = useColorScheme()
   const colorAdaptedTheme = useMemo(
@@ -90,57 +90,46 @@ const App = () => {
     }
   })
 
-  useEffect(() => {
-    if (!accountsRestored) return
-
-    SplashScreen.hideAsync()
-  }, [accountsRestored])
-
-  if (!client || loading) {
-    return (
-      <ThemeProvider theme={colorAdaptedTheme}>
-        <SafeAreaBox flex={1} backgroundColor="white">
-          <Text>Splash Screen</Text>
-        </SafeAreaBox>
-      </ThemeProvider>
-    )
-  }
-
   return (
     <GestureHandlerRootView style={globalStyles.container}>
       <SafeAreaProvider>
         <ThemeProvider theme={colorAdaptedTheme}>
-          <PortalProvider>
-            <OnboardingProvider>
-              <ApolloProvider client={client}>
-                <BalanceProvider>
-                  <TransactionProvider>
-                    <LockScreen>
-                      <WalletConnectProvider>
-                        {accountsRestored && (
-                          <AccountSelector>
-                            <NavigationContainer
-                              theme={navTheme}
-                              linking={linking}
-                              ref={navigationRef}
-                            >
-                              <TestnetAwareStatusBar />
-                              <RootNavigator />
-                            </NavigationContainer>
-                            <SecurityScreen
-                              visible={
-                                appState !== 'active' && appState !== 'unknown'
-                              }
-                            />
-                          </AccountSelector>
-                        )}
-                      </WalletConnectProvider>
-                    </LockScreen>
-                  </TransactionProvider>
-                </BalanceProvider>
-              </ApolloProvider>
-            </OnboardingProvider>
-          </PortalProvider>
+          <SplashScreen>
+            <PortalProvider>
+              <OnboardingProvider>
+                {client && (
+                  <ApolloProvider client={client}>
+                    <BalanceProvider>
+                      <TransactionProvider>
+                        <LockScreen>
+                          <WalletConnectProvider>
+                            {accountsRestored && (
+                              <AccountSelector>
+                                <NavigationContainer
+                                  theme={navTheme}
+                                  linking={linking}
+                                  ref={navigationRef}
+                                >
+                                  <TestnetAwareStatusBar />
+                                  <RootNavigator />
+                                </NavigationContainer>
+                                <SecurityScreen
+                                  visible={
+                                    appState !== 'active' &&
+                                    appState !== 'unknown'
+                                  }
+                                />
+                              </AccountSelector>
+                            )}
+                          </WalletConnectProvider>
+                        </LockScreen>
+                      </TransactionProvider>
+                    </BalanceProvider>
+                  </ApolloProvider>
+                )}
+              </OnboardingProvider>
+            </PortalProvider>
+          </SplashScreen>
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

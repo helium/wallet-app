@@ -85,6 +85,7 @@
     "domain-browser": "1.2.0",
     "events": "3.3.0",
     "expo": "43.0.5",
+    "expo-asset": "^8.6.1",
     "expo-barcode-scanner": "11.4.0",
     "expo-camera": "12.3.0",
     "expo-constants": "13.2.3",
