@@ -11,10 +11,12 @@ import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useApolloClient } from '../graphql/useApolloClient'
 import globalStyles from '../theme/globalStyles'
 import { useColors } from '../theme/themeHooks'
+import { useAppStorage } from '../storage/AppStorageProvider'
 
 const SplashScreen = ({ children }: { children: ReactNode }) => {
   const { client, loading } = useApolloClient()
   const { restored: accountsRestored } = useAccountStorage()
+  const { locked } = useAppStorage()
   const [isAppReady, setAppReady] = useState(false)
   const [imageReady, setImageReady] = useState(false)
   const [isSplashAnimationComplete, setAnimationComplete] = useState(false)
@@ -54,9 +56,16 @@ const SplashScreen = ({ children }: { children: ReactNode }) => {
   }, [])
 
   useEffect(() => {
-    if (!accountsRestored || !client || loading || !imageReady) return
+    if (
+      !accountsRestored ||
+      !client ||
+      loading ||
+      !imageReady ||
+      locked === undefined
+    )
+      return
     setAppReady(true)
-  }, [accountsRestored, client, imageReady, loading])
+  }, [accountsRestored, client, imageReady, loading, locked])
 
   return (
     <View style={globalStyles.container}>

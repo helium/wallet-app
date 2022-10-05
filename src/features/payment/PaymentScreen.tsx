@@ -633,10 +633,9 @@ const PaymentScreen = () => {
                 />
 
                 {state.payments.map((p, index) => (
-                  <>
+                  // eslint-disable-next-line react/no-array-index-key
+                  <React.Fragment key={index}>
                     <PaymentItem
-                      // eslint-disable-next-line react/no-array-index-key
-                      key={index}
                       hasError={
                         p.address === currentAccount?.address || p.hasError
                       }
@@ -662,7 +661,7 @@ const PaymentScreen = () => {
                       }
                       netType={networkType}
                     />
-                  </>
+                  </React.Fragment>
                 ))}
                 {canAddPayee && (
                   <TouchableOpacityBox

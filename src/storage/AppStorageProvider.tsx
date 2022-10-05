@@ -23,7 +23,7 @@ const useAppStorageHook = () => {
     Intervals.IMMEDIATELY,
   )
   const [currency, setCurrency] = useState('USD')
-  const [locked, setLocked] = useState(false)
+  const [locked, setLocked] = useState<boolean>()
   const [convertToCurrency, setConvertToCurrency] = useState(false)
   const [enableTestnet, setEnableTestnet] = useState(false)
   const [scannedAddress, setScannedAddress] = useState<string>()
@@ -46,7 +46,18 @@ const useAppStorageHook = () => {
 
       setPin({ value: nextPin || '', status: nextPin ? 'restored' : 'off' })
       setRequirePinForPayment(nextPinForPayment === 'true')
-      setLocked(nextLocked === 'true')
+
+      // Always lock when app is freshly started
+      if (nextPin) {
+        if (locked === undefined) {
+          setLocked(true)
+        } else {
+          setLocked(nextLocked === 'true')
+        }
+      } else {
+        setLocked(false)
+      }
+
       setCurrency(nextCurrency || 'USD')
       setConvertToCurrency(nextConvertToCurrency === 'true')
       setEnableTestnet(nextEnableTestnet === 'true')
