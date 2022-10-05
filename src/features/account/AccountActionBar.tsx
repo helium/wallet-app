@@ -1,12 +1,13 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import { LayoutChangeEvent } from 'react-native'
+import { LayoutChangeEvent, Animated } from 'react-native'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import Box from '../../components/Box'
 import FabButton from '../../components/FabButton'
 import { HomeNavigationProp } from '../home/homeTypes'
-import { TokenType } from '../../generated/graphql'
+import { TokenType, useVotesQuery } from '../../generated/graphql'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
 export type Action = 'send' | 'request' | 'stake' | 'lock' | 'vote' | '5G'
 
@@ -20,6 +21,49 @@ const AccountActionBar = ({ tokenType, onLayout, compact }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const { requirePinForPayment } = useAppStorage()
+  const anim = useRef(new Animated.Value(1))
+  const { currentAccount } = useAccountStorage()
+
+  const { data: voteData } = useVotesQuery({
+    variables: { address: currentAccount?.address || '' },
+    skip: !currentAccount?.address,
+    fetchPolicy: 'cache-and-network',
+  })
+
+  useEffect(() => {
+    const seenVoteIds = currentAccount?.voteIdsSeen || []
+    const unseenVotes =
+      voteData?.votes.active.filter((v) => !seenVoteIds.includes(v.id)) || []
+
+    // makes the sequence loop
+    if (voteData && unseenVotes?.length > 0) {
+      const res = Animated.loop(
+        // runs given animations in a sequence
+        Animated.sequence([
+          // increase size
+          Animated.timing(anim.current, {
+            toValue: 1.2,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+          // decrease size
+          Animated.timing(anim.current, {
+            toValue: 1,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+        ]),
+      )
+
+      // start the animation
+      res.start()
+
+      return () => {
+        // stop animation
+        res.reset()
+      }
+    }
+  }, [currentAccount, voteData])
 
   const handleAction = useCallback(
     (type: Action) => () => {
@@ -77,13 +121,27 @@ const AccountActionBar = ({ tokenType, onLayout, compact }: Props) => {
         />
       </Box>
       {!compact && (
-        <FabButton
-          icon="vote"
-          backgroundColor="purple500"
-          backgroundColorOpacity={0.3}
-          backgroundColorOpacityPressed={0.5}
-          onPress={handleAction('vote')}
-        />
+        <Box>
+          <FabButton
+            zIndex={2}
+            icon="vote"
+            backgroundColor="purple500"
+            backgroundColorOpacity={0.3}
+            backgroundColorOpacityPressed={0.5}
+            onPress={handleAction('vote')}
+          />
+          <Box position="absolute" top={0} left={0} right={0} bottom={0}>
+            <Animated.View style={{ transform: [{ scale: anim.current }] }}>
+              <Box
+                opacity={0.3}
+                borderRadius="round"
+                width="100%"
+                height="100%"
+                backgroundColor="purple500"
+              />
+            </Animated.View>
+          </Box>
+        </Box>
       )}
       <Box flex={compact ? undefined : 1}>
         <FabButton

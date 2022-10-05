@@ -16,6 +16,7 @@ export type CSAccount = {
   netType: NetType.NetType
   ledgerDevice?: LedgerDevice
   accountIndex?: number
+  voteIdsSeen?: string[]
 }
 export type CSAccounts = Record<string, CSAccount>
 

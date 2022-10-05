@@ -136,17 +136,20 @@ const useAccountStorageHook = () => {
       address,
       ledgerDevice,
       secureAccount,
+      voteIdsSeen,
     }: {
       alias: string
       address: string
       ledgerDevice?: LedgerDevice
       secureAccount?: SecureAccount
+      voteIdsSeen?: string[]
     }) => {
       const nextAccount: CSAccount = {
         alias,
         address,
         netType: accountNetType(address),
         ledgerDevice,
+        voteIdsSeen,
       }
 
       const nextAccounts: CSAccounts = {
