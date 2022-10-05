@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { NetTypes } from '@helium/address'
 import CurrencyFormatter from 'react-native-currency-format'
+import { addMinutes } from 'date-fns'
 import * as AccountUtils from '../../utils/accountUtils'
 import { AccountBalance, AccountData } from '../../generated/graphql'
 import Text from '../../components/Text'
@@ -39,8 +40,9 @@ const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
       setSelectedDate('')
       return
     }
-    const endDate = new Date(selectedBalance.date)
-    DateModule.formatDate(endDate.toISOString(), 'dd MMMM yyyy').then(
+    const date = new Date(selectedBalance.date)
+    const utc = addMinutes(date, date.getTimezoneOffset())
+    DateModule.formatDate(utc.toISOString(), 'dd MMMM yyyy').then(
       setSelectedDate,
     )
   }, [selectedBalance])

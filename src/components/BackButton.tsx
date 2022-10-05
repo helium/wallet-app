@@ -1,6 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react'
 import { BoxProps } from '@shopify/restyle'
+import { Insets } from 'react-native'
 import { Color, Spacing, Theme } from '../theme/theme'
 import BackArrow from '../assets/images/backArrow.svg'
 import TouchableOpacityBox from './TouchableOpacityBox'
@@ -10,12 +11,14 @@ type Props = BoxProps<Theme> & {
   color?: Color
   onPress?: () => void
   paddingHorizontal?: Spacing
+  hitSlop?: Insets
 }
 
 const BackButton = ({
   color = 'primaryText',
   onPress,
   paddingHorizontal = 'lx',
+  hitSlop,
   ...props
 }: Props) => {
   const colors = useColors()
@@ -28,6 +31,7 @@ const BackButton = ({
       paddingHorizontal={paddingHorizontal}
       alignItems="center"
       flexDirection="row"
+      hitSlop={hitSlop}
       {...props}
     >
       <BackArrow color={colors[color]} />

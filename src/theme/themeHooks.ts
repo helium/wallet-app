@@ -19,6 +19,11 @@ export const useColors = () => {
   return colors
 }
 
+export const useBackgroundStyle = (color: Color) => {
+  const colors = useColors()
+  return { backgroundColor: colors[color] }
+}
+
 export const useOpacity = (color: Color, alpha: number) => {
   const colors = useColors()
 

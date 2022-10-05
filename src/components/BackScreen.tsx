@@ -5,6 +5,7 @@ import React, { memo } from 'react'
 import { LayoutChangeEvent } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { Spacing, Theme } from '../theme/theme'
+import { useHitSlop } from '../theme/themeHooks'
 import BackButton from './BackButton'
 import Box from './Box'
 import CloseButton from './CloseButton'
@@ -37,6 +38,7 @@ const BackScreen = ({
   ...rest
 }: Props) => {
   const navigation = useNavigation()
+  const hitSlop = useHitSlop('l')
   return (
     <SafeAreaBox
       edges={edges || undefined}
@@ -48,6 +50,7 @@ const BackScreen = ({
         flexDirection="row"
         paddingHorizontal={headerHorizontalPadding}
         onLayout={onHeaderLayout}
+        zIndex={999}
       >
         <Box
           position="absolute"
@@ -67,6 +70,7 @@ const BackScreen = ({
         {onClose && (
           <CloseButton
             paddingHorizontal="lx"
+            hitSlop={hitSlop}
             marginEnd="n_lx"
             onPress={onClose}
           />
