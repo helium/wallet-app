@@ -34,6 +34,7 @@ import FadeInOut, { DelayedFadeIn } from '../../components/FadeInOut'
 import AccountTokenBalance from './AccountTokenBalance'
 import globalStyles from '../../theme/globalStyles'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
+import { useBackgroundStyle } from '../../theme/themeHooks'
 
 const delayedAnimation = FadeIn.delay(300)
 
@@ -51,6 +52,7 @@ const AccountTokenScreen = () => {
   const [topHeaderYPos, setTopHeaderYPos] = useState(0)
   const [headerContainerYPos, setHeaderContainerYPos] = useState(0)
   const listAnimatedPos = useSharedValue<number>(0)
+  const listStyle = useBackgroundStyle('primaryBackground')
 
   const toggleFiltersOpen = useCallback(
     (open) => () => {
@@ -59,10 +61,7 @@ const AccountTokenScreen = () => {
     [],
   )
 
-  const {
-    data: accountData,
-    // error: accountsError
-  } = useAccountQuery({
+  const { data: accountData } = useAccountQuery({
     variables: {
       address: currentAccount?.address || '',
     },
@@ -95,7 +94,7 @@ const AccountTokenScreen = () => {
   const canShowList = useMemo(() => snapPoints?.length === 2, [snapPoints])
 
   const topHeaderAnimatedStyle = useAnimatedStyle(() => {
-    if (!snapPoints || !canShowList || !listHeight) {
+    if (!snapPoints || !canShowList || listHeight !== snapPoints[1]) {
       return { opacity: 0 }
     }
 
@@ -111,7 +110,7 @@ const AccountTokenScreen = () => {
   }, [snapPoints, topHeaderHeight, listHeight])
 
   const bottomHeaderAnimatedStyle = useAnimatedStyle(() => {
-    if (!snapPoints || !canShowList || !listHeight) {
+    if (!snapPoints || !canShowList || listHeight !== snapPoints[1]) {
       return { opacity: 1 }
     }
 
@@ -404,6 +403,7 @@ const AccountTokenScreen = () => {
           >
             <BottomSheetFlatList
               onLayout={setListHeight}
+              style={listStyle}
               keyExtractor={keyExtractor}
               directionalLockEnabled
               renderItem={renderItem}
@@ -417,6 +417,12 @@ const AccountTokenScreen = () => {
           </Animated.View>
         </BottomSheet>
       )}
+
+      {/* HACK FOR BACK GESTURE NOT WORKING ON IOS */}
+      {Platform.OS === 'ios' && (
+        <Box position="absolute" top={120} bottom={0} left={0} width={32} />
+      )}
+
       <BlurActionSheet
         title={t('accountsScreen.filterTransactions')}
         open={filtersOpen}

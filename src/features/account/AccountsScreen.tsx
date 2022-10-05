@@ -27,7 +27,6 @@ import useAppear from '../../utils/useAppear'
 import { withTransactionDetail } from './TransactionDetail'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
-import { CSAccount } from '../../storage/cloudStorage'
 import StatusBanner from '../StatusPage/StatusBanner'
 import { checkSecureAccount } from '../../storage/secureStorage'
 import { getJazzSeed, isTestnet } from '../../utils/accountUtils'
@@ -45,15 +44,8 @@ import useDisappear from '../../utils/useDisappear'
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
   const navigation = useNavigation<HomeNavigationProp>()
-  const {
-    sortedAccounts,
-    currentAccount,
-    setCurrentAccount,
-    defaultAccountAddress,
-  } = useAccountStorage()
-  const prevSortedAccounts = usePrevious<CSAccount[] | undefined>(
-    sortedAccounts,
-  )
+  const { sortedAccounts, currentAccount, defaultAccountAddress } =
+    useAccountStorage()
   const [navLayoutHeight, setNavLayoutHeight] = useLayoutHeight()
   const { openedNotification } = useNotificationStorage()
   const { locked } = useAppStorage()
@@ -145,22 +137,6 @@ const AccountsScreen = () => {
       console.warn('lazyAccount', lazyAccountError)
     }
   }, [accountsError, lazyAccountError])
-
-  useEffect(() => {
-    if (
-      prevSortedAccounts &&
-      sortedAccounts.length - prevSortedAccounts.length === 1
-    ) {
-      // We have a new account, snap to it
-      const newAccount = sortedAccounts[sortedAccounts.length - 1]
-      setCurrentAccount(newAccount)
-    }
-  }, [
-    prevSortedAccounts,
-    setCurrentAccount,
-    sortedAccounts,
-    sortedAccounts.length,
-  ])
 
   useEffect(() => {
     if (openedNotification && !locked) {
