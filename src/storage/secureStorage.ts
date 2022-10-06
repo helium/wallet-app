@@ -80,20 +80,6 @@ export const checkSecureAccount = async (
               navToImportAccount({
                 screen: 'AccountImportScreen',
                 params: {
-                  wordCount: 12,
-                  restoringAccount: true,
-                  accountAddress: address,
-                },
-              })
-            },
-          },
-          {
-            text: t('restoreAccount.missingAlert.button2'),
-            onPress: () => {
-              navToImportAccount({
-                screen: 'AccountImportScreen',
-                params: {
-                  wordCount: 24,
                   restoringAccount: true,
                   accountAddress: address,
                 },

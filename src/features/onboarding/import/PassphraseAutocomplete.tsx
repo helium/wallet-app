@@ -39,10 +39,9 @@ const PassphraseAutocomplete = ({
   const prevIndex = usePrevious(wordIdx)
 
   useEffect(() => {
-    if (wordIdx === prevIndex) return
-
+    if (wordIdx === prevIndex && !complete) return
     setWord(propsWord ? upperCase(propsWord) : '')
-  }, [prevIndex, propsWord, wordIdx])
+  }, [complete, prevIndex, propsWord, wordIdx])
 
   useEffect(() => {
     setMatchingWords(

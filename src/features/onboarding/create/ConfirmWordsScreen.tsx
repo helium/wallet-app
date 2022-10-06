@@ -125,7 +125,11 @@ const ConfirmWordsScreen = ({
   }, [navigation])
 
   return (
-    <SafeAreaBox flex={1} backgroundColor="secondary" paddingHorizontal="xl">
+    <SafeAreaBox
+      flex={1}
+      backgroundColor="secondaryBackground"
+      paddingHorizontal="xl"
+    >
       <Box width="100%" alignItems="flex-end">
         <CloseButton onPress={onClose} />
       </Box>
