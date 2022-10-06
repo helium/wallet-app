@@ -7,6 +7,7 @@ import TouchableOpacityBox, {
   TouchableOpacityBoxProps,
 } from './TouchableOpacityBox'
 
+export const LIST_ITEM_HEIGHT = 70
 export type ListItemProps = {
   Icon?: React.ReactNode
   SecondaryIcon?: React.ReactNode
@@ -42,7 +43,7 @@ const ListItem = ({
       alignItems="center"
       flex={1}
       flexDirection="row"
-      height={70}
+      height={LIST_ITEM_HEIGHT}
       borderBottomColor="black900"
       borderBottomWidth={hasDivider ? 1 : 0}
       onPress={handlePress}

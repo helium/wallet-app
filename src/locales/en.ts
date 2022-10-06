@@ -379,6 +379,7 @@ export default {
     },
     selectContact: 'Select Contact',
     selfPay: 'Self Pay',
+    send: 'Send',
     sendButton: 'Swipe to Send {{ticker}}',
     sending: 'Sending...',
     submitError:
@@ -427,6 +428,7 @@ export default {
     memo: 'Memo',
     payee: 'Payee',
     qr: 'QR',
+    requestType: 'Request {{ticker}}',
     title: 'Generate Request',
   },
   restoreAccount: {

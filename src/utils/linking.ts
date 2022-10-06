@@ -1,14 +1,17 @@
 import Address from '@helium/address'
 import Balance, { CurrencyType } from '@helium/currency'
-import { LinkingOptions } from '@react-navigation/native'
 import * as Linking from 'expo-linking'
 import qs from 'qs'
 import queryString from 'query-string'
 import BigNumber from 'bignumber.js'
+import { LinkingOptions } from '@react-navigation/native'
 import { encodeMemoString } from '../components/MemoInput'
-import { PaymentRouteParam } from '../features/home/homeTypes'
-import { RootNavigationProp } from '../navigation/rootTypes'
+import {
+  HomeStackParamList,
+  PaymentRouteParam,
+} from '../features/home/homeTypes'
 import { SendDetails } from '../storage/TransactionProvider'
+import { TokenType } from '../generated/graphql'
 
 export const APP_LINK_SCHEME = Linking.createURL('')
 export const PAYMENT_PATH = 'payment'
@@ -19,7 +22,7 @@ const formatMemo = (memo: string | undefined, isUtf8: boolean) => {
   return isUtf8 ? encodeMemoString(memo) : memo
 }
 
-export const linking = {
+export const linking: LinkingOptions<HomeStackParamList> = {
   prefixes: [APP_LINK_SCHEME, HELIUM_WALLET_LINK_SCHEME],
   config: {
     screens: {
@@ -29,14 +32,16 @@ export const linking = {
       RequestScreen: 'request',
       DappLoginScreen: 'dapp_login',
     },
+    initialRouteName: 'AccountsScreen',
   },
-} as LinkingOptions<RootNavigationProp>
+}
 
 export const makePayRequestLink = ({
   payee,
   balanceAmount,
   memo,
-}: Partial<SendDetails>) => {
+  defaultTokenType,
+}: Partial<SendDetails> & { defaultTokenType?: TokenType }) => {
   return [
     HELIUM_WALLET_LINK_SCHEME + PAYMENT_PATH,
     qs.stringify(
@@ -44,6 +49,7 @@ export const makePayRequestLink = ({
         payee,
         amount: balanceAmount?.integerBalance || null,
         memo: encodeMemoString(memo),
+        defaultTokenType,
       },
       { skipNulls: true },
     ),
@@ -55,13 +61,16 @@ export const makeMultiPayRequestLink = ({
   payer,
 }: {
   payer?: string
-  payments: Array<Partial<SendDetails>>
+  payments: Array<Partial<SendDetails> & { defaultTokenType?: TokenType }>
 }) => {
-  const ironed = payments.map(({ payee: address, balanceAmount, memo }) => ({
-    payee: address || null,
-    amount: balanceAmount?.integerBalance || null,
-    memo: encodeMemoString(memo),
-  }))
+  const ironed = payments.map(
+    ({ payee: address, balanceAmount, memo, defaultTokenType }) => ({
+      payee: address || null,
+      amount: balanceAmount?.integerBalance || null,
+      memo: encodeMemoString(memo),
+      defaultTokenType,
+    }),
+  )
   return [
     HELIUM_WALLET_LINK_SCHEME + PAYMENT_PATH,
     qs.stringify(

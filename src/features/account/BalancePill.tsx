@@ -28,7 +28,7 @@ const BalancePill = ({ netType, balance }: Props) => {
       case MobileTokens:
         return (
           <Box marginLeft="n_xs">
-            <MobileIcon height={18} width={18} />
+            <MobileIcon height={18} width={18} color={colors.blueBright500} />
           </Box>
         )
       case SecurityTokens:
