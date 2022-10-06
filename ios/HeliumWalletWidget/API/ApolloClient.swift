@@ -43,17 +43,23 @@ class Network {
             switch result {
             case let .success(response):
 
-                if response.data == nil || response.data?.account?.balance == nil {
+              if response.data == nil || response.data?.account?.balance == nil || response.data?.currentPrices?.hnt == nil {
                     completion(nil, fallback)
                 }
 
                 var chartValues: [Double] = []
                 let history = response.data?.accountBalanceHistory ?? []
 
-                let maxBalance = history.map { $0.balance }.max()
+                let balanceHis = history.map { $0.balance }
+                let maxBalance = balanceHis.max()
+                let minBalance = balanceHis.min()
 
                 for (_, element) in history.enumerated() {
-                    chartValues.append(element.balance / (maxBalance ?? element.balance))
+                    if minBalance == element.balance {
+                        chartValues.append(0.0)
+                    } else {
+                        chartValues.append(element.balance / (maxBalance ?? element.balance))
+                    }
                 }
 
                 let hntAsset = HeliumAsset(name: "Helium", symbol: "HNT", balance: response.data?.account?.balance ?? 0, price: response.data?.currentPrices?.hnt ?? 0.0)

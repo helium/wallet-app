@@ -7,8 +7,9 @@
 */
 
 "Wallet_Title" = "내 지갑";
+"Balance" = "Balance";
 "Balance_Widget_Title" = "Helium Balance Widget";
-"Balance_Widget_Description" = "Track your daily earnings and current balance in your default account.";
+"Balance_Widget_Description" = "Track your daily HNT earnings and current HNT balance in your default account.";
 
 "Wallet_Widget_Title" = "Helium Tokens Widget";
 "Wallet_Widget_Description" = "View balances for all helium tokens in your default account.";

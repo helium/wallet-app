@@ -164,8 +164,6 @@ const RequestScreen = () => {
         edges={edges}
         onLayout={handleContainerLayout}
         borderWidth={1}
-        borderTopStartRadius="xxl"
-        borderTopEndRadius="xxl"
       >
         <Text variant="subtitle2" paddingTop="l" textAlign="center">
           {t('request.title')}

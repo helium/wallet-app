@@ -21,7 +21,7 @@ type Props = {
 const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const [contentHeight, setContentHeight] = useState(0)
-  const { backgroundStyle } = useOpacity('grey600', 0.4)
+  const { backgroundStyle } = useOpacity('black400', 0.4)
 
   const handleOnClose = useCallback(() => {
     if (onClose) {

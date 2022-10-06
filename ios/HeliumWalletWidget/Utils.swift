@@ -72,7 +72,7 @@ enum Utils {
     // Empty account details for when Network issues occur
     static func emptyAccountDetails() -> DefaultAccountDetails {
         let assets: [HeliumAsset] = []
-        let accountDetails = DefaultAccountDetails(accountName: "", accountAddress: "", jazzSeed: 0, isTestnet: false, totalFiatBalance: 0, totalHNTBalance: 0, assets: assets, chartValues: [0.0, 0.0])
+        let accountDetails = DefaultAccountDetails(accountName: "", accountAddress: "", jazzSeed: 0, isTestnet: false, totalFiatBalance: 0, totalHNTBalance: 0, assets: assets, chartValues: [0, 1.0])
         return accountDetails
     }
 
