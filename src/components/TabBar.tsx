@@ -1,11 +1,20 @@
-import React, { memo, useCallback, useEffect, useState } from 'react'
+import React, {
+  FC,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { Insets, LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated'
-import { useVerticalHitSlop } from '../theme/themeHooks'
+import { SvgProps } from 'react-native-svg'
+import { Color } from '../theme/theme'
+import { useColors, useVerticalHitSlop } from '../theme/themeHooks'
 import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox, {
@@ -18,20 +27,40 @@ const TabBarItem = ({
   onLayout,
   onPress,
   hitSlop,
+  Icon,
+  iconSize,
+  iconColor,
+  value,
 }: {
-  title: string
   selected: boolean
   onPress: () => void
   onLayout: (event: LayoutChangeEvent) => void
   hitSlop: Insets | undefined
-}) => {
+} & TabBarOption) => {
+  const colors = useColors()
+
+  const iconColorValue = useMemo(() => {
+    if (!selected) return colors.secondaryText
+    if (!iconColor) return colors.primaryText
+    return colors[iconColor]
+  }, [colors, iconColor, selected])
+
   return (
     <TouchableOpacityBox
+      key={value}
       onPress={onPress}
       onLayout={onLayout}
       marginRight="m"
       hitSlop={hitSlop}
+      alignItems="center"
     >
+      {Icon && (
+        <Icon
+          height={iconSize || 20}
+          width={iconSize || 20}
+          color={iconColorValue}
+        />
+      )}
       <Text
         variant="subtitle2"
         color={selected ? 'primaryText' : 'secondaryText'}
@@ -44,8 +73,16 @@ const TabBarItem = ({
   )
 }
 
+export type TabBarOption = {
+  title: string
+  value: string
+  Icon?: FC<SvgProps>
+  iconSize?: number
+  iconColor?: Color
+}
+
 type Props = {
-  tabBarOptions: Array<{ title: string; value: string }>
+  tabBarOptions: Array<TabBarOption>
   selectedValue: string
   onItemSelected: (value: string) => void
 } & TouchableOpacityBoxProps
@@ -54,7 +91,7 @@ const TabBar = ({
   tabBarOptions,
   selectedValue,
   onItemSelected,
-  ...rest
+  ...containerProps
 }: Props) => {
   const hitSlop = useVerticalHitSlop('l')
   const [itemRects, setItemRects] = useState<Record<string, LayoutRectangle>>()
@@ -96,21 +133,16 @@ const TabBar = ({
   })
 
   return (
-    <Box>
-      <Box
-        flexDirection="row"
-        justifyContent="center"
-        paddingVertical="ms"
-        {...rest}
-      >
+    <Box {...containerProps}>
+      <Box flexDirection="row" justifyContent="center" paddingVertical="ms">
         {tabBarOptions.map((o) => (
           <TabBarItem
             key={o.value}
-            title={o.title}
             selected={o.value === selectedValue}
             onLayout={handleLayout(o.value)}
             onPress={handlePress(o.value)}
             hitSlop={hitSlop}
+            {...o}
           />
         ))}
       </Box>

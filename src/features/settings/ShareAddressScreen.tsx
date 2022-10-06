@@ -1,8 +1,9 @@
-import React, { memo, useMemo, useCallback } from 'react'
-import QRCode from 'react-qr-code'
+import React, { memo, useMemo, useCallback, useRef } from 'react'
+import QRCode from 'react-native-qrcode-svg'
 import ShareAddress from '@assets/images/shareAddress.svg'
 import { useTranslation } from 'react-i18next'
-import { Share } from 'react-native'
+import { Platform } from 'react-native'
+import Share, { ShareOptions } from 'react-native-share'
 import { Spacing } from '../../theme/theme'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import useHaptic from '../../utils/useHaptic'
@@ -22,12 +23,48 @@ const ShareAddressScreen = () => {
   const spacing = useSpacing()
   const padding = useMemo(() => 'm' as Spacing, [])
   const { t } = useTranslation()
+  const qrRef = useRef<{
+    toDataURL: (callback: (url: string) => void) => void
+  }>(null)
 
-  const handleShare = useCallback(() => {
+  const handleShare = useCallback(async () => {
     if (!currentAccount?.address) return
 
-    Share.share({ message: currentAccount.address })
-    triggerNavHaptic()
+    qrRef.current?.toDataURL((imgData) => {
+      const imageUrl = `data:image/png;base64,${imgData}`
+
+      let options: ShareOptions = {
+        failOnCancel: false,
+        title: 'image',
+        message: currentAccount?.address,
+        url: imageUrl,
+        type: 'image/png',
+      }
+
+      if (Platform.OS === 'ios') {
+        options = {
+          failOnCancel: false,
+          message: currentAccount?.address,
+          url: imageUrl,
+          type: 'image/png',
+          activityItemSources: [
+            {
+              item: {},
+              placeholderItem: {
+                type: 'text',
+                content: currentAccount?.address,
+              },
+              linkMetadata: {
+                title: currentAccount?.address,
+              },
+            },
+          ],
+        }
+      }
+
+      triggerNavHaptic()
+      Share.open(options)
+    })
   }, [currentAccount, triggerNavHaptic])
 
   if (!currentAccount?.address) return null
@@ -61,6 +98,9 @@ const ShareAddressScreen = () => {
           <QRCode
             size={QR_CONTAINER_SIZE - 2 * spacing[padding]}
             value={currentAccount.address}
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            getRef={qrRef}
           />
         </Box>
         <Box flexDirection="row" alignItems="center" marginTop="lx">

@@ -18,11 +18,12 @@ import {
 import { BoxProps } from '@shopify/restyle'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenHNT from '@assets/images/tokenHNT.svg'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useColors, useOpacity, useSpacing } from '../theme/themeHooks'
 import { Theme } from '../theme/theme'
 import Box from './Box'
 import useBackHandler from '../utils/useBackHandler'
-import ListItem from './ListItem'
+import ListItem, { LIST_ITEM_HEIGHT } from './ListItem'
 import { TokenType } from '../generated/graphql'
 
 type TokenListItem = {
@@ -45,11 +46,11 @@ const TokenSelector = forwardRef(
   ) => {
     useImperativeHandle(ref, () => ({ showTokens }))
 
+    const { bottom } = useSafeAreaInsets()
     const [currentToken, setCurrentToken] = useState<string>('HNT')
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-    const { backgroundStyle } = useOpacity('primaryBackground', 1)
+    const { backgroundStyle } = useOpacity('secondary', 1)
     const { m } = useSpacing()
-    const snapPoints = useMemo(() => ['70%', '90%'], [])
     const sheetHandleStyle = useMemo(() => ({ padding: m }), [m])
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
     const { primary, white, blueBright500 } = useColors()
@@ -97,6 +98,7 @@ const TokenSelector = forwardRef(
             onPress={handleTokenPress(item.value)}
             selected={item.value === currentToken}
             marginHorizontal="l"
+            hasDivider={false}
           />
         )
       },
@@ -121,12 +123,18 @@ const TokenSelector = forwardRef(
       [blueBright500, white],
     )
 
+    const snapPoints = useMemo(
+      () => [data.length * LIST_ITEM_HEIGHT + bottom, '50%'],
+      [bottom, data.length],
+    )
+
     return (
       <BottomSheetModalProvider>
         <Box flex={1} {...boxProps}>
           <BottomSheetModal
             ref={bottomSheetModalRef}
             index={0}
+            handleComponent={null}
             backgroundStyle={backgroundStyle}
             backdropComponent={renderBackdrop}
             snapPoints={snapPoints}

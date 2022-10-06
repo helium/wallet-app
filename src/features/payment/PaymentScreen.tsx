@@ -43,7 +43,6 @@ import { SendDetails } from '../../storage/TransactionProvider'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import PaymentItem from './PaymentItem'
 import usePaymentsReducer, { MAX_PAYMENTS } from './usePaymentsReducer'
-import BackgroundFill from '../../components/BackgroundFill'
 import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
 import PaymentCard from './PaymentCard'
 import { getMemoStrValid } from '../../components/MemoInput'
@@ -585,7 +584,7 @@ const PaymentScreen = () => {
                   color="primaryText"
                   maxFontSizeMultiplier={1}
                 >
-                  Send
+                  {t('payment.send')}
                 </Text>
                 <TouchableOpacityBox
                   onPress={navigation.goBack}
@@ -602,7 +601,8 @@ const PaymentScreen = () => {
                 keyboardShouldPersistTaps="always"
               >
                 <AccountButton
-                  accountIconSize={40}
+                  backgroundColor="secondary"
+                  accountIconSize={41}
                   paddingTop="l"
                   title={formatAccountAlias(currentAccount)}
                   subtitle="Sender Account"
@@ -612,10 +612,11 @@ const PaymentScreen = () => {
                   onPress={handleShowAccounts}
                   showBubbleArrow
                   marginHorizontal="l"
+                  marginBottom="xs"
                 />
 
                 <TokenButton
-                  paddingTop="l"
+                  backgroundColor="secondary"
                   title={t('payment.title', { ticker: currencyType.ticker })}
                   subtitle={balanceToString(
                     tokenType === 'hnt'
@@ -634,6 +635,8 @@ const PaymentScreen = () => {
                   // eslint-disable-next-line react/no-array-index-key
                   <React.Fragment key={index}>
                     <PaymentItem
+                      marginTop={index === 0 ? 'xs' : 'none'}
+                      marginBottom="l"
                       hasError={
                         p.address === currentAccount?.address || p.hasError
                       }
@@ -671,8 +674,8 @@ const PaymentScreen = () => {
                     marginVertical="l"
                     alignItems="center"
                     justifyContent="center"
+                    backgroundColor="secondary"
                   >
-                    <BackgroundFill backgroundColor="surface" opacity={0.2} />
                     <Text variant="body1" color="surfaceSecondaryText">
                       {t('payment.addRecipient')}
                     </Text>

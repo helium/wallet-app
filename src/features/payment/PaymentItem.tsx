@@ -21,6 +21,7 @@ import {
 } from 'react-native'
 import Address from '@helium/address'
 import { toUpper } from 'lodash'
+import { BoxProps } from '@shopify/restyle'
 import Box from '../../components/Box'
 import { accountNetType, ellipsizeAddress } from '../../utils/accountUtils'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -33,6 +34,7 @@ import TextInput from '../../components/TextInput'
 import { useIsHotspotOrValidatorQuery } from '../../generated/graphql'
 import AccountIcon from '../../components/AccountIcon'
 import BackgroundFill from '../../components/BackgroundFill'
+import { Theme } from '../../theme/theme'
 
 export type Payment = {
   address?: string
@@ -41,7 +43,7 @@ export type Payment = {
   memo?: string
   hasError?: boolean
   max?: boolean
-}
+} & BoxProps<Theme>
 
 type Props = {
   index: number
@@ -86,6 +88,7 @@ const PaymentItem = ({
   onToggleMax,
   onUpdateError,
   ticker,
+  ...boxProps
 }: Props) => {
   const { colorStyle } = useOpacity('primaryText', 0.3)
   const { dcToNetworkTokens } = useBalance()
@@ -193,11 +196,11 @@ const PaymentItem = ({
 
   return (
     <Box
-      marginTop="l"
       marginHorizontal="l"
       backgroundColor="secondary"
       borderRadius="xl"
       overflow="hidden"
+      {...boxProps}
     >
       {hasError && <BackgroundFill backgroundColor="error" opacity={0.2} />}
       <Box flexDirection="row">

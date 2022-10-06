@@ -4,7 +4,6 @@ import { useNavigation } from '@react-navigation/native'
 import React, { memo, useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent } from 'react-native'
-import BackgroundFill from '../../components/BackgroundFill'
 import Box from '../../components/Box'
 import LedgerPayment, { LedgerPaymentRef } from '../../components/LedgerPayment'
 import SubmitButton from '../../components/SubmitButton'
@@ -113,8 +112,6 @@ const PaymentCard = ({
         minHeight={232}
         backgroundColor="secondary"
       >
-        <BackgroundFill backgroundColor="secondary" opacity={0.4} />
-
         <PaymentSummary
           totalBalance={totalBalance}
           feeTokenBalance={feeTokenBalance}

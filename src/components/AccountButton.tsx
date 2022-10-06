@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { memo, useCallback } from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 import ChevronDown from '@assets/images/chevronDown.svg'
 import { Keyboard, StyleSheet } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
@@ -33,6 +33,7 @@ const AccountButton = ({
   innerBoxProps,
   showChevron = true,
   accountIconSize = 28,
+  backgroundColor: backgroundColorProps,
   ...boxProps
 }: Props) => {
   const hitSlop = useHitSlop('l')
@@ -41,6 +42,13 @@ const AccountButton = ({
     Keyboard.dismiss()
     onPress?.(address)
   }, [address, onPress])
+
+  const backgroundColor = useMemo(() => {
+    if (netType === NetType.TESTNET) return 'lividBrown'
+    if (backgroundColorProps) {
+      return backgroundColorProps
+    }
+  }, [backgroundColorProps, netType])
 
   return (
     <TouchableOpacityBox
@@ -51,9 +59,7 @@ const AccountButton = ({
       {...boxProps}
     >
       <Box
-        backgroundColor={
-          netType === NetType.TESTNET ? 'lividBrown' : 'secondary'
-        }
+        backgroundColor={backgroundColor}
         borderRadius="xl"
         alignItems="center"
         flexDirection="row"
@@ -75,13 +81,13 @@ const AccountButton = ({
         {showChevron && <ChevronDown />}
       </Box>
       {showBubbleArrow && (
-        <Box
-          backgroundColor={
-            netType === NetType.TESTNET ? 'lividBrown' : 'secondary'
-          }
-          alignSelf="center"
-          style={styles.rotatedBox}
-        />
+        <Box height={18}>
+          <Box
+            backgroundColor={backgroundColor}
+            alignSelf="center"
+            style={styles.rotatedBox}
+          />
+        </Box>
       )}
     </TouchableOpacityBox>
   )

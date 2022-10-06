@@ -21,9 +21,9 @@ const TokenTypeItem = ({ tokenType }: { tokenType: TokenType }) => {
   return (
     <Box alignItems="center">
       {tokenType === TokenType.Hnt ? (
-        <TokenHNT color={colors[color]} />
+        <TokenHNT color={colors[color]} height={41} width={41} />
       ) : (
-        <TokenMOBILE color={colors[color]} />
+        <TokenMOBILE color={colors[color]} height={41} width={41} />
       )}
     </Box>
   )
@@ -49,6 +49,7 @@ const TokenButton = ({
   netType = NetType.MAINNET,
   innerBoxProps,
   tokenType,
+  backgroundColor: backgroundColorProps,
   ...boxProps
 }: Props) => {
   const hitSlop = useHitSlop('l')
@@ -57,6 +58,13 @@ const TokenButton = ({
     Keyboard.dismiss()
     onPress?.(address)
   }, [address, onPress])
+
+  const backgroundColor = useMemo(() => {
+    if (netType === NetType.TESTNET) return 'lividBrown'
+    if (backgroundColorProps) {
+      return backgroundColorProps
+    }
+  }, [backgroundColorProps, netType])
 
   return (
     <TouchableOpacityBox
@@ -67,9 +75,7 @@ const TokenButton = ({
       {...boxProps}
     >
       <Box
-        backgroundColor={
-          netType === NetType.TESTNET ? 'lividBrown' : 'secondary'
-        }
+        backgroundColor={backgroundColor}
         borderRadius="xl"
         alignItems="center"
         flexDirection="row"
@@ -91,13 +97,13 @@ const TokenButton = ({
         <ChevronDown />
       </Box>
       {showBubbleArrow && (
-        <Box
-          backgroundColor={
-            netType === NetType.TESTNET ? 'lividBrown' : 'secondary'
-          }
-          alignSelf="center"
-          style={styles.rotatedBox}
-        />
+        <Box height={18}>
+          <Box
+            backgroundColor={backgroundColor}
+            alignSelf="center"
+            style={styles.rotatedBox}
+          />
+        </Box>
       )}
     </TouchableOpacityBox>
   )

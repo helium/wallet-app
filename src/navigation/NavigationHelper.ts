@@ -1,8 +1,7 @@
 import { createNavigationContainerRef } from '@react-navigation/native'
-import { RootNavigationProp } from './rootTypes'
 import { HomeStackParamList } from '../features/home/homeTypes'
 
-export const navigationRef = createNavigationContainerRef<RootNavigationProp>()
+export const navigationRef = createNavigationContainerRef()
 
 export const navToImportAccount = (
   params: HomeStackParamList['ReImportAccountNavigator'],
