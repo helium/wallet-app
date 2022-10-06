@@ -105,7 +105,7 @@ const AccountCreatePassphraseScreen = () => {
   }
 
   return (
-    <Box flex={1} backgroundColor="secondary">
+    <Box flex={1} backgroundColor="secondaryBackground">
       <TouchableOpacityBox padding="l" onPress={navToTop} alignItems="flex-end">
         <Close color={colors.primaryText} height={16} width={16} />
       </TouchableOpacityBox>

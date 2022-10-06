@@ -32,11 +32,9 @@ export type HomeStackParamList = {
   AddNewAccountNavigator: undefined
   ReImportAccountNavigator:
     | undefined
-    | { wordCount: 12 | 24 }
     | {
         screen: 'AccountImportScreen'
         params: {
-          wordCount: 12 | 24
           restoringAccount?: boolean
           accountAddress?: string
         }

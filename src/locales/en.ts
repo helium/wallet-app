@@ -41,14 +41,15 @@ export default {
       title: 'Please confirm your seed phrase',
     },
     pickKeyType: 'Pick Security Key Type:',
-    restoreChoice: '{{totalWords}} Words',
+    recoveryPhrase: 'Secret Phrase',
     subTitle:
       'To import your existing Helium account, enter its <havelockBlue>12</havelockBlue> or <jazzberryJam>24</jazzberryJam> word security key.',
     title: 'Import\nAccount',
     wordEntry: {
       placeholder: '{{ordinal}} word',
-      title: "Enter your\naccount's {{totalWords}}\nsecurity words.",
+      title: "Enter your\naccount's 12 or 24\nsecurity words.",
       word: 'Word {{ordinal}}',
+      changeWordAmount: 'I have a {{totalWords}}-word recovery phrase',
     },
   },
   accountSetup: {
@@ -442,9 +443,7 @@ export default {
     },
     missing: 'Account has no private key. Tap to restore.',
     missingAlert: {
-      button1: 'Restore 12 Words',
-      button2: 'Restore 24 Words',
-      button3: "Don't Show Again",
+      button1: 'Restore account with 12-24 Words',
       message:
         'Your private key for account {{address}} is missing and must be restored.',
       title: 'Private Key Not Found',

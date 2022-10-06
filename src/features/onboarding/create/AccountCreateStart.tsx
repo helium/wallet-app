@@ -21,7 +21,11 @@ const AccountCreateStart = ({ onCreate, inline }: Props) => {
   }, [navigation])
 
   return (
-    <SafeAreaBox flex={1} backgroundColor="secondary" paddingHorizontal="l">
+    <SafeAreaBox
+      flex={1}
+      backgroundColor="secondaryBackground"
+      paddingHorizontal="l"
+    >
       <Box width="100%" alignItems="flex-end" visible={!inline}>
         <CloseButton onPress={onClose} />
       </Box>

@@ -84,7 +84,11 @@ const AccountAssignScreen = () => {
   )
 
   return (
-    <SafeAreaBox backgroundColor="secondary" flex={1} paddingHorizontal="xl">
+    <SafeAreaBox
+      backgroundColor="secondaryBackground"
+      flex={1}
+      paddingHorizontal="xl"
+    >
       <KeyboardAvoidingView
         keyboardVerticalOffset={insets.top + spacing.l}
         behavior={Platform.OS === 'android' ? undefined : 'padding'}

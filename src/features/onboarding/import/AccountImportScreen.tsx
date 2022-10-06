@@ -48,8 +48,9 @@ const AccountImportScreen = () => {
   const parentNav = useNavigation<OnboardingNavigationProp>()
   const flatlistRef = useRef<FlatList>(null)
   const {
-    params: { wordCount, restoringAccount, accountAddress },
+    params: { restoringAccount, accountAddress },
   } = useRoute<Route>()
+  const [wordCount, setWordCount] = useState(12)
   const colors = useColors()
   const { t } = useTranslation()
   const flatListStyle = usePaddingStyle('m', ['left', 'right'])
@@ -77,6 +78,50 @@ const AccountImportScreen = () => {
     },
     [colors],
   )
+
+  const onWordAmountClicked = useCallback(() => {
+    const newWordCount = wordCount === 12 ? 24 : 12
+    setWordCount(newWordCount)
+
+    let newIndex = 0
+
+    // Set index if new word count is smaller
+    if (newWordCount < wordCount) {
+      const lastWordIndex = [...words]
+        .splice(0, newWordCount)
+        .reverse()
+        .findIndex((w) => w !== null)
+
+      if (lastWordIndex !== -1) {
+        newIndex = newWordCount - 1 - lastWordIndex
+      }
+    } else if (words.every((w) => w !== null)) {
+      // Set index to next word if all words are filled
+      newIndex = wordCount
+    }
+
+    setWordIndex(newIndex)
+
+    // Keep existing words if they fit within the bounds
+    setWords((w) => {
+      let fill = new Array(newWordCount).fill(null)
+      fill = fill.map((word, index) => {
+        if (index < newWordCount) {
+          return w[index]
+        }
+        return word
+      })
+      return [...fill]
+    })
+  }, [wordCount, words])
+
+  useEffect(() => {
+    flatlistRef.current?.scrollToIndex({
+      index: wordIndex,
+      animated: true,
+      viewPosition: 1.0,
+    })
+  }, [wordIndex])
 
   const handleSelectWord = useCallback(
     (selectedWord: string) => {
@@ -198,7 +243,7 @@ const AccountImportScreen = () => {
   )
 
   return (
-    <Box flex={1} backgroundColor="secondary">
+    <Box flex={1} backgroundColor="secondaryBackground">
       <TouchableOpacityBox padding="l" onPress={navToTop} alignItems="flex-end">
         <Close color={colors.primaryText} height={16} width={16} />
       </TouchableOpacityBox>
@@ -227,6 +272,17 @@ const AccountImportScreen = () => {
           horizontal
           ref={flatlistRef}
           showsHorizontalScrollIndicator={false}
+          initialScrollIndex={wordIndex}
+          onScrollToIndexFailed={(info) => {
+            const wait = new Promise((resolve) => setTimeout(resolve, 500))
+            wait.then(() => {
+              flatlistRef.current?.scrollToIndex({
+                index: info.index,
+                animated: true,
+                viewPosition: 1.0,
+              })
+            })
+          }}
         />
         <PassphraseAutocomplete
           word={words[wordIndex]}
@@ -238,6 +294,17 @@ const AccountImportScreen = () => {
           accentKey={getAccent(wordIndex).key}
           accentValue={getAccent(wordIndex).value}
         />
+        <TouchableOpacityBox
+          onPress={onWordAmountClicked}
+          flex={1}
+          alignItems="center"
+        >
+          <Text variant="body1">
+            {t('accountImport.wordEntry.changeWordAmount', {
+              totalWords: wordCount === 12 ? 24 : 12,
+            })}
+          </Text>
+        </TouchableOpacityBox>
       </KeyboardAwareScrollView>
     </Box>
   )
