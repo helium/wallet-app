@@ -9,7 +9,7 @@ import Intents
 import SwiftUI
 import WidgetKit
 
-struct HeliumBalanceWidgetEntryView: View {
+struct HeliumBalanceWidgetSmallView: View {
     var entry: HNTBalanceWidgetProvider.Entry
 
     var body: some View {

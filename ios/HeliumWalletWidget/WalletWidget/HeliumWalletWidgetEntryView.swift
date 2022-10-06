@@ -38,7 +38,8 @@ struct HeliumWalletWidget: Widget {
     let kind: String = "HeliumWalletWidget"
 
     var body: some WidgetConfiguration {
-        IntentConfiguration(kind: kind, intent: ConfigurationIntent.self, provider: Provider()) { entry in
+        // Fallback on earlier versions
+        return IntentConfiguration(kind: kind, intent: ConfigurationIntent.self, provider: Provider()) { entry in
             HeliumWalletWidgetEntryView(entry: entry)
         }
         .configurationDisplayName(String(localized: "Wallet_Widget_Title",
@@ -72,6 +73,14 @@ struct HeliumWalletWidget: Widget {
 // struct HeliumWalletWidget_Previews: PreviewProvider {
 //    static var previews: some View {
 //      Group {
+//        if #available(iOSApplicationExtension 16.0, *) {
+//          HeliumWalletWidgetEntryView(entry: WalletWidgetEntry(date: Date(), configuration: ConfigurationIntent(), accountDetails: Utils.mockAccountDetails()))
+//            .previewContext(WidgetPreviewContext(family: .accessoryCircular)).previewDisplayName("Circular Widget").environment(\.widgetFamily, .accessoryCircular).environment(\.colorScheme, .light)
+//          HeliumWalletWidgetEntryView(entry: WalletWidgetEntry(date: Date(), configuration: ConfigurationIntent(), accountDetails: Utils.mockAccountDetails()))
+//            .previewContext(WidgetPreviewContext(family: .accessoryRectangular)).previewDisplayName("Rectangular Widget").environment(\.widgetFamily, .accessoryRectangular).environment(\.colorScheme, .light)
+//          HeliumWalletWidgetEntryView(entry: WalletWidgetEntry(date: Date(), configuration: ConfigurationIntent(), accountDetails: Utils.mockAccountDetails()))
+//            .previewContext(WidgetPreviewContext(family: .accessoryInline)).previewDisplayName("Inline Widget").environment(\.widgetFamily, .accessoryInline).environment(\.colorScheme, .light)
+//        }
 //        HeliumWalletWidgetEntryView(entry: WalletWidgetEntry(date: Date(), configuration: ConfigurationIntent(), accountDetails: Utils.mockAccountDetails()))
 //          .previewContext(WidgetPreviewContext(family: .systemSmall)).previewDisplayName("Small Widget").environment(\.widgetFamily, .systemSmall).environment(\.colorScheme, .light)
 //        HeliumWalletWidgetEntryView(entry: WalletWidgetEntry(date: Date(), configuration: ConfigurationIntent(), accountDetails: Utils.mockAccountDetails()))

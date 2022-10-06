@@ -25,7 +25,7 @@ struct AssetPillView: View {
             Spacer().frame(width: 6)
             Text(assetBalance)
                 .bold()
-                .font(.system(size: 10.0)).foregroundColor(.white)
+                .font(.system(size: 10.0)).foregroundColor(.white).privacySensitive()
             Spacer().frame(width: 6)
         }.frame(height: 25).background(.clear).clipShape(Rectangle()).cornerRadius(12.5)
     }
@@ -34,7 +34,6 @@ struct AssetPillView: View {
 // Wallet Medium Widget View
 struct HeliumWalletWidgetMediumView: View {
     var entry: Provider.Entry
-
     @ViewBuilder
     var body: some View {
         let assets = entry.accountDetails.assets
@@ -60,12 +59,12 @@ struct HeliumWalletWidgetMediumView: View {
                             HStack {
                                 Spacer().frame(width: 8)
                                 Text("$\(entry.accountDetails.totalFiatBalance.kmFormatted)").bold()
-                                    .font(.system(size: 24.0)).foregroundColor(.white)
+                                    .font(.system(size: 24.0)).foregroundColor(.white).privacySensitive()
 
                                 VStack {
                                     Spacer().frame(height: 8)
                                     Text("\(entry.accountDetails.totalHNTBalance.fromBones.kmFormatted) \(Utils.networkTokenLabel(isTestnet: entry.accountDetails.isTestnet))")
-                                        .lineLimit(1).font(.system(size: 12.0)).foregroundColor(.white).opacity(0.6)
+                                        .lineLimit(1).font(.system(size: 12.0)).foregroundColor(.white).opacity(0.6).privacySensitive()
                                 }
 
                                 Spacer()
@@ -85,12 +84,12 @@ struct HeliumWalletWidgetMediumView: View {
                 ZStack {
                     Chart(data: data)
                         .chartStyle(
-                            LineChartStyle(.quadCurve, lineColor: Color("LineColor"), lineWidth: 1)
+                            LineChartStyle(.line, lineColor: Color("LineColor"), lineWidth: 1)
                         )
 
                     Chart(data: data)
                         .chartStyle(
-                            AreaChartStyle(.quadCurve, fill:
+                            AreaChartStyle(.line, fill:
                                 LinearGradient(gradient: .init(colors: [Color.white.opacity(0.2), Color.white.opacity(0.01)]), startPoint: .top, endPoint: .bottom))
                         )
                 }

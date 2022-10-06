@@ -46,7 +46,7 @@ struct AssetListItemView: View {
             VStack(alignment: .leading) {
                 Text("\(assetBalance) \(symbolName)")
                     .bold()
-                    .font(.system(size: 12.0)).foregroundColor(.white)
+                    .font(.system(size: 12.0)).foregroundColor(.white).privacySensitive()
                 HStack(spacing: 4) {
                     if assetPrice != "" && symbolName != "MOBILE" {
                         Text(assetPrice).lineLimit(1).font(.system(size: 10.0)).foregroundColor(.white).opacity(0.6)
@@ -161,10 +161,10 @@ struct HeliumWalletWidgetLargeView: View {
                 }
 
                 Text("$\(entry.accountDetails.totalFiatBalance.kmFormatted)").bold().lineLimit(1)
-                    .font(.system(size: 28.0)).foregroundColor(.white)
+                    .font(.system(size: 28.0)).foregroundColor(.white).privacySensitive()
 
                 Text("\(entry.accountDetails.totalHNTBalance.fromBones.kmFormatted) \(Utils.networkTokenLabel(isTestnet: entry.accountDetails.isTestnet))")
-                    .lineLimit(1).font(.system(size: 12.0)).foregroundColor(.white).opacity(0.6)
+                .lineLimit(1).font(.system(size: 12.0)).foregroundColor(.white).opacity(0.6).privacySensitive()
 
                 Spacer()
                 HStack(alignment: .center) {
@@ -180,12 +180,12 @@ struct HeliumWalletWidgetLargeView: View {
                 ZStack {
                     Chart(data: data)
                         .chartStyle(
-                            LineChartStyle(.quadCurve, lineColor: Color("LineColor"), lineWidth: 1)
+                            LineChartStyle(.line, lineColor: Color("LineColor"), lineWidth: 1)
                         )
 
                     Chart(data: data)
                         .chartStyle(
-                            AreaChartStyle(.quadCurve, fill:
+                            AreaChartStyle(.line, fill:
                                 LinearGradient(gradient: .init(colors: [Color.white.opacity(0.2), Color.white.opacity(0.01)]), startPoint: .top, endPoint: .bottom))
                         )
                 }.padding(.leading, 16).padding(.trailing, 16)

@@ -99,7 +99,7 @@ const palette = {
   black300: '#464646',
   black400: '#333333',
   black500: '#2B2B2B',
-  black600: '#303030',
+  black600: '#313131',
   black650: '#242424',
   black700: '#161616',
   black750: '#1A1A1A',
@@ -191,7 +191,7 @@ export const lightThemeColors = {
 export const darkThemeColors = {
   ...palette,
   primary: palette.black900,
-  secondary: palette.black750,
+  secondary: palette.black600,
   primaryBackground: palette.black,
   secondaryBackground: palette.black750,
   primaryText: palette.white,
