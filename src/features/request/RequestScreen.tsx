@@ -24,13 +24,19 @@ import { useKeyboard } from '@react-native-community/hooks'
 import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
 import { NetTypes as NetType } from '@helium/address'
 import QRCode from 'react-native-qrcode-svg'
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import TabBar, { TabBarOption } from '../../components/TabBar'
 import Text from '../../components/Text'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import Box from '../../components/Box'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import MemoInput, { useMemoValid } from '../../components/MemoInput'
-import { useColors, useOpacity, useSpacing } from '../../theme/themeHooks'
+import {
+  useBorderRadii,
+  useColors,
+  useOpacity,
+  useSpacing,
+} from '../../theme/themeHooks'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import AccountButton from '../../components/AccountButton'
 import { useAccountSelector } from '../../components/AccountSelector'
@@ -42,6 +48,7 @@ import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
 import { TokenType } from '../../generated/graphql'
 import TokenButton from '../../components/TokenButton'
 import TokenSelector, { TokenSelectorRef } from '../../components/TokenSelector'
+import FadeInOut from '../../components/FadeInOut'
 
 const QR_CONTAINER_SIZE = 220
 
@@ -58,7 +65,8 @@ const RequestScreen = () => {
   const { triggerNavHaptic } = useHaptic()
   const navigation = useNavigation()
   const { l } = useSpacing()
-  const { secondaryText } = useColors()
+  const { l: borderRadius } = useBorderRadii()
+  const { secondaryText, primaryText } = useColors()
   const [isEditing, setIsEditing] = useState(false)
   const { keyboardShown } = useKeyboard()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
@@ -116,6 +124,22 @@ const RequestScreen = () => {
   }, [currentAccount, memoValid, paymentAmount, tokenType, txnMemo])
 
   const [qrLink] = useDebounce(link, 500)
+
+  const qrStyle = useAnimatedStyle(() => {
+    const opac = requestType === 'qr' && !!qrLink && !keyboardShown ? 1 : 0
+    const animVal = withTiming(opac, { duration: 300 })
+    return {
+      opacity: animVal,
+      position: 'absolute',
+      height: QR_CONTAINER_SIZE,
+      justifyContent: 'center',
+      alignSelf: 'center',
+      backgroundColor: primaryText,
+      aspectRatio: 1,
+      padding: l,
+      borderRadius,
+    }
+  }, [requestType, qrLink, keyboardShown])
 
   useEffect(() => {
     const nextEditing = qrLink !== link || keyboardShown || hntKeyboardVisible
@@ -220,28 +244,12 @@ const RequestScreen = () => {
           />
           <KeyboardAwareScrollView enableOnAndroid>
             <Box marginHorizontal="l">
-              {requestType === 'link' && (
-                <TouchableOpacityBox
-                  onPress={copyLink}
-                  height={QR_CONTAINER_SIZE}
-                  borderRadius="xl"
-                  justifyContent="center"
-                >
-                  <Text variant="body1" color="greenBright500" padding="l">
-                    {link}
-                  </Text>
-                </TouchableOpacityBox>
-              )}
-              {requestType === 'qr' && !!qrLink && !keyboardShown && (
-                <Box
-                  height={QR_CONTAINER_SIZE}
-                  aspectRatio={1}
-                  backgroundColor="white"
-                  padding="l"
-                  borderRadius="xl"
-                  alignSelf="center"
-                  justifyContent="center"
-                >
+              <Box
+                height={QR_CONTAINER_SIZE}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Animated.View style={qrStyle}>
                   {!isEditing ? (
                     <QRCode
                       size={QR_CONTAINER_SIZE - 2 * l}
@@ -253,8 +261,22 @@ const RequestScreen = () => {
                   ) : (
                     <ActivityIndicator color={secondaryText} />
                   )}
-                </Box>
-              )}
+                </Animated.View>
+
+                {requestType === 'link' && (
+                  <FadeInOut>
+                    <TouchableOpacityBox
+                      onPress={copyLink}
+                      borderRadius="xl"
+                      justifyContent="center"
+                    >
+                      <Text variant="body1" color="greenBright500" padding="l">
+                        {link}
+                      </Text>
+                    </TouchableOpacityBox>
+                  </FadeInOut>
+                )}
+              </Box>
 
               <AccountButton
                 accountIconSize={41}
@@ -293,7 +315,7 @@ const RequestScreen = () => {
                   justifyContent="center"
                   onPress={handleShowPaymentKeyboard}
                 >
-                  <Text variant="body3" color="white">
+                  <Text variant="body3" color="primaryText">
                     {t('request.amount')}
                   </Text>
                   {!paymentAmount || paymentAmount.integerBalance === 0 ? (
@@ -316,7 +338,7 @@ const RequestScreen = () => {
                   marginVertical="ms"
                 />
 
-                <Text variant="body3" color="white">
+                <Text variant="body3" color="primaryText">
                   {t('request.memo')}
                 </Text>
                 <MemoInput
