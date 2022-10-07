@@ -53,13 +53,16 @@ class Network {
                 let balanceHis = history.map { $0.balance }
                 let maxBalance = balanceHis.max()
                 let minBalance = balanceHis.min()
+              
+                // Calculate diff to use as divisor to get a number between 0 and 1 for Charts Package
+                let diff = (maxBalance ?? 0.0) - (minBalance ?? 0.0)
 
                 for (_, element) in history.enumerated() {
-                    if minBalance == element.balance {
-                        chartValues.append(0.0)
-                    } else {
-                        chartValues.append(element.balance / (maxBalance ?? element.balance))
-                    }
+                  if (diff != 0) {
+                    chartValues.append((element.balance - minBalance!) / diff)
+                  } else {
+                    chartValues.append(0.5)
+                  }
                 }
 
                 let hntAsset = HeliumAsset(name: "Helium", symbol: "HNT", balance: response.data?.account?.balance ?? 0, price: response.data?.currentPrices?.hnt ?? 0.0)
