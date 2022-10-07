@@ -84,12 +84,12 @@ struct HeliumWalletWidgetMediumView: View {
                 ZStack {
                     Chart(data: data)
                         .chartStyle(
-                            LineChartStyle(.line, lineColor: Color("LineColor"), lineWidth: 1)
+                            LineChartStyle(data.count > 2 ? .quadCurve : .line, lineColor: Color("LineColor"), lineWidth: 1)
                         )
 
                     Chart(data: data)
                         .chartStyle(
-                            AreaChartStyle(.line, fill:
+                            AreaChartStyle(data.count > 2 ? .quadCurve : .line, fill:
                                 LinearGradient(gradient: .init(colors: [Color.white.opacity(0.2), Color.white.opacity(0.01)]), startPoint: .top, endPoint: .bottom))
                         )
                 }

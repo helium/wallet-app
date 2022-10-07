@@ -180,12 +180,12 @@ struct HeliumWalletWidgetLargeView: View {
                 ZStack {
                     Chart(data: data)
                         .chartStyle(
-                            LineChartStyle(.line, lineColor: Color("LineColor"), lineWidth: 1)
+                            LineChartStyle(data.count > 2 ? .quadCurve : .line, lineColor: Color("LineColor"), lineWidth: 1)
                         )
 
                     Chart(data: data)
                         .chartStyle(
-                            AreaChartStyle(.line, fill:
+                          AreaChartStyle(data.count > 2 ? .quadCurve : .line, fill:
                                 LinearGradient(gradient: .init(colors: [Color.white.opacity(0.2), Color.white.opacity(0.01)]), startPoint: .top, endPoint: .bottom))
                         )
                 }.padding(.leading, 16).padding(.trailing, 16)
@@ -193,7 +193,7 @@ struct HeliumWalletWidgetLargeView: View {
                 VStack(spacing: 0) {
                     Divider().padding(.leading, 16).padding(.trailing, 16)
                     ForEach(0 ..< 2, id: \.self) { i in
-                        AssetListItemView(imageName: Utils.getCoinImageName(assets[i].symbol), assetBalance: Utils.getCurrentBalance(asset: assets[i]), symbolName: assets[i].symbol, assetPrice: "$\(String(format: "%.2f", getCurrentAssetPrice(assets[i]))) \(assetPriceConversion(assets[i].symbol))", isTestnet: entry.accountDetails.isTestnet)
+                      AssetListItemView(imageName: Utils.getCoinImageName(assets[i].symbol), assetBalance: Utils.getCurrentBalance(asset: assets[i]), symbolName: assets[i].symbol, assetPrice: "$\(String(format: "%.2f", getCurrentAssetPrice(assets[i]))) \(assetPriceConversion(assets[i].symbol))", isTestnet: entry.accountDetails.isTestnet).padding(.leading, 4).padding(.trailing, 4)
                     }
                     Spacer().frame(height: 8.0)
                 }
