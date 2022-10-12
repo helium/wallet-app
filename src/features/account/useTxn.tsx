@@ -16,11 +16,13 @@ import animalName from 'angry-purple-tiger'
 import shortLocale from '../../utils/formatDistance'
 import { Color } from '../../theme/theme'
 import { useColors } from '../../theme/themeHooks'
-import { Activity, TokenType } from '../../generated/graphql'
+import { Activity } from '../../generated/graphql'
 import { accountCurrencyType, ellipsizeAddress } from '../../utils/accountUtils'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import { decodeMemoString, DEFAULT_MEMO } from '../../components/MemoInput'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { TokenType } from '../../types/activity'
 
 export const TxnTypeKeys = [
   'rewards_v1',
@@ -42,9 +44,9 @@ type TxnType = typeof TxnTypeKeys[number]
 
 const useTxn = (
   item?: Activity,
-  address?: string,
   dateOpts?: { dateFormat?: string; now?: Date },
 ) => {
+  const { currentNetworkAddress: address } = useAccountStorage()
   const colors = useColors()
   const { bonesToBalance } = useBalance()
   const { t } = useTranslation()
@@ -422,7 +424,7 @@ const useTxn = (
     }
 
     return ''
-  }, [item, formatAmount, isSelling, address, bonesToBalance])
+  }, [item, formatAmount, isSelling, bonesToBalance, address])
 
   const time = useMemo(() => {
     if (!item) return ''
@@ -535,7 +537,7 @@ type TxnDetails = {
   isValidatorTxn: boolean
   isHotspotTxn: boolean
 }
-export const useTxnDetails = (item?: Activity, address?: string) => {
+export const useTxnDetails = (item?: Activity) => {
   const {
     listIcon,
     title,
@@ -551,7 +553,7 @@ export const useTxnDetails = (item?: Activity, address?: string) => {
     isHotspotTxn,
     isValidatorTxn,
     getAmountTitle,
-  } = useTxn(item, address || '', {
+  } = useTxn(item, {
     dateFormat: 'dd MMMM yyyy HH:MM',
   })
 

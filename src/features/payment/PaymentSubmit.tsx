@@ -2,16 +2,18 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import { ApolloError } from '@apollo/client'
 import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
+import { SerializedError } from '@reduxjs/toolkit'
 import Box from '../../components/Box'
-import animateTransition from '../../utils/animateTransition'
 import PaymentSubmitLoading from './PaymentSubmitLoading'
 import PaymentSuccess from './PaymentSuccess'
 import { Payment } from './PaymentItem'
 import PaymentError from './PaymentError'
+import FadeInOut from '../../components/FadeInOut'
+import globalStyles from '../../theme/globalStyles'
 
 type Props = {
   submitLoading: boolean
-  submitError?: ApolloError | Error
+  submitError?: ApolloError | Error | SerializedError
   submitSucceeded?: boolean
   totalBalance: Balance<TestNetworkTokens | NetworkTokens>
   feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
@@ -33,7 +35,7 @@ const PaymentSubmit = ({
   actionTitle,
 }: Props) => {
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<ApolloError | Error>()
+  const [error, setError] = useState<ApolloError | Error | SerializedError>()
   const [succeeded, setSucceeded] = useState(false)
   const [videoFinished, setVideoFinished] = useState(false)
 
@@ -50,7 +52,6 @@ const PaymentSubmit = ({
       return
     }
 
-    animateTransition('PaymentSubmit.Loading')
     setLoading(true)
   }, [loading, submitLoading])
 
@@ -67,7 +68,6 @@ const PaymentSubmit = ({
       return
     }
 
-    animateTransition('PaymentSubmit.Error')
     setError(submitError)
   }, [error, submitError])
 
@@ -77,8 +77,6 @@ const PaymentSubmit = ({
   )
 
   const handleVideoEnded = useCallback(() => {
-    animateTransition('PaymentSubmit.VideoFinished')
-
     setVideoFinished(true)
   }, [])
 
@@ -88,25 +86,29 @@ const PaymentSubmit = ({
     }
     if (videoFinished && succeeded) {
       return (
-        <PaymentSuccess
-          totalBalance={totalBalance}
-          feeTokenBalance={feeTokenBalance}
-          payments={payments}
-          onSuccess={onSuccess}
-          actionTitle={actionTitle}
-        />
+        <FadeInOut style={globalStyles.container}>
+          <PaymentSuccess
+            totalBalance={totalBalance}
+            feeTokenBalance={feeTokenBalance}
+            payments={payments}
+            onSuccess={onSuccess}
+            actionTitle={actionTitle}
+          />
+        </FadeInOut>
       )
     }
 
     if (videoFinished && submitError) {
       return (
-        <PaymentError
-          totalBalance={totalBalance}
-          feeTokenBalance={feeTokenBalance}
-          payments={payments}
-          error={submitError}
-          onRetry={handleRetry}
-        />
+        <FadeInOut style={globalStyles.container}>
+          <PaymentError
+            totalBalance={totalBalance}
+            feeTokenBalance={feeTokenBalance}
+            payments={payments}
+            error={submitError}
+            onRetry={handleRetry}
+          />
+        </FadeInOut>
       )
     }
   }, [

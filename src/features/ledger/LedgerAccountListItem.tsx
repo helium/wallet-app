@@ -1,6 +1,5 @@
 import React, { useCallback, memo, useMemo } from 'react'
 import CheckBox from '@react-native-community/checkbox'
-import { TokenType } from '../../generated/graphql'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import Surface from '../../components/Surface'
@@ -9,6 +8,7 @@ import { useColors } from '../../theme/themeHooks'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import { ellipsizeAddress, isTestnet } from '../../utils/accountUtils'
 import { LedgerAccount } from '../../utils/useLedger'
+import { TokenType } from '../../generated/graphql'
 
 export enum Section {
   NEW_ACCOUNT = 0,

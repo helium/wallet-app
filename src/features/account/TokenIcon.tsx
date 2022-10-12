@@ -2,8 +2,11 @@ import React from 'react'
 import TokenHNT from '@assets/images/tokenHNT.svg'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenDC from '@assets/images/tokenDC.svg'
+import TokenSOL from '@assets/images/tokenSolana.svg'
 import { useColors } from '../../theme/themeHooks'
-import { TokenType } from '../../generated/graphql'
+import Box from '../../components/Box'
+import BackgroundFill from '../../components/BackgroundFill'
+import { TokenType } from '../../types/activity'
 
 type Props = {
   tokenType: TokenType
@@ -23,6 +26,20 @@ const TokenIcon = ({ tokenType, size = 40 }: Props) => {
       return <TokenDC width={size} height={size} />
     case TokenType.Hst:
       return <TokenHNT color={colors.purple500} width={size} height={size} />
+    case TokenType.Sol:
+      return (
+        <Box
+          width={size}
+          height={size}
+          alignItems="center"
+          justifyContent="center"
+          borderRadius="round"
+          overflow="hidden"
+        >
+          <BackgroundFill backgroundColor="solanaPurple" opacity={0.35} />
+          <TokenSOL width={size * 0.5} height={size * 0.5} />
+        </Box>
+      )
   }
 }
 
