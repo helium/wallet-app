@@ -1,13 +1,12 @@
 import React, { memo, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as LocalAuthentication from 'expo-local-authentication'
-import { AnimatePresence } from 'moti'
 import useAppState from 'react-native-appstate-hook'
 import { useAsync } from 'react-async-hook'
+import { FadeIn, FadeOutDown } from 'react-native-reanimated'
 import ConfirmPinView from '../../components/ConfirmPinView'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import useAlert from '../../utils/useAlert'
-import MotiBox from '../../components/MotiBox'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import {
   deleteSecureItem,
@@ -15,6 +14,7 @@ import {
   storeSecureItem,
 } from '../../storage/secureStorage'
 import usePrevious from '../../utils/usePrevious'
+import { ReAnimatedBox } from '../../components/AnimatedBox'
 
 type Props = { children: React.ReactNode }
 const LockScreen = ({ children }: Props) => {
@@ -98,42 +98,28 @@ const LockScreen = ({ children }: Props) => {
 
   return (
     <>
+      {!!locked && (
+        <ReAnimatedBox
+          entering={FadeIn}
+          exiting={FadeOutDown}
+          zIndex={9999}
+          top={0}
+          bottom={0}
+          left={0}
+          right={0}
+          position="absolute"
+        >
+          <ConfirmPinView
+            originalPin={pin?.value || ''}
+            title={t('auth.title')}
+            subtitle={t('auth.enterCurrent')}
+            pinSuccess={handleSuccess}
+            onCancel={handleSignOut}
+            clearable
+          />
+        </ReAnimatedBox>
+      )}
       {children}
-
-      <AnimatePresence>
-        {locked && (
-          <MotiBox
-            backgroundColor="primaryBackground"
-            flex={1}
-            position="absolute"
-            top={0}
-            left={0}
-            right={0}
-            bottom={0}
-            from={{
-              opacity: 0,
-              scale: 0.9,
-            }}
-            animate={{
-              opacity: 1,
-              scale: 1,
-            }}
-            exit={{
-              opacity: 0,
-              scale: 0.9,
-            }}
-          >
-            <ConfirmPinView
-              originalPin={pin?.value || ''}
-              title={t('auth.title')}
-              subtitle={t('auth.enterCurrent')}
-              pinSuccess={handleSuccess}
-              onCancel={handleSignOut}
-              clearable
-            />
-          </MotiBox>
-        )}
-      </AnimatePresence>
     </>
   )
 }

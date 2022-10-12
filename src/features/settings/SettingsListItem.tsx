@@ -1,4 +1,4 @@
-import React, { memo, ReactText, useMemo } from 'react'
+import React, { memo, ReactText, useCallback, useMemo, useRef } from 'react'
 import { Linking, Platform, Switch } from 'react-native'
 import CarotRight from '@assets/images/carot-right.svg'
 import LinkImg from '@assets/images/link.svg'
@@ -7,9 +7,12 @@ import { useColors } from '../../theme/themeHooks'
 import Text, { TextProps } from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { Color } from '../../theme/theme'
-import HeliumActionSheet from '../../components/HeliumActionSheet'
+import HeliumActionSheet, {
+  HeliumActionSheetRef,
+} from '../../components/HeliumActionSheet'
 import { hp } from '../../utils/layout'
 import Box from '../../components/Box'
+import sleep from '../../utils/sleep'
 
 export type SelectProps = {
   onDonePress?: () => void
@@ -52,6 +55,7 @@ const SettingsListItem = ({
   item: SettingsListItemType
   isTop?: boolean
 }) => {
+  const actionSheetRef = useRef<HeliumActionSheetRef>(null)
   const colors = useColors()
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
 
@@ -62,6 +66,10 @@ const SettingsListItem = ({
 
     if (onPress) {
       onPress()
+    }
+
+    if (select) {
+      actionSheetRef.current?.show()
     }
   }
 
@@ -103,6 +111,16 @@ const SettingsListItem = ({
   if (destructive && disabled) textColor = 'red400'
   if (!destructive && disabled) textColor = 'grey400'
 
+  const handleSelect = useCallback(
+    async (itemValue: string | number, itemIndex: number) => {
+      // Need to wait a little bit to avoid a glitch with the animation
+      await sleep(100)
+
+      select?.onValueSelect(itemValue, itemIndex)
+    },
+    [select],
+  )
+
   return (
     <TouchableOpacityBox
       flexDirection="row"
@@ -113,7 +131,7 @@ const SettingsListItem = ({
       paddingHorizontal="l"
       marginBottom="xxxs"
       onPress={handlePress}
-      disabled={disabled || !(onPress || openUrl)}
+      disabled={disabled || !(onPress || openUrl || select)}
       borderBottomColor="surfaceSecondary"
       borderBottomWidth={1}
       borderTopColor="surfaceSecondary"
@@ -157,9 +175,10 @@ const SettingsListItem = ({
       )}
       {select && (
         <HeliumActionSheet
+          ref={actionSheetRef}
           data={select.items}
           selectedValue={value as string}
-          onValueSelected={select.onValueSelect}
+          onValueSelected={handleSelect}
           title={title}
           textProps={actionSheetTextProps}
           iconVariant="none"

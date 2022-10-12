@@ -12,7 +12,7 @@ import {
   PaymentRouteParam,
 } from '../features/home/homeTypes'
 import { SendDetails } from '../storage/TransactionProvider'
-import { TokenType } from '../generated/graphql'
+import { TokenType } from '../types/activity'
 
 export const APP_LINK_SCHEME = Linking.createURL('')
 export const PAYMENT_PATH = 'payment'

@@ -3,8 +3,10 @@ import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
 import { PaymentV2, TokenBurnV1, Transaction } from '@helium/transactions'
 import React, { createContext, ReactNode, useContext, useEffect } from 'react'
 import { encodeMemoString } from '../components/MemoInput'
-import { TokenType, useTxnConfigVarsQuery } from '../generated/graphql'
+import { useTxnConfigVarsQuery } from '../generated/graphql'
+import { TokenType } from '../types/activity'
 import { useAccountStorage } from './AccountStorageProvider'
+import { useAppStorage } from './AppStorageProvider'
 import { getKeypair } from './secureStorage'
 
 export const EMPTY_B58_ADDRESS = Address.fromB58(
@@ -20,6 +22,7 @@ export type SendDetails = {
 
 const useTransactionHook = () => {
   const { currentAccount } = useAccountStorage()
+  const { l1Network } = useAppStorage()
   const { data: txnVarsData, error } = useTxnConfigVarsQuery({
     fetchPolicy: 'cache-and-network',
     variables: { address: currentAccount?.address || '' },
@@ -42,6 +45,9 @@ const useTransactionHook = () => {
     shouldSign?: boolean
     payerB58?: string
   }) => {
+    if (l1Network !== 'helium') {
+      throw new Error(`makeBurnTxn not supported for ${l1Network}`)
+    }
     const {
       payeeB58,
       amount,
@@ -100,6 +106,10 @@ const useTransactionHook = () => {
     signedTxn?: PaymentV2
     unsignedTxn: PaymentV2
   }> => {
+    if (l1Network !== 'helium') {
+      throw new Error(`makePaymentTxn not supported for ${l1Network}`)
+    }
+
     if (!currentAccount?.address) {
       throw new Error('No account selected for payment')
     }
