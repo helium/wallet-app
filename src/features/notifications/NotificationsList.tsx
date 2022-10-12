@@ -17,6 +17,8 @@ import { useNotificationStorage } from '../../storage/NotificationStorageProvide
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useNotificationsQuery } from '../../generated/graphql'
 import parseMarkup from '../../utils/parseMarkup'
+import { useGetNotificationsQuery } from '../../store/slices/walletRestApi'
+import { heliumAddressToSolAddress } from '../../utils/accountUtils'
 
 const NotificationsList = () => {
   const colors = useColors()
@@ -26,7 +28,7 @@ const NotificationsList = () => {
     useNotificationStorage()
   const { accounts, currentAccount } = useAccountStorage()
 
-  const { data: notifications } = useNotificationsQuery({
+  const { data: v1Notifications } = useNotificationsQuery({
     variables: {
       address: currentAccount?.address || '',
       resource: selectedList || '',
@@ -34,6 +36,30 @@ const NotificationsList = () => {
     skip: !currentAccount?.address || !selectedList,
     fetchPolicy: 'cache-and-network',
   })
+
+  const solanaAddress = useMemo(() => {
+    const sol = heliumAddressToSolAddress(selectedList)
+    if (sol) return sol
+    return selectedList
+  }, [selectedList])
+
+  const { currentData: v2Notifications } = useGetNotificationsQuery(
+    solanaAddress,
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  )
+
+  const notifications = useMemo(() => {
+    const all = [
+      ...(v2Notifications || []),
+      ...(v1Notifications?.notifications || []),
+    ]
+    return all.sort(
+      ({ time: timeA }, { time: timeB }) =>
+        parseISO(timeB).getTime() - parseISO(timeA).getTime(),
+    )
+  }, [v1Notifications, v2Notifications])
 
   const title = useMemo(() => {
     switch (selectedList) {
@@ -148,7 +174,7 @@ const NotificationsList = () => {
         {title}
       </Text>
       <BottomSheetFlatList
-        data={notifications?.notifications || []}
+        data={notifications || []}
         renderItem={renderItem}
         ListEmptyComponent={EmptyListView}
       />

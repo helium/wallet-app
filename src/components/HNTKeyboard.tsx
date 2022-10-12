@@ -15,7 +15,11 @@ import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
-import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
+import Balance, {
+  NetworkTokens,
+  SolTokens,
+  TestNetworkTokens,
+} from '@helium/currency'
 import { useTranslation } from 'react-i18next'
 import PaymentArrow from '@assets/images/paymentArrow.svg'
 import { LayoutChangeEvent } from 'react-native'
@@ -42,8 +46,10 @@ import HandleBasic from './HandleBasic'
 import { Theme } from '../theme/theme'
 import { CSAccount } from '../storage/cloudStorage'
 import useBackHandler from '../utils/useBackHandler'
-import { TokenType } from '../generated/graphql'
 import { Payment } from '../features/payment/PaymentItem'
+import { useAppStorage } from '../storage/AppStorageProvider'
+import { solAddressToHeliumAddress } from '../utils/accountUtils'
+import { TokenType } from '../types/activity'
 
 type ShowOptions = {
   payer?: CSAccount | null
@@ -61,7 +67,7 @@ export type HNTKeyboardRef = {
 
 type Props = {
   tokenType: TokenType
-  networkFee?: Balance<NetworkTokens | TestNetworkTokens>
+  networkFee?: Balance<NetworkTokens | TestNetworkTokens | SolTokens>
   children: ReactNode
   handleVisible?: (visible: boolean) => void
   onConfirmBalance: (opts: {
@@ -96,22 +102,20 @@ const HNTKeyboardSelector = forwardRef(
     const [headerHeight, setHeaderHeight] = useState(0)
     const containerStyle = useSafeTopPaddingStyle('android')
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
+    const { l1Network } = useAppStorage()
 
     const {
       oracleDateTime,
       floatToBalance,
-      accountNetworkBalance,
-      accountMobileBalance,
+      networkBalance,
+      mobileBalance,
       bonesToBalance,
     } = useBalance()
     const [timeStr, setTimeStr] = useState('')
 
     const balanceForTokenType = useMemo(
-      () =>
-        tokenType === TokenType.Hnt
-          ? accountNetworkBalance
-          : accountMobileBalance,
-      [accountMobileBalance, accountNetworkBalance, tokenType],
+      () => (tokenType === TokenType.Hnt ? networkBalance : mobileBalance),
+      [mobileBalance, networkBalance, tokenType],
     )
 
     const snapPoints = useMemo(() => {
@@ -120,6 +124,7 @@ const HNTKeyboardSelector = forwardRef(
     }, [containerHeight, headerHeight])
 
     useEffect(() => {
+      if (l1Network === 'solana_dev') return
       const timer = setTimeout(() => {
         if (!oracleDateTime) return '???'
 
@@ -140,6 +145,15 @@ const HNTKeyboardSelector = forwardRef(
         return (payee as CSAccount).address
       }
     }, [payee])
+
+    const payeeHeliumAddress = useMemo(() => {
+      if (!payeeAddress) return
+
+      if (l1Network === 'helium') {
+        return payeeAddress
+      }
+      return solAddressToHeliumAddress(payeeAddress)
+    }, [l1Network, payeeAddress])
 
     const valueAsBalance = useMemo(() => {
       const stripped = value
@@ -206,7 +220,7 @@ const HNTKeyboardSelector = forwardRef(
     const [maxEnabled, setMaxEnabled] = useState(false)
 
     const handleSetMax = useCallback(() => {
-      if (!accountNetworkBalance || !accountMobileBalance || !networkFee) return
+      if (!networkBalance || !mobileBalance || !networkFee) return
 
       const currentAmount = getNextPayments()
         .filter((_v, index) => index !== paymentIndex || 0) // Remove the payment being updated
@@ -219,11 +233,12 @@ const HNTKeyboardSelector = forwardRef(
 
       let maxBalance: Balance<NetworkTokens | TestNetworkTokens> | undefined
       if (tokenType === TokenType.Hnt) {
-        maxBalance = accountNetworkBalance
-          .minus(currentAmount)
-          .minus(networkFee)
+        maxBalance = networkBalance.minus(currentAmount)
+        if (l1Network === 'helium') {
+          maxBalance = maxBalance.minus(networkFee)
+        }
       } else {
-        maxBalance = accountMobileBalance.minus(currentAmount)
+        maxBalance = mobileBalance.minus(currentAmount)
       }
 
       if (maxBalance.integerBalance < 0) {
@@ -241,14 +256,15 @@ const HNTKeyboardSelector = forwardRef(
       setValue(maxEnabled ? '0' : val)
       setMaxEnabled((m) => !m)
     }, [
-      accountNetworkBalance,
-      accountMobileBalance,
+      networkBalance,
+      mobileBalance,
       networkFee,
       getNextPayments,
       bonesToBalance,
       tokenType,
       maxEnabled,
       paymentIndex,
+      l1Network,
     ])
 
     const renderBackdrop = useCallback(
@@ -286,7 +302,7 @@ const HNTKeyboardSelector = forwardRef(
                   </>
                 )}
                 {payeeAddress && (
-                  <AccountIcon size={40} address={payeeAddress || '1'} />
+                  <AccountIcon size={40} address={payeeHeliumAddress || '1'} />
                 )}
               </Box>
               <Text
@@ -311,6 +327,7 @@ const HNTKeyboardSelector = forwardRef(
         containerStyle,
         handleHeaderLayout,
         payeeAddress,
+        payeeHeliumAddress,
         payer,
         t,
         valueAsBalance,
@@ -368,31 +385,34 @@ const HNTKeyboardSelector = forwardRef(
     const hasSufficientBalance = useMemo(() => {
       if (!payer) return true
 
-      if (
-        !networkFee ||
-        !valueAsBalance ||
-        !accountNetworkBalance ||
-        !accountMobileBalance
-      ) {
+      if (!networkFee || !valueAsBalance || !networkBalance || !mobileBalance) {
         return false
+      }
+
+      if (l1Network === 'solana_dev') {
+        if (tokenType === TokenType.Mobile) {
+          return mobileBalance.minus(valueAsBalance).integerBalance >= 0
+        }
+        return networkBalance.minus(valueAsBalance).integerBalance >= 0
       }
 
       if (tokenType === TokenType.Mobile) {
         // If paying with mobile, they need to have enough mobile to cover the payment
         // and enough hnt to cover the fee
         const hasEnoughHnt =
-          accountNetworkBalance.minus(networkFee).integerBalance >= 0
+          networkBalance.minus(networkFee).integerBalance >= 0
         const hasEnoughMobile =
-          accountMobileBalance.minus(valueAsBalance).integerBalance >= 0
+          mobileBalance.minus(valueAsBalance).integerBalance >= 0
         return hasEnoughHnt && hasEnoughMobile
       }
       return (
-        accountNetworkBalance.minus(networkFee).minus(valueAsBalance)
-          .integerBalance >= 0
+        networkBalance.minus(networkFee).minus(valueAsBalance).integerBalance >=
+        0
       )
     }, [
-      accountMobileBalance,
-      accountNetworkBalance,
+      l1Network,
+      mobileBalance,
+      networkBalance,
       networkFee,
       payer,
       tokenType,

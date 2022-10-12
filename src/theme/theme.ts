@@ -157,6 +157,9 @@ const palette = {
   red400: '#FF6666',
   red500: '#E43B70',
 
+  solanaGreen: '#14F195',
+  solanaPurple: '#9945FF',
+
   transparent: '#00000000',
   transparent10: '#FFFFFF1A',
 

@@ -8,12 +8,11 @@ import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 
 type Props = {
   item: Activity
-  accountAddress?: string
   now: Date
   isLast: boolean
   onPress: (item: Activity) => void
 }
-const TxnListItem = ({ item, accountAddress, now, isLast, onPress }: Props) => {
+const TxnListItem = ({ item, now, isLast, onPress }: Props) => {
   const {
     listIcon,
     title,
@@ -21,7 +20,7 @@ const TxnListItem = ({ item, accountAddress, now, isLast, onPress }: Props) => {
     time,
     memo: txnMemo,
     getAmount,
-  } = useTxn(item, accountAddress || '', { now })
+  } = useTxn(item, { now })
   const amt = useMemo(() => getAmount(), [getAmount])
 
   const handlePress = useCallback(() => {
