@@ -4,6 +4,7 @@ import React, { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import FailureIcon from '@assets/images/paymentFailure.svg'
 import { ApolloError } from '@apollo/client'
+import { SerializedError } from '@reduxjs/toolkit'
 import BackgroundFill from '../../components/BackgroundFill'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
@@ -15,7 +16,7 @@ type Props = {
   totalBalance: Balance<TestNetworkTokens | NetworkTokens>
   feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
   payments: Payment[]
-  error?: ApolloError | Error
+  error?: ApolloError | Error | SerializedError
   onRetry: () => void
 }
 

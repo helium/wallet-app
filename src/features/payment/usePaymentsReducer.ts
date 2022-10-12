@@ -5,6 +5,7 @@ import Balance, {
   IotTokens,
   MobileTokens,
   NetworkTokens,
+  SolTokens,
   TestNetworkTokens,
   USDollars,
 } from '@helium/currency'
@@ -14,6 +15,8 @@ import { useReducer } from 'react'
 import { decodeMemoString } from '../../components/MemoInput'
 import { CSAccount } from '../../storage/cloudStorage'
 import { EMPTY_B58_ADDRESS } from '../../storage/TransactionProvider'
+import { L1Network } from '../../utils/accountUtils'
+import { TXN_FEE_IN_LAMPORTS } from '../../utils/solanaUtils'
 import { Payment } from './PaymentItem'
 
 type PaymentCurrencyType =
@@ -88,7 +91,8 @@ type PaymentState = {
   currencyType: PaymentCurrencyType
   oraclePrice?: Balance<USDollars>
   netType: NetTypes.NetType
-  networkFee?: Balance<TestNetworkTokens | NetworkTokens>
+  l1Network: L1Network
+  networkFee?: Balance<TestNetworkTokens | NetworkTokens | SolTokens>
   dcFee?: Balance<DataCredits>
   accountMobileBalance?: Balance<MobileTokens>
   accountNetworkBalance?: Balance<TestNetworkTokens | NetworkTokens>
@@ -98,6 +102,7 @@ const initialState = (opts: {
   currencyType: PaymentCurrencyType
   payments?: Payment[]
   netType: NetTypes.NetType
+  l1Network: L1Network
   oraclePrice?: Balance<USDollars>
   accountMobileBalance?: Balance<MobileTokens>
   accountNetworkBalance?: Balance<TestNetworkTokens | NetworkTokens>
@@ -109,6 +114,7 @@ const initialState = (opts: {
     currencyType: opts.currencyType,
     oraclePrice: opts.oraclePrice,
     netType: opts.netType,
+    l1Network: opts.l1Network,
   }),
   ...opts,
 })
@@ -128,9 +134,16 @@ const calculateFee = (
     currencyType: PaymentCurrencyType
     oraclePrice?: Balance<USDollars>
     netType: NetTypes.NetType
+    l1Network: L1Network
   },
 ) => {
-  const { currencyType, oraclePrice, netType } = opts
+  const { currencyType, oraclePrice, netType, l1Network } = opts
+  if (l1Network === 'solana_dev') {
+    return {
+      networkFee: new Balance(TXN_FEE_IN_LAMPORTS, CurrencyType.solTokens),
+    }
+  }
+
   const mapped = payments.map(({ amount: balanceAmount, address }) => ({
     payee:
       address && Address.isValid(address)
@@ -182,7 +195,10 @@ const recalculate = (payments: Payment[], state: PaymentState) => {
   const totalMinusPrevPayment = totalAmount.minus(prevPaymentAmount)
   let maxBalance = accountBalance?.minus(totalMinusPrevPayment)
 
-  if (state.currencyType.ticker !== CurrencyType.mobile.ticker) {
+  if (
+    state.l1Network !== 'solana_dev' &&
+    state.currencyType.ticker !== CurrencyType.mobile.ticker
+  ) {
     maxBalance = maxBalance?.minus(networkFee)
   }
 
@@ -225,15 +241,20 @@ function reducer(
   switch (action.type) {
     case 'updatePayee': {
       // 1. If the contact exists, addresses should be equal
-      const addressesNotEqual =
-        action.contact?.address && action.address !== action.contact?.address
+      const contactAddress =
+        state.l1Network === 'helium'
+          ? action.contact?.address
+          : action.contact?.solanaAddress
+
+      const addressNotEqual =
+        contactAddress && action.address !== contactAddress
 
       // 2. Disallow multiple payments with the same address
       const duplicateAddress = state.payments.find(
         (p) => p.address === action.address,
       )
 
-      if (addressesNotEqual || duplicateAddress) {
+      if (addressNotEqual || duplicateAddress) {
         return state
       }
 
@@ -320,6 +341,7 @@ function reducer(
         accountMobileBalance: state.accountMobileBalance,
         accountNetworkBalance: state.accountNetworkBalance,
         netType: state.netType,
+        l1Network: state.l1Network,
       })
     }
 
@@ -331,6 +353,7 @@ function reducer(
           accountMobileBalance: state.accountMobileBalance,
           accountNetworkBalance: state.accountNetworkBalance,
           netType: state.netType,
+          l1Network: state.l1Network,
         })
       }
 
@@ -383,6 +406,7 @@ function reducer(
 
 export default (opts: {
   netType: NetTypes.NetType
+  l1Network: L1Network
   currencyType: PaymentCurrencyType
   oraclePrice?: Balance<USDollars>
   accountMobileBalance?: Balance<MobileTokens>

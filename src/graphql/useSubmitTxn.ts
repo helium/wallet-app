@@ -1,17 +1,23 @@
 import { useCallback, useState } from 'react'
-import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
+import Balance, {
+  MobileTokens,
+  NetworkTokens,
+  TestNetworkTokens,
+} from '@helium/currency'
 import { PaymentV2 } from '@helium/transactions'
 import { useTransactions } from '../storage/TransactionProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import {
-  TokenType,
-  useAccountLazyQuery,
-  useSubmitTxnMutation,
-} from '../generated/graphql'
+import { useAccountLazyQuery, useSubmitTxnMutation } from '../generated/graphql'
+import { useAppStorage } from '../storage/AppStorageProvider'
+import { makePayment } from '../store/slices/solanaSlice'
+import { useAppDispatch } from '../store/store'
+import { TokenType } from '../types/activity'
 
 export default () => {
   const { makePaymentTxn } = useTransactions()
   const { currentAccount } = useAccountStorage()
+  const { l1Network } = useAppStorage()
+  const dispatch = useAppDispatch()
 
   const [fetchAccount, { loading: accountLoading, error: accountError }] =
     useAccountLazyQuery({
@@ -28,11 +34,11 @@ export default () => {
 
   const [nonceError, setNonceError] = useState<Error>()
 
-  const submit = useCallback(
+  const submitHelium = useCallback(
     async (
       payments: {
         payee: string
-        balanceAmount: Balance<NetworkTokens | TestNetworkTokens>
+        balanceAmount: Balance<NetworkTokens | TestNetworkTokens | MobileTokens>
         memo: string
         max?: boolean
       }[],
@@ -74,8 +80,47 @@ export default () => {
     },
     [currentAccount, fetchAccount, makePaymentTxn, submitTxnMutation],
   )
+  const submitSolDev = useCallback(
+    async (
+      payments: {
+        payee: string
+        balanceAmount: Balance<NetworkTokens | TestNetworkTokens | MobileTokens>
+        memo: string
+        max?: boolean
+      }[],
+      _tokenType: TokenType,
+    ) => {
+      if (!currentAccount) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+      dispatch(makePayment({ account: currentAccount, payments }))
+    },
+    [currentAccount, dispatch],
+  )
 
-  const submitLedger = useCallback(
+  const submit = useCallback(
+    async (
+      payments: {
+        payee: string
+        balanceAmount: Balance<NetworkTokens | TestNetworkTokens | MobileTokens>
+        memo: string
+        max?: boolean
+      }[],
+      tokenType: TokenType,
+    ) => {
+      switch (l1Network) {
+        case 'helium':
+          submitHelium(payments, tokenType)
+          break
+        case 'solana_dev':
+          submitSolDev(payments, tokenType)
+          break
+      }
+    },
+    [l1Network, submitHelium, submitSolDev],
+  )
+
+  const submitHeliumLedger = useCallback(
     async ({ txn, txnJson }: { txn: PaymentV2; txnJson: string }) => {
       if (!currentAccount?.address) {
         throw new Error('There must be an account selected to submit a txn')
@@ -91,6 +136,20 @@ export default () => {
     },
     [currentAccount, submitTxnMutation],
   )
+
+  const submitLedger = useCallback(
+    async ({ txn, txnJson }: { txn: PaymentV2; txnJson: string }) => {
+      switch (l1Network) {
+        case 'helium':
+          submitHeliumLedger({ txn, txnJson })
+          break
+        case 'solana_dev':
+          throw new Error('Solana not yet supported for ledger devices')
+      }
+    },
+    [l1Network, submitHeliumLedger],
+  )
+
   return {
     submit,
     submitLedger,

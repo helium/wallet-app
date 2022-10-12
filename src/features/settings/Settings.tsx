@@ -51,12 +51,14 @@ const Settings = () => {
     authInterval,
     convertToCurrency,
     currency,
+    enableSolana,
     enableTestnet,
     pin: appPin,
     requirePinForPayment,
     updateAuthInterval,
     updateConvertToCurrency,
     updateCurrency,
+    updateEnableSolana,
     updateEnableTestnet,
     updateRequirePinForPayment,
   } = useAppStorage()
@@ -311,11 +313,14 @@ const Settings = () => {
 
   const handleCopyAddress = useCallback(() => {
     if (!currentAccount?.address) return
-    copyText({
-      message: ellipsizeAddress(currentAccount?.address),
-      copyText: currentAccount?.address,
-    })
-  }, [copyText, currentAccount])
+    if (!enableSolana) {
+      copyText({
+        message: ellipsizeAddress(currentAccount?.address),
+        copyText: currentAccount?.address,
+      })
+    } else {
+    }
+  }, [copyText, currentAccount, enableSolana])
 
   const handleShareAddress = useCallback(() => {
     settingsNav.navigate('ShareAddress')
@@ -373,7 +378,28 @@ const Settings = () => {
           },
           {
             title: t('settings.sections.account.copyAddress'),
-            onPress: handleCopyAddress,
+            onPress: enableSolana ? undefined : handleCopyAddress,
+            select: enableSolana
+              ? {
+                  items: [
+                    { label: 'Helium', value: 'helium' },
+                    { label: 'Solana', value: 'solana' },
+                  ],
+                  onValueSelect: (val) => {
+                    const address =
+                      val === 'helium'
+                        ? currentAccount?.address
+                        : currentAccount?.solanaAddress
+
+                    if (!address) return
+
+                    copyText({
+                      message: ellipsizeAddress(address),
+                      copyText: address,
+                    })
+                  },
+                }
+              : undefined,
           },
           {
             title: t('settings.sections.account.shareAddress'),
@@ -456,6 +482,18 @@ const Settings = () => {
                 ? t('settings.sections.dev.testnet.helperText')
                 : undefined,
           },
+          {
+            title: t('settings.sections.dev.solana.title'),
+            value: enableSolana,
+            onToggle: () => updateEnableSolana(!enableSolana),
+            helperText: t('settings.sections.dev.solana.helperText'),
+            onPress: () => {
+              showOKAlert({
+                message: t('settings.sections.dev.solana.prompt.message'),
+                title: t('settings.sections.dev.solana.prompt.title'),
+              })
+            },
+          },
         ],
       },
       {
@@ -476,8 +514,10 @@ const Settings = () => {
     authInterval,
     authIntervals,
     convertToCurrency,
+    copyText,
     currency,
     currentAccount,
+    enableSolana,
     enableTestnet,
     handleCopyAddress,
     handleCurrencyTypeChange,
@@ -497,9 +537,11 @@ const Settings = () => {
     isPinRequired,
     language,
     requirePinForPayment,
+    showOKAlert,
     sortedTestnetAccounts.length,
     t,
     updateConvertToCurrency,
+    updateEnableSolana,
     version,
   ])
 

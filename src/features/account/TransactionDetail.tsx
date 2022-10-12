@@ -26,7 +26,7 @@ import TransactionLineItem from './TransactionLineItem'
 import HandleBasic from '../../components/HandleBasic'
 import { useTxnDetails } from './useTxn'
 import { useBalance } from '../../utils/Balance'
-import { useExplorer, usePublicApi } from '../../constants/urls'
+import { useCreateExplorerUrl, usePublicApi } from '../../constants/urls'
 import { decodeMemoString, DEFAULT_MEMO } from '../../components/MemoInput'
 import { ellipsizeAddress } from '../../utils/accountUtils'
 import useBackHandler from '../../utils/useBackHandler'
@@ -52,7 +52,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
   const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
 
   const { intToBalance } = useBalance()
-  const { item: txn, accountAddress } = detailData || {}
+  const { item: txn } = detailData || {}
 
   const {
     amount,
@@ -67,8 +67,8 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
     time,
     title,
     validatorName,
-  } = useTxnDetails(txn, accountAddress || '')
-  const explorerURL = useExplorer()
+  } = useTxnDetails(txn)
+  const createExplorerUrl = useCreateExplorerUrl()
   const apiUrl = usePublicApi()
 
   const snapPoints = useMemo(() => {
@@ -181,14 +181,14 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                 <TransactionLineItem
                   title={t('transactions.hotspot')}
                   bodyText={hotspotName}
-                  navTo={`${explorerURL}/hotspots/${txn?.gateway}`}
+                  navTo={createExplorerUrl('hotspot', txn?.gateway)}
                 />
               )}
               {!!validatorName && (
                 <TransactionLineItem
                   title={t('transactions.validator')}
                   bodyText={validatorName}
-                  navTo={`${explorerURL}/validators/${txn?.gateway}`}
+                  navTo={createExplorerUrl('validator', txn?.gateway)}
                 />
               )}
 
@@ -196,7 +196,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                 <TransactionLineItem
                   title={t('transactions.buyer')}
                   bodyText={ellipsizeAddress(txn.buyer)}
-                  navTo={`${explorerURL}/accounts/${txn.buyer}`}
+                  navTo={createExplorerUrl('account', txn.buyer)}
                 />
               )}
 
@@ -204,7 +204,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                 <TransactionLineItem
                   title={t('transactions.seller')}
                   bodyText={ellipsizeAddress(txn.seller)}
-                  navTo={`${explorerURL}/accounts/${txn.seller}`}
+                  navTo={createExplorerUrl('account', txn.seller)}
                 />
               )}
 
@@ -213,7 +213,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                   title={t('transactions.payee', { index: '' })}
                   bodyText={txn.payee}
                   isAddress
-                  navTo={`${explorerURL}/accounts/${txn.payee}`}
+                  navTo={createExplorerUrl('account', txn.payee)}
                 />
               )}
 
@@ -232,9 +232,9 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                     })}
                     bodyText={payee}
                     isAddress
-                    navTo={`${explorerURL}/accounts/${payee}`}
+                    navTo={createExplorerUrl('account', payee)}
                   />
-                  {memo !== undefined && memo !== DEFAULT_MEMO && (
+                  {!!memo && memo !== DEFAULT_MEMO && (
                     <TransactionLineItem
                       title={t('transactions.memo')}
                       bodyText={decodeMemoString(memo)}
@@ -256,11 +256,11 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                     isAddress
                     navTo={
                       txn?.payer
-                        ? `${explorerURL}/accounts/${txn?.payer}`
+                        ? createExplorerUrl('account', txn.payer)
                         : undefined
                     }
                   />
-                  {memo !== undefined && memo !== DEFAULT_MEMO && (
+                  {!!memo && memo !== DEFAULT_MEMO && (
                     <TransactionLineItem
                       title={t('transactions.memo')}
                       bodyText={decodeMemoString(memo)}
@@ -304,7 +304,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                 <TransactionLineItem
                   title={t('transactions.owner')}
                   bodyText={txn.owner}
-                  navTo={`${explorerURL}/accounts/${txn.owner}`}
+                  navTo={createExplorerUrl('account', txn.owner)}
                 />
               )}
 
@@ -312,7 +312,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                 <TransactionLineItem
                   title={t('transactions.oldOwner')}
                   bodyText={txn.oldOwner}
-                  navTo={`${explorerURL}/accounts/${txn.oldOwner}`}
+                  navTo={createExplorerUrl('account', txn.oldOwner)}
                 />
               )}
 
@@ -320,7 +320,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                 <TransactionLineItem
                   title={t('transactions.oldAddress')}
                   bodyText={txn.oldAddress}
-                  navTo={`${explorerURL}/accounts/${txn.oldAddress}`}
+                  navTo={createExplorerUrl('account', txn.oldAddress)}
                 />
               )}
 
@@ -328,7 +328,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                 <TransactionLineItem
                   title={t('transactions.newOwner')}
                   bodyText={txn.newOwner}
-                  navTo={`${explorerURL}/accounts/${txn.newOwner}`}
+                  navTo={createExplorerUrl('account', txn.newOwner)}
                 />
               )}
 
@@ -336,7 +336,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                 <TransactionLineItem
                   title={t('transactions.newAddress')}
                   bodyText={txn.newAddress}
-                  navTo={`${explorerURL}/accounts/${txn.newAddress}`}
+                  navTo={createExplorerUrl('account', txn.newAddress)}
                 />
               )}
 
@@ -349,7 +349,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                 <TransactionLineItem
                   title={t('transactions.block')}
                   bodyText={txn?.height || ''}
-                  navTo={`${explorerURL}/blocks/${txn?.height}`}
+                  navTo={createExplorerUrl('block', txn?.height)}
                 />
               )}
 
@@ -359,7 +359,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                 navTo={
                   txn?.pending
                     ? `${apiUrl}/pending_transactions/${txn?.hash}`
-                    : `${explorerURL}/txns/${txn?.hash}`
+                    : createExplorerUrl('txn', txn?.hash)
                 }
               />
             </SafeAreaBox>

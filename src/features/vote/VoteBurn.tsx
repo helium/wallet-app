@@ -35,6 +35,7 @@ import LedgerBurnModal, {
   LedgerBurnModalRef,
 } from '../../components/LedgerBurnModal'
 import { checkSecureAccount } from '../../storage/secureStorage'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Route = RouteProp<VoteNavigatorStackParamList, 'VoteBurn'>
 const VoteBurn = () => {
@@ -49,6 +50,7 @@ const VoteBurn = () => {
   const [fee, setFee] = useState<Balance<DataCredits>>()
   const { makeBurnTxn } = useTransactions()
   const { showOKAlert } = useAlert()
+  const { l1Network } = useAppStorage()
   const { data: accountData } = useAccountQuery({
     variables: {
       address: account.address,
@@ -173,6 +175,11 @@ const VoteBurn = () => {
     const memoValid = getMemoStrValid(memo)
     return memoValid && errors.length === 0
   }, [errors.length, memo])
+
+  if (account.netType !== NetType.MAINNET || l1Network === 'solana_dev') {
+    throw new Error('Only helium mainnet supported for voting')
+  }
+
   return (
     <LedgerBurnModal
       ref={ledgerPaymentRef}

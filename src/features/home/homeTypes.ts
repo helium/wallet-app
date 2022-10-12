@@ -1,6 +1,6 @@
 import { LinkWalletRequest, SignHotspotRequest } from '@helium/wallet-link'
 import { StackNavigationProp } from '@react-navigation/stack'
-import { TokenType } from '../../generated/graphql'
+import { TokenType } from '../../types/activity'
 
 export type PaymentRouteParam = {
   payer?: string

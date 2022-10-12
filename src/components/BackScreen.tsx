@@ -4,7 +4,7 @@ import { BoxProps } from '@shopify/restyle'
 import React, { memo } from 'react'
 import { LayoutChangeEvent } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { Spacing, Theme } from '../theme/theme'
+import { Color, Spacing, Theme } from '../theme/theme'
 import { useHitSlop } from '../theme/themeHooks'
 import BackButton from './BackButton'
 import Box from './Box'
@@ -21,6 +21,7 @@ type Props = BoxProps<Theme> & {
   onLayout?: (event: LayoutChangeEvent) => void
   onHeaderLayout?: (event: LayoutChangeEvent) => void
   title?: string
+  headerBackgroundColor?: Color
 }
 
 const BackScreen = ({
@@ -35,6 +36,7 @@ const BackScreen = ({
   onLayout,
   onHeaderLayout,
   title,
+  headerBackgroundColor,
   ...rest
 }: Props) => {
   const navigation = useNavigation()
@@ -51,6 +53,7 @@ const BackScreen = ({
         paddingHorizontal={headerHorizontalPadding}
         onLayout={onHeaderLayout}
         zIndex={999}
+        backgroundColor={headerBackgroundColor}
       >
         <Box
           position="absolute"

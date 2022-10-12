@@ -4,7 +4,6 @@ import CogIco from '@assets/images/cog.svg'
 import AccountIco from '@assets/images/account.svg'
 import { LayoutChangeEvent } from 'react-native'
 import CarotDown from '@assets/images/carot-down.svg'
-import { NetTypes } from '@helium/address'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from '../../components/Box'
 import NotificationIcon from '../../components/NotificationIcon'
@@ -17,6 +16,7 @@ import * as AccountUtils from '../../utils/accountUtils'
 import AccountIcon from '../../components/AccountIcon'
 import BackgroundFill from '../../components/BackgroundFill'
 import useLayoutWidth from '../../utils/useLayoutWidth'
+import useNetworkColor from '../../utils/useNetworkColor'
 
 type Props = {
   onPressWallet: () => void
@@ -50,6 +50,10 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
 
   const containerStyle = useMemo(() => ({ marginTop: top }), [top])
 
+  const backgroundColor = useNetworkColor({
+    netType: accountNetType,
+  })
+
   return (
     <Box
       flexDirection="row"
@@ -58,8 +62,8 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
       onLayout={onLayout}
       style={containerStyle}
     >
-      {accountNetType === NetTypes.TESTNET && (
-        <BackgroundFill backgroundColor="testnet" opacity={1} />
+      {backgroundColor && (
+        <BackgroundFill backgroundColor={backgroundColor} opacity={1} />
       )}
       <TouchableOpacityBox
         paddingVertical="ms"

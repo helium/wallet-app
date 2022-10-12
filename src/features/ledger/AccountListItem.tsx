@@ -1,6 +1,5 @@
 import React, { useCallback, memo, useMemo } from 'react'
 import CheckBox from '@react-native-community/checkbox'
-import { TokenType } from '../../generated/graphql'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import Surface from '../../components/Surface'
@@ -13,6 +12,7 @@ import {
   setLedgerAccounts,
   useLedgerAccounts,
 } from '../../utils/heliumLedger'
+import { TokenType } from '../../types/activity'
 
 type AccountListItemProps = {
   item: LedgerAccount

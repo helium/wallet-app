@@ -5,6 +5,7 @@ import Balance, {
   NetworkTokens,
   SecurityTokens,
   AnyCurrencyType,
+  SolTokens,
 } from '@helium/currency'
 import { times } from 'lodash'
 import { useNavigation } from '@react-navigation/native'
@@ -19,8 +20,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useAccountBalances } from '../../utils/Balance'
-import { AccountData, TokenType } from '../../generated/graphql'
+import { useBalance } from '../../utils/Balance'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -29,6 +29,7 @@ import TokenIcon from './TokenIcon'
 import { useBreakpoints } from '../../theme/themeHooks'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import useLayoutHeight from '../../utils/useLayoutHeight'
+import { TokenType } from '../../types/activity'
 
 type Token = {
   type: TokenType
@@ -37,13 +38,19 @@ type Token = {
 }
 
 type Props = {
-  accountData: AccountData | null | undefined
   loading?: boolean
 }
 
 const ITEM_HEIGHT = 78
-const AccountTokenList = ({ accountData, loading = false }: Props) => {
-  const displayVals = useAccountBalances(accountData)
+const AccountTokenList = ({ loading = false }: Props) => {
+  const {
+    dcBalance,
+    mobileBalance,
+    networkBalance,
+    networkStakedBalance,
+    secBalance,
+    solBalance,
+  } = useBalance()
   const navigation = useNavigation<HomeNavigationProp>()
   const [listItemHeight, setListItemHeight] = useLayoutHeight()
   const breakpoints = useBreakpoints()
@@ -63,27 +70,32 @@ const AccountTokenList = ({ accountData, loading = false }: Props) => {
     return [
       {
         type: TokenType.Hnt,
-        balance: displayVals?.hnt as Balance<NetworkTokens>,
+        balance: networkBalance as Balance<NetworkTokens>,
         staked: false,
       },
       {
         type: TokenType.Hnt,
-        balance: displayVals?.stakedHnt as Balance<NetworkTokens>,
+        balance: networkStakedBalance as Balance<NetworkTokens>,
         staked: true,
       },
       {
         type: TokenType.Mobile,
-        balance: displayVals?.mobile as Balance<MobileTokens>,
+        balance: mobileBalance as Balance<MobileTokens>,
         staked: false,
       },
       {
         type: TokenType.Dc,
-        balance: displayVals?.dc as Balance<DataCredits>,
+        balance: dcBalance as Balance<DataCredits>,
         staked: false,
       },
       {
         type: TokenType.Hst,
-        balance: displayVals?.hst as Balance<SecurityTokens>,
+        balance: secBalance as Balance<SecurityTokens>,
+        staked: false,
+      },
+      {
+        type: TokenType.Sol,
+        balance: solBalance as Balance<SolTokens>,
         staked: false,
       },
     ].filter(
@@ -92,10 +104,21 @@ const AccountTokenList = ({ accountData, loading = false }: Props) => {
         token?.type === TokenType.Mobile ||
         (token?.type === TokenType.Hnt && token?.staked === false),
     )
-  }, [displayVals, loading])
+  }, [
+    dcBalance,
+    loading,
+    mobileBalance,
+    networkBalance,
+    networkStakedBalance,
+    secBalance,
+    solBalance,
+  ])
 
   const handleNavigation = useCallback(
     (token: Token) => () => {
+      if (token.type === 'sol') {
+        return
+      }
       navigation.navigate('AccountTokenScreen', { tokenType: token.type })
     },
     [navigation],
@@ -126,6 +149,7 @@ const AccountTokenList = ({ accountData, loading = false }: Props) => {
         staked: boolean
       }
     }) => {
+      const disabled = token.type === 'sol'
       return (
         <Animated.View entering={FadeIn} exiting={FadeOut}>
           <TouchableOpacityBox
@@ -138,6 +162,7 @@ const AccountTokenList = ({ accountData, loading = false }: Props) => {
             paddingVertical="m"
             borderBottomColor="primaryBackground"
             borderBottomWidth={1}
+            disabled={disabled}
           >
             <TokenIcon tokenType={token.type} />
             <Box flex={1} paddingHorizontal="m">
@@ -159,20 +184,21 @@ const AccountTokenList = ({ accountData, loading = false }: Props) => {
                   }`}
                 </Text>
               </Box>
-              <AccountTokenCurrencyBalance
-                variant="subtitle4"
-                color="secondaryText"
-                accountData={accountData}
-                tokenType={token.type}
-                staked={token.staked}
-              />
+              {!disabled && (
+                <AccountTokenCurrencyBalance
+                  variant="subtitle4"
+                  color="secondaryText"
+                  tokenType={token.type}
+                  staked={token.staked}
+                />
+              )}
             </Box>
-            <Arrow color="gray400" />
+            {!disabled && <Arrow color="gray400" />}
           </TouchableOpacityBox>
         </Animated.View>
       )
     },
-    [accountData, handleItemLayout, handleNavigation],
+    [handleItemLayout, handleNavigation],
   )
 
   const renderFooter = useCallback(() => {

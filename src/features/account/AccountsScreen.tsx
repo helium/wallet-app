@@ -11,6 +11,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDebouncedCallback } from 'use-debounce/lib'
 import { toUpper } from 'lodash'
+import { NetTypes } from '@helium/address'
 import Box from '../../components/Box'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
@@ -29,7 +30,7 @@ import { useNotificationStorage } from '../../storage/NotificationStorageProvide
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import StatusBanner from '../StatusPage/StatusBanner'
 import { checkSecureAccount } from '../../storage/secureStorage'
-import { getJazzSeed, isTestnet } from '../../utils/accountUtils'
+import { getJazzSeed, isTestnet, L1Network } from '../../utils/accountUtils'
 import AccountsTopNav from './AccountsTopNav'
 import AccountTokenList from './AccountTokenList'
 import AccountView from './AccountView'
@@ -40,6 +41,7 @@ import globalStyles from '../../theme/globalStyles'
 import { FadeInSlow } from '../../components/FadeInOut'
 import AccountBalanceChart from './AccountBalanceChart'
 import useDisappear from '../../utils/useDisappear'
+import TabBar from '../../components/TabBar'
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
@@ -48,7 +50,7 @@ const AccountsScreen = () => {
     useAccountStorage()
   const [navLayoutHeight, setNavLayoutHeight] = useLayoutHeight()
   const { openedNotification } = useNotificationStorage()
-  const { locked } = useAppStorage()
+  const { locked, l1Network, enableSolana, updateL1Network } = useAppStorage()
   const { reset } = useOnboarding()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const [walletsVisible, setWalletsVisible] = useState(false)
@@ -64,7 +66,7 @@ const AccountsScreen = () => {
     setSelectedBalance(undefined)
   })
 
-  const { data: accountData, error: accountsError } = useAccountQuery({
+  const { data: accountData } = useAccountQuery({
     variables: {
       address: currentAccount?.address || '',
     },
@@ -74,7 +76,7 @@ const AccountsScreen = () => {
     // TODO: adjust this interval if needed
   })
 
-  const [fetchAccount, { error: lazyAccountError }] = useAccountLazyQuery({
+  const [fetchAccount] = useAccountLazyQuery({
     variables: {
       address: currentAccount?.address || '',
     },
@@ -94,8 +96,9 @@ const AccountsScreen = () => {
   })
 
   const showChart = useMemo(
-    () => (data?.accountBalanceHistory?.length || 0) >= 2,
-    [data],
+    () =>
+      l1Network === 'helium' && (data?.accountBalanceHistory?.length || 0) >= 2,
+    [data, l1Network],
   )
   const prevShowChart = usePrevious(showChart)
 
@@ -126,18 +129,6 @@ const AccountsScreen = () => {
     if (!currentAccount || !!currentAccount.ledgerDevice) return
     checkSecureAccount(currentAccount.address)
   }, [currentAccount])
-
-  useEffect(() => {
-    if (!accountsError && !lazyAccountError) return
-
-    if (accountsError) {
-      console.warn('accounts', accountsError)
-    }
-
-    if (lazyAccountError) {
-      console.warn('lazyAccount', lazyAccountError)
-    }
-  }, [accountsError, lazyAccountError])
 
   useEffect(() => {
     if (openedNotification && !locked) {
@@ -216,6 +207,23 @@ const AccountsScreen = () => {
     handleBalanceHistorySelected(undefined)
   }, [handleBalanceHistorySelected])
 
+  const tabData = useMemo((): Array<{
+    value: L1Network
+    title: string
+  }> => {
+    return [
+      { value: 'helium', title: 'Helium' },
+      { value: 'solana_dev', title: 'Solana-Devnet' },
+    ]
+  }, [])
+
+  const setL1Network = useCallback(
+    (l1: string) => {
+      updateL1Network(l1 as L1Network)
+    },
+    [updateL1Network],
+  )
+
   return (
     <Box flex={1}>
       <AccountsTopNav
@@ -231,6 +239,15 @@ const AccountsScreen = () => {
               selectedBalance={selectedBalance}
             />
           </Box>
+
+          {enableSolana && currentAccount.netType === NetTypes.MAINNET && (
+            <TabBar
+              tabBarOptions={tabData}
+              selectedValue={l1Network}
+              onItemSelected={setL1Network}
+            />
+          )}
+
           <Animated.View style={style}>
             <Box
               flex={1}
@@ -248,10 +265,7 @@ const AccountsScreen = () => {
               backgroundColor="primaryBackground"
             />
           </Animated.View>
-          <AccountTokenList
-            accountData={accountData?.account}
-            loading={accountLoading}
-          />
+          <AccountTokenList loading={accountLoading} />
         </Animated.View>
       )}
       {walletsVisible && (

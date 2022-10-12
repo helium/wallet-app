@@ -23,6 +23,7 @@ if (Array.isArray(locales)) {
 }
 
 export const locale = phoneLocale
+export const lang = phoneLang
 
 export const supportedLangs = [
   'en',
@@ -55,18 +56,18 @@ export const useLanguage = () => {
     await initLanguage()
   }, [])
 
-  const changeLanguage = useCallback(async (lang: string) => {
-    setLanguage(lang)
-    await AsyncStorage.setItem('language', lang)
-    await i18n.changeLanguage(lang)
+  const changeLanguage = useCallback(async (l: string) => {
+    setLanguage(l)
+    await AsyncStorage.setItem('language', l)
+    await i18n.changeLanguage(l)
   }, [])
 
   const initLanguage = useCallback(async () => {
-    const lang = await AsyncStorage.getItem('language')
-    if (lang) {
-      await changeLanguage(lang)
+    const l = await AsyncStorage.getItem('language')
+    if (l) {
+      await changeLanguage(l)
     }
-    setLanguage(lang || phoneLang)
+    setLanguage(l || phoneLang)
   }, [changeLanguage])
 
   return { language, changeLanguage }
