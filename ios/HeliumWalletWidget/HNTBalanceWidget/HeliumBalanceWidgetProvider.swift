@@ -54,11 +54,7 @@ struct HNTBalanceWidgetProvider: IntentTimelineProvider {
                         if let parsedBalanceWidgetData = parsedBalanceWidgetData {
                             let entry = BalanceWidgetEntry(date: nextRefresh, configuration: configuration, hntPrice: parsedBalanceWidgetData.price, hntDailyEarnings: parsedBalanceWidgetData.total, balance: parsedBalanceWidgetData.balance)
                             let timeline = Timeline(entries: [entry], policy: .atEnd)
-                            completion(timeline)
-                        } else {
-                            let nextRefresh = Calendar.current.date(byAdding: .minute, value: 5, to: entryDate)!
-                            let entry = BalanceWidgetEntry(date: nextRefresh, configuration: configuration, hntPrice: 0, hntDailyEarnings: 0, balance: 0)
-                            let timeline = Timeline(entries: [entry], policy: .atEnd)
+                            entryCache.previousEntry = entry
                             completion(timeline)
                         }
                     }
@@ -68,7 +64,6 @@ struct HNTBalanceWidgetProvider: IntentTimelineProvider {
                 let entry = BalanceWidgetEntry(date: nextRefresh, configuration: configuration, hntPrice: 0, hntDailyEarnings: 0, balance: 0)
                 let fallback = entryCache.previousEntry ?? entry
                 let timeline = Timeline(entries: [fallback], policy: .atEnd)
-                entryCache.previousEntry = entry
                 completion(timeline)
             }
         }
