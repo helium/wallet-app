@@ -1,24 +1,25 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import React, { memo, useCallback } from 'react'
+import React, { memo, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Linking } from 'react-native'
 import { getUnixTime } from 'date-fns'
 import { getBundleId } from 'react-native-device-info'
-import ChevronDown from '@assets/images/chevronDown.svg'
 import {
   createLinkWalletCallbackUrl,
   LinkWalletResponse,
   makeAppLinkAuthToken,
 } from '@helium/wallet-link'
+import { NetTypes } from '@helium/address'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import { useAccountSelector } from '../../components/AccountSelector'
-import AccountIcon from '../../components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { formatAccountAlias } from '../../utils/accountUtils'
 import { checkSecureAccount, getKeypair } from '../../storage/secureStorage'
+import AccountButton from '../../components/AccountButton'
+import useAlert from '../../utils/useAlert'
 
 type Route = RouteProp<HomeStackParamList, 'LinkWallet'>
 const LinkWallet = () => {
@@ -27,8 +28,15 @@ const LinkWallet = () => {
   } = useRoute<Route>()
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
-  const { show } = useAccountSelector()
-  const { currentAccount } = useAccountStorage()
+  const { showAccountTypes } = useAccountSelector()
+  const {
+    currentAccount,
+    setCurrentAccount,
+    sortedMainnetAccounts,
+    accounts,
+    defaultAccountAddress,
+  } = useAccountStorage()
+  const { showOKAlert } = useAlert()
 
   const callback = useCallback(
     async (responseParams: LinkWalletResponse) => {
@@ -71,6 +79,39 @@ const LinkWallet = () => {
     callback({ status: 'user_cancelled' })
   }, [callback])
 
+  useEffect(() => {
+    // Only allow mainnet accounts to be linked
+
+    if (currentAccount?.netType === NetTypes.MAINNET) return
+
+    let mainnetAcct = sortedMainnetAccounts.length
+      ? sortedMainnetAccounts[0]
+      : null
+
+    if (!mainnetAcct) {
+      // Edgecase - They only have testnet accts
+      showOKAlert({
+        title: t('linkWallet.testnet.title'),
+        message: t('linkWallet.testnet.message'),
+      }).then(handleCancel)
+      return
+    }
+    const defaultAccount = accounts?.[defaultAccountAddress || '']
+    if (defaultAccount?.netType === NetTypes.MAINNET) {
+      mainnetAcct = defaultAccount
+    }
+    setCurrentAccount(mainnetAcct)
+  }, [
+    accounts,
+    currentAccount,
+    defaultAccountAddress,
+    handleCancel,
+    setCurrentAccount,
+    showOKAlert,
+    sortedMainnetAccounts,
+    t,
+  ])
+
   return (
     <SafeAreaBox
       backgroundColor="primaryBackground"
@@ -85,21 +126,14 @@ const LinkWallet = () => {
         {t('linkWallet.body', { appName })}
       </Text>
 
-      <TouchableOpacityBox
-        paddingHorizontal="xl"
+      <AccountButton
+        accountIconSize={26}
         paddingVertical="l"
-        borderBottomColor="primaryBackground"
-        borderBottomWidth={1}
-        flexDirection="row"
-        alignItems="center"
-        onPress={show}
-      >
-        <AccountIcon size={26} address={currentAccount?.address} />
-        <Text marginLeft="ms" variant="subtitle2" flex={1}>
-          {formatAccountAlias(currentAccount)}
-        </Text>
-        <ChevronDown />
-      </TouchableOpacityBox>
+        title={formatAccountAlias(currentAccount)}
+        address={currentAccount?.address}
+        netType={currentAccount?.netType}
+        onPress={showAccountTypes(NetTypes.MAINNET)}
+      />
 
       <TouchableOpacityBox
         marginTop="ms"

@@ -605,7 +605,7 @@ const PaymentScreen = () => {
                   accountIconSize={41}
                   paddingTop="l"
                   title={formatAccountAlias(currentAccount)}
-                  subtitle="Sender Account"
+                  subtitle={t('payment.senderAccount')}
                   showChevron={sortedAccountsForNetType(networkType).length > 1}
                   address={currentAccount?.address}
                   netType={currentAccount?.netType}

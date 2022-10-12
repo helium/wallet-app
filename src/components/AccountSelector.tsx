@@ -45,14 +45,18 @@ const AccountSelector = ({ children }: { children: ReactNode }) => {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const { primary } = useColors()
   const { backgroundStyle } = useOpacity('primaryBackground', 1)
-  const { m } = useSpacing()
+  const { m, xl } = useSpacing()
   const [accountsType, setAccountsTypes] = useState<AccountNetTypeOpt>('all')
   const snapPoints = useMemo(() => ['60%', '80%'], [])
+
   const sheetHandleStyle = useMemo(() => ({ padding: m }), [m])
+
   const flatListStyle = useMemo(
     () => ({ borderTopColor: primary, borderTopWidth: 1 }),
     [primary],
   )
+  const flatListContainerStyle = useMemo(() => ({ paddingBottom: xl }), [xl])
+
   const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
 
   const show = useCallback(
@@ -141,6 +145,7 @@ const AccountSelector = ({ children }: { children: ReactNode }) => {
             data={data}
             renderItem={renderFlatlistItem}
             keyExtractor={keyExtractor}
+            contentContainerStyle={flatListContainerStyle}
             style={flatListStyle}
           />
         </BottomSheetModal>
