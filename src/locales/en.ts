@@ -158,6 +158,23 @@ export default {
     },
     title: 'Enter Your PIN',
   },
+  burn: {
+    amount: 'Amount (HNT)',
+    equivalent: 'Equivalent to (DC)',
+    ledger: {
+      subtitle:
+        'Please verify the burn transaction on your Ledger device {{name}}',
+      title: 'Ledger Approval',
+    },
+    memo: 'Memo',
+    noAcct: {
+      message: 'No account for this network found',
+      title: 'Account not found',
+    },
+    recipient: 'Recipient Address',
+    swipeToBurn: 'Swipe to Burn',
+    title: 'Burn',
+  },
   connectedWallets: {
     add: 'Add New Account',
     addTestnet: 'Add New Testnet Account',

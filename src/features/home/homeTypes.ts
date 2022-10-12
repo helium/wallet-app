@@ -11,6 +11,13 @@ export type PaymentRouteParam = {
   netType?: string
   defaultTokenType?: TokenType
 }
+
+export type BurnRouteParam = {
+  address: string
+  amount: string
+  memo?: string
+}
+
 export type HomeStackParamList = {
   AccountsScreen: undefined
   AccountTokenScreen: { tokenType: TokenType }
@@ -19,6 +26,7 @@ export type HomeStackParamList = {
     action: 'payment'
   }
   PaymentScreen: undefined | PaymentRouteParam
+  BurnScreen: BurnRouteParam
   PaymentQrScanner: undefined
   RequestScreen: undefined
   PurchaseData: undefined

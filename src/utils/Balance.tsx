@@ -125,6 +125,17 @@ const useBalanceHook = () => {
     [currentAccount, oraclePrice],
   )
 
+  const networkTokensToDc = useCallback(
+    (
+      balance: Balance<NetworkTokens | TestNetworkTokens>,
+    ): Balance<DataCredits> | undefined => {
+      if (!oraclePrice) return
+
+      return balance.toDataCredits(oraclePrice)
+    },
+    [oraclePrice],
+  )
+
   const currencyTypeFromTokenType = useCallback(
     (type: TokenType | null | undefined) => {
       switch (type) {
@@ -260,6 +271,7 @@ const useBalanceHook = () => {
     dcToNetworkTokens,
     floatToBalance,
     intToBalance,
+    networkTokensToDc,
     oracleDateTime,
     oraclePrice,
     toCurrencyString,
@@ -277,6 +289,7 @@ const initialState = {
   dcToNetworkTokens: () => undefined,
   floatToBalance: () => undefined,
   intToBalance: () => undefined,
+  networkTokensToDc: () => undefined,
   oracleDateTime: undefined,
   oraclePrice: undefined,
   toCurrencyString: () => new Promise<string>((resolve) => resolve('')),

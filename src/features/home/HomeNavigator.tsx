@@ -21,6 +21,7 @@ import DappLoginScreen from '../dappLogin/DappLoginScreen'
 import AccountTokenScreen from '../account/AccountTokenScreen'
 import AddNewAccountNavigator from './addNewAccount/AddNewAccountNavigator'
 import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
+import BurnScreen from '../burn/BurnScreen'
 
 const HomeStack = createStackNavigator()
 
@@ -50,6 +51,7 @@ const HomeStackScreen = () => {
       />
       <HomeStack.Screen name="ConfirmPin" component={ConfirmPinScreen} />
       <HomeStack.Screen name="PaymentScreen" component={PaymentScreen} />
+      <HomeStack.Screen name="BurnScreen" component={BurnScreen} />
       <HomeStack.Screen name="PaymentQrScanner" component={PaymentQrScanner} />
       <HomeStack.Screen name="RequestScreen" component={RequestScreen} />
       <HomeStack.Screen name="DappLoginScreen" component={DappLoginScreen} />
