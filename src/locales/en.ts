@@ -46,10 +46,10 @@ export default {
       'To import your existing Helium account, enter its <havelockBlue>12</havelockBlue> or <jazzberryJam>24</jazzberryJam> word security key.',
     title: 'Import\nAccount',
     wordEntry: {
+      changeWordAmount: 'I have a {{totalWords}}-word recovery phrase',
       placeholder: '{{ordinal}} word',
       title: "Enter your\naccount's 12 or 24\nsecurity words.",
       word: 'Word {{ordinal}}',
-      changeWordAmount: 'I have a {{totalWords}}-word recovery phrase',
     },
   },
   accountSetup: {
@@ -312,6 +312,10 @@ export default {
   linkWallet: {
     body: 'By Linking Helium Wallet to {{appName}}, you can safely sign blockchain transactions without re-entering your seed phrase.',
     no: 'No, Cancel',
+    testnet: {
+      message: 'Linking requires a mainnet account.',
+      title: 'Accounts not found',
+    },
     title: 'Link Helium Wallet\nto {{appName}}?',
     yes: 'Yes, Link my Wallet',
   },
@@ -381,6 +385,7 @@ export default {
     selfPay: 'Self Pay',
     send: 'Send',
     sendButton: 'Swipe to Send {{ticker}}',
+    senderAccount: 'Sender Account',
     sending: 'Sending...',
     submitError:
       'There was an error submitting this transaction. Please try again.\n\n{{details}}',
