@@ -30,6 +30,7 @@ import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
 import { navigationRef } from './navigation/NavigationHelper'
 import globalStyles from './theme/globalStyles'
 import SplashScreen from './components/SplashScreen'
+import SentinelScreen from './components/SentinelScreen'
 
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -102,29 +103,31 @@ const App = () => {
                     <BalanceProvider>
                       <TransactionProvider>
                         <LockScreen>
-                          <WalletConnectProvider>
-                            {accountsRestored && (
-                              <AccountSelector>
-                                <NavigationContainer
-                                  theme={navTheme}
-                                  // Can't figure out how to fix this ts error
-                                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                  // @ts-ignore
-                                  linking={linking}
-                                  ref={navigationRef}
-                                >
-                                  <TestnetAwareStatusBar />
-                                  <RootNavigator />
-                                </NavigationContainer>
-                                <SecurityScreen
-                                  visible={
-                                    appState !== 'active' &&
-                                    appState !== 'unknown'
-                                  }
-                                />
-                              </AccountSelector>
-                            )}
-                          </WalletConnectProvider>
+                          <SentinelScreen>
+                            <WalletConnectProvider>
+                              {accountsRestored && (
+                                <AccountSelector>
+                                  <NavigationContainer
+                                    theme={navTheme}
+                                    // Can't figure out how to fix this ts error
+                                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                    // @ts-ignore
+                                    linking={linking}
+                                    ref={navigationRef}
+                                  >
+                                    <TestnetAwareStatusBar />
+                                    <RootNavigator />
+                                  </NavigationContainer>
+                                  <SecurityScreen
+                                    visible={
+                                      appState !== 'active' &&
+                                      appState !== 'unknown'
+                                    }
+                                  />
+                                </AccountSelector>
+                              )}
+                            </WalletConnectProvider>
+                          </SentinelScreen>
                         </LockScreen>
                       </TransactionProvider>
                     </BalanceProvider>
