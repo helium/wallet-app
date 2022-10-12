@@ -1,4 +1,15 @@
 export default {
+  sentinel: {
+    action: 'Understood',
+    in_progress: {
+      title: 'Helium Chain Halted',
+      body: 'Helium is transitioning to Solana.',
+    },
+    complete: {
+      title: 'App update needed',
+      body: 'Helium has transitioned to Solana, update your app and LFG!',
+    },
+  },
   accountAssign: {
     AccountNamePlaceholder: 'Account Name',
     setDefault: 'Set as Default',

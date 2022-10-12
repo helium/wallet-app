@@ -1,5 +1,5 @@
 import React, { memo, ReactNode, useCallback, useEffect, useState } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 import * as SplashLib from 'expo-splash-screen'
 import Animated, {
   runOnJS,
@@ -12,6 +12,7 @@ import { useApolloClient } from '../graphql/useApolloClient'
 import globalStyles from '../theme/globalStyles'
 import { useColors } from '../theme/themeHooks'
 import { useAppStorage } from '../storage/AppStorageProvider'
+import { ReAnimatedBox } from './AnimatedBox'
 
 const SplashScreen = ({ children }: { children: ReactNode }) => {
   const { client, loading } = useApolloClient()
@@ -40,6 +41,9 @@ const SplashScreen = ({ children }: { children: ReactNode }) => {
       runOnJS(animationCompleted),
     )
     return {
+      width: '100%',
+      height: '100%',
+      resizeMode: 'cover',
       opacity: animVal,
       backgroundColor: primaryBackground,
       transform: [
@@ -71,24 +75,22 @@ const SplashScreen = ({ children }: { children: ReactNode }) => {
     <View style={globalStyles.container}>
       {isAppReady && children}
       {!isSplashAnimationComplete && (
-        <Animated.View
+        <ReAnimatedBox
           pointerEvents="none"
-          style={[StyleSheet.absoluteFill, style]}
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          position="absolute"
+          style={style}
         >
           <Animated.Image
-            style={[
-              {
-                width: '100%',
-                height: '100%',
-                resizeMode: 'cover',
-              },
-              style,
-            ]}
+            style={style}
             source={require('../assets/images/SplashScreen.png')}
             onLoadEnd={onImageLoaded}
             fadeDuration={0}
           />
-        </Animated.View>
+        </ReAnimatedBox>
       )}
     </View>
   )
