@@ -96,7 +96,7 @@ const TabBar = ({
   const hitSlop = useVerticalHitSlop('l')
   const [itemRects, setItemRects] = useState<Record<string, LayoutRectangle>>()
 
-  const offset = useSharedValue(0)
+  const offset = useSharedValue<number | null>(null)
 
   const handleLayout = useCallback(
     (value: string) => (e: LayoutChangeEvent) => {
@@ -117,7 +117,7 @@ const TabBar = ({
   useEffect(() => {
     const nextOffset = itemRects?.[selectedValue]?.x || 0
 
-    if (offset.value === 0) {
+    if (offset.value === null) {
       // Don't animate on first position update
       offset.value = nextOffset
       return
@@ -127,24 +127,29 @@ const TabBar = ({
   }, [itemRects, offset.value, selectedValue])
 
   const animatedStyles = useAnimatedStyle(() => {
+    if (offset.value === null) return {}
     return {
       transform: [{ translateX: offset.value }],
     }
   })
 
+  const items = useMemo(() => {
+    return tabBarOptions.map((o) => (
+      <TabBarItem
+        key={o.value}
+        selected={o.value === selectedValue}
+        onLayout={handleLayout(o.value)}
+        onPress={handlePress(o.value)}
+        hitSlop={hitSlop}
+        {...o}
+      />
+    ))
+  }, [handleLayout, handlePress, hitSlop, selectedValue, tabBarOptions])
+
   return (
     <Box {...containerProps}>
       <Box flexDirection="row" justifyContent="center" paddingVertical="ms">
-        {tabBarOptions.map((o) => (
-          <TabBarItem
-            key={o.value}
-            selected={o.value === selectedValue}
-            onLayout={handleLayout(o.value)}
-            onPress={handlePress(o.value)}
-            hitSlop={hitSlop}
-            {...o}
-          />
-        ))}
+        {items}
       </Box>
       <Animated.View style={animatedStyles}>
         <Box

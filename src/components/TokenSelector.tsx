@@ -24,7 +24,7 @@ import { Theme } from '../theme/theme'
 import Box from './Box'
 import useBackHandler from '../utils/useBackHandler'
 import ListItem, { LIST_ITEM_HEIGHT } from './ListItem'
-import { TokenType } from '../generated/graphql'
+import { TokenType } from '../types/activity'
 
 type TokenListItem = {
   label: string

@@ -13,6 +13,7 @@ export type LedgerDevice = {
 export type CSAccount = {
   alias: string
   address: string
+  solanaAddress?: string
   netType: NetType.NetType
   ledgerDevice?: LedgerDevice
   accountIndex?: number

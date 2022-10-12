@@ -49,10 +49,11 @@ import useHaptic from '../../utils/useHaptic'
 import BackgroundFill from '../../components/BackgroundFill'
 import animateTransition from '../../utils/animateTransition'
 import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
-import { TokenType } from '../../generated/graphql'
 import TokenButton from '../../components/TokenButton'
 import TokenSelector, { TokenSelectorRef } from '../../components/TokenSelector'
 import FadeInOut from '../../components/FadeInOut'
+import { useAppStorage } from '../../storage/AppStorageProvider'
+import { TokenType } from '../../types/activity'
 
 const QR_CONTAINER_SIZE = 220
 
@@ -60,7 +61,9 @@ type RequestType = 'qr' | 'link'
 const RequestScreen = () => {
   const [txnMemo, setTxnMemo] = useState('')
   const { valid: memoValid } = useMemoValid(txnMemo)
-  const { currentAccount } = useAccountStorage()
+  const { currentAccount, currentNetworkAddress: networkAddress } =
+    useAccountStorage()
+  const { l1Network } = useAppStorage()
   const { t } = useTranslation()
   const [requestType, setRequestType] = useState<RequestType>('qr')
   const [containerHeight, setContainerHeight] = useState(0)
@@ -117,15 +120,15 @@ const RequestScreen = () => {
   )
 
   const link = useMemo(() => {
-    if (!currentAccount?.address || !memoValid) return ''
+    if (!networkAddress || !memoValid) return ''
 
     return makePayRequestLink({
-      payee: currentAccount.address,
+      payee: networkAddress,
       memo: txnMemo,
       balanceAmount: paymentAmount,
       defaultTokenType: tokenType,
     })
-  }, [currentAccount, memoValid, paymentAmount, tokenType, txnMemo])
+  }, [memoValid, networkAddress, paymentAmount, tokenType, txnMemo])
 
   const [qrLink] = useDebounce(link, 500)
 
@@ -335,21 +338,24 @@ const RequestScreen = () => {
                   )}
                 </TouchableOpacityBox>
 
-                <Box
-                  height={1}
-                  backgroundColor="primaryBackground"
-                  marginHorizontal="n_l"
-                  marginVertical="ms"
-                />
-
-                <Text variant="body3" color="primaryText">
-                  {t('request.memo')}
-                </Text>
-                <MemoInput
-                  value={txnMemo}
-                  onChangeText={setTxnMemo}
-                  margin="n_m"
-                />
+                {l1Network === 'helium' && (
+                  <>
+                    <Box
+                      height={1}
+                      backgroundColor="primaryBackground"
+                      marginHorizontal="n_l"
+                      marginVertical="ms"
+                    />
+                    <Text variant="body3" color="primaryText">
+                      {t('request.memo')}
+                    </Text>
+                    <MemoInput
+                      value={txnMemo}
+                      onChangeText={setTxnMemo}
+                      margin="n_m"
+                    />
+                  </>
+                )}
               </Box>
               <Box flexDirection="row" marginTop="l" paddingBottom="xxl">
                 <TouchableOpacityBox
