@@ -379,19 +379,24 @@ const Settings = () => {
           {
             title: t('settings.sections.account.copyAddress'),
             onPress: enableSolana ? undefined : handleCopyAddress,
-            // value: 'solana',
             select: enableSolana
               ? {
                   items: [
                     { label: 'Helium', value: 'helium' },
                     { label: 'Solana', value: 'solana' },
                   ],
-                  onValueSelect: (_val) => {
-                    // TODO:
-                    // copyText({
-                    //   message: ellipsizeAddress(currentAccount?.address),
-                    //   copyText: currentAccount?.address,
-                    // })
+                  onValueSelect: (val) => {
+                    const address =
+                      val === 'helium'
+                        ? currentAccount?.address
+                        : currentAccount?.solanaAddress
+
+                    if (!address) return
+
+                    copyText({
+                      message: ellipsizeAddress(address),
+                      copyText: address,
+                    })
                   },
                 }
               : undefined,
@@ -509,8 +514,11 @@ const Settings = () => {
     authInterval,
     authIntervals,
     convertToCurrency,
+    copyText,
     currency,
-    currentAccount,
+    currentAccount.address,
+    currentAccount.alias,
+    currentAccount.solanaAddress,
     enableSolana,
     enableTestnet,
     handleCopyAddress,
