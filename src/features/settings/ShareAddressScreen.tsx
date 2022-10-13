@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useCallback, useRef } from 'react'
+import React, { memo, useMemo, useCallback, useRef, useState } from 'react'
 import QRCode from 'react-native-qrcode-svg'
 import ShareAddress from '@assets/images/shareAddress.svg'
 import { useTranslation } from 'react-i18next'
@@ -14,21 +14,43 @@ import Text from '../../components/Text'
 import BackScreen from '../../components/BackScreen'
 import { ellipsizeAddress } from '../../utils/accountUtils'
 import CopyAddress from '../../components/CopyAddress'
+import TabBar from '../../components/TabBar'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
-const QR_CONTAINER_SIZE = 146
+const QR_CONTAINER_SIZE = 225
 
 const ShareAddressScreen = () => {
   const { currentAccount } = useAccountStorage()
   const { triggerNavHaptic } = useHaptic()
   const spacing = useSpacing()
-  const padding = useMemo(() => 'm' as Spacing, [])
+  const padding = useMemo(() => 'l' as Spacing, [])
   const { t } = useTranslation()
   const qrRef = useRef<{
     toDataURL: (callback: (url: string) => void) => void
   }>(null)
 
+  const tabData = useMemo((): Array<{
+    value: string
+    title: string
+  }> => {
+    return [
+      { title: 'Helium', value: 'helium' },
+      { title: 'Solana', value: 'solana' },
+    ]
+  }, [])
+
+  const { enableSolana } = useAppStorage()
+
+  const [selectedOption, setSelectedOption] = useState(tabData[0].value)
+
+  const address = useMemo(() => {
+    if (selectedOption === 'helium') return currentAccount?.address
+
+    return currentAccount?.solanaAddress
+  }, [currentAccount, selectedOption])
+
   const handleShare = useCallback(async () => {
-    if (!currentAccount?.address) return
+    if (!address) return
 
     qrRef.current?.toDataURL((imgData) => {
       const imageUrl = `data:image/png;base64,${imgData}`
@@ -36,7 +58,7 @@ const ShareAddressScreen = () => {
       let options: ShareOptions = {
         failOnCancel: false,
         title: 'image',
-        message: currentAccount?.address,
+        message: address,
         url: imageUrl,
         type: 'image/png',
       }
@@ -44,7 +66,7 @@ const ShareAddressScreen = () => {
       if (Platform.OS === 'ios') {
         options = {
           failOnCancel: false,
-          message: currentAccount?.address,
+          message: address,
           url: imageUrl,
           type: 'image/png',
           activityItemSources: [
@@ -52,10 +74,10 @@ const ShareAddressScreen = () => {
               item: {},
               placeholderItem: {
                 type: 'text',
-                content: currentAccount?.address,
+                content: address,
               },
               linkMetadata: {
-                title: currentAccount?.address,
+                title: address,
               },
             },
           ],
@@ -65,52 +87,75 @@ const ShareAddressScreen = () => {
       triggerNavHaptic()
       Share.open(options)
     })
-  }, [currentAccount, triggerNavHaptic])
+  }, [address, triggerNavHaptic])
 
-  if (!currentAccount?.address) return null
+  const handleItemSelected = useCallback((value: string) => {
+    setSelectedOption(value)
+  }, [])
+
+  if (!currentAccount || !address) return null
 
   return (
     <BackScreen>
-      <Box alignItems="center" marginTop="xxl">
-        <Text
-          variant="h2"
-          color="primaryText"
-          textAlign="center"
-          marginBottom="s"
-        >
-          {currentAccount.alias}
-        </Text>
-        <Text
-          variant="h4"
-          color="secondaryText"
-          textAlign="center"
-          marginBottom="xxl"
-        >
-          {ellipsizeAddress(currentAccount.address)}
-        </Text>
+      <Box flex={1}>
         <Box
-          height={QR_CONTAINER_SIZE}
-          width={QR_CONTAINER_SIZE}
-          backgroundColor="white"
-          padding={padding}
-          borderRadius="xl"
+          flex={1}
+          justifyContent="center"
+          alignItems="center"
+          marginBottom="xxxl"
         >
-          <QRCode
-            size={QR_CONTAINER_SIZE - 2 * spacing[padding]}
-            value={currentAccount.address}
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            getRef={qrRef}
-          />
+          {enableSolana && (
+            <TabBar
+              tabBarOptions={tabData}
+              selectedValue={selectedOption}
+              onItemSelected={handleItemSelected}
+              marginBottom="xxl"
+            />
+          )}
+
+          <Text
+            variant="h2"
+            color="primaryText"
+            textAlign="center"
+            marginBottom="s"
+          >
+            {currentAccount.alias}
+          </Text>
+          <Text
+            variant="h4"
+            color="secondaryText"
+            textAlign="center"
+            marginBottom="xxl"
+          >
+            {ellipsizeAddress(address)}
+          </Text>
+          <Box
+            height={QR_CONTAINER_SIZE}
+            width={QR_CONTAINER_SIZE}
+            backgroundColor="white"
+            padding={padding}
+            borderRadius="xxl"
+          >
+            <QRCode
+              size={QR_CONTAINER_SIZE - 2 * spacing[padding]}
+              value={address}
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              getRef={qrRef}
+            />
+          </Box>
         </Box>
-        <Box flexDirection="row" alignItems="center" marginTop="lx">
-          <CopyAddress address={currentAccount?.address} />
+        <Box width="100%" flexDirection="row">
+          <CopyAddress address={address} flex={1} />
           <TouchableOpacityBox
             flexDirection="row"
             padding="m"
             backgroundColor="purple500"
             borderRadius="round"
             onPress={handleShare}
+            flex={1}
+            alignItems="center"
+            justifyContent="center"
           >
             <ShareAddress />
             <Text
