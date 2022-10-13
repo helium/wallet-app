@@ -510,7 +510,7 @@ const Settings = () => {
     authIntervals,
     convertToCurrency,
     currency,
-    currentAccount.alias,
+    currentAccount,
     enableSolana,
     enableTestnet,
     handleCopyAddress,
