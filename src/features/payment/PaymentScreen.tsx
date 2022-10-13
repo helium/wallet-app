@@ -55,6 +55,7 @@ type LinkedPayment = {
   amount?: string
   memo: string
   payee: string
+  defaultTokenType?: TokenType
 }
 
 const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
@@ -67,6 +68,7 @@ const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
         payee: opts.payee,
         amount: opts.amount,
         memo: opts.memo || '',
+        defaultTokenType: opts.defaultTokenType,
       },
     ]
   }
@@ -183,6 +185,10 @@ const PaymentScreen = () => {
     const paymentsArr = parseLinkedPayments(route.params)
 
     if (!paymentsArr?.length) return
+
+    if (paymentsArr[0].defaultTokenType) {
+      onTokenSelected(paymentsArr[0].defaultTokenType)
+    }
 
     if (paymentsArr.find((p) => !Address.isValid(p.payee))) {
       throw new Error('Invalid address found in deep link')

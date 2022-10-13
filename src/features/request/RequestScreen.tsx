@@ -21,7 +21,11 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import ShareIcon from '@assets/images/share.svg'
 import { useDebounce } from 'use-debounce'
 import { useKeyboard } from '@react-native-community/hooks'
-import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
+import Balance, {
+  MobileTokens,
+  NetworkTokens,
+  TestNetworkTokens,
+} from '@helium/currency'
 import { NetTypes as NetType } from '@helium/address'
 import QRCode from 'react-native-qrcode-svg'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
@@ -72,7 +76,7 @@ const RequestScreen = () => {
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
   const [hntKeyboardVisible, setHNTKeyboardVisible] = useState(false)
   const [paymentAmount, setPaymentAmount] =
-    useState<Balance<NetworkTokens | TestNetworkTokens>>()
+    useState<Balance<NetworkTokens | TestNetworkTokens | MobileTokens>>()
   const [tokenType, setTokenType] = useState<TokenType>(TokenType.Hnt)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const qrRef = useRef<{
@@ -83,7 +87,7 @@ const RequestScreen = () => {
 
   const handleBalance = useCallback(
     (opts: {
-      balance: Balance<NetworkTokens | TestNetworkTokens>
+      balance: Balance<NetworkTokens | TestNetworkTokens | MobileTokens>
       payee?: string
       index?: number
     }) => {
@@ -219,7 +223,7 @@ const RequestScreen = () => {
 
   return (
     <HNTKeyboard
-      tokenType={TokenType.Hnt}
+      tokenType={tokenType}
       ref={hntKeyboardRef}
       onConfirmBalance={handleBalance}
       handleVisible={setHNTKeyboardVisible}
