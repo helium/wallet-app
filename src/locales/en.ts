@@ -405,18 +405,6 @@ export default {
     fetchMoreActivity: 'Fetch More Activity',
     getAccountData: 'Get Account Data',
   },
-  onboardData: {
-    carousel: {
-      item1:
-        'lorem',
-      item2:
-        'lorem',
-      item3:
-        'lorem',
-    },
-    install: 'Install',
-    title: 'lorem',
-  },
   qrScanner: {
     deniedAlert: {
       message:
