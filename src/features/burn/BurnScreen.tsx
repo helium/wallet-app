@@ -37,7 +37,9 @@ import { balanceToString, useBalance } from '../../utils/Balance'
 import PaymentSummary from '../payment/PaymentSummary'
 import SubmitButton from '../../components/SubmitButton'
 import { useTransactions } from '../../storage/TransactionProvider'
-import LedgerBurn, { LedgerBurnRef } from '../../components/LedgerBurn'
+import LedgerBurnModal, {
+  LedgerBurnModalRef,
+} from '../../components/LedgerBurnModal'
 import PaymentSubmit from '../payment/PaymentSubmit'
 import useAlert from '../../utils/useAlert'
 import { checkSecureAccount } from '../../storage/secureStorage'
@@ -63,7 +65,7 @@ const BurnScreen = () => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const { primaryText } = useColors()
-  const ledgerPaymentRef = useRef<LedgerBurnRef>(null)
+  const ledgerPaymentRef = useRef<LedgerBurnModalRef>(null)
   const hitSlop = useHitSlop('l')
   const { showAccountTypes } = useAccountSelector()
   const { floatToBalance, dcToNetworkTokens, networkTokensToDc } = useBalance()
@@ -240,7 +242,7 @@ const BurnScreen = () => {
   if (!amountBalance) return null
 
   return (
-    <LedgerBurn
+    <LedgerBurnModal
       ref={ledgerPaymentRef}
       onConfirm={ledgerPaymentConfirmed}
       onError={handleLedgerError}
@@ -395,7 +397,7 @@ const BurnScreen = () => {
         onSuccess={navigation.popToTop}
         actionTitle={t('generic.ok')}
       />
-    </LedgerBurn>
+    </LedgerBurnModal>
   )
 }
 
