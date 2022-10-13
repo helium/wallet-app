@@ -41,7 +41,8 @@ const useAccountStorageHook = () => {
   const [accounts, setAccounts] = useState<CSAccounts>()
   const [contacts, setContacts] = useState<CSAccount[]>([])
   const [defaultAccountAddress, setDefaultAccountAddress] = useState<string>()
-  const solanaAddressUpdateComplete = useRef(false)
+  const solanaAccountsUpdateComplete = useRef(false)
+  const solanaContactsUpdateComplete = useRef(false)
 
   const { result: restoredAccounts } = useAsync(restoreAccounts, [])
 
@@ -77,16 +78,33 @@ const useAccountStorageHook = () => {
     [sortedAccounts],
   )
 
-  useAsync(async () => {
+  useEffect(() => {
     // Ensure all accounts have solana address
-    if (!sortedAccounts.length || solanaAddressUpdateComplete.current) {
+    if (!sortedAccounts.length || solanaAccountsUpdateComplete.current) {
       return
     }
 
-    solanaAddressUpdateComplete.current = true
+    solanaAccountsUpdateComplete.current = true
 
     sortedAccounts.filter((a) => !a.solanaAddress).forEach(upsertAccount)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortedAccounts])
+
+  useEffect(() => {
+    // Ensure all contacts have solana address
+    if (!contacts.length || solanaContactsUpdateComplete.current) {
+      return
+    }
+
+    solanaContactsUpdateComplete.current = true
+
+    contacts
+      .filter((a) => !a.solanaAddress)
+      .forEach((c) => {
+        editContact(c.address, c)
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contacts])
 
   useEffect(() => {
     if (!restoredAccounts) return
@@ -156,7 +174,7 @@ const useAccountStorageHook = () => {
       let { solanaAddress } = csAccount
 
       if (!solanaAddress) {
-        solanaAddress = await heliumAddressToSolAddress(csAccount.address)
+        solanaAddress = heliumAddressToSolAddress(csAccount.address)
       }
 
       const nextAccount: CSAccount = {
@@ -224,8 +242,14 @@ const useAccountStorageHook = () => {
 
   const addContact = useCallback(
     async (account: CSAccount) => {
-      const filtered = contacts.filter((c) => c.address !== account.address)
-      const nextContacts = [...filtered, account]
+      const nextAccount = account
+      if (!nextAccount.solanaAddress) {
+        nextAccount.solanaAddress = heliumAddressToSolAddress(
+          nextAccount.address,
+        )
+      }
+      const filtered = contacts.filter((c) => c.address !== nextAccount.address)
+      const nextContacts = [...filtered, nextAccount]
       setContacts(nextContacts)
 
       return updateCloudContacts(nextContacts)
@@ -235,8 +259,14 @@ const useAccountStorageHook = () => {
 
   const editContact = useCallback(
     async (oldAddress: string, updatedAccount: CSAccount) => {
+      const nextAccount = updatedAccount
+      if (!nextAccount.solanaAddress) {
+        nextAccount.solanaAddress = heliumAddressToSolAddress(
+          nextAccount.address,
+        )
+      }
       const filtered = contacts.filter((c) => c.address !== oldAddress)
-      const nextContacts = [...filtered, updatedAccount]
+      const nextContacts = [...filtered, nextAccount]
       setContacts(nextContacts)
 
       return updateCloudContacts(nextContacts)
