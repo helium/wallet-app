@@ -26,6 +26,7 @@ const useAppStorageHook = () => {
   const [locked, setLocked] = useState<boolean>()
   const [convertToCurrency, setConvertToCurrency] = useState(false)
   const [enableTestnet, setEnableTestnet] = useState(false)
+  const [enableSolana, setEnableSolana] = useState(false)
   const [scannedAddress, setScannedAddress] = useState<string>()
   const [voteTutorialShown, setVoteTutorialShown] = useState(false)
   const [showNumericChange, setShowNumericChange] = useState(false)
@@ -41,6 +42,7 @@ const useAppStorageHook = () => {
       const nextCurrency = await getSecureItem('currency')
       const nextConvertToCurrency = await getSecureItem('convertToCurrency')
       const nextEnableTestnet = await getSecureItem('enableTestnet')
+      const nextEnableSolana = await getSecureItem('enableSolana')
       const nextVoteShown = await AsyncStorage.getItem(VOTE_TUTORIAL_SHOWN)
       const nextShowNumericChange = await getSecureItem('showNumericChange')
 
@@ -61,6 +63,7 @@ const useAppStorageHook = () => {
       setCurrency(nextCurrency || 'USD')
       setConvertToCurrency(nextConvertToCurrency === 'true')
       setEnableTestnet(nextEnableTestnet === 'true')
+      setEnableSolana(nextEnableSolana === 'true')
       setVoteTutorialShown(nextVoteShown === 'true')
       setShowNumericChange(nextShowNumericChange === 'true')
 
@@ -123,6 +126,11 @@ const useAppStorageHook = () => {
     [],
   )
 
+  const updateEnableSolana = useCallback(async (nextEnableSolana: boolean) => {
+    setEnableSolana(nextEnableSolana)
+    return storeSecureItem('enableSolana', nextEnableSolana ? 'true' : 'false')
+  }, [])
+
   const toggleConvertToCurrency = useCallback(async () => {
     setConvertToCurrency((prev) => {
       storeSecureItem('convertToCurrency', !prev ? 'true' : 'false')
@@ -144,6 +152,7 @@ const useAppStorageHook = () => {
     authInterval,
     convertToCurrency,
     currency,
+    enableSolana,
     enableTestnet,
     locked,
     pin,
@@ -155,6 +164,7 @@ const useAppStorageHook = () => {
     updateAuthInterval,
     updateConvertToCurrency,
     updateCurrency,
+    updateEnableSolana,
     updateEnableTestnet,
     updateLocked,
     updatePin,
@@ -169,6 +179,7 @@ const initialState = {
   authInterval: Intervals.IMMEDIATELY,
   convertToCurrency: false,
   currency: 'USD',
+  enableSolana: false,
   enableTestnet: false,
   locked: false,
   pin: undefined,
@@ -180,6 +191,7 @@ const initialState = {
   updateAuthInterval: async () => undefined,
   updateConvertToCurrency: async () => undefined,
   updateCurrency: async () => undefined,
+  updateEnableSolana: async () => undefined,
   updateEnableTestnet: async () => undefined,
   updateLocked: async () => undefined,
   updatePin: async () => undefined,

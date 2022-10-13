@@ -519,6 +519,15 @@ export default {
         title: 'Default Account',
       },
       dev: {
+        solana: {
+          helperText: 'More Info',
+          prompt: {
+            message:
+              'By enabling preview, you will see your equivalent Helium address on Solana.\n\nAll token balances are test tokens on Solana represented as tHNT, tMOBILE, etc.\n\nSolana balances are a snapshot of your Helium balance and may be reset or updated at any time.\n\nYou can interact with test tokens but they should not be traded.',
+            title: 'Solana Preview',
+          },
+          title: 'Preview Solana Experience',
+        },
         testnet: {
           enablePrompt: {
             getTnt: 'Get TNT',

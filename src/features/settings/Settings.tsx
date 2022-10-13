@@ -51,12 +51,14 @@ const Settings = () => {
     authInterval,
     convertToCurrency,
     currency,
+    enableSolana,
     enableTestnet,
     pin: appPin,
     requirePinForPayment,
     updateAuthInterval,
     updateConvertToCurrency,
     updateCurrency,
+    updateEnableSolana,
     updateEnableTestnet,
     updateRequirePinForPayment,
   } = useAppStorage()
@@ -456,6 +458,18 @@ const Settings = () => {
                 ? t('settings.sections.dev.testnet.helperText')
                 : undefined,
           },
+          {
+            title: t('settings.sections.dev.solana.title'),
+            value: enableSolana,
+            onToggle: () => updateEnableSolana(!enableSolana),
+            helperText: t('settings.sections.dev.solana.helperText'),
+            onPress: () => {
+              showOKAlert({
+                message: t('settings.sections.dev.solana.prompt.message'),
+                title: t('settings.sections.dev.solana.prompt.title'),
+              })
+            },
+          },
         ],
       },
       {
@@ -478,6 +492,7 @@ const Settings = () => {
     convertToCurrency,
     currency,
     currentAccount,
+    enableSolana,
     enableTestnet,
     handleCopyAddress,
     handleCurrencyTypeChange,
@@ -497,9 +512,11 @@ const Settings = () => {
     isPinRequired,
     language,
     requirePinForPayment,
+    showOKAlert,
     sortedTestnetAccounts.length,
     t,
     updateConvertToCurrency,
+    updateEnableSolana,
     version,
   ])
 
