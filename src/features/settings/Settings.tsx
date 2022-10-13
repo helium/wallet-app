@@ -313,11 +313,14 @@ const Settings = () => {
 
   const handleCopyAddress = useCallback(() => {
     if (!currentAccount?.address) return
-    copyText({
-      message: ellipsizeAddress(currentAccount?.address),
-      copyText: currentAccount?.address,
-    })
-  }, [copyText, currentAccount])
+    if (!enableSolana) {
+      copyText({
+        message: ellipsizeAddress(currentAccount?.address),
+        copyText: currentAccount?.address,
+      })
+    } else {
+    }
+  }, [copyText, currentAccount, enableSolana])
 
   const handleShareAddress = useCallback(() => {
     settingsNav.navigate('ShareAddress')
@@ -375,7 +378,23 @@ const Settings = () => {
           },
           {
             title: t('settings.sections.account.copyAddress'),
-            onPress: handleCopyAddress,
+            onPress: enableSolana ? undefined : handleCopyAddress,
+            // value: 'solana',
+            select: enableSolana
+              ? {
+                  items: [
+                    { label: 'Helium', value: 'helium' },
+                    { label: 'Solana', value: 'solana' },
+                  ],
+                  onValueSelect: (_val) => {
+                    // TODO:
+                    // copyText({
+                    //   message: ellipsizeAddress(currentAccount?.address),
+                    //   copyText: currentAccount?.address,
+                    // })
+                  },
+                }
+              : undefined,
           },
           {
             title: t('settings.sections.account.shareAddress'),
@@ -491,7 +510,7 @@ const Settings = () => {
     authIntervals,
     convertToCurrency,
     currency,
-    currentAccount,
+    currentAccount.alias,
     enableSolana,
     enableTestnet,
     handleCopyAddress,
