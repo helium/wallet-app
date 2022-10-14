@@ -1,23 +1,17 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import * as web3 from '@solana/web3.js'
-import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  TOKEN_PROGRAM_ID,
-  getOrCreateAssociatedTokenAccount,
-  createAssociatedTokenAccount,
-} from '@solana/spl-token'
-import { getKeypair } from '../../storage/secureStorage'
+import { TOKEN_PROGRAM_ID, AccountLayout } from '@solana/spl-token'
 import { CSAccount } from '../../storage/cloudStorage'
 
 type Balances = {
-  hntBalance?: web3.TokenAmount
-  dcBalance?: web3.TokenAmount
-  mobileBalance?: web3.TokenAmount
+  hntBalance?: bigint
+  dcBalance?: bigint
+  mobileBalance?: bigint
 }
 export type SolanaState = {
-  accountBalances: Record<string, Balances>
+  balances: Record<string, Balances>
 }
-const initialState: SolanaState = { accountBalances: {} }
+const initialState: SolanaState = { balances: {} }
 
 const connection = new web3.Connection(web3.clusterApiUrl('devnet'))
 
@@ -43,74 +37,23 @@ export const readBalances = createAsyncThunk(
     if (!acct?.solanaAddress) throw new Error('No solana account found')
 
     const account = new web3.PublicKey(acct.solanaAddress)
-    const secureAcct = await getKeypair(acct.address)
 
-    const signer = {
-      publicKey: account,
-      // If this account has been restored from iCloud, we may not have a secret key
-      // If they already have an ata, we won't need signer, so it's ok that it's invalid
-      secretKey: secureAcct?.privateKey || Buffer.from([]),
+    const tokenAccounts = await connection.getTokenAccountsByOwner(account, {
+      programId: TOKEN_PROGRAM_ID,
+    })
+
+    const vals = {} as Record<string, bigint>
+    tokenAccounts.value.forEach((tokenAccount) => {
+      const accountData = AccountLayout.decode(tokenAccount.account.data)
+      vals[accountData.mint.toBase58()] = accountData.amount
+    })
+
+    const retval = {
+      hntBalance: vals[Mint.HNT.toBase58()],
+      mobileBalance: vals[Mint.MOBILE.toBase58()],
+      dcBalance: vals[Mint.DC.toBase58()],
     }
-
-    // Who should the owner be?
-    const ata = await createAssociatedTokenAccount(
-      connection, // connection
-      signer, // fee payer
-      Mint.HNT, // mint
-      account, // owner,
-    )
-    // eslint-disable-next-line no-console
-    console.log({ ata })
-
-    const hntAta = getOrCreateAssociatedTokenAccount(
-      connection,
-      signer,
-      Mint.HNT,
-      account,
-      true,
-      undefined,
-      undefined,
-      ASSOCIATED_TOKEN_PROGRAM_ID,
-      TOKEN_PROGRAM_ID,
-    )
-
-    const mobileAta = getOrCreateAssociatedTokenAccount(
-      connection,
-      signer,
-      Mint.MOBILE,
-      account,
-      true,
-      undefined,
-      undefined,
-      ASSOCIATED_TOKEN_PROGRAM_ID,
-      TOKEN_PROGRAM_ID,
-    )
-
-    const dcAta = getOrCreateAssociatedTokenAccount(
-      connection,
-      signer,
-      Mint.DC,
-      account,
-      true,
-      undefined,
-      undefined,
-      ASSOCIATED_TOKEN_PROGRAM_ID,
-      TOKEN_PROGRAM_ID,
-    )
-
-    const atas = await Promise.all([hntAta, mobileAta, dcAta])
-
-    const hntBalance = connection.getTokenAccountBalance(atas[0].mint)
-    const mobileBalance = connection.getTokenAccountBalance(atas[1].mint)
-    const dcBalance = connection.getTokenAccountBalance(atas[2].mint)
-
-    const balances = await Promise.all([hntBalance, mobileBalance, dcBalance])
-
-    return {
-      hntBalance: balances[0].value,
-      mobileBalance: balances[1].value,
-      dcBalance: balances[2].value,
-    }
+    return retval
   },
 )
 
@@ -122,7 +65,9 @@ const solanaSlice = createSlice({
     builder.addCase(readBalances.fulfilled, (state, action) => {
       if (!action.meta.arg?.solanaAddress) return state
 
-      state.accountBalances[action.meta.arg?.solanaAddress] = action.payload
+      state.balances[action.meta.arg?.solanaAddress] = {
+        ...action.payload,
+      }
     })
     builder.addCase(readBalances.rejected, (_, action) => {
       console.error(action.error)
@@ -131,5 +76,5 @@ const solanaSlice = createSlice({
 })
 
 const { reducer, name } = solanaSlice
-export { name }
+export { name, solanaSlice }
 export default reducer

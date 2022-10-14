@@ -1,14 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { useDispatch, useStore } from 'react-redux'
-import {
-  persistReducer,
-  FLUSH,
-  REHYDRATE,
-  PAUSE,
-  PERSIST,
-  PURGE,
-  REGISTER,
-} from 'redux-persist'
+import { persistReducer } from 'redux-persist'
 import { setupListeners } from '@reduxjs/toolkit/query'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import reducer from './rootReducer'
@@ -26,9 +18,7 @@ const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: {
-        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-      },
+      serializableCheck: false,
     }).concat([solanaStatusApi.middleware]),
 })
 

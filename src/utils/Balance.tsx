@@ -19,6 +19,7 @@ import React, {
 } from 'react'
 import useAppState from 'react-native-appstate-hook'
 import CurrencyFormatter from 'react-native-currency-format'
+import { useSelector } from 'react-redux'
 import {
   TokenType,
   useAccountLazyQuery,
@@ -28,6 +29,7 @@ import {
 } from '../generated/graphql'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
+import { RootState } from '../store/rootReducer'
 import { readBalances } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import { accountCurrencyType } from './accountUtils'
@@ -56,7 +58,9 @@ const useBalanceHook = () => {
     notifyOnNetworkStatusChange: true,
     skip: !currentAccount?.address,
   })
+
   const [fetchOracle] = useOracleDataLazyQuery()
+
   const { data: accountData } = useAccountQuery({
     variables: {
       address: currentAccount?.address || '',
@@ -65,7 +69,15 @@ const useBalanceHook = () => {
     skip: !currentAccount?.address,
     pollInterval: 30000,
   })
+
   const [fetchAccountData] = useAccountLazyQuery()
+
+  const solanaBalances = useSelector(
+    (state: RootState) => state.solana.balances,
+  )
+  // TODO: Make use of these balances
+  // eslint-disable-next-line no-console
+  console.log({ solanaBalances })
 
   const prevLoadingOracle = usePrevious(loadingOracle)
   const [oracleDateTime, setOracleDateTime] = useState<Date>()
@@ -79,7 +91,6 @@ const useBalanceHook = () => {
   useEffect(() => {
     if (!currentAccount?.solanaAddress) return
     dispatch(readBalances(currentAccount))
-    // dispatch(requestAirdrop(currentAccount))
   }, [currentAccount, dispatch])
 
   useMount(() => {
