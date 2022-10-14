@@ -19,8 +19,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useAccountBalances } from '../../utils/Balance'
-import { AccountData, TokenType } from '../../generated/graphql'
+import { TokenType } from '../../generated/graphql'
+import { useBalance } from '../../utils/Balance'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -37,13 +37,20 @@ type Token = {
 }
 
 type Props = {
-  accountData: AccountData | null | undefined
   loading?: boolean
 }
 
 const ITEM_HEIGHT = 78
-const AccountTokenList = ({ accountData, loading = false }: Props) => {
-  const displayVals = useAccountBalances(accountData)
+const AccountTokenList = ({ loading = false }: Props) => {
+  const {
+    helium: {
+      dcBalance,
+      mobileBalance,
+      networkBalance,
+      networkStakedBalance,
+      secBalance,
+    },
+  } = useBalance()
   const navigation = useNavigation<HomeNavigationProp>()
   const [listItemHeight, setListItemHeight] = useLayoutHeight()
   const breakpoints = useBreakpoints()
@@ -63,27 +70,27 @@ const AccountTokenList = ({ accountData, loading = false }: Props) => {
     return [
       {
         type: TokenType.Hnt,
-        balance: displayVals?.hnt as Balance<NetworkTokens>,
+        balance: networkBalance as Balance<NetworkTokens>,
         staked: false,
       },
       {
         type: TokenType.Hnt,
-        balance: displayVals?.stakedHnt as Balance<NetworkTokens>,
+        balance: networkStakedBalance as Balance<NetworkTokens>,
         staked: true,
       },
       {
         type: TokenType.Mobile,
-        balance: displayVals?.mobile as Balance<MobileTokens>,
+        balance: mobileBalance as Balance<MobileTokens>,
         staked: false,
       },
       {
         type: TokenType.Dc,
-        balance: displayVals?.dc as Balance<DataCredits>,
+        balance: dcBalance as Balance<DataCredits>,
         staked: false,
       },
       {
         type: TokenType.Hst,
-        balance: displayVals?.hst as Balance<SecurityTokens>,
+        balance: secBalance as Balance<SecurityTokens>,
         staked: false,
       },
     ].filter(
@@ -92,7 +99,14 @@ const AccountTokenList = ({ accountData, loading = false }: Props) => {
         token?.type === TokenType.Mobile ||
         (token?.type === TokenType.Hnt && token?.staked === false),
     )
-  }, [displayVals, loading])
+  }, [
+    dcBalance,
+    loading,
+    mobileBalance,
+    networkBalance,
+    networkStakedBalance,
+    secBalance,
+  ])
 
   const handleNavigation = useCallback(
     (token: Token) => () => {
@@ -162,7 +176,6 @@ const AccountTokenList = ({ accountData, loading = false }: Props) => {
               <AccountTokenCurrencyBalance
                 variant="subtitle4"
                 color="secondaryText"
-                accountData={accountData}
                 tokenType={token.type}
                 staked={token.staked}
               />
@@ -172,7 +185,7 @@ const AccountTokenList = ({ accountData, loading = false }: Props) => {
         </Animated.View>
       )
     },
-    [accountData, handleItemLayout, handleNavigation],
+    [handleItemLayout, handleNavigation],
   )
 
   const renderFooter = useCallback(() => {

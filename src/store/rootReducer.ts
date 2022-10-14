@@ -3,9 +3,11 @@ import {
   reducer as solanaStatusReducer,
   solanaStatusApi,
 } from './slices/solanaStatusApi'
+import solanaReducer, { name as solanaName } from './slices/solanaSlice'
 
 const reducer = combineReducers({
   [solanaStatusApi.reducerPath]: solanaStatusReducer,
+  [solanaName]: solanaReducer,
 })
 
 export const rootReducer = (state: RootState, action: AnyAction) => {

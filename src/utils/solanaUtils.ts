@@ -6,6 +6,7 @@ export const solKeypairFromPK = (heliumPK: Buffer) => {
 }
 
 export const heliumAddressToSolAddress = (heliumAddress: string) => {
+  if (typeof heliumAddress !== 'string') return ''
   const heliumPK = Address.fromB58(heliumAddress).publicKey
   const pk = new web3.PublicKey(heliumPK)
   return pk.toBase58()

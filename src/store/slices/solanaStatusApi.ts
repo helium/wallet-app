@@ -1,6 +1,11 @@
 // Need to use the React-specific entry point to allow generating React hooks
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import type { SolanaStatusResponse } from './solanaStatusTypes'
+
+export type SolanaStatusResponse = {
+  migrationStatus: 'not_started' | 'in_progress' | 'complete'
+  minimumVersions: Record<string, string>
+  finalBlockHeight?: number
+}
 
 // Define a service using a base URL and expected endpoints
 export const solanaStatusApi = createApi({

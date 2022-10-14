@@ -81,12 +81,7 @@ const PaymentScreen = () => {
   const addressBookRef = useRef<AddressBookRef>(null)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const {
-    currencyTypeFromTokenType,
-    accountNetworkBalance,
-    accountMobileBalance,
-    oraclePrice,
-  } = useBalance()
+  const { currencyTypeFromTokenType, helium, oraclePrice } = useBalance()
 
   const { showOKAlert } = useAlert()
 
@@ -139,8 +134,8 @@ const PaymentScreen = () => {
   const [state, dispatch] = usePaymentsReducer({
     currencyType,
     oraclePrice,
-    accountMobileBalance,
-    accountNetworkBalance,
+    accountMobileBalance: helium.mobileBalance,
+    accountNetworkBalance: helium.networkBalance,
     netType: networkType,
   })
 
@@ -279,7 +274,7 @@ const PaymentScreen = () => {
     value: boolean,
     errorTicker: string,
   ] => {
-    if (!accountNetworkBalance || !accountMobileBalance || !state.totalAmount) {
+    if (!helium.networkBalance || !helium.mobileBalance || !state.totalAmount) {
       return [true, '']
     }
     if (state.networkFee?.integerBalance === undefined) return [false, '']
@@ -288,19 +283,19 @@ const PaymentScreen = () => {
         // If paying with mobile, they need to have enough mobile to cover the payment
         // and enough hnt to cover the fee
         const hasEnoughNetwork =
-          accountNetworkBalance.minus(state.networkFee).integerBalance >= 0
+          helium.networkBalance.minus(state.networkFee).integerBalance >= 0
         const hasEnoughMobile =
-          accountMobileBalance.minus(state.totalAmount).integerBalance >= 0
-        if (!hasEnoughNetwork) return [true, accountNetworkBalance.type.ticker]
-        if (!hasEnoughMobile) return [true, accountMobileBalance.type.ticker]
+          helium.mobileBalance.minus(state.totalAmount).integerBalance >= 0
+        if (!hasEnoughNetwork) return [true, helium.networkBalance.type.ticker]
+        if (!hasEnoughMobile) return [true, helium.mobileBalance.type.ticker]
       }
 
       const hasEnoughNetwork =
-        accountNetworkBalance.integerBalance <
+        helium.networkBalance.integerBalance <
         state.totalAmount.plus(state.networkFee).integerBalance
       return [
         hasEnoughNetwork,
-        hasEnoughNetwork ? '' : accountNetworkBalance.type.ticker,
+        hasEnoughNetwork ? '' : helium.networkBalance.type.ticker,
       ]
     } catch (e) {
       // if the screen was already open, then a deep link of a different net type
@@ -311,8 +306,8 @@ const PaymentScreen = () => {
       return [false, '']
     }
   }, [
-    accountMobileBalance,
-    accountNetworkBalance,
+    helium.mobileBalance,
+    helium.networkBalance,
     state.networkFee,
     state.totalAmount,
     tokenType,
@@ -626,8 +621,8 @@ const PaymentScreen = () => {
                   title={t('payment.title', { ticker: currencyType.ticker })}
                   subtitle={balanceToString(
                     tokenType === 'hnt'
-                      ? accountNetworkBalance
-                      : accountMobileBalance,
+                      ? helium.networkBalance
+                      : helium.mobileBalance,
                   )}
                   address={currentAccount?.address}
                   netType={currentAccount?.netType}

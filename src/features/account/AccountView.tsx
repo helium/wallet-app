@@ -5,7 +5,7 @@ import { addMinutes } from 'date-fns'
 import * as AccountUtils from '../../utils/accountUtils'
 import { AccountBalance, AccountData } from '../../generated/graphql'
 import Text from '../../components/Text'
-import { useAccountBalances, useBalance } from '../../utils/Balance'
+import { useBalance } from '../../utils/Balance'
 import FadeInOut from '../../components/FadeInOut'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import supportedCurrencies from '../../utils/supportedCurrencies'
@@ -24,8 +24,7 @@ const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
   const [balanceString, setBalanceString] = useState('')
   const [selectedDate, setSelectedDate] = useState('')
 
-  const balances = useAccountBalances(accountData)
-  const { toCurrencyString } = useBalance()
+  const { toCurrencyString, helium } = useBalance()
   const { currency } = useAppStorage()
   const [formattedHntPrice, setFormattedHntPrice] = useState('')
   const [actionBarHeight, setActionBarHeight] = useLayoutHeight()
@@ -77,16 +76,19 @@ const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
         setBalanceString,
       )
     } else if (hntPrice) {
-      toCurrencyString(balances?.hnt?.plus(balances.stakedHnt)).then(
-        setBalanceString,
-      )
+      let bal = helium.networkBalance
+      if (helium.networkStakedBalance) {
+        bal = helium.networkBalance?.plus(helium.networkStakedBalance)
+      }
+      toCurrencyString(bal).then(setBalanceString)
     } else {
       setBalanceString('')
     }
   }, [
     accountNetType,
-    balances,
     currency,
+    helium.networkBalance,
+    helium.networkStakedBalance,
     hntPrice,
     selectedBalance,
     toCurrencyString,

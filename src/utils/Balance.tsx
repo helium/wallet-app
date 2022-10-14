@@ -20,7 +20,6 @@ import React, {
 import useAppState from 'react-native-appstate-hook'
 import CurrencyFormatter from 'react-native-currency-format'
 import {
-  AccountData,
   TokenType,
   useAccountLazyQuery,
   useAccountQuery,
@@ -29,6 +28,8 @@ import {
 } from '../generated/graphql'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
+import { readBalances } from '../store/slices/solanaSlice'
+import { useAppDispatch } from '../store/store'
 import { accountCurrencyType } from './accountUtils'
 import { CoinGeckoPrices, getCurrentPrices } from './coinGeckoClient'
 import { decimalSeparator, groupSeparator } from './i18n'
@@ -39,6 +40,8 @@ export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
 const useBalanceHook = () => {
   const { currentAccount } = useAccountStorage()
   const { convertToCurrency, currency } = useAppStorage()
+
+  const dispatch = useAppDispatch()
 
   const {
     data: oracleData,
@@ -60,6 +63,7 @@ const useBalanceHook = () => {
     },
     fetchPolicy: 'cache-and-network',
     skip: !currentAccount?.address,
+    pollInterval: 30000,
   })
   const [fetchAccountData] = useAccountLazyQuery()
 
@@ -71,6 +75,12 @@ const useBalanceHook = () => {
     () => getCurrentPrices().then(setCoinGeckoPrices),
     [],
   )
+
+  useEffect(() => {
+    if (!currentAccount?.solanaAddress) return
+    dispatch(readBalances(currentAccount))
+    // dispatch(requestAirdrop(currentAccount))
+  }, [currentAccount, dispatch])
 
   useMount(() => {
     updateCoinGeckoPrices()
@@ -176,7 +186,7 @@ const useBalanceHook = () => {
     [currentAccount],
   )
 
-  const accountNetworkBalance = useMemo(() => {
+  const networkBalance = useMemo(() => {
     if (accountData?.account?.balance === undefined || !currentAccount) {
       return
     }
@@ -186,7 +196,17 @@ const useBalanceHook = () => {
     )
   }, [accountData, currentAccount])
 
-  const accountMobileBalance = useMemo(() => {
+  const networkStakedBalance = useMemo(() => {
+    if (accountData?.account?.stakedBalance === undefined || !currentAccount) {
+      return
+    }
+    return new Balance(
+      accountData?.account?.stakedBalance,
+      accountCurrencyType(currentAccount.address),
+    )
+  }, [accountData, currentAccount])
+
+  const mobileBalance = useMemo(() => {
     if (
       accountData?.account?.mobileBalance === undefined ||
       accountData.account.mobileBalance === null ||
@@ -195,6 +215,31 @@ const useBalanceHook = () => {
       return
     }
     return new Balance(accountData.account.mobileBalance, CurrencyType.mobile)
+  }, [accountData, currentAccount])
+
+  const secBalance = useMemo(() => {
+    if (
+      accountData?.account?.secBalance === undefined ||
+      accountData.account.secBalance === null ||
+      !currentAccount
+    ) {
+      return
+    }
+    return new Balance(
+      accountData.account.secBalance || 0,
+      CurrencyType.security,
+    )
+  }, [accountData, currentAccount])
+
+  const dcBalance = useMemo(() => {
+    if (
+      accountData?.account?.dcBalance === undefined ||
+      accountData.account.dcBalance === null ||
+      !currentAccount
+    ) {
+      return
+    }
+    return new Balance(accountData.account.dcBalance, CurrencyType.dataCredit)
   }, [accountData, currentAccount])
 
   const toPreferredCurrencyString = useCallback(
@@ -253,8 +298,13 @@ const useBalanceHook = () => {
   )
 
   return {
-    accountNetworkBalance,
-    accountMobileBalance,
+    helium: {
+      dcBalance,
+      mobileBalance,
+      networkBalance,
+      networkStakedBalance,
+      secBalance,
+    },
     bonesToBalance,
     currencyTypeFromTokenType,
     dcToNetworkTokens,
@@ -270,8 +320,13 @@ const useBalanceHook = () => {
 }
 
 const initialState = {
-  accountNetworkBalance: undefined,
-  accountMobileBalance: undefined,
+  helium: {
+    dcBalance: undefined,
+    mobileBalance: undefined,
+    networkBalance: undefined,
+    networkStakedBalance: undefined,
+    secBalance: undefined,
+  },
   bonesToBalance: () => new Balance(0, CurrencyType.networkToken),
   currencyTypeFromTokenType: () => CurrencyType.networkToken,
   dcToNetworkTokens: () => undefined,
@@ -309,21 +364,3 @@ export const balanceToString = (
     showTicker: opts?.showTicker,
   })
 }
-
-export const useAccountBalances = (
-  accountData: AccountData | null | undefined,
-) =>
-  useMemo(() => {
-    if (!accountData) return
-    const currencyType = accountCurrencyType(accountData.address)
-
-    return {
-      hnt: new Balance(accountData.balance || 0, currencyType),
-      mobile: new Balance(accountData.mobileBalance || 0, CurrencyType.mobile),
-      dc: new Balance(accountData.dcBalance || 0, CurrencyType.dataCredit),
-      stakedHnt: new Balance(accountData.stakedBalance || 0, currencyType),
-      hst: new Balance(accountData.secBalance || 0, CurrencyType.security),
-      address: accountData?.address,
-      hntBal: accountData.balance,
-    }
-  }, [accountData])

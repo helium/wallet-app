@@ -100,18 +100,14 @@ const HNTKeyboardSelector = forwardRef(
     const {
       oracleDateTime,
       floatToBalance,
-      accountNetworkBalance,
-      accountMobileBalance,
+      helium: { networkBalance, mobileBalance },
       bonesToBalance,
     } = useBalance()
     const [timeStr, setTimeStr] = useState('')
 
     const balanceForTokenType = useMemo(
-      () =>
-        tokenType === TokenType.Hnt
-          ? accountNetworkBalance
-          : accountMobileBalance,
-      [accountMobileBalance, accountNetworkBalance, tokenType],
+      () => (tokenType === TokenType.Hnt ? networkBalance : mobileBalance),
+      [mobileBalance, networkBalance, tokenType],
     )
 
     const snapPoints = useMemo(() => {
@@ -206,7 +202,7 @@ const HNTKeyboardSelector = forwardRef(
     const [maxEnabled, setMaxEnabled] = useState(false)
 
     const handleSetMax = useCallback(() => {
-      if (!accountNetworkBalance || !accountMobileBalance || !networkFee) return
+      if (!networkBalance || !mobileBalance || !networkFee) return
 
       const currentAmount = getNextPayments()
         .filter((_v, index) => index !== paymentIndex || 0) // Remove the payment being updated
@@ -219,11 +215,9 @@ const HNTKeyboardSelector = forwardRef(
 
       let maxBalance: Balance<NetworkTokens | TestNetworkTokens> | undefined
       if (tokenType === TokenType.Hnt) {
-        maxBalance = accountNetworkBalance
-          .minus(currentAmount)
-          .minus(networkFee)
+        maxBalance = networkBalance.minus(currentAmount).minus(networkFee)
       } else {
-        maxBalance = accountMobileBalance.minus(currentAmount)
+        maxBalance = mobileBalance.minus(currentAmount)
       }
 
       if (maxBalance.integerBalance < 0) {
@@ -241,8 +235,8 @@ const HNTKeyboardSelector = forwardRef(
       setValue(maxEnabled ? '0' : val)
       setMaxEnabled((m) => !m)
     }, [
-      accountNetworkBalance,
-      accountMobileBalance,
+      networkBalance,
+      mobileBalance,
       networkFee,
       getNextPayments,
       bonesToBalance,
@@ -368,12 +362,7 @@ const HNTKeyboardSelector = forwardRef(
     const hasSufficientBalance = useMemo(() => {
       if (!payer) return true
 
-      if (
-        !networkFee ||
-        !valueAsBalance ||
-        !accountNetworkBalance ||
-        !accountMobileBalance
-      ) {
+      if (!networkFee || !valueAsBalance || !networkBalance || !mobileBalance) {
         return false
       }
 
@@ -381,18 +370,18 @@ const HNTKeyboardSelector = forwardRef(
         // If paying with mobile, they need to have enough mobile to cover the payment
         // and enough hnt to cover the fee
         const hasEnoughHnt =
-          accountNetworkBalance.minus(networkFee).integerBalance >= 0
+          networkBalance.minus(networkFee).integerBalance >= 0
         const hasEnoughMobile =
-          accountMobileBalance.minus(valueAsBalance).integerBalance >= 0
+          mobileBalance.minus(valueAsBalance).integerBalance >= 0
         return hasEnoughHnt && hasEnoughMobile
       }
       return (
-        accountNetworkBalance.minus(networkFee).minus(valueAsBalance)
-          .integerBalance >= 0
+        networkBalance.minus(networkFee).minus(valueAsBalance).integerBalance >=
+        0
       )
     }, [
-      accountMobileBalance,
-      accountNetworkBalance,
+      mobileBalance,
+      networkBalance,
       networkFee,
       payer,
       tokenType,

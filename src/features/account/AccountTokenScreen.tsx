@@ -16,7 +16,7 @@ import BackScreen from '../../components/BackScreen'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import ListItem from '../../components/ListItem'
-import { Activity, TokenType, useAccountQuery } from '../../generated/graphql'
+import { Activity, TokenType } from '../../generated/graphql'
 import TokenIcon from './TokenIcon'
 import AccountActionBar from './AccountActionBar'
 import useActivityList from './useActivityList'
@@ -60,16 +60,6 @@ const AccountTokenScreen = () => {
     },
     [],
   )
-
-  const { data: accountData } = useAccountQuery({
-    variables: {
-      address: currentAccount?.address || '',
-    },
-    fetchPolicy: 'cache-and-network',
-    skip: !currentAccount?.address,
-    pollInterval: 30000,
-    // TODO: adjust this interval if needed
-  })
 
   const filterState = useActivityFilter()
 
@@ -361,12 +351,10 @@ const AccountTokenScreen = () => {
                   showTicker={false}
                   textVariant="h2"
                   justifyContent="flex-start"
-                  accountData={accountData?.account}
                   tokenType={route.params.tokenType}
                   flex={1}
                 />
                 <AccountTokenCurrencyBalance
-                  accountData={accountData?.account}
                   tokenType={route.params.tokenType}
                   variant="body1"
                   color="secondaryText"
@@ -382,11 +370,9 @@ const AccountTokenScreen = () => {
               </Box>
               <AccountTokenBalance
                 marginTop="s"
-                accountData={accountData?.account}
                 tokenType={route.params.tokenType}
               />
               <AccountTokenCurrencyBalance
-                accountData={accountData?.account}
                 tokenType={route.params.tokenType}
                 variant="h4"
                 color="secondaryText"

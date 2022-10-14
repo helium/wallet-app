@@ -3,32 +3,35 @@ import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { NetTypes } from '@helium/address'
 import * as AccountUtils from '../../utils/accountUtils'
-import { useAccountBalances, useBalance } from '../../utils/Balance'
-import { AccountData, TokenType } from '../../generated/graphql'
+import { useBalance } from '../../utils/Balance'
+import { TokenType } from '../../generated/graphql'
 import Text, { TextProps } from '../../components/Text'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
 type Props = {
-  accountData?: AccountData | null
   tokenType: TokenType
   staked?: boolean
 } & TextProps
 
 const AccountTokenCurrencyBalance = ({
-  accountData,
   tokenType,
   staked = false,
   ...textProps
 }: Props) => {
   const { t } = useTranslation()
   const [balanceString, setBalanceString] = useState('')
+  const { currentAccount } = useAccountStorage()
 
   const accountNetType = useMemo(
-    () => AccountUtils.accountNetType(accountData?.address),
-    [accountData],
+    () => AccountUtils.accountNetType(currentAccount?.address),
+    [currentAccount],
   )
 
-  const balances = useAccountBalances(accountData)
-  const { toCurrencyString, oraclePrice } = useBalance()
+  const {
+    toCurrencyString,
+    oraclePrice,
+    helium: { dcBalance, networkBalance, networkStakedBalance },
+  } = useBalance()
 
   useAsync(async () => {
     if (accountNetType !== NetTypes.MAINNET) {
@@ -39,13 +42,13 @@ const AccountTokenCurrencyBalance = ({
     switch (tokenType) {
       case TokenType.Hnt:
         if (staked) {
-          toCurrencyString(balances?.stakedHnt).then(setBalanceString)
+          toCurrencyString(networkStakedBalance).then(setBalanceString)
         } else {
-          toCurrencyString(balances?.hnt).then(setBalanceString)
+          toCurrencyString(networkBalance).then(setBalanceString)
         }
         break
       case TokenType.Dc: {
-        const balance = balances?.dc.toUsd(oraclePrice).floatBalance.toFixed(2)
+        const balance = dcBalance?.toUsd(oraclePrice).floatBalance.toFixed(2)
         setBalanceString(
           `$${balance || '0.00'} • ${t('accountView.nonTransferable')}`,
         )
@@ -60,15 +63,7 @@ const AccountTokenCurrencyBalance = ({
       default:
         setBalanceString('-')
     }
-  }, [
-    accountNetType,
-    balances,
-    oraclePrice,
-    staked,
-    t,
-    toCurrencyString,
-    tokenType,
-  ])
+  }, [accountNetType, oraclePrice, staked, t, toCurrencyString, tokenType])
 
   return (
     <Text
