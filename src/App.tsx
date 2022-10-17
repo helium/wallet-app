@@ -25,7 +25,7 @@ import { BalanceProvider } from './utils/Balance'
 import { useColorScheme } from './theme/themeHooks'
 import { linking } from './utils/linking'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
-import TestnetAwareStatusBar from './components/TestnetAwareStatusBar'
+import NetworkAwareStatusBar from './components/NetworkAwareStatusBar'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
 import { navigationRef } from './navigation/NavigationHelper'
 import globalStyles from './theme/globalStyles'
@@ -115,7 +115,7 @@ const App = () => {
                                     linking={linking}
                                     ref={navigationRef}
                                   >
-                                    <TestnetAwareStatusBar />
+                                    <NetworkAwareStatusBar />
                                     <RootNavigator />
                                   </NavigationContainer>
                                   <SecurityScreen

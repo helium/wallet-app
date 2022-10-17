@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 import { NetTypes } from '@helium/address'
 import Balance, {
   CurrencyType,
@@ -41,7 +42,7 @@ import usePrevious from './usePrevious'
 export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
 const useBalanceHook = () => {
   const { currentAccount } = useAccountStorage()
-  const { convertToCurrency, currency } = useAppStorage()
+  const { convertToCurrency, currency, l1Network } = useAppStorage()
 
   const dispatch = useAppDispatch()
 
@@ -75,10 +76,6 @@ const useBalanceHook = () => {
   const solanaBalances = useSelector(
     (state: RootState) => state.solana.balances,
   )
-  // TODO: Make use of these balances
-  // eslint-disable-next-line no-console
-  console.log({ solanaBalances })
-
   const prevLoadingOracle = usePrevious(loadingOracle)
   const [oracleDateTime, setOracleDateTime] = useState<Date>()
   const [coinGeckoPrices, setCoinGeckoPrices] = useState<CoinGeckoPrices>()
@@ -116,6 +113,17 @@ const useBalanceHook = () => {
       },
     })
   }, [currentAccount, fetchAccountData, fetchOracle, updateCoinGeckoPrices])
+
+  const solAddress = useMemo(
+    () => currentAccount?.solanaAddress,
+    [currentAccount.solanaAddress],
+  )
+
+  const solBalances = useMemo(() => {
+    if (!solAddress) return
+
+    return solanaBalances[solAddress]
+  }, [solAddress, solanaBalances])
 
   const oraclePrice = useMemo(() => {
     if (!oracleData?.currentOraclePrice) return
@@ -198,60 +206,79 @@ const useBalanceHook = () => {
   )
 
   const networkBalance = useMemo(() => {
-    if (accountData?.account?.balance === undefined || !currentAccount) {
-      return
+    let bal = 0
+    switch (l1Network) {
+      case 'helium':
+        bal = accountData?.account?.balance || 0
+        break
+
+      case 'solana_dev':
+        bal = solBalances?.hntBalance ? Number(solBalances.hntBalance) : 0
+        break
     }
-    return new Balance(
-      accountData?.account?.balance,
-      accountCurrencyType(currentAccount.address),
-    )
-  }, [accountData, currentAccount])
+
+    return new Balance(bal, accountCurrencyType(currentAccount?.address))
+  }, [accountData, currentAccount, l1Network, solBalances])
 
   const networkStakedBalance = useMemo(() => {
-    if (accountData?.account?.stakedBalance === undefined || !currentAccount) {
-      return
+    let bal = 0
+    switch (l1Network) {
+      case 'helium':
+        bal = accountData?.account?.stakedBalance || 0
+        break
+
+      case 'solana_dev':
+        bal = solBalances?.stakedBalance ? Number(solBalances.stakedBalance) : 0
+        break
     }
-    return new Balance(
-      accountData?.account?.stakedBalance,
-      accountCurrencyType(currentAccount.address),
-    )
-  }, [accountData, currentAccount])
+
+    return new Balance(bal, accountCurrencyType(currentAccount?.address))
+  }, [accountData, currentAccount, l1Network, solBalances])
 
   const mobileBalance = useMemo(() => {
-    if (
-      accountData?.account?.mobileBalance === undefined ||
-      accountData.account.mobileBalance === null ||
-      !currentAccount
-    ) {
-      return
+    let bal = 0
+    switch (l1Network) {
+      case 'helium':
+        bal = accountData?.account?.mobileBalance || 0
+        break
+
+      case 'solana_dev':
+        bal = solBalances?.mobileBalance ? Number(solBalances.mobileBalance) : 0
+        break
     }
-    return new Balance(accountData.account.mobileBalance, CurrencyType.mobile)
-  }, [accountData, currentAccount])
+
+    return new Balance(bal, CurrencyType.mobile)
+  }, [accountData, l1Network, solBalances])
 
   const secBalance = useMemo(() => {
-    if (
-      accountData?.account?.secBalance === undefined ||
-      accountData.account.secBalance === null ||
-      !currentAccount
-    ) {
-      return
+    let bal = 0
+    switch (l1Network) {
+      case 'helium':
+        bal = accountData?.account?.secBalance || 0
+        break
+
+      case 'solana_dev':
+        bal = solBalances?.secBalance ? Number(solBalances.secBalance) : 0
+        break
     }
-    return new Balance(
-      accountData.account.secBalance || 0,
-      CurrencyType.security,
-    )
-  }, [accountData, currentAccount])
+
+    return new Balance(bal, CurrencyType.security)
+  }, [accountData, l1Network, solBalances])
 
   const dcBalance = useMemo(() => {
-    if (
-      accountData?.account?.dcBalance === undefined ||
-      accountData.account.dcBalance === null ||
-      !currentAccount
-    ) {
-      return
+    let bal = 0
+    switch (l1Network) {
+      case 'helium':
+        bal = accountData?.account?.dcBalance || 0
+        break
+
+      case 'solana_dev':
+        bal = solBalances?.dcBalance ? Number(solBalances.dcBalance) : 0
+        break
     }
-    return new Balance(accountData.account.dcBalance, CurrencyType.dataCredit)
-  }, [accountData, currentAccount])
+
+    return new Balance(bal, CurrencyType.dataCredit)
+  }, [accountData, l1Network, solBalances])
 
   const toPreferredCurrencyString = useCallback(
     (
@@ -309,13 +336,11 @@ const useBalanceHook = () => {
   )
 
   return {
-    helium: {
-      dcBalance,
-      mobileBalance,
-      networkBalance,
-      networkStakedBalance,
-      secBalance,
-    },
+    dcBalance,
+    mobileBalance,
+    networkBalance,
+    networkStakedBalance,
+    secBalance,
     bonesToBalance,
     currencyTypeFromTokenType,
     dcToNetworkTokens,

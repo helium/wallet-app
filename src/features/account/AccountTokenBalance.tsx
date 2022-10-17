@@ -19,13 +19,11 @@ const AccountTokenBalance = ({
   ...boxProps
 }: Props) => {
   const {
-    helium: {
-      dcBalance,
-      mobileBalance,
-      networkBalance,
-      networkStakedBalance,
-      secBalance,
-    },
+    dcBalance,
+    mobileBalance,
+    networkBalance,
+    networkStakedBalance,
+    secBalance,
   } = useBalance()
 
   const balance = useMemo(() => {

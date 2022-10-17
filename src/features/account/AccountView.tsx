@@ -24,7 +24,8 @@ const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
   const [balanceString, setBalanceString] = useState('')
   const [selectedDate, setSelectedDate] = useState('')
 
-  const { toCurrencyString, helium } = useBalance()
+  const { toCurrencyString, networkBalance, networkStakedBalance } =
+    useBalance()
   const { currency } = useAppStorage()
   const [formattedHntPrice, setFormattedHntPrice] = useState('')
   const [actionBarHeight, setActionBarHeight] = useLayoutHeight()
@@ -76,9 +77,9 @@ const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
         setBalanceString,
       )
     } else if (hntPrice) {
-      let bal = helium.networkBalance
-      if (helium.networkStakedBalance) {
-        bal = helium.networkBalance?.plus(helium.networkStakedBalance)
+      let bal = networkBalance
+      if (networkStakedBalance) {
+        bal = networkBalance?.plus(networkStakedBalance)
       }
       toCurrencyString(bal).then(setBalanceString)
     } else {
@@ -87,8 +88,8 @@ const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
   }, [
     accountNetType,
     currency,
-    helium.networkBalance,
-    helium.networkStakedBalance,
+    networkBalance,
+    networkStakedBalance,
     hntPrice,
     selectedBalance,
     toCurrencyString,

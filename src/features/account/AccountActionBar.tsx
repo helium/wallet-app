@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent, Animated } from 'react-native'
+import { NetTypes } from '@helium/address'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import Box from '../../components/Box'
 import FabButton from '../../components/FabButton'
@@ -20,7 +21,7 @@ type Props = {
 const AccountActionBar = ({ tokenType, onLayout, compact }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
-  const { requirePinForPayment, pin } = useAppStorage()
+  const { requirePinForPayment, pin, l1Network } = useAppStorage()
   const anim = useRef(new Animated.Value(1))
   const { currentAccount } = useAccountStorage()
 
@@ -99,6 +100,12 @@ const AccountActionBar = ({ tokenType, onLayout, compact }: Props) => {
     [navigation, pin, requirePinForPayment, tokenType],
   )
 
+  const isHeliumMainnet = useMemo(
+    () =>
+      l1Network === 'helium' && currentAccount?.netType === NetTypes.MAINNET,
+    [currentAccount, l1Network],
+  )
+
   return (
     <Box
       flexDirection="row"
@@ -120,7 +127,7 @@ const AccountActionBar = ({ tokenType, onLayout, compact }: Props) => {
           onPress={handleAction('request')}
         />
       </Box>
-      {!compact && (
+      {!compact && isHeliumMainnet && (
         <Box>
           <FabButton
             zIndex={2}

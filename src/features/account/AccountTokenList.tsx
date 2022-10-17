@@ -43,13 +43,11 @@ type Props = {
 const ITEM_HEIGHT = 78
 const AccountTokenList = ({ loading = false }: Props) => {
   const {
-    helium: {
-      dcBalance,
-      mobileBalance,
-      networkBalance,
-      networkStakedBalance,
-      secBalance,
-    },
+    dcBalance,
+    mobileBalance,
+    networkBalance,
+    networkStakedBalance,
+    secBalance,
   } = useBalance()
   const navigation = useNavigation<HomeNavigationProp>()
   const [listItemHeight, setListItemHeight] = useLayoutHeight()

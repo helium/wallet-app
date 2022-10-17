@@ -7,6 +7,7 @@ import { useBalance } from '../../utils/Balance'
 import { TokenType } from '../../generated/graphql'
 import Text, { TextProps } from '../../components/Text'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { locale } from '../../utils/i18n'
 
 type Props = {
   tokenType: TokenType
@@ -30,7 +31,9 @@ const AccountTokenCurrencyBalance = ({
   const {
     toCurrencyString,
     oraclePrice,
-    helium: { dcBalance, networkBalance, networkStakedBalance },
+    dcBalance,
+    networkBalance,
+    networkStakedBalance,
   } = useBalance()
 
   useAsync(async () => {
@@ -48,7 +51,9 @@ const AccountTokenCurrencyBalance = ({
         }
         break
       case TokenType.Dc: {
-        const balance = dcBalance?.toUsd(oraclePrice).floatBalance.toFixed(2)
+        const balance = dcBalance
+          ?.toUsd(oraclePrice)
+          .floatBalance.toLocaleString(locale, { maximumFractionDigits: 2 })
         setBalanceString(
           `$${balance || '0.00'} • ${t('accountView.nonTransferable')}`,
         )
@@ -63,7 +68,17 @@ const AccountTokenCurrencyBalance = ({
       default:
         setBalanceString('-')
     }
-  }, [accountNetType, oraclePrice, staked, t, toCurrencyString, tokenType])
+  }, [
+    accountNetType,
+    dcBalance,
+    networkBalance,
+    networkStakedBalance,
+    oraclePrice,
+    staked,
+    t,
+    toCurrencyString,
+    tokenType,
+  ])
 
   return (
     <Text

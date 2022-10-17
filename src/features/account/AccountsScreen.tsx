@@ -26,7 +26,7 @@ import {
 import useAppear from '../../utils/useAppear'
 import { withTransactionDetail } from './TransactionDetail'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
-import { useAppStorage } from '../../storage/AppStorageProvider'
+import { L1NETWORK, useAppStorage } from '../../storage/AppStorageProvider'
 import StatusBanner from '../StatusPage/StatusBanner'
 import { checkSecureAccount } from '../../storage/secureStorage'
 import { getJazzSeed, isTestnet } from '../../utils/accountUtils'
@@ -40,6 +40,7 @@ import globalStyles from '../../theme/globalStyles'
 import { FadeInSlow } from '../../components/FadeInOut'
 import AccountBalanceChart from './AccountBalanceChart'
 import useDisappear from '../../utils/useDisappear'
+import TabBar from '../../components/TabBar'
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
@@ -48,7 +49,7 @@ const AccountsScreen = () => {
     useAccountStorage()
   const [navLayoutHeight, setNavLayoutHeight] = useLayoutHeight()
   const { openedNotification } = useNotificationStorage()
-  const { locked } = useAppStorage()
+  const { locked, l1Network, enableSolana, updateL1Network } = useAppStorage()
   const { reset } = useOnboarding()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const [walletsVisible, setWalletsVisible] = useState(false)
@@ -94,8 +95,9 @@ const AccountsScreen = () => {
   })
 
   const showChart = useMemo(
-    () => (data?.accountBalanceHistory?.length || 0) >= 2,
-    [data],
+    () =>
+      l1Network === 'helium' && (data?.accountBalanceHistory?.length || 0) >= 2,
+    [data, l1Network],
   )
   const prevShowChart = usePrevious(showChart)
 
@@ -216,6 +218,23 @@ const AccountsScreen = () => {
     handleBalanceHistorySelected(undefined)
   }, [handleBalanceHistorySelected])
 
+  const tabData = useMemo((): Array<{
+    value: L1NETWORK
+    title: string
+  }> => {
+    return [
+      { value: 'helium', title: 'Helium' },
+      { value: 'solana_dev', title: 'Solana-Devnet' },
+    ]
+  }, [])
+
+  const setL1Network = useCallback(
+    (l1: string) => {
+      updateL1Network(l1 as L1NETWORK)
+    },
+    [updateL1Network],
+  )
+
   return (
     <Box flex={1}>
       <AccountsTopNav
@@ -231,6 +250,15 @@ const AccountsScreen = () => {
               selectedBalance={selectedBalance}
             />
           </Box>
+
+          {enableSolana && (
+            <TabBar
+              tabBarOptions={tabData}
+              selectedValue={l1Network}
+              onItemSelected={setL1Network}
+            />
+          )}
+
           <Animated.View style={style}>
             <Box
               flex={1}

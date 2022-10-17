@@ -100,7 +100,8 @@ const HNTKeyboardSelector = forwardRef(
     const {
       oracleDateTime,
       floatToBalance,
-      helium: { networkBalance, mobileBalance },
+      networkBalance,
+      mobileBalance,
       bonesToBalance,
     } = useBalance()
     const [timeStr, setTimeStr] = useState('')

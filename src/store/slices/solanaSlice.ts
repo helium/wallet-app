@@ -7,6 +7,8 @@ type Balances = {
   hntBalance?: bigint
   dcBalance?: bigint
   mobileBalance?: bigint
+  secBalance?: bigint
+  stakedBalance?: bigint
 }
 export type SolanaState = {
   balances: Record<string, Balances>
