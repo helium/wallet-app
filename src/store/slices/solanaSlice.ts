@@ -74,7 +74,13 @@ const solanaSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(readBalances.pending, (state, action) => {
       if (!action.meta.arg?.solanaAddress) return state
-      state.balances[action.meta.arg?.solanaAddress].loading = true
+      const prev =
+        state.balances[action.meta.arg?.solanaAddress] || initialPaymentState
+
+      state.balances[action.meta.arg?.solanaAddress] = {
+        ...prev,
+        loading: true,
+      }
     })
     builder.addCase(readBalances.fulfilled, (state, action) => {
       if (!action.meta.arg?.solanaAddress) return state
@@ -85,7 +91,12 @@ const solanaSlice = createSlice({
     })
     builder.addCase(readBalances.rejected, (state, action) => {
       if (!action.meta.arg?.solanaAddress) return state
-      state.balances[action.meta.arg?.solanaAddress].loading = false
+      const prev =
+        state.balances[action.meta.arg?.solanaAddress] || initialPaymentState
+      state.balances[action.meta.arg?.solanaAddress] = {
+        ...prev,
+        loading: false,
+      }
     })
     builder.addCase(makePayment.pending, (state, _action) => {
       state.payment = initialPaymentState

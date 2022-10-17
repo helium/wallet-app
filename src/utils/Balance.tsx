@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 import { NetTypes } from '@helium/address'
 import Balance, {
   CurrencyType,
@@ -16,6 +15,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import useAppState from 'react-native-appstate-hook'
@@ -36,12 +36,15 @@ import { useAppDispatch } from '../store/store'
 import { accountCurrencyType } from './accountUtils'
 import { CoinGeckoPrices, getCurrentPrices } from './coinGeckoClient'
 import { decimalSeparator, groupSeparator } from './i18n'
+import { onAccountChange, removeAccountChangeListener } from './solanaUtils'
 import useMount from './useMount'
 import usePrevious from './usePrevious'
 
 export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
 const useBalanceHook = () => {
   const { currentAccount } = useAccountStorage()
+  const prevAccount = usePrevious(currentAccount)
+  const accountSubscriptionId = useRef<number>()
   const { convertToCurrency, currency, l1Network } = useAppStorage()
 
   const dispatch = useAppDispatch()
@@ -76,10 +79,6 @@ const useBalanceHook = () => {
   const solanaBalances = useSelector(
     (state: RootState) => state.solana.balances,
   )
-  const solanaPaymentSuccess = useSelector(
-    (state: RootState) => state.solana.payment?.success,
-  )
-  const previousSolanaPaymentSuccess = usePrevious(solanaPaymentSuccess)
 
   const prevLoadingOracle = usePrevious(loadingOracle)
   const [oracleDateTime, setOracleDateTime] = useState<Date>()
@@ -100,11 +99,10 @@ const useBalanceHook = () => {
     return solanaBalances[solAddress]
   }, [solAddress, solanaBalances])
 
-  useEffect(() => {
+  const dispatchBalanceUpdate = useCallback(() => {
     if (!currentAccount?.solanaAddress) {
       return
     }
-
     dispatch(readBalances(currentAccount))
   }, [currentAccount, dispatch])
 
@@ -112,15 +110,19 @@ const useBalanceHook = () => {
     if (!currentAccount?.solanaAddress) {
       return
     }
-    if (solanaPaymentSuccess && !previousSolanaPaymentSuccess) {
-      dispatch(readBalances(currentAccount))
+
+    if (prevAccount !== currentAccount) {
+      dispatchBalanceUpdate()
+      const subId = onAccountChange(
+        currentAccount?.solanaAddress,
+        dispatchBalanceUpdate,
+      )
+      if (accountSubscriptionId.current !== undefined) {
+        removeAccountChangeListener(accountSubscriptionId.current)
+      }
+      accountSubscriptionId.current = subId
     }
-  }, [
-    currentAccount,
-    dispatch,
-    previousSolanaPaymentSuccess,
-    solanaPaymentSuccess,
-  ])
+  }, [currentAccount, dispatch, dispatchBalanceUpdate, prevAccount])
 
   useMount(() => {
     updateCoinGeckoPrices()
@@ -377,13 +379,11 @@ const useBalanceHook = () => {
 }
 
 const initialState = {
-  helium: {
-    dcBalance: undefined,
-    mobileBalance: undefined,
-    networkBalance: undefined,
-    networkStakedBalance: undefined,
-    secBalance: undefined,
-  },
+  dcBalance: new Balance(0, CurrencyType.dataCredit),
+  mobileBalance: new Balance(0, CurrencyType.mobile),
+  networkBalance: new Balance(0, CurrencyType.networkToken),
+  networkStakedBalance: new Balance(0, CurrencyType.networkToken),
+  secBalance: new Balance(0, CurrencyType.security),
   bonesToBalance: () => new Balance(0, CurrencyType.networkToken),
   currencyTypeFromTokenType: () => CurrencyType.networkToken,
   dcToNetworkTokens: () => undefined,

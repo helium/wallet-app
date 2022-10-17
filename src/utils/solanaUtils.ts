@@ -158,3 +158,17 @@ export const confirmTxn = async (signature: string) => {
     signature,
   })
 }
+
+export const onAccountChange = (
+  address: string,
+  callback: (address: string) => void,
+) => {
+  const account = new web3.PublicKey(address)
+  return connection.onAccountChange(account, () => {
+    callback(address)
+  })
+}
+
+export const removeAccountChangeListener = (id: number) => {
+  return connection.removeAccountChangeListener(id)
+}
