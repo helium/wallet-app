@@ -21,7 +21,7 @@ type Props = {
 const AccountActionBar = ({ tokenType, onLayout, compact }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
-  const { requirePinForPayment, pin, l1Network } = useAppStorage()
+  const { requirePinForPayment, l1Network, pin } = useAppStorage()
   const anim = useRef(new Animated.Value(1))
   const { currentAccount } = useAccountStorage()
 
@@ -105,6 +105,10 @@ const AccountActionBar = ({ tokenType, onLayout, compact }: Props) => {
       l1Network === 'helium' && currentAccount?.netType === NetTypes.MAINNET,
     [currentAccount, l1Network],
   )
+
+  if (currentAccount?.ledgerDevice && l1Network !== 'helium') {
+    return null
+  }
 
   return (
     <Box

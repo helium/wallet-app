@@ -14,6 +14,7 @@ import { useReducer } from 'react'
 import { decodeMemoString } from '../../components/MemoInput'
 import { CSAccount } from '../../storage/cloudStorage'
 import { EMPTY_B58_ADDRESS } from '../../storage/TransactionProvider'
+import { L1Network } from '../../utils/accountUtils'
 import { Payment } from './PaymentItem'
 
 type PaymentCurrencyType =
@@ -88,6 +89,7 @@ type PaymentState = {
   currencyType: PaymentCurrencyType
   oraclePrice?: Balance<USDollars>
   netType: NetTypes.NetType
+  l1Network: L1Network
   networkFee?: Balance<TestNetworkTokens | NetworkTokens>
   dcFee?: Balance<DataCredits>
   accountMobileBalance?: Balance<MobileTokens>
@@ -98,6 +100,7 @@ const initialState = (opts: {
   currencyType: PaymentCurrencyType
   payments?: Payment[]
   netType: NetTypes.NetType
+  l1Network: L1Network
   oraclePrice?: Balance<USDollars>
   accountMobileBalance?: Balance<MobileTokens>
   accountNetworkBalance?: Balance<TestNetworkTokens | NetworkTokens>
@@ -225,15 +228,20 @@ function reducer(
   switch (action.type) {
     case 'updatePayee': {
       // 1. If the contact exists, addresses should be equal
-      const addressesNotEqual =
-        action.contact?.address && action.address !== action.contact?.address
+      const contactAddress =
+        state.l1Network === 'helium'
+          ? action.contact?.address
+          : action.contact?.solanaAddress
+
+      const addressNotEqual =
+        contactAddress && action.address !== contactAddress
 
       // 2. Disallow multiple payments with the same address
       const duplicateAddress = state.payments.find(
         (p) => p.address === action.address,
       )
 
-      if (addressesNotEqual || duplicateAddress) {
+      if (addressNotEqual || duplicateAddress) {
         return state
       }
 
@@ -320,6 +328,7 @@ function reducer(
         accountMobileBalance: state.accountMobileBalance,
         accountNetworkBalance: state.accountNetworkBalance,
         netType: state.netType,
+        l1Network: state.l1Network,
       })
     }
 
@@ -331,6 +340,7 @@ function reducer(
           accountMobileBalance: state.accountMobileBalance,
           accountNetworkBalance: state.accountNetworkBalance,
           netType: state.netType,
+          l1Network: state.l1Network,
         })
       }
 
@@ -383,6 +393,7 @@ function reducer(
 
 export default (opts: {
   netType: NetTypes.NetType
+  l1Network: L1Network
   currencyType: PaymentCurrencyType
   oraclePrice?: Balance<USDollars>
   accountMobileBalance?: Balance<MobileTokens>

@@ -4,12 +4,13 @@ import ChevronDown from '@assets/images/chevronDown.svg'
 import { Keyboard, StyleSheet } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
 import { NetTypes as NetType } from '@helium/address'
-import { useHitSlop } from '../theme/themeHooks'
+import { useColors, useHitSlop } from '../theme/themeHooks'
 import AccountIcon from './AccountIcon'
 import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
-import { Theme } from '../theme/theme'
+import { Color, Theme } from '../theme/theme'
+import { useAppStorage } from '../storage/AppStorageProvider'
 
 type Props = {
   onPress?: (address?: string) => void
@@ -37,6 +38,8 @@ const AccountButton = ({
   ...boxProps
 }: Props) => {
   const hitSlop = useHitSlop('l')
+  const { l1Network } = useAppStorage()
+  const colors = useColors()
 
   const handlePress = useCallback(() => {
     Keyboard.dismiss()
@@ -45,10 +48,17 @@ const AccountButton = ({
 
   const backgroundColor = useMemo(() => {
     if (netType === NetType.TESTNET) return 'lividBrown'
+    if (l1Network === 'solana_dev') return 'solanaPurple'
     if (backgroundColorProps) {
       return backgroundColorProps
     }
-  }, [backgroundColorProps, netType])
+  }, [backgroundColorProps, l1Network, netType])
+
+  const textColor = useMemo((): Color => {
+    if (l1Network === 'solana_dev' || netType === NetType.TESTNET)
+      return 'primaryText'
+    return 'secondaryText'
+  }, [l1Network, netType])
 
   return (
     <TouchableOpacityBox
@@ -70,7 +80,7 @@ const AccountButton = ({
         <AccountIcon size={accountIconSize} address={address} />
         <Box flex={1}>
           {!!subtitle && (
-            <Text marginLeft="ms" variant="body3" color="secondaryText">
+            <Text marginLeft="ms" variant="body3" color={textColor}>
               {subtitle}
             </Text>
           )}
@@ -78,7 +88,7 @@ const AccountButton = ({
             {title}
           </Text>
         </Box>
-        {showChevron && <ChevronDown />}
+        {showChevron && <ChevronDown color={colors[textColor]} />}
       </Box>
       {showBubbleArrow && (
         <Box height={18}>

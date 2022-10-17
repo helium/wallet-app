@@ -13,7 +13,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
 import { Keyboard, Platform } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import Address from '@helium/address'
+import Address, { NetTypes } from '@helium/address'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { PaymentV2 } from '@helium/transactions'
 import { unionBy } from 'lodash'
@@ -50,6 +50,8 @@ import PaymentSubmit from './PaymentSubmit'
 import { CSAccount } from '../../storage/cloudStorage'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
 import useAlert from '../../utils/useAlert'
+import { useAppStorage } from '../../storage/AppStorageProvider'
+import { solAddressIsValid } from '../../utils/solanaUtils'
 
 type LinkedPayment = {
   amount?: string
@@ -89,6 +91,7 @@ const PaymentScreen = () => {
   } = useBalance()
 
   const { showOKAlert } = useAlert()
+  const { l1Network } = useAppStorage()
 
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
@@ -142,6 +145,7 @@ const PaymentScreen = () => {
     accountMobileBalance: mobileBalance,
     accountNetworkBalance: networkBalance,
     netType: networkType,
+    l1Network,
   })
 
   const { showAccountTypes } = useAccountSelector()
@@ -265,11 +269,15 @@ const PaymentScreen = () => {
 
   const handleSubmit = useCallback(
     (opts?: { txn: PaymentV2; txnJson: string }) => {
-      if (!opts) {
-        submit(payments, tokenType)
-      } else {
-        // This is a ledger device
-        submitLedger(opts)
+      try {
+        if (!opts) {
+          submit(payments, tokenType)
+        } else {
+          // This is a ledger device
+          submitLedger(opts)
+        }
+      } catch (e) {
+        console.error(e)
       }
     },
     [payments, submit, submitLedger, tokenType],
@@ -374,7 +382,16 @@ const PaymentScreen = () => {
     const paymentsValid =
       state.payments.length &&
       state.payments.every((p) => {
-        const addressValid = p.address && Address.isValid(p.address)
+        let addressValid = false
+        switch (l1Network) {
+          case 'helium':
+            addressValid = !!(p.address && Address.isValid(p.address))
+            break
+          case 'solana_dev':
+            addressValid = !!(p.address && solAddressIsValid(p.address))
+            break
+        }
+
         const paymentValid = p.amount && p.amount.integerBalance > 0
         const memoValid = getMemoStrValid(p.memo)
         return addressValid && paymentValid && memoValid && !p.hasError
@@ -384,6 +401,7 @@ const PaymentScreen = () => {
   }, [
     currentAccount,
     insufficientFunds,
+    l1Network,
     selfPay,
     state.networkFee,
     state.payments,
@@ -481,14 +499,24 @@ const PaymentScreen = () => {
         handleSetPaymentError(index, true)
         return
       }
-      const invalidAddress = !!address && !Address.isValid(address)
+      let invalidAddress = false
+
+      switch (l1Network) {
+        case 'helium':
+          invalidAddress = !!address && !Address.isValid(address)
+          break
+        case 'solana_dev':
+          invalidAddress = !!address && !solAddressIsValid(address)
+          break
+      }
+
       const wrongNetType =
         address !== undefined &&
         address !== '' &&
         accountNetType(address) !== networkType
       handleSetPaymentError(index, invalidAddress || wrongNetType)
     },
-    [handleSetPaymentError, networkType],
+    [handleSetPaymentError, l1Network, networkType],
   )
 
   const handleEditAddress = useCallback(
@@ -523,15 +551,25 @@ const PaymentScreen = () => {
       index?: number
     }) => {
       if (index === undefined || !currentAccount) return
+
+      const payee =
+        l1Network === 'helium' ? contact.address : contact.solanaAddress
+      const payer =
+        l1Network === 'helium'
+          ? currentAccount.address
+          : currentAccount.solanaAddress
+
+      if (!payee || !payer) return
+
       dispatch({
         type: 'updatePayee',
         contact,
         index,
-        address: contact.address,
-        payer: currentAccount?.address,
+        address: payee,
+        payer,
       })
     },
-    [currentAccount, dispatch],
+    [currentAccount, dispatch, l1Network],
   )
 
   const handleAddPayee = useCallback(() => {
@@ -544,12 +582,18 @@ const PaymentScreen = () => {
   )
 
   const handleShowAccounts = useCallback(() => {
-    if (sortedAccountsForNetType(networkType).length <= 1) {
-      return
+    let accts = [] as CSAccount[]
+    if (l1Network === 'solana_dev') {
+      accts = sortedAccountsForNetType(NetTypes.MAINNET)
+    } else {
+      accts = sortedAccountsForNetType(networkType)
     }
+    if (accts.length < 2) return
 
-    showAccountTypes(networkType)()
-  }, [networkType, showAccountTypes, sortedAccountsForNetType])
+    const netType = l1Network === 'solana_dev' ? NetTypes.MAINNET : networkType
+
+    showAccountTypes(netType)()
+  }, [l1Network, networkType, showAccountTypes, sortedAccountsForNetType])
 
   return (
     <>
@@ -639,16 +683,12 @@ const PaymentScreen = () => {
                   // eslint-disable-next-line react/no-array-index-key
                   <React.Fragment key={index}>
                     <PaymentItem
+                      {...p}
                       marginTop={index === 0 ? 'xs' : 'none'}
                       marginBottom="l"
                       hasError={
                         p.address === currentAccount?.address || p.hasError
                       }
-                      address={p.address}
-                      account={p.account}
-                      amount={p.amount}
-                      max={p.max}
-                      memo={p.memo}
                       fee={
                         state.payments.length === 1 ? state.dcFee : undefined
                       }

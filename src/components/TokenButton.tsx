@@ -9,8 +9,9 @@ import { useColors, useHitSlop } from '../theme/themeHooks'
 import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
-import { Theme } from '../theme/theme'
+import { Color, Theme } from '../theme/theme'
 import { TokenType } from '../generated/graphql'
+import { useAppStorage } from '../storage/AppStorageProvider'
 
 const TokenTypeItem = ({ tokenType }: { tokenType: TokenType }) => {
   const colors = useColors()
@@ -53,6 +54,8 @@ const TokenButton = ({
   ...boxProps
 }: Props) => {
   const hitSlop = useHitSlop('l')
+  const { l1Network } = useAppStorage()
+  const colors = useColors()
 
   const handlePress = useCallback(() => {
     Keyboard.dismiss()
@@ -61,10 +64,17 @@ const TokenButton = ({
 
   const backgroundColor = useMemo(() => {
     if (netType === NetType.TESTNET) return 'lividBrown'
+    if (l1Network === 'solana_dev') return 'solanaPurple'
     if (backgroundColorProps) {
       return backgroundColorProps
     }
-  }, [backgroundColorProps, netType])
+  }, [backgroundColorProps, l1Network, netType])
+
+  const textColor = useMemo((): Color => {
+    if (l1Network === 'solana_dev' || netType === NetType.TESTNET)
+      return 'primaryText'
+    return 'secondaryText'
+  }, [l1Network, netType])
 
   return (
     <TouchableOpacityBox
@@ -89,12 +99,12 @@ const TokenButton = ({
             {title}
           </Text>
           {!!subtitle && (
-            <Text marginLeft="ms" variant="body3" color="secondaryText">
+            <Text marginLeft="ms" variant="body3" color={textColor}>
               {subtitle}
             </Text>
           )}
         </Box>
-        <ChevronDown />
+        <ChevronDown color={colors[textColor]} />
       </Box>
       {showBubbleArrow && (
         <Box height={18}>

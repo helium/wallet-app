@@ -11,6 +11,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDebouncedCallback } from 'use-debounce/lib'
 import { toUpper } from 'lodash'
+import { NetTypes } from '@helium/address'
 import Box from '../../components/Box'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
@@ -26,10 +27,10 @@ import {
 import useAppear from '../../utils/useAppear'
 import { withTransactionDetail } from './TransactionDetail'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
-import { L1NETWORK, useAppStorage } from '../../storage/AppStorageProvider'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 import StatusBanner from '../StatusPage/StatusBanner'
 import { checkSecureAccount } from '../../storage/secureStorage'
-import { getJazzSeed, isTestnet } from '../../utils/accountUtils'
+import { getJazzSeed, isTestnet, L1Network } from '../../utils/accountUtils'
 import AccountsTopNav from './AccountsTopNav'
 import AccountTokenList from './AccountTokenList'
 import AccountView from './AccountView'
@@ -219,7 +220,7 @@ const AccountsScreen = () => {
   }, [handleBalanceHistorySelected])
 
   const tabData = useMemo((): Array<{
-    value: L1NETWORK
+    value: L1Network
     title: string
   }> => {
     return [
@@ -230,7 +231,7 @@ const AccountsScreen = () => {
 
   const setL1Network = useCallback(
     (l1: string) => {
-      updateL1Network(l1 as L1NETWORK)
+      updateL1Network(l1 as L1Network)
     },
     [updateL1Network],
   )
@@ -251,7 +252,7 @@ const AccountsScreen = () => {
             />
           </Box>
 
-          {enableSolana && (
+          {enableSolana && currentAccount.netType === NetTypes.MAINNET && (
             <TabBar
               tabBarOptions={tabData}
               selectedValue={l1Network}

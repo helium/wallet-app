@@ -10,7 +10,7 @@ import React, {
 } from 'react'
 import { useAsync } from 'react-async-hook'
 import * as SecureStore from 'expo-secure-store'
-import { NetTypes as NetType } from '@helium/address'
+import { NetTypes as NetType, NetTypes } from '@helium/address'
 import { accountNetType, AccountNetTypeOpt } from '../utils/accountUtils'
 import {
   createSecureAccount,
@@ -33,6 +33,7 @@ import {
 } from './cloudStorage'
 import { removeAccountTag, tagAccount } from './oneSignalStorage'
 import { heliumAddressToSolAddress } from '../utils/solanaUtils'
+import { useAppStorage } from './AppStorageProvider'
 
 const useAccountStorageHook = () => {
   const [currentAccount, setCurrentAccount] = useState<
@@ -43,6 +44,7 @@ const useAccountStorageHook = () => {
   const [defaultAccountAddress, setDefaultAccountAddress] = useState<string>()
   const solanaAccountsUpdateComplete = useRef(false)
   const solanaContactsUpdateComplete = useRef(false)
+  const { updateL1Network } = useAppStorage()
 
   const { result: restoredAccounts } = useAsync(restoreAccounts, [])
 
@@ -105,6 +107,12 @@ const useAccountStorageHook = () => {
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contacts])
+
+  useEffect(() => {
+    // if a testnet address is selected, set l1 back to helium
+    if (currentAccount?.netType !== NetTypes.TESTNET) return
+    updateL1Network('helium')
+  }, [currentAccount, updateL1Network])
 
   useEffect(() => {
     if (!restoredAccounts) return

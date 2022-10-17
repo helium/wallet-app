@@ -1,7 +1,7 @@
+import Balance, { AnyCurrencyType } from '@helium/currency'
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import * as web3 from '@solana/web3.js'
-import { TOKEN_PROGRAM_ID, AccountLayout } from '@solana/spl-token'
 import { CSAccount } from '../../storage/cloudStorage'
+import * as solUtils from '../../utils/solanaUtils'
 
 type Balances = {
   hntBalance?: bigint
@@ -15,21 +15,12 @@ export type SolanaState = {
 }
 const initialState: SolanaState = { balances: {} }
 
-const connection = new web3.Connection(web3.clusterApiUrl('devnet'))
-
-const Mint = {
-  HNT: new web3.PublicKey('hntg4GdrpMBW8bqs4R2om4stE6uScPRhPKWAarzoWKP'),
-  MOBILE: new web3.PublicKey('mob1r1x3raXXoH42RZwxTxgbAuKkBQzTAQqSjkUdZbd'),
-  DC: new web3.PublicKey('dcr5SHHfQixyb5YT7J1hgbWvgxvBpn65bpCyx6pTiKo'),
-} as const
-
 export const requestAirdrop = createAsyncThunk(
   'solana/airdrop',
   async (acct?: CSAccount) => {
     if (!acct?.solanaAddress) throw new Error('No solana account found')
 
-    const key = new web3.PublicKey(acct.solanaAddress)
-    return connection.requestAirdrop(key, web3.LAMPORTS_PER_SOL)
+    return solUtils.airdrop(acct.solanaAddress)
   },
 )
 
@@ -38,24 +29,29 @@ export const readBalances = createAsyncThunk(
   async (acct?: CSAccount) => {
     if (!acct?.solanaAddress) throw new Error('No solana account found')
 
-    const account = new web3.PublicKey(acct.solanaAddress)
+    return solUtils.readBalances(acct.solanaAddress)
+  },
+)
 
-    const tokenAccounts = await connection.getTokenAccountsByOwner(account, {
-      programId: TOKEN_PROGRAM_ID,
-    })
+type Payment = {
+  payee: string
+  balanceAmount: Balance<AnyCurrencyType>
+  memo: string
+  max?: boolean
+}
 
-    const vals = {} as Record<string, bigint>
-    tokenAccounts.value.forEach((tokenAccount) => {
-      const accountData = AccountLayout.decode(tokenAccount.account.data)
-      vals[accountData.mint.toBase58()] = accountData.amount
-    })
+type PaymentInput = { account: CSAccount; payments: Payment[] }
 
-    const retval = {
-      hntBalance: vals[Mint.HNT.toBase58()],
-      mobileBalance: vals[Mint.MOBILE.toBase58()],
-      dcBalance: vals[Mint.DC.toBase58()],
-    }
-    return retval
+export const makePayment = createAsyncThunk(
+  'solana/makePayment',
+  async ({ account, payments }: PaymentInput) => {
+    if (!account?.solanaAddress) throw new Error('No solana account found')
+
+    return solUtils.transferToken(
+      account.solanaAddress,
+      account.address,
+      payments,
+    )
   },
 )
 
@@ -66,7 +62,6 @@ const solanaSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(readBalances.fulfilled, (state, action) => {
       if (!action.meta.arg?.solanaAddress) return state
-
       state.balances[action.meta.arg?.solanaAddress] = {
         ...action.payload,
       }

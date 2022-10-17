@@ -17,6 +17,7 @@ import * as AccountUtils from '../../utils/accountUtils'
 import AccountIcon from '../../components/AccountIcon'
 import BackgroundFill from '../../components/BackgroundFill'
 import useLayoutWidth from '../../utils/useLayoutWidth'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Props = {
   onPressWallet: () => void
@@ -26,6 +27,7 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
   const { primaryIcon, primaryText } = useColors()
   const navigation = useNavigation<HomeNavigationProp>()
   const { currentAccount } = useAccountStorage()
+  const { l1Network } = useAppStorage()
   const [barButtonsRightWidth, setBarButtonsRightWidth] = useLayoutWidth()
 
   const accountNetType = useMemo(
@@ -60,6 +62,9 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
     >
       {accountNetType === NetTypes.TESTNET && (
         <BackgroundFill backgroundColor="testnet" opacity={1} />
+      )}
+      {l1Network === 'solana_dev' && (
+        <BackgroundFill backgroundColor="solanaPurple" opacity={1} />
       )}
       <TouchableOpacityBox
         paddingVertical="ms"
