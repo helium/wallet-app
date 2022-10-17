@@ -129,16 +129,32 @@ export const transferToken = async (
     const amount = p.balanceAmount.integerBalance
 
     const instruction = createTransferCheckedInstruction(
-      payerATA.address, // source account
-      mint, // mint
-      payeeATAs[idx].address, // destination
-      payer, //  owner of the source account
-      amount, // amount
-      firstPayment.balanceAmount.type.decimalPlaces.toNumber(), // decimals?
-      [signer], // multisigners?
+      payerATA.address,
+      mint,
+      payeeATAs[idx].address,
+      payer,
+      amount,
+      firstPayment.balanceAmount.type.decimalPlaces.toNumber(),
+      [signer],
     )
 
     transaction.add(instruction)
-    return web3.sendAndConfirmTransaction(connection, transaction, [signer])
+  })
+
+  const signature = await web3.sendAndConfirmTransaction(
+    connection,
+    transaction,
+    [signer],
+  )
+  return signature
+}
+
+export const confirmTxn = async (signature: string) => {
+  const latestBlockHash = await connection.getLatestBlockhash()
+
+  return connection.confirmTransaction({
+    blockhash: latestBlockHash.blockhash,
+    lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+    signature,
   })
 }

@@ -1,5 +1,9 @@
 import Balance, { AnyCurrencyType } from '@helium/currency'
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import {
+  createAsyncThunk,
+  createSlice,
+  SerializedError,
+} from '@reduxjs/toolkit'
 import { CSAccount } from '../../storage/cloudStorage'
 import * as solUtils from '../../utils/solanaUtils'
 
@@ -9,9 +13,17 @@ type Balances = {
   mobileBalance?: bigint
   secBalance?: bigint
   stakedBalance?: bigint
+  loading?: boolean
 }
+
 export type SolanaState = {
   balances: Record<string, Balances>
+  payment?: { loading?: boolean; error?: SerializedError; success?: boolean }
+}
+const initialPaymentState = {
+  loading: false,
+  error: undefined,
+  success: undefined,
 }
 const initialState: SolanaState = { balances: {} }
 
@@ -26,7 +38,7 @@ export const requestAirdrop = createAsyncThunk(
 
 export const readBalances = createAsyncThunk(
   'solana/readBalance',
-  async (acct?: CSAccount) => {
+  async (acct: CSAccount) => {
     if (!acct?.solanaAddress) throw new Error('No solana account found')
 
     return solUtils.readBalances(acct.solanaAddress)
@@ -60,14 +72,38 @@ const solanaSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
+    builder.addCase(readBalances.pending, (state, action) => {
+      if (!action.meta.arg?.solanaAddress) return state
+      state.balances[action.meta.arg?.solanaAddress].loading = true
+    })
     builder.addCase(readBalances.fulfilled, (state, action) => {
       if (!action.meta.arg?.solanaAddress) return state
       state.balances[action.meta.arg?.solanaAddress] = {
         ...action.payload,
+        loading: false,
       }
     })
-    builder.addCase(readBalances.rejected, (_, action) => {
-      console.error(action.error)
+    builder.addCase(readBalances.rejected, (state, action) => {
+      if (!action.meta.arg?.solanaAddress) return state
+      state.balances[action.meta.arg?.solanaAddress].loading = false
+    })
+    builder.addCase(makePayment.pending, (state, _action) => {
+      state.payment = initialPaymentState
+      state.payment.success = undefined
+      state.payment.loading = true
+      state.payment.error = undefined
+    })
+    builder.addCase(makePayment.fulfilled, (state, _action) => {
+      state.payment = initialPaymentState
+      state.payment.success = true
+      state.payment.loading = false
+      state.payment.error = undefined
+    })
+    builder.addCase(makePayment.rejected, (state, action) => {
+      state.payment = initialPaymentState
+      state.payment.success = false
+      state.payment.loading = false
+      state.payment.error = action.error
     })
   },
 })

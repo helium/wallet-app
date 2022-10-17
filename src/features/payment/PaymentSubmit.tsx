@@ -2,6 +2,7 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import { ApolloError } from '@apollo/client'
 import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
+import { SerializedError } from '@reduxjs/toolkit'
 import Box from '../../components/Box'
 import animateTransition from '../../utils/animateTransition'
 import PaymentSubmitLoading from './PaymentSubmitLoading'
@@ -11,7 +12,7 @@ import PaymentError from './PaymentError'
 
 type Props = {
   submitLoading: boolean
-  submitError?: ApolloError | Error
+  submitError?: ApolloError | Error | SerializedError
   submitSucceeded?: boolean
   totalBalance: Balance<TestNetworkTokens | NetworkTokens>
   feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
@@ -33,7 +34,7 @@ const PaymentSubmit = ({
   actionTitle,
 }: Props) => {
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<ApolloError | Error>()
+  const [error, setError] = useState<ApolloError | Error | SerializedError>()
   const [succeeded, setSucceeded] = useState(false)
   const [videoFinished, setVideoFinished] = useState(false)
 

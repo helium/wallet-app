@@ -1,13 +1,21 @@
 import { AnyAction, combineReducers } from '@reduxjs/toolkit'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { persistReducer } from 'redux-persist'
 import {
   reducer as solanaStatusReducer,
   solanaStatusApi,
 } from './slices/solanaStatusApi'
-import solanaReducer, { name as solanaName } from './slices/solanaSlice'
+import solanaReducer, { name as solanaSliceName } from './slices/solanaSlice'
+
+const solanaConfig = {
+  key: solanaSliceName,
+  storage: AsyncStorage,
+  blacklist: ['payment'],
+}
 
 const reducer = combineReducers({
   [solanaStatusApi.reducerPath]: solanaStatusReducer,
-  [solanaName]: solanaReducer,
+  [solanaSliceName]: persistReducer(solanaConfig, solanaReducer),
 })
 
 export const rootReducer = (state: RootState, action: AnyAction) => {

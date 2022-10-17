@@ -20,6 +20,7 @@ import { unionBy } from 'lodash'
 import Toast from 'react-native-simple-toast'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useAsync } from 'react-async-hook'
+import { useSelector } from 'react-redux'
 import TokenButton from '../../components/TokenButton'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
@@ -52,6 +53,7 @@ import useSubmitTxn from '../../graphql/useSubmitTxn'
 import useAlert from '../../utils/useAlert'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { solAddressIsValid } from '../../utils/solanaUtils'
+import { RootState } from '../../store/rootReducer'
 
 type LinkedPayment = {
   amount?: string
@@ -139,7 +141,7 @@ const PaymentScreen = () => {
     [currencyTypeFromTokenType, tokenType],
   )
 
-  const [state, dispatch] = usePaymentsReducer({
+  const [paymentState, dispatch] = usePaymentsReducer({
     currencyType,
     oraclePrice,
     accountMobileBalance: mobileBalance,
@@ -152,11 +154,15 @@ const PaymentScreen = () => {
 
   const {
     data: submitData,
-    loading: submitLoading,
+    loading: paymentSubmitLoading,
     error: submitError,
     submit,
     submitLedger,
   } = useSubmitTxn()
+
+  const solanaPayment = useSelector(
+    (reduxState: RootState) => reduxState.solana.payment,
+  )
 
   const { top } = useSafeAreaInsets()
 
@@ -241,19 +247,19 @@ const PaymentScreen = () => {
       // Only single payee is supported for ledger devices
       return false
     }
-    const lastPayee = state.payments[state.payments.length - 1]
+    const lastPayee = paymentState.payments[paymentState.payments.length - 1]
 
     return (
-      state.payments.length < MAX_PAYMENTS &&
+      paymentState.payments.length < MAX_PAYMENTS &&
       !!lastPayee.address &&
       !!lastPayee.amount &&
       lastPayee.amount.integerBalance > 0
     )
-  }, [currentAccount, state.payments])
+  }, [currentAccount, paymentState.payments])
 
   const payments = useMemo(
     (): Array<SendDetails> =>
-      state.payments.flatMap((p) => {
+      paymentState.payments.flatMap((p) => {
         if (!p.address || !p.amount) return []
         return [
           {
@@ -264,7 +270,7 @@ const PaymentScreen = () => {
           },
         ]
       }),
-    [state.payments],
+    [paymentState.payments],
   )
 
   const handleSubmit = useCallback(
@@ -287,25 +293,26 @@ const PaymentScreen = () => {
     value: boolean,
     errorTicker: string,
   ] => {
-    if (!networkBalance || !mobileBalance || !state.totalAmount) {
+    if (!networkBalance || !mobileBalance || !paymentState.totalAmount) {
       return [true, '']
     }
-    if (state.networkFee?.integerBalance === undefined) return [false, '']
+    if (paymentState.networkFee?.integerBalance === undefined)
+      return [false, '']
     try {
       if (tokenType === TokenType.Mobile) {
         // If paying with mobile, they need to have enough mobile to cover the payment
         // and enough hnt to cover the fee
         const hasEnoughNetwork =
-          networkBalance.minus(state.networkFee).integerBalance >= 0
+          networkBalance.minus(paymentState.networkFee).integerBalance >= 0
         const hasEnoughMobile =
-          mobileBalance.minus(state.totalAmount).integerBalance >= 0
+          mobileBalance.minus(paymentState.totalAmount).integerBalance >= 0
         if (!hasEnoughNetwork) return [true, networkBalance.type.ticker]
         if (!hasEnoughMobile) return [true, mobileBalance.type.ticker]
       }
 
       const hasEnoughNetwork =
         networkBalance.integerBalance <
-        state.totalAmount.plus(state.networkFee).integerBalance
+        paymentState.totalAmount.plus(paymentState.networkFee).integerBalance
       return [
         hasEnoughNetwork,
         hasEnoughNetwork ? '' : networkBalance.type.ticker,
@@ -321,29 +328,30 @@ const PaymentScreen = () => {
   }, [
     mobileBalance,
     networkBalance,
-    state.networkFee,
-    state.totalAmount,
+    paymentState.networkFee,
+    paymentState.totalAmount,
     tokenType,
   ])
 
   const selfPay = useMemo(
-    () => state.payments.find((p) => p.address === currentAccount?.address),
-    [currentAccount, state.payments],
+    () =>
+      paymentState.payments.find((p) => p.address === currentAccount?.address),
+    [currentAccount, paymentState.payments],
   )
 
   const wrongNetTypePay = useMemo(
     () =>
-      state.payments.find((p) => {
+      paymentState.payments.find((p) => {
         if (!p.address || !Address.isValid(p.address)) return false
         return accountNetType(p.address) !== currentAccount?.netType
       }),
-    [currentAccount, state.payments],
+    [currentAccount, paymentState.payments],
   )
 
   const errors = useMemo(() => {
     const errStrings: string[] = []
 
-    if (!!currentAccount?.ledgerDevice && state.payments.length > 1) {
+    if (!!currentAccount?.ledgerDevice && paymentState.payments.length > 1) {
       // ledger payments are limited to one payee
       errStrings.push(t('payment.ledgerTooManyRecipients'))
     }
@@ -365,7 +373,7 @@ const PaymentScreen = () => {
     currentAccount,
     insufficientFunds,
     selfPay,
-    state.payments.length,
+    paymentState.payments.length,
     t,
     wrongNetTypePay,
   ])
@@ -373,15 +381,15 @@ const PaymentScreen = () => {
   const isFormValid = useMemo(() => {
     if (
       selfPay ||
-      !state.networkFee?.integerBalance ||
-      (!!currentAccount?.ledgerDevice && state.payments.length > 1) // ledger payments are limited to one payee
+      !paymentState.networkFee?.integerBalance ||
+      (!!currentAccount?.ledgerDevice && paymentState.payments.length > 1) // ledger payments are limited to one payee
     ) {
       return false
     }
 
     const paymentsValid =
-      state.payments.length &&
-      state.payments.every((p) => {
+      paymentState.payments.length &&
+      paymentState.payments.every((p) => {
         let addressValid = false
         switch (l1Network) {
           case 'helium':
@@ -403,8 +411,8 @@ const PaymentScreen = () => {
     insufficientFunds,
     l1Network,
     selfPay,
-    state.networkFee,
-    state.payments,
+    paymentState.networkFee,
+    paymentState.payments,
   ])
 
   const handleTokenTypeSelected = useCallback(() => {
@@ -436,12 +444,12 @@ const PaymentScreen = () => {
       hntKeyboardRef.current?.show({
         payer: currentAccount,
         payee: address,
-        balance: state.payments[index].amount,
+        balance: paymentState.payments[index].amount,
         index,
-        payments: state.payments,
+        payments: paymentState.payments,
       })
     },
-    [currentAccount, state.payments],
+    [currentAccount, paymentState.payments],
   )
 
   const handleToggleMax = useCallback(
@@ -601,7 +609,7 @@ const PaymentScreen = () => {
         ref={hntKeyboardRef}
         onConfirmBalance={handleBalance}
         tokenType={tokenType}
-        networkFee={state.networkFee}
+        networkFee={paymentState.networkFee}
       >
         <AddressBookSelector
           ref={addressBookRef}
@@ -679,7 +687,7 @@ const PaymentScreen = () => {
                   tokenType={tokenType}
                 />
 
-                {state.payments.map((p, index) => (
+                {paymentState.payments.map((p, index) => (
                   // eslint-disable-next-line react/no-array-index-key
                   <React.Fragment key={index}>
                     <PaymentItem
@@ -690,7 +698,9 @@ const PaymentScreen = () => {
                         p.address === currentAccount?.address || p.hasError
                       }
                       fee={
-                        state.payments.length === 1 ? state.dcFee : undefined
+                        paymentState.payments.length === 1
+                          ? paymentState.dcFee
+                          : undefined
                       }
                       index={index}
                       onAddressBookSelected={handleAddressBookSelected}
@@ -702,7 +712,9 @@ const PaymentScreen = () => {
                       onUpdateError={handleSetPaymentError}
                       ticker={currencyType.ticker}
                       onRemove={
-                        state.payments.length > 1 ? handleRemove : undefined
+                        paymentState.payments.length > 1
+                          ? handleRemove
+                          : undefined
                       }
                       netType={networkType}
                     />
@@ -729,8 +741,8 @@ const PaymentScreen = () => {
 
               <PaymentCard
                 tokenType={tokenType}
-                totalBalance={state.totalAmount}
-                feeTokenBalance={state.networkFee}
+                totalBalance={paymentState.totalAmount}
+                feeTokenBalance={paymentState.networkFee}
                 disabled={!isFormValid}
                 onSubmit={handleSubmit}
                 payments={payments}
@@ -741,12 +753,14 @@ const PaymentScreen = () => {
         </AddressBookSelector>
       </HNTKeyboard>
       <PaymentSubmit
-        submitLoading={submitLoading}
-        submitSucceeded={!!submitData?.submitTxn?.hash}
-        submitError={submitError}
-        totalBalance={state.totalAmount}
-        payments={state.payments}
-        feeTokenBalance={state.networkFee}
+        submitLoading={paymentSubmitLoading || !!solanaPayment?.loading}
+        submitSucceeded={
+          !!submitData?.submitTxn?.hash || !!solanaPayment?.success
+        }
+        submitError={submitError || solanaPayment?.error}
+        totalBalance={paymentState.totalAmount}
+        payments={paymentState.payments}
+        feeTokenBalance={paymentState.networkFee}
         onRetry={handleSubmit}
         onSuccess={navigation.popToTop}
         actionTitle={t('payment.backToAccounts')}

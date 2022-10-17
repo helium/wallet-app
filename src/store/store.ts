@@ -5,11 +5,12 @@ import { setupListeners } from '@reduxjs/toolkit/query'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import reducer from './rootReducer'
 import { solanaStatusApi } from './slices/solanaStatusApi'
+import { name as solanaSliceName } from './slices/solanaSlice'
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  blacklist: [solanaStatusApi.reducerPath],
+  blacklist: [solanaStatusApi.reducerPath, solanaSliceName],
 }
 
 const persistedReducer = persistReducer(persistConfig, reducer)

@@ -76,6 +76,11 @@ const useBalanceHook = () => {
   const solanaBalances = useSelector(
     (state: RootState) => state.solana.balances,
   )
+  const solanaPaymentSuccess = useSelector(
+    (state: RootState) => state.solana.payment?.success,
+  )
+  const previousSolanaPaymentSuccess = usePrevious(solanaPaymentSuccess)
+
   const prevLoadingOracle = usePrevious(loadingOracle)
   const [oracleDateTime, setOracleDateTime] = useState<Date>()
   const [coinGeckoPrices, setCoinGeckoPrices] = useState<CoinGeckoPrices>()
@@ -84,11 +89,38 @@ const useBalanceHook = () => {
     () => getCurrentPrices().then(setCoinGeckoPrices),
     [],
   )
+  const solAddress = useMemo(
+    () => currentAccount?.solanaAddress,
+    [currentAccount],
+  )
+
+  const solBalances = useMemo(() => {
+    if (!solAddress) return
+
+    return solanaBalances[solAddress]
+  }, [solAddress, solanaBalances])
 
   useEffect(() => {
-    if (!currentAccount?.solanaAddress) return
+    if (!currentAccount?.solanaAddress) {
+      return
+    }
+
     dispatch(readBalances(currentAccount))
   }, [currentAccount, dispatch])
+
+  useEffect(() => {
+    if (!currentAccount?.solanaAddress) {
+      return
+    }
+    if (solanaPaymentSuccess && !previousSolanaPaymentSuccess) {
+      dispatch(readBalances(currentAccount))
+    }
+  }, [
+    currentAccount,
+    dispatch,
+    previousSolanaPaymentSuccess,
+    solanaPaymentSuccess,
+  ])
 
   useMount(() => {
     updateCoinGeckoPrices()
@@ -113,17 +145,6 @@ const useBalanceHook = () => {
       },
     })
   }, [currentAccount, fetchAccountData, fetchOracle, updateCoinGeckoPrices])
-
-  const solAddress = useMemo(
-    () => currentAccount?.solanaAddress,
-    [currentAccount.solanaAddress],
-  )
-
-  const solBalances = useMemo(() => {
-    if (!solAddress) return
-
-    return solanaBalances[solAddress]
-  }, [solAddress, solanaBalances])
 
   const oraclePrice = useMemo(() => {
     if (!oracleData?.currentOraclePrice) return
