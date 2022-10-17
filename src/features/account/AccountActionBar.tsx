@@ -20,7 +20,7 @@ type Props = {
 const AccountActionBar = ({ tokenType, onLayout, compact }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
-  const { requirePinForPayment } = useAppStorage()
+  const { requirePinForPayment, pin } = useAppStorage()
   const anim = useRef(new Animated.Value(1))
   const { currentAccount } = useAccountStorage()
 
@@ -69,7 +69,7 @@ const AccountActionBar = ({ tokenType, onLayout, compact }: Props) => {
     (type: Action) => () => {
       switch (type) {
         case 'send': {
-          if (requirePinForPayment) {
+          if (pin?.status === 'on' && requirePinForPayment) {
             navigation.navigate('ConfirmPin', { action: 'payment' })
           } else {
             navigation.navigate('PaymentScreen', {
@@ -96,7 +96,7 @@ const AccountActionBar = ({ tokenType, onLayout, compact }: Props) => {
         }
       }
     },
-    [navigation, requirePinForPayment, tokenType],
+    [navigation, pin, requirePinForPayment, tokenType],
   )
 
   return (
