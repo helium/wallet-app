@@ -96,7 +96,7 @@ const AccountActionBar = ({ tokenType, onLayout, compact }: Props) => {
         }
       }
     },
-    [navigation, pin.status, requirePinForPayment, tokenType],
+    [navigation, pin, requirePinForPayment, tokenType],
   )
 
   return (
