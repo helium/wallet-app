@@ -182,6 +182,33 @@ export const confirmTxn = async (signature: string) => {
   })
 }
 
+export const getTransactions = async (walletAddress: string) => {
+  const account = new web3.PublicKey(walletAddress)
+  const transactionList = await conn.getSignaturesForAddress(account)
+  const sigs = transactionList.map(({ signature }) => signature)
+  const transactionDetails = await conn.getParsedTransactions(sigs, {
+    maxSupportedTransactionVersion: 0,
+  })
+
+  const info = transactionDetails.flatMap((td) => {
+    if (!td?.transaction.message.instructions) {
+      return []
+    }
+
+    const infos = td.transaction.message.instructions.flatMap((i) => {
+      const instruction = i as web3.ParsedInstruction
+      if (!instruction?.parsed?.info) return []
+      return [instruction.parsed.info]
+    })
+
+    if (!infos.length) return []
+    return [infos]
+  })
+
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(info, null, 2))
+}
+
 export const onAccountChange = (
   address: string,
   callback: (address: string) => void,

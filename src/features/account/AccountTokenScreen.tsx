@@ -11,6 +11,7 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated'
 import { Platform, View } from 'react-native'
+import { NetTypes } from '@helium/address'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import BackScreen from '../../components/BackScreen'
 import Box from '../../components/Box'
@@ -35,6 +36,10 @@ import AccountTokenBalance from './AccountTokenBalance'
 import globalStyles from '../../theme/globalStyles'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { useBackgroundStyle } from '../../theme/themeHooks'
+import { useAppStorage } from '../../storage/AppStorageProvider'
+import { useAppDispatch } from '../../store/store'
+import useMount from '../../utils/useMount'
+import { getTxns } from '../../store/slices/solanaSlice'
 
 const delayedAnimation = FadeIn.delay(300)
 
@@ -44,6 +49,7 @@ const AccountTokenScreen = () => {
   const { t } = useTranslation()
   const route = useRoute<Route>()
   const { currentAccount } = useAccountStorage()
+  const { l1Network } = useAppStorage()
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [topHeaderHeight, setTopHeaderHeight] = useState(0)
   const [listHeight, setListHeight] = useLayoutHeight()
@@ -53,6 +59,13 @@ const AccountTokenScreen = () => {
   const [headerContainerYPos, setHeaderContainerYPos] = useState(0)
   const listAnimatedPos = useSharedValue<number>(0)
   const listStyle = useBackgroundStyle('primaryBackground')
+  const dispatch = useAppDispatch()
+
+  useMount(() => {
+    if (!currentAccount?.address) return
+
+    dispatch(getTxns({ account: currentAccount }))
+  })
 
   const toggleFiltersOpen = useCallback(
     (open) => () => {
@@ -324,10 +337,16 @@ const AccountTokenScreen = () => {
     })
   }, [setTopHeaderHeight])
 
+  const backgroundColor = useMemo(() => {
+    if (currentAccount?.netType === NetTypes.TESTNET) return 'lividBrown'
+    if (l1Network === 'solana_dev') return 'solanaPurple'
+  }, [currentAccount, l1Network])
+
   return (
     <Animated.View entering={DelayedFadeIn} style={globalStyles.container}>
       <BackScreen
         padding="none"
+        headerBackgroundColor={backgroundColor}
         title={t('accountsScreen.title', {
           tokenType: route.params.tokenType.toUpperCase(),
         })}

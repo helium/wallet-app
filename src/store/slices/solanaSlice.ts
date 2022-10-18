@@ -66,6 +66,15 @@ export const makePayment = createAsyncThunk(
   },
 )
 
+export const getTxns = createAsyncThunk(
+  'solana/makePayment',
+  async ({ account }: { account: CSAccount }) => {
+    if (!account?.solanaAddress) throw new Error('No solana account found')
+
+    solUtils.getTransactions(account.solanaAddress)
+  },
+)
+
 const solanaSlice = createSlice({
   name: 'solana',
   initialState,

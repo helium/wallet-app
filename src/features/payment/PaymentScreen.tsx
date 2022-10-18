@@ -692,6 +692,7 @@ const PaymentScreen = () => {
                   <React.Fragment key={index}>
                     <PaymentItem
                       {...p}
+                      hideMemo={l1Network === 'solana_dev'}
                       marginTop={index === 0 ? 'xs' : 'none'}
                       marginBottom="l"
                       hasError={

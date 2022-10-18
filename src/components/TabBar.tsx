@@ -15,7 +15,6 @@ import Animated, {
 import { SvgProps } from 'react-native-svg'
 import { Color } from '../theme/theme'
 import { useColors, useVerticalHitSlop } from '../theme/themeHooks'
-import usePrevious from '../utils/usePrevious'
 import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox, {
@@ -96,7 +95,6 @@ const TabBar = ({
 }: Props) => {
   const hitSlop = useVerticalHitSlop('l')
   const [itemRects, setItemRects] = useState<Record<string, LayoutRectangle>>()
-  const prevSelectedValue = usePrevious(selectedValue)
 
   const offset = useSharedValue<number | null>(null)
 
@@ -117,8 +115,6 @@ const TabBar = ({
   )
 
   useEffect(() => {
-    if (!itemRects) return
-
     const nextOffset = itemRects?.[selectedValue]?.x || 0
 
     if (offset.value === null) {
@@ -127,10 +123,8 @@ const TabBar = ({
       return
     }
 
-    if (prevSelectedValue === selectedValue) return
-
     offset.value = withSpring(nextOffset, { mass: 0.5 })
-  }, [itemRects, offset.value, prevSelectedValue, selectedValue])
+  }, [itemRects, offset.value, selectedValue])
 
   const animatedStyles = useAnimatedStyle(() => {
     if (offset.value === null) return {}
