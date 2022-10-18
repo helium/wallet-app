@@ -12,6 +12,7 @@ type Balances = {
   dcBalance?: bigint
   mobileBalance?: bigint
   secBalance?: bigint
+  solBalance?: number
   stakedBalance?: bigint
   loading?: boolean
 }
@@ -27,21 +28,19 @@ const initialPaymentState = {
 }
 const initialState: SolanaState = { balances: {} }
 
-export const requestAirdrop = createAsyncThunk(
-  'solana/airdrop',
-  async (acct?: CSAccount) => {
-    if (!acct?.solanaAddress) throw new Error('No solana account found')
-
-    return solUtils.airdrop(acct.solanaAddress)
-  },
-)
-
 export const readBalances = createAsyncThunk(
   'solana/readBalance',
   async (acct: CSAccount) => {
     if (!acct?.solanaAddress) throw new Error('No solana account found')
 
-    return solUtils.readBalances(acct.solanaAddress)
+    const heliumBals = await solUtils.readHeliumBalances(acct.solanaAddress)
+    const solBalance = await solUtils.readSolanaBalance(acct.solanaAddress)
+
+    if (solBalance === 0) {
+      // TODO: REMOVE FOR MAINNET - How do those wallets get funded?
+      solUtils.airdrop(acct.solanaAddress)
+    }
+    return { ...heliumBals, solBalance }
   },
 )
 

@@ -45,6 +45,7 @@ const App = () => {
     'You are calling concat on a terminating link, which will have no effect',
     "[react-native-gesture-handler] Seems like you're using an old API with gesture components",
     'console.error: {"context":"client"} {"context":"client/pairing"} Unauthorized pairing update request',
+    'Require cycle:',
   ])
 
   const { appState } = useAppState()

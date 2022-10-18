@@ -122,6 +122,12 @@ const useBalanceHook = () => {
       }
       accountSubscriptionId.current = subId
     }
+    return () => {
+      if (accountSubscriptionId.current !== undefined) {
+        removeAccountChangeListener(accountSubscriptionId.current)
+        accountSubscriptionId.current = undefined
+      }
+    }
   }, [currentAccount, dispatch, dispatchBalanceUpdate, prevAccount])
 
   useMount(() => {
