@@ -118,7 +118,13 @@ const TransactionLineItem = ({
       paddingVertical="m"
       paddingHorizontal="l"
     >
-      <Text variant="body2" color="secondaryText" marginBottom="xs">
+      <Text
+        numberOfLines={2}
+        adjustsFontSizeToFit
+        variant="body2"
+        color="secondaryText"
+        marginBottom="xs"
+      >
         {title}
       </Text>
       <Box flexDirection="row" alignItems="center">
@@ -139,6 +145,8 @@ const TransactionLineItem = ({
             </Box>
           )}
           <Text
+            numberOfLines={2}
+            adjustsFontSizeToFit
             flexShrink={1}
             variant="body1"
             color={bodyColor || 'primaryText'}
@@ -150,6 +158,8 @@ const TransactionLineItem = ({
 
         {bodyTextEnd && (
           <Text
+            numberOfLines={2}
+            adjustsFontSizeToFit
             flex={1}
             textAlign="right"
             variant="body1"

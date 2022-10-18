@@ -138,6 +138,7 @@ const ConnectedWallets = ({ onClose, onAddNew, topOffset }: Props) => {
           borderBottomLeftRadius={!enableTestnet ? 'lx' : 'none'}
           borderBottomRightRadius={!enableTestnet ? 'lx' : 'none'}
           onPress={handleAddNew(NetTypes.MAINNET)}
+          alignItems="center"
         >
           <Add color={primaryText} />
           <Text variant="subtitle1" color="primaryText" marginLeft="m">
@@ -155,6 +156,7 @@ const ConnectedWallets = ({ onClose, onAddNew, topOffset }: Props) => {
             borderBottomLeftRadius="lx"
             borderBottomRightRadius="lx"
             onPress={handleAddNew(NetTypes.TESTNET)}
+            alignItems="center"
           >
             <BackgroundFill backgroundColor="testnet" opacity={0.4} />
             <Add color={primaryText} />

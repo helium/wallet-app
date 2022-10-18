@@ -128,7 +128,9 @@ const ButtonPressable = ({
                 variant="subtitle2"
                 color={iconColor}
                 paddingHorizontal="xs"
-                maxFontSizeMultiplier={1.3}
+                maxFontSizeMultiplier={1.1}
+                numberOfLines={1}
+                adjustsFontSizeToFit
               >
                 {title}
               </Text>
