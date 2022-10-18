@@ -16,6 +16,7 @@ import { ellipsizeAddress } from '../../utils/accountUtils'
 import CopyAddress from '../../components/CopyAddress'
 import TabBar from '../../components/TabBar'
 import { useAppStorage } from '../../storage/AppStorageProvider'
+import useCopyText from '../../utils/useCopyText'
 
 const QR_CONTAINER_SIZE = 225
 
@@ -28,6 +29,7 @@ const ShareAddressScreen = () => {
   const qrRef = useRef<{
     toDataURL: (callback: (url: string) => void) => void
   }>(null)
+  const copyText = useCopyText()
 
   const tabData = useMemo((): Array<{
     value: string
@@ -121,14 +123,23 @@ const ShareAddressScreen = () => {
           >
             {currentAccount.alias}
           </Text>
-          <Text
-            variant="h4"
-            color="secondaryText"
-            textAlign="center"
-            marginBottom="xxl"
+          <TouchableOpacityBox
+            onPress={() =>
+              copyText({
+                message: ellipsizeAddress(address),
+                copyText: address,
+              })
+            }
           >
-            {ellipsizeAddress(address)}
-          </Text>
+            <Text
+              variant="h4"
+              color="secondaryText"
+              textAlign="center"
+              marginBottom="xxl"
+            >
+              {ellipsizeAddress(address)}
+            </Text>
+          </TouchableOpacityBox>
           <Box
             height={QR_CONTAINER_SIZE}
             width={QR_CONTAINER_SIZE}

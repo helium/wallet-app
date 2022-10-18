@@ -145,7 +145,7 @@ export const transferToken = async (
     instructions = [...instructions, instruction]
   })
 
-  const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash()
+  const { blockhash } = await conn.getLatestBlockhash()
 
   const messageV0 = new web3.TransactionMessage({
     payerKey: payer,
@@ -159,17 +159,22 @@ export const transferToken = async (
   const signature = await conn.sendTransaction(transaction, {
     maxRetries: 5,
   })
-  const confirmation = await conn.confirmTransaction({
-    signature,
-    blockhash,
-    lastValidBlockHeight,
-  })
 
-  if (confirmation.value.err) {
-    throw new Error(confirmation.value.err.toString())
-  }
+  // TODO: Confirming the txn sometimes throws a socket error,
+  // not sure what's going on or if we need to do it in the first place
+  // signatureSubscribe error for argument ["your_signature", {"commitment": "finalized"}] INVALID_STATE_ERR
 
-  return `https://explorer.solana.com/tx/${signature}?cluster=devnet`
+  // const confirmation = await conn.confirmTransaction({
+  //   signature,
+  //   blockhash,
+  //   lastValidBlockHeight,
+  // })
+
+  // if (confirmation.value.err) {
+  //   throw new Error(confirmation.value.err.toString())
+  // }
+
+  return signature
 }
 
 export const confirmTxn = async (signature: string) => {
