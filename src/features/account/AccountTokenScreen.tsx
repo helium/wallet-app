@@ -82,8 +82,9 @@ const AccountTokenScreen = () => {
     loading: activityLoading,
     now,
   } = useActivityList({
-    address: currentAccount?.address,
+    account: currentAccount,
     filter: filterState.filter,
+    tokenType: route.params.tokenType,
   })
 
   const snapPoints = useMemo(() => {
@@ -125,26 +126,6 @@ const AccountTokenScreen = () => {
       opacity: o,
     }
   }, [snapPoints, topHeaderHeight, listHeight])
-
-  const filteredTxns = useMemo(() => {
-    if (filterState.filter === 'payment') {
-      return activityData.filter(
-        (txn) =>
-          txn.payments &&
-          txn.payments.some((p) =>
-            route.params.tokenType === TokenType.Hnt
-              ? !p.tokenType || p.tokenType === TokenType.Hnt
-              : p.tokenType === route.params.tokenType,
-          ),
-      )
-    }
-
-    return activityData.filter((txn: Activity) =>
-      route.params.tokenType === TokenType.Hnt
-        ? !txn.tokenType || txn.tokenType === TokenType.Hnt
-        : txn.tokenType === route.params.tokenType,
-    )
-  }, [activityData, filterState.filter, route.params.tokenType])
 
   const { show: showTxnDetail } = useTransactionDetail()
 
@@ -426,7 +407,7 @@ const AccountTokenScreen = () => {
               stickyHeaderIndices={stickyHeaderIndices}
               ListFooterComponent={renderFooter}
               onEndReached={fetchMoreActivity}
-              data={filteredTxns}
+              data={activityData}
               onEndReachedThreshold={0.01}
             />
           </Animated.View>

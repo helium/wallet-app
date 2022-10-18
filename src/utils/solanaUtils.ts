@@ -210,8 +210,7 @@ export const getTransactions = async (walletAddress: string) => {
     return [infos]
   })
 
-  // eslint-disable-next-line no-console
-  console.log(JSON.stringify(info, null, 2))
+  return info
 }
 
 export const onAccountChange = (

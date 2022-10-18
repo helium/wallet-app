@@ -37,6 +37,7 @@ import { accountCurrencyType } from './accountUtils'
 import { CoinGeckoPrices, getCurrentPrices } from './coinGeckoClient'
 import { decimalSeparator, groupSeparator } from './i18n'
 import { onAccountChange, removeAccountChangeListener } from './solanaUtils'
+import useAppear from './useAppear'
 import useMount from './useMount'
 import usePrevious from './usePrevious'
 
@@ -123,6 +124,10 @@ const useBalanceHook = () => {
       accountSubscriptionId.current = subId
     }
   }, [currentAccount, dispatch, dispatchBalanceUpdate, prevAccount])
+
+  useAppear(() => {
+    dispatchBalanceUpdate()
+  })
 
   useMount(() => {
     updateCoinGeckoPrices()

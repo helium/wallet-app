@@ -101,37 +101,37 @@ const App = () => {
               <OnboardingProvider>
                 {client && (
                   <ApolloProvider client={client}>
-                    <BalanceProvider>
-                      <TransactionProvider>
-                        <LockScreen>
-                          <SentinelScreen>
-                            <WalletConnectProvider>
-                              {accountsRestored && (
-                                <AccountSelector>
-                                  <NavigationContainer
-                                    theme={navTheme}
-                                    // Can't figure out how to fix this ts error
-                                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                    // @ts-ignore
-                                    linking={linking}
-                                    ref={navigationRef}
-                                  >
+                    <LockScreen>
+                      <SentinelScreen>
+                        <WalletConnectProvider>
+                          {accountsRestored && (
+                            <AccountSelector>
+                              <NavigationContainer
+                                theme={navTheme}
+                                // Can't figure out how to fix this ts error
+                                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                // @ts-ignore
+                                linking={linking}
+                                ref={navigationRef}
+                              >
+                                <BalanceProvider>
+                                  <TransactionProvider>
                                     <NetworkAwareStatusBar />
                                     <RootNavigator />
-                                  </NavigationContainer>
-                                  <SecurityScreen
-                                    visible={
-                                      appState !== 'active' &&
-                                      appState !== 'unknown'
-                                    }
-                                  />
-                                </AccountSelector>
-                              )}
-                            </WalletConnectProvider>
-                          </SentinelScreen>
-                        </LockScreen>
-                      </TransactionProvider>
-                    </BalanceProvider>
+                                  </TransactionProvider>
+                                </BalanceProvider>
+                              </NavigationContainer>
+                              <SecurityScreen
+                                visible={
+                                  appState !== 'active' &&
+                                  appState !== 'unknown'
+                                }
+                              />
+                            </AccountSelector>
+                          )}
+                        </WalletConnectProvider>
+                      </SentinelScreen>
+                    </LockScreen>
                   </ApolloProvider>
                 )}
               </OnboardingProvider>
