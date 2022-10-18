@@ -220,7 +220,12 @@ const AccountTokenScreen = () => {
           justifyContent="center"
           alignItems="center"
         >
-          <Text variant="body1" color="surfaceSecondaryText" textAlign="center">
+          <Text
+            variant="body1"
+            color="surfaceSecondaryText"
+            textAlign="center"
+            maxFontSizeMultiplier={1.3}
+          >
             {t('generic.loading')}
           </Text>
         </Box>
@@ -236,7 +241,12 @@ const AccountTokenScreen = () => {
         justifyContent="center"
         alignItems="center"
       >
-        <Text variant="body1" color="surfaceSecondaryText" textAlign="center">
+        <Text
+          variant="body1"
+          color="surfaceSecondaryText"
+          textAlign="center"
+          maxFontSizeMultiplier={1.3}
+        >
           {t('accountsScreen.allFilterFooter')}
         </Text>
       </Box>

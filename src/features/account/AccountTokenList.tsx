@@ -18,6 +18,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAccountBalances } from '../../utils/Balance'
 import { AccountData, TokenType } from '../../generated/graphql'
 import Box from '../../components/Box'
@@ -25,7 +26,7 @@ import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { HomeNavigationProp } from '../home/homeTypes'
 import TokenIcon from './TokenIcon'
-import { useBreakpoints, useSpacing } from '../../theme/themeHooks'
+import { useBreakpoints } from '../../theme/themeHooks'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import useLayoutHeight from '../../utils/useLayoutHeight'
 
@@ -46,8 +47,10 @@ const AccountTokenList = ({ accountData, loading = false }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const [listItemHeight, setListItemHeight] = useLayoutHeight()
   const breakpoints = useBreakpoints()
-  const { xxxl: bottomSpace } = useSpacing()
   const height = useSharedValue(0)
+  const { bottom } = useSafeAreaInsets()
+
+  const bottomSpace = useMemo(() => bottom * 2, [bottom])
 
   const tokens = useMemo((): {
     type: TokenType
@@ -99,7 +102,7 @@ const AccountTokenList = ({ accountData, loading = false }: Props) => {
   )
 
   const maxVisibleTokens = useMemo(
-    () => (breakpoints?.smallPhone ? 3 : 4),
+    () => (breakpoints?.smallPhone ? 2 : 4),
     [breakpoints.smallPhone],
   )
 

@@ -99,7 +99,7 @@ const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
         color="secondaryText"
         numberOfLines={1}
         adjustsFontSizeToFit
-        maxFontSizeMultiplier={1.3}
+        maxFontSizeMultiplier={1.2}
         textAlign="center"
         marginBottom="s"
       >
@@ -107,7 +107,7 @@ const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
       </Text>
       {!balanceString && (
         <Text
-          maxFontSizeMultiplier={1.3}
+          maxFontSizeMultiplier={1.1}
           variant="h0"
           color="primaryText"
           numberOfLines={1}
@@ -120,7 +120,7 @@ const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
       {!!balanceString && (
         <FadeInOut>
           <Text
-            maxFontSizeMultiplier={1.3}
+            maxFontSizeMultiplier={1.1}
             variant="h0"
             color="primaryText"
             numberOfLines={1}
@@ -132,7 +132,7 @@ const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
         </FadeInOut>
       )}
       <Text
-        variant="body3"
+        variant="body2"
         textAlign="center"
         marginTop="s"
         marginBottom="m"
@@ -154,7 +154,6 @@ const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
               marginLeft="xs"
               numberOfLines={1}
               adjustsFontSizeToFit
-              maxFontSizeMultiplier={1.3}
             >
               {selectedDate}
             </Text>

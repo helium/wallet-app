@@ -4,6 +4,8 @@ import { Theme } from '../theme/theme'
 
 const Text = createText<Theme>()
 
-export default Text
+export default (props: TextProps) => (
+  <Text maxFontSizeMultiplier={1.3} {...props} />
+)
 
 export type TextProps = React.ComponentProps<typeof Text>
