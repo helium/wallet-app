@@ -5,6 +5,7 @@ import {
   SerializedError,
 } from '@reduxjs/toolkit'
 import { CSAccount } from '../../storage/cloudStorage'
+import { Activity, TokenType } from '../../types/activity'
 import * as solUtils from '../../utils/solanaUtils'
 
 type Balances = {
@@ -17,16 +18,25 @@ type Balances = {
   loading?: boolean
 }
 
+type SolActivity = {
+  all: Activity[]
+  payment: Activity[]
+}
 export type SolanaState = {
   balances: Record<string, Balances>
   payment?: { loading?: boolean; error?: SerializedError; success?: boolean }
+  activities: {
+    loading?: boolean
+    data: Record<string, SolActivity>
+    error?: SerializedError
+  }
 }
 const initialPaymentState = {
   loading: false,
   error: undefined,
   success: undefined,
 }
-const initialState: SolanaState = { balances: {} }
+const initialState: SolanaState = { balances: {}, activities: { data: {} } }
 
 export const readBalances = createAsyncThunk(
   'solana/readBalance',
@@ -67,11 +77,17 @@ export const makePayment = createAsyncThunk(
 )
 
 export const getTxns = createAsyncThunk(
-  'solana/makePayment',
-  async ({ account }: { account: CSAccount }) => {
+  'solana/getTxns',
+  async ({
+    account,
+    tokenType,
+  }: {
+    account: CSAccount
+    tokenType: TokenType
+  }) => {
     if (!account?.solanaAddress) throw new Error('No solana account found')
 
-    solUtils.getTransactions(account.solanaAddress)
+    return solUtils.getTransactions(account.solanaAddress, tokenType)
   },
 )
 
@@ -123,6 +139,34 @@ const solanaSlice = createSlice({
       state.payment.success = false
       state.payment.loading = false
       state.payment.error = action.error
+    })
+    builder.addCase(getTxns.pending, (state, _action) => {
+      state.activities.loading = true
+      state.activities.error = undefined
+    })
+    builder.addCase(getTxns.fulfilled, (state, action) => {
+      state.activities.loading = false
+      state.activities.error = undefined
+      if (!action.meta.arg.account.solanaAddress) return
+
+      state.activities = state.activities || {}
+      state.activities.data = state.activities.data || {}
+      const nextData =
+        state.activities.data[action.meta.arg.account.solanaAddress] || {}
+
+      // TODO: sort into filters
+      nextData.all = action.payload
+      nextData.payment = action.payload
+
+      state.activities.data[action.meta.arg.account.solanaAddress] = nextData
+
+      // const  =activities.data[action.meta.arg.account.solanaAddress]
+      // data.all = action.payload
+      // data.payment = action.payload
+    })
+    builder.addCase(getTxns.rejected, (state, action) => {
+      state.activities.loading = false
+      state.activities.error = action.error
     })
   },
 })

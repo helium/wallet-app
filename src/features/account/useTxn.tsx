@@ -21,6 +21,8 @@ import { accountCurrencyType, ellipsizeAddress } from '../../utils/accountUtils'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import { decodeMemoString, DEFAULT_MEMO } from '../../components/MemoInput'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 export const TxnTypeKeys = [
   'rewards_v1',
@@ -42,13 +44,19 @@ type TxnType = typeof TxnTypeKeys[number]
 
 const useTxn = (
   item?: Activity,
-  address?: string,
   dateOpts?: { dateFormat?: string; now?: Date },
 ) => {
+  const { currentAccount } = useAccountStorage()
+  const { l1Network } = useAppStorage()
   const colors = useColors()
   const { bonesToBalance } = useBalance()
   const { t } = useTranslation()
   const { makers } = useOnboarding()
+
+  const address = useMemo(() => {
+    if (l1Network === 'solana_dev') return currentAccount?.solanaAddress || ''
+    return currentAccount?.address || ''
+  }, [currentAccount, l1Network])
 
   const ticker = useMemo(() => {
     // Get the ticker from the item if it's available
@@ -422,7 +430,7 @@ const useTxn = (
     }
 
     return ''
-  }, [item, formatAmount, isSelling, address, bonesToBalance])
+  }, [item, formatAmount, isSelling, bonesToBalance, address])
 
   const time = useMemo(() => {
     if (!item) return ''
@@ -535,7 +543,7 @@ type TxnDetails = {
   isValidatorTxn: boolean
   isHotspotTxn: boolean
 }
-export const useTxnDetails = (item?: Activity, address?: string) => {
+export const useTxnDetails = (item?: Activity) => {
   const {
     listIcon,
     title,
@@ -551,7 +559,7 @@ export const useTxnDetails = (item?: Activity, address?: string) => {
     isHotspotTxn,
     isValidatorTxn,
     getAmountTitle,
-  } = useTxn(item, address || '', {
+  } = useTxn(item, {
     dateFormat: 'dd MMMM yyyy HH:MM',
   })
 

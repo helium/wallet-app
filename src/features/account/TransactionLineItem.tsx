@@ -145,7 +145,7 @@ const TransactionLineItem = ({
             </Box>
           )}
           <Text
-            numberOfLines={2}
+            numberOfLines={3}
             adjustsFontSizeToFit
             flexShrink={1}
             variant="body1"

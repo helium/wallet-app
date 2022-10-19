@@ -1,21 +1,19 @@
 import * as web3 from '@solana/web3.js'
-import Address from '@helium/address'
+import Address, { KeyTypes, NetTypes } from '@helium/address'
 import {
   TOKEN_PROGRAM_ID,
   AccountLayout,
   createTransferCheckedInstruction,
   getOrCreateAssociatedTokenAccount,
+  getAssociatedTokenAddress,
 } from '@solana/spl-token'
 import Balance, { AnyCurrencyType } from '@helium/currency'
 import { getKeypair } from '../storage/secureStorage'
+import solInstructionsToActivity from './solInstructionsToActivity'
+import { Mint, tokenTypeToMint } from '../types/solana'
+import { Activity, TokenType } from '../types/activity'
 
 const conn = new web3.Connection(web3.clusterApiUrl('devnet'))
-
-export const Mint = {
-  HNT: new web3.PublicKey('hntg4GdrpMBW8bqs4R2om4stE6uScPRhPKWAarzoWKP'),
-  MOBILE: new web3.PublicKey('mob1r1x3raXXoH42RZwxTxgbAuKkBQzTAQqSjkUdZbd'),
-  DC: new web3.PublicKey('dcr5SHHfQixyb5YT7J1hgbWvgxvBpn65bpCyx6pTiKo'),
-} as const
 
 export const solKeypairFromPK = (heliumPK: Buffer) => {
   return web3.Keypair.fromSecretKey(heliumPK)
@@ -26,6 +24,18 @@ export const heliumAddressToSolAddress = (heliumAddress: string) => {
   const heliumPK = Address.fromB58(heliumAddress).publicKey
   const pk = new web3.PublicKey(heliumPK)
   return pk.toBase58()
+}
+
+export const solAddressToHeliumAddress = (solanaAddress: string) => {
+  if (typeof solanaAddress !== 'string') return ''
+  const solPubKey = new web3.PublicKey(solanaAddress)
+  const heliumAddress = new Address(
+    0,
+    NetTypes.MAINNET,
+    KeyTypes.ECC_COMPACT_KEY_TYPE,
+    solPubKey.toBytes(),
+  )
+  return heliumAddress.b58
 }
 
 export const solAddressIsValid = (address: string) => {
@@ -187,30 +197,23 @@ export const confirmTxn = async (signature: string) => {
   })
 }
 
-export const getTransactions = async (walletAddress: string) => {
+export const getTransactions = async (
+  walletAddress: string,
+  tokenType: TokenType,
+) => {
   const account = new web3.PublicKey(walletAddress)
-  const transactionList = await conn.getSignaturesForAddress(account)
+  const mint = tokenTypeToMint(tokenType)
+  const ata = await getAssociatedTokenAddress(mint, account)
+  const transactionList = await conn.getSignaturesForAddress(ata)
   const sigs = transactionList.map(({ signature }) => signature)
+
   const transactionDetails = await conn.getParsedTransactions(sigs, {
     maxSupportedTransactionVersion: 0,
   })
 
-  const info = transactionDetails.flatMap((td) => {
-    if (!td?.transaction.message.instructions) {
-      return []
-    }
-
-    const infos = td.transaction.message.instructions.flatMap((i) => {
-      const instruction = i as web3.ParsedInstruction
-      if (!instruction?.parsed?.info) return []
-      return [instruction.parsed.info]
-    })
-
-    if (!infos.length) return []
-    return [infos]
-  })
-
-  return info
+  return transactionDetails
+    .map((td, idx) => solInstructionsToActivity(td, sigs[idx]))
+    .filter((a) => !!a) as Activity[]
 }
 
 export const onAccountChange = (

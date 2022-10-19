@@ -37,9 +37,6 @@ import globalStyles from '../../theme/globalStyles'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { useBackgroundStyle } from '../../theme/themeHooks'
 import { useAppStorage } from '../../storage/AppStorageProvider'
-import { useAppDispatch } from '../../store/store'
-import useMount from '../../utils/useMount'
-import { getTxns } from '../../store/slices/solanaSlice'
 
 const delayedAnimation = FadeIn.delay(300)
 
@@ -59,13 +56,6 @@ const AccountTokenScreen = () => {
   const [headerContainerYPos, setHeaderContainerYPos] = useState(0)
   const listAnimatedPos = useSharedValue<number>(0)
   const listStyle = useBackgroundStyle('primaryBackground')
-  const dispatch = useAppDispatch()
-
-  useMount(() => {
-    if (!currentAccount?.address) return
-
-    dispatch(getTxns({ account: currentAccount }))
-  })
 
   const toggleFiltersOpen = useCallback(
     (open) => () => {
