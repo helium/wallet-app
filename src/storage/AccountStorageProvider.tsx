@@ -32,7 +32,10 @@ import {
   updateCloudContacts,
 } from './cloudStorage'
 import { removeAccountTag, tagAccount } from './oneSignalStorage'
-import { heliumAddressToSolAddress } from '../utils/solanaUtils'
+import {
+  heliumAddressToSolAddress,
+  solAddressToHeliumAddress,
+} from '../utils/solanaUtils'
 import { useAppStorage } from './AppStorageProvider'
 
 const useAccountStorageHook = () => {
@@ -251,9 +254,14 @@ const useAccountStorageHook = () => {
   const addContact = useCallback(
     async (account: CSAccount) => {
       const nextAccount = account
-      if (!nextAccount.solanaAddress) {
+      if (!nextAccount.solanaAddress && nextAccount.address) {
         nextAccount.solanaAddress = heliumAddressToSolAddress(
           nextAccount.address,
+        )
+      }
+      if (nextAccount.solanaAddress && !nextAccount.address) {
+        nextAccount.address = solAddressToHeliumAddress(
+          nextAccount.solanaAddress,
         )
       }
       const filtered = contacts.filter((c) => c.address !== nextAccount.address)
@@ -268,9 +276,14 @@ const useAccountStorageHook = () => {
   const editContact = useCallback(
     async (oldAddress: string, updatedAccount: CSAccount) => {
       const nextAccount = updatedAccount
-      if (!nextAccount.solanaAddress) {
+      if (!nextAccount.solanaAddress && nextAccount.address) {
         nextAccount.solanaAddress = heliumAddressToSolAddress(
           nextAccount.address,
+        )
+      }
+      if (nextAccount.solanaAddress && !nextAccount.address) {
+        nextAccount.address = solAddressToHeliumAddress(
+          nextAccount.solanaAddress,
         )
       }
       const filtered = contacts.filter((c) => c.address !== oldAddress)

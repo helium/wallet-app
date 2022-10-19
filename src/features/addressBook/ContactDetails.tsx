@@ -39,6 +39,11 @@ import AddressExtra from './AddressExtra'
 import useAlert from '../../utils/useAlert'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useIsHotspotOrValidatorQuery } from '../../generated/graphql'
+import {
+  solAddressIsValid,
+  solAddressToHeliumAddress,
+} from '../../utils/solanaUtils'
+import useNetworkColor from '../../utils/useNetworkColor'
 
 const BUTTON_HEIGHT = 55
 
@@ -59,22 +64,34 @@ const ContactDetails = ({ action, contact }: Props) => {
     'surfaceSecondary',
     keyboardShown ? 0.85 : 0.4,
   )
-  const { addContact, editContact, deleteContact } = useAccountStorage()
+  const { addContact, editContact, deleteContact, currentAccount } =
+    useAccountStorage()
   const [nickname, setNickname] = useState(contact?.alias || '')
-  const [address, setAddress] = useState(
-    contact?.address || route.params?.address || '',
-  )
+  const [address, setAddress] = useState('')
   const nicknameInput = useRef<RNTextInput | null>(null)
   const { blueBright500, primaryText } = useColors()
-  const { scannedAddress, setScannedAddress } = useAppStorage()
+  const { scannedAddress, setScannedAddress, l1Network } = useAppStorage()
   const spacing = useSpacing()
   const { showOKCancelAlert } = useAlert()
+
+  const isSolana = useMemo(() => l1Network === 'solana_dev', [l1Network])
+  const backgroundColor = useNetworkColor({ netType: currentAccount?.netType })
+
+  useEffect(() => {
+    if (route.params?.address) {
+      setAddress(route.params.address)
+    } else if (isSolana && contact?.solanaAddress) {
+      setAddress(contact.solanaAddress)
+    } else if (!isSolana && contact?.address) {
+      setAddress(contact.address)
+    }
+  }, [contact, isSolana, route])
 
   const { error, loading, data } = useIsHotspotOrValidatorQuery({
     variables: {
       address,
     },
-    skip: !address || !Address.isValid(address),
+    skip: !address || isSolana || !Address.isValid(address),
   })
 
   const onRequestClose = useCallback(() => {
@@ -84,10 +101,19 @@ const ContactDetails = ({ action, contact }: Props) => {
   const isAddingContact = useMemo(() => action === 'add', [action])
   const isEditingContact = useMemo(() => action === 'edit', [action])
 
+  const heliumAddress = useMemo(() => {
+    if (!isSolana) return address
+    return solAddressToHeliumAddress(address)
+  }, [address, isSolana])
+
   const handleCreateNewContact = useCallback(() => {
-    addContact({ address, alias: nickname, netType: accountNetType(address) })
+    addContact({
+      address: heliumAddress,
+      alias: nickname,
+      netType: accountNetType(address),
+    })
     addressBookNav.goBack()
-  }, [addContact, address, addressBookNav, nickname])
+  }, [addContact, address, addressBookNav, heliumAddress, nickname])
 
   const handleDeleteContact = useCallback(async () => {
     const decision = await showOKCancelAlert({
@@ -95,20 +121,27 @@ const ContactDetails = ({ action, contact }: Props) => {
       message: t('editContact.deleteConfirmMessage', { alias: nickname }),
     })
     if (decision) {
-      deleteContact(address)
+      deleteContact(heliumAddress)
       addressBookNav.goBack()
     }
-  }, [address, addressBookNav, deleteContact, nickname, showOKCancelAlert, t])
+  }, [
+    addressBookNav,
+    deleteContact,
+    heliumAddress,
+    nickname,
+    showOKCancelAlert,
+    t,
+  ])
 
   const handleSaveNewContact = useCallback(() => {
     if (!contact) return
     editContact(contact.address, {
-      address,
+      address: heliumAddress,
       alias: nickname,
       netType: accountNetType(address),
     })
     addressBookNav.goBack()
-  }, [editContact, contact, address, nickname, addressBookNav])
+  }, [contact, editContact, heliumAddress, nickname, address, addressBookNav])
 
   const handleKeydown = useCallback(
     (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
@@ -128,20 +161,33 @@ const ContactDetails = ({ action, contact }: Props) => {
   }, [addressBookNav])
 
   useEffect(() => {
-    if (scannedAddress && Address.isValid(scannedAddress)) {
+    if (!scannedAddress) return
+
+    if (
+      (!isSolana && Address.isValid(scannedAddress)) ||
+      (isSolana && solAddressIsValid(scannedAddress))
+    ) {
       setAddress(scannedAddress)
       setScannedAddress(undefined)
     }
-  }, [scannedAddress, setScannedAddress])
+  }, [isSolana, scannedAddress, setScannedAddress])
 
-  const addressIsValid = useMemo(
-    () => data?.isHotspotOrValidator === false,
-    [data],
-  )
+  const addressIsValid = useMemo(() => {
+    if (isSolana) {
+      return solAddressIsValid(address)
+    }
+
+    return data?.isHotspotOrValidator === false
+  }, [data, isSolana, address])
 
   return (
-    <SafeAreaBox flex={1} edges={['top']}>
-      <Box flexDirection="row" alignItems="center">
+    <Box flex={1}>
+      <Box
+        style={{ paddingTop: Platform.OS === 'android' ? 24 : 0 }}
+        flexDirection="row"
+        alignItems="center"
+        backgroundColor={backgroundColor}
+      >
         <Box flex={1} />
         <Text variant="subtitle2">
           {isAddingContact ? t('addNewContact.title') : t('editContact.title')}
@@ -158,7 +204,7 @@ const ContactDetails = ({ action, contact }: Props) => {
       </Box>
       <Box flex={1} alignItems="center" justifyContent="center">
         {addressIsValid && (
-          <AccountIcon address={address} size={nickname ? 85 : 122} />
+          <AccountIcon address={heliumAddress} size={nickname ? 85 : 122} />
         )}
         {!!nickname && (
           <Text variant="h1" marginTop={addressIsValid ? 'm' : 'none'}>
@@ -182,7 +228,11 @@ const ContactDetails = ({ action, contact }: Props) => {
             justifyContent="space-between"
             marginHorizontal="xl"
           >
-            <Text variant="body1">{t('addNewContact.address.title')}</Text>
+            <Text variant="body1">
+              {t('addNewContact.address.title', {
+                network: isSolana ? 'Solana' : 'Helium',
+              })}
+            </Text>
             <AddressExtra
               onScanPress={handleScanAddress}
               isValidAddress={addressIsValid}
@@ -289,7 +339,7 @@ const ContactDetails = ({ action, contact }: Props) => {
           </Box>
         </SafeAreaBox>
       </KeyboardAvoidingView>
-    </SafeAreaBox>
+    </Box>
   )
 }
 

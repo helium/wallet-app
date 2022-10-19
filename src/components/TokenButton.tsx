@@ -12,6 +12,7 @@ import TouchableOpacityBox from './TouchableOpacityBox'
 import { Color, Theme } from '../theme/theme'
 import { TokenType } from '../generated/graphql'
 import { useAppStorage } from '../storage/AppStorageProvider'
+import useNetworkColor from '../utils/useNetworkColor'
 
 const TokenTypeItem = ({ tokenType }: { tokenType: TokenType }) => {
   const colors = useColors()
@@ -62,13 +63,11 @@ const TokenButton = ({
     onPress?.(address)
   }, [address, onPress])
 
-  const backgroundColor = useMemo(() => {
-    if (netType === NetType.TESTNET) return 'lividBrown'
-    if (l1Network === 'solana_dev') return 'solanaPurple'
-    if (backgroundColorProps) {
-      return backgroundColorProps
-    }
-  }, [backgroundColorProps, l1Network, netType])
+  const backgroundColor = useNetworkColor({
+    netType,
+    defaultColor: backgroundColorProps as Color,
+    muted: true,
+  })
 
   const textColor = useMemo((): Color => {
     if (l1Network === 'solana_dev' || netType === NetType.TESTNET)

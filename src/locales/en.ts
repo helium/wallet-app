@@ -141,7 +141,7 @@ export default {
     addContact: 'Add Contact',
     address: {
       placeholder: 'e.g. 9h9h9r3hfi04nf0j083...',
-      title: 'Enter Helium Address',
+      title: 'Enter {{network}} Address',
     },
     loadFailed: 'Cannot validate address. Please try again.',
     nickname: {

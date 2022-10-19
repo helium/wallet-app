@@ -27,7 +27,10 @@ export const heliumAddressToSolAddress = (heliumAddress: string) => {
 }
 
 export const solAddressToHeliumAddress = (solanaAddress: string) => {
-  if (typeof solanaAddress !== 'string') return ''
+  if (typeof solanaAddress !== 'string' || !solAddressIsValid(solanaAddress)) {
+    return ''
+  }
+
   const solPubKey = new web3.PublicKey(solanaAddress)
   const heliumAddress = new Address(
     0,

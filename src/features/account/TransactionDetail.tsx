@@ -234,7 +234,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                     isAddress
                     navTo={createExplorerUrl('account', payee)}
                   />
-                  {memo !== undefined && memo !== DEFAULT_MEMO && (
+                  {!!memo && memo !== DEFAULT_MEMO && (
                     <TransactionLineItem
                       title={t('transactions.memo')}
                       bodyText={decodeMemoString(memo)}
@@ -260,7 +260,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                         : undefined
                     }
                   />
-                  {memo !== undefined && memo !== DEFAULT_MEMO && (
+                  {!!memo && memo !== DEFAULT_MEMO && (
                     <TransactionLineItem
                       title={t('transactions.memo')}
                       bodyText={decodeMemoString(memo)}

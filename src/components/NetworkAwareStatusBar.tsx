@@ -31,7 +31,7 @@ const NetworkAwareStatusBar = () => {
 
   const backgroundColor = useMemo(() => {
     if (l1Network === 'solana_dev') return 'solanaPurple'
-    return 'red500'
+    return 'testnet'
   }, [l1Network])
 
   if (l1Network === 'helium' && !isTestnet)

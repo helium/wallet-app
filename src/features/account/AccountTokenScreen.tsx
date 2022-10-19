@@ -11,7 +11,6 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated'
 import { Platform, View } from 'react-native'
-import { NetTypes } from '@helium/address'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import BackScreen from '../../components/BackScreen'
 import Box from '../../components/Box'
@@ -36,7 +35,7 @@ import AccountTokenBalance from './AccountTokenBalance'
 import globalStyles from '../../theme/globalStyles'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { useBackgroundStyle } from '../../theme/themeHooks'
-import { useAppStorage } from '../../storage/AppStorageProvider'
+import useNetworkColor from '../../utils/useNetworkColor'
 
 const delayedAnimation = FadeIn.delay(300)
 
@@ -46,7 +45,6 @@ const AccountTokenScreen = () => {
   const { t } = useTranslation()
   const route = useRoute<Route>()
   const { currentAccount } = useAccountStorage()
-  const { l1Network } = useAppStorage()
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [topHeaderHeight, setTopHeaderHeight] = useState(0)
   const [listHeight, setListHeight] = useLayoutHeight()
@@ -308,10 +306,9 @@ const AccountTokenScreen = () => {
     })
   }, [setTopHeaderHeight])
 
-  const backgroundColor = useMemo(() => {
-    if (currentAccount?.netType === NetTypes.TESTNET) return 'lividBrown'
-    if (l1Network === 'solana_dev') return 'solanaPurple'
-  }, [currentAccount, l1Network])
+  const backgroundColor = useNetworkColor({
+    netType: currentAccount?.netType,
+  })
 
   return (
     <Animated.View entering={DelayedFadeIn} style={globalStyles.container}>
