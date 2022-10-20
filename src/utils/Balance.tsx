@@ -191,6 +191,8 @@ const useBalanceHook = () => {
           return CurrencyType.iot
         case TokenType.Mobile:
           return CurrencyType.mobile
+        case TokenType.Dc:
+          return CurrencyType.dataCredit
         case TokenType.Hnt:
         default:
           if (currentAccount?.netType === NetTypes.TESTNET)

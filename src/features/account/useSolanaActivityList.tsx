@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
 import { RootState } from '../../store/rootReducer'
 import { getTxns } from '../../store/slices/solanaSlice'
@@ -16,13 +17,14 @@ export default ({
   filter: FilterType
   tokenType: TokenType
 }) => {
-  // TODO: Can this be removed?
   const [now, setNow] = useState(new Date())
   const dispatch = useAppDispatch()
-
-  const solanaActivities = useSelector(
-    (state: RootState) => state.solana.activities,
+  const { l1Network } = useAppStorage()
+  const solanaActivity = useSelector(
+    (state: RootState) => state.solana.activity,
   )
+
+  const isSolana = useMemo(() => l1Network === 'solana_dev', [l1Network])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -32,9 +34,10 @@ export default ({
   }, [])
 
   useEffect(() => {
-    if (!account?.address) return
+    if (!account?.address || !isSolana) return
+
     dispatch(getTxns({ account, tokenType }))
-  }, [account, dispatch, filter, tokenType])
+  }, [account, dispatch, filter, isSolana, tokenType])
 
   const requestMore = useCallback(() => {}, [])
 
@@ -43,20 +46,20 @@ export default ({
 
     if (
       (filter !== 'payment' && filter !== 'all') ||
-      !solanaActivities?.data?.[account.solanaAddress]
+      !solanaActivity?.data?.[account.solanaAddress]
     )
       return []
 
-    return solanaActivities.data[account.solanaAddress][filter]
-  }, [account, filter, solanaActivities])
+    return solanaActivity.data[account.solanaAddress][filter][tokenType]
+  }, [account, filter, solanaActivity.data, tokenType])
 
   const loading = useMemo(() => {
-    return solanaActivities.loading
-  }, [solanaActivities.loading])
+    return solanaActivity.loading
+  }, [solanaActivity.loading])
 
   const error = useMemo(() => {
-    return solanaActivities.error
-  }, [solanaActivities.error])
+    return solanaActivity.error
+  }, [solanaActivity.error])
 
   return {
     data,

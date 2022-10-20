@@ -11,6 +11,7 @@ import {
 import { FilterType } from './AccountActivityFilter'
 import useAppear from '../../utils/useAppear'
 import { CSAccount } from '../../storage/cloudStorage'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 const AccountActivityAPIFilters = {
   all: ['all'],
@@ -39,7 +40,9 @@ export default ({
   filter: FilterType
   tokenType: TokenType
 }) => {
+  const { l1Network } = useAppStorage()
   const address = useMemo(() => account?.address, [account])
+  const isHelium = useMemo(() => l1Network === 'helium', [l1Network])
 
   const {
     data: activityData,
@@ -53,7 +56,7 @@ export default ({
       filter: AccountActivityAPIFilters[filter].join(','),
     },
     fetchPolicy: 'cache-and-network',
-    skip: !address || filter === 'pending',
+    skip: !address || filter === 'pending' || !isHelium,
     notifyOnNetworkStatusChange: true,
     pollInterval: 30000,
   })
@@ -63,16 +66,21 @@ export default ({
       address: address || '',
     },
     fetchPolicy: 'network-only',
-    skip: !address,
+    skip: !address || !isHelium,
     pollInterval: 9000,
   })
 
-  const [getPendingTxns] = usePendingTxnsLazyQuery({
+  const [getPendingLazy] = usePendingTxnsLazyQuery({
     variables: {
       address: address || '',
     },
     fetchPolicy: 'network-only',
   })
+  const getPendingTxns = useCallback(() => {
+    if (!isHelium) return
+    getPendingLazy()
+  }, [getPendingLazy, isHelium])
+
   useAppear(getPendingTxns)
 
   const [getTxns, { loading: loadingActivityLazy }] =
@@ -87,9 +95,10 @@ export default ({
     })
 
   useEffect(() => {
-    if (!address || filter === 'pending') return
+    if (!address || filter === 'pending' || !isHelium) return
+
     getTxns()
-  }, [address, filter, getTxns])
+  }, [address, filter, getTxns, isHelium, l1Network])
 
   const [now, setNow] = useState(new Date())
 
@@ -97,7 +106,8 @@ export default ({
     if (
       !activityData?.accountActivity?.cursor ||
       !address ||
-      filter === 'pending'
+      filter === 'pending' ||
+      !isHelium
     )
       return
 
@@ -107,7 +117,7 @@ export default ({
         address,
       },
     })
-  }, [address, activityData, fetchMore, filter])
+  }, [activityData, address, filter, isHelium, fetchMore])
 
   useEffect(() => {
     const interval = setInterval(() => {

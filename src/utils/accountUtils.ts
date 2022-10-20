@@ -30,11 +30,11 @@ export const accountCurrencyType = (
     case TokenType.Hst:
       return CurrencyType.security
     case TokenType.Iot:
-      // TODO: Add testnet IOT token
       return CurrencyType.iot
     case TokenType.Mobile:
-      // TODO: Add testnet Mobile token
       return CurrencyType.mobile
+    case TokenType.Dc:
+      return CurrencyType.dataCredit
   }
 }
 

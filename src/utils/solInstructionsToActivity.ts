@@ -13,7 +13,7 @@ export default (
   const { transaction, slot, blockTime, meta } = parsedTxn
 
   activity.fee = meta?.fee
-  activity.height = slot // not sure if this is right
+  activity.height = slot
 
   if (blockTime) {
     activity.time = blockTime
@@ -22,11 +22,11 @@ export default (
   if (meta?.preTokenBalances && meta.postTokenBalances) {
     const { preTokenBalances, postTokenBalances } = meta
     let payments = [] as Payment[]
-    postTokenBalances.forEach((post, idx) => {
-      const pre =
-        preTokenBalances.length > idx
-          ? preTokenBalances[idx]
-          : { uiTokenAmount: { amount: '0' } }
+    postTokenBalances.forEach((post) => {
+      const preBalance = preTokenBalances.find(
+        ({ accountIndex }) => accountIndex === post.accountIndex,
+      )
+      const pre = preBalance || { uiTokenAmount: { amount: '0' } }
       const preAmount = parseInt(pre.uiTokenAmount.amount, 10)
       const postAmount = parseInt(post.uiTokenAmount.amount, 10)
       const amount = postAmount - preAmount
