@@ -54,6 +54,9 @@ import useAlert from '../../utils/useAlert'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { solAddressIsValid } from '../../utils/solanaUtils'
 import { RootState } from '../../store/rootReducer'
+import { useAppDispatch } from '../../store/store'
+import useDisappear from '../../utils/useDisappear'
+import { solanaSlice } from '../../store/slices/solanaSlice'
 
 type LinkedPayment = {
   amount?: string
@@ -94,6 +97,7 @@ const PaymentScreen = () => {
 
   const { showOKAlert } = useAlert()
   const { l1Network } = useAppStorage()
+  const appDispatch = useAppDispatch()
 
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
@@ -109,6 +113,10 @@ const PaymentScreen = () => {
   const [tokenType, setTokenType] = useState<TokenType>(
     route.params?.defaultTokenType || TokenType.Hnt,
   )
+
+  useDisappear(() => {
+    appDispatch(solanaSlice.actions.resetPayment())
+  })
 
   useAsync(async () => {
     if (tokenType !== TokenType.Mobile) return

@@ -12,6 +12,7 @@ import { getKeypair } from '../storage/secureStorage'
 import solInstructionsToActivity from './solInstructionsToActivity'
 import { Mint, tokenTypeToMint } from '../types/solana'
 import { Activity, TokenType } from '../types/activity'
+import sleep from './sleep'
 
 const conn = new web3.Connection(web3.clusterApiUrl('devnet'))
 
@@ -173,21 +174,35 @@ export const transferToken = async (
     maxRetries: 5,
   })
 
-  // TODO: Confirming the txn sometimes throws a socket error,
-  // not sure what's going on or if we need to do it in the first place
+  // The web3.sendAndConfirmTransaction socket connection occassionally blows up with the error
   // signatureSubscribe error for argument ["your_signature", {"commitment": "finalized"}] INVALID_STATE_ERR
+  // Just going to poll for the txn for now 👇
+  const txn = await getTxn(signature, { maxTries: 10 })
 
-  // const confirmation = await conn.confirmTransaction({
-  //   signature,
-  //   blockhash,
-  //   lastValidBlockHeight,
-  // })
+  if (txn?.meta?.err) {
+    throw new Error(txn.meta.err.toString())
+  }
 
-  // if (confirmation.value.err) {
-  //   throw new Error(confirmation.value.err.toString())
-  // }
+  return txn
+}
 
-  return signature
+export const getTxn = async (
+  signature: string,
+  config?: { maxTries?: number; waitMS?: number },
+): Promise<web3.VersionedTransactionResponse | null> => {
+  const maxTries = config?.maxTries || 1
+  const waitMS = config?.waitMS || 500
+
+  const txn = await conn.getTransaction(signature, {
+    maxSupportedTransactionVersion: 0,
+  })
+
+  const remainingTries = maxTries - 1
+  if (txn || remainingTries === 0) return txn
+
+  await sleep(waitMS)
+
+  return getTxn(signature, { maxTries, waitMS })
 }
 
 export const confirmTxn = async (signature: string) => {

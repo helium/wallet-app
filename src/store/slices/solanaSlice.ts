@@ -36,16 +36,6 @@ export type SolanaState = {
     error?: SerializedError
   }
 }
-const initialPaymentState = {
-  loading: false,
-  error: undefined,
-  success: undefined,
-}
-
-const initialActivityState = {
-  all: {},
-  payment: {},
-}
 
 const initialState: SolanaState = { balances: {}, activity: { data: {} } }
 
@@ -135,12 +125,15 @@ export const getTxns = createAsyncThunk(
 const solanaSlice = createSlice({
   name: 'solana',
   initialState,
-  reducers: {},
+  reducers: {
+    resetPayment: (state) => {
+      state.payment = { success: false, loading: false, error: undefined }
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(readBalances.pending, (state, action) => {
       if (!action.meta.arg?.solanaAddress) return state
-      const prev =
-        state.balances[action.meta.arg?.solanaAddress] || initialPaymentState
+      const prev = state.balances[action.meta.arg?.solanaAddress] || {}
 
       state.balances[action.meta.arg?.solanaAddress] = {
         ...prev,
@@ -156,30 +149,20 @@ const solanaSlice = createSlice({
     })
     builder.addCase(readBalances.rejected, (state, action) => {
       if (!action.meta.arg?.solanaAddress) return state
-      const prev =
-        state.balances[action.meta.arg?.solanaAddress] || initialPaymentState
+      const prev = state.balances[action.meta.arg?.solanaAddress] || {}
       state.balances[action.meta.arg?.solanaAddress] = {
         ...prev,
         loading: false,
       }
     })
     builder.addCase(makePayment.pending, (state, _action) => {
-      state.payment = initialPaymentState
-      state.payment.success = undefined
-      state.payment.loading = true
-      state.payment.error = undefined
+      state.payment = { success: false, loading: true, error: undefined }
     })
     builder.addCase(makePayment.fulfilled, (state, _action) => {
-      state.payment = initialPaymentState
-      state.payment.success = true
-      state.payment.loading = false
-      state.payment.error = undefined
+      state.payment = { success: true, loading: false, error: undefined }
     })
     builder.addCase(makePayment.rejected, (state, action) => {
-      state.payment = initialPaymentState
-      state.payment.success = false
-      state.payment.loading = false
-      state.payment.error = action.error
+      state.payment = { success: false, loading: false, error: action.error }
     })
     builder.addCase(getTxns.pending, (state, _action) => {
       state.activity.loading = true
@@ -199,8 +182,10 @@ const solanaSlice = createSlice({
 
       state.activity = state.activity || {}
       state.activity.data = state.activity.data || {}
-      state.activity.data[address] =
-        state.activity.data[address] || initialActivityState
+      state.activity.data[address] = state.activity.data[address] || {
+        all: {},
+        payment: {},
+      }
 
       const prevAll = state.activity.data[address].all[tokenType]
       const prevPayment = state.activity.data[address].payment[tokenType]
