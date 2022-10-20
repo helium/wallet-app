@@ -4,6 +4,8 @@ import {
   createSlice,
   SerializedError,
 } from '@reduxjs/toolkit'
+import { SignaturesForAddressOptions } from '@solana/web3.js'
+import { first, last } from 'lodash'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity, TokenType } from '../../types/activity'
 import * as solUtils from '../../utils/solanaUtils'
@@ -87,16 +89,46 @@ export const makePayment = createAsyncThunk(
 
 export const getTxns = createAsyncThunk(
   'solana/getTxns',
-  async ({
-    account,
-    tokenType,
-  }: {
-    account: CSAccount
-    tokenType: TokenType
-  }) => {
+  async (
+    {
+      account,
+      tokenType,
+      requestType,
+    }: {
+      account: CSAccount
+      tokenType: TokenType
+      requestType: 'update_head' | 'start_fresh' | 'fetch_more'
+    },
+    { getState },
+  ) => {
     if (!account?.solanaAddress) throw new Error('No solana account found')
 
-    return solUtils.getTransactions(account.solanaAddress, tokenType)
+    const options: SignaturesForAddressOptions = {
+      limit: 20,
+    }
+
+    const { solana } = (await getState()) as {
+      solana: SolanaState
+    }
+    const existing =
+      solana.activity.data[account.solanaAddress]?.all?.[tokenType]
+
+    if (requestType === 'fetch_more') {
+      const lastActivity = last(existing)
+      if (!lastActivity) {
+        throw new Error("Can't fetch more")
+      }
+      options.before = lastActivity.hash
+    } else if (requestType === 'update_head') {
+      const firstActvity = first(existing)
+      if (!firstActvity) {
+        throw new Error("Can't update head")
+      }
+
+      options.until = firstActvity.hash
+    }
+
+    return solUtils.getTransactions(account.solanaAddress, tokenType, options)
   },
 )
 
@@ -153,13 +185,14 @@ const solanaSlice = createSlice({
       state.activity.loading = true
       state.activity.error = undefined
     })
-    builder.addCase(getTxns.fulfilled, (state, action) => {
-      if (!action.meta.arg.account.solanaAddress) return
+    builder.addCase(getTxns.fulfilled, (state, { meta, payload }) => {
+      if (!meta.arg.account.solanaAddress) return
 
       const {
         tokenType,
         account: { solanaAddress: address },
-      } = action.meta.arg
+        requestType,
+      } = meta.arg
 
       state.activity.loading = false
       state.activity.error = undefined
@@ -169,12 +202,40 @@ const solanaSlice = createSlice({
       state.activity.data[address] =
         state.activity.data[address] || initialActivityState
 
-      state.activity.data[address].all[tokenType] = action.payload
-      state.activity.data[address].payment[tokenType] = action.payload
+      const prevAll = state.activity.data[address].all[tokenType]
+      const prevPayment = state.activity.data[address].payment[tokenType]
+
+      switch (requestType) {
+        case 'start_fresh': {
+          state.activity.data[address].all[tokenType] = payload
+          state.activity.data[address].payment[tokenType] = payload
+          break
+        }
+        case 'fetch_more': {
+          state.activity.data[address].all[tokenType] = [...prevAll, ...payload]
+          state.activity.data[address].payment[tokenType] = [
+            ...prevPayment,
+            ...payload,
+          ]
+          break
+        }
+        case 'update_head': {
+          state.activity.data[address].all[tokenType] = [...payload, ...prevAll]
+          state.activity.data[address].payment[tokenType] = [
+            ...payload,
+            ...prevPayment,
+          ]
+          break
+        }
+      }
     })
-    builder.addCase(getTxns.rejected, (state, action) => {
+    builder.addCase(getTxns.rejected, (state, { error, meta }) => {
       state.activity.loading = false
-      state.activity.error = action.error
+
+      // Only store the error if it was a fresh load
+      if (meta.arg.requestType === 'start_fresh') {
+        state.activity.error = error
+      }
     })
   },
 })

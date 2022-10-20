@@ -34,12 +34,24 @@ export default ({
   }, [])
 
   useEffect(() => {
+    const interval = setInterval(() => {
+      if (!account?.address || !isSolana) return
+      dispatch(getTxns({ account, tokenType, requestType: 'update_head' }))
+    }, 5000) // Every 5 seconds update the head of the list
+    return () => clearInterval(interval)
+  }, [account, dispatch, isSolana, tokenType])
+
+  useEffect(() => {
     if (!account?.address || !isSolana) return
 
-    dispatch(getTxns({ account, tokenType }))
+    dispatch(getTxns({ account, tokenType, requestType: 'start_fresh' }))
   }, [account, dispatch, filter, isSolana, tokenType])
 
-  const requestMore = useCallback(() => {}, [])
+  const requestMore = useCallback(() => {
+    if (!account?.address || !isSolana) return
+
+    dispatch(getTxns({ account, tokenType, requestType: 'fetch_more' }))
+  }, [account, dispatch, isSolana, tokenType])
 
   const data = useMemo(() => {
     if (!account?.solanaAddress) return []

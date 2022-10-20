@@ -66,7 +66,7 @@ const AccountsScreen = () => {
     setSelectedBalance(undefined)
   })
 
-  const { data: accountData, error: accountsError } = useAccountQuery({
+  const { data: accountData } = useAccountQuery({
     variables: {
       address: currentAccount?.address || '',
     },
@@ -76,7 +76,7 @@ const AccountsScreen = () => {
     // TODO: adjust this interval if needed
   })
 
-  const [fetchAccount, { error: lazyAccountError }] = useAccountLazyQuery({
+  const [fetchAccount] = useAccountLazyQuery({
     variables: {
       address: currentAccount?.address || '',
     },
@@ -129,18 +129,6 @@ const AccountsScreen = () => {
     if (!currentAccount || !!currentAccount.ledgerDevice) return
     checkSecureAccount(currentAccount.address)
   }, [currentAccount])
-
-  useEffect(() => {
-    if (!accountsError && !lazyAccountError) return
-
-    if (accountsError) {
-      console.warn('accounts', accountsError)
-    }
-
-    if (lazyAccountError) {
-      console.warn('lazyAccount', lazyAccountError)
-    }
-  }, [accountsError, lazyAccountError])
 
   useEffect(() => {
     if (openedNotification && !locked) {

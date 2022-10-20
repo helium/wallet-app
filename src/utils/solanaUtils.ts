@@ -203,11 +203,12 @@ export const confirmTxn = async (signature: string) => {
 export const getTransactions = async (
   walletAddress: string,
   tokenType: TokenType,
+  options?: web3.SignaturesForAddressOptions,
 ) => {
   const account = new web3.PublicKey(walletAddress)
   const mint = tokenTypeToMint(tokenType)
   const ata = await getAssociatedTokenAddress(mint, account)
-  const transactionList = await conn.getSignaturesForAddress(ata)
+  const transactionList = await conn.getSignaturesForAddress(ata, options)
   const sigs = transactionList.map(({ signature }) => signature)
 
   const transactionDetails = await conn.getParsedTransactions(sigs, {
