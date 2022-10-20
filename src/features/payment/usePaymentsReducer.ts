@@ -112,6 +112,7 @@ const initialState = (opts: {
     currencyType: opts.currencyType,
     oraclePrice: opts.oraclePrice,
     netType: opts.netType,
+    l1Network: opts.l1Network,
   }),
   ...opts,
 })
@@ -131,9 +132,18 @@ const calculateFee = (
     currencyType: PaymentCurrencyType
     oraclePrice?: Balance<USDollars>
     netType: NetTypes.NetType
+    l1Network: L1Network
   },
 ) => {
-  const { currencyType, oraclePrice, netType } = opts
+  const { currencyType, oraclePrice, netType, l1Network } = opts
+  if (l1Network === 'solana_dev') {
+    // TODO: Add SOL as a currency type, fee is 5_000 lamports
+    return {
+      dcFee: new Balance(0, CurrencyType.dataCredit),
+      networkFee: new Balance(0, currencyType),
+    }
+  }
+
   const mapped = payments.map(({ amount: balanceAmount, address }) => ({
     payee:
       address && Address.isValid(address)

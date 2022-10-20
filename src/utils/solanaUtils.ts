@@ -15,6 +15,9 @@ import sleep from './sleep'
 
 const conn = new web3.Connection(web3.clusterApiUrl('devnet'))
 
+export const TXN_FEE_IN_SOL = 5000 / web3.LAMPORTS_PER_SOL
+export const TXN_FEE_IN_LAMPORTS = 5000
+
 export const solKeypairFromPK = (heliumPK: Buffer) => {
   return web3.Keypair.fromSecretKey(heliumPK)
 }
@@ -49,9 +52,8 @@ export const readSolanaBalance = async (address: string) => {
   return conn.getBalance(key)
 }
 
-export const transferToken = async (
-  solanaAddress: string,
-  heliumAddress: string,
+export const createTransferTxn = async (
+  signer: web3.Signer,
   payments: {
     payee: string
     balanceAmount: Balance<AnyCurrencyType>
@@ -61,17 +63,6 @@ export const transferToken = async (
 ) => {
   if (!payments.length) throw new Error('No payment found')
 
-  const payer = new web3.PublicKey(solanaAddress)
-  const secureAcct = await getKeypair(heliumAddress)
-
-  if (!secureAcct) {
-    throw new Error('Secure account not found')
-  }
-
-  const signer = {
-    publicKey: payer,
-    secretKey: secureAcct.privateKey,
-  }
   let mint: web3.PublicKey = Mint.HNT
   const [firstPayment] = payments
 
@@ -91,6 +82,8 @@ export const transferToken = async (
     default:
       throw new Error('Token type not found')
   }
+
+  const payer = signer.publicKey
 
   const payerATA = await getOrCreateAssociatedTokenAccount(
     conn,
@@ -135,7 +128,32 @@ export const transferToken = async (
     instructions,
   }).compileToV0Message()
 
-  const transaction = new web3.VersionedTransaction(messageV0)
+  return new web3.VersionedTransaction(messageV0)
+}
+
+export const transferToken = async (
+  solanaAddress: string,
+  heliumAddress: string,
+  payments: {
+    payee: string
+    balanceAmount: Balance<AnyCurrencyType>
+    memo: string
+    max?: boolean
+  }[],
+) => {
+  const payer = new web3.PublicKey(solanaAddress)
+  const secureAcct = await getKeypair(heliumAddress)
+
+  if (!secureAcct) {
+    throw new Error('Secure account not found')
+  }
+
+  const signer = {
+    publicKey: payer,
+    secretKey: secureAcct.privateKey,
+  }
+
+  const transaction = await createTransferTxn(signer, payments)
   transaction.sign([signer])
 
   const signature = await conn.sendTransaction(transaction, {
@@ -183,14 +201,21 @@ export const confirmTxn = async (signature: string) => {
   })
 }
 
+export const getAssocTokenAddress = (
+  walletAddress: string,
+  tokenType: TokenType,
+) => {
+  const account = new web3.PublicKey(walletAddress)
+  const mint = tokenTypeToMint(tokenType)
+  return getAssociatedTokenAddress(mint, account)
+}
+
 export const getTransactions = async (
   walletAddress: string,
   tokenType: TokenType,
   options?: web3.SignaturesForAddressOptions,
 ) => {
-  const account = new web3.PublicKey(walletAddress)
-  const mint = tokenTypeToMint(tokenType)
-  const ata = await getAssociatedTokenAddress(mint, account)
+  const ata = await getAssocTokenAddress(walletAddress, tokenType)
   const transactionList = await conn.getSignaturesForAddress(ata, options)
   const sigs = transactionList.map(({ signature }) => signature)
 
