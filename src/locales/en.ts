@@ -107,7 +107,7 @@ export default {
     filter: 'Filter',
     filterTransactions: 'Filter Transactions',
     filterTypes: {
-      all: 'All Activity (24h)',
+      all: 'All Activity',
       burn: 'Burn Transactions',
       hotspotAndValidators: 'Hotspots & Validators',
       mining: 'Mining Rewards',

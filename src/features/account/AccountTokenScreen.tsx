@@ -36,6 +36,8 @@ import globalStyles from '../../theme/globalStyles'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { useBackgroundStyle } from '../../theme/themeHooks'
 import useNetworkColor from '../../utils/useNetworkColor'
+import { useAppStorage } from '../../storage/AppStorageProvider'
+import ActivityIndicator from '../../components/ActivityIndicator'
 
 const delayedAnimation = FadeIn.delay(300)
 
@@ -54,6 +56,7 @@ const AccountTokenScreen = () => {
   const [headerContainerYPos, setHeaderContainerYPos] = useState(0)
   const listAnimatedPos = useSharedValue<number>(0)
   const listStyle = useBackgroundStyle('primaryBackground')
+  const { l1Network } = useAppStorage()
 
   const toggleFiltersOpen = useCallback(
     (open) => () => {
@@ -128,6 +131,9 @@ const AccountTokenScreen = () => {
   )
 
   const renderHeader = useCallback(() => {
+    const filterName = t(`accountsScreen.filterTypes.${filterState.filter}`)
+    const postFix = l1Network === 'helium' ? ' (24h)' : ''
+
     return (
       <Box
         backgroundColor="primaryBackground"
@@ -147,7 +153,7 @@ const AccountTokenScreen = () => {
           numberOfLines={1}
           adjustsFontSizeToFit
         >
-          {t(`accountsScreen.filterTypes.${filterState.filter}`)}
+          {filterName + postFix}
         </Text>
         <TouchableOpacityBox onPress={toggleFiltersOpen(true)}>
           <Text variant="body1" padding="ms" color="secondaryText">
@@ -156,7 +162,7 @@ const AccountTokenScreen = () => {
         </TouchableOpacityBox>
       </Box>
     )
-  }, [filterState.filter, t, toggleFiltersOpen])
+  }, [filterState.filter, l1Network, t, toggleFiltersOpen])
 
   const keyExtractor = useCallback((item: Activity) => {
     return item.hash
@@ -171,7 +177,6 @@ const AccountTokenScreen = () => {
             <TxnListItem
               onPress={showTransactionDetail}
               item={item}
-              accountAddress={currentAccount?.address}
               now={now}
               isLast={isLast}
             />
@@ -179,14 +184,15 @@ const AccountTokenScreen = () => {
         </FadeInOut>
       )
     },
-    [currentAccount, activityData, now, showTransactionDetail],
+    [activityData, now, showTransactionDetail],
   )
 
   const renderFooter = useCallback(() => {
-    if (activityLoading) {
+    if (l1Network === 'helium' && !activityLoading) {
       return (
         <Box
-          paddingVertical="l"
+          backgroundColor="primaryBackground"
+          paddingVertical="m"
           paddingHorizontal="s"
           flexDirection="row"
           justifyContent="center"
@@ -198,7 +204,7 @@ const AccountTokenScreen = () => {
             textAlign="center"
             maxFontSizeMultiplier={1.3}
           >
-            {t('generic.loading')}
+            {t('accountsScreen.allFilterFooter')}
           </Text>
         </Box>
       )
@@ -206,24 +212,16 @@ const AccountTokenScreen = () => {
 
     return (
       <Box
-        backgroundColor="primaryBackground"
-        paddingVertical="m"
+        paddingVertical="l"
         paddingHorizontal="s"
         flexDirection="row"
         justifyContent="center"
         alignItems="center"
       >
-        <Text
-          variant="body1"
-          color="surfaceSecondaryText"
-          textAlign="center"
-          maxFontSizeMultiplier={1.3}
-        >
-          {t('accountsScreen.allFilterFooter')}
-        </Text>
+        <ActivityIndicator animating={activityLoading} />
       </Box>
     )
-  }, [activityLoading, t])
+  }, [activityLoading, l1Network, t])
 
   const setFilter = useCallback(
     (filterType: FilterType) => () => {
@@ -238,7 +236,9 @@ const AccountTokenScreen = () => {
       <>
         <ListItem
           key="all"
-          title={t('accountsScreen.filterTypes.all')}
+          title={`${t('accountsScreen.filterTypes.all')}${
+            l1Network === 'helium' ? ' (24h)' : ''
+          }`}
           selected={filterState.filter === 'all'}
           onPress={setFilter('all')}
         />
@@ -278,7 +278,7 @@ const AccountTokenScreen = () => {
         )}
       </>
     ),
-    [filterState, route.params.tokenType, setFilter, t],
+    [filterState.filter, l1Network, route.params.tokenType, setFilter, t],
   )
 
   const backgroundComponent = useCallback(
