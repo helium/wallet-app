@@ -1,11 +1,48 @@
-import Address, { NetTypes as NetType, utils } from '@helium/address'
+import Address, {
+  KeyTypes,
+  NetTypes as NetType,
+  NetTypes,
+  utils,
+} from '@helium/address'
 import { CurrencyType } from '@helium/currency'
 import Bcrypt from 'bcrypt-react-native'
+import * as web3 from '@solana/web3.js'
 import { TokenType } from '../generated/graphql'
 
 export type L1Network = 'helium' | 'solana_dev'
 
 export type AccountNetTypeOpt = 'all' | NetType.NetType
+
+export const heliumAddressToSolAddress = (heliumAddress: string) => {
+  if (typeof heliumAddress !== 'string') return ''
+  const heliumPK = Address.fromB58(heliumAddress).publicKey
+  const pk = new web3.PublicKey(heliumPK)
+  return pk.toBase58()
+}
+
+export const solAddressToHeliumAddress = (solanaAddress: string) => {
+  if (typeof solanaAddress !== 'string' || !solAddressIsValid(solanaAddress)) {
+    return ''
+  }
+
+  const solPubKey = new web3.PublicKey(solanaAddress)
+  const heliumAddress = new Address(
+    0,
+    NetTypes.MAINNET,
+    KeyTypes.ECC_COMPACT_KEY_TYPE,
+    solPubKey.toBytes(),
+  )
+  return heliumAddress.b58
+}
+
+export const solAddressIsValid = (address: string) => {
+  try {
+    const pubKey = new web3.PublicKey(address)
+    return web3.PublicKey.isOnCurve(pubKey)
+  } catch {
+    return false
+  }
+}
 
 export const accountCurrencyType = (
   address?: string,
@@ -82,7 +119,12 @@ export const formatAccountAlias = (
 }
 
 export const getJazzSeed = (address: string | undefined) => {
-  if (!address || !Address.isValid(address)) return
+  if (!address || !Address.isValid(address)) {
+    if (address && solAddressIsValid(address)) {
+      console.error('Account icon does not support solana address')
+    }
+    return
+  }
 
   const hexVal = utils.bs58ToBin(address).toString('hex')
   return parseInt(hexVal.slice(-8), 16)

@@ -44,6 +44,8 @@ import { CSAccount } from '../storage/cloudStorage'
 import useBackHandler from '../utils/useBackHandler'
 import { TokenType } from '../generated/graphql'
 import { Payment } from '../features/payment/PaymentItem'
+import { useAppStorage } from '../storage/AppStorageProvider'
+import { solAddressToHeliumAddress } from '../utils/accountUtils'
 
 type ShowOptions = {
   payer?: CSAccount | null
@@ -96,6 +98,7 @@ const HNTKeyboardSelector = forwardRef(
     const [headerHeight, setHeaderHeight] = useState(0)
     const containerStyle = useSafeTopPaddingStyle('android')
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
+    const { l1Network } = useAppStorage()
 
     const {
       oracleDateTime,
@@ -137,6 +140,15 @@ const HNTKeyboardSelector = forwardRef(
         return (payee as CSAccount).address
       }
     }, [payee])
+
+    const payeeHeliumAddress = useMemo(() => {
+      if (!payeeAddress) return
+
+      if (l1Network === 'helium') {
+        return payeeAddress
+      }
+      return solAddressToHeliumAddress(payeeAddress)
+    }, [l1Network, payeeAddress])
 
     const valueAsBalance = useMemo(() => {
       const stripped = value
@@ -281,7 +293,7 @@ const HNTKeyboardSelector = forwardRef(
                   </>
                 )}
                 {payeeAddress && (
-                  <AccountIcon size={40} address={payeeAddress || '1'} />
+                  <AccountIcon size={40} address={payeeHeliumAddress || '1'} />
                 )}
               </Box>
               <Text
@@ -306,6 +318,7 @@ const HNTKeyboardSelector = forwardRef(
         containerStyle,
         handleHeaderLayout,
         payeeAddress,
+        payeeHeliumAddress,
         payer,
         t,
         valueAsBalance,

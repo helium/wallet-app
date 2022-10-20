@@ -22,7 +22,6 @@ import { balanceToString, useBalance } from '../../utils/Balance'
 import { decodeMemoString, DEFAULT_MEMO } from '../../components/MemoInput'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 
 export const TxnTypeKeys = [
   'rewards_v1',
@@ -46,17 +45,11 @@ const useTxn = (
   item?: Activity,
   dateOpts?: { dateFormat?: string; now?: Date },
 ) => {
-  const { currentAccount } = useAccountStorage()
-  const { l1Network } = useAppStorage()
+  const { currentNetworkAddress: address } = useAccountStorage()
   const colors = useColors()
   const { bonesToBalance } = useBalance()
   const { t } = useTranslation()
   const { makers } = useOnboarding()
-
-  const address = useMemo(() => {
-    if (l1Network === 'solana_dev') return currentAccount?.solanaAddress || ''
-    return currentAccount?.address || ''
-  }, [currentAccount, l1Network])
 
   const ticker = useMemo(() => {
     // Get the ticker from the item if it's available

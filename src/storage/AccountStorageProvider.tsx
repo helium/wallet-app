@@ -11,7 +11,12 @@ import React, {
 import { useAsync } from 'react-async-hook'
 import * as SecureStore from 'expo-secure-store'
 import { NetTypes as NetType, NetTypes } from '@helium/address'
-import { accountNetType, AccountNetTypeOpt } from '../utils/accountUtils'
+import {
+  accountNetType,
+  AccountNetTypeOpt,
+  heliumAddressToSolAddress,
+  solAddressToHeliumAddress,
+} from '../utils/accountUtils'
 import {
   createSecureAccount,
   deleteSecureAccount,
@@ -32,10 +37,6 @@ import {
   updateCloudContacts,
 } from './cloudStorage'
 import { removeAccountTag, tagAccount } from './oneSignalStorage'
-import {
-  heliumAddressToSolAddress,
-  solAddressToHeliumAddress,
-} from '../utils/solanaUtils'
 import { useAppStorage } from './AppStorageProvider'
 
 const useAccountStorageHook = () => {
@@ -47,7 +48,12 @@ const useAccountStorageHook = () => {
   const [defaultAccountAddress, setDefaultAccountAddress] = useState<string>()
   const solanaAccountsUpdateComplete = useRef(false)
   const solanaContactsUpdateComplete = useRef(false)
-  const { updateL1Network } = useAppStorage()
+  const { updateL1Network, l1Network } = useAppStorage()
+
+  const currentNetworkAddress = useMemo(() => {
+    if (l1Network === 'helium') return currentAccount?.address
+    if (l1Network === 'solana_dev') return currentAccount?.solanaAddress
+  }, [currentAccount, l1Network])
 
   const { result: restoredAccounts } = useAsync(restoreAccounts, [])
 
@@ -363,20 +369,20 @@ const useAccountStorageHook = () => {
   )
 
   return {
-    accounts,
     accountAddresses,
+    accounts,
     addContact,
-    editContact,
-    deleteContact,
-    defaultAccountAddress,
-    updateDefaultAccountAddress,
     contacts,
     contactsForNetType,
     createSecureAccount,
     currentAccount,
+    currentNetworkAddress,
+    defaultAccountAddress,
+    deleteContact,
+    editContact,
     hasAccounts,
-    reachedAccountLimit,
     mainnetContacts,
+    reachedAccountLimit,
     restored,
     setCurrentAccount,
     signOut,
@@ -385,6 +391,7 @@ const useAccountStorageHook = () => {
     sortedMainnetAccounts,
     sortedTestnetAccounts,
     testnetContacts,
+    updateDefaultAccountAddress,
     upsertAccount,
     upsertAccounts,
   }
@@ -406,6 +413,7 @@ const initialState = {
     address: '',
   }),
   currentAccount: undefined,
+  currentNetworkAddress: '',
   hasAccounts: false,
   reachedAccountLimit: false,
   mainnetContacts: [],

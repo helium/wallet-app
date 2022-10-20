@@ -100,7 +100,7 @@ const useBalanceHook = () => {
     return solanaBalances[solAddress]
   }, [solAddress, solanaBalances])
 
-  const dispatchBalanceUpdate = useCallback(() => {
+  const dispatchSolBalanceUpdate = useCallback(() => {
     if (!currentAccount?.solanaAddress) {
       return
     }
@@ -113,20 +113,20 @@ const useBalanceHook = () => {
     }
 
     if (prevAccount !== currentAccount) {
-      dispatchBalanceUpdate()
+      dispatchSolBalanceUpdate()
       const subId = onAccountChange(
         currentAccount?.solanaAddress,
-        dispatchBalanceUpdate,
+        dispatchSolBalanceUpdate,
       )
       if (accountSubscriptionId.current !== undefined) {
         removeAccountChangeListener(accountSubscriptionId.current)
       }
       accountSubscriptionId.current = subId
     }
-  }, [currentAccount, dispatch, dispatchBalanceUpdate, prevAccount])
+  }, [currentAccount, dispatch, dispatchSolBalanceUpdate, prevAccount])
 
   useAppear(() => {
-    dispatchBalanceUpdate()
+    dispatchSolBalanceUpdate()
   })
 
   useMount(() => {

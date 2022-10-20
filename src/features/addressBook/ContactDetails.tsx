@@ -33,16 +33,16 @@ import {
   AddressBookNavigationProp,
   AddressBookStackParamList,
 } from './addressBookTypes'
-import { accountNetType } from '../../utils/accountUtils'
+import {
+  solAddressIsValid,
+  solAddressToHeliumAddress,
+  accountNetType,
+} from '../../utils/accountUtils'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import AddressExtra from './AddressExtra'
 import useAlert from '../../utils/useAlert'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useIsHotspotOrValidatorQuery } from '../../generated/graphql'
-import {
-  solAddressIsValid,
-  solAddressToHeliumAddress,
-} from '../../utils/solanaUtils'
 import useNetworkColor from '../../utils/useNetworkColor'
 
 const BUTTON_HEIGHT = 55

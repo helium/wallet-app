@@ -7,6 +7,7 @@ import Text from '../../components/Text'
 import Box from '../../components/Box'
 import ActivityIndicator from '../../components/ActivityIndicator'
 import FadeInOut from '../../components/FadeInOut'
+import globalStyles from '../../theme/globalStyles'
 
 type Props = {
   onVideoEnd: () => void
@@ -26,12 +27,14 @@ const PaymentSubmitLoading = ({ onVideoEnd }: Props) => {
       <Box style={StyleSheet.absoluteFill} justifyContent="center">
         <Box aspectRatio={1}>
           {!videoEnded && (
-            <Video
-              resizeMode="contain"
-              source={videoSource}
-              style={StyleSheet.absoluteFill}
-              onEnd={handleVideoEnded}
-            />
+            <FadeInOut style={globalStyles.container} slow>
+              <Video
+                resizeMode="contain"
+                source={videoSource}
+                style={StyleSheet.absoluteFill}
+                onEnd={handleVideoEnded}
+              />
+            </FadeInOut>
           )}
           {videoEnded && (
             <FadeInOut>

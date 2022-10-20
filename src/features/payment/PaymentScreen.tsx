@@ -31,7 +31,11 @@ import {
   HomeStackParamList,
   PaymentRouteParam,
 } from '../home/homeTypes'
-import { accountNetType, formatAccountAlias } from '../../utils/accountUtils'
+import {
+  accountNetType,
+  formatAccountAlias,
+  solAddressIsValid,
+} from '../../utils/accountUtils'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAccountSelector } from '../../components/AccountSelector'
 import TokenSelector, { TokenSelectorRef } from '../../components/TokenSelector'
@@ -52,11 +56,11 @@ import { CSAccount } from '../../storage/cloudStorage'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
 import useAlert from '../../utils/useAlert'
 import { useAppStorage } from '../../storage/AppStorageProvider'
-import { solAddressIsValid } from '../../utils/solanaUtils'
 import { RootState } from '../../store/rootReducer'
 import { useAppDispatch } from '../../store/store'
 import useDisappear from '../../utils/useDisappear'
 import { solanaSlice } from '../../store/slices/solanaSlice'
+import useNetworkColor from '../../utils/useNetworkColor'
 
 type LinkedPayment = {
   amount?: string
@@ -105,6 +109,7 @@ const PaymentScreen = () => {
   const hitSlop = useHitSlop('l')
   const {
     currentAccount,
+    currentNetworkAddress,
     accounts,
     contacts,
     setCurrentAccount,
@@ -159,6 +164,7 @@ const PaymentScreen = () => {
   })
 
   const { showAccountTypes } = useAccountSelector()
+  const backgroundColor = useNetworkColor({ netType: currentAccount?.netType })
 
   const {
     data: submitData,
@@ -208,8 +214,14 @@ const PaymentScreen = () => {
       onTokenSelected(paymentsArr[0].defaultTokenType)
     }
 
-    if (paymentsArr.find((p) => !Address.isValid(p.payee))) {
-      throw new Error('Invalid address found in deep link')
+    if (
+      paymentsArr.find((p) => {
+        if (l1Network === 'helium') return !Address.isValid(p.payee)
+        return !solAddressIsValid(p.payee)
+      })
+    ) {
+      console.error('Invalid address found in deep link')
+      return
     }
 
     dispatch({
@@ -343,8 +355,8 @@ const PaymentScreen = () => {
 
   const selfPay = useMemo(
     () =>
-      paymentState.payments.find((p) => p.address === currentAccount?.address),
-    [currentAccount, paymentState.payments],
+      paymentState.payments.find((p) => p.address === currentNetworkAddress),
+    [currentNetworkAddress, paymentState.payments],
   )
 
   const wrongNetTypePay = useMemo(
@@ -566,14 +578,11 @@ const PaymentScreen = () => {
       prevAddress?: string
       index?: number
     }) => {
-      if (index === undefined || !currentAccount) return
+      if (index === undefined || !currentNetworkAddress) return
 
       const payee =
         l1Network === 'helium' ? contact.address : contact.solanaAddress
-      const payer =
-        l1Network === 'helium'
-          ? currentAccount.address
-          : currentAccount.solanaAddress
+      const payer = currentNetworkAddress
 
       if (!payee || !payer) return
 
@@ -585,7 +594,7 @@ const PaymentScreen = () => {
         payer,
       })
     },
-    [currentAccount, dispatch, l1Network],
+    [currentNetworkAddress, dispatch, l1Network],
   )
 
   const handleAddPayee = useCallback(() => {
@@ -627,12 +636,9 @@ const PaymentScreen = () => {
             ref={tokenSelectorRef}
             onTokenSelected={onTokenSelected}
           >
-            <Box
-              backgroundColor="secondaryBackground"
-              flex={1}
-              style={containerStyle}
-            >
+            <Box flex={1} style={containerStyle}>
               <Box
+                backgroundColor={backgroundColor}
                 flexDirection="row"
                 justifyContent="space-between"
                 alignItems="center"

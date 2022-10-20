@@ -265,10 +265,7 @@ const AccountsScreen = () => {
               backgroundColor="primaryBackground"
             />
           </Animated.View>
-          <AccountTokenList
-            accountData={accountData?.account}
-            loading={accountLoading}
-          />
+          <AccountTokenList loading={accountLoading} />
         </Animated.View>
       )}
       {walletsVisible && (

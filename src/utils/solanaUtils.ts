@@ -1,5 +1,4 @@
 import * as web3 from '@solana/web3.js'
-import Address, { KeyTypes, NetTypes } from '@helium/address'
 import {
   TOKEN_PROGRAM_ID,
   AccountLayout,
@@ -18,37 +17,6 @@ const conn = new web3.Connection(web3.clusterApiUrl('devnet'))
 
 export const solKeypairFromPK = (heliumPK: Buffer) => {
   return web3.Keypair.fromSecretKey(heliumPK)
-}
-
-export const heliumAddressToSolAddress = (heliumAddress: string) => {
-  if (typeof heliumAddress !== 'string') return ''
-  const heliumPK = Address.fromB58(heliumAddress).publicKey
-  const pk = new web3.PublicKey(heliumPK)
-  return pk.toBase58()
-}
-
-export const solAddressToHeliumAddress = (solanaAddress: string) => {
-  if (typeof solanaAddress !== 'string' || !solAddressIsValid(solanaAddress)) {
-    return ''
-  }
-
-  const solPubKey = new web3.PublicKey(solanaAddress)
-  const heliumAddress = new Address(
-    0,
-    NetTypes.MAINNET,
-    KeyTypes.ECC_COMPACT_KEY_TYPE,
-    solPubKey.toBytes(),
-  )
-  return heliumAddress.b58
-}
-
-export const solAddressIsValid = (address: string) => {
-  try {
-    const pubKey = new web3.PublicKey(address)
-    return web3.PublicKey.isOnCurve(pubKey)
-  } catch {
-    return false
-  }
 }
 
 export const airdrop = (address: string) => {
