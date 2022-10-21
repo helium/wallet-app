@@ -14,7 +14,7 @@ PODS:
   - Charts/Core (4.1.0):
     - SwiftAlgorithms (~> 1.0)
   - DoubleConversion (1.1.6)
-  - EXApplication (4.0.2):
+  - EXApplication (4.2.2):
     - ExpoModulesCore
   - EXBarCodeScanner (11.4.0):
     - EXImageLoader
@@ -25,27 +25,28 @@ PODS:
     - ExpoModulesCore
   - EXConstants (13.2.4):
     - ExpoModulesCore
-  - EXErrorRecovery (3.0.5):
+  - EXErrorRecovery (3.2.0):
     - ExpoModulesCore
-  - EXFileSystem (13.0.3):
+  - EXFileSystem (14.1.0):
     - ExpoModulesCore
-  - EXFont (10.0.5):
+  - EXFont (10.2.1):
     - ExpoModulesCore
   - EXImageLoader (3.2.0):
     - ExpoModulesCore
     - React-Core
-  - EXKeepAwake (10.0.2):
-    - ExpoModulesCore
   - EXLocalAuthentication (12.3.0):
     - ExpoModulesCore
   - EXPermissions (13.2.0):
     - ExpoModulesCore
-  - Expo (43.0.5):
+  - Expo (46.0.16):
     - ExpoModulesCore
   - ExpoHaptics (11.3.0):
     - ExpoModulesCore
-  - ExpoModulesCore (0.4.10):
+  - ExpoKeepAwake (10.2.0):
+    - ExpoModulesCore
+  - ExpoModulesCore (0.11.8):
     - React-Core
+    - ReactCommon/turbomodule/core
   - EXSecureStore (11.3.0):
     - ExpoModulesCore
   - EXSplashScreen (0.16.2):
@@ -408,7 +409,7 @@ PODS:
     - React
   - RNReactNativeSharedGroupPreferences (1.1.23):
     - React
-  - RNReanimated (2.9.1):
+  - RNReanimated (2.11.0):
     - DoubleConversion
     - FBLazyVector
     - FBReactNativeSpec
@@ -468,11 +469,11 @@ DEPENDENCIES:
   - EXFileSystem (from `../node_modules/expo-file-system/ios`)
   - EXFont (from `../node_modules/expo-font/ios`)
   - EXImageLoader (from `../node_modules/expo-image-loader/ios`)
-  - EXKeepAwake (from `../node_modules/expo-keep-awake/ios`)
   - EXLocalAuthentication (from `../node_modules/expo-local-authentication/ios`)
   - EXPermissions (from `../node_modules/expo-permissions/ios`)
-  - Expo (from `../node_modules/expo/ios`)
+  - Expo (from `../node_modules/expo`)
   - ExpoHaptics (from `../node_modules/expo-haptics/ios`)
+  - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core/ios`)
   - EXSecureStore (from `../node_modules/expo-secure-store/ios`)
   - EXSplashScreen (from `../node_modules/expo-splash-screen/ios`)
@@ -578,16 +579,16 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-font/ios"
   EXImageLoader:
     :path: "../node_modules/expo-image-loader/ios"
-  EXKeepAwake:
-    :path: "../node_modules/expo-keep-awake/ios"
   EXLocalAuthentication:
     :path: "../node_modules/expo-local-authentication/ios"
   EXPermissions:
     :path: "../node_modules/expo-permissions/ios"
   Expo:
-    :path: "../node_modules/expo/ios"
+    :path: "../node_modules/expo"
   ExpoHaptics:
     :path: "../node_modules/expo-haptics/ios"
+  ExpoKeepAwake:
+    :path: "../node_modules/expo-keep-awake/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core/ios"
   EXSecureStore:
@@ -723,30 +724,30 @@ SPEC CHECKSUMS:
   BVLinearGradient: 34a999fda29036898a09c6a6b728b0b4189e1a44
   Charts: 354f86803d11d9c35de280587fef50d1af063978
   DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
-  EXApplication: 54fe5bd6268d697771645e8f1aef8b806a65247a
+  EXApplication: e418d737a036e788510f2c4ad6c10a7d54d18586
   EXBarCodeScanner: 8e13bad5d197b4b9a58d16af41f8690875a5f736
   EXCamera: 9f8303a52b2027e007174c2068c2ac76ff41d974
   EXConstants: 7c44785d41d8e959d527d23d29444277a4d1ee73
-  EXErrorRecovery: b0d7582714a2cc896e94a2308a356f94dbf14ef7
-  EXFileSystem: 99aac7962c11c680681819dd9cbca24e20e5b1e7
-  EXFont: 2597c10ac85a69d348d44d7873eccf5a7576ef5e
+  EXErrorRecovery: 74d71ee59f6814315457b09d68e86aa95cc7d05d
+  EXFileSystem: 927e0a8885aa9c49e50fc38eaba2c2389f2f1019
+  EXFont: 06df627203afcb8a3b3152ec06eb2f11f46f0cff
   EXImageLoader: b88e053d760f85a82405b1db2de4abf11978fc9f
-  EXKeepAwake: bf48d7f740a5cd2befed6cf9a49911d385c6c47d
   EXLocalAuthentication: a714f4e7370c4efba4ed4345a55110f22ac3d85f
   EXPermissions: 3dbb869e7f96a5711314f73d48ddc2f28009a7f6
-  Expo: d9588796cd19999da4d440d87bf7eb7ae4dbd608
+  Expo: 7ac824960a6059d6c68e73f432c8e6bf6d92a0ef
   ExpoHaptics: efe9e68e9dfe0d15c183c0c70a25f3874124ab9e
-  ExpoModulesCore: c9438f6add0fb7b04b7c64eb97a833d2752a7834
+  ExpoKeepAwake: 0e8f18142e71bbf2c7f6aa66ebed249ba1420320
+  ExpoModulesCore: 39ec590ce622289c060183aba57f77b1e73b4e11
   EXSecureStore: ac4b3c89dd5810528074d9422d5fed5a9e684467
   EXSplashScreen: 799bece80089219b2c989c1082d70f3b00995cda
   FBLazyVector: 3b313c3fb52b597f7a9b430798e6367d2b9f07e5
   FBReactNativeSpec: 99a7ecb7e9665d96f2fea706b0844e2f3117f381
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  glog: 791fe035093b84822da7f0870421a25839ca7870
+  glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
   helium-react-native-sdk: 32c0a7e3abc733a7f3d291013b2db31475fc6980
   MultiplatformBleAdapter: 5a6a897b006764392f9cef785e4360f54fb9477d
   OneSignalXCFramework: 81ceac017a290f23793443323090cfbe888f74ea
-  RCT-Folly: 766adb69dc1d6294bcc94a950a818a87adb3a766
+  RCT-Folly: 0080d0a6ebf2577475bda044aa59e2ca1f909cda
   RCTRequired: 5cf7e7d2f12699724b59f90350257a422eaa9492
   RCTTypeSafety: 3f3ead9673d1ab8bb1aea85b0894ab3220f8f06e
   React: 30a333798d1fcf595e8a4108bbaa0f125a655f4a
@@ -796,7 +797,7 @@ SPEC CHECKSUMS:
   RNLocalize: a64514b46a01375fdfae9349036b4dc7130333b5
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNReactNativeSharedGroupPreferences: de0121a4224c267bc7e9fb16c398f3f087c8da81
-  RNReanimated: 24508aef58348323f891abd6616debf39173f1b9
+  RNReanimated: 4473e1b550c787fa34bde29c935b72e48a52670a
   RNScreens: 6e1ea5787989f92b0671049b808aef64fa1ef98c
   RNShare: be91a5c149585affb02c25b351bd07ba927c7006
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
