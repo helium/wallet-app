@@ -81,6 +81,7 @@
     "constants-browserify": "1.0.0",
     "crypto": "1.0.1",
     "date-fns": "2.29.2",
+    "deprecated-react-native-prop-types": "^2.3.0",
     "dns.js": "1.0.1",
     "domain-browser": "1.2.0",
     "events": "3.3.0",
