@@ -1,9 +1,8 @@
-import * as React from 'react'
+import React, { memo, useCallback } from 'react'
 import {
   createStackNavigator,
   StackNavigationOptions,
 } from '@react-navigation/stack'
-import { memo } from 'react'
 import { ImportAccountStackParamList } from './importAccountNavTypes'
 import AccountImportStartScreen from './AccountImportStartScreen'
 import AccountImportScreen from './AccountImportScreen'
@@ -16,6 +15,7 @@ import CLIAccountNavigator from '../cli-import/CLIAccountNavigator'
 const ImportAccountStack = createStackNavigator<ImportAccountStackParamList>()
 const ImportAccountNavigator = () => {
   const { sortedAccounts } = useAccountStorage()
+
   const screenOptions = React.useMemo(
     () =>
       ({
@@ -23,12 +23,17 @@ const ImportAccountNavigator = () => {
       } as StackNavigationOptions),
     [],
   )
+
+  const AccountImportStart = useCallback(() => {
+    return <AccountImportStartScreen />
+  }, [])
+
   return (
     <ImportAccountStack.Navigator screenOptions={screenOptions}>
       {sortedAccounts.length === 0 && (
         <ImportAccountStack.Screen
           name="AccountImportStartScreen"
-          component={AccountImportStartScreen}
+          component={AccountImportStart}
         />
       )}
       <ImportAccountStack.Screen

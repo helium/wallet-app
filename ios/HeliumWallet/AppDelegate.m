@@ -48,11 +48,7 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
   NSDictionary *initProps = [self prepareInitialProps];
   UIView *rootView = [self.reactDelegate createRootViewWithBridge:bridge moduleName:@"HeliumWallet" initialProperties:nil];
 
-  if (@available(iOS 13.0, *)) {
-    rootView.backgroundColor = [UIColor systemBackgroundColor];
-  } else {
-    rootView.backgroundColor = [UIColor colorWithRed: 0.00 green: 0.00 blue: 0.00 alpha: 1.00];
-  }
+  rootView.backgroundColor = [UIColor colorWithRed: 0.00 green: 0.00 blue: 0.00 alpha: 1.00];
 
   self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
   UIViewController *rootViewController = [self.reactDelegate createRootViewController];
