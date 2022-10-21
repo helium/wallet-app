@@ -23,7 +23,7 @@ PODS:
     - ZXingObjC/PDF417
   - EXCamera (12.3.0):
     - ExpoModulesCore
-  - EXConstants (13.2.3):
+  - EXConstants (13.2.4):
     - ExpoModulesCore
   - EXErrorRecovery (3.0.5):
     - ExpoModulesCore
@@ -31,24 +31,24 @@ PODS:
     - ExpoModulesCore
   - EXFont (10.0.5):
     - ExpoModulesCore
-  - EXHaptics (11.0.3):
-    - ExpoModulesCore
   - EXImageLoader (3.2.0):
     - ExpoModulesCore
     - React-Core
   - EXKeepAwake (10.0.2):
     - ExpoModulesCore
-  - EXLocalAuthentication (12.0.1):
+  - EXLocalAuthentication (12.3.0):
     - ExpoModulesCore
   - EXPermissions (13.2.0):
     - ExpoModulesCore
   - Expo (43.0.5):
     - ExpoModulesCore
+  - ExpoHaptics (11.3.0):
+    - ExpoModulesCore
   - ExpoModulesCore (0.4.10):
     - React-Core
-  - EXSecureStore (11.0.3):
+  - EXSecureStore (11.3.0):
     - ExpoModulesCore
-  - EXSplashScreen (0.13.5):
+  - EXSplashScreen (0.16.2):
     - ExpoModulesCore
     - React-Core
   - FBLazyVector (0.70.3)
@@ -288,7 +288,7 @@ PODS:
     - React-Core
   - react-native-blur (4.2.0):
     - React-Core
-  - react-native-charts-wrapper (0.5.11):
+  - react-native-charts-wrapper (0.5.10):
     - Charts (= 4.1.0)
     - React
     - SwiftyJSON (= 5.0)
@@ -438,7 +438,7 @@ PODS:
   - RNScreens (3.8.0):
     - React-Core
     - React-RCTImage
-  - RNShare (7.9.1):
+  - RNShare (7.9.0):
     - React-Core
   - RNSVG (12.1.1):
     - React
@@ -467,12 +467,12 @@ DEPENDENCIES:
   - EXErrorRecovery (from `../node_modules/expo-error-recovery/ios`)
   - EXFileSystem (from `../node_modules/expo-file-system/ios`)
   - EXFont (from `../node_modules/expo-font/ios`)
-  - EXHaptics (from `../node_modules/expo-haptics/ios`)
   - EXImageLoader (from `../node_modules/expo-image-loader/ios`)
   - EXKeepAwake (from `../node_modules/expo-keep-awake/ios`)
   - EXLocalAuthentication (from `../node_modules/expo-local-authentication/ios`)
   - EXPermissions (from `../node_modules/expo-permissions/ios`)
   - Expo (from `../node_modules/expo/ios`)
+  - ExpoHaptics (from `../node_modules/expo-haptics/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core/ios`)
   - EXSecureStore (from `../node_modules/expo-secure-store/ios`)
   - EXSplashScreen (from `../node_modules/expo-splash-screen/ios`)
@@ -576,8 +576,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-file-system/ios"
   EXFont:
     :path: "../node_modules/expo-font/ios"
-  EXHaptics:
-    :path: "../node_modules/expo-haptics/ios"
   EXImageLoader:
     :path: "../node_modules/expo-image-loader/ios"
   EXKeepAwake:
@@ -588,6 +586,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-permissions/ios"
   Expo:
     :path: "../node_modules/expo/ios"
+  ExpoHaptics:
+    :path: "../node_modules/expo-haptics/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core/ios"
   EXSecureStore:
@@ -726,27 +726,27 @@ SPEC CHECKSUMS:
   EXApplication: 54fe5bd6268d697771645e8f1aef8b806a65247a
   EXBarCodeScanner: 8e13bad5d197b4b9a58d16af41f8690875a5f736
   EXCamera: 9f8303a52b2027e007174c2068c2ac76ff41d974
-  EXConstants: 75c40827af38bd6bfcf69f880a5b45037eeff9c9
+  EXConstants: 7c44785d41d8e959d527d23d29444277a4d1ee73
   EXErrorRecovery: b0d7582714a2cc896e94a2308a356f94dbf14ef7
   EXFileSystem: 99aac7962c11c680681819dd9cbca24e20e5b1e7
   EXFont: 2597c10ac85a69d348d44d7873eccf5a7576ef5e
-  EXHaptics: f52df335f17192e440d9639c971ebcbb3fb91dec
   EXImageLoader: b88e053d760f85a82405b1db2de4abf11978fc9f
   EXKeepAwake: bf48d7f740a5cd2befed6cf9a49911d385c6c47d
-  EXLocalAuthentication: c0ec9379a81c3c823a362382b6a2145e880d9840
+  EXLocalAuthentication: a714f4e7370c4efba4ed4345a55110f22ac3d85f
   EXPermissions: 3dbb869e7f96a5711314f73d48ddc2f28009a7f6
   Expo: d9588796cd19999da4d440d87bf7eb7ae4dbd608
+  ExpoHaptics: efe9e68e9dfe0d15c183c0c70a25f3874124ab9e
   ExpoModulesCore: c9438f6add0fb7b04b7c64eb97a833d2752a7834
-  EXSecureStore: 919bf7c28472862020d2cd7b59b69aae160b5d40
-  EXSplashScreen: 57f329dbf25c5c12800feed79068a056453dc772
+  EXSecureStore: ac4b3c89dd5810528074d9422d5fed5a9e684467
+  EXSplashScreen: 799bece80089219b2c989c1082d70f3b00995cda
   FBLazyVector: 3b313c3fb52b597f7a9b430798e6367d2b9f07e5
   FBReactNativeSpec: 99a7ecb7e9665d96f2fea706b0844e2f3117f381
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
+  glog: 791fe035093b84822da7f0870421a25839ca7870
   helium-react-native-sdk: 32c0a7e3abc733a7f3d291013b2db31475fc6980
   MultiplatformBleAdapter: 5a6a897b006764392f9cef785e4360f54fb9477d
   OneSignalXCFramework: 81ceac017a290f23793443323090cfbe888f74ea
-  RCT-Folly: 0080d0a6ebf2577475bda044aa59e2ca1f909cda
+  RCT-Folly: 766adb69dc1d6294bcc94a950a818a87adb3a766
   RCTRequired: 5cf7e7d2f12699724b59f90350257a422eaa9492
   RCTTypeSafety: 3f3ead9673d1ab8bb1aea85b0894ab3220f8f06e
   React: 30a333798d1fcf595e8a4108bbaa0f125a655f4a
@@ -762,7 +762,7 @@ SPEC CHECKSUMS:
   React-logger: cffcc09e8aba8a3014be8d18da7f922802e9f19e
   react-native-ble-plx: f10240444452dfb2d2a13a0e4f58d7783e92d76e
   react-native-blur: 3e9c8e8e9f7d17fa1b94e1a0ae9fd816675f5382
-  react-native-charts-wrapper: 4461b72f48e737a490e968bf2468cc0fd2281681
+  react-native-charts-wrapper: 4268219d67a6fd7e94453d77d31b38ef1cd23860
   react-native-config: 7cd105e71d903104e8919261480858940a6b9c0e
   react-native-currency-format: cd0a30868fddb004c3b5b5e9b7fe7717876927f5
   react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
@@ -798,7 +798,7 @@ SPEC CHECKSUMS:
   RNReactNativeSharedGroupPreferences: de0121a4224c267bc7e9fb16c398f3f087c8da81
   RNReanimated: 24508aef58348323f891abd6616debf39173f1b9
   RNScreens: 6e1ea5787989f92b0671049b808aef64fa1ef98c
-  RNShare: a5dc3b9c53ddc73e155b8cd9a94c70c91913c43c
+  RNShare: be91a5c149585affb02c25b351bd07ba927c7006
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   SwiftAlgorithms: 38dda4731d19027fdeee1125f973111bf3386b53
   SwiftyJSON: 36413e04c44ee145039d332b4f4e2d3e8d6c4db7

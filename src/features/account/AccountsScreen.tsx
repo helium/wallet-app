@@ -90,6 +90,7 @@ const AccountsScreen = () => {
     },
     skip: !currentAccount?.address,
     fetchPolicy: 'cache-and-network',
+    pollInterval: 30000,
   })
 
   const showChart = useMemo(
