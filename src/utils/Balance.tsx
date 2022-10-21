@@ -22,7 +22,6 @@ import useAppState from 'react-native-appstate-hook'
 import CurrencyFormatter from 'react-native-currency-format'
 import { useSelector } from 'react-redux'
 import {
-  TokenType,
   useAccountLazyQuery,
   useAccountQuery,
   useOracleDataLazyQuery,
@@ -33,6 +32,7 @@ import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
 import { readBalances } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
+import { TokenType } from '../types/activity'
 import { accountCurrencyType } from './accountUtils'
 import { CoinGeckoPrices, getCurrentPrices } from './coinGeckoClient'
 import { decimalSeparator, groupSeparator } from './i18n'
@@ -310,6 +310,20 @@ const useBalanceHook = () => {
     return new Balance(bal, CurrencyType.dataCredit)
   }, [accountData, l1Network, solBalances])
 
+  const solBalance = useMemo(() => {
+    let bal = 0
+    switch (l1Network) {
+      case 'helium':
+        break
+
+      case 'solana_dev':
+        bal = solBalances?.solBalance ? Number(solBalances.solBalance) : 0
+        break
+    }
+
+    return new Balance(bal, CurrencyType.solTokens)
+  }, [l1Network, solBalances])
+
   const toPreferredCurrencyString = useCallback(
     (
       balance?: Balance<DataCredits | NetworkTokens | TestNetworkTokens>,
@@ -366,18 +380,19 @@ const useBalanceHook = () => {
   )
 
   return {
-    dcBalance,
-    mobileBalance,
-    networkBalance,
-    networkStakedBalance,
-    secBalance,
     bonesToBalance,
     currencyTypeFromTokenType,
+    dcBalance,
     dcToNetworkTokens,
     floatToBalance,
     intToBalance,
+    mobileBalance,
+    networkBalance,
+    networkStakedBalance,
     oracleDateTime,
     oraclePrice,
+    secBalance,
+    solBalance,
     toCurrencyString,
     toPreferredCurrencyString,
     toUsd,
@@ -386,25 +401,25 @@ const useBalanceHook = () => {
 }
 
 const initialState = {
-  dcBalance: new Balance(0, CurrencyType.dataCredit),
-  mobileBalance: new Balance(0, CurrencyType.mobile),
-  networkBalance: new Balance(0, CurrencyType.networkToken),
-  networkStakedBalance: new Balance(0, CurrencyType.networkToken),
-  secBalance: new Balance(0, CurrencyType.security),
   bonesToBalance: () => new Balance(0, CurrencyType.networkToken),
   currencyTypeFromTokenType: () => CurrencyType.networkToken,
+  dcBalance: new Balance(0, CurrencyType.dataCredit),
   dcToNetworkTokens: () => undefined,
   floatToBalance: () => undefined,
   intToBalance: () => undefined,
+  mobileBalance: new Balance(0, CurrencyType.mobile),
+  networkBalance: new Balance(0, CurrencyType.networkToken),
+  networkStakedBalance: new Balance(0, CurrencyType.networkToken),
   oracleDateTime: undefined,
   oraclePrice: undefined,
+  secBalance: new Balance(0, CurrencyType.security),
+  solBalance: new Balance(0, CurrencyType.solTokens),
   toCurrencyString: () => new Promise<string>((resolve) => resolve('')),
   toPreferredCurrencyString: () =>
     new Promise<string>((resolve) => resolve('')),
   toUsd: () => 0,
   updateVars: () => undefined,
 }
-
 const BalanceContext =
   createContext<ReturnType<typeof useBalanceHook>>(initialState)
 const { Provider } = BalanceContext

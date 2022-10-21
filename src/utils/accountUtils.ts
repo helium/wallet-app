@@ -7,7 +7,7 @@ import Address, {
 import { CurrencyType } from '@helium/currency'
 import Bcrypt from 'bcrypt-react-native'
 import * as web3 from '@solana/web3.js'
-import { TokenType } from '../generated/graphql'
+import { TokenType } from '../types/activity'
 
 export type L1Network = 'helium' | 'solana_dev'
 

@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next'
 import { NetTypes } from '@helium/address'
 import * as AccountUtils from '../../utils/accountUtils'
 import { useBalance } from '../../utils/Balance'
-import { TokenType } from '../../generated/graphql'
 import Text, { TextProps } from '../../components/Text'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { locale } from '../../utils/i18n'
+import { TokenType } from '../../types/activity'
 
 type Props = {
   tokenType: TokenType

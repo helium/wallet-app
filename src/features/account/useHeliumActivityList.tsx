@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { differenceBy } from 'lodash'
 import {
   Activity,
-  TokenType,
   useAccountActivityLazyQuery,
   useAccountActivityQuery,
   usePendingTxnsLazyQuery,
@@ -12,6 +11,7 @@ import { FilterType } from './AccountActivityFilter'
 import useAppear from '../../utils/useAppear'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useAppStorage } from '../../storage/AppStorageProvider'
+import { TokenType } from '../../types/activity'
 
 const AccountActivityAPIFilters = {
   all: ['all'],

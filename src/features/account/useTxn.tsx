@@ -16,12 +16,13 @@ import animalName from 'angry-purple-tiger'
 import shortLocale from '../../utils/formatDistance'
 import { Color } from '../../theme/theme'
 import { useColors } from '../../theme/themeHooks'
-import { Activity, TokenType } from '../../generated/graphql'
+import { Activity } from '../../generated/graphql'
 import { accountCurrencyType, ellipsizeAddress } from '../../utils/accountUtils'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import { decodeMemoString, DEFAULT_MEMO } from '../../components/MemoInput'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { TokenType } from '../../types/activity'
 
 export const TxnTypeKeys = [
   'rewards_v1',

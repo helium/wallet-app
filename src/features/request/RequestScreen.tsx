@@ -49,11 +49,11 @@ import useHaptic from '../../utils/useHaptic'
 import BackgroundFill from '../../components/BackgroundFill'
 import animateTransition from '../../utils/animateTransition'
 import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
-import { TokenType } from '../../generated/graphql'
 import TokenButton from '../../components/TokenButton'
 import TokenSelector, { TokenSelectorRef } from '../../components/TokenSelector'
 import FadeInOut from '../../components/FadeInOut'
 import { useAppStorage } from '../../storage/AppStorageProvider'
+import { TokenType } from '../../types/activity'
 
 const QR_CONTAINER_SIZE = 220
 

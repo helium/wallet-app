@@ -7,14 +7,11 @@ import Balance, {
 import { PaymentV2 } from '@helium/transactions'
 import { useTransactions } from '../storage/TransactionProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import {
-  TokenType,
-  useAccountLazyQuery,
-  useSubmitTxnMutation,
-} from '../generated/graphql'
+import { useAccountLazyQuery, useSubmitTxnMutation } from '../generated/graphql'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { makePayment } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
+import { TokenType } from '../types/activity'
 
 export default () => {
   const { makePaymentTxn } = useTransactions()

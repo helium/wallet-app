@@ -2,8 +2,8 @@ import { BoxProps } from '@shopify/restyle'
 import React, { memo, useMemo } from 'react'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
-import { TokenType } from '../../generated/graphql'
 import { Theme } from '../../theme/theme'
+import { TokenType } from '../../types/activity'
 import { useBalance } from '../../utils/Balance'
 
 type Props = {

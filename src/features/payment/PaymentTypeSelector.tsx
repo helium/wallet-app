@@ -3,7 +3,6 @@ import React, { memo, useCallback, useMemo } from 'react'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenHNT from '@assets/images/tokenHNT.svg'
 import { BoxProps } from '@shopify/restyle'
-import { TokenType } from '../../generated/graphql'
 import Box from '../../components/Box'
 import { Theme } from '../../theme/theme'
 import Text from '../../components/Text'
@@ -11,6 +10,7 @@ import { useColors } from '../../theme/themeHooks'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { accountCurrencyType } from '../../utils/accountUtils'
+import { TokenType } from '../../types/activity'
 
 type Props = {
   onChangeTokenType: (tokenType: TokenType) => void

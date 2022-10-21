@@ -5,6 +5,7 @@ import Balance, {
   NetworkTokens,
   SecurityTokens,
   AnyCurrencyType,
+  SolTokens,
 } from '@helium/currency'
 import { times } from 'lodash'
 import { useNavigation } from '@react-navigation/native'
@@ -19,7 +20,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { TokenType } from '../../generated/graphql'
 import { useBalance } from '../../utils/Balance'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
@@ -29,6 +29,7 @@ import TokenIcon from './TokenIcon'
 import { useBreakpoints } from '../../theme/themeHooks'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import useLayoutHeight from '../../utils/useLayoutHeight'
+import { TokenType } from '../../types/activity'
 
 type Token = {
   type: TokenType
@@ -48,6 +49,7 @@ const AccountTokenList = ({ loading = false }: Props) => {
     networkBalance,
     networkStakedBalance,
     secBalance,
+    solBalance,
   } = useBalance()
   const navigation = useNavigation<HomeNavigationProp>()
   const [listItemHeight, setListItemHeight] = useLayoutHeight()
@@ -91,6 +93,11 @@ const AccountTokenList = ({ loading = false }: Props) => {
         balance: secBalance as Balance<SecurityTokens>,
         staked: false,
       },
+      {
+        type: TokenType.Sol,
+        balance: solBalance as Balance<SolTokens>,
+        staked: false,
+      },
     ].filter(
       (token) =>
         token?.balance?.integerBalance > 0 ||
@@ -104,10 +111,14 @@ const AccountTokenList = ({ loading = false }: Props) => {
     networkBalance,
     networkStakedBalance,
     secBalance,
+    solBalance,
   ])
 
   const handleNavigation = useCallback(
     (token: Token) => () => {
+      if (token.type === 'sol') {
+        return
+      }
       navigation.navigate('AccountTokenScreen', { tokenType: token.type })
     },
     [navigation],
@@ -138,6 +149,7 @@ const AccountTokenList = ({ loading = false }: Props) => {
         staked: boolean
       }
     }) => {
+      const disabled = token.type === 'sol'
       return (
         <Animated.View entering={FadeIn} exiting={FadeOut}>
           <TouchableOpacityBox
@@ -150,6 +162,7 @@ const AccountTokenList = ({ loading = false }: Props) => {
             paddingVertical="m"
             borderBottomColor="primaryBackground"
             borderBottomWidth={1}
+            disabled={disabled}
           >
             <TokenIcon tokenType={token.type} />
             <Box flex={1} paddingHorizontal="m">
@@ -171,14 +184,16 @@ const AccountTokenList = ({ loading = false }: Props) => {
                   }`}
                 </Text>
               </Box>
-              <AccountTokenCurrencyBalance
-                variant="subtitle4"
-                color="secondaryText"
-                tokenType={token.type}
-                staked={token.staked}
-              />
+              {!disabled && (
+                <AccountTokenCurrencyBalance
+                  variant="subtitle4"
+                  color="secondaryText"
+                  tokenType={token.type}
+                  staked={token.staked}
+                />
+              )}
             </Box>
-            <Arrow color="gray400" />
+            {!disabled && <Arrow color="gray400" />}
           </TouchableOpacityBox>
         </Animated.View>
       )

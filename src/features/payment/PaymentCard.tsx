@@ -15,7 +15,7 @@ import animateTransition from '../../utils/animateTransition'
 import useAlert from '../../utils/useAlert'
 import PaymentSummary from './PaymentSummary'
 import { checkSecureAccount } from '../../storage/secureStorage'
-import { TokenType } from '../../generated/graphql'
+import { TokenType } from '../../types/activity'
 
 type Props = {
   totalBalance: Balance<TestNetworkTokens | NetworkTokens>

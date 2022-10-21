@@ -42,10 +42,10 @@ import HandleBasic from './HandleBasic'
 import { Theme } from '../theme/theme'
 import { CSAccount } from '../storage/cloudStorage'
 import useBackHandler from '../utils/useBackHandler'
-import { TokenType } from '../generated/graphql'
 import { Payment } from '../features/payment/PaymentItem'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { solAddressToHeliumAddress } from '../utils/accountUtils'
+import { TokenType } from '../types/activity'
 
 type ShowOptions = {
   payer?: CSAccount | null

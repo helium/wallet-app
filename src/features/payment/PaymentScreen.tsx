@@ -39,7 +39,6 @@ import {
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAccountSelector } from '../../components/AccountSelector'
 import TokenSelector, { TokenSelectorRef } from '../../components/TokenSelector'
-import { TokenType } from '../../generated/graphql'
 import AccountButton from '../../components/AccountButton'
 import AddressBookSelector, {
   AddressBookRef,
@@ -61,6 +60,7 @@ import { useAppDispatch } from '../../store/store'
 import useDisappear from '../../utils/useDisappear'
 import { solanaSlice } from '../../store/slices/solanaSlice'
 import useNetworkColor from '../../utils/useNetworkColor'
+import { TokenType } from '../../types/activity'
 
 type LinkedPayment = {
   amount?: string

@@ -10,9 +10,9 @@ import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import { Color, Theme } from '../theme/theme'
-import { TokenType } from '../generated/graphql'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import useNetworkColor from '../utils/useNetworkColor'
+import { TokenType } from '../types/activity'
 
 const TokenTypeItem = ({ tokenType }: { tokenType: TokenType }) => {
   const colors = useColors()
