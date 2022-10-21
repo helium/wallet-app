@@ -5,6 +5,7 @@ import Balance, {
   IotTokens,
   MobileTokens,
   NetworkTokens,
+  SolTokens,
   TestNetworkTokens,
   USDollars,
 } from '@helium/currency'
@@ -15,6 +16,7 @@ import { decodeMemoString } from '../../components/MemoInput'
 import { CSAccount } from '../../storage/cloudStorage'
 import { EMPTY_B58_ADDRESS } from '../../storage/TransactionProvider'
 import { L1Network } from '../../utils/accountUtils'
+import { TXN_FEE_IN_LAMPORTS } from '../../utils/solanaUtils'
 import { Payment } from './PaymentItem'
 
 type PaymentCurrencyType =
@@ -90,7 +92,7 @@ type PaymentState = {
   oraclePrice?: Balance<USDollars>
   netType: NetTypes.NetType
   l1Network: L1Network
-  networkFee?: Balance<TestNetworkTokens | NetworkTokens>
+  networkFee?: Balance<TestNetworkTokens | NetworkTokens | SolTokens>
   dcFee?: Balance<DataCredits>
   accountMobileBalance?: Balance<MobileTokens>
   accountNetworkBalance?: Balance<TestNetworkTokens | NetworkTokens>
@@ -137,10 +139,8 @@ const calculateFee = (
 ) => {
   const { currencyType, oraclePrice, netType, l1Network } = opts
   if (l1Network === 'solana_dev') {
-    // TODO: Add SOL as a currency type, fee is 5_000 lamports
     return {
-      dcFee: new Balance(0, CurrencyType.dataCredit),
-      networkFee: new Balance(0, currencyType),
+      networkFee: new Balance(TXN_FEE_IN_LAMPORTS, CurrencyType.solTokens),
     }
   }
 
@@ -195,7 +195,10 @@ const recalculate = (payments: Payment[], state: PaymentState) => {
   const totalMinusPrevPayment = totalAmount.minus(prevPaymentAmount)
   let maxBalance = accountBalance?.minus(totalMinusPrevPayment)
 
-  if (state.currencyType.ticker !== CurrencyType.mobile.ticker) {
+  if (
+    state.l1Network !== 'solana_dev' &&
+    state.currencyType.ticker !== CurrencyType.mobile.ticker
+  ) {
     maxBalance = maxBalance?.minus(networkFee)
   }
 

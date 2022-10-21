@@ -15,7 +15,11 @@ import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
-import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
+import Balance, {
+  NetworkTokens,
+  SolTokens,
+  TestNetworkTokens,
+} from '@helium/currency'
 import { useTranslation } from 'react-i18next'
 import PaymentArrow from '@assets/images/paymentArrow.svg'
 import { LayoutChangeEvent } from 'react-native'
@@ -63,7 +67,7 @@ export type HNTKeyboardRef = {
 
 type Props = {
   tokenType: TokenType
-  networkFee?: Balance<NetworkTokens | TestNetworkTokens>
+  networkFee?: Balance<NetworkTokens | TestNetworkTokens | SolTokens>
   children: ReactNode
   handleVisible?: (visible: boolean) => void
   onConfirmBalance: (opts: {
@@ -120,6 +124,7 @@ const HNTKeyboardSelector = forwardRef(
     }, [containerHeight, headerHeight])
 
     useEffect(() => {
+      if (l1Network === 'solana_dev') return
       const timer = setTimeout(() => {
         if (!oracleDateTime) return '???'
 
@@ -228,7 +233,10 @@ const HNTKeyboardSelector = forwardRef(
 
       let maxBalance: Balance<NetworkTokens | TestNetworkTokens> | undefined
       if (tokenType === TokenType.Hnt) {
-        maxBalance = networkBalance.minus(currentAmount).minus(networkFee)
+        maxBalance = networkBalance.minus(currentAmount)
+        if (l1Network === 'helium') {
+          maxBalance = maxBalance.minus(networkFee)
+        }
       } else {
         maxBalance = mobileBalance.minus(currentAmount)
       }
@@ -256,6 +264,7 @@ const HNTKeyboardSelector = forwardRef(
       tokenType,
       maxEnabled,
       paymentIndex,
+      l1Network,
     ])
 
     const renderBackdrop = useCallback(
@@ -380,6 +389,13 @@ const HNTKeyboardSelector = forwardRef(
         return false
       }
 
+      if (l1Network === 'solana_dev') {
+        if (tokenType === TokenType.Mobile) {
+          return mobileBalance.minus(valueAsBalance).integerBalance >= 0
+        }
+        return networkBalance.minus(valueAsBalance).integerBalance >= 0
+      }
+
       if (tokenType === TokenType.Mobile) {
         // If paying with mobile, they need to have enough mobile to cover the payment
         // and enough hnt to cover the fee
@@ -394,6 +410,7 @@ const HNTKeyboardSelector = forwardRef(
         0
       )
     }, [
+      l1Network,
       mobileBalance,
       networkBalance,
       networkFee,

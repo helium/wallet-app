@@ -230,7 +230,7 @@ export default {
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',
-    fee: '+{{value}} Fee ⓘ',
+    fee: '+{{value}} Fee',
     hntAvailable: '{{amount}} Available',
     validFor: 'valid for {{time}}',
   },

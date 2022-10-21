@@ -15,8 +15,8 @@ import sleep from './sleep'
 
 const conn = new web3.Connection(web3.clusterApiUrl('devnet'))
 
-export const TXN_FEE_IN_SOL = 5000 / web3.LAMPORTS_PER_SOL
 export const TXN_FEE_IN_LAMPORTS = 5000
+export const TXN_FEE_IN_SOL = TXN_FEE_IN_LAMPORTS / web3.LAMPORTS_PER_SOL
 
 export const solKeypairFromPK = (heliumPK: Buffer) => {
   return web3.Keypair.fromSecretKey(heliumPK)

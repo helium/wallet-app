@@ -96,6 +96,7 @@ const PaymentScreen = () => {
     currencyTypeFromTokenType,
     oraclePrice,
     networkBalance,
+    solBalance,
     mobileBalance,
   } = useBalance()
 
@@ -319,6 +320,22 @@ const PaymentScreen = () => {
     if (paymentState.networkFee?.integerBalance === undefined)
       return [false, '']
     try {
+      if (l1Network === 'solana_dev') {
+        const hasEnoughSol =
+          solBalance.minus(paymentState.networkFee).integerBalance >= 0
+        let hasEnoughToken = false
+        if (tokenType === TokenType.Mobile) {
+          hasEnoughToken =
+            mobileBalance.minus(paymentState.totalAmount).integerBalance >= 0
+        } else if (tokenType === TokenType.Hnt) {
+          hasEnoughToken =
+            networkBalance.minus(paymentState.totalAmount).integerBalance >= 0
+        }
+        if (!hasEnoughSol) return [true, solBalance.type.ticker]
+        if (!hasEnoughToken) return [true, paymentState.totalAmount.type.ticker]
+        return [false, '']
+      }
+
       if (tokenType === TokenType.Mobile) {
         // If paying with mobile, they need to have enough mobile to cover the payment
         // and enough hnt to cover the fee
@@ -346,10 +363,12 @@ const PaymentScreen = () => {
       return [false, '']
     }
   }, [
+    l1Network,
     mobileBalance,
     networkBalance,
     paymentState.networkFee,
     paymentState.totalAmount,
+    solBalance,
     tokenType,
   ])
 
