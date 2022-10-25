@@ -203,7 +203,7 @@ const initialState = {
   currency: 'USD',
   enableSolana: false,
   enableTestnet: false,
-  l1Network: 'helium',
+  l1Network: 'helium' as L1Network,
   locked: false,
   pin: undefined,
   requirePinForPayment: false,
