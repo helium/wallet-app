@@ -41,7 +41,7 @@
     "@gorhom/bottom-sheet": "4.4.3",
     "@gorhom/portal": "1.0.14",
     "@helium/address": "4.6.2",
-    "@helium/crypto-react-native": "4.6.2",
+    "@helium/crypto-react-native": "file:.yalc/@helium/crypto-react-native",
     "@helium/currency": "file:.yalc/@helium/currency",
     "@helium/http": "4.7.5",
     "@helium/onboarding": "4.6.2",
@@ -220,8 +220,7 @@
   },
   "resolutions": {
     "@types/react": "17",
-    "@helium/transactions": "4.7.5",
-    "react-native-sodium": "0.4.0"
+    "@helium/transactions": "4.7.5"
   },
   "jest": {
     "preset": "react-native",
