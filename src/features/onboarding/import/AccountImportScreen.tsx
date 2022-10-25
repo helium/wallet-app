@@ -115,14 +115,6 @@ const AccountImportScreen = () => {
     })
   }, [wordCount, words])
 
-  useEffect(() => {
-    flatlistRef.current?.scrollToIndex({
-      index: wordIndex,
-      animated: true,
-      viewPosition: 1.0,
-    })
-  }, [wordIndex])
-
   const handleSelectWord = useCallback(
     (selectedWord: string) => {
       setWords((w) => [
@@ -133,13 +125,19 @@ const AccountImportScreen = () => {
 
       if (wordIndex === wordCount - 1) return
       setWordIndex(wordIndex + 1)
-      flatlistRef?.current?.scrollToIndex({
-        animated: true,
-        index: wordIndex,
-      })
     },
     [wordCount, wordIndex],
   )
+
+  const handleContentSizeChanged = useCallback(() => {
+    flatlistRef.current?.scrollToIndex({
+      index:
+        wordIndex === words.length - 1 || wordIndex < 2
+          ? wordIndex
+          : wordIndex - 1,
+      animated: true,
+    })
+  }, [wordIndex, words.length])
 
   const navToTop = useCallback(() => {
     if (hasAccounts) {
@@ -223,7 +221,6 @@ const AccountImportScreen = () => {
           paddingHorizontal="s"
           onPress={handleWordSelectedAtIndex(index)}
           paddingVertical="lm"
-          // minWidth={wordWidth}
           alignItems="center"
         >
           <Text
@@ -273,16 +270,7 @@ const AccountImportScreen = () => {
           ref={flatlistRef}
           showsHorizontalScrollIndicator={false}
           initialScrollIndex={wordIndex}
-          onScrollToIndexFailed={(info) => {
-            const wait = new Promise((resolve) => setTimeout(resolve, 500))
-            wait.then(() => {
-              flatlistRef.current?.scrollToIndex({
-                index: info.index,
-                animated: true,
-                viewPosition: 1.0,
-              })
-            })
-          }}
+          onContentSizeChange={handleContentSizeChanged}
         />
         <PassphraseAutocomplete
           word={words[wordIndex]}
