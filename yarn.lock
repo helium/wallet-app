@@ -2079,16 +2079,36 @@
     js-sha256 "^0.9.0"
     multiformats "^9.6.4"
 
-"@helium/crypto-react-native@file:.yalc/@helium/crypto-react-native":
-  version "4.6.2"
+"@helium/address@^4.8.0":
+  version "4.8.0"
+  resolved "https://registry.yarnpkg.com/@helium/address/-/address-4.8.0.tgz#86e226585350bb5f004be4dd2eaaad2c4ef103ac"
+  integrity sha512-5/ERXiAQ/pWNBnDrIHp1ktPURyakP5rkZAJEKhUQzBJuyKs3tqzKUvUJ6c/X//vg/LiiaBY2R+TFqjhPBVaIoA==
   dependencies:
-    "@helium/address" "^4.6.2"
+    bs58 "^5.0.0"
+    js-sha256 "^0.9.0"
+    multiformats "^9.6.4"
+
+"@helium/crypto-react-native@4.8.0":
+  version "4.8.0"
+  resolved "https://registry.yarnpkg.com/@helium/crypto-react-native/-/crypto-react-native-4.8.0.tgz#c9145189d8e93940298b6203a2f10e2a612cb930"
+  integrity sha512-HbmJkEQzPceWBRa+rCd+FNI1s2hTCZw9FEEodBBvGgQUp4NhGU6o+/CabgC+A+Y+TsjBTuWpsAP+uWesvpNgfg==
+  dependencies:
+    "@helium/address" "^4.8.0"
     js-sha256 "^0.9.0"
     react-native-sodium "^0.4.0"
     safe-buffer "^5.2.1"
 
-"@helium/currency@^4.7.3", "@helium/currency@file:.yalc/@helium/currency":
+"@helium/currency@4.8.0":
+  version "4.8.0"
+  resolved "https://registry.yarnpkg.com/@helium/currency/-/currency-4.8.0.tgz#d48b73c96510c870200b215a7b6e731ff53079d2"
+  integrity sha512-hEhwxC1i1KaMepo6nHo77SeNXKVLhuZqnjCg1IthmYe4+lvi/76oSqBTInEWa6NVsYTO/lJGDOs/A5b8RHenDA==
+  dependencies:
+    bignumber.js "^9.0.0"
+
+"@helium/currency@^4.7.3":
   version "4.7.3"
+  resolved "https://registry.yarnpkg.com/@helium/currency/-/currency-4.7.3.tgz#141bc29301024a4d749ab768c9b93ef3c9f77166"
+  integrity sha512-5uHffpXUa0jF+DAFvaY4dUGz64/NkNAMpsPx6czziqe83o4KlP6vpy6+QLG6GaFwEmrqgaEJMtWYhkhslIHxLQ==
   dependencies:
     bignumber.js "^9.0.0"
 
