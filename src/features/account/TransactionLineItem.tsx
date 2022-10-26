@@ -5,7 +5,10 @@ import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
-import { ellipsizeAddress } from '../../utils/accountUtils'
+import {
+  ellipsizeAddress,
+  solAddressToHeliumAddress,
+} from '../../utils/accountUtils'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import {
   useColors,
@@ -19,6 +22,7 @@ import useAlert from '../../utils/useAlert'
 import { AddressBookNavigationProp } from '../addressBook/addressBookTypes'
 import { locale } from '../../utils/i18n'
 import AccountIcon from '../../components/AccountIcon'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Props = {
   title: string
@@ -44,6 +48,7 @@ const TransactionLineItem = ({
   const linkHitSlop = useHitSlop('s')
   const copyHitSlop = useVerticalHitSlop('s')
   const { contacts, sortedAccounts } = useAccountStorage()
+  const { l1Network } = useAppStorage()
   const copyText = useCopyText()
   const navigation = useNavigation<AddressBookNavigationProp>()
   const { showOKCancelAlert } = useAlert()
@@ -68,13 +73,26 @@ const TransactionLineItem = ({
     [copyText, isAddress, navTo],
   )
 
+  const heliumAddress = useMemo(() => {
+    if (!isAddress || typeof bodyText === 'number') return
+
+    if (l1Network === 'solana_dev') {
+      return solAddressToHeliumAddress(bodyText)
+    }
+    return bodyText
+  }, [bodyText, isAddress, l1Network])
+
   const account = useCallback(
     (address) => {
-      const contact = contacts.find((c) => c.address === address)
+      let acctAddress = address
+      if (l1Network === 'solana_dev') {
+        acctAddress = solAddressToHeliumAddress(address)
+      }
+      const contact = contacts.find((c) => c.address === acctAddress)
       if (contact) return contact
-      return sortedAccounts.find((c) => c.address === address)
+      return sortedAccounts.find((c) => c.address === acctAddress)
     },
-    [contacts, sortedAccounts],
+    [contacts, l1Network, sortedAccounts],
   )
 
   const body = useMemo(() => {
@@ -141,7 +159,7 @@ const TransactionLineItem = ({
         >
           {isAddress && typeof bodyText === 'string' && (
             <Box marginRight="xs" justifyContent="center">
-              <AccountIcon size={16} address={bodyText} />
+              <AccountIcon size={16} address={heliumAddress} />
             </Box>
           )}
           <Text

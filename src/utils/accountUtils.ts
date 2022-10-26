@@ -29,7 +29,7 @@ export const solAddressToHeliumAddress = (solanaAddress: string) => {
   const heliumAddress = new Address(
     0,
     NetTypes.MAINNET,
-    KeyTypes.ECC_COMPACT_KEY_TYPE,
+    KeyTypes.ED25519_KEY_TYPE,
     solPubKey.toBytes(),
   )
   return heliumAddress.b58
