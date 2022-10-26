@@ -9,6 +9,7 @@ import { first, last } from 'lodash'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity, TokenType } from '../../types/activity'
 import * as solUtils from '../../utils/solanaUtils'
+import walletRestApi from './walletRestApi'
 
 type Balances = {
   hntBalance?: bigint
@@ -66,13 +67,20 @@ type PaymentInput = { account: CSAccount; payments: Payment[] }
 
 export const makePayment = createAsyncThunk(
   'solana/makePayment',
-  async ({ account, payments }: PaymentInput) => {
+  async ({ account, payments }: PaymentInput, { dispatch }) => {
     if (!account?.solanaAddress) throw new Error('No solana account found')
 
-    return solUtils.transferToken(
+    const transfer = await solUtils.transferToken(
       account.solanaAddress,
       account.address,
       payments,
+    )
+
+    return dispatch(
+      walletRestApi.endpoints.postPayment.initiate({
+        txnSignature: transfer.signature,
+        cluster: 'devnet',
+      }),
     )
   },
 )
@@ -159,7 +167,11 @@ const solanaSlice = createSlice({
       state.payment = { success: false, loading: true, error: undefined }
     })
     builder.addCase(makePayment.fulfilled, (state, _action) => {
-      state.payment = { success: true, loading: false, error: undefined }
+      state.payment = {
+        success: true,
+        loading: false,
+        error: undefined,
+      }
     })
     builder.addCase(makePayment.rejected, (state, action) => {
       state.payment = { success: false, loading: false, error: action.error }

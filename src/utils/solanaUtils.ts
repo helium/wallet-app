@@ -163,13 +163,13 @@ export const transferToken = async (
   // The web3.sendAndConfirmTransaction socket connection occassionally blows up with the error
   // signatureSubscribe error for argument ["your_signature", {"commitment": "finalized"}] INVALID_STATE_ERR
   // Just going to poll for the txn for now 👇
-  const txn = await getTxn(signature, { maxTries: 10 })
+  const txn = await getTxn(signature, { maxTries: 20, waitMS: 1000 })
 
   if (txn?.meta?.err) {
     throw new Error(txn.meta.err.toString())
   }
 
-  return txn
+  return { signature, txn }
 }
 
 export const getTxn = async (
