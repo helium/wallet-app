@@ -188,7 +188,7 @@ export const getTxn = async (
 
   await sleep(waitMS)
 
-  return getTxn(signature, { maxTries, waitMS })
+  return getTxn(signature, { maxTries: remainingTries, waitMS })
 }
 
 export const confirmTxn = async (signature: string) => {
