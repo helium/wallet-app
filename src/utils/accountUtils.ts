@@ -14,10 +14,14 @@ export type L1Network = 'helium' | 'solana_dev'
 export type AccountNetTypeOpt = 'all' | NetType.NetType
 
 export const heliumAddressToSolAddress = (heliumAddress: string) => {
-  if (typeof heliumAddress !== 'string') return ''
-  const heliumPK = Address.fromB58(heliumAddress).publicKey
-  const pk = new web3.PublicKey(heliumPK)
-  return pk.toBase58()
+  try {
+    if (typeof heliumAddress !== 'string') return ''
+    const heliumPK = Address.fromB58(heliumAddress).publicKey
+    const pk = new web3.PublicKey(heliumPK)
+    return pk.toBase58()
+  } catch {
+    return ''
+  }
 }
 
 export const solAddressToHeliumAddress = (solanaAddress: string) => {

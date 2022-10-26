@@ -5,6 +5,10 @@ import {
   reducer as solanaStatusReducer,
   solanaStatusApi,
 } from './slices/solanaStatusApi'
+import {
+  reducer as walletRestApiReducer,
+  walletRestApi,
+} from './slices/walletRestApi'
 import solanaReducer, { name as solanaSliceName } from './slices/solanaSlice'
 
 const solanaConfig = {
@@ -16,6 +20,7 @@ const solanaConfig = {
 const reducer = combineReducers({
   [solanaStatusApi.reducerPath]: solanaStatusReducer,
   [solanaSliceName]: persistReducer(solanaConfig, solanaReducer),
+  [walletRestApi.reducerPath]: walletRestApiReducer,
 })
 
 export const rootReducer = (state: RootState, action: AnyAction) => {
