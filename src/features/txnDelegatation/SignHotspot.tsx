@@ -34,7 +34,7 @@ const SignHotspot = () => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const [validated, setValidated] = useState<boolean>()
-  const { accounts, currentAccount } = useAccountStorage()
+  const { accounts } = useAccountStorage()
 
   const linkInvalid = useMemo(() => {
     return !addGatewayTxn && !assertLocationTxn && !transferHotspotTxn
@@ -89,8 +89,10 @@ const SignHotspot = () => {
   )
 
   const handleLink = useCallback(async () => {
+    if (!parsedToken) return
+
     try {
-      const ownerKeypair = await getKeypair(currentAccount?.address || '')
+      const ownerKeypair = await getKeypair(parsedToken.address || '')
 
       const responseParams = {
         status: 'success',
@@ -143,10 +145,10 @@ const SignHotspot = () => {
     }
   }, [
     callback,
-    currentAccount,
     gatewayAddress,
     gatewayTxn,
     locationTxn,
+    parsedToken,
     transferTxn,
   ])
 
