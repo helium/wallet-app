@@ -48,7 +48,6 @@ import { CSAccount } from '../storage/cloudStorage'
 import useBackHandler from '../utils/useBackHandler'
 import { Payment } from '../features/payment/PaymentItem'
 import { useAppStorage } from '../storage/AppStorageProvider'
-import { solAddressToHeliumAddress } from '../utils/accountUtils'
 import { TokenType } from '../types/activity'
 
 type ShowOptions = {
@@ -145,15 +144,6 @@ const HNTKeyboardSelector = forwardRef(
         return (payee as CSAccount).address
       }
     }, [payee])
-
-    const payeeHeliumAddress = useMemo(() => {
-      if (!payeeAddress) return
-
-      if (l1Network === 'helium') {
-        return payeeAddress
-      }
-      return solAddressToHeliumAddress(payeeAddress)
-    }, [l1Network, payeeAddress])
 
     const valueAsBalance = useMemo(() => {
       const stripped = value
@@ -294,7 +284,10 @@ const HNTKeyboardSelector = forwardRef(
               >
                 {payer && (
                   <>
-                    <AccountIcon size={40} address={payer?.address} />
+                    <AccountIcon
+                      size={40}
+                      address={payer?.address || payer?.solanaAddress}
+                    />
 
                     <Box padding="s">
                       <PaymentArrow />
@@ -302,7 +295,7 @@ const HNTKeyboardSelector = forwardRef(
                   </>
                 )}
                 {payeeAddress && (
-                  <AccountIcon size={40} address={payeeHeliumAddress || '1'} />
+                  <AccountIcon size={40} address={payeeAddress || '1'} />
                 )}
               </Box>
               <Text
@@ -327,7 +320,6 @@ const HNTKeyboardSelector = forwardRef(
         containerStyle,
         handleHeaderLayout,
         payeeAddress,
-        payeeHeliumAddress,
         payer,
         t,
         valueAsBalance,
