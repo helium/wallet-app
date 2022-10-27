@@ -1,62 +1,53 @@
+import { Ticker } from '@helium/currency'
+
 export type Activity = {
-  account?: string
-  address?: string
-  amount?: number
-  amountToSeller?: number
-  buyer?: string
-  elevation?: number
-  endEpoch?: number
-  fee?: number
-  gain?: number
-  gateway?: string
+  account?: null | string
+  address?: null | string
+  amount?: null | number
+  amountToSeller?: null | number
+  buyer?: null | string
+  elevation?: null | number
+  endEpoch?: null | number
+  fee?: null | number
+  gain?: null | number
+  gateway?: null | string
   hash: string
-  height?: number
-  lat?: number
-  lng?: number
-  location?: string
-  memo?: string
-  newAddress?: string
-  newOwner?: string
-  nonce?: number
-  oldAddress?: string
-  oldOwner?: string
-  owner?: string
-  payee?: string
-  payer?: string
-  payments?: Array<Payment>
-  pending?: boolean
-  rewards?: Array<Reward>
-  seller?: string
-  stake?: number
-  stakeAmount?: number
-  stakingFee?: number
-  startEpoch?: number
-  time?: number
-  tokenType?: TokenType
+  height?: null | number
+  lat?: null | number
+  lng?: null | number
+  location?: null | string
+  memo?: null | string
+  newAddress?: null | string
+  newOwner?: null | string
+  nonce?: null | number
+  oldAddress?: null | string
+  oldOwner?: null | string
+  owner?: null | string
+  payee?: null | string
+  payer?: null | string
+  payments?: null | Array<Payment>
+  pending?: null | boolean
+  rewards?: null | Array<Reward>
+  seller?: null | string
+  stake?: null | number
+  stakeAmount?: null | number
+  stakingFee?: null | number
+  startEpoch?: null | number
+  time?: null | number
+  tokenType?: null | Ticker
   type: string
 }
 
 export type Payment = {
-  __typename?: 'Payment'
   amount: number
-  memo?: string
+  memo?: null | string
   payee: string
-  tokenType?: TokenType
+  tokenType?: null | Ticker
 }
 
 export type Reward = {
-  __typename?: 'Reward'
-  account?: string
+  account?: null | string
   amount: number
-  gateway?: string
+  gateway?: null | string
   type: string
-}
-
-export enum TokenType {
-  Dc = 'dc',
-  Hnt = 'hnt',
-  Hst = 'hst',
-  Iot = 'iot',
-  Mobile = 'mobile',
-  Sol = 'sol',
 }

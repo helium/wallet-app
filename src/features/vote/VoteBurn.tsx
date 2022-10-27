@@ -174,7 +174,7 @@ const VoteBurn = () => {
     return memoValid && errors.length === 0
   }, [errors.length, memo])
 
-  if (account.netType !== NetType.MAINNET || l1Network === 'solana_dev') {
+  if (account.netType !== NetType.MAINNET || l1Network === 'solana') {
     throw new Error('Only helium mainnet supported for voting')
   }
 

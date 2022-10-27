@@ -3,6 +3,7 @@ import React, { memo, useCallback, useMemo } from 'react'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenHNT from '@assets/images/tokenHNT.svg'
 import { BoxProps } from '@shopify/restyle'
+import { Ticker } from '@helium/currency'
 import Box from '../../components/Box'
 import { Theme } from '../../theme/theme'
 import Text from '../../components/Text'
@@ -10,47 +11,41 @@ import { useColors } from '../../theme/themeHooks'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { accountCurrencyType } from '../../utils/accountUtils'
-import { TokenType } from '../../types/activity'
 
 type Props = {
-  onChangeTokenType: (tokenType: TokenType) => void
-  tokenType: TokenType
+  onChangeTokenType: (ticker: Ticker) => void
+  ticker: Ticker
 } & BoxProps<Theme>
 
 const TokenTypeItem = ({
-  tokenType,
+  ticker,
   selected,
   onPress,
 }: {
-  tokenType: TokenType
+  ticker: Ticker
   selected: boolean
-  onPress: (tokenType: TokenType) => void
+  onPress: (ticker: Ticker) => void
 }) => {
   const { currentAccount } = useAccountStorage()
   const colors = useColors()
   const color = useCallback(
     (isIcon = true) => {
       const selectedColor =
-        tokenType === TokenType.Mobile && isIcon
-          ? 'blueBright500'
-          : 'primaryText'
+        ticker === 'MOBILE' && isIcon ? 'blueBright500' : 'primaryText'
       return selected ? selectedColor : 'secondaryIcon'
     },
-    [selected, tokenType],
+    [selected, ticker],
   )
-  const handlePress = useCallback(
-    () => onPress(tokenType),
-    [onPress, tokenType],
-  )
+  const handlePress = useCallback(() => onPress(ticker), [onPress, ticker])
 
   const title = useMemo(
-    () => accountCurrencyType(currentAccount?.address, tokenType).ticker,
-    [currentAccount, tokenType],
+    () => accountCurrencyType(currentAccount?.address, ticker).ticker,
+    [currentAccount, ticker],
   )
 
   return (
     <TouchableOpacityBox alignItems="center" onPress={handlePress}>
-      {tokenType === TokenType.Hnt ? (
+      {ticker === 'HNT' ? (
         <TokenHNT color={colors[color()]} />
       ) : (
         <TokenMOBILE color={colors[color()]} />
@@ -72,7 +67,7 @@ const TokenTypeItem = ({
 
 const PaymentTypeSelector = ({
   onChangeTokenType,
-  tokenType,
+  ticker: tokenType,
   ...boxProps
 }: Props) => {
   return (
@@ -84,14 +79,14 @@ const PaymentTypeSelector = ({
         borderBottomWidth={1}
       >
         <TokenTypeItem
-          tokenType={TokenType.Hnt}
-          selected={tokenType === TokenType.Hnt}
+          ticker="HNT"
+          selected={tokenType === 'HNT'}
           onPress={onChangeTokenType}
         />
         <Box marginRight="lx" />
         <TokenTypeItem
-          tokenType={TokenType.Mobile}
-          selected={tokenType === TokenType.Mobile}
+          ticker="MOBILE"
+          selected={tokenType === 'MOBILE'}
           onPress={onChangeTokenType}
         />
       </Box>

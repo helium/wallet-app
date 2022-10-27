@@ -22,7 +22,7 @@ const AccountListItem = ({ selected, account, onPress, disabled }: Props) => {
   const handlePress = useCallback(() => onPress?.(account), [account, onPress])
 
   const address = useMemo(() => {
-    if (l1Network === 'solana_dev' && account.solanaAddress) {
+    if (l1Network === 'solana' && account.solanaAddress) {
       return account.solanaAddress
     }
     return account.address

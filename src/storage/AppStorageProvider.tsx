@@ -7,6 +7,7 @@ import React, {
 } from 'react'
 import { useAsync } from 'react-async-hook'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { Cluster } from '@solana/web3.js'
 import { Intervals } from '../features/settings/useAuthIntervals'
 import { getSecureItem, storeSecureItem } from './secureStorage'
 import { L1Network } from '../utils/accountUtils'
@@ -28,6 +29,7 @@ const useAppStorageHook = () => {
   const [convertToCurrency, setConvertToCurrency] = useState(false)
   const [enableTestnet, setEnableTestnet] = useState(false)
   const [enableSolana, setEnableSolana] = useState(false)
+  const [solanaNetwork, setSolanaNetwork] = useState<Cluster>('devnet')
   const [l1Network, setL1Network] = useState<L1Network>('helium')
   const [scannedAddress, setScannedAddress] = useState<string>()
   const [voteTutorialShown, setVoteTutorialShown] = useState(false)
@@ -45,6 +47,9 @@ const useAppStorageHook = () => {
       const nextConvertToCurrency = await getSecureItem('convertToCurrency')
       const nextEnableTestnet = await getSecureItem('enableTestnet')
       const nextEnableSolana = await getSecureItem('enableSolana')
+      const nextSolanaNetwork = (await getSecureItem(
+        'solanaNetwork',
+      )) as Cluster | null
       const nextL1Network = (await getSecureItem(
         'l1Network',
       )) as L1Network | null
@@ -69,6 +74,7 @@ const useAppStorageHook = () => {
       setConvertToCurrency(nextConvertToCurrency === 'true')
       setEnableTestnet(nextEnableTestnet === 'true')
       setEnableSolana(nextEnableSolana === 'true')
+      setSolanaNetwork(nextSolanaNetwork || 'devnet')
       setL1Network(nextL1Network || 'helium')
       setVoteTutorialShown(nextVoteShown === 'true')
       setShowNumericChange(nextShowNumericChange === 'true')
@@ -137,6 +143,11 @@ const useAppStorageHook = () => {
     return storeSecureItem('l1Network', nextL1Network)
   }, [])
 
+  const updateSolanaNetwork = useCallback(async (nextSolNetwork: Cluster) => {
+    setSolanaNetwork(nextSolNetwork)
+    return storeSecureItem('solanaNetwork', nextSolNetwork)
+  }, [])
+
   const updateEnableSolana = useCallback(
     async (nextEnableSolana: boolean) => {
       if (nextEnableSolana === false) {
@@ -182,6 +193,7 @@ const useAppStorageHook = () => {
     setScannedAddress,
     setVoteTutorialCompleted,
     showNumericChange,
+    solanaNetwork,
     toggleConvertToCurrency,
     updateAuthInterval,
     updateConvertToCurrency,
@@ -193,6 +205,7 @@ const useAppStorageHook = () => {
     updatePin,
     updateRequirePinForPayment,
     updateShowNumericChange,
+    updateSolanaNetwork,
     voteTutorialShown,
   }
 }
@@ -210,6 +223,7 @@ const initialState = {
   scannedAddress: undefined,
   setScannedAddress: () => undefined,
   setVoteTutorialCompleted: () => new Promise<void>((resolve) => resolve()),
+  solanaNetwork: 'devnet' as Cluster,
   toggleConvertToCurrency: async () => undefined,
   updateAuthInterval: async () => undefined,
   updateConvertToCurrency: async () => undefined,
@@ -220,6 +234,7 @@ const initialState = {
   updateLocked: async () => undefined,
   updatePin: async () => undefined,
   updateRequirePinForPayment: async () => undefined,
+  updateSolanaNetwork: async () => undefined,
   voteTutorialShown: false,
   updateShowNumericChange: async () => undefined,
   showNumericChange: false,

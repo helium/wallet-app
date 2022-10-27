@@ -22,9 +22,11 @@ import ShareIcon from '@assets/images/share.svg'
 import { useDebounce } from 'use-debounce'
 import { useKeyboard } from '@react-native-community/hooks'
 import Balance, {
+  CurrencyType,
   MobileTokens,
   NetworkTokens,
   TestNetworkTokens,
+  Ticker,
 } from '@helium/currency'
 import { NetTypes as NetType } from '@helium/address'
 import QRCode from 'react-native-qrcode-svg'
@@ -41,7 +43,7 @@ import {
   useOpacity,
   useSpacing,
 } from '../../theme/themeHooks'
-import { balanceToString, useBalance } from '../../utils/Balance'
+import { balanceToString } from '../../utils/Balance'
 import AccountButton from '../../components/AccountButton'
 import { useAccountSelector } from '../../components/AccountSelector'
 import { makePayRequestLink } from '../../utils/linking'
@@ -53,7 +55,6 @@ import TokenButton from '../../components/TokenButton'
 import TokenSelector, { TokenSelectorRef } from '../../components/TokenSelector'
 import FadeInOut from '../../components/FadeInOut'
 import { useAppStorage } from '../../storage/AppStorageProvider'
-import { TokenType } from '../../types/activity'
 
 const QR_CONTAINER_SIZE = 220
 
@@ -80,13 +81,11 @@ const RequestScreen = () => {
   const [hntKeyboardVisible, setHNTKeyboardVisible] = useState(false)
   const [paymentAmount, setPaymentAmount] =
     useState<Balance<NetworkTokens | TestNetworkTokens | MobileTokens>>()
-  const [tokenType, setTokenType] = useState<TokenType>(TokenType.Hnt)
+  const [ticker, setTicker] = useState<Ticker>('HNT')
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const qrRef = useRef<{
     toDataURL: (callback: (url: string) => void) => void
   }>(null)
-
-  const { currencyTypeFromTokenType } = useBalance()
 
   const handleBalance = useCallback(
     (opts: {
@@ -126,9 +125,9 @@ const RequestScreen = () => {
       payee: networkAddress,
       memo: txnMemo,
       balanceAmount: paymentAmount,
-      defaultTokenType: tokenType,
+      defaultTokenType: ticker,
     })
-  }, [memoValid, networkAddress, paymentAmount, tokenType, txnMemo])
+  }, [memoValid, networkAddress, paymentAmount, ticker, txnMemo])
 
   const [qrLink] = useDebounce(link, 500)
 
@@ -203,10 +202,7 @@ const RequestScreen = () => {
     triggerNavHaptic()
   }, [link, showToast, triggerNavHaptic])
 
-  const currencyType = useMemo(
-    () => currencyTypeFromTokenType(tokenType),
-    [currencyTypeFromTokenType, tokenType],
-  )
+  const currencyType = useMemo(() => CurrencyType.fromTicker(ticker), [ticker])
 
   const requestTypeOptions = useMemo(
     (): Array<TabBarOption> => [
@@ -216,22 +212,22 @@ const RequestScreen = () => {
     [t],
   )
 
-  const handleTokenTypeSelected = useCallback(() => {
+  const handleTickerSelected = useCallback(() => {
     tokenSelectorRef?.current?.showTokens()
   }, [])
 
-  const onTokenSelected = useCallback((token: TokenType) => {
-    setTokenType(token)
+  const onTickerSelected = useCallback((tick: Ticker) => {
+    setTicker(tick)
   }, [])
 
   return (
     <HNTKeyboard
-      tokenType={tokenType}
+      ticker={ticker}
       ref={hntKeyboardRef}
       onConfirmBalance={handleBalance}
       handleVisible={setHNTKeyboardVisible}
     >
-      <TokenSelector ref={tokenSelectorRef} onTokenSelected={onTokenSelected}>
+      <TokenSelector ref={tokenSelectorRef} onTokenSelected={onTickerSelected}>
         <Box
           backgroundColor="secondaryBackground"
           flex={1}
@@ -302,9 +298,9 @@ const RequestScreen = () => {
                 backgroundColor="secondary"
                 address={currentAccount?.address}
                 netType={currentAccount?.netType}
-                onPress={handleTokenTypeSelected}
+                onPress={handleTickerSelected}
                 showBubbleArrow
-                tokenType={tokenType}
+                ticker={ticker}
               />
               <Box
                 backgroundColor={

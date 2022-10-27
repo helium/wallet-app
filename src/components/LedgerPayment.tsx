@@ -14,12 +14,13 @@ import { useTranslation } from 'react-i18next'
 import { Edge } from 'react-native-safe-area-context'
 import { PaymentV2 } from '@helium/transactions'
 import Ledger from '@assets/images/ledger.svg'
+import { Ticker } from '@helium/currency'
 import { useColors, useOpacity } from '../theme/themeHooks'
 import SafeAreaBox from './SafeAreaBox'
 import HandleBasic from './HandleBasic'
 import { signLedgerPayment, useLedger } from '../utils/heliumLedger'
 import { SendDetails, useTransactions } from '../storage/TransactionProvider'
-import { TokenType, useAccountLazyQuery } from '../generated/graphql'
+import { useAccountLazyQuery } from '../generated/graphql'
 import Text from './Text'
 import Box from './Box'
 import { LedgerDevice } from '../storage/cloudStorage'
@@ -43,11 +44,11 @@ type Props = {
   children: ReactNode
   onConfirm: (opts: { txn: PaymentV2; txnJson: string }) => void
   onError: (error: Error) => void
-  tokenType: TokenType
+  ticker: Ticker
 }
 const LedgerPaymentSelector = forwardRef(
   (
-    { children, onConfirm, onError, tokenType }: Props,
+    { children, onConfirm, onError, ticker }: Props,
     ref: Ref<LedgerPaymentRef>,
   ) => {
     useImperativeHandle(ref, () => ({ show, hide }))
@@ -91,7 +92,7 @@ const LedgerPaymentSelector = forwardRef(
             paymentDetails: opts.payments,
             speculativeNonce: accountData?.account?.speculativeNonce || 0,
             isLedger: true,
-            tokenType,
+            ticker,
           })
           const payment = await signLedgerPayment(
             nextTransport,
@@ -116,7 +117,7 @@ const LedgerPaymentSelector = forwardRef(
         setIsShowing,
         showOKAlert,
         t,
-        tokenType,
+        ticker,
       ],
     )
 

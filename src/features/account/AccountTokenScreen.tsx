@@ -11,12 +11,12 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated'
 import { Platform, View } from 'react-native'
+import { Ticker } from '@helium/currency'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import BackScreen from '../../components/BackScreen'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import ListItem from '../../components/ListItem'
-import { Activity, TokenType } from '../../generated/graphql'
 import TokenIcon from './TokenIcon'
 import AccountActionBar from './AccountActionBar'
 import useActivityList from './useActivityList'
@@ -38,6 +38,7 @@ import { useBackgroundStyle } from '../../theme/themeHooks'
 import useNetworkColor from '../../utils/useNetworkColor'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import ActivityIndicator from '../../components/ActivityIndicator'
+import { Activity } from '../../types/activity'
 
 const delayedAnimation = FadeIn.delay(300)
 
@@ -58,6 +59,11 @@ const AccountTokenScreen = () => {
   const listStyle = useBackgroundStyle('primaryBackground')
   const { l1Network } = useAppStorage()
 
+  const routeTicker = useMemo(
+    () => route.params.tokenType?.toUpperCase() as Ticker,
+    [route.params.tokenType],
+  )
+
   const toggleFiltersOpen = useCallback(
     (open) => () => {
       setFiltersOpen(open)
@@ -75,7 +81,7 @@ const AccountTokenScreen = () => {
   } = useActivityList({
     account: currentAccount,
     filter: filterState.filter,
-    tokenType: route.params.tokenType,
+    ticker: routeTicker,
   })
 
   const snapPoints = useMemo(() => {
@@ -254,7 +260,7 @@ const AccountTokenScreen = () => {
           onPress={setFilter('mining')}
           selected={filterState.filter === 'mining'}
         />
-        {route.params.tokenType === TokenType.Hnt && (
+        {routeTicker === 'HNT' && (
           <>
             <ListItem
               key="burn"
@@ -278,7 +284,7 @@ const AccountTokenScreen = () => {
         )}
       </>
     ),
-    [filterState.filter, l1Network, route.params.tokenType, setFilter, t],
+    [filterState.filter, l1Network, routeTicker, setFilter, t],
   )
 
   const backgroundComponent = useCallback(
@@ -316,7 +322,7 @@ const AccountTokenScreen = () => {
         padding="none"
         headerBackgroundColor={backgroundColor}
         title={t('accountsScreen.title', {
-          tokenType: route.params.tokenType.toUpperCase(),
+          ticker: routeTicker,
         })}
       >
         <Box
@@ -338,35 +344,32 @@ const AccountTokenScreen = () => {
                   showTicker={false}
                   textVariant="h2"
                   justifyContent="flex-start"
-                  tokenType={route.params.tokenType}
+                  ticker={routeTicker}
                   flex={1}
                 />
                 <AccountTokenCurrencyBalance
-                  tokenType={route.params.tokenType}
+                  ticker={routeTicker}
                   variant="body1"
                   color="secondaryText"
                 />
               </Box>
-              <AccountActionBar tokenType={route.params.tokenType} compact />
+              <AccountActionBar ticker={routeTicker} compact />
             </Box>
           </Animated.View>
           <Animated.View style={bottomHeaderAnimatedStyle}>
             <Box marginVertical="xl">
               <Box alignItems="center" marginBottom="m">
-                <TokenIcon tokenType={route.params.tokenType} size={50} />
+                <TokenIcon ticker={routeTicker} size={50} />
               </Box>
-              <AccountTokenBalance
-                marginTop="s"
-                tokenType={route.params.tokenType}
-              />
+              <AccountTokenBalance marginTop="s" ticker={routeTicker} />
               <AccountTokenCurrencyBalance
-                tokenType={route.params.tokenType}
+                ticker={routeTicker}
                 variant="h4"
                 color="secondaryText"
                 textAlign="center"
                 marginBottom="xl"
               />
-              <AccountActionBar tokenType={route.params.tokenType} />
+              <AccountActionBar ticker={routeTicker} />
             </Box>
           </Animated.View>
           <Box height={topHeaderHeight} />
