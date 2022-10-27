@@ -4,9 +4,7 @@ import { useTranslation } from 'react-i18next'
 import AccountIcon from '../../components/AccountIcon'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 import { balanceToString } from '../../utils/Balance'
-import { solAddressToHeliumAddress } from '../../utils/accountUtils'
 import { Payment } from './PaymentItem'
 
 type Props = {
@@ -29,7 +27,6 @@ const PaymentSummary = ({
   alwaysShowRecipients,
 }: Props) => {
   const { t } = useTranslation()
-  const { l1Network } = useAppStorage()
 
   const total = useMemo(() => balanceToString(totalBalance), [totalBalance])
   const fee = useMemo(
@@ -53,14 +50,10 @@ const PaymentSummary = ({
     const icons = payments
       .slice(0, MAX_ACCOUNT_ICONS)
       .map(({ address }, index) => {
-        const networkAddress =
-          address && l1Network === 'solana_dev'
-            ? solAddressToHeliumAddress(address)
-            : address
         return (
           // eslint-disable-next-line react/no-array-index-key
           <Box key={`${index}.${address}`} style={{ marginLeft: index * -4 }}>
-            <AccountIcon address={networkAddress} size={16} />
+            <AccountIcon address={address} size={16} />
           </Box>
         )
       })
@@ -99,7 +92,7 @@ const PaymentSummary = ({
       )
     }
     return icons
-  }, [l1Network, payments])
+  }, [payments])
 
   return (
     <>
