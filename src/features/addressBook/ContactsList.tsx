@@ -115,7 +115,7 @@ const ContactsList = ({
     let listData = allContacts
     if (searchTerm.trim()) {
       listData = new Fuse(allContacts, {
-        keys: ['alias', 'address'],
+        keys: ['alias', 'address', 'solanaAddress'],
         threshold: 0.3,
         fieldNormWeight: 1,
       })
