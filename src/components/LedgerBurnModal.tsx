@@ -31,7 +31,7 @@ type ShowOptions = {
   accountIndex: number
 }
 
-export type LedgerBurnRef = {
+export type LedgerBurnModalRef = {
   show: (opts: ShowOptions) => void
   hide: () => void
 }
@@ -43,10 +43,10 @@ type Props = {
   title: string
   subtitle: string
 }
-const LedgerBurn = forwardRef(
+const LedgerBurnModal = forwardRef(
   (
     { children, onConfirm, onError, title, subtitle }: Props,
-    ref: Ref<LedgerBurnRef>,
+    ref: Ref<LedgerBurnModalRef>,
   ) => {
     useImperativeHandle(ref, () => ({ show, hide }))
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
@@ -150,4 +150,4 @@ const LedgerBurn = forwardRef(
   },
 )
 
-export default memo(LedgerBurn)
+export default memo(LedgerBurnModal)

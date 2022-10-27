@@ -6,7 +6,9 @@ import { ActivityIndicator, Linking } from 'react-native'
 import { useDebouncedCallback } from 'use-debounce/lib'
 import Close from '@assets/images/close.svg'
 import { useAsync } from 'react-async-hook'
-import LedgerBurn, { LedgerBurnRef } from '../../components/LedgerBurn'
+import LedgerBurnModal, {
+  LedgerBurnModalRef,
+} from '../../components/LedgerBurnModal'
 import { encodeMemoString } from '../../components/MemoInput'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -45,7 +47,7 @@ const DappLoginScreen = () => {
   const { makeBurnTxn } = useTransactions()
   const { primaryText } = useColors()
   const { showOKAlert } = useAlert()
-  const ledgerRef = useRef<LedgerBurnRef>(null)
+  const ledgerRef = useRef<LedgerBurnModalRef>(null)
   const hasRequestedPair = useRef(false)
   const ledgerShown = useRef(false)
 
@@ -219,7 +221,7 @@ const DappLoginScreen = () => {
   ])
 
   return (
-    <LedgerBurn
+    <LedgerBurnModal
       ref={ledgerRef}
       onConfirm={ledgerConfirmed}
       onError={handleLedgerError}
@@ -245,7 +247,7 @@ const DappLoginScreen = () => {
         </TouchableOpacityBox>
         {body}
       </SafeAreaBox>
-    </LedgerBurn>
+    </LedgerBurnModal>
   )
 }
 

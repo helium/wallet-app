@@ -7,6 +7,7 @@ import BigNumber from 'bignumber.js'
 import { LinkingOptions } from '@react-navigation/native'
 import { encodeMemoString } from '../components/MemoInput'
 import {
+  BurnRouteParam,
   HomeStackParamList,
   PaymentRouteParam,
 } from '../features/home/homeTypes'
@@ -78,6 +79,20 @@ export const makeMultiPayRequestLink = ({
       { skipNulls: true },
     ),
   ].join('?')
+}
+
+export const parseBurn = (qrContent: string) => {
+  try {
+    const parsedJson = JSON.parse(qrContent)
+    const isBurn =
+      parsedJson.type === 'dc_burn' && parsedJson.amount !== undefined
+
+    if (!isBurn) return false
+
+    return parsedJson as BurnRouteParam
+  } catch (e) {
+    return false
+  }
 }
 
 export const parsePaymentLink = (

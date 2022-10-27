@@ -31,7 +31,9 @@ import BackgroundFill from '../../components/BackgroundFill'
 import PaymentSummary from '../payment/PaymentSummary'
 import SubmitButton from '../../components/SubmitButton'
 import useAlert from '../../utils/useAlert'
-import LedgerBurn, { LedgerBurnRef } from '../../components/LedgerBurn'
+import LedgerBurnModal, {
+  LedgerBurnModalRef,
+} from '../../components/LedgerBurnModal'
 import { checkSecureAccount } from '../../storage/secureStorage'
 
 type Route = RouteProp<VoteNavigatorStackParamList, 'VoteBurn'>
@@ -40,7 +42,7 @@ const VoteBurn = () => {
     params: { voteOutcome, account, memo },
   } = useRoute<Route>()
   const { t } = useTranslation()
-  const ledgerPaymentRef = useRef<LedgerBurnRef>(null)
+  const ledgerPaymentRef = useRef<LedgerBurnModalRef>(null)
   const navigation = useNavigation<VoteNavigatorNavigationProp>()
   const { colorStyle } = useOpacity('primaryText', 0.3)
   const { dcToNetworkTokens } = useBalance()
@@ -172,7 +174,7 @@ const VoteBurn = () => {
     return memoValid && errors.length === 0
   }, [errors.length, memo])
   return (
-    <LedgerBurn
+    <LedgerBurnModal
       ref={ledgerPaymentRef}
       onConfirm={ledgerPaymentConfirmed}
       onError={handleLedgerError}
@@ -285,7 +287,7 @@ const VoteBurn = () => {
         onSuccess={navigation.popToTop}
         actionTitle={t('vote.backToVoting')}
       />
-    </LedgerBurn>
+    </LedgerBurnModal>
   )
 }
 export default reactMemo(VoteBurn)
