@@ -228,7 +228,10 @@ const PaymentScreen = () => {
     dispatch({
       type: 'addLinkedPayments',
       payments: paymentsArr.map((p) => {
-        const contact = contacts.find(({ address }) => address === p.payee)
+        const contact = contacts.find(
+          ({ address, solanaAddress }) =>
+            address === p.payee || solanaAddress === p.payee,
+        )
         return {
           address: p.payee,
           account: contact,

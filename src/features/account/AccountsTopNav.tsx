@@ -25,7 +25,7 @@ type Props = {
 const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
   const { primaryIcon, primaryText } = useColors()
   const navigation = useNavigation<HomeNavigationProp>()
-  const { currentAccount } = useAccountStorage()
+  const { currentAccount, currentNetworkAddress } = useAccountStorage()
   const [barButtonsRightWidth, setBarButtonsRightWidth] = useLayoutWidth()
 
   const accountNetType = useMemo(
@@ -83,7 +83,7 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
         paddingVertical="ms"
         onPress={onPressWallet}
       >
-        <AccountIcon address={currentAccount?.address} size={25} />
+        <AccountIcon address={currentNetworkAddress} size={25} />
         <Text
           variant="subtitle1"
           marginLeft="m"

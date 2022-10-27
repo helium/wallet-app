@@ -15,7 +15,6 @@ import {
   accountNetType,
   AccountNetTypeOpt,
   heliumAddressToSolAddress,
-  solAddressToHeliumAddress,
 } from '../utils/accountUtils'
 import {
   createSecureAccount,
@@ -172,11 +171,16 @@ const useAccountStorageHook = () => {
 
   const contactsForNetType = useCallback(
     (netType: AccountNetTypeOpt) => {
-      if (netType === NetType.MAINNET) return mainnetContacts
-      if (netType === NetType.TESTNET) return testnetContacts
-      return contacts
+      if (l1Network === 'solana_dev') {
+        return mainnetContacts.filter((c) => !!c.solanaAddress)
+      }
+      if (netType === NetType.MAINNET)
+        return mainnetContacts.filter((c) => !!c.address)
+      if (netType === NetType.TESTNET)
+        return testnetContacts.filter((c) => !!c.address)
+      return contacts.filter((c) => !!c.address)
     },
-    [contacts, mainnetContacts, testnetContacts],
+    [contacts, l1Network, mainnetContacts, testnetContacts],
   )
 
   const upsertAccount = useCallback(
@@ -265,11 +269,6 @@ const useAccountStorageHook = () => {
           nextAccount.address,
         )
       }
-      if (nextAccount.solanaAddress && !nextAccount.address) {
-        nextAccount.address = solAddressToHeliumAddress(
-          nextAccount.solanaAddress,
-        )
-      }
       const filtered = contacts.filter((c) => c.address !== nextAccount.address)
       const nextContacts = [...filtered, nextAccount]
       setContacts(nextContacts)
@@ -287,12 +286,9 @@ const useAccountStorageHook = () => {
           nextAccount.address,
         )
       }
-      if (nextAccount.solanaAddress && !nextAccount.address) {
-        nextAccount.address = solAddressToHeliumAddress(
-          nextAccount.solanaAddress,
-        )
-      }
-      const filtered = contacts.filter((c) => c.address !== oldAddress)
+      const filtered = contacts.filter(
+        (c) => c.address !== oldAddress && c.solanaAddress !== oldAddress,
+      )
       const nextContacts = [...filtered, nextAccount]
       setContacts(nextContacts)
 
@@ -303,7 +299,9 @@ const useAccountStorageHook = () => {
 
   const deleteContact = useCallback(
     async (address: string) => {
-      const filtered = contacts.filter((c) => c.address !== address)
+      const filtered = contacts.filter(
+        (c) => c.address !== address && c.solanaAddress !== address,
+      )
       const nextContacts = [...filtered]
       setContacts(nextContacts)
       return updateCloudContacts(nextContacts)
@@ -381,7 +379,6 @@ const useAccountStorageHook = () => {
     deleteContact,
     editContact,
     hasAccounts,
-    mainnetContacts,
     reachedAccountLimit,
     restored,
     setCurrentAccount,
@@ -390,7 +387,6 @@ const useAccountStorageHook = () => {
     sortedAccountsForNetType,
     sortedMainnetAccounts,
     sortedTestnetAccounts,
-    testnetContacts,
     updateDefaultAccountAddress,
     upsertAccount,
     upsertAccounts,
@@ -416,7 +412,6 @@ const initialState = {
   currentNetworkAddress: '',
   hasAccounts: false,
   reachedAccountLimit: false,
-  mainnetContacts: [],
   restored: false,
   setCurrentAccount: () => undefined,
   signOut: async () => undefined,
@@ -424,7 +419,6 @@ const initialState = {
   sortedAccountsForNetType: () => [],
   sortedMainnetAccounts: [],
   sortedTestnetAccounts: [],
-  testnetContacts: [],
   upsertAccount: async () => undefined,
   upsertAccounts: async () => undefined,
 }

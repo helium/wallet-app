@@ -33,11 +33,7 @@ import {
   AddressBookNavigationProp,
   AddressBookStackParamList,
 } from './addressBookTypes'
-import {
-  solAddressIsValid,
-  solAddressToHeliumAddress,
-  accountNetType,
-} from '../../utils/accountUtils'
+import { solAddressIsValid, accountNetType } from '../../utils/accountUtils'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import AddressExtra from './AddressExtra'
 import useAlert from '../../utils/useAlert'
@@ -101,19 +97,24 @@ const ContactDetails = ({ action, contact }: Props) => {
   const isAddingContact = useMemo(() => action === 'add', [action])
   const isEditingContact = useMemo(() => action === 'edit', [action])
 
-  const heliumAddress = useMemo(() => {
-    if (!isSolana) return address
-    return solAddressToHeliumAddress(address)
-  }, [address, isSolana])
-
   const handleCreateNewContact = useCallback(() => {
+    let heliumAddress = ''
+    let solanaAddress = ''
+
+    if (isSolana) {
+      solanaAddress = address
+    } else {
+      heliumAddress = address
+    }
+
     addContact({
       address: heliumAddress,
+      solanaAddress,
       alias: nickname,
       netType: accountNetType(address),
     })
     addressBookNav.goBack()
-  }, [addContact, address, addressBookNav, heliumAddress, nickname])
+  }, [addContact, address, addressBookNav, isSolana, nickname])
 
   const handleDeleteContact = useCallback(async () => {
     const decision = await showOKCancelAlert({
@@ -121,27 +122,20 @@ const ContactDetails = ({ action, contact }: Props) => {
       message: t('editContact.deleteConfirmMessage', { alias: nickname }),
     })
     if (decision) {
-      deleteContact(heliumAddress)
+      deleteContact(address)
       addressBookNav.goBack()
     }
-  }, [
-    addressBookNav,
-    deleteContact,
-    heliumAddress,
-    nickname,
-    showOKCancelAlert,
-    t,
-  ])
+  }, [address, addressBookNav, deleteContact, nickname, showOKCancelAlert, t])
 
   const handleSaveNewContact = useCallback(() => {
     if (!contact) return
     editContact(contact.address, {
-      address: heliumAddress,
+      address,
       alias: nickname,
       netType: accountNetType(address),
     })
     addressBookNav.goBack()
-  }, [contact, editContact, heliumAddress, nickname, address, addressBookNav])
+  }, [contact, editContact, nickname, address, addressBookNav])
 
   const handleKeydown = useCallback(
     (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
@@ -204,7 +198,7 @@ const ContactDetails = ({ action, contact }: Props) => {
       </Box>
       <Box flex={1} alignItems="center" justifyContent="center">
         {addressIsValid && (
-          <AccountIcon address={heliumAddress} size={nickname ? 85 : 122} />
+          <AccountIcon address={address} size={nickname ? 85 : 122} />
         )}
         {!!nickname && (
           <Text variant="h1" marginTop={addressIsValid ? 'm' : 'none'}>
