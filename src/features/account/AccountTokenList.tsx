@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { memo, useCallback, useMemo, useState } from 'react'
 import Balance, {
   DataCredits,
   MobileTokens,
@@ -11,16 +11,28 @@ import Balance, {
 import { times } from 'lodash'
 import { useNavigation } from '@react-navigation/native'
 import Arrow from '@assets/images/listItemRight.svg'
-import { FlatList } from 'react-native-gesture-handler'
-import { LayoutChangeEvent } from 'react-native'
-import Animated, {
-  FadeIn,
-  FadeOut,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import {
+  Dimensions,
+  Image,
+  LayoutChangeEvent,
+  RefreshControl,
+  ViewStyle,
+} from 'react-native'
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
+import { Edge } from 'react-native-safe-area-context'
+import { useAsync } from 'react-async-hook'
+import 'text-encoding-polyfill'
+import {
+  JsonMetadata,
+  Metadata,
+  Metaplex,
+  Nft,
+  NftWithToken,
+  Sft,
+  SftWithToken,
+} from '@metaplex-foundation/js'
+import { Connection, PublicKey } from '@solana/web3.js'
+import CircleLoader from '../../components/CircleLoader'
 import { useBalance } from '../../utils/Balance'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
@@ -30,6 +42,16 @@ import TokenIcon from './TokenIcon'
 import { useBreakpoints } from '../../theme/themeHooks'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import useLayoutHeight from '../../utils/useLayoutHeight'
+import SafeAreaBox from '../../components/SafeAreaBox'
+import {
+  getCollectables,
+  getCollectablesMetadata,
+  groupCollectables,
+} from '../../utils/accountUtils'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import * as Logger from '../../utils/logger'
+
+const breadcrumbOpts = { category: 'AccountTokens' }
 
 type Token = {
   type: Ticker
@@ -39,10 +61,16 @@ type Token = {
 
 type Props = {
   loading?: boolean
+  renderHeader: JSX.Element
+  showCollectables: boolean
 }
 
 const ITEM_HEIGHT = 78
-const AccountTokenList = ({ loading = false }: Props) => {
+const AccountTokenList = ({
+  loading = false,
+  renderHeader,
+  showCollectables,
+}: Props) => {
   const {
     dcBalance,
     mobileBalance,
@@ -51,16 +79,59 @@ const AccountTokenList = ({ loading = false }: Props) => {
     secBalance,
     solBalance,
   } = useBalance()
+  const { currentNetworkAddress } = useAccountStorage()
   const navigation = useNavigation<HomeNavigationProp>()
   const [listItemHeight, setListItemHeight] = useLayoutHeight()
   const breakpoints = useBreakpoints()
-  const height = useSharedValue(0)
-  const { bottom } = useSafeAreaInsets()
+  const COLLECTABLE_HEIGHT = Dimensions.get('window').width / 2
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [collectables, setCollectables] = useState<
+    Metadata<JsonMetadata<string>>[]
+  >([])
+  const [collectablesWithMeta, setCollectableWithMeta] = useState<
+    Record<string, (Sft | SftWithToken | Nft | NftWithToken)[]>
+  >({})
+  const [loadingCollectables, setLoadingCollectables] = useState(false)
 
-  const bottomSpace = useMemo(() => bottom * 2, [bottom])
+  const fetchCollectables = useCallback(async () => {
+    setLoadingCollectables(true)
+    if (!currentNetworkAddress) return
+
+    try {
+      const connection = new Connection(
+        'https://metaplex.devnet.rpcpool.com/',
+        'confirmed',
+      )
+
+      const metaplex = new Metaplex(connection, { cluster: 'devnet' })
+      const pubKey = new PublicKey(currentNetworkAddress)
+      const fetchedCollectables = await getCollectables(pubKey, metaplex)
+      setCollectables(fetchedCollectables)
+      const collectablesWithMetadata = await getCollectablesMetadata(
+        fetchedCollectables,
+        metaplex,
+      )
+      const groupedCollectables = groupCollectables(collectablesWithMetadata)
+      setLoadingCollectables(false)
+      setCollectableWithMeta(groupedCollectables)
+    } catch (e) {
+      Logger.breadcrumb('Solana getCollectables - fail', breadcrumbOpts)
+      Logger.error(e)
+    }
+  }, [currentNetworkAddress])
+
+  useAsync(async () => {
+    if (!showCollectables) {
+      setCollectables([])
+      setCollectableWithMeta({})
+      return
+    }
+
+    await fetchCollectables()
+  }, [currentNetworkAddress, showCollectables])
 
   const tokens = useMemo(() => {
-    if (loading) {
+    if (loading || showCollectables) {
       return []
     }
     const allTokens = [
@@ -112,8 +183,18 @@ const AccountTokenList = ({ loading = false }: Props) => {
     networkBalance,
     networkStakedBalance,
     secBalance,
+    showCollectables,
     solBalance,
   ])
+
+  const flatListItems = useMemo(() => {
+    const toks = !showCollectables ? tokens : []
+    const cols = showCollectables ? Object.keys(collectablesWithMeta) : []
+
+    return [...toks, ...cols]
+  }, [collectablesWithMeta, showCollectables, tokens])
+
+  const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
 
   const handleNavigation = useCallback(
     (token: Token) => () => {
@@ -121,6 +202,15 @@ const AccountTokenList = ({ loading = false }: Props) => {
         return
       }
       navigation.navigate('AccountTokenScreen', { tokenType: token.type })
+    },
+    [navigation],
+  )
+
+  const hanleCollectableNavigation = useCallback(
+    (collection: (Sft | SftWithToken | Nft | NftWithToken)[]) => () => {
+      navigation.navigate('AccountCollectionScreen', {
+        collection,
+      })
     },
     [navigation],
   )
@@ -139,23 +229,136 @@ const AccountTokenList = ({ loading = false }: Props) => {
     [listItemHeight, setListItemHeight],
   )
 
+  const renderCollectable = useCallback(
+    ({ item }: { item: string }) => {
+      if (!showCollectables) return null
+      const { json } = collectablesWithMeta[item][0]
+
+      return (
+        <Animated.View
+          style={{ width: '50%' }}
+          entering={FadeIn}
+          exiting={FadeOut}
+        >
+          <TouchableOpacityBox
+            onLayout={handleItemLayout}
+            marginHorizontal="s"
+            marginVertical="s"
+            alignItems="center"
+            backgroundColor="surface"
+            borderRadius="m"
+            onPress={hanleCollectableNavigation(collectablesWithMeta[item])}
+          >
+            <Image
+              borderRadius={10}
+              style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
+              source={{
+                uri: json?.image,
+              }}
+            />
+            <Box
+              backgroundColor="black"
+              borderRadius="s"
+              padding="s"
+              position="absolute"
+              bottom={8}
+              left={8}
+              flexDirection="row"
+            >
+              <Text
+                variant="body2"
+                fontWeight="bold"
+                color="white"
+                marginRight="s"
+              >
+                {item}
+              </Text>
+              <Text variant="body2" fontWeight="bold" color="grey600">
+                {collectablesWithMeta[item].length}
+              </Text>
+            </Box>
+          </TouchableOpacityBox>
+        </Animated.View>
+      )
+    },
+    [
+      COLLECTABLE_HEIGHT,
+      collectablesWithMeta,
+      handleItemLayout,
+      hanleCollectableNavigation,
+      showCollectables,
+    ],
+  )
+
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true)
+    await fetchCollectables()
+    setIsRefreshing(false)
+  }, [fetchCollectables])
+
+  const renderCollectableSkeletonItem = useCallback(
+    (key: number) => {
+      if (!loadingCollectables) return null
+      return (
+        <Animated.View
+          style={{ width: '50%' }}
+          entering={FadeIn}
+          exiting={FadeOut}
+          key={key}
+        >
+          <TouchableOpacityBox
+            onLayout={handleItemLayout}
+            marginHorizontal="s"
+            marginVertical="s"
+            alignItems="center"
+          >
+            <Box
+              backgroundColor="surface"
+              borderRadius="m"
+              height={COLLECTABLE_HEIGHT}
+              width="100%"
+              justifyContent="center"
+              alignItems="center"
+            >
+              <CircleLoader loaderSize={80} />
+            </Box>
+          </TouchableOpacityBox>
+        </Animated.View>
+      )
+    },
+    [COLLECTABLE_HEIGHT, handleItemLayout, loadingCollectables],
+  )
+
+  // const isCollectable = useCallback((token) => {
+  //   const collectable = token as Sft | SftWithToken | Nft | NftWithToken
+  //   return collectable.address !== undefined
+  // }, [])
+
   const renderItem = useCallback(
     ({
       item: token,
     }: {
       // eslint-disable-next-line react/no-unused-prop-types
-      item: {
-        type: Ticker
-        balance: Balance<AnyCurrencyType>
-        staked: boolean
-      }
+      item:
+        | {
+            type: Ticker
+            balance: Balance<AnyCurrencyType>
+            staked: boolean
+          }
+        | string
     }) => {
-      const disabled = token.type === 'SOL'
+      if (typeof token === 'string') {
+        return renderCollectable({ item: token })
+      }
+
+      const currencyType = token as Token
+
+      const disabled = currencyType.type === 'sol'
       return (
         <Animated.View entering={FadeIn} exiting={FadeOut}>
           <TouchableOpacityBox
             onLayout={handleItemLayout}
-            onPress={handleNavigation(token)}
+            onPress={handleNavigation(currencyType)}
             flexDirection="row"
             minHeight={ITEM_HEIGHT}
             alignItems="center"
@@ -173,15 +376,15 @@ const AccountTokenList = ({ loading = false }: Props) => {
                   color="primaryText"
                   maxFontSizeMultiplier={1.3}
                 >
-                  {token.balance?.toString(7, { showTicker: false })}
+                  {currencyType.balance?.toString(7, { showTicker: false })}
                 </Text>
                 <Text
                   variant="body1"
                   color="secondaryText"
                   maxFontSizeMultiplier={1.3}
                 >
-                  {` ${token?.balance?.type.ticker}${
-                    token.staked ? ' Staked' : ''
+                  {` ${currencyType?.balance?.type.ticker}${
+                    currencyType.staked ? ' Staked' : ''
                   }`}
                 </Text>
               </Box>
@@ -199,17 +402,32 @@ const AccountTokenList = ({ loading = false }: Props) => {
         </Animated.View>
       )
     },
-    [handleItemLayout, handleNavigation],
+    [handleItemLayout, handleNavigation, renderCollectable],
   )
 
   const renderFooter = useCallback(() => {
-    if (!loading) return null
-    return <>{times(maxVisibleTokens).map((i) => renderSkeletonItem(i))}</>
-  }, [loading, maxVisibleTokens])
+    if (!loading && !showCollectables) return null
+    if (!loadingCollectables && showCollectables) return null
 
-  const renderHeader = useCallback(() => {
-    return <Box height={1} backgroundColor="surface" marginBottom="ms" />
-  }, [])
+    if (loadingCollectables && showCollectables) {
+      return (
+        <Box flex={1} flexDirection="row">
+          {times(collectables.length).map((i) =>
+            renderCollectableSkeletonItem(i),
+          )}
+        </Box>
+      )
+    }
+
+    return <>{times(maxVisibleTokens).map((i) => renderSkeletonItem(i))}</>
+  }, [
+    collectables.length,
+    loading,
+    loadingCollectables,
+    maxVisibleTokens,
+    renderCollectableSkeletonItem,
+    showCollectables,
+  ])
 
   const renderSkeletonItem = (key: number) => {
     return (
@@ -243,57 +461,45 @@ const AccountTokenList = ({ loading = false }: Props) => {
     )
   }
 
-  useEffect(() => {
-    let nextHeight = 0
-    if (loading) {
-      nextHeight = ITEM_HEIGHT * maxVisibleTokens + bottomSpace
-    } else if (!listItemHeight) {
-      nextHeight = ITEM_HEIGHT * tokens.length + bottomSpace
-    } else {
-      nextHeight =
-        listItemHeight * Math.min(tokens.length, maxVisibleTokens) + bottomSpace
+  const keyExtractor = useCallback((item: Token | string) => {
+    if (typeof item === 'string') {
+      return item
     }
-    height.value = withTiming(nextHeight, { duration: 700 })
-  }, [
-    bottomSpace,
-    height.value,
-    listItemHeight,
-    loading,
-    maxVisibleTokens,
-    tokens.length,
-  ])
+    const currencyToken = item as Token
 
-  const listStyle = useAnimatedStyle(() => {
-    return { height: height.value }
-  })
-
-  const keyExtractor = useCallback((item: Token) => {
-    if (item.staked) {
-      return [item.type, 'staked'].join('-')
+    if (currencyToken.staked) {
+      return [currencyToken.type, 'staked'].join('-')
     }
-    return item.type
+    return currencyToken.type
   }, [])
 
-  const contentContainerStyle = useMemo(
-    () => ({
-      paddingBottom: bottomSpace,
-    }),
-    [bottomSpace],
-  )
+  const contentContainerStyle = useMemo(() => ({}), [])
 
   return (
-    <Animated.View style={listStyle}>
-      <FlatList
-        scrollEnabled={tokens.length > maxVisibleTokens}
-        data={tokens}
+    <SafeAreaBox edges={safeEdges} backgroundColor="black" flex={1}>
+      <Animated.FlatList
+        scrollEnabled
+        data={flatListItems}
+        numColumns={2}
         contentContainerStyle={contentContainerStyle}
         renderItem={renderItem}
+        columnWrapperStyle={
+          { flexDirection: !showCollectables ? 'column' : 'row' } as ViewStyle
+        }
         ListHeaderComponent={renderHeader}
-        ListFooterComponent={renderFooter}
+        ListEmptyComponent={renderFooter}
         keyExtractor={keyExtractor}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            title=""
+            tintColor="#fff"
+          />
+        }
       />
-    </Animated.View>
+    </SafeAreaBox>
   )
 }
 
-export default AccountTokenList
+export default memo(AccountTokenList)

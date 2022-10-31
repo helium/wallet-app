@@ -14,7 +14,12 @@
     "baseUrl": ".",
     "paths": {
       "@helium/crypto": ["./node_modules/@helium/crypto-react-native"],
-      "@assets": ["./src/assets"]
+      "@assets": ["./src/assets"],
+      "_stream_transform": [
+        "./node_modules/readable-stream/transform"
+      ],
+      "stream": ["./node_modules/readable-stream"],
+      "browserify-zlib": ["./node_modules/browserify-zlib"]
     },
     "resolveJsonModule": true,
     "skipLibCheck": true

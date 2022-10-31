@@ -1,0 +1,13 @@
+diff --git a/node_modules/browserify-zlib/src/index.js b/node_modules/browserify-zlib/src/index.js
+index 032689c..57178e8 100644
+--- a/node_modules/browserify-zlib/src/index.js
++++ b/node_modules/browserify-zlib/src/index.js
+@@ -19,7 +19,7 @@
+ // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+ // USE OR OTHER DEALINGS IN THE SOFTWARE.
+ 
+-var Transform = require('_stream_transform');
++var Transform = require('readable-stream').Transform;
+ 
+ var binding = require('./binding');
+ var util = require('util');

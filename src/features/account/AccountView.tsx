@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { memo, useEffect, useMemo, useState } from 'react'
 import { NetTypes } from '@helium/address'
 import CurrencyFormatter from 'react-native-currency-format'
 import { addMinutes } from 'date-fns'
@@ -167,4 +167,4 @@ const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
   )
 }
 
-export default AccountView
+export default memo(AccountView)

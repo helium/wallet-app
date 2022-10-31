@@ -1,8 +1,18 @@
 import Address, { NetTypes as NetType, utils } from '@helium/address'
 import { CurrencyType, Ticker } from '@helium/currency'
 import Bcrypt from 'bcrypt-react-native'
-import * as web3 from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
+import {
+  JsonMetadata,
+  Metadata,
+  Metaplex,
+  Nft,
+  NftWithToken,
+  Sft,
+  SftWithToken,
+} from '@metaplex-foundation/js'
 import bs58 from 'bs58'
+import { TokenType } from '../types/activity'
 
 export type L1Network = 'helium' | 'solana'
 
@@ -12,7 +22,7 @@ export const heliumAddressToSolAddress = (heliumAddress: string) => {
   try {
     if (typeof heliumAddress !== 'string') return ''
     const heliumPK = Address.fromB58(heliumAddress).publicKey
-    const pk = new web3.PublicKey(heliumPK)
+    const pk = new PublicKey(heliumPK)
     return pk.toBase58()
   } catch {
     return ''
@@ -21,8 +31,8 @@ export const heliumAddressToSolAddress = (heliumAddress: string) => {
 
 export const solAddressIsValid = (address: string) => {
   try {
-    const pubKey = new web3.PublicKey(address)
-    return web3.PublicKey.isOnCurve(pubKey)
+    const pubKey = new PublicKey(address)
+    return PublicKey.isOnCurve(pubKey)
   } catch {
     return false
   }
@@ -124,4 +134,64 @@ export const getJazzSeed = (address: string | undefined) => {
   }
 
   return parseInt(hexVal.slice(-8), 16)
+}
+
+/**
+ * Returns the account's collectables
+ * @param pubKey public key of the account
+ * @param metaplex metaplex connection
+ * @returns collectables
+ */
+export const getCollectables = async (
+  pubKey: PublicKey,
+  metaplex: Metaplex,
+) => {
+  const collectables = (await metaplex
+    .nfts()
+    .findAllByOwner({ owner: pubKey })
+    .run()) as Metadata<JsonMetadata<string>>[]
+
+  return collectables
+}
+
+/**
+ * Returns the account's collectables with metadata
+ * @param collectables collectables without metadata
+ * @param metaplex metaplex connection
+ * @returns collectables with metadata
+ */
+export const getCollectablesMetadata = async (
+  collectables: Metadata<JsonMetadata<string>>[],
+  metaplex: Metaplex,
+) => {
+  const collectablesWithMetadata = await Promise.all(
+    collectables.map(async (col) => {
+      const json = await (await fetch(col.uri)).json()
+      const metadata = await metaplex.nfts().load({ metadata: col }).run()
+      return { ...metadata, json }
+    }),
+  )
+
+  return collectablesWithMetadata
+}
+
+/**
+ * Returns the account's collectables grouped by token type
+ * @param collectables collectables with metadata
+ * @returns grouped collecables by token type
+ */
+export const groupCollectables = (
+  collectables: (Sft | SftWithToken | Nft | NftWithToken)[],
+) => {
+  const collectablesGroupedByName = collectables.reduce((acc, cur) => {
+    const { symbol } = cur.json as any
+    if (!acc[symbol]) {
+      acc[symbol] = [cur]
+    } else {
+      acc[symbol].push(cur)
+    }
+    return acc
+  }, {} as Record<string, (Sft | SftWithToken | Nft | NftWithToken)[]>)
+
+  return collectablesGroupedByName
 }
