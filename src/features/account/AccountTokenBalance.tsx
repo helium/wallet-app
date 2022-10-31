@@ -1,19 +1,19 @@
+import { Ticker } from '@helium/currency'
 import { BoxProps } from '@shopify/restyle'
 import React, { memo, useMemo } from 'react'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import { Theme } from '../../theme/theme'
-import { TokenType } from '../../types/activity'
 import { useBalance } from '../../utils/Balance'
 
 type Props = {
-  tokenType: TokenType
+  ticker: Ticker
   textVariant?: 'h0' | 'h1' | 'h2'
   showTicker?: boolean
 } & BoxProps<Theme>
 
 const AccountTokenBalance = ({
-  tokenType,
+  ticker,
   textVariant,
   showTicker = true,
   ...boxProps
@@ -27,20 +27,20 @@ const AccountTokenBalance = ({
   } = useBalance()
 
   const balance = useMemo(() => {
-    switch (tokenType) {
+    switch (ticker) {
       default:
-      case TokenType.Hnt: {
+      case 'HNT': {
         if (networkBalance && networkStakedBalance)
           return networkBalance.plus(networkStakedBalance)
 
         if (networkBalance) return networkBalance
         return networkStakedBalance
       }
-      case TokenType.Mobile:
+      case 'MOBILE':
         return mobileBalance
-      case TokenType.Dc:
+      case 'DC':
         return dcBalance
-      case TokenType.Hst:
+      case 'HST':
         return secBalance
     }
   }, [
@@ -49,7 +49,7 @@ const AccountTokenBalance = ({
     networkBalance,
     networkStakedBalance,
     secBalance,
-    tokenType,
+    ticker,
   ])
 
   return (

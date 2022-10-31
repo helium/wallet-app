@@ -20,7 +20,6 @@ import { useTranslation } from 'react-i18next'
 import { groupBy } from 'lodash'
 import animalName from 'angry-purple-tiger'
 import { LayoutChangeEvent } from 'react-native'
-import { Activity } from '../../generated/graphql'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import TransactionLineItem from './TransactionLineItem'
 import HandleBasic from '../../components/HandleBasic'
@@ -31,6 +30,7 @@ import { decodeMemoString, DEFAULT_MEMO } from '../../components/MemoInput'
 import { ellipsizeAddress } from '../../utils/accountUtils'
 import useBackHandler from '../../utils/useBackHandler'
 import BlurBox from '../../components/BlurBox'
+import { Activity } from '../../types/activity'
 
 const initialState = {
   show: () => undefined,

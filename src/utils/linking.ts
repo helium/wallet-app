@@ -1,5 +1,5 @@
 import Address from '@helium/address'
-import Balance, { CurrencyType } from '@helium/currency'
+import Balance, { CurrencyType, Ticker } from '@helium/currency'
 import * as Linking from 'expo-linking'
 import qs from 'qs'
 import queryString from 'query-string'
@@ -8,7 +8,6 @@ import { LinkingOptions } from '@react-navigation/native'
 import { encodeMemoString } from '../components/MemoInput'
 import { BurnRouteParam, PaymentRouteParam } from '../features/home/homeTypes'
 import { SendDetails } from '../storage/TransactionProvider'
-import { TokenType } from '../generated/graphql'
 import { RootStackParamList } from '../navigation/rootTypes'
 
 export const APP_LINK_SCHEME = Linking.createURL('')
@@ -47,7 +46,7 @@ export const makePayRequestLink = ({
   balanceAmount,
   memo,
   defaultTokenType,
-}: Partial<SendDetails> & { defaultTokenType?: TokenType }) => {
+}: Partial<SendDetails> & { defaultTokenType?: Ticker }) => {
   return [
     HELIUM_WALLET_LINK_SCHEME + PAYMENT_PATH,
     qs.stringify(
@@ -67,7 +66,7 @@ export const makeMultiPayRequestLink = ({
   payer,
 }: {
   payer?: string
-  payments: Array<Partial<SendDetails> & { defaultTokenType?: TokenType }>
+  payments: Array<Partial<SendDetails> & { defaultTokenType?: Ticker }>
 }) => {
   const ironed = payments.map(
     ({ payee: address, balanceAmount, memo, defaultTokenType }) => ({

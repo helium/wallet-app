@@ -127,7 +127,7 @@ export default {
     hideFilters: 'Hide Filters',
     myTransactions: 'My Transactions',
     showFilters: 'Show Filters',
-    title: 'My {{tokenType}}',
+    title: 'My {{ticker}}',
     tokens: 'Tokens',
   },
   accountView: {
@@ -256,6 +256,7 @@ export default {
     tryAgain: 'Try Again',
     somethingWentWrong: 'Something went wrong, please try again',
     submitSuccess: 'Transaction Submit',
+    understand: 'I Understand',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',
@@ -427,6 +428,12 @@ export default {
     sendButton: 'Swipe to Send {{ticker}}',
     senderAccount: 'Sender Account',
     sending: 'Sending...',
+    solana: {
+      warning: {
+        title: 'Solana {{cluster}} Payment',
+        message: 'You are sending a payment on Solana {{cluster}}.',
+      },
+    },
     submitError:
       'There was an error submitting this transaction. Please try again.\n\n{{details}}',
     submitFailed: 'Transaction\nFailed',
@@ -557,6 +564,7 @@ export default {
           },
           title: 'Preview Solana Experience',
         },
+        solanaNetwork: { title: 'Solana Network' },
         testnet: {
           enablePrompt: {
             getTnt: 'Get TNT',

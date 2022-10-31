@@ -30,6 +30,7 @@ export type AddressBookRef = {
 }
 type Props = {
   children: ReactNode
+  hideCurrentAccount?: boolean
   onContactSelected: (opts: {
     contact: CSAccount
     prevAddress?: string
@@ -38,7 +39,7 @@ type Props = {
 } & BoxProps<Theme>
 const AddressBookSelector = forwardRef(
   (
-    { children, onContactSelected, ...boxProps }: Props,
+    { children, onContactSelected, hideCurrentAccount, ...boxProps }: Props,
     ref: Ref<AddressBookRef>,
   ) => {
     useImperativeHandle(ref, () => ({ showAddressBook }))
@@ -101,6 +102,7 @@ const AddressBookSelector = forwardRef(
           >
             <ContactsList
               showMyAccounts
+              hideCurrentAccount={hideCurrentAccount}
               onAddNew={handleAddNewContact}
               handleContactSelected={handleContactSelected}
               address={address}

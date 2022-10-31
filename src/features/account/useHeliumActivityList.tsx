@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { differenceBy } from 'lodash'
+import { Ticker } from '@helium/currency'
 import {
-  Activity,
   useAccountActivityLazyQuery,
   useAccountActivityQuery,
   usePendingTxnsLazyQuery,
   usePendingTxnsQuery,
+  Activity as HeliumActivity,
 } from '../../generated/graphql'
 import { FilterType } from './AccountActivityFilter'
 import useAppear from '../../utils/useAppear'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useAppStorage } from '../../storage/AppStorageProvider'
-import { TokenType } from '../../types/activity'
+import { Activity } from '../../types/activity'
 
 const AccountActivityAPIFilters = {
   all: ['all'],
@@ -34,11 +35,11 @@ const AccountActivityAPIFilters = {
 export default ({
   account,
   filter,
-  tokenType,
+  ticker,
 }: {
   account?: CSAccount | null
   filter: FilterType
-  tokenType: TokenType
+  ticker: Ticker
 }) => {
   const { l1Network } = useAppStorage()
   const address = useMemo(() => account?.address, [account])
@@ -126,15 +127,25 @@ export default ({
     return () => clearInterval(interval)
   }, [])
 
-  const data = useMemo(() => {
+  const data = useMemo((): Activity[] => {
     const pending = pendingData?.pendingTxns || []
     if (filter === 'pending') {
-      return pending
+      return pending.map((p) => ({
+        ...p,
+        payments: (p?.payments || []).map((pay) => ({
+          ...pay,
+          tokenType: pay.tokenType?.toUpperCase() as Ticker,
+        })),
+      }))
     }
     const dataForFilter = activityData?.accountActivity?.data || []
 
+    let activities = [] as HeliumActivity[]
     if (filter === 'all') {
-      return [...differenceBy(pending, dataForFilter, 'hash'), ...dataForFilter]
+      activities = [
+        ...differenceBy(pending, dataForFilter, 'hash'),
+        ...dataForFilter,
+      ]
     }
 
     const filteredPending = pending.filter(({ type }) =>
@@ -142,7 +153,16 @@ export default ({
     )
     const dedupedPending = differenceBy(filteredPending, dataForFilter, 'hash')
 
-    return [...dedupedPending, ...dataForFilter]
+    activities = [...dedupedPending, ...dataForFilter]
+
+    return activities.map((p) => ({
+      ...p,
+      tokenType: p.tokenType?.toUpperCase() as Ticker,
+      payments: (p?.payments || []).map((pay) => ({
+        ...pay,
+        tokenType: pay.tokenType?.toUpperCase() as Ticker,
+      })),
+    }))
   }, [activityData, filter, pendingData])
 
   const filteredTxns = useMemo(() => {
@@ -151,19 +171,19 @@ export default ({
         (txn) =>
           txn.payments &&
           txn.payments.some((p) =>
-            tokenType === TokenType.Hnt
-              ? !p.tokenType || p.tokenType === TokenType.Hnt
-              : p.tokenType === tokenType,
+            ticker === 'HNT'
+              ? !p.tokenType || p.tokenType.toUpperCase() === 'HNT'
+              : p.tokenType?.toUpperCase() === ticker,
           ),
       )
     }
 
     return data.filter((txn: Activity) =>
-      tokenType === TokenType.Hnt
-        ? !txn.tokenType || txn.tokenType === TokenType.Hnt
-        : txn.tokenType === tokenType,
+      ticker === 'HNT'
+        ? !txn.tokenType || txn.tokenType.toUpperCase() === 'HNT'
+        : txn.tokenType?.toUpperCase() === ticker,
     )
-  }, [data, filter, tokenType])
+  }, [data, filter, ticker])
 
   return {
     data: filteredTxns,
