@@ -3,7 +3,7 @@
   "version": "1.4.1",
   "private": true,
   "scripts": {
-    "postinstall": "patch-package && ./node_modules/.bin/rn-nodeify --hack --install",
+    "postinstall": "patch-package && ./node_modules/.bin/rn-nodeify --hack --install && npx jetify",
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start",
@@ -202,6 +202,7 @@
     "eslint-plugin-react-hooks": "1.7.0",
     "husky": "7.0.4",
     "jest": "26.6.3",
+    "jetifier": "2.0.0",
     "lint-staged": "11.2.6",
     "metro-react-native-babel-preset": "0.66.2",
     "prettier": "2.7.1",
