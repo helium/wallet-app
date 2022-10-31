@@ -138,7 +138,7 @@ const calculateFee = (
   },
 ) => {
   const { currencyType, oraclePrice, netType, l1Network } = opts
-  if (l1Network === 'solana_dev') {
+  if (l1Network === 'solana') {
     return {
       networkFee: new Balance(TXN_FEE_IN_LAMPORTS, CurrencyType.solTokens),
     }
@@ -196,7 +196,7 @@ const recalculate = (payments: Payment[], state: PaymentState) => {
   let maxBalance = accountBalance?.minus(totalMinusPrevPayment)
 
   if (
-    state.l1Network !== 'solana_dev' &&
+    state.l1Network !== 'solana' &&
     state.currencyType.ticker !== CurrencyType.mobile.ticker
   ) {
     maxBalance = maxBalance?.minus(networkFee)

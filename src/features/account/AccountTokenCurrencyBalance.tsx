@@ -2,20 +2,20 @@ import React, { useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { NetTypes } from '@helium/address'
+import { Ticker } from '@helium/currency'
 import * as AccountUtils from '../../utils/accountUtils'
 import { useBalance } from '../../utils/Balance'
 import Text, { TextProps } from '../../components/Text'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { locale } from '../../utils/i18n'
-import { TokenType } from '../../types/activity'
 
 type Props = {
-  tokenType: TokenType
+  ticker: Ticker
   staked?: boolean
 } & TextProps
 
 const AccountTokenCurrencyBalance = ({
-  tokenType,
+  ticker,
   staked = false,
   ...textProps
 }: Props) => {
@@ -42,15 +42,15 @@ const AccountTokenCurrencyBalance = ({
       return
     }
 
-    switch (tokenType) {
-      case TokenType.Hnt:
+    switch (ticker) {
+      case 'HNT':
         if (staked) {
           toCurrencyString(networkStakedBalance).then(setBalanceString)
         } else {
           toCurrencyString(networkBalance).then(setBalanceString)
         }
         break
-      case TokenType.Dc: {
+      case 'DC': {
         const balance = dcBalance
           ?.toUsd(oraclePrice)
           .floatBalance.toLocaleString(locale, { maximumFractionDigits: 2 })
@@ -59,10 +59,10 @@ const AccountTokenCurrencyBalance = ({
         )
         break
       }
-      case TokenType.Mobile:
+      case 'MOBILE':
         setBalanceString(t('accountView.genesis'))
         break
-      case TokenType.Hst:
+      case 'HST':
         setBalanceString(t('accountView.securityTokens'))
         break
       default:
@@ -77,7 +77,7 @@ const AccountTokenCurrencyBalance = ({
     staked,
     t,
     toCurrencyString,
-    tokenType,
+    ticker,
   ])
 
   return (

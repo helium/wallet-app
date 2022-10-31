@@ -6,6 +6,7 @@ import Balance, {
   MobileTokens,
   NetworkTokens,
   TestNetworkTokens,
+  Ticker,
 } from '@helium/currency'
 import { round } from 'lodash'
 import React, {
@@ -18,7 +19,6 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import useAppState from 'react-native-appstate-hook'
 import CurrencyFormatter from 'react-native-currency-format'
 import { useSelector } from 'react-redux'
 import {
@@ -31,14 +31,13 @@ import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
 import { readBalances } from '../store/slices/solanaSlice'
+import { useGetMintsQuery } from '../store/slices/walletRestApi'
 import { useAppDispatch } from '../store/store'
-import { TokenType } from '../types/activity'
 import { accountCurrencyType } from './accountUtils'
 import { CoinGeckoPrices, getCurrentPrices } from './coinGeckoClient'
 import { decimalSeparator, groupSeparator } from './i18n'
 import { onAccountChange, removeAccountChangeListener } from './solanaUtils'
 import useAppear from './useAppear'
-import useMount from './useMount'
 import usePrevious from './usePrevious'
 
 export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
@@ -46,9 +45,16 @@ const useBalanceHook = () => {
   const { currentAccount } = useAccountStorage()
   const prevAccount = usePrevious(currentAccount)
   const accountSubscriptionId = useRef<number>()
-  const { convertToCurrency, currency, l1Network } = useAppStorage()
+  const {
+    convertToCurrency,
+    currency,
+    l1Network,
+    solanaNetwork: cluster,
+  } = useAppStorage()
+  const prevCluster = usePrevious(cluster)
 
   const dispatch = useAppDispatch()
+  const { data: mints } = useGetMintsQuery(cluster)
 
   const {
     data: oracleData,
@@ -101,39 +107,42 @@ const useBalanceHook = () => {
   }, [solAddress, solanaBalances])
 
   const dispatchSolBalanceUpdate = useCallback(() => {
-    if (!currentAccount?.solanaAddress) {
+    if (!currentAccount?.solanaAddress || !mints) {
       return
     }
-    dispatch(readBalances(currentAccount))
-  }, [currentAccount, dispatch])
+    dispatch(readBalances({ cluster, acct: currentAccount, mints }))
+  }, [currentAccount, dispatch, mints, cluster])
 
   useEffect(() => {
     if (!currentAccount?.solanaAddress) {
       return
     }
 
-    if (prevAccount !== currentAccount) {
+    if (prevAccount !== currentAccount || cluster !== prevCluster) {
       dispatchSolBalanceUpdate()
       const subId = onAccountChange(
+        cluster,
         currentAccount?.solanaAddress,
         dispatchSolBalanceUpdate,
       )
       if (accountSubscriptionId.current !== undefined) {
-        removeAccountChangeListener(accountSubscriptionId.current)
+        removeAccountChangeListener(cluster, accountSubscriptionId.current)
       }
       accountSubscriptionId.current = subId
     }
-  }, [currentAccount, dispatch, dispatchSolBalanceUpdate, prevAccount])
+  }, [
+    currentAccount,
+    dispatch,
+    dispatchSolBalanceUpdate,
+    prevAccount,
+    prevCluster,
+    cluster,
+  ])
 
   useAppear(() => {
     dispatchSolBalanceUpdate()
-  })
-
-  useMount(() => {
     updateCoinGeckoPrices()
   })
-
-  useAppState({ onForeground: updateCoinGeckoPrices })
 
   const updateVars = useCallback(() => {
     updateCoinGeckoPrices()
@@ -193,43 +202,22 @@ const useBalanceHook = () => {
     [oraclePrice],
   )
 
-  const currencyTypeFromTokenType = useCallback(
-    (type: TokenType | null | undefined) => {
-      switch (type) {
-        case TokenType.Hst:
-          return CurrencyType.security
-        case TokenType.Iot:
-          return CurrencyType.iot
-        case TokenType.Mobile:
-          return CurrencyType.mobile
-        case TokenType.Dc:
-          return CurrencyType.dataCredit
-        case TokenType.Hnt:
-        default:
-          if (currentAccount?.netType === NetTypes.TESTNET)
-            return CurrencyType.testNetworkToken
-          return CurrencyType.networkToken
-      }
-    },
-    [currentAccount],
-  )
-
   const floatToBalance = useCallback(
-    (value: number, tokenType: TokenType) => {
+    (value: number, ticker: Ticker) => {
       if (!currentAccount) {
         console.warn('Cannot convert float to balance for nil account')
         return
       }
-      return Balance.fromFloat(value, currencyTypeFromTokenType(tokenType))
+      return Balance.fromFloatAndTicker(value, ticker)
     },
-    [currencyTypeFromTokenType, currentAccount],
+    [currentAccount],
   )
 
   const bonesToBalance = useCallback(
-    (v: number | undefined | null, tokenType: TokenType | null | undefined) => {
-      return new Balance(v || 0, currencyTypeFromTokenType(tokenType))
+    (v: number | undefined | null, ticker: Ticker | null | undefined) => {
+      return Balance.fromIntAndTicker(v || 0, ticker || 'HNT')
     },
-    [currencyTypeFromTokenType],
+    [],
   )
 
   const intToBalance = useCallback(
@@ -253,7 +241,7 @@ const useBalanceHook = () => {
         bal = accountData?.account?.balance || 0
         break
 
-      case 'solana_dev':
+      case 'solana':
         bal = solBalances?.hntBalance ? Number(solBalances.hntBalance) : 0
         break
     }
@@ -268,7 +256,7 @@ const useBalanceHook = () => {
         bal = accountData?.account?.stakedBalance || 0
         break
 
-      case 'solana_dev':
+      case 'solana':
         bal = solBalances?.stakedBalance ? Number(solBalances.stakedBalance) : 0
         break
     }
@@ -283,7 +271,7 @@ const useBalanceHook = () => {
         bal = accountData?.account?.mobileBalance || 0
         break
 
-      case 'solana_dev':
+      case 'solana':
         bal = solBalances?.mobileBalance ? Number(solBalances.mobileBalance) : 0
         break
     }
@@ -298,7 +286,7 @@ const useBalanceHook = () => {
         bal = accountData?.account?.secBalance || 0
         break
 
-      case 'solana_dev':
+      case 'solana':
         bal = solBalances?.secBalance ? Number(solBalances.secBalance) : 0
         break
     }
@@ -313,7 +301,7 @@ const useBalanceHook = () => {
         bal = accountData?.account?.dcBalance || 0
         break
 
-      case 'solana_dev':
+      case 'solana':
         bal = solBalances?.dcBalance ? Number(solBalances.dcBalance) : 0
         break
     }
@@ -327,7 +315,7 @@ const useBalanceHook = () => {
       case 'helium':
         break
 
-      case 'solana_dev':
+      case 'solana':
         bal = solBalances?.solBalance ? Number(solBalances.solBalance) : 0
         break
     }
@@ -392,7 +380,6 @@ const useBalanceHook = () => {
 
   return {
     bonesToBalance,
-    currencyTypeFromTokenType,
     dcBalance,
     dcToNetworkTokens,
     floatToBalance,
@@ -414,7 +401,6 @@ const useBalanceHook = () => {
 
 const initialState = {
   bonesToBalance: () => new Balance(0, CurrencyType.networkToken),
-  currencyTypeFromTokenType: () => CurrencyType.networkToken,
   dcBalance: new Balance(0, CurrencyType.dataCredit),
   dcToNetworkTokens: () => undefined,
   floatToBalance: () => undefined,

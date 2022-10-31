@@ -51,7 +51,7 @@ const useAccountStorageHook = () => {
 
   const currentNetworkAddress = useMemo(() => {
     if (l1Network === 'helium') return currentAccount?.address
-    if (l1Network === 'solana_dev') return currentAccount?.solanaAddress
+    if (l1Network === 'solana') return currentAccount?.solanaAddress
   }, [currentAccount, l1Network])
 
   const { result: restoredAccounts } = useAsync(restoreAccounts, [])
@@ -171,7 +171,7 @@ const useAccountStorageHook = () => {
 
   const contactsForNetType = useCallback(
     (netType: AccountNetTypeOpt) => {
-      if (l1Network === 'solana_dev') {
+      if (l1Network === 'solana') {
         return mainnetContacts.filter((c) => !!c.solanaAddress)
       }
       if (netType === NetType.MAINNET)

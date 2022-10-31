@@ -3,6 +3,7 @@ import Balance, {
   MobileTokens,
   NetworkTokens,
   TestNetworkTokens,
+  Ticker,
 } from '@helium/currency'
 import { PaymentV2 } from '@helium/transactions'
 import { useTransactions } from '../storage/TransactionProvider'
@@ -11,12 +12,13 @@ import { useAccountLazyQuery, useSubmitTxnMutation } from '../generated/graphql'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { makePayment } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
-import { TokenType } from '../types/activity'
+import { useGetMintsQuery } from '../store/slices/walletRestApi'
 
 export default () => {
   const { makePaymentTxn } = useTransactions()
   const { currentAccount } = useAccountStorage()
-  const { l1Network } = useAppStorage()
+  const { l1Network, solanaNetwork: cluster } = useAppStorage()
+  const { data: mints } = useGetMintsQuery(cluster)
   const dispatch = useAppDispatch()
 
   const [fetchAccount, { loading: accountLoading, error: accountError }] =
@@ -42,7 +44,7 @@ export default () => {
         memo: string
         max?: boolean
       }[],
-      tokenType: TokenType,
+      ticker: Ticker,
     ) => {
       if (!currentAccount) {
         throw new Error('There must be an account selected to submit a txn')
@@ -62,7 +64,7 @@ export default () => {
         const { txnJson, signedTxn } = await makePaymentTxn({
           paymentDetails: payments,
           speculativeNonce: freshAccountData.account.speculativeNonce,
-          tokenType,
+          ticker,
         })
 
         if (!signedTxn) {
@@ -88,14 +90,24 @@ export default () => {
         memo: string
         max?: boolean
       }[],
-      _tokenType: TokenType,
     ) => {
       if (!currentAccount) {
         throw new Error('There must be an account selected to submit a txn')
       }
-      dispatch(makePayment({ account: currentAccount, payments }))
+      if (!mints) {
+        throw new Error('Mints not found')
+      }
+
+      dispatch(
+        makePayment({
+          account: currentAccount,
+          payments,
+          cluster,
+          mints,
+        }),
+      )
     },
-    [currentAccount, dispatch],
+    [currentAccount, dispatch, mints, cluster],
   )
 
   const submit = useCallback(
@@ -106,14 +118,14 @@ export default () => {
         memo: string
         max?: boolean
       }[],
-      tokenType: TokenType,
+      ticker: Ticker,
     ) => {
       switch (l1Network) {
         case 'helium':
-          submitHelium(payments, tokenType)
+          submitHelium(payments, ticker)
           break
-        case 'solana_dev':
-          submitSolDev(payments, tokenType)
+        case 'solana':
+          submitSolDev(payments)
           break
       }
     },
@@ -143,7 +155,7 @@ export default () => {
         case 'helium':
           submitHeliumLedger({ txn, txnJson })
           break
-        case 'solana_dev':
+        case 'solana':
           throw new Error('Solana not yet supported for ledger devices')
       }
     },
