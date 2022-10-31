@@ -21,7 +21,7 @@ const useCreateExplorerUrl = () => {
 
   const getPath = useCallback(
     (type: UrlType) => {
-      if (l1Network === 'solana_dev') {
+      if (l1Network === 'solana') {
         switch (type) {
           case 'block':
             return 'block'
@@ -54,7 +54,7 @@ const useCreateExplorerUrl = () => {
     (type: UrlType, target?: string | number | null) => {
       const path = `${getPath(type)}/${target}`
 
-      if (l1Network === 'solana_dev') {
+      if (l1Network === 'solana') {
         return `${SOLANA_EXPLORER_BASE_URL}/${path}?cluster=devnet`
       }
 
@@ -73,7 +73,7 @@ const usePublicApi = () => {
   const { l1Network } = useAppStorage()
 
   return useMemo(() => {
-    if (l1Network === 'solana_dev') return ''
+    if (l1Network === 'solana') return ''
 
     const { address } = currentAccount || {}
     if (!address || isMainnet(address)) {

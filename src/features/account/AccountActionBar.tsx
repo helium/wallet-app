@@ -3,22 +3,23 @@ import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent, Animated } from 'react-native'
 import { NetTypes } from '@helium/address'
+import { Ticker } from '@helium/currency'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import Box from '../../components/Box'
 import FabButton from '../../components/FabButton'
 import { HomeNavigationProp } from '../home/homeTypes'
-import { TokenType, useVotesQuery } from '../../generated/graphql'
+import { useVotesQuery } from '../../generated/graphql'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
 export type Action = 'send' | 'request' | 'stake' | 'lock' | 'vote' | '5G'
 
 type Props = {
-  tokenType?: TokenType
+  ticker?: Ticker
   onLayout?: (event: LayoutChangeEvent) => void
   compact?: boolean
 }
 
-const AccountActionBar = ({ tokenType, onLayout, compact }: Props) => {
+const AccountActionBar = ({ ticker, onLayout, compact }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const { requirePinForPayment, l1Network, pin } = useAppStorage()
@@ -74,7 +75,7 @@ const AccountActionBar = ({ tokenType, onLayout, compact }: Props) => {
             navigation.navigate('ConfirmPin', { action: 'payment' })
           } else {
             navigation.navigate('PaymentScreen', {
-              defaultTokenType: tokenType,
+              defaultTokenType: ticker,
             })
           }
           break
@@ -97,7 +98,7 @@ const AccountActionBar = ({ tokenType, onLayout, compact }: Props) => {
         }
       }
     },
-    [navigation, pin, requirePinForPayment, tokenType],
+    [navigation, pin, requirePinForPayment, ticker],
   )
 
   const isHeliumMainnet = useMemo(

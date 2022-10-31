@@ -94,7 +94,7 @@ const BurnScreen = () => {
   const amountBalance = useMemo(() => {
     const amount = parseFloat(route.params.amount)
 
-    return floatToBalance(amount, TokenType.Hnt)
+    return floatToBalance(amount, 'HNT')
   }, [floatToBalance, route.params.amount])
 
   const feeAsTokens = useMemo(() => {

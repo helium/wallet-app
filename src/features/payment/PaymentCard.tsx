@@ -1,4 +1,8 @@
-import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
+import Balance, {
+  NetworkTokens,
+  TestNetworkTokens,
+  Ticker,
+} from '@helium/currency'
 import { PaymentV2 } from '@helium/transactions'
 import { useNavigation } from '@react-navigation/native'
 import React, { memo, useCallback, useRef, useState } from 'react'
@@ -15,7 +19,7 @@ import animateTransition from '../../utils/animateTransition'
 import useAlert from '../../utils/useAlert'
 import PaymentSummary from './PaymentSummary'
 import { checkSecureAccount } from '../../storage/secureStorage'
-import { TokenType } from '../../types/activity'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Props = {
   totalBalance: Balance<TestNetworkTokens | NetworkTokens>
@@ -24,7 +28,7 @@ type Props = {
   disabled?: boolean
   errors?: string[]
   payments?: SendDetails[]
-  tokenType: TokenType
+  ticker: Ticker
 }
 
 const PaymentCard = ({
@@ -32,7 +36,7 @@ const PaymentCard = ({
   feeTokenBalance,
   onSubmit,
   disabled,
-  tokenType,
+  ticker,
   payments,
   errors,
 }: Props) => {
@@ -41,14 +45,27 @@ const PaymentCard = ({
   const [height, setHeight] = useState(0)
   const nav = useNavigation()
   const ledgerPaymentRef = useRef<LedgerPaymentRef>(null)
-  const { showOKAlert } = useAlert()
+  const { showOKAlert, showOKCancelAlert } = useAlert()
   const { currentAccount } = useAccountStorage()
+  const { l1Network, solanaNetwork: cluster } = useAppStorage()
   const [options, setOptions] = useState<{
     txn: PaymentV2
     txnJson: string
   }>()
 
   const handlePayPressed = useCallback(async () => {
+    if (l1Network === 'solana') {
+      const decision = await showOKCancelAlert({
+        title: t('payment.solana.warning.title', { cluster }),
+        message: t('payment.solana.warning.message', { cluster }),
+        ok: t('generic.understand'),
+      })
+
+      if (!decision) {
+        return
+      }
+    }
+
     if (!currentAccount?.ledgerDevice) {
       const hasSecureAccount = await checkSecureAccount(
         currentAccount?.address,
@@ -67,7 +84,7 @@ const PaymentCard = ({
         speculativeNonce: 0,
       })
     }
-  }, [currentAccount, payments])
+  }, [cluster, currentAccount, l1Network, payments, showOKCancelAlert, t])
 
   const handleLayout = useCallback(
     (e: LayoutChangeEvent) => {
@@ -100,7 +117,7 @@ const PaymentCard = ({
       ref={ledgerPaymentRef}
       onConfirm={handleConfirm}
       onError={handleLedgerError}
-      tokenType={tokenType}
+      ticker={ticker}
     >
       <Box
         borderTopLeftRadius="xl"

@@ -19,17 +19,17 @@ import { BoxProps } from '@shopify/restyle'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenHNT from '@assets/images/tokenHNT.svg'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Ticker } from '@helium/currency'
 import { useColors, useOpacity, useSpacing } from '../theme/themeHooks'
 import { Theme } from '../theme/theme'
 import Box from './Box'
 import useBackHandler from '../utils/useBackHandler'
 import ListItem, { LIST_ITEM_HEIGHT } from './ListItem'
-import { TokenType } from '../types/activity'
 
 type TokenListItem = {
   label: string
   icon: ReactNode
-  value: string
+  value: Ticker
 }
 
 export type TokenSelectorRef = {
@@ -37,7 +37,7 @@ export type TokenSelectorRef = {
 }
 type Props = {
   children: ReactNode
-  onTokenSelected: (tokenType: TokenType) => void
+  onTokenSelected: (type: Ticker) => void
 } & BoxProps<Theme>
 const TokenSelector = forwardRef(
   (
@@ -80,7 +80,7 @@ const TokenSelector = forwardRef(
       (token: string) => () => {
         bottomSheetModalRef.current?.dismiss()
         setCurrentToken(token)
-        onTokenSelected(token as TokenType)
+        onTokenSelected(token as Ticker)
       },
       [onTokenSelected],
     )
@@ -106,19 +106,18 @@ const TokenSelector = forwardRef(
     )
 
     const data = useMemo(
-      () =>
-        [
-          {
-            label: 'HNT',
-            icon: <TokenHNT color={white} />,
-            value: 'hnt',
-          },
-          {
-            label: 'MOBILE',
-            icon: <TokenMOBILE color={blueBright500} />,
-            value: 'mobile',
-          },
-        ] as TokenListItem[],
+      (): TokenListItem[] => [
+        {
+          label: 'HNT',
+          icon: <TokenHNT color={white} />,
+          value: 'HNT',
+        },
+        {
+          label: 'MOBILE',
+          icon: <TokenMOBILE color={blueBright500} />,
+          value: 'MOBILE',
+        },
+      ],
 
       [blueBright500, white],
     )

@@ -20,7 +20,7 @@ export default ({
       }
       return 'testnet'
     }
-    if (l1Network === 'solana_dev') return 'solanaPurple'
+    if (l1Network === 'solana') return 'solanaPurple'
     if (defaultColor) {
       return defaultColor
     }

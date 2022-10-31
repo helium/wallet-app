@@ -213,7 +213,7 @@ const AccountsScreen = () => {
   }> => {
     return [
       { value: 'helium', title: 'Helium' },
-      { value: 'solana_dev', title: 'Solana-Devnet' },
+      { value: 'solana', title: 'Solana' },
     ]
   }, [])
 

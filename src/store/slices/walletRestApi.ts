@@ -1,7 +1,10 @@
+import { Ticker } from '@helium/currency'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { Cluster } from '@solana/web3.js'
 import Config from 'react-native-config'
 import { lang } from '../../utils/i18n'
+
+export type Mints = Record<Ticker, string>
 
 type Notification = {
   title: string | null
@@ -32,6 +35,9 @@ export const walletRestApi = createApi({
     },
   }),
   endpoints: (builder) => ({
+    getMints: builder.query<Mints, string>({
+      query: (cluster) => `/mints?cluster=${cluster}`,
+    }),
     getNotifications: builder.query<Notification[], string | undefined>({
       query: (resource) => `/notifications/${resource}`,
       providesTags: ['Notifications'],
@@ -53,5 +59,10 @@ export const walletRestApi = createApi({
   }),
 })
 
-export const { useGetNotificationsQuery, usePostPaymentMutation, reducer } =
-  walletRestApi
+export const {
+  useGetNotificationsQuery,
+  usePostPaymentMutation,
+  useLazyGetMintsQuery,
+  useGetMintsQuery,
+  reducer,
+} = walletRestApi

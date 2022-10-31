@@ -1,15 +1,16 @@
-import Balance, { AnyCurrencyType } from '@helium/currency'
+import Balance, { AnyCurrencyType, Ticker } from '@helium/currency'
 import {
   createAsyncThunk,
   createSlice,
   SerializedError,
 } from '@reduxjs/toolkit'
-import { SignaturesForAddressOptions } from '@solana/web3.js'
+import { Cluster, SignaturesForAddressOptions } from '@solana/web3.js'
 import { first, last } from 'lodash'
 import { CSAccount } from '../../storage/cloudStorage'
-import { Activity, TokenType } from '../../types/activity'
+import { Activity } from '../../types/activity'
+import { toMintAddress } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
-import { walletRestApi } from './walletRestApi'
+import { Mints, walletRestApi } from './walletRestApi'
 
 type Balances = {
   hntBalance?: bigint
@@ -21,7 +22,7 @@ type Balances = {
   loading?: boolean
 }
 
-type TokenActivity = Record<TokenType, Activity[]>
+type TokenActivity = Record<Ticker, Activity[]>
 
 type SolActivity = {
   all: TokenActivity
@@ -38,19 +39,36 @@ export type SolanaState = {
   }
 }
 
-const initialState: SolanaState = { balances: {}, activity: { data: {} } }
+const initialState: SolanaState = {
+  balances: {},
+  activity: { data: {} },
+}
 
 export const readBalances = createAsyncThunk(
   'solana/readBalance',
-  async (acct: CSAccount) => {
+  async ({
+    acct,
+    cluster,
+    mints,
+  }: {
+    acct: CSAccount
+    cluster: Cluster
+    mints: Mints
+  }) => {
     if (!acct?.solanaAddress) throw new Error('No solana account found')
 
-    const heliumBals = await solUtils.readHeliumBalances(acct.solanaAddress)
-    const solBalance = await solUtils.readSolanaBalance(acct.solanaAddress)
+    const heliumBals = await solUtils.readHeliumBalances(
+      cluster,
+      acct.solanaAddress,
+      mints,
+    )
+    const solBalance = await solUtils.readSolanaBalance(
+      cluster,
+      acct.solanaAddress,
+    )
 
-    if (solBalance === 0) {
-      // TODO: REMOVE FOR MAINNET - How do those wallets get funded?
-      solUtils.airdrop(acct.solanaAddress)
+    if (solBalance === 0 && cluster !== 'mainnet-beta') {
+      solUtils.airdrop(cluster, acct.solanaAddress)
     }
     return { ...heliumBals, solBalance }
   },
@@ -63,23 +81,35 @@ type Payment = {
   max?: boolean
 }
 
-type PaymentInput = { account: CSAccount; payments: Payment[] }
+type PaymentInput = {
+  account: CSAccount
+  payments: Payment[]
+  cluster: Cluster
+  mints: Mints
+}
 
 export const makePayment = createAsyncThunk(
   'solana/makePayment',
-  async ({ account, payments }: PaymentInput, { dispatch }) => {
+  async ({ account, payments, cluster, mints }: PaymentInput, { dispatch }) => {
     if (!account?.solanaAddress) throw new Error('No solana account found')
 
+    const [firstPayment] = payments
+    const mintAddress = toMintAddress(
+      firstPayment.balanceAmount.type.ticker,
+      mints,
+    )
     const transfer = await solUtils.transferToken(
+      cluster,
       account.solanaAddress,
       account.address,
       payments,
+      mintAddress,
     )
 
     return dispatch(
       walletRestApi.endpoints.postPayment.initiate({
         txnSignature: transfer.signature,
-        cluster: 'devnet',
+        cluster,
       }),
     )
   },
@@ -90,11 +120,15 @@ export const getTxns = createAsyncThunk(
   async (
     {
       account,
-      tokenType,
+      cluster,
+      ticker,
       requestType,
+      mints,
     }: {
       account: CSAccount
-      tokenType: TokenType
+      cluster: Cluster
+      ticker: Ticker
+      mints: Mints
       requestType: 'update_head' | 'start_fresh' | 'fetch_more'
     },
     { getState },
@@ -108,8 +142,7 @@ export const getTxns = createAsyncThunk(
     const { solana } = (await getState()) as {
       solana: SolanaState
     }
-    const existing =
-      solana.activity.data[account.solanaAddress]?.all?.[tokenType]
+    const existing = solana.activity.data[account.solanaAddress]?.all?.[ticker]
 
     if (requestType === 'fetch_more') {
       const lastActivity = last(existing)
@@ -126,7 +159,13 @@ export const getTxns = createAsyncThunk(
       options.until = firstActvity.hash
     }
 
-    return solUtils.getTransactions(account.solanaAddress, tokenType, options)
+    return solUtils.getTransactions(
+      cluster,
+      account.solanaAddress,
+      toMintAddress(ticker, mints),
+      mints,
+      options,
+    )
   },
 )
 
@@ -140,25 +179,25 @@ const solanaSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(readBalances.pending, (state, action) => {
-      if (!action.meta.arg?.solanaAddress) return state
-      const prev = state.balances[action.meta.arg?.solanaAddress] || {}
+      if (!action.meta.arg?.acct.solanaAddress) return state
+      const prev = state.balances[action.meta.arg?.acct.solanaAddress] || {}
 
-      state.balances[action.meta.arg?.solanaAddress] = {
+      state.balances[action.meta.arg?.acct.solanaAddress] = {
         ...prev,
         loading: true,
       }
     })
     builder.addCase(readBalances.fulfilled, (state, action) => {
-      if (!action.meta.arg?.solanaAddress) return state
-      state.balances[action.meta.arg?.solanaAddress] = {
+      if (!action.meta.arg?.acct.solanaAddress) return state
+      state.balances[action.meta.arg?.acct.solanaAddress] = {
         ...action.payload,
         loading: false,
       }
     })
     builder.addCase(readBalances.rejected, (state, action) => {
-      if (!action.meta.arg?.solanaAddress) return state
-      const prev = state.balances[action.meta.arg?.solanaAddress] || {}
-      state.balances[action.meta.arg?.solanaAddress] = {
+      if (!action.meta.arg?.acct.solanaAddress) return state
+      const prev = state.balances[action.meta.arg?.acct.solanaAddress] || {}
+      state.balances[action.meta.arg?.acct.solanaAddress] = {
         ...prev,
         loading: false,
       }
@@ -184,7 +223,7 @@ const solanaSlice = createSlice({
       if (!meta.arg.account.solanaAddress) return
 
       const {
-        tokenType,
+        ticker,
         account: { solanaAddress: address },
         requestType,
       } = meta.arg
@@ -199,26 +238,26 @@ const solanaSlice = createSlice({
         payment: {},
       }
 
-      const prevAll = state.activity.data[address].all[tokenType]
-      const prevPayment = state.activity.data[address].payment[tokenType]
+      const prevAll = state.activity.data[address].all[ticker]
+      const prevPayment = state.activity.data[address].payment[ticker]
 
       switch (requestType) {
         case 'start_fresh': {
-          state.activity.data[address].all[tokenType] = payload
-          state.activity.data[address].payment[tokenType] = payload
+          state.activity.data[address].all[ticker] = payload
+          state.activity.data[address].payment[ticker] = payload
           break
         }
         case 'fetch_more': {
-          state.activity.data[address].all[tokenType] = [...prevAll, ...payload]
-          state.activity.data[address].payment[tokenType] = [
+          state.activity.data[address].all[ticker] = [...prevAll, ...payload]
+          state.activity.data[address].payment[ticker] = [
             ...prevPayment,
             ...payload,
           ]
           break
         }
         case 'update_head': {
-          state.activity.data[address].all[tokenType] = [...payload, ...prevAll]
-          state.activity.data[address].payment[tokenType] = [
+          state.activity.data[address].all[ticker] = [...payload, ...prevAll]
+          state.activity.data[address].payment[ticker] = [
             ...payload,
             ...prevPayment,
           ]

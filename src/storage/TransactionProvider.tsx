@@ -1,10 +1,13 @@
 import Address from '@helium/address'
-import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
+import Balance, {
+  NetworkTokens,
+  TestNetworkTokens,
+  Ticker,
+} from '@helium/currency'
 import { PaymentV2, TokenBurnV1, Transaction } from '@helium/transactions'
 import React, { createContext, ReactNode, useContext, useEffect } from 'react'
 import { encodeMemoString } from '../components/MemoInput'
 import { useTxnConfigVarsQuery } from '../generated/graphql'
-import { TokenType } from '../types/activity'
 import { useAccountStorage } from './AccountStorageProvider'
 import { useAppStorage } from './AppStorageProvider'
 import { getKeypair } from './secureStorage'
@@ -100,7 +103,7 @@ const useTransactionHook = () => {
     paymentDetails: Array<SendDetails>
     speculativeNonce: number
     isLedger?: boolean
-    tokenType: TokenType
+    ticker: Ticker
   }): Promise<{
     txnJson: string
     signedTxn?: PaymentV2
@@ -120,6 +123,8 @@ const useTransactionHook = () => {
       )
     }
 
+    const tokenType = opts.ticker.toLowerCase()
+
     const txn = new PaymentV2({
       payer: Address.fromB58(currentAccount.address),
       payments: opts.paymentDetails.map(
@@ -128,7 +133,7 @@ const useTransactionHook = () => {
           max,
           amount: balanceAmount.integerBalance,
           memo: encodeMemoString(memo),
-          tokenType: opts.tokenType || 'hnt',
+          tokenType,
         }),
       ),
       nonce: opts.speculativeNonce + 1,
@@ -140,7 +145,7 @@ const useTransactionHook = () => {
         payee: p.payee.b58,
         memo: p.memo,
         amount: p.amount,
-        token_type: opts.tokenType || 'hnt',
+        token_type: tokenType,
         max: p.max,
       })),
       payer: txn.payer?.b58,

@@ -12,7 +12,6 @@ import {
   setLedgerAccounts,
   useLedgerAccounts,
 } from '../../utils/heliumLedger'
-import { TokenType } from '../../types/activity'
 
 type AccountListItemProps = {
   item: LedgerAccount
@@ -43,7 +42,7 @@ const AccountListItem = ({ item, index, section }: AccountListItemProps) => {
   )
 
   // TODO: Add other token types once nano app supports them
-  const balance = bonesToBalance(item.balance, TokenType.Hnt)
+  const balance = bonesToBalance(item.balance, 'HNT')
   const disabled = section.index === 1
 
   const borderTopEndRadius = useMemo(
