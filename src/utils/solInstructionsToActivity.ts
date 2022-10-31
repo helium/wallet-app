@@ -1,10 +1,12 @@
 import * as web3 from '@solana/web3.js'
+import { Mints } from '../store/slices/walletRestApi'
 import { Activity, Payment } from '../types/activity'
-import { mintToTokenType } from '../types/solana'
+import { mintToTicker } from '../types/solana'
 
 export default (
   parsedTxn: web3.ParsedTransactionWithMeta | null,
   signature: string,
+  mints: Mints,
 ) => {
   if (!parsedTxn) return
 
@@ -33,14 +35,14 @@ export default (
       if (amount < 0) {
         // is payer
         activity.payer = post.owner
-        activity.tokenType = mintToTokenType(post.mint)
+        activity.tokenType = mintToTicker(post.mint, mints)
         activity.amount = -1 * amount
       } else {
         // is payee
         const p: Payment = {
           amount,
           payee: post.owner || '',
-          tokenType: mintToTokenType(post.mint),
+          tokenType: mintToTicker(post.mint, mints),
         }
         payments = [...payments, p]
       }

@@ -10,7 +10,12 @@ import { useTranslation } from 'react-i18next'
 import Close from '@assets/images/close.svg'
 import QR from '@assets/images/qr.svg'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
+import Balance, {
+  CurrencyType,
+  NetworkTokens,
+  TestNetworkTokens,
+  Ticker,
+} from '@helium/currency'
 import { Keyboard, Platform } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import Address, { NetTypes } from '@helium/address'
@@ -60,13 +65,12 @@ import { useAppDispatch } from '../../store/store'
 import useDisappear from '../../utils/useDisappear'
 import { solanaSlice } from '../../store/slices/solanaSlice'
 import useNetworkColor from '../../utils/useNetworkColor'
-import { TokenType } from '../../types/activity'
 
 type LinkedPayment = {
   amount?: string
   memo: string
   payee: string
-  defaultTokenType?: TokenType
+  defaultTokenType?: Ticker
 }
 
 const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
@@ -79,7 +83,7 @@ const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
         payee: opts.payee,
         amount: opts.amount,
         memo: opts.memo || '',
-        defaultTokenType: opts.defaultTokenType,
+        defaultTokenType: opts.defaultTokenType?.toUpperCase() as Ticker,
       },
     ]
   }
@@ -92,13 +96,8 @@ const PaymentScreen = () => {
   const addressBookRef = useRef<AddressBookRef>(null)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const {
-    currencyTypeFromTokenType,
-    oraclePrice,
-    networkBalance,
-    solBalance,
-    mobileBalance,
-  } = useBalance()
+  const { oraclePrice, networkBalance, solBalance, mobileBalance } =
+    useBalance()
 
   const { showOKAlert } = useAlert()
   const { l1Network } = useAppStorage()
@@ -116,8 +115,8 @@ const PaymentScreen = () => {
     setCurrentAccount,
     sortedAccountsForNetType,
   } = useAccountStorage()
-  const [tokenType, setTokenType] = useState<TokenType>(
-    route.params?.defaultTokenType || TokenType.Hnt,
+  const [ticker, setTicker] = useState<Ticker>(
+    (route.params?.defaultTokenType?.toUpperCase() as Ticker) || 'HNT',
   )
 
   useDisappear(() => {
@@ -125,17 +124,17 @@ const PaymentScreen = () => {
   })
 
   useAsync(async () => {
-    if (tokenType !== TokenType.Mobile) return
+    if (ticker !== 'MOBILE') return
 
     const mobilePromptShown = await AsyncStorage.getItem('mobilePaymentPrompt')
-    if (mobilePromptShown === 'true') return
+    if (mobilePromptShown === 'true' || l1Network === 'solana') return
 
     await showOKAlert({
       title: t('payment.mobilePrompt.title'),
       message: t('payment.mobilePrompt.message'),
     })
     AsyncStorage.setItem('mobilePaymentPrompt', 'true')
-  }, [tokenType])
+  }, [ticker])
 
   const networkType = useMemo(() => {
     if (!route.params || !route.params.payer) {
@@ -150,10 +149,7 @@ const PaymentScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route])
 
-  const currencyType = useMemo(
-    () => currencyTypeFromTokenType(tokenType),
-    [currencyTypeFromTokenType, tokenType],
-  )
+  const currencyType = useMemo(() => CurrencyType.fromTicker(ticker), [ticker])
 
   const [paymentState, dispatch] = usePaymentsReducer({
     currencyType,
@@ -212,7 +208,7 @@ const PaymentScreen = () => {
     if (!paymentsArr?.length) return
 
     if (paymentsArr[0].defaultTokenType) {
-      onTokenSelected(paymentsArr[0].defaultTokenType)
+      onTickerSelected(paymentsArr[0].defaultTokenType)
     }
 
     if (
@@ -301,7 +297,7 @@ const PaymentScreen = () => {
     (opts?: { txn: PaymentV2; txnJson: string }) => {
       try {
         if (!opts) {
-          submit(payments, tokenType)
+          submit(payments, ticker)
         } else {
           // This is a ledger device
           submitLedger(opts)
@@ -310,7 +306,7 @@ const PaymentScreen = () => {
         console.error(e)
       }
     },
-    [payments, submit, submitLedger, tokenType],
+    [payments, submit, submitLedger, ticker],
   )
 
   const insufficientFunds = useMemo((): [
@@ -323,14 +319,14 @@ const PaymentScreen = () => {
     if (paymentState.networkFee?.integerBalance === undefined)
       return [false, '']
     try {
-      if (l1Network === 'solana_dev') {
+      if (l1Network === 'solana') {
         const hasEnoughSol =
           solBalance.minus(paymentState.networkFee).integerBalance >= 0
         let hasEnoughToken = false
-        if (tokenType === TokenType.Mobile) {
+        if (ticker === 'MOBILE') {
           hasEnoughToken =
             mobileBalance.minus(paymentState.totalAmount).integerBalance >= 0
-        } else if (tokenType === TokenType.Hnt) {
+        } else if (ticker === 'HNT') {
           hasEnoughToken =
             networkBalance.minus(paymentState.totalAmount).integerBalance >= 0
         }
@@ -339,7 +335,7 @@ const PaymentScreen = () => {
         return [false, '']
       }
 
-      if (tokenType === TokenType.Mobile) {
+      if (ticker === 'MOBILE') {
         // If paying with mobile, they need to have enough mobile to cover the payment
         // and enough hnt to cover the fee
         const hasEnoughNetwork =
@@ -372,7 +368,7 @@ const PaymentScreen = () => {
     paymentState.networkFee,
     paymentState.totalAmount,
     solBalance,
-    tokenType,
+    ticker,
   ])
 
   const selfPay = useMemo(
@@ -437,7 +433,7 @@ const PaymentScreen = () => {
           case 'helium':
             addressValid = !!(p.address && Address.isValid(p.address))
             break
-          case 'solana_dev':
+          case 'solana':
             addressValid = !!(p.address && solAddressIsValid(p.address))
             break
         }
@@ -461,16 +457,16 @@ const PaymentScreen = () => {
     tokenSelectorRef?.current?.showTokens()
   }, [])
 
-  const onTokenSelected = useCallback(
-    (token: TokenType) => {
-      setTokenType(token)
+  const onTickerSelected = useCallback(
+    (tick: Ticker) => {
+      setTicker(tick)
 
       dispatch({
         type: 'changeToken',
-        currencyType: currencyTypeFromTokenType(token),
+        currencyType: CurrencyType.fromTicker(tick),
       })
     },
-    [currencyTypeFromTokenType, dispatch],
+    [dispatch],
   )
 
   const handleAddressBookSelected = useCallback(
@@ -555,7 +551,7 @@ const PaymentScreen = () => {
         case 'helium':
           invalidAddress = !!address && !Address.isValid(address)
           break
-        case 'solana_dev':
+        case 'solana':
           invalidAddress = !!address && !solAddressIsValid(address)
           break
       }
@@ -630,14 +626,14 @@ const PaymentScreen = () => {
 
   const handleShowAccounts = useCallback(() => {
     let accts = [] as CSAccount[]
-    if (l1Network === 'solana_dev') {
+    if (l1Network === 'solana') {
       accts = sortedAccountsForNetType(NetTypes.MAINNET)
     } else {
       accts = sortedAccountsForNetType(networkType)
     }
     if (accts.length < 2) return
 
-    const netType = l1Network === 'solana_dev' ? NetTypes.MAINNET : networkType
+    const netType = l1Network === 'solana' ? NetTypes.MAINNET : networkType
 
     showAccountTypes(netType)()
   }, [l1Network, networkType, showAccountTypes, sortedAccountsForNetType])
@@ -647,16 +643,17 @@ const PaymentScreen = () => {
       <HNTKeyboard
         ref={hntKeyboardRef}
         onConfirmBalance={handleBalance}
-        tokenType={tokenType}
+        ticker={ticker}
         networkFee={paymentState.networkFee}
       >
         <AddressBookSelector
           ref={addressBookRef}
           onContactSelected={handleContactSelected}
+          hideCurrentAccount
         >
           <TokenSelector
             ref={tokenSelectorRef}
-            onTokenSelected={onTokenSelected}
+            onTokenSelected={onTickerSelected}
           >
             <Box flex={1} style={containerStyle}>
               <Box
@@ -713,14 +710,14 @@ const PaymentScreen = () => {
                   backgroundColor="secondary"
                   title={t('payment.title', { ticker: currencyType.ticker })}
                   subtitle={balanceToString(
-                    tokenType === 'hnt' ? networkBalance : mobileBalance,
+                    ticker === 'HNT' ? networkBalance : mobileBalance,
                   )}
                   address={currentAccount?.address}
                   netType={currentAccount?.netType}
                   onPress={handleTokenTypeSelected}
                   showBubbleArrow
                   marginHorizontal="l"
-                  tokenType={tokenType}
+                  ticker={ticker}
                 />
 
                 {paymentState.payments.map((p, index) => (
@@ -728,7 +725,7 @@ const PaymentScreen = () => {
                   <React.Fragment key={index}>
                     <PaymentItem
                       {...p}
-                      hideMemo={l1Network === 'solana_dev'}
+                      hideMemo={l1Network === 'solana'}
                       marginTop={index === 0 ? 'xs' : 'none'}
                       marginBottom="l"
                       hasError={
@@ -777,7 +774,7 @@ const PaymentScreen = () => {
               </KeyboardAwareScrollView>
 
               <PaymentCard
-                tokenType={tokenType}
+                ticker={ticker}
                 totalBalance={paymentState.totalAmount}
                 feeTokenBalance={paymentState.networkFee}
                 disabled={!isFormValid}

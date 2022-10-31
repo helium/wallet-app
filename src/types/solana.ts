@@ -1,5 +1,6 @@
+import { Ticker } from '@helium/currency'
 import * as web3 from '@solana/web3.js'
-import { TokenType } from './activity'
+import { Mints } from '../store/slices/walletRestApi'
 
 export type SolPayment = {
   destination: string
@@ -18,32 +19,14 @@ export type SolPaymentInfo = {
   wallet: string
 }
 
-export const Mint = {
-  HNT: new web3.PublicKey('hntg4GdrpMBW8bqs4R2om4stE6uScPRhPKWAarzoWKP'),
-  MOBILE: new web3.PublicKey('mob1r1x3raXXoH42RZwxTxgbAuKkBQzTAQqSjkUdZbd'),
-  DC: new web3.PublicKey('dcr5SHHfQixyb5YT7J1hgbWvgxvBpn65bpCyx6pTiKo'),
-} as const
-
-export const mintToTokenType = (mint: string) => {
-  switch (mint) {
-    case Mint.DC.toBase58():
-      return TokenType.Dc
-    case Mint.MOBILE.toBase58():
-      return TokenType.Mobile
-    case Mint.HNT.toBase58():
-    default:
-      return TokenType.Hnt
-  }
+export const toMintAddress = (symbol: string, mints: Mints) => {
+  const ticker = symbol.toUpperCase() as Ticker
+  return mints[ticker]
 }
 
-export const tokenTypeToMint = (tokenType: TokenType) => {
-  switch (tokenType) {
-    case TokenType.Dc:
-      return Mint.DC
-    case TokenType.Mobile:
-      return Mint.MOBILE
-    case TokenType.Hnt:
-    default:
-      return Mint.HNT
-  }
+export const mintToTicker = (mint: string, mints: Mints) => {
+  const found = Object.keys(mints).find((key) => mints[key as Ticker] === mint)
+  if (!found) throw new Error('Token type for mint not found')
+
+  return found as Ticker
 }

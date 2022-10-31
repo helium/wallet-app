@@ -54,7 +54,7 @@ const AccountButton = ({
   })
 
   const textColor = useMemo((): Color => {
-    if (l1Network === 'solana_dev' || netType === NetType.TESTNET)
+    if (l1Network === 'solana' || netType === NetType.TESTNET)
       return 'primaryText'
     return 'secondaryText'
   }, [l1Network, netType])

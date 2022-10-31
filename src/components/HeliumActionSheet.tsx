@@ -131,7 +131,7 @@ const HeliumActionSheet = forwardRef(
     const keyExtractor = useCallback((item) => item.value, [])
 
     const renderItem = useCallback(
-      ({ index, item: { label, value, Icon, action } }: ListItem) => {
+      ({ index, item: { label, value, Icon, action, disabled } }: ListItem) => {
         return (
           <HeliumActionSheetItem
             label={label}
@@ -139,6 +139,7 @@ const HeliumActionSheet = forwardRef(
             onPress={handleItemSelected(value, index, action)}
             selected={selected(value)}
             Icon={Icon}
+            disabled={disabled}
           />
         )
       },

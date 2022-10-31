@@ -6,6 +6,7 @@ import Balance, {
   SecurityTokens,
   AnyCurrencyType,
   SolTokens,
+  Ticker,
 } from '@helium/currency'
 import { times } from 'lodash'
 import { useNavigation } from '@react-navigation/native'
@@ -29,10 +30,9 @@ import TokenIcon from './TokenIcon'
 import { useBreakpoints } from '../../theme/themeHooks'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import useLayoutHeight from '../../utils/useLayoutHeight'
-import { TokenType } from '../../types/activity'
 
 type Token = {
-  type: TokenType
+  type: Ticker
   balance: Balance<AnyCurrencyType>
   staked: boolean
 }
@@ -59,50 +59,51 @@ const AccountTokenList = ({ loading = false }: Props) => {
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
 
-  const tokens = useMemo((): {
-    type: TokenType
-    balance: Balance<AnyCurrencyType>
-    staked: boolean
-  }[] => {
+  const tokens = useMemo(() => {
     if (loading) {
       return []
     }
-    return [
+    const allTokens = [
       {
-        type: TokenType.Hnt,
+        type: 'HNT',
         balance: networkBalance as Balance<NetworkTokens>,
         staked: false,
       },
       {
-        type: TokenType.Hnt,
+        type: 'HNT',
         balance: networkStakedBalance as Balance<NetworkTokens>,
         staked: true,
       },
       {
-        type: TokenType.Mobile,
+        type: 'MOBILE',
         balance: mobileBalance as Balance<MobileTokens>,
         staked: false,
       },
       {
-        type: TokenType.Dc,
+        type: 'DC',
         balance: dcBalance as Balance<DataCredits>,
         staked: false,
       },
       {
-        type: TokenType.Hst,
+        type: 'HST',
         balance: secBalance as Balance<SecurityTokens>,
         staked: false,
       },
       {
-        type: TokenType.Sol,
+        type: 'SOL',
         balance: solBalance as Balance<SolTokens>,
         staked: false,
       },
-    ].filter(
+    ] as {
+      type: Ticker
+      balance: Balance<AnyCurrencyType>
+      staked: boolean
+    }[]
+    return allTokens.filter(
       (token) =>
         token?.balance?.integerBalance > 0 ||
-        token?.type === TokenType.Mobile ||
-        (token?.type === TokenType.Hnt && token?.staked === false),
+        token?.type === 'MOBILE' ||
+        (token?.type === 'HNT' && token?.staked === false),
     )
   }, [
     dcBalance,
@@ -116,7 +117,7 @@ const AccountTokenList = ({ loading = false }: Props) => {
 
   const handleNavigation = useCallback(
     (token: Token) => () => {
-      if (token.type === 'sol') {
+      if (token.type === 'SOL') {
         return
       }
       navigation.navigate('AccountTokenScreen', { tokenType: token.type })
@@ -144,12 +145,12 @@ const AccountTokenList = ({ loading = false }: Props) => {
     }: {
       // eslint-disable-next-line react/no-unused-prop-types
       item: {
-        type: TokenType
+        type: Ticker
         balance: Balance<AnyCurrencyType>
         staked: boolean
       }
     }) => {
-      const disabled = token.type === 'sol'
+      const disabled = token.type === 'SOL'
       return (
         <Animated.View entering={FadeIn} exiting={FadeOut}>
           <TouchableOpacityBox
@@ -164,7 +165,7 @@ const AccountTokenList = ({ loading = false }: Props) => {
             borderBottomWidth={1}
             disabled={disabled}
           >
-            <TokenIcon tokenType={token.type} />
+            <TokenIcon ticker={token.type} />
             <Box flex={1} paddingHorizontal="m">
               <Box flexDirection="row">
                 <Text
@@ -188,7 +189,7 @@ const AccountTokenList = ({ loading = false }: Props) => {
                 <AccountTokenCurrencyBalance
                   variant="subtitle4"
                   color="secondaryText"
-                  tokenType={token.type}
+                  ticker={token.type}
                   staked={token.staked}
                 />
               )}

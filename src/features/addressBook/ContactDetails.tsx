@@ -70,7 +70,7 @@ const ContactDetails = ({ action, contact }: Props) => {
   const spacing = useSpacing()
   const { showOKCancelAlert } = useAlert()
 
-  const isSolana = useMemo(() => l1Network === 'solana_dev', [l1Network])
+  const isSolana = useMemo(() => l1Network === 'solana', [l1Network])
   const backgroundColor = useNetworkColor({ netType: currentAccount?.netType })
 
   useEffect(() => {

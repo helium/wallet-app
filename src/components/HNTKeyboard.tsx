@@ -19,6 +19,7 @@ import Balance, {
   NetworkTokens,
   SolTokens,
   TestNetworkTokens,
+  Ticker,
 } from '@helium/currency'
 import { useTranslation } from 'react-i18next'
 import PaymentArrow from '@assets/images/paymentArrow.svg'
@@ -48,7 +49,6 @@ import { CSAccount } from '../storage/cloudStorage'
 import useBackHandler from '../utils/useBackHandler'
 import { Payment } from '../features/payment/PaymentItem'
 import { useAppStorage } from '../storage/AppStorageProvider'
-import { TokenType } from '../types/activity'
 
 type ShowOptions = {
   payer?: CSAccount | null
@@ -65,7 +65,7 @@ export type HNTKeyboardRef = {
 }
 
 type Props = {
-  tokenType: TokenType
+  ticker: Ticker
   networkFee?: Balance<NetworkTokens | TestNetworkTokens | SolTokens>
   children: ReactNode
   handleVisible?: (visible: boolean) => void
@@ -81,7 +81,7 @@ const HNTKeyboardSelector = forwardRef(
       children,
       onConfirmBalance,
       handleVisible,
-      tokenType,
+      ticker,
       networkFee,
       ...boxProps
     }: Props,
@@ -112,9 +112,9 @@ const HNTKeyboardSelector = forwardRef(
     } = useBalance()
     const [timeStr, setTimeStr] = useState('')
 
-    const balanceForTokenType = useMemo(
-      () => (tokenType === TokenType.Hnt ? networkBalance : mobileBalance),
-      [mobileBalance, networkBalance, tokenType],
+    const balanceForTicker = useMemo(
+      () => (ticker === 'HNT' ? networkBalance : mobileBalance),
+      [mobileBalance, networkBalance, ticker],
     )
 
     const snapPoints = useMemo(() => {
@@ -123,7 +123,7 @@ const HNTKeyboardSelector = forwardRef(
     }, [containerHeight, headerHeight])
 
     useEffect(() => {
-      if (l1Network === 'solana_dev') return
+      if (l1Network === 'solana') return
       const timer = setTimeout(() => {
         if (!oracleDateTime) return '???'
 
@@ -150,8 +150,8 @@ const HNTKeyboardSelector = forwardRef(
         .replaceAll(groupSeparator, '')
         .replaceAll(decimalSeparator, '.')
       const numberVal = parseFloat(stripped)
-      return floatToBalance(numberVal, tokenType)
-    }, [floatToBalance, tokenType, value])
+      return floatToBalance(numberVal, ticker)
+    }, [floatToBalance, ticker, value])
 
     const hasMaxDecimals = useMemo(() => {
       if (!valueAsBalance) return false
@@ -219,10 +219,10 @@ const HNTKeyboardSelector = forwardRef(
             return prev
           }
           return prev.plus(current.amount)
-        }, bonesToBalance(0, tokenType))
+        }, bonesToBalance(0, ticker))
 
       let maxBalance: Balance<NetworkTokens | TestNetworkTokens> | undefined
-      if (tokenType === TokenType.Hnt) {
+      if (ticker === 'HNT') {
         maxBalance = networkBalance.minus(currentAmount)
         if (l1Network === 'helium') {
           maxBalance = maxBalance.minus(networkFee)
@@ -232,7 +232,7 @@ const HNTKeyboardSelector = forwardRef(
       }
 
       if (maxBalance.integerBalance < 0) {
-        maxBalance = bonesToBalance(0, tokenType)
+        maxBalance = bonesToBalance(0, ticker)
       }
 
       const decimalPlaces = maxBalance.type.decimalPlaces.toNumber()
@@ -251,7 +251,7 @@ const HNTKeyboardSelector = forwardRef(
       networkFee,
       getNextPayments,
       bonesToBalance,
-      tokenType,
+      ticker,
       maxEnabled,
       paymentIndex,
       l1Network,
@@ -305,7 +305,7 @@ const HNTKeyboardSelector = forwardRef(
               >
                 {payer
                   ? t('hntKeyboard.hntAvailable', {
-                      amount: balanceToString(balanceForTokenType, {
+                      amount: balanceToString(balanceForTicker, {
                         maxDecimalPlaces: 4,
                       }),
                     })
@@ -316,7 +316,7 @@ const HNTKeyboardSelector = forwardRef(
         </BottomSheetBackdrop>
       ),
       [
-        balanceForTokenType,
+        balanceForTicker,
         containerStyle,
         handleHeaderLayout,
         payeeAddress,
@@ -381,14 +381,14 @@ const HNTKeyboardSelector = forwardRef(
         return false
       }
 
-      if (l1Network === 'solana_dev') {
-        if (tokenType === TokenType.Mobile) {
+      if (l1Network === 'solana') {
+        if (ticker === 'MOBILE') {
           return mobileBalance.minus(valueAsBalance).integerBalance >= 0
         }
         return networkBalance.minus(valueAsBalance).integerBalance >= 0
       }
 
-      if (tokenType === TokenType.Mobile) {
+      if (ticker === 'MOBILE') {
         // If paying with mobile, they need to have enough mobile to cover the payment
         // and enough hnt to cover the fee
         const hasEnoughHnt =
@@ -407,7 +407,7 @@ const HNTKeyboardSelector = forwardRef(
       networkBalance,
       networkFee,
       payer,
-      tokenType,
+      ticker,
       valueAsBalance,
     ])
 
