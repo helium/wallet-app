@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { Dimensions, ScrollView, LogBox } from 'react-native'
+import { ScrollView, LogBox } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
@@ -15,6 +15,7 @@ import Box from '../../components/Box'
 import ImageBox from '../../components/ImageBox'
 import ButtonPressable from '../../components/ButtonPressable'
 import Text from '../../components/Text'
+import { ww } from '../../utils/layout'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -25,7 +26,7 @@ type Route = RouteProp<HomeStackParamList, 'AccountCollectableScreen'>
 const AccountCollectableScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<HomeNavigationProp>()
-  const COLLECTABLE_HEIGHT = Dimensions.get('window').width
+  const COLLECTABLE_HEIGHT = ww
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const { t } = useTranslation()
 
@@ -42,14 +43,14 @@ const AccountCollectableScreen = () => {
         key={`${traitType}+${traitValue}`}
       >
         <Text variant="body2" fontWeight="bold" color="grey600">
-          {traitType?.toUpperCase() || 'No trait type'}
+          {traitType?.toUpperCase() || t('collectables.noTraitType')}
         </Text>
         <Text variant="body1" color="white">
-          {traitValue || 'No trait value'}
+          {traitValue || t('collectables.noTraitValue')}
         </Text>
       </Box>
     ),
-    [],
+    [t],
   )
 
   const handleSend = useCallback(() => {
@@ -77,7 +78,7 @@ const AccountCollectableScreen = () => {
             flex={1}
             padding="m"
           >
-            {collectable.json ? (
+            {collectable.json && (
               <ImageBox
                 backgroundColor="surface"
                 height={COLLECTABLE_HEIGHT}
@@ -85,7 +86,7 @@ const AccountCollectableScreen = () => {
                 source={{ uri: collectable.json.image }}
                 borderRadius="m"
               />
-            ) : null}
+            )}
             <ButtonPressable
               marginTop="m"
               borderRadius="round"
@@ -106,10 +107,10 @@ const AccountCollectableScreen = () => {
               color="grey600"
               marginBottom="s"
             >
-              Description
+              {t('collectables.description')}
             </Text>
             <Text variant="body1" marginBottom="xl">
-              {collectable.json.description || 'No description'}
+              {collectable.json.description || t('collectables.noDescription')}
             </Text>
             <Text
               variant="body1"
@@ -117,13 +118,12 @@ const AccountCollectableScreen = () => {
               color="grey600"
               marginBottom="s"
             >
-              Properties
+              {t('collectables.properties')}
             </Text>
             <Box flex={1} flexDirection="row">
-              {collectable.json.attributes &&
-                collectable.json.attributes.map(({ trait_type, value }) =>
-                  renderProperty(trait_type, value),
-                )}
+              {collectable.json.attributes?.map(({ trait_type, value }) =>
+                renderProperty(trait_type, value),
+              )}
             </Box>
           </SafeAreaBox>
         </ScrollView>

@@ -386,6 +386,13 @@ export default {
     '23rd',
     '24th',
   ],
+  collectables: {
+    noTraitType: 'No trait type',
+    noTraitValue: 'No trait value',
+    noDescription: 'No description',
+    description: 'Description',
+    properties: 'Properties',
+  },
   payment: {
     addRecipient: '+ Add Recipient',
     backToAccounts: 'Back to Accounts',

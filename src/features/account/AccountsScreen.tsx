@@ -300,7 +300,7 @@ const AccountsScreen = () => {
       {walletsVisible && (
         <ConnectedWallets
           onClose={toggleWalletsVisible}
-          onAddNew={() => <>{handleAddNew()}</>}
+          onAddNew={handleAddNew}
           topOffset={navLayoutHeight + top}
         />
       )}

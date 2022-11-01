@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { Dimensions, Image, ViewStyle, LogBox } from 'react-native'
+import { Dimensions, Image, ViewStyle, LogBox, FlatList } from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
@@ -13,6 +13,7 @@ import SafeAreaBox from '../../components/SafeAreaBox'
 import { DelayedFadeIn } from '../../components/FadeInOut'
 import globalStyles from '../../theme/globalStyles'
 import Box from '../../components/Box'
+import { useBorderRadii } from '../../theme/themeHooks'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -28,6 +29,8 @@ const AccountCollectionScreen = () => {
   const collectables = route.params.collection
 
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
+
+  const { lm: borderRadius } = useBorderRadii()
 
   const handleNavigateToCollectable = useCallback(
     (collectable: Sft | SftWithToken | Nft | NftWithToken) => {
@@ -56,7 +59,7 @@ const AccountCollectionScreen = () => {
             onPress={() => handleNavigateToCollectable(item)}
           >
             <Image
-              borderRadius={10}
+              borderRadius={borderRadius}
               style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
               source={{
                 uri: json?.image,
@@ -66,7 +69,7 @@ const AccountCollectionScreen = () => {
         </Animated.View>
       )
     },
-    [COLLECTABLE_HEIGHT, handleNavigateToCollectable],
+    [COLLECTABLE_HEIGHT, borderRadius, handleNavigateToCollectable],
   )
 
   const keyExtractor = useCallback(
@@ -75,8 +78,6 @@ const AccountCollectionScreen = () => {
     },
     [],
   )
-
-  const contentContainerStyle = useMemo(() => ({}), [])
 
   const backgroundColor = useNetworkColor({})
 
@@ -94,11 +95,10 @@ const AccountCollectionScreen = () => {
           flex={1}
           marginTop="s"
         >
-          <Animated.FlatList
+          <FlatList
             scrollEnabled
             data={collectables}
             numColumns={2}
-            contentContainerStyle={contentContainerStyle}
             renderItem={renderCollectable}
             columnWrapperStyle={{ flexDirection: 'row' } as ViewStyle}
             keyExtractor={keyExtractor}
