@@ -511,7 +511,7 @@ export const groupCollectablesWithMetaData = (
   collectables: (Sft | SftWithToken | Nft | NftWithToken)[],
 ) => {
   const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const { symbol } = cur.json as any
+    const { symbol } = cur.json as Sft | SftWithToken | Nft | NftWithToken
     if (!acc[symbol]) {
       acc[symbol] = [cur]
     } else {
