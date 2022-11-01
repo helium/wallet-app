@@ -1,4 +1,11 @@
-import React, { memo, useCallback, useMemo, useState } from 'react'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import Balance, {
   DataCredits,
   MobileTokens,
@@ -20,7 +27,6 @@ import {
 } from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { Edge } from 'react-native-safe-area-context'
-import { useAsync } from 'react-async-hook'
 import 'text-encoding-polyfill'
 import {
   JsonMetadata,
@@ -43,13 +49,16 @@ import { useBreakpoints } from '../../theme/themeHooks'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import useLayoutHeight from '../../utils/useLayoutHeight'
 import SafeAreaBox from '../../components/SafeAreaBox'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import * as Logger from '../../utils/logger'
 import {
+  onLogs,
+  removeAccountChangeListener,
   getCollectables,
   getCollectablesMetadata,
   groupCollectables,
-} from '../../utils/accountUtils'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import * as Logger from '../../utils/logger'
+  groupCollectablesWithMetaData,
+} from '../../utils/solanaUtils'
 
 const breadcrumbOpts = { category: 'AccountTokens' }
 
@@ -79,15 +88,20 @@ const AccountTokenList = ({
     secBalance,
     solBalance,
   } = useBalance()
-  const { currentNetworkAddress } = useAccountStorage()
+  const accountSubscriptionId = useRef<number>()
+  const {
+    currentNetworkAddress,
+    currentAccount,
+    solanaNetwork: cluster,
+  } = useAccountStorage()
   const navigation = useNavigation<HomeNavigationProp>()
   const [listItemHeight, setListItemHeight] = useLayoutHeight()
   const breakpoints = useBreakpoints()
   const COLLECTABLE_HEIGHT = Dimensions.get('window').width / 2
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [collectables, setCollectables] = useState<
-    Metadata<JsonMetadata<string>>[]
-  >([])
+    Record<string, Metadata<JsonMetadata<string>>[]>
+  >({})
   const [collectablesWithMeta, setCollectableWithMeta] = useState<
     Record<string, (Sft | SftWithToken | Nft | NftWithToken)[]>
   >({})
@@ -106,12 +120,14 @@ const AccountTokenList = ({
       const metaplex = new Metaplex(connection, { cluster: 'devnet' })
       const pubKey = new PublicKey(currentNetworkAddress)
       const fetchedCollectables = await getCollectables(pubKey, metaplex)
-      setCollectables(fetchedCollectables)
+      setCollectables(groupCollectables(fetchedCollectables))
       const collectablesWithMetadata = await getCollectablesMetadata(
         fetchedCollectables,
         metaplex,
       )
-      const groupedCollectables = groupCollectables(collectablesWithMetadata)
+      const groupedCollectables = groupCollectablesWithMetaData(
+        collectablesWithMetadata,
+      )
       setLoadingCollectables(false)
       setCollectableWithMeta(groupedCollectables)
     } catch (e) {
@@ -120,15 +136,25 @@ const AccountTokenList = ({
     }
   }, [currentNetworkAddress])
 
-  useAsync(async () => {
-    if (!showCollectables) {
-      setCollectables([])
-      setCollectableWithMeta({})
+  useEffect(() => {
+    if (!currentAccount?.solanaAddress) {
       return
     }
 
-    await fetchCollectables()
-  }, [currentNetworkAddress, showCollectables])
+    setCollectables({})
+    setCollectableWithMeta({})
+    fetchCollectables()
+
+    const subId = onLogs(cluster, currentAccount?.solanaAddress, () => {
+      setCollectables({})
+      setCollectableWithMeta({})
+      fetchCollectables()
+    })
+    if (accountSubscriptionId.current !== undefined) {
+      removeAccountChangeListener(cluster, accountSubscriptionId.current)
+    }
+    accountSubscriptionId.current = subId
+  }, [cluster, currentAccount, fetchCollectables])
 
   const tokens = useMemo(() => {
     if (loading || showCollectables) {
@@ -208,9 +234,15 @@ const AccountTokenList = ({
 
   const hanleCollectableNavigation = useCallback(
     (collection: (Sft | SftWithToken | Nft | NftWithToken)[]) => () => {
-      navigation.navigate('AccountCollectionScreen', {
-        collection,
-      })
+      if (collection.length > 1) {
+        navigation.navigate('AccountCollectionScreen', {
+          collection,
+        })
+      } else {
+        navigation.navigate('AccountCollectableScreen', {
+          collectable: collection[0],
+        })
+      }
     },
     [navigation],
   )
@@ -412,7 +444,7 @@ const AccountTokenList = ({
     if (loadingCollectables && showCollectables) {
       return (
         <Box flex={1} flexDirection="row">
-          {times(collectables.length).map((i) =>
+          {times(Object.keys(collectables).length).map((i) =>
             renderCollectableSkeletonItem(i),
           )}
         </Box>
@@ -421,7 +453,7 @@ const AccountTokenList = ({
 
     return <>{times(maxVisibleTokens).map((i) => renderSkeletonItem(i))}</>
   }, [
-    collectables.length,
+    collectables,
     loading,
     loadingCollectables,
     maxVisibleTokens,

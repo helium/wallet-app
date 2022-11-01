@@ -6,11 +6,15 @@ import Balance, {
   Ticker,
 } from '@helium/currency'
 import { PaymentV2 } from '@helium/transactions'
+import { Nft, NftWithToken, Sft, SftWithToken } from '@metaplex-foundation/js'
 import { useTransactions } from '../storage/TransactionProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAccountLazyQuery, useSubmitTxnMutation } from '../generated/graphql'
 import { useAppStorage } from '../storage/AppStorageProvider'
-import { makePayment } from '../store/slices/solanaSlice'
+import {
+  makeCollectablePayment,
+  makePayment,
+} from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import { useGetMintsQuery } from '../store/slices/walletRestApi'
 
@@ -132,6 +136,21 @@ export default () => {
     [l1Network, submitHelium, submitSolDev],
   )
 
+  const submitCollectable = useCallback(
+    async (
+      collectable: Nft | NftWithToken | Sft | SftWithToken,
+      payee: string,
+    ) => {
+      if (!currentAccount) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+      dispatch(
+        makeCollectablePayment({ account: currentAccount, collectable, payee }),
+      )
+    },
+    [currentAccount, dispatch],
+  )
+
   const submitHeliumLedger = useCallback(
     async ({ txn, txnJson }: { txn: PaymentV2; txnJson: string }) => {
       if (!currentAccount?.address) {
@@ -164,6 +183,7 @@ export default () => {
 
   return {
     submit,
+    submitCollectable,
     submitLedger,
     data,
     error: accountError || submitError || nonceError,

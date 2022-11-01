@@ -11,6 +11,7 @@ export type PaymentRouteParam = {
   memo?: string
   netType?: string
   defaultTokenType?: Ticker
+  collectable?: Sft | SftWithToken | Nft | NftWithToken
 }
 
 export type BurnRouteParam = {

@@ -29,6 +29,7 @@ type Props = {
   errors?: string[]
   payments?: SendDetails[]
   ticker: Ticker
+  collectableSymbol?: string
 }
 
 const PaymentCard = ({
@@ -39,6 +40,7 @@ const PaymentCard = ({
   ticker,
   payments,
   errors,
+  collectableSymbol,
 }: Props) => {
   const { t } = useTranslation()
   const [payEnabled, setPayEnabled] = useState(false)
@@ -135,6 +137,7 @@ const PaymentCard = ({
           disabled={disabled}
           payments={payments}
           errors={errors}
+          collectableSymbol={collectableSymbol}
         />
         <Box flex={1} justifyContent="flex-end">
           {!payEnabled ? (
@@ -181,7 +184,7 @@ const PaymentCard = ({
             <SubmitButton
               marginTop="l"
               title={t('payment.sendButton', {
-                ticker: totalBalance?.type.ticker,
+                ticker: collectableSymbol || totalBalance?.type.ticker,
               })}
               onSubmit={handleSubmit}
             />
