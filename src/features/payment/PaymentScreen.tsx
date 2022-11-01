@@ -730,7 +730,7 @@ const PaymentScreen = () => {
                     backgroundColor="secondary"
                     title={t('payment.title', { ticker: currencyType.ticker })}
                     subtitle={balanceToString(
-                      ticker === 'hnt' ? networkBalance : mobileBalance,
+                      ticker === 'HNT' ? networkBalance : mobileBalance,
                     )}
                     address={currentAccount?.address}
                     netType={currentAccount?.netType}

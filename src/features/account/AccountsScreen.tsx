@@ -190,7 +190,7 @@ const AccountsScreen = () => {
 
   useEffect(() => {
     if (enableSolana) {
-      setL1Network('solana_dev')
+      setL1Network('solana')
     } else {
       setL1Network('helium')
     }

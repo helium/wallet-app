@@ -93,6 +93,7 @@ type CollectablePaymentInput = {
   account: CSAccount
   collectable: Sft | SftWithToken | Nft | NftWithToken
   payee: string
+  cluster: Cluster
 }
 
 export const makePayment = createAsyncThunk(
@@ -125,12 +126,13 @@ export const makePayment = createAsyncThunk(
 export const makeCollectablePayment = createAsyncThunk(
   'solana/makeCollectablePayment',
   async (
-    { account, collectable, payee }: CollectablePaymentInput,
+    { account, collectable, payee, cluster }: CollectablePaymentInput,
     { dispatch },
   ) => {
     if (!account?.solanaAddress) throw new Error('No solana account found')
 
     const transfer = await solUtils.transferCollectable(
+      cluster,
       account.solanaAddress,
       account.address,
       collectable,

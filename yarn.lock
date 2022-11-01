@@ -2455,6 +2455,15 @@
     js-sha256 "^0.9.0"
     multiformats "^9.6.4"
 
+"@helium/address@^4.8.1":
+  version "4.8.1"
+  resolved "https://registry.yarnpkg.com/@helium/address/-/address-4.8.1.tgz#d8d7cefc6aa7791d79eb8759befb821aaccec3ff"
+  integrity sha512-OEqX9j8m4sIc6bmvGUWV3/AHeuJCBWIl9EvRpS9xOPy+mC17OkDiPwZI35DSbMlAM7cK7+UjKYZvIVQL/aCgSQ==
+  dependencies:
+    bs58 "^5.0.0"
+    js-sha256 "^0.9.0"
+    multiformats "^9.6.4"
+
 "@helium/crypto-react-native@4.8.0":
   version "4.8.0"
   resolved "https://registry.yarnpkg.com/@helium/crypto-react-native/-/crypto-react-native-4.8.0.tgz#c9145189d8e93940298b6203a2f10e2a612cb930"
@@ -2519,7 +2528,7 @@
   resolved "https://registry.yarnpkg.com/@helium/react-native-sdk/-/react-native-sdk-1.0.0.tgz#41024fa99859490bd8a0b717f52acc11ae72f114"
   integrity sha512-Qi1Nnp/q2hsz2D7aeuM6LxXhNX8NrHz1U+PoQslwK2XfqPFZEYb4uAzjXDKlc+JBWPiF96GMJywv/ofxlZ9XLg==
 
-"@helium/transactions@4.7.5", "@helium/transactions@^4.1.0", "@helium/transactions@^4.7.5":
+"@helium/transactions@4.7.5", "@helium/transactions@^4.1.0", "@helium/transactions@^4.8.1":
   version "4.7.5"
   resolved "https://registry.yarnpkg.com/@helium/transactions/-/transactions-4.7.5.tgz#a50d3e59524e038dfdd0e35b64468e1c312c3a1d"
   integrity sha512-SCJI9lYVUTec9Ub60TpYcMEKmdiTV4qjib8yh63C4l1ACM5sHMSHoJwKSVxpjEEA8q+j6fnEBBEnJMtTSoK9/Q==
@@ -2530,13 +2539,13 @@
     long "^4.0.0"
     path "^0.12.7"
 
-"@helium/wallet-link@4.7.5":
-  version "4.7.5"
-  resolved "https://registry.yarnpkg.com/@helium/wallet-link/-/wallet-link-4.7.5.tgz#7345deafbfd0aca5c42bdfd0ead042b455cdb65e"
-  integrity sha512-OiXTbVlSGkZ33Q+qdoPnOTrmdIV94JzhSa2AUI3rrw926oiFUfOOt3Ui8jTstrruZNuUZoi6RS6X2MHMgd6fOQ==
+"@helium/wallet-link@^4.8.1":
+  version "4.8.1"
+  resolved "https://registry.yarnpkg.com/@helium/wallet-link/-/wallet-link-4.8.1.tgz#435ce81e3023f3be113551f5aaa60e2598bf749a"
+  integrity sha512-BpYn1cnxEdlpghW0aXK0ZYNec6F5LkUY9bnojJ9Q/3VvRYiwtJlwbFfs71VoH1Bm6kAREgHAIOCbHzCmEyvWIQ==
   dependencies:
-    "@helium/address" "^4.6.2"
-    "@helium/transactions" "^4.7.5"
+    "@helium/address" "^4.8.1"
+    "@helium/transactions" "^4.8.1"
     date-fns "^2.28.0"
     query-string "^7.1.1"
 

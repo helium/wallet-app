@@ -145,10 +145,15 @@ export default () => {
         throw new Error('There must be an account selected to submit a txn')
       }
       dispatch(
-        makeCollectablePayment({ account: currentAccount, collectable, payee }),
+        makeCollectablePayment({
+          account: currentAccount,
+          collectable,
+          payee,
+          cluster,
+        }),
       )
     },
-    [currentAccount, dispatch],
+    [cluster, currentAccount, dispatch],
   )
 
   const submitHeliumLedger = useCallback(

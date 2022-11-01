@@ -50,6 +50,8 @@ import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import useLayoutHeight from '../../utils/useLayoutHeight'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { useAppStorage } from '../../storage/AppStorageProvider'
+
 import * as Logger from '../../utils/logger'
 import {
   onLogs,
@@ -89,11 +91,8 @@ const AccountTokenList = ({
     solBalance,
   } = useBalance()
   const accountSubscriptionId = useRef<number>()
-  const {
-    currentNetworkAddress,
-    currentAccount,
-    solanaNetwork: cluster,
-  } = useAccountStorage()
+  const { currentNetworkAddress, currentAccount } = useAccountStorage()
+  const { solanaNetwork: cluster, enableSolana } = useAppStorage()
   const navigation = useNavigation<HomeNavigationProp>()
   const [listItemHeight, setListItemHeight] = useLayoutHeight()
   const breakpoints = useBreakpoints()
@@ -109,7 +108,7 @@ const AccountTokenList = ({
 
   const fetchCollectables = useCallback(async () => {
     setLoadingCollectables(true)
-    if (!currentNetworkAddress) return
+    if (!currentNetworkAddress || !enableSolana) return
 
     try {
       const connection = new Connection(
@@ -134,7 +133,7 @@ const AccountTokenList = ({
       Logger.breadcrumb('Solana getCollectables - fail', breadcrumbOpts)
       Logger.error(e)
     }
-  }, [currentNetworkAddress])
+  }, [currentNetworkAddress, enableSolana])
 
   useEffect(() => {
     if (!currentAccount?.solanaAddress) {
@@ -385,7 +384,7 @@ const AccountTokenList = ({
 
       const currencyType = token as Token
 
-      const disabled = currencyType.type === 'sol'
+      const disabled = token.type === 'SOL'
       return (
         <Animated.View entering={FadeIn} exiting={FadeOut}>
           <TouchableOpacityBox
