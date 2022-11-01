@@ -261,6 +261,7 @@ export const theme = createTheme({
   breakpoints: {
     smallPhone: 0,
     phone: 380,
+    largePhone: 430,
     tablet: 768,
   },
   cardVariants: {
