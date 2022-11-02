@@ -41,7 +41,7 @@ const ShareAddressScreen = () => {
     ]
   }, [])
 
-  const { enableSolana } = useAppStorage()
+  const { l1Network } = useAppStorage()
 
   const [selectedOption, setSelectedOption] = useState(tabData[0].value)
 
@@ -106,7 +106,7 @@ const ShareAddressScreen = () => {
           alignItems="center"
           marginBottom="xxxl"
         >
-          {enableSolana && (
+          {l1Network === 'solana' && (
             <TabBar
               tabBarOptions={tabData}
               selectedValue={selectedOption}

@@ -92,7 +92,7 @@ const AccountTokenList = ({
   } = useBalance()
   const accountSubscriptionId = useRef<number>()
   const { currentNetworkAddress, currentAccount } = useAccountStorage()
-  const { solanaNetwork: cluster, enableSolana } = useAppStorage()
+  const { solanaNetwork: cluster, l1Network } = useAppStorage()
   const navigation = useNavigation<HomeNavigationProp>()
   const [listItemHeight, setListItemHeight] = useLayoutHeight()
   const breakpoints = useBreakpoints()
@@ -108,7 +108,7 @@ const AccountTokenList = ({
 
   const fetchCollectables = useCallback(async () => {
     setLoadingCollectables(true)
-    if (!currentNetworkAddress || !enableSolana) return
+    if (!currentNetworkAddress || l1Network !== 'solana') return
 
     try {
       const connection = new Connection(
@@ -133,7 +133,7 @@ const AccountTokenList = ({
       Logger.breadcrumb('Solana getCollectables - fail', breadcrumbOpts)
       Logger.error(e)
     }
-  }, [currentNetworkAddress, enableSolana])
+  }, [currentNetworkAddress, l1Network])
 
   useEffect(() => {
     if (!currentAccount?.solanaAddress) {

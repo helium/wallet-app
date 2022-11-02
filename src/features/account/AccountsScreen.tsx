@@ -264,20 +264,29 @@ const AccountsScreen = () => {
                     <Box onTouchStart={onTouchStart} />
                   </Animated.View>
                   {l1Network === 'solana' &&
-                    currentAccount &&
-                    currentAccount.netType === NetTypes.MAINNET && (
-                      <TabBar
-                        backgroundColor="black"
-                        tabBarOptions={tabData}
-                        selectedValue={tokenType}
-                        onItemSelected={handleItemSelected}
-                        stretchItems
-                        marginBottom="s"
-                      />
-                    )}
+                  currentAccount &&
+                  currentAccount.netType === NetTypes.MAINNET ? (
+                    <TabBar
+                      backgroundColor="black"
+                      tabBarOptions={tabData}
+                      selectedValue={tokenType}
+                      onItemSelected={handleItemSelected}
+                      stretchItems
+                      marginBottom="ms"
+                    />
+                  ) : (
+                    <Box
+                      height={1}
+                      backgroundColor="surface"
+                      marginBottom="ms"
+                    />
+                  )}
                 </Box>
               }
-              showCollectables={tokenType === SPLTokenType.Collectables}
+              showCollectables={
+                tokenType === SPLTokenType.Collectables &&
+                l1Network === 'solana'
+              }
             />
           </>
         </Animated.View>
