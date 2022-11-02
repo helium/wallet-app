@@ -28,11 +28,7 @@ import {
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAccountSelector } from '../../components/AccountSelector'
 import AccountButton from '../../components/AccountButton'
-import {
-  TokenType,
-  useAccountQuery,
-  useSubmitTxnMutation,
-} from '../../generated/graphql'
+import { useAccountQuery, useSubmitTxnMutation } from '../../generated/graphql'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import PaymentSummary from '../payment/PaymentSummary'
 import SubmitButton from '../../components/SubmitButton'

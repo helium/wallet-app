@@ -31,11 +31,13 @@ const TabBarItem = ({
   iconSize,
   iconColor,
   value,
+  stretch,
 }: {
   selected: boolean
   onPress: () => void
   onLayout: (event: LayoutChangeEvent) => void
   hitSlop: Insets | undefined
+  stretch: boolean
 } & TabBarOption) => {
   const colors = useColors()
 
@@ -50,9 +52,11 @@ const TabBarItem = ({
       key={value}
       onPress={onPress}
       onLayout={onLayout}
-      marginRight="m"
+      marginRight={stretch ? 'none' : 'm'}
       hitSlop={hitSlop}
       alignItems="center"
+      flexGrow={stretch ? 1 : undefined}
+      flex={stretch ? 1 : undefined}
     >
       {Icon && (
         <Icon
@@ -85,12 +89,14 @@ type Props = {
   tabBarOptions: Array<TabBarOption>
   selectedValue: string
   onItemSelected: (value: string) => void
+  stretchItems?: boolean
 } & TouchableOpacityBoxProps
 
 const TabBar = ({
   tabBarOptions,
   selectedValue,
   onItemSelected,
+  stretchItems = false,
   ...containerProps
 }: Props) => {
   const hitSlop = useVerticalHitSlop('l')
@@ -136,6 +142,7 @@ const TabBar = ({
   const items = useMemo(() => {
     return tabBarOptions.map((o) => (
       <TabBarItem
+        stretch={stretchItems}
         key={o.value}
         selected={o.value === selectedValue}
         onLayout={handleLayout(o.value)}
@@ -144,7 +151,14 @@ const TabBar = ({
         {...o}
       />
     ))
-  }, [handleLayout, handlePress, hitSlop, selectedValue, tabBarOptions])
+  }, [
+    handleLayout,
+    handlePress,
+    hitSlop,
+    selectedValue,
+    stretchItems,
+    tabBarOptions,
+  ])
 
   return (
     <Box {...containerProps}>

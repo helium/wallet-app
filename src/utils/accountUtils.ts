@@ -1,7 +1,7 @@
 import Address, { NetTypes as NetType, utils } from '@helium/address'
 import { CurrencyType, Ticker } from '@helium/currency'
 import Bcrypt from 'bcrypt-react-native'
-import * as web3 from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import bs58 from 'bs58'
 
 export type L1Network = 'helium' | 'solana'
@@ -12,7 +12,7 @@ export const heliumAddressToSolAddress = (heliumAddress: string) => {
   try {
     if (typeof heliumAddress !== 'string') return ''
     const heliumPK = Address.fromB58(heliumAddress).publicKey
-    const pk = new web3.PublicKey(heliumPK)
+    const pk = new PublicKey(heliumPK)
     return pk.toBase58()
   } catch {
     return ''
@@ -21,8 +21,8 @@ export const heliumAddressToSolAddress = (heliumAddress: string) => {
 
 export const solAddressIsValid = (address: string) => {
   try {
-    const pubKey = new web3.PublicKey(address)
-    return web3.PublicKey.isOnCurve(pubKey)
+    const pubKey = new PublicKey(address)
+    return PublicKey.isOnCurve(pubKey)
   } catch {
     return false
   }
