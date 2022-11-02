@@ -28,7 +28,6 @@ const useAppStorageHook = () => {
   const [locked, setLocked] = useState<boolean>()
   const [convertToCurrency, setConvertToCurrency] = useState(false)
   const [enableTestnet, setEnableTestnet] = useState(false)
-  const [enableSolana, setEnableSolana] = useState(false)
   const [solanaNetwork, setSolanaNetwork] = useState<Cluster>('devnet')
   const [l1Network, setL1Network] = useState<L1Network>('helium')
   const [scannedAddress, setScannedAddress] = useState<string>()
@@ -46,7 +45,6 @@ const useAppStorageHook = () => {
       const nextCurrency = await getSecureItem('currency')
       const nextConvertToCurrency = await getSecureItem('convertToCurrency')
       const nextEnableTestnet = await getSecureItem('enableTestnet')
-      const nextEnableSolana = await getSecureItem('enableSolana')
       const nextSolanaNetwork = (await getSecureItem(
         'solanaNetwork',
       )) as Cluster | null
@@ -73,7 +71,6 @@ const useAppStorageHook = () => {
       setCurrency(nextCurrency || 'USD')
       setConvertToCurrency(nextConvertToCurrency === 'true')
       setEnableTestnet(nextEnableTestnet === 'true')
-      setEnableSolana(nextEnableSolana === 'true')
       setSolanaNetwork(nextSolanaNetwork || 'devnet')
       setL1Network(nextL1Network || 'helium')
       setVoteTutorialShown(nextVoteShown === 'true')
@@ -148,20 +145,6 @@ const useAppStorageHook = () => {
     return storeSecureItem('solanaNetwork', nextSolNetwork)
   }, [])
 
-  const updateEnableSolana = useCallback(
-    async (nextEnableSolana: boolean) => {
-      if (nextEnableSolana === false) {
-        updateL1Network('helium')
-      }
-      setEnableSolana(nextEnableSolana)
-      return storeSecureItem(
-        'enableSolana',
-        nextEnableSolana ? 'true' : 'false',
-      )
-    },
-    [updateL1Network],
-  )
-
   const toggleConvertToCurrency = useCallback(async () => {
     setConvertToCurrency((prev) => {
       storeSecureItem('convertToCurrency', !prev ? 'true' : 'false')
@@ -183,7 +166,6 @@ const useAppStorageHook = () => {
     authInterval,
     convertToCurrency,
     currency,
-    enableSolana,
     enableTestnet,
     l1Network,
     locked,
@@ -198,7 +180,6 @@ const useAppStorageHook = () => {
     updateAuthInterval,
     updateConvertToCurrency,
     updateCurrency,
-    updateEnableSolana,
     updateEnableTestnet,
     updateL1Network,
     updateLocked,
@@ -214,7 +195,6 @@ const initialState = {
   authInterval: Intervals.IMMEDIATELY,
   convertToCurrency: false,
   currency: 'USD',
-  enableSolana: false,
   enableTestnet: false,
   l1Network: 'helium' as L1Network,
   locked: false,
@@ -228,7 +208,6 @@ const initialState = {
   updateAuthInterval: async () => undefined,
   updateConvertToCurrency: async () => undefined,
   updateCurrency: async () => undefined,
-  updateEnableSolana: async () => undefined,
   updateEnableTestnet: async () => undefined,
   updateL1Network: async () => undefined,
   updateLocked: async () => undefined,

@@ -1,4 +1,5 @@
 import Balance, { AnyCurrencyType, Ticker } from '@helium/currency'
+import { Nft, NftWithToken, Sft, SftWithToken } from '@metaplex-foundation/js'
 import {
   createAsyncThunk,
   createSlice,
@@ -88,6 +89,13 @@ type PaymentInput = {
   mints: Mints
 }
 
+type CollectablePaymentInput = {
+  account: CSAccount
+  collectable: Sft | SftWithToken | Nft | NftWithToken
+  payee: string
+  cluster: Cluster
+}
+
 export const makePayment = createAsyncThunk(
   'solana/makePayment',
   async ({ account, payments, cluster, mints }: PaymentInput, { dispatch }) => {
@@ -110,6 +118,31 @@ export const makePayment = createAsyncThunk(
       walletRestApi.endpoints.postPayment.initiate({
         txnSignature: transfer.signature,
         cluster,
+      }),
+    )
+  },
+)
+
+export const makeCollectablePayment = createAsyncThunk(
+  'solana/makeCollectablePayment',
+  async (
+    { account, collectable, payee, cluster }: CollectablePaymentInput,
+    { dispatch },
+  ) => {
+    if (!account?.solanaAddress) throw new Error('No solana account found')
+
+    const transfer = await solUtils.transferCollectable(
+      cluster,
+      account.solanaAddress,
+      account.address,
+      collectable,
+      payee,
+    )
+
+    return dispatch(
+      walletRestApi.endpoints.postPayment.initiate({
+        txnSignature: transfer.signature,
+        cluster: 'devnet',
       }),
     )
   },
@@ -201,6 +234,19 @@ const solanaSlice = createSlice({
         ...prev,
         loading: false,
       }
+    })
+    builder.addCase(makeCollectablePayment.pending, (state, _action) => {
+      state.payment = { success: false, loading: true, error: undefined }
+    })
+    builder.addCase(makeCollectablePayment.fulfilled, (state, _action) => {
+      state.payment = {
+        success: true,
+        loading: false,
+        error: undefined,
+      }
+    })
+    builder.addCase(makeCollectablePayment.rejected, (state, action) => {
+      state.payment = { success: false, loading: false, error: action.error }
     })
     builder.addCase(makePayment.pending, (state, _action) => {
       state.payment = { success: false, loading: true, error: undefined }

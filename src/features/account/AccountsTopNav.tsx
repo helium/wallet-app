@@ -61,6 +61,7 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
       alignItems="center"
       onLayout={onLayout}
       style={containerStyle}
+      zIndex={1}
     >
       {backgroundColor && (
         <BackgroundFill backgroundColor={backgroundColor} opacity={1} />

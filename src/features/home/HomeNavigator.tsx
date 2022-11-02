@@ -22,6 +22,8 @@ import AccountTokenScreen from '../account/AccountTokenScreen'
 import AddNewAccountNavigator from './addNewAccount/AddNewAccountNavigator'
 import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
 import BurnScreen from '../burn/BurnScreen'
+import AccountCollectionScreen from '../account/AccountCollectionScreen'
+import AccountCollectableScreen from '../account/AccountCollectableScreen'
 
 const HomeStack = createStackNavigator()
 
@@ -45,6 +47,18 @@ const HomeStackScreen = () => {
         component={AccountTokenScreen}
         options={cardPresentation}
       />
+      <HomeStack.Screen
+        name="AccountCollectionScreen"
+        component={AccountCollectionScreen}
+        options={cardPresentation}
+      />
+
+      <HomeStack.Screen
+        name="AccountCollectableScreen"
+        component={AccountCollectableScreen}
+        options={cardPresentation}
+      />
+
       <HomeStack.Screen
         name="AccountAssignScreen"
         component={AccountAssignScreen}
