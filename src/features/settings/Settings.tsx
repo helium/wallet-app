@@ -52,7 +52,6 @@ const Settings = () => {
     authInterval,
     convertToCurrency,
     currency,
-    enableSolana,
     enableTestnet,
     pin: appPin,
     requirePinForPayment,
@@ -60,10 +59,11 @@ const Settings = () => {
     updateAuthInterval,
     updateConvertToCurrency,
     updateCurrency,
-    updateEnableSolana,
     updateEnableTestnet,
     updateRequirePinForPayment,
     updateSolanaNetwork,
+    l1Network,
+    updateL1Network,
   } = useAppStorage()
   const copyText = useCopyText()
   const { showOKAlert, showOKCancelAlert } = useAlert()
@@ -323,14 +323,14 @@ const Settings = () => {
 
   const handleCopyAddress = useCallback(() => {
     if (!currentAccount?.address) return
-    if (!enableSolana) {
+    if (l1Network !== 'solana') {
       copyText({
         message: ellipsizeAddress(currentAccount?.address),
         copyText: currentAccount?.address,
       })
     } else {
     }
-  }, [copyText, currentAccount, enableSolana])
+  }, [copyText, currentAccount, l1Network])
 
   const handleShareAddress = useCallback(() => {
     settingsNav.navigate('ShareAddress')
@@ -384,8 +384,9 @@ const Settings = () => {
       },
       {
         title: t('settings.sections.dev.solana.title'),
-        value: enableSolana,
-        onToggle: () => updateEnableSolana(!enableSolana),
+        value: l1Network === 'solana',
+        onToggle: () =>
+          updateL1Network(l1Network === 'helium' ? 'solana' : 'helium'),
         helperText: t('settings.sections.dev.solana.helperText'),
         onPress: () => {
           showOKAlert({
@@ -395,7 +396,7 @@ const Settings = () => {
         },
       },
     ]
-    if (enableSolana) {
+    if (l1Network === 'solana') {
       devData = [
         ...devData,
         {
@@ -431,28 +432,29 @@ const Settings = () => {
           },
           {
             title: t('settings.sections.account.copyAddress'),
-            onPress: enableSolana ? undefined : handleCopyAddress,
-            select: enableSolana
-              ? {
-                  items: [
-                    { label: 'Helium', value: 'helium' },
-                    { label: 'Solana', value: 'solana' },
-                  ],
-                  onValueSelect: (val) => {
-                    const address =
-                      val === 'helium'
-                        ? currentAccount?.address
-                        : currentAccount?.solanaAddress
+            onPress: l1Network === 'solana' ? undefined : handleCopyAddress,
+            select:
+              l1Network === 'solana'
+                ? {
+                    items: [
+                      { label: 'Helium', value: 'helium' },
+                      { label: 'Solana', value: 'solana' },
+                    ],
+                    onValueSelect: (val) => {
+                      const address =
+                        val === 'helium'
+                          ? currentAccount?.address
+                          : currentAccount?.solanaAddress
 
-                    if (!address) return
+                      if (!address) return
 
-                    copyText({
-                      message: ellipsizeAddress(address),
-                      copyText: address,
-                    })
-                  },
-                }
-              : undefined,
+                      copyText({
+                        message: ellipsizeAddress(address),
+                        copyText: address,
+                      })
+                    },
+                  }
+                : undefined,
           },
           {
             title: t('settings.sections.account.shareAddress'),
@@ -547,7 +549,6 @@ const Settings = () => {
     copyText,
     currency,
     currentAccount,
-    enableSolana,
     enableTestnet,
     handleCopyAddress,
     handleCurrencyTypeChange,
@@ -566,6 +567,7 @@ const Settings = () => {
     handleUpdateAlias,
     isDefaultAccount,
     isPinRequired,
+    l1Network,
     language,
     requirePinForPayment,
     showOKAlert,
@@ -573,7 +575,7 @@ const Settings = () => {
     sortedTestnetAccounts.length,
     t,
     updateConvertToCurrency,
-    updateEnableSolana,
+    updateL1Network,
     version,
   ])
 

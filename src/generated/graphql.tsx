@@ -492,12 +492,16 @@ export type SumMeta = {
 }
 
 export enum TokenType {
+  /** Data Credit */
   Dc = 'dc',
+  /** Helium Network Token */
   Hnt = 'hnt',
+  /** Helium Security Token */
   Hst = 'hst',
+  /** IOT Subnetwork Token */
   Iot = 'iot',
+  /** MOBILE Subnetwork Token */
   Mobile = 'mobile',
-  Sol = 'sol',
 }
 
 export type TxnConfigVars = {

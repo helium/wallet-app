@@ -18,6 +18,7 @@ type Props = {
   payments: Payment[]
   error?: ApolloError | Error | SerializedError
   onRetry: () => void
+  collectableSymbol?: string
 }
 
 const PaymentError = ({
@@ -26,6 +27,7 @@ const PaymentError = ({
   payments,
   error,
   onRetry,
+  collectableSymbol,
 }: Props) => {
   const navigation = useNavigation()
   const { t } = useTranslation()
@@ -66,6 +68,7 @@ const PaymentError = ({
           feeTokenBalance={feeTokenBalance}
           payments={payments}
           alwaysShowRecipients
+          collectableSymbol={collectableSymbol}
         />
         <Box flexDirection="row" marginTop="xxl">
           <TouchableOpacityBox
