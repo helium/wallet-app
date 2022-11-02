@@ -26,7 +26,7 @@ import {
   ViewStyle,
 } from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
-import { Edge } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import {
   JsonMetadata,
@@ -48,7 +48,6 @@ import TokenIcon from './TokenIcon'
 import { useBreakpoints } from '../../theme/themeHooks'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import useLayoutHeight from '../../utils/useLayoutHeight'
-import SafeAreaBox from '../../components/SafeAreaBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 
@@ -219,7 +218,7 @@ const AccountTokenList = ({
     return [...toks, ...cols]
   }, [collectablesWithMeta, showCollectables, tokens])
 
-  const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
+  const { bottom } = useSafeAreaInsets()
 
   const handleNavigation = useCallback(
     (token: Token) => () => {
@@ -360,11 +359,6 @@ const AccountTokenList = ({
     [COLLECTABLE_HEIGHT, handleItemLayout, loadingCollectables],
   )
 
-  // const isCollectable = useCallback((token) => {
-  //   const collectable = token as Sft | SftWithToken | Nft | NftWithToken
-  //   return collectable.address !== undefined
-  // }, [])
-
   const renderItem = useCallback(
     ({
       item: token,
@@ -428,7 +422,7 @@ const AccountTokenList = ({
                 />
               )}
             </Box>
-            {!disabled && <Arrow color="gray400" />}
+            {!disabled && <Arrow />}
           </TouchableOpacityBox>
         </Animated.View>
       )
@@ -486,7 +480,7 @@ const AccountTokenList = ({
               backgroundColor="surface"
             />
           </Box>
-          <Arrow color="gray400" />
+          <Arrow />
         </Box>
       </Animated.View>
     )
@@ -504,32 +498,33 @@ const AccountTokenList = ({
     return currencyToken.type
   }, [])
 
-  const contentContainerStyle = useMemo(() => ({}), [])
+  const contentContainerStyle = useMemo(
+    () => ({ paddingBottom: bottom }),
+    [bottom],
+  )
 
   return (
-    <SafeAreaBox edges={safeEdges} backgroundColor="black" flex={1}>
-      <Animated.FlatList
-        scrollEnabled
-        data={flatListItems}
-        numColumns={2}
-        contentContainerStyle={contentContainerStyle}
-        renderItem={renderItem}
-        columnWrapperStyle={
-          { flexDirection: !showCollectables ? 'column' : 'row' } as ViewStyle
-        }
-        ListHeaderComponent={renderHeader}
-        ListEmptyComponent={renderFooter}
-        keyExtractor={keyExtractor}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={onRefresh}
-            title=""
-            tintColor="#fff"
-          />
-        }
-      />
-    </SafeAreaBox>
+    <Animated.FlatList
+      scrollEnabled
+      data={flatListItems}
+      numColumns={2}
+      contentContainerStyle={contentContainerStyle}
+      renderItem={renderItem}
+      columnWrapperStyle={
+        { flexDirection: !showCollectables ? 'column' : 'row' } as ViewStyle
+      }
+      ListHeaderComponent={renderHeader}
+      ListEmptyComponent={renderFooter}
+      keyExtractor={keyExtractor}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefreshing}
+          onRefresh={onRefresh}
+          title=""
+          tintColor="#fff"
+        />
+      }
+    />
   )
 }
 
