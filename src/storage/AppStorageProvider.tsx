@@ -152,6 +152,8 @@ const useAppStorageHook = () => {
     async (nextEnableSolana: boolean) => {
       if (nextEnableSolana === false) {
         updateL1Network('helium')
+      } else {
+        updateL1Network('solana')
       }
       setEnableSolana(nextEnableSolana)
       return storeSecureItem(

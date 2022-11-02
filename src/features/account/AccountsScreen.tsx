@@ -30,7 +30,7 @@ import { useNotificationStorage } from '../../storage/NotificationStorageProvide
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import StatusBanner from '../StatusPage/StatusBanner'
 import { checkSecureAccount } from '../../storage/secureStorage'
-import { getJazzSeed, isTestnet, L1Network } from '../../utils/accountUtils'
+import { getJazzSeed, isTestnet } from '../../utils/accountUtils'
 import AccountsTopNav from './AccountsTopNav'
 import AccountTokenList from './AccountTokenList'
 import AccountView from './AccountView'
@@ -55,7 +55,7 @@ const AccountsScreen = () => {
     useAccountStorage()
   const [navLayoutHeight, setNavLayoutHeight] = useLayoutHeight()
   const { openedNotification } = useNotificationStorage()
-  const { locked, l1Network, enableSolana, updateL1Network } = useAppStorage()
+  const { locked, l1Network } = useAppStorage()
   const [tokenType, setTokenType] = useState<SPLTokenType>(SPLTokenType.tokens)
   const { reset } = useOnboarding()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
@@ -181,21 +181,6 @@ const AccountsScreen = () => {
     }
   }, [chartFlex.value, chartValues, prevShowChart, showChart])
 
-  const setL1Network = useCallback(
-    (l1: string) => {
-      updateL1Network(l1 as L1Network)
-    },
-    [updateL1Network],
-  )
-
-  useEffect(() => {
-    if (enableSolana) {
-      setL1Network('solana')
-    } else {
-      setL1Network('helium')
-    }
-  }, [enableSolana, setL1Network])
-
   const toggleWalletsVisible = useCallback(() => {
     setWalletsVisible((v) => !v)
     setSelectedBalance(undefined)
@@ -278,7 +263,7 @@ const AccountsScreen = () => {
                     />
                     <Box onTouchStart={onTouchStart} />
                   </Animated.View>
-                  {enableSolana &&
+                  {l1Network === 'solana' &&
                     currentAccount &&
                     currentAccount.netType === NetTypes.MAINNET && (
                       <TabBar
