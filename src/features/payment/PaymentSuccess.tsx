@@ -15,6 +15,7 @@ type Props = {
   payments: Payment[]
   onSuccess: () => void
   actionTitle: string
+  collectableSymbol?: string
 }
 
 const PaymentSuccess = ({
@@ -23,6 +24,7 @@ const PaymentSuccess = ({
   payments,
   onSuccess,
   actionTitle,
+  collectableSymbol,
 }: Props) => {
   const { t } = useTranslation()
   return (
@@ -45,6 +47,7 @@ const PaymentSuccess = ({
           feeTokenBalance={feeTokenBalance}
           payments={payments}
           alwaysShowRecipients
+          collectableSymbol={collectableSymbol}
         />
         <TouchableOpacityBox
           marginTop="xxl"

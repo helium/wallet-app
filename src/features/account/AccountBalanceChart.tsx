@@ -16,7 +16,7 @@ import useHaptic from '../../utils/useHaptic'
 import usePrevious from '../../utils/usePrevious'
 
 type Props = {
-  chartValues: Array<{ y: number; info: AccountBalance }>
+  chartValues: Array<{ y: number; info: AccountBalance | undefined }>
   onHistorySelected: (accountBalance: AccountBalance) => void
   selectedBalance?: AccountBalance
 }

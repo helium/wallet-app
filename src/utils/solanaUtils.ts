@@ -7,6 +7,15 @@ import {
   getAssociatedTokenAddress,
 } from '@solana/spl-token'
 import Balance, { AnyCurrencyType } from '@helium/currency'
+import {
+  Nft,
+  NftWithToken,
+  Sft,
+  SftWithToken,
+  JsonMetadata,
+  Metadata,
+  Metaplex,
+} from '@metaplex-foundation/js'
 import { getKeypair } from '../storage/secureStorage'
 import solInstructionsToActivity from './solInstructionsToActivity'
 import { Activity } from '../types/activity'
@@ -262,9 +271,254 @@ export const onAccountChange = (
   })
 }
 
+export const onLogs = (
+  cluster: web3.Cluster,
+  address: string,
+  callback: (address: string) => void,
+) => {
+  const account = new web3.PublicKey(address)
+  return getConnection(cluster).onLogs(
+    account,
+    () => {
+      callback(address)
+    },
+    'confirmed',
+  )
+}
+
 export const removeAccountChangeListener = (
   cluster: web3.Cluster,
   id: number,
 ) => {
   return getConnection(cluster).removeAccountChangeListener(id)
+}
+
+export const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new web3.PublicKey(
+  'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+)
+
+export function createAssociatedTokenAccountInstruction(
+  associatedTokenAddress: web3.PublicKey,
+  payer: web3.PublicKey,
+  walletAddress: web3.PublicKey,
+  splTokenMintAddress: web3.PublicKey,
+) {
+  const keys = [
+    {
+      pubkey: payer,
+      isSigner: true,
+      isWritable: true,
+    },
+    {
+      pubkey: associatedTokenAddress,
+      isSigner: false,
+      isWritable: true,
+    },
+    {
+      pubkey: walletAddress,
+      isSigner: false,
+      isWritable: false,
+    },
+    {
+      pubkey: splTokenMintAddress,
+      isSigner: false,
+      isWritable: false,
+    },
+    {
+      pubkey: web3.SystemProgram.programId,
+      isSigner: false,
+      isWritable: false,
+    },
+    {
+      pubkey: TOKEN_PROGRAM_ID,
+      isSigner: false,
+      isWritable: false,
+    },
+    {
+      pubkey: web3.SYSVAR_RENT_PUBKEY,
+      isSigner: false,
+      isWritable: false,
+    },
+  ]
+  return new web3.TransactionInstruction({
+    keys,
+    programId: SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID,
+    data: Buffer.from([]),
+  })
+}
+
+export const transferCollectable = async (
+  cluster: web3.Cluster,
+  solanaAddress: string,
+  heliumAddress: string,
+  collectable: Sft | SftWithToken | Nft | NftWithToken,
+  payee: string,
+) => {
+  const payer = new web3.PublicKey(solanaAddress)
+  const secureAcct = await getKeypair(heliumAddress)
+  const conn = getConnection(cluster)
+
+  if (!secureAcct) {
+    throw new Error('Secure account not found')
+  }
+
+  const signer = {
+    publicKey: payer,
+    secretKey: secureAcct.privateKey,
+  }
+
+  const recipientPubKey = new web3.PublicKey(payee)
+  const mintPubkey = new web3.PublicKey(collectable.mint.address)
+
+  const instructions: web3.TransactionInstruction[] = []
+
+  const ownerATA = await getAssociatedTokenAddress(mintPubkey, signer.publicKey)
+
+  if (!(await conn.getAccountInfo(ownerATA))) {
+    instructions.push(
+      createAssociatedTokenAccountInstruction(
+        ownerATA,
+        signer.publicKey,
+        signer.publicKey,
+        mintPubkey,
+      ),
+    )
+  }
+
+  const recipientATA = await getAssociatedTokenAddress(
+    mintPubkey,
+    recipientPubKey,
+  )
+
+  if (!(await conn.getAccountInfo(recipientATA))) {
+    instructions.push(
+      createAssociatedTokenAccountInstruction(
+        recipientATA,
+        signer.publicKey,
+        recipientPubKey,
+        mintPubkey,
+      ),
+    )
+  }
+
+  instructions.push(
+    createTransferCheckedInstruction(
+      ownerATA, // from (should be a token account)
+      mintPubkey, // mint
+      recipientATA, // to (should be a token account)
+      signer.publicKey, // from's owner
+      1, // amount
+      0, // decimals
+      [], // signers
+    ),
+  )
+
+  const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash()
+
+  const messageV0 = new web3.TransactionMessage({
+    payerKey: payer,
+    recentBlockhash: blockhash,
+    instructions,
+  }).compileToV0Message()
+
+  const transaction = new web3.VersionedTransaction(messageV0)
+
+  transaction.sign([signer])
+
+  const signature = await conn.sendTransaction(transaction, {
+    maxRetries: 5,
+  })
+
+  await conn.confirmTransaction(
+    { signature, blockhash, lastValidBlockHeight },
+    'finalized',
+  )
+  const txn = await getTxn(cluster, signature)
+
+  if (txn?.meta?.err) {
+    throw new Error(txn.meta.err.toString())
+  }
+
+  return { signature, txn }
+}
+
+/**
+ * Returns the account's collectables
+ * @param pubKey public key of the account
+ * @param metaplex metaplex connection
+ * @returns collectables
+ */
+export const getCollectables = async (
+  pubKey: web3.PublicKey,
+  metaplex: Metaplex,
+) => {
+  const collectables = (await metaplex
+    .nfts()
+    .findAllByOwner({ owner: pubKey })
+    .run()) as Metadata<JsonMetadata<string>>[]
+
+  return collectables
+}
+
+/**
+ * Returns the account's collectables with metadata
+ * @param collectables collectables without metadata
+ * @param metaplex metaplex connection
+ * @returns collectables with metadata
+ */
+export const getCollectablesMetadata = async (
+  collectables: Metadata<JsonMetadata<string>>[],
+  metaplex: Metaplex,
+) => {
+  const collectablesWithMetadata = await Promise.all(
+    collectables.map(async (col) => {
+      const json = await (await fetch(col.uri)).json()
+      const metadata = await metaplex.nfts().load({ metadata: col }).run()
+      return { ...metadata, json }
+    }),
+  )
+
+  return collectablesWithMetadata
+}
+
+/**
+ * Returns the account's collectables grouped by token type
+ * @param collectables collectables
+ * @returns grouped collecables by token type
+ */
+export const groupCollectables = (
+  collectables: Metadata<JsonMetadata<string>>[],
+) => {
+  const collectablesGroupedByName = collectables.reduce((acc, cur) => {
+    const { symbol } = cur
+    if (!acc[symbol]) {
+      acc[symbol] = [cur]
+    } else {
+      acc[symbol].push(cur)
+    }
+    return acc
+  }, {} as Record<string, Metadata<JsonMetadata<string>>[]>)
+
+  return collectablesGroupedByName
+}
+
+/**
+ * Returns the account's collectables grouped by token type
+ * @param collectables collectables with metadata
+ * @returns grouped collecables by token type
+ */
+export const groupCollectablesWithMetaData = (
+  collectables: (Sft | SftWithToken | Nft | NftWithToken)[],
+) => {
+  const collectablesGroupedByName = collectables.reduce((acc, cur) => {
+    const { symbol } = cur.json as Sft | SftWithToken | Nft | NftWithToken
+    if (!acc[symbol]) {
+      acc[symbol] = [cur]
+    } else {
+      acc[symbol].push(cur)
+    }
+    return acc
+  }, {} as Record<string, (Sft | SftWithToken | Nft | NftWithToken)[]>)
+
+  return collectablesGroupedByName
 }

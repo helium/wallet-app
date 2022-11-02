@@ -164,7 +164,7 @@ struct HeliumWalletWidgetLargeView: View {
                     .font(.system(size: 28.0)).foregroundColor(.white).privacySensitive()
 
                 Text("\(entry.accountDetails.totalHNTBalance.fromBones.kmFormatted) \(Utils.networkTokenLabel(isTestnet: entry.accountDetails.isTestnet))")
-                .lineLimit(1).font(.system(size: 12.0)).foregroundColor(.white).opacity(0.6).privacySensitive()
+                    .lineLimit(1).font(.system(size: 12.0)).foregroundColor(.white).opacity(0.6).privacySensitive()
 
                 Spacer()
                 HStack(alignment: .center) {
@@ -185,7 +185,7 @@ struct HeliumWalletWidgetLargeView: View {
 
                     Chart(data: data)
                         .chartStyle(
-                          AreaChartStyle(data.count > 2 ? .quadCurve : .line, fill:
+                            AreaChartStyle(data.count > 2 ? .quadCurve : .line, fill:
                                 LinearGradient(gradient: .init(colors: [Color.white.opacity(0.2), Color.white.opacity(0.01)]), startPoint: .top, endPoint: .bottom))
                         )
                 }.padding(.leading, 16).padding(.trailing, 16)
@@ -193,7 +193,7 @@ struct HeliumWalletWidgetLargeView: View {
                 VStack(spacing: 0) {
                     Divider().padding(.leading, 16).padding(.trailing, 16)
                     ForEach(0 ..< 2, id: \.self) { i in
-                      AssetListItemView(imageName: Utils.getCoinImageName(assets[i].symbol), assetBalance: Utils.getCurrentBalance(asset: assets[i]), symbolName: assets[i].symbol, assetPrice: "$\(String(format: "%.2f", getCurrentAssetPrice(assets[i]))) \(assetPriceConversion(assets[i].symbol))", isTestnet: entry.accountDetails.isTestnet).padding(.leading, 4).padding(.trailing, 4)
+                        AssetListItemView(imageName: Utils.getCoinImageName(assets[i].symbol), assetBalance: Utils.getCurrentBalance(asset: assets[i]), symbolName: assets[i].symbol, assetPrice: "$\(String(format: "%.2f", getCurrentAssetPrice(assets[i]))) \(assetPriceConversion(assets[i].symbol))", isTestnet: entry.accountDetails.isTestnet).padding(.leading, 4).padding(.trailing, 4)
                     }
                     Spacer().frame(height: 8.0)
                 }

@@ -17,11 +17,11 @@ struct AssetViewInline: View {
     var body: some View {
         let size = 18.0
         HStack(spacing: 4) {
-          VStack(spacing: 0) {
-              Image(imageName).resizable()
-                  .frame(width: size, height: size)
-          }.frame(width: size, height: size).background(.clear).clipShape(Circle())
-          Text("HNT \(assetPrice)")
+            VStack(spacing: 0) {
+                Image(imageName).resizable()
+                    .frame(width: size, height: size)
+            }.frame(width: size, height: size).background(.clear).clipShape(Circle())
+            Text("HNT \(assetPrice)")
                 .bold()
                 .font(.title).minimumScaleFactor(0.1).foregroundColor(.black)
         }
@@ -34,10 +34,10 @@ struct HeliumTickerAccessoryInlineView: View {
 
     @ViewBuilder
     var body: some View {
-      ViewThatFits() {
-          CustomView(content: {
-            AssetViewInline(imageName: Utils.getCoinImageName("HNT"), assetPrice: "$\(String(format: "%.2f", entry.hntPrice))")
-          })
-      }.frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity).background(.clear)
+        ViewThatFits {
+            CustomView(content: {
+                AssetViewInline(imageName: Utils.getCoinImageName("HNT"), assetPrice: "$\(String(format: "%.2f", entry.hntPrice))")
+            })
+        }.frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity).background(.clear)
     }
 }
