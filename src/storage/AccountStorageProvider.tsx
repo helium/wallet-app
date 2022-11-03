@@ -11,6 +11,7 @@ import React, {
 import { useAsync } from 'react-async-hook'
 import * as SecureStore from 'expo-secure-store'
 import { NetTypes as NetType, NetTypes } from '@helium/address'
+import { useAppState } from '@react-native-community/hooks'
 import {
   accountNetType,
   AccountNetTypeOpt,
@@ -37,6 +38,9 @@ import {
 } from './cloudStorage'
 import { removeAccountTag, tagAccount } from './oneSignalStorage'
 import { useAppStorage } from './AppStorageProvider'
+import { useAppDispatch } from '../store/store'
+import makeApiToken from '../utils/makeApiToken'
+import { authSlice } from '../store/slices/authSlice'
 
 const useAccountStorageHook = () => {
   const [currentAccount, setCurrentAccount] = useState<
@@ -48,6 +52,19 @@ const useAccountStorageHook = () => {
   const solanaAccountsUpdateComplete = useRef(false)
   const solanaContactsUpdateComplete = useRef(false)
   const { updateL1Network, l1Network } = useAppStorage()
+  const dispatch = useAppDispatch()
+  const currentAppState = useAppState()
+
+  const updateApiToken = useCallback(async () => {
+    const apiToken = await makeApiToken(currentAccount?.address)
+    dispatch(authSlice.actions.setApiToken(apiToken))
+  }, [currentAccount, dispatch])
+
+  useEffect(() => {
+    if (currentAppState === 'active') {
+      updateApiToken()
+    }
+  }, [currentAccount, currentAppState, updateApiToken])
 
   const currentNetworkAddress = useMemo(() => {
     if (l1Network === 'helium') return currentAccount?.address
