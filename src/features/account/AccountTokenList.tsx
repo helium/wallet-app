@@ -245,10 +245,11 @@ const AccountTokenList = ({
     [navigation],
   )
 
-  const maxVisibleTokens = useMemo(
-    () => (breakpoints?.smallPhone ? 2 : 4),
-    [breakpoints.smallPhone],
-  )
+  const maxVisibleTokens = useMemo(() => {
+    if (breakpoints.largePhone) return 4
+    if (breakpoints.phone) return 3
+    return 2
+  }, [breakpoints.largePhone, breakpoints.phone])
 
   const handleItemLayout = useCallback(
     (e: LayoutChangeEvent) => {
