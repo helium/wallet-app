@@ -52,6 +52,7 @@ const useBalanceHook = () => {
     solanaNetwork: cluster,
   } = useAppStorage()
   const prevCluster = usePrevious(cluster)
+  const [updating, setUpdating] = useState(false)
 
   const dispatch = useAppDispatch()
   const { data: mints } = useGetMintsQuery(cluster)
@@ -144,22 +145,24 @@ const useBalanceHook = () => {
     updateCoinGeckoPrices()
   })
 
-  const updateVars = useCallback(() => {
-    updateCoinGeckoPrices()
-
+  const updateVars = useCallback(async () => {
     if (!currentAccount?.address) return
 
-    fetchOracle({
+    setUpdating(true)
+    await updateCoinGeckoPrices()
+
+    await fetchOracle({
       variables: {
         address: currentAccount.address,
       },
     })
 
-    fetchAccountData({
+    await fetchAccountData({
       variables: {
         address: currentAccount.address,
       },
     })
+    setUpdating(false)
   }, [currentAccount, fetchAccountData, fetchOracle, updateCoinGeckoPrices])
 
   const oraclePrice = useMemo(() => {
@@ -396,6 +399,7 @@ const useBalanceHook = () => {
     toPreferredCurrencyString,
     toUsd,
     updateVars,
+    updating,
   }
 }
 
@@ -417,7 +421,8 @@ const initialState = {
   toPreferredCurrencyString: () =>
     new Promise<string>((resolve) => resolve('')),
   toUsd: () => 0,
-  updateVars: () => undefined,
+  updateVars: () => new Promise<void>((resolve) => resolve()),
+  updating: false,
 }
 const BalanceContext =
   createContext<ReturnType<typeof useBalanceHook>>(initialState)

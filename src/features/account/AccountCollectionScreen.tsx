@@ -4,7 +4,6 @@ import { Dimensions, Image, ViewStyle, LogBox, FlatList } from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
-import { Nft, NftWithToken, Sft, SftWithToken } from '@metaplex-foundation/js'
 import useNetworkColor from '../../utils/useNetworkColor'
 import BackScreen from '../../components/BackScreen'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -14,6 +13,7 @@ import { DelayedFadeIn } from '../../components/FadeInOut'
 import globalStyles from '../../theme/globalStyles'
 import Box from '../../components/Box'
 import { useBorderRadii } from '../../theme/themeHooks'
+import { Collectable } from '../../types/solana'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -33,7 +33,7 @@ const AccountCollectionScreen = () => {
   const { lm: borderRadius } = useBorderRadii()
 
   const handleNavigateToCollectable = useCallback(
-    (collectable: Sft | SftWithToken | Nft | NftWithToken) => {
+    (collectable: Collectable) => {
       navigation.navigate('AccountCollectableScreen', { collectable })
     },
     [navigation],
@@ -41,7 +41,7 @@ const AccountCollectionScreen = () => {
 
   const renderCollectable = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
-    ({ item }: { item: Sft | SftWithToken | Nft | NftWithToken }) => {
+    ({ item }: { item: Collectable }) => {
       const { json } = item
 
       return (
@@ -72,12 +72,9 @@ const AccountCollectionScreen = () => {
     [COLLECTABLE_HEIGHT, borderRadius, handleNavigateToCollectable],
   )
 
-  const keyExtractor = useCallback(
-    (item: Sft | SftWithToken | Nft | NftWithToken) => {
-      return item.address.toString()
-    },
-    [],
-  )
+  const keyExtractor = useCallback((item: Collectable) => {
+    return item.address.toString()
+  }, [])
 
   const backgroundColor = useNetworkColor({})
 
