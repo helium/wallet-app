@@ -76,7 +76,7 @@ const SentinelScreen = ({ children }: { children: ReactNode }) => {
             <Box justifyContent="center" alignItems="center" marginBottom="xl">
               <InfoError />
             </Box>
-            <Text variant="h1" textAlign="center" fontSize={40} lineHeight={40}>
+            <Text variant="h1" textAlign="center" fontSize={40} lineHeight={42}>
               {t(`sentinel.${status?.migrationStatus}.title`)}
             </Text>
             <Text
