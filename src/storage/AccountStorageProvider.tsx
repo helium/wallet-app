@@ -107,15 +107,27 @@ const useAccountStorageHook = () => {
 
   useEffect(() => {
     // Ensure all accounts have solana address
-    if (!sortedAccounts.length || solanaAccountsUpdateComplete.current) {
+    const accts = accounts || ({} as CSAccounts)
+    if (solanaAccountsUpdateComplete.current || !Object.keys(accts).length)
       return
-    }
 
     solanaAccountsUpdateComplete.current = true
 
-    sortedAccounts.filter((a) => !a.solanaAddress).forEach(upsertAccount)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortedAccounts])
+    const updated = Object.keys(accts).reduce((result, addy) => {
+      const acct = accts[addy]
+      if (!acct) return result
+      return {
+        ...result,
+        [addy]: {
+          ...acct,
+          solanaAddress: heliumAddressToSolAddress(addy),
+        },
+      }
+    }, {} as CSAccounts)
+
+    setAccounts(updated)
+    updateCloudAccounts(updated)
+  }, [accounts])
 
   useEffect(() => {
     // Ensure all contacts have solana address
@@ -125,12 +137,16 @@ const useAccountStorageHook = () => {
 
     solanaContactsUpdateComplete.current = true
 
-    contacts
-      .filter((a) => !a.solanaAddress)
-      .forEach((c) => {
-        editContact(c.address, c)
-      })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const updated = contacts.map((c) => {
+      if (c.solanaAddress) return c
+      return {
+        ...c,
+        solanaAddress: heliumAddressToSolAddress(c.address),
+      }
+    })
+
+    setContacts(updated)
+    updateCloudContacts(updated)
   }, [contacts])
 
   useEffect(() => {
