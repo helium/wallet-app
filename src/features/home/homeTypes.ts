@@ -1,7 +1,7 @@
 import { Ticker } from '@helium/currency'
 import { LinkWalletRequest, SignHotspotRequest } from '@helium/wallet-link'
-import { Sft, SftWithToken, Nft, NftWithToken } from '@metaplex-foundation/js'
 import { StackNavigationProp } from '@react-navigation/stack'
+import { Collectable } from '../../types/solana'
 
 export type PaymentRouteParam = {
   payer?: string
@@ -11,7 +11,7 @@ export type PaymentRouteParam = {
   memo?: string
   netType?: string
   defaultTokenType?: Ticker
-  collectable?: Sft | SftWithToken | Nft | NftWithToken
+  collectable?: Collectable
 }
 
 export type BurnRouteParam = {
@@ -24,10 +24,10 @@ export type HomeStackParamList = {
   AccountsScreen: undefined
   AccountTokenScreen: { tokenType: Ticker }
   AccountCollectionScreen: {
-    collection: (Sft | SftWithToken | Nft | NftWithToken)[]
+    collection: Collectable[]
   }
   AccountCollectableScreen: {
-    collectable: Sft | SftWithToken | Nft | NftWithToken
+    collectable: Collectable
   }
   AccountAssignScreen: undefined
   ConfirmPin: {

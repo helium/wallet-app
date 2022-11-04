@@ -21,7 +21,6 @@ import {
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
-import { Nft, NftWithToken, Sft, SftWithToken } from '@metaplex-foundation/js'
 import CircleLoader from '../../components/CircleLoader'
 import { useBalance } from '../../utils/Balance'
 import Box from '../../components/Box'
@@ -32,7 +31,8 @@ import TokenIcon from './TokenIcon'
 import { useBreakpoints, useColors } from '../../theme/themeHooks'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import useLayoutHeight from '../../utils/useLayoutHeight'
-import useMetaplex from '../../utils/useMetaplex'
+import useCollectables from '../../utils/useCollectables'
+import { Collectable } from '../../types/solana'
 
 type Token = {
   type: Ticker
@@ -70,7 +70,7 @@ const AccountTokenList = ({
     collectablesWithMeta,
     loading: loadingCollectables,
     refresh: refreshCollectables,
-  } = useMetaplex()
+  } = useCollectables()
 
   const tokens = useMemo(() => {
     if (loading || showCollectables) {
@@ -149,7 +149,7 @@ const AccountTokenList = ({
   )
 
   const handleCollectableNavigation = useCallback(
-    (collection: (Sft | SftWithToken | Nft | NftWithToken)[]) => () => {
+    (collection: Collectable[]) => () => {
       if (collection.length > 1) {
         navigation.navigate('AccountCollectionScreen', {
           collection,

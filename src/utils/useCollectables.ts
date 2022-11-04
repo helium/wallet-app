@@ -10,14 +10,12 @@ import {
 import { useAppDispatch } from '../store/store'
 import { onLogs, removeAccountChangeListener } from './solanaUtils'
 
-const useMetaplex = (): WalletCollectables & { refresh: () => void } => {
+const useCollectables = (): WalletCollectables & { refresh: () => void } => {
   const { solanaNetwork: cluster, l1Network } = useAppStorage()
   const dispatch = useAppDispatch()
   const accountSubscriptionId = useRef<number>()
   const { currentAccount } = useAccountStorage()
-  const metaplex = useSelector(
-    (state: RootState) => state.collectables.collectables,
-  )
+  const collectables = useSelector((state: RootState) => state.collectables)
 
   const refresh = useCallback(() => {
     if (!currentAccount?.solanaAddress || l1Network !== 'solana') {
@@ -43,7 +41,7 @@ const useMetaplex = (): WalletCollectables & { refresh: () => void } => {
 
   if (
     !currentAccount?.solanaAddress ||
-    !metaplex[currentAccount?.solanaAddress]
+    !collectables[currentAccount?.solanaAddress]
   ) {
     return {
       loading: false,
@@ -53,6 +51,6 @@ const useMetaplex = (): WalletCollectables & { refresh: () => void } => {
     }
   }
 
-  return { ...metaplex[currentAccount?.solanaAddress], refresh }
+  return { ...collectables[currentAccount?.solanaAddress], refresh }
 }
-export default useMetaplex
+export default useCollectables

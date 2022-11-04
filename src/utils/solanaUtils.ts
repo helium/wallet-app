@@ -7,20 +7,13 @@ import {
   getAssociatedTokenAddress,
 } from '@solana/spl-token'
 import Balance, { AnyCurrencyType } from '@helium/currency'
-import {
-  Nft,
-  NftWithToken,
-  Sft,
-  SftWithToken,
-  JsonMetadata,
-  Metadata,
-  Metaplex,
-} from '@metaplex-foundation/js'
+import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
 import { getKeypair } from '../storage/secureStorage'
 import solInstructionsToActivity from './solInstructionsToActivity'
 import { Activity } from '../types/activity'
 import sleep from './sleep'
 import { Mints } from '../store/slices/walletRestApi'
+import { Collectable } from '../types/solana'
 
 const Connection = {
   devnet: new web3.Connection(web3.clusterApiUrl('devnet')),
@@ -351,7 +344,7 @@ export const transferCollectable = async (
   cluster: web3.Cluster,
   solanaAddress: string,
   heliumAddress: string,
-  collectable: Sft | SftWithToken | Nft | NftWithToken,
+  collectable: Collectable,
   payee: string,
 ) => {
   const payer = new web3.PublicKey(solanaAddress)
@@ -507,18 +500,16 @@ export const groupCollectables = (
  * @param collectables collectables with metadata
  * @returns grouped collecables by token type
  */
-export const groupCollectablesWithMetaData = (
-  collectables: (Sft | SftWithToken | Nft | NftWithToken)[],
-) => {
+export const groupCollectablesWithMetaData = (collectables: Collectable[]) => {
   const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const { symbol } = cur.json as Sft | SftWithToken | Nft | NftWithToken
+    const { symbol } = cur.json as Collectable
     if (!acc[symbol]) {
       acc[symbol] = [cur]
     } else {
       acc[symbol].push(cur)
     }
     return acc
-  }, {} as Record<string, (Sft | SftWithToken | Nft | NftWithToken)[]>)
+  }, {} as Record<string, Collectable[]>)
 
   return collectablesGroupedByName
 }

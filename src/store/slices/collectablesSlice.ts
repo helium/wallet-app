@@ -1,15 +1,8 @@
-import {
-  JsonMetadata,
-  Metadata,
-  Metaplex,
-  Nft,
-  NftWithToken,
-  Sft,
-  SftWithToken,
-} from '@metaplex-foundation/js'
+import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import * as web3 from '@solana/web3.js'
 import { CSAccount } from '../../storage/cloudStorage'
+import { Collectable } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
 
 const connection = new web3.Connection(
@@ -19,20 +12,13 @@ const connection = new web3.Connection(
 
 export type WalletCollectables = {
   collectables: Record<string, Metadata<JsonMetadata<string>>[]>
-  collectablesWithMeta: Record<
-    string,
-    (Sft | SftWithToken | Nft | NftWithToken)[]
-  >
+  collectablesWithMeta: Record<string, Collectable[]>
   loading: boolean
 }
 
-export type CollectablesState = {
-  collectables: Record<string, WalletCollectables>
-}
+export type CollectablesState = Record<string, WalletCollectables>
 
-const initialState: CollectablesState = {
-  collectables: {},
-}
+const initialState: CollectablesState = {}
 
 export const fetchCollectables = createAsyncThunk(
   'collectables/fetchCollectables',
@@ -71,11 +57,11 @@ const collectables = createSlice({
       if (!action.meta.arg?.account.solanaAddress) return state
 
       const address = action.meta.arg.account.solanaAddress
-      const prev = state.collectables[address] || {
+      const prev = state[address] || {
         collectablesWithMeta: {},
         collectables: {},
       }
-      state.collectables[address] = {
+      state[address] = {
         ...prev,
         loading: true,
       }
@@ -86,7 +72,7 @@ const collectables = createSlice({
         action.payload
 
       const address = action.meta.arg.account.solanaAddress
-      state.collectables[address] = {
+      state[address] = {
         collectables: groupedCollectables,
         collectablesWithMeta: groupedCollectablesWithMeta,
         loading: false,
@@ -96,11 +82,11 @@ const collectables = createSlice({
       if (!action.meta.arg?.account.solanaAddress) return state
 
       const address = action.meta.arg.account.solanaAddress
-      const prev = state.collectables[address] || {
+      const prev = state[address] || {
         collectablesWithMeta: {},
         collectables: {},
       }
-      state.collectables[address] = {
+      state[address] = {
         ...prev,
         loading: false,
       }
