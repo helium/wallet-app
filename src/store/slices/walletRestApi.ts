@@ -3,6 +3,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { Cluster } from '@solana/web3.js'
 import Config from 'react-native-config'
 import { lang } from '../../utils/i18n'
+import { AuthState } from './authSlice'
 
 export type Mints = Record<Ticker, string>
 
@@ -29,7 +30,15 @@ export const walletRestApi = createApi({
   tagTypes: ['Notifications'],
   baseQuery: fetchBaseQuery({
     baseUrl: Config.WALLET_REST_URI,
-    prepareHeaders: (headers) => {
+    prepareHeaders: (headers, { getState }) => {
+      const { auth } = getState() as {
+        auth: AuthState
+      }
+
+      if (auth.apiToken) {
+        headers.set('authorization', `Bearer ${auth.apiToken}`)
+      }
+
       headers.set('accept-language', lang)
       return headers
     },
