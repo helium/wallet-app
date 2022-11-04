@@ -62,8 +62,16 @@ export const walletRestApi = createApi({
         return response as Notification[]
       },
     }),
+    postNotificationRead: builder.mutation<void, { id: number }>({
+      query: ({ id }) => ({
+        url: '/notifications/markRead',
+        method: 'PUT',
+        body: { id },
+      }),
+      invalidatesTags: ['Notifications'],
+    }),
     postPayment: builder.mutation<
-      { txnSignature: string; cluster: Cluster },
+      void,
       { txnSignature: string; cluster: Cluster }
     >({
       query: ({ txnSignature, cluster }) => ({
@@ -79,6 +87,7 @@ export const walletRestApi = createApi({
 export const {
   useGetNotificationsQuery,
   usePostPaymentMutation,
+  usePostNotificationReadMutation,
   useLazyGetMintsQuery,
   useGetMintsQuery,
   useGetBalanceHistoryQuery,
