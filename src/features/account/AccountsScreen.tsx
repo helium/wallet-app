@@ -42,6 +42,7 @@ import useDisappear from '../../utils/useDisappear'
 import TabBar from '../../components/TabBar'
 import { FadeInSlow } from '../../components/FadeInOut'
 import globalStyles from '../../theme/globalStyles'
+import { useGetBalanceHistoryQuery } from '../../store/slices/walletRestApi'
 
 enum SPLTokenType {
   tokens = 'Tokens',
@@ -55,8 +56,8 @@ const AccountsScreen = () => {
     useAccountStorage()
   const [navLayoutHeight, setNavLayoutHeight] = useLayoutHeight()
   const { openedNotification } = useNotificationStorage()
-  const { locked, l1Network } = useAppStorage()
   const [tokenType, setTokenType] = useState<SPLTokenType>(SPLTokenType.tokens)
+  const { locked, l1Network, solanaNetwork: cluster } = useAppStorage()
   const { reset } = useOnboarding()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const [walletsVisible, setWalletsVisible] = useState(false)
@@ -101,21 +102,43 @@ const AccountsScreen = () => {
     pollInterval: 30000,
   })
 
-  const showChart = useMemo(
-    () =>
-      l1Network === 'helium' && (data?.accountBalanceHistory?.length || 0) >= 2,
-    [data, l1Network],
+  const { currentData: solChainBalanceHistory } = useGetBalanceHistoryQuery(
+    {
+      address: currentAccount?.solanaAddress || '',
+      cluster,
+      currency,
+    },
+    {
+      skip: !currentAccount?.address,
+      refetchOnFocus: true,
+      refetchOnMountOrArgChange: true,
+      refetchOnReconnect: true,
+    },
   )
+
+  const showChart = useMemo(() => {
+    if (l1Network === 'helium') {
+      return (data?.accountBalanceHistory?.length || 0) >= 2
+    }
+    return (solChainBalanceHistory?.length || 0) >= 2
+  }, [data, l1Network, solChainBalanceHistory])
+
   const prevShowChart = usePrevious(showChart)
 
   const chartValues = useMemo(() => {
     // Need to have at least a two days of data to display
-    if (!data?.accountBalanceHistory || !showChart) return
+    if (!showChart) return
 
-    return data.accountBalanceHistory?.map((bh) => {
+    if (l1Network === 'helium' && data) {
+      return data.accountBalanceHistory?.map((bh) => {
+        return { y: bh.balance, info: bh }
+      })
+    }
+
+    return solChainBalanceHistory?.map((bh) => {
       return { y: bh.balance, info: bh }
     })
-  }, [data, showChart])
+  }, [data, l1Network, showChart, solChainBalanceHistory])
 
   useAppear(() => {
     if (!currentAccount?.address) return

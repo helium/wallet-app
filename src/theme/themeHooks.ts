@@ -139,6 +139,7 @@ export const useBreakpoints = () => {
   const width = ww
   return {
     smallPhone: breakpoints.phone > width,
+    largePhone: breakpoints.largePhone <= width,
     phone: breakpoints.phone <= width,
   }
 }
