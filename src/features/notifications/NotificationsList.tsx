@@ -83,8 +83,9 @@ const NotificationsList = () => {
     ({ index, item }) => {
       const isFirst = index === 0
       const viewed =
-        lastViewedTimestamp &&
-        isBefore(new Date(item.time), new Date(lastViewedTimestamp))
+        (lastViewedTimestamp &&
+          isBefore(new Date(item.time), new Date(lastViewedTimestamp))) ||
+        !!item.viewedAt
 
       const onItemSelected = () => {
         navigator.navigate('NotificationDetails', { notification: item })
