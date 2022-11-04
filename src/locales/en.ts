@@ -2,12 +2,12 @@ export default {
   sentinel: {
     action: 'Understood',
     in_progress: {
-      title: 'Helium Chain Halted',
+      title: 'Helium Blockchain Stopped',
       body: 'Helium is transitioning to Solana.',
     },
     complete: {
       title: 'App update needed',
-      body: 'Helium has transitioned to Solana, update your app and LFG!',
+      body: 'Helium has transitioned to Solana. Update your app to manage your account on Solana. No other action required.',
     },
   },
   accountAssign: {
