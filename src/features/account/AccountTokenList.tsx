@@ -1,11 +1,4 @@
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 import Balance, {
   DataCredits,
   MobileTokens,
@@ -28,16 +21,7 @@ import {
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
-import {
-  JsonMetadata,
-  Metadata,
-  Metaplex,
-  Nft,
-  NftWithToken,
-  Sft,
-  SftWithToken,
-} from '@metaplex-foundation/js'
-import { Connection, PublicKey } from '@solana/web3.js'
+import { Nft, NftWithToken, Sft, SftWithToken } from '@metaplex-foundation/js'
 import CircleLoader from '../../components/CircleLoader'
 import { useBalance } from '../../utils/Balance'
 import Box from '../../components/Box'
@@ -45,23 +29,10 @@ import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { HomeNavigationProp } from '../home/homeTypes'
 import TokenIcon from './TokenIcon'
-import { useBreakpoints } from '../../theme/themeHooks'
+import { useBreakpoints, useColors } from '../../theme/themeHooks'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import useLayoutHeight from '../../utils/useLayoutHeight'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useAppStorage } from '../../storage/AppStorageProvider'
-
-import * as Logger from '../../utils/logger'
-import {
-  onLogs,
-  removeAccountChangeListener,
-  getCollectables,
-  getCollectablesMetadata,
-  groupCollectables,
-  groupCollectablesWithMetaData,
-} from '../../utils/solanaUtils'
-
-const breadcrumbOpts = { category: 'AccountTokens' }
+import useMetaplex from '../../utils/useMetaplex'
 
 type Token = {
   type: Ticker
@@ -89,70 +60,17 @@ const AccountTokenList = ({
     secBalance,
     solBalance,
   } = useBalance()
-  const accountSubscriptionId = useRef<number>()
-  const { currentNetworkAddress, currentAccount } = useAccountStorage()
-  const { solanaNetwork: cluster, l1Network } = useAppStorage()
+  const { primaryText } = useColors()
   const navigation = useNavigation<HomeNavigationProp>()
   const [listItemHeight, setListItemHeight] = useLayoutHeight()
   const breakpoints = useBreakpoints()
   const COLLECTABLE_HEIGHT = Dimensions.get('window').width / 2
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const [collectables, setCollectables] = useState<
-    Record<string, Metadata<JsonMetadata<string>>[]>
-  >({})
-  const [collectablesWithMeta, setCollectableWithMeta] = useState<
-    Record<string, (Sft | SftWithToken | Nft | NftWithToken)[]>
-  >({})
-  const [loadingCollectables, setLoadingCollectables] = useState(false)
-
-  const fetchCollectables = useCallback(async () => {
-    setLoadingCollectables(true)
-    if (!currentNetworkAddress || l1Network !== 'solana') return
-
-    try {
-      const connection = new Connection(
-        'https://metaplex.devnet.rpcpool.com/',
-        'confirmed',
-      )
-
-      const metaplex = new Metaplex(connection, { cluster: 'devnet' })
-      const pubKey = new PublicKey(currentNetworkAddress)
-      const fetchedCollectables = await getCollectables(pubKey, metaplex)
-      setCollectables(groupCollectables(fetchedCollectables))
-      const collectablesWithMetadata = await getCollectablesMetadata(
-        fetchedCollectables,
-        metaplex,
-      )
-      const groupedCollectables = groupCollectablesWithMetaData(
-        collectablesWithMetadata,
-      )
-      setLoadingCollectables(false)
-      setCollectableWithMeta(groupedCollectables)
-    } catch (e) {
-      Logger.breadcrumb('Solana getCollectables - fail', breadcrumbOpts)
-      Logger.error(e)
-    }
-  }, [currentNetworkAddress, l1Network])
-
-  useEffect(() => {
-    if (!currentAccount?.solanaAddress) {
-      return
-    }
-
-    setCollectables({})
-    setCollectableWithMeta({})
-    fetchCollectables()
-
-    const subId = onLogs(cluster, currentAccount?.solanaAddress, () => {
-      setCollectables({})
-      setCollectableWithMeta({})
-      fetchCollectables()
-    })
-    if (accountSubscriptionId.current !== undefined) {
-      removeAccountChangeListener(cluster, accountSubscriptionId.current)
-    }
-    accountSubscriptionId.current = subId
-  }, [cluster, currentAccount, fetchCollectables])
+  const {
+    collectables,
+    collectablesWithMeta,
+    loading: loadingCollectables,
+    refresh: refreshCollectables,
+  } = useMetaplex()
 
   const tokens = useMemo(() => {
     if (loading || showCollectables) {
@@ -230,7 +148,7 @@ const AccountTokenList = ({
     [navigation],
   )
 
-  const hanleCollectableNavigation = useCallback(
+  const handleCollectableNavigation = useCallback(
     (collection: (Sft | SftWithToken | Nft | NftWithToken)[]) => () => {
       if (collection.length > 1) {
         navigation.navigate('AccountCollectionScreen', {
@@ -278,7 +196,7 @@ const AccountTokenList = ({
             alignItems="center"
             backgroundColor="surface"
             borderRadius="m"
-            onPress={hanleCollectableNavigation(collectablesWithMeta[item])}
+            onPress={handleCollectableNavigation(collectablesWithMeta[item])}
           >
             <Image
               borderRadius={10}
@@ -313,19 +231,13 @@ const AccountTokenList = ({
       )
     },
     [
-      COLLECTABLE_HEIGHT,
+      showCollectables,
       collectablesWithMeta,
       handleItemLayout,
-      hanleCollectableNavigation,
-      showCollectables,
+      handleCollectableNavigation,
+      COLLECTABLE_HEIGHT,
     ],
   )
-
-  const onRefresh = useCallback(async () => {
-    setIsRefreshing(true)
-    await fetchCollectables()
-    setIsRefreshing(false)
-  }, [fetchCollectables])
 
   const renderCollectableSkeletonItem = useCallback(
     (key: number) => {
@@ -519,10 +431,10 @@ const AccountTokenList = ({
       keyExtractor={keyExtractor}
       refreshControl={
         <RefreshControl
-          refreshing={isRefreshing}
-          onRefresh={onRefresh}
+          refreshing={loadingCollectables}
+          onRefresh={refreshCollectables}
           title=""
-          tintColor="#fff"
+          tintColor={primaryText}
         />
       }
     />
