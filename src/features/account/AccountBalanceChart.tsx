@@ -8,6 +8,7 @@ import React, {
 } from 'react'
 import { Platform, processColor, ViewStyle } from 'react-native'
 import { ChartSelectEvent, LineChart } from 'react-native-charts-wrapper'
+import { ScrollView } from 'react-native-gesture-handler'
 import FadeInOut from '../../components/FadeInOut'
 import { AccountBalance } from '../../generated/graphql'
 import { useColors, useSpacing } from '../../theme/themeHooks'
@@ -82,86 +83,88 @@ const AccountBalanceChart = ({
   }, [marginVertical])
 
   return (
-    <FadeInOut style={style}>
-      <LineChart
-        ref={chartsRef}
-        style={{
-          flex: 1,
-          marginHorizontal: 0,
-          borderWidth: 0,
-          maxHeight: CHART_HEIGHT,
-        }}
-        onSelect={handleSelect}
-        onTouchStart={(x) => {
-          if (Platform.OS === 'ios') {
-            handleSelect(x)
-          }
-        }}
-        onChange={(x) => {
-          if (Platform.OS === 'ios') {
-            handleSelect(x)
-          }
-        }}
-        xAxis={{
-          enabled: false,
-          drawAxisLines: false,
-          drawGridLines: false,
-          drawLabels: false,
-        }}
-        drawBorders={false}
-        borderColor={processedColors.primaryBackground}
-        chartDescription={{ text: '' }}
-        borderWidth={0}
-        yAxis={{
-          left: {
+    <FadeInOut>
+      <ScrollView contentContainerStyle={style} scrollEnabled={false}>
+        <LineChart
+          ref={chartsRef}
+          style={{
+            flex: 1,
+            marginHorizontal: 0,
+            borderWidth: 0,
+            maxHeight: CHART_HEIGHT,
+          }}
+          onSelect={handleSelect}
+          onTouchStart={(x) => {
+            if (Platform.OS === 'ios') {
+              handleSelect(x)
+            }
+          }}
+          onChange={(x) => {
+            if (Platform.OS === 'ios') {
+              handleSelect(x)
+            }
+          }}
+          xAxis={{
             enabled: false,
+            drawAxisLines: false,
             drawGridLines: false,
-            zeroLine: { enabled: false },
-          },
-          right: {
-            enabled: false,
-            drawGridLines: false,
-            zeroLine: { enabled: false },
-          },
-        }}
-        legend={{ enabled: false }}
-        pinchZoom={false}
-        chartBackgroundColor={processedColors.primaryBackground}
-        scaleEnabled={false}
-        scaleXEnabled={false}
-        scaleYEnabled={false}
-        data={{
-          dataSets: [
-            {
-              label: '',
-              config: {
-                drawHorizontalHighlightIndicator: false,
-                highlightColor: processedColors.primaryText,
-                lineWidth: 1,
-                color: processedColors.primaryText,
-                drawCircles: false,
-                drawValues: false,
-                mode: 'CUBIC_BEZIER',
-                drawFilled: true,
-                fillAlpha: 100,
-                fillGradient: {
-                  colors: [
-                    Platform.OS === 'ios'
-                      ? processedColors.primaryBackground
-                      : processedColors.primaryText,
-                    Platform.OS === 'ios'
-                      ? processedColors.primaryText
-                      : processedColors.primaryBackground,
-                  ],
-                  positions: [0, 1],
-                  orientation: 'TOP_BOTTOM',
-                },
-              },
-              values: chartValues,
+            drawLabels: false,
+          }}
+          drawBorders={false}
+          borderColor={processedColors.primaryBackground}
+          chartDescription={{ text: '' }}
+          borderWidth={0}
+          yAxis={{
+            left: {
+              enabled: false,
+              drawGridLines: false,
+              zeroLine: { enabled: false },
             },
-          ],
-        }}
-      />
+            right: {
+              enabled: false,
+              drawGridLines: false,
+              zeroLine: { enabled: false },
+            },
+          }}
+          legend={{ enabled: false }}
+          pinchZoom={false}
+          chartBackgroundColor={processedColors.primaryBackground}
+          scaleEnabled={false}
+          scaleXEnabled={false}
+          scaleYEnabled={false}
+          data={{
+            dataSets: [
+              {
+                label: '',
+                config: {
+                  drawHorizontalHighlightIndicator: false,
+                  highlightColor: processedColors.primaryText,
+                  lineWidth: 1,
+                  color: processedColors.primaryText,
+                  drawCircles: false,
+                  drawValues: false,
+                  mode: 'CUBIC_BEZIER',
+                  drawFilled: true,
+                  fillAlpha: 100,
+                  fillGradient: {
+                    colors: [
+                      Platform.OS === 'ios'
+                        ? processedColors.primaryBackground
+                        : processedColors.primaryText,
+                      Platform.OS === 'ios'
+                        ? processedColors.primaryText
+                        : processedColors.primaryBackground,
+                    ],
+                    positions: [0, 1],
+                    orientation: 'TOP_BOTTOM',
+                  },
+                },
+                values: chartValues,
+              },
+            ],
+          }}
+        />
+      </ScrollView>
     </FadeInOut>
   )
 }
