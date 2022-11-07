@@ -2,6 +2,8 @@ import React, { memo, useEffect, useMemo, useState } from 'react'
 import { NetTypes } from '@helium/address'
 import CurrencyFormatter from 'react-native-currency-format'
 import { addMinutes } from 'date-fns'
+import { BoxProps } from '@shopify/restyle'
+import { GestureResponderEvent } from 'react-native'
 import * as AccountUtils from '../../utils/accountUtils'
 import { AccountBalance, AccountData } from '../../generated/graphql'
 import Text from '../../components/Text'
@@ -13,14 +15,21 @@ import AccountActionBar from './AccountActionBar'
 import useLayoutHeight from '../../utils/useLayoutHeight'
 import Box from '../../components/Box'
 import DateModule from '../../utils/DateModule'
+import { Theme } from '../../theme/theme'
 
 type Props = {
   accountData?: AccountData | null
   hntPrice?: number
   selectedBalance?: AccountBalance
-}
+  onTouchStart?: (event: GestureResponderEvent) => void
+} & BoxProps<Theme>
 
-const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
+const AccountView = ({
+  accountData,
+  hntPrice,
+  selectedBalance,
+  ...boxProps
+}: Props) => {
   const [balanceString, setBalanceString] = useState('')
   const [selectedDate, setSelectedDate] = useState('')
 
@@ -96,7 +105,12 @@ const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
   ])
 
   return (
-    <Box flexDirection="column" alignItems="center">
+    <Box
+      flexDirection="column"
+      alignItems="center"
+      marginTop="xxxl"
+      {...boxProps}
+    >
       <Text
         variant="body1"
         color="secondaryText"

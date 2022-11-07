@@ -1,5 +1,6 @@
 import { Ticker } from '@helium/currency'
 import * as web3 from '@solana/web3.js'
+import { Nft, NftWithToken, Sft, SftWithToken } from '@metaplex-foundation/js'
 import { Mints } from '../store/slices/walletRestApi'
 
 export type SolPayment = {
@@ -30,3 +31,5 @@ export const mintToTicker = (mint: string, mints: Mints) => {
 
   return found as Ticker
 }
+
+export type Collectable = Sft | SftWithToken | Nft | NftWithToken
