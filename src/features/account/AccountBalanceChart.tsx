@@ -6,15 +6,15 @@ import React, {
   useMemo,
   useRef,
 } from 'react'
-import { Platform, processColor } from 'react-native'
+import { Platform, processColor, ViewStyle } from 'react-native'
 import { ChartSelectEvent, LineChart } from 'react-native-charts-wrapper'
 import FadeInOut from '../../components/FadeInOut'
 import { AccountBalance } from '../../generated/graphql'
-import globalStyles from '../../theme/globalStyles'
-import { useColors } from '../../theme/themeHooks'
+import { useColors, useSpacing } from '../../theme/themeHooks'
 import useHaptic from '../../utils/useHaptic'
 import usePrevious from '../../utils/usePrevious'
 
+const CHART_HEIGHT = 140
 type Props = {
   chartValues: Array<{ y: number; info: AccountBalance | undefined }>
   onHistorySelected: (accountBalance: AccountBalance) => void
@@ -27,6 +27,7 @@ const AccountBalanceChart = ({
 }: Props) => {
   const { triggerImpact } = useHaptic()
   const { primaryBackground, primaryText } = useColors()
+  const { xl: marginVertical } = useSpacing()
 
   const chartsRef = useRef<
     LineChart & {
@@ -76,15 +77,19 @@ const AccountBalanceChart = ({
     }
   }, [prevSelectedBalance, selectedBalance])
 
+  const style = useMemo((): ViewStyle => {
+    return { justifyContent: 'center', height: CHART_HEIGHT, marginVertical }
+  }, [marginVertical])
+
   return (
-    <FadeInOut style={[globalStyles.container, { justifyContent: 'center' }]}>
+    <FadeInOut style={style}>
       <LineChart
         ref={chartsRef}
         style={{
           flex: 1,
           marginHorizontal: 0,
           borderWidth: 0,
-          maxHeight: 140,
+          maxHeight: CHART_HEIGHT,
         }}
         onSelect={handleSelect}
         onTouchStart={(x) => {

@@ -1,16 +1,14 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import { Platform } from 'react-native'
+import { LogBox, Platform, RefreshControl } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import SharedGroupPreferences from 'react-native-shared-group-preferences'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated'
+import { useSharedValue, withTiming } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDebouncedCallback } from 'use-debounce/lib'
 import { toUpper } from 'lodash'
+import { useTranslation } from 'react-i18next'
+import { ScrollView } from 'react-native-gesture-handler'
 import Box from '../../components/Box'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
@@ -31,19 +29,31 @@ import StatusBanner from '../StatusPage/StatusBanner'
 import { checkSecureAccount } from '../../storage/secureStorage'
 import { getJazzSeed, isTestnet } from '../../utils/accountUtils'
 import AccountsTopNav from './AccountsTopNav'
-import AccountTokenList from './AccountTokenList'
+import AccountTokenList, { SplTokenType } from './AccountTokenList'
 import AccountView from './AccountView'
 import ConnectedWallets from './ConnectedWallets'
 import useLayoutHeight from '../../utils/useLayoutHeight'
 import { OnboardingOpt } from '../onboarding/onboardingTypes'
-import globalStyles from '../../theme/globalStyles'
-import { FadeInSlow } from '../../components/FadeInOut'
 import AccountBalanceChart from './AccountBalanceChart'
 import useDisappear from '../../utils/useDisappear'
 import { useGetBalanceHistoryQuery } from '../../store/slices/walletRestApi'
+import TabBar from '../../components/TabBar'
+import { useBalance } from '../../utils/Balance'
+import { useColors } from '../../theme/themeHooks'
+import useCollectables from '../../utils/useCollectables'
+
+LogBox.ignoreLogs([
+  'VirtualizedLists should never be nested inside plain ScrollViews',
+])
+// There is a flatlist nested inside of a scrollview which should be fine as
+// the flatlist has scroll disabled and will only ever have a relatively
+// low amount of items in it. Initial thought was to use a Sectionlist for
+// this, but the Flatlist has two columns (numColumns={2}) which makes that
+// not work so cleanly.
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
+  const { t } = useTranslation()
   const navigation = useNavigation<HomeNavigationProp>()
   const { sortedAccounts, currentAccount, defaultAccountAddress } =
     useAccountStorage()
@@ -54,8 +64,13 @@ const AccountsScreen = () => {
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const [walletsVisible, setWalletsVisible] = useState(false)
   const [selectedBalance, setSelectedBalance] = useState<AccountBalanceType>()
+  const [tokenType, setTokenType] = useState<SplTokenType>('tokens')
   const { top } = useSafeAreaInsets()
   const chartFlex = useSharedValue(0)
+  const { updateVars: refreshTokens, updating: updatingTokens } = useBalance()
+  const { primaryText } = useColors()
+  const { loading: loadingCollectables, refresh: refreshCollectables } =
+    useCollectables()
 
   useAppear(() => {
     reset()
@@ -108,6 +123,11 @@ const AccountsScreen = () => {
     },
   )
 
+  const showCollectables = useMemo(
+    () => tokenType === 'collectables',
+    [tokenType],
+  )
+
   const showChart = useMemo(() => {
     if (l1Network === 'helium') {
       return (data?.accountBalanceHistory?.length || 0) >= 2
@@ -116,6 +136,16 @@ const AccountsScreen = () => {
   }, [data, l1Network, solChainBalanceHistory])
 
   const prevShowChart = usePrevious(showChart)
+
+  const tabData = useMemo((): Array<{
+    value: SplTokenType
+    title: string
+  }> => {
+    return [
+      { value: 'tokens', title: t('accountTokenList.tokens') },
+      { value: 'collectables', title: t('accountTokenList.collectables') },
+    ]
+  }, [t])
 
   const chartValues = useMemo(() => {
     // Need to have at least a two days of data to display
@@ -192,7 +222,7 @@ const AccountsScreen = () => {
     if (!showChart && prevShowChart) {
       chartFlex.value = withTiming(0, { duration: 700 })
     } else if (showChart && !prevShowChart) {
-      chartFlex.value = withTiming(50, { duration: 700 })
+      chartFlex.value = withTiming(80, { duration: 700 })
     }
   }, [chartFlex.value, chartValues, prevShowChart, showChart])
 
@@ -217,16 +247,17 @@ const AccountsScreen = () => {
     setWalletsVisible(false)
   }, [navigation])
 
-  const style = useAnimatedStyle(() => {
-    return {
-      flex: chartFlex.value,
-      justifyContent: 'center',
-    }
-  })
-
   const onTouchStart = useCallback(() => {
     handleBalanceHistorySelected(undefined)
   }, [handleBalanceHistorySelected])
+
+  const handleItemSelected = useCallback(
+    (type: string) => {
+      setTokenType(type as SplTokenType)
+      onTouchStart()
+    },
+    [onTouchStart],
+  )
 
   return (
     <Box flex={1}>
@@ -235,35 +266,47 @@ const AccountsScreen = () => {
         onLayout={setNavLayoutHeight}
       />
       {currentAccount?.address && (accountData?.account || accountLoading) && (
-        <Animated.View style={globalStyles.container} entering={FadeInSlow}>
-          <Box flex={100} justifyContent="center">
-            <AccountView
-              accountData={accountData?.account}
-              hntPrice={data?.currentPrices?.hnt}
-              selectedBalance={selectedBalance}
+        <ScrollView
+          stickyHeaderIndices={[2]}
+          nestedScrollEnabled
+          refreshControl={
+            <RefreshControl
+              refreshing={
+                showCollectables ? loadingCollectables : updatingTokens
+              }
+              onRefresh={showCollectables ? refreshCollectables : refreshTokens}
+              title=""
+              tintColor={primaryText}
             />
+          }
+        >
+          <AccountView
+            onTouchStart={onTouchStart}
+            accountData={accountData?.account}
+            hntPrice={data?.currentPrices?.hnt}
+            selectedBalance={selectedBalance}
+          />
+          <AccountBalanceChart
+            chartValues={chartValues || []}
+            onHistorySelected={handleBalanceHistorySelected}
+            selectedBalance={selectedBalance}
+          />
+          {l1Network === 'solana' && currentAccount ? (
+            <TabBar
+              backgroundColor="black"
+              tabBarOptions={tabData}
+              selectedValue={tokenType}
+              onItemSelected={handleItemSelected}
+              stretchItems
+              marginBottom="ms"
+            />
+          ) : (
+            <Box height={1} backgroundColor="surface" marginBottom="ms" />
+          )}
+          <Box onTouchStart={onTouchStart}>
+            <AccountTokenList loading={accountLoading} tokenType={tokenType} />
           </Box>
-
-          <Animated.View style={style}>
-            <Box
-              flex={1}
-              onTouchStart={onTouchStart}
-              backgroundColor="primaryBackground"
-            />
-            <AccountBalanceChart
-              chartValues={chartValues || []}
-              onHistorySelected={handleBalanceHistorySelected}
-              selectedBalance={selectedBalance}
-            />
-            <Box
-              flex={1}
-              onTouchStart={onTouchStart}
-              backgroundColor="primaryBackground"
-            />
-          </Animated.View>
-
-          <AccountTokenList loading={accountLoading} />
-        </Animated.View>
+        </ScrollView>
       )}
       {walletsVisible && (
         <ConnectedWallets
