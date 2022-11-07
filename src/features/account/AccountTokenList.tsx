@@ -95,14 +95,12 @@ const AccountTokenList = ({ loading = false, tokenType }: Props) => {
       balance: Balance<AnyCurrencyType>
       staked: boolean
     }[]
-    return allTokens
-      .filter(
-        (token) =>
-          token?.balance?.integerBalance > 0 ||
-          token?.type === 'MOBILE' ||
-          (token?.type === 'HNT' && token?.staked === false),
-      )
-      .splice(1)
+    return allTokens.filter(
+      (token) =>
+        token?.balance?.integerBalance > 0 ||
+        token?.type === 'MOBILE' ||
+        (token?.type === 'HNT' && token?.staked === false),
+    )
   }, [
     dcBalance,
     loading,
