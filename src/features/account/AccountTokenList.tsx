@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Balance, {
   DataCredits,
   MobileTokens,
@@ -11,28 +11,37 @@ import Balance, {
 import { times } from 'lodash'
 import { useNavigation } from '@react-navigation/native'
 import Arrow from '@assets/images/listItemRight.svg'
-import {
-  Dimensions,
-  Image,
-  LayoutChangeEvent,
-  RefreshControl,
-  ViewStyle,
-} from 'react-native'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
+import { FlatList } from 'react-native-gesture-handler'
+import { Image, LayoutChangeEvent, RefreshControl } from 'react-native'
+import Animated, {
+  FadeIn,
+  FadeOut,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import 'text-encoding-polyfill'
-import CircleLoader from '../../components/CircleLoader'
+import { useTranslation } from 'react-i18next'
 import { useBalance } from '../../utils/Balance'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { HomeNavigationProp } from '../home/homeTypes'
 import TokenIcon from './TokenIcon'
-import { useBreakpoints, useColors } from '../../theme/themeHooks'
+import {
+  useBorderRadii,
+  useBreakpoints,
+  useColors,
+} from '../../theme/themeHooks'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import useLayoutHeight from '../../utils/useLayoutHeight'
-import useCollectables from '../../utils/useCollectables'
+import TabBar from '../../components/TabBar'
+import { useAppStorage } from '../../storage/AppStorageProvider'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { Collectable } from '../../types/solana'
+import useCollectables from '../../utils/useCollectables'
+import { ww } from '../../utils/layout'
+import CircleLoader from '../../components/CircleLoader'
 
 type Token = {
   type: Ticker
@@ -42,16 +51,13 @@ type Token = {
 
 type Props = {
   loading?: boolean
-  renderHeader: JSX.Element
-  showCollectables: boolean
 }
 
 const ITEM_HEIGHT = 78
-const AccountTokenList = ({
-  loading = false,
-  renderHeader,
-  showCollectables,
-}: Props) => {
+const COLLECTABLE_HEIGHT = ww / 2
+type SplTokenType = 'tokens' | 'collectables'
+
+const AccountTokenList = ({ loading = false }: Props) => {
   const {
     dcBalance,
     mobileBalance,
@@ -59,12 +65,20 @@ const AccountTokenList = ({
     networkStakedBalance,
     secBalance,
     solBalance,
+    updateVars: refreshTokens,
+    updating: updatingTokens,
   } = useBalance()
-  const { primaryText } = useColors()
   const navigation = useNavigation<HomeNavigationProp>()
   const [listItemHeight, setListItemHeight] = useLayoutHeight()
   const breakpoints = useBreakpoints()
-  const COLLECTABLE_HEIGHT = Dimensions.get('window').width / 2
+  const { l1Network } = useAppStorage()
+  const { currentAccount } = useAccountStorage()
+  const height = useSharedValue(0)
+  const { bottom } = useSafeAreaInsets()
+  const [tokenType, setTokenType] = useState<SplTokenType>('tokens')
+  const { t } = useTranslation()
+  const { primaryText } = useColors()
+  const { lm } = useBorderRadii()
   const {
     collectables,
     collectablesWithMeta,
@@ -72,10 +86,18 @@ const AccountTokenList = ({
     refresh: refreshCollectables,
   } = useCollectables()
 
+  const bottomSpace = useMemo(() => bottom * 2, [bottom])
+
+  const showCollectables = useMemo(
+    () => tokenType === 'collectables',
+    [tokenType],
+  )
+
   const tokens = useMemo(() => {
     if (loading || showCollectables) {
       return []
     }
+
     const allTokens = [
       {
         type: 'HNT',
@@ -136,8 +158,6 @@ const AccountTokenList = ({
     return [...toks, ...cols]
   }, [collectablesWithMeta, showCollectables, tokens])
 
-  const { bottom } = useSafeAreaInsets()
-
   const handleNavigation = useCallback(
     (token: Token) => () => {
       if (token.type === 'SOL') {
@@ -169,6 +189,20 @@ const AccountTokenList = ({
     return 2
   }, [breakpoints.largePhone, breakpoints.phone])
 
+  const tabData = useMemo((): Array<{
+    value: SplTokenType
+    title: string
+  }> => {
+    return [
+      { value: 'tokens', title: t('accountTokenList.tokens') },
+      { value: 'collectables', title: t('accountTokenList.collectables') },
+    ]
+  }, [t])
+
+  const handleItemSelected = useCallback((type: string) => {
+    setTokenType(type as SplTokenType)
+  }, [])
+
   const handleItemLayout = useCallback(
     (e: LayoutChangeEvent) => {
       if (listItemHeight !== 0) return
@@ -199,7 +233,7 @@ const AccountTokenList = ({
             onPress={handleCollectableNavigation(collectablesWithMeta[item])}
           >
             <Image
-              borderRadius={10}
+              borderRadius={lm}
               style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
               source={{
                 uri: json?.image,
@@ -235,7 +269,7 @@ const AccountTokenList = ({
       collectablesWithMeta,
       handleItemLayout,
       handleCollectableNavigation,
-      COLLECTABLE_HEIGHT,
+      lm,
     ],
   )
 
@@ -269,8 +303,25 @@ const AccountTokenList = ({
         </Animated.View>
       )
     },
-    [COLLECTABLE_HEIGHT, handleItemLayout, loadingCollectables],
+    [handleItemLayout, loadingCollectables],
   )
+
+  const renderHeader = useCallback(() => {
+    if (l1Network === 'solana' && currentAccount) {
+      return (
+        <TabBar
+          backgroundColor="black"
+          tabBarOptions={tabData}
+          selectedValue={tokenType}
+          onItemSelected={handleItemSelected}
+          stretchItems
+          marginBottom="ms"
+        />
+      )
+    }
+
+    return <Box height={1} backgroundColor="surface" marginBottom="ms" />
+  }, [currentAccount, handleItemSelected, l1Network, tabData, tokenType])
 
   const renderItem = useCallback(
     ({
@@ -399,6 +450,33 @@ const AccountTokenList = ({
     )
   }
 
+  useEffect(() => {
+    let nextHeight = 0
+    if (tokenType === 'collectables') return
+
+    if (loading) {
+      nextHeight = ITEM_HEIGHT * maxVisibleTokens + bottomSpace
+    } else if (!listItemHeight) {
+      nextHeight = ITEM_HEIGHT * tokens.length + bottomSpace
+    } else {
+      nextHeight =
+        listItemHeight * Math.min(tokens.length, maxVisibleTokens) + bottomSpace
+    }
+    height.value = withTiming(nextHeight, { duration: 700 })
+  }, [
+    bottomSpace,
+    height.value,
+    listItemHeight,
+    loading,
+    maxVisibleTokens,
+    tokenType,
+    tokens.length,
+  ])
+
+  const listStyle = useAnimatedStyle(() => {
+    return { height: height.value }
+  })
+
   const keyExtractor = useCallback((item: Token | string) => {
     if (typeof item === 'string') {
       return item
@@ -412,33 +490,37 @@ const AccountTokenList = ({
   }, [])
 
   const contentContainerStyle = useMemo(
-    () => ({ paddingBottom: bottom }),
-    [bottom],
+    () => ({
+      paddingBottom: bottomSpace,
+    }),
+    [bottomSpace],
   )
 
   return (
-    <Animated.FlatList
-      scrollEnabled
-      data={flatListItems}
-      numColumns={2}
-      contentContainerStyle={contentContainerStyle}
-      renderItem={renderItem}
-      columnWrapperStyle={
-        { flexDirection: !showCollectables ? 'column' : 'row' } as ViewStyle
-      }
-      ListHeaderComponent={renderHeader}
-      ListEmptyComponent={renderFooter}
-      keyExtractor={keyExtractor}
-      refreshControl={
-        <RefreshControl
-          refreshing={loadingCollectables}
-          onRefresh={refreshCollectables}
-          title=""
-          tintColor={primaryText}
-        />
-      }
-    />
+    <Animated.View style={listStyle}>
+      <FlatList
+        data={flatListItems}
+        numColumns={2}
+        stickyHeaderIndices={[0]}
+        columnWrapperStyle={{
+          flexDirection: !showCollectables ? 'column' : 'row',
+        }}
+        contentContainerStyle={contentContainerStyle}
+        ListHeaderComponent={renderHeader}
+        renderItem={renderItem}
+        ListFooterComponent={renderFooter}
+        keyExtractor={keyExtractor}
+        refreshControl={
+          <RefreshControl
+            refreshing={showCollectables ? loadingCollectables : updatingTokens}
+            onRefresh={showCollectables ? refreshCollectables : refreshTokens}
+            title=""
+            tintColor={primaryText}
+          />
+        }
+      />
+    </Animated.View>
   )
 }
 
-export default memo(AccountTokenList)
+export default AccountTokenList

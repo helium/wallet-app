@@ -11,7 +11,6 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDebouncedCallback } from 'use-debounce/lib'
 import { toUpper } from 'lodash'
-import { NetTypes } from '@helium/address'
 import Box from '../../components/Box'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
@@ -37,17 +36,11 @@ import AccountView from './AccountView'
 import ConnectedWallets from './ConnectedWallets'
 import useLayoutHeight from '../../utils/useLayoutHeight'
 import { OnboardingOpt } from '../onboarding/onboardingTypes'
+import globalStyles from '../../theme/globalStyles'
+import { FadeInSlow } from '../../components/FadeInOut'
 import AccountBalanceChart from './AccountBalanceChart'
 import useDisappear from '../../utils/useDisappear'
-import TabBar from '../../components/TabBar'
-import { FadeInSlow } from '../../components/FadeInOut'
-import globalStyles from '../../theme/globalStyles'
 import { useGetBalanceHistoryQuery } from '../../store/slices/walletRestApi'
-
-enum SPLTokenType {
-  tokens = 'Tokens',
-  Collectables = 'Collectables',
-}
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
@@ -56,7 +49,6 @@ const AccountsScreen = () => {
     useAccountStorage()
   const [navLayoutHeight, setNavLayoutHeight] = useLayoutHeight()
   const { openedNotification } = useNotificationStorage()
-  const [tokenType, setTokenType] = useState<SPLTokenType>(SPLTokenType.tokens)
   const { locked, l1Network, solanaNetwork: cluster } = useAppStorage()
   const { reset } = useOnboarding()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
@@ -200,7 +192,7 @@ const AccountsScreen = () => {
     if (!showChart && prevShowChart) {
       chartFlex.value = withTiming(0, { duration: 700 })
     } else if (showChart && !prevShowChart) {
-      chartFlex.value = withTiming(100, { duration: 700 })
+      chartFlex.value = withTiming(50, { duration: 700 })
     }
   }, [chartFlex.value, chartValues, prevShowChart, showChart])
 
@@ -236,82 +228,41 @@ const AccountsScreen = () => {
     handleBalanceHistorySelected(undefined)
   }, [handleBalanceHistorySelected])
 
-  const tabData = useMemo((): Array<{
-    value: string
-    title: string
-  }> => {
-    return [
-      { value: SPLTokenType.tokens, title: SPLTokenType.tokens },
-      { value: SPLTokenType.Collectables, title: SPLTokenType.Collectables },
-    ]
-  }, [])
-
-  const handleItemSelected = useCallback((type: string) => {
-    setTokenType(type as SPLTokenType)
-  }, [])
-
   return (
-    <>
+    <Box flex={1}>
       <AccountsTopNav
         onPressWallet={toggleWalletsVisible}
         onLayout={setNavLayoutHeight}
       />
       {currentAccount?.address && (accountData?.account || accountLoading) && (
         <Animated.View style={globalStyles.container} entering={FadeInSlow}>
-          <>
-            <AccountTokenList
-              loading={accountLoading}
-              renderHeader={
-                <Box flexGrow={1} minHeight={450}>
-                  {currentAccount?.address &&
-                    (accountData?.account || accountLoading) && (
-                      <Box justifyContent="center" flexGrow={1}>
-                        <AccountView
-                          accountData={accountData?.account}
-                          hntPrice={data?.currentPrices?.hnt}
-                          selectedBalance={selectedBalance}
-                        />
-                      </Box>
-                    )}
-                  <Animated.View style={style}>
-                    <Box
-                      flex={1}
-                      onTouchStart={onTouchStart}
-                      backgroundColor="primaryBackground"
-                    />
-                    <AccountBalanceChart
-                      chartValues={chartValues || []}
-                      onHistorySelected={handleBalanceHistorySelected}
-                      selectedBalance={selectedBalance}
-                    />
-                    <Box onTouchStart={onTouchStart} />
-                  </Animated.View>
-                  {l1Network === 'solana' &&
-                  currentAccount &&
-                  currentAccount.netType === NetTypes.MAINNET ? (
-                    <TabBar
-                      backgroundColor="black"
-                      tabBarOptions={tabData}
-                      selectedValue={tokenType}
-                      onItemSelected={handleItemSelected}
-                      stretchItems
-                      marginBottom="ms"
-                    />
-                  ) : (
-                    <Box
-                      height={1}
-                      backgroundColor="surface"
-                      marginBottom="ms"
-                    />
-                  )}
-                </Box>
-              }
-              showCollectables={
-                tokenType === SPLTokenType.Collectables &&
-                l1Network === 'solana'
-              }
+          <Box flex={100} justifyContent="center">
+            <AccountView
+              accountData={accountData?.account}
+              hntPrice={data?.currentPrices?.hnt}
+              selectedBalance={selectedBalance}
             />
-          </>
+          </Box>
+
+          <Animated.View style={style}>
+            <Box
+              flex={1}
+              onTouchStart={onTouchStart}
+              backgroundColor="primaryBackground"
+            />
+            <AccountBalanceChart
+              chartValues={chartValues || []}
+              onHistorySelected={handleBalanceHistorySelected}
+              selectedBalance={selectedBalance}
+            />
+            <Box
+              flex={1}
+              onTouchStart={onTouchStart}
+              backgroundColor="primaryBackground"
+            />
+          </Animated.View>
+
+          <AccountTokenList loading={accountLoading} />
         </Animated.View>
       )}
       {walletsVisible && (
@@ -322,7 +273,7 @@ const AccountsScreen = () => {
         />
       )}
       <StatusBanner />
-    </>
+    </Box>
   )
 }
 
