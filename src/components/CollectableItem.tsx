@@ -1,17 +1,17 @@
 import React, { memo, useMemo } from 'react'
 import { BoxProps } from '@shopify/restyle'
-import { Nft, NftWithToken, Sft, SftWithToken } from '@metaplex-foundation/js'
 import { useHitSlop } from '../theme/themeHooks'
 import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import { Color, Theme } from '../theme/theme'
 import ImageBox from './ImageBox'
+import { Collectable } from '../types/solana'
 
 type Props = {
   onPress?: (address?: string) => void
   innerBoxProps?: BoxProps<Theme>
-  collectable: Sft | SftWithToken | Nft | NftWithToken
+  collectable: Collectable
 } & BoxProps<Theme>
 
 const TokenButton = ({

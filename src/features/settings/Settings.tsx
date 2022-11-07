@@ -256,6 +256,7 @@ const Settings = () => {
 
   const handleSolanaNetworkChange = useCallback(
     async (network: ReactText, _index: number) => {
+      // TODO: Should we reset the solana and collectable slices when cluster changes?
       await updateSolanaNetwork(network as Cluster)
     },
     [updateSolanaNetwork],

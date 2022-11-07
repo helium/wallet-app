@@ -6,7 +6,6 @@ import Balance, {
   Ticker,
 } from '@helium/currency'
 import { PaymentV2 } from '@helium/transactions'
-import { Nft, NftWithToken, Sft, SftWithToken } from '@metaplex-foundation/js'
 import { useTransactions } from '../storage/TransactionProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAccountLazyQuery, useSubmitTxnMutation } from '../generated/graphql'
@@ -17,6 +16,7 @@ import {
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import { useGetMintsQuery } from '../store/slices/walletRestApi'
+import { Collectable } from '../types/solana'
 
 export default () => {
   const { makePaymentTxn } = useTransactions()
@@ -137,10 +137,7 @@ export default () => {
   )
 
   const submitCollectable = useCallback(
-    async (
-      collectable: Nft | NftWithToken | Sft | SftWithToken,
-      payee: string,
-    ) => {
+    async (collectable: Collectable, payee: string) => {
       if (!currentAccount) {
         throw new Error('There must be an account selected to submit a txn')
       }

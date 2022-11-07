@@ -120,6 +120,10 @@ export default {
     title: 'My {{ticker}}',
     tokens: 'Tokens',
   },
+  accountTokenList: {
+    tokens: 'Tokens',
+    collectables: 'Collectables',
+  },
   accountView: {
     balance: 'Balance',
     fiveG: '5G',

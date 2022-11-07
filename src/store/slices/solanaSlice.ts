@@ -1,5 +1,4 @@
 import Balance, { AnyCurrencyType, Ticker } from '@helium/currency'
-import { Nft, NftWithToken, Sft, SftWithToken } from '@metaplex-foundation/js'
 import {
   createAsyncThunk,
   createSlice,
@@ -9,7 +8,7 @@ import { Cluster, SignaturesForAddressOptions } from '@solana/web3.js'
 import { first, last } from 'lodash'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
-import { toMintAddress } from '../../types/solana'
+import { Collectable, toMintAddress } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
 import { Mints, walletRestApi } from './walletRestApi'
 
@@ -91,7 +90,7 @@ type PaymentInput = {
 
 type CollectablePaymentInput = {
   account: CSAccount
-  collectable: Sft | SftWithToken | Nft | NftWithToken
+  collectable: Collectable
   payee: string
   cluster: Cluster
 }
