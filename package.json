@@ -49,7 +49,7 @@
     "@helium/react-native-sdk": "1.0.0",
     "@helium/transactions": "4.7.5",
     "@helium/wallet-link": "4.7.5",
-    "@ledgerhq/hw-app-helium": "6.28.0-nightly.0",
+    "@ledgerhq/hw-app-helium": "6.29.1",
     "@ledgerhq/react-native-hid": "6.28.4",
     "@ledgerhq/react-native-hw-transport-ble": "6.27.2",
     "@react-native-async-storage/async-storage": "1.17.9",
