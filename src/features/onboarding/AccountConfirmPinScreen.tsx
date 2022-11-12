@@ -8,6 +8,7 @@ import { useOnboarding } from './OnboardingProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { CreateAccountStackParamList } from './create/createAccountNavTypes'
 import { ImportAccountStackParamList } from './import/importAccountNavTypes'
+import { RootNavigationProp } from '../../navigation/rootTypes'
 
 type Route = RouteProp<
   CreateAccountStackParamList & ImportAccountStackParamList,
@@ -17,6 +18,7 @@ type Route = RouteProp<
 const AccountConfirmPinScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<OnboardingNavigationProp>()
+  const rootNav = useNavigation<RootNavigationProp>()
   const { params } = route
   const { t } = useTranslation()
   const { upsertAccount } = useAccountStorage()
@@ -37,6 +39,7 @@ const AccountConfirmPinScreen = () => {
             },
           })
           reset()
+          rootNav.replace('HomeNavigator')
         } catch (e) {
           console.error(e)
         }
@@ -44,7 +47,7 @@ const AccountConfirmPinScreen = () => {
 
       await updatePin(pin)
     },
-    [params.account, reset, updatePin, upsertAccount],
+    [params.account, reset, rootNav, updatePin, upsertAccount],
   )
 
   return (
