@@ -14,7 +14,7 @@ import { TokenBurnV1 } from '@helium/transactions'
 import Ledger from '@assets/images/ledger.svg'
 import { useTranslation } from 'react-i18next'
 import { useColors, useOpacity } from '../theme/themeHooks'
-import { signLedgerBurn, useLedger } from '../utils/heliumLedger'
+import { signLedgerBurn } from '../utils/heliumLedger'
 import { LedgerDevice } from '../storage/cloudStorage'
 import HandleBasic from './HandleBasic'
 import SafeAreaBox from './SafeAreaBox'
@@ -23,6 +23,7 @@ import Text from './Text'
 import * as Logger from '../utils/logger'
 import useAlert from '../utils/useAlert'
 import useBackHandler from '../utils/useBackHandler'
+import useLedger from '../utils/useLedger'
 
 type ShowOptions = {
   ledgerDevice: LedgerDevice

@@ -17,7 +17,7 @@ import Ledger from '@assets/images/ledger.svg'
 import { useColors, useOpacity } from '../theme/themeHooks'
 import SafeAreaBox from './SafeAreaBox'
 import HandleBasic from './HandleBasic'
-import { signLedgerPayment, useLedger } from '../utils/heliumLedger'
+import { signLedgerPayment } from '../utils/heliumLedger'
 import { SendDetails, useTransactions } from '../storage/TransactionProvider'
 import { TokenType, useAccountLazyQuery } from '../generated/graphql'
 import Text from './Text'
@@ -25,6 +25,7 @@ import Box from './Box'
 import { LedgerDevice } from '../storage/cloudStorage'
 import useAlert from '../utils/useAlert'
 import useBackHandler from '../utils/useBackHandler'
+import useLedger from '../utils/useLedger'
 
 type ShowOptions = {
   payments: SendDetails[]
