@@ -123,19 +123,37 @@ const DeviceScan = () => {
   )
 
   const checkPermission = useCallback(async () => {
-    if (
-      Platform.OS !== 'android' ||
-      (await PermissionsAndroid.check(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      ))
-    ) {
+    if (Platform.OS === 'ios') {
       return true
     }
 
-    const granted = await PermissionsAndroid.request(
+    const perms = [
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+    ]
+
+    const results = await Promise.all(
+      perms.map((p) => PermissionsAndroid.check(p)),
     )
-    return granted === PermissionsAndroid.RESULTS.GRANTED
+
+    if (results.findIndex((r) => r === false) === -1) {
+      return true
+    }
+
+    const granted = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+    ])
+
+    perms.forEach((p) => {
+      if (!granted[p]) {
+        return false
+      }
+    })
+
+    return true
   }, [])
 
   const startScan = useCallback(async () => {
