@@ -14,12 +14,14 @@ import SafeAreaBox from '../../../components/SafeAreaBox'
 import CloseButton from '../../../components/CloseButton'
 import { MultiAccountStackParamList } from '../multiAccount/MultiAccountNavigatorTypes'
 import { AddNewAccountNavigationProp } from '../../home/addNewAccount/addNewAccountTypes'
+import { HomeNavigationProp } from '../../home/homeTypes'
 
 type Route = RouteProp<MultiAccountStackParamList, 'AccountImportStartScreen'>
 
 const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
   const { setOnboardingData } = useOnboarding()
   const navigation = useNavigation<ImportAccountNavigationProp>()
+  const homeNav = useNavigation<HomeNavigationProp>()
   const addNewAcctNav = useNavigation<AddNewAccountNavigationProp>()
   const { hasAccounts, reachedAccountLimit } = useAccountStorage()
   const { t } = useTranslation()
@@ -50,6 +52,10 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
   const onClose = useCallback(() => {
     navigation.goBack()
   }, [navigation])
+
+  const importPrivateKey = useCallback(() => {
+    homeNav.navigate('ImportPrivateKey', { key: undefined })
+  }, [homeNav])
 
   const cliExport = useCallback(
     () => () => {
@@ -116,7 +122,7 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
       </Text>
       <Box flexDirection="row" marginHorizontal="l" marginBottom="l">
         <ButtonPressable
-          width="50%"
+          width="33%"
           borderTopLeftRadius="round"
           borderBottomLeftRadius="round"
           backgroundColor="havelockBlue"
@@ -132,7 +138,22 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
           disabled={reachedAccountLimit}
         />
         <ButtonPressable
-          width="50%"
+          width="33%"
+          marginLeft="xxs"
+          backgroundColor="grey500"
+          titleColor="black900"
+          title={t('accountImport.keyImport')}
+          onPress={importPrivateKey}
+          titleColorDisabled="black800"
+          backgroundColorOpacityPressed={0.7}
+          backgroundColorDisabled="grey500"
+          backgroundColorDisabledOpacity={0.4}
+          fontWeight="500"
+          fontSize={18}
+          disabled={reachedAccountLimit}
+        />
+        <ButtonPressable
+          width="33%"
           marginLeft="xxs"
           backgroundColor="jazzberryJam"
           titleColor="black900"

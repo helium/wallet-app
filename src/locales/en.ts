@@ -42,6 +42,7 @@ export default {
     },
     pickKeyType: 'Pick Security Key Type:',
     recoveryPhrase: 'Secret Phrase',
+    keyImport: 'Private Key',
     subTitle:
       'To import your existing Helium account, enter its <havelockBlue>12</havelockBlue> or <jazzberryJam>24</jazzberryJam> word security key.',
     title: 'Import\nAccount',
@@ -50,6 +51,14 @@ export default {
       placeholder: '{{ordinal}} word',
       title: "Enter your\naccount's 12 or 24\nsecurity words.",
       word: 'Word {{ordinal}}',
+    },
+    privateKey: {
+      title: 'Import Private Key',
+      paste: 'Copy and paste your private key from the Helium Hotspot App.',
+      inputPlaceholder: 'You private key...',
+      error: 'Invalid Private Key',
+      body: 'You are importing a private key with the following public key.',
+      action: 'Import Account',
     },
   },
   accountSetup: {
@@ -69,6 +78,7 @@ export default {
       helperText:
         'Coming from Helium App? Use the\nsame 12 words to import an Account.',
       import: 'Import a Wallet',
+      importPrivateKey: 'Import a Private Key',
       ledger: 'Pair with Ledger',
       title: 'What would\nyou like to do?',
     },

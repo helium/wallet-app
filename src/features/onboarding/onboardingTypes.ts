@@ -7,7 +7,7 @@ export type OnboardingStackParamList = {
   ImportAccount: undefined
   LedgerNavigator: undefined
   CLIAccountNavigator: undefined
-  ImportPrivateKey: { key: string }
+  ImportPrivateKey: { key?: string }
 }
 
 export type OnboardingNavigationProp =

@@ -5,6 +5,7 @@ import bs58 from 'bs58'
 import { useAsync } from 'react-async-hook'
 import RNSodium from 'react-native-sodium'
 import { MAINNET } from '@helium/address/build/NetTypes'
+import { useTranslation } from 'react-i18next'
 import Text from '../../../components/Text'
 import SafeAreaBox from '../../../components/SafeAreaBox'
 import BackButton from '../../../components/BackButton'
@@ -16,41 +17,53 @@ import { createSecureAccount } from '../../../storage/secureStorage'
 import * as Logger from '../../../utils/logger'
 import ButtonPressable from '../../../components/ButtonPressable'
 import Box from '../../../components/Box'
+import TextInput from '../../../components/TextInput'
 
 type Route = RouteProp<OnboardingStackParamList, 'ImportPrivateKey'>
-
-// TODO: figure out full signout flow
 
 const ImportPrivateKey = () => {
   const { hasAccounts } = useAccountStorage()
   const navigation = useNavigation<RootNavigationProp>()
   const route = useRoute<Route>()
+  const { t } = useTranslation()
   const privateKey = route.params.key
   const { setOnboardingData } = useOnboarding()
   const [publicKey, setPublicKey] = useState<string>()
+  const [error, setError] = useState(false)
+
+  const decodePrivateKey = useCallback(
+    async (key?: string) => {
+      const keyToDecode = key || privateKey
+      if (!keyToDecode) return
+
+      try {
+        setError(false)
+        const keyBytes = bs58.decode(keyToDecode)
+        const seedBase64 = await RNSodium.crypto_sign_ed25519_sk_to_seed(
+          Buffer.from(keyBytes).toString('base64'),
+        )
+        const seedBuffer = Buffer.from(seedBase64, 'base64')
+        const mnemonic = Mnemonic.fromEntropy(seedBuffer)
+        const secureAccount = await createSecureAccount({
+          givenMnemonic: mnemonic,
+          netType: MAINNET,
+          use24Words: true,
+        })
+        setPublicKey(secureAccount.address)
+        setOnboardingData((prev) => {
+          return { ...prev, secureAccount }
+        })
+      } catch (e) {
+        setError(true)
+        Logger.error(e)
+      }
+    },
+    [privateKey, setOnboardingData],
+  )
 
   useAsync(async () => {
-    try {
-      const keyBytes = bs58.decode(privateKey)
-      const seedBase64 = await RNSodium.crypto_sign_ed25519_sk_to_seed(
-        Buffer.from(keyBytes).toString('base64'),
-      )
-      const seedBuffer = Buffer.from(seedBase64, 'base64')
-      const mnemonic = Mnemonic.fromEntropy(seedBuffer)
-      const secureAccount = await createSecureAccount({
-        givenMnemonic: mnemonic,
-        netType: MAINNET,
-        use24Words: true,
-      })
-      setPublicKey(secureAccount.address)
-      setOnboardingData((prev) => {
-        return { ...prev, secureAccount }
-      })
-    } catch (e) {
-      Logger.error(e)
-      // TODO show import failed and nav back
-    }
-  }, [])
+    await decodePrivateKey()
+  }, [decodePrivateKey])
 
   const onBack = useCallback(() => {
     if (navigation.canGoBack()) {
@@ -79,22 +92,63 @@ const ImportPrivateKey = () => {
     }
   }, [hasAccounts, navigation])
 
+  const onChangeText = useCallback(
+    async (text: string) => {
+      await decodePrivateKey(text)
+    },
+    [decodePrivateKey],
+  )
+
   return (
     <SafeAreaBox paddingHorizontal="l" flex={1}>
       <BackButton onPress={onBack} paddingHorizontal="none" />
       <Text variant="h1" marginTop="m">
-        Import Account
+        {t('accountImport.privateKey.title')}
       </Text>
-      <Text variant="body1" marginTop="xl">
-        You are importing a private key with the following public key.
+      <Text
+        variant="body1"
+        marginTop="xl"
+        marginBottom="xl"
+        visible={!publicKey}
+      >
+        {t('accountImport.privateKey.paste')}
       </Text>
-      <Text variant="body1" fontWeight="bold" marginTop="xl" textAlign="center">
+      <TextInput
+        visible={!publicKey}
+        placeholder={t('accountImport.privateKey.inputPlaceholder')}
+        variant="underline"
+        autoCapitalize="none"
+        keyboardAppearance="dark"
+        autoCorrect={false}
+        onChangeText={onChangeText}
+        autoComplete="off"
+        returnKeyType="done"
+      />
+      <Text
+        variant="body1"
+        marginTop="m"
+        marginBottom="m"
+        visible={error}
+        color="red500"
+      >
+        {t('accountImport.privateKey.error')}
+      </Text>
+      <Text variant="body1" marginTop="xl" visible={!!publicKey}>
+        {t('accountImport.privateKey.body')}
+      </Text>
+      <Text
+        variant="body1"
+        fontWeight="bold"
+        marginTop="xl"
+        textAlign="center"
+        visible={!!publicKey}
+      >
         {publicKey}
       </Text>
       <Box flex={1} />
       <ButtonPressable
         onPress={onImportAccount}
-        title="Import Account"
+        title={t('accountImport.privateKey.action')}
         borderRadius="round"
         backgroundColor="white"
         backgroundColorOpacityPressed={0.7}
