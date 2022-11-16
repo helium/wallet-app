@@ -40,10 +40,12 @@ import globalStyles from '../../theme/globalStyles'
 import { FadeInSlow } from '../../components/FadeInOut'
 import AccountBalanceChart from './AccountBalanceChart'
 import useDisappear from '../../utils/useDisappear'
+import { RootNavigationProp } from '../../navigation/rootTypes'
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
   const navigation = useNavigation<HomeNavigationProp>()
+  const rootNav = useNavigation<RootNavigationProp>()
   const { sortedAccounts, currentAccount, defaultAccountAddress } =
     useAccountStorage()
   const [navLayoutHeight, setNavLayoutHeight] = useLayoutHeight()
@@ -63,6 +65,13 @@ const AccountsScreen = () => {
   useDisappear(() => {
     setSelectedBalance(undefined)
   })
+
+  // if user signs out from lockscreen
+  useEffect(() => {
+    if (sortedAccounts.length === 0) {
+      rootNav.replace('OnboardingNavigator')
+    }
+  }, [rootNav, sortedAccounts.length])
 
   const { data: accountData, error: accountsError } = useAccountQuery({
     variables: {
