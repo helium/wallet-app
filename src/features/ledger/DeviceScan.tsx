@@ -1,14 +1,6 @@
 import React, { useCallback, useState, useRef, useMemo, useEffect } from 'react'
-import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import { useTranslation } from 'react-i18next'
-import {
-  FlatList,
-  LayoutChangeEvent,
-  PermissionsAndroid,
-  Platform,
-} from 'react-native'
-import { useAsync } from 'react-async-hook'
-import { Observable, Subscription } from 'rxjs'
+import { FlatList, LayoutChangeEvent } from 'react-native'
 import { Device } from 'react-native-ble-plx'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import CarotRight from '@assets/images/carot-right.svg'
@@ -30,41 +22,8 @@ import {
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import LedgerConnectSteps from './LedgerConnectSteps'
 import { useColors, useOpacity } from '../../theme/themeHooks'
-import * as Logger from '../../utils/logger'
 import useBackHandler from '../../utils/useBackHandler'
-
-enum DeviceModelId {
-  blue = 'blue',
-  nanoS = 'nanoS',
-  nanoSP = 'nanoSP',
-  nanoX = 'nanoX',
-}
-
-type LedgerDetails = {
-  type: string
-  descriptor: Device
-  deviceModel: {
-    id: DeviceModelId
-    productName: string
-    productIdMM: number
-    legacyUsbProductId: number
-    usbOnly: boolean
-    memorySize: number
-    masks: number[]
-    // blockSize: number, // THIS FIELD IS DEPRECATED, use getBlockSize
-    getBlockSize: (firmwareVersion: string) => number
-    bluetoothSpec?: {
-      serviceUuid: string
-      writeUuid: string
-      writeCmdUuid: string
-      notifyUuid: string
-    }[]
-  }
-}
-type LedgerAvailable = {
-  available: boolean
-  type: string
-}
+import useLedgerDeviceScan from '../../utils/useLedgerDeviceScan'
 
 type Route = RouteProp<LedgerNavigatorStackParamList, 'DeviceScan'>
 const DeviceScan = () => {
@@ -73,14 +32,11 @@ const DeviceScan = () => {
   const route = useRoute<Route>()
   const { primaryText } = useColors()
 
-  const [devices, setDevices] = useState<Device[]>([])
-  const [error, setError] = useState<Error>()
-  const [refreshing, setRefreshing] = useState(false)
   const { backgroundStyle } = useOpacity('secondary', 1)
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-  const sub = useRef<Subscription>()
   const [contentHeight, setContentHeight] = useState(0)
   const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
+  const { refreshing, error, devices, setError, reload } = useLedgerDeviceScan()
 
   useEffect(() => {
     if (!route.params?.error) {
@@ -88,7 +44,7 @@ const DeviceScan = () => {
     }
 
     setError(route.params.error)
-  }, [route])
+  }, [route, setError])
 
   const snapPoints = useMemo(() => {
     let maxHeight: number | string = '90%'
@@ -111,70 +67,11 @@ const DeviceScan = () => {
     [],
   )
 
-  const maybeAddDevice = useCallback(
-    (device: Device) => {
-      if (devices.some((i: Device) => i.id === device.id)) {
-        return
-      }
-
-      setDevices([...devices, device])
-    },
-    [devices],
-  )
-
-  const checkPermission = useCallback(async () => {
-    if (
-      Platform.OS !== 'android' ||
-      (await PermissionsAndroid.check(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      ))
-    ) {
-      return true
-    }
-
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-    )
-    return granted === PermissionsAndroid.RESULTS.GRANTED
-  }, [])
-
-  const startScan = useCallback(async () => {
-    setRefreshing(true)
-
-    await checkPermission()
-
-    sub.current = new Observable<LedgerDetails>(TransportBLE.listen).subscribe({
-      complete: () => {
-        setRefreshing(false)
-      },
-      next: (e) => {
-        if (e.type === 'add') {
-          maybeAddDevice(e.descriptor)
-        }
-        setRefreshing(false)
-      },
-      error: (err) => {
-        Logger.error(err)
-        setError(err)
-        setRefreshing(false)
-      },
-    })
-  }, [checkPermission, maybeAddDevice])
-
-  const reload = useCallback(() => {
-    if (sub.current) {
-      sub.current.unsubscribe()
-    }
-
-    setRefreshing(false)
-    startScan()
-  }, [startScan])
-
   const clearError = useCallback(() => {
     handleDismiss()
     setError(undefined)
     reload()
-  }, [handleDismiss, reload])
+  }, [handleDismiss, reload, setError])
 
   useEffect(() => {
     if (!error) return
@@ -182,27 +79,6 @@ const DeviceScan = () => {
     bottomSheetModalRef.current?.present()
     setIsShowing(true)
   }, [error, setIsShowing])
-
-  useAsync(async () => {
-    let previousAvailable: boolean | undefined
-    new Observable<LedgerAvailable>(TransportBLE.observeState).subscribe(
-      (e) => {
-        if (e.available !== previousAvailable) {
-          previousAvailable = e.available
-          if (e.available) {
-            reload()
-          } else if (!e.available && e.type) {
-            setError(new Error(e.type))
-          }
-        }
-      },
-    )
-    return () => {
-      if (sub.current) {
-        sub.current.unsubscribe()
-      }
-    }
-  }, [])
 
   const keyExtractor = useCallback((item) => item.id, [])
 

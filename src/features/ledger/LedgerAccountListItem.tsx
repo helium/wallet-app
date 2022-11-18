@@ -8,43 +8,37 @@ import AccountIcon from '../../components/AccountIcon'
 import { useColors } from '../../theme/themeHooks'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import { ellipsizeAddress, isTestnet } from '../../utils/accountUtils'
-import {
-  LedgerAccount,
-  setLedgerAccounts,
-  useLedgerAccounts,
-} from '../../utils/heliumLedger'
+import { LedgerAccount } from '../../utils/useLedger'
 
-type AccountListItemProps = {
+export enum Section {
+  NEW_ACCOUNT = 0,
+  ALREADY_LINKED = 1,
+}
+
+type LedgerAccountListItemProps = {
   item: LedgerAccount
+  isSelected: boolean
   index: number
   section: {
     title: string
     index: number
     data: LedgerAccount[]
   }
+  onCheckboxToggled: (account: LedgerAccount, value: boolean) => void
 }
-const AccountListItem = ({ item, index, section }: AccountListItemProps) => {
+const LedgerAccountListItem = ({
+  item: account,
+  isSelected,
+  index,
+  onCheckboxToggled,
+  section,
+}: LedgerAccountListItemProps) => {
   const { bonesToBalance } = useBalance()
   const colors = useColors()
-  const ledgerAccounts = useLedgerAccounts()
-
-  const onCheckboxToggled = useCallback(
-    (checked) => {
-      setLedgerAccounts(
-        ledgerAccounts.map((a) => {
-          if (a.address === item.address) {
-            return { ...a, isSelected: checked }
-          }
-          return a
-        }),
-      )
-    },
-    [item.address, ledgerAccounts],
-  )
 
   // TODO: Add other token types once nano app supports them
-  const balance = bonesToBalance(item.balance, TokenType.Hnt)
-  const disabled = section.index === 1
+  const balance = bonesToBalance(account.balance, TokenType.Hnt)
+  const disabled = section.index === Section.ALREADY_LINKED
 
   const borderTopEndRadius = useMemo(
     () => (index === 0 ? 'xl' : 'none'),
@@ -67,6 +61,13 @@ const AccountListItem = ({ item, index, section }: AccountListItemProps) => {
     [index, section.data.length],
   )
 
+  const handleCheckboxToggled = useCallback(
+    (value: boolean) => {
+      onCheckboxToggled(account, value)
+    },
+    [account, onCheckboxToggled],
+  )
+
   return (
     <Box paddingHorizontal="l">
       <Surface
@@ -78,12 +79,14 @@ const AccountListItem = ({ item, index, section }: AccountListItemProps) => {
         borderTopStartRadius={borderTopStartRadius}
         borderBottomEndRadius={borderBottomEndRadius}
         borderBottomStartRadius={borderBottomStartRadius}
-        backgroundColor={isTestnet(item.address) ? 'lividBrown' : 'secondary'}
+        backgroundColor={
+          isTestnet(account.address) ? 'lividBrown' : 'secondary'
+        }
       >
-        <AccountIcon size={40} address={item.address} />
+        <AccountIcon size={40} address={account.address} />
         <Box marginRight="l" marginLeft="l" flexGrow={1}>
           <Text variant="subtitle2" marginBottom="xxs">
-            {item.alias}
+            {account.alias}
           </Text>
           <Text
             variant="body2"
@@ -92,7 +95,7 @@ const AccountListItem = ({ item, index, section }: AccountListItemProps) => {
             adjustsFontSizeToFit
             maxFontSizeMultiplier={1.2}
           >
-            {`${ellipsizeAddress(item.address, {
+            {`${ellipsizeAddress(account.address, {
               numChars: 4,
             })} | ${balanceToString(balance, {
               maxDecimalPlaces: 2,
@@ -103,7 +106,7 @@ const AccountListItem = ({ item, index, section }: AccountListItemProps) => {
           <CheckBox
             disabled={!!disabled}
             style={{ width: 25, height: 25 }}
-            value={item.isSelected}
+            value={isSelected || section.index === Section.ALREADY_LINKED}
             tintColors={{
               true: colors.purple500,
               false: colors.surfaceSecondary,
@@ -116,7 +119,7 @@ const AccountListItem = ({ item, index, section }: AccountListItemProps) => {
             offAnimationType="fill"
             boxType="circle"
             lineWidth={2}
-            onValueChange={onCheckboxToggled}
+            onValueChange={handleCheckboxToggled}
           />
         </Box>
       </Surface>
@@ -125,4 +128,4 @@ const AccountListItem = ({ item, index, section }: AccountListItemProps) => {
   )
 }
 
-export default memo(AccountListItem)
+export default memo(LedgerAccountListItem)

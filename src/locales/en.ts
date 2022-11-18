@@ -301,11 +301,11 @@ export default {
     show: {
       accountsAlreadyLinked: 'Accounts Already Linked ({{count}})',
       addNewAccount: 'Add New Account',
-      alias: 'Ledger Account',
+      alias: 'Ledger Account {{accountIndex}}',
       close: 'Close',
       deselectAll: 'Deselect All',
       emptyAccount:
-        "Can't add a new account before you've recieved assets on your {{account}}",
+        "Can't add a new account before you've received assets on your {{account}}",
       help: 'Verify that the address shown on the Ledger device matches.',
       next: 'Import Account(s)',
       selectAll: 'Select All',
