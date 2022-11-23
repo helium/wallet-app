@@ -7,7 +7,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import BlurBox from './BlurBox'
 import Text from './Text'
-import Box from './Box'
+import SafeAreaBox from './SafeAreaBox'
 
 type Props = BottomSheetBackdropProps & {
   title?: string
@@ -45,14 +45,14 @@ const CustomBlurBackdrop = ({
   return (
     <Animated.View onTouchEnd={onPress} style={containerStyle}>
       <BlurBox position="absolute" top={0} bottom={0} left={0} right={0}>
-        <Box
+        <SafeAreaBox
+          edges={['top']}
           backgroundColor="transparent"
-          marginTop="xxl"
           alignItems="center"
           width="100%"
         >
           <Text variant="h4">{title || ''}</Text>
-        </Box>
+        </SafeAreaBox>
       </BlurBox>
     </Animated.View>
   )

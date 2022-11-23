@@ -30,6 +30,7 @@ const TabBarItem = ({
   Icon,
   iconSize,
   iconColor,
+  iconPosition,
   value,
   stretch,
 }: {
@@ -57,32 +58,53 @@ const TabBarItem = ({
       alignItems="center"
       flexGrow={stretch ? 1 : undefined}
       flex={stretch ? 1 : undefined}
+      flexDirection={
+        iconPosition === 'top' || iconPosition === undefined ? 'column' : 'row'
+      }
     >
       {Icon && (
-        <Icon
-          height={iconSize || 20}
-          width={iconSize || 20}
-          color={iconColorValue}
-        />
+        <Box
+          marginEnd={
+            iconPosition === 'top' || iconPosition === undefined
+              ? undefined
+              : 's'
+          }
+        >
+          <Icon
+            height={iconSize || 20}
+            width={iconSize || 20}
+            color={iconColorValue}
+          />
+        </Box>
       )}
-      <Text
-        variant="subtitle2"
-        color={selected ? 'primaryText' : 'secondaryText'}
-        minWidth={75}
-        textAlign="center"
-      >
-        {title}
-      </Text>
+      {title && (
+        <Text
+          variant="subtitle2"
+          color={selected ? 'primaryText' : 'secondaryText'}
+          minWidth={
+            iconPosition === 'top' || iconPosition === undefined ? 75 : 0
+          }
+          textAlign="center"
+        >
+          {title}
+        </Text>
+      )}
     </TouchableOpacityBox>
   )
 }
 
 export type TabBarOption = {
-  title: string
+  title?: string
   value: string
   Icon?: FC<SvgProps>
   iconSize?: number
   iconColor?: Color
+  iconPosition?: 'top' | 'leading'
+}
+
+export type IndicatorOptions = {
+  indicatorPostion: 'top' | 'bottom'
+  indicatorWidthOffset: number
 }
 
 type Props = {
@@ -135,7 +157,11 @@ const TabBar = ({
   const animatedStyles = useAnimatedStyle(() => {
     if (offset.value === null) return {}
     return {
-      transform: [{ translateX: offset.value }],
+      transform: [
+        {
+          translateX: offset.value,
+        },
+      ],
     }
   })
 
@@ -148,6 +174,7 @@ const TabBar = ({
         onLayout={handleLayout(o.value)}
         onPress={handlePress(o.value)}
         hitSlop={hitSlop}
+        iconPosition={o.iconPosition}
         {...o}
       />
     ))

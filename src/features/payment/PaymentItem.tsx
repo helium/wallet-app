@@ -238,16 +238,18 @@ const PaymentItem = ({
                   <TextInput
                     variant="transparent"
                     flex={1}
-                    placeholder={t('payment.enterAddress')}
-                    value={address}
-                    onChangeText={handleEditAddress}
-                    onEndEditing={handleAddressBlur}
-                    autoCapitalize="none"
-                    numberOfLines={1}
-                    multiline={false}
-                    autoComplete="off"
-                    autoCorrect={false}
-                    returnKeyType="done"
+                    textInputProps={{
+                      placeholder: t('payment.enterAddress'),
+                      value: address,
+                      onChangeText: handleEditAddress,
+                      onEndEditing: handleAddressBlur,
+                      autoCapitalize: 'none',
+                      numberOfLines: 1,
+                      multiline: false,
+                      autoComplete: 'off',
+                      autoCorrect: false,
+                      returnKeyType: 'done',
+                    }}
                   />
                   <Text
                     opacity={

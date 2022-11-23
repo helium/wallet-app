@@ -7,7 +7,10 @@ import 'text-encoding-polyfill'
 import useNetworkColor from '../../utils/useNetworkColor'
 import BackScreen from '../../components/BackScreen'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
+import {
+  CollectableNavigationProp,
+  CollectableStackParamList,
+} from './collectablesTypes'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { DelayedFadeIn } from '../../components/FadeInOut'
 import globalStyles from '../../theme/globalStyles'
@@ -19,12 +22,12 @@ LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ])
 
-type Route = RouteProp<HomeStackParamList, 'AccountCollectionScreen'>
+type Route = RouteProp<CollectableStackParamList, 'CollectionScreen'>
 
-const AccountCollectionScreen = () => {
+const CollectionScreen = () => {
   const route = useRoute<Route>()
 
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<CollectableNavigationProp>()
   const COLLECTABLE_HEIGHT = Dimensions.get('window').width / 2
   const collectables = route.params.collection
 
@@ -34,7 +37,7 @@ const AccountCollectionScreen = () => {
 
   const handleNavigateToCollectable = useCallback(
     (collectable: Collectable) => {
-      navigation.navigate('AccountCollectableScreen', { collectable })
+      navigation.navigate('NftDetailsScreen', { collectable })
     },
     [navigation],
   )
@@ -54,8 +57,8 @@ const AccountCollectionScreen = () => {
             marginHorizontal="s"
             marginVertical="s"
             alignItems="center"
-            backgroundColor="surface"
-            borderRadius="m"
+            backgroundColor="black800"
+            borderRadius="xxl"
             onPress={() => handleNavigateToCollectable(item)}
           >
             <Image
@@ -106,4 +109,4 @@ const AccountCollectionScreen = () => {
   )
 }
 
-export default AccountCollectionScreen
+export default CollectionScreen

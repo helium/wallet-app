@@ -189,6 +189,7 @@ export const lightThemeColors = {
   regularInputBackground: palette.offWhite,
   highlight: palette.blueBright500,
   testnet: palette.red500,
+  transparent: palette.transparent,
 }
 
 export const darkThemeColors = {
@@ -212,6 +213,7 @@ export const darkThemeColors = {
   regularInputBackground: palette.black750,
   highlight: palette.blueBright500,
   testnet: palette.red500,
+  transparent: palette.transparent,
 }
 
 export const theme = createTheme({
@@ -316,6 +318,13 @@ export const theme = createTheme({
       borderBottomColor: 'purple500',
       borderBottomWidth: 2,
       paddingBottom: 'xs',
+    },
+    thickBlur: {
+      padding: 'm',
+      borderRadius: 'xl',
+      backgroundColor: 'transparent10',
+      fontWeight: '600',
+      fontSize: 15,
     },
   },
 })

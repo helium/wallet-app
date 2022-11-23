@@ -16,12 +16,13 @@ import { Mints } from '../store/slices/walletRestApi'
 import { Collectable } from '../types/solana'
 
 const Connection = {
-  devnet: new web3.Connection(web3.clusterApiUrl('devnet')),
+  localnet: new web3.Connection('http://127.0.0.1:8899'),
+  devnet: new web3.Connection('https://metaplex.devnet.rpcpool.com'),
   testnet: new web3.Connection(web3.clusterApiUrl('testnet')),
   'mainnet-beta': new web3.Connection(web3.clusterApiUrl('mainnet-beta')),
 } as const
 
-const getConnection = (cluster: web3.Cluster) =>
+export const getConnection = (cluster: web3.Cluster) =>
   Connection[cluster] || Connection.devnet
 
 export const TXN_FEE_IN_LAMPORTS = 5000
@@ -340,7 +341,7 @@ export function createAssociatedTokenAccountInstruction(
   })
 }
 
-export const transferCollectable = async (
+export const createTransferCollectableMessage = async (
   cluster: web3.Cluster,
   solanaAddress: string,
   heliumAddress: string,
@@ -406,19 +407,102 @@ export const transferCollectable = async (
     ),
   )
 
+  const { blockhash } = await conn.getLatestBlockhash()
+
+  const message = new web3.TransactionMessage({
+    payerKey: payer,
+    recentBlockhash: blockhash,
+    instructions,
+  }).compileToLegacyMessage()
+
+  return { message }
+}
+
+// TODO: Remove this and replace with createTransferCollectableTransaction
+export const transferCollectable = async (
+  cluster: web3.Cluster,
+  solanaAddress: string,
+  heliumAddress: string,
+  collectable: Collectable,
+  payee: string,
+) => {
+  const payer = new web3.PublicKey(solanaAddress)
+  const secureAcct = await getKeypair(heliumAddress)
+  const conn = getConnection(cluster)
+
+  if (!secureAcct) {
+    throw new Error('Secure account not found')
+  }
+
+  const signer = {
+    publicKey: payer,
+    secretKey: secureAcct.privateKey,
+  }
+
+  airdrop(cluster, solanaAddress)
+
+  const recipientPubKey = new web3.PublicKey(payee)
+  const mintPubkey = new web3.PublicKey(collectable.mint.address)
+
+  const instructions: web3.TransactionInstruction[] = []
+
+  const ownerATA = await getAssociatedTokenAddress(mintPubkey, signer.publicKey)
+
+  if (!(await conn.getAccountInfo(ownerATA))) {
+    instructions.push(
+      createAssociatedTokenAccountInstruction(
+        ownerATA,
+        signer.publicKey,
+        signer.publicKey,
+        mintPubkey,
+      ),
+    )
+  }
+
+  const recipientATA = await getAssociatedTokenAddress(
+    mintPubkey,
+    recipientPubKey,
+  )
+
+  if (!(await conn.getAccountInfo(recipientATA))) {
+    instructions.push(
+      createAssociatedTokenAccountInstruction(
+        recipientATA,
+        signer.publicKey,
+        recipientPubKey,
+        mintPubkey,
+      ),
+    )
+  }
+
+  instructions.push(
+    createTransferCheckedInstruction(
+      ownerATA, // from (should be a token account)
+      mintPubkey, // mint
+      recipientATA, // to (should be a token account)
+      signer.publicKey, // from's owner
+      1, // amount
+      0, // decimals
+      [], // signers
+    ),
+  )
+
   const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash()
 
   const messageV0 = new web3.TransactionMessage({
     payerKey: payer,
     recentBlockhash: blockhash,
     instructions,
-  }).compileToV0Message()
+  }).compileToLegacyMessage()
 
-  const transaction = new web3.VersionedTransaction(messageV0)
+  const transaction = new web3.VersionedTransaction(
+    web3.VersionedMessage.deserialize(messageV0.serialize()),
+  )
 
   transaction.sign([signer])
 
-  const signature = await conn.sendTransaction(transaction, {
+  const signature = await conn.sendRawTransaction(transaction.serialize(), {
+    skipPreflight: true,
     maxRetries: 5,
   })
 
@@ -426,6 +510,29 @@ export const transferCollectable = async (
     { signature, blockhash, lastValidBlockHeight },
     'finalized',
   )
+
+  const txn = await getTxn(cluster, signature)
+
+  if (txn?.meta?.err) {
+    throw new Error(txn.meta.err.toString())
+  }
+
+  return { signature, txn }
+}
+
+export const confirmTransaction = async (
+  cluster: web3.Cluster,
+  signature: string,
+) => {
+  const conn = getConnection(cluster)
+  const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash()
+  await conn.confirmTransaction(
+    { signature, blockhash, lastValidBlockHeight },
+    'finalized',
+  )
+
+  // console.log('result', result)
+
   const txn = await getTxn(cluster, signature)
 
   if (txn?.meta?.err) {
@@ -447,10 +554,14 @@ export const getCollectables = async (
 ) => {
   const collectables = (await metaplex
     .nfts()
-    .findAllByOwner({ owner: pubKey })
-    .run()) as Metadata<JsonMetadata<string>>[]
+    .findAllByOwner({ owner: pubKey })) as Metadata<JsonMetadata<string>>[]
 
-  return collectables
+  // TODO: Remove this filter once the uri is fixed for HOTSPOTS
+  const filteredCollectables = collectables.filter(
+    (c) => c.symbol !== 'HOTSPOT',
+  )
+
+  return filteredCollectables
 }
 
 /**
@@ -463,10 +574,17 @@ export const getCollectablesMetadata = async (
   collectables: Metadata<JsonMetadata<string>>[],
   metaplex: Metaplex,
 ) => {
+  // TODO: Remove this filter once the uri is fixed for HOTSPOTS
+  const filteredCollectables = collectables.filter(
+    (c) => c.symbol !== 'HOTSPOT',
+  )
   const collectablesWithMetadata = await Promise.all(
-    collectables.map(async (col) => {
-      const json = await (await fetch(col.uri)).json()
-      const metadata = await metaplex.nfts().load({ metadata: col }).run()
+    filteredCollectables.map(async (col) => {
+      let json
+      try {
+        json = await (await fetch(col.uri)).json()
+      } catch (e) {}
+      const metadata = await metaplex.nfts().load({ metadata: col })
       return { ...metadata, json }
     }),
   )
@@ -502,7 +620,7 @@ export const groupCollectables = (
  */
 export const groupCollectablesWithMetaData = (collectables: Collectable[]) => {
   const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const { symbol } = cur.json as Collectable
+    const { symbol } = cur
     if (!acc[symbol]) {
       acc[symbol] = [cur]
     } else {

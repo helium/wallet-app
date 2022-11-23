@@ -113,17 +113,19 @@ const CLIPasswordScreen = () => {
 
         <TextInput
           variant="transparent"
-          onChangeText={setPassword}
-          placeholderTextColor="grey500"
-          value={password}
-          placeholder="password"
-          autoCorrect={false}
-          autoComplete="off"
+          textInputProps={{
+            onChangeText: setPassword,
+            placeholderTextColor: 'grey500',
+            value: password,
+            placeholder: 'password',
+            autoCorrect: false,
+            autoComplete: 'off',
+            keyboardAppearance: 'dark',
+            style: inputStyle,
+            secureTextEntry: true,
+          }}
           marginTop="xl"
           width="100%"
-          keyboardAppearance="dark"
-          style={inputStyle}
-          secureTextEntry
         />
       </Box>
 

@@ -23,12 +23,6 @@ export type BurnRouteParam = {
 export type HomeStackParamList = {
   AccountsScreen: undefined
   AccountTokenScreen: { tokenType: Ticker }
-  AccountCollectionScreen: {
-    collection: Collectable[]
-  }
-  AccountCollectableScreen: {
-    collectable: Collectable
-  }
   AccountAssignScreen: undefined
   ConfirmPin: {
     action: 'payment'

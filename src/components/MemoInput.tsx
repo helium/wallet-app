@@ -67,11 +67,13 @@ const MemoInput = ({ onChangeText, value, ...boxProps }: Props) => {
       <TextInput
         flex={1}
         variant="transparent"
-        placeholder={t('payment.enterMemo')}
-        onChangeText={onChangeText}
-        value={value}
-        editable={!!onChangeText}
-        returnKeyType="done"
+        textInputProps={{
+          placeholder: t('payment.enterMemo'),
+          onChangeText,
+          value,
+          editable: !!onChangeText,
+          returnKeyType: 'done',
+        }}
       />
       <Box position="absolute" top={0} right={0}>
         <Text variant="body3" color={valid ? 'white' : 'error'} marginRight="m">

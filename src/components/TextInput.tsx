@@ -4,33 +4,58 @@ import {
   createRestyleComponent,
   VariantProps,
   createVariant,
-  createBox,
 } from '@shopify/restyle'
-import { TextInput as RNTextInput } from 'react-native'
+import { TextInput } from 'react-native'
 import tinycolor from 'tinycolor2'
+import { SvgProps } from 'react-native-svg'
 import { Color, theme, Theme } from '../theme/theme'
 import { useColors, useInputVariants } from '../theme/themeHooks'
+import Box from './Box'
+import Text from './Text'
+import TouchableOpacityBox from './TouchableOpacityBox'
 
-const TextInputBox = createBox<Theme, React.ComponentProps<typeof RNTextInput>>(
-  RNTextInput,
-)
-
-const TextInput = createRestyleComponent<
-  VariantProps<Theme, 'inputVariants'> &
-    React.ComponentProps<typeof TextInputBox>,
+const BoxWrapper = createRestyleComponent<
+  VariantProps<Theme, 'inputVariants'> & React.ComponentProps<typeof Box>,
   Theme
->([createVariant({ themeKey: 'inputVariants' })], TextInputBox)
+>([createVariant({ themeKey: 'inputVariants' })], Box)
 
-type Props = React.ComponentProps<typeof TextInput> & {
+type Props = React.ComponentProps<typeof BoxWrapper> & {
   placeholderTextColor?: Color
   textColor?: Color
   fontSize?: number
+  fontWeight?:
+    | 'bold'
+    | 'normal'
+    | '100'
+    | '200'
+    | '300'
+    | '400'
+    | '500'
+    | '600'
+    | '700'
+    | '800'
+    | '900'
+    | undefined
+  floatingLabel?: string
+  onTrailingIconPress?: () => void
+  TrailingIcon?: React.FC<SvgProps>
+  textInputProps?: React.ComponentProps<typeof TextInput>
 }
 
 const TI = forwardRef(
   (
-    { placeholderTextColor, textColor, fontSize, ...rest }: Props,
-    ref: Ref<RNTextInput>,
+    {
+      placeholderTextColor,
+      textColor,
+      fontSize,
+      textInputProps,
+      floatingLabel,
+      fontWeight,
+      TrailingIcon,
+      onTrailingIconPress,
+      ...rest
+    }: Props,
+    ref: Ref<TextInput>,
   ) => {
     const colors = useColors()
     const inputVariants = useInputVariants()
@@ -54,15 +79,44 @@ const TI = forwardRef(
     }, [colors, textColor])
 
     return (
-      <TextInput
-        style={{
-          color: getTextColor,
-          fontSize: fontSize || inputVariants.regular.fontSize,
-        }}
-        placeholderTextColor={getPlaceholderTextColor}
-        ref={ref}
+      <BoxWrapper
+        justifyContent="center"
+        alignItems="center"
+        flexDirection="row"
         {...rest}
-      />
+      >
+        <Box flexGrow={1} width="80%">
+          {floatingLabel && (
+            <Text
+              variant="body2"
+              fontWeight="bold"
+              fontSize={12}
+              color="grey600"
+            >
+              {floatingLabel}
+            </Text>
+          )}
+          <TextInput
+            style={{
+              color: getTextColor,
+              fontSize: fontSize || inputVariants.regular.fontSize,
+              fontWeight,
+            }}
+            placeholderTextColor={getPlaceholderTextColor}
+            {...textInputProps}
+            ref={ref}
+          />
+        </Box>
+        {TrailingIcon && (
+          <TouchableOpacityBox
+            paddingHorizontal="s"
+            paddingVertical="m"
+            onPress={onTrailingIconPress}
+          >
+            <TrailingIcon color="white" width={14} />
+          </TouchableOpacityBox>
+        )}
+      </BoxWrapper>
     )
   },
 )

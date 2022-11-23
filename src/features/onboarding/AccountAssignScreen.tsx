@@ -116,16 +116,18 @@ const AccountAssignScreen = () => {
             <AccountIcon size={40} address={secureAccount?.address} />
             <TextInput
               textColor="primaryText"
-              onChangeText={setAlias}
-              value={alias}
               fontSize={24}
-              placeholder={t('accountAssign.AccountNamePlaceholder')}
-              autoCorrect={false}
-              autoComplete="off"
-              autoCapitalize="words"
               marginLeft="m"
               marginRight="xl"
-              autoFocus
+              textInputProps={{
+                placeholder: t('accountAssign.AccountNamePlaceholder'),
+                autoCorrect: false,
+                autoComplete: 'off',
+                autoCapitalize: 'words',
+                onChangeText: setAlias,
+                value: alias,
+                autoFocus: true,
+              }}
             />
           </Box>
 

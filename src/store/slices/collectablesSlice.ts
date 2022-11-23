@@ -5,11 +5,6 @@ import { CSAccount } from '../../storage/cloudStorage'
 import { Collectable } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
 
-const connection = new web3.Connection(
-  'https://metaplex.devnet.rpcpool.com/',
-  'confirmed',
-)
-
 export type WalletCollectables = {
   collectables: Record<string, Metadata<JsonMetadata<string>>[]>
   collectablesWithMeta: Record<string, Collectable[]>
@@ -30,6 +25,7 @@ export const fetchCollectables = createAsyncThunk(
     cluster: web3.Cluster
   }) => {
     if (!account.solanaAddress) throw new Error('Solana address missing')
+    const connection = solUtils.getConnection(cluster)
 
     const metaplex = new Metaplex(connection, { cluster })
     const pubKey = new web3.PublicKey(account.solanaAddress)
@@ -37,10 +33,12 @@ export const fetchCollectables = createAsyncThunk(
     const groupedCollectables = await solUtils.groupCollectables(
       fetchedCollectables,
     )
+
     const collectablesWithMetadata = await solUtils.getCollectablesMetadata(
       fetchedCollectables,
       metaplex,
     )
+
     const groupedCollectablesWithMeta = solUtils.groupCollectablesWithMetaData(
       collectablesWithMetadata,
     )

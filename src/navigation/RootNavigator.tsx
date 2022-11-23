@@ -3,7 +3,7 @@ import changeNavigationBarColor from 'react-native-navigation-bar-color'
 import { useColors } from '../theme/themeHooks'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import OnboardingNavigator from '../features/onboarding/OnboardingNavigator'
-import HomeNavigator from '../features/home/HomeNavigator'
+import TabBarNavigator from './TabBarNavigator'
 
 const RootNavigator = () => {
   const colors = useColors()
@@ -13,7 +13,7 @@ const RootNavigator = () => {
     changeNavigationBarColor(colors.primaryBackground, true, false)
   }, [colors.primaryBackground])
 
-  return hasAccounts ? <HomeNavigator /> : <OnboardingNavigator />
+  return hasAccounts ? <TabBarNavigator /> : <OnboardingNavigator />
 }
 
 export default memo(RootNavigator)

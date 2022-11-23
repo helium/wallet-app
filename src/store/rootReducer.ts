@@ -14,6 +14,7 @@ import collectablesReducer, {
   name as collectablesSliceName,
 } from './slices/collectablesSlice'
 import authReducer, { name as authSliceName } from './slices/authSlice'
+import appNavReducer, { name as appNavSliceName } from './slices/AppNavSlice'
 
 const solanaConfig = {
   key: solanaSliceName,
@@ -22,6 +23,7 @@ const solanaConfig = {
 }
 
 const reducer = combineReducers({
+  [appNavSliceName]: appNavReducer,
   [solanaStatusApi.reducerPath]: solanaStatusReducer,
   [collectablesSliceName]: collectablesReducer,
   [solanaSliceName]: persistReducer(solanaConfig, solanaReducer),

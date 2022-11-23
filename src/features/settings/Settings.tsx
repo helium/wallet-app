@@ -398,6 +398,7 @@ const Settings = () => {
       },
     ]
     if (l1Network === 'solana') {
+      const localNet = __DEV__ ? [{ label: 'Localnet', value: 'localnet' }] : []
       devData = [
         ...devData,
         {
@@ -405,6 +406,7 @@ const Settings = () => {
           value: solanaNetwork,
           select: {
             items: [
+              ...localNet,
               { label: 'Devnet', value: 'devnet' },
               { label: 'Testnet', value: 'testnet', disabled: true },
               { label: 'Mainnet-Beta', value: 'mainnet-beta', disabled: true },

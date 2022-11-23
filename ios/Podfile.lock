@@ -287,7 +287,7 @@ PODS:
   - react-native-ble-plx (2.0.3):
     - MultiplatformBleAdapter (= 0.1.9)
     - React-Core
-  - react-native-blur (4.2.0):
+  - react-native-blur (4.3.0):
     - React-Core
   - react-native-charts-wrapper (0.5.10):
     - Charts (= 4.1.0)
@@ -762,7 +762,7 @@ SPEC CHECKSUMS:
   React-jsinspector: 0553c9fe7218e1f127be070bd5a4d2fc19fb8190
   React-logger: cffcc09e8aba8a3014be8d18da7f922802e9f19e
   react-native-ble-plx: f10240444452dfb2d2a13a0e4f58d7783e92d76e
-  react-native-blur: 3e9c8e8e9f7d17fa1b94e1a0ae9fd816675f5382
+  react-native-blur: 50c9feabacbc5f49b61337ebc32192c6be7ec3c3
   react-native-charts-wrapper: 4268219d67a6fd7e94453d77d31b38ef1cd23860
   react-native-config: 7cd105e71d903104e8919261480858940a6b9c0e
   react-native-currency-format: cd0a30868fddb004c3b5b5e9b7fe7717876927f5
@@ -797,7 +797,7 @@ SPEC CHECKSUMS:
   RNLocalize: a64514b46a01375fdfae9349036b4dc7130333b5
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNReactNativeSharedGroupPreferences: de0121a4224c267bc7e9fb16c398f3f087c8da81
-  RNReanimated: 4473e1b550c787fa34bde29c935b72e48a52670a
+  RNReanimated: ad8965523012ba68090d416718c1adb2e6540eb2
   RNScreens: 6e1ea5787989f92b0671049b808aef64fa1ef98c
   RNShare: be91a5c149585affb02c25b351bd07ba927c7006
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f

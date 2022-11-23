@@ -12,6 +12,7 @@ import { useAsync } from 'react-async-hook'
 import * as SecureStore from 'expo-secure-store'
 import { NetTypes as NetType, NetTypes } from '@helium/address'
 import { useAppState } from '@react-native-community/hooks'
+import { AccountFetchCache } from '@helium/spl-utils'
 import {
   accountNetType,
   AccountNetTypeOpt,
@@ -41,17 +42,19 @@ import { useAppStorage } from './AppStorageProvider'
 import { useAppDispatch } from '../store/store'
 import makeApiToken from '../utils/makeApiToken'
 import { authSlice } from '../store/slices/authSlice'
+import { getConnection } from '../utils/solanaUtils'
 
 const useAccountStorageHook = () => {
   const [currentAccount, setCurrentAccount] = useState<
     CSAccount | null | undefined
   >(undefined)
+  const [cache, setCache] = useState<AccountFetchCache>()
   const [accounts, setAccounts] = useState<CSAccounts>()
   const [contacts, setContacts] = useState<CSAccount[]>([])
   const [defaultAccountAddress, setDefaultAccountAddress] = useState<string>()
   const solanaAccountsUpdateComplete = useRef(false)
   const solanaContactsUpdateComplete = useRef(false)
-  const { updateL1Network, l1Network } = useAppStorage()
+  const { updateL1Network, l1Network, solanaNetwork: cluster } = useAppStorage()
   const dispatch = useAppDispatch()
   const currentAppState = useAppState()
 
@@ -399,6 +402,24 @@ const useAccountStorageHook = () => {
     ],
   )
 
+  useEffect(() => {
+    const connection = getConnection(cluster)
+    if (connection) {
+      cache?.close()
+
+      setCache((c) =>
+        !c
+          ? new AccountFetchCache({
+              connection,
+              delay: 50,
+              commitment: 'confirmed',
+              extendConnection: true,
+            })
+          : c,
+      )
+    }
+  }, [cache, cluster])
+
   return {
     accountAddresses,
     accounts,
@@ -423,6 +444,7 @@ const useAccountStorageHook = () => {
     updateDefaultAccountAddress,
     upsertAccount,
     upsertAccounts,
+    cache,
   }
 }
 
@@ -454,6 +476,7 @@ const initialState = {
   sortedTestnetAccounts: [],
   upsertAccount: async () => undefined,
   upsertAccounts: async () => undefined,
+  cache: undefined,
 }
 
 const AccountStorageContext =
