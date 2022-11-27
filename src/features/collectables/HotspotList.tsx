@@ -7,34 +7,30 @@ import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { useColors } from '../../theme/themeHooks'
 import Box from '../../components/Box'
-import useCollectables from '../../utils/useCollectables'
 import { CollectableSkeleton } from './NftListItem'
 import { Collectable } from '../../types/solana'
 import { CollectableNavigationProp } from './collectablesTypes'
 import HotspotListItem from './HotspotListItem'
 import ButtonPressable from '../../components/ButtonPressable'
+import useHotspots from '../../utils/useHotspots'
 
 const HotspotList = () => {
   const { bottom } = useSafeAreaInsets()
   const navigation = useNavigation<CollectableNavigationProp>()
   const { t } = useTranslation()
 
-  const {
-    collectables,
-    collectablesWithMeta,
-    loading: loadingCollectables,
-    refresh,
-  } = useCollectables()
-
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
   const { primaryText } = useColors()
+  const {
+    hotspots,
+    hotspotsWithMeta,
+    loading: loadingHotspots,
+    refresh,
+  } = useHotspots()
 
   const flatListItems = useMemo(() => {
-    if (collectablesWithMeta.HOTSPOT) {
-      return collectablesWithMeta.HOTSPOT
-    }
-    return []
-  }, [collectablesWithMeta])
+    return hotspotsWithMeta
+  }, [hotspotsWithMeta])
 
   const handleNavigateToCollectable = useCallback(
     (collectable: Collectable) => {
@@ -75,12 +71,12 @@ const HotspotList = () => {
   )
 
   const renderEmptyComponent = useCallback(() => {
-    if (!loadingCollectables) return null
+    if (!loadingHotspots) return null
 
-    if (loadingCollectables && collectables.HOTSPOT) {
+    if (loadingHotspots && hotspots) {
       return (
         <Box flex={1} flexDirection="row">
-          {times(collectables.HOTSPOT.length).map((i) => (
+          {times(hotspots.length).map((i) => (
             <CollectableSkeleton key={i} />
           ))}
         </Box>
@@ -88,7 +84,7 @@ const HotspotList = () => {
     }
 
     return null
-  }, [collectables, loadingCollectables])
+  }, [hotspots, loadingHotspots])
 
   const keyExtractor = useCallback((item: Collectable) => {
     return item.address.toString()
@@ -112,7 +108,7 @@ const HotspotList = () => {
       refreshControl={
         <RefreshControl
           enabled
-          refreshing={loadingCollectables}
+          refreshing={loadingHotspots}
           onRefresh={refresh}
           title=""
           tintColor={primaryText}

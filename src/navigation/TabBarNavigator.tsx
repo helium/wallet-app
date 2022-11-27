@@ -5,6 +5,7 @@ import {
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs'
 import { Edge } from 'react-native-safe-area-context'
+import useHotspots from '../utils/useHotspots'
 import NavBar from '../components/NavBar'
 import Dollar from '../assets/images/dollar.svg'
 import Gem from '../assets/images/gem.svg'
@@ -20,19 +21,27 @@ import Box from '../components/Box'
 const Tab = createBottomTabNavigator()
 
 function MyTabBar({ state, navigation }: BottomTabBarProps) {
+  const { allPendingRewards } = useHotspots()
+
   const tabData = useMemo((): Array<{
     value: string
     Icon: FC<SvgProps>
     iconColor: Color
+    hasBadge?: boolean
   }> => {
     return [
       { value: 'account', Icon: Dollar, iconColor: 'white' },
-      { value: 'collectables', Icon: Gem, iconColor: 'white' },
+      {
+        value: 'collectables',
+        Icon: Gem,
+        iconColor: 'white',
+        hasBadge: allPendingRewards > 0,
+      },
       { value: 'swaps', Icon: Swaps, iconColor: 'white' },
       { value: 'transactions', Icon: Transactions, iconColor: 'white' },
       { value: 'notifications', Icon: Notifications, iconColor: 'white' },
     ]
-  }, [])
+  }, [allPendingRewards])
 
   const selectedValue = tabData[state.index].value
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])

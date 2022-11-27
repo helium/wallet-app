@@ -27,12 +27,14 @@ const NavBarItem = ({
   hitSlop,
   Icon,
   value,
+  hasBadge,
 }: {
   selected: boolean
   onPress: () => void
   onLongPress?: () => void
   onLayout: (event: LayoutChangeEvent) => void
   hitSlop: Insets | undefined
+  hasBadge?: boolean
 } & NavBarOption) => {
   const colors = useColors()
 
@@ -77,6 +79,26 @@ const NavBarItem = ({
           width={30}
           color={selected ? colors.black : colors.white}
         />
+        {hasBadge && (
+          <Box
+            position="absolute"
+            justifyContent="center"
+            alignItems="center"
+            top={6}
+            right={2}
+            backgroundColor={selected ? 'white' : 'black'}
+            borderRadius="round"
+            height={10}
+            width={10}
+          >
+            <Box
+              backgroundColor={selected ? 'black' : 'malachite'}
+              borderRadius="round"
+              height={6}
+              width={6}
+            />
+          </Box>
+        )}
       </Box>
     </TouchableOpacityBox>
   )
@@ -85,6 +107,7 @@ const NavBarItem = ({
 export type NavBarOption = {
   value: string
   Icon: FC<SvgProps>
+  hasBadge?: boolean
 }
 
 type Props = {
