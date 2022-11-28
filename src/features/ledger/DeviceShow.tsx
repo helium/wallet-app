@@ -14,19 +14,13 @@ import {
   LedgerNavigatorStackParamList,
 } from './ledgerNavigatorTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import {
-  getLedgerAddress,
-  LedgerAccount,
-  useLedger,
-  useLedgerAccounts,
-  setLedgerAccounts,
-} from '../../utils/heliumLedger'
 import { useColors, useSpacing } from '../../theme/themeHooks'
-import AccountListItem from './AccountListItem'
+import LedgerAccountListItem, { Section } from './LedgerAccountListItem'
 import BackButton from '../../components/BackButton'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { CSAccounts } from '../../storage/cloudStorage'
+import useLedger, { LedgerAccount } from '../../utils/useLedger'
 
 const MAX_ACCOUNTS = 10
 
@@ -45,23 +39,59 @@ const DeviceShow = () => {
   const { ledgerDevice } = route.params
   const { t } = useTranslation()
   const { accounts, upsertAccounts } = useAccountStorage()
-  const { transport, getTransport } = useLedger()
+  const {
+    updateLedgerAccounts,
+    ledgerAccounts,
+    ledgerAccountsLoading: isScanning,
+  } = useLedger()
   const [newLedgerAccounts, setNewLedgerAccounts] = useState<LedgerAccount[]>(
     [],
   )
   const [existingLedgerAccounts, setExistingLedgerAccounts] = useState<
     LedgerAccount[]
   >([])
-  const [reachedAccountLimit, setReachedAccountLimit] = useState(false)
-  const [isScanning, setIsScanning] = useState<boolean>(false)
-  const [selectAll, setSelectAll] = useState<boolean>(false)
+  const [selectAll, setSelectAll] = useState<boolean>(true)
+  const [selectedAccounts, setSelectedAccounts] = useState<
+    Record<string, boolean>
+  >({})
 
   const spacing = useSpacing()
-  const ledgerAccounts = useLedgerAccounts()
   const colors = useColors()
   const {
     onboardingData: { netType },
   } = useOnboarding()
+
+  const accountsToAdd = useMemo(
+    () => newLedgerAccounts.filter((a) => selectedAccounts[a.address]),
+
+    [newLedgerAccounts, selectedAccounts],
+  )
+
+  useEffect(() => {
+    const selected = {} as Record<string, boolean>
+    ledgerAccounts.forEach((a) => {
+      if (selected[a.address] === undefined) {
+        selected[a.address] = true
+      }
+    })
+
+    setSelectedAccounts(selected)
+  }, [ledgerAccounts])
+
+  const reachedAccountLimit = useMemo(() => {
+    const { length } = Object.keys(accounts as CSAccounts)
+
+    const selectedCount = Object.keys(selectedAccounts).filter(
+      (key) => !!selectedAccounts[key],
+    ).length
+
+    return length + selectedCount > MAX_ACCOUNTS
+  }, [accounts, selectedAccounts])
+
+  const canAddAccounts = useMemo(
+    () => !reachedAccountLimit && accountsToAdd.length,
+    [accountsToAdd.length, reachedAccountLimit],
+  )
 
   const SectionData = useMemo((): {
     title: string
@@ -71,7 +101,7 @@ const DeviceShow = () => {
     const sections = [
       {
         title: t('ledger.show.addNewAccount'),
-        index: 0,
+        index: Section.NEW_ACCOUNT,
         data: newLedgerAccounts,
       },
     ]
@@ -81,7 +111,7 @@ const DeviceShow = () => {
         title: t('ledger.show.accountsAlreadyLinked', {
           count: existingLedgerAccounts.length,
         }),
-        index: 1,
+        index: Section.ALREADY_LINKED,
         data: existingLedgerAccounts,
       })
     }
@@ -101,17 +131,18 @@ const DeviceShow = () => {
   )
 
   const onSelectAll = useCallback(() => {
-    setLedgerAccounts(
-      ledgerAccounts.map((account) => {
-        if (newLedgerAccounts?.includes(account)) {
-          return { ...account, isSelected: selectAll }
-        }
+    setSelectAll((s) => {
+      const next = !s
 
-        return account
-      }),
-    )
-    setSelectAll((s) => !s)
-  }, [ledgerAccounts, newLedgerAccounts, selectAll])
+      const selected = {} as Record<string, boolean>
+      ledgerAccounts.forEach((a) => {
+        selected[a.address] = next
+      })
+      setSelectedAccounts(selected)
+
+      return next
+    })
+  }, [ledgerAccounts])
 
   // Show page header on first section of section list
   const PageHeader = useCallback(() => {
@@ -191,8 +222,8 @@ const DeviceShow = () => {
             <TouchableOpacity onPress={onSelectAll}>
               <Text variant="body2" fontWeight="bold">
                 {selectAll
-                  ? t('ledger.show.selectAll')
-                  : t('ledger.show.deselectAll')}
+                  ? t('ledger.show.deselectAll')
+                  : t('ledger.show.selectAll')}
               </Text>
             </TouchableOpacity>
           )}
@@ -217,7 +248,7 @@ const DeviceShow = () => {
               {t('ledger.show.emptyAccount', {
                 account:
                   existingLedgerAccounts[existingLedgerAccounts.length - 1]
-                    .alias,
+                    ?.alias,
               })}
             </Text>
           )}
@@ -229,42 +260,17 @@ const DeviceShow = () => {
 
   useAsync(async () => {
     try {
-      const ledgerTransport = await getTransport(
-        ledgerDevice.id,
-        ledgerDevice.type,
-      )
-      if (!ledgerTransport) return
-
-      setIsScanning(true)
-      await getLedgerAddress(ledgerTransport, accounts, netType)
-      setIsScanning(false)
+      await updateLedgerAccounts(ledgerDevice, netType)
     } catch (error) {
-      if (isScanning) return
-
       // in this case, user is likely not on Helium app
+
       console.error(error)
       navigation.navigate('DeviceScan', { error: error as Error })
     }
   }, [])
 
   useEffect(() => {
-    if (ledgerAccounts.length === 0) {
-      return
-    }
-
-    if (!accounts) {
-      setNewLedgerAccounts(ledgerAccounts)
-      return
-    }
-
-    const accountAddresses = Object.keys(accounts)
-    const { length } = Object.keys(accounts as CSAccounts)
-
-    const selectedAccounts = ledgerAccounts.filter(
-      (account) => account.isSelected,
-    )
-
-    setReachedAccountLimit(length + selectedAccounts.length > MAX_ACCOUNTS)
+    const accountAddresses = Object.keys(accounts || {})
 
     setExistingLedgerAccounts([
       ...ledgerAccounts.filter((a) => accountAddresses.includes(a.address)),
@@ -273,36 +279,38 @@ const DeviceShow = () => {
     setNewLedgerAccounts([
       ...ledgerAccounts.filter((a) => !accountAddresses.includes(a.address)),
     ])
-  }, [accounts, ledgerAccounts])
+  }, [accounts, ledgerAccounts, selectedAccounts])
 
-  const next = useCallback(async () => {
-    if (!newLedgerAccounts) return
-    const accs = newLedgerAccounts?.map((acc) => {
-      const ledgerIndex = ledgerAccounts.indexOf(acc)
+  const handleNext = useCallback(async () => {
+    if (!accountsToAdd) return
+    const accs = accountsToAdd?.map((acc) => {
       return {
         alias: acc.alias,
         address: acc.address,
         ledgerDevice,
-        ledgerIndex,
+        ledgerIndex: acc.accountIndex,
       }
     })
 
     await upsertAccounts(accs)
 
     navigation.navigate('PairSuccess')
-  }, [
-    ledgerAccounts,
-    ledgerDevice,
-    navigation,
-    newLedgerAccounts,
-    upsertAccounts,
-  ])
+  }, [accountsToAdd, ledgerDevice, navigation, upsertAccounts])
 
-  const close = useCallback(() => {
+  const handleClose = useCallback(() => {
     homeNav.navigate('AccountsScreen')
   }, [homeNav])
 
-  if (!transport || !ledgerAccounts) {
+  const onCheckboxToggled = useCallback(
+    (account: LedgerAccount, value: boolean) => {
+      setSelectedAccounts((selected) => {
+        return { ...selected, [account.address]: value }
+      })
+    },
+    [],
+  )
+
+  if (!ledgerAccounts) {
     return (
       <Box
         flex={1}
@@ -323,7 +331,13 @@ const DeviceShow = () => {
           contentContainerStyle={contentContainer}
           sections={SectionData}
           keyExtractor={keyExtractor}
-          renderItem={(props) => <AccountListItem {...props} />}
+          renderItem={(vals) => (
+            <LedgerAccountListItem
+              {...vals}
+              isSelected={selectedAccounts[vals.item.address]}
+              onCheckboxToggled={onCheckboxToggled}
+            />
+          )}
           renderSectionHeader={renderSectionHeader}
           renderSectionFooter={renderSectionFooter}
           initialNumToRender={100}
@@ -340,7 +354,6 @@ const DeviceShow = () => {
         height="11%"
       >
         <ButtonPressable
-          disabled={reachedAccountLimit}
           marginTop="m"
           borderRadius="round"
           backgroundColor="surfaceSecondary"
@@ -348,11 +361,9 @@ const DeviceShow = () => {
           backgroundColorDisabled="surfaceSecondary"
           backgroundColorDisabledOpacity={0.5}
           titleColorDisabled="black500"
-          onPress={newLedgerAccounts.length === 0 ? close : next}
+          onPress={canAddAccounts ? handleNext : handleClose}
           title={
-            newLedgerAccounts.length === 0
-              ? t('ledger.show.close')
-              : t('ledger.show.next')
+            canAddAccounts ? t('ledger.show.next') : t('ledger.show.close')
           }
           marginBottom="xs"
           marginHorizontal="l"
