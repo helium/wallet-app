@@ -6,13 +6,10 @@ import queryString from 'query-string'
 import BigNumber from 'bignumber.js'
 import { LinkingOptions } from '@react-navigation/native'
 import { encodeMemoString } from '../components/MemoInput'
-import {
-  BurnRouteParam,
-  HomeStackParamList,
-  PaymentRouteParam,
-} from '../features/home/homeTypes'
+import { BurnRouteParam, PaymentRouteParam } from '../features/home/homeTypes'
 import { SendDetails } from '../storage/TransactionProvider'
 import { TokenType } from '../generated/graphql'
+import { RootStackParamList } from '../navigation/rootTypes'
 
 export const APP_LINK_SCHEME = Linking.createURL('')
 export const PAYMENT_PATH = 'payment'
@@ -23,17 +20,25 @@ const formatMemo = (memo: string | undefined, isUtf8: boolean) => {
   return isUtf8 ? encodeMemoString(memo) : memo
 }
 
-export const linking: LinkingOptions<HomeStackParamList> = {
+export const linking: LinkingOptions<RootStackParamList> = {
   prefixes: [APP_LINK_SCHEME, HELIUM_WALLET_LINK_SCHEME],
   config: {
     screens: {
-      LinkWallet: 'link_wallet',
-      SignHotspot: 'sign_hotspot',
-      PaymentScreen: 'payment',
-      RequestScreen: 'request',
-      DappLoginScreen: 'dapp_login',
+      HomeNavigator: {
+        screens: {
+          LinkWallet: 'link_wallet',
+          SignHotspot: 'sign_hotspot',
+          PaymentScreen: 'payment',
+          RequestScreen: 'request',
+          DappLoginScreen: 'dapp_login',
+        },
+      },
+      OnboardingNavigator: {
+        screens: {
+          ImportPrivateKey: 'import_key/:key',
+        },
+      },
     },
-    initialRouteName: 'AccountsScreen',
   },
 }
 

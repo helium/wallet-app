@@ -27,6 +27,7 @@ import {
 import { useApolloClient } from '../../graphql/useApolloClient'
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
 import { ellipsizeAddress } from '../../utils/accountUtils'
+import { RootNavigationProp } from '../../navigation/rootTypes'
 
 const Settings = () => {
   const { t } = useTranslation()
@@ -34,6 +35,7 @@ const Settings = () => {
   const settingsNav = useNavigation<SettingsNavigationProp>()
   const { client } = useApolloClient()
   const { primaryText } = useColors()
+  const rootNav = useNavigation<RootNavigationProp>()
   const spacing = useSpacing()
   const version = useAppVersion()
   const hitSlop = useHitSlop('xxl')
@@ -221,6 +223,7 @@ const Settings = () => {
                 // last account is signing out, clear all storage then nav to onboarding
                 await signOut()
                 client?.resetStore()
+                rootNav.replace('OnboardingNavigator')
               } else {
                 // sign out the specific account, then nav to home
                 await signOut(currentAccount)
@@ -233,7 +236,16 @@ const Settings = () => {
     } else {
       settingsNav.push('ConfirmSignout')
     }
-  }, [accounts, client, currentAccount, homeNav, settingsNav, signOut, t])
+  }, [
+    accounts,
+    client,
+    currentAccount,
+    homeNav,
+    rootNav,
+    settingsNav,
+    signOut,
+    t,
+  ])
 
   const handleLanguageChange = useCallback(
     async (lng: string) => {

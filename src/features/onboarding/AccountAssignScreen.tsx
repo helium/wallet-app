@@ -49,7 +49,7 @@ const AccountAssignScreen = () => {
         if (setAsDefault) {
           await updateDefaultAccountAddress(secureAccount.address)
         }
-        homeNav.navigate('AccountsScreen')
+        homeNav.replace('AccountsScreen')
         reset()
         return
       } catch (e) {

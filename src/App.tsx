@@ -107,9 +107,6 @@ const App = () => {
                               <AccountSelector>
                                 <NavigationContainer
                                   theme={navTheme}
-                                  // Can't figure out how to fix this ts error
-                                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                  // @ts-ignore
                                   linking={linking}
                                   ref={navigationRef}
                                 >

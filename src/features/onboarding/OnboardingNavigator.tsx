@@ -10,6 +10,7 @@ import IntroScreen from './IntroScreen'
 import CreateAccountNavigator from './create/CreateAccountNavigator'
 import ImportAccountNavigator from './import/ImportAccountNavigator'
 import { OnboardingStackParamList } from './onboardingTypes'
+import ImportPrivateKey from './import/ImportPrivateKey'
 
 const OnboardingStack = createStackNavigator<OnboardingStackParamList>()
 
@@ -49,6 +50,11 @@ const OnboardingNavigator = () => {
       <OnboardingStack.Screen
         name="LedgerNavigator"
         component={LedgerNavigator}
+        options={subScreenOptions}
+      />
+      <OnboardingStack.Screen
+        name="ImportPrivateKey"
+        component={ImportPrivateKey}
         options={subScreenOptions}
       />
     </OnboardingStack.Navigator>

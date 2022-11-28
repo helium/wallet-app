@@ -13,12 +13,14 @@ import { SettingsNavigationProp } from './settingsTypes'
 import { getSecureAccount } from '../../storage/secureStorage'
 import { useColors } from '../../theme/themeHooks'
 import Box from '../../components/Box'
+import { RootNavigationProp } from '../../navigation/rootTypes'
 
 const ConfirmSignoutScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<
     HomeNavigationProp & SettingsNavigationProp
   >()
+  const rootNav = useNavigation<RootNavigationProp>()
   const { showOKCancelAlert } = useAlert()
   const { currentAccount, signOut, accounts } = useAccountStorage()
   const { pin } = useAppStorage()
@@ -77,6 +79,7 @@ const ConfirmSignoutScreen = () => {
               // last account is signing out, clear all storage then nav to onboarding
               await signOut()
               client?.resetStore()
+              rootNav.replace('OnboardingNavigator')
             } else {
               // sign out the specific account, then nav to home
               await signOut(currentAccount)
@@ -86,7 +89,7 @@ const ConfirmSignoutScreen = () => {
         },
       ],
     )
-  }, [accounts, client, currentAccount, navigation, signOut, t])
+  }, [accounts, client, currentAccount, navigation, rootNav, signOut, t])
 
   const onForgotWords = useCallback(async () => {
     navigation.goBack()
