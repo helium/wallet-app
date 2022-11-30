@@ -161,14 +161,14 @@ const TransferCollectableScreen = () => {
     () => (
       <>
         <ListItem
-          key="addNewContact"
-          title="Add New Contact"
+          key="selectContact"
+          title={t('payment.selectContact')}
           onPress={handleAddressBookSelected}
           selected={false}
         />
       </>
     ),
-    [handleAddressBookSelected],
+    [handleAddressBookSelected, t],
   )
 
   const onTrailingIconButtonPress = useCallback(() => {
@@ -248,7 +248,7 @@ const TransferCollectableScreen = () => {
                   t('collectables.noDescription')}
               </Text>
               <TextInput
-                floatingLabel="Transfer to:"
+                floatingLabel={t('collectablesScreen.transferTo')}
                 variant="thickBlur"
                 marginBottom="s"
                 height={80}
@@ -259,7 +259,7 @@ const TransferCollectableScreen = () => {
                 TrailingIcon={Menu}
                 onTrailingIconPress={onTrailingIconButtonPress}
                 textInputProps={{
-                  placeholder: 'Solana Address',
+                  placeholder: t('generic.solanaAddress'),
                   placeholderTextColor: 'white',
                   autoCorrect: false,
                   autoComplete: 'off',
@@ -316,7 +316,7 @@ const TransferCollectableScreen = () => {
                   backgroundColorDisabledOpacity={0.1}
                   disabled={!solAddressIsValid(recipient)}
                   titleColorPressedOpacity={0.3}
-                  title="Transfer"
+                  title={t('collectablesScreen.transfer')}
                   titleColor="black"
                   fontWeight="bold"
                   onPress={handleTransfer}
@@ -325,7 +325,7 @@ const TransferCollectableScreen = () => {
             </SafeAreaBox>
           </ScrollView>
           <BlurActionSheet
-            title="Transfer Actions"
+            title={t('collectablesScreen.transferActions')}
             open={optionsOpen}
             onClose={toggleActionSheet(false)}
           >

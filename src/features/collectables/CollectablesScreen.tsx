@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Edge } from 'react-native-safe-area-context'
 import { SvgProps } from 'react-native-svg'
+import Animated from 'react-native-reanimated'
 import TabBar from '../../components/TabBar'
 import AccountHotspotsList from './HotspotList'
 import AccountCollectablesList from './NftList'
@@ -9,6 +10,8 @@ import Text from '../../components/Text'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import NFT from '../../assets/images/nft.svg'
 import Hotspot from '../../assets/images/hotspot.svg'
+import { DelayedFadeIn } from '../../components/FadeInOut'
+import globalStyles from '../../theme/globalStyles'
 
 const CollectablesScreen = () => {
   const { t } = useTranslation()
@@ -42,22 +45,24 @@ const CollectablesScreen = () => {
   }, [t])
 
   return (
-    <SafeAreaBox edges={safeEdges} flex={1}>
-      <Text marginTop="m" alignSelf="center" variant="h4">
-        {t('collectablesScreen.title')}
-      </Text>
-      <TabBar
-        marginTop="l"
-        backgroundColor="black"
-        tabBarOptions={tabData}
-        selectedValue={selectedItem}
-        onItemSelected={handleItemSelected}
-        marginBottom="ms"
-      />
+    <Animated.View entering={DelayedFadeIn} style={globalStyles.container}>
+      <SafeAreaBox edges={safeEdges} flex={1}>
+        <Text marginTop="m" alignSelf="center" variant="h4">
+          {t('collectablesScreen.title')}
+        </Text>
+        <TabBar
+          marginTop="l"
+          backgroundColor="black"
+          tabBarOptions={tabData}
+          selectedValue={selectedItem}
+          onItemSelected={handleItemSelected}
+          marginBottom="ms"
+        />
 
-      {selectedItem === tabData[0].value && <AccountHotspotsList />}
-      {selectedItem === tabData[1].value && <AccountCollectablesList />}
-    </SafeAreaBox>
+        {selectedItem === tabData[0].value && <AccountHotspotsList />}
+        {selectedItem === tabData[1].value && <AccountCollectablesList />}
+      </SafeAreaBox>
+    </Animated.View>
   )
 }
 

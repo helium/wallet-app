@@ -20,7 +20,7 @@ const CircleLoader = ({
     Animated.loop(
       Animated.timing(rotateAnim.current, {
         toValue: -1,
-        duration: 1500,
+        duration: 1000,
         useNativeDriver: true,
         easing: Easing.linear,
       }),
@@ -28,7 +28,7 @@ const CircleLoader = ({
 
     Animated.timing(opacityAnim.current, {
       toValue: 1,
-      duration: 1000,
+      duration: 500,
       easing: Easing.linear,
       useNativeDriver: true,
     }).start()

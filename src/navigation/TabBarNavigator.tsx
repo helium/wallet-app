@@ -15,6 +15,7 @@ import Notifications from '../assets/images/notifications.svg'
 import { Color } from '../theme/theme'
 import HomeNavigator from '../features/home/HomeNavigator'
 import CollectableNavigator from '../features/collectables/CollectablesNavigator'
+import ActivityNavigator from '../features/activity/ActivityNavigator'
 import SafeAreaBox from '../components/SafeAreaBox'
 import Box from '../components/Box'
 
@@ -38,7 +39,7 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
         hasBadge: allPendingRewards > 0,
       },
       { value: 'swaps', Icon: Swaps, iconColor: 'white' },
-      { value: 'transactions', Icon: Transactions, iconColor: 'white' },
+      { value: 'activity', Icon: Transactions, iconColor: 'white' },
       { value: 'notifications', Icon: Notifications, iconColor: 'white' },
     ]
   }, [allPendingRewards])
@@ -106,7 +107,7 @@ const TabBarNavigator = () => {
       <Tab.Screen name="Home" component={HomeNavigator} />
       <Tab.Screen name="Collectables" component={CollectableNavigator} />
       <Tab.Screen name="Swaps" component={CollectableNavigator} />
-      <Tab.Screen name="Transactions" component={CollectableNavigator} />
+      <Tab.Screen name="Activity" component={ActivityNavigator} />
       <Tab.Screen name="Notifications" component={CollectableNavigator} />
     </Tab.Navigator>
   )

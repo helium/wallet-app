@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { recipientKey as getRecipientKey } from '@helium/lazy-distributor-sdk'
@@ -64,35 +65,35 @@ const useHotspots = (): {
   }, [cluster, collectables.loading, currentAccount, dispatch, l1Network])
 
   // TODO: Fix/test this with compressed hotspots once metaplex pushes fix
-  useAsync(async () => {
-    if (
-      !currentAccount?.solanaAddress ||
-      collectables[currentAccount?.solanaAddress].collectables.HOTSPOT
-        .length === 0
-    ) {
-      return
-    }
+  // useAsync(async () => {
+  //   if (
+  //     !currentAccount?.solanaAddress ||
+  //     collectables[currentAccount?.solanaAddress].collectables.HOTSPOT
+  //       .length === 0
+  //   ) {
+  //     return
+  //   }
 
-    const hotspotRewards = await Promise.all(
-      Object.keys(recipientKeys).map(async (rec) => {
-        const { info: recipient, loading } = recipients[rec]
-        if (loading) return { pendingRewards: 0 }
-        const pendingRewards = await getPendingRewards(
-          program as any,
-          new PublicKey(rec),
-          recipient,
-        )
-        return pendingRewards
-      }),
-    )
+  //   const hotspotRewards = await Promise.all(
+  //     Object.keys(recipientKeys).map(async (rec) => {
+  //       const { info: recipient, loading } = recipients[rec]
+  //       if (loading) return { pendingRewards: 0 }
+  //       const pendingRewards = await getPendingRewards(
+  //         program as any,
+  //         new PublicKey(rec),
+  //         recipient,
+  //       )
+  //       return pendingRewards
+  //     }),
+  //   )
 
-    const totalRewards = hotspotRewards.reduce(
-      (a, b) => a + b.pendingRewards,
-      0,
-    )
+  //   const totalRewards = hotspotRewards.reduce(
+  //     (a, b) => a + b.pendingRewards,
+  //     0,
+  //   )
 
-    setAllPendingRewards(totalRewards)
-  }, [collectables, currentAccount, program])
+  //   setAllPendingRewards(totalRewards)
+  // }, [collectables, currentAccount, program])
 
   useEffect(() => {
     if (!currentAccount?.solanaAddress) return

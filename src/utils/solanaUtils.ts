@@ -8,16 +8,18 @@ import {
 } from '@solana/spl-token'
 import Balance, { AnyCurrencyType } from '@helium/currency'
 import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
+import axios from 'axios'
+import Config from 'react-native-config'
 import { getKeypair } from '../storage/secureStorage'
 import solInstructionsToActivity from './solInstructionsToActivity'
 import { Activity } from '../types/activity'
 import sleep from './sleep'
 import { Mints } from '../store/slices/walletRestApi'
-import { Collectable } from '../types/solana'
+import { Collectable, EnrichedTransaction } from '../types/solana'
 
 const Connection = {
   localnet: new web3.Connection('http://127.0.0.1:8899'),
-  devnet: new web3.Connection('https://metaplex.devnet.rpcpool.com'),
+  devnet: new web3.Connection(web3.clusterApiUrl('devnet')),
   testnet: new web3.Connection(web3.clusterApiUrl('testnet')),
   'mainnet-beta': new web3.Connection(web3.clusterApiUrl('mainnet-beta')),
 } as const
@@ -630,4 +632,108 @@ export const groupCollectablesWithMetaData = (collectables: Collectable[]) => {
   }, {} as Record<string, Collectable[]>)
 
   return collectablesGroupedByName
+}
+
+/**
+ *
+ * @param mint mint address
+ * @param metaplex metaplex connection
+ * @returns collectable
+ */
+export const getCollectableByMint = async (
+  mint: web3.PublicKey,
+  metaplex: Metaplex,
+): Promise<Collectable | null> => {
+  try {
+    const collectable = await metaplex.nfts().findByMint({ mintAddress: mint })
+    if (!collectable.json && collectable.uri) {
+      const json = await (await fetch(collectable.uri)).json()
+      return { ...collectable, json }
+    }
+    return collectable
+  } catch (e) {
+    return null
+  }
+}
+
+/**
+ *
+ * @param address public key of the account
+ * @param cluster cluster
+ * @param oldestTransaction starting point of the transaction history
+ * @returns transaction history
+ */
+export const getAllTransactions = async (
+  address: string,
+  cluster: web3.Cluster,
+  oldestTransaction?: string,
+): Promise<(EnrichedTransaction | web3.ConfirmedSignatureInfo)[]> => {
+  const pubKey = new web3.PublicKey(address)
+  const conn = getConnection(cluster)
+  const metaplex = new Metaplex(conn, { cluster })
+  const parseTransactionsUrl = `${Config.HELIUS_API_URL}/v0/transactions/?api-key=${Config.HELIUS_API_KEY}`
+
+  try {
+    const txList = await conn.getSignaturesForAddress(pubKey, {
+      before: oldestTransaction,
+      limit: 100,
+    })
+    const sigList = txList.map((tx) => tx.signature)
+
+    if (cluster !== 'mainnet-beta') {
+      return txList
+    }
+
+    const { data } = await axios.post(parseTransactionsUrl, {
+      transactions: sigList,
+    })
+
+    /*
+     * TODO: Remove this once helius nft indexer is live
+     * Getting metadata for collectables.
+     */
+    const allTxnsWithMetadata = await Promise.all(
+      data.map(async (tx) => {
+        const firstTokenTransfer = tx.tokenTransfers[0]
+        if (firstTokenTransfer && firstTokenTransfer.mint) {
+          const tokenMetadata = await getCollectableByMint(
+            new web3.PublicKey(firstTokenTransfer.mint),
+            metaplex,
+          )
+
+          return {
+            ...tx,
+            tokenTransfers: [
+              {
+                ...firstTokenTransfer,
+                tokenMetadata: {
+                  model: tokenMetadata?.model,
+                  name: tokenMetadata?.name,
+                  symbol: tokenMetadata?.symbol,
+                  uri: tokenMetadata?.uri,
+                  json: tokenMetadata?.json,
+                },
+              },
+            ],
+          }
+        }
+
+        return tx
+      }),
+    )
+
+    const failedTxns = txList.filter((tx) => tx.err)
+
+    // Combine and sort all txns by date in descending order
+    const allTxs = [...allTxnsWithMetadata, ...failedTxns].sort((a, b) => {
+      const date = new Date()
+      const aDate = new Date(a.blockTime * 1000 || a.timestamp * 1000 || date)
+      const bDate = new Date(b.blockTime * 1000 || b.timestamp * 1000 || date)
+      return bDate.getTime() - aDate.getTime()
+    })
+
+    return allTxs
+  } catch (e) {
+    return []
+  }
 }

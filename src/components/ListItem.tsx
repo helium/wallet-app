@@ -50,10 +50,8 @@ const ListItem = ({
       {...rest}
     >
       {Icon && Icon}
-      <Box flexGrow={1} justifyContent="center">
-        <Text variant="subtitle2" marginStart="l">
-          {title}
-        </Text>
+      <Box flexGrow={1} justifyContent="center" marginStart={Icon ? 'm' : 'l'}>
+        <Text variant="subtitle2">{title}</Text>
         {subtitle && <Text>{subtitle}</Text>}
       </Box>
       <Box marginEnd="l">
