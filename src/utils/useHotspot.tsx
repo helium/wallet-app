@@ -32,14 +32,13 @@ export function useHotspot(mint: PublicKey): {
         )
         setPendingRewards(rewards)
       }
-    } catch (e: any) {
-      console.error(e)
+    } catch (e) {
+      Logger.error(e)
     }
   }, [mint, program])
 
   const anchorProvider = useAnchorProvider()
 
-  // const { setMessage } = useNotification();
   const {
     error: rewardsError,
     execute,

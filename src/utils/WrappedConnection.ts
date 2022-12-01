@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnchorProvider } from '@project-serum/anchor'
 import NodeWallet from '@project-serum/anchor/dist/cjs/nodewallet'
 import { Connection, Keypair } from '@solana/web3.js'
