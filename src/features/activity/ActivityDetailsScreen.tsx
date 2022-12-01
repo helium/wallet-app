@@ -72,7 +72,7 @@ const ActivityDetailsScreen = () => {
     const confirmedSig = transaction as ConfirmedSignatureInfo
 
     if (confirmedSig.err) {
-      return <Error color={colors.error} width={250} height={250} />
+      return <Error color={colors.error} width={150} height={150} />
     }
 
     const { tokenTransfers } = enrichedTx
@@ -96,7 +96,7 @@ const ActivityDetailsScreen = () => {
       )
     }
     return (
-      <CheckmarkFilled color={colors.greenBright500} width={250} height={250} />
+      <CheckmarkFilled color={colors.greenBright500} width={150} height={150} />
     )
   }, [colors, transaction])
 
