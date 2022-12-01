@@ -102,18 +102,55 @@ const TransferCollectableScreen = () => {
                 />
               </Box>
             )}
-            {!solanaPayment ||
-              (!solanaPayment.loading && (
-                <Animated.View
-                  style={{ alignItems: 'center' }}
-                  entering={FadeIn}
-                  exiting={FadeOut}
+            {solanaPayment && !solanaPayment.error && !solanaPayment.loading && (
+              <Animated.View
+                style={{ alignItems: 'center' }}
+                entering={FadeIn}
+                exiting={FadeOut}
+              >
+                <Text variant="h2" color="white" marginTop="xl">
+                  {t('collectablesScreen.transferComplete')}
+                </Text>
+              </Animated.View>
+            )}
+
+            {solanaPayment && solanaPayment.error && (
+              <Animated.View
+                style={{ alignItems: 'center' }}
+                entering={FadeIn}
+                exiting={FadeOut}
+              >
+                <Text
+                  variant="h2"
+                  color="white"
+                  marginTop="xl"
+                  textAlign="center"
                 >
-                  <Text variant="h2" color="white" marginTop="xl">
-                    {t('collectablesScreen.transferComplete')}
-                  </Text>
-                </Animated.View>
-              ))}
+                  {t('collectablesScreen.transferError')}
+                </Text>
+                <Text
+                  variant="body2"
+                  color="secondaryText"
+                  marginTop="xl"
+                  numberOfLines={2}
+                  textAlign="center"
+                >
+                  {solanaPayment.error.message}
+                </Text>
+              </Animated.View>
+            )}
+
+            {!solanaPayment && (
+              <Animated.View
+                style={{ alignItems: 'center' }}
+                entering={FadeIn}
+                exiting={FadeOut}
+              >
+                <Text variant="h2" color="white" marginTop="xl">
+                  {t('collectablesScreen.transferError')}
+                </Text>
+              </Animated.View>
+            )}
 
             {solanaPayment && solanaPayment.loading && (
               <Animated.View
@@ -155,7 +192,6 @@ const TransferCollectableScreen = () => {
               titleColorPressedOpacity={0.3}
               title={t('collectablesScreen.returnToCollectables')}
               titleColor="white"
-              fontWeight="bold"
               onPress={onReturn}
             />
           </Box>

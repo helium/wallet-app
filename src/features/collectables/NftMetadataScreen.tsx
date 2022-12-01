@@ -28,7 +28,7 @@ const NftMetadataScreen = () => {
         marginEnd={hasMarginEnd ? 's' : undefined}
         key={`${traitType}+${traitValue}`}
       >
-        <Text variant="body2" fontWeight="bold" color="grey600">
+        <Text variant="body2" color="grey600">
           {traitType?.toUpperCase() ||
             t('collectablesScreen.collectables.noTraitType')}
         </Text>
@@ -43,12 +43,7 @@ const NftMetadataScreen = () => {
   return (
     <BackScreen title="Metadata" padding="none">
       <SafeAreaBox alignItems="center" flex={1}>
-        <Text
-          variant="body1"
-          fontWeight="bold"
-          color="grey600"
-          marginBottom="l"
-        >
+        <Text variant="body1" color="grey600" marginBottom="l">
           {t('collectablesScreen.collectables.properties')}
         </Text>
         <Box flexDirection="row">

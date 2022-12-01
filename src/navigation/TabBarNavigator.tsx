@@ -5,7 +5,6 @@ import {
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs'
 import { Edge } from 'react-native-safe-area-context'
-import useHotspots from '../utils/useHotspots'
 import NavBar from '../components/NavBar'
 import Dollar from '../assets/images/dollar.svg'
 import Gem from '../assets/images/gem.svg'
@@ -19,12 +18,13 @@ import ActivityNavigator from '../features/activity/ActivityNavigator'
 import NotificationsNavigator from '../features/notifications/NotificationsNavigator'
 import SafeAreaBox from '../components/SafeAreaBox'
 import Box from '../components/Box'
+import useEnrichedTransactions from '../utils/useEnrichedTransactions'
 
 const Tab = createBottomTabNavigator()
 
 function MyTabBar({ state, navigation }: BottomTabBarProps) {
-  const { allPendingRewards } = useHotspots()
-
+  const { hasNewTransactions, resetNewTransactions } = useEnrichedTransactions()
+  // TODO: Verify if it is even worth getting all pending rewards considering the amount of account fetches required for every hotspot.
   const tabData = useMemo((): Array<{
     value: string
     Icon: FC<SvgProps>
@@ -37,13 +37,22 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
         value: 'collectables',
         Icon: Gem,
         iconColor: 'white',
-        hasBadge: allPendingRewards > 0,
+        hasBadge: false,
       },
       { value: 'swaps', Icon: Swaps, iconColor: 'white' },
-      { value: 'activity', Icon: Transactions, iconColor: 'white' },
-      { value: 'notifications', Icon: Notifications, iconColor: 'white' },
+      {
+        value: 'activity',
+        Icon: Transactions,
+        iconColor: 'white',
+        hasBadge: hasNewTransactions && state.index !== 3,
+      },
+      {
+        value: 'notifications',
+        Icon: Notifications,
+        iconColor: 'white',
+      },
     ]
-  }, [allPendingRewards])
+  }, [hasNewTransactions, state.index])
 
   const selectedValue = tabData[state.index].value
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
@@ -58,6 +67,11 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
         canPreventDefault: true,
       })
 
+      // Check if activty tab is selected and has new transactions
+      if (selectedValue === 'activity' && hasNewTransactions) {
+        resetNewTransactions()
+      }
+
       if (!isSelected && !event.defaultPrevented) {
         // The `merge: true` option makes sure that the params inside the tab screen are preserved
         navigation.navigate({
@@ -67,7 +81,14 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
         })
       }
     },
-    [navigation, selectedValue, state.routes, tabData],
+    [
+      hasNewTransactions,
+      navigation,
+      resetNewTransactions,
+      selectedValue,
+      state.routes,
+      tabData,
+    ],
   )
 
   const onLongPress = useCallback(

@@ -246,23 +246,18 @@ const ActivityDetailsScreen = () => {
         <BackScreen title="Activity Details">
           <Box alignItems="center" justifyContent="center" height="100%">
             {activityImage}
-            <Text variant="h2" fontWeight="bold" marginTop="m" marginBottom="s">
+            <Text variant="h2" marginTop="m" marginBottom="s">
               {title}
             </Text>
             <Text
               variant="body0"
-              fontWeight="bold"
               marginBottom="s"
               textAlign="center"
+              opacity={0.8}
             >
               {description}
             </Text>
-            <Text
-              variant="body2"
-              textAlign="center"
-              color="secondaryText"
-              fontWeight="bold"
-            >
+            <Text variant="body2" textAlign="center" color="secondaryText">
               {dateLabel}
             </Text>
             {AccountAddressListItems}
@@ -281,8 +276,8 @@ const ActivityDetailsScreen = () => {
                 titleColorPressedOpacity={0.3}
                 title={t('activityScreen.viewOnExplorer')}
                 titleColor="black"
-                fontWeight="bold"
                 onPress={handleOpenExplorer}
+                fontWeight="bold"
               />
             </Box>
           </Box>

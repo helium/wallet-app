@@ -1,15 +1,14 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react'
 import { PublicKey, AccountInfo } from '@solana/web3.js'
 import { TypedAccountParser } from '@helium/spl-utils'
 import { useAsync } from 'react-async-hook'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
+import * as Logger from './logger'
 
 export interface ParsedAccountBase {
   pubkey: PublicKey
   account: AccountInfo<Buffer>
-  info: any // TODO: change to unkown
+  info: unknown
 }
 
 export interface UseAccountState<T> {
@@ -37,7 +36,6 @@ export function useAccount<T>(
     loading: true,
   })
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const parsedAccountBaseParser = (
     pubkey: PublicKey,
     data: AccountInfo<Buffer>,
@@ -57,8 +55,8 @@ export function useAccount<T>(
         account: data,
         info: undefined,
       }
-    } catch (e: any) {
-      console.error('Error while parsing', e)
+    } catch (e) {
+      Logger.error(`Error while parsing: ${(e as Error).message}`)
       return {
         pubkey,
         account: data,
@@ -98,7 +96,7 @@ export function useAccount<T>(
           try {
             const nextInfo = mergePublicKeys(
               prevInfo,
-              (parser && parser(acc.pubkey, acc?.account)) as any,
+              parser && parser(acc.pubkey, acc?.account),
             )
             prevInfo = nextInfo
             setState({
@@ -106,8 +104,8 @@ export function useAccount<T>(
               info: nextInfo,
               account: acc.account,
             })
-          } catch (e: any) {
-            console.error('Error while parsing', e)
+          } catch (e) {
+            Logger.error(`Error while parsing: ${(e as Error).message}`)
             setState({
               loading: false,
               info: undefined,
@@ -119,7 +117,7 @@ export function useAccount<T>(
         }
       })
       .catch((e) => {
-        console.error(e)
+        Logger.error(e)
         setState((s) => (!s.loading ? s : { loading: false }))
       })
     const disposeEmitter = cache.emitter.onCache((e) => {
@@ -134,13 +132,12 @@ export function useAccount<T>(
                   loading: false,
                   info: mergePublicKeys(
                     state.info,
-                    parser && (parser(acc.pubkey, acc!.account) as any),
+                    parser && parser(acc.pubkey, acc.account),
                   ),
-                  account: acc!.account,
+                  account: acc.account,
                 })
-                // eslint-disable-next-line @typescript-eslint/no-shadow
-              } catch (e) {
-                console.error('Error while parsing', e)
+              } catch (err) {
+                Logger.error(`Error while parsing: ${(err as Error).message}`)
                 setState({
                   loading: false,
                   info: undefined,
@@ -165,7 +162,7 @@ export function useAccount<T>(
  * @param input
  * @returns
  */
-function isPureObject(input: any) {
+function isPureObject(input: typeof Object | null) {
   return (
     input !== null &&
     typeof input === 'object' &&
@@ -178,7 +175,8 @@ function isPureObject(input: any) {
  * actually the same, just a new JS object. This will cause a lot of useMemo
  * to fail.
  */
-function mergePublicKeys(arg0: any | undefined, arg1: any | undefined): any {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mergePublicKeys(arg0: any, arg1: any) {
   if (!isPureObject(arg1) || !arg1 || !arg0) {
     return arg1
   }
@@ -190,11 +188,12 @@ function mergePublicKeys(arg0: any | undefined, arg1: any | undefined): any {
       arg0[key] &&
       arg1[key].equals(arg0[key])
     ) {
-      acc[key] = arg0[key]
+      acc[key as keyof typeof acc] = arg0[key]
     } else {
-      acc[key] = value
+      acc[key as keyof typeof acc] = value
     }
 
     return acc
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }, {} as Record<string, any>)
 }

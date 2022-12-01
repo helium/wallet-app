@@ -53,9 +53,9 @@ const HotspotList = () => {
         titleColorDisabled="white"
         title={t('collectablesScreen.hotspots.claimAllRewards')}
         titleColor="black"
-        fontWeight="bold"
         marginBottom="m"
         marginHorizontal="l"
+        fontWeight="bold"
       />
     )
   }, [t])

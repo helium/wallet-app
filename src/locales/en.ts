@@ -129,6 +129,7 @@ export default {
     transferingNftTitle: 'Transferring NFT...',
     transferActions: 'Transfer Actions',
     transferTo: 'Transfer to:',
+    transferError: 'Transfer failed. Please try again later.',
     transferingNftBody:
       'You can exit this screen while you wait. We’ll update your collection momentarily.',
     collectables: {

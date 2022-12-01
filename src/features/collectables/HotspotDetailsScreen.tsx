@@ -150,14 +150,9 @@ const HotspotDetailsScreen = () => {
               textAlign="center"
               variant="h2"
             >
-              {removeDashAndCapitalize(collectable.json.name)}
+              {removeDashAndCapitalize(collectable.json.name || '')}
             </Text>
-            <Text
-              variant="body2"
-              fontWeight="bold"
-              color="grey600"
-              marginBottom="xl"
-            >
+            <Text variant="body2" color="grey600" marginBottom="xl">
               {collectable.json.description ||
                 t('collectablesScreen.collectables.noDescription')}
             </Text>
@@ -190,17 +185,12 @@ const HotspotDetailsScreen = () => {
                 titleColorDisabled="grey600"
                 title={t('collectablesScreen.hotspots.claimRewards')}
                 titleColor="black"
-                fontWeight="bold"
                 disabled={loading || !hasMobileRewards}
                 onPress={handleClaimRewards}
+                fontWeight="bold"
               />
             </Box>
-            <Text
-              marginBottom="s"
-              variant="body2"
-              fontWeight="bold"
-              color="grey600"
-            >
+            <Text marginBottom="s" variant="body2" color="grey600">
               {t('collectablesScreen.collectables.pendingRewardsTitle')}
             </Text>
             <Text variant="body2" marginBottom="m">

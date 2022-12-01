@@ -406,7 +406,6 @@ const useAccountStorageHook = () => {
     const connection = getConnection(cluster)
     if (connection) {
       cache?.close()
-
       setCache((c) =>
         !c
           ? new AccountFetchCache({

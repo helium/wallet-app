@@ -14,7 +14,7 @@ import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 
 export type HotspotListItemProps = {
   hotspot: Collectable
-  onPress: (hotspot) => void
+  onPress: (hotspot: Collectable) => void
 }
 
 const HotspotListItem = ({ hotspot, onPress }: HotspotListItemProps) => {

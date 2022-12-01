@@ -88,6 +88,6 @@ export const getHotspotCollectables = async (
   return collectables.filter((c) => c.symbol === 'HOTSPOT')
 }
 
-export const removeDashAndCapitalize = (str) => {
-  return str.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+export const removeDashAndCapitalize = (str: string) => {
+  return str.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
 }

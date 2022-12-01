@@ -7,9 +7,9 @@ import { useIdlAccount } from './useIdlAccount'
 export type Recipient = IdlAccounts<typeof LazyDistributor>['recipientV0'] & {
   pubkey: PublicKey
 }
-const type = 'recipientV0'
+const t = 'recipientV0'
 export function useRecipient(key: PublicKey): UseAccountState<Recipient> {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  return useIdlAccount<LazyDistributor>(key, IDL as LazyDistributor, type)
+  return useIdlAccount<LazyDistributor>(key, IDL as LazyDistributor, t)
 }

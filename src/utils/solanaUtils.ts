@@ -16,6 +16,8 @@ import { Activity } from '../types/activity'
 import sleep from './sleep'
 import { Mints } from '../store/slices/walletRestApi'
 import { Collectable, EnrichedTransaction } from '../types/solana'
+import * as Logger from './logger'
+import { WrappedConnection } from './WrappedConnection'
 
 const Connection = {
   localnet: new web3.Connection('http://127.0.0.1:8899'),
@@ -270,15 +272,15 @@ export const onAccountChange = (
 export const onLogs = (
   cluster: web3.Cluster,
   address: string,
-  callback: (address: string) => void,
+  callback: (address: string, log: web3.Logs) => void,
 ) => {
   const account = new web3.PublicKey(address)
   return getConnection(cluster).onLogs(
     account,
-    () => {
-      callback(address)
+    (log) => {
+      callback(address, log)
     },
-    'confirmed',
+    'finalized',
   )
 }
 
@@ -420,7 +422,6 @@ export const createTransferCollectableMessage = async (
   return { message }
 }
 
-// TODO: Remove this and replace with createTransferCollectableTransaction
 export const transferCollectable = async (
   cluster: web3.Cluster,
   solanaAddress: string,
@@ -429,97 +430,103 @@ export const transferCollectable = async (
   payee: string,
 ) => {
   const payer = new web3.PublicKey(solanaAddress)
-  const secureAcct = await getKeypair(heliumAddress)
-  const conn = getConnection(cluster)
+  try {
+    const secureAcct = await getKeypair(heliumAddress)
+    const conn = getConnection(cluster)
 
-  if (!secureAcct) {
-    throw new Error('Secure account not found')
-  }
+    if (!secureAcct) {
+      throw new Error('Secure account not found')
+    }
 
-  const signer = {
-    publicKey: payer,
-    secretKey: secureAcct.privateKey,
-  }
+    const signer = {
+      publicKey: payer,
+      secretKey: secureAcct.privateKey,
+    }
 
-  airdrop(cluster, solanaAddress)
+    const recipientPubKey = new web3.PublicKey(payee)
+    const mintPubkey = new web3.PublicKey(collectable.mint.address)
 
-  const recipientPubKey = new web3.PublicKey(payee)
-  const mintPubkey = new web3.PublicKey(collectable.mint.address)
+    const instructions: web3.TransactionInstruction[] = []
 
-  const instructions: web3.TransactionInstruction[] = []
+    const ownerATA = await getAssociatedTokenAddress(
+      mintPubkey,
+      signer.publicKey,
+    )
 
-  const ownerATA = await getAssociatedTokenAddress(mintPubkey, signer.publicKey)
+    if (!(await conn.getAccountInfo(ownerATA))) {
+      instructions.push(
+        createAssociatedTokenAccountInstruction(
+          ownerATA,
+          signer.publicKey,
+          signer.publicKey,
+          mintPubkey,
+        ),
+      )
+    }
 
-  if (!(await conn.getAccountInfo(ownerATA))) {
+    const recipientATA = await getAssociatedTokenAddress(
+      mintPubkey,
+      recipientPubKey,
+    )
+
+    if (!(await conn.getAccountInfo(recipientATA))) {
+      instructions.push(
+        createAssociatedTokenAccountInstruction(
+          recipientATA,
+          signer.publicKey,
+          recipientPubKey,
+          mintPubkey,
+        ),
+      )
+    }
+
     instructions.push(
-      createAssociatedTokenAccountInstruction(
-        ownerATA,
-        signer.publicKey,
-        signer.publicKey,
-        mintPubkey,
+      createTransferCheckedInstruction(
+        ownerATA, // from (should be a token account)
+        mintPubkey, // mint
+        recipientATA, // to (should be a token account)
+        signer.publicKey, // from's owner
+        1, // amount
+        0, // decimals
+        [], // signers
       ),
     )
-  }
 
-  const recipientATA = await getAssociatedTokenAddress(
-    mintPubkey,
-    recipientPubKey,
-  )
+    const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash()
 
-  if (!(await conn.getAccountInfo(recipientATA))) {
-    instructions.push(
-      createAssociatedTokenAccountInstruction(
-        recipientATA,
-        signer.publicKey,
-        recipientPubKey,
-        mintPubkey,
-      ),
+    const messageV0 = new web3.TransactionMessage({
+      payerKey: payer,
+      recentBlockhash: blockhash,
+      instructions,
+    }).compileToLegacyMessage()
+
+    const transaction = new web3.VersionedTransaction(
+      web3.VersionedMessage.deserialize(messageV0.serialize()),
     )
+
+    transaction.sign([new web3.Keypair()])
+
+    const signature = await conn.sendRawTransaction(transaction.serialize(), {
+      skipPreflight: true,
+      maxRetries: 5,
+    })
+
+    await conn.confirmTransaction(
+      { signature, blockhash, lastValidBlockHeight },
+      'finalized',
+    )
+
+    const txn = await getTxn(cluster, signature)
+
+    if (txn?.meta?.err) {
+      throw new Error(txn.meta.err.toString())
+    }
+
+    return { signature, txn }
+  } catch (e) {
+    Logger.error(e)
+    throw new Error((e as Error).message)
   }
-
-  instructions.push(
-    createTransferCheckedInstruction(
-      ownerATA, // from (should be a token account)
-      mintPubkey, // mint
-      recipientATA, // to (should be a token account)
-      signer.publicKey, // from's owner
-      1, // amount
-      0, // decimals
-      [], // signers
-    ),
-  )
-
-  const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash()
-
-  const messageV0 = new web3.TransactionMessage({
-    payerKey: payer,
-    recentBlockhash: blockhash,
-    instructions,
-  }).compileToLegacyMessage()
-
-  const transaction = new web3.VersionedTransaction(
-    web3.VersionedMessage.deserialize(messageV0.serialize()),
-  )
-
-  transaction.sign([signer])
-
-  const signature = await conn.sendRawTransaction(transaction.serialize(), {
-    skipPreflight: true,
-    maxRetries: 5,
-  })
-
-  await conn.confirmTransaction(
-    { signature, blockhash, lastValidBlockHeight },
-    'finalized',
-  )
-
-  const txn = await getTxn(cluster, signature)
-
-  if (txn?.meta?.err) {
-    throw new Error(txn.meta.err.toString())
-  }
-
-  return { signature, txn }
 }
 
 export const confirmTransaction = async (
@@ -532,8 +539,6 @@ export const confirmTransaction = async (
     { signature, blockhash, lastValidBlockHeight },
     'finalized',
   )
-
-  // console.log('result', result)
 
   const txn = await getTxn(cluster, signature)
 
@@ -549,21 +554,23 @@ export const confirmTransaction = async (
  * @param pubKey public key of the account
  * @param metaplex metaplex connection
  * @returns collectables
+ * TODO: Need to add pagination via oldest collectable param in collectables slice
  */
 export const getCollectables = async (
   pubKey: web3.PublicKey,
-  metaplex: Metaplex,
+  oldestCollectable?: string,
 ) => {
-  const collectables = (await metaplex
-    .nfts()
-    .findAllByOwner({ owner: pubKey })) as Metadata<JsonMetadata<string>>[]
-
-  // TODO: Remove this filter once the uri is fixed for HOTSPOTS
-  const filteredCollectables = collectables.filter(
-    (c) => c.symbol !== 'HOTSPOT',
+  const conn = new WrappedConnection('https://rpc-devnet.aws.metaplex.com/')
+  const { items } = await conn.getAssetsByOwner(
+    pubKey.toString(),
+    'created',
+    100,
+    1,
+    oldestCollectable || '',
+    '',
   )
 
-  return filteredCollectables
+  return items as Metadata<JsonMetadata<string>>[]
 }
 
 /**
@@ -692,8 +699,8 @@ export const getAllTransactions = async (
      * TODO: Remove this once helius nft indexer is live
      * Getting metadata for collectables.
      */
-    const allTxnsWithMetadata = await Promise.all(
-      data.map(async (tx) => {
+    const allTxnsWithMetadata: EnrichedTransaction[] = await Promise.all(
+      data.map(async (tx: EnrichedTransaction) => {
         const firstTokenTransfer = tx.tokenTransfers[0]
         if (firstTokenTransfer && firstTokenTransfer.mint) {
           const tokenMetadata = await getCollectableByMint(
@@ -723,14 +730,38 @@ export const getAllTransactions = async (
     )
 
     const failedTxns = txList.filter((tx) => tx.err)
-
+    const allTxs: (EnrichedTransaction | web3.ConfirmedSignatureInfo)[] = [
+      ...allTxnsWithMetadata,
+      ...failedTxns,
+    ]
     // Combine and sort all txns by date in descending order
-    const allTxs = [...allTxnsWithMetadata, ...failedTxns].sort((a, b) => {
-      const date = new Date()
-      const aDate = new Date(a.blockTime * 1000 || a.timestamp * 1000 || date)
-      const bDate = new Date(b.blockTime * 1000 || b.timestamp * 1000 || date)
-      return bDate.getTime() - aDate.getTime()
-    })
+    allTxs.sort(
+      (
+        a: EnrichedTransaction | web3.ConfirmedSignatureInfo,
+        b: EnrichedTransaction | web3.ConfirmedSignatureInfo,
+      ) => {
+        const aEnrichedTransaction = a as EnrichedTransaction
+        const aSignatureInfo = a as web3.ConfirmedSignatureInfo
+        const bEnrichedTransaction = b as EnrichedTransaction
+        const bSignatureInfo = b as web3.ConfirmedSignatureInfo
+
+        const aDate = new Date()
+        if (aEnrichedTransaction.timestamp) {
+          aDate.setTime(aEnrichedTransaction.timestamp * 1000)
+        } else if (aSignatureInfo.blockTime) {
+          aDate.setTime(aSignatureInfo.blockTime * 1000)
+        }
+
+        const bDate = new Date()
+        if (bEnrichedTransaction.timestamp) {
+          bDate.setTime(bEnrichedTransaction.timestamp * 1000)
+        } else if (bSignatureInfo.blockTime) {
+          bDate.setTime(bSignatureInfo.blockTime * 1000)
+        }
+
+        return bDate.getTime() - aDate.getTime()
+      },
+    )
 
     return allTxs
   } catch (e) {

@@ -1,10 +1,13 @@
-import { useCallback, useState } from 'react'
-import { useAsync } from 'react-async-hook'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { EnrichedTransaction } from '../types/solana'
-import { getAllTransactions } from './solanaUtils'
+import {
+  getAllTransactions,
+  onLogs,
+  removeAccountChangeListener,
+} from './solanaUtils'
 
 const useEnrichedTransactions = (): {
   transactions: (EnrichedTransaction | ConfirmedSignatureInfo)[]
@@ -13,6 +16,8 @@ const useEnrichedTransactions = (): {
   refresh: () => void
   fetchMore: () => void
   onEndReached: boolean
+  resetNewTransactions: () => void
+  hasNewTransactions: boolean
 } => {
   const { currentAccount } = useAccountStorage()
   const { solanaNetwork: cluster } = useAppStorage()
@@ -23,6 +28,8 @@ const useEnrichedTransactions = (): {
   const [loading, setLoading] = useState<boolean>(false)
   const [fetchingMore, setFetchingMore] = useState<boolean>(false)
   const [onEndReached, setOnEndReached] = useState<boolean>(false)
+  const [hasNewTransactions, setHasNewTransactions] = useState(false)
+  const accountSubscriptionId = useRef<number>()
 
   const refresh = useCallback(async () => {
     if (!currentAccount || !currentAccount?.solanaAddress) return
@@ -67,8 +74,24 @@ const useEnrichedTransactions = (): {
     setFetchingMore(false)
   }, [currentAccount, fetchingMore, onEndReached, cluster, oldestTransaction])
 
-  useAsync(async () => {
+  useEffect(() => {
+    if (!currentAccount?.solanaAddress) return
+
     refresh()
+
+    const subId = onLogs(cluster, currentAccount?.solanaAddress, () => {
+      refresh()
+      setHasNewTransactions(true)
+    })
+
+    if (accountSubscriptionId.current !== undefined) {
+      removeAccountChangeListener(cluster, accountSubscriptionId.current)
+    }
+    accountSubscriptionId.current = subId
+  }, [cluster, currentAccount, refresh])
+
+  const resetNewTransactions = useCallback(() => {
+    setHasNewTransactions(false)
   }, [])
 
   return {
@@ -78,6 +101,8 @@ const useEnrichedTransactions = (): {
     fetchingMore,
     fetchMore,
     onEndReached,
+    resetNewTransactions,
+    hasNewTransactions,
   }
 }
 
