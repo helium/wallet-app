@@ -23,12 +23,14 @@ import BlurActionSheet from '../../components/BlurActionSheet'
 import useHaptic from '../../utils/useHaptic'
 import globalStyles from '../../theme/globalStyles'
 import { DelayedFadeIn } from '../../components/FadeInOut'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Route = RouteProp<ActivityStackParamList, 'ActivityDetailsScreen'>
 
 const ActivityDetailsScreen = () => {
   const route = useRoute<Route>()
   const colors = useColors()
+  const { solanaNetwork: cluster } = useAppStorage()
   const { t, i18n } = useTranslation()
   const { triggerNavHaptic } = useHaptic()
 
@@ -191,13 +193,11 @@ const ActivityDetailsScreen = () => {
     return 'Transaction Successful'
   }, [transaction])
 
-  //   https://explorer.solana.com/tx/SDV21yWbuy4k8hk8rbMuZxYgMKJhUniRppzAzHZeKnTnjvWujsjMHH62TZ9wVzcpfzLgXEkDqsPz4Cw15shMY8w
-
   const handleOpenExplorer = useCallback(async () => {
-    const url = `https://explorer.solana.com/tx/${transaction.signature}`
+    const url = `https://explorer.solana.com/tx/${transaction.signature}?cluster=${cluster}`
     // Open url in browser
     await Linking.openURL(url)
-  }, [transaction.signature])
+  }, [cluster, transaction.signature])
 
   const toggleActionSheet = useCallback(
     (open) => () => {

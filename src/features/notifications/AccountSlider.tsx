@@ -23,6 +23,7 @@ const AccountSlider = () => {
     openedNotification,
     setOpenedNotification,
   } = useNotificationStorage()
+
   const { sortedAccounts } = useAccountStorage()
 
   const data = useMemo(() => {
@@ -62,8 +63,9 @@ const AccountSlider = () => {
       // clear the opened push notification
       setOpenedNotification(undefined)
     } else {
+      // TODO: Double check with team if this is the desired behavior
       // set the selected list as the first account by default, after sorting of data by unread
-      await updateSelectedList(data[0])
+      // await updateSelectedList(data[0])
     }
   }, [
     data,
@@ -79,7 +81,7 @@ const AccountSlider = () => {
 
   const onSnap = useCallback(
     async (index: number) => {
-      await updateSelectedList(data[index])
+      updateSelectedList(data[index])
     },
     [data, updateSelectedList],
   )
@@ -94,18 +96,20 @@ const AccountSlider = () => {
       else icon = <AccountIcon address={item} size={56} />
       return (
         <AccountSliderIcon
+          key={item}
           resource={item}
           icon={icon}
           index={index}
           onPress={onIconSelected}
+          selected={selectedList === data[index]}
         />
       )
     },
-    [onIconSelected],
+    [data, onIconSelected, selectedList],
   )
 
   return (
-    <Box height={56} marginBottom="l" marginTop="m">
+    <Box marginBottom="l" marginTop="m">
       <Carousel
         ref={carouselRef}
         firstItem={selectedList ? data.indexOf(selectedList) : 0}
@@ -118,6 +122,7 @@ const AccountSlider = () => {
         sliderWidth={sliderWidth}
         itemWidth={72}
         inactiveSlideScale={1}
+        keyExtractor={(item) => item || ''}
       />
     </Box>
   )

@@ -1,25 +1,25 @@
 import React, { memo, useCallback, useEffect, useMemo } from 'react'
 import { useNavigation } from '@react-navigation/native'
-import TriangleTop from '@assets/images/boxTriangleTop.svg'
-import BottomSheet from '@gorhom/bottom-sheet'
 import { Linking } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import Animated from 'react-native-reanimated'
 import Text from '../../components/Text'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import Box from '../../components/Box'
 import CloseButton from '../../components/CloseButton'
 import { HomeNavigationProp } from '../home/homeTypes'
-import { useColors } from '../../theme/themeHooks'
 import AccountSlider from './AccountSlider'
-import NotificationsListNavigator from './NotificationsListNavigator'
-import HandleBasic from '../../components/HandleBasic'
 import ButtonPressable from '../../components/ButtonPressable'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
+import { useAppStorage } from '../../storage/AppStorageProvider'
+import NotificationsList from './NotificationsList'
+import { DelayedFadeIn } from '../../components/FadeInOut'
+import globalStyles from '../../theme/globalStyles'
 
 const NotificationsScreen = () => {
+  const { l1Network } = useAppStorage()
   const { t } = useTranslation()
   const navigation = useNavigation<HomeNavigationProp>()
-  const colors = useColors()
   const {
     selectedNotification,
     setSelectedNotification,
@@ -29,24 +29,6 @@ const NotificationsScreen = () => {
   useEffect(() => {
     return navigation.addListener('beforeRemove', onNotificationsClosed)
   }, [navigation, onNotificationsClosed, setSelectedNotification])
-
-  const handleComponent = useCallback(
-    () => (
-      <Box
-        justifyContent="center"
-        alignItems="center"
-        backgroundColor="surfaceSecondary"
-        borderTopLeftRadius="xl"
-        borderTopRightRadius="xl"
-      >
-        <Box position="absolute" top={-11}>
-          <TriangleTop color={colors.surfaceSecondary} />
-        </Box>
-        <HandleBasic marginTop="s" />
-      </Box>
-    ),
-    [colors.surfaceSecondary],
-  )
 
   const onActionPress = useCallback(() => {
     if (!selectedNotification?.actionUrl) return
@@ -58,58 +40,56 @@ const NotificationsScreen = () => {
     setSelectedNotification(undefined)
   }, [navigation, setSelectedNotification])
 
-  const sheetStyle = useMemo(
-    () => ({ backgroundColor: colors.primaryBackground }),
-    [colors.primaryBackground],
-  )
+  const HeaderComponent = useMemo(() => {
+    return (
+      <>
+        {l1Network === 'helium' && (
+          <Box width="100%" alignItems="flex-end" paddingHorizontal="s">
+            <CloseButton onPress={onClose} />
+          </Box>
+        )}
+        <Text textAlign="center" variant="h4" marginTop="m" marginBottom="l">
+          {t('notifications.title')}
+        </Text>
+        <AccountSlider />
+      </>
+    )
+  }, [l1Network, onClose, t])
+
+  const FooterComponent = useMemo(() => {
+    return selectedNotification?.actionTitle &&
+      selectedNotification?.actionUrl ? (
+      <Box
+        position="absolute"
+        bottom={0}
+        width="100%"
+        paddingHorizontal="m"
+        marginBottom="xl"
+      >
+        <ButtonPressable
+          title={selectedNotification.actionTitle}
+          onPress={onActionPress}
+          backgroundColor="highlight"
+          marginTop="m"
+          borderRadius="round"
+          height={60}
+          titleColor="black900"
+        />
+      </Box>
+    ) : (
+      <></>
+    )
+  }, [onActionPress, selectedNotification])
 
   return (
-    <SafeAreaBox
-      flex={1}
-      alignItems="center"
-      backgroundColor="primaryBackground"
-      edges={['top']}
-    >
-      <Box width="100%" alignItems="flex-end" paddingHorizontal="s">
-        <CloseButton onPress={onClose} />
-      </Box>
-      <Text variant="h4">{t('notifications.title')}</Text>
-      <AccountSlider />
-      <BottomSheet
-        snapPoints={['70%', '90%']}
-        handleComponent={handleComponent}
-        backgroundStyle={sheetStyle}
-      >
-        <Box
-          flex={1}
-          width="100%"
-          backgroundColor="surfaceSecondary"
-          borderTopLeftRadius="xl"
-          borderTopRightRadius="xl"
-        >
-          <NotificationsListNavigator />
-        </Box>
-      </BottomSheet>
-      {selectedNotification?.actionTitle && selectedNotification?.actionUrl && (
-        <Box
-          position="absolute"
-          bottom={0}
-          width="100%"
-          paddingHorizontal="m"
-          marginBottom="xl"
-        >
-          <ButtonPressable
-            title={selectedNotification.actionTitle}
-            onPress={onActionPress}
-            backgroundColor="highlight"
-            marginTop="m"
-            borderRadius="round"
-            height={60}
-            titleColor="black900"
-          />
-        </Box>
-      )}
-    </SafeAreaBox>
+    <Animated.View entering={DelayedFadeIn} style={globalStyles.container}>
+      <SafeAreaBox flex={1} backgroundColor="primaryBackground" edges={['top']}>
+        <NotificationsList
+          HeaderComponent={HeaderComponent}
+          FooterComponent={FooterComponent}
+        />
+      </SafeAreaBox>
+    </Animated.View>
   )
 }
 

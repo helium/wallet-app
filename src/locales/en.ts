@@ -472,7 +472,7 @@ export default {
     accountUpdates: '{{title}} Updates',
     emptyTitle: 'No Notifications',
     heliumUpdates: 'Helium Updates',
-    title: 'Notifications',
+    title: 'My Notifications',
     walletUpdates: 'Wallet Updates',
   },
   onboarding: {

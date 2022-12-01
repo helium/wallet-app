@@ -125,7 +125,7 @@ const ActivityScreen = () => {
           borderTopEndRadius={firstItem ? 'xl' : undefined}
           borderBottomStartRadius={lastItem ? 'xl' : undefined}
           borderBottomEndRadius={lastItem ? 'xl' : undefined}
-          hasDivider={!lastItem}
+          hasDivider={!lastItem || (firstItem && section.data.length !== 1)}
           marginHorizontal="m"
           transaction={item}
           onPress={handleActivityItemPress(item)}

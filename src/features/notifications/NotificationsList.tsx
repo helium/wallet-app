@@ -1,32 +1,41 @@
 import React, { memo, useCallback, useMemo } from 'react'
-import CarotRight from '@assets/images/carot-right.svg'
 import { useNavigation } from '@react-navigation/native'
-import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
-import { formatDistanceToNow, isBefore, parseISO } from 'date-fns'
+import { isBefore, parseISO } from 'date-fns'
 import { useTranslation } from 'react-i18next'
-import TouchableHighlightBox from '../../components/TouchableHighlightBox'
+import { SectionList } from 'react-native'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
-import { useColors } from '../../theme/themeHooks'
-import {
-  HELIUM_UPDATES_ITEM,
-  NotificationsListNavigationProp,
-  WALLET_UPDATES_ITEM,
-} from './notificationTypes'
+import { useSpacing } from '../../theme/themeHooks'
+import { NotificationsListNavigationProp } from './notificationTypes'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useNotificationsQuery } from '../../generated/graphql'
-import parseMarkup from '../../utils/parseMarkup'
+import { Notification, useNotificationsQuery } from '../../generated/graphql'
 import { useGetNotificationsQuery } from '../../store/slices/walletRestApi'
 import { heliumAddressToSolAddress } from '../../utils/accountUtils'
+import NotificationListItem from './NotificationListItem'
 
-const NotificationsList = () => {
-  const colors = useColors()
+export type NotificationsListProps = {
+  HeaderComponent: JSX.Element
+  FooterComponent: JSX.Element
+}
+
+const NotificationsList = ({
+  HeaderComponent,
+  FooterComponent,
+}: NotificationsListProps) => {
   const { t } = useTranslation()
   const navigator = useNavigation<NotificationsListNavigationProp>()
   const { selectedList, setSelectedNotification, lastViewedTimestamp } =
     useNotificationStorage()
-  const { accounts, currentAccount } = useAccountStorage()
+  const { currentAccount } = useAccountStorage()
+  const spacing = useSpacing()
+
+  const contentContainer = useMemo(
+    () => ({
+      paddingBottom: spacing.xxxl,
+    }),
+    [spacing.xxxl],
+  )
 
   const { data: v1Notifications } = useNotificationsQuery({
     variables: {
@@ -61,27 +70,41 @@ const NotificationsList = () => {
     )
   }, [v1Notifications, v2Notifications])
 
-  const title = useMemo(() => {
-    switch (selectedList) {
-      case undefined:
-        return ''
-      case WALLET_UPDATES_ITEM:
-        return t('notifications.walletUpdates')
-      case HELIUM_UPDATES_ITEM:
-        return t('notifications.heliumUpdates')
-      default:
-        return t('notifications.accountUpdates', {
-          title:
-            accounts && selectedList
-              ? accounts[selectedList]?.alias
-              : t('generic.account'),
-        })
-    }
-  }, [accounts, selectedList, t])
+  const SectionData = useMemo((): {
+    title: string
+    data: Notification[]
+  }[] => {
+    // Group by date
+    const grouped = notifications.reduce((acc, noti) => {
+      const date = new Date(noti.time)
+
+      const key = date.toDateString()
+      if (!acc[key]) {
+        acc[key] = []
+      }
+
+      if (!noti) return acc
+
+      acc[key].push(noti as Notification)
+      return acc
+    }, {} as Record<string, Notification[]>)
+
+    // Create array of objects
+    const sections = Object.keys(grouped).map((date) => {
+      return {
+        title: date,
+        data: grouped[date],
+      }
+    })
+
+    return sections
+  }, [notifications])
 
   const renderItem = useCallback(
-    ({ index, item }) => {
+    ({ index, item, section }) => {
       const isFirst = index === 0
+      const isLast = index === section.data.length - 1
+
       const viewed =
         (lastViewedTimestamp &&
           isBefore(new Date(item.time), new Date(lastViewedTimestamp))) ||
@@ -93,69 +116,20 @@ const NotificationsList = () => {
       }
 
       return (
-        <TouchableHighlightBox
-          activeOpacity={0.9}
-          borderTopWidth={isFirst ? 1 : 0}
-          borderBottomWidth={1}
-          borderColor="primaryBackground"
-          underlayColor={colors.surfaceSecondary}
+        <NotificationListItem
+          marginHorizontal="m"
+          borderTopStartRadius={isFirst ? 'xl' : undefined}
+          borderTopEndRadius={isFirst ? 'xl' : undefined}
+          borderBottomStartRadius={isLast ? 'xl' : undefined}
+          borderBottomEndRadius={isLast ? 'xl' : undefined}
+          notification={item}
+          viewed={viewed}
+          hasDivider={!isLast || (isFirst && section.data.length !== 1)}
           onPress={onItemSelected}
-        >
-          <Box flexDirection="row" justifyContent="space-between" padding="m">
-            <Box width="85%">
-              <Box flexDirection="row" alignItems="center">
-                {!viewed && (
-                  <Box
-                    borderRadius="round"
-                    backgroundColor="red500"
-                    width={10}
-                    height={10}
-                    marginRight="xs"
-                    marginBottom="xs"
-                  />
-                )}
-                <Text
-                  variant="body1"
-                  color={viewed ? 'secondaryText' : 'white'}
-                  marginBottom="xs"
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                >
-                  {item.title}
-                </Text>
-              </Box>
-              <Text
-                variant="body3"
-                numberOfLines={2}
-                color="surfaceSecondaryText"
-                marginBottom="xs"
-              >
-                {parseMarkup(item.body)}
-              </Text>
-              <Text
-                variant="body3"
-                numberOfLines={2}
-                color={!viewed ? 'red500' : 'surfaceSecondaryText'}
-              >
-                {formatDistanceToNow(parseISO(item.time), {
-                  addSuffix: true,
-                })}
-              </Text>
-            </Box>
-            <Box alignItems="center" justifyContent="center">
-              <CarotRight color={colors.surfaceSecondaryText} />
-            </Box>
-          </Box>
-        </TouchableHighlightBox>
+        />
       )
     },
-    [
-      colors.surfaceSecondary,
-      colors.surfaceSecondaryText,
-      lastViewedTimestamp,
-      navigator,
-      setSelectedNotification,
-    ],
+    [lastViewedTimestamp, navigator, setSelectedNotification],
   )
 
   const EmptyListView = useCallback(
@@ -169,13 +143,37 @@ const NotificationsList = () => {
     [t],
   )
 
+  const renderSectionHeader = useCallback(
+    ({ section: { title: sectionTitle, icon } }) => (
+      <Box
+        flexDirection="row"
+        alignItems="center"
+        paddingTop="xl"
+        paddingBottom="m"
+        paddingHorizontal="l"
+        backgroundColor="primaryBackground"
+        justifyContent="center"
+      >
+        {icon !== undefined && icon}
+        <Text variant="body2" textAlign="center" color="secondaryText">
+          {sectionTitle}
+        </Text>
+      </Box>
+    ),
+    [],
+  )
+
+  const keyExtractor = useCallback((item, index) => item.time + index, [])
+
   return (
-    <Box backgroundColor="surfaceSecondary" flex={1}>
-      <Text variant="h3" padding="m" marginVertical="s">
-        {title}
-      </Text>
-      <BottomSheetFlatList
-        data={notifications || []}
+    <Box flex={1}>
+      <SectionList
+        keyExtractor={keyExtractor}
+        ListHeaderComponent={HeaderComponent}
+        ListFooterComponent={FooterComponent}
+        renderSectionHeader={renderSectionHeader}
+        contentContainerStyle={contentContainer}
+        sections={SectionData}
         renderItem={renderItem}
         ListEmptyComponent={EmptyListView}
       />

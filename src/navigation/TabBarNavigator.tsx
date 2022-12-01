@@ -16,6 +16,7 @@ import { Color } from '../theme/theme'
 import HomeNavigator from '../features/home/HomeNavigator'
 import CollectableNavigator from '../features/collectables/CollectablesNavigator'
 import ActivityNavigator from '../features/activity/ActivityNavigator'
+import NotificationsNavigator from '../features/notifications/NotificationsNavigator'
 import SafeAreaBox from '../components/SafeAreaBox'
 import Box from '../components/Box'
 
@@ -108,7 +109,10 @@ const TabBarNavigator = () => {
       <Tab.Screen name="Collectables" component={CollectableNavigator} />
       <Tab.Screen name="Swaps" component={CollectableNavigator} />
       <Tab.Screen name="Activity" component={ActivityNavigator} />
-      <Tab.Screen name="Notifications" component={CollectableNavigator} />
+      <Tab.Screen
+        name="NotificationsNavigator"
+        component={NotificationsNavigator}
+      />
     </Tab.Navigator>
   )
 }

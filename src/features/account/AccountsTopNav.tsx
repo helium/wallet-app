@@ -17,6 +17,7 @@ import AccountIcon from '../../components/AccountIcon'
 import BackgroundFill from '../../components/BackgroundFill'
 import useLayoutWidth from '../../utils/useLayoutWidth'
 import useNetworkColor from '../../utils/useNetworkColor'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Props = {
   onPressWallet: () => void
@@ -27,6 +28,7 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { currentAccount, currentNetworkAddress } = useAccountStorage()
   const [barButtonsRightWidth, setBarButtonsRightWidth] = useLayoutWidth()
+  const { l1Network } = useAppStorage()
 
   const accountNetType = useMemo(
     () => AccountUtils.accountNetType(currentAccount?.address),
@@ -102,14 +104,16 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
         paddingRight="l"
         onLayout={setBarButtonsRightWidth}
       >
-        <TouchableOpacityBox
-          paddingVertical="ms"
-          paddingLeft="s"
-          onPress={handleNotificationsSelected}
-          marginRight="s"
-        >
-          <NotificationIcon />
-        </TouchableOpacityBox>
+        {l1Network === 'helium' && (
+          <TouchableOpacityBox
+            paddingVertical="ms"
+            paddingLeft="s"
+            onPress={handleNotificationsSelected}
+            marginRight="s"
+          >
+            <NotificationIcon />
+          </TouchableOpacityBox>
+        )}
         <TouchableOpacityBox onPress={handleAddressBook} paddingVertical="ms">
           <AccountIco color={primaryIcon} />
         </TouchableOpacityBox>
