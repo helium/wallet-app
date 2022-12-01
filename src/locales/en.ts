@@ -243,6 +243,8 @@ export default {
     testnet: 'Testnet',
     total: 'Total',
     tryAgain: 'Try Again',
+    somethingWentWrong: 'Something went wrong, please try again',
+    submitSuccess: 'Transaction Submit',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',

@@ -36,7 +36,7 @@ export type HomeStackParamList = {
   SettingsNavigator: undefined
   AddNewContact: undefined
   LinkWallet: LinkWalletRequest
-  SignHotspot: SignHotspotRequest
+  SignHotspot: SignHotspotRequest & { submit?: boolean }
   AddNewAccountNavigator: undefined
   ReImportAccountNavigator:
     | undefined
