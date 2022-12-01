@@ -1,5 +1,6 @@
 import React from 'react'
 import { StyleSheet } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import { useColors } from '../../theme/themeHooks'
@@ -26,6 +27,7 @@ const AddressActivityItem = ({
 }: AddressActivityItemProps) => {
   const colors = useColors()
   const { currentAccount } = useAccountStorage()
+  const { t } = useTranslation()
 
   return (
     <Box>
@@ -42,7 +44,7 @@ const AddressActivityItem = ({
         <Box flexGrow={1} justifyContent="center" marginStart="m">
           {currentAccount &&
             currentAccount.solanaAddress === accountAddress && (
-              <Text variant="subtitle2">My Account</Text>
+              <Text variant="subtitle2">{t('activityScreen.myAccount')}</Text>
             )}
           <Text color="secondaryText">{ellipsizeAddress(accountAddress)}</Text>
         </Box>

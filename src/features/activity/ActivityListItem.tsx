@@ -92,7 +92,7 @@ const ActivityListItem = ({
       <Box marginStart="s" flexGrow={1} flexBasis={0.5} justifyContent="center">
         <Text variant="body1">{title}</Text>
         <Text variant="body2" color="secondaryText">
-          {subtitle || 'No description provided'}
+          {subtitle}
         </Text>
       </Box>
     </TouchableOpacityBox>

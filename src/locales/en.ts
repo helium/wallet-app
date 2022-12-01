@@ -154,8 +154,11 @@ export default {
     },
   },
   activityScreen: {
+    title: 'My Activity',
     transactionFailed: 'Transaction Failed',
     viewOnExplorer: 'View on Explorer',
+    activityDetails: 'Activity Details',
+    myAccount: 'My Account',
     enrichedTransactionTypes: {
       UNKNOWN: 'App Interaction',
       NFT_BID: 'NFT Bid',

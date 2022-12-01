@@ -243,7 +243,7 @@ const ActivityDetailsScreen = () => {
       <ScrollView
         contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
       >
-        <BackScreen title="Activity Details">
+        <BackScreen title={t('activityScreen.activityDetails')}>
           <Box alignItems="center" justifyContent="center" height="100%">
             {activityImage}
             <Text variant="h2" marginTop="m" marginBottom="s">

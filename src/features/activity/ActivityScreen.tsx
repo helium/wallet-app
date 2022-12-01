@@ -4,6 +4,7 @@ import { EnrichedTransaction } from 'src/types/solana'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
 import Animated from 'react-native-reanimated'
 import { useNavigation } from '@react-navigation/native'
+import { useTranslation } from 'react-i18next'
 import { useColors, useSpacing } from '../../theme/themeHooks'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import Box from '../../components/Box'
@@ -18,6 +19,7 @@ import { ActivityNavigationProp } from './activityTypes'
 const ActivityScreen = () => {
   const { transactions, loading, fetchingMore, fetchMore, refresh } =
     useEnrichedTransactions()
+  const { t } = useTranslation()
   const spacing = useSpacing()
   const colors = useColors()
   const navigation = useNavigation<ActivityNavigationProp>()
@@ -99,11 +101,11 @@ const ActivityScreen = () => {
         backgroundColor="primaryBackground"
       >
         <Text variant="h4" textAlign="center">
-          My Activity
+          {t('activityScreen.title')}
         </Text>
       </Box>
     )
-  }, [])
+  }, [t])
 
   const handleActivityItemPress = useCallback(
     (transaction: EnrichedTransaction | ConfirmedSignatureInfo) => () => {
