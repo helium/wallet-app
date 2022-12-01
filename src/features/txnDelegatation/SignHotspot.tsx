@@ -23,6 +23,7 @@ import { formatAccountAlias } from '../../utils/accountUtils'
 import { getKeypair } from '../../storage/secureStorage'
 import { useSubmitTxnMutation } from '../../generated/graphql'
 import { useColors } from '../../theme/themeHooks'
+import * as Logger from '../../utils/logger'
 
 type Route = RouteProp<HomeStackParamList, 'SignHotspot'>
 const SignHotspot = () => {
@@ -106,6 +107,8 @@ const SignHotspot = () => {
     if (submit) {
       // submitting signed transaction from hotspot app
       const txn = assertLocationTxn || transferHotspotTxn
+      const txnObject = locationTxn || transferTxn
+
       try {
         if (!txn) throw new Error('no transaction')
 
@@ -113,10 +116,12 @@ const SignHotspot = () => {
           variables: {
             address: parsedToken.address,
             txn,
+            txnJson: JSON.stringify(txnObject),
           },
         })
         Toast.show(t('generic.submitSuccess'))
       } catch (e) {
+        Logger.error(e)
         Toast.show(t('generic.somethingWentWrong'))
       }
       navigation.goBack()
