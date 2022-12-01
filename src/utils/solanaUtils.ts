@@ -504,7 +504,7 @@ export const transferCollectable = async (
       web3.VersionedMessage.deserialize(messageV0.serialize()),
     )
 
-    transaction.sign([new web3.Keypair()])
+    transaction.sign([signer])
 
     const signature = await conn.sendRawTransaction(transaction.serialize(), {
       skipPreflight: true,
