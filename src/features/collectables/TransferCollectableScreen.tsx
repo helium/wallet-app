@@ -89,7 +89,7 @@ const TransferCollectableScreen = () => {
         currentAccount?.solanaAddress,
         currentAccount?.address || '',
         collectable,
-        'DFpfwC2qYdvhL5vruHvCafCHH5aKNSnUwiwZfJAvPACy',
+        currentAccount?.solanaAddress,
       )
 
       const response = await connection.getFeeForMessage(
