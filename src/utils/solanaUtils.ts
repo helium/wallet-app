@@ -519,7 +519,11 @@ export const transferCollectable = async (
     const txn = await getTxn(cluster, signature)
 
     if (txn?.meta?.err) {
-      throw new Error(txn.meta.err.toString())
+      throw new Error(
+        typeof txn.meta.err === 'string'
+          ? txn.meta.err
+          : JSON.stringify(txn.meta.err),
+      )
     }
 
     return { signature, txn }
@@ -554,9 +558,31 @@ export const confirmTransaction = async (
  * @param pubKey public key of the account
  * @param metaplex metaplex connection
  * @returns collectables
- * TODO: Need to add pagination via oldest collectable param in collectables slice
  */
 export const getCollectables = async (
+  pubKey: web3.PublicKey,
+  metaplex: Metaplex,
+) => {
+  const collectables = (await metaplex
+    .nfts()
+    .findAllByOwner({ owner: pubKey })) as Metadata<JsonMetadata<string>>[]
+
+  // TODO: Remove this filter once the uri is fixed for HOTSPOTS
+  const filteredCollectables = collectables.filter(
+    (c) => c.symbol !== 'HOTSPOT',
+  )
+
+  return filteredCollectables
+}
+
+/**
+ * Returns the account's collectables
+ * @param pubKey public key of the account
+ * @param oldestCollectable starting point for the query
+ * @returns collectables
+ * TODO: Need to add pagination via oldest collectable param in collectables slice
+ */
+export const getCompressedCollectables = async (
   pubKey: web3.PublicKey,
   oldestCollectable?: string,
 ) => {
@@ -592,13 +618,17 @@ export const getCollectablesMetadata = async (
       let json
       try {
         json = await (await fetch(col.uri)).json()
-      } catch (e) {}
-      const metadata = await metaplex.nfts().load({ metadata: col })
-      return { ...metadata, json }
+
+        const metadata = await metaplex.nfts().load({ metadata: col })
+        return { ...metadata, json }
+      } catch (e) {
+        Logger.error(e)
+        return null
+      }
     }),
   )
 
-  return collectablesWithMetadata
+  return collectablesWithMetadata.filter((c) => c !== null) as Collectable[]
 }
 
 /**

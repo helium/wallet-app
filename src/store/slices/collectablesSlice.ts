@@ -29,7 +29,7 @@ export const fetchCollectables = createAsyncThunk(
 
     const metaplex = new Metaplex(connection, { cluster })
     const pubKey = new web3.PublicKey(account.solanaAddress)
-    const fetchedCollectables = await solUtils.getCollectables(pubKey, '')
+    const fetchedCollectables = await solUtils.getCollectables(pubKey, metaplex)
     const groupedCollectables = await solUtils.groupCollectables(
       fetchedCollectables,
     )

@@ -81,23 +81,31 @@ const TransferCollectableScreen = () => {
 
   useAsync(async () => {
     if (!currentAccount?.solanaAddress) return
+
     const connection = getConnection(cluster)
-    const { message } = await createTransferCollectableMessage(
-      cluster,
-      currentAccount?.solanaAddress,
-      currentAccount?.address || '',
-      collectable,
-      'DFpfwC2qYdvhL5vruHvCafCHH5aKNSnUwiwZfJAvPACy',
-    )
+    try {
+      const { message } = await createTransferCollectableMessage(
+        cluster,
+        currentAccount?.solanaAddress,
+        currentAccount?.address || '',
+        collectable,
+        'DFpfwC2qYdvhL5vruHvCafCHH5aKNSnUwiwZfJAvPACy',
+      )
 
-    const response = await connection.getFeeForMessage(message, 'singleGossip')
-    setSolFee(response.value / LAMPORTS_PER_SOL)
+      const response = await connection.getFeeForMessage(
+        message,
+        'singleGossip',
+      )
+      setSolFee(response.value / LAMPORTS_PER_SOL)
 
-    const balance = await connection.getBalance(
-      new PublicKey(currentAccount?.solanaAddress),
-    )
-
-    setHasInsufficientBalance(response.value > balance)
+      const balance = await connection.getBalance(
+        new PublicKey(currentAccount?.solanaAddress),
+      )
+      setHasInsufficientBalance(response.value > balance)
+    } catch (error) {
+      Logger.error(error)
+      setNetworkError((error as Error).message)
+    }
   }, [])
 
   const handleInfoPress = useCallback(() => {
