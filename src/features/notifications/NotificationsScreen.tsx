@@ -2,7 +2,7 @@ import React, { memo, useCallback, useEffect, useMemo } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { Linking } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import Animated from 'react-native-reanimated'
+import { Edge } from 'react-native-safe-area-context'
 import Text from '../../components/Text'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import Box from '../../components/Box'
@@ -14,11 +14,12 @@ import { useNotificationStorage } from '../../storage/NotificationStorageProvide
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import NotificationsList from './NotificationsList'
 import { DelayedFadeIn } from '../../components/FadeInOut'
-import globalStyles from '../../theme/globalStyles'
+import { ReAnimatedBox } from '../../components/AnimatedBox'
 
 const NotificationsScreen = () => {
   const { l1Network } = useAppStorage()
   const { t } = useTranslation()
+  const safeEdges = useMemo(() => ['top'] as Edge[], [])
   const navigation = useNavigation<HomeNavigationProp>()
   const {
     selectedNotification,
@@ -82,14 +83,18 @@ const NotificationsScreen = () => {
   }, [onActionPress, selectedNotification])
 
   return (
-    <Animated.View entering={DelayedFadeIn} style={globalStyles.container}>
-      <SafeAreaBox flex={1} backgroundColor="primaryBackground" edges={['top']}>
+    <ReAnimatedBox flex={1} entering={DelayedFadeIn}>
+      <SafeAreaBox
+        flex={1}
+        backgroundColor="primaryBackground"
+        edges={safeEdges}
+      >
         <NotificationsList
           HeaderComponent={HeaderComponent}
           FooterComponent={FooterComponent}
         />
       </SafeAreaBox>
-    </Animated.View>
+    </ReAnimatedBox>
   )
 }
 

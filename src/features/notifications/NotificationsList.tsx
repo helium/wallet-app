@@ -13,6 +13,7 @@ import { Notification, useNotificationsQuery } from '../../generated/graphql'
 import { useGetNotificationsQuery } from '../../store/slices/walletRestApi'
 import { heliumAddressToSolAddress } from '../../utils/accountUtils'
 import NotificationListItem from './NotificationListItem'
+import FadeInOut from '../../components/FadeInOut'
 
 export type NotificationsListProps = {
   HeaderComponent: JSX.Element
@@ -116,17 +117,19 @@ const NotificationsList = ({
       }
 
       return (
-        <NotificationListItem
-          marginHorizontal="m"
-          borderTopStartRadius={isFirst ? 'xl' : undefined}
-          borderTopEndRadius={isFirst ? 'xl' : undefined}
-          borderBottomStartRadius={isLast ? 'xl' : undefined}
-          borderBottomEndRadius={isLast ? 'xl' : undefined}
-          notification={item}
-          viewed={viewed}
-          hasDivider={!isLast || (isFirst && section.data.length !== 1)}
-          onPress={onItemSelected}
-        />
+        <FadeInOut>
+          <NotificationListItem
+            marginHorizontal="m"
+            borderTopStartRadius={isFirst ? 'xl' : undefined}
+            borderTopEndRadius={isFirst ? 'xl' : undefined}
+            borderBottomStartRadius={isLast ? 'xl' : undefined}
+            borderBottomEndRadius={isLast ? 'xl' : undefined}
+            notification={item}
+            viewed={viewed}
+            hasDivider={!isLast || (isFirst && section.data.length !== 1)}
+            onPress={onItemSelected}
+          />
+        </FadeInOut>
       )
     },
     [lastViewedTimestamp, navigator, setSelectedNotification],
@@ -134,31 +137,35 @@ const NotificationsList = ({
 
   const EmptyListView = useCallback(
     () => (
-      <Box alignItems="center">
-        <Text color="primaryText" marginTop="xl">
-          {t('notifications.emptyTitle')}
-        </Text>
-      </Box>
+      <FadeInOut>
+        <Box alignItems="center">
+          <Text color="primaryText" marginTop="xl">
+            {t('notifications.emptyTitle')}
+          </Text>
+        </Box>
+      </FadeInOut>
     ),
     [t],
   )
 
   const renderSectionHeader = useCallback(
     ({ section: { title: sectionTitle, icon } }) => (
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        paddingTop="xl"
-        paddingBottom="m"
-        paddingHorizontal="l"
-        backgroundColor="primaryBackground"
-        justifyContent="center"
-      >
-        {icon !== undefined && icon}
-        <Text variant="body2" textAlign="center" color="secondaryText">
-          {sectionTitle}
-        </Text>
-      </Box>
+      <FadeInOut>
+        <Box
+          flexDirection="row"
+          alignItems="center"
+          paddingTop="xl"
+          paddingBottom="m"
+          paddingHorizontal="l"
+          backgroundColor="primaryBackground"
+          justifyContent="center"
+        >
+          {icon !== undefined && icon}
+          <Text variant="body2" textAlign="center" color="secondaryText">
+            {sectionTitle}
+          </Text>
+        </Box>
+      </FadeInOut>
     ),
     [],
   )
@@ -167,9 +174,9 @@ const NotificationsList = ({
 
   return (
     <Box flex={1}>
+      {HeaderComponent}
       <SectionList
         keyExtractor={keyExtractor}
-        ListHeaderComponent={HeaderComponent}
         ListFooterComponent={FooterComponent}
         renderSectionHeader={renderSectionHeader}
         contentContainerStyle={contentContainer}
