@@ -108,6 +108,8 @@ const AccountSlider = () => {
     [data, onIconSelected, selectedList],
   )
 
+  const keyExtractor = useCallback((item) => item || '', [])
+
   return (
     <Box marginBottom="l" marginTop="m">
       <Carousel
@@ -122,7 +124,7 @@ const AccountSlider = () => {
         sliderWidth={sliderWidth}
         itemWidth={72}
         inactiveSlideScale={1}
-        keyExtractor={(item) => item || ''}
+        keyExtractor={keyExtractor}
       />
     </Box>
   )
