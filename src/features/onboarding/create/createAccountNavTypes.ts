@@ -6,7 +6,7 @@ export type CreateAccountStackParamList = {
   AccountCreateStartScreen: undefined
   AccountCreatePassphraseScreen: undefined
   AccountEnterPassphraseScreen: undefined
-  AccountAssignScreen: undefined
+  AccountAssignScreen: undefined | { secureAccount?: SecureAccount }
   AccountCreatePinScreen:
     | {
         pinReset?: boolean

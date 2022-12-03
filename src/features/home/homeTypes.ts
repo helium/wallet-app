@@ -21,7 +21,15 @@ export type BurnRouteParam = {
 export type HomeStackParamList = {
   AccountsScreen: undefined
   AccountTokenScreen: { tokenType: TokenType }
-  AccountAssignScreen: undefined
+  AccountAssignScreen:
+    | undefined
+    | {
+        secureAccount?: {
+          mnemonic: string[]
+          keypair: { pk: string; sk: string }
+          address: string
+        }
+      }
   ConfirmPin: {
     action: 'payment'
   }
@@ -36,7 +44,7 @@ export type HomeStackParamList = {
   SettingsNavigator: undefined
   AddNewContact: undefined
   LinkWallet: LinkWalletRequest
-  SignHotspot: SignHotspotRequest
+  SignHotspot: SignHotspotRequest & { submit?: boolean }
   AddNewAccountNavigator: undefined
   ReImportAccountNavigator:
     | undefined

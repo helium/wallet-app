@@ -1,7 +1,7 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Linking } from 'react-native'
+import { ActivityIndicator, Linking } from 'react-native'
 import { AddGateway, Location, Transfer } from '@helium/react-native-sdk'
 import animalHash from 'angry-purple-tiger'
 import { useAsync } from 'react-async-hook'
@@ -11,6 +11,7 @@ import {
   SignHotspotResponse,
   createSignHotspotCallbackUrl,
 } from '@helium/wallet-link'
+import Toast from 'react-native-simple-toast'
 import Box from '../../components/Box'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import Text from '../../components/Text'
@@ -20,21 +21,33 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import AccountIcon from '../../components/AccountIcon'
 import { formatAccountAlias } from '../../utils/accountUtils'
 import { getKeypair } from '../../storage/secureStorage'
+import { useSubmitTxnMutation } from '../../generated/graphql'
+import { useColors } from '../../theme/themeHooks'
+import * as Logger from '../../utils/logger'
 
 type Route = RouteProp<HomeStackParamList, 'SignHotspot'>
 const SignHotspot = () => {
   const {
-    params: { token, addGatewayTxn, assertLocationTxn, transferHotspotTxn } = {
+    params: {
+      token,
+      addGatewayTxn,
+      assertLocationTxn,
+      transferHotspotTxn,
+      submit,
+    } = {
       token: '',
       addGatewayTxn: '',
       assertLocationTxn: '',
       transferHotspotTxn: '',
+      submit: false,
     },
   } = useRoute<Route>()
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const [validated, setValidated] = useState<boolean>()
   const { accounts } = useAccountStorage()
+  const { surfaceContrastText } = useColors()
+  const [submitTxnMutation, { loading: submitLoading }] = useSubmitTxnMutation()
 
   const linkInvalid = useMemo(() => {
     return !addGatewayTxn && !assertLocationTxn && !transferHotspotTxn
@@ -91,6 +104,30 @@ const SignHotspot = () => {
   const handleLink = useCallback(async () => {
     if (!parsedToken) return
 
+    if (submit) {
+      // submitting signed transaction from hotspot app
+      const txn = assertLocationTxn || transferHotspotTxn
+      const txnObject = locationTxn || transferTxn
+
+      try {
+        if (!txn) throw new Error('no transaction')
+
+        await submitTxnMutation({
+          variables: {
+            address: parsedToken.address,
+            txn,
+            txnJson: JSON.stringify(txnObject),
+          },
+        })
+        Toast.show(t('generic.submitSuccess'))
+      } catch (e) {
+        Logger.error(e)
+        Toast.show(t('generic.somethingWentWrong'))
+      }
+      navigation.goBack()
+      return
+    }
+
     try {
       const ownerKeypair = await getKeypair(parsedToken.address || '')
 
@@ -144,11 +181,17 @@ const SignHotspot = () => {
       // Logger.error(e)
     }
   }, [
+    assertLocationTxn,
     callback,
     gatewayAddress,
     gatewayTxn,
     locationTxn,
+    navigation,
     parsedToken,
+    submit,
+    submitTxnMutation,
+    t,
+    transferHotspotTxn,
     transferTxn,
   ])
 
@@ -345,6 +388,7 @@ const SignHotspot = () => {
           backgroundColor="secondary"
           borderRadius="round"
           onPress={handleCancel}
+          disabled={submitLoading}
         >
           <Text variant="subtitle1" textAlign="center" color="primaryText">
             {t('generic.cancel')}
@@ -357,7 +401,9 @@ const SignHotspot = () => {
           justifyContent="center"
           borderRadius="round"
           onPress={handleLink}
-          disabled={!validated}
+          disabled={!validated || submitLoading}
+          flexDirection="row"
+          alignItems="center"
         >
           <Text
             variant="subtitle1"
@@ -366,6 +412,11 @@ const SignHotspot = () => {
           >
             {t('generic.confirm')}
           </Text>
+          {submitLoading && (
+            <Box marginLeft="s">
+              <ActivityIndicator color={surfaceContrastText} />
+            </Box>
+          )}
         </TouchableOpacityBox>
       </Box>
     </SafeAreaBox>

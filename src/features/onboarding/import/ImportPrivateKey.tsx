@@ -13,7 +13,10 @@ import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import { RootNavigationProp } from '../../../navigation/rootTypes'
 import { OnboardingStackParamList } from '../onboardingTypes'
 import { useOnboarding } from '../OnboardingProvider'
-import { createSecureAccount } from '../../../storage/secureStorage'
+import {
+  createSecureAccount,
+  SecureAccount,
+} from '../../../storage/secureStorage'
 import * as Logger from '../../../utils/logger'
 import ButtonPressable from '../../../components/ButtonPressable'
 import Box from '../../../components/Box'
@@ -29,6 +32,7 @@ const ImportPrivateKey = () => {
   const privateKey = route.params.key
   const { setOnboardingData } = useOnboarding()
   const [publicKey, setPublicKey] = useState<string>()
+  const [secureAccount, setSecureAccount] = useState<SecureAccount>()
   const [error, setError] = useState(false)
 
   const decodePrivateKey = useCallback(
@@ -44,14 +48,15 @@ const ImportPrivateKey = () => {
         )
         const seedBuffer = Buffer.from(seedBase64, 'base64')
         const mnemonic = Mnemonic.fromEntropy(seedBuffer)
-        const secureAccount = await createSecureAccount({
+        const account = await createSecureAccount({
           givenMnemonic: mnemonic,
           netType: MAINNET,
           use24Words: true,
         })
-        setPublicKey(secureAccount.address)
+        setSecureAccount(account)
+        setPublicKey(account.address)
         setOnboardingData((prev) => {
-          return { ...prev, secureAccount }
+          return { ...prev, secureAccount: account }
         })
       } catch (e) {
         setError(true)
@@ -79,7 +84,12 @@ const ImportPrivateKey = () => {
     if (hasAccounts) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      navigation.replace('HomeNavigator', { screen: 'AccountAssignScreen' })
+      navigation.replace('HomeNavigator', {
+        screen: 'AccountAssignScreen',
+        params: {
+          secureAccount,
+        },
+      })
     } else {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -87,10 +97,13 @@ const ImportPrivateKey = () => {
         screen: 'CreateAccount',
         params: {
           screen: 'AccountAssignScreen',
+          params: {
+            secureAccount,
+          },
         },
       })
     }
-  }, [hasAccounts, navigation])
+  }, [hasAccounts, navigation, secureAccount])
 
   const onChangeText = useCallback(
     async (text: string) => {

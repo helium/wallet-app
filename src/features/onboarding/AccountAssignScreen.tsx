@@ -1,5 +1,5 @@
-import React, { memo, useCallback, useState } from 'react'
-import { useNavigation } from '@react-navigation/native'
+import React, { memo, useCallback, useMemo, useState } from 'react'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -16,9 +16,12 @@ import { accountNetType } from '../../utils/accountUtils'
 import Text from '../../components/Text'
 import { ImportAccountNavigationProp } from './import/importAccountNavTypes'
 import { CreateAccountNavigationProp } from './create/createAccountNavTypes'
-import { HomeNavigationProp } from '../home/homeTypes'
+import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
+
+type Route = RouteProp<HomeStackParamList, 'AccountAssignScreen'>
 
 const AccountAssignScreen = () => {
+  const route = useRoute<Route>()
   const onboardingNav = useNavigation<
     ImportAccountNavigationProp & CreateAccountNavigationProp
   >()
@@ -36,18 +39,22 @@ const AccountAssignScreen = () => {
     useAccountStorage()
   const [setAsDefault, toggleSetAsDefault] = useState(false)
 
+  const account = useMemo(() => {
+    return secureAccount || route?.params?.secureAccount
+  }, [route, secureAccount])
+
   const handlePress = useCallback(async () => {
-    if (!secureAccount) return
+    if (!account) return
 
     if (hasAccounts) {
       try {
         await upsertAccount({
           alias,
-          address: secureAccount.address,
-          secureAccount,
+          address: account.address,
+          secureAccount: account,
         })
         if (setAsDefault) {
-          await updateDefaultAccountAddress(secureAccount.address)
+          await updateDefaultAccountAddress(account.address)
         }
         homeNav.replace('AccountsScreen')
         reset()
@@ -61,13 +68,13 @@ const AccountAssignScreen = () => {
     onboardingNav.navigate('AccountCreatePinScreen', {
       pinReset: false,
       account: {
-        ...secureAccount,
+        ...account,
         alias,
-        netType: accountNetType(secureAccount.address),
+        netType: accountNetType(account.address),
       },
     })
   }, [
-    secureAccount,
+    account,
     hasAccounts,
     onboardingNav,
     alias,
@@ -113,7 +120,7 @@ const AccountAssignScreen = () => {
             marginTop="xl"
             flexDirection="row"
           >
-            <AccountIcon size={40} address={secureAccount?.address} />
+            <AccountIcon size={40} address={account?.address} />
             <TextInput
               textColor="primaryText"
               onChangeText={setAlias}
