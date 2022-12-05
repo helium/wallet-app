@@ -77,9 +77,7 @@ const ActivityDetailsScreen = () => {
 
     if (
       tokenTransfers?.length &&
-      tokenTransfers[0].tokenMetadata &&
-      tokenTransfers[0].tokenMetadata.json &&
-      tokenTransfers[0].tokenMetadata.json.image
+      tokenTransfers[0].tokenMetadata?.json?.image
     ) {
       return (
         <ImageBox

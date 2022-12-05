@@ -4,6 +4,7 @@ import { EnrichedTransaction } from 'src/types/solana'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
+import { Edge } from 'react-native-safe-area-context'
 import { useColors, useSpacing } from '../../theme/themeHooks'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import Box from '../../components/Box'
@@ -116,6 +117,8 @@ const ActivityScreen = () => {
     [navigation],
   )
 
+  const safeEdges = useMemo(() => ['top'] as Edge[], [])
+
   const renderItem = useCallback(
     ({ item, index, section }) => {
       const firstItem = index === 0
@@ -151,7 +154,7 @@ const ActivityScreen = () => {
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
-      <SafeAreaBox edges={['top']}>
+      <SafeAreaBox edges={safeEdges}>
         <SectionList
           contentContainerStyle={contentContainer}
           sections={SectionData}
