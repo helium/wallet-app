@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react'
+import { format } from 'date-fns'
 import Text from '../../components/Text'
 import Box from '../../components/Box'
 import TouchableOpacityBox, {
@@ -31,13 +32,7 @@ const NotificationListItem = ({
     const date = new Date(notification.time)
     // To local time
     date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
-    // Get hours with leading zero
-    const hours = (date.getHours() % 12 || 12).toString().padStart(2, '0')
-    // Get minutes with trailing 0
-    const minutes = date.getMinutes().toString().padEnd(2, '0')
-    // Get AM/PM
-    const ampm = date.getHours() >= 12 ? 'PM' : 'AM'
-    return `${hours}:${minutes} ${ampm}`
+    return format(date, 'hh:mm a')
   }, [notification.time])
 
   return (
