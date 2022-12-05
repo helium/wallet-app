@@ -18,11 +18,15 @@ const useCollectables = (): WalletCollectables & { refresh: () => void } => {
   const collectables = useSelector((state: RootState) => state.collectables)
 
   const refresh = useCallback(() => {
-    if (!currentAccount?.solanaAddress || l1Network !== 'solana') {
+    if (
+      !currentAccount?.solanaAddress ||
+      l1Network !== 'solana' ||
+      collectables.loading
+    ) {
       return
     }
     dispatch(fetchCollectables({ account: currentAccount, cluster }))
-  }, [cluster, currentAccount, dispatch, l1Network])
+  }, [cluster, collectables.loading, currentAccount, dispatch, l1Network])
 
   useEffect(() => {
     if (!currentAccount?.solanaAddress) return

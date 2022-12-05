@@ -97,7 +97,7 @@ const TokenSelector = forwardRef(
             Icon={item.icon}
             onPress={handleTokenPress(item.value)}
             selected={item.value === currentToken}
-            marginHorizontal="l"
+            marginLeft="l"
             hasDivider={false}
           />
         )

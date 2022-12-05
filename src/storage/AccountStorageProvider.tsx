@@ -12,6 +12,9 @@ import { useAsync } from 'react-async-hook'
 import * as SecureStore from 'expo-secure-store'
 import { NetTypes as NetType, NetTypes } from '@helium/address'
 import { useAppState } from '@react-native-community/hooks'
+import { AccountFetchCache } from '@helium/spl-utils'
+import { Transaction } from '@solana/web3.js'
+import { AnchorProvider, Wallet } from '@project-serum/anchor'
 import {
   accountNetType,
   AccountNetTypeOpt,
@@ -20,6 +23,7 @@ import {
 import {
   createSecureAccount,
   deleteSecureAccount,
+  getSolanaKeypair,
   SecureAccount,
   signoutSecureStore,
   storeSecureAccount,
@@ -41,17 +45,22 @@ import { useAppStorage } from './AppStorageProvider'
 import { useAppDispatch } from '../store/store'
 import makeApiToken from '../utils/makeApiToken'
 import { authSlice } from '../store/slices/authSlice'
+import { getConnection } from '../utils/solanaUtils'
 
 const useAccountStorageHook = () => {
   const [currentAccount, setCurrentAccount] = useState<
     CSAccount | null | undefined
   >(undefined)
+  const [cache, setCache] = useState<AccountFetchCache>()
   const [accounts, setAccounts] = useState<CSAccounts>()
   const [contacts, setContacts] = useState<CSAccount[]>([])
   const [defaultAccountAddress, setDefaultAccountAddress] = useState<string>()
+  const [anchorProvider, setAnchorProvider] = useState<
+    AnchorProvider | undefined
+  >()
   const solanaAccountsUpdateComplete = useRef(false)
   const solanaContactsUpdateComplete = useRef(false)
-  const { updateL1Network, l1Network } = useAppStorage()
+  const { updateL1Network, l1Network, solanaNetwork: cluster } = useAppStorage()
   const dispatch = useAppDispatch()
   const currentAppState = useAppState()
 
@@ -104,6 +113,35 @@ const useAccountStorageHook = () => {
     () => sortedAccounts.filter(({ netType }) => netType === NetType.MAINNET),
     [sortedAccounts],
   )
+
+  useAsync(async () => {
+    const connection = getConnection(cluster)
+
+    if (!currentAccount || !currentAccount.address || !connection) return
+    const secureAcct = await getSolanaKeypair(currentAccount.address)
+
+    if (!secureAcct) return
+
+    const anchorWallet = {
+      publicKey: secureAcct?.publicKey,
+      signAllTransactions: async (transactions: Transaction[]) => {
+        return transactions.map((tx) => {
+          tx.partialSign(secureAcct)
+          return tx
+        })
+      },
+      signTransaction: async (transaction: Transaction) => {
+        transaction.partialSign(secureAcct)
+        return transaction
+      },
+    } as Wallet
+
+    setAnchorProvider(
+      new AnchorProvider(connection, anchorWallet, {
+        preflightCommitment: 'confirmed',
+      }),
+    )
+  }, [currentAccount])
 
   useEffect(() => {
     // Ensure all accounts have solana address
@@ -399,6 +437,23 @@ const useAccountStorageHook = () => {
     ],
   )
 
+  useEffect(() => {
+    const connection = getConnection(cluster)
+    if (connection) {
+      cache?.close()
+      setCache((c) =>
+        !c
+          ? new AccountFetchCache({
+              connection,
+              delay: 50,
+              commitment: 'confirmed',
+              extendConnection: true,
+            })
+          : c,
+      )
+    }
+  }, [cache, cluster])
+
   return {
     accountAddresses,
     accounts,
@@ -423,6 +478,8 @@ const useAccountStorageHook = () => {
     updateDefaultAccountAddress,
     upsertAccount,
     upsertAccounts,
+    cache,
+    anchorProvider,
   }
 }
 
@@ -454,6 +511,8 @@ const initialState = {
   sortedTestnetAccounts: [],
   upsertAccount: async () => undefined,
   upsertAccounts: async () => undefined,
+  cache: undefined,
+  anchorProvider: undefined,
 }
 
 const AccountStorageContext =

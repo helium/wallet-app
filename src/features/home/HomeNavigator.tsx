@@ -1,8 +1,8 @@
 import React, { memo } from 'react'
 import {
-  createStackNavigator,
-  StackNavigationOptions,
-} from '@react-navigation/stack'
+  createNativeStackNavigator,
+  NativeStackNavigationOptions,
+} from '@react-navigation/native-stack'
 import AccountAssignScreen from '../onboarding/AccountAssignScreen'
 import AccountsScreen from '../account/AccountsScreen'
 import PaymentScreen from '../payment/PaymentScreen'
@@ -23,21 +23,22 @@ import AddNewAccountNavigator from './addNewAccount/AddNewAccountNavigator'
 import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
 import BurnScreen from '../burn/BurnScreen'
 import ImportPrivateKey from '../onboarding/import/ImportPrivateKey'
-import AccountCollectionScreen from '../account/AccountCollectionScreen'
-import AccountCollectableScreen from '../account/AccountCollectableScreen'
 
-const HomeStack = createStackNavigator()
+const HomeStack = createNativeStackNavigator()
 
 const screenOptions = {
   presentation: 'modal',
-} as StackNavigationOptions
+} as NativeStackNavigationOptions
 
 const navigatorScreenOptions = {
+  animationTypeForReplace: 'push',
   presentation: 'modal',
   headerShown: false,
-} as StackNavigationOptions
+} as NativeStackNavigationOptions
 
-const cardPresentation = { presentation: 'card' } as StackNavigationOptions
+const cardPresentation = {
+  presentation: 'card',
+} as NativeStackNavigationOptions
 
 const HomeStackScreen = () => {
   return (
@@ -48,18 +49,6 @@ const HomeStackScreen = () => {
         component={AccountTokenScreen}
         options={cardPresentation}
       />
-      <HomeStack.Screen
-        name="AccountCollectionScreen"
-        component={AccountCollectionScreen}
-        options={cardPresentation}
-      />
-
-      <HomeStack.Screen
-        name="AccountCollectableScreen"
-        component={AccountCollectableScreen}
-        options={cardPresentation}
-      />
-
       <HomeStack.Screen
         name="AccountAssignScreen"
         component={AccountAssignScreen}

@@ -32,12 +32,6 @@ export type HomeStackParamList = {
           address: string
         }
       }
-  AccountCollectionScreen: {
-    collection: Collectable[]
-  }
-  AccountCollectableScreen: {
-    collectable: Collectable
-  }
   ConfirmPin: {
     action: 'payment'
   }

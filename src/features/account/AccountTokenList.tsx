@@ -12,9 +12,6 @@ import { times } from 'lodash'
 import { FlatList } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useBalance } from '../../utils/Balance'
-import Box from '../../components/Box'
-import useCollectables from '../../utils/useCollectables'
-import CollectableListItem, { CollectableSkeleton } from './CollectableListItem'
 import TokenListItem, { TokenSkeleton } from './TokenListItem'
 
 type Token = {
@@ -25,12 +22,9 @@ type Token = {
 
 type Props = {
   loading?: boolean
-  tokenType: SplTokenType
 }
 
-export type SplTokenType = 'tokens' | 'collectables'
-
-const AccountTokenList = ({ loading = false, tokenType }: Props) => {
+const AccountTokenList = ({ loading = false }: Props) => {
   const {
     dcBalance,
     mobileBalance,
@@ -41,21 +35,11 @@ const AccountTokenList = ({ loading = false, tokenType }: Props) => {
     updating: updatingTokens,
   } = useBalance()
   const { bottom } = useSafeAreaInsets()
-  const {
-    collectables,
-    collectablesWithMeta,
-    loading: loadingCollectables,
-  } = useCollectables()
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
 
-  const showCollectables = useMemo(
-    () => tokenType === 'collectables',
-    [tokenType],
-  )
-
   const tokens = useMemo(() => {
-    if (loading || showCollectables) {
+    if (loading) {
       return []
     }
 
@@ -108,64 +92,33 @@ const AccountTokenList = ({ loading = false, tokenType }: Props) => {
     networkBalance,
     networkStakedBalance,
     secBalance,
-    showCollectables,
     solBalance,
   ])
-
-  const flatListItems = useMemo(() => {
-    const toks = !showCollectables ? tokens : []
-    const cols = showCollectables ? Object.keys(collectablesWithMeta) : []
-
-    return [...toks, ...cols]
-  }, [collectablesWithMeta, showCollectables, tokens])
 
   const renderItem = useCallback(
     ({
       item: token,
     }: {
       // eslint-disable-next-line react/no-unused-prop-types
-      item:
-        | {
-            type: Ticker
-            balance: Balance<AnyCurrencyType>
-            staked: boolean
-          }
-        | string
-    }) => {
-      if (typeof token === 'string') {
-        return (
-          <CollectableListItem
-            item={token}
-            collectables={collectablesWithMeta}
-          />
-        )
+      item: {
+        type: Ticker
+        balance: Balance<AnyCurrencyType>
+        staked: boolean
       }
-
-      const currencyType = token as Token
+    }) => {
       return (
         <TokenListItem
-          ticker={currencyType.type}
-          balance={currencyType.balance}
-          staked={currencyType.staked}
+          ticker={token.type}
+          balance={token.balance}
+          staked={token.staked}
         />
       )
     },
-    [collectablesWithMeta],
+    [],
   )
 
   const renderFooter = useCallback(() => {
-    if (!(updatingTokens || loading) && !showCollectables) return null
-    if (!loadingCollectables && showCollectables) return null
-
-    if (loadingCollectables && showCollectables) {
-      return (
-        <Box flex={1} flexDirection="row">
-          {times(Object.keys(collectables).length).map((i) => (
-            <CollectableSkeleton key={i} />
-          ))}
-        </Box>
-      )
-    }
+    if (!(updatingTokens || loading)) return null
 
     return (
       <>
@@ -174,13 +127,7 @@ const AccountTokenList = ({ loading = false, tokenType }: Props) => {
         ))}
       </>
     )
-  }, [
-    collectables,
-    loading,
-    loadingCollectables,
-    showCollectables,
-    updatingTokens,
-  ])
+  }, [loading, updatingTokens])
 
   const keyExtractor = useCallback((item: Token | string) => {
     if (typeof item === 'string') {
@@ -203,15 +150,15 @@ const AccountTokenList = ({ loading = false, tokenType }: Props) => {
 
   return (
     <FlatList
-      data={flatListItems}
+      data={tokens}
       scrollEnabled={false}
       numColumns={2}
       columnWrapperStyle={{
-        flexDirection: !showCollectables ? 'column' : 'row',
+        flexDirection: 'column',
       }}
       contentContainerStyle={contentContainerStyle}
       renderItem={renderItem}
-      ListFooterComponent={renderFooter}
+      ListEmptyComponent={renderFooter}
       keyExtractor={keyExtractor}
     />
   )

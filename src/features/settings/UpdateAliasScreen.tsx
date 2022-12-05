@@ -59,13 +59,15 @@ const UpdateAliasScreen = () => {
             <AccountIcon size={40} address={currentAccount?.address || ''} />
             <TextInput
               textColor="primaryText"
-              onChangeText={setAlias}
-              value={alias}
+              textInputProps={{
+                onChangeText: setAlias,
+                value: alias,
+                placeholder: currentAccount?.alias,
+                autoCorrect: false,
+                autoComplete: 'off',
+                autoCapitalize: 'words',
+              }}
               fontSize={24}
-              placeholder={currentAccount?.alias}
-              autoCorrect={false}
-              autoComplete="off"
-              autoCapitalize="words"
               marginLeft="m"
               marginRight="xl"
             />

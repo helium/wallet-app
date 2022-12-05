@@ -83,21 +83,23 @@ const PassphraseAutocomplete = ({
     <>
       <Box marginHorizontal="l">
         <TextInput
-          placeholder={t('accountImport.wordEntry.placeholder', {
-            ordinal,
-          })}
+          textInputProps={{
+            placeholder: t('accountImport.wordEntry.placeholder', {
+              ordinal,
+            }),
+            onChangeText,
+            onSubmitEditing: handleSubmit,
+            value: word,
+            keyboardAppearance: 'dark',
+            autoCorrect: false,
+            autoComplete: 'off',
+            blurOnSubmit: false,
+            returnKeyType: 'next',
+            autoFocus: true,
+            autoCapitalize: 'characters',
+          }}
           variant="underline"
-          onChangeText={onChangeText}
-          onSubmitEditing={handleSubmit}
-          value={word}
-          keyboardAppearance="dark"
-          autoCorrect={false}
-          autoComplete="off"
-          blurOnSubmit={false}
-          returnKeyType="next"
           marginBottom="s"
-          autoFocus
-          autoCapitalize="characters"
           style={inputStyle}
         />
 

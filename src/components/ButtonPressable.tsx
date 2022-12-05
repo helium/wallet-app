@@ -1,7 +1,12 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { BoxProps } from '@shopify/restyle'
 import React, { FC, memo, useCallback } from 'react'
-import { GestureResponderEvent, Pressable, StyleSheet } from 'react-native'
+import {
+  GestureResponderEvent,
+  Pressable,
+  StyleSheet,
+  ViewStyle,
+} from 'react-native'
 import { SvgProps } from 'react-native-svg'
 import { useDebouncedCallback } from 'use-debounce'
 import { Color, FontWeight, Theme } from '../theme/theme'
@@ -30,6 +35,8 @@ type Props = BoxProps<Theme> & {
   disabled?: boolean
   selected?: boolean
   debounceDuration?: number
+  style?: ViewStyle
+  TrailingComponent?: React.ReactNode
 }
 
 const ButtonPressable = ({
@@ -55,6 +62,7 @@ const ButtonPressable = ({
   padding,
   debounceDuration,
   height = 60,
+  TrailingComponent,
   ...boxProps
 }: Props) => {
   const debouncedHandler = useDebouncedCallback(
@@ -175,6 +183,7 @@ const ButtonPressable = ({
               </Text>
             )}
             {Icon && <Icon color={getIconColor(pressed)} />}
+            {TrailingComponent && TrailingComponent}
           </Box>
         )}
       </Pressable>

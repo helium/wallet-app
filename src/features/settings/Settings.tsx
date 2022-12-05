@@ -410,17 +410,24 @@ const Settings = () => {
       },
     ]
     if (l1Network === 'solana') {
+      const items = [
+        { label: 'Devnet', value: 'devnet' },
+        { label: 'Testnet', value: 'testnet', disabled: true },
+        { label: 'Mainnet-Beta', value: 'mainnet-beta', disabled: true },
+      ]
+
+      if (__DEV__) {
+        // push the localnet option to the front of the list
+        items.unshift({ label: 'Localnet', value: 'localnet' })
+      }
+
       devData = [
         ...devData,
         {
           title: t('settings.sections.dev.solanaNetwork.title'),
           value: solanaNetwork,
           select: {
-            items: [
-              { label: 'Devnet', value: 'devnet' },
-              { label: 'Testnet', value: 'testnet', disabled: true },
-              { label: 'Mainnet-Beta', value: 'mainnet-beta', disabled: true },
-            ],
+            items,
             onValueSelect: handleSolanaNetworkChange,
           },
         },

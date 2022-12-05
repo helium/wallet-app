@@ -1,18 +1,19 @@
 import React, { useCallback } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { Image } from 'react-native'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
+import { FadeIn, FadeOut } from 'react-native-reanimated'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { HomeNavigationProp } from '../home/homeTypes'
+import { CollectableNavigationProp } from './collectablesTypes'
 import { useBorderRadii } from '../../theme/themeHooks'
 import { Collectable } from '../../types/solana'
 import { ww } from '../../utils/layout'
 import CircleLoader from '../../components/CircleLoader'
+import { ReAnimatedBox } from '../../components/AnimatedBox'
 
 const COLLECTABLE_HEIGHT = ww / 2
-const CollectableListItem = ({
+const NftListItem = ({
   item,
   collectables,
 }: {
@@ -21,16 +22,17 @@ const CollectableListItem = ({
 }) => {
   const { lm } = useBorderRadii()
   const { json } = collectables[item][0]
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<CollectableNavigationProp>()
 
   const handleCollectableNavigation = useCallback(
     (collection: Collectable[]) => () => {
       if (collection.length > 1) {
-        navigation.navigate('AccountCollectionScreen', {
+        navigation.navigate('CollectionScreen', {
           collection,
         })
-      } else {
-        navigation.navigate('AccountCollectableScreen', {
+      } else if (collection[0]?.json?.image) {
+        // TODO: Cache image so we don't need to fetch uri in all the different nft screens
+        navigation.navigate('NftDetailsScreen', {
           collectable: collection[0],
         })
       }
@@ -39,13 +41,13 @@ const CollectableListItem = ({
   )
 
   return (
-    <Animated.View style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
+    <ReAnimatedBox style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
       <TouchableOpacityBox
         marginHorizontal="s"
         marginVertical="s"
         alignItems="center"
-        backgroundColor="surface"
-        borderRadius="m"
+        backgroundColor="black800"
+        borderRadius="xxl"
         onPress={handleCollectableNavigation(collectables[item])}
       >
         <Image
@@ -53,32 +55,35 @@ const CollectableListItem = ({
           style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
           source={{
             uri: json?.image,
+            cache: 'force-cache',
           }}
         />
         <Box
-          backgroundColor="black"
-          borderRadius="s"
           padding="s"
           position="absolute"
-          bottom={8}
-          left={8}
+          justifyContent="center"
+          alignItems="center"
+          backgroundColor="white"
+          borderRadius="round"
+          bottom={20}
+          right={16}
           flexDirection="row"
         >
-          <Text variant="body2" fontWeight="bold" color="white" marginRight="s">
+          <Text variant="body2" fontWeight="bold" color="black" marginRight="s">
             {item}
           </Text>
-          <Text variant="body2" fontWeight="bold" color="grey600">
+          <Text variant="body2" fontWeight="bold" color="black600">
             {collectables[item].length}
           </Text>
         </Box>
       </TouchableOpacityBox>
-    </Animated.View>
+    </ReAnimatedBox>
   )
 }
 
 export const CollectableSkeleton = () => {
   return (
-    <Animated.View style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
+    <ReAnimatedBox style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
       <TouchableOpacityBox
         marginHorizontal="s"
         marginVertical="s"
@@ -86,7 +91,7 @@ export const CollectableSkeleton = () => {
       >
         <Box
           backgroundColor="surface"
-          borderRadius="m"
+          borderRadius="xl"
           height={COLLECTABLE_HEIGHT}
           width="100%"
           justifyContent="center"
@@ -95,8 +100,8 @@ export const CollectableSkeleton = () => {
           <CircleLoader loaderSize={80} />
         </Box>
       </TouchableOpacityBox>
-    </Animated.View>
+    </ReAnimatedBox>
   )
 }
 
-export default CollectableListItem
+export default NftListItem

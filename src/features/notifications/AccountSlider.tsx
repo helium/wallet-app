@@ -23,6 +23,7 @@ const AccountSlider = () => {
     openedNotification,
     setOpenedNotification,
   } = useNotificationStorage()
+
   const { sortedAccounts } = useAccountStorage()
 
   const data = useMemo(() => {
@@ -79,7 +80,7 @@ const AccountSlider = () => {
 
   const onSnap = useCallback(
     async (index: number) => {
-      await updateSelectedList(data[index])
+      updateSelectedList(data[index])
     },
     [data, updateSelectedList],
   )
@@ -94,18 +95,22 @@ const AccountSlider = () => {
       else icon = <AccountIcon address={item} size={56} />
       return (
         <AccountSliderIcon
+          key={item}
           resource={item}
           icon={icon}
           index={index}
           onPress={onIconSelected}
+          selected={selectedList === data[index]}
         />
       )
     },
-    [onIconSelected],
+    [data, onIconSelected, selectedList],
   )
 
+  const keyExtractor = useCallback((item) => item || '', [])
+
   return (
-    <Box height={56} marginBottom="l" marginTop="m">
+    <Box marginBottom="l" marginTop="m">
       <Carousel
         ref={carouselRef}
         firstItem={selectedList ? data.indexOf(selectedList) : 0}
@@ -118,6 +123,7 @@ const AccountSlider = () => {
         sliderWidth={sliderWidth}
         itemWidth={72}
         inactiveSlideScale={1}
+        keyExtractor={keyExtractor}
       />
     </Box>
   )

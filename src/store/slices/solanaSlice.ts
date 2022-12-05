@@ -10,6 +10,7 @@ import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
 import { Collectable, toMintAddress } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
+import { fetchCollectables } from './collectablesSlice'
 import { Mints, walletRestApi } from './walletRestApi'
 
 type Balances = {
@@ -138,10 +139,15 @@ export const makeCollectablePayment = createAsyncThunk(
       payee,
     )
 
+    // If the transfer is successful, we need to update the collectables
+    if (!transfer.txn?.meta?.err) {
+      dispatch(fetchCollectables({ account, cluster }))
+    }
+
     return dispatch(
       walletRestApi.endpoints.postPayment.initiate({
         txnSignature: transfer.signature,
-        cluster: 'devnet',
+        cluster,
       }),
     )
   },

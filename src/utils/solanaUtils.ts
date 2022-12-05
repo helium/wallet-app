@@ -8,20 +8,25 @@ import {
 } from '@solana/spl-token'
 import Balance, { AnyCurrencyType } from '@helium/currency'
 import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
+import axios from 'axios'
+import Config from 'react-native-config'
 import { getKeypair } from '../storage/secureStorage'
 import solInstructionsToActivity from './solInstructionsToActivity'
 import { Activity } from '../types/activity'
 import sleep from './sleep'
 import { Mints } from '../store/slices/walletRestApi'
-import { Collectable } from '../types/solana'
+import { Collectable, EnrichedTransaction } from '../types/solana'
+import * as Logger from './logger'
+import { WrappedConnection } from './WrappedConnection'
 
 const Connection = {
+  localnet: new web3.Connection('http://127.0.0.1:8899'),
   devnet: new web3.Connection(web3.clusterApiUrl('devnet')),
   testnet: new web3.Connection(web3.clusterApiUrl('testnet')),
   'mainnet-beta': new web3.Connection(web3.clusterApiUrl('mainnet-beta')),
 } as const
 
-const getConnection = (cluster: web3.Cluster) =>
+export const getConnection = (cluster: web3.Cluster) =>
   Connection[cluster] || Connection.devnet
 
 export const TXN_FEE_IN_LAMPORTS = 5000
@@ -267,15 +272,15 @@ export const onAccountChange = (
 export const onLogs = (
   cluster: web3.Cluster,
   address: string,
-  callback: (address: string) => void,
+  callback: (address: string, log: web3.Logs) => void,
 ) => {
   const account = new web3.PublicKey(address)
   return getConnection(cluster).onLogs(
     account,
-    () => {
-      callback(address)
+    (log) => {
+      callback(address, log)
     },
-    'confirmed',
+    'finalized',
   )
 }
 
@@ -340,7 +345,7 @@ export function createAssociatedTokenAccountInstruction(
   })
 }
 
-export const transferCollectable = async (
+export const createTransferCollectableMessage = async (
   cluster: web3.Cluster,
   solanaAddress: string,
   heliumAddress: string,
@@ -406,26 +411,139 @@ export const transferCollectable = async (
     ),
   )
 
-  const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash()
+  const { blockhash } = await conn.getLatestBlockhash()
 
-  const messageV0 = new web3.TransactionMessage({
+  const message = new web3.TransactionMessage({
     payerKey: payer,
     recentBlockhash: blockhash,
     instructions,
-  }).compileToV0Message()
+  }).compileToLegacyMessage()
 
-  const transaction = new web3.VersionedTransaction(messageV0)
+  return { message }
+}
 
-  transaction.sign([signer])
+export const transferCollectable = async (
+  cluster: web3.Cluster,
+  solanaAddress: string,
+  heliumAddress: string,
+  collectable: Collectable,
+  payee: string,
+) => {
+  const payer = new web3.PublicKey(solanaAddress)
+  try {
+    const secureAcct = await getKeypair(heliumAddress)
+    const conn = getConnection(cluster)
 
-  const signature = await conn.sendTransaction(transaction, {
-    maxRetries: 5,
-  })
+    if (!secureAcct) {
+      throw new Error('Secure account not found')
+    }
 
+    const signer = {
+      publicKey: payer,
+      secretKey: secureAcct.privateKey,
+    }
+
+    const recipientPubKey = new web3.PublicKey(payee)
+    const mintPubkey = new web3.PublicKey(collectable.mint.address)
+
+    const instructions: web3.TransactionInstruction[] = []
+
+    const ownerATA = await getAssociatedTokenAddress(
+      mintPubkey,
+      signer.publicKey,
+    )
+
+    if (!(await conn.getAccountInfo(ownerATA))) {
+      instructions.push(
+        createAssociatedTokenAccountInstruction(
+          ownerATA,
+          signer.publicKey,
+          signer.publicKey,
+          mintPubkey,
+        ),
+      )
+    }
+
+    const recipientATA = await getAssociatedTokenAddress(
+      mintPubkey,
+      recipientPubKey,
+    )
+
+    if (!(await conn.getAccountInfo(recipientATA))) {
+      instructions.push(
+        createAssociatedTokenAccountInstruction(
+          recipientATA,
+          signer.publicKey,
+          recipientPubKey,
+          mintPubkey,
+        ),
+      )
+    }
+
+    instructions.push(
+      createTransferCheckedInstruction(
+        ownerATA, // from (should be a token account)
+        mintPubkey, // mint
+        recipientATA, // to (should be a token account)
+        signer.publicKey, // from's owner
+        1, // amount
+        0, // decimals
+        [], // signers
+      ),
+    )
+
+    const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash()
+
+    const messageV0 = new web3.TransactionMessage({
+      payerKey: payer,
+      recentBlockhash: blockhash,
+      instructions,
+    }).compileToLegacyMessage()
+
+    const transaction = new web3.VersionedTransaction(
+      web3.VersionedMessage.deserialize(messageV0.serialize()),
+    )
+
+    transaction.sign([signer])
+
+    const signature = await conn.sendRawTransaction(transaction.serialize(), {
+      skipPreflight: true,
+      maxRetries: 5,
+    })
+
+    await conn.confirmTransaction(
+      { signature, blockhash, lastValidBlockHeight },
+      'finalized',
+    )
+
+    const txn = await getTxn(cluster, signature)
+
+    if (txn?.meta?.err) {
+      throw new Error(
+        typeof txn.meta.err === 'string'
+          ? txn.meta.err
+          : JSON.stringify(txn.meta.err),
+      )
+    }
+
+    return { signature, txn }
+  } catch (e) {
+    Logger.error(e)
+    throw new Error((e as Error).message)
+  }
+}
+
+export const confirmTransaction = async (
+  cluster: web3.Cluster,
+  signature: string,
+) => {
+  const conn = getConnection(cluster)
+  const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash()
   await conn.confirmTransaction(
     { signature, blockhash, lastValidBlockHeight },
     'finalized',
   )
+
   const txn = await getTxn(cluster, signature)
 
   if (txn?.meta?.err) {
@@ -447,10 +565,39 @@ export const getCollectables = async (
 ) => {
   const collectables = (await metaplex
     .nfts()
-    .findAllByOwner({ owner: pubKey })
-    .run()) as Metadata<JsonMetadata<string>>[]
+    .findAllByOwner({ owner: pubKey })) as Metadata<JsonMetadata<string>>[]
 
-  return collectables
+  // TODO: Remove this filter once the uri is fixed for HOTSPOTS
+  const filteredCollectables = collectables.filter(
+    (c) => c.symbol !== 'HOTSPOT',
+  )
+
+  return filteredCollectables
+}
+
+/**
+ * Returns the account's collectables
+ * @param pubKey public key of the account
+ * @param oldestCollectable starting point for the query
+ * @returns collectables
+ * TODO: Need to add pagination via oldest collectable param in collectables slice
+ */
+export const getCompressedCollectables = async (
+  pubKey: web3.PublicKey,
+  oldestCollectable?: string,
+) => {
+  // TODO: Replace with devnet when metaplex RPC is ready for all other txs to be sent to devnet
+  const conn = new WrappedConnection('https://rpc-devnet.aws.metaplex.com/')
+  const { items } = await conn.getAssetsByOwner(
+    pubKey.toString(),
+    'created',
+    100,
+    1,
+    oldestCollectable || '',
+    '',
+  )
+
+  return items as Metadata<JsonMetadata<string>>[]
 }
 
 /**
@@ -463,15 +610,26 @@ export const getCollectablesMetadata = async (
   collectables: Metadata<JsonMetadata<string>>[],
   metaplex: Metaplex,
 ) => {
+  // TODO: Remove this filter once the uri is fixed for HOTSPOTS
+  const filteredCollectables = collectables.filter(
+    (c) => c.symbol !== 'HOTSPOT',
+  )
   const collectablesWithMetadata = await Promise.all(
-    collectables.map(async (col) => {
-      const json = await (await fetch(col.uri)).json()
-      const metadata = await metaplex.nfts().load({ metadata: col }).run()
-      return { ...metadata, json }
+    filteredCollectables.map(async (col) => {
+      let json
+      try {
+        json = await (await fetch(col.uri)).json()
+
+        const metadata = await metaplex.nfts().load({ metadata: col })
+        return { ...metadata, json }
+      } catch (e) {
+        Logger.error(e)
+        return null
+      }
     }),
   )
 
-  return collectablesWithMetadata
+  return collectablesWithMetadata.filter((c) => c !== null) as Collectable[]
 }
 
 /**
@@ -502,7 +660,7 @@ export const groupCollectables = (
  */
 export const groupCollectablesWithMetaData = (collectables: Collectable[]) => {
   const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const { symbol } = cur.json as Collectable
+    const { symbol } = cur
     if (!acc[symbol]) {
       acc[symbol] = [cur]
     } else {
@@ -512,4 +670,132 @@ export const groupCollectablesWithMetaData = (collectables: Collectable[]) => {
   }, {} as Record<string, Collectable[]>)
 
   return collectablesGroupedByName
+}
+
+/**
+ *
+ * @param mint mint address
+ * @param metaplex metaplex connection
+ * @returns collectable
+ */
+export const getCollectableByMint = async (
+  mint: web3.PublicKey,
+  metaplex: Metaplex,
+): Promise<Collectable | null> => {
+  try {
+    const collectable = await metaplex.nfts().findByMint({ mintAddress: mint })
+    if (!collectable.json && collectable.uri) {
+      const json = await (await fetch(collectable.uri)).json()
+      return { ...collectable, json }
+    }
+    return collectable
+  } catch (e) {
+    return null
+  }
+}
+
+/**
+ *
+ * @param address public key of the account
+ * @param cluster cluster
+ * @param oldestTransaction starting point of the transaction history
+ * @returns transaction history
+ */
+export const getAllTransactions = async (
+  address: string,
+  cluster: web3.Cluster,
+  oldestTransaction?: string,
+): Promise<(EnrichedTransaction | web3.ConfirmedSignatureInfo)[]> => {
+  const pubKey = new web3.PublicKey(address)
+  const conn = getConnection(cluster)
+  const metaplex = new Metaplex(conn, { cluster })
+  const parseTransactionsUrl = `${Config.HELIUS_API_URL}/v0/transactions/?api-key=${Config.HELIUS_API_KEY}`
+
+  try {
+    const txList = await conn.getSignaturesForAddress(pubKey, {
+      before: oldestTransaction,
+      limit: 100,
+    })
+    const sigList = txList.map((tx) => tx.signature)
+
+    if (cluster !== 'mainnet-beta') {
+      return txList
+    }
+
+    const { data } = await axios.post(parseTransactionsUrl, {
+      transactions: sigList,
+    })
+
+    /*
+     * TODO: Remove this once helius nft indexer is live
+     * Getting metadata for collectables.
+     */
+    const allTxnsWithMetadata: EnrichedTransaction[] = await Promise.all(
+      data.map(async (tx: EnrichedTransaction) => {
+        const firstTokenTransfer = tx.tokenTransfers[0]
+        if (firstTokenTransfer && firstTokenTransfer.mint) {
+          const tokenMetadata = await getCollectableByMint(
+            new web3.PublicKey(firstTokenTransfer.mint),
+            metaplex,
+          )
+
+          return {
+            ...tx,
+            tokenTransfers: [
+              {
+                ...firstTokenTransfer,
+                tokenMetadata: {
+                  model: tokenMetadata?.model,
+                  name: tokenMetadata?.name,
+                  symbol: tokenMetadata?.symbol,
+                  uri: tokenMetadata?.uri,
+                  json: tokenMetadata?.json,
+                },
+              },
+            ],
+          }
+        }
+
+        return tx
+      }),
+    )
+
+    const failedTxns = txList.filter((tx) => tx.err)
+    const allTxs: (EnrichedTransaction | web3.ConfirmedSignatureInfo)[] = [
+      ...allTxnsWithMetadata,
+      ...failedTxns,
+    ]
+    // Combine and sort all txns by date in descending order
+    allTxs.sort(
+      (
+        a: EnrichedTransaction | web3.ConfirmedSignatureInfo,
+        b: EnrichedTransaction | web3.ConfirmedSignatureInfo,
+      ) => {
+        const aEnrichedTransaction = a as EnrichedTransaction
+        const aSignatureInfo = a as web3.ConfirmedSignatureInfo
+        const bEnrichedTransaction = b as EnrichedTransaction
+        const bSignatureInfo = b as web3.ConfirmedSignatureInfo
+
+        const aDate = new Date()
+        if (aEnrichedTransaction.timestamp) {
+          aDate.setTime(aEnrichedTransaction.timestamp * 1000)
+        } else if (aSignatureInfo.blockTime) {
+          aDate.setTime(aSignatureInfo.blockTime * 1000)
+        }
+
+        const bDate = new Date()
+        if (bEnrichedTransaction.timestamp) {
+          bDate.setTime(bEnrichedTransaction.timestamp * 1000)
+        } else if (bSignatureInfo.blockTime) {
+          bDate.setTime(bSignatureInfo.blockTime * 1000)
+        }
+
+        return bDate.getTime() - aDate.getTime()
+      },
+    )
+
+    return allTxs
+  } catch (e) {
+    return []
+  }
 }

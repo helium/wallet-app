@@ -235,16 +235,18 @@ const ContactDetails = ({ action, contact }: Props) => {
           </Box>
           <TextInput
             variant="plain"
-            placeholder={t('addNewContact.address.placeholder')}
-            onChangeText={handleAddressChange}
-            value={address}
-            autoCapitalize="none"
-            multiline
-            returnKeyType="next"
-            autoComplete="off"
-            autoCorrect={false}
+            textInputProps={{
+              placeholder: t('addNewContact.address.placeholder'),
+              onChangeText: handleAddressChange,
+              value: address,
+              autoCapitalize: 'none',
+              multiline: true,
+              returnKeyType: 'next',
+              autoComplete: 'off',
+              autoCorrect: false,
+              onKeyPress: handleKeydown,
+            }}
             paddingVertical="xl"
-            onKeyPress={handleKeydown}
           />
           <Text
             opacity={error || data?.isHotspotOrValidator ? 100 : 0}
@@ -267,13 +269,15 @@ const ContactDetails = ({ action, contact }: Props) => {
           </Box>
           <TextInput
             variant="plain"
-            placeholder={t('addNewContact.nickname.placeholder')}
-            onChangeText={setNickname}
-            value={nickname}
-            autoCapitalize="words"
-            autoComplete="off"
-            returnKeyType="done"
-            autoCorrect={false}
+            textInputProps={{
+              placeholder: t('addNewContact.nickname.placeholder'),
+              onChangeText: setNickname,
+              value: nickname,
+              autoCapitalize: 'words',
+              autoComplete: 'off',
+              returnKeyType: 'done',
+              autoCorrect: false,
+            }}
             ref={nicknameInput}
           />
           <ButtonPressable

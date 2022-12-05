@@ -8,7 +8,6 @@ import { useColors } from '../../theme/themeHooks'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import { ellipsizeAddress, isTestnet } from '../../utils/accountUtils'
 import { LedgerAccount } from '../../utils/useLedger'
-import { TokenType } from '../../generated/graphql'
 
 export enum Section {
   NEW_ACCOUNT = 0,
@@ -37,7 +36,7 @@ const LedgerAccountListItem = ({
   const colors = useColors()
 
   // TODO: Add other token types once nano app supports them
-  const balance = bonesToBalance(account.balance, TokenType.Hnt)
+  const balance = bonesToBalance(account.balance, 'HNT')
   const disabled = section.index === Section.ALREADY_LINKED
 
   const borderTopEndRadius = useMemo(
