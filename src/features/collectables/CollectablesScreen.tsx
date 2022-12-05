@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Edge } from 'react-native-safe-area-context'
 import { SvgProps } from 'react-native-svg'
-import Animated from 'react-native-reanimated'
 import TabBar from '../../components/TabBar'
 import AccountHotspotsList from './HotspotList'
 import AccountCollectablesList from './NftList'
@@ -12,6 +11,7 @@ import NFT from '../../assets/images/nft.svg'
 import Hotspot from '../../assets/images/hotspot.svg'
 import { DelayedFadeIn } from '../../components/FadeInOut'
 import globalStyles from '../../theme/globalStyles'
+import { ReAnimatedBox } from '../../components/AnimatedBox'
 
 const CollectablesScreen = () => {
   const { t } = useTranslation()
@@ -45,7 +45,7 @@ const CollectablesScreen = () => {
   }, [t])
 
   return (
-    <Animated.View entering={DelayedFadeIn} style={globalStyles.container}>
+    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <SafeAreaBox edges={safeEdges} flex={1}>
         <Text marginTop="m" alignSelf="center" variant="h4">
           {t('collectablesScreen.title')}
@@ -62,7 +62,7 @@ const CollectablesScreen = () => {
         {selectedItem === tabData[0].value && <AccountHotspotsList />}
         {selectedItem === tabData[1].value && <AccountCollectablesList />}
       </SafeAreaBox>
-    </Animated.View>
+    </ReAnimatedBox>
   )
 }
 

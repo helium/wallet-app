@@ -13,6 +13,7 @@ import { CollectableNavigationProp } from './collectablesTypes'
 import HotspotListItem from './HotspotListItem'
 import ButtonPressable from '../../components/ButtonPressable'
 import useHotspots from '../../utils/useHotspots'
+import FadeInOut from '../../components/FadeInOut'
 
 const HotspotList = () => {
   const { bottom } = useSafeAreaInsets()
@@ -27,10 +28,6 @@ const HotspotList = () => {
     loading: loadingHotspots,
     refresh,
   } = useHotspots()
-
-  const flatListItems = useMemo(() => {
-    return hotspotsWithMeta
-  }, [hotspotsWithMeta])
 
   const handleNavigateToCollectable = useCallback(
     (collectable: Collectable) => {
@@ -64,7 +61,12 @@ const HotspotList = () => {
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: Collectable }) => {
       return (
-        <HotspotListItem hotspot={item} onPress={handleNavigateToCollectable} />
+        <FadeInOut>
+          <HotspotListItem
+            hotspot={item}
+            onPress={handleNavigateToCollectable}
+          />
+        </FadeInOut>
       )
     },
     [handleNavigateToCollectable],
@@ -99,7 +101,7 @@ const HotspotList = () => {
 
   return (
     <FlatList
-      data={flatListItems}
+      data={hotspotsWithMeta}
       numColumns={2}
       columnWrapperStyle={{
         flexDirection: 'row',

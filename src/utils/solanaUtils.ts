@@ -586,6 +586,7 @@ export const getCompressedCollectables = async (
   pubKey: web3.PublicKey,
   oldestCollectable?: string,
 ) => {
+  // TODO: Replace with devnet when metaplex RPC is ready for all other txs to be sent to devnet
   const conn = new WrappedConnection('https://rpc-devnet.aws.metaplex.com/')
   const { items } = await conn.getAssetsByOwner(
     pubKey.toString(),

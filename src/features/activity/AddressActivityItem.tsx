@@ -1,23 +1,23 @@
 import React from 'react'
 import { StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { BoxProps } from '@shopify/restyle'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import { useColors } from '../../theme/themeHooks'
-import TouchableOpacityBox, {
-  TouchableOpacityBoxProps,
-} from '../../components/TouchableOpacityBox'
 import AccountIcon from '../../components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import Menu from '../../assets/images/menu.svg'
 import { ellipsizeAddress } from '../../utils/accountUtils'
+import { Theme } from '../../theme/theme'
+import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 
 export const LIST_ITEM_HEIGHT = 70
 export type AddressActivityItemProps = {
   accountAddress: string
   showBubbleArrow?: boolean
   onMenuPress?: () => void
-} & TouchableOpacityBoxProps
+} & BoxProps<Theme>
 
 const AddressActivityItem = ({
   accountAddress,
@@ -30,11 +30,10 @@ const AddressActivityItem = ({
   const { t } = useTranslation()
 
   return (
-    <Box>
+    <>
       <Box
         backgroundColor="black700"
         alignItems="center"
-        flex={1}
         flexDirection="row"
         height={LIST_ITEM_HEIGHT}
         {...rest}
@@ -61,7 +60,7 @@ const AddressActivityItem = ({
           />
         </Box>
       )}
-    </Box>
+    </>
   )
 }
 

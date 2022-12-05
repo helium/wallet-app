@@ -63,9 +63,8 @@ const AccountSlider = () => {
       // clear the opened push notification
       setOpenedNotification(undefined)
     } else {
-      // TODO: Double check with team if this is the desired behavior
       // set the selected list as the first account by default, after sorting of data by unread
-      // await updateSelectedList(data[0])
+      await updateSelectedList(data[0])
     }
   }, [
     data,

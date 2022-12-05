@@ -1,7 +1,7 @@
 import { BoxProps } from '@shopify/restyle'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { LayoutRectangle, LayoutChangeEvent } from 'react-native'
-import Animated, {
+import {
   Easing,
   useAnimatedStyle,
   useSharedValue,
@@ -10,6 +10,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import { Theme } from '../theme/theme'
+import { ReAnimatedBox } from './AnimatedBox'
 import Box from './Box'
 
 const IndeterminateProgressBar = ({ ...rest }: BoxProps<Theme>) => {
@@ -66,14 +67,14 @@ const IndeterminateProgressBar = ({ ...rest }: BoxProps<Theme>) => {
       backgroundColor="transparent10"
       overflow="hidden"
     >
-      <Animated.View style={[progress]}>
+      <ReAnimatedBox style={progress}>
         <Box
           width={PROGRESS_WIDTH / 2}
           height={HEIGHT - 1}
           borderRadius="round"
           backgroundColor="white"
         />
-      </Animated.View>
+      </ReAnimatedBox>
     </Box>
   )
 }

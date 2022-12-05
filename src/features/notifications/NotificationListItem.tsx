@@ -29,16 +29,20 @@ const NotificationListItem = ({
 
   const time = useMemo(() => {
     const date = new Date(notification.time)
+    // To local time
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
     // Get hours with leading zero
-    const hours = date.getHours().toString().padStart(2, '0')
+    const hours = (date.getHours() % 12 || 12).toString().padStart(2, '0')
     // Get minutes with trailing 0
     const minutes = date.getMinutes().toString().padEnd(2, '0')
-    return `${hours}:${minutes}`
+    // Get AM/PM
+    const ampm = date.getHours() >= 12 ? 'PM' : 'AM'
+    return `${hours}:${minutes} ${ampm}`
   }, [notification.time])
 
   return (
     <TouchableOpacityBox
-      backgroundColor="black700"
+      backgroundColor="secondaryBackground"
       flexDirection="row"
       padding="m"
       borderBottomWidth={hasDivider ? 1 : 0}
@@ -57,21 +61,15 @@ const NotificationListItem = ({
             />
           )}
           <Text
-            variant="body1"
-            color="white"
+            variant="body2"
+            color="primaryText"
             adjustsFontSizeToFit
             allowFontScaling
-            fontSize={15}
           >
             {title}
           </Text>
         </Box>
-        <Text
-          variant="body3"
-          color="secondaryText"
-          numberOfLines={2}
-          fontSize={12}
-        >
+        <Text variant="body3" color="secondaryText" numberOfLines={2}>
           {subtitle}
         </Text>
       </Box>

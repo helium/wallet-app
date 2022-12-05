@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { LogBox } from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
@@ -20,8 +20,8 @@ import Text from '../../components/Text'
 import { ww } from '../../utils/layout'
 import BackScreen from '../../components/BackScreen'
 import { useSpacing } from '../../theme/themeHooks'
-import useCollectables from '../../utils/useCollectables'
 import { RootState } from '../../store/rootReducer'
+import { ReAnimatedBox } from '../../components/AnimatedBox'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -37,7 +37,6 @@ const TransferCollectableScreen = () => {
 
   const { t } = useTranslation()
   const { collectable } = route.params
-  const { refresh } = useCollectables()
   const solanaPayment = useSelector(
     (reduxState: RootState) => reduxState.solana.payment,
   )
@@ -51,13 +50,6 @@ const TransferCollectableScreen = () => {
     navigation.popToTop()
   }, [navigation])
 
-  useEffect(() => {
-    return () => {
-      // Refresh collectables on return
-      refresh()
-    }
-  }, [refresh])
-
   if (!collectable.json || !backgroundImageUri) {
     return null
   }
@@ -70,133 +62,133 @@ const TransferCollectableScreen = () => {
       onClose={onReturn}
       hideBack
     >
-      <Animated.View entering={DelayedFadeIn} style={globalStyles.container}>
+      <ReAnimatedBox
+        entering={DelayedFadeIn}
+        style={globalStyles.container}
+        backgroundColor="transparent"
+        flex={1}
+        padding="m"
+        alignItems="center"
+        justifyContent="center"
+      >
         <Box
-          backgroundColor="transparent"
-          flex={1}
-          padding="m"
-          alignItems="center"
+          flexGrow={1}
+          marginBottom="xl"
           justifyContent="center"
+          alignItems="center"
         >
-          <Box
-            flexGrow={1}
-            marginBottom="xl"
-            justifyContent="center"
-            alignItems="center"
-          >
-            {collectable.json && (
-              <Box
-                shadowColor="black"
-                shadowOpacity={0.4}
-                shadowOffset={{ width: 0, height: 10 }}
-                shadowRadius={10}
-                elevation={12}
+          {collectable.json && (
+            <Box
+              shadowColor="black"
+              shadowOpacity={0.4}
+              shadowOffset={{ width: 0, height: 10 }}
+              shadowRadius={10}
+              elevation={12}
+            >
+              <ImageBox
+                marginTop="l"
+                backgroundColor="black"
+                height={COLLECTABLE_HEIGHT - spacing.xl * 5}
+                width={COLLECTABLE_HEIGHT - spacing.xl * 5}
+                source={{ uri: collectable.json.image, cache: 'force-cache' }}
+                borderRadius="xxl"
+              />
+            </Box>
+          )}
+          {solanaPayment && !solanaPayment.error && !solanaPayment.loading && (
+            <Animated.View
+              style={{ alignItems: 'center' }}
+              entering={FadeIn}
+              exiting={FadeOut}
+            >
+              <Text variant="h2" color="white" marginTop="xl">
+                {t('collectablesScreen.transferComplete')}
+              </Text>
+            </Animated.View>
+          )}
+
+          {solanaPayment?.error && (
+            <Animated.View
+              style={{ alignItems: 'center' }}
+              entering={FadeIn}
+              exiting={FadeOut}
+            >
+              <Text
+                variant="h2"
+                color="white"
+                marginTop="xl"
+                textAlign="center"
               >
-                <ImageBox
-                  marginTop="l"
-                  backgroundColor="black"
-                  height={COLLECTABLE_HEIGHT - spacing.xl * 5}
-                  width={COLLECTABLE_HEIGHT - spacing.xl * 5}
-                  source={{ uri: collectable.json.image, cache: 'force-cache' }}
-                  borderRadius="xxl"
-                />
+                {t('collectablesScreen.transferError')}
+              </Text>
+              <Text
+                variant="body2"
+                color="secondaryText"
+                marginTop="xl"
+                numberOfLines={2}
+                textAlign="center"
+              >
+                {solanaPayment.error.message}
+              </Text>
+            </Animated.View>
+          )}
+
+          {!solanaPayment && (
+            <Animated.View
+              style={{ alignItems: 'center' }}
+              entering={FadeIn}
+              exiting={FadeOut}
+            >
+              <Text variant="h2" color="white" marginTop="xl">
+                {t('collectablesScreen.transferError')}
+              </Text>
+            </Animated.View>
+          )}
+
+          {solanaPayment && solanaPayment.loading && (
+            <Animated.View
+              style={{ alignItems: 'center' }}
+              entering={FadeIn}
+              exiting={FadeOut}
+            >
+              <Text
+                variant="h2"
+                color="white"
+                marginTop="xl"
+                textAlign="center"
+              >
+                {t('collectablesScreen.transferingNftTitle')}
+              </Text>
+              <Text
+                variant="body0"
+                color="grey600"
+                textAlign="center"
+                marginBottom="m"
+              >
+                {t('collectablesScreen.transferingNftBody')}
+              </Text>
+              <Box flexDirection="row" marginHorizontal="xxl">
+                <IndeterminateProgressBar paddingHorizontal="l" />
               </Box>
-            )}
-            {solanaPayment && !solanaPayment.error && !solanaPayment.loading && (
-              <Animated.View
-                style={{ alignItems: 'center' }}
-                entering={FadeIn}
-                exiting={FadeOut}
-              >
-                <Text variant="h2" color="white" marginTop="xl">
-                  {t('collectablesScreen.transferComplete')}
-                </Text>
-              </Animated.View>
-            )}
-
-            {solanaPayment && solanaPayment.error && (
-              <Animated.View
-                style={{ alignItems: 'center' }}
-                entering={FadeIn}
-                exiting={FadeOut}
-              >
-                <Text
-                  variant="h2"
-                  color="white"
-                  marginTop="xl"
-                  textAlign="center"
-                >
-                  {t('collectablesScreen.transferError')}
-                </Text>
-                <Text
-                  variant="body2"
-                  color="secondaryText"
-                  marginTop="xl"
-                  numberOfLines={2}
-                  textAlign="center"
-                >
-                  {solanaPayment.error.message}
-                </Text>
-              </Animated.View>
-            )}
-
-            {!solanaPayment && (
-              <Animated.View
-                style={{ alignItems: 'center' }}
-                entering={FadeIn}
-                exiting={FadeOut}
-              >
-                <Text variant="h2" color="white" marginTop="xl">
-                  {t('collectablesScreen.transferError')}
-                </Text>
-              </Animated.View>
-            )}
-
-            {solanaPayment && solanaPayment.loading && (
-              <Animated.View
-                style={{ alignItems: 'center' }}
-                entering={FadeIn}
-                exiting={FadeOut}
-              >
-                <Text
-                  variant="h2"
-                  color="white"
-                  marginTop="xl"
-                  textAlign="center"
-                >
-                  {t('collectablesScreen.transferingNftTitle')}
-                </Text>
-                <Text
-                  variant="body0"
-                  color="grey600"
-                  textAlign="center"
-                  marginBottom="m"
-                >
-                  {t('collectablesScreen.transferingNftBody')}
-                </Text>
-                <Box flexDirection="row" marginHorizontal="xxl">
-                  <IndeterminateProgressBar paddingHorizontal="l" />
-                </Box>
-              </Animated.View>
-            )}
-          </Box>
-          <Box flex={1} width="100%" justifyContent="flex-end">
-            <ButtonPressable
-              marginHorizontal="m"
-              marginBottom="m"
-              height={65}
-              borderRadius="round"
-              backgroundColor="white"
-              backgroundColorOpacity={0.1}
-              backgroundColorOpacityPressed={0.05}
-              titleColorPressedOpacity={0.3}
-              title={t('collectablesScreen.returnToCollectables')}
-              titleColor="white"
-              onPress={onReturn}
-            />
-          </Box>
+            </Animated.View>
+          )}
         </Box>
-      </Animated.View>
+        <Box flex={1} width="100%" justifyContent="flex-end">
+          <ButtonPressable
+            marginHorizontal="m"
+            marginBottom="m"
+            height={65}
+            borderRadius="round"
+            backgroundColor="white"
+            backgroundColorOpacity={0.1}
+            backgroundColorOpacityPressed={0.05}
+            titleColorPressedOpacity={0.3}
+            title={t('collectablesScreen.returnToCollectables')}
+            titleColor="white"
+            onPress={onReturn}
+          />
+        </Box>
+      </ReAnimatedBox>
     </BackScreen>
   )
 }

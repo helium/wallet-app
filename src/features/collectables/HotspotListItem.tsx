@@ -1,9 +1,7 @@
 import React, { useMemo } from 'react'
-import { Image } from 'react-native'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
+import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { PublicKey } from '@solana/web3.js'
 import Text from '../../components/Text'
-import { useBorderRadii } from '../../theme/themeHooks'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { Collectable } from '../../types/solana'
 import { ww } from '../../utils/layout'
@@ -11,6 +9,8 @@ import { useHotspot } from '../../utils/useHotspot'
 import Box from '../../components/Box'
 import MobileSymbol from '../../assets/images/mobileSymbol.svg'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
+import { ReAnimatedBox } from '../../components/AnimatedBox'
+import ImageBox from '../../components/ImageBox'
 
 export type HotspotListItemProps = {
   hotspot: Collectable
@@ -19,7 +19,6 @@ export type HotspotListItemProps = {
 
 const HotspotListItem = ({ hotspot, onPress }: HotspotListItemProps) => {
   const COLLECTABLE_HEIGHT = ww / 2
-  const { lm: borderRadius } = useBorderRadii()
   const { json } = hotspot
   const mint = useMemo(
     () => new PublicKey(hotspot.mint.address),
@@ -34,7 +33,7 @@ const HotspotListItem = ({ hotspot, onPress }: HotspotListItemProps) => {
   )
 
   return (
-    <Animated.View
+    <ReAnimatedBox
       style={{ width: '50%', justifyContent: 'center' }}
       entering={FadeIn}
       exiting={FadeOut}
@@ -43,13 +42,14 @@ const HotspotListItem = ({ hotspot, onPress }: HotspotListItemProps) => {
         marginHorizontal="s"
         marginVertical="s"
         alignItems="center"
-        backgroundColor="black800"
+        backgroundColor="secondaryBackground"
         borderRadius="xxl"
         onPress={() => onPress(hotspot)}
       >
-        <Image
-          borderRadius={borderRadius}
-          style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
+        <ImageBox
+          borderRadius="lm"
+          height={COLLECTABLE_HEIGHT}
+          width="100%"
           source={{
             uri: json?.image,
             cache: 'force-cache',
@@ -90,7 +90,7 @@ const HotspotListItem = ({ hotspot, onPress }: HotspotListItemProps) => {
           {removeDashAndCapitalize(json.name)}
         </Text>
       )}
-    </Animated.View>
+    </ReAnimatedBox>
   )
 }
 

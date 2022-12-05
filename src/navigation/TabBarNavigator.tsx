@@ -8,7 +8,6 @@ import { Edge } from 'react-native-safe-area-context'
 import NavBar from '../components/NavBar'
 import Dollar from '../assets/images/dollar.svg'
 import Gem from '../assets/images/gem.svg'
-import Swaps from '../assets/images/swaps.svg'
 import Transactions from '../assets/images/transactions.svg'
 import Notifications from '../assets/images/notifications.svg'
 import { Color } from '../theme/theme'
@@ -39,7 +38,8 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
         iconColor: 'white',
         hasBadge: false,
       },
-      { value: 'swaps', Icon: Swaps, iconColor: 'white' },
+      // TODO: Uncomment once swap navigator is ready
+      // { value: 'swaps', Icon: Swaps, iconColor: 'white' },
       {
         value: 'activity',
         Icon: Transactions,
@@ -128,7 +128,7 @@ const TabBarNavigator = () => {
     >
       <Tab.Screen name="Home" component={HomeNavigator} />
       <Tab.Screen name="Collectables" component={CollectableNavigator} />
-      <Tab.Screen name="Swaps" component={CollectableNavigator} />
+      {/* <Tab.Screen name="Swaps" component={CollectableNavigator} /> */}
       <Tab.Screen name="Activity" component={ActivityNavigator} />
       <Tab.Screen
         name="NotificationsNavigator"

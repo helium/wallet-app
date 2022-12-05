@@ -7,6 +7,7 @@ import Box from '../../components/Box'
 import useCollectables from '../../utils/useCollectables'
 import CollectableListItem, { CollectableSkeleton } from './NftListItem'
 import { useColors } from '../../theme/themeHooks'
+import FadeInOut from '../../components/FadeInOut'
 
 const NftList = () => {
   const { bottom } = useSafeAreaInsets()
@@ -32,7 +33,12 @@ const NftList = () => {
       item: string
     }) => {
       return (
-        <CollectableListItem item={token} collectables={collectablesWithMeta} />
+        <FadeInOut>
+          <CollectableListItem
+            item={token}
+            collectables={collectablesWithMeta}
+          />
+        </FadeInOut>
       )
     },
     [collectablesWithMeta],

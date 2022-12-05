@@ -2,7 +2,6 @@ import React, { useCallback, useMemo } from 'react'
 import { RefreshControl, SectionList } from 'react-native'
 import { EnrichedTransaction } from 'src/types/solana'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
-import Animated from 'react-native-reanimated'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { useColors, useSpacing } from '../../theme/themeHooks'
@@ -13,8 +12,9 @@ import ActivityListItem from './ActivityListItem'
 import useEnrichedTransactions from '../../utils/useEnrichedTransactions'
 import CircleLoader from '../../components/CircleLoader'
 import globalStyles from '../../theme/globalStyles'
-import { DelayedFadeIn } from '../../components/FadeInOut'
+import FadeInOut, { DelayedFadeIn } from '../../components/FadeInOut'
 import { ActivityNavigationProp } from './activityTypes'
+import { ReAnimatedBox } from '../../components/AnimatedBox'
 
 const ActivityScreen = () => {
   const { transactions, loading, fetchingMore, fetchMore, refresh } =
@@ -122,16 +122,18 @@ const ActivityScreen = () => {
       const lastItem = index === section.data.length - 1
 
       return (
-        <ActivityListItem
-          borderTopStartRadius={firstItem ? 'xl' : undefined}
-          borderTopEndRadius={firstItem ? 'xl' : undefined}
-          borderBottomStartRadius={lastItem ? 'xl' : undefined}
-          borderBottomEndRadius={lastItem ? 'xl' : undefined}
-          hasDivider={!lastItem || (firstItem && section.data.length !== 1)}
-          marginHorizontal="m"
-          transaction={item}
-          onPress={handleActivityItemPress(item)}
-        />
+        <FadeInOut>
+          <ActivityListItem
+            borderTopStartRadius={firstItem ? 'xl' : undefined}
+            borderTopEndRadius={firstItem ? 'xl' : undefined}
+            borderBottomStartRadius={lastItem ? 'xl' : undefined}
+            borderBottomEndRadius={lastItem ? 'xl' : undefined}
+            hasDivider={!lastItem || (firstItem && section.data.length !== 1)}
+            marginHorizontal="m"
+            transaction={item}
+            onPress={handleActivityItemPress(item)}
+          />
+        </FadeInOut>
       )
     },
     [handleActivityItemPress],
@@ -148,7 +150,7 @@ const ActivityScreen = () => {
   const keyExtractor = useCallback((item, index) => item.signature + index, [])
 
   return (
-    <Animated.View entering={DelayedFadeIn} style={globalStyles.container}>
+    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <SafeAreaBox edges={['top']}>
         <SectionList
           contentContainerStyle={contentContainer}
@@ -171,7 +173,7 @@ const ActivityScreen = () => {
           ListFooterComponent={Footer}
         />
       </SafeAreaBox>
-    </Animated.View>
+    </ReAnimatedBox>
   )
 }
 

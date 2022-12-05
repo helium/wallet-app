@@ -5,8 +5,8 @@ import { useAsync, useAsyncCallback } from 'react-async-hook'
 import * as client from '@helium/distributor-oracle'
 import { getPendingRewards, LAZY_KEY, useProgram } from './hotspotNftsUtils'
 import { useRecipient } from './useRecipient'
-import { useAnchorProvider } from './useAnchorProvider'
 import * as Logger from './logger'
+import { useAccountStorage } from '../storage/AccountStorageProvider'
 
 export function useHotspot(mint: PublicKey): {
   pendingRewards: number | null
@@ -37,7 +37,7 @@ export function useHotspot(mint: PublicKey): {
     }
   }, [mint, program])
 
-  const anchorProvider = useAnchorProvider()
+  const { anchorProvider } = useAccountStorage()
 
   const {
     error: rewardsError,

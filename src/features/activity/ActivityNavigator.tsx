@@ -9,6 +9,7 @@ import ActivityDetailsScreen from './ActivityDetailsScreen'
 const ActivityStack = createNativeStackNavigator()
 
 const modalPresentation: NativeStackNavigationOptions = {
+  headerShown: false,
   presentation: 'modal',
 }
 
@@ -18,12 +19,7 @@ const cardPresentation: NativeStackNavigationOptions = {
 
 const ActivityStackScreen = () => {
   return (
-    <ActivityStack.Navigator
-      screenOptions={{
-        headerShown: false,
-        ...modalPresentation,
-      }}
-    >
+    <ActivityStack.Navigator screenOptions={modalPresentation}>
       <ActivityStack.Screen name="ActivityScreen" component={ActivityScreen} />
       <ActivityStack.Screen
         name="ActivityDetailsScreen"

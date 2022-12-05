@@ -174,7 +174,6 @@ const TabBar = ({
         onLayout={handleLayout(o.value)}
         onPress={handlePress(o.value)}
         hitSlop={hitSlop}
-        iconPosition={o.iconPosition}
         {...o}
       />
     ))

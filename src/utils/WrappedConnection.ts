@@ -15,7 +15,7 @@ export class WrappedConnection extends Connection {
      * Eventually we want to have a hosted RPC node that supports this API
      */
     this.axiosInstance = axios.create({
-      baseURL: 'https://rpc-devnet.aws.metaplex.com/' ?? endpoint,
+      baseURL: endpoint ?? 'https://rpc-devnet.aws.metaplex.com/',
     })
   }
 

@@ -17,6 +17,7 @@ import globalStyles from '../../theme/globalStyles'
 import Box from '../../components/Box'
 import { useBorderRadii } from '../../theme/themeHooks'
 import { Collectable } from '../../types/solana'
+import { ReAnimatedBox } from '../../components/AnimatedBox'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -48,7 +49,7 @@ const CollectionScreen = () => {
       const { json } = item
 
       return (
-        <Animated.View
+        <ReAnimatedBox
           style={{ width: '50%' }}
           entering={FadeIn}
           exiting={FadeOut}
@@ -69,7 +70,7 @@ const CollectionScreen = () => {
               }}
             />
           </TouchableOpacityBox>
-        </Animated.View>
+        </ReAnimatedBox>
       )
     },
     [COLLECTABLE_HEIGHT, borderRadius, handleNavigateToCollectable],

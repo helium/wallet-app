@@ -45,7 +45,7 @@ const ActivityListItem = ({
     const enrichedTx = transaction as EnrichedTransaction
     const confirmedSig = transaction as ConfirmedSignatureInfo
 
-    // Custom description that elipiizes the address
+    // Custom description that ellipsizes the address
     if (enrichedTx.description) {
       const customDescription = enrichedTx.description
         ?.split(' ')
@@ -64,11 +64,11 @@ const ActivityListItem = ({
     }
 
     if (confirmedSig.err) {
-      return 'Error'
+      return t('generic.error')
     }
 
-    return 'Success'
-  }, [transaction])
+    return t('generic.success')
+  }, [t, transaction])
 
   const transactionFailed = useMemo(() => {
     const confirmedSig = transaction as ConfirmedSignatureInfo
@@ -77,7 +77,7 @@ const ActivityListItem = ({
 
   return (
     <TouchableOpacityBox
-      backgroundColor="black700"
+      backgroundColor="secondaryBackground"
       flexDirection="row"
       padding="m"
       borderBottomWidth={hasDivider ? 1 : 0}

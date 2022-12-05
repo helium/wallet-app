@@ -122,6 +122,7 @@ export default {
   },
   collectablesScreen: {
     title: 'Collectables',
+    metadata: 'Metadata',
     transfer: 'Transfer',
     transferComplete: 'NFT Transferred!',
     returnToCollectables: 'Return to Collectables',
@@ -130,6 +131,7 @@ export default {
     transferActions: 'Transfer Actions',
     transferTo: 'Transfer to:',
     transferError: 'Transfer failed. Please try again later.',
+    transferCollectable: 'Transfer Collectable',
     transferingNftBody:
       'You can exit this screen while you wait. We’ll update your collection momentarily.',
     collectables: {

@@ -15,13 +15,13 @@ import { useState } from 'react'
 import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
 import { useAsync } from 'react-async-hook'
 import { Recipient } from './useRecipient'
-import { useAnchorProvider } from './useAnchorProvider'
+import { useAccountStorage } from '../storage/AccountStorageProvider'
 
 export const LAZY_KEY = lazyDistributorKey(new PublicKey(MOBILE_MINT))[0]
 
 export function useProgram() {
   const [program, setProgram] = useState<Program<LazyDistributor> | null>(null)
-  const anchorProvider = useAnchorProvider()
+  const { anchorProvider } = useAccountStorage()
   useAsync(async () => {
     if (!anchorProvider) return
     setProvider(anchorProvider)

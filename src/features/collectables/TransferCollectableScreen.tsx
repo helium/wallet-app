@@ -6,7 +6,6 @@ import {
   NativeSyntheticEvent,
   TextInputEndEditingEventData,
 } from 'react-native'
-import Animated from 'react-native-reanimated'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
@@ -45,6 +44,7 @@ import AddressBookSelector, {
 import { CSAccount } from '../../storage/cloudStorage'
 import * as Logger from '../../utils/logger'
 import TextTransform from '../../components/TextTransform'
+import { ReAnimatedBox } from '../../components/AnimatedBox'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -196,13 +196,13 @@ const TransferCollectableScreen = () => {
   return (
     <BackScreen
       padding="none"
-      title="Hotspot Detail"
+      title={t('collectablesScreen.transferCollectable')}
       backgroundImageUri={backgroundImageUri}
       edges={backEdges}
       TrailingIcon={InfoIcon}
       onTrailingIconPress={handleInfoPress}
     >
-      <Animated.View entering={DelayedFadeIn} style={globalStyles.container}>
+      <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
         <AddressBookSelector
           ref={addressBookRef}
           onContactSelected={handleContactSelected}
@@ -257,7 +257,6 @@ const TransferCollectableScreen = () => {
                 height={80}
                 width="100%"
                 textColor="white"
-                fontWeight="600"
                 fontSize={15}
                 TrailingIcon={Menu}
                 onTrailingIconPress={onTrailingIconButtonPress}
@@ -335,7 +334,7 @@ const TransferCollectableScreen = () => {
             {transferOptions()}
           </BlurActionSheet>
         </AddressBookSelector>
-      </Animated.View>
+      </ReAnimatedBox>
     </BackScreen>
   )
 }

@@ -41,7 +41,7 @@ const NftMetadataScreen = () => {
   )
 
   return (
-    <BackScreen title="Metadata" padding="none">
+    <BackScreen title={t('collectablesScreen.metadata')} padding="none">
       <SafeAreaBox alignItems="center" flex={1}>
         <Text variant="body1" color="grey600" marginBottom="l">
           {t('collectablesScreen.collectables.properties')}

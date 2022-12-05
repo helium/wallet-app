@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { Image } from 'react-native'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
+import { FadeIn, FadeOut } from 'react-native-reanimated'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -10,6 +10,7 @@ import { useBorderRadii } from '../../theme/themeHooks'
 import { Collectable } from '../../types/solana'
 import { ww } from '../../utils/layout'
 import CircleLoader from '../../components/CircleLoader'
+import { ReAnimatedBox } from '../../components/AnimatedBox'
 
 const COLLECTABLE_HEIGHT = ww / 2
 const NftListItem = ({
@@ -40,7 +41,7 @@ const NftListItem = ({
   )
 
   return (
-    <Animated.View style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
+    <ReAnimatedBox style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
       <TouchableOpacityBox
         marginHorizontal="s"
         marginVertical="s"
@@ -76,13 +77,13 @@ const NftListItem = ({
           </Text>
         </Box>
       </TouchableOpacityBox>
-    </Animated.View>
+    </ReAnimatedBox>
   )
 }
 
 export const CollectableSkeleton = () => {
   return (
-    <Animated.View style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
+    <ReAnimatedBox style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
       <TouchableOpacityBox
         marginHorizontal="s"
         marginVertical="s"
@@ -99,7 +100,7 @@ export const CollectableSkeleton = () => {
           <CircleLoader loaderSize={80} />
         </Box>
       </TouchableOpacityBox>
-    </Animated.View>
+    </ReAnimatedBox>
   )
 }
 

@@ -23,19 +23,6 @@ type Props = React.ComponentProps<typeof BoxWrapper> & {
   placeholderTextColor?: Color
   textColor?: Color
   fontSize?: number
-  fontWeight?:
-    | 'bold'
-    | 'normal'
-    | '100'
-    | '200'
-    | '300'
-    | '400'
-    | '500'
-    | '600'
-    | '700'
-    | '800'
-    | '900'
-    | undefined
   floatingLabel?: string
   onTrailingIconPress?: () => void
   TrailingIcon?: React.FC<SvgProps>
@@ -50,7 +37,6 @@ const TI = forwardRef(
       fontSize,
       textInputProps,
       floatingLabel,
-      fontWeight,
       TrailingIcon,
       onTrailingIconPress,
       ...rest
@@ -100,7 +86,6 @@ const TI = forwardRef(
             style={{
               color: getTextColor,
               fontSize: fontSize || inputVariants.regular.fontSize,
-              fontWeight,
             }}
             placeholderTextColor={getPlaceholderTextColor}
             {...textInputProps}

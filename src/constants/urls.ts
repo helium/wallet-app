@@ -17,7 +17,7 @@ type UrlType = 'block' | 'txn' | 'account' | 'validator' | 'hotspot'
 
 const useCreateExplorerUrl = () => {
   const { currentAccount } = useAccountStorage()
-  const { l1Network } = useAppStorage()
+  const { l1Network, solanaNetwork: cluster } = useAppStorage()
 
   const getPath = useCallback(
     (type: UrlType) => {
@@ -55,7 +55,7 @@ const useCreateExplorerUrl = () => {
       const path = `${getPath(type)}/${target}`
 
       if (l1Network === 'solana') {
-        return `${SOLANA_EXPLORER_BASE_URL}/${path}?cluster=devnet`
+        return `${SOLANA_EXPLORER_BASE_URL}/${path}?cluster=${cluster}`
       }
 
       const { address } = currentAccount || {}
@@ -64,7 +64,7 @@ const useCreateExplorerUrl = () => {
       }
       return `${EXPLORER_TESTNET_BASE_URL}/${path}`
     },
-    [currentAccount, getPath, l1Network],
+    [cluster, currentAccount, getPath, l1Network],
   )
 }
 
