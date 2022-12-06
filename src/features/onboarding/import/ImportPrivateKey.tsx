@@ -128,14 +128,16 @@ const ImportPrivateKey = () => {
       </Text>
       <TextInput
         visible={!publicKey}
-        placeholder={t('accountImport.privateKey.inputPlaceholder')}
+        textInputProps={{
+          placeholder: t('accountImport.privateKey.inputPlaceholder'),
+          autoCapitalize: 'none',
+          keyboardAppearance: 'dark',
+          autoCorrect: false,
+          onChangeText,
+          autoComplete: 'off',
+          returnKeyType: 'done',
+        }}
         variant="underline"
-        autoCapitalize="none"
-        keyboardAppearance="dark"
-        autoCorrect={false}
-        onChangeText={onChangeText}
-        autoComplete="off"
-        returnKeyType="done"
       />
       <Text
         variant="body1"
