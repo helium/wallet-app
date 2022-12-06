@@ -32,7 +32,7 @@ const CollectionScreen = () => {
   const COLLECTABLE_HEIGHT = Dimensions.get('window').width / 2
   const collectables = route.params.collection
 
-  const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
+  const safeEdges = useMemo(() => [] as Edge[], [])
 
   const { lm: borderRadius } = useBorderRadii()
 
