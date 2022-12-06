@@ -21,6 +21,7 @@ import * as Logger from '../../../utils/logger'
 import ButtonPressable from '../../../components/ButtonPressable'
 import Box from '../../../components/Box'
 import TextInput from '../../../components/TextInput'
+import { useAppStorage } from '../../../storage/AppStorageProvider'
 
 type Route = RouteProp<OnboardingStackParamList, 'ImportPrivateKey'>
 
@@ -34,6 +35,7 @@ const ImportPrivateKey = () => {
   const [publicKey, setPublicKey] = useState<string>()
   const [secureAccount, setSecureAccount] = useState<SecureAccount>()
   const [error, setError] = useState(false)
+  const { l1Network } = useAppStorage()
 
   const decodePrivateKey = useCallback(
     async (key?: string) => {
@@ -82,14 +84,24 @@ const ImportPrivateKey = () => {
 
   const onImportAccount = useCallback(() => {
     if (hasAccounts) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      navigation.replace('HomeNavigator', {
-        screen: 'AccountAssignScreen',
-        params: {
-          secureAccount,
-        },
-      })
+      if (l1Network === 'helium') {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        navigation.replace('HomeNavigator', {
+          screen: 'AccountAssignScreen',
+          params: {
+            secureAccount,
+          },
+        })
+      } else {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        navigation.push('AccountAssignScreen', {
+          params: {
+            secureAccount,
+          },
+        })
+      }
     } else {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -103,7 +115,7 @@ const ImportPrivateKey = () => {
         },
       })
     }
-  }, [hasAccounts, navigation, secureAccount])
+  }, [hasAccounts, l1Network, navigation, secureAccount])
 
   const onChangeText = useCallback(
     async (text: string) => {

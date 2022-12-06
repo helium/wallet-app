@@ -40,19 +40,23 @@ const RootNavigator = () => {
 
   return (
     <RootStack.Navigator initialRouteName={initialRouteName}>
+      {l1Network === 'helium' ? (
+        <RootStack.Screen
+          name="HomeNavigator"
+          component={HomeNavigator}
+          options={screenOptions}
+        />
+      ) : (
+        <RootStack.Screen
+          name="TabBarNavigator"
+          component={TabBarNavigator}
+          options={screenOptions}
+        />
+      )}
+
       <RootStack.Screen
         name="OnboardingNavigator"
         component={OnboardingNavigator}
-        options={screenOptions}
-      />
-      <RootStack.Screen
-        name="HomeNavigator"
-        component={HomeNavigator}
-        options={screenOptions}
-      />
-      <RootStack.Screen
-        name="TabBarNavigator"
-        component={TabBarNavigator}
         options={screenOptions}
       />
     </RootStack.Navigator>
