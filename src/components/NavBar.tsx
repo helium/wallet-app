@@ -19,6 +19,8 @@ import TouchableOpacityBox, {
   TouchableOpacityBoxProps,
 } from './TouchableOpacityBox'
 
+export const NavBarHeight = 60
+
 const NavBarItem = ({
   selected,
   onLayout,

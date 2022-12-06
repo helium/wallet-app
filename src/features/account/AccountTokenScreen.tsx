@@ -12,6 +12,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { Platform, View } from 'react-native'
 import { Ticker } from '@helium/currency'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import BackScreen from '../../components/BackScreen'
 import Box from '../../components/Box'
@@ -39,6 +40,8 @@ import useNetworkColor from '../../utils/useNetworkColor'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import ActivityIndicator from '../../components/ActivityIndicator'
 import { Activity } from '../../types/activity'
+import { ReAnimatedBox } from '../../components/AnimatedBox'
+import { NavBarHeight } from '../../components/NavBar'
 
 const delayedAnimation = FadeIn.delay(300)
 
@@ -58,6 +61,7 @@ const AccountTokenScreen = () => {
   const listAnimatedPos = useSharedValue<number>(0)
   const listStyle = useBackgroundStyle('primaryBackground')
   const { l1Network } = useAppStorage()
+  const insets = useSafeAreaInsets()
 
   const routeTicker = useMemo(
     () => route.params.tokenType?.toUpperCase() as Ticker,
@@ -84,13 +88,17 @@ const AccountTokenScreen = () => {
     ticker: routeTicker,
   })
 
+  const actualHeight = useMemo(() => {
+    if (l1Network === 'helium') return WINDOW_HEIGHT
+    return WINDOW_HEIGHT - insets.bottom - NavBarHeight
+  }, [insets.bottom, l1Network])
+
   const snapPoints = useMemo(() => {
     if (!topHeaderYPos || !headerContainerYPos) return
-
-    const collapsed = WINDOW_HEIGHT - headerContainerYPos
-    const expanded = WINDOW_HEIGHT - topHeaderYPos
+    const collapsed = actualHeight - headerContainerYPos
+    const expanded = actualHeight - topHeaderYPos
     return [collapsed, expanded]
-  }, [headerContainerYPos, topHeaderYPos])
+  }, [actualHeight, headerContainerYPos, topHeaderYPos])
 
   const canShowList = useMemo(() => snapPoints?.length === 2, [snapPoints])
 
@@ -99,7 +107,7 @@ const AccountTokenScreen = () => {
       return { opacity: 0 }
     }
 
-    const expandedPosition = WINDOW_HEIGHT - snapPoints[1]
+    const expandedPosition = actualHeight - snapPoints[1]
     const diff = listAnimatedPos.value - expandedPosition
     const o = diff / (snapPoints[1] - snapPoints[0])
 
@@ -115,7 +123,7 @@ const AccountTokenScreen = () => {
       return { opacity: 1 }
     }
 
-    const expandedPosition = WINDOW_HEIGHT - snapPoints[1]
+    const expandedPosition = actualHeight - snapPoints[1]
     const diff = listAnimatedPos.value - expandedPosition
     const o = diff / (snapPoints[1] - snapPoints[0])
 
@@ -317,7 +325,7 @@ const AccountTokenScreen = () => {
   })
 
   return (
-    <Animated.View entering={DelayedFadeIn} style={globalStyles.container}>
+    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <BackScreen
         padding="none"
         headerBackgroundColor={backgroundColor}
@@ -416,7 +424,7 @@ const AccountTokenScreen = () => {
       >
         {filters()}
       </BlurActionSheet>
-    </Animated.View>
+    </ReAnimatedBox>
   )
 }
 
