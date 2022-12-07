@@ -1,20 +1,16 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { Dimensions, Image, ViewStyle, LogBox, FlatList } from 'react-native'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
-import { Edge } from 'react-native-safe-area-context'
+import { Dimensions, Image, LogBox, FlatList } from 'react-native'
+import { FadeIn, FadeOut } from 'react-native-reanimated'
 import 'text-encoding-polyfill'
-import useNetworkColor from '../../utils/useNetworkColor'
 import BackScreen from '../../components/BackScreen'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import SafeAreaBox from '../../components/SafeAreaBox'
 import { DelayedFadeIn } from '../../components/FadeInOut'
 import globalStyles from '../../theme/globalStyles'
-import Box from '../../components/Box'
 import { useBorderRadii } from '../../theme/themeHooks'
 import { Collectable } from '../../types/solana'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
@@ -31,9 +27,6 @@ const CollectionScreen = () => {
   const navigation = useNavigation<CollectableNavigationProp>()
   const COLLECTABLE_HEIGHT = Dimensions.get('window').width / 2
   const collectables = route.params.collection
-
-  const safeEdges = useMemo(() => [] as Edge[], [])
-
   const { lm: borderRadius } = useBorderRadii()
 
   const handleNavigateToCollectable = useCallback(
@@ -80,32 +73,25 @@ const CollectionScreen = () => {
     return item.address.toString()
   }, [])
 
-  const backgroundColor = useNetworkColor({})
-
   return (
     <BackScreen
       padding="none"
-      headerBackgroundColor={backgroundColor}
+      headerBackgroundColor="primaryBackground"
       title={`${collectables[0].symbol} ${collectables.length}`}
     >
-      <Box backgroundColor={backgroundColor} paddingVertical="s" />
-      <Animated.View entering={DelayedFadeIn} style={globalStyles.container}>
-        <SafeAreaBox
-          edges={safeEdges}
-          backgroundColor="black"
-          flex={1}
-          marginTop="s"
-        >
-          <FlatList
-            scrollEnabled
-            data={collectables}
-            numColumns={2}
-            renderItem={renderCollectable}
-            columnWrapperStyle={{ flexDirection: 'row' } as ViewStyle}
-            keyExtractor={keyExtractor}
-          />
-        </SafeAreaBox>
-      </Animated.View>
+      <ReAnimatedBox
+        marginTop="s"
+        entering={DelayedFadeIn}
+        style={globalStyles.container}
+      >
+        <FlatList
+          scrollEnabled
+          data={collectables}
+          numColumns={2}
+          renderItem={renderCollectable}
+          keyExtractor={keyExtractor}
+        />
+      </ReAnimatedBox>
     </BackScreen>
   )
 }
