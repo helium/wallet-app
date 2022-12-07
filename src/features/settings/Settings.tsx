@@ -398,7 +398,7 @@ const Settings = () => {
       },
     ]
 
-    if (Config.SOLANA_PREVIEW) {
+    if (Config.SOLANA_PREVIEW && Config.SOLANA_PREVIEW === 'true') {
       devData.push({
         title: t('settings.sections.dev.solana.title'),
         value: l1Network === 'solana',
