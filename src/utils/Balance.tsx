@@ -37,8 +37,8 @@ import { accountCurrencyType } from './accountUtils'
 import { CoinGeckoPrices, getCurrentPrices } from './coinGeckoClient'
 import { decimalSeparator, groupSeparator } from './i18n'
 import { onAccountChange, removeAccountChangeListener } from './solanaUtils'
-import useAppear from './useAppear'
-import usePrevious from './usePrevious'
+import useAppear from '../hooks/useAppear'
+import usePrevious from '../hooks/usePrevious'
 
 export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
 const useBalanceHook = () => {

@@ -18,7 +18,7 @@ import {
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import Text from '../../../components/Text'
 import { createSecureAccount } from '../../../storage/secureStorage'
-import useAlert from '../../../utils/useAlert'
+import useAlert from '../../../hooks/useAlert'
 import { Color } from '../../../theme/theme'
 
 const accentColors = [

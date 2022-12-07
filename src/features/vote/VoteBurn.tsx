@@ -30,7 +30,7 @@ import PaymentSubmit from '../payment/PaymentSubmit'
 import BackgroundFill from '../../components/BackgroundFill'
 import PaymentSummary from '../payment/PaymentSummary'
 import SubmitButton from '../../components/SubmitButton'
-import useAlert from '../../utils/useAlert'
+import useAlert from '../../hooks/useAlert'
 import LedgerBurnModal, {
   LedgerBurnModalRef,
 } from '../../components/LedgerBurnModal'

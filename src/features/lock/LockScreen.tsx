@@ -6,14 +6,14 @@ import { useAsync } from 'react-async-hook'
 import { FadeIn, FadeOutDown } from 'react-native-reanimated'
 import ConfirmPinView from '../../components/ConfirmPinView'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import useAlert from '../../utils/useAlert'
+import useAlert from '../../hooks/useAlert'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import {
   deleteSecureItem,
   getSecureItem,
   storeSecureItem,
 } from '../../storage/secureStorage'
-import usePrevious from '../../utils/usePrevious'
+import usePrevious from '../../hooks/usePrevious'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 
 type Props = { children: React.ReactNode }

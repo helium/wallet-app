@@ -7,7 +7,7 @@ import wordlist from '../../../constants/wordlists/english.json'
 import TextInput from '../../../components/TextInput'
 import Box from '../../../components/Box'
 import FabButton from '../../../components/FabButton'
-import usePrevious from '../../../utils/usePrevious'
+import usePrevious from '../../../hooks/usePrevious'
 import { Color } from '../../../theme/theme'
 
 type Props = {

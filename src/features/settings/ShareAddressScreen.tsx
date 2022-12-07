@@ -6,7 +6,7 @@ import { Platform } from 'react-native'
 import Share, { ShareOptions } from 'react-native-share'
 import { Spacing } from '../../theme/theme'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import useHaptic from '../../utils/useHaptic'
+import useHaptic from '../../hooks/useHaptic'
 import { useSpacing } from '../../theme/themeHooks'
 import Box from '../../components/Box'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -16,7 +16,7 @@ import { ellipsizeAddress } from '../../utils/accountUtils'
 import CopyAddress from '../../components/CopyAddress'
 import TabBar from '../../components/TabBar'
 import { useAppStorage } from '../../storage/AppStorageProvider'
-import useCopyText from '../../utils/useCopyText'
+import useCopyText from '../../hooks/useCopyText'
 
 const QR_CONTAINER_SIZE = 225
 

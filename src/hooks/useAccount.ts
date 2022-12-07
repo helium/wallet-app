@@ -3,7 +3,7 @@ import { PublicKey, AccountInfo } from '@solana/web3.js'
 import { TypedAccountParser } from '@helium/spl-utils'
 import { useAsync } from 'react-async-hook'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import * as Logger from './logger'
+import * as Logger from '../utils/logger'
 
 export interface ParsedAccountBase {
   pubkey: PublicKey

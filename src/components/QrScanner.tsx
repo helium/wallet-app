@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import Box from './Box'
-import useAlert from '../utils/useAlert'
+import useAlert from '../hooks/useAlert'
 import BackScreen from './BackScreen'
 
 type Props = { onBarCodeScanned: (data: string) => void }

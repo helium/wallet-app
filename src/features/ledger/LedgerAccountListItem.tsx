@@ -7,7 +7,7 @@ import AccountIcon from '../../components/AccountIcon'
 import { useColors } from '../../theme/themeHooks'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import { ellipsizeAddress, isTestnet } from '../../utils/accountUtils'
-import { LedgerAccount } from '../../utils/useLedger'
+import { LedgerAccount } from '../../hooks/useLedger'
 
 export enum Section {
   NEW_ACCOUNT = 0,

@@ -21,7 +21,7 @@ import BlurActionSheet from '../../components/BlurActionSheet'
 import globalStyles from '../../theme/globalStyles'
 import { DelayedFadeIn } from '../../components/FadeInOut'
 import { useCreateExplorerUrl } from '../../constants/urls'
-import useCopyText from '../../utils/useCopyText'
+import useCopyText from '../../hooks/useCopyText'
 
 type Route = RouteProp<ActivityStackParamList, 'ActivityDetailsScreen'>
 

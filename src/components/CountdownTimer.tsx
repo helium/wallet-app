@@ -16,7 +16,7 @@ import { format } from 'date-fns'
 import Box from './Box'
 import Text from './Text'
 import { useColors } from '../theme/themeHooks'
-import useDisappear from '../utils/useDisappear'
+import useDisappear from '../hooks/useDisappear'
 import { Theme } from '../theme/theme'
 
 export type TimerRef = {

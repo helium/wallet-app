@@ -7,7 +7,7 @@ import {
   getAllTransactions,
   onLogs,
   removeAccountChangeListener,
-} from './solanaUtils'
+} from '../utils/solanaUtils'
 
 const useEnrichedTransactions = (): {
   transactions: (EnrichedTransaction | ConfirmedSignatureInfo)[]

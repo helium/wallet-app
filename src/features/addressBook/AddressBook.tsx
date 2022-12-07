@@ -11,7 +11,7 @@ import { HomeNavigationProp } from '../home/homeTypes'
 import ContactsList from './ContactsList'
 import { AddressBookNavigationProp } from './addressBookTypes'
 import { CSAccount } from '../../storage/cloudStorage'
-import useNetworkColor from '../../utils/useNetworkColor'
+import useNetworkColor from '../../hooks/useNetworkColor'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
 const AddressBook = () => {

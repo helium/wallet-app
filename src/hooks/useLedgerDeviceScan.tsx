@@ -4,7 +4,7 @@ import { Observable, Subscription } from 'rxjs'
 import { PermissionsAndroid, Platform } from 'react-native'
 import { Device } from 'react-native-ble-plx'
 import { useAsync } from 'react-async-hook'
-import * as Logger from './logger'
+import * as Logger from '../utils/logger'
 
 enum DeviceModelId {
   blue = 'blue',

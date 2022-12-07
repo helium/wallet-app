@@ -23,7 +23,7 @@ import { Ticker } from '@helium/currency'
 import { useColors, useOpacity, useSpacing } from '../theme/themeHooks'
 import { Theme } from '../theme/theme'
 import Box from './Box'
-import useBackHandler from '../utils/useBackHandler'
+import useBackHandler from '../hooks/useBackHandler'
 import ListItem, { LIST_ITEM_HEIGHT } from './ListItem'
 
 type TokenListItem = {

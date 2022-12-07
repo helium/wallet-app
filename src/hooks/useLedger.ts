@@ -9,7 +9,7 @@ import { ApolloError } from '@apollo/client'
 import { LedgerDevice } from '../storage/cloudStorage'
 import { useAccountLazyQuery } from '../generated/graphql'
 import useDisappear from './useDisappear'
-import { runDerivationScheme } from './heliumLedger'
+import { runDerivationScheme } from '../utils/heliumLedger'
 
 export type LedgerAccount = {
   address: string

@@ -14,7 +14,7 @@ import Box from './Box'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import BlurBox from './BlurBox'
 import { ReAnimatedBox } from './AnimatedBox'
-import useDisappear from '../utils/useDisappear'
+import useDisappear from '../hooks/useDisappear'
 
 type Props = BoxProps<Theme> & {
   children?: React.ReactNode

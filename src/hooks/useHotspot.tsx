@@ -3,9 +3,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { recipientKey as getRecipientKey } from '@helium/lazy-distributor-sdk'
 import { useAsync, useAsyncCallback } from 'react-async-hook'
 import * as client from '@helium/distributor-oracle'
-import { getPendingRewards, LAZY_KEY, useProgram } from './hotspotNftsUtils'
+import {
+  getPendingRewards,
+  LAZY_KEY,
+  useProgram,
+} from '../utils/hotspotNftsUtils'
 import { useRecipient } from './useRecipient'
-import * as Logger from './logger'
+import * as Logger from '../utils/logger'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 
 export function useHotspot(mint: PublicKey): {
