@@ -4,6 +4,7 @@ import {
   createStackNavigator,
   StackNavigationOptions,
 } from '@react-navigation/stack'
+import Config from 'react-native-config'
 import { RootStackParamList } from './rootTypes'
 import HomeNavigator from '../features/home/HomeNavigator'
 import { useColors } from '../theme/themeHooks'
@@ -15,7 +16,7 @@ import { useAppStorage } from '../storage/AppStorageProvider'
 const RootNavigator = () => {
   const colors = useColors()
   const { hasAccounts } = useAccountStorage()
-  const { l1Network } = useAppStorage()
+  const { l1Network, updateL1Network } = useAppStorage()
 
   const RootStack = createStackNavigator<RootStackParamList>()
 
@@ -30,6 +31,13 @@ const RootNavigator = () => {
   useEffect(() => {
     changeNavigationBarColor(colors.primaryBackground, true, false)
   }, [colors.primaryBackground])
+
+  // Edge case scenario where user is on testflight and has solana preview on then installs app store version.
+  useEffect(() => {
+    if (Config.SOLANA_PREVIEW !== 'true') {
+      updateL1Network('helium')
+    }
+  }, [updateL1Network])
 
   const initialRouteName = useMemo(() => {
     if (hasAccounts) {

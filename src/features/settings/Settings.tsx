@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native'
 import Close from '@assets/images/close.svg'
 import { Alert, Linking, Platform, SectionList } from 'react-native'
 import { Cluster } from '@solana/web3.js'
+import Config from 'react-native-config'
 import Text from '../../components/Text'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -395,7 +396,10 @@ const Settings = () => {
             ? t('settings.sections.dev.testnet.helperText')
             : undefined,
       },
-      {
+    ]
+
+    if (Config.SOLANA_PREVIEW === 'true') {
+      devData.push({
         title: t('settings.sections.dev.solana.title'),
         value: l1Network === 'solana',
         onToggle: () =>
@@ -407,8 +411,9 @@ const Settings = () => {
             title: t('settings.sections.dev.solana.prompt.title'),
           })
         },
-      },
-    ]
+      })
+    }
+
     if (l1Network === 'solana') {
       const items = [
         { label: 'Devnet', value: 'devnet' },
