@@ -28,7 +28,7 @@ import { useBalance } from '../../utils/Balance'
 import { useCreateExplorerUrl, usePublicApi } from '../../constants/urls'
 import { decodeMemoString, DEFAULT_MEMO } from '../../components/MemoInput'
 import { ellipsizeAddress } from '../../utils/accountUtils'
-import useBackHandler from '../../utils/useBackHandler'
+import useBackHandler from '../../hooks/useBackHandler'
 import BlurBox from '../../components/BlurBox'
 import { Activity } from '../../types/activity'
 

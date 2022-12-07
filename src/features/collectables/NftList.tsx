@@ -4,7 +4,7 @@ import { FlatList } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { RefreshControl } from 'react-native'
 import Box from '../../components/Box'
-import useCollectables from '../../utils/useCollectables'
+import useCollectables from '../../hooks/useCollectables'
 import CollectableListItem, { CollectableSkeleton } from './NftListItem'
 import { useColors } from '../../theme/themeHooks'
 

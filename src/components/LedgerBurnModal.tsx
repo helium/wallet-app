@@ -21,9 +21,9 @@ import SafeAreaBox from './SafeAreaBox'
 import Box from './Box'
 import Text from './Text'
 import * as Logger from '../utils/logger'
-import useAlert from '../utils/useAlert'
-import useBackHandler from '../utils/useBackHandler'
-import useLedger from '../utils/useLedger'
+import useAlert from '../hooks/useAlert'
+import useBackHandler from '../hooks/useBackHandler'
+import useLedger from '../hooks/useLedger'
 
 type ShowOptions = {
   ledgerDevice: LedgerDevice

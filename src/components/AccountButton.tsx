@@ -11,7 +11,7 @@ import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import { Color, Theme } from '../theme/theme'
 import { useAppStorage } from '../storage/AppStorageProvider'
-import useNetworkColor from '../utils/useNetworkColor'
+import useNetworkColor from '../hooks/useNetworkColor'
 
 type Props = {
   onPress?: (address?: string) => void

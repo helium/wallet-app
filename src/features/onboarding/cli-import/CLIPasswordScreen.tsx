@@ -16,7 +16,7 @@ import Box from '../../../components/Box'
 import CloseButton from '../../../components/CloseButton'
 import TextInput from '../../../components/TextInput'
 import { createSecureAccount } from '../../../storage/secureStorage'
-import useAlert from '../../../utils/useAlert'
+import useAlert from '../../../hooks/useAlert'
 import { accountNetType } from '../../../utils/accountUtils'
 import { useOnboarding } from '../OnboardingProvider'
 

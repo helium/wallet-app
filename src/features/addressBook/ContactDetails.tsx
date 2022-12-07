@@ -36,10 +36,10 @@ import {
 import { solAddressIsValid, accountNetType } from '../../utils/accountUtils'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import AddressExtra from './AddressExtra'
-import useAlert from '../../utils/useAlert'
+import useAlert from '../../hooks/useAlert'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useIsHotspotOrValidatorQuery } from '../../generated/graphql'
-import useNetworkColor from '../../utils/useNetworkColor'
+import useNetworkColor from '../../hooks/useNetworkColor'
 
 const BUTTON_HEIGHT = 55
 

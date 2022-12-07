@@ -12,7 +12,7 @@ import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import { Color, Theme } from '../theme/theme'
 import { useAppStorage } from '../storage/AppStorageProvider'
-import useNetworkColor from '../utils/useNetworkColor'
+import useNetworkColor from '../hooks/useNetworkColor'
 
 const TokenItem = ({ ticker }: { ticker: Ticker }) => {
   const colors = useColors()

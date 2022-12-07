@@ -37,7 +37,7 @@ import LedgerBurnModal, {
   LedgerBurnModalRef,
 } from '../../components/LedgerBurnModal'
 import PaymentSubmit from '../payment/PaymentSubmit'
-import useAlert from '../../utils/useAlert'
+import useAlert from '../../hooks/useAlert'
 import { checkSecureAccount } from '../../storage/secureStorage'
 
 type Route = RouteProp<HomeStackParamList, 'BurnScreen'>

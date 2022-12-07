@@ -24,9 +24,9 @@ import { useAccountLazyQuery } from '../generated/graphql'
 import Text from './Text'
 import Box from './Box'
 import { LedgerDevice } from '../storage/cloudStorage'
-import useAlert from '../utils/useAlert'
-import useBackHandler from '../utils/useBackHandler'
-import useLedger from '../utils/useLedger'
+import useAlert from '../hooks/useAlert'
+import useBackHandler from '../hooks/useBackHandler'
+import useLedger from '../hooks/useLedger'
 
 type ShowOptions = {
   payments: SendDetails[]

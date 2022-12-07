@@ -17,7 +17,7 @@ import ActivityNavigator from '../features/activity/ActivityNavigator'
 import NotificationsNavigator from '../features/notifications/NotificationsNavigator'
 import SafeAreaBox from '../components/SafeAreaBox'
 import Box from '../components/Box'
-import useEnrichedTransactions from '../utils/useEnrichedTransactions'
+import useEnrichedTransactions from '../hooks/useEnrichedTransactions'
 
 const Tab = createBottomTabNavigator()
 

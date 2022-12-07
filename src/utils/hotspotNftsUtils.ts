@@ -14,7 +14,7 @@ import BN from 'bn.js'
 import { useState } from 'react'
 import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
 import { useAsync } from 'react-async-hook'
-import { Recipient } from './useRecipient'
+import { Recipient } from '../hooks/useRecipient'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 
 export const LAZY_KEY = lazyDistributorKey(new PublicKey(MOBILE_MINT))[0]

@@ -20,7 +20,7 @@ import BackButton from '../../components/BackButton'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { CSAccounts } from '../../storage/cloudStorage'
-import useLedger, { LedgerAccount } from '../../utils/useLedger'
+import useLedger, { LedgerAccount } from '../../hooks/useLedger'
 
 const MAX_ACCOUNTS = 10
 

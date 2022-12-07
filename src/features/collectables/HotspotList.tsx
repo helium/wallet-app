@@ -12,7 +12,7 @@ import { Collectable } from '../../types/solana'
 import { CollectableNavigationProp } from './collectablesTypes'
 import HotspotListItem from './HotspotListItem'
 import ButtonPressable from '../../components/ButtonPressable'
-import useHotspots from '../../utils/useHotspots'
+import useHotspots from '../../hooks/useHotspots'
 import FadeInOut from '../../components/FadeInOut'
 
 const HotspotList = () => {

@@ -59,13 +59,13 @@ import { getMemoStrValid } from '../../components/MemoInput'
 import PaymentSubmit from './PaymentSubmit'
 import { CSAccount } from '../../storage/cloudStorage'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
-import useAlert from '../../utils/useAlert'
+import useAlert from '../../hooks/useAlert'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { RootState } from '../../store/rootReducer'
 import { useAppDispatch } from '../../store/store'
-import useDisappear from '../../utils/useDisappear'
+import useDisappear from '../../hooks/useDisappear'
 import { solanaSlice } from '../../store/slices/solanaSlice'
-import useNetworkColor from '../../utils/useNetworkColor'
+import useNetworkColor from '../../hooks/useNetworkColor'
 
 type LinkedPayment = {
   amount?: string

@@ -19,7 +19,7 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { formatAccountAlias } from '../../utils/accountUtils'
 import { checkSecureAccount, getKeypair } from '../../storage/secureStorage'
 import AccountButton from '../../components/AccountButton'
-import useAlert from '../../utils/useAlert'
+import useAlert from '../../hooks/useAlert'
 
 type Route = RouteProp<HomeStackParamList, 'LinkWallet'>
 const LinkWallet = () => {

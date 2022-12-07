@@ -25,7 +25,7 @@ import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import BlurActionSheet from '../../components/BlurActionSheet'
 import ListItem from '../../components/ListItem'
 import InfoIcon from '../../assets/images/info.svg'
-import { useHotspot } from '../../utils/useHotspot'
+import { useHotspot } from '../../hooks/useHotspot'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 
 LogBox.ignoreLogs([

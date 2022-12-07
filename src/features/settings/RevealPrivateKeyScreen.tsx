@@ -12,7 +12,7 @@ import TextTransform from '../../components/TextTransform'
 import { getSecureAccount } from '../../storage/secureStorage'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import CopyAddress from '../../components/CopyAddress'
-import useAlert from '../../utils/useAlert'
+import useAlert from '../../hooks/useAlert'
 
 const RevealPrivateKeyScreen = () => {
   const { currentAccount } = useAccountStorage()

@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
-import useHaptic from '../../../utils/useHaptic'
-import useAlert from '../../../utils/useAlert'
+import useHaptic from '../../../hooks/useHaptic'
+import useAlert from '../../../hooks/useAlert'
 import {
   CLIAccountNavigationProp,
   EncyptedAccountRouteParam,

@@ -20,7 +20,7 @@ import { useColors, useOpacity, useSpacing } from '../theme/themeHooks'
 import { AccountNetTypeOpt } from '../utils/accountUtils'
 import AccountListItem from './AccountListItem'
 import { CSAccount } from '../storage/cloudStorage'
-import useBackHandler from '../utils/useBackHandler'
+import useBackHandler from '../hooks/useBackHandler'
 
 const initialState = {
   show: (_type?: AccountNetTypeOpt) => undefined,

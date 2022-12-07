@@ -24,7 +24,7 @@ import { HomeNavigationProp } from '../features/home/homeTypes'
 import { Theme } from '../theme/theme'
 import Box from './Box'
 import { CSAccount } from '../storage/cloudStorage'
-import useBackHandler from '../utils/useBackHandler'
+import useBackHandler from '../hooks/useBackHandler'
 
 export type AddressBookRef = {
   showAddressBook: (opts: { address?: string; index?: number }) => void

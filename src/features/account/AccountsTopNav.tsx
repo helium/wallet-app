@@ -15,8 +15,8 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import * as AccountUtils from '../../utils/accountUtils'
 import AccountIcon from '../../components/AccountIcon'
 import BackgroundFill from '../../components/BackgroundFill'
-import useLayoutWidth from '../../utils/useLayoutWidth'
-import useNetworkColor from '../../utils/useNetworkColor'
+import useLayoutWidth from '../../hooks/useLayoutWidth'
+import useNetworkColor from '../../hooks/useNetworkColor'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Props = {

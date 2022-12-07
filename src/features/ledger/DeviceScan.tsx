@@ -22,8 +22,8 @@ import {
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import LedgerConnectSteps from './LedgerConnectSteps'
 import { useColors, useOpacity } from '../../theme/themeHooks'
-import useBackHandler from '../../utils/useBackHandler'
-import useLedgerDeviceScan from '../../utils/useLedgerDeviceScan'
+import useBackHandler from '../../hooks/useBackHandler'
+import useLedgerDeviceScan from '../../hooks/useLedgerDeviceScan'
 
 type Route = RouteProp<LedgerNavigatorStackParamList, 'DeviceScan'>
 const DeviceScan = () => {

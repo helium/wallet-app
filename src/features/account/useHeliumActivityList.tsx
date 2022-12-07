@@ -9,7 +9,7 @@ import {
   Activity as HeliumActivity,
 } from '../../generated/graphql'
 import { FilterType } from './AccountActivityFilter'
-import useAppear from '../../utils/useAppear'
+import useAppear from '../../hooks/useAppear'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { Activity } from '../../types/activity'
