@@ -3,7 +3,7 @@ import { PublicKey } from '@solana/web3.js'
 import { useMemo } from 'react'
 import { TypedAccountParser } from '@helium/spl-utils'
 import { UseAccountState, useAccount } from './useAccount'
-import * as Logger from './logger'
+import * as Logger from '../utils/logger'
 
 export function useIdlAccount<IDL extends Idl, A extends string = string>(
   key: PublicKey,
