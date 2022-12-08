@@ -40,7 +40,9 @@ const useEnrichedTransactions = (): {
     )
     setTransactions(fetchTransactions)
     setOldestTransaction(
-      fetchTransactions[fetchTransactions.length - 1].signature,
+      fetchTransactions.length > 0
+        ? fetchTransactions[fetchTransactions.length - 1].signature
+        : '',
     )
     setLoading(false)
     setOnEndReached(false)
@@ -66,7 +68,9 @@ const useEnrichedTransactions = (): {
     if (fetchTransactions.length !== 0) {
       setTransactions((t) => [...t, ...fetchTransactions])
       setOldestTransaction(
-        fetchTransactions[fetchTransactions.length - 1].signature,
+        fetchTransactions.length > 0
+          ? fetchTransactions[fetchTransactions.length - 1].signature
+          : '',
       )
     } else {
       setOnEndReached(true)
