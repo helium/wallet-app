@@ -6,6 +6,7 @@ import { useAsync } from 'react-async-hook'
 import RNSodium from 'react-native-sodium'
 import { MAINNET } from '@helium/address/build/NetTypes'
 import { useTranslation } from 'react-i18next'
+import { Buffer } from 'buffer'
 import Text from '../../../components/Text'
 import SafeAreaBox from '../../../components/SafeAreaBox'
 import BackButton from '../../../components/BackButton'
@@ -30,7 +31,7 @@ const ImportPrivateKey = () => {
   const navigation = useNavigation<RootNavigationProp>()
   const route = useRoute<Route>()
   const { t } = useTranslation()
-  const privateKey = route.params.key
+  const encodedWords = route.params.key
   const { setOnboardingData } = useOnboarding()
   const [publicKey, setPublicKey] = useState<string>()
   const [secureAccount, setSecureAccount] = useState<SecureAccount>()
@@ -39,33 +40,51 @@ const ImportPrivateKey = () => {
 
   const decodePrivateKey = useCallback(
     async (key?: string) => {
-      const keyToDecode = key || privateKey
-      if (!keyToDecode) return
-
-      try {
-        setError(false)
-        const keyBytes = bs58.decode(keyToDecode)
-        const seedBase64 = await RNSodium.crypto_sign_ed25519_sk_to_seed(
-          Buffer.from(keyBytes).toString('base64'),
-        )
-        const seedBuffer = Buffer.from(seedBase64, 'base64')
-        const mnemonic = Mnemonic.fromEntropy(seedBuffer)
-        const account = await createSecureAccount({
-          givenMnemonic: mnemonic,
-          netType: MAINNET,
-          use24Words: true,
-        })
-        setSecureAccount(account)
-        setPublicKey(account.address)
-        setOnboardingData((prev) => {
-          return { ...prev, secureAccount: account }
-        })
-      } catch (e) {
-        setError(true)
-        Logger.error(e)
+      if (key) {
+        // decoding b58 private key
+        try {
+          setError(false)
+          const keyBytes = bs58.decode(key)
+          const seedBase64 = await RNSodium.crypto_sign_ed25519_sk_to_seed(
+            Buffer.from(keyBytes).toString('base64'),
+          )
+          const seedBuffer = Buffer.from(seedBase64, 'base64')
+          const mnemonic = Mnemonic.fromEntropy(seedBuffer)
+          const account = await createSecureAccount({
+            givenMnemonic: mnemonic,
+            netType: MAINNET,
+          })
+          setSecureAccount(account)
+          setPublicKey(account.address)
+          setOnboardingData((prev) => {
+            return { ...prev, secureAccount: account }
+          })
+        } catch (e) {
+          setError(true)
+          Logger.error(e)
+        }
+      } else if (encodedWords) {
+        // decoding base64 words list
+        try {
+          const buffer = Buffer.from(encodedWords, 'base64')
+          const words = JSON.parse(buffer.toString())
+          const mnemonic = new Mnemonic(words)
+          const account = await createSecureAccount({
+            givenMnemonic: mnemonic,
+            netType: MAINNET,
+          })
+          setSecureAccount(account)
+          setPublicKey(account.address)
+          setOnboardingData((prev) => {
+            return { ...prev, secureAccount: account }
+          })
+        } catch (e) {
+          setError(true)
+          Logger.error(e)
+        }
       }
     },
-    [privateKey, setOnboardingData],
+    [encodedWords, setOnboardingData],
   )
 
   useAsync(async () => {
