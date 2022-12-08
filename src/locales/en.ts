@@ -68,6 +68,8 @@ export default {
       paste: 'Copy and paste your private key from the Helium Hotspot App.',
       inputPlaceholder: 'You private key...',
       error: 'Invalid Private Key',
+      exists:
+        'The account you\'re importing already exists as "{{alias}}". No further action is required.',
       body: 'You are importing a private key with the following public key.',
       action: 'Import Account',
     },
