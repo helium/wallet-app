@@ -56,7 +56,7 @@ const NotificationListItem = ({
             />
           )}
           <Text
-            variant="body2"
+            variant="subtitle4"
             color="primaryText"
             adjustsFontSizeToFit
             allowFontScaling

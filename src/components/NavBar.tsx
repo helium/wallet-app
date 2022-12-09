@@ -44,7 +44,7 @@ const NavBarItem = ({
     return {
       transform: [
         {
-          scale: withSpring(selected ? 1 : 0),
+          scale: 1,
         },
       ],
     }

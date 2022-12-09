@@ -242,11 +242,11 @@ const TransferCollectableScreen = () => {
                 marginBottom="s"
                 marginHorizontal="l"
                 textAlign="center"
-                variant="h2"
+                variant="h1Medium"
               >
                 {collectable.json.name}
               </Text>
-              <Text variant="body2" color="grey600" marginBottom="xl">
+              <Text variant="body3Medium" color="grey600" marginBottom="xl">
                 {collectable.json.description ||
                   t('collectables.noDescription')}
               </Text>
@@ -273,7 +273,7 @@ const TransferCollectableScreen = () => {
               {solFee ? (
                 <TextTransform
                   marginHorizontal="m"
-                  variant="body2"
+                  variant="body3Medium"
                   marginBottom="s"
                   color="white"
                   i18nKey="collectablesScreen.transferFee"
@@ -282,7 +282,7 @@ const TransferCollectableScreen = () => {
               ) : (
                 <Text
                   marginHorizontal="m"
-                  variant="body2"
+                  variant="body3Medium"
                   marginBottom="s"
                   color="secondaryText"
                 >
@@ -294,7 +294,7 @@ const TransferCollectableScreen = () => {
                   hasError || hasInsufficientBalance || networkError ? 100 : 0
                 }
                 marginHorizontal="m"
-                variant="body3"
+                variant="body3Medium"
                 marginBottom="l"
                 color="red500"
               >
@@ -321,7 +321,6 @@ const TransferCollectableScreen = () => {
                   title={t('collectablesScreen.transfer')}
                   titleColor="black"
                   onPress={handleTransfer}
-                  fontWeight="bold"
                 />
               </Box>
             </SafeAreaBox>

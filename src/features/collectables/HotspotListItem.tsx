@@ -42,7 +42,7 @@ const HotspotListItem = ({ hotspot, onPress }: HotspotListItemProps) => {
         marginHorizontal="s"
         marginVertical="s"
         alignItems="center"
-        backgroundColor="secondaryBackground"
+        backgroundColor="surfaceSecondary"
         borderRadius="xxl"
         onPress={() => onPress(hotspot)}
       >
@@ -81,12 +81,7 @@ const HotspotListItem = ({ hotspot, onPress }: HotspotListItemProps) => {
         )}
       </TouchableOpacityBox>
       {json?.name && (
-        <Text
-          textAlign="center"
-          variant="body0"
-          fontSize={20}
-          marginHorizontal="m"
-        >
+        <Text textAlign="center" variant="subtitle1" marginHorizontal="m">
           {removeDashAndCapitalize(json.name)}
         </Text>
       )}

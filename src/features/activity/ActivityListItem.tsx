@@ -90,8 +90,8 @@ const ActivityListItem = ({
         <Error width={25} height={25} color={colors.error} />
       )}
       <Box marginStart="s" flexGrow={1} flexBasis={0.5} justifyContent="center">
-        <Text variant="body1">{title}</Text>
-        <Text variant="body2" color="secondaryText">
+        <Text variant="subtitle4">{title}</Text>
+        <Text variant="body3" color="secondaryText">
           {subtitle}
         </Text>
       </Box>

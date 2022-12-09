@@ -85,7 +85,7 @@ const ActivityScreen = () => {
         justifyContent="center"
       >
         {icon !== undefined && icon}
-        <Text variant="body2" textAlign="center" color="secondaryText">
+        <Text variant="body3" textAlign="center" color="secondaryText">
           {title}
         </Text>
       </Box>

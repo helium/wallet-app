@@ -51,7 +51,7 @@ const CollectionScreen = () => {
             marginHorizontal="s"
             marginVertical="s"
             alignItems="center"
-            backgroundColor="black800"
+            backgroundColor="surfaceSecondary"
             borderRadius="xxl"
             onPress={() => handleNavigateToCollectable(item)}
           >
