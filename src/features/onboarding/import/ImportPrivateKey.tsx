@@ -6,6 +6,7 @@ import { useAsync } from 'react-async-hook'
 import RNSodium from 'react-native-sodium'
 import { MAINNET } from '@helium/address/build/NetTypes'
 import { useTranslation } from 'react-i18next'
+import { Buffer } from 'buffer'
 import Text from '../../../components/Text'
 import SafeAreaBox from '../../../components/SafeAreaBox'
 import BackButton from '../../../components/BackButton'
@@ -30,42 +31,68 @@ const ImportPrivateKey = () => {
   const navigation = useNavigation<RootNavigationProp>()
   const route = useRoute<Route>()
   const { t } = useTranslation()
-  const privateKey = route.params.key
+  const encodedWords = route.params.key
   const { setOnboardingData } = useOnboarding()
   const [publicKey, setPublicKey] = useState<string>()
   const [secureAccount, setSecureAccount] = useState<SecureAccount>()
-  const [error, setError] = useState(false)
+  const [error, setError] = useState<string>()
+  const { accounts } = useAccountStorage()
   const { l1Network } = useAppStorage()
+
+  const createAccount = useCallback(
+    async (mnemonic: Mnemonic) => {
+      const account = await createSecureAccount({
+        givenMnemonic: mnemonic,
+        netType: MAINNET,
+      })
+      if (
+        accounts &&
+        Object.keys(accounts).find((a) => a === account.address)
+      ) {
+        const alias = accounts[account.address]?.alias
+        setError(t('accountImport.privateKey.exists', { alias }))
+        return
+      }
+      setSecureAccount(account)
+      setPublicKey(account.address)
+      setOnboardingData((prev) => {
+        return { ...prev, secureAccount: account }
+      })
+      setError(undefined)
+    },
+    [accounts, setOnboardingData, t],
+  )
 
   const decodePrivateKey = useCallback(
     async (key?: string) => {
-      const keyToDecode = key || privateKey
-      if (!keyToDecode) return
-
-      try {
-        setError(false)
-        const keyBytes = bs58.decode(keyToDecode)
-        const seedBase64 = await RNSodium.crypto_sign_ed25519_sk_to_seed(
-          Buffer.from(keyBytes).toString('base64'),
-        )
-        const seedBuffer = Buffer.from(seedBase64, 'base64')
-        const mnemonic = Mnemonic.fromEntropy(seedBuffer)
-        const account = await createSecureAccount({
-          givenMnemonic: mnemonic,
-          netType: MAINNET,
-          use24Words: true,
-        })
-        setSecureAccount(account)
-        setPublicKey(account.address)
-        setOnboardingData((prev) => {
-          return { ...prev, secureAccount: account }
-        })
-      } catch (e) {
-        setError(true)
-        Logger.error(e)
+      if (key) {
+        // decoding b58 private key
+        try {
+          const keyBytes = bs58.decode(key)
+          const seedBase64 = await RNSodium.crypto_sign_ed25519_sk_to_seed(
+            Buffer.from(keyBytes).toString('base64'),
+          )
+          const seedBuffer = Buffer.from(seedBase64, 'base64')
+          const mnemonic = Mnemonic.fromEntropy(seedBuffer)
+          await createAccount(mnemonic)
+        } catch (e) {
+          setError(t('accountImport.privateKey.error'))
+          Logger.error(e)
+        }
+      } else if (encodedWords) {
+        // decoding base64 words list
+        try {
+          const buffer = Buffer.from(encodedWords, 'base64')
+          const words = JSON.parse(buffer.toString())
+          const mnemonic = new Mnemonic(words)
+          await createAccount(mnemonic)
+        } catch (e) {
+          setError(t('accountImport.privateKey.error'))
+          Logger.error(e)
+        }
       }
     },
-    [privateKey, setOnboardingData],
+    [createAccount, encodedWords, t],
   )
 
   useAsync(async () => {
@@ -134,12 +161,12 @@ const ImportPrivateKey = () => {
         variant="body1"
         marginTop="xl"
         marginBottom="xl"
-        visible={!publicKey}
+        visible={!publicKey && !encodedWords}
       >
         {t('accountImport.privateKey.paste')}
       </Text>
       <TextInput
-        visible={!publicKey}
+        visible={!publicKey && !encodedWords}
         textInputProps={{
           placeholder: t('accountImport.privateKey.inputPlaceholder'),
           autoCapitalize: 'none',
@@ -155,10 +182,10 @@ const ImportPrivateKey = () => {
         variant="body1"
         marginTop="m"
         marginBottom="m"
-        visible={error}
+        visible={!!error}
         color="red500"
       >
-        {t('accountImport.privateKey.error')}
+        {error}
       </Text>
       <Text variant="body1" marginTop="xl" visible={!!publicKey}>
         {t('accountImport.privateKey.body')}
@@ -182,6 +209,7 @@ const ImportPrivateKey = () => {
         backgroundColorDisabled="surfaceSecondary"
         backgroundColorDisabledOpacity={0.5}
         titleColor="black"
+        disabled={!!error}
       />
     </SafeAreaBox>
   )
