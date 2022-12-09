@@ -105,11 +105,11 @@ const NftDetailsScreen = () => {
               marginBottom="s"
               marginHorizontal="l"
               textAlign="center"
-              variant="h2"
+              variant="h1Medium"
             >
               {collectable.json.name}
             </Text>
-            <Text variant="body2" color="grey600" marginBottom="xl">
+            <Text variant="body3Medium" color="grey600" marginBottom="xl">
               {collectable.json.description || t('collectables.noDescription')}
             </Text>
             <Box
@@ -142,7 +142,6 @@ const NftDetailsScreen = () => {
                 title={t('collectablesScreen.transfer')}
                 titleColor="black"
                 onPress={handleSend}
-                fontWeight="bold"
               />
             </Box>
           </SafeAreaBox>

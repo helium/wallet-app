@@ -100,7 +100,7 @@ const palette = {
   black400: '#333333',
   black500: '#2B2B2B',
   black600: '#313131',
-  black650: '#242424',
+  black650: '#191919',
   black700: '#161616',
   black750: '#1A1A1A',
   black800: '#1A1C22',
@@ -288,7 +288,33 @@ export const theme = createTheme({
       borderRadius: 'xl',
     },
   },
-  textVariants,
+  textVariants: {
+    ...textVariants,
+
+    body0Medium: { ...textVariants.body0, ...textVariants.medium },
+    body0Bold: { ...textVariants.body0, ...textVariants.bold },
+
+    body1Medium: { ...textVariants.body1, ...textVariants.medium },
+    body1Bold: { ...textVariants.body1, ...textVariants.bold },
+
+    body2Medium: { ...textVariants.body2, ...textVariants.medium },
+    body2Bold: { ...textVariants.body2, ...textVariants.bold },
+
+    body3Medium: { ...textVariants.body3, ...textVariants.medium },
+    body3Bold: { ...textVariants.body3, ...textVariants.bold },
+
+    h1Medium: { ...textVariants.h1, ...textVariants.medium },
+    h1Bold: { ...textVariants.h1, ...textVariants.bold },
+
+    h2Medium: { ...textVariants.h2, ...textVariants.medium },
+    h2Bold: { ...textVariants.h2, ...textVariants.bold },
+
+    h3Medium: { ...textVariants.h3, ...textVariants.medium },
+    h3Bold: { ...textVariants.h3, ...textVariants.bold },
+
+    h4Medium: { ...textVariants.h4, ...textVariants.medium },
+    h4Bold: { ...textVariants.h4, ...textVariants.bold },
+  },
   inputVariants: {
     plain: {
       color: 'primaryText',
@@ -323,8 +349,6 @@ export const theme = createTheme({
       padding: 'm',
       borderRadius: 'xl',
       backgroundColor: 'transparent10',
-      fontWeight: '600',
-      fontSize: 15,
     },
   },
 })

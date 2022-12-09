@@ -52,7 +52,6 @@ const HotspotList = () => {
         titleColor="black"
         marginBottom="m"
         marginHorizontal="l"
-        fontWeight="bold"
       />
     )
   }, [t])

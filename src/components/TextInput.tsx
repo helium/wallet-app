@@ -9,7 +9,11 @@ import { TextInput } from 'react-native'
 import tinycolor from 'tinycolor2'
 import { SvgProps } from 'react-native-svg'
 import { Color, theme, Theme } from '../theme/theme'
-import { useColors, useInputVariants } from '../theme/themeHooks'
+import {
+  useColors,
+  useInputVariants,
+  useTextVariants,
+} from '../theme/themeHooks'
 import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
@@ -45,6 +49,7 @@ const TI = forwardRef(
   ) => {
     const colors = useColors()
     const inputVariants = useInputVariants()
+    const textVariants = useTextVariants()
 
     const getPlaceholderTextColor = useMemo(() => {
       const findColor = () => {
@@ -73,12 +78,7 @@ const TI = forwardRef(
       >
         <Box flexGrow={1} width="80%">
           {floatingLabel && (
-            <Text
-              variant="body2"
-              fontWeight="bold"
-              fontSize={12}
-              color="grey600"
-            >
+            <Text variant="body3" color="grey600">
               {floatingLabel}
             </Text>
           )}
@@ -86,6 +86,9 @@ const TI = forwardRef(
             style={{
               color: getTextColor,
               fontSize: fontSize || inputVariants.regular.fontSize,
+              fontFamily: floatingLabel
+                ? textVariants.subtitle4.fontFamily
+                : undefined,
             }}
             placeholderTextColor={getPlaceholderTextColor}
             {...textInputProps}

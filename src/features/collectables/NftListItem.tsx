@@ -46,7 +46,7 @@ const NftListItem = ({
         marginHorizontal="s"
         marginVertical="s"
         alignItems="center"
-        backgroundColor="black800"
+        backgroundColor="surfaceSecondary"
         borderRadius="xxl"
         onPress={handleCollectableNavigation(collectables[item])}
       >
@@ -69,10 +69,10 @@ const NftListItem = ({
           right={16}
           flexDirection="row"
         >
-          <Text variant="body2" fontWeight="bold" color="black" marginRight="s">
+          <Text variant="subtitle4" color="black" marginRight="xs">
             {item}
           </Text>
-          <Text variant="body2" fontWeight="bold" color="black600">
+          <Text variant="body2" color="secondaryText">
             {collectables[item].length}
           </Text>
         </Box>

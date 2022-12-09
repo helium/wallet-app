@@ -238,18 +238,13 @@ const ActivityDetailsScreen = () => {
         <BackScreen title={t('activityScreen.activityDetails')}>
           <Box alignItems="center" justifyContent="center" height="100%">
             {activityImage}
-            <Text variant="h2" marginTop="m" marginBottom="s">
+            <Text variant="h1Medium" marginTop="m" marginBottom="s">
               {title}
             </Text>
-            <Text
-              variant="body0"
-              marginBottom="s"
-              textAlign="center"
-              opacity={0.8}
-            >
+            <Text variant="subtitle3" marginBottom="s" textAlign="center">
               {description}
             </Text>
-            <Text variant="body2" textAlign="center" color="secondaryText">
+            <Text variant="body3" textAlign="center" color="secondaryText">
               {dateLabel}
             </Text>
             {AccountAddressListItems}

@@ -173,7 +173,7 @@ const ButtonPressable = ({
           >
             {title && (
               <Text
-                variant="body1"
+                variant="subtitle1"
                 fontSize={fontSize || 19}
                 fontWeight={fontWeight}
                 style={getTitleColorStyle(pressed)}
