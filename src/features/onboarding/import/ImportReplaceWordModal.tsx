@@ -93,22 +93,24 @@ const ImportReplaceWordModal = ({
             </ScrollView>
           </Box>
           <TextInput
-            placeholder={t('accountImport.wordEntry.placeholder', {
-              ordinal,
-            })}
+            textInputProps={{
+              placeholder: t('accountImport.wordEntry.placeholder', {
+                ordinal,
+              }),
+              onChangeText: setWord,
+              onSubmitEditing: handleSubmit,
+              value: word,
+              autoCapitalize: 'characters',
+              keyboardAppearance: 'dark',
+              autoCorrect: false,
+              autoComplete: 'off',
+              blurOnSubmit: false,
+              returnKeyType: 'next',
+              autoFocus: true,
+            }}
             marginHorizontal="l"
             variant="underline"
-            onChangeText={setWord}
-            onSubmitEditing={handleSubmit}
-            value={word}
-            autoCapitalize="characters"
-            keyboardAppearance="dark"
-            autoCorrect={false}
-            autoComplete="off"
-            blurOnSubmit={false}
-            returnKeyType="next"
             marginBottom="s"
-            autoFocus
           />
         </Box>
       </SafeAreaBox>

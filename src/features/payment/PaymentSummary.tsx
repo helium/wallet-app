@@ -14,6 +14,7 @@ type Props = {
   errors?: string[]
   payments?: Payment[]
   alwaysShowRecipients?: boolean
+  collectableSymbol?: string
 }
 
 const MAX_ACCOUNT_ICONS = 3
@@ -25,6 +26,7 @@ const PaymentSummary = ({
   payments = [],
   errors,
   alwaysShowRecipients,
+  collectableSymbol,
 }: Props) => {
   const { t } = useTranslation()
 
@@ -49,12 +51,14 @@ const PaymentSummary = ({
   const accountIcons = useMemo(() => {
     const icons = payments
       .slice(0, MAX_ACCOUNT_ICONS)
-      .map(({ address }, index) => (
-        // eslint-disable-next-line react/no-array-index-key
-        <Box key={`${index}.${address}`} style={{ marginLeft: index * -4 }}>
-          <AccountIcon address={address} size={16} />
-        </Box>
-      ))
+      .map(({ address }, index) => {
+        return (
+          // eslint-disable-next-line react/no-array-index-key
+          <Box key={`${index}.${address}`} style={{ marginLeft: index * -4 }}>
+            <AccountIcon address={address} size={16} />
+          </Box>
+        )
+      })
     if (payments.length > MAX_ACCOUNT_ICONS) {
       icons.push(
         <Box
@@ -99,12 +103,12 @@ const PaymentSummary = ({
           {t('payment.total')}
         </Text>
         <Text variant="h3" color="primaryText">
-          {total}
+          {!collectableSymbol ? total : `1 ${collectableSymbol}`}
         </Text>
       </Box>
 
       <Box flexDirection="row" alignItems="center">
-        {showRecipients && payments.length > 0 && (
+        {showRecipients && payments.length > 0 && !collectableSymbol && (
           <>
             {accountIcons}
             <Text variant="body2" color="secondaryText" marginLeft="s">

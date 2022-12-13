@@ -7,6 +7,7 @@ import {
 import { LayoutChangeEvent } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useAsync } from 'react-async-hook'
+import { Portal } from '@gorhom/portal'
 import { useOpacity } from '../theme/themeHooks'
 import CustomBlurBackdrop from './CustomBlurBackdrop'
 import SafeAreaBox from './SafeAreaBox'
@@ -52,7 +53,7 @@ const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
         title={title}
         disappearsOnIndex={-1}
         appearsOnIndex={0}
-        opacity={0.8}
+        opacity={0.6}
         {...props}
       />
     ),
@@ -66,22 +67,24 @@ const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
   }, [])
 
   return (
-    <BottomSheetModalProvider>
-      <BottomSheetModal
-        ref={bottomSheetModalRef}
-        index={0}
-        snapPoints={snapPoints}
-        backdropComponent={renderBackdrop}
-        backgroundStyle={backgroundStyle}
-        onDismiss={handleOnClose}
-      >
-        <BottomSheetScrollView>
-          <SafeAreaBox edges={safeEdges} onLayout={handleContentLayout}>
-            {children}
-          </SafeAreaBox>
-        </BottomSheetScrollView>
-      </BottomSheetModal>
-    </BottomSheetModalProvider>
+    <Portal>
+      <BottomSheetModalProvider>
+        <BottomSheetModal
+          ref={bottomSheetModalRef}
+          index={0}
+          snapPoints={snapPoints}
+          backdropComponent={renderBackdrop}
+          backgroundStyle={backgroundStyle}
+          onDismiss={handleOnClose}
+        >
+          <BottomSheetScrollView>
+            <SafeAreaBox edges={safeEdges} onLayout={handleContentLayout}>
+              {children}
+            </SafeAreaBox>
+          </BottomSheetScrollView>
+        </BottomSheetModal>
+      </BottomSheetModalProvider>
+    </Portal>
   )
 }
 

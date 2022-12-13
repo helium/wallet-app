@@ -2,6 +2,7 @@ import { Keypair, Mnemonic } from '@helium/crypto-react-native'
 import Address, { NetTypes as NetType } from '@helium/address'
 import * as SecureStore from 'expo-secure-store'
 import { Alert } from 'react-native'
+import { Keypair as SolanaKeypair } from '@solana/web3.js'
 import { CSAccount } from './cloudStorage'
 import i18n from '../utils/i18n'
 import { navToImportAccount } from '../navigation/NavigationHelper'
@@ -17,6 +18,8 @@ export enum SecureStorageKeys {
   LAST_IDLE = 'lastIdle',
   SELECTED_LIST = 'selected_list',
   ENABLE_TESTNET = 'enableTestnet',
+  SOLANA_NETWORK = 'solanaNetwork',
+  L1_NETWORK = 'l1Network',
   HIDE_PRIVATE_KEY_ALERT = 'hidePrivateKeyAlert',
   SHOW_NUMERIC_CHANGE = 'showNumericChange',
 }
@@ -130,6 +133,19 @@ export const getKeypair = async (
 
   const netType = Address.fromB58(address)?.netType
   return new Keypair(secureAccount.keypair, netType)
+}
+
+export const getSolanaKeypair = async (
+  address: string,
+): Promise<SolanaKeypair | undefined> => {
+  const secureAccount = await getSecureAccount(address)
+  if (!secureAccount) {
+    return
+  }
+
+  return SolanaKeypair.fromSecretKey(
+    Buffer.from(secureAccount.keypair.sk, 'base64'),
+  )
 }
 
 export const storeSecureAccount = (secureAccount: SecureAccount) =>

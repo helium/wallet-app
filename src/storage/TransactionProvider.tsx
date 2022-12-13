@@ -1,10 +1,15 @@
 import Address from '@helium/address'
-import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
+import Balance, {
+  NetworkTokens,
+  TestNetworkTokens,
+  Ticker,
+} from '@helium/currency'
 import { PaymentV2, TokenBurnV1, Transaction } from '@helium/transactions'
 import React, { createContext, ReactNode, useContext, useEffect } from 'react'
 import { encodeMemoString } from '../components/MemoInput'
-import { TokenType, useTxnConfigVarsQuery } from '../generated/graphql'
+import { useTxnConfigVarsQuery } from '../generated/graphql'
 import { useAccountStorage } from './AccountStorageProvider'
+import { useAppStorage } from './AppStorageProvider'
 import { getKeypair } from './secureStorage'
 
 export const EMPTY_B58_ADDRESS = Address.fromB58(
@@ -20,6 +25,7 @@ export type SendDetails = {
 
 const useTransactionHook = () => {
   const { currentAccount } = useAccountStorage()
+  const { l1Network } = useAppStorage()
   const { data: txnVarsData, error } = useTxnConfigVarsQuery({
     fetchPolicy: 'cache-and-network',
     variables: { address: currentAccount?.address || '' },
@@ -42,6 +48,9 @@ const useTransactionHook = () => {
     shouldSign?: boolean
     payerB58?: string
   }) => {
+    if (l1Network !== 'helium') {
+      throw new Error(`makeBurnTxn not supported for ${l1Network}`)
+    }
     const {
       payeeB58,
       amount,
@@ -94,12 +103,16 @@ const useTransactionHook = () => {
     paymentDetails: Array<SendDetails>
     speculativeNonce: number
     isLedger?: boolean
-    tokenType: TokenType
+    ticker: Ticker
   }): Promise<{
     txnJson: string
     signedTxn?: PaymentV2
     unsignedTxn: PaymentV2
   }> => {
+    if (l1Network !== 'helium') {
+      throw new Error(`makePaymentTxn not supported for ${l1Network}`)
+    }
+
     if (!currentAccount?.address) {
       throw new Error('No account selected for payment')
     }
@@ -110,6 +123,8 @@ const useTransactionHook = () => {
       )
     }
 
+    const tokenType = opts.ticker.toLowerCase()
+
     const txn = new PaymentV2({
       payer: Address.fromB58(currentAccount.address),
       payments: opts.paymentDetails.map(
@@ -118,7 +133,7 @@ const useTransactionHook = () => {
           max,
           amount: balanceAmount.integerBalance,
           memo: encodeMemoString(memo),
-          tokenType: opts.tokenType || 'hnt',
+          tokenType,
         }),
       ),
       nonce: opts.speculativeNonce + 1,
@@ -130,7 +145,7 @@ const useTransactionHook = () => {
         payee: p.payee.b58,
         memo: p.memo,
         amount: p.amount,
-        token_type: opts.tokenType || 'hnt',
+        token_type: tokenType,
         max: p.max,
       })),
       payer: txn.payer?.b58,

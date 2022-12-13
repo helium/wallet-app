@@ -11,12 +11,13 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated'
 import { Platform, View } from 'react-native'
+import { Ticker } from '@helium/currency'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import BackScreen from '../../components/BackScreen'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import ListItem from '../../components/ListItem'
-import { Activity, TokenType, useAccountQuery } from '../../generated/graphql'
 import TokenIcon from './TokenIcon'
 import AccountActionBar from './AccountActionBar'
 import useActivityList from './useActivityList'
@@ -29,12 +30,18 @@ import {
 import { HomeStackParamList } from '../home/homeTypes'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import BlurActionSheet from '../../components/BlurActionSheet'
-import useLayoutHeight from '../../utils/useLayoutHeight'
+import useLayoutHeight from '../../hooks/useLayoutHeight'
 import FadeInOut, { DelayedFadeIn } from '../../components/FadeInOut'
 import AccountTokenBalance from './AccountTokenBalance'
 import globalStyles from '../../theme/globalStyles'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { useBackgroundStyle } from '../../theme/themeHooks'
+import useNetworkColor from '../../hooks/useNetworkColor'
+import { useAppStorage } from '../../storage/AppStorageProvider'
+import ActivityIndicator from '../../components/ActivityIndicator'
+import { Activity } from '../../types/activity'
+import { ReAnimatedBox } from '../../components/AnimatedBox'
+import { NavBarHeight } from '../../components/NavBar'
 
 const delayedAnimation = FadeIn.delay(300)
 
@@ -53,6 +60,13 @@ const AccountTokenScreen = () => {
   const [headerContainerYPos, setHeaderContainerYPos] = useState(0)
   const listAnimatedPos = useSharedValue<number>(0)
   const listStyle = useBackgroundStyle('primaryBackground')
+  const { l1Network } = useAppStorage()
+  const insets = useSafeAreaInsets()
+
+  const routeTicker = useMemo(
+    () => route.params.tokenType?.toUpperCase() as Ticker,
+    [route.params.tokenType],
+  )
 
   const toggleFiltersOpen = useCallback(
     (open) => () => {
@@ -60,16 +74,6 @@ const AccountTokenScreen = () => {
     },
     [],
   )
-
-  const { data: accountData } = useAccountQuery({
-    variables: {
-      address: currentAccount?.address || '',
-    },
-    fetchPolicy: 'cache-and-network',
-    skip: !currentAccount?.address,
-    pollInterval: 30000,
-    // TODO: adjust this interval if needed
-  })
 
   const filterState = useActivityFilter()
 
@@ -79,17 +83,22 @@ const AccountTokenScreen = () => {
     loading: activityLoading,
     now,
   } = useActivityList({
-    address: currentAccount?.address,
+    account: currentAccount,
     filter: filterState.filter,
+    ticker: routeTicker,
   })
+
+  const actualHeight = useMemo(() => {
+    if (l1Network === 'helium') return WINDOW_HEIGHT
+    return WINDOW_HEIGHT - insets.bottom - NavBarHeight
+  }, [insets.bottom, l1Network])
 
   const snapPoints = useMemo(() => {
     if (!topHeaderYPos || !headerContainerYPos) return
-
-    const collapsed = WINDOW_HEIGHT - headerContainerYPos
-    const expanded = WINDOW_HEIGHT - topHeaderYPos
+    const collapsed = actualHeight - headerContainerYPos
+    const expanded = actualHeight - topHeaderYPos
     return [collapsed, expanded]
-  }, [headerContainerYPos, topHeaderYPos])
+  }, [actualHeight, headerContainerYPos, topHeaderYPos])
 
   const canShowList = useMemo(() => snapPoints?.length === 2, [snapPoints])
 
@@ -98,7 +107,7 @@ const AccountTokenScreen = () => {
       return { opacity: 0 }
     }
 
-    const expandedPosition = WINDOW_HEIGHT - snapPoints[1]
+    const expandedPosition = actualHeight - snapPoints[1]
     const diff = listAnimatedPos.value - expandedPosition
     const o = diff / (snapPoints[1] - snapPoints[0])
 
@@ -114,7 +123,7 @@ const AccountTokenScreen = () => {
       return { opacity: 1 }
     }
 
-    const expandedPosition = WINDOW_HEIGHT - snapPoints[1]
+    const expandedPosition = actualHeight - snapPoints[1]
     const diff = listAnimatedPos.value - expandedPosition
     const o = diff / (snapPoints[1] - snapPoints[0])
 
@@ -122,26 +131,6 @@ const AccountTokenScreen = () => {
       opacity: o,
     }
   }, [snapPoints, topHeaderHeight, listHeight])
-
-  const filteredTxns = useMemo(() => {
-    if (filterState.filter === 'payment') {
-      return activityData.filter(
-        (txn) =>
-          txn.payments &&
-          txn.payments.some((p) =>
-            route.params.tokenType === TokenType.Hnt
-              ? !p.tokenType || p.tokenType === TokenType.Hnt
-              : p.tokenType === route.params.tokenType,
-          ),
-      )
-    }
-
-    return activityData.filter((txn: Activity) =>
-      route.params.tokenType === TokenType.Hnt
-        ? !txn.tokenType || txn.tokenType === TokenType.Hnt
-        : txn.tokenType === route.params.tokenType,
-    )
-  }, [activityData, filterState.filter, route.params.tokenType])
 
   const { show: showTxnDetail } = useTransactionDetail()
 
@@ -156,6 +145,9 @@ const AccountTokenScreen = () => {
   )
 
   const renderHeader = useCallback(() => {
+    const filterName = t(`accountsScreen.filterTypes.${filterState.filter}`)
+    const postFix = l1Network === 'helium' ? ' (24h)' : ''
+
     return (
       <Box
         backgroundColor="primaryBackground"
@@ -175,7 +167,7 @@ const AccountTokenScreen = () => {
           numberOfLines={1}
           adjustsFontSizeToFit
         >
-          {t(`accountsScreen.filterTypes.${filterState.filter}`)}
+          {filterName + postFix}
         </Text>
         <TouchableOpacityBox onPress={toggleFiltersOpen(true)}>
           <Text variant="body1" padding="ms" color="secondaryText">
@@ -184,7 +176,7 @@ const AccountTokenScreen = () => {
         </TouchableOpacityBox>
       </Box>
     )
-  }, [filterState.filter, t, toggleFiltersOpen])
+  }, [filterState.filter, l1Network, t, toggleFiltersOpen])
 
   const keyExtractor = useCallback((item: Activity) => {
     return item.hash
@@ -199,7 +191,6 @@ const AccountTokenScreen = () => {
             <TxnListItem
               onPress={showTransactionDetail}
               item={item}
-              accountAddress={currentAccount?.address}
               now={now}
               isLast={isLast}
             />
@@ -207,14 +198,15 @@ const AccountTokenScreen = () => {
         </FadeInOut>
       )
     },
-    [currentAccount, activityData, now, showTransactionDetail],
+    [activityData, now, showTransactionDetail],
   )
 
   const renderFooter = useCallback(() => {
-    if (activityLoading) {
+    if (l1Network === 'helium' && !activityLoading) {
       return (
         <Box
-          paddingVertical="l"
+          backgroundColor="primaryBackground"
+          paddingVertical="m"
           paddingHorizontal="s"
           flexDirection="row"
           justifyContent="center"
@@ -226,7 +218,7 @@ const AccountTokenScreen = () => {
             textAlign="center"
             maxFontSizeMultiplier={1.3}
           >
-            {t('generic.loading')}
+            {t('accountsScreen.allFilterFooter')}
           </Text>
         </Box>
       )
@@ -234,24 +226,16 @@ const AccountTokenScreen = () => {
 
     return (
       <Box
-        backgroundColor="primaryBackground"
-        paddingVertical="m"
+        paddingVertical="l"
         paddingHorizontal="s"
         flexDirection="row"
         justifyContent="center"
         alignItems="center"
       >
-        <Text
-          variant="body1"
-          color="surfaceSecondaryText"
-          textAlign="center"
-          maxFontSizeMultiplier={1.3}
-        >
-          {t('accountsScreen.allFilterFooter')}
-        </Text>
+        <ActivityIndicator animating={activityLoading} />
       </Box>
     )
-  }, [activityLoading, t])
+  }, [activityLoading, l1Network, t])
 
   const setFilter = useCallback(
     (filterType: FilterType) => () => {
@@ -266,7 +250,9 @@ const AccountTokenScreen = () => {
       <>
         <ListItem
           key="all"
-          title={t('accountsScreen.filterTypes.all')}
+          title={`${t('accountsScreen.filterTypes.all')}${
+            l1Network === 'helium' ? ' (24h)' : ''
+          }`}
           selected={filterState.filter === 'all'}
           onPress={setFilter('all')}
         />
@@ -282,7 +268,7 @@ const AccountTokenScreen = () => {
           onPress={setFilter('mining')}
           selected={filterState.filter === 'mining'}
         />
-        {route.params.tokenType === TokenType.Hnt && (
+        {routeTicker === 'HNT' && (
           <>
             <ListItem
               key="burn"
@@ -306,7 +292,7 @@ const AccountTokenScreen = () => {
         )}
       </>
     ),
-    [filterState, route.params.tokenType, setFilter, t],
+    [filterState.filter, l1Network, routeTicker, setFilter, t],
   )
 
   const backgroundComponent = useCallback(
@@ -334,12 +320,17 @@ const AccountTokenScreen = () => {
     })
   }, [setTopHeaderHeight])
 
+  const backgroundColor = useNetworkColor({
+    netType: currentAccount?.netType,
+  })
+
   return (
-    <Animated.View entering={DelayedFadeIn} style={globalStyles.container}>
+    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <BackScreen
         padding="none"
+        headerBackgroundColor={backgroundColor}
         title={t('accountsScreen.title', {
-          tokenType: route.params.tokenType.toUpperCase(),
+          ticker: routeTicker,
         })}
       >
         <Box
@@ -361,39 +352,32 @@ const AccountTokenScreen = () => {
                   showTicker={false}
                   textVariant="h2"
                   justifyContent="flex-start"
-                  accountData={accountData?.account}
-                  tokenType={route.params.tokenType}
+                  ticker={routeTicker}
                   flex={1}
                 />
                 <AccountTokenCurrencyBalance
-                  accountData={accountData?.account}
-                  tokenType={route.params.tokenType}
+                  ticker={routeTicker}
                   variant="body1"
                   color="secondaryText"
                 />
               </Box>
-              <AccountActionBar tokenType={route.params.tokenType} compact />
+              <AccountActionBar ticker={routeTicker} compact />
             </Box>
           </Animated.View>
           <Animated.View style={bottomHeaderAnimatedStyle}>
             <Box marginVertical="xl">
               <Box alignItems="center" marginBottom="m">
-                <TokenIcon tokenType={route.params.tokenType} size={50} />
+                <TokenIcon ticker={routeTicker} size={50} />
               </Box>
-              <AccountTokenBalance
-                marginTop="s"
-                accountData={accountData?.account}
-                tokenType={route.params.tokenType}
-              />
+              <AccountTokenBalance marginTop="s" ticker={routeTicker} />
               <AccountTokenCurrencyBalance
-                accountData={accountData?.account}
-                tokenType={route.params.tokenType}
+                ticker={routeTicker}
                 variant="h4"
                 color="secondaryText"
                 textAlign="center"
                 marginBottom="xl"
               />
-              <AccountActionBar tokenType={route.params.tokenType} />
+              <AccountActionBar ticker={routeTicker} />
             </Box>
           </Animated.View>
           <Box height={topHeaderHeight} />
@@ -421,7 +405,7 @@ const AccountTokenScreen = () => {
               stickyHeaderIndices={stickyHeaderIndices}
               ListFooterComponent={renderFooter}
               onEndReached={fetchMoreActivity}
-              data={filteredTxns}
+              data={activityData}
               onEndReachedThreshold={0.01}
             />
           </Animated.View>
@@ -440,7 +424,7 @@ const AccountTokenScreen = () => {
       >
         {filters()}
       </BlurActionSheet>
-    </Animated.View>
+    </ReAnimatedBox>
   )
 }
 

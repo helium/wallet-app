@@ -1,36 +1,68 @@
 import Address, { NetTypes as NetType, utils } from '@helium/address'
-import { CurrencyType } from '@helium/currency'
+import { CurrencyType, Ticker } from '@helium/currency'
 import Bcrypt from 'bcrypt-react-native'
-import { TokenType } from '../generated/graphql'
+import { PublicKey } from '@solana/web3.js'
+import bs58 from 'bs58'
+
+export type L1Network = 'helium' | 'solana'
 
 export type AccountNetTypeOpt = 'all' | NetType.NetType
 
+export const heliumAddressToSolAddress = (heliumAddress: string) => {
+  try {
+    if (typeof heliumAddress !== 'string') return ''
+    const heliumPK = Address.fromB58(heliumAddress).publicKey
+    const pk = new PublicKey(heliumPK)
+    return pk.toBase58()
+  } catch {
+    return ''
+  }
+}
+
+export const solAddressIsValid = (address: string) => {
+  try {
+    const pubKey = new PublicKey(address)
+    return PublicKey.isOnCurve(pubKey)
+  } catch {
+    return false
+  }
+}
+
+export const heliumAddressIsValid = (address: string) => {
+  try {
+    return Address.isValid(address)
+  } catch {
+    return false
+  }
+}
+
 export const accountCurrencyType = (
   address?: string,
-  tokenType?: TokenType,
+  tokenType?: Ticker,
+  l1Network?: L1Network,
 ) => {
   if (!address) return CurrencyType.default
   if (!tokenType) {
-    return accountNetType(address) === NetType.TESTNET
-      ? CurrencyType.testNetworkToken
-      : CurrencyType.default
+    return accountNetType(address) === NetType.MAINNET || l1Network === 'solana'
+      ? CurrencyType.default
+      : CurrencyType.testNetworkToken
   }
-
   // If token type is passed in, we need to check if to return testnet token or default token
   switch (tokenType) {
     default:
-    case TokenType.Hnt:
-      return accountNetType(address) === NetType.TESTNET
-        ? CurrencyType.testNetworkToken
-        : CurrencyType.default
-    case TokenType.Hst:
+    case 'HNT':
+      return accountNetType(address) === NetType.MAINNET ||
+        l1Network === 'solana'
+        ? CurrencyType.default
+        : CurrencyType.testNetworkToken
+    case 'HST':
       return CurrencyType.security
-    case TokenType.Iot:
-      // TODO: Add testnet IOT token
+    case 'IOT':
       return CurrencyType.iot
-    case TokenType.Mobile:
-      // TODO: Add testnet Mobile token
+    case 'MOBILE':
       return CurrencyType.mobile
+    case 'DC':
+      return CurrencyType.dataCredit
   }
 }
 
@@ -78,8 +110,18 @@ export const formatAccountAlias = (
 }
 
 export const getJazzSeed = (address: string | undefined) => {
-  if (!address || !Address.isValid(address)) return
+  if (!address) {
+    console.error('Jazz seed is invalid')
+    return
+  }
 
-  const hexVal = utils.bs58ToBin(address).toString('hex')
+  let hexVal = ''
+  if (heliumAddressIsValid(address)) {
+    hexVal = utils.bs58ToBin(address).toString('hex')
+  } else if (solAddressIsValid(address)) {
+    const decoded = bs58.decode(address)
+    hexVal = Buffer.from(decoded).toString('hex')
+  }
+
   return parseInt(hexVal.slice(-8), 16)
 }

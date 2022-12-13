@@ -1,17 +1,29 @@
 import { useCallback, useState } from 'react'
-import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
+import Balance, {
+  MobileTokens,
+  NetworkTokens,
+  TestNetworkTokens,
+  Ticker,
+} from '@helium/currency'
 import { PaymentV2 } from '@helium/transactions'
 import { useTransactions } from '../storage/TransactionProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
+import { useAccountLazyQuery, useSubmitTxnMutation } from '../generated/graphql'
+import { useAppStorage } from '../storage/AppStorageProvider'
 import {
-  TokenType,
-  useAccountLazyQuery,
-  useSubmitTxnMutation,
-} from '../generated/graphql'
+  makeCollectablePayment,
+  makePayment,
+} from '../store/slices/solanaSlice'
+import { useAppDispatch } from '../store/store'
+import { useGetMintsQuery } from '../store/slices/walletRestApi'
+import { Collectable } from '../types/solana'
 
 export default () => {
   const { makePaymentTxn } = useTransactions()
   const { currentAccount } = useAccountStorage()
+  const { l1Network, solanaNetwork: cluster } = useAppStorage()
+  const { data: mints } = useGetMintsQuery(cluster)
+  const dispatch = useAppDispatch()
 
   const [fetchAccount, { loading: accountLoading, error: accountError }] =
     useAccountLazyQuery({
@@ -28,15 +40,15 @@ export default () => {
 
   const [nonceError, setNonceError] = useState<Error>()
 
-  const submit = useCallback(
+  const submitHelium = useCallback(
     async (
       payments: {
         payee: string
-        balanceAmount: Balance<NetworkTokens | TestNetworkTokens>
+        balanceAmount: Balance<NetworkTokens | TestNetworkTokens | MobileTokens>
         memo: string
         max?: boolean
       }[],
-      tokenType: TokenType,
+      ticker: Ticker,
     ) => {
       if (!currentAccount) {
         throw new Error('There must be an account selected to submit a txn')
@@ -56,7 +68,7 @@ export default () => {
         const { txnJson, signedTxn } = await makePaymentTxn({
           paymentDetails: payments,
           speculativeNonce: freshAccountData.account.speculativeNonce,
-          tokenType,
+          ticker,
         })
 
         if (!signedTxn) {
@@ -74,8 +86,74 @@ export default () => {
     },
     [currentAccount, fetchAccount, makePaymentTxn, submitTxnMutation],
   )
+  const submitSolDev = useCallback(
+    async (
+      payments: {
+        payee: string
+        balanceAmount: Balance<NetworkTokens | TestNetworkTokens | MobileTokens>
+        memo: string
+        max?: boolean
+      }[],
+    ) => {
+      if (!currentAccount) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+      if (!mints) {
+        throw new Error('Mints not found')
+      }
 
-  const submitLedger = useCallback(
+      dispatch(
+        makePayment({
+          account: currentAccount,
+          payments,
+          cluster,
+          mints,
+        }),
+      )
+    },
+    [currentAccount, dispatch, mints, cluster],
+  )
+
+  const submit = useCallback(
+    async (
+      payments: {
+        payee: string
+        balanceAmount: Balance<NetworkTokens | TestNetworkTokens | MobileTokens>
+        memo: string
+        max?: boolean
+      }[],
+      ticker: Ticker,
+    ) => {
+      switch (l1Network) {
+        case 'helium':
+          submitHelium(payments, ticker)
+          break
+        case 'solana':
+          submitSolDev(payments)
+          break
+      }
+    },
+    [l1Network, submitHelium, submitSolDev],
+  )
+
+  const submitCollectable = useCallback(
+    async (collectable: Collectable, payee: string) => {
+      if (!currentAccount) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+      dispatch(
+        makeCollectablePayment({
+          account: currentAccount,
+          collectable,
+          payee,
+          cluster,
+        }),
+      )
+    },
+    [cluster, currentAccount, dispatch],
+  )
+
+  const submitHeliumLedger = useCallback(
     async ({ txn, txnJson }: { txn: PaymentV2; txnJson: string }) => {
       if (!currentAccount?.address) {
         throw new Error('There must be an account selected to submit a txn')
@@ -91,8 +169,23 @@ export default () => {
     },
     [currentAccount, submitTxnMutation],
   )
+
+  const submitLedger = useCallback(
+    async ({ txn, txnJson }: { txn: PaymentV2; txnJson: string }) => {
+      switch (l1Network) {
+        case 'helium':
+          submitHeliumLedger({ txn, txnJson })
+          break
+        case 'solana':
+          throw new Error('Solana not yet supported for ledger devices')
+      }
+    },
+    [l1Network, submitHeliumLedger],
+  )
+
   return {
     submit,
+    submitCollectable,
     submitLedger,
     data,
     error: accountError || submitError || nonceError,

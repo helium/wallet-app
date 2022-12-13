@@ -11,8 +11,15 @@ type Props = {
   resource: string
   index: number
   onPress: (index: number) => void
+  selected: boolean
 }
-const AccountSliderIcon = ({ icon, index, resource, onPress }: Props) => {
+const AccountSliderIcon = ({
+  icon,
+  index,
+  resource,
+  onPress,
+  selected,
+}: Props) => {
   const { currentAccount } = useAccountStorage()
   const { lastViewedTimestamp, markListUnread, unreadLists } =
     useNotificationStorage()
@@ -35,6 +42,7 @@ const AccountSliderIcon = ({ icon, index, resource, onPress }: Props) => {
     ) {
       return true
     }
+
     if (
       lastViewedTimestamp &&
       notifications?.notifications &&
@@ -63,19 +71,37 @@ const AccountSliderIcon = ({ icon, index, resource, onPress }: Props) => {
 
   return (
     <>
-      <TouchableOpacityBox onPress={selectIcon} flexDirection="column">
-        {icon}
+      <TouchableOpacityBox
+        onPress={selectIcon}
+        flexDirection="column"
+        borderRadius="round"
+        borderWidth={selected ? 2 : 0}
+        borderColor="white"
+        width={64}
+        height={64}
+        justifyContent="center"
+        alignItems="center"
+      >
+        <Box
+          backgroundColor="black"
+          borderRadius="round"
+          padding="xxs"
+          justifyContent="center"
+          alignItems="center"
+        >
+          {icon}
+        </Box>
       </TouchableOpacityBox>
       <Box
         position="absolute"
         opacity={hasUnread ? 100 : 0}
-        right={15}
+        right={12}
         height={15}
         width={15}
         borderWidth={2}
         borderColor="primaryBackground"
         borderRadius="round"
-        backgroundColor="red500"
+        backgroundColor="malachite"
       />
     </>
   )

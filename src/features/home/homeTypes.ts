@@ -1,6 +1,7 @@
+import { Ticker } from '@helium/currency'
 import { LinkWalletRequest, SignHotspotRequest } from '@helium/wallet-link'
 import { StackNavigationProp } from '@react-navigation/stack'
-import { TokenType } from '../../generated/graphql'
+import { Collectable } from '../../types/solana'
 
 export type PaymentRouteParam = {
   payer?: string
@@ -9,7 +10,8 @@ export type PaymentRouteParam = {
   amount?: string
   memo?: string
   netType?: string
-  defaultTokenType?: TokenType
+  defaultTokenType?: Ticker
+  collectable?: Collectable
 }
 
 export type BurnRouteParam = {
@@ -20,7 +22,7 @@ export type BurnRouteParam = {
 
 export type HomeStackParamList = {
   AccountsScreen: undefined
-  AccountTokenScreen: { tokenType: TokenType }
+  AccountTokenScreen: { tokenType: Ticker }
   AccountAssignScreen:
     | undefined
     | {

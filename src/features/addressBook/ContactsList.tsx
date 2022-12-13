@@ -20,6 +20,7 @@ type Props = {
   address?: string
   insideBottomSheet?: boolean
   showMyAccounts?: boolean
+  hideCurrentAccount?: boolean
 }
 const ContactsList = ({
   onAddNew,
@@ -27,6 +28,7 @@ const ContactsList = ({
   address,
   insideBottomSheet,
   showMyAccounts = false,
+  hideCurrentAccount = false,
 }: Props) => {
   const { contactsForNetType, currentAccount, sortedAccountsForNetType } =
     useAccountStorage()
@@ -113,9 +115,18 @@ const ContactsList = ({
 
   const data = useMemo(() => {
     let listData = allContacts
+    if (hideCurrentAccount) {
+      listData = listData.filter(
+        ({ solanaAddress, address: heliumAddress }) =>
+          !(
+            heliumAddress === currentAccount?.address ||
+            solanaAddress === currentAccount?.solanaAddress
+          ),
+      )
+    }
     if (searchTerm.trim()) {
       listData = new Fuse(allContacts, {
-        keys: ['alias', 'address'],
+        keys: ['alias', 'address', 'solanaAddress'],
         threshold: 0.3,
         fieldNormWeight: 1,
       })
@@ -125,7 +136,7 @@ const ContactsList = ({
         })
     }
     return listData.sort((a, b) => a.alias.localeCompare(b.alias))
-  }, [allContacts, searchTerm])
+  }, [allContacts, currentAccount, hideCurrentAccount, searchTerm])
 
   if (insideBottomSheet) {
     return (

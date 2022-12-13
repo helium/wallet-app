@@ -1,20 +1,15 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import { Platform } from 'react-native'
+import { LogBox, Platform, RefreshControl } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import SharedGroupPreferences from 'react-native-shared-group-preferences'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDebouncedCallback } from 'use-debounce/lib'
 import { toUpper } from 'lodash'
+import { ScrollView } from 'react-native-gesture-handler'
 import Box from '../../components/Box'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
-import usePrevious from '../../utils/usePrevious'
 import { HomeNavigationProp } from '../home/homeTypes'
 import {
   AccountBalance as AccountBalanceType,
@@ -23,7 +18,7 @@ import {
   useAccountLazyQuery,
   useAccountQuery,
 } from '../../generated/graphql'
-import useAppear from '../../utils/useAppear'
+import useAppear from '../../hooks/useAppear'
 import { withTransactionDetail } from './TransactionDetail'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
@@ -34,13 +29,23 @@ import AccountsTopNav from './AccountsTopNav'
 import AccountTokenList from './AccountTokenList'
 import AccountView from './AccountView'
 import ConnectedWallets from './ConnectedWallets'
-import useLayoutHeight from '../../utils/useLayoutHeight'
+import useLayoutHeight from '../../hooks/useLayoutHeight'
 import { OnboardingOpt } from '../onboarding/onboardingTypes'
-import globalStyles from '../../theme/globalStyles'
-import { FadeInSlow } from '../../components/FadeInOut'
 import AccountBalanceChart from './AccountBalanceChart'
-import useDisappear from '../../utils/useDisappear'
+import useDisappear from '../../hooks/useDisappear'
 import { RootNavigationProp } from '../../navigation/rootTypes'
+import { useGetBalanceHistoryQuery } from '../../store/slices/walletRestApi'
+import { useBalance } from '../../utils/Balance'
+import { useColors } from '../../theme/themeHooks'
+
+LogBox.ignoreLogs([
+  'VirtualizedLists should never be nested inside plain ScrollViews',
+])
+// There is a flatlist nested inside of a scrollview which should be fine as
+// the flatlist has scroll disabled and will only ever have a relatively
+// low amount of items in it. Initial thought was to use a Sectionlist for
+// this, but the Flatlist has two columns (numColumns={2}) which makes that
+// not work so cleanly.
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
@@ -50,13 +55,14 @@ const AccountsScreen = () => {
     useAccountStorage()
   const [navLayoutHeight, setNavLayoutHeight] = useLayoutHeight()
   const { openedNotification } = useNotificationStorage()
-  const { locked } = useAppStorage()
+  const { locked, l1Network, solanaNetwork: cluster } = useAppStorage()
   const { reset } = useOnboarding()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const [walletsVisible, setWalletsVisible] = useState(false)
   const [selectedBalance, setSelectedBalance] = useState<AccountBalanceType>()
   const { top } = useSafeAreaInsets()
-  const chartFlex = useSharedValue(0)
+  const { updateVars: refreshTokens, updating: updatingTokens } = useBalance()
+  const { primaryText } = useColors()
 
   useAppear(() => {
     reset()
@@ -73,7 +79,7 @@ const AccountsScreen = () => {
     }
   }, [rootNav, sortedAccounts.length])
 
-  const { data: accountData, error: accountsError } = useAccountQuery({
+  const { data: accountData } = useAccountQuery({
     variables: {
       address: currentAccount?.address || '',
     },
@@ -83,7 +89,7 @@ const AccountsScreen = () => {
     // TODO: adjust this interval if needed
   })
 
-  const [fetchAccount, { error: lazyAccountError }] = useAccountLazyQuery({
+  const [fetchAccount] = useAccountLazyQuery({
     variables: {
       address: currentAccount?.address || '',
     },
@@ -102,20 +108,41 @@ const AccountsScreen = () => {
     pollInterval: 30000,
   })
 
-  const showChart = useMemo(
-    () => (data?.accountBalanceHistory?.length || 0) >= 2,
-    [data],
+  const { currentData: solChainBalanceHistory } = useGetBalanceHistoryQuery(
+    {
+      address: currentAccount?.solanaAddress || '',
+      cluster,
+      currency,
+    },
+    {
+      skip: !currentAccount?.address,
+      refetchOnFocus: true,
+      refetchOnMountOrArgChange: true,
+      refetchOnReconnect: true,
+    },
   )
-  const prevShowChart = usePrevious(showChart)
+
+  const showChart = useMemo(() => {
+    if (l1Network === 'helium') {
+      return (data?.accountBalanceHistory?.length || 0) >= 2
+    }
+    return (solChainBalanceHistory?.length || 0) >= 2
+  }, [data, l1Network, solChainBalanceHistory])
 
   const chartValues = useMemo(() => {
     // Need to have at least a two days of data to display
-    if (!data?.accountBalanceHistory || !showChart) return
+    if (!showChart) return
 
-    return data.accountBalanceHistory?.map((bh) => {
+    if (l1Network === 'helium' && data) {
+      return data.accountBalanceHistory?.map((bh) => {
+        return { y: bh.balance, info: bh }
+      })
+    }
+
+    return solChainBalanceHistory?.map((bh) => {
       return { y: bh.balance, info: bh }
     })
-  }, [data, showChart])
+  }, [data, l1Network, showChart, solChainBalanceHistory])
 
   useAppear(() => {
     if (!currentAccount?.address) return
@@ -135,18 +162,6 @@ const AccountsScreen = () => {
     if (!currentAccount || !!currentAccount.ledgerDevice) return
     checkSecureAccount(currentAccount.address)
   }, [currentAccount])
-
-  useEffect(() => {
-    if (!accountsError && !lazyAccountError) return
-
-    if (accountsError) {
-      console.warn('accounts', accountsError)
-    }
-
-    if (lazyAccountError) {
-      console.warn('lazyAccount', lazyAccountError)
-    }
-  }, [accountsError, lazyAccountError])
 
   useEffect(() => {
     if (openedNotification && !locked) {
@@ -185,14 +200,6 @@ const AccountsScreen = () => {
     }
   }, [defaultAccountAddress, sortedAccounts])
 
-  useEffect(() => {
-    if (!showChart && prevShowChart) {
-      chartFlex.value = withTiming(0, { duration: 700 })
-    } else if (showChart && !prevShowChart) {
-      chartFlex.value = withTiming(100, { duration: 700 })
-    }
-  }, [chartFlex.value, chartValues, prevShowChart, showChart])
-
   const toggleWalletsVisible = useCallback(() => {
     setWalletsVisible((v) => !v)
     setSelectedBalance(undefined)
@@ -214,13 +221,6 @@ const AccountsScreen = () => {
     setWalletsVisible(false)
   }, [navigation])
 
-  const style = useAnimatedStyle(() => {
-    return {
-      flex: chartFlex.value,
-      justifyContent: 'center',
-    }
-  })
-
   const onTouchStart = useCallback(() => {
     handleBalanceHistorySelected(undefined)
   }, [handleBalanceHistorySelected])
@@ -232,36 +232,34 @@ const AccountsScreen = () => {
         onLayout={setNavLayoutHeight}
       />
       {currentAccount?.address && (accountData?.account || accountLoading) && (
-        <Animated.View style={globalStyles.container} entering={FadeInSlow}>
-          <Box flex={100} justifyContent="center">
-            <AccountView
-              accountData={accountData?.account}
-              hntPrice={data?.currentPrices?.hnt}
-              selectedBalance={selectedBalance}
+        <ScrollView
+          stickyHeaderIndices={[2]}
+          nestedScrollEnabled
+          refreshControl={
+            <RefreshControl
+              refreshing={updatingTokens}
+              onRefresh={refreshTokens}
+              title=""
+              tintColor={primaryText}
             />
-          </Box>
-          <Animated.View style={style}>
-            <Box
-              flex={1}
-              onTouchStart={onTouchStart}
-              backgroundColor="primaryBackground"
-            />
-            <AccountBalanceChart
-              chartValues={chartValues || []}
-              onHistorySelected={handleBalanceHistorySelected}
-              selectedBalance={selectedBalance}
-            />
-            <Box
-              flex={1}
-              onTouchStart={onTouchStart}
-              backgroundColor="primaryBackground"
-            />
-          </Animated.View>
-          <AccountTokenList
+          }
+        >
+          <AccountView
+            onTouchStart={onTouchStart}
             accountData={accountData?.account}
-            loading={accountLoading}
+            hntPrice={data?.currentPrices?.hnt}
+            selectedBalance={selectedBalance}
           />
-        </Animated.View>
+          <AccountBalanceChart
+            chartValues={chartValues || []}
+            onHistorySelected={handleBalanceHistorySelected}
+            selectedBalance={selectedBalance}
+          />
+          <Box height={1} backgroundColor="surface" marginBottom="ms" />
+          <Box onTouchStart={onTouchStart}>
+            <AccountTokenList loading={accountLoading} />
+          </Box>
+        </ScrollView>
       )}
       {walletsVisible && (
         <ConnectedWallets

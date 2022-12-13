@@ -35,12 +35,14 @@ const SearchInput = ({
     >
       <Search color={colors[color as Color]} />
       <TextInput
-        onChangeText={onChangeText}
-        value={value}
+        textInputProps={{
+          onChangeText,
+          value,
+          placeholder,
+          autoCorrect: false,
+          autoComplete: 'off',
+        }}
         variant={variant || 'regular'}
-        placeholder={placeholder}
-        autoCorrect={false}
-        autoComplete="off"
       />
     </Box>
   )

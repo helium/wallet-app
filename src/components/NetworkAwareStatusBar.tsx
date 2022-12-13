@@ -5,13 +5,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAppState } from '@react-native-community/hooks'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
-import { Color } from '../theme/theme'
 import { useColors, useColorScheme } from '../theme/themeHooks'
 import Box from './Box'
 import { useOnboarding } from '../features/onboarding/OnboardingProvider'
 
-type Props = { backgroundColor?: Color }
-const CustomStatusBar = ({ backgroundColor = 'red500' }: Props) => {
+const NetworkAwareStatusBar = () => {
   const insets = useSafeAreaInsets()
   const colors = useColors()
   const theme = useColorScheme()
@@ -19,7 +17,7 @@ const CustomStatusBar = ({ backgroundColor = 'red500' }: Props) => {
   const {
     onboardingData: { netType },
   } = useOnboarding()
-  const { locked } = useAppStorage()
+  const { locked, l1Network } = useAppStorage()
   const appState = useAppState()
 
   const isTestnet = useMemo(
@@ -30,7 +28,13 @@ const CustomStatusBar = ({ backgroundColor = 'red500' }: Props) => {
       !locked,
     [appState, currentAccount, locked, netType],
   )
-  if (!isTestnet)
+
+  const backgroundColor = useMemo(() => {
+    if (l1Network === 'solana') return 'solanaPurple'
+    return 'testnet'
+  }, [l1Network])
+
+  if (l1Network === 'helium' && !isTestnet)
     return (
       <StatusBar
         animated
@@ -58,4 +62,4 @@ const CustomStatusBar = ({ backgroundColor = 'red500' }: Props) => {
   )
 }
 
-export default CustomStatusBar
+export default NetworkAwareStatusBar

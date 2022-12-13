@@ -1,119 +1,99 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import Balance, {
   DataCredits,
   MobileTokens,
   NetworkTokens,
   SecurityTokens,
   AnyCurrencyType,
+  SolTokens,
+  Ticker,
 } from '@helium/currency'
 import { times } from 'lodash'
-import { useNavigation } from '@react-navigation/native'
-import Arrow from '@assets/images/listItemRight.svg'
 import { FlatList } from 'react-native-gesture-handler'
-import { LayoutChangeEvent } from 'react-native'
-import Animated, {
-  FadeIn,
-  FadeOut,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useAccountBalances } from '../../utils/Balance'
-import { AccountData, TokenType } from '../../generated/graphql'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { HomeNavigationProp } from '../home/homeTypes'
-import TokenIcon from './TokenIcon'
-import { useBreakpoints } from '../../theme/themeHooks'
-import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
-import useLayoutHeight from '../../utils/useLayoutHeight'
+import { useBalance } from '../../utils/Balance'
+import TokenListItem, { TokenSkeleton } from './TokenListItem'
 
 type Token = {
-  type: TokenType
+  type: Ticker
   balance: Balance<AnyCurrencyType>
   staked: boolean
 }
 
 type Props = {
-  accountData: AccountData | null | undefined
   loading?: boolean
 }
 
-const ITEM_HEIGHT = 78
-const AccountTokenList = ({ accountData, loading = false }: Props) => {
-  const displayVals = useAccountBalances(accountData)
-  const navigation = useNavigation<HomeNavigationProp>()
-  const [listItemHeight, setListItemHeight] = useLayoutHeight()
-  const breakpoints = useBreakpoints()
-  const height = useSharedValue(0)
+const AccountTokenList = ({ loading = false }: Props) => {
+  const {
+    dcBalance,
+    mobileBalance,
+    networkBalance,
+    networkStakedBalance,
+    secBalance,
+    solBalance,
+    updating: updatingTokens,
+  } = useBalance()
   const { bottom } = useSafeAreaInsets()
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
 
-  const tokens = useMemo((): {
-    type: TokenType
-    balance: Balance<AnyCurrencyType>
-    staked: boolean
-  }[] => {
+  const tokens = useMemo(() => {
     if (loading) {
       return []
     }
-    return [
+
+    const allTokens = [
       {
-        type: TokenType.Hnt,
-        balance: displayVals?.hnt as Balance<NetworkTokens>,
+        type: 'HNT',
+        balance: networkBalance as Balance<NetworkTokens>,
         staked: false,
       },
       {
-        type: TokenType.Hnt,
-        balance: displayVals?.stakedHnt as Balance<NetworkTokens>,
+        type: 'HNT',
+        balance: networkStakedBalance as Balance<NetworkTokens>,
         staked: true,
       },
       {
-        type: TokenType.Mobile,
-        balance: displayVals?.mobile as Balance<MobileTokens>,
+        type: 'MOBILE',
+        balance: mobileBalance as Balance<MobileTokens>,
         staked: false,
       },
       {
-        type: TokenType.Dc,
-        balance: displayVals?.dc as Balance<DataCredits>,
+        type: 'DC',
+        balance: dcBalance as Balance<DataCredits>,
         staked: false,
       },
       {
-        type: TokenType.Hst,
-        balance: displayVals?.hst as Balance<SecurityTokens>,
+        type: 'HST',
+        balance: secBalance as Balance<SecurityTokens>,
         staked: false,
       },
-    ].filter(
+      {
+        type: 'SOL',
+        balance: solBalance as Balance<SolTokens>,
+        staked: false,
+      },
+    ] as {
+      type: Ticker
+      balance: Balance<AnyCurrencyType>
+      staked: boolean
+    }[]
+    return allTokens.filter(
       (token) =>
         token?.balance?.integerBalance > 0 ||
-        token?.type === TokenType.Mobile ||
-        (token?.type === TokenType.Hnt && token?.staked === false),
+        token?.type === 'MOBILE' ||
+        (token?.type === 'HNT' && token?.staked === false),
     )
-  }, [displayVals, loading])
-
-  const handleNavigation = useCallback(
-    (token: Token) => () => {
-      navigation.navigate('AccountTokenScreen', { tokenType: token.type })
-    },
-    [navigation],
-  )
-
-  const maxVisibleTokens = useMemo(
-    () => (breakpoints?.smallPhone ? 2 : 4),
-    [breakpoints.smallPhone],
-  )
-
-  const handleItemLayout = useCallback(
-    (e: LayoutChangeEvent) => {
-      if (listItemHeight !== 0) return
-
-      setListItemHeight(e)
-    },
-    [listItemHeight, setListItemHeight],
-  )
+  }, [
+    dcBalance,
+    loading,
+    mobileBalance,
+    networkBalance,
+    networkStakedBalance,
+    secBalance,
+    solBalance,
+  ])
 
   const renderItem = useCallback(
     ({
@@ -121,130 +101,44 @@ const AccountTokenList = ({ accountData, loading = false }: Props) => {
     }: {
       // eslint-disable-next-line react/no-unused-prop-types
       item: {
-        type: TokenType
+        type: Ticker
         balance: Balance<AnyCurrencyType>
         staked: boolean
       }
     }) => {
       return (
-        <Animated.View entering={FadeIn} exiting={FadeOut}>
-          <TouchableOpacityBox
-            onLayout={handleItemLayout}
-            onPress={handleNavigation(token)}
-            flexDirection="row"
-            minHeight={ITEM_HEIGHT}
-            alignItems="center"
-            paddingHorizontal="l"
-            paddingVertical="m"
-            borderBottomColor="primaryBackground"
-            borderBottomWidth={1}
-          >
-            <TokenIcon tokenType={token.type} />
-            <Box flex={1} paddingHorizontal="m">
-              <Box flexDirection="row">
-                <Text
-                  variant="body1"
-                  color="primaryText"
-                  maxFontSizeMultiplier={1.3}
-                >
-                  {token.balance?.toString(7, { showTicker: false })}
-                </Text>
-                <Text
-                  variant="body1"
-                  color="secondaryText"
-                  maxFontSizeMultiplier={1.3}
-                >
-                  {` ${token?.balance?.type.ticker}${
-                    token.staked ? ' Staked' : ''
-                  }`}
-                </Text>
-              </Box>
-              <AccountTokenCurrencyBalance
-                variant="subtitle4"
-                color="secondaryText"
-                accountData={accountData}
-                tokenType={token.type}
-                staked={token.staked}
-              />
-            </Box>
-            <Arrow color="gray400" />
-          </TouchableOpacityBox>
-        </Animated.View>
+        <TokenListItem
+          ticker={token.type}
+          balance={token.balance}
+          staked={token.staked}
+        />
       )
     },
-    [accountData, handleItemLayout, handleNavigation],
+    [],
   )
 
   const renderFooter = useCallback(() => {
-    if (!loading) return null
-    return <>{times(maxVisibleTokens).map((i) => renderSkeletonItem(i))}</>
-  }, [loading, maxVisibleTokens])
+    if (!(updatingTokens || loading)) return null
 
-  const renderHeader = useCallback(() => {
-    return <Box height={1} backgroundColor="surface" marginBottom="ms" />
-  }, [])
-
-  const renderSkeletonItem = (key: number) => {
     return (
-      <Animated.View entering={FadeIn} exiting={FadeOut} key={key}>
-        <Box
-          flexDirection="row"
-          height={ITEM_HEIGHT}
-          alignItems="center"
-          paddingHorizontal="l"
-          borderBottomColor="primaryBackground"
-          borderBottomWidth={1}
-        >
-          <Box
-            width={40}
-            height={40}
-            borderRadius="round"
-            backgroundColor="surface"
-          />
-          <Box flex={1} paddingHorizontal="m">
-            <Box width={120} height={16} backgroundColor="surface" />
-            <Box
-              width={70}
-              height={16}
-              marginTop="s"
-              backgroundColor="surface"
-            />
-          </Box>
-          <Arrow color="gray400" />
-        </Box>
-      </Animated.View>
+      <>
+        {times(4).map((i) => (
+          <TokenSkeleton key={i} />
+        ))}
+      </>
     )
-  }
+  }, [loading, updatingTokens])
 
-  useEffect(() => {
-    let nextHeight = 0
-    if (loading) {
-      nextHeight = ITEM_HEIGHT * maxVisibleTokens + bottomSpace
-    } else if (!listItemHeight) {
-      nextHeight = ITEM_HEIGHT * tokens.length + bottomSpace
-    } else {
-      nextHeight =
-        listItemHeight * Math.min(tokens.length, maxVisibleTokens) + bottomSpace
+  const keyExtractor = useCallback((item: Token | string) => {
+    if (typeof item === 'string') {
+      return item
     }
-    height.value = withTiming(nextHeight, { duration: 700 })
-  }, [
-    bottomSpace,
-    height.value,
-    listItemHeight,
-    loading,
-    maxVisibleTokens,
-    tokens.length,
-  ])
+    const currencyToken = item as Token
 
-  const listStyle = useAnimatedStyle(() => {
-    return { height: height.value }
-  })
-
-  const keyExtractor = useCallback((item: Token) => {
-    if (item.staked) {
-      return [item.type, 'staked'].join('-')
+    if (currencyToken.staked) {
+      return [currencyToken.type, 'staked'].join('-')
     }
-    return item.type
+    return currencyToken.type
   }, [])
 
   const contentContainerStyle = useMemo(
@@ -255,17 +149,18 @@ const AccountTokenList = ({ accountData, loading = false }: Props) => {
   )
 
   return (
-    <Animated.View style={listStyle}>
-      <FlatList
-        scrollEnabled={tokens.length > maxVisibleTokens}
-        data={tokens}
-        contentContainerStyle={contentContainerStyle}
-        renderItem={renderItem}
-        ListHeaderComponent={renderHeader}
-        ListFooterComponent={renderFooter}
-        keyExtractor={keyExtractor}
-      />
-    </Animated.View>
+    <FlatList
+      data={tokens}
+      scrollEnabled={false}
+      numColumns={2}
+      columnWrapperStyle={{
+        flexDirection: 'column',
+      }}
+      contentContainerStyle={contentContainerStyle}
+      renderItem={renderItem}
+      ListEmptyComponent={renderFooter}
+      keyExtractor={keyExtractor}
+    />
   )
 }
 

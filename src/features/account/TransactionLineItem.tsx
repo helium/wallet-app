@@ -14,8 +14,8 @@ import {
 } from '../../theme/themeHooks'
 import { Color } from '../../theme/theme'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import useCopyText from '../../utils/useCopyText'
-import useAlert from '../../utils/useAlert'
+import useCopyText from '../../hooks/useCopyText'
+import useAlert from '../../hooks/useAlert'
 import { AddressBookNavigationProp } from '../addressBook/addressBookTypes'
 import { locale } from '../../utils/i18n'
 import AccountIcon from '../../components/AccountIcon'
@@ -70,9 +70,13 @@ const TransactionLineItem = ({
 
   const account = useCallback(
     (address) => {
-      const contact = contacts.find((c) => c.address === address)
+      const contact = contacts.find(
+        (c) => c.address === address || c.solanaAddress === address,
+      )
       if (contact) return contact
-      return sortedAccounts.find((c) => c.address === address)
+      return sortedAccounts.find(
+        (c) => c.address === address || c.solanaAddress === address,
+      )
     },
     [contacts, sortedAccounts],
   )
@@ -145,7 +149,7 @@ const TransactionLineItem = ({
             </Box>
           )}
           <Text
-            numberOfLines={2}
+            numberOfLines={3}
             adjustsFontSizeToFit
             flexShrink={1}
             variant="body1"

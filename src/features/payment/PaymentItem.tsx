@@ -35,6 +35,7 @@ import { useIsHotspotOrValidatorQuery } from '../../generated/graphql'
 import AccountIcon from '../../components/AccountIcon'
 import BackgroundFill from '../../components/BackgroundFill'
 import { Theme } from '../../theme/theme'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 export type Payment = {
   address?: string
@@ -64,6 +65,7 @@ type Props = {
   hideMemo?: boolean
   ticker?: string
   netType?: number
+  showAmount?: boolean
 } & Payment
 
 const ITEM_HEIGHT = 80
@@ -88,12 +90,14 @@ const PaymentItem = ({
   onToggleMax,
   onUpdateError,
   ticker,
+  showAmount = true,
   ...boxProps
 }: Props) => {
   const { colorStyle } = useOpacity('primaryText', 0.3)
   const { dcToNetworkTokens } = useBalance()
   const { t } = useTranslation()
   const { secondaryText } = useColors()
+  const { l1Network } = useAppStorage()
 
   const { error, loading, data } = useIsHotspotOrValidatorQuery({
     variables: {
@@ -183,8 +187,10 @@ const PaymentItem = ({
   }, [index, onRemove])
 
   const isDeepLink = useMemo(
-    () => address && !account?.address,
-    [account, address],
+    () =>
+      address &&
+      !(l1Network === 'helium' ? account?.address : account?.solanaAddress),
+    [account, address, l1Network],
   )
 
   const AddressIcon = useCallback(() => {
@@ -232,16 +238,18 @@ const PaymentItem = ({
                   <TextInput
                     variant="transparent"
                     flex={1}
-                    placeholder={t('payment.enterAddress')}
-                    value={address}
-                    onChangeText={handleEditAddress}
-                    onEndEditing={handleAddressBlur}
-                    autoCapitalize="none"
-                    numberOfLines={1}
-                    multiline={false}
-                    autoComplete="off"
-                    autoCorrect={false}
-                    returnKeyType="done"
+                    textInputProps={{
+                      placeholder: t('payment.enterAddress'),
+                      value: address,
+                      onChangeText: handleEditAddress,
+                      onEndEditing: handleAddressBlur,
+                      autoCapitalize: 'none',
+                      numberOfLines: 1,
+                      multiline: false,
+                      autoComplete: 'off',
+                      autoCorrect: false,
+                      returnKeyType: 'done',
+                    }}
                   />
                   <Text
                     opacity={
@@ -284,69 +292,75 @@ const PaymentItem = ({
 
       <Box height={1} backgroundColor="primaryBackground" />
 
-      <Box flexDirection="row" minHeight={ITEM_HEIGHT}>
-        {!amount || amount?.integerBalance === 0 ? (
-          <>
+      {showAmount && (
+        <Box flexDirection="row" minHeight={ITEM_HEIGHT}>
+          {!amount || amount?.integerBalance === 0 ? (
+            <>
+              <TouchableOpacityBox
+                onPress={handleEditAmount}
+                flex={1}
+                justifyContent="center"
+              >
+                <Text
+                  color="secondaryText"
+                  padding="m"
+                  variant="subtitle2"
+                  fontWeight="100"
+                  style={colorStyle}
+                >
+                  {t('payment.enterAmount', {
+                    ticker,
+                  })}
+                </Text>
+              </TouchableOpacityBox>
+            </>
+          ) : (
             <TouchableOpacityBox
+              justifyContent="center"
               onPress={handleEditAmount}
               flex={1}
-              justifyContent="center"
             >
               <Text
-                color="secondaryText"
-                padding="m"
+                paddingHorizontal="m"
                 variant="subtitle2"
-                fontWeight="100"
-                style={colorStyle}
+                color="primaryText"
               >
-                {t('payment.enterAmount', {
-                  ticker,
+                {balanceToString(amount, {
+                  maxDecimalPlaces: amount.type.decimalPlaces.toNumber(),
                 })}
               </Text>
+              {fee && (
+                <Text paddingHorizontal="m" variant="body3" style={colorStyle}>
+                  {t('payment.fee', {
+                    value: balanceToString(feeAsTokens, {
+                      maxDecimalPlaces: 4,
+                    }),
+                  })}
+                </Text>
+              )}
             </TouchableOpacityBox>
-          </>
-        ) : (
-          <TouchableOpacityBox
-            justifyContent="center"
-            onPress={handleEditAmount}
-            flex={1}
-          >
-            <Text paddingHorizontal="m" variant="subtitle2" color="primaryText">
-              {balanceToString(amount, {
-                maxDecimalPlaces: amount.type.decimalPlaces.toNumber(),
-              })}
-            </Text>
-            {fee && (
-              <Text paddingHorizontal="m" variant="body3" style={colorStyle}>
-                {t('payment.fee', {
-                  value: balanceToString(feeAsTokens, {
-                    maxDecimalPlaces: 4,
-                  }),
-                })}
-              </Text>
-            )}
-          </TouchableOpacityBox>
-        )}
+          )}
 
-        <TouchableOpacityBox
-          onPress={handleToggleMax}
-          backgroundColor={max ? 'white' : 'transparent'}
-          borderColor={max ? 'transparent' : 'surface'}
-          borderWidth={1.5}
-          borderRadius="m"
-          paddingVertical="xs"
-          paddingHorizontal="ms"
-          marginRight="ms"
-          marginVertical="l"
-          justifyContent="center"
-          disabled
-          visible={false} // TODO: Enable once we move to solana (will need some rework)
-        >
-          <Text variant="body3" color={max ? 'black900' : 'secondaryText'}>
-            {toUpper(t('payment.max'))}
-          </Text>
-        </TouchableOpacityBox>
-      </Box>
+          <TouchableOpacityBox
+            onPress={handleToggleMax}
+            backgroundColor={max ? 'white' : 'transparent'}
+            borderColor={max ? 'transparent' : 'surface'}
+            borderWidth={1.5}
+            borderRadius="m"
+            paddingVertical="xs"
+            paddingHorizontal="ms"
+            marginRight="ms"
+            marginVertical="l"
+            justifyContent="center"
+            disabled
+            visible={false} // TODO: Enable once we move to solana (will need some rework)
+          >
+            <Text variant="body3" color={max ? 'black900' : 'secondaryText'}>
+              {toUpper(t('payment.max'))}
+            </Text>
+          </TouchableOpacityBox>
+        </Box>
+      )}
 
       {!hideMemo && (
         <>

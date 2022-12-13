@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
 import Close from '@assets/images/close.svg'
 import { Alert, Linking, Platform, SectionList } from 'react-native'
+import { Cluster } from '@solana/web3.js'
+import Config from 'react-native-config'
 import Text from '../../components/Text'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -10,7 +12,7 @@ import { HomeNavigationProp } from '../home/homeTypes'
 import { useColors, useHitSlop, useSpacing } from '../../theme/themeHooks'
 import Box from '../../components/Box'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
-import { useAppVersion } from '../../utils/useDevice'
+import { useAppVersion } from '../../hooks/useDevice'
 import { SUPPORTED_LANGUAGUES } from '../../utils/i18n'
 import useAuthIntervals from './useAuthIntervals'
 import SUPPORTED_CURRENCIES from '../../utils/supportedCurrencies'
@@ -18,8 +20,8 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { SettingsNavigationProp } from './settingsTypes'
 import { useLanguageStorage } from '../../storage/LanguageProvider'
-import useCopyText from '../../utils/useCopyText'
-import useAlert from '../../utils/useAlert'
+import useCopyText from '../../hooks/useCopyText'
+import useAlert from '../../hooks/useAlert'
 import {
   checkSecureAccount,
   getSecureAccount,
@@ -56,11 +58,15 @@ const Settings = () => {
     enableTestnet,
     pin: appPin,
     requirePinForPayment,
+    solanaNetwork,
     updateAuthInterval,
     updateConvertToCurrency,
     updateCurrency,
     updateEnableTestnet,
     updateRequirePinForPayment,
+    updateSolanaNetwork,
+    l1Network,
+    updateL1Network,
   } = useAppStorage()
   const copyText = useCopyText()
   const { showOKAlert, showOKCancelAlert } = useAlert()
@@ -255,10 +261,18 @@ const Settings = () => {
   )
 
   const handleCurrencyTypeChange = useCallback(
-    async (currencyType: string) => {
-      await updateCurrency(currencyType)
+    async (currencyType: ReactText, _index: number) => {
+      await updateCurrency(currencyType as string)
     },
     [updateCurrency],
+  )
+
+  const handleSolanaNetworkChange = useCallback(
+    async (network: ReactText, _index: number) => {
+      // TODO: Should we reset the solana and collectable slices when cluster changes?
+      await updateSolanaNetwork(network as Cluster)
+    },
+    [updateSolanaNetwork],
   )
 
   const handleToggleEnableTestnet = useCallback(async () => {
@@ -323,11 +337,14 @@ const Settings = () => {
 
   const handleCopyAddress = useCallback(() => {
     if (!currentAccount?.address) return
-    copyText({
-      message: ellipsizeAddress(currentAccount?.address),
-      copyText: currentAccount?.address,
-    })
-  }, [copyText, currentAccount])
+    if (l1Network !== 'solana') {
+      copyText({
+        message: ellipsizeAddress(currentAccount?.address),
+        copyText: currentAccount?.address,
+      })
+    } else {
+    }
+  }, [copyText, currentAccount, l1Network])
 
   const handleShareAddress = useCallback(() => {
     settingsNav.navigate('ShareAddress')
@@ -367,6 +384,61 @@ const Settings = () => {
         },
       ]
     }
+
+    let devData: SettingsListItemType[] = [
+      {
+        title: t('settings.sections.dev.testnet.title'),
+        value: enableTestnet,
+        onToggle: handleToggleEnableTestnet,
+        disabled: !!sortedTestnetAccounts.length && enableTestnet,
+        helperText:
+          sortedTestnetAccounts.length && enableTestnet
+            ? t('settings.sections.dev.testnet.helperText')
+            : undefined,
+      },
+    ]
+
+    if (Config.SOLANA_PREVIEW === 'true') {
+      devData.push({
+        title: t('settings.sections.dev.solana.title'),
+        value: l1Network === 'solana',
+        onToggle: () =>
+          updateL1Network(l1Network === 'helium' ? 'solana' : 'helium'),
+        helperText: t('settings.sections.dev.solana.helperText'),
+        onPress: () => {
+          showOKAlert({
+            message: t('settings.sections.dev.solana.prompt.message'),
+            title: t('settings.sections.dev.solana.prompt.title'),
+          })
+        },
+      })
+    }
+
+    if (l1Network === 'solana') {
+      const items = [
+        { label: 'Devnet', value: 'devnet' },
+        { label: 'Testnet', value: 'testnet', disabled: true },
+        { label: 'Mainnet-Beta', value: 'mainnet-beta', disabled: true },
+      ]
+
+      if (__DEV__) {
+        // push the localnet option to the front of the list
+        items.unshift({ label: 'Localnet', value: 'localnet' })
+      }
+
+      devData = [
+        ...devData,
+        {
+          title: t('settings.sections.dev.solanaNetwork.title'),
+          value: solanaNetwork,
+          select: {
+            items,
+            onValueSelect: handleSolanaNetworkChange,
+          },
+        },
+      ]
+    }
+
     return [
       {
         title: t('settings.sections.account.title', {
@@ -385,7 +457,29 @@ const Settings = () => {
           },
           {
             title: t('settings.sections.account.copyAddress'),
-            onPress: handleCopyAddress,
+            onPress: l1Network === 'solana' ? undefined : handleCopyAddress,
+            select:
+              l1Network === 'solana'
+                ? {
+                    items: [
+                      { label: 'Helium', value: 'helium' },
+                      { label: 'Solana', value: 'solana' },
+                    ],
+                    onValueSelect: (val) => {
+                      const address =
+                        val === 'helium'
+                          ? currentAccount?.address
+                          : currentAccount?.solanaAddress
+
+                      if (!address) return
+
+                      copyText({
+                        message: ellipsizeAddress(address),
+                        copyText: address,
+                      })
+                    },
+                  }
+                : undefined,
           },
           {
             title: t('settings.sections.account.shareAddress'),
@@ -457,18 +551,7 @@ const Settings = () => {
 
       {
         title: t('settings.sections.dev.title'),
-        data: [
-          {
-            title: t('settings.sections.dev.testnet.title'),
-            value: enableTestnet,
-            onToggle: handleToggleEnableTestnet,
-            disabled: !!sortedTestnetAccounts.length && enableTestnet,
-            helperText:
-              sortedTestnetAccounts.length && enableTestnet
-                ? t('settings.sections.dev.testnet.helperText')
-                : undefined,
-          },
-        ],
+        data: devData,
       },
       {
         title: t('settings.sections.finePrint.title'),
@@ -488,6 +571,7 @@ const Settings = () => {
     authInterval,
     authIntervals,
     convertToCurrency,
+    copyText,
     currency,
     currentAccount,
     enableTestnet,
@@ -503,15 +587,20 @@ const Settings = () => {
     handleSetDefaultAccount,
     handleShareAddress,
     handleSignOut,
+    handleSolanaNetworkChange,
     handleToggleEnableTestnet,
     handleUpdateAlias,
     isDefaultAccount,
     isPinRequired,
+    l1Network,
     language,
     requirePinForPayment,
+    showOKAlert,
+    solanaNetwork,
     sortedTestnetAccounts.length,
     t,
     updateConvertToCurrency,
+    updateL1Network,
     version,
   ])
 

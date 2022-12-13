@@ -4,7 +4,6 @@ import CogIco from '@assets/images/cog.svg'
 import AccountIco from '@assets/images/account.svg'
 import { LayoutChangeEvent } from 'react-native'
 import CarotDown from '@assets/images/carot-down.svg'
-import { NetTypes } from '@helium/address'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from '../../components/Box'
 import NotificationIcon from '../../components/NotificationIcon'
@@ -16,7 +15,9 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import * as AccountUtils from '../../utils/accountUtils'
 import AccountIcon from '../../components/AccountIcon'
 import BackgroundFill from '../../components/BackgroundFill'
-import useLayoutWidth from '../../utils/useLayoutWidth'
+import useLayoutWidth from '../../hooks/useLayoutWidth'
+import useNetworkColor from '../../hooks/useNetworkColor'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Props = {
   onPressWallet: () => void
@@ -25,8 +26,9 @@ type Props = {
 const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
   const { primaryIcon, primaryText } = useColors()
   const navigation = useNavigation<HomeNavigationProp>()
-  const { currentAccount } = useAccountStorage()
+  const { currentAccount, currentNetworkAddress } = useAccountStorage()
   const [barButtonsRightWidth, setBarButtonsRightWidth] = useLayoutWidth()
+  const { l1Network } = useAppStorage()
 
   const accountNetType = useMemo(
     () => AccountUtils.accountNetType(currentAccount?.address),
@@ -50,6 +52,10 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
 
   const containerStyle = useMemo(() => ({ marginTop: top }), [top])
 
+  const backgroundColor = useNetworkColor({
+    netType: accountNetType,
+  })
+
   return (
     <Box
       flexDirection="row"
@@ -57,9 +63,10 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
       alignItems="center"
       onLayout={onLayout}
       style={containerStyle}
+      zIndex={1}
     >
-      {accountNetType === NetTypes.TESTNET && (
-        <BackgroundFill backgroundColor="testnet" opacity={1} />
+      {backgroundColor && (
+        <BackgroundFill backgroundColor={backgroundColor} opacity={1} />
       )}
       <TouchableOpacityBox
         paddingVertical="ms"
@@ -79,7 +86,7 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
         paddingVertical="ms"
         onPress={onPressWallet}
       >
-        <AccountIcon address={currentAccount?.address} size={25} />
+        <AccountIcon address={currentNetworkAddress} size={25} />
         <Text
           variant="subtitle1"
           marginLeft="m"
@@ -97,14 +104,16 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
         paddingRight="l"
         onLayout={setBarButtonsRightWidth}
       >
-        <TouchableOpacityBox
-          paddingVertical="ms"
-          paddingLeft="s"
-          onPress={handleNotificationsSelected}
-          marginRight="s"
-        >
-          <NotificationIcon />
-        </TouchableOpacityBox>
+        {l1Network === 'helium' && (
+          <TouchableOpacityBox
+            paddingVertical="ms"
+            paddingLeft="s"
+            onPress={handleNotificationsSelected}
+            marginRight="s"
+          >
+            <NotificationIcon />
+          </TouchableOpacityBox>
+        )}
         <TouchableOpacityBox onPress={handleAddressBook} paddingVertical="ms">
           <AccountIco color={primaryIcon} />
         </TouchableOpacityBox>

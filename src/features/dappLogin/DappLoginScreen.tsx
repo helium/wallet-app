@@ -18,8 +18,8 @@ import {
   useTransactions,
 } from '../../storage/TransactionProvider'
 import { useColors } from '../../theme/themeHooks'
-import useAlert from '../../utils/useAlert'
-import useDisappear from '../../utils/useDisappear'
+import useAlert from '../../hooks/useAlert'
+import useDisappear from '../../hooks/useDisappear'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import { useWalletConnect } from './WalletConnectProvider'
 import DappConnect from './DappConnect'

@@ -17,19 +17,21 @@ import {
 } from '@gorhom/bottom-sheet'
 import { useNavigation } from '@react-navigation/native'
 import { BoxProps } from '@shopify/restyle'
+import { Portal } from '@gorhom/portal'
 import { useOpacity, useSpacing } from '../theme/themeHooks'
 import ContactsList from '../features/addressBook/ContactsList'
 import { HomeNavigationProp } from '../features/home/homeTypes'
 import { Theme } from '../theme/theme'
 import Box from './Box'
 import { CSAccount } from '../storage/cloudStorage'
-import useBackHandler from '../utils/useBackHandler'
+import useBackHandler from '../hooks/useBackHandler'
 
 export type AddressBookRef = {
   showAddressBook: (opts: { address?: string; index?: number }) => void
 }
 type Props = {
   children: ReactNode
+  hideCurrentAccount?: boolean
   onContactSelected: (opts: {
     contact: CSAccount
     prevAddress?: string
@@ -38,7 +40,7 @@ type Props = {
 } & BoxProps<Theme>
 const AddressBookSelector = forwardRef(
   (
-    { children, onContactSelected, ...boxProps }: Props,
+    { children, onContactSelected, hideCurrentAccount, ...boxProps }: Props,
     ref: Ref<AddressBookRef>,
   ) => {
     useImperativeHandle(ref, () => ({ showAddressBook }))
@@ -88,28 +90,31 @@ const AddressBookSelector = forwardRef(
     }, [homeNav])
 
     return (
-      <BottomSheetModalProvider>
-        <Box flex={1} {...boxProps}>
-          <BottomSheetModal
-            ref={bottomSheetModalRef}
-            index={0}
-            backgroundStyle={backgroundStyle}
-            backdropComponent={renderBackdrop}
-            snapPoints={snapPoints}
-            handleStyle={sheetHandleStyle}
-            onDismiss={handleDismiss}
-          >
-            <ContactsList
-              showMyAccounts
-              onAddNew={handleAddNewContact}
-              handleContactSelected={handleContactSelected}
-              address={address}
-              insideBottomSheet
-            />
-          </BottomSheetModal>
-          {children}
-        </Box>
-      </BottomSheetModalProvider>
+      <Box flex={1} {...boxProps}>
+        <Portal>
+          <BottomSheetModalProvider>
+            <BottomSheetModal
+              ref={bottomSheetModalRef}
+              index={0}
+              backgroundStyle={backgroundStyle}
+              backdropComponent={renderBackdrop}
+              snapPoints={snapPoints}
+              handleStyle={sheetHandleStyle}
+              onDismiss={handleDismiss}
+            >
+              <ContactsList
+                showMyAccounts
+                hideCurrentAccount={hideCurrentAccount}
+                onAddNew={handleAddNewContact}
+                handleContactSelected={handleContactSelected}
+                address={address}
+                insideBottomSheet
+              />
+            </BottomSheetModal>
+          </BottomSheetModalProvider>
+        </Portal>
+        {children}
+      </Box>
     )
   },
 )

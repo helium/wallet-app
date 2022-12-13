@@ -1,6 +1,5 @@
 import React, { useCallback, memo, useMemo } from 'react'
 import CheckBox from '@react-native-community/checkbox'
-import { TokenType } from '../../generated/graphql'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
 import Surface from '../../components/Surface'
@@ -8,7 +7,7 @@ import AccountIcon from '../../components/AccountIcon'
 import { useColors } from '../../theme/themeHooks'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import { ellipsizeAddress, isTestnet } from '../../utils/accountUtils'
-import { LedgerAccount } from '../../utils/useLedger'
+import { LedgerAccount } from '../../hooks/useLedger'
 
 export enum Section {
   NEW_ACCOUNT = 0,
@@ -37,7 +36,7 @@ const LedgerAccountListItem = ({
   const colors = useColors()
 
   // TODO: Add other token types once nano app supports them
-  const balance = bonesToBalance(account.balance, TokenType.Hnt)
+  const balance = bonesToBalance(account.balance, 'HNT')
   const disabled = section.index === Section.ALREADY_LINKED
 
   const borderTopEndRadius = useMemo(

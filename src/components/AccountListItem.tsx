@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 import Checkmark from '@assets/images/checkIco.svg'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import Text from './Text'
@@ -7,6 +7,7 @@ import AccountIcon from './AccountIcon'
 import { useColors } from '../theme/themeHooks'
 import { ellipsizeAddress, formatAccountAlias } from '../utils/accountUtils'
 import { CSAccount } from '../storage/cloudStorage'
+import { useAppStorage } from '../storage/AppStorageProvider'
 
 type Props = {
   selected: boolean
@@ -16,7 +17,17 @@ type Props = {
 }
 const AccountListItem = ({ selected, account, onPress, disabled }: Props) => {
   const { primary } = useColors()
+  const { l1Network } = useAppStorage()
+
   const handlePress = useCallback(() => onPress?.(account), [account, onPress])
+
+  const address = useMemo(() => {
+    if (l1Network === 'solana' && account.solanaAddress) {
+      return account.solanaAddress
+    }
+    return account.address
+  }, [account.address, account.solanaAddress, l1Network])
+
   return (
     <TouchableOpacityBox
       minHeight={52}
@@ -29,13 +40,13 @@ const AccountListItem = ({ selected, account, onPress, disabled }: Props) => {
       onPress={handlePress}
       disabled={disabled}
     >
-      <AccountIcon size={40} address={account.address} />
+      <AccountIcon size={40} address={address} />
       <Box flexDirection="column" justifyContent="center" flex={1}>
         <Text variant="body1" marginLeft="ms">
           {formatAccountAlias(account)}
         </Text>
         <Text variant="body3" marginLeft="ms" color="secondaryText">
-          {ellipsizeAddress(account.address)}
+          {ellipsizeAddress(address)}
         </Text>
       </Box>
       {selected && (

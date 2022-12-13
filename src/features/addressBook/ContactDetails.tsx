@@ -33,12 +33,13 @@ import {
   AddressBookNavigationProp,
   AddressBookStackParamList,
 } from './addressBookTypes'
-import { accountNetType } from '../../utils/accountUtils'
+import { solAddressIsValid, accountNetType } from '../../utils/accountUtils'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import AddressExtra from './AddressExtra'
-import useAlert from '../../utils/useAlert'
+import useAlert from '../../hooks/useAlert'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useIsHotspotOrValidatorQuery } from '../../generated/graphql'
+import useNetworkColor from '../../hooks/useNetworkColor'
 
 const BUTTON_HEIGHT = 55
 
@@ -59,22 +60,34 @@ const ContactDetails = ({ action, contact }: Props) => {
     'surfaceSecondary',
     keyboardShown ? 0.85 : 0.4,
   )
-  const { addContact, editContact, deleteContact } = useAccountStorage()
+  const { addContact, editContact, deleteContact, currentAccount } =
+    useAccountStorage()
   const [nickname, setNickname] = useState(contact?.alias || '')
-  const [address, setAddress] = useState(
-    contact?.address || route.params?.address || '',
-  )
+  const [address, setAddress] = useState('')
   const nicknameInput = useRef<RNTextInput | null>(null)
   const { blueBright500, primaryText } = useColors()
-  const { scannedAddress, setScannedAddress } = useAppStorage()
+  const { scannedAddress, setScannedAddress, l1Network } = useAppStorage()
   const spacing = useSpacing()
   const { showOKCancelAlert } = useAlert()
+
+  const isSolana = useMemo(() => l1Network === 'solana', [l1Network])
+  const backgroundColor = useNetworkColor({ netType: currentAccount?.netType })
+
+  useEffect(() => {
+    if (route.params?.address) {
+      setAddress(route.params.address)
+    } else if (isSolana && contact?.solanaAddress) {
+      setAddress(contact.solanaAddress)
+    } else if (!isSolana && contact?.address) {
+      setAddress(contact.address)
+    }
+  }, [contact, isSolana, route])
 
   const { error, loading, data } = useIsHotspotOrValidatorQuery({
     variables: {
       address,
     },
-    skip: !address || !Address.isValid(address),
+    skip: !address || isSolana || !Address.isValid(address),
   })
 
   const onRequestClose = useCallback(() => {
@@ -85,9 +98,23 @@ const ContactDetails = ({ action, contact }: Props) => {
   const isEditingContact = useMemo(() => action === 'edit', [action])
 
   const handleCreateNewContact = useCallback(() => {
-    addContact({ address, alias: nickname, netType: accountNetType(address) })
+    let heliumAddress = ''
+    let solanaAddress = ''
+
+    if (isSolana) {
+      solanaAddress = address
+    } else {
+      heliumAddress = address
+    }
+
+    addContact({
+      address: heliumAddress,
+      solanaAddress,
+      alias: nickname,
+      netType: accountNetType(address),
+    })
     addressBookNav.goBack()
-  }, [addContact, address, addressBookNav, nickname])
+  }, [addContact, address, addressBookNav, isSolana, nickname])
 
   const handleDeleteContact = useCallback(async () => {
     const decision = await showOKCancelAlert({
@@ -108,7 +135,7 @@ const ContactDetails = ({ action, contact }: Props) => {
       netType: accountNetType(address),
     })
     addressBookNav.goBack()
-  }, [editContact, contact, address, nickname, addressBookNav])
+  }, [contact, editContact, nickname, address, addressBookNav])
 
   const handleKeydown = useCallback(
     (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
@@ -128,20 +155,33 @@ const ContactDetails = ({ action, contact }: Props) => {
   }, [addressBookNav])
 
   useEffect(() => {
-    if (scannedAddress && Address.isValid(scannedAddress)) {
+    if (!scannedAddress) return
+
+    if (
+      (!isSolana && Address.isValid(scannedAddress)) ||
+      (isSolana && solAddressIsValid(scannedAddress))
+    ) {
       setAddress(scannedAddress)
       setScannedAddress(undefined)
     }
-  }, [scannedAddress, setScannedAddress])
+  }, [isSolana, scannedAddress, setScannedAddress])
 
-  const addressIsValid = useMemo(
-    () => data?.isHotspotOrValidator === false,
-    [data],
-  )
+  const addressIsValid = useMemo(() => {
+    if (isSolana) {
+      return solAddressIsValid(address)
+    }
+
+    return data?.isHotspotOrValidator === false
+  }, [data, isSolana, address])
 
   return (
-    <SafeAreaBox flex={1} edges={['top']}>
-      <Box flexDirection="row" alignItems="center">
+    <Box flex={1}>
+      <Box
+        style={{ paddingTop: Platform.OS === 'android' ? 24 : 0 }}
+        flexDirection="row"
+        alignItems="center"
+        backgroundColor={backgroundColor}
+      >
         <Box flex={1} />
         <Text variant="subtitle2">
           {isAddingContact ? t('addNewContact.title') : t('editContact.title')}
@@ -182,7 +222,11 @@ const ContactDetails = ({ action, contact }: Props) => {
             justifyContent="space-between"
             marginHorizontal="xl"
           >
-            <Text variant="body1">{t('addNewContact.address.title')}</Text>
+            <Text variant="body1">
+              {t('addNewContact.address.title', {
+                network: isSolana ? 'Solana' : 'Helium',
+              })}
+            </Text>
             <AddressExtra
               onScanPress={handleScanAddress}
               isValidAddress={addressIsValid}
@@ -191,16 +235,18 @@ const ContactDetails = ({ action, contact }: Props) => {
           </Box>
           <TextInput
             variant="plain"
-            placeholder={t('addNewContact.address.placeholder')}
-            onChangeText={handleAddressChange}
-            value={address}
-            autoCapitalize="none"
-            multiline
-            returnKeyType="next"
-            autoComplete="off"
-            autoCorrect={false}
+            textInputProps={{
+              placeholder: t('addNewContact.address.placeholder'),
+              onChangeText: handleAddressChange,
+              value: address,
+              autoCapitalize: 'none',
+              multiline: true,
+              returnKeyType: 'next',
+              autoComplete: 'off',
+              autoCorrect: false,
+              onKeyPress: handleKeydown,
+            }}
             paddingVertical="xl"
-            onKeyPress={handleKeydown}
           />
           <Text
             opacity={error || data?.isHotspotOrValidator ? 100 : 0}
@@ -223,13 +269,15 @@ const ContactDetails = ({ action, contact }: Props) => {
           </Box>
           <TextInput
             variant="plain"
-            placeholder={t('addNewContact.nickname.placeholder')}
-            onChangeText={setNickname}
-            value={nickname}
-            autoCapitalize="words"
-            autoComplete="off"
-            returnKeyType="done"
-            autoCorrect={false}
+            textInputProps={{
+              placeholder: t('addNewContact.nickname.placeholder'),
+              onChangeText: setNickname,
+              value: nickname,
+              autoCapitalize: 'words',
+              autoComplete: 'off',
+              returnKeyType: 'done',
+              autoCorrect: false,
+            }}
             ref={nicknameInput}
           />
           <ButtonPressable
@@ -289,7 +337,7 @@ const ContactDetails = ({ action, contact }: Props) => {
           </Box>
         </SafeAreaBox>
       </KeyboardAvoidingView>
-    </SafeAreaBox>
+    </Box>
   )
 }
 

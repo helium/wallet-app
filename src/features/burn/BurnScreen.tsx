@@ -28,11 +28,7 @@ import {
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAccountSelector } from '../../components/AccountSelector'
 import AccountButton from '../../components/AccountButton'
-import {
-  TokenType,
-  useAccountQuery,
-  useSubmitTxnMutation,
-} from '../../generated/graphql'
+import { useAccountQuery, useSubmitTxnMutation } from '../../generated/graphql'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import PaymentSummary from '../payment/PaymentSummary'
 import SubmitButton from '../../components/SubmitButton'
@@ -41,7 +37,7 @@ import LedgerBurnModal, {
   LedgerBurnModalRef,
 } from '../../components/LedgerBurnModal'
 import PaymentSubmit from '../payment/PaymentSubmit'
-import useAlert from '../../utils/useAlert'
+import useAlert from '../../hooks/useAlert'
 import { checkSecureAccount } from '../../storage/secureStorage'
 
 type Route = RouteProp<HomeStackParamList, 'BurnScreen'>
@@ -94,7 +90,7 @@ const BurnScreen = () => {
   const amountBalance = useMemo(() => {
     const amount = parseFloat(route.params.amount)
 
-    return floatToBalance(amount, TokenType.Hnt)
+    return floatToBalance(amount, 'HNT')
   }, [floatToBalance, route.params.amount])
 
   const feeAsTokens = useMemo(() => {

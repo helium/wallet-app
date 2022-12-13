@@ -17,7 +17,7 @@ import RootNavigator from './navigation/RootNavigator'
 import { useAccountStorage } from './storage/AccountStorageProvider'
 import LockScreen from './features/lock/LockScreen'
 import SecurityScreen from './features/security/SecurityScreen'
-import useMount from './utils/useMount'
+import useMount from './hooks/useMount'
 import OnboardingProvider from './features/onboarding/OnboardingProvider'
 import AccountSelector from './components/AccountSelector'
 import TransactionProvider from './storage/TransactionProvider'
@@ -25,11 +25,12 @@ import { BalanceProvider } from './utils/Balance'
 import { useColorScheme } from './theme/themeHooks'
 import { linking } from './utils/linking'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
-import TestnetAwareStatusBar from './components/TestnetAwareStatusBar'
+import NetworkAwareStatusBar from './components/NetworkAwareStatusBar'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
 import { navigationRef } from './navigation/NavigationHelper'
 import globalStyles from './theme/globalStyles'
 import SplashScreen from './components/SplashScreen'
+import SentinelScreen from './components/SentinelScreen'
 
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -44,6 +45,7 @@ const App = () => {
     'You are calling concat on a terminating link, which will have no effect',
     "[react-native-gesture-handler] Seems like you're using an old API with gesture components",
     'console.error: {"context":"client"} {"context":"client/pairing"} Unauthorized pairing update request',
+    'Require cycle:',
   ])
 
   const { appState } = useAppState()
@@ -99,32 +101,34 @@ const App = () => {
               <OnboardingProvider>
                 {client && (
                   <ApolloProvider client={client}>
-                    <BalanceProvider>
-                      <TransactionProvider>
-                        <LockScreen>
-                          <WalletConnectProvider>
-                            {accountsRestored && (
-                              <AccountSelector>
-                                <NavigationContainer
-                                  theme={navTheme}
-                                  linking={linking}
-                                  ref={navigationRef}
-                                >
-                                  <TestnetAwareStatusBar />
-                                  <RootNavigator />
-                                </NavigationContainer>
-                                <SecurityScreen
-                                  visible={
-                                    appState !== 'active' &&
-                                    appState !== 'unknown'
-                                  }
-                                />
-                              </AccountSelector>
-                            )}
-                          </WalletConnectProvider>
-                        </LockScreen>
-                      </TransactionProvider>
-                    </BalanceProvider>
+                    <LockScreen>
+                      <SentinelScreen>
+                        <WalletConnectProvider>
+                          {accountsRestored && (
+                            <AccountSelector>
+                              <NavigationContainer
+                                theme={navTheme}
+                                linking={linking}
+                                ref={navigationRef}
+                              >
+                                <BalanceProvider>
+                                  <TransactionProvider>
+                                    <NetworkAwareStatusBar />
+                                    <RootNavigator />
+                                  </TransactionProvider>
+                                </BalanceProvider>
+                              </NavigationContainer>
+                              <SecurityScreen
+                                visible={
+                                  appState !== 'active' &&
+                                  appState !== 'unknown'
+                                }
+                              />
+                            </AccountSelector>
+                          )}
+                        </WalletConnectProvider>
+                      </SentinelScreen>
+                    </LockScreen>
                   </ApolloProvider>
                 )}
               </OnboardingProvider>

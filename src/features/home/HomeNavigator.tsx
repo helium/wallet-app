@@ -1,8 +1,8 @@
 import React, { memo } from 'react'
 import {
-  createStackNavigator,
-  StackNavigationOptions,
-} from '@react-navigation/stack'
+  createNativeStackNavigator,
+  NativeStackNavigationOptions,
+} from '@react-navigation/native-stack'
 import AccountAssignScreen from '../onboarding/AccountAssignScreen'
 import AccountsScreen from '../account/AccountsScreen'
 import PaymentScreen from '../payment/PaymentScreen'
@@ -24,18 +24,21 @@ import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
 import BurnScreen from '../burn/BurnScreen'
 import ImportPrivateKey from '../onboarding/import/ImportPrivateKey'
 
-const HomeStack = createStackNavigator()
+const HomeStack = createNativeStackNavigator()
 
 const screenOptions = {
   presentation: 'modal',
-} as StackNavigationOptions
+} as NativeStackNavigationOptions
 
 const navigatorScreenOptions = {
+  animationTypeForReplace: 'push',
   presentation: 'modal',
   headerShown: false,
-} as StackNavigationOptions
+} as NativeStackNavigationOptions
 
-const cardPresentation = { presentation: 'card' } as StackNavigationOptions
+const cardPresentation = {
+  presentation: 'card',
+} as NativeStackNavigationOptions
 
 const HomeStackScreen = () => {
   return (

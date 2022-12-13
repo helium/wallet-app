@@ -5,15 +5,25 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import { useAsync } from 'react-async-hook'
 import * as SecureStore from 'expo-secure-store'
-import { NetTypes as NetType } from '@helium/address'
-import { accountNetType, AccountNetTypeOpt } from '../utils/accountUtils'
+import { NetTypes as NetType, NetTypes } from '@helium/address'
+import { useAppState } from '@react-native-community/hooks'
+import { AccountFetchCache } from '@helium/spl-utils'
+import { Transaction } from '@solana/web3.js'
+import { AnchorProvider, Wallet } from '@project-serum/anchor'
+import {
+  accountNetType,
+  AccountNetTypeOpt,
+  heliumAddressToSolAddress,
+} from '../utils/accountUtils'
 import {
   createSecureAccount,
   deleteSecureAccount,
+  getSolanaKeypair,
   SecureAccount,
   signoutSecureStore,
   storeSecureAccount,
@@ -31,40 +41,46 @@ import {
   updateCloudContacts,
 } from './cloudStorage'
 import { removeAccountTag, tagAccount } from './oneSignalStorage'
+import { useAppStorage } from './AppStorageProvider'
+import { useAppDispatch } from '../store/store'
+import makeApiToken from '../utils/makeApiToken'
+import { authSlice } from '../store/slices/authSlice'
+import { getConnection } from '../utils/solanaUtils'
 
 const useAccountStorageHook = () => {
   const [currentAccount, setCurrentAccount] = useState<
     CSAccount | null | undefined
   >(undefined)
+  const [cache, setCache] = useState<AccountFetchCache>()
   const [accounts, setAccounts] = useState<CSAccounts>()
   const [contacts, setContacts] = useState<CSAccount[]>([])
   const [defaultAccountAddress, setDefaultAccountAddress] = useState<string>()
+  const [anchorProvider, setAnchorProvider] = useState<
+    AnchorProvider | undefined
+  >()
+  const solanaAccountsUpdateComplete = useRef(false)
+  const solanaContactsUpdateComplete = useRef(false)
+  const { updateL1Network, l1Network, solanaNetwork: cluster } = useAppStorage()
+  const dispatch = useAppDispatch()
+  const currentAppState = useAppState()
 
-  const { result: restoredAccounts } = useAsync(restoreAccounts, [])
+  const updateApiToken = useCallback(async () => {
+    const apiToken = await makeApiToken(currentAccount?.address)
+    dispatch(authSlice.actions.setApiToken(apiToken))
+  }, [currentAccount, dispatch])
 
   useEffect(() => {
-    if (!restoredAccounts) return
-
-    setAccounts(restoredAccounts.csAccounts)
-    setCurrentAccount(restoredAccounts.current)
-    setContacts(restoredAccounts.contacts)
-  }, [restoredAccounts])
-
-  useAsync(async () => {
-    if (!accounts || Object.values(accounts)?.length === 0) return
-
-    const restoredAddress = await getCloudDefaultAccountAddress()
-    if (!restoredAddress) {
-      // set default account to first in list
-      const firstAccount = Object.values(accounts)[0]
-      const firstAddress = firstAccount.address
-      await setCloudDefaultAccountAddress(firstAddress)
-      setDefaultAccountAddress(firstAddress)
-    } else {
-      // restore default account
-      setDefaultAccountAddress(restoredAddress)
+    if (currentAppState === 'active') {
+      updateApiToken()
     }
-  }, [accounts])
+  }, [currentAccount, currentAppState, updateApiToken])
+
+  const currentNetworkAddress = useMemo(() => {
+    if (l1Network === 'helium') return currentAccount?.address
+    if (l1Network === 'solana') return currentAccount?.solanaAddress
+  }, [currentAccount, l1Network])
+
+  const { result: restoredAccounts } = useAsync(restoreAccounts, [])
 
   const restored = useMemo(() => accounts !== undefined, [accounts])
 
@@ -98,6 +114,109 @@ const useAccountStorageHook = () => {
     [sortedAccounts],
   )
 
+  useAsync(async () => {
+    const connection = getConnection(cluster)
+
+    if (!currentAccount || !currentAccount.address || !connection) return
+    const secureAcct = await getSolanaKeypair(currentAccount.address)
+
+    if (!secureAcct) return
+
+    const anchorWallet = {
+      publicKey: secureAcct?.publicKey,
+      signAllTransactions: async (transactions: Transaction[]) => {
+        return transactions.map((tx) => {
+          tx.partialSign(secureAcct)
+          return tx
+        })
+      },
+      signTransaction: async (transaction: Transaction) => {
+        transaction.partialSign(secureAcct)
+        return transaction
+      },
+    } as Wallet
+
+    setAnchorProvider(
+      new AnchorProvider(connection, anchorWallet, {
+        preflightCommitment: 'confirmed',
+      }),
+    )
+  }, [currentAccount])
+
+  useEffect(() => {
+    // Ensure all accounts have solana address
+    const accts = accounts || ({} as CSAccounts)
+    if (solanaAccountsUpdateComplete.current || !Object.keys(accts).length)
+      return
+
+    solanaAccountsUpdateComplete.current = true
+
+    const updated = Object.keys(accts).reduce((result, addy) => {
+      const acct = accts[addy]
+      if (!acct) return result
+      return {
+        ...result,
+        [addy]: {
+          ...acct,
+          solanaAddress: heliumAddressToSolAddress(addy),
+        },
+      }
+    }, {} as CSAccounts)
+
+    setAccounts(updated)
+    updateCloudAccounts(updated)
+  }, [accounts])
+
+  useEffect(() => {
+    // Ensure all contacts have solana address
+    if (!contacts.length || solanaContactsUpdateComplete.current) {
+      return
+    }
+
+    solanaContactsUpdateComplete.current = true
+
+    const updated = contacts.map((c) => {
+      if (c.solanaAddress) return c
+      return {
+        ...c,
+        solanaAddress: heliumAddressToSolAddress(c.address),
+      }
+    })
+
+    setContacts(updated)
+    updateCloudContacts(updated)
+  }, [contacts])
+
+  useEffect(() => {
+    // if a testnet address is selected, set l1 back to helium
+    if (currentAccount?.netType !== NetTypes.TESTNET) return
+    updateL1Network('helium')
+  }, [currentAccount, updateL1Network])
+
+  useEffect(() => {
+    if (!restoredAccounts) return
+
+    setAccounts(restoredAccounts.csAccounts)
+    setCurrentAccount(restoredAccounts.current)
+    setContacts(restoredAccounts.contacts)
+  }, [restoredAccounts])
+
+  useAsync(async () => {
+    if (!accounts || Object.values(accounts)?.length === 0) return
+
+    const restoredAddress = await getCloudDefaultAccountAddress()
+    if (!restoredAddress) {
+      // set default account to first in list
+      const firstAccount = Object.values(accounts)[0]
+      const firstAddress = firstAccount.address
+      await setCloudDefaultAccountAddress(firstAddress)
+      setDefaultAccountAddress(firstAddress)
+    } else {
+      // restore default account
+      setDefaultAccountAddress(restoredAddress)
+    }
+  }, [accounts])
+
   const sortedAccountsForNetType = useCallback(
     (netType: AccountNetTypeOpt) => {
       if (netType === NetType.MAINNET) {
@@ -123,46 +242,47 @@ const useAccountStorageHook = () => {
 
   const contactsForNetType = useCallback(
     (netType: AccountNetTypeOpt) => {
-      if (netType === NetType.MAINNET) return mainnetContacts
-      if (netType === NetType.TESTNET) return testnetContacts
-      return contacts
+      if (l1Network === 'solana') {
+        return mainnetContacts.filter((c) => !!c.solanaAddress)
+      }
+      if (netType === NetType.MAINNET)
+        return mainnetContacts.filter((c) => !!c.address)
+      if (netType === NetType.TESTNET)
+        return testnetContacts.filter((c) => !!c.address)
+      return contacts.filter((c) => !!c.address)
     },
-    [contacts, mainnetContacts, testnetContacts],
+    [contacts, l1Network, mainnetContacts, testnetContacts],
   )
 
   const upsertAccount = useCallback(
     async ({
-      alias,
-      address,
-      ledgerDevice,
       secureAccount,
-      voteIdsSeen,
-    }: {
-      alias: string
-      address: string
-      ledgerDevice?: LedgerDevice
-      secureAccount?: SecureAccount
-      voteIdsSeen?: string[]
-    }) => {
+      ...csAccount
+    }: Omit<CSAccount, 'netType'> & { secureAccount?: SecureAccount }) => {
+      if (secureAccount) {
+        await storeSecureAccount(secureAccount)
+      }
+
+      let { solanaAddress } = csAccount
+
+      if (!solanaAddress) {
+        solanaAddress = heliumAddressToSolAddress(csAccount.address)
+      }
+
       const nextAccount: CSAccount = {
-        alias,
-        address,
-        netType: accountNetType(address),
-        ledgerDevice,
-        voteIdsSeen,
+        ...csAccount,
+        netType: accountNetType(csAccount.address),
+        solanaAddress,
       }
 
       const nextAccounts: CSAccounts = {
         ...accounts,
-        [address]: nextAccount,
-      }
-      if (secureAccount) {
-        await storeSecureAccount(secureAccount)
+        [csAccount.address]: nextAccount,
       }
       setAccounts(nextAccounts)
       setCurrentAccount(nextAccount)
       await updateCloudAccounts(nextAccounts)
-      await tagAccount(address)
+      await tagAccount(csAccount.address)
     },
     [accounts],
   )
@@ -176,6 +296,8 @@ const useAccountStorageHook = () => {
         ledgerIndex?: number
       }[],
     ) => {
+      if (!accountBulk.length) return
+
       const bulkAccounts = accountBulk.reduce((prev, curr) => {
         const accountIndex = curr.ledgerIndex || 0
         return {
@@ -212,8 +334,14 @@ const useAccountStorageHook = () => {
 
   const addContact = useCallback(
     async (account: CSAccount) => {
-      const filtered = contacts.filter((c) => c.address !== account.address)
-      const nextContacts = [...filtered, account]
+      const nextAccount = account
+      if (!nextAccount.solanaAddress && nextAccount.address) {
+        nextAccount.solanaAddress = heliumAddressToSolAddress(
+          nextAccount.address,
+        )
+      }
+      const filtered = contacts.filter((c) => c.address !== nextAccount.address)
+      const nextContacts = [...filtered, nextAccount]
       setContacts(nextContacts)
 
       return updateCloudContacts(nextContacts)
@@ -223,8 +351,16 @@ const useAccountStorageHook = () => {
 
   const editContact = useCallback(
     async (oldAddress: string, updatedAccount: CSAccount) => {
-      const filtered = contacts.filter((c) => c.address !== oldAddress)
-      const nextContacts = [...filtered, updatedAccount]
+      const nextAccount = updatedAccount
+      if (!nextAccount.solanaAddress && nextAccount.address) {
+        nextAccount.solanaAddress = heliumAddressToSolAddress(
+          nextAccount.address,
+        )
+      }
+      const filtered = contacts.filter(
+        (c) => c.address !== oldAddress && c.solanaAddress !== oldAddress,
+      )
+      const nextContacts = [...filtered, nextAccount]
       setContacts(nextContacts)
 
       return updateCloudContacts(nextContacts)
@@ -234,7 +370,9 @@ const useAccountStorageHook = () => {
 
   const deleteContact = useCallback(
     async (address: string) => {
-      const filtered = contacts.filter((c) => c.address !== address)
+      const filtered = contacts.filter(
+        (c) => c.address !== address && c.solanaAddress !== address,
+      )
       const nextContacts = [...filtered]
       setContacts(nextContacts)
       return updateCloudContacts(nextContacts)
@@ -299,21 +437,37 @@ const useAccountStorageHook = () => {
     ],
   )
 
+  useEffect(() => {
+    const connection = getConnection(cluster)
+    if (connection) {
+      cache?.close()
+      setCache((c) =>
+        !c
+          ? new AccountFetchCache({
+              connection,
+              delay: 50,
+              commitment: 'confirmed',
+              extendConnection: true,
+            })
+          : c,
+      )
+    }
+  }, [cache, cluster])
+
   return {
-    accounts,
     accountAddresses,
+    accounts,
     addContact,
-    editContact,
-    deleteContact,
-    defaultAccountAddress,
-    updateDefaultAccountAddress,
     contacts,
     contactsForNetType,
     createSecureAccount,
     currentAccount,
+    currentNetworkAddress,
+    defaultAccountAddress,
+    deleteContact,
+    editContact,
     hasAccounts,
     reachedAccountLimit,
-    mainnetContacts,
     restored,
     setCurrentAccount,
     signOut,
@@ -321,9 +475,11 @@ const useAccountStorageHook = () => {
     sortedAccountsForNetType,
     sortedMainnetAccounts,
     sortedTestnetAccounts,
-    testnetContacts,
+    updateDefaultAccountAddress,
     upsertAccount,
     upsertAccounts,
+    cache,
+    anchorProvider,
   }
 }
 
@@ -343,9 +499,9 @@ const initialState = {
     address: '',
   }),
   currentAccount: undefined,
+  currentNetworkAddress: '',
   hasAccounts: false,
   reachedAccountLimit: false,
-  mainnetContacts: [],
   restored: false,
   setCurrentAccount: () => undefined,
   signOut: async () => undefined,
@@ -353,9 +509,10 @@ const initialState = {
   sortedAccountsForNetType: () => [],
   sortedMainnetAccounts: [],
   sortedTestnetAccounts: [],
-  testnetContacts: [],
   upsertAccount: async () => undefined,
   upsertAccounts: async () => undefined,
+  cache: undefined,
+  anchorProvider: undefined,
 }
 
 const AccountStorageContext =

@@ -1,40 +1,56 @@
+import { Ticker } from '@helium/currency'
 import { BoxProps } from '@shopify/restyle'
 import React, { memo, useMemo } from 'react'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
-import { AccountData, TokenType } from '../../generated/graphql'
 import { Theme } from '../../theme/theme'
-import { useAccountBalances } from '../../utils/Balance'
+import { useBalance } from '../../utils/Balance'
 
 type Props = {
-  accountData?: AccountData | null
-  tokenType: TokenType
+  ticker: Ticker
   textVariant?: 'h0' | 'h1' | 'h2'
   showTicker?: boolean
 } & BoxProps<Theme>
 
 const AccountTokenBalance = ({
-  accountData,
-  tokenType,
+  ticker,
   textVariant,
   showTicker = true,
   ...boxProps
 }: Props) => {
-  const balances = useAccountBalances(accountData)
+  const {
+    dcBalance,
+    mobileBalance,
+    networkBalance,
+    networkStakedBalance,
+    secBalance,
+  } = useBalance()
 
   const balance = useMemo(() => {
-    switch (tokenType) {
+    switch (ticker) {
       default:
-      case TokenType.Hnt:
-        return balances?.hnt
-      case TokenType.Mobile:
-        return balances?.mobile
-      case TokenType.Dc:
-        return balances?.dc
-      case TokenType.Hst:
-        return balances?.hst
+      case 'HNT': {
+        if (networkBalance && networkStakedBalance)
+          return networkBalance.plus(networkStakedBalance)
+
+        if (networkBalance) return networkBalance
+        return networkStakedBalance
+      }
+      case 'MOBILE':
+        return mobileBalance
+      case 'DC':
+        return dcBalance
+      case 'HST':
+        return secBalance
     }
-  }, [balances, tokenType])
+  }, [
+    dcBalance,
+    mobileBalance,
+    networkBalance,
+    networkStakedBalance,
+    secBalance,
+    ticker,
+  ])
 
   return (
     <Box flexDirection="row" justifyContent="center" {...boxProps}>

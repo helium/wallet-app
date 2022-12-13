@@ -24,3 +24,10 @@ if (!String.prototype.replaceAll) {
     return this.replace(new RegExp(str, 'g'), newStr)
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+// eslint-disable-next-line no-extend-native
+BigInt.prototype.toJSON = function () {
+  return this.toString()
+}

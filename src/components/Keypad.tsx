@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react'
 import { BoxProps } from '@shopify/restyle'
-import useHaptic from '../utils/useHaptic'
+import useHaptic from '../hooks/useHaptic'
 import Box from './Box'
 import KeypadButton, { KeypadCustomInput, KeypadInput } from './KeypadButton'
 import { Theme } from '../theme/theme'

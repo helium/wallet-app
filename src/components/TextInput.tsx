@@ -4,36 +4,52 @@ import {
   createRestyleComponent,
   VariantProps,
   createVariant,
-  createBox,
 } from '@shopify/restyle'
-import { TextInput as RNTextInput } from 'react-native'
+import { TextInput } from 'react-native'
 import tinycolor from 'tinycolor2'
+import { SvgProps } from 'react-native-svg'
 import { Color, theme, Theme } from '../theme/theme'
-import { useColors, useInputVariants } from '../theme/themeHooks'
+import {
+  useColors,
+  useInputVariants,
+  useTextVariants,
+} from '../theme/themeHooks'
+import Box from './Box'
+import Text from './Text'
+import TouchableOpacityBox from './TouchableOpacityBox'
 
-const TextInputBox = createBox<Theme, React.ComponentProps<typeof RNTextInput>>(
-  RNTextInput,
-)
-
-const TextInput = createRestyleComponent<
-  VariantProps<Theme, 'inputVariants'> &
-    React.ComponentProps<typeof TextInputBox>,
+const BoxWrapper = createRestyleComponent<
+  VariantProps<Theme, 'inputVariants'> & React.ComponentProps<typeof Box>,
   Theme
->([createVariant({ themeKey: 'inputVariants' })], TextInputBox)
+>([createVariant({ themeKey: 'inputVariants' })], Box)
 
-type Props = React.ComponentProps<typeof TextInput> & {
+type Props = React.ComponentProps<typeof BoxWrapper> & {
   placeholderTextColor?: Color
   textColor?: Color
   fontSize?: number
+  floatingLabel?: string
+  onTrailingIconPress?: () => void
+  TrailingIcon?: React.FC<SvgProps>
+  textInputProps?: React.ComponentProps<typeof TextInput>
 }
 
 const TI = forwardRef(
   (
-    { placeholderTextColor, textColor, fontSize, ...rest }: Props,
-    ref: Ref<RNTextInput>,
+    {
+      placeholderTextColor,
+      textColor,
+      fontSize,
+      textInputProps,
+      floatingLabel,
+      TrailingIcon,
+      onTrailingIconPress,
+      ...rest
+    }: Props,
+    ref: Ref<TextInput>,
   ) => {
     const colors = useColors()
     const inputVariants = useInputVariants()
+    const textVariants = useTextVariants()
 
     const getPlaceholderTextColor = useMemo(() => {
       const findColor = () => {
@@ -54,15 +70,41 @@ const TI = forwardRef(
     }, [colors, textColor])
 
     return (
-      <TextInput
-        style={{
-          color: getTextColor,
-          fontSize: fontSize || inputVariants.regular.fontSize,
-        }}
-        placeholderTextColor={getPlaceholderTextColor}
-        ref={ref}
+      <BoxWrapper
+        justifyContent="center"
+        alignItems="center"
+        flexDirection="row"
         {...rest}
-      />
+      >
+        <Box flexGrow={1} width="80%">
+          {floatingLabel && (
+            <Text variant="body3" color="grey600">
+              {floatingLabel}
+            </Text>
+          )}
+          <TextInput
+            style={{
+              color: getTextColor,
+              fontSize: fontSize || inputVariants.regular.fontSize,
+              fontFamily: floatingLabel
+                ? textVariants.subtitle4.fontFamily
+                : undefined,
+            }}
+            placeholderTextColor={getPlaceholderTextColor}
+            {...textInputProps}
+            ref={ref}
+          />
+        </Box>
+        {TrailingIcon && (
+          <TouchableOpacityBox
+            paddingHorizontal="s"
+            paddingVertical="m"
+            onPress={onTrailingIconPress}
+          >
+            <TrailingIcon color="white" width={14} />
+          </TouchableOpacityBox>
+        )}
+      </BoxWrapper>
     )
   },
 )

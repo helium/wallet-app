@@ -1,16 +1,21 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { useNavigation } from '@react-navigation/native'
 import { BoxProps } from '@shopify/restyle'
-import React, { memo } from 'react'
-import { LayoutChangeEvent } from 'react-native'
+import React, { memo, useMemo } from 'react'
+import { LayoutChangeEvent, Platform } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { Spacing, Theme } from '../theme/theme'
+import { SvgProps } from 'react-native-svg'
+import { Color, Spacing, Theme } from '../theme/theme'
 import { useHitSlop } from '../theme/themeHooks'
 import BackButton from './BackButton'
 import Box from './Box'
 import CloseButton from './CloseButton'
+import ImageBox from './ImageBox'
 import SafeAreaBox from './SafeAreaBox'
 import Text from './Text'
+import { width, height } from '../utils/layout'
+import TouchableOpacityBox from './TouchableOpacityBox'
+import BlurBox from './BlurBox'
 
 type Props = BoxProps<Theme> & {
   children?: React.ReactNode
@@ -21,10 +26,13 @@ type Props = BoxProps<Theme> & {
   onLayout?: (event: LayoutChangeEvent) => void
   onHeaderLayout?: (event: LayoutChangeEvent) => void
   title?: string
+  headerBackgroundColor?: Color
+  backgroundImageUri?: string
+  TrailingIcon?: React.FC<SvgProps>
+  onTrailingIconPress?: () => void
 }
 
 const BackScreen = ({
-  backgroundColor,
   children,
   flex,
   padding,
@@ -35,51 +43,97 @@ const BackScreen = ({
   onLayout,
   onHeaderLayout,
   title,
+  headerBackgroundColor,
+  backgroundImageUri,
+  TrailingIcon,
+  onTrailingIconPress,
   ...rest
 }: Props) => {
   const navigation = useNavigation()
   const hitSlop = useHitSlop('l')
+  const isAndroid = useMemo(() => Platform.OS === 'android', [])
+
   return (
-    <SafeAreaBox
-      edges={edges || undefined}
-      backgroundColor={backgroundColor || 'primaryBackground'}
-      flex={1}
-      onLayout={onLayout}
-    >
-      <Box
-        flexDirection="row"
-        paddingHorizontal={headerHorizontalPadding}
-        onLayout={onHeaderLayout}
-        zIndex={999}
-      >
+    <Box flex={1}>
+      <SafeAreaBox edges={edges || undefined} onLayout={onLayout} flex={1}>
         <Box
-          position="absolute"
-          left={0}
-          right={0}
-          bottom={0}
-          top={0}
-          alignItems="center"
-          justifyContent="center"
+          flexDirection="row"
+          paddingHorizontal={headerHorizontalPadding}
+          onLayout={onHeaderLayout}
+          backgroundColor={headerBackgroundColor}
         >
-          <Text variant="subtitle1">{title}</Text>
+          <Box
+            position="absolute"
+            left={0}
+            right={0}
+            bottom={0}
+            top={0}
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Text variant="subtitle1">{title}</Text>
+          </Box>
+          {!hideBack && (
+            <BackButton marginHorizontal="n_lx" onPress={navigation.goBack} />
+          )}
+          <Box flex={1} />
+          {onClose && (
+            <CloseButton
+              paddingHorizontal="lx"
+              hitSlop={hitSlop}
+              marginEnd="n_lx"
+              onPress={onClose}
+            />
+          )}
+
+          {TrailingIcon && (
+            <TouchableOpacityBox
+              hitSlop={hitSlop}
+              marginEnd="n_lx"
+              paddingHorizontal="lx"
+              onPress={onTrailingIconPress}
+              justifyContent="center"
+            >
+              <TrailingIcon />
+            </TouchableOpacityBox>
+          )}
         </Box>
-        {!hideBack && (
-          <BackButton marginHorizontal="n_lx" onPress={navigation.goBack} />
-        )}
-        <Box flex={1} />
-        {onClose && (
-          <CloseButton
-            paddingHorizontal="lx"
-            hitSlop={hitSlop}
-            marginEnd="n_lx"
-            onPress={onClose}
+        <Box padding={padding || 'lx'} flex={flex || 1} {...rest}>
+          {children}
+        </Box>
+      </SafeAreaBox>
+
+      {/**
+       * If backgroundImageUri is provided, we render a blurred version of the image
+       */}
+      {backgroundImageUri && (
+        <>
+          <ImageBox
+            zIndex={-2}
+            position="absolute"
+            top={0}
+            left={0}
+            right={0}
+            bottom={0}
+            height={height}
+            width={width}
+            source={{ uri: backgroundImageUri, cache: 'force-cache' }}
+            resizeMode="cover"
+            opacity={0.3}
           />
-        )}
-      </Box>
-      <Box padding={padding || 'lx'} flex={flex || 1} {...rest}>
-        {children}
-      </Box>
-    </SafeAreaBox>
+          <BlurBox
+            zIndex={-1}
+            position="absolute"
+            top={0}
+            left={0}
+            right={0}
+            bottom={0}
+            blurAmount={10}
+            blurType={isAndroid ? 'dark' : 'thinMaterialDark'}
+          />
+        </>
+      )}
+    </Box>
   )
 }
 

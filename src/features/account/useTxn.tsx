@@ -7,7 +7,11 @@ import {
   fromUnixTime,
 } from 'date-fns'
 import { useTranslation } from 'react-i18next'
-import Balance, { AnyCurrencyType, CurrencyType } from '@helium/currency'
+import Balance, {
+  AnyCurrencyType,
+  CurrencyType,
+  Ticker,
+} from '@helium/currency'
 import { startCase } from 'lodash'
 import TxnReceive from '@assets/images/txnReceive.svg'
 import TxnSend from '@assets/images/txnSend.svg'
@@ -16,11 +20,14 @@ import animalName from 'angry-purple-tiger'
 import shortLocale from '../../utils/formatDistance'
 import { Color } from '../../theme/theme'
 import { useColors } from '../../theme/themeHooks'
-import { Activity, TokenType } from '../../generated/graphql'
 import { accountCurrencyType, ellipsizeAddress } from '../../utils/accountUtils'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import { decodeMemoString, DEFAULT_MEMO } from '../../components/MemoInput'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { useAppStorage } from '../../storage/AppStorageProvider'
+import { TXN_FEE_IN_LAMPORTS } from '../../utils/solanaUtils'
+import { Activity } from '../../types/activity'
 
 export const TxnTypeKeys = [
   'rewards_v1',
@@ -42,9 +49,10 @@ type TxnType = typeof TxnTypeKeys[number]
 
 const useTxn = (
   item?: Activity,
-  address?: string,
   dateOpts?: { dateFormat?: string; now?: Date },
 ) => {
+  const { currentNetworkAddress: address } = useAccountStorage()
+  const { l1Network } = useAppStorage()
   const colors = useColors()
   const { bonesToBalance } = useBalance()
   const { t } = useTranslation()
@@ -183,7 +191,7 @@ const useTxn = (
       case 'transfer_validator_stake_v1':
         return t('transactions.transferValidator')
       case 'subnetwork_rewards_v1':
-        return item?.tokenType === 'iot'
+        return item?.tokenType === 'IOT'
           ? t('transactions.iotRewards')
           : t('transactions.mobileRewards')
     }
@@ -257,6 +265,12 @@ const useTxn = (
   )
 
   const getFee = useCallback(async () => {
+    if (l1Network === 'solana') {
+      return formatAmount(
+        '-',
+        new Balance(TXN_FEE_IN_LAMPORTS, CurrencyType.solTokens),
+      )
+    }
     const type = item?.type as TxnType
     if (type === 'rewards_v1' || type === 'rewards_v2') {
       return ''
@@ -286,7 +300,7 @@ const useTxn = (
     }
 
     return ''
-  }, [address, formatAmount, isSelling, item])
+  }, [address, formatAmount, isSelling, item, l1Network])
 
   const getFeePayer = useCallback(() => {
     const type = item?.type
@@ -342,54 +356,49 @@ const useTxn = (
       case 'rewards_v2': {
         const rewardsAmount =
           item.rewards?.reduce(
-            (sum, current) =>
-              sum.plus(bonesToBalance(current.amount, TokenType.Hnt)),
-            bonesToBalance(0, TokenType.Hnt),
-          ) || bonesToBalance(0, TokenType.Hnt)
+            (sum, current) => sum.plus(bonesToBalance(current.amount, 'HNT')),
+            bonesToBalance(0, 'HNT'),
+          ) || bonesToBalance(0, 'HNT')
         return formatAmount('+', rewardsAmount)
       }
       case 'subnetwork_rewards_v1': {
         const { tokenType } = item
+        const tick = (tokenType?.toUpperCase() || 'MOBILE') as Ticker
         const rewardsAmount =
           item.rewards?.reduce((sum, current) => {
             if (current.account !== address) return sum
-            return sum.plus(
-              bonesToBalance(current.amount, tokenType || TokenType.Mobile),
-            )
-          }, bonesToBalance(0, tokenType || TokenType.Mobile)) ||
-          bonesToBalance(0, tokenType || TokenType.Mobile)
+            return sum.plus(bonesToBalance(current.amount, tick))
+          }, bonesToBalance(0, tick)) || bonesToBalance(0, tick)
         return formatAmount('+', rewardsAmount)
       }
       case 'transfer_hotspot_v1':
         return formatAmount(
           isSelling ? '+' : '-',
-          bonesToBalance(item.amountToSeller, TokenType.Hnt),
+          bonesToBalance(item.amountToSeller, 'HNT'),
         )
       case 'assert_location_v1':
       case 'assert_location_v2':
       case 'add_gateway_v1':
         return formatAmount('-', dcBalance(item.stakingFee))
       case 'stake_validator_v1':
-        return formatAmount('-', bonesToBalance(item.stake, TokenType.Hnt))
+        return formatAmount('-', bonesToBalance(item.stake, 'HNT'))
       case 'unstake_validator_v1':
-        return formatAmount(
-          '-',
-          bonesToBalance(item.stakeAmount, TokenType.Hnt),
-        )
+        return formatAmount('-', bonesToBalance(item.stakeAmount, 'HNT'))
       case 'transfer_validator_stake_v1':
         return formatAmount(
           item.payer === address ? '-' : '+',
-          bonesToBalance(item.stakeAmount, TokenType.Hnt),
+          bonesToBalance(item.stakeAmount, 'HNT'),
         )
       case 'token_burn_v1':
-        return formatAmount('-', bonesToBalance(item.amount, TokenType.Hnt))
+        return formatAmount('-', bonesToBalance(item.amount, 'HNT'))
       case 'payment_v1':
-        return formatAmount('', bonesToBalance(item.amount, TokenType.Hnt))
+        return formatAmount('', bonesToBalance(item.amount, 'HNT'))
       case 'payment_v2': {
         if (item.payer === address) {
           const paymentTotals = item.payments?.reduce(
             (sums, current) => {
-              const tokenType: TokenType = current.tokenType || TokenType.Hnt
+              const tokenType = (current.tokenType?.toUpperCase() ||
+                'HNT') as Ticker
               return {
                 ...sums,
                 [tokenType]: sums[tokenType].plus(
@@ -398,17 +407,18 @@ const useTxn = (
               }
             },
             {
-              [TokenType.Hnt]: bonesToBalance(0, TokenType.Hnt),
-              [TokenType.Iot]: bonesToBalance(0, TokenType.Iot),
-              [TokenType.Mobile]: bonesToBalance(0, TokenType.Mobile),
-            } as Record<TokenType, Balance<AnyCurrencyType>>,
+              HNT: bonesToBalance(0, 'HNT'),
+              IOT: bonesToBalance(0, 'IOT'),
+              MOBILE: bonesToBalance(0, 'MOBILE'),
+            } as Record<Ticker, Balance<AnyCurrencyType>>,
           )
           if (!paymentTotals) return ''
           return Object.keys(paymentTotals)
             .flatMap((p) => {
-              const total = paymentTotals[p as TokenType]
+              const tick = p.toUpperCase() as Ticker
+              const total = paymentTotals[tick]
               if (total.integerBalance === 0) return []
-              const amt = formatAmount('', paymentTotals[p as TokenType])
+              const amt = formatAmount('', paymentTotals[tick])
               return [amt]
             })
             .join(', ')
@@ -416,13 +426,18 @@ const useTxn = (
 
         return `+${item.payments
           ?.filter((p) => p.payee === address)
-          .map((p) => formatAmount('', bonesToBalance(p.amount, p.tokenType)))
+          .map((p) =>
+            formatAmount(
+              '',
+              bonesToBalance(p.amount, p.tokenType?.toUpperCase() as Ticker),
+            ),
+          )
           .join(', ')}`
       }
     }
 
     return ''
-  }, [item, formatAmount, isSelling, address, bonesToBalance])
+  }, [item, formatAmount, isSelling, bonesToBalance, address])
 
   const time = useMemo(() => {
     if (!item) return ''
@@ -473,7 +488,7 @@ const useTxn = (
     const all = payments.map(async (p) => {
       const balance = await formatAmount(
         '+',
-        bonesToBalance(p.amount, p.tokenType),
+        bonesToBalance(p.amount, p.tokenType?.toUpperCase() as Ticker),
       )
       return { amount: balance, payee: p.payee, memo: p.memo || '' }
     })
@@ -486,7 +501,10 @@ const useTxn = (
     }
     const all = item.payments.map(
       async ({ amount: amt, payee, memo: paymentMemo, tokenType }) => {
-        const balance = await formatAmount('', bonesToBalance(amt, tokenType))
+        const balance = await formatAmount(
+          '',
+          bonesToBalance(amt, tokenType?.toUpperCase() as Ticker),
+        )
         return { amount: balance, payee, memo: paymentMemo || '' }
       },
     )
@@ -535,7 +553,7 @@ type TxnDetails = {
   isValidatorTxn: boolean
   isHotspotTxn: boolean
 }
-export const useTxnDetails = (item?: Activity, address?: string) => {
+export const useTxnDetails = (item?: Activity) => {
   const {
     listIcon,
     title,
@@ -551,7 +569,7 @@ export const useTxnDetails = (item?: Activity, address?: string) => {
     isHotspotTxn,
     isValidatorTxn,
     getAmountTitle,
-  } = useTxn(item, address || '', {
+  } = useTxn(item, {
     dateFormat: 'dd MMMM yyyy HH:MM',
   })
 

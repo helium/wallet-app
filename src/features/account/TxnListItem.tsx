@@ -2,18 +2,17 @@ import React, { memo, useCallback, useMemo } from 'react'
 import Pending from '@assets/images/pending.svg'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
-import { Activity } from '../../generated/graphql'
 import useTxn from './useTxn'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
+import { Activity } from '../../types/activity'
 
 type Props = {
   item: Activity
-  accountAddress?: string
   now: Date
   isLast: boolean
   onPress: (item: Activity) => void
 }
-const TxnListItem = ({ item, accountAddress, now, isLast, onPress }: Props) => {
+const TxnListItem = ({ item, now, isLast, onPress }: Props) => {
   const {
     listIcon,
     title,
@@ -21,7 +20,7 @@ const TxnListItem = ({ item, accountAddress, now, isLast, onPress }: Props) => {
     time,
     memo: txnMemo,
     getAmount,
-  } = useTxn(item, accountAddress || '', { now })
+  } = useTxn(item, { now })
   const amt = useMemo(() => getAmount(), [getAmount])
 
   const handlePress = useCallback(() => {

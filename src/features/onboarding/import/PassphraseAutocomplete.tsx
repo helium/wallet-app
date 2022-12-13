@@ -7,7 +7,7 @@ import wordlist from '../../../constants/wordlists/english.json'
 import TextInput from '../../../components/TextInput'
 import Box from '../../../components/Box'
 import FabButton from '../../../components/FabButton'
-import usePrevious from '../../../utils/usePrevious'
+import usePrevious from '../../../hooks/usePrevious'
 import { Color } from '../../../theme/theme'
 
 type Props = {
@@ -83,21 +83,23 @@ const PassphraseAutocomplete = ({
     <>
       <Box marginHorizontal="l">
         <TextInput
-          placeholder={t('accountImport.wordEntry.placeholder', {
-            ordinal,
-          })}
+          textInputProps={{
+            placeholder: t('accountImport.wordEntry.placeholder', {
+              ordinal,
+            }),
+            onChangeText,
+            onSubmitEditing: handleSubmit,
+            value: word,
+            keyboardAppearance: 'dark',
+            autoCorrect: false,
+            autoComplete: 'off',
+            blurOnSubmit: false,
+            returnKeyType: 'next',
+            autoFocus: true,
+            autoCapitalize: 'characters',
+          }}
           variant="underline"
-          onChangeText={onChangeText}
-          onSubmitEditing={handleSubmit}
-          value={word}
-          keyboardAppearance="dark"
-          autoCorrect={false}
-          autoComplete="off"
-          blurOnSubmit={false}
-          returnKeyType="next"
           marginBottom="s"
-          autoFocus
-          autoCapitalize="characters"
           style={inputStyle}
         />
 

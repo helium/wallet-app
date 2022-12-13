@@ -1,31 +1,40 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { memo, useEffect, useMemo, useState } from 'react'
 import { NetTypes } from '@helium/address'
 import CurrencyFormatter from 'react-native-currency-format'
 import { addMinutes } from 'date-fns'
+import { BoxProps } from '@shopify/restyle'
+import { GestureResponderEvent } from 'react-native'
 import * as AccountUtils from '../../utils/accountUtils'
 import { AccountBalance, AccountData } from '../../generated/graphql'
 import Text from '../../components/Text'
-import { useAccountBalances, useBalance } from '../../utils/Balance'
+import { useBalance } from '../../utils/Balance'
 import FadeInOut from '../../components/FadeInOut'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import supportedCurrencies from '../../utils/supportedCurrencies'
 import AccountActionBar from './AccountActionBar'
-import useLayoutHeight from '../../utils/useLayoutHeight'
+import useLayoutHeight from '../../hooks/useLayoutHeight'
 import Box from '../../components/Box'
 import DateModule from '../../utils/DateModule'
+import { Theme } from '../../theme/theme'
 
 type Props = {
   accountData?: AccountData | null
   hntPrice?: number
   selectedBalance?: AccountBalance
-}
+  onTouchStart?: (event: GestureResponderEvent) => void
+} & BoxProps<Theme>
 
-const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
+const AccountView = ({
+  accountData,
+  hntPrice,
+  selectedBalance,
+  ...boxProps
+}: Props) => {
   const [balanceString, setBalanceString] = useState('')
   const [selectedDate, setSelectedDate] = useState('')
 
-  const balances = useAccountBalances(accountData)
-  const { toCurrencyString } = useBalance()
+  const { toCurrencyString, networkBalance, networkStakedBalance } =
+    useBalance()
   const { currency } = useAppStorage()
   const [formattedHntPrice, setFormattedHntPrice] = useState('')
   const [actionBarHeight, setActionBarHeight] = useLayoutHeight()
@@ -77,23 +86,31 @@ const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
         setBalanceString,
       )
     } else if (hntPrice) {
-      toCurrencyString(balances?.hnt?.plus(balances.stakedHnt)).then(
-        setBalanceString,
-      )
+      let bal = networkBalance
+      if (networkStakedBalance) {
+        bal = networkBalance?.plus(networkStakedBalance)
+      }
+      toCurrencyString(bal).then(setBalanceString)
     } else {
       setBalanceString('')
     }
   }, [
     accountNetType,
-    balances,
     currency,
+    networkBalance,
+    networkStakedBalance,
     hntPrice,
     selectedBalance,
     toCurrencyString,
   ])
 
   return (
-    <Box flexDirection="column" alignItems="center">
+    <Box
+      flexDirection="column"
+      alignItems="center"
+      marginTop="xxxl"
+      {...boxProps}
+    >
       <Text
         variant="body1"
         color="secondaryText"
@@ -164,4 +181,4 @@ const AccountView = ({ accountData, hntPrice, selectedBalance }: Props) => {
   )
 }
 
-export default AccountView
+export default memo(AccountView)

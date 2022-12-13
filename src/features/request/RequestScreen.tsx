@@ -22,9 +22,11 @@ import ShareIcon from '@assets/images/share.svg'
 import { useDebounce } from 'use-debounce'
 import { useKeyboard } from '@react-native-community/hooks'
 import Balance, {
+  CurrencyType,
   MobileTokens,
   NetworkTokens,
   TestNetworkTokens,
+  Ticker,
 } from '@helium/currency'
 import { NetTypes as NetType } from '@helium/address'
 import QRCode from 'react-native-qrcode-svg'
@@ -41,18 +43,18 @@ import {
   useOpacity,
   useSpacing,
 } from '../../theme/themeHooks'
-import { balanceToString, useBalance } from '../../utils/Balance'
+import { balanceToString } from '../../utils/Balance'
 import AccountButton from '../../components/AccountButton'
 import { useAccountSelector } from '../../components/AccountSelector'
 import { makePayRequestLink } from '../../utils/linking'
-import useHaptic from '../../utils/useHaptic'
+import useHaptic from '../../hooks/useHaptic'
 import BackgroundFill from '../../components/BackgroundFill'
 import animateTransition from '../../utils/animateTransition'
 import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
-import { TokenType } from '../../generated/graphql'
 import TokenButton from '../../components/TokenButton'
 import TokenSelector, { TokenSelectorRef } from '../../components/TokenSelector'
 import FadeInOut from '../../components/FadeInOut'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 const QR_CONTAINER_SIZE = 220
 
@@ -60,7 +62,9 @@ type RequestType = 'qr' | 'link'
 const RequestScreen = () => {
   const [txnMemo, setTxnMemo] = useState('')
   const { valid: memoValid } = useMemoValid(txnMemo)
-  const { currentAccount } = useAccountStorage()
+  const { currentAccount, currentNetworkAddress: networkAddress } =
+    useAccountStorage()
+  const { l1Network } = useAppStorage()
   const { t } = useTranslation()
   const [requestType, setRequestType] = useState<RequestType>('qr')
   const [containerHeight, setContainerHeight] = useState(0)
@@ -77,13 +81,11 @@ const RequestScreen = () => {
   const [hntKeyboardVisible, setHNTKeyboardVisible] = useState(false)
   const [paymentAmount, setPaymentAmount] =
     useState<Balance<NetworkTokens | TestNetworkTokens | MobileTokens>>()
-  const [tokenType, setTokenType] = useState<TokenType>(TokenType.Hnt)
+  const [ticker, setTicker] = useState<Ticker>('HNT')
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const qrRef = useRef<{
     toDataURL: (callback: (url: string) => void) => void
   }>(null)
-
-  const { currencyTypeFromTokenType } = useBalance()
 
   const handleBalance = useCallback(
     (opts: {
@@ -117,15 +119,15 @@ const RequestScreen = () => {
   )
 
   const link = useMemo(() => {
-    if (!currentAccount?.address || !memoValid) return ''
+    if (!networkAddress || !memoValid) return ''
 
     return makePayRequestLink({
-      payee: currentAccount.address,
+      payee: networkAddress,
       memo: txnMemo,
       balanceAmount: paymentAmount,
-      defaultTokenType: tokenType,
+      defaultTokenType: ticker,
     })
-  }, [currentAccount, memoValid, paymentAmount, tokenType, txnMemo])
+  }, [memoValid, networkAddress, paymentAmount, ticker, txnMemo])
 
   const [qrLink] = useDebounce(link, 500)
 
@@ -200,10 +202,7 @@ const RequestScreen = () => {
     triggerNavHaptic()
   }, [link, showToast, triggerNavHaptic])
 
-  const currencyType = useMemo(
-    () => currencyTypeFromTokenType(tokenType),
-    [currencyTypeFromTokenType, tokenType],
-  )
+  const currencyType = useMemo(() => CurrencyType.fromTicker(ticker), [ticker])
 
   const requestTypeOptions = useMemo(
     (): Array<TabBarOption> => [
@@ -213,22 +212,22 @@ const RequestScreen = () => {
     [t],
   )
 
-  const handleTokenTypeSelected = useCallback(() => {
+  const handleTickerSelected = useCallback(() => {
     tokenSelectorRef?.current?.showTokens()
   }, [])
 
-  const onTokenSelected = useCallback((token: TokenType) => {
-    setTokenType(token)
+  const onTickerSelected = useCallback((tick: Ticker) => {
+    setTicker(tick)
   }, [])
 
   return (
     <HNTKeyboard
-      tokenType={tokenType}
+      ticker={ticker}
       ref={hntKeyboardRef}
       onConfirmBalance={handleBalance}
       handleVisible={setHNTKeyboardVisible}
     >
-      <TokenSelector ref={tokenSelectorRef} onTokenSelected={onTokenSelected}>
+      <TokenSelector ref={tokenSelectorRef} onTokenSelected={onTickerSelected}>
         <Box
           backgroundColor="secondaryBackground"
           flex={1}
@@ -299,9 +298,9 @@ const RequestScreen = () => {
                 backgroundColor="secondary"
                 address={currentAccount?.address}
                 netType={currentAccount?.netType}
-                onPress={handleTokenTypeSelected}
+                onPress={handleTickerSelected}
                 showBubbleArrow
-                tokenType={tokenType}
+                ticker={ticker}
               />
               <Box
                 backgroundColor={
@@ -335,21 +334,24 @@ const RequestScreen = () => {
                   )}
                 </TouchableOpacityBox>
 
-                <Box
-                  height={1}
-                  backgroundColor="primaryBackground"
-                  marginHorizontal="n_l"
-                  marginVertical="ms"
-                />
-
-                <Text variant="body3" color="primaryText">
-                  {t('request.memo')}
-                </Text>
-                <MemoInput
-                  value={txnMemo}
-                  onChangeText={setTxnMemo}
-                  margin="n_m"
-                />
+                {l1Network === 'helium' && (
+                  <>
+                    <Box
+                      height={1}
+                      backgroundColor="primaryBackground"
+                      marginHorizontal="n_l"
+                      marginVertical="ms"
+                    />
+                    <Text variant="body3" color="primaryText">
+                      {t('request.memo')}
+                    </Text>
+                    <MemoInput
+                      value={txnMemo}
+                      onChangeText={setTxnMemo}
+                      margin="n_m"
+                    />
+                  </>
+                )}
               </Box>
               <Box flexDirection="row" marginTop="l" paddingBottom="xxl">
                 <TouchableOpacityBox

@@ -7,8 +7,8 @@ import {
   StoredIncident,
   Summary,
 } from './statusPageTypes'
-import useAppear from '../../utils/useAppear'
-import useMount from '../../utils/useMount'
+import useAppear from '../../hooks/useAppear'
+import useMount from '../../hooks/useMount'
 
 const APP_ID = '7sl1km0rgk6r'
 const STATUS_KEY = 'statusKey'

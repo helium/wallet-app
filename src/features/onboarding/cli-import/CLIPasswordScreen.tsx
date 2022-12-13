@@ -16,7 +16,7 @@ import Box from '../../../components/Box'
 import CloseButton from '../../../components/CloseButton'
 import TextInput from '../../../components/TextInput'
 import { createSecureAccount } from '../../../storage/secureStorage'
-import useAlert from '../../../utils/useAlert'
+import useAlert from '../../../hooks/useAlert'
 import { accountNetType } from '../../../utils/accountUtils'
 import { useOnboarding } from '../OnboardingProvider'
 
@@ -113,17 +113,19 @@ const CLIPasswordScreen = () => {
 
         <TextInput
           variant="transparent"
-          onChangeText={setPassword}
-          placeholderTextColor="grey500"
-          value={password}
-          placeholder="password"
-          autoCorrect={false}
-          autoComplete="off"
+          textInputProps={{
+            onChangeText: setPassword,
+            placeholderTextColor: 'grey500',
+            value: password,
+            placeholder: 'password',
+            autoCorrect: false,
+            autoComplete: 'off',
+            keyboardAppearance: 'dark',
+            style: inputStyle,
+            secureTextEntry: true,
+          }}
           marginTop="xl"
           width="100%"
-          keyboardAppearance="dark"
-          style={inputStyle}
-          secureTextEntry
         />
       </Box>
 

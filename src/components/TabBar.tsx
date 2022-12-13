@@ -30,12 +30,15 @@ const TabBarItem = ({
   Icon,
   iconSize,
   iconColor,
+  iconPosition,
   value,
+  stretch,
 }: {
   selected: boolean
   onPress: () => void
   onLayout: (event: LayoutChangeEvent) => void
   hitSlop: Insets | undefined
+  stretch: boolean
 } & TabBarOption) => {
   const colors = useColors()
 
@@ -50,53 +53,78 @@ const TabBarItem = ({
       key={value}
       onPress={onPress}
       onLayout={onLayout}
-      marginRight="m"
+      marginRight={stretch ? 'none' : 'm'}
       hitSlop={hitSlop}
       alignItems="center"
+      flexGrow={stretch ? 1 : undefined}
+      flex={stretch ? 1 : undefined}
+      flexDirection={
+        iconPosition === 'top' || iconPosition === undefined ? 'column' : 'row'
+      }
     >
       {Icon && (
-        <Icon
-          height={iconSize || 20}
-          width={iconSize || 20}
-          color={iconColorValue}
-        />
+        <Box
+          marginEnd={
+            iconPosition === 'top' || iconPosition === undefined
+              ? undefined
+              : 's'
+          }
+        >
+          <Icon
+            height={iconSize || 20}
+            width={iconSize || 20}
+            color={iconColorValue}
+          />
+        </Box>
       )}
-      <Text
-        variant="subtitle2"
-        color={selected ? 'primaryText' : 'secondaryText'}
-        minWidth={75}
-        textAlign="center"
-      >
-        {title}
-      </Text>
+      {title && (
+        <Text
+          variant="subtitle2"
+          color={selected ? 'primaryText' : 'secondaryText'}
+          minWidth={
+            iconPosition === 'top' || iconPosition === undefined ? 75 : 0
+          }
+          textAlign="center"
+        >
+          {title}
+        </Text>
+      )}
     </TouchableOpacityBox>
   )
 }
 
 export type TabBarOption = {
-  title: string
+  title?: string
   value: string
   Icon?: FC<SvgProps>
   iconSize?: number
   iconColor?: Color
+  iconPosition?: 'top' | 'leading'
+}
+
+export type IndicatorOptions = {
+  indicatorPostion: 'top' | 'bottom'
+  indicatorWidthOffset: number
 }
 
 type Props = {
   tabBarOptions: Array<TabBarOption>
   selectedValue: string
   onItemSelected: (value: string) => void
+  stretchItems?: boolean
 } & TouchableOpacityBoxProps
 
 const TabBar = ({
   tabBarOptions,
   selectedValue,
   onItemSelected,
+  stretchItems = false,
   ...containerProps
 }: Props) => {
   const hitSlop = useVerticalHitSlop('l')
   const [itemRects, setItemRects] = useState<Record<string, LayoutRectangle>>()
 
-  const offset = useSharedValue(0)
+  const offset = useSharedValue<number | null>(null)
 
   const handleLayout = useCallback(
     (value: string) => (e: LayoutChangeEvent) => {
@@ -117,7 +145,7 @@ const TabBar = ({
   useEffect(() => {
     const nextOffset = itemRects?.[selectedValue]?.x || 0
 
-    if (offset.value === 0) {
+    if (offset.value === null) {
       // Don't animate on first position update
       offset.value = nextOffset
       return
@@ -127,24 +155,41 @@ const TabBar = ({
   }, [itemRects, offset.value, selectedValue])
 
   const animatedStyles = useAnimatedStyle(() => {
+    if (offset.value === null) return {}
     return {
-      transform: [{ translateX: offset.value }],
+      transform: [
+        {
+          translateX: offset.value,
+        },
+      ],
     }
   })
+
+  const items = useMemo(() => {
+    return tabBarOptions.map((o) => (
+      <TabBarItem
+        stretch={stretchItems}
+        key={o.value}
+        selected={o.value === selectedValue}
+        onLayout={handleLayout(o.value)}
+        onPress={handlePress(o.value)}
+        hitSlop={hitSlop}
+        {...o}
+      />
+    ))
+  }, [
+    handleLayout,
+    handlePress,
+    hitSlop,
+    selectedValue,
+    stretchItems,
+    tabBarOptions,
+  ])
 
   return (
     <Box {...containerProps}>
       <Box flexDirection="row" justifyContent="center" paddingVertical="ms">
-        {tabBarOptions.map((o) => (
-          <TabBarItem
-            key={o.value}
-            selected={o.value === selectedValue}
-            onLayout={handleLayout(o.value)}
-            onPress={handlePress(o.value)}
-            hitSlop={hitSlop}
-            {...o}
-          />
-        ))}
+        {items}
       </Box>
       <Animated.View style={animatedStyles}>
         <Box

@@ -17,6 +17,8 @@ import Text from '../../components/Text'
 import { ImportAccountNavigationProp } from './import/importAccountNavTypes'
 import { CreateAccountNavigationProp } from './create/createAccountNavTypes'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
+import { useAppStorage } from '../../storage/AppStorageProvider'
+import { RootNavigationProp } from '../../navigation/rootTypes'
 
 type Route = RouteProp<HomeStackParamList, 'AccountAssignScreen'>
 
@@ -26,12 +28,15 @@ const AccountAssignScreen = () => {
     ImportAccountNavigationProp & CreateAccountNavigationProp
   >()
   const homeNav = useNavigation<HomeNavigationProp>()
+  const rootNav = useNavigation<RootNavigationProp>()
+
   const { t } = useTranslation()
   const [alias, setAlias] = useState('')
   const {
     reset,
     onboardingData: { secureAccount },
   } = useOnboarding()
+  const { l1Network } = useAppStorage()
   const insets = useSafeAreaInsets()
   const spacing = useSpacing()
   const colors = useColors()
@@ -56,7 +61,11 @@ const AccountAssignScreen = () => {
         if (setAsDefault) {
           await updateDefaultAccountAddress(account.address)
         }
-        homeNav.replace('AccountsScreen')
+        if (l1Network === 'helium') {
+          homeNav.replace('AccountsScreen')
+        } else {
+          rootNav.replace('TabBarNavigator')
+        }
         reset()
         return
       } catch (e) {
@@ -80,9 +89,11 @@ const AccountAssignScreen = () => {
     alias,
     upsertAccount,
     setAsDefault,
-    homeNav,
+    l1Network,
     reset,
     updateDefaultAccountAddress,
+    homeNav,
+    rootNav,
   ])
 
   const onCheckboxToggled = useCallback(
@@ -123,16 +134,18 @@ const AccountAssignScreen = () => {
             <AccountIcon size={40} address={account?.address} />
             <TextInput
               textColor="primaryText"
-              onChangeText={setAlias}
-              value={alias}
               fontSize={24}
-              placeholder={t('accountAssign.AccountNamePlaceholder')}
-              autoCorrect={false}
-              autoComplete="off"
-              autoCapitalize="words"
               marginLeft="m"
               marginRight="xl"
-              autoFocus
+              textInputProps={{
+                placeholder: t('accountAssign.AccountNamePlaceholder'),
+                autoCorrect: false,
+                autoComplete: 'off',
+                autoCapitalize: 'words',
+                onChangeText: setAlias,
+                value: alias,
+                autoFocus: true,
+              }}
             />
           </Box>
 

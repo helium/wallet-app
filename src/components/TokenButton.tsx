@@ -5,22 +5,24 @@ import { BoxProps } from '@shopify/restyle'
 import { NetTypes as NetType } from '@helium/address'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenHNT from '@assets/images/tokenHNT.svg'
+import { Ticker } from '@helium/currency'
 import { useColors, useHitSlop } from '../theme/themeHooks'
 import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
-import { Theme } from '../theme/theme'
-import { TokenType } from '../generated/graphql'
+import { Color, Theme } from '../theme/theme'
+import { useAppStorage } from '../storage/AppStorageProvider'
+import useNetworkColor from '../hooks/useNetworkColor'
 
-const TokenTypeItem = ({ tokenType }: { tokenType: TokenType }) => {
+const TokenItem = ({ ticker }: { ticker: Ticker }) => {
   const colors = useColors()
   const color = useMemo(() => {
-    return TokenType.Mobile === tokenType ? 'blueBright500' : 'white'
-  }, [tokenType])
+    return ticker === 'MOBILE' ? 'blueBright500' : 'white'
+  }, [ticker])
 
   return (
     <Box alignItems="center">
-      {tokenType === TokenType.Hnt ? (
+      {ticker === 'HNT' ? (
         <TokenHNT color={colors[color]} height={41} width={41} />
       ) : (
         <TokenMOBILE color={colors[color]} height={41} width={41} />
@@ -37,7 +39,7 @@ type Props = {
   showBubbleArrow?: boolean
   netType?: NetType.NetType
   innerBoxProps?: BoxProps<Theme>
-  tokenType: TokenType
+  ticker: Ticker
 } & BoxProps<Theme>
 
 const TokenButton = ({
@@ -48,23 +50,30 @@ const TokenButton = ({
   showBubbleArrow,
   netType = NetType.MAINNET,
   innerBoxProps,
-  tokenType,
+  ticker,
   backgroundColor: backgroundColorProps,
   ...boxProps
 }: Props) => {
   const hitSlop = useHitSlop('l')
+  const { l1Network } = useAppStorage()
+  const colors = useColors()
 
   const handlePress = useCallback(() => {
     Keyboard.dismiss()
     onPress?.(address)
   }, [address, onPress])
 
-  const backgroundColor = useMemo(() => {
-    if (netType === NetType.TESTNET) return 'lividBrown'
-    if (backgroundColorProps) {
-      return backgroundColorProps
-    }
-  }, [backgroundColorProps, netType])
+  const backgroundColor = useNetworkColor({
+    netType,
+    defaultColor: backgroundColorProps as Color,
+    muted: true,
+  })
+
+  const textColor = useMemo((): Color => {
+    if (l1Network === 'solana' || netType === NetType.TESTNET)
+      return 'primaryText'
+    return 'secondaryText'
+  }, [l1Network, netType])
 
   return (
     <TouchableOpacityBox
@@ -83,18 +92,18 @@ const TokenButton = ({
         paddingVertical={innerBoxProps?.paddingVertical || 'm'}
         {...innerBoxProps}
       >
-        <TokenTypeItem tokenType={tokenType} />
+        <TokenItem ticker={ticker} />
         <Box flex={1}>
           <Text marginLeft="ms" marginRight="xs" variant="subtitle2">
             {title}
           </Text>
           {!!subtitle && (
-            <Text marginLeft="ms" variant="body3" color="secondaryText">
+            <Text marginLeft="ms" variant="body3" color={textColor}>
               {subtitle}
             </Text>
           )}
         </Box>
-        <ChevronDown />
+        <ChevronDown color={colors[textColor]} />
       </Box>
       {showBubbleArrow && (
         <Box height={18}>
