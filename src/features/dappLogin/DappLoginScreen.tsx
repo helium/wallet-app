@@ -59,7 +59,7 @@ const DappLoginScreen = () => {
       } catch (error) {
         showOKAlert({
           title: t('dappLogin.error', {
-            app: sessionProposal?.params.proposer.metadata.name,
+            appName: sessionProposal?.params.proposer.metadata.name,
           }),
           message: (error as Error).toString(),
         })
@@ -70,6 +70,8 @@ const DappLoginScreen = () => {
   const goBack = useCallback(() => {
     if (navigation.canGoBack()) {
       navigation.goBack()
+    } else {
+      navigation.replace('AccountsScreen')
     }
   }, [navigation])
 
@@ -102,7 +104,7 @@ const DappLoginScreen = () => {
     } catch (error) {
       showOKAlert({
         title: t('dappLogin.error', {
-          app: sessionProposal?.params.proposer.metadata.name,
+          appName: sessionProposal?.params.proposer.metadata.name,
         }),
         message: (error as Error).toString(),
       })
@@ -146,7 +148,7 @@ const DappLoginScreen = () => {
     } catch (error) {
       showOKAlert({
         title: t('dappLogin.error', {
-          app: sessionProposal?.params.proposer.metadata.name,
+          appName: sessionProposal?.params.proposer.metadata.name,
         }),
         message: (error as Error).toString(),
       })
@@ -227,8 +229,8 @@ const DappLoginScreen = () => {
       onError={handleLedgerError}
       title={t('dappLogin.ledger.title')}
       subtitle={t('dappLogin.ledger.subtitle', {
-        name: currentAccount?.ledgerDevice?.name,
-        app: sessionProposal?.params.proposer.metadata.name,
+        deviceName: currentAccount?.ledgerDevice?.name,
+        appName: sessionProposal?.params.proposer.metadata.name,
       })}
     >
       <SafeAreaBox
