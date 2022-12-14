@@ -326,18 +326,18 @@ export default {
   },
   dappLogin: {
     account: {
-      subtitle: 'Which account do you want to authenticate with Crowdspot?',
+      subtitle: 'Which account do you want to authenticate with {{appName}}?',
       title: 'Choose your\nAccount',
     },
     connect: {
       continue: 'Continue',
-      subtitle: 'Authenticate Crowdspot\nwith your Helium Wallet?',
-      title: 'Connect to {{name}}?',
+      subtitle: 'Authenticate {{appName}}\nwith your Helium Wallet?',
+      title: 'Connect to {{appName}}?',
     },
-    error: 'Failed to verify {{app}}',
+    error: 'Failed to verify {{appName}}',
     ledger: {
       subtitle:
-        'You must sign burn transaction to login to {{app}}. Please verify the burn transaction on your Ledger device {{name}}',
+        'You must sign burn transaction to login to {{appName}}. Please verify the burn transaction on your Ledger device {{deviceName}}',
       title: 'Ledger Approval',
     },
     login: 'Login',

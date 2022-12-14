@@ -1,7 +1,8 @@
-import React, { memo, useEffect } from 'react'
+import React, { memo, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import Crowdspot from '@assets/images/crowdspot.svg'
-import CrowdspotEllipsis from '@assets/images/crowdspot-ellipsis.svg'
+import AddDapp from '@assets/images/addDapp.svg'
+import DappEllipsis from '@assets/images/dapp-ellipsis.svg'
 import { NetTypes as NetType, NetTypes } from '@helium/address'
 import { ActivityIndicator } from 'react-native'
 import AccountButton from '../../components/AccountButton'
@@ -26,6 +27,11 @@ const DappLogin = ({ onLogin, onCancel, appName, loading }: Props) => {
   const { showAccountTypes } = useAccountSelector()
   const colors = useColors()
 
+  const isCrowdspot = useMemo(
+    () => appName.toLowerCase() === 'crowdspot',
+    [appName],
+  )
+
   useEffect(() => {
     if (currentAccount?.netType !== NetType.MAINNET) {
       setCurrentAccount(
@@ -43,15 +49,19 @@ const DappLogin = ({ onLogin, onCancel, appName, loading }: Props) => {
         justifyContent="center"
         marginVertical="l"
       >
-        <Crowdspot height={70} width={70} />
+        {isCrowdspot ? (
+          <Crowdspot height={70} width={70} />
+        ) : (
+          <AddDapp color={colors.primaryText} height={70} width={70} />
+        )}
         <Box marginHorizontal="s">
-          <CrowdspotEllipsis />
+          <DappEllipsis />
         </Box>
         <AccountIcon address={currentAccount?.address} size={70} />
       </Box>
       <Text variant="h0" textAlign="center">
         {t('dappLogin.account.title', {
-          name: appName,
+          appName,
         })}
       </Text>
       <Text
@@ -60,7 +70,7 @@ const DappLogin = ({ onLogin, onCancel, appName, loading }: Props) => {
         marginVertical="l"
         color="secondaryText"
       >
-        {t('dappLogin.account.subtitle', { name: appName })}
+        {t('dappLogin.account.subtitle', { appName })}
       </Text>
       <AccountButton
         title={currentAccount?.alias}
