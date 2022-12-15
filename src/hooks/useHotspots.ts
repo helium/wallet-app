@@ -8,11 +8,11 @@ import { RootState } from '../store/rootReducer'
 import { fetchCollectables } from '../store/slices/collectablesSlice'
 import { useAppDispatch } from '../store/store'
 import { onLogs, removeAccountChangeListener } from '../utils/solanaUtils'
-import { Collectable } from '../types/solana'
+import { CompressedNFT } from '../types/solana'
 
 const useHotspots = (): {
-  hotspots: Metadata<JsonMetadata<string>>[]
-  hotspotsWithMeta: Collectable[]
+  hotspots: CompressedNFT[]
+  hotspotsWithMeta: CompressedNFT[]
   loading: boolean
   refresh: () => void
 } => {

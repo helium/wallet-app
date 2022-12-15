@@ -46,8 +46,8 @@ const HotspotDetailsScreen = () => {
 
   const { collectable } = route.params
   const mint = useMemo(
-    () => new PublicKey(collectable.mint.address),
-    [collectable.mint],
+    () => new PublicKey(collectable.compression.asset_hash),
+    [collectable.compression.asset_hash],
   )
 
   const {
@@ -82,12 +82,12 @@ const HotspotDetailsScreen = () => {
   }, [claimRewards])
 
   const handleInfoPress = useCallback(() => {
-    if (collectable.json) {
+    if (collectable.content.metadata) {
       navigation.push('NftMetadataScreen', {
-        metadata: collectable.json,
+        metadata: collectable.content.metadata,
       })
     }
-  }, [collectable.json, navigation])
+  }, [collectable.content.metadata, navigation])
 
   const hotspotOptions = useCallback(
     () => (
@@ -103,15 +103,11 @@ const HotspotDetailsScreen = () => {
     [handleSend],
   )
 
-  if (!collectable.json) {
-    return null
-  }
-
   return (
     <BackScreen
       padding="none"
       title={t('collectablesScreen.hotspots.hotspotDetailTitle')}
-      backgroundImageUri={collectable.json.image || ''}
+      backgroundImageUri={collectable.content.metadata.image || ''}
       edges={backEdges}
       TrailingIcon={InfoIcon}
       onTrailingIconPress={handleInfoPress}
@@ -125,7 +121,7 @@ const HotspotDetailsScreen = () => {
             padding="m"
             alignItems="center"
           >
-            {collectable.json && (
+            {collectable.content.metadata.image && (
               <Box
                 shadowColor="black"
                 shadowOpacity={0.4}
@@ -138,7 +134,10 @@ const HotspotDetailsScreen = () => {
                   backgroundColor="black"
                   height={COLLECTABLE_HEIGHT - spacing.xl * 2}
                   width={COLLECTABLE_HEIGHT - spacing.xl * 2}
-                  source={{ uri: collectable.json.image, cache: 'force-cache' }}
+                  source={{
+                    uri: collectable.content.metadata.image,
+                    cache: 'force-cache',
+                  }}
                   borderRadius="xxl"
                 />
               </Box>
@@ -150,10 +149,10 @@ const HotspotDetailsScreen = () => {
               textAlign="center"
               variant="h1Medium"
             >
-              {removeDashAndCapitalize(collectable.json.name || '')}
+              {removeDashAndCapitalize(collectable.content.metadata.name || '')}
             </Text>
             <Text variant="body3Medium" color="grey600" marginBottom="xl">
-              {collectable.json.description ||
+              {collectable.content.metadata.description ||
                 t('collectablesScreen.collectables.noDescription')}
             </Text>
             <Box
@@ -190,16 +189,13 @@ const HotspotDetailsScreen = () => {
               />
             </Box>
             <Text marginBottom="s" variant="body2" color="grey600">
-              {t('collectablesScreen.collectables.pendingRewardsTitle')}
+              {t('collectablesScreen.hotspots.pendingRewardsTitle')}
             </Text>
             <Text variant="body2" marginBottom="m">
-              {
-                (t('collectablesScreen.collectables.pendingRewards'),
-                {
-                  amount: pendingRewards,
-                  ticker: 'MOBILE',
-                })
-              }
+              {t('collectablesScreen.hotspots.pendingRewards', {
+                amount: pendingRewards,
+                ticker: 'MOBILE',
+              })}
             </Text>
             <BlurActionSheet
               title={t('collectablesScreen.hotspots.hotspotActions')}

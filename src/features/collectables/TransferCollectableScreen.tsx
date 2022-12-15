@@ -77,6 +77,10 @@ const TransferCollectableScreen = () => {
   const { currentAccount } = useAccountStorage()
   const addressBookRef = useRef<AddressBookRef>(null)
 
+  const {
+    content: { metadata },
+  } = collectable
+
   const { submitCollectable } = useSubmitTxn()
 
   useAsync(async () => {
@@ -109,12 +113,12 @@ const TransferCollectableScreen = () => {
   }, [])
 
   const handleInfoPress = useCallback(() => {
-    if (collectable.json) {
+    if (metadata) {
       navigation.push('NftMetadataScreen', {
-        metadata: collectable.json,
+        metadata,
       })
     }
-  }, [collectable.json, navigation])
+  }, [metadata, navigation])
 
   const handleAddressBookSelected = useCallback(() => {
     setOptionsOpen(false)
@@ -131,8 +135,8 @@ const TransferCollectableScreen = () => {
   )
 
   const backgroundImageUri = useMemo(() => {
-    return collectable?.json?.image
-  }, [collectable.json])
+    return metadata?.image
+  }, [metadata.image])
 
   const handleEditAddress = useCallback((text?: string) => {
     setRecipient(text || '')
@@ -189,7 +193,8 @@ const TransferCollectableScreen = () => {
     if (networkError) return networkError
   }, [hasError, hasInsufficientBalance, networkError, t])
 
-  if (!collectable.json || !backgroundImageUri) {
+  if (!metadata || !backgroundImageUri) {
+    // TODO: Show some error
     return null
   }
 
@@ -216,7 +221,7 @@ const TransferCollectableScreen = () => {
               padding="m"
               alignItems="center"
             >
-              {collectable.json && (
+              {metadata && (
                 <Box
                   shadowColor="black"
                   shadowOpacity={0.4}
@@ -230,7 +235,7 @@ const TransferCollectableScreen = () => {
                     height={COLLECTABLE_HEIGHT - spacing.xl * 5}
                     width={COLLECTABLE_HEIGHT - spacing.xl * 5}
                     source={{
-                      uri: collectable.json.image,
+                      uri: metadata?.image,
                       cache: 'force-cache',
                     }}
                     borderRadius="xxl"
@@ -244,11 +249,10 @@ const TransferCollectableScreen = () => {
                 textAlign="center"
                 variant="h1Medium"
               >
-                {collectable.json.name}
+                {metadata.name}
               </Text>
               <Text variant="body3Medium" color="grey600" marginBottom="xl">
-                {collectable.json.description ||
-                  t('collectables.noDescription')}
+                {metadata.description || t('collectables.noDescription')}
               </Text>
               <TextInput
                 floatingLabel={t('collectablesScreen.transferTo')}

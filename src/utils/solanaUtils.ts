@@ -7,7 +7,7 @@ import {
   getAssociatedTokenAddress,
 } from '@solana/spl-token'
 import Balance, { AnyCurrencyType } from '@helium/currency'
-import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
+import { Metaplex } from '@metaplex-foundation/js'
 import axios from 'axios'
 import Config from 'react-native-config'
 import { getKeypair } from '../storage/secureStorage'
@@ -15,15 +15,19 @@ import solInstructionsToActivity from './solInstructionsToActivity'
 import { Activity } from '../types/activity'
 import sleep from './sleep'
 import { Mints } from '../store/slices/walletRestApi'
-import { Collectable, EnrichedTransaction } from '../types/solana'
+import {
+  Collectable,
+  CompressedNFT,
+  EnrichedTransaction,
+} from '../types/solana'
 import * as Logger from './logger'
 import { WrappedConnection } from './WrappedConnection'
 
 const Connection = {
-  localnet: new web3.Connection('http://127.0.0.1:8899'),
-  devnet: new web3.Connection(web3.clusterApiUrl('devnet')),
-  testnet: new web3.Connection(web3.clusterApiUrl('testnet')),
-  'mainnet-beta': new web3.Connection(web3.clusterApiUrl('mainnet-beta')),
+  localnet: new WrappedConnection('http://127.0.0.1:8899'),
+  devnet: new WrappedConnection('https://rpc-devnet.aws.metaplex.com/'),
+  testnet: new WrappedConnection(web3.clusterApiUrl('testnet')),
+  'mainnet-beta': new WrappedConnection(web3.clusterApiUrl('mainnet-beta')),
 } as const
 
 export const getConnection = (cluster: web3.Cluster) =>
@@ -349,7 +353,7 @@ export const createTransferCollectableMessage = async (
   cluster: web3.Cluster,
   solanaAddress: string,
   heliumAddress: string,
-  collectable: Collectable,
+  collectable: CompressedNFT,
   payee: string,
 ) => {
   const payer = new web3.PublicKey(solanaAddress)
@@ -366,7 +370,7 @@ export const createTransferCollectableMessage = async (
   }
 
   const recipientPubKey = new web3.PublicKey(payee)
-  const mintPubkey = new web3.PublicKey(collectable.mint.address)
+  const mintPubkey = new web3.PublicKey(collectable.id)
 
   const instructions: web3.TransactionInstruction[] = []
 
@@ -426,7 +430,7 @@ export const transferCollectable = async (
   cluster: web3.Cluster,
   solanaAddress: string,
   heliumAddress: string,
-  collectable: Collectable,
+  collectable: CompressedNFT,
   payee: string,
 ) => {
   const payer = new web3.PublicKey(solanaAddress)
@@ -444,7 +448,7 @@ export const transferCollectable = async (
     }
 
     const recipientPubKey = new web3.PublicKey(payee)
-    const mintPubkey = new web3.PublicKey(collectable.mint.address)
+    const mintPubkey = new web3.PublicKey(collectable.id)
 
     const instructions: web3.TransactionInstruction[] = []
 
@@ -556,48 +560,27 @@ export const confirmTransaction = async (
 /**
  * Returns the account's collectables
  * @param pubKey public key of the account
- * @param metaplex metaplex connection
- * @returns collectables
- */
-export const getCollectables = async (
-  pubKey: web3.PublicKey,
-  metaplex: Metaplex,
-) => {
-  const collectables = (await metaplex
-    .nfts()
-    .findAllByOwner({ owner: pubKey })) as Metadata<JsonMetadata<string>>[]
-
-  // TODO: Remove this filter once the uri is fixed for HOTSPOTS
-  const filteredCollectables = collectables.filter(
-    (c) => c.symbol !== 'HOTSPOT',
-  )
-
-  return filteredCollectables
-}
-
-/**
- * Returns the account's collectables
- * @param pubKey public key of the account
  * @param oldestCollectable starting point for the query
  * @returns collectables
  * TODO: Need to add pagination via oldest collectable param in collectables slice
  */
 export const getCompressedCollectables = async (
   pubKey: web3.PublicKey,
+  cluster: web3.Cluster,
   oldestCollectable?: string,
 ) => {
   // TODO: Replace with devnet when metaplex RPC is ready for all other txs to be sent to devnet
-  const conn = new WrappedConnection('https://rpc-devnet.aws.metaplex.com/')
+  const conn = getConnection(cluster)
   const { items } = await conn.getAssetsByOwner(
     pubKey.toString(),
     'created',
-    100,
+    50,
     1,
     oldestCollectable || '',
     '',
   )
 
-  return items as Metadata<JsonMetadata<string>>[]
+  return items as CompressedNFT[]
 }
 
 /**
@@ -607,21 +590,20 @@ export const getCompressedCollectables = async (
  * @returns collectables with metadata
  */
 export const getCollectablesMetadata = async (
-  collectables: Metadata<JsonMetadata<string>>[],
-  metaplex: Metaplex,
+  collectables: CompressedNFT[],
 ) => {
-  // TODO: Remove this filter once the uri is fixed for HOTSPOTS
-  const filteredCollectables = collectables.filter(
-    (c) => c.symbol !== 'HOTSPOT',
-  )
   const collectablesWithMetadata = await Promise.all(
-    filteredCollectables.map(async (col) => {
+    collectables.map(async (col) => {
       let json
       try {
-        json = await (await fetch(col.uri)).json()
-
-        const metadata = await metaplex.nfts().load({ metadata: col })
-        return { ...metadata, json }
+        json = await (await fetch(col.content.json_uri)).json()
+        return {
+          ...col,
+          content: {
+            ...col.content,
+            metadata: { ...col.content.metadata, ...json },
+          },
+        }
       } catch (e) {
         Logger.error(e)
         return null
@@ -629,7 +611,7 @@ export const getCollectablesMetadata = async (
     }),
   )
 
-  return collectablesWithMetadata.filter((c) => c !== null) as Collectable[]
+  return collectablesWithMetadata.filter((c) => c !== null) as CompressedNFT[]
 }
 
 /**
@@ -637,18 +619,20 @@ export const getCollectablesMetadata = async (
  * @param collectables collectables
  * @returns grouped collecables by token type
  */
-export const groupCollectables = (
-  collectables: Metadata<JsonMetadata<string>>[],
-) => {
+export const groupCollectables = (collectables: CompressedNFT[]) => {
   const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const { symbol } = cur
-    if (!acc[symbol]) {
-      acc[symbol] = [cur]
+    const {
+      content: {
+        metadata: { symbol },
+      },
+    } = cur
+    if (!acc[symbol || 'UNKNOWN']) {
+      acc[symbol || 'UNKNOWN'] = [cur]
     } else {
-      acc[symbol].push(cur)
+      acc[symbol || 'UNKOWN'].push(cur)
     }
     return acc
-  }, {} as Record<string, Metadata<JsonMetadata<string>>[]>)
+  }, {} as Record<string, CompressedNFT[]>)
 
   return collectablesGroupedByName
 }
@@ -658,16 +642,22 @@ export const groupCollectables = (
  * @param collectables collectables with metadata
  * @returns grouped collecables by token type
  */
-export const groupCollectablesWithMetaData = (collectables: Collectable[]) => {
+export const groupCollectablesWithMetaData = (
+  collectables: CompressedNFT[],
+) => {
   const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const { symbol } = cur
-    if (!acc[symbol]) {
-      acc[symbol] = [cur]
+    const {
+      content: {
+        metadata: { symbol },
+      },
+    } = cur
+    if (!acc[symbol || 'UNKNOWN']) {
+      acc[symbol || 'UNKNOWN'] = [cur]
     } else {
-      acc[symbol].push(cur)
+      acc[symbol || 'UNKNOWN'].push(cur)
     }
     return acc
-  }, {} as Record<string, Collectable[]>)
+  }, {} as Record<string, CompressedNFT[]>)
 
   return collectablesGroupedByName
 }

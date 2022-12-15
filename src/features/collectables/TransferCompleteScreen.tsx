@@ -41,16 +41,19 @@ const TransferCollectableScreen = () => {
     (reduxState: RootState) => reduxState.solana.payment,
   )
   const spacing = useSpacing()
+  const {
+    content: { metadata },
+  } = collectable
 
   const backgroundImageUri = useMemo(() => {
-    return collectable?.json?.image
-  }, [collectable.json])
+    return metadata?.image
+  }, [metadata.image])
 
   const onReturn = useCallback(() => {
     navigation.popToTop()
   }, [navigation])
 
-  if (!collectable.json || !backgroundImageUri) {
+  if (!metadata || !backgroundImageUri) {
     return null
   }
 
@@ -77,7 +80,7 @@ const TransferCollectableScreen = () => {
           justifyContent="center"
           alignItems="center"
         >
-          {collectable.json && (
+          {metadata && (
             <Box
               shadowColor="black"
               shadowOpacity={0.4}
@@ -90,7 +93,7 @@ const TransferCollectableScreen = () => {
                 backgroundColor="black"
                 height={COLLECTABLE_HEIGHT - spacing.xl * 5}
                 width={COLLECTABLE_HEIGHT - spacing.xl * 5}
-                source={{ uri: collectable.json.image, cache: 'force-cache' }}
+                source={{ uri: metadata.image, cache: 'force-cache' }}
                 borderRadius="xxl"
               />
             </Box>

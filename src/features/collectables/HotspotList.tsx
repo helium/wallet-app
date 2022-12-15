@@ -7,13 +7,12 @@ import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { useColors } from '../../theme/themeHooks'
 import Box from '../../components/Box'
-import { CollectableSkeleton } from './NftListItem'
-import { Collectable } from '../../types/solana'
+import { NFTSkeleton } from './NftListItem'
+import { CompressedNFT } from '../../types/solana'
 import { CollectableNavigationProp } from './collectablesTypes'
 import HotspotListItem from './HotspotListItem'
 import ButtonPressable from '../../components/ButtonPressable'
 import useHotspots from '../../hooks/useHotspots'
-import FadeInOut from '../../components/FadeInOut'
 
 const HotspotList = () => {
   const { bottom } = useSafeAreaInsets()
@@ -30,8 +29,10 @@ const HotspotList = () => {
   } = useHotspots()
 
   const handleNavigateToCollectable = useCallback(
-    (collectable: Collectable) => {
-      navigation.navigate('HotspotDetailsScreen', { collectable })
+    (collectable: CompressedNFT) => {
+      if (collectable.content.metadata) {
+        navigation.navigate('HotspotDetailsScreen', { collectable })
+      }
     },
     [navigation],
   )
@@ -58,14 +59,9 @@ const HotspotList = () => {
 
   const renderCollectable = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
-    ({ item }: { item: Collectable }) => {
+    ({ item }: { item: CompressedNFT }) => {
       return (
-        <FadeInOut>
-          <HotspotListItem
-            hotspot={item}
-            onPress={handleNavigateToCollectable}
-          />
-        </FadeInOut>
+        <HotspotListItem hotspot={item} onPress={handleNavigateToCollectable} />
       )
     },
     [handleNavigateToCollectable],
@@ -78,7 +74,7 @@ const HotspotList = () => {
       return (
         <Box flex={1} flexDirection="row">
           {times(hotspots.length).map((i) => (
-            <CollectableSkeleton key={i} />
+            <NFTSkeleton key={i} />
           ))}
         </Box>
       )
@@ -87,8 +83,8 @@ const HotspotList = () => {
     return null
   }, [hotspots, loadingHotspots])
 
-  const keyExtractor = useCallback((item: Collectable) => {
-    return item.mint.toString()
+  const keyExtractor = useCallback((item: CompressedNFT) => {
+    return item.id
   }, [])
 
   const contentContainerStyle = useMemo(

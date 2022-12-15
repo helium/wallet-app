@@ -3,7 +3,7 @@ import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { PublicKey } from '@solana/web3.js'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { Collectable } from '../../types/solana'
+import { CompressedNFT } from '../../types/solana'
 import { ww } from '../../utils/layout'
 import { useHotspot } from '../../hooks/useHotspot'
 import Box from '../../components/Box'
@@ -13,17 +13,16 @@ import { ReAnimatedBox } from '../../components/AnimatedBox'
 import ImageBox from '../../components/ImageBox'
 
 export type HotspotListItemProps = {
-  hotspot: Collectable
-  onPress: (hotspot: Collectable) => void
+  hotspot: CompressedNFT
+  onPress: (hotspot: CompressedNFT) => void
 }
 
 const HotspotListItem = ({ hotspot, onPress }: HotspotListItemProps) => {
   const COLLECTABLE_HEIGHT = ww / 2
-  const { json } = hotspot
-  const mint = useMemo(
-    () => new PublicKey(hotspot.mint.address),
-    [hotspot.mint],
-  )
+  const {
+    content: { metadata },
+  } = hotspot
+  const mint = useMemo(() => new PublicKey(hotspot.id), [hotspot.id])
   const { pendingRewards } = useHotspot(mint)
 
   // TODO: Add IOT Rewards once IOT MINT is available
@@ -51,7 +50,7 @@ const HotspotListItem = ({ hotspot, onPress }: HotspotListItemProps) => {
           height={COLLECTABLE_HEIGHT}
           width="100%"
           source={{
-            uri: json?.image,
+            uri: metadata?.image,
             cache: 'force-cache',
           }}
         />
@@ -80,9 +79,9 @@ const HotspotListItem = ({ hotspot, onPress }: HotspotListItemProps) => {
           </Box>
         )}
       </TouchableOpacityBox>
-      {json?.name && (
+      {metadata?.name && (
         <Text textAlign="center" variant="subtitle1" marginHorizontal="m">
-          {removeDashAndCapitalize(json.name)}
+          {removeDashAndCapitalize(metadata.name)}
         </Text>
       )}
     </ReAnimatedBox>

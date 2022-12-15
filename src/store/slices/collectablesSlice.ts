@@ -1,13 +1,12 @@
-import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import * as web3 from '@solana/web3.js'
 import { CSAccount } from '../../storage/cloudStorage'
-import { Collectable } from '../../types/solana'
+import { CompressedNFT } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
 
 export type WalletCollectables = {
-  collectables: Record<string, Metadata<JsonMetadata<string>>[]>
-  collectablesWithMeta: Record<string, Collectable[]>
+  collectables: Record<string, CompressedNFT[]>
+  collectablesWithMeta: Record<string, CompressedNFT[]>
   loading: boolean
 }
 
@@ -25,24 +24,27 @@ export const fetchCollectables = createAsyncThunk(
     cluster: web3.Cluster
   }) => {
     if (!account.solanaAddress) throw new Error('Solana address missing')
-    const connection = solUtils.getConnection(cluster)
 
-    const metaplex = new Metaplex(connection, { cluster })
     const pubKey = new web3.PublicKey(account.solanaAddress)
-    const fetchedCollectables = await solUtils.getCollectables(pubKey, metaplex)
+    const fetchedCollectables = await solUtils.getCompressedCollectables(
+      pubKey,
+      cluster,
+    )
     const groupedCollectables = await solUtils.groupCollectables(
       fetchedCollectables,
     )
 
     const collectablesWithMetadata = await solUtils.getCollectablesMetadata(
       fetchedCollectables,
-      metaplex,
     )
 
     const groupedCollectablesWithMeta = solUtils.groupCollectablesWithMetaData(
       collectablesWithMetadata,
     )
-    return { groupedCollectables, groupedCollectablesWithMeta }
+    return {
+      groupedCollectables,
+      groupedCollectablesWithMeta,
+    }
   },
 )
 

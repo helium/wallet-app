@@ -6,12 +6,12 @@ import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import { Color, Theme } from '../theme/theme'
 import ImageBox from './ImageBox'
-import { Collectable } from '../types/solana'
+import { CompressedNFT } from '../types/solana'
 
 type Props = {
   onPress?: (address?: string) => void
   innerBoxProps?: BoxProps<Theme>
-  collectable: Collectable
+  collectable: CompressedNFT
 } & BoxProps<Theme>
 
 const TokenButton = ({
@@ -43,24 +43,24 @@ const TokenButton = ({
         paddingVertical={innerBoxProps?.paddingVertical || 'm'}
         {...innerBoxProps}
       >
-        {collectable.json && (
+        {collectable.content.metadata && (
           <ImageBox
             width={60}
             height={60}
-            source={{ uri: collectable.json.image }}
+            source={{ uri: collectable.content.metadata.image }}
             backgroundColor="surfaceSecondary"
             borderRadius="s"
           />
         )}
         <Box flex={1}>
-          {collectable.json?.name && (
+          {collectable.content.metadata.name && (
             <Text marginLeft="ms" marginRight="xs" variant="subtitle2">
-              {collectable.json?.name}
+              {collectable.content.metadata.name}
             </Text>
           )}
-          {collectable.json?.description && (
+          {collectable.content.metadata.description && (
             <Text marginLeft="ms" variant="body3" color={textColor}>
-              {collectable.json?.description}
+              {collectable.content.metadata.description}
             </Text>
           )}
         </Box>

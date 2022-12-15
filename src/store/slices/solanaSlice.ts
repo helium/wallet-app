@@ -8,7 +8,7 @@ import { Cluster, SignaturesForAddressOptions } from '@solana/web3.js'
 import { first, last } from 'lodash'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
-import { Collectable, toMintAddress } from '../../types/solana'
+import { CompressedNFT, toMintAddress } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
 import { fetchCollectables } from './collectablesSlice'
 import { Mints, walletRestApi } from './walletRestApi'
@@ -91,7 +91,7 @@ type PaymentInput = {
 
 type CollectablePaymentInput = {
   account: CSAccount
-  collectable: Collectable
+  collectable: CompressedNFT
   payee: string
   cluster: Cluster
 }

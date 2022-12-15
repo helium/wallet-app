@@ -46,6 +46,7 @@ const App = () => {
     "[react-native-gesture-handler] Seems like you're using an old API with gesture components",
     'console.error: {"context":"client"} {"context":"client/pairing"} Unauthorized pairing update request',
     'Require cycle:',
+    'ws error: received bad response code from server 403',
   ])
 
   const { appState } = useAppState()

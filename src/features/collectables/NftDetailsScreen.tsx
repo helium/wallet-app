@@ -39,6 +39,9 @@ const NftDetailsScreen = () => {
   const { t } = useTranslation()
 
   const { collectable } = route.params
+  const {
+    content: { metadata },
+  } = collectable
 
   const spacing = useSpacing()
 
@@ -49,20 +52,16 @@ const NftDetailsScreen = () => {
   }, [collectable, navigation])
 
   const handleInfoPress = useCallback(() => {
-    if (collectable.json) {
+    if (metadata) {
       navigation.push('NftMetadataScreen', {
-        metadata: collectable.json,
+        metadata,
       })
     }
-  }, [collectable.json, navigation])
+  }, [metadata, navigation])
 
   const backgroundImageUri = useMemo(() => {
-    return collectable?.json?.image
-  }, [collectable.json])
-
-  if (!collectable.json || !backgroundImageUri) {
-    return null
-  }
+    return metadata.image
+  }, [metadata.image])
 
   return (
     <BackScreen
@@ -82,7 +81,7 @@ const NftDetailsScreen = () => {
             padding="m"
             alignItems="center"
           >
-            {collectable.json && (
+            {metadata && (
               <Box
                 shadowColor="black"
                 shadowOpacity={0.4}
@@ -95,7 +94,7 @@ const NftDetailsScreen = () => {
                   backgroundColor="black"
                   height={COLLECTABLE_HEIGHT - spacing.xl * 2}
                   width={COLLECTABLE_HEIGHT - spacing.xl * 2}
-                  source={{ uri: collectable.json.image, cache: 'force-cache' }}
+                  source={{ uri: metadata.image, cache: 'force-cache' }}
                   borderRadius="xxl"
                 />
               </Box>
@@ -107,10 +106,10 @@ const NftDetailsScreen = () => {
               textAlign="center"
               variant="h1Medium"
             >
-              {collectable.json.name}
+              {metadata.name}
             </Text>
             <Text variant="body3Medium" color="grey600" marginBottom="xl">
-              {collectable.json.description || t('collectables.noDescription')}
+              {metadata.description || t('collectables.noDescription')}
             </Text>
             <Box
               flexDirection="row"

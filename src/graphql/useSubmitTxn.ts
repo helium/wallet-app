@@ -16,7 +16,7 @@ import {
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import { useGetMintsQuery } from '../store/slices/walletRestApi'
-import { Collectable } from '../types/solana'
+import { CompressedNFT } from '../types/solana'
 
 export default () => {
   const { makePaymentTxn } = useTransactions()
@@ -137,7 +137,7 @@ export default () => {
   )
 
   const submitCollectable = useCallback(
-    async (collectable: Collectable, payee: string) => {
+    async (collectable: CompressedNFT, payee: string) => {
       if (!currentAccount) {
         throw new Error('There must be an account selected to submit a txn')
       }
