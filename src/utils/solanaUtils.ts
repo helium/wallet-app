@@ -25,7 +25,8 @@ import { WrappedConnection } from './WrappedConnection'
 
 const Connection = {
   localnet: new WrappedConnection('http://127.0.0.1:8899'),
-  devnet: new WrappedConnection('https://rpc-devnet.aws.metaplex.com/'),
+  devnetMetaplex: new WrappedConnection('https://rpc-devnet.aws.metaplex.com/'),
+  devnet: new WrappedConnection(web3.clusterApiUrl('devnet')),
   testnet: new WrappedConnection(web3.clusterApiUrl('testnet')),
   'mainnet-beta': new WrappedConnection(web3.clusterApiUrl('mainnet-beta')),
 } as const
@@ -570,7 +571,7 @@ export const getCompressedCollectables = async (
   oldestCollectable?: string,
 ) => {
   // TODO: Replace with devnet when metaplex RPC is ready for all other txs to be sent to devnet
-  const conn = getConnection(cluster)
+  const conn = Connection.devnetMetaplex
   const { items } = await conn.getAssetsByOwner(
     pubKey.toString(),
     'created',
