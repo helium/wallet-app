@@ -23,6 +23,7 @@ import AddNewAccountNavigator from './addNewAccount/AddNewAccountNavigator'
 import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
 import BurnScreen from '../burn/BurnScreen'
 import ImportPrivateKey from '../onboarding/import/ImportPrivateKey'
+import BuyNavigator from '../buy/BuyNavigator'
 
 const HomeStack = createNativeStackNavigator()
 
@@ -101,6 +102,8 @@ const HomeStackScreen = () => {
       />
 
       <HomeStack.Screen name="ImportPrivateKey" component={ImportPrivateKey} />
+
+      <HomeStack.Screen name="BuyNavigator" component={BuyNavigator} />
     </HomeStack.Navigator>
   )
 }

@@ -84,6 +84,10 @@ const AccountActionBar = ({ ticker, onLayout, compact }: Props) => {
           navigation.navigate('RequestScreen')
           break
         }
+        case 'buy': {
+          navigation.navigate('BuyNavigator')
+          break
+        }
         case 'vote': {
           navigation.navigate('VoteNavigator')
           break
@@ -127,9 +131,22 @@ const AccountActionBar = ({ ticker, onLayout, compact }: Props) => {
           backgroundColorOpacity={0.2}
           backgroundColorOpacityPressed={0.4}
           iconColor="greenBright500"
-          title={compact ? undefined : t('accountView.request')}
+          title={compact ? undefined : t('accountView.deposit')}
           marginRight={compact ? 'm' : undefined}
           onPress={handleAction('request')}
+        />
+      </Box>
+      <Box flex={compact ? undefined : 1}>
+        <FabButton
+          icon="fatArrowDown"
+          marginLeft="s"
+          backgroundColor="orange500"
+          backgroundColorOpacity={0.2}
+          backgroundColorOpacityPressed={0.4}
+          iconColor="orange500"
+          title={compact ? undefined : t('accountView.buy')}
+          marginRight={compact ? 'm' : undefined}
+          onPress={handleAction('buy')}
         />
       </Box>
       {!compact && isHeliumMainnet && (

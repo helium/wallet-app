@@ -251,6 +251,10 @@ export default {
       TOKEN_MINT: 'Token Minted!',
     },
   },
+  buyScreen: {
+    buy: 'Buy',
+    buyToken: 'Buy {{ ticker }}',
+  },
   accountTokenList: {
     tokens: 'Tokens',
   },
@@ -261,7 +265,8 @@ export default {
     lock: 'Lock',
     nonTransferable: 'Non-Transferable',
     payment: 'Payment',
-    request: 'Request',
+    deposit: 'Deposit',
+    buy: 'Buy',
     securityTokens: 'Security Tokens',
     send: 'Send',
     stake: 'Stake',
