@@ -6,14 +6,14 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { LogBox, Platform, View } from 'react-native'
+import { Platform, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import SharedGroupPreferences from 'react-native-shared-group-preferences'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDebouncedCallback } from 'use-debounce/lib'
 import { toUpper } from 'lodash'
-import BottomSheet, { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
+import BottomSheet from '@gorhom/bottom-sheet'
 import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
 import { useTranslation } from 'react-i18next'
 import ListItem from '../../components/ListItem'
@@ -55,15 +55,6 @@ import AccountActionBar from './AccountActionBar'
 import SUPPORTED_CURRENCIES from '../../utils/supportedCurrencies'
 import { NavBarHeight } from '../../components/NavBar'
 
-LogBox.ignoreLogs([
-  'VirtualizedLists should never be nested inside plain ScrollViews',
-])
-// There is a flatlist nested inside of a scrollview which should be fine as
-// the flatlist has scroll disabled and will only ever have a relatively
-// low amount of items in it. Initial thought was to use a Sectionlist for
-// this, but the Flatlist has two columns (numColumns={2}) which makes that
-// not work so cleanly.
-
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
   const navigation = useNavigation<HomeNavigationProp>()
@@ -96,11 +87,10 @@ const AccountsScreen = () => {
   const { t } = useTranslation()
 
   const snapPoints = useMemo(() => {
+    if (!pageHeight) return undefined
     const collapsedHeight = ITEM_HEIGHT * 2
     // Get safe area top height
-    const expandedHeight = pageHeight
-      ? pageHeight - navLayoutHeight - top - topHeaderHeight
-      : ITEM_HEIGHT * 8
+    const expandedHeight = pageHeight - navLayoutHeight - top - topHeaderHeight
     return [collapsedHeight, expandedHeight]
   }, [navLayoutHeight, pageHeight, top, topHeaderHeight])
 
@@ -264,6 +254,14 @@ const AccountsScreen = () => {
   }, [handleBalanceHistorySelected])
 
   const animatedStyle = useAnimatedStyle(() => {
+    if (!snapPoints) {
+      return {
+        opacity: 1,
+        paddingBottom: 0,
+        display: 'flex',
+      }
+    }
+
     const realHeight = pageHeight + NavBarHeight
     const diff = realHeight - listAnimatedPos.value
     const opacity =
@@ -277,10 +275,21 @@ const AccountsScreen = () => {
     return {
       opacity,
       paddingBottom: diff - NavBarHeight,
+      display: opacity <= 0 ? 'none' : 'flex',
     }
   })
 
   const headerAnimatedStyle = useAnimatedStyle(() => {
+    if (!snapPoints) {
+      return {
+        opacity: 0,
+        position: 'absolute',
+        top: top + navLayoutHeight,
+        left: 0,
+        right: 0,
+      }
+    }
+
     const opacity =
       (listAnimatedPos.value - top - topHeaderHeight - navLayoutHeight) /
       (snapPoints[1] - snapPoints[0])
@@ -342,28 +351,27 @@ const AccountsScreen = () => {
 
   const RetractedView = useMemo(() => {
     return (
-      <ReAnimatedBox style={headerAnimatedStyle}>
-        <Box
-          paddingTop="m"
-          paddingBottom={Platform.OS === 'android' ? 'l' : 'm'}
-          flexDirection="row"
-          alignItems="center"
-          onLayout={handleTopHeaderLayout}
-          ref={topHeaderRef}
-          marginHorizontal="l"
-        >
-          <Box flex={1}>
-            <AccountTokenCurrencyBalance ticker="HNT" variant="h2Medium" />
-          </Box>
-          <AccountActionBar ticker="HNT" maxCompact hasBuy />
+      <ReAnimatedBox
+        style={headerAnimatedStyle}
+        paddingTop="m"
+        paddingBottom={Platform.OS === 'android' ? 'l' : 'm'}
+        flexDirection="row"
+        alignItems="center"
+        onLayout={handleTopHeaderLayout}
+        ref={topHeaderRef}
+        marginHorizontal="l"
+      >
+        <Box flex={1}>
+          <AccountTokenCurrencyBalance ticker="HNT" variant="h2Medium" />
         </Box>
+        <AccountActionBar ticker="HNT" maxCompact hasBuy />
       </ReAnimatedBox>
     )
   }, [handleTopHeaderLayout, headerAnimatedStyle])
 
   return (
-    <BottomSheetModalProvider>
-      <ReAnimatedBox onLayout={setPageHeight} flex={1}>
+    <Box flex={1}>
+      <Box onLayout={setPageHeight} flex={1}>
         <AccountsTopNav
           onPressWallet={toggleWalletsVisible}
           onLayout={setNavLayoutHeight}
@@ -399,10 +407,10 @@ const AccountsScreen = () => {
           />
         )}
         <StatusBanner />
-      </ReAnimatedBox>
+      </Box>
       <BottomSheet
         ref={bottomSheetRef}
-        snapPoints={snapPoints}
+        snapPoints={snapPoints || [10, 100]}
         backgroundStyle={bottomSheetStyle}
         detached
         animatedPosition={listAnimatedPos}
@@ -420,7 +428,7 @@ const AccountsScreen = () => {
       >
         {currencies()}
       </BlurActionSheet>
-    </BottomSheetModalProvider>
+    </Box>
   )
 }
 
