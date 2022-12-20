@@ -6,7 +6,8 @@ export type BuyStackParamList = {
   BuyAmountScreen: {
     token: Ticker
   }
-  BuyProviderScreen: undefined
+  ChooseProviderScreen: undefined
+  CoinbaseWebView: undefined
 }
 
 export type BuyNavigationProp = StackNavigationProp<BuyStackParamList>

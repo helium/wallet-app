@@ -5,7 +5,8 @@ import {
 } from '@react-navigation/stack'
 import BuyTokenScreen from './BuyTokenScreen'
 import BuyAmountScreen from './BuyAmountScreen'
-import BuyProviderScreen from './BuyProviderScreen'
+import ChooseProviderScreen from './ChooseProviderScreen'
+import CoinbaseWebView from './CoinbaseWebView'
 
 const BuyStack = createStackNavigator()
 
@@ -32,9 +33,14 @@ const BuyStackScreen = () => {
         component={BuyAmountScreen}
       />
       <BuyStack.Screen
-        name="BuyProviderScreen"
+        name="ChooseProviderScreen"
         options={cardPresentation}
-        component={BuyProviderScreen}
+        component={ChooseProviderScreen}
+      />
+      <BuyStack.Screen
+        name="CoinbaseWebView"
+        options={cardPresentation}
+        component={CoinbaseWebView}
       />
     </BuyStack.Navigator>
   )

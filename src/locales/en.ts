@@ -131,6 +131,7 @@ export default {
     showFilters: 'Show Filters',
     title: 'My {{ticker}}',
     tokens: 'Tokens',
+    chooseCurrency: 'Choose Currency',
   },
   collectablesScreen: {
     title: 'Collectables',
@@ -254,6 +255,7 @@ export default {
   buyScreen: {
     buy: 'Buy',
     buyToken: 'Buy {{ ticker }}',
+    chooseProvider: 'Choose Provider',
   },
   accountTokenList: {
     tokens: 'Tokens',
@@ -390,6 +392,7 @@ export default {
     somethingWentWrong: 'Something went wrong, please try again',
     submitSuccess: 'Transaction Submit',
     understand: 'I Understand',
+    noData: 'No Data',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',

@@ -1,12 +1,23 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import { LogBox, Platform, RefreshControl } from 'react-native'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { LogBox, Platform, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import SharedGroupPreferences from 'react-native-shared-group-preferences'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDebouncedCallback } from 'use-debounce/lib'
 import { toUpper } from 'lodash'
-import { ScrollView } from 'react-native-gesture-handler'
+import BottomSheet, { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
+import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
+import { useTranslation } from 'react-i18next'
+import ListItem from '../../components/ListItem'
+import BlurActionSheet from '../../components/BlurActionSheet'
 import Box from '../../components/Box'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
@@ -36,7 +47,13 @@ import useDisappear from '../../hooks/useDisappear'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useGetBalanceHistoryQuery } from '../../store/slices/walletRestApi'
 import { useBalance } from '../../utils/Balance'
-import { useColors } from '../../theme/themeHooks'
+import { useBackgroundStyle } from '../../theme/themeHooks'
+import { ITEM_HEIGHT } from './TokenListItem'
+import { ReAnimatedBox } from '../../components/AnimatedBox'
+import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
+import AccountActionBar from './AccountActionBar'
+import SUPPORTED_CURRENCIES from '../../utils/supportedCurrencies'
+import { NavBarHeight } from '../../components/NavBar'
 
 LogBox.ignoreLogs([
   'VirtualizedLists should never be nested inside plain ScrollViews',
@@ -54,15 +71,38 @@ const AccountsScreen = () => {
   const { sortedAccounts, currentAccount, defaultAccountAddress } =
     useAccountStorage()
   const [navLayoutHeight, setNavLayoutHeight] = useLayoutHeight()
+  const [pageHeight, setPageHeight] = useLayoutHeight(0)
   const { openedNotification } = useNotificationStorage()
-  const { locked, l1Network, solanaNetwork: cluster } = useAppStorage()
+  const {
+    locked,
+    l1Network,
+    solanaNetwork: cluster,
+    currency,
+    updateCurrency,
+  } = useAppStorage()
   const { reset } = useOnboarding()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const [walletsVisible, setWalletsVisible] = useState(false)
   const [selectedBalance, setSelectedBalance] = useState<AccountBalanceType>()
   const { top } = useSafeAreaInsets()
   const { updateVars: refreshTokens, updating: updatingTokens } = useBalance()
-  const { primaryText } = useColors()
+  const bottomSheetRef = useRef<BottomSheet>(null)
+  const listAnimatedPos = useSharedValue<number>(0)
+  const [topHeaderHeight, setTopHeaderHeight] = useState(0)
+  const topHeaderRef = useRef<View>(null)
+  const [currenciesOpen, setCurrenciesOpen] = useState(false)
+  const bottomSheetStyle = useBackgroundStyle('secondaryBackground')
+
+  const { t } = useTranslation()
+
+  const snapPoints = useMemo(() => {
+    const collapsedHeight = ITEM_HEIGHT * 2
+    // Get safe area top height
+    const expandedHeight = pageHeight
+      ? pageHeight - navLayoutHeight - top - topHeaderHeight
+      : ITEM_HEIGHT * 8
+    return [collapsedHeight, expandedHeight]
+  }, [navLayoutHeight, pageHeight, top, topHeaderHeight])
 
   useAppear(() => {
     reset()
@@ -95,8 +135,6 @@ const AccountsScreen = () => {
     },
     fetchPolicy: 'cache-and-network',
   })
-
-  const { currency } = useAppStorage()
 
   const { data } = useAccountBalanceHistoryQuery({
     variables: {
@@ -225,51 +263,164 @@ const AccountsScreen = () => {
     handleBalanceHistorySelected(undefined)
   }, [handleBalanceHistorySelected])
 
-  return (
-    <Box flex={1}>
-      <AccountsTopNav
-        onPressWallet={toggleWalletsVisible}
-        onLayout={setNavLayoutHeight}
-      />
-      {currentAccount?.address && (accountData?.account || accountLoading) && (
-        <ScrollView
-          stickyHeaderIndices={[2]}
-          nestedScrollEnabled
-          refreshControl={
-            <RefreshControl
-              refreshing={updatingTokens}
-              onRefresh={refreshTokens}
-              title=""
-              tintColor={primaryText}
-            />
-          }
+  const animatedStyle = useAnimatedStyle(() => {
+    const realHeight = pageHeight + NavBarHeight
+    const diff = realHeight - listAnimatedPos.value
+    const opacity =
+      (listAnimatedPos.value -
+        top -
+        topHeaderHeight -
+        navLayoutHeight -
+        pageHeight * 0.3) /
+      (snapPoints[1] - snapPoints[0] - pageHeight * 0.3)
+
+    return {
+      opacity,
+      paddingBottom: diff - NavBarHeight,
+    }
+  })
+
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    const opacity =
+      (listAnimatedPos.value - top - topHeaderHeight - navLayoutHeight) /
+      (snapPoints[1] - snapPoints[0])
+
+    return {
+      opacity: 1 - opacity,
+      position: 'absolute',
+      top: top + navLayoutHeight,
+      left: 0,
+      right: 0,
+    }
+  })
+
+  const handleTopHeaderLayout = useCallback(() => {
+    topHeaderRef.current?.measure((...args) => {
+      const [, , , height, , pageY] = args
+
+      if (!height || !pageY) return
+      setTopHeaderHeight(height)
+    })
+  }, [setTopHeaderHeight])
+
+  const toggleCurrenciesOpen = useCallback(
+    (open) => () => {
+      setCurrenciesOpen(open)
+    },
+    [],
+  )
+
+  const handleCurrencyTypeChange = useCallback(
+    (currencyType: string) => () => {
+      updateCurrency(currencyType)
+      setCurrenciesOpen(false)
+    },
+    [updateCurrency],
+  )
+
+  const currencies = useCallback(() => {
+    // Sort by selected currency first
+    const sortedCurrencies = Object.keys(SUPPORTED_CURRENCIES).sort((a, b) => {
+      if (a === currency) return -1
+      if (b === currency) return 1
+      return 0
+    })
+
+    return (
+      <>
+        {sortedCurrencies.map((c) => (
+          <ListItem
+            key={c}
+            title={SUPPORTED_CURRENCIES[c]}
+            selected={c === currency}
+            onPress={handleCurrencyTypeChange(c)}
+          />
+        ))}
+      </>
+    )
+  }, [currency, handleCurrencyTypeChange])
+
+  const RetractedView = useMemo(() => {
+    return (
+      <ReAnimatedBox style={headerAnimatedStyle}>
+        <Box
+          paddingTop="m"
+          paddingBottom={Platform.OS === 'android' ? 'l' : 'm'}
+          flexDirection="row"
+          alignItems="center"
+          onLayout={handleTopHeaderLayout}
+          ref={topHeaderRef}
+          marginHorizontal="l"
         >
-          <AccountView
-            onTouchStart={onTouchStart}
-            accountData={accountData?.account}
-            hntPrice={data?.currentPrices?.hnt}
-            selectedBalance={selectedBalance}
-          />
-          <AccountBalanceChart
-            chartValues={chartValues || []}
-            onHistorySelected={handleBalanceHistorySelected}
-            selectedBalance={selectedBalance}
-          />
-          <Box height={1} backgroundColor="surface" marginBottom="ms" />
-          <Box onTouchStart={onTouchStart}>
-            <AccountTokenList loading={accountLoading} />
+          <Box flex={1}>
+            <AccountTokenCurrencyBalance ticker="HNT" variant="h2Medium" />
           </Box>
-        </ScrollView>
-      )}
-      {walletsVisible && (
-        <ConnectedWallets
-          onClose={toggleWalletsVisible}
-          onAddNew={handleAddNew}
-          topOffset={navLayoutHeight + top}
+          <AccountActionBar ticker="HNT" maxCompact hasBuy />
+        </Box>
+      </ReAnimatedBox>
+    )
+  }, [handleTopHeaderLayout, headerAnimatedStyle])
+
+  return (
+    <BottomSheetModalProvider>
+      <ReAnimatedBox onLayout={setPageHeight} flex={1}>
+        <AccountsTopNav
+          onPressWallet={toggleWalletsVisible}
+          onLayout={setNavLayoutHeight}
         />
-      )}
-      <StatusBanner />
-    </Box>
+        {RetractedView}
+        {currentAccount?.address && (accountData?.account || accountLoading) && (
+          <ReAnimatedBox flex={1} style={animatedStyle}>
+            <AccountView
+              flexGrow={1}
+              justifyContent="center"
+              onTouchStart={onTouchStart}
+              accountData={accountData?.account}
+              hntPrice={data?.currentPrices?.hnt}
+              selectedBalance={selectedBalance}
+              onCurrencySelectorPress={toggleCurrenciesOpen(true)}
+            />
+            <Box>
+              {chartValues && (
+                <AccountBalanceChart
+                  chartValues={chartValues || []}
+                  onHistorySelected={handleBalanceHistorySelected}
+                  selectedBalance={selectedBalance}
+                />
+              )}
+            </Box>
+          </ReAnimatedBox>
+        )}
+        {walletsVisible && (
+          <ConnectedWallets
+            onClose={toggleWalletsVisible}
+            onAddNew={handleAddNew}
+            topOffset={navLayoutHeight + top}
+          />
+        )}
+        <StatusBanner />
+      </ReAnimatedBox>
+      <BottomSheet
+        ref={bottomSheetRef}
+        snapPoints={snapPoints}
+        backgroundStyle={bottomSheetStyle}
+        detached
+        animatedPosition={listAnimatedPos}
+      >
+        <AccountTokenList
+          loading={accountLoading}
+          onRefresh={refreshTokens}
+          refreshing={updatingTokens}
+        />
+      </BottomSheet>
+      <BlurActionSheet
+        title={t('accountsScreen.chooseCurrency')}
+        open={currenciesOpen}
+        onClose={toggleCurrenciesOpen(false)}
+      >
+        {currencies()}
+      </BlurActionSheet>
+    </BottomSheetModalProvider>
   )
 }
 

@@ -28,7 +28,7 @@ const BuyAmountScreen = () => {
   }, [currentAccount])
 
   const onConfirmBalance = useCallback(() => {
-    navigation.navigate('BuyProviderScreen')
+    navigation.navigate('ChooseProviderScreen')
   }, [navigation])
 
   return (
