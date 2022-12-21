@@ -2,7 +2,6 @@ import React, { memo, ReactNode, useCallback, useEffect, useState } from 'react'
 import { View } from 'react-native'
 import * as SplashLib from 'expo-splash-screen'
 import Animated, {
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -20,7 +19,6 @@ const SplashScreen = ({ children }: { children: ReactNode }) => {
   const { locked } = useAppStorage()
   const [isAppReady, setAppReady] = useState(false)
   const [imageReady, setImageReady] = useState(false)
-  const [isSplashAnimationComplete, setAnimationComplete] = useState(false)
   const { primaryBackground } = useColors()
   const animValue = useSharedValue(1)
 
@@ -30,16 +28,8 @@ const SplashScreen = ({ children }: { children: ReactNode }) => {
     }
   }, [isAppReady, animValue.value])
 
-  const animationCompleted = useCallback(() => {
-    setAnimationComplete(true)
-  }, [])
-
   const style = useAnimatedStyle(() => {
-    const animVal = withTiming(
-      animValue.value,
-      { duration: 700 },
-      runOnJS(animationCompleted),
-    )
+    const animVal = withTiming(animValue.value, { duration: 700 })
     return {
       width: '100%',
       height: '100%',
@@ -74,24 +64,22 @@ const SplashScreen = ({ children }: { children: ReactNode }) => {
   return (
     <View style={globalStyles.container}>
       {isAppReady && children}
-      {!isSplashAnimationComplete && (
-        <ReAnimatedBox
-          pointerEvents="none"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-          position="absolute"
+      <ReAnimatedBox
+        pointerEvents="none"
+        top={0}
+        left={0}
+        right={0}
+        bottom={0}
+        position="absolute"
+        style={style}
+      >
+        <Animated.Image
           style={style}
-        >
-          <Animated.Image
-            style={style}
-            source={require('../assets/images/SplashScreen.png')}
-            onLoadEnd={onImageLoaded}
-            fadeDuration={0}
-          />
-        </ReAnimatedBox>
-      )}
+          source={require('../assets/images/SplashScreen.png')}
+          onLoadEnd={onImageLoaded}
+          fadeDuration={0}
+        />
+      </ReAnimatedBox>
     </View>
   )
 }
