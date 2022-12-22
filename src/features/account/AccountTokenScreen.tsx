@@ -35,7 +35,7 @@ import FadeInOut, { DelayedFadeIn } from '../../components/FadeInOut'
 import AccountTokenBalance from './AccountTokenBalance'
 import globalStyles from '../../theme/globalStyles'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { useBackgroundStyle } from '../../theme/themeHooks'
+import { useColors } from '../../theme/themeHooks'
 import useNetworkColor from '../../hooks/useNetworkColor'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import ActivityIndicator from '../../components/ActivityIndicator'
@@ -54,14 +54,17 @@ const AccountTokenScreen = () => {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [topHeaderHeight, setTopHeaderHeight] = useState(0)
   const [listHeight, setListHeight] = useLayoutHeight()
+  const [bottomScreenHeaderHeight, setBottomScreenHeaderHeight] =
+    useLayoutHeight()
+  const [backHeaderHeight, setBackHeaderHeight] = useLayoutHeight()
   const topHeaderRef = useRef<View>(null)
   const headerContainerRef = useRef<View>(null)
   const [topHeaderYPos, setTopHeaderYPos] = useState(0)
   const [headerContainerYPos, setHeaderContainerYPos] = useState(0)
   const listAnimatedPos = useSharedValue<number>(0)
-  const listStyle = useBackgroundStyle('primaryBackground')
   const { l1Network } = useAppStorage()
   const insets = useSafeAreaInsets()
+  const colors = useColors()
 
   const routeTicker = useMemo(
     () => route.params.tokenType?.toUpperCase() as Ticker,
@@ -74,6 +77,12 @@ const AccountTokenScreen = () => {
     },
     [],
   )
+
+  const listStyle = useMemo(() => {
+    return {
+      backgroundColor: colors.primaryBackground,
+    }
+  }, [colors])
 
   const filterState = useActivityFilter()
 
@@ -96,30 +105,40 @@ const AccountTokenScreen = () => {
   const snapPoints = useMemo(() => {
     if (!topHeaderYPos || !headerContainerYPos) return
     const collapsed = actualHeight - headerContainerYPos
-    const expanded = actualHeight - topHeaderYPos
+    const expanded = actualHeight
+      ? actualHeight - insets.top - backHeaderHeight - topHeaderHeight
+      : 0
     return [collapsed, expanded]
-  }, [actualHeight, headerContainerYPos, topHeaderYPos])
+  }, [
+    actualHeight,
+    backHeaderHeight,
+    headerContainerYPos,
+    insets.top,
+    topHeaderHeight,
+    topHeaderYPos,
+  ])
 
   const canShowList = useMemo(() => snapPoints?.length === 2, [snapPoints])
 
   const topHeaderAnimatedStyle = useAnimatedStyle(() => {
-    if (!snapPoints || !canShowList || listHeight !== snapPoints[1]) {
+    if (!snapPoints || !canShowList) {
       return { opacity: 0 }
     }
 
-    const expandedPosition = actualHeight - snapPoints[1]
-    const diff = listAnimatedPos.value - expandedPosition
-    const o = diff / (snapPoints[1] - snapPoints[0])
+    const o =
+      (listAnimatedPos.value - insets.top - topHeaderHeight) /
+      (snapPoints[1] - snapPoints[0])
 
-    const offset = -1 * o * topHeaderHeight * 0.65
     return {
       opacity: 1 - o,
-      transform: [{ translateY: offset }],
+      position: 'absolute',
+      left: 0,
+      right: 0,
     }
   }, [snapPoints, topHeaderHeight, listHeight])
 
   const bottomHeaderAnimatedStyle = useAnimatedStyle(() => {
-    if (!snapPoints || !canShowList || listHeight !== snapPoints[1]) {
+    if (!snapPoints || !canShowList) {
       return { opacity: 1 }
     }
 
@@ -150,6 +169,11 @@ const AccountTokenScreen = () => {
 
     return (
       <Box
+        onLayout={setBottomScreenHeaderHeight}
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
         backgroundColor="primaryBackground"
         paddingHorizontal="l"
         flexDirection="row"
@@ -176,7 +200,13 @@ const AccountTokenScreen = () => {
         </TouchableOpacityBox>
       </Box>
     )
-  }, [filterState.filter, l1Network, t, toggleFiltersOpen])
+  }, [
+    filterState.filter,
+    l1Network,
+    setBottomScreenHeaderHeight,
+    t,
+    toggleFiltersOpen,
+  ])
 
   const keyExtractor = useCallback((item: Activity) => {
     return item.hash
@@ -184,10 +214,17 @@ const AccountTokenScreen = () => {
 
   const renderItem = useCallback(
     ({ item, index }) => {
+      const isFirst = index === 0
       const isLast = index === (activityData?.length || 0) - 1
       return (
         <FadeInOut>
-          <Box paddingHorizontal="l" backgroundColor="primaryBackground">
+          <Box
+            paddingHorizontal="l"
+            backgroundColor="primaryBackground"
+            style={{
+              marginTop: isFirst ? bottomScreenHeaderHeight : 0,
+            }}
+          >
             <TxnListItem
               onPress={showTransactionDetail}
               item={item}
@@ -198,7 +235,7 @@ const AccountTokenScreen = () => {
         </FadeInOut>
       )
     },
-    [activityData, now, showTransactionDetail],
+    [activityData.length, bottomScreenHeaderHeight, now, showTransactionDetail],
   )
 
   const renderFooter = useCallback(() => {
@@ -211,6 +248,9 @@ const AccountTokenScreen = () => {
           flexDirection="row"
           justifyContent="center"
           alignItems="center"
+          style={{
+            marginTop: activityData.length > 0 ? 0 : bottomScreenHeaderHeight,
+          }}
         >
           <Text
             variant="body1"
@@ -235,7 +275,13 @@ const AccountTokenScreen = () => {
         <ActivityIndicator animating={activityLoading} />
       </Box>
     )
-  }, [activityLoading, l1Network, t])
+  }, [
+    activityData.length,
+    activityLoading,
+    bottomScreenHeaderHeight,
+    l1Network,
+    t,
+  ])
 
   const setFilter = useCallback(
     (filterType: FilterType) => () => {
@@ -332,11 +378,13 @@ const AccountTokenScreen = () => {
         title={t('accountsScreen.title', {
           ticker: routeTicker,
         })}
+        onHeaderLayout={setBackHeaderHeight}
       >
         <Box
           paddingHorizontal="l"
           ref={headerContainerRef}
           onLayout={handleHeaderLayout}
+          justifyContent="center"
         >
           <Animated.View style={topHeaderAnimatedStyle}>
             <Box
@@ -344,13 +392,14 @@ const AccountTokenScreen = () => {
               paddingBottom={Platform.OS === 'android' ? 'l' : 'm'}
               flexDirection="row"
               alignItems="center"
+              justifyContent="center"
               onLayout={handleTopHeaderLayout}
               ref={topHeaderRef}
             >
               <Box flex={1}>
                 <AccountTokenBalance
                   showTicker={false}
-                  textVariant="h2"
+                  textVariant="h2Medium"
                   justifyContent="flex-start"
                   ticker={routeTicker}
                   flex={1}
