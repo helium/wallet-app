@@ -24,7 +24,7 @@ export default {
   MYR: 'Malaysian Ringgit',
   NGN: 'Nigerian Naira',
   NOK: 'Norwegian Krone',
-  NZD: 'New Zealand Dolloar',
+  NZD: 'New Zealand Dollar',
   PHP: 'Philippine Peso',
   PKR: 'Pakistani Rupee',
   PLN: 'Polish Zloty',
