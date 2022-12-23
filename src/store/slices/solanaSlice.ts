@@ -1,17 +1,24 @@
 import Balance, { AnyCurrencyType, Ticker } from '@helium/currency'
+import { AnchorProvider } from '@project-serum/anchor'
 import {
   createAsyncThunk,
   createSlice,
   SerializedError,
 } from '@reduxjs/toolkit'
-import { Cluster, SignaturesForAddressOptions } from '@solana/web3.js'
+import {
+  Cluster,
+  SignaturesForAddressOptions,
+  Transaction,
+} from '@solana/web3.js'
 import { first, last } from 'lodash'
+import { sendAndConfirmWithRetry } from '@helium/spl-utils'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
 import { CompressedNFT, toMintAddress } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
 import { fetchCollectables } from './collectablesSlice'
 import { Mints, walletRestApi } from './walletRestApi'
+import * as Logger from '../../utils/logger'
 
 type Balances = {
   hntBalance?: bigint
@@ -96,6 +103,18 @@ type CollectablePaymentInput = {
   cluster: Cluster
 }
 
+type AnchorTxnInput = {
+  txn: Transaction
+  anchorProvider: AnchorProvider
+  cluster: Cluster
+}
+
+type SendAllAnchorTxnsInput = {
+  txns: Transaction[]
+  anchorProvider: AnchorProvider
+  cluster: Cluster
+}
+
 export const makePayment = createAsyncThunk(
   'solana/makePayment',
   async ({ account, payments, cluster, mints }: PaymentInput, { dispatch }) => {
@@ -150,6 +169,64 @@ export const makeCollectablePayment = createAsyncThunk(
         cluster,
       }),
     )
+  },
+)
+
+export const sendAnchorTxn = createAsyncThunk(
+  'solana/sendAnchorTxn',
+  async ({ txn, anchorProvider, cluster }: AnchorTxnInput, { dispatch }) => {
+    try {
+      const signed = await anchorProvider.wallet.signTransaction(txn)
+      const { txid } = await sendAndConfirmWithRetry(
+        anchorProvider.connection,
+        signed.serialize(),
+        { skipPreflight: true },
+        'confirmed',
+      )
+
+      return await dispatch(
+        walletRestApi.endpoints.postPayment.initiate({
+          txnSignature: txid,
+          cluster,
+        }),
+      )
+    } catch (error) {
+      Logger.error(error)
+    }
+  },
+)
+
+export const sendAllAnchorTxns = createAsyncThunk(
+  'solana/sendAllAnchorTxns',
+  async (
+    { txns, anchorProvider, cluster }: SendAllAnchorTxnsInput,
+    { dispatch },
+  ) => {
+    try {
+      const signed = await anchorProvider.wallet.signAllTransactions(txns)
+
+      const txIds = await Promise.all(
+        signed.map(async (tx: Transaction) => {
+          const { txid } = await sendAndConfirmWithRetry(
+            anchorProvider.connection,
+            tx.serialize(),
+            { skipPreflight: true },
+            'confirmed',
+          )
+          return txid
+        }),
+      )
+
+      // TODO: This is a hack to get around the fact that we can't send multiple
+      return await dispatch(
+        walletRestApi.endpoints.postPayment.initiate({
+          txnSignature: txIds[0],
+          cluster,
+        }),
+      )
+    } catch (error) {
+      Logger.error(error)
+    }
   },
 )
 
@@ -257,6 +334,32 @@ const solanaSlice = createSlice({
       state.payment = { success: false, loading: true, error: undefined }
     })
     builder.addCase(makePayment.fulfilled, (state, _action) => {
+      state.payment = {
+        success: true,
+        loading: false,
+        error: undefined,
+      }
+    })
+    builder.addCase(sendAnchorTxn.rejected, (state, action) => {
+      state.payment = { success: false, loading: false, error: action.error }
+    })
+    builder.addCase(sendAnchorTxn.pending, (state, _action) => {
+      state.payment = { success: false, loading: true, error: undefined }
+    })
+    builder.addCase(sendAnchorTxn.fulfilled, (state, _action) => {
+      state.payment = {
+        success: true,
+        loading: false,
+        error: undefined,
+      }
+    })
+    builder.addCase(sendAllAnchorTxns.rejected, (state, action) => {
+      state.payment = { success: false, loading: false, error: action.error }
+    })
+    builder.addCase(sendAllAnchorTxns.pending, (state, _action) => {
+      state.payment = { success: false, loading: true, error: undefined }
+    })
+    builder.addCase(sendAllAnchorTxns.fulfilled, (state, _action) => {
       state.payment = {
         success: true,
         loading: false,

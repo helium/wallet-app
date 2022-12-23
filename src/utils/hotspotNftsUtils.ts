@@ -1,11 +1,6 @@
 import * as client from '@helium/distributor-oracle'
 import { LazyDistributor } from '@helium/idls/lib/types/lazy_distributor'
-import { IDL } from '@helium/idls/lib/esm/lazy_distributor'
-import {
-  init,
-  lazyDistributorKey,
-  PROGRAM_ID,
-} from '@helium/lazy-distributor-sdk'
+import { init, lazyDistributorKey } from '@helium/lazy-distributor-sdk'
 import { toNumber, MOBILE_MINT } from '@helium/spl-utils'
 import { Program, setProvider } from '@project-serum/anchor'
 import { getMint } from '@solana/spl-token'
@@ -26,7 +21,7 @@ export function useProgram() {
     if (!anchorProvider) return
     setProvider(anchorProvider)
 
-    const p = await init(anchorProvider, PROGRAM_ID, IDL)
+    const p = await init(anchorProvider)
     setProgram((prog) => prog || (p as unknown as Program<LazyDistributor>))
   }, [anchorProvider])
 
@@ -43,7 +38,7 @@ export async function getPendingRewards(
   )
 
   const oracleRewards = await client.getCurrentRewards(
-    // TODO: Fix program type
+    // TODO: Fix program type once HPL is upgraded to anchor v0.26
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     program as any,
     LAZY_KEY,

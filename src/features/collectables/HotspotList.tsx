@@ -26,6 +26,7 @@ const HotspotList = () => {
     hotspotsWithMeta,
     loading: loadingHotspots,
     refresh,
+    claimAllRewards: { execute, loading, error },
   } = useHotspots()
 
   const handleNavigateToCollectable = useCallback(
@@ -48,14 +49,16 @@ const HotspotList = () => {
         backgroundColorOpacityPressed={0.7}
         backgroundColorDisabled="surfaceSecondary"
         backgroundColorDisabledOpacity={0.5}
-        titleColorDisabled="white"
+        titleColorDisabled="secondaryText"
         title={t('collectablesScreen.hotspots.claimAllRewards')}
         titleColor="black"
         marginBottom="m"
         marginHorizontal="l"
+        disabled={loading || !!error}
+        onPress={execute}
       />
     )
-  }, [t])
+  }, [error, execute, loading, t])
 
   const renderCollectable = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types

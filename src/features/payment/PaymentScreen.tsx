@@ -26,7 +26,6 @@ import Toast from 'react-native-simple-toast'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useAsync } from 'react-async-hook'
 import { useSelector } from 'react-redux'
-import CollectableItem from '../../components/CollectableItem'
 import TokenButton from '../../components/TokenButton'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
@@ -119,7 +118,6 @@ const PaymentScreen = () => {
   const [ticker, setTicker] = useState<Ticker>(
     (route.params?.defaultTokenType?.toUpperCase() as Ticker) || 'HNT',
   )
-  const collectable = route.params?.collectable
 
   useDisappear(() => {
     appDispatch(solanaSlice.actions.resetPayment())
@@ -170,7 +168,6 @@ const PaymentScreen = () => {
     loading: paymentSubmitLoading,
     error: submitError,
     submit,
-    submitCollectable,
     submitLedger,
   } = useSubmitTxn()
 
@@ -300,14 +297,7 @@ const PaymentScreen = () => {
     (opts?: { txn: PaymentV2; txnJson: string }) => {
       try {
         if (!opts) {
-          if (collectable) {
-            if (!paymentState.payments[0].address) {
-              return
-            }
-            submitCollectable(collectable, paymentState.payments[0].address)
-          } else {
-            submit(payments, ticker)
-          }
+          submit(payments, ticker)
         } else {
           // This is a ledger device
           submitLedger(opts)
@@ -316,15 +306,7 @@ const PaymentScreen = () => {
         console.error(e)
       }
     },
-    [
-      collectable,
-      paymentState.payments,
-      payments,
-      submit,
-      submitCollectable,
-      submitLedger,
-      ticker,
-    ],
+    [payments, submit, submitLedger, ticker],
   )
 
   const insufficientFunds = useMemo((): [
@@ -456,21 +438,13 @@ const PaymentScreen = () => {
             break
         }
 
-        const paymentValid =
-          (p.amount && p.amount.integerBalance > 0) || collectable
-        const memoValid = getMemoStrValid(p.memo) || collectable
+        const paymentValid = p.amount && p.amount.integerBalance > 0
+        const memoValid = getMemoStrValid(p.memo)
         return addressValid && paymentValid && memoValid && !p.hasError
       })
 
     return paymentsValid && !insufficientFunds[0]
-  }, [
-    selfPay,
-    paymentState,
-    currentAccount,
-    insufficientFunds,
-    l1Network,
-    collectable,
-  ])
+  }, [selfPay, paymentState, currentAccount, insufficientFunds, l1Network])
 
   const handleTokenTypeSelected = useCallback(() => {
     tokenSelectorRef?.current?.showTokens()
@@ -725,29 +699,19 @@ const PaymentScreen = () => {
                   marginBottom="xs"
                 />
 
-                {!collectable ? (
-                  <TokenButton
-                    backgroundColor="secondary"
-                    title={t('payment.title', { ticker: currencyType.ticker })}
-                    subtitle={balanceToString(
-                      ticker === 'HNT' ? networkBalance : mobileBalance,
-                    )}
-                    address={currentAccount?.address}
-                    netType={currentAccount?.netType}
-                    onPress={handleTokenTypeSelected}
-                    showBubbleArrow
-                    marginHorizontal="l"
-                    ticker={ticker}
-                  />
-                ) : (
-                  <CollectableItem
-                    backgroundColor="secondary"
-                    marginHorizontal="l"
-                    marginTop="m"
-                    marginBottom="m"
-                    collectable={collectable}
-                  />
-                )}
+                <TokenButton
+                  backgroundColor="secondary"
+                  title={t('payment.title', { ticker: currencyType.ticker })}
+                  subtitle={balanceToString(
+                    ticker === 'HNT' ? networkBalance : mobileBalance,
+                  )}
+                  address={currentAccount?.address}
+                  netType={currentAccount?.netType}
+                  onPress={handleTokenTypeSelected}
+                  showBubbleArrow
+                  marginHorizontal="l"
+                  ticker={ticker}
+                />
 
                 {paymentState.payments.map((p, index) => (
                   // eslint-disable-next-line react/no-array-index-key
@@ -780,7 +744,7 @@ const PaymentScreen = () => {
                           : undefined
                       }
                       netType={networkType}
-                      showAmount={!collectable}
+                      showAmount
                     />
                   </React.Fragment>
                 ))}
@@ -811,7 +775,6 @@ const PaymentScreen = () => {
                 onSubmit={handleSubmit}
                 payments={payments}
                 errors={errors}
-                collectableSymbol={collectable?.json?.symbol}
               />
             </Box>
           </TokenSelector>
@@ -829,7 +792,6 @@ const PaymentScreen = () => {
         onRetry={handleSubmit}
         onSuccess={navigation.popToTop}
         actionTitle={t('payment.backToAccounts')}
-        collectableSymbol={collectable?.json?.symbol}
       />
     </>
   )

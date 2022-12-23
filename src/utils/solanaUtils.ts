@@ -25,8 +25,8 @@ import { WrappedConnection } from './WrappedConnection'
 
 const Connection = {
   localnet: new WrappedConnection('http://127.0.0.1:8899'),
-  devnetMetaplex: new WrappedConnection('https://rpc-devnet.aws.metaplex.com/'),
-  devnet: new WrappedConnection(web3.clusterApiUrl('devnet')),
+  devnetMetaplex: new WrappedConnection('https://mplx-devnet.genesysgo.net/'),
+  devnet: new WrappedConnection('https://mplx-devnet.genesysgo.net/'),
   testnet: new WrappedConnection(web3.clusterApiUrl('testnet')),
   'mainnet-beta': new WrappedConnection(web3.clusterApiUrl('mainnet-beta')),
 } as const

@@ -6,6 +6,7 @@ import Balance, {
   Ticker,
 } from '@helium/currency'
 import { PaymentV2 } from '@helium/transactions'
+import { Transaction } from '@solana/web3.js'
 import { useTransactions } from '../storage/TransactionProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAccountLazyQuery, useSubmitTxnMutation } from '../generated/graphql'
@@ -13,6 +14,8 @@ import { useAppStorage } from '../storage/AppStorageProvider'
 import {
   makeCollectablePayment,
   makePayment,
+  sendAnchorTxn,
+  sendAllAnchorTxns,
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import { useGetMintsQuery } from '../store/slices/walletRestApi'
@@ -20,7 +23,7 @@ import { CompressedNFT } from '../types/solana'
 
 export default () => {
   const { makePaymentTxn } = useTransactions()
-  const { currentAccount } = useAccountStorage()
+  const { currentAccount, anchorProvider } = useAccountStorage()
   const { l1Network, solanaNetwork: cluster } = useAppStorage()
   const { data: mints } = useGetMintsQuery(cluster)
   const dispatch = useAppDispatch()
@@ -153,6 +156,38 @@ export default () => {
     [cluster, currentAccount, dispatch],
   )
 
+  const submitAnchorTxn = useCallback(
+    async (txn: Transaction) => {
+      if (!anchorProvider) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+      dispatch(
+        sendAnchorTxn({
+          txn,
+          anchorProvider,
+          cluster,
+        }),
+      )
+    },
+    [anchorProvider, cluster, dispatch],
+  )
+
+  const submitAllAnchorTxns = useCallback(
+    async (txns: Transaction[]) => {
+      if (!anchorProvider) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+      dispatch(
+        sendAllAnchorTxns({
+          txns,
+          anchorProvider,
+          cluster,
+        }),
+      )
+    },
+    [anchorProvider, cluster, dispatch],
+  )
+
   const submitHeliumLedger = useCallback(
     async ({ txn, txnJson }: { txn: PaymentV2; txnJson: string }) => {
       if (!currentAccount?.address) {
@@ -186,6 +221,8 @@ export default () => {
   return {
     submit,
     submitCollectable,
+    submitAnchorTxn,
+    submitAllAnchorTxns,
     submitLedger,
     data,
     error: accountError || submitError || nonceError,

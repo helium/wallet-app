@@ -11,6 +11,7 @@ import {
 import { useRecipient } from './useRecipient'
 import * as Logger from '../utils/logger'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
+import useSubmitTxn from '../graphql/useSubmitTxn'
 
 export function useHotspot(mint: PublicKey): {
   pendingRewards: number | null
@@ -25,6 +26,7 @@ export function useHotspot(mint: PublicKey): {
     return getRecipientKey(LAZY_KEY, mint)[0]
   }, [mint])
   const { info: recipient, loading } = useRecipient(recipientKey)
+  const { submitAnchorTxn } = useSubmitTxn()
 
   useAsync(async () => {
     try {
@@ -51,7 +53,7 @@ export function useHotspot(mint: PublicKey): {
     if (mint && program && anchorProvider) {
       if (loading) return
       const rewards = await client.getCurrentRewards(
-        // TODO: Fix program type
+        // TODO: Fix program type once HPL is upgraded to anchor v0.26
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         program as any,
         LAZY_KEY,
@@ -59,7 +61,7 @@ export function useHotspot(mint: PublicKey): {
       )
 
       const tx = await client.formTransaction({
-        // TODO: Fix program type
+        // TODO: Fix program type once HPL is upgraded to anchor v0.26
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         program: program as any,
         provider: anchorProvider,
@@ -68,8 +70,7 @@ export function useHotspot(mint: PublicKey): {
         lazyDistributor: LAZY_KEY,
       })
 
-      // TODO: Send this transaction via Solana Slice
-      await anchorProvider.sendAndConfirm(tx)
+      await submitAnchorTxn(tx)
     }
   })
 
