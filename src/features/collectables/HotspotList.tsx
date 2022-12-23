@@ -27,6 +27,7 @@ const HotspotList = () => {
     loading: loadingHotspots,
     refresh,
     claimAllRewards: { execute, loading, error },
+    createHotspot,
   } = useHotspots()
 
   const handleNavigateToCollectable = useCallback(
@@ -40,25 +41,41 @@ const HotspotList = () => {
 
   const renderHeader = useCallback(() => {
     return (
-      <ButtonPressable
-        style={{ flexBasis: 0 }}
-        flexGrow={1}
-        marginTop="m"
-        borderRadius="round"
-        backgroundColor="white"
-        backgroundColorOpacityPressed={0.7}
-        backgroundColorDisabled="surfaceSecondary"
-        backgroundColorDisabledOpacity={0.5}
-        titleColorDisabled="secondaryText"
-        title={t('collectablesScreen.hotspots.claimAllRewards')}
-        titleColor="black"
-        marginBottom="m"
-        marginHorizontal="l"
-        disabled={loading || !!error}
-        onPress={execute}
-      />
+      <>
+        <ButtonPressable
+          style={{ flexBasis: 0 }}
+          flexGrow={1}
+          marginTop="m"
+          borderRadius="round"
+          backgroundColor="white"
+          backgroundColorOpacityPressed={0.7}
+          backgroundColorDisabled="surfaceSecondary"
+          backgroundColorDisabledOpacity={0.5}
+          titleColorDisabled="secondaryText"
+          title={t('collectablesScreen.hotspots.claimAllRewards')}
+          titleColor="black"
+          marginBottom="m"
+          marginHorizontal="l"
+          disabled={loading || !!error}
+          onPress={execute}
+        />
+        {__DEV__ && (
+          <ButtonPressable
+            style={{ flexBasis: 0 }}
+            flexGrow={1}
+            borderRadius="round"
+            backgroundColor="white"
+            backgroundColorOpacityPressed={0.7}
+            title="Create Hotspot"
+            titleColor="black"
+            marginBottom="m"
+            marginHorizontal="l"
+            onPress={createHotspot}
+          />
+        )}
+      </>
     )
-  }, [error, execute, loading, t])
+  }, [createHotspot, error, execute, loading, t])
 
   const renderCollectable = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
