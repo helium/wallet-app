@@ -28,7 +28,11 @@ import { Edge } from 'react-native-safe-area-context'
 import { BoxProps } from '@shopify/restyle'
 import { floor } from 'lodash'
 import { differenceInMilliseconds } from 'date-fns'
-import { useOpacity, useSafeTopPaddingStyle } from '../theme/themeHooks'
+import {
+  useOpacity,
+  useSafeTopPaddingStyle,
+  useColors,
+} from '../theme/themeHooks'
 import Keypad from './Keypad'
 import Box from './Box'
 import Text from './Text'
@@ -49,6 +53,10 @@ import { CSAccount } from '../storage/cloudStorage'
 import useBackHandler from '../hooks/useBackHandler'
 import { Payment } from '../features/payment/PaymentItem'
 import { useAppStorage } from '../storage/AppStorageProvider'
+import Close from '../assets/images/close.svg'
+import HeliumCircle from '../assets/images/helium.svg'
+import MobileCircle from '../assets/images/mobileCircle.svg'
+import SolanaCircle from '../assets/images/solanaCircle.svg'
 
 type ShowOptions = {
   payer?: CSAccount | null
@@ -67,13 +75,15 @@ export type HNTKeyboardRef = {
 type Props = {
   ticker: Ticker
   networkFee?: Balance<NetworkTokens | TestNetworkTokens | SolTokens>
-  children: ReactNode
+  children?: ReactNode
   handleVisible?: (visible: boolean) => void
   onConfirmBalance: (opts: {
     balance: Balance<TestNetworkTokens | NetworkTokens>
     payee?: string
     index?: number
   }) => void
+  isStatic?: boolean
+  onCancel?: () => void
 } & BoxProps<Theme>
 const HNTKeyboardSelector = forwardRef(
   (
@@ -83,12 +93,15 @@ const HNTKeyboardSelector = forwardRef(
       handleVisible,
       ticker,
       networkFee,
+      isStatic = false,
+      onCancel,
       ...boxProps
     }: Props,
     ref: Ref<HNTKeyboardRef>,
   ) => {
     useImperativeHandle(ref, () => ({ show, hide }))
     const { t } = useTranslation()
+    const colors = useColors()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const [value, setValue] = useState('0')
@@ -257,12 +270,32 @@ const HNTKeyboardSelector = forwardRef(
       l1Network,
     ])
 
+    const tickerImage = useMemo(() => {
+      switch (ticker) {
+        case 'HNT':
+          return <HeliumCircle height={44} width={44} color="white" />
+        case 'MOBILE':
+          return <MobileCircle height={44} width={44} />
+        case 'SOL':
+          return (
+            <SolanaCircle
+              color={colors.secondaryBackground}
+              height={44}
+              width={44}
+            />
+          )
+        default:
+          return <SolanaCircle height={40} width={40} />
+      }
+    }, [colors.secondaryBackground, ticker])
+
     const renderBackdrop = useCallback(
       (props) => (
         <BottomSheetBackdrop
           disappearsOnIndex={-1}
           opacity={1}
           appearsOnIndex={0}
+          pressBehavior={isStatic ? 'none' : 'close'}
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...props}
         >
@@ -271,16 +304,31 @@ const HNTKeyboardSelector = forwardRef(
             flex={1}
             style={containerStyle}
           >
-            <Box padding="l" alignItems="center" onLayout={handleHeaderLayout}>
-              <Text variant="subtitle2">
+            <Box
+              height={60}
+              backgroundColor="secondaryBackground"
+              justifyContent="center"
+              alignItems="center"
+            >
+              <TouchableOpacityBox
+                padding="l"
+                position="absolute"
+                left={0}
+                onPress={onCancel}
+              >
+                <Close color={colors.white} width={16} height={16} />
+              </TouchableOpacityBox>
+              <Text variant="subtitle1">
                 {t('hntKeyboard.enterAmount', {
                   ticker: valueAsBalance?.type.ticker,
                 })}
               </Text>
+            </Box>
+            <Box alignItems="center" onLayout={handleHeaderLayout}>
               <Box
                 flexDirection="row"
                 alignItems="center"
-                marginTop={{ smallPhone: 'm', phone: 'xxl' }}
+                marginTop={{ smallPhone: 'm', phone: 'l' }}
               >
                 {payer && (
                   <>
@@ -289,6 +337,14 @@ const HNTKeyboardSelector = forwardRef(
                       address={payer?.address || payer?.solanaAddress}
                     />
 
+                    <Box padding="s">
+                      <PaymentArrow />
+                    </Box>
+                  </>
+                )}
+                {payeeAddress && !payer && (
+                  <>
+                    {tickerImage}
                     <Box padding="s">
                       <PaymentArrow />
                     </Box>
@@ -317,11 +373,15 @@ const HNTKeyboardSelector = forwardRef(
       ),
       [
         balanceForTicker,
+        colors.white,
         containerStyle,
         handleHeaderLayout,
+        isStatic,
+        onCancel,
         payeeAddress,
         payer,
         t,
+        tickerImage,
         valueAsBalance,
       ],
     )
@@ -412,7 +472,9 @@ const HNTKeyboardSelector = forwardRef(
     ])
 
     const handleConfirm = useCallback(() => {
-      bottomSheetModalRef.current?.dismiss()
+      if (!isStatic) {
+        bottomSheetModalRef.current?.dismiss()
+      }
 
       if (!valueAsBalance) return
 
@@ -421,13 +483,19 @@ const HNTKeyboardSelector = forwardRef(
         payee: payeeAddress,
         index: paymentIndex,
       })
-      bottomSheetModalRef.current?.dismiss()
-    }, [payeeAddress, valueAsBalance, onConfirmBalance, paymentIndex])
+      if (!isStatic) {
+        bottomSheetModalRef.current?.dismiss()
+      }
+    }, [isStatic, valueAsBalance, onConfirmBalance, payeeAddress, paymentIndex])
 
     const handleCancel = useCallback(() => {
       setValue(originalValue)
-      bottomSheetModalRef.current?.dismiss()
-    }, [originalValue])
+      if (onCancel) {
+        onCancel()
+      } else {
+        bottomSheetModalRef.current?.dismiss()
+      }
+    }, [onCancel, originalValue])
 
     const handleDecimal = useCallback(() => {
       setValue((prevVal) => {
@@ -494,6 +562,7 @@ const HNTKeyboardSelector = forwardRef(
             handleComponent={renderHandle}
             snapPoints={snapPoints}
             onDismiss={handleModalDismiss}
+            enableHandlePanningGesture={!isStatic}
           >
             <SafeAreaBox
               flex={1}

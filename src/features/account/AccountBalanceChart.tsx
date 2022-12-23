@@ -11,7 +11,7 @@ import { ChartSelectEvent, LineChart } from 'react-native-charts-wrapper'
 import { ScrollView } from 'react-native-gesture-handler'
 import FadeInOut from '../../components/FadeInOut'
 import { AccountBalance } from '../../generated/graphql'
-import { useColors, useSpacing } from '../../theme/themeHooks'
+import { useColors } from '../../theme/themeHooks'
 import useHaptic from '../../hooks/useHaptic'
 import usePrevious from '../../hooks/usePrevious'
 
@@ -27,8 +27,7 @@ const AccountBalanceChart = ({
   selectedBalance,
 }: Props) => {
   const { triggerImpact } = useHaptic()
-  const { primaryBackground, primaryText } = useColors()
-  const { xl: marginVertical } = useSpacing()
+  const { primaryBackground } = useColors()
 
   const chartsRef = useRef<
     LineChart & {
@@ -49,9 +48,9 @@ const AccountBalanceChart = ({
   const processedColors = useMemo(
     () => ({
       primaryBackground: processColor(primaryBackground),
-      primaryText: processColor(primaryText),
+      primaryText: processColor('#8C8C8C'),
     }),
-    [primaryBackground, primaryText],
+    [primaryBackground],
   )
 
   const prevSelectedBalance = usePrevious(selectedBalance)
@@ -79,8 +78,8 @@ const AccountBalanceChart = ({
   }, [prevSelectedBalance, selectedBalance])
 
   const style = useMemo((): ViewStyle => {
-    return { justifyContent: 'center', height: CHART_HEIGHT, marginVertical }
-  }, [marginVertical])
+    return { justifyContent: 'center', height: CHART_HEIGHT }
+  }, [])
 
   return (
     <FadeInOut>

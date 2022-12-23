@@ -9,8 +9,10 @@ import Balance, {
   Ticker,
 } from '@helium/currency'
 import { times } from 'lodash'
-import { FlatList } from 'react-native-gesture-handler'
+import { RefreshControl } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
+import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
 import { useBalance } from '../../utils/Balance'
 import TokenListItem, { TokenSkeleton } from './TokenListItem'
 
@@ -22,9 +24,17 @@ type Token = {
 
 type Props = {
   loading?: boolean
+  refreshing: boolean
+  onRefresh?: () => void
+  onLayout?: BottomSheetFlatListProps<Token>['onLayout']
 }
 
-const AccountTokenList = ({ loading = false }: Props) => {
+const AccountTokenList = ({
+  loading = false,
+  refreshing,
+  onRefresh,
+  onLayout,
+}: Props) => {
   const {
     dcBalance,
     mobileBalance,
@@ -149,9 +159,8 @@ const AccountTokenList = ({ loading = false }: Props) => {
   )
 
   return (
-    <FlatList
+    <BottomSheetFlatList
       data={tokens}
-      scrollEnabled={false}
       numColumns={2}
       columnWrapperStyle={{
         flexDirection: 'column',
@@ -160,6 +169,16 @@ const AccountTokenList = ({ loading = false }: Props) => {
       renderItem={renderItem}
       ListEmptyComponent={renderFooter}
       keyExtractor={keyExtractor}
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      onLayout={onLayout}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor="white"
+        />
+      }
     />
   )
 }

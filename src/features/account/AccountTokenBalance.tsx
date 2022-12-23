@@ -8,7 +8,7 @@ import { useBalance } from '../../utils/Balance'
 
 type Props = {
   ticker: Ticker
-  textVariant?: 'h0' | 'h1' | 'h2'
+  textVariant?: 'h0' | 'h1' | 'h2' | 'h2Medium'
   showTicker?: boolean
 } & BoxProps<Theme>
 

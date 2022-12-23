@@ -34,7 +34,7 @@ export default {
   THB: 'Thai Baht',
   TRY: 'Turkish Lira',
   UAH: 'Ukrainian hryvnia',
-  USD: 'United States Dollar',
+  USD: 'US Dollar',
   VEF: 'Venezuelan bolívar fuerte',
   VND: 'Vietnamese đồng',
   XDR: 'IMF Special Drawing Rights',
