@@ -31,10 +31,11 @@ const ImportPrivateKey = () => {
   const navigation = useNavigation<RootNavigationProp>()
   const route = useRoute<Route>()
   const { t } = useTranslation()
-  const encodedWords = route.params.key
+  const encodedKey = route.params.key
   const { setOnboardingData } = useOnboarding()
   const [publicKey, setPublicKey] = useState<string>()
   const [secureAccount, setSecureAccount] = useState<SecureAccount>()
+  const [password, setPassword] = useState<string>()
   const [error, setError] = useState<string>()
   const { accounts } = useAccountStorage()
   const { l1Network } = useAppStorage()
@@ -65,6 +66,9 @@ const ImportPrivateKey = () => {
 
   const decodePrivateKey = useCallback(
     async (key?: string) => {
+      setSecureAccount(undefined)
+      setPublicKey(undefined)
+
       if (key) {
         // decoding b58 private key
         try {
@@ -79,20 +83,44 @@ const ImportPrivateKey = () => {
           setError(t('accountImport.privateKey.error'))
           Logger.error(e)
         }
-      } else if (encodedWords) {
-        // decoding base64 words list
+      } else if (encodedKey) {
+        // decoding base64 encrypted key
+        if (!password) {
+          setError(t('accountImport.privateKey.passwordError'))
+          return
+        }
         try {
-          const buffer = Buffer.from(encodedWords, 'base64')
-          const words = JSON.parse(buffer.toString())
+          const buffer = Buffer.from(encodedKey, 'base64')
+          const data = JSON.parse(buffer.toString()) as {
+            ciphertext: string
+            nonce: string
+            salt: string
+          }
+          const cryptoKey = await RNSodium.crypto_pwhash(
+            32,
+            Buffer.from(password).toString('base64'),
+            data.salt,
+            RNSodium.crypto_pwhash_OPSLIMIT_MODERATE,
+            RNSodium.crypto_pwhash_MEMLIMIT_MODERATE,
+            RNSodium.crypto_pwhash_ALG_ARGON2ID13,
+          )
+          const base64Words = await RNSodium.crypto_secretbox_open_easy(
+            data.ciphertext,
+            data.nonce,
+            cryptoKey,
+          )
+          const words = JSON.parse(
+            Buffer.from(base64Words, 'base64').toString(),
+          )
           const mnemonic = new Mnemonic(words)
           await createAccount(mnemonic)
         } catch (e) {
-          setError(t('accountImport.privateKey.error'))
+          setError(t('accountImport.privateKey.errorPassword'))
           Logger.error(e)
         }
       }
     },
-    [createAccount, encodedWords, t],
+    [createAccount, encodedKey, password, t],
   )
 
   useAsync(async () => {
@@ -144,6 +172,10 @@ const ImportPrivateKey = () => {
     }
   }, [hasAccounts, l1Network, navigation, secureAccount])
 
+  const onChangePassword = useCallback((text: string) => {
+    setPassword(text)
+  }, [])
+
   const onChangeText = useCallback(
     async (text: string) => {
       await decodePrivateKey(text)
@@ -161,18 +193,39 @@ const ImportPrivateKey = () => {
         variant="body1"
         marginTop="xl"
         marginBottom="xl"
-        visible={!publicKey && !encodedWords}
+        visible={!publicKey && !encodedKey}
       >
         {t('accountImport.privateKey.paste')}
       </Text>
       <TextInput
-        visible={!publicKey && !encodedWords}
+        visible={!publicKey && !encodedKey}
         textInputProps={{
           placeholder: t('accountImport.privateKey.inputPlaceholder'),
           autoCapitalize: 'none',
           keyboardAppearance: 'dark',
           autoCorrect: false,
           onChangeText,
+          autoComplete: 'off',
+          returnKeyType: 'done',
+        }}
+        variant="underline"
+      />
+      <Text
+        variant="body1"
+        marginTop="xl"
+        marginBottom="xl"
+        visible={!!encodedKey}
+      >
+        Enter the password you set for your private key.
+      </Text>
+      <TextInput
+        visible={!!encodedKey}
+        textInputProps={{
+          placeholder: t('accountImport.privateKey.passwordPlaceholder'),
+          autoCapitalize: 'none',
+          keyboardAppearance: 'dark',
+          autoCorrect: false,
+          onChangeText: onChangePassword,
           autoComplete: 'off',
           returnKeyType: 'done',
         }}
@@ -209,7 +262,7 @@ const ImportPrivateKey = () => {
         backgroundColorDisabled="surfaceSecondary"
         backgroundColorDisabledOpacity={0.5}
         titleColor="black"
-        disabled={!!error}
+        disabled={!!error || secureAccount === undefined}
       />
     </SafeAreaBox>
   )
