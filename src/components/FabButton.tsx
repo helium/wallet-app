@@ -17,6 +17,7 @@ import Vote from '@assets/images/vote-thumbs.svg'
 import Close from '@assets/images/close.svg'
 import Dots from '@assets/images/dots.svg'
 import Filter from '@assets/images/filter.svg'
+import Buy from '@assets/images/buy.svg'
 import { Color, FontWeight, Theme } from '../theme/theme'
 import { useColors, useCreateOpacity } from '../theme/themeHooks'
 import Box from './Box'
@@ -35,6 +36,7 @@ type IconName =
   | 'close'
   | 'dots'
   | 'filter'
+  | 'buy'
 
 type Props = BoxProps<Theme> & {
   backgroundColor?: Color
@@ -260,12 +262,19 @@ const FabIcon = ({ icon, pressed, color, colorPressed }: IconProps) => {
       return <Close color={getIconColor()} />
     case 'filter':
       return <Filter color={getIconColor()} />
+    case 'buy':
+      return <Buy color={getIconColor()} />
     default:
     case 'dots':
       return <Dots color={getIconColor()} />
   }
 }
 
-const styles = StyleSheet.create({ pressable: { width: '100%' } })
+const styles = StyleSheet.create({
+  pressable: {
+    width: '100%',
+    alignItems: 'center',
+  },
+})
 
 export default memo(ButtonPressable)
