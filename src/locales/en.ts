@@ -134,6 +134,7 @@ export default {
     showFilters: 'Show Filters',
     title: 'My {{ticker}}',
     tokens: 'Tokens',
+    chooseCurrency: 'Choose Currency',
   },
   collectablesScreen: {
     title: 'Collectables',
@@ -264,12 +265,14 @@ export default {
     lock: 'Lock',
     nonTransferable: 'Non-Transferable',
     payment: 'Payment',
-    request: 'Request',
+    deposit: 'Deposit',
+    buy: 'Buy',
     securityTokens: 'Security Tokens',
     send: 'Send',
     stake: 'Stake',
     testnetTokens: 'Testnet Tokens',
     vote: 'Vote',
+    noData: 'No Data',
   },
   addNewAccount: {
     title: 'Add New Account',

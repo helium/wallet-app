@@ -10,16 +10,34 @@ import FabButton from '../../components/FabButton'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useVotesQuery } from '../../generated/graphql'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import Text from '../../components/Text'
 
-export type Action = 'send' | 'request' | 'stake' | 'lock' | 'vote' | '5G'
+export type Action =
+  | 'send'
+  | 'request'
+  | 'stake'
+  | 'lock'
+  | 'vote'
+  | '5G'
+  | 'buy'
 
 type Props = {
   ticker?: Ticker
   onLayout?: (event: LayoutChangeEvent) => void
   compact?: boolean
+  maxCompact?: boolean
+  hasBottomTitle?: boolean
+  hasBuy?: boolean
 }
 
-const AccountActionBar = ({ ticker, onLayout, compact }: Props) => {
+const AccountActionBar = ({
+  ticker,
+  onLayout,
+  compact,
+  maxCompact,
+  hasBottomTitle,
+  hasBuy,
+}: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const { requirePinForPayment, l1Network, pin } = useAppStorage()
@@ -32,11 +50,14 @@ const AccountActionBar = ({ ticker, onLayout, compact }: Props) => {
     fetchPolicy: 'cache-and-network',
   })
 
-  useEffect(() => {
+  const unseenVotes = useMemo(() => {
     const seenVoteIds = currentAccount?.voteIdsSeen || []
-    const unseenVotes =
+    return (
       voteData?.votes.active.filter((v) => !seenVoteIds.includes(v.id)) || []
+    )
+  }, [currentAccount, voteData])
 
+  useEffect(() => {
     // makes the sequence loop
     if (voteData && unseenVotes?.length > 0) {
       const res = Animated.loop(
@@ -65,7 +86,7 @@ const AccountActionBar = ({ ticker, onLayout, compact }: Props) => {
         res.reset()
       }
     }
-  }, [currentAccount, voteData])
+  }, [currentAccount, unseenVotes.length, voteData])
 
   const handleAction = useCallback(
     (type: Action) => () => {
@@ -84,6 +105,11 @@ const AccountActionBar = ({ ticker, onLayout, compact }: Props) => {
           navigation.navigate('RequestScreen')
           break
         }
+        // TODO: Uncomment when coinbase pay is ready
+        // case 'buy': {
+        //   navigation.navigate('BuyNavigator')
+        //   break
+        // }
         case 'vote': {
           navigation.navigate('VoteNavigator')
           break
@@ -101,6 +127,12 @@ const AccountActionBar = ({ ticker, onLayout, compact }: Props) => {
     [navigation, pin, requirePinForPayment, ticker],
   )
 
+  const fabMargin = useMemo(() => {
+    if (compact) return 'm'
+    if (maxCompact) return 's'
+    return undefined
+  }, [compact, maxCompact])
+
   const isHeliumMainnet = useMemo(
     () =>
       l1Network === 'helium' && currentAccount?.netType === NetTypes.MAINNET,
@@ -113,27 +145,78 @@ const AccountActionBar = ({ ticker, onLayout, compact }: Props) => {
 
   return (
     <Box
-      flexDirection="row"
       justifyContent="center"
-      marginHorizontal={compact ? undefined : 's'}
+      alignItems="center"
+      flexDirection="row"
       onLayout={onLayout}
-      width={compact ? undefined : '100%'}
+      width={compact || maxCompact ? undefined : '100%'}
     >
-      <Box flex={compact ? undefined : 1}>
+      <Box
+        flexDirection={hasBottomTitle ? 'column' : 'row'}
+        flex={compact || maxCompact ? undefined : 1}
+        marginEnd={fabMargin}
+      >
         <FabButton
           icon="fatArrowDown"
-          marginLeft="s"
           backgroundColor="greenBright500"
           backgroundColorOpacity={0.2}
           backgroundColorOpacityPressed={0.4}
           iconColor="greenBright500"
-          title={compact ? undefined : t('accountView.request')}
-          marginRight={compact ? 'm' : undefined}
+          title={compact || maxCompact ? undefined : t('accountView.deposit')}
           onPress={handleAction('request')}
+          width={maxCompact ? 47.5 : undefined}
+          height={maxCompact ? 47.5 : undefined}
+          justifyContent="center"
         />
+        {hasBottomTitle && (
+          <Box marginTop="s">
+            <Text
+              variant="body2Medium"
+              color="secondaryText"
+              marginTop="xs"
+              textAlign="center"
+            >
+              {t('accountView.deposit')}
+            </Text>
+          </Box>
+        )}
       </Box>
-      {!compact && isHeliumMainnet && (
-        <Box>
+      {hasBuy && (
+        <Box
+          marginEnd={fabMargin}
+          flexDirection={hasBottomTitle ? 'column' : 'row'}
+        >
+          <FabButton
+            icon="buy"
+            backgroundColor="orange500"
+            backgroundColorOpacity={0.2}
+            backgroundColorOpacityPressed={0.4}
+            iconColor="orange500"
+            title={compact || maxCompact ? undefined : t('accountView.buy')}
+            onPress={handleAction('buy')}
+            width={maxCompact ? 47.5 : undefined}
+            height={maxCompact ? 47.5 : undefined}
+            justifyContent="center"
+          />
+          {hasBottomTitle && (
+            <Box marginTop="s">
+              <Text
+                variant="body2Medium"
+                color="secondaryText"
+                marginTop="xs"
+                textAlign="center"
+              >
+                {t('accountView.buy')}
+              </Text>
+            </Box>
+          )}
+        </Box>
+      )}
+      {isHeliumMainnet && (
+        <Box
+          marginEnd={fabMargin}
+          flexDirection={hasBottomTitle ? 'column' : 'row'}
+        >
           <FabButton
             zIndex={2}
             icon="vote"
@@ -141,31 +224,73 @@ const AccountActionBar = ({ ticker, onLayout, compact }: Props) => {
             backgroundColorOpacity={0.3}
             backgroundColorOpacityPressed={0.5}
             onPress={handleAction('vote')}
+            width={maxCompact ? 47.5 : undefined}
+            height={maxCompact ? 47.5 : undefined}
+            justifyContent="center"
           />
-          <Box position="absolute" top={0} left={0} right={0} bottom={0}>
-            <Animated.View style={{ transform: [{ scale: anim.current }] }}>
-              <Box
-                opacity={0.3}
-                borderRadius="round"
-                width="100%"
-                height="100%"
-                backgroundColor="purple500"
-              />
-            </Animated.View>
-          </Box>
+          {hasBottomTitle && (
+            <Box marginTop="s">
+              <Text
+                variant="body2Medium"
+                color="secondaryText"
+                marginTop="xs"
+                textAlign="center"
+              >
+                {t('accountView.vote')}
+              </Text>
+            </Box>
+          )}
+          {voteData && unseenVotes?.length > 0 && (
+            <Box
+              position="absolute"
+              top={0}
+              left={0}
+              right={0}
+              bottom={0}
+              marginRight={fabMargin}
+            >
+              <Animated.View style={{ transform: [{ scale: anim.current }] }}>
+                <Box
+                  opacity={0.3}
+                  borderRadius="round"
+                  width="100%"
+                  height="100%"
+                  backgroundColor="purple500"
+                />
+              </Animated.View>
+            </Box>
+          )}
         </Box>
       )}
-      <Box flex={compact ? undefined : 1}>
+      <Box
+        flexDirection={hasBottomTitle ? 'column' : 'row'}
+        flex={compact || maxCompact ? undefined : 1}
+      >
         <FabButton
           icon="fatArrowUp"
           backgroundColor="blueBright500"
           backgroundColorOpacity={0.2}
           backgroundColorOpacityPressed={0.4}
           iconColor="blueBright500"
-          title={compact ? undefined : t('accountView.send')}
+          title={compact || maxCompact ? undefined : t('accountView.send')}
           onPress={handleAction('send')}
           reverse
+          width={maxCompact ? 47.5 : undefined}
+          height={maxCompact ? 47.5 : undefined}
+          justifyContent="center"
         />
+        {hasBottomTitle && (
+          <Box marginTop="s">
+            <Text
+              variant="body2Medium"
+              color="secondaryText"
+              marginTop="xs"
+              textAlign="center"
+            >
+              {t('accountView.send')}
+            </Text>
+          </Box>
+        )}
       </Box>
     </Box>
   )

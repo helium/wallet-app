@@ -26,6 +26,11 @@ type Notification = {
   time: string
 }
 
+export type TokenPrices = {
+  solana: { [key: string]: number }
+  helium: { [key: string]: number }
+}
+
 export const walletRestApi = createApi({
   reducerPath: 'walletRestApi',
   tagTypes: ['Notifications'],
@@ -81,6 +86,16 @@ export const walletRestApi = createApi({
       }),
       invalidatesTags: ['Notifications'],
     }),
+    getTokenPrices: builder.query<
+      TokenPrices,
+      { tokens: string; currency: string }
+    >({
+      query: ({ tokens, currency }) =>
+        `/prices/fetchTokenPrices?tokens=${tokens}&currency=${currency}`,
+      transformResponse: (response) => {
+        return response as TokenPrices
+      },
+    }),
   }),
 })
 
@@ -91,5 +106,6 @@ export const {
   useLazyGetMintsQuery,
   useGetMintsQuery,
   useGetBalanceHistoryQuery,
+  useGetTokenPricesQuery,
   reducer,
 } = walletRestApi
