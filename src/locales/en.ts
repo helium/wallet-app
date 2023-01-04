@@ -272,7 +272,6 @@ export default {
     stake: 'Stake',
     testnetTokens: 'Testnet Tokens',
     vote: 'Vote',
-    noData: 'No Data',
   },
   addNewAccount: {
     title: 'Add New Account',
@@ -391,6 +390,7 @@ export default {
     somethingWentWrong: 'Something went wrong, please try again',
     submitSuccess: 'Transaction Submit',
     understand: 'I Understand',
+    noData: 'No Data',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',

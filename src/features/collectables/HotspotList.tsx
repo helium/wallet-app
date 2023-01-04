@@ -88,7 +88,7 @@ const HotspotList = () => {
   }, [hotspots, loadingHotspots])
 
   const keyExtractor = useCallback((item: Collectable) => {
-    return item.address.toString()
+    return item.mint.toString()
   }, [])
 
   const contentContainerStyle = useMemo(

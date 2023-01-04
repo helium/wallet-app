@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { memo, useMemo } from 'react'
 import { BoxProps } from '@shopify/restyle'
 import { Easing } from 'react-native'
@@ -30,7 +29,7 @@ const TokenPricesTicker = ({ ...boxProps }: Props) => {
   )
 
   const text = useMemo(() => {
-    if (!tokenPrices) return t('general.noData')
+    if (!tokenPrices) return t('generic.noData')
 
     const heliumPrice = tokenPrices.helium[currency.toLowerCase()]
     const solanaPrice = tokenPrices.solana[currency.toLowerCase()]
