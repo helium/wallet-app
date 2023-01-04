@@ -10,7 +10,7 @@ import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import TokenIcon from './TokenIcon'
 import { HomeNavigationProp } from '../home/homeTypes'
 
-const ITEM_HEIGHT = 78
+export const ITEM_HEIGHT = 72
 type Props = {
   ticker: Ticker
   balance: Balance<AnyCurrencyType>
@@ -34,7 +34,7 @@ const TokenListItem = ({ ticker, balance, staked }: Props) => {
         flexDirection="row"
         minHeight={ITEM_HEIGHT}
         alignItems="center"
-        paddingHorizontal="l"
+        paddingHorizontal="m"
         paddingVertical="m"
         borderBottomColor="primaryBackground"
         borderBottomWidth={1}
@@ -42,7 +42,7 @@ const TokenListItem = ({ ticker, balance, staked }: Props) => {
       >
         <TokenIcon ticker={ticker} />
         <Box flex={1} paddingHorizontal="m">
-          <Box flexDirection="row">
+          <Box flexDirection="row" alignItems="center">
             <Text
               variant="body1"
               color="primaryText"
@@ -51,7 +51,7 @@ const TokenListItem = ({ ticker, balance, staked }: Props) => {
               {balance?.toString(7, { showTicker: false })}
             </Text>
             <Text
-              variant="body1"
+              variant="body2Medium"
               color="secondaryText"
               maxFontSizeMultiplier={1.3}
             >
@@ -94,7 +94,7 @@ export const TokenSkeleton = () => {
           <Box width={120} height={16} backgroundColor="surface" />
           <Box width={70} height={16} marginTop="s" backgroundColor="surface" />
         </Box>
-        <Arrow />
+        <Arrow width={4} height={4} />
       </Box>
     </FadeInOut>
   )

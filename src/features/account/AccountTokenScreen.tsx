@@ -410,7 +410,7 @@ const AccountTokenScreen = () => {
                   color="secondaryText"
                 />
               </Box>
-              <AccountActionBar ticker={routeTicker} compact />
+              <AccountActionBar ticker={routeTicker} maxCompact />
             </Box>
           </Animated.View>
           <Animated.View style={bottomHeaderAnimatedStyle}>
@@ -426,7 +426,7 @@ const AccountTokenScreen = () => {
                 textAlign="center"
                 marginBottom="xl"
               />
-              <AccountActionBar ticker={routeTicker} />
+              <AccountActionBar ticker={routeTicker} compact hasBottomTitle />
             </Box>
           </Animated.View>
           <Box height={topHeaderHeight} />
