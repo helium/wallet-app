@@ -63,7 +63,7 @@ const textVariants = {
   },
   body1: {
     fontFamily: Font.regular,
-    fontSize: 17,
+    fontSize: 16,
     color: 'primaryText',
   },
   body2: {

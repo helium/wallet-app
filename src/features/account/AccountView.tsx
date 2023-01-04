@@ -4,6 +4,7 @@ import CurrencyFormatter from 'react-native-currency-format'
 import { addMinutes } from 'date-fns'
 import { BoxProps } from '@shopify/restyle'
 import { GestureResponderEvent } from 'react-native'
+import CarotDown from '@assets/images/triangleDown.svg'
 import * as AccountUtils from '../../utils/accountUtils'
 import { AccountBalance, AccountData } from '../../generated/graphql'
 import Text from '../../components/Text'
@@ -16,18 +17,22 @@ import useLayoutHeight from '../../hooks/useLayoutHeight'
 import Box from '../../components/Box'
 import DateModule from '../../utils/DateModule'
 import { Theme } from '../../theme/theme'
+import TouchableOpacityBox from '../../components/TouchableOpacityBox'
+import TokenPricesTicker from '../../components/TokenPricesTicker'
 
 type Props = {
   accountData?: AccountData | null
   hntPrice?: number
   selectedBalance?: AccountBalance
   onTouchStart?: (event: GestureResponderEvent) => void
+  onCurrencySelectorPress?: () => void
 } & BoxProps<Theme>
 
 const AccountView = ({
   accountData,
   hntPrice,
   selectedBalance,
+  onCurrencySelectorPress,
   ...boxProps
 }: Props) => {
   const [balanceString, setBalanceString] = useState('')
@@ -36,7 +41,6 @@ const AccountView = ({
   const { toCurrencyString, networkBalance, networkStakedBalance } =
     useBalance()
   const { currency } = useAppStorage()
-  const [formattedHntPrice, setFormattedHntPrice] = useState('')
   const [actionBarHeight, setActionBarHeight] = useLayoutHeight()
 
   const accountNetType = useMemo(
@@ -55,25 +59,6 @@ const AccountView = ({
       setSelectedDate,
     )
   }, [selectedBalance])
-
-  useEffect(() => {
-    if (accountNetType !== NetTypes.MAINNET) {
-      setFormattedHntPrice('Testnet')
-      return
-    }
-
-    if (!hntPrice && !selectedBalance) return
-
-    let price = hntPrice
-
-    if (selectedBalance) {
-      price = selectedBalance.hntPrice
-    }
-
-    CurrencyFormatter.format(price || 0, currency).then((p) =>
-      setFormattedHntPrice(`1 HNT = ${p}`),
-    )
-  }, [accountNetType, currency, hntPrice, selectedBalance])
 
   useEffect(() => {
     if (accountNetType !== NetTypes.MAINNET) {
@@ -105,23 +90,36 @@ const AccountView = ({
   ])
 
   return (
-    <Box
-      flexDirection="column"
-      alignItems="center"
-      marginTop="xxxl"
-      {...boxProps}
-    >
-      <Text
-        variant="body1"
-        color="secondaryText"
-        numberOfLines={1}
-        adjustsFontSizeToFit
-        maxFontSizeMultiplier={1.2}
-        textAlign="center"
-        marginBottom="s"
+    <Box flexDirection="column" alignItems="center" {...boxProps}>
+      <Box position="absolute" top={0}>
+        <TokenPricesTicker marginTop="m" />
+      </Box>
+      <TouchableOpacityBox
+        backgroundColor="surfaceSecondary"
+        borderRadius="round"
+        paddingVertical="s"
+        paddingHorizontal="m"
+        marginBottom="l"
+        flexDirection="row"
+        justifyContent="center"
+        alignItems="center"
+        onPress={onCurrencySelectorPress}
       >
-        {supportedCurrencies[currency]}
-      </Text>
+        <Text
+          variant="body2"
+          color="secondaryText"
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          maxFontSizeMultiplier={1.2}
+          textAlign="center"
+          marginEnd="s"
+        >
+          {supportedCurrencies[currency]}
+        </Text>
+        <Box marginTop="xxs">
+          <CarotDown />
+        </Box>
+      </TouchableOpacityBox>
       {!balanceString && (
         <Text
           maxFontSizeMultiplier={1.1}
@@ -143,23 +141,19 @@ const AccountView = ({
             numberOfLines={1}
             adjustsFontSizeToFit
             textAlign="center"
+            marginBottom="m"
           >
             {balanceString}
           </Text>
         </FadeInOut>
       )}
-      <Text
-        variant="body2"
-        textAlign="center"
-        marginTop="s"
-        marginBottom="m"
-        color="secondaryText"
-      >
-        {formattedHntPrice}
-      </Text>
       {!selectedBalance && (
         <FadeInOut>
-          <AccountActionBar onLayout={setActionBarHeight} />
+          <AccountActionBar
+            compact
+            hasBottomTitle
+            onLayout={setActionBarHeight}
+          />
         </FadeInOut>
       )}
       {selectedBalance && (

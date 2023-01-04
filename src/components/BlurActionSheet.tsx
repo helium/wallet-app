@@ -11,6 +11,7 @@ import { Portal } from '@gorhom/portal'
 import { useOpacity } from '../theme/themeHooks'
 import CustomBlurBackdrop from './CustomBlurBackdrop'
 import SafeAreaBox from './SafeAreaBox'
+import { wh } from '../utils/layout'
 
 type Props = {
   title: string
@@ -41,8 +42,9 @@ const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
   const snapPoints = useMemo(() => {
     let maxHeight: number | string = '75%'
     if (contentHeight > 0) {
-      maxHeight = contentHeight
+      maxHeight = Math.min(wh * 0.75, contentHeight)
     }
+
     return [maxHeight]
   }, [contentHeight])
 
