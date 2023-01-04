@@ -105,7 +105,7 @@ const AccountActionBar = ({
           navigation.navigate('RequestScreen')
           break
         }
-        // TODO: Uncomment when coinbase pay is ready
+        // TODO: Uncomment when pay is ready
         // case 'buy': {
         //   navigation.navigate('BuyNavigator')
         //   break
