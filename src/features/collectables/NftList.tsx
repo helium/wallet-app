@@ -6,15 +6,19 @@ import { RefreshControl } from 'react-native'
 import Box from '../../components/Box'
 import useCollectables from '../../hooks/useCollectables'
 import NFTListItem, { NFTSkeleton } from './NftListItem'
-import { useColors } from '../../theme/themeHooks'
+import { useColors, useSpacing } from '../../theme/themeHooks'
+import CircleLoader from '../../components/CircleLoader'
 
 const NftList = () => {
   const { bottom } = useSafeAreaInsets()
+  const spacing = useSpacing()
   const {
     collectables,
     collectablesWithMeta,
     loading: loadingCollectables,
     refresh,
+    fetchMore,
+    fetchingMore,
   } = useCollectables()
   const { primaryText } = useColors()
 
@@ -36,7 +40,7 @@ const NftList = () => {
     [collectablesWithMeta],
   )
 
-  const renderFooter = useCallback(() => {
+  const renderEmptyComponent = useCallback(() => {
     if (!loadingCollectables) return null
 
     if (loadingCollectables) {
@@ -60,10 +64,19 @@ const NftList = () => {
 
   const contentContainerStyle = useMemo(
     () => ({
+      marginTop: spacing.m,
       paddingBottom: bottomSpace,
     }),
-    [bottomSpace],
+    [bottomSpace, spacing.m],
   )
+
+  const Footer = useCallback(() => {
+    return fetchingMore ? (
+      <Box marginTop="m">
+        <CircleLoader loaderSize={40} />
+      </Box>
+    ) : null
+  }, [fetchingMore])
 
   return (
     <FlatList
@@ -83,8 +96,11 @@ const NftList = () => {
       }}
       contentContainerStyle={contentContainerStyle}
       renderItem={renderItem}
-      ListEmptyComponent={renderFooter}
+      ListEmptyComponent={renderEmptyComponent}
       keyExtractor={keyExtractor}
+      // onEndReachedThreshold={0.01}
+      // onEndReached={fetchMore}
+      ListFooterComponent={Footer}
     />
   )
 }

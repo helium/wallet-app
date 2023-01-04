@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useSelector } from 'react-redux'
@@ -14,11 +15,14 @@ import { getKeypair } from '../storage/secureStorage'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
-import { fetchCollectables } from '../store/slices/collectablesSlice'
+import {
+  fetchCollectables,
+  fetchMoreCollectables,
+} from '../store/slices/collectablesSlice'
 import { useAppDispatch } from '../store/store'
 import { onLogs, removeAccountChangeListener } from '../utils/solanaUtils'
 import { CompressedNFT } from '../types/solana'
-import { LAZY_KEY } from '../utils/hotspotNftsUtils'
+import { MOBILE_LAZY_KEY, IOT_LAZY_KEY } from '../utils/hotspotNftsUtils'
 import useSubmitTxn from '../graphql/useSubmitTxn'
 
 function random(len: number): string {
@@ -32,12 +36,19 @@ const useHotspots = (): {
   hotspotsWithMeta: CompressedNFT[]
   loading: boolean
   refresh: () => void
-  claimAllRewards: {
+  claimAllMobileRewards: {
+    loading: boolean
+    error: Error | undefined
+    execute: () => Promise<void>
+  }
+  claimAllIotRewards: {
     loading: boolean
     error: Error | undefined
     execute: () => Promise<void>
   }
   createHotspot: () => Promise<void>
+  fetchMore: () => void
+  fetchingMore: boolean
 } => {
   const { solanaNetwork: cluster, l1Network } = useAppStorage()
   const dispatch = useAppDispatch()
@@ -45,6 +56,11 @@ const useHotspots = (): {
   const { currentAccount, anchorProvider } = useAccountStorage()
   const collectables = useSelector((state: RootState) => state.collectables)
   const { submitAllAnchorTxns } = useSubmitTxn()
+
+  const oldestCollectableId = useMemo(() => {
+    if (!currentAccount?.solanaAddress) return ''
+    return collectables[currentAccount?.solanaAddress].oldestCollectableId
+  }, [collectables, currentAccount])
 
   const hotspots = useMemo(() => {
     if (!currentAccount?.solanaAddress) return []
@@ -54,7 +70,7 @@ const useHotspots = (): {
     )
   }, [collectables, currentAccount])
 
-  const claimAllRewards = async () => {
+  const onClaimAllMobileRewards = async () => {
     if (!anchorProvider || !currentAccount?.solanaAddress) {
       return
     }
@@ -62,18 +78,19 @@ const useHotspots = (): {
     const wallet = new PublicKey(currentAccount?.solanaAddress)
 
     const txns = await Promise.all(
-      hotspots.map(async (nft) => {
+      hotspots.map(async (nft: CompressedNFT) => {
         const rewards = await client.getCurrentRewards(
-          program,
-          LAZY_KEY,
+          program as any,
+          MOBILE_LAZY_KEY,
           new PublicKey(nft.id),
         )
+
         return client.formTransaction({
-          program,
+          program: program as any,
           provider: anchorProvider,
           rewards,
           hotspot: new PublicKey(nft.id),
-          lazyDistributor: LAZY_KEY,
+          lazyDistributor: MOBILE_LAZY_KEY,
           wallet,
         })
       }),
@@ -82,7 +99,41 @@ const useHotspots = (): {
     await submitAllAnchorTxns(txns)
   }
 
-  const { execute, loading, error } = useAsyncCallback(claimAllRewards)
+  const onClaimAllIotRewards = async () => {
+    if (!anchorProvider || !currentAccount?.solanaAddress) {
+      return
+    }
+    const program = await init(anchorProvider)
+    const wallet = new PublicKey(currentAccount?.solanaAddress)
+
+    const txns = await Promise.all(
+      hotspots.map(async (nft: CompressedNFT) => {
+        const rewards = await client.getCurrentRewards(
+          program as any,
+          MOBILE_LAZY_KEY,
+          new PublicKey(nft.id),
+        )
+
+        return client.formTransaction({
+          program: program as any,
+          provider: anchorProvider,
+          rewards,
+          hotspot: new PublicKey(nft.id),
+          lazyDistributor: IOT_LAZY_KEY,
+          wallet,
+        })
+      }),
+    )
+
+    await submitAllAnchorTxns(txns)
+  }
+
+  const { execute, loading, error } = useAsyncCallback(onClaimAllMobileRewards)
+  const {
+    execute: executeIot,
+    loading: loadingIot,
+    error: errorIot,
+  } = useAsyncCallback(onClaimAllIotRewards)
 
   const refresh = useCallback(() => {
     if (
@@ -95,6 +146,36 @@ const useHotspots = (): {
     dispatch(fetchCollectables({ account: currentAccount, cluster }))
   }, [cluster, collectables.loading, currentAccount, dispatch, l1Network])
 
+  const fetchingMore = useMemo(() => {
+    if (!currentAccount?.solanaAddress) return false
+
+    return collectables[currentAccount?.solanaAddress].fetchingMore
+  }, [collectables, currentAccount])
+
+  const fetchMore = useCallback(() => {
+    if (
+      !currentAccount?.solanaAddress ||
+      l1Network !== 'solana' ||
+      collectables.loading
+    ) {
+      return
+    }
+    dispatch(
+      fetchMoreCollectables({
+        account: currentAccount,
+        cluster,
+        oldestCollectable: oldestCollectableId,
+      }),
+    )
+  }, [
+    cluster,
+    collectables.loading,
+    currentAccount,
+    dispatch,
+    l1Network,
+    oldestCollectableId,
+  ])
+
   const createHotspot = useCallback(async () => {
     if (!currentAccount || !anchorProvider || !currentAccount.solanaAddress)
       return
@@ -103,6 +184,10 @@ const useHotspots = (): {
     if (!secureStorage) return
 
     const owner = new Keypair(secureStorage.keypair)
+    // console.log('owner address => ', owner.address)
+    // Solana address to uint array
+    // const addr = Buffer.from(currentAccount.address)
+    // const ownerAddress = new Address(0, 0, 1, addr)
     const onboardingKey = random(10)
     const gateway = await Keypair.makeRandom()
     const maker = Address.fromB58(
@@ -191,12 +276,19 @@ const useHotspots = (): {
       hotspots: [],
       hotspotsWithMeta: [],
       refresh,
-      claimAllRewards: {
+      claimAllMobileRewards: {
         execute,
         error,
         loading,
       },
+      claimAllIotRewards: {
+        execute: executeIot,
+        error: errorIot,
+        loading: loadingIot,
+      },
       createHotspot,
+      fetchMore,
+      fetchingMore,
     }
   }
 
@@ -207,12 +299,19 @@ const useHotspots = (): {
         .HOTSPOT || [],
     loading: collectables[currentAccount?.solanaAddress].loading,
     refresh,
-    claimAllRewards: {
+    claimAllMobileRewards: {
       execute,
       error,
       loading,
     },
+    claimAllIotRewards: {
+      execute: executeIot,
+      error: errorIot,
+      loading: loadingIot,
+    },
     createHotspot,
+    fetchMore,
+    fetchingMore,
   }
 }
 export default useHotspots

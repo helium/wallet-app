@@ -22,6 +22,7 @@ import Trash from '../../assets/images/trash.svg'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import InfoIcon from '../../assets/images/info.svg'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
+import ArrowRight from '../../assets/images/arrowRight.svg'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -64,15 +65,16 @@ const NftDetailsScreen = () => {
   }, [metadata.image])
 
   return (
-    <BackScreen
-      padding="none"
-      title={t('collectablesScreen.nfts.nftDetialTitle')}
-      backgroundImageUri={backgroundImageUri}
-      edges={backEdges}
-      TrailingIcon={InfoIcon}
-      onTrailingIconPress={handleInfoPress}
-    >
-      <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
+    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
+      <BackScreen
+        padding="none"
+        title={t('collectablesScreen.nfts.nftDetialTitle')}
+        backgroundImageUri={backgroundImageUri}
+        edges={backEdges}
+        TrailingIcon={InfoIcon}
+        onTrailingIconPress={handleInfoPress}
+        headerTopMargin="l"
+      >
         <ScrollView>
           <SafeAreaBox
             edges={safeEdges}
@@ -141,12 +143,15 @@ const NftDetailsScreen = () => {
                 title={t('collectablesScreen.transfer')}
                 titleColor="black"
                 onPress={handleSend}
+                TrailingComponent={
+                  <ArrowRight width={16} height={15} color="black" />
+                }
               />
             </Box>
           </SafeAreaBox>
         </ScrollView>
-      </ReAnimatedBox>
-    </BackScreen>
+      </BackScreen>
+    </ReAnimatedBox>
   )
 }
 

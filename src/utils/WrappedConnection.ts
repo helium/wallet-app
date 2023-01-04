@@ -15,7 +15,7 @@ export class WrappedConnection extends Connection {
      * Eventually we want to have a hosted RPC node that supports this API
      */
     this.axiosInstance = axios.create({
-      baseURL: endpoint ?? 'https://rpc-devnet.aws.metaplex.com/',
+      baseURL: endpoint,
     })
   }
 
@@ -47,6 +47,20 @@ export class WrappedConnection extends Connection {
         method: 'get_assets_by_owner',
         id: 'rpd-op-123',
         params: [assetId, sortBy, limit, page, before, after],
+      })
+      return response.data.result
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  async getAssetProof(assetId: any): Promise<any> {
+    try {
+      const response = await this.axiosInstance.post('get_asset_proof', {
+        jsonrpc: '2.0',
+        method: 'get_asset_proof',
+        id: 'rpd-op-123',
+        params: [assetId],
       })
       return response.data.result
     } catch (error) {

@@ -13,6 +13,7 @@ import { CollectableNavigationProp } from './collectablesTypes'
 import HotspotListItem from './HotspotListItem'
 import ButtonPressable from '../../components/ButtonPressable'
 import useHotspots from '../../hooks/useHotspots'
+import CircleLoader from '../../components/CircleLoader'
 
 const HotspotList = () => {
   const { bottom } = useSafeAreaInsets()
@@ -26,8 +27,19 @@ const HotspotList = () => {
     hotspotsWithMeta,
     loading: loadingHotspots,
     refresh,
-    claimAllRewards: { execute, loading, error },
+    claimAllMobileRewards: {
+      execute: executeMobile,
+      loading: loadingMobile,
+      error: errorMobile,
+    },
+    claimAllIotRewards: {
+      execute: executeIot,
+      loading: loadingIot,
+      error: errorIot,
+    },
     createHotspot,
+    fetchMore,
+    fetchingMore,
   } = useHotspots()
 
   const handleNavigateToCollectable = useCallback(
@@ -39,13 +51,19 @@ const HotspotList = () => {
     [navigation],
   )
 
+  const handleNavigateToClaimRewards = useCallback(() => {
+    navigation.navigate('ClaimRewardsScreen', {
+      isClaimingAllRewards: true,
+    })
+  }, [navigation])
+
   const renderHeader = useCallback(() => {
     return (
       <>
         <ButtonPressable
           style={{ flexBasis: 0 }}
           flexGrow={1}
-          marginTop="m"
+          marginTop="l"
           borderRadius="round"
           backgroundColor="white"
           backgroundColorOpacityPressed={0.7}
@@ -56,8 +74,8 @@ const HotspotList = () => {
           titleColor="black"
           marginBottom="m"
           marginHorizontal="l"
-          disabled={loading || !!error}
-          onPress={execute}
+          disabled={loadingMobile || !!errorMobile || loadingIot || !!errorIot}
+          onPress={handleNavigateToClaimRewards}
         />
         {__DEV__ && (
           <ButtonPressable
@@ -75,7 +93,15 @@ const HotspotList = () => {
         )}
       </>
     )
-  }, [createHotspot, error, execute, loading, t])
+  }, [
+    createHotspot,
+    errorIot,
+    errorMobile,
+    handleNavigateToClaimRewards,
+    loadingIot,
+    loadingMobile,
+    t,
+  ])
 
   const renderCollectable = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
@@ -114,6 +140,14 @@ const HotspotList = () => {
     [bottomSpace],
   )
 
+  const Footer = useCallback(() => {
+    return fetchingMore ? (
+      <Box marginTop="m">
+        <CircleLoader loaderSize={40} />
+      </Box>
+    ) : null
+  }, [fetchingMore])
+
   return (
     <FlatList
       data={hotspotsWithMeta}
@@ -134,7 +168,10 @@ const HotspotList = () => {
       contentContainerStyle={contentContainerStyle}
       renderItem={renderCollectable}
       ListEmptyComponent={renderEmptyComponent}
+      // onEndReachedThreshold={0.01}
+      // onEndReached={fetchMore}
       keyExtractor={keyExtractor}
+      ListFooterComponent={Footer}
     />
   )
 }

@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import { LogBox } from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { Edge } from 'react-native-safe-area-context'
@@ -7,61 +7,44 @@ import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import IndeterminateProgressBar from '../../components/IndeterminateProgressBar'
-import {
-  CollectableNavigationProp,
-  CollectableStackParamList,
-} from './collectablesTypes'
+import { CollectableNavigationProp } from './collectablesTypes'
 import { DelayedFadeIn } from '../../components/FadeInOut'
+import globalStyles from '../../theme/globalStyles'
 import Box from '../../components/Box'
-import ImageBox from '../../components/ImageBox'
 import ButtonPressable from '../../components/ButtonPressable'
 import Text from '../../components/Text'
-import { ww } from '../../utils/layout'
 import BackScreen from '../../components/BackScreen'
-import { useSpacing } from '../../theme/themeHooks'
 import { RootState } from '../../store/rootReducer'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
+import AccountIcon from '../../components/AccountIcon'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import BackArrow from '../../assets/images/backArrow.svg'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ])
 
-type Route = RouteProp<CollectableStackParamList, 'TransferCompleteScreen'>
-
-const TransferCollectableScreen = () => {
-  const route = useRoute<Route>()
+const ClaimingRewardsScreen = () => {
+  const { currentAccount } = useAccountStorage()
   const navigation = useNavigation<CollectableNavigationProp>()
-  const COLLECTABLE_HEIGHT = ww
   const backEdges = useMemo(() => ['top'] as Edge[], [])
 
   const { t } = useTranslation()
-  const { collectable } = route.params
   const solanaPayment = useSelector(
     (reduxState: RootState) => reduxState.solana.payment,
   )
-  const spacing = useSpacing()
-  const {
-    content: { metadata },
-  } = collectable
-
-  const backgroundImageUri = useMemo(() => {
-    return metadata?.image
-  }, [metadata.image])
-
   const onReturn = useCallback(() => {
     navigation.popToTop()
   }, [navigation])
 
-  if (!metadata || !backgroundImageUri) {
+  if (!currentAccount) {
     return null
   }
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
+    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <BackScreen
         padding="none"
-        backgroundImageUri={backgroundImageUri}
         edges={backEdges}
         onClose={onReturn}
         hideBack
@@ -74,38 +57,33 @@ const TransferCollectableScreen = () => {
           alignItems="center"
           justifyContent="center"
         >
-          <Box
-            flexGrow={1}
-            marginBottom="xl"
-            justifyContent="center"
-            alignItems="center"
-          >
-            {metadata && (
-              <Box
-                shadowColor="black"
-                shadowOpacity={0.4}
-                shadowOffset={{ width: 0, height: 10 }}
-                shadowRadius={10}
-                elevation={12}
-              >
-                <ImageBox
-                  marginTop="l"
-                  backgroundColor="black"
-                  height={COLLECTABLE_HEIGHT - spacing.xl * 5}
-                  width={COLLECTABLE_HEIGHT - spacing.xl * 5}
-                  source={{ uri: metadata.image, cache: 'force-cache' }}
-                  borderRadius="xxl"
-                />
-              </Box>
-            )}
+          <Box flexGrow={1} justifyContent="center" alignItems="center">
+            <Box
+              shadowColor="black"
+              shadowOpacity={0.4}
+              shadowOffset={{ width: 0, height: 10 }}
+              shadowRadius={10}
+              elevation={12}
+            >
+              <AccountIcon address={currentAccount?.solanaAddress} size={76} />
+            </Box>
             {solanaPayment && !solanaPayment.error && !solanaPayment.loading && (
               <Animated.View
                 style={{ alignItems: 'center' }}
                 entering={FadeIn}
                 exiting={FadeOut}
               >
-                <Text variant="h2" color="white" marginTop="xl">
-                  {t('collectablesScreen.transferComplete')}
+                <Text variant="h1Medium" color="white" marginTop="xl">
+                  {t('collectablesScreen.claimComplete')}
+                </Text>
+                <Text
+                  variant="body2"
+                  color="secondaryText"
+                  marginTop="xl"
+                  numberOfLines={2}
+                  textAlign="center"
+                >
+                  {t('collectablesScreen.claimComplete')}
                 </Text>
               </Animated.View>
             )}
@@ -117,12 +95,12 @@ const TransferCollectableScreen = () => {
                 exiting={FadeOut}
               >
                 <Text
-                  variant="h2"
+                  variant="h1Medium"
                   color="white"
                   marginTop="xl"
                   textAlign="center"
                 >
-                  {t('collectablesScreen.transferError')}
+                  {t('collectablesScreen.rewardsError')}
                 </Text>
                 <Text
                   variant="body2"
@@ -142,8 +120,13 @@ const TransferCollectableScreen = () => {
                 entering={FadeIn}
                 exiting={FadeOut}
               >
-                <Text variant="h2" color="white" marginTop="xl">
-                  {t('collectablesScreen.transferError')}
+                <Text
+                  textAlign="center"
+                  variant="h1Medium"
+                  color="white"
+                  marginTop="xl"
+                >
+                  {t('collectablesScreen.rewardsError')}
                 </Text>
               </Animated.View>
             )}
@@ -155,22 +138,23 @@ const TransferCollectableScreen = () => {
                 exiting={FadeOut}
               >
                 <Text
-                  variant="h2"
+                  variant="h1Medium"
                   color="white"
                   marginTop="xl"
                   textAlign="center"
                 >
-                  {t('collectablesScreen.transferingNftTitle')}
+                  {t('collectablesScreen.claimingRewards')}
                 </Text>
                 <Text
                   variant="body0"
                   color="grey600"
                   textAlign="center"
                   marginBottom="m"
+                  marginTop="s"
                 >
-                  {t('collectablesScreen.transferingNftBody')}
+                  {t('collectablesScreen.claimingRewardsBody')}
                 </Text>
-                <Box flexDirection="row" marginHorizontal="xxl">
+                <Box flexDirection="row" marginHorizontal="xxl" marginTop="m">
                   <IndeterminateProgressBar paddingHorizontal="l" />
                 </Box>
               </Animated.View>
@@ -200,4 +184,4 @@ const TransferCollectableScreen = () => {
   )
 }
 
-export default TransferCollectableScreen
+export default ClaimingRewardsScreen

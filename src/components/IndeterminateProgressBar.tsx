@@ -62,8 +62,6 @@ const IndeterminateProgressBar = ({ ...rest }: BoxProps<Theme>) => {
       borderRadius="round"
       width="100%"
       height={HEIGHT}
-      borderWidth={1}
-      borderColor="white"
       backgroundColor="transparent10"
       overflow="hidden"
     >
@@ -72,7 +70,7 @@ const IndeterminateProgressBar = ({ ...rest }: BoxProps<Theme>) => {
           width={PROGRESS_WIDTH / 2}
           height={HEIGHT - 1}
           borderRadius="round"
-          backgroundColor="white"
+          backgroundColor="lightGrey"
         />
       </ReAnimatedBox>
     </Box>

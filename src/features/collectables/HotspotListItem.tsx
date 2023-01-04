@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { PublicKey } from '@solana/web3.js'
+import { BoxProps } from '@shopify/restyle'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { CompressedNFT } from '../../types/solana'
@@ -11,31 +12,42 @@ import MobileSymbol from '../../assets/images/mobileSymbol.svg'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 import ImageBox from '../../components/ImageBox'
+import { Theme } from '../../theme/theme'
+import IotSymbol from '../../assets/images/iotSymbol.svg'
 
 export type HotspotListItemProps = {
   hotspot: CompressedNFT
   onPress: (hotspot: CompressedNFT) => void
-}
+} & BoxProps<Theme>
 
-const HotspotListItem = ({ hotspot, onPress }: HotspotListItemProps) => {
+const HotspotListItem = ({
+  hotspot,
+  onPress,
+  ...rest
+}: HotspotListItemProps) => {
   const COLLECTABLE_HEIGHT = ww / 2
   const {
     content: { metadata },
   } = hotspot
   const mint = useMemo(() => new PublicKey(hotspot.id), [hotspot.id])
-  const { pendingRewards } = useHotspot(mint)
+  const { pendingMobileRewards, pendingIotRewards } = useHotspot(mint)
 
-  // TODO: Add IOT Rewards once IOT MINT is available
+  const hasIotRewards = useMemo(
+    () => pendingIotRewards && pendingIotRewards > 0,
+    [pendingIotRewards],
+  )
+
   const hasMobileRewards = useMemo(
-    () => pendingRewards && pendingRewards > 0,
-    [pendingRewards],
+    () => pendingMobileRewards && pendingMobileRewards > 0,
+    [pendingMobileRewards],
   )
 
   return (
     <ReAnimatedBox
-      style={{ width: '50%', justifyContent: 'center' }}
+      style={{ width: '50%', justifyContent: 'flex-start' }}
       entering={FadeIn}
       exiting={FadeOut}
+      {...rest}
     >
       <TouchableOpacityBox
         marginHorizontal="s"
@@ -76,6 +88,30 @@ const HotspotListItem = ({ hotspot, onPress }: HotspotListItemProps) => {
             elevation={2}
           >
             <MobileSymbol color="black" />
+          </Box>
+        )}
+        {hasIotRewards && (
+          <Box
+            justifyContent="center"
+            alignItems="center"
+            backgroundColor="white"
+            borderRadius="round"
+            position="absolute"
+            top={hasMobileRewards ? 58 : 20}
+            right={16}
+            height={28}
+            width={28}
+            flexDirection="row"
+            shadowRadius={6}
+            shadowColor="black"
+            shadowOffset={{
+              width: 0,
+              height: 3,
+            }}
+            shadowOpacity={0.3}
+            elevation={2}
+          >
+            <IotSymbol color="black" />
           </Box>
         )}
       </TouchableOpacityBox>

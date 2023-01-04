@@ -15,17 +15,13 @@ const NftMetadataScreen = () => {
   const { metadata } = route.params
 
   const renderProperty = useCallback(
-    (
-      traitType: string | undefined,
-      traitValue: string | undefined,
-      hasMarginEnd: boolean,
-    ) => (
+    (traitType: string | undefined, traitValue: string | undefined) => (
       <Box
         padding="s"
         paddingHorizontal="m"
         borderRadius="round"
         backgroundColor="transparent10"
-        marginEnd={hasMarginEnd ? 's' : undefined}
+        margin="s"
         key={`${traitType}+${traitValue}`}
       >
         <Text variant="subtitle4" color="grey600">
@@ -46,15 +42,14 @@ const NftMetadataScreen = () => {
         <Text variant="subtitle1" color="grey600" marginBottom="l">
           {t('collectablesScreen.collectables.properties')}
         </Text>
-        <Box flexDirection="row">
-          {metadata.attributes?.map(({ trait_type, value }, index) =>
-            renderProperty(
-              trait_type,
-              value,
-              metadata.attributes
-                ? index !== metadata.attributes.length - 1
-                : false,
-            ),
+        <Box
+          flexDirection="row"
+          paddingHorizontal="m"
+          flexWrap="wrap"
+          justifyContent="center"
+        >
+          {metadata.attributes?.map(({ trait_type, value }) =>
+            renderProperty(trait_type, value),
           )}
         </Box>
       </SafeAreaBox>

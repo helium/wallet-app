@@ -12,7 +12,6 @@ import {
 } from './collectablesTypes'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { DelayedFadeIn } from '../../components/FadeInOut'
-import globalStyles from '../../theme/globalStyles'
 import Box from '../../components/Box'
 import ImageBox from '../../components/ImageBox'
 import ButtonPressable from '../../components/ButtonPressable'
@@ -51,14 +50,24 @@ const HotspotDetailsScreen = () => {
   )
 
   const {
-    pendingRewards,
-    claimRewards,
-    rewardsLoading: loading,
+    pendingMobileRewards,
+    claimMobileRewards,
+    mobileRewardsLoading,
+    pendingIotRewards,
+    claimIotRewards,
+    iotRewardsLoading,
+    iotRewardsError,
+    mobileRewardsError,
   } = useHotspot(mint)
 
   const hasMobileRewards = useMemo(
-    () => pendingRewards && pendingRewards > 0,
-    [pendingRewards],
+    () => pendingMobileRewards && pendingMobileRewards > 0,
+    [pendingMobileRewards],
+  )
+
+  const hasIotRewards = useMemo(
+    () => pendingIotRewards && pendingIotRewards > 0,
+    [pendingIotRewards],
   )
 
   const spacing = useSpacing()
@@ -78,8 +87,9 @@ const HotspotDetailsScreen = () => {
   }, [collectable, navigation])
 
   const handleClaimRewards = useCallback(() => {
-    claimRewards()
-  }, [claimRewards])
+    claimMobileRewards()
+    claimIotRewards()
+  }, [claimIotRewards, claimMobileRewards])
 
   const handleInfoPress = useCallback(() => {
     if (collectable.content.metadata) {
@@ -104,15 +114,16 @@ const HotspotDetailsScreen = () => {
   )
 
   return (
-    <BackScreen
-      padding="none"
-      title={t('collectablesScreen.hotspots.hotspotDetailTitle')}
-      backgroundImageUri={collectable.content.metadata.image || ''}
-      edges={backEdges}
-      TrailingIcon={InfoIcon}
-      onTrailingIconPress={handleInfoPress}
-    >
-      <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
+    <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
+      <BackScreen
+        headerTopMargin="l"
+        padding="none"
+        title={t('collectablesScreen.hotspots.hotspotDetailTitle')}
+        backgroundImageUri={collectable.content.metadata.image || ''}
+        edges={backEdges}
+        TrailingIcon={InfoIcon}
+        onTrailingIconPress={handleInfoPress}
+      >
         <ScrollView>
           <SafeAreaBox
             edges={safeEdges}
@@ -184,7 +195,14 @@ const HotspotDetailsScreen = () => {
                 titleColorDisabled="grey600"
                 title={t('collectablesScreen.hotspots.claimRewards')}
                 titleColor="black"
-                disabled={loading || !hasMobileRewards}
+                disabled={
+                  !mobileRewardsLoading ||
+                  !iotRewardsLoading ||
+                  !!iotRewardsError ||
+                  !!mobileRewardsError ||
+                  !hasMobileRewards ||
+                  !hasIotRewards
+                }
                 onPress={handleClaimRewards}
               />
             </Box>
@@ -193,8 +211,14 @@ const HotspotDetailsScreen = () => {
             </Text>
             <Text variant="body2" marginBottom="m">
               {t('collectablesScreen.hotspots.pendingRewards', {
-                amount: pendingRewards,
+                amount: pendingMobileRewards || 0,
                 ticker: 'MOBILE',
+              })}
+            </Text>
+            <Text variant="body2" marginBottom="m">
+              {t('collectablesScreen.hotspots.pendingRewards', {
+                amount: pendingIotRewards || 0,
+                ticker: 'IOT',
               })}
             </Text>
             <BlurActionSheet
@@ -206,8 +230,8 @@ const HotspotDetailsScreen = () => {
             </BlurActionSheet>
           </SafeAreaBox>
         </ScrollView>
-      </ReAnimatedBox>
-    </BackScreen>
+      </BackScreen>
+    </ReAnimatedBox>
   )
 }
 

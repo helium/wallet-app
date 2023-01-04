@@ -150,13 +150,21 @@ export const makeCollectablePayment = createAsyncThunk(
   ) => {
     if (!account?.solanaAddress) throw new Error('No solana account found')
 
-    const transfer = await solUtils.transferCollectable(
-      cluster,
-      account.solanaAddress,
-      account.address,
-      collectable,
-      payee,
-    )
+    const transfer = collectable.compression.compressed
+      ? await solUtils.transferCompressedCollectable(
+          cluster,
+          account.solanaAddress,
+          account.address,
+          collectable,
+          payee,
+        )
+      : await solUtils.transferCollectable(
+          cluster,
+          account.solanaAddress,
+          account.address,
+          collectable,
+          payee,
+        )
 
     // If the transfer is successful, we need to update the collectables
     if (!transfer.txn?.meta?.err) {

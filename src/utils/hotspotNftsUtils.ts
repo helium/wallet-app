@@ -1,7 +1,7 @@
 import * as client from '@helium/distributor-oracle'
 import { LazyDistributor } from '@helium/idls/lib/types/lazy_distributor'
 import { init, lazyDistributorKey } from '@helium/lazy-distributor-sdk'
-import { toNumber, MOBILE_MINT } from '@helium/spl-utils'
+import { toNumber } from '@helium/spl-utils'
 import { Program, setProvider } from '@project-serum/anchor'
 import { getMint } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
@@ -12,7 +12,11 @@ import { useAsync } from 'react-async-hook'
 import { Recipient } from '../hooks/useRecipient'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 
-export const LAZY_KEY = lazyDistributorKey(new PublicKey(MOBILE_MINT))[0]
+export const IOT_MINT = '9NKNQDCW7xhJ9Snnqa7P6wK3RoBYKBk5h8ruGTcz3KbG'
+export const MOBILE_MINT = '7NU39idAXhxZCx3R8dgzwzH57Sb8YKTfCbV4B6SHU4RB'
+
+export const MOBILE_LAZY_KEY = lazyDistributorKey(new PublicKey(MOBILE_MINT))[0]
+export const IOT_LAZY_KEY = lazyDistributorKey(new PublicKey(IOT_MINT))[0]
 
 export function useProgram() {
   const [program, setProgram] = useState<Program<LazyDistributor> | null>(null)
@@ -32,16 +36,15 @@ export async function getPendingRewards(
   program: Program<LazyDistributor>,
   mint: PublicKey,
   maybeRecipient: Recipient | undefined,
+  lazyKey: PublicKey = MOBILE_LAZY_KEY,
 ) {
-  const lazyDistributor = await program.account.lazyDistributorV0.fetch(
-    LAZY_KEY,
-  )
+  const lazyDistributor = await program.account.lazyDistributorV0.fetch(lazyKey)
 
   const oracleRewards = await client.getCurrentRewards(
     // TODO: Fix program type once HPL is upgraded to anchor v0.26
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     program as any,
-    LAZY_KEY,
+    lazyKey,
     mint,
   )
 

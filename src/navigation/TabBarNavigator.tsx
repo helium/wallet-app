@@ -12,7 +12,7 @@ import Transactions from '../assets/images/transactions.svg'
 import Notifications from '../assets/images/notifications.svg'
 import { Color } from '../theme/theme'
 import HomeNavigator from '../features/home/HomeNavigator'
-import CollectableNavigator from '../features/collectables/CollectablesNavigator'
+import CollectablesTabNavigator from '../features/collectables/CollectablesTabNavigator'
 import ActivityNavigator from '../features/activity/ActivityNavigator'
 import NotificationsNavigator from '../features/notifications/NotificationsNavigator'
 import SafeAreaBox from '../components/SafeAreaBox'
@@ -127,7 +127,7 @@ const TabBarNavigator = () => {
       }}
     >
       <Tab.Screen name="Home" component={HomeNavigator} />
-      <Tab.Screen name="Collectables" component={CollectableNavigator} />
+      <Tab.Screen name="Collectables" component={CollectablesTabNavigator} />
       {/* <Tab.Screen name="Swaps" component={CollectableNavigator} /> */}
       <Tab.Screen name="Activity" component={ActivityNavigator} />
       <Tab.Screen

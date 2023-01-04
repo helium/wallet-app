@@ -18,14 +18,13 @@ import {
 } from './collectablesTypes'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { DelayedFadeIn } from '../../components/FadeInOut'
-import globalStyles from '../../theme/globalStyles'
 import Box from '../../components/Box'
 import ImageBox from '../../components/ImageBox'
 import ButtonPressable from '../../components/ButtonPressable'
 import Text from '../../components/Text'
 import { ww } from '../../utils/layout'
 import BackScreen from '../../components/BackScreen'
-import { useSpacing } from '../../theme/themeHooks'
+import { useColors, useSpacing } from '../../theme/themeHooks'
 import InfoIcon from '../../assets/images/info.svg'
 import TextInput from '../../components/TextInput'
 import { solAddressIsValid } from '../../utils/accountUtils'
@@ -45,6 +44,7 @@ import { CSAccount } from '../../storage/cloudStorage'
 import * as Logger from '../../utils/logger'
 import TextTransform from '../../components/TextTransform'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
+import ArrowRight from '../../assets/images/arrowRight.svg'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -76,6 +76,7 @@ const TransferCollectableScreen = () => {
   const { solanaNetwork: cluster } = useAppStorage()
   const { currentAccount } = useAccountStorage()
   const addressBookRef = useRef<AddressBookRef>(null)
+  const colors = useColors()
 
   const {
     content: { metadata },
@@ -199,15 +200,16 @@ const TransferCollectableScreen = () => {
   }
 
   return (
-    <BackScreen
-      padding="none"
-      title={t('collectablesScreen.transferCollectable')}
-      backgroundImageUri={backgroundImageUri}
-      edges={backEdges}
-      TrailingIcon={InfoIcon}
-      onTrailingIconPress={handleInfoPress}
-    >
-      <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
+    <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
+      <BackScreen
+        padding="none"
+        title={t('collectablesScreen.transferCollectable')}
+        backgroundImageUri={backgroundImageUri}
+        edges={backEdges}
+        TrailingIcon={InfoIcon}
+        onTrailingIconPress={handleInfoPress}
+        headerTopMargin="l"
+      >
         <AddressBookSelector
           ref={addressBookRef}
           onContactSelected={handleContactSelected}
@@ -325,6 +327,17 @@ const TransferCollectableScreen = () => {
                   title={t('collectablesScreen.transfer')}
                   titleColor="black"
                   onPress={handleTransfer}
+                  TrailingComponent={
+                    <ArrowRight
+                      width={16}
+                      height={15}
+                      color={
+                        !solAddressIsValid(recipient)
+                          ? colors.grey600
+                          : colors.black
+                      }
+                    />
+                  }
                 />
               </Box>
             </SafeAreaBox>
@@ -337,8 +350,8 @@ const TransferCollectableScreen = () => {
             {transferOptions()}
           </BlurActionSheet>
         </AddressBookSelector>
-      </ReAnimatedBox>
-    </BackScreen>
+      </BackScreen>
+    </ReAnimatedBox>
   )
 }
 

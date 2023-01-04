@@ -150,6 +150,12 @@ export default {
     transferCollectable: 'Transfer Collectable',
     transferingNftBody:
       'You can exit this screen while you wait. We’ll update your collection momentarily.',
+    rewardsError: 'Reward redemption failed. Please try again later.',
+    claimingRewards: 'Claiming your Rewards...',
+    claimingRewardsBody:
+      'You can exit this screen while you wait. We’ll update your Wallet momentarily.',
+    claimComplete: 'Rewards Claimed!',
+    claimCompleteBody: 'We’ve added your tokens to your wallet.',
     collectables: {
       noTraitType: 'No trait type',
       noTraitValue: 'No trait value',
@@ -169,6 +175,11 @@ export default {
       hotspotActions: 'Hotspot Actions',
       pendingRewards: '{{ amount }} {{ ticker }}',
       claimAllRewards: 'Claim all Rewards',
+      blocksMessage:
+        'In the last {{ blocks }} blocks, \nyour Hotspot has earned...',
+      addToAccount: 'Add to Account',
+      addAllToAccount: 'Add all to account',
+      hotspotCount: '{{ count }} Hotspot(s)',
     },
   },
   activityScreen: {
