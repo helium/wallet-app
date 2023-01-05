@@ -3,7 +3,7 @@ import { times } from 'lodash'
 import { FlatList } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { RefreshControl } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { useColors } from '../../theme/themeHooks'
 import Box from '../../components/Box'
@@ -19,6 +19,7 @@ const HotspotList = () => {
   const { bottom } = useSafeAreaInsets()
   const navigation = useNavigation<CollectableNavigationProp>()
   const { t } = useTranslation()
+  const isFocused = useIsFocused()
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
   const { primaryText } = useColors()
@@ -27,16 +28,10 @@ const HotspotList = () => {
     hotspotsWithMeta,
     loading: loadingHotspots,
     refresh,
-    claimAllMobileRewards: {
-      execute: executeMobile,
-      loading: loadingMobile,
-      error: errorMobile,
-    },
-    claimAllIotRewards: {
-      execute: executeIot,
-      loading: loadingIot,
-      error: errorIot,
-    },
+    claimAllMobileRewards: { loading: loadingMobile, error: errorMobile },
+    claimAllIotRewards: { loading: loadingIot, error: errorIot },
+    pendingIotRewards,
+    pendingMobileRewards,
     createHotspot,
     fetchMore,
     fetchingMore,
@@ -51,10 +46,14 @@ const HotspotList = () => {
     [navigation],
   )
 
+  const handleOnEndReached = useCallback(() => {
+    if (!fetchingMore && isFocused) {
+      fetchMore()
+    }
+  }, [fetchingMore, isFocused, fetchMore])
+
   const handleNavigateToClaimRewards = useCallback(() => {
-    navigation.navigate('ClaimRewardsScreen', {
-      isClaimingAllRewards: true,
-    })
+    navigation.navigate('ClaimAllRewardsScreen')
   }, [navigation])
 
   const renderHeader = useCallback(() => {
@@ -74,7 +73,13 @@ const HotspotList = () => {
           titleColor="black"
           marginBottom="m"
           marginHorizontal="l"
-          disabled={loadingMobile || !!errorMobile || loadingIot || !!errorIot}
+          disabled={
+            loadingMobile ||
+            !!errorMobile ||
+            loadingIot ||
+            !!errorIot ||
+            (pendingIotRewards === 0 && pendingMobileRewards === 0)
+          }
           onPress={handleNavigateToClaimRewards}
         />
         {__DEV__ && (
@@ -100,6 +105,8 @@ const HotspotList = () => {
     handleNavigateToClaimRewards,
     loadingIot,
     loadingMobile,
+    pendingIotRewards,
+    pendingMobileRewards,
     t,
   ])
 
@@ -168,8 +175,8 @@ const HotspotList = () => {
       contentContainerStyle={contentContainerStyle}
       renderItem={renderCollectable}
       ListEmptyComponent={renderEmptyComponent}
-      // onEndReachedThreshold={0.01}
-      // onEndReached={fetchMore}
+      onEndReachedThreshold={0.01}
+      onEndReached={handleOnEndReached}
       keyExtractor={keyExtractor}
       ListFooterComponent={Footer}
     />

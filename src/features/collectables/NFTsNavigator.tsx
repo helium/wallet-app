@@ -14,7 +14,7 @@ import NftMetadataScreen from './NftMetadataScreen'
 import TransferCollectableScreen from './TransferCollectableScreen'
 import AddressBookNavigator from '../addressBook/AddressBookNavigator'
 import TransferCompleteScreen from './TransferCompleteScreen'
-import ClaimRewardsScreen from './ClaimRewardsScreen'
+import ClaimRewardsScreen from './ClaimAllRewardsScreen'
 
 const CollectablesStack = createNativeStackNavigator()
 

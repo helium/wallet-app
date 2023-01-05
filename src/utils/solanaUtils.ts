@@ -548,6 +548,11 @@ export const transferCollectable = async (
   }
 }
 
+/**
+ * Convert a buffer to an array of numbers
+ * @param buffer
+ * @returns
+ */
 export function bufferToArray(buffer: Buffer): number[] {
   const nums = []
   for (let i = 0; i < buffer.length; i += 1) {
@@ -556,6 +561,11 @@ export function bufferToArray(buffer: Buffer): number[] {
   return nums
 }
 
+/**
+ * Get the Bubblegum Authority PDA for a given tree
+ * @param merkleRollPubKey
+ * @returns
+ */
 export async function getBubblegumAuthorityPDA(
   merkleRollPubKey: web3.PublicKey,
 ) {
@@ -566,6 +576,12 @@ export async function getBubblegumAuthorityPDA(
   return bubblegumAuthorityPDAKey
 }
 
+/**
+ * Get the nonce count for a given tree
+ * @param connection
+ * @param tree
+ * @returns
+ */
 export async function getNonceCount(
   connection: web3.Connection,
   tree: web3.PublicKey,
@@ -576,6 +592,15 @@ export async function getNonceCount(
   )
 }
 
+/**
+ * Transfer a compressed collectable to a new owner
+ * @param cluster
+ * @param solanaAddress
+ * @param heliumAddress
+ * @param collectable
+ * @param payee
+ * @returns
+ */
 export const transferCompressedCollectable = async (
   cluster: web3.Cluster,
   solanaAddress: string,
@@ -684,26 +709,6 @@ export const transferCompressedCollectable = async (
     Logger.error(e)
     throw new Error((e as Error).message)
   }
-}
-
-export const confirmTransaction = async (
-  cluster: web3.Cluster,
-  signature: string,
-) => {
-  const conn = getConnection(cluster)
-  const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash()
-  await conn.confirmTransaction(
-    { signature, blockhash, lastValidBlockHeight },
-    'finalized',
-  )
-
-  const txn = await getTxn(cluster, signature)
-
-  if (txn?.meta?.err) {
-    throw new Error(txn.meta.err.toString())
-  }
-
-  return { signature, txn }
 }
 
 /**

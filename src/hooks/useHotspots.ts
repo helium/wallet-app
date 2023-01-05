@@ -46,6 +46,8 @@ const useHotspots = (): {
     error: Error | undefined
     execute: () => Promise<void>
   }
+  pendingIotRewards: number
+  pendingMobileRewards: number
   createHotspot: () => Promise<void>
   fetchMore: () => void
   fetchingMore: boolean
@@ -55,6 +57,7 @@ const useHotspots = (): {
   const accountSubscriptionId = useRef<number>()
   const { currentAccount, anchorProvider } = useAccountStorage()
   const collectables = useSelector((state: RootState) => state.collectables)
+  const hotspotsDetails = useSelector((state: RootState) => state.hotspots)
   const { submitAllAnchorTxns } = useSubmitTxn()
 
   const oldestCollectableId = useMemo(() => {
@@ -184,10 +187,6 @@ const useHotspots = (): {
     if (!secureStorage) return
 
     const owner = new Keypair(secureStorage.keypair)
-    // console.log('owner address => ', owner.address)
-    // Solana address to uint array
-    // const addr = Buffer.from(currentAccount.address)
-    // const ownerAddress = new Address(0, 0, 1, addr)
     const onboardingKey = random(10)
     const gateway = await Keypair.makeRandom()
     const maker = Address.fromB58(
@@ -252,6 +251,38 @@ const useHotspots = (): {
     }
   }, [anchorProvider, currentAccount])
 
+  const pendingIotRewards = useMemo(() => {
+    if (!currentAccount?.solanaAddress) return 0
+
+    let total = 0
+    const walletHotspots = hotspotsDetails[currentAccount?.solanaAddress]
+
+    if (!walletHotspots) return 0
+
+    Object.keys(walletHotspots).forEach((hotspot) => {
+      const hotspotDetails = walletHotspots.hotspots[hotspot]
+      total += hotspotDetails?.pendingIotRewards || 0
+    })
+
+    return total
+  }, [hotspotsDetails, currentAccount])
+
+  const pendingMobileRewards = useMemo(() => {
+    if (!currentAccount?.solanaAddress) return 0
+
+    let total = 0
+    const walletHotspots = hotspotsDetails[currentAccount?.solanaAddress]
+
+    if (!walletHotspots) return 0
+
+    Object.keys(walletHotspots).forEach((hotspot) => {
+      const hotspotDetails = walletHotspots.hotspots[hotspot]
+      total += hotspotDetails?.pendingMobileRewards || 0
+    })
+
+    return total
+  }, [hotspotsDetails, currentAccount])
+
   useEffect(() => {
     if (!currentAccount?.solanaAddress) return
 
@@ -286,6 +317,8 @@ const useHotspots = (): {
         error: errorIot,
         loading: loadingIot,
       },
+      pendingIotRewards,
+      pendingMobileRewards,
       createHotspot,
       fetchMore,
       fetchingMore,
@@ -309,6 +342,8 @@ const useHotspots = (): {
       error: errorIot,
       loading: loadingIot,
     },
+    pendingIotRewards,
+    pendingMobileRewards,
     createHotspot,
     fetchMore,
     fetchingMore,

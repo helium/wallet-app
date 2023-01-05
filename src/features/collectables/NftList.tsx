@@ -3,6 +3,7 @@ import { times } from 'lodash'
 import { FlatList } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { RefreshControl } from 'react-native'
+import { useIsFocused } from '@react-navigation/native'
 import Box from '../../components/Box'
 import useCollectables from '../../hooks/useCollectables'
 import NFTListItem, { NFTSkeleton } from './NftListItem'
@@ -12,6 +13,8 @@ import CircleLoader from '../../components/CircleLoader'
 const NftList = () => {
   const { bottom } = useSafeAreaInsets()
   const spacing = useSpacing()
+  const isFocused = useIsFocused()
+
   const {
     collectables,
     collectablesWithMeta,
@@ -23,6 +26,12 @@ const NftList = () => {
   const { primaryText } = useColors()
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
+
+  const handleOnEndReached = useCallback(() => {
+    if (!fetchingMore && isFocused) {
+      fetchMore()
+    }
+  }, [fetchingMore, isFocused, fetchMore])
 
   const flatListItems = useMemo(() => {
     return Object.keys(collectablesWithMeta).filter((key) => key !== 'HOTSPOT')
@@ -98,8 +107,8 @@ const NftList = () => {
       renderItem={renderItem}
       ListEmptyComponent={renderEmptyComponent}
       keyExtractor={keyExtractor}
-      // onEndReachedThreshold={0.01}
-      // onEndReached={fetchMore}
+      onEndReachedThreshold={0.01}
+      onEndReached={handleOnEndReached}
       ListFooterComponent={Footer}
     />
   )

@@ -51,10 +51,8 @@ const HotspotDetailsScreen = () => {
 
   const {
     pendingMobileRewards,
-    claimMobileRewards,
     mobileRewardsLoading,
     pendingIotRewards,
-    claimIotRewards,
     iotRewardsLoading,
     iotRewardsError,
     mobileRewardsError,
@@ -87,9 +85,10 @@ const HotspotDetailsScreen = () => {
   }, [collectable, navigation])
 
   const handleClaimRewards = useCallback(() => {
-    claimMobileRewards()
-    claimIotRewards()
-  }, [claimIotRewards, claimMobileRewards])
+    navigation.navigate('ClaimRewardsScreen', {
+      hotspot: collectable,
+    })
+  }, [collectable, navigation])
 
   const handleInfoPress = useCallback(() => {
     if (collectable.content.metadata) {

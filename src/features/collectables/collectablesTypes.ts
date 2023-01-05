@@ -26,9 +26,9 @@ export type CollectableStackParamList = {
     collectable: CompressedNFT
   }
   ClaimRewardsScreen: {
-    isClaimingAllRewards: boolean
-    hotspot?: CompressedNFT
+    hotspot: CompressedNFT
   }
+  ClaimAllRewardsScreen: undefined
   ClaimingRewardsScreen: undefined
   AddNewContact: undefined
   PaymentQrScanner: undefined

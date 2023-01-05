@@ -15,6 +15,9 @@ import collectablesReducer, {
 } from './slices/collectablesSlice'
 import appReducer, { name as appSliceName } from './slices/appSlice'
 import authReducer, { name as authSliceName } from './slices/authSlice'
+import hotspotReducer, {
+  name as hotspotSliceName,
+} from './slices/hotspotsSlice'
 
 const solanaConfig = {
   key: solanaSliceName,
@@ -29,6 +32,7 @@ const reducer = combineReducers({
   [authSliceName]: authReducer,
   [walletRestApi.reducerPath]: walletRestApiReducer,
   [appSliceName]: appReducer,
+  [hotspotSliceName]: hotspotReducer,
 })
 
 export const rootReducer = (state: RootState, action: AnyAction) => {

@@ -34,7 +34,7 @@ const NetworkAwareStatusBar = () => {
     return 'testnet'
   }, [l1Network])
 
-  if ((l1Network === 'helium' || l1Network === 'solana') && !isTestnet)
+  if (l1Network === 'helium' && !isTestnet)
     return (
       <StatusBar
         animated

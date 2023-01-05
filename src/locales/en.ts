@@ -175,8 +175,10 @@ export default {
       hotspotActions: 'Hotspot Actions',
       pendingRewards: '{{ amount }} {{ ticker }}',
       claimAllRewards: 'Claim all Rewards',
-      blocksMessage:
-        'In the last {{ blocks }} blocks, \nyour Hotspot has earned...',
+      hotspotClaimMessage:
+        'Since your last claim, \nyour Hotspot has earned...',
+      hotspotsClaimMessage:
+        'Since your last claim, \nyour Hotspots have earned...',
       addToAccount: 'Add to Account',
       addAllToAccount: 'Add all to account',
       hotspotCount: '{{ count }} Hotspot(s)',

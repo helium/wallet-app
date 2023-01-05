@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { PublicKey } from '@solana/web3.js'
 import { BoxProps } from '@shopify/restyle'
@@ -14,6 +14,9 @@ import { ReAnimatedBox } from '../../components/AnimatedBox'
 import ImageBox from '../../components/ImageBox'
 import { Theme } from '../../theme/theme'
 import IotSymbol from '../../assets/images/iotSymbol.svg'
+import { hotspots } from '../../store/slices/hotspotsSlice'
+import { useAppDispatch } from '../../store/store'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
 export type HotspotListItemProps = {
   hotspot: CompressedNFT
@@ -26,6 +29,8 @@ const HotspotListItem = ({
   ...rest
 }: HotspotListItemProps) => {
   const COLLECTABLE_HEIGHT = ww / 2
+  const dispatch = useAppDispatch()
+  const { currentAccount } = useAccountStorage()
   const {
     content: { metadata },
   } = hotspot
@@ -41,6 +46,31 @@ const HotspotListItem = ({
     () => pendingMobileRewards && pendingMobileRewards > 0,
     [pendingMobileRewards],
   )
+
+  useEffect(() => {
+    if (!currentAccount) return
+
+    dispatch(
+      hotspots.actions.updateHotspot({
+        account: currentAccount,
+        hotspotDetails: {
+          hotspotId: hotspot.id,
+          pendingIotRewards:
+            hasIotRewards && pendingIotRewards ? pendingIotRewards : 0,
+          pendingMobileRewards:
+            hasMobileRewards && pendingMobileRewards ? pendingMobileRewards : 0,
+        },
+      }),
+    )
+  }, [
+    currentAccount,
+    dispatch,
+    hasIotRewards,
+    hasMobileRewards,
+    hotspot.id,
+    pendingIotRewards,
+    pendingMobileRewards,
+  ])
 
   return (
     <ReAnimatedBox
