@@ -7,6 +7,7 @@ import Balance, {
   AnyCurrencyType,
   SolTokens,
   Ticker,
+  IotTokens,
 } from '@helium/currency'
 import { times } from 'lodash'
 import { RefreshControl } from 'react-native-gesture-handler'
@@ -38,6 +39,7 @@ const AccountTokenList = ({
   const {
     dcBalance,
     mobileBalance,
+    iotBalance,
     networkBalance,
     networkStakedBalance,
     secBalance,
@@ -70,6 +72,11 @@ const AccountTokenList = ({
         staked: false,
       },
       {
+        type: 'IOT',
+        balance: iotBalance as Balance<IotTokens>,
+        staked: false,
+      },
+      {
         type: 'DC',
         balance: dcBalance as Balance<DataCredits>,
         staked: false,
@@ -97,6 +104,7 @@ const AccountTokenList = ({
     )
   }, [
     dcBalance,
+    iotBalance,
     loading,
     mobileBalance,
     networkBalance,
