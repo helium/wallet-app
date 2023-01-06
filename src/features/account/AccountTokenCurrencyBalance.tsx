@@ -62,6 +62,9 @@ const AccountTokenCurrencyBalance = ({
       case 'MOBILE':
         setBalanceString(t('accountView.genesis'))
         break
+      case 'IOT':
+        setBalanceString(t('accountView.genesis'))
+        break
       case 'HST':
         setBalanceString(t('accountView.securityTokens'))
         break

@@ -24,7 +24,9 @@ export default ({
   const solanaActivity = useSelector(
     (state: RootState) => state.solana.activity,
   )
-  const { data: mints } = useGetMintsQuery(cluster)
+  const { data: mints } = useGetMintsQuery(cluster, {
+    refetchOnMountOrArgChange: true,
+  })
 
   const isSolana = useMemo(() => l1Network === 'solana', [l1Network])
 

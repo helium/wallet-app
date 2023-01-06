@@ -17,7 +17,7 @@ type Props = {
   staked?: boolean
 }
 const TokenListItem = ({ ticker, balance, staked }: Props) => {
-  const disabled = ticker === 'SOL'
+  const disabled = ticker === 'SOL' || ticker === 'IOT'
   const navigation = useNavigation<HomeNavigationProp>()
 
   const handleNavigation = useCallback(() => {

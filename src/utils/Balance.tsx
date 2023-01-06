@@ -55,7 +55,9 @@ const useBalanceHook = () => {
   const [updating, setUpdating] = useState(false)
 
   const dispatch = useAppDispatch()
-  const { data: mints } = useGetMintsQuery(cluster)
+  const { data: mints } = useGetMintsQuery(cluster, {
+    refetchOnMountOrArgChange: true,
+  })
 
   const {
     data: oracleData,
@@ -282,6 +284,21 @@ const useBalanceHook = () => {
     return new Balance(bal, CurrencyType.mobile)
   }, [accountData, l1Network, solBalances])
 
+  const iotBalance = useMemo(() => {
+    let bal = 0
+    switch (l1Network) {
+      case 'helium':
+        bal = accountData?.account?.iotBalance || 0
+        break
+
+      case 'solana':
+        bal = solBalances?.iotBalance ? Number(solBalances.iotBalance) : 0
+        break
+    }
+
+    return new Balance(bal, CurrencyType.iot)
+  }, [accountData, l1Network, solBalances])
+
   const secBalance = useMemo(() => {
     let bal = 0
     switch (l1Network) {
@@ -388,6 +405,7 @@ const useBalanceHook = () => {
     floatToBalance,
     intToBalance,
     networkTokensToDc,
+    iotBalance,
     mobileBalance,
     networkBalance,
     networkStakedBalance,
@@ -410,6 +428,7 @@ const initialState = {
   floatToBalance: () => undefined,
   intToBalance: () => undefined,
   networkTokensToDc: () => undefined,
+  iotBalance: new Balance(0, CurrencyType.iot),
   mobileBalance: new Balance(0, CurrencyType.mobile),
   networkBalance: new Balance(0, CurrencyType.networkToken),
   networkStakedBalance: new Balance(0, CurrencyType.networkToken),
