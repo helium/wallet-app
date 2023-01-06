@@ -65,6 +65,7 @@ export const readHeliumBalances = async (
     hntBalance: vals[mints.HNT],
     mobileBalance: vals[mints.MOBILE],
     dcBalance: vals[mints.DC],
+    iotBalance: vals[mints.IOT],
   }
 }
 

@@ -22,7 +22,9 @@ export default () => {
   const { makePaymentTxn } = useTransactions()
   const { currentAccount } = useAccountStorage()
   const { l1Network, solanaNetwork: cluster } = useAppStorage()
-  const { data: mints } = useGetMintsQuery(cluster)
+  const { data: mints } = useGetMintsQuery(cluster, {
+    refetchOnMountOrArgChange: true,
+  })
   const dispatch = useAppDispatch()
 
   const [fetchAccount, { loading: accountLoading, error: accountError }] =
