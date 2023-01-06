@@ -17,6 +17,7 @@ type Balances = {
   hntBalance?: bigint
   dcBalance?: bigint
   mobileBalance?: bigint
+  iotBalance?: bigint
   secBalance?: bigint
   solBalance?: number
   stakedBalance?: bigint

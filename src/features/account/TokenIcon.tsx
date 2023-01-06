@@ -3,6 +3,7 @@ import TokenHNT from '@assets/images/tokenHNT.svg'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenDC from '@assets/images/tokenDC.svg'
 import TokenSOL from '@assets/images/tokenSolana.svg'
+import TokenIOT from '@assets/images/tokenIOT.svg'
 import { Ticker } from '@helium/currency'
 import { useColors } from '../../theme/themeHooks'
 import Box from '../../components/Box'
@@ -22,6 +23,8 @@ const TokenIcon = ({ ticker, size = 40 }: Props) => {
       return <TokenHNT color={colors.white} width={size} height={size} />
     case 'MOBILE':
       return <TokenMOBILE width={size} height={size} />
+    case 'IOT':
+      return <TokenIOT width={size} height={size} />
     case 'DC':
       return <TokenDC width={size} height={size} />
     case 'HST':
