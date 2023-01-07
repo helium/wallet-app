@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState, memo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { ScrollView, LogBox } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
@@ -234,4 +234,4 @@ const HotspotDetailsScreen = () => {
   )
 }
 
-export default HotspotDetailsScreen
+export default memo(HotspotDetailsScreen)

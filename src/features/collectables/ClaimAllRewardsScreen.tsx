@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import IotReward from '@assets/images/iotRewardIcon.svg'
@@ -128,4 +128,4 @@ const ClaimAllRewardsScreen = () => {
   )
 }
 
-export default ClaimAllRewardsScreen
+export default memo(ClaimAllRewardsScreen)

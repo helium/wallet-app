@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, memo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import IotReward from '@assets/images/iotRewardIcon.svg'
@@ -21,7 +21,7 @@ import { useHotspot } from '../../hooks/useHotspot'
 
 type Route = RouteProp<CollectableStackParamList, 'ClaimRewardsScreen'>
 
-const ClaimAllRewardsScreen = () => {
+const ClaimRewardsScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<CollectableNavigationProp>()
   const route = useRoute<Route>()
@@ -49,7 +49,7 @@ const ClaimAllRewardsScreen = () => {
   }, [t])
 
   const subtitle = useMemo(() => {
-    return hotspot.content.metadata.name
+    return hotspot?.content?.metadata?.name || ''
   }, [hotspot.content.metadata.name])
 
   const onClaimRewards = useCallback(async () => {
@@ -164,4 +164,4 @@ const ClaimAllRewardsScreen = () => {
   )
 }
 
-export default ClaimAllRewardsScreen
+export default memo(ClaimRewardsScreen)

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState, memo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import {
   ScrollView,
@@ -355,4 +355,4 @@ const TransferCollectableScreen = () => {
   )
 }
 
-export default TransferCollectableScreen
+export default memo(TransferCollectableScreen)

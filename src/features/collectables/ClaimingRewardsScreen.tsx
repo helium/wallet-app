@@ -1,6 +1,5 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 import { useNavigation } from '@react-navigation/native'
-import { LogBox } from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
@@ -19,10 +18,6 @@ import { ReAnimatedBox } from '../../components/AnimatedBox'
 import AccountIcon from '../../components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import BackArrow from '../../assets/images/backArrow.svg'
-
-LogBox.ignoreLogs([
-  'Non-serializable values were found in the navigation state',
-])
 
 const ClaimingRewardsScreen = () => {
   const { currentAccount } = useAccountStorage()
@@ -184,4 +179,4 @@ const ClaimingRewardsScreen = () => {
   )
 }
 
-export default ClaimingRewardsScreen
+export default memo(ClaimingRewardsScreen)

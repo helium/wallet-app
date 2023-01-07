@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, memo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { LogBox } from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
@@ -200,4 +200,4 @@ const TransferCollectableScreen = () => {
   )
 }
 
-export default TransferCollectableScreen
+export default memo(TransferCollectableScreen)

@@ -1,6 +1,6 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, memo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { ScrollView, LogBox } from 'react-native'
+import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
@@ -23,10 +23,6 @@ import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import InfoIcon from '../../assets/images/info.svg'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 import ArrowRight from '../../assets/images/arrowRight.svg'
-
-LogBox.ignoreLogs([
-  'Non-serializable values were found in the navigation state',
-])
 
 type Route = RouteProp<CollectableStackParamList, 'NftDetailsScreen'>
 
@@ -155,4 +151,4 @@ const NftDetailsScreen = () => {
   )
 }
 
-export default NftDetailsScreen
+export default memo(NftDetailsScreen)

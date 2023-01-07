@@ -4,13 +4,14 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { init } from '@helium/lazy-distributor-sdk'
 import * as client from '@helium/distributor-oracle'
-import { Connection, PublicKey } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import { useAsyncCallback } from 'react-async-hook'
 import axios from 'axios'
 import { AddGatewayV1 } from '@helium/transactions'
 import Address from '@helium/address'
 import { Keypair } from '@helium/crypto'
 import { sendAndConfirmWithRetry } from '@helium/spl-utils'
+import Config from 'react-native-config'
 import { getKeypair } from '../storage/secureStorage'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
@@ -20,7 +21,11 @@ import {
   fetchMoreCollectables,
 } from '../store/slices/collectablesSlice'
 import { useAppDispatch } from '../store/store'
-import { onLogs, removeAccountChangeListener } from '../utils/solanaUtils'
+import {
+  getConnection,
+  onLogs,
+  removeAccountChangeListener,
+} from '../utils/solanaUtils'
 import { CompressedNFT } from '../types/solana'
 import { MOBILE_LAZY_KEY, IOT_LAZY_KEY } from '../utils/hotspotNftsUtils'
 import useSubmitTxn from '../graphql/useSubmitTxn'
@@ -179,6 +184,7 @@ const useHotspots = (): {
     oldestCollectableId,
   ])
 
+  // FOR TESTING ONLY
   const createHotspot = useCallback(async () => {
     if (!currentAccount || !anchorProvider || !currentAccount.solanaAddress)
       return
@@ -189,12 +195,13 @@ const useHotspots = (): {
     const owner = new Keypair(secureStorage.keypair)
     const onboardingKey = random(10)
     const gateway = await Keypair.makeRandom()
+    // Random maker address
     const maker = Address.fromB58(
       '13AjXWhBNWdxq63dSQmPvRx3uQtaa3pMu5wXB1bPUZTTYEiwpgC',
     )
 
     await axios.post(
-      'https://onboarding.oracle.test-helium.com/api/v2/hotspots',
+      `${Config.ONBOARDING_SERVER_URL}/v2/hotspots`,
       {
         onboardingKey,
         macWlan0: random(10),
@@ -205,8 +212,7 @@ const useHotspots = (): {
       },
       {
         headers: {
-          authorization:
-            'pk_cc0LfShOEengfvg/w1y6JLoOQjD090MxDa8N7+rn73w=:sk_IrcEnnhcgI+wSfJfq4w3OZAdF9V++NDQkQSrkpFgXlUp07DbAAdw/QUMbHfJEevQsx0dm1PKwzcUC5Ew6f7YYA==',
+          authorization: Config.ONBOARDING_SERVER_AUTH,
         },
       },
     )
@@ -214,17 +220,15 @@ const useHotspots = (): {
     // Sleep for 2 seconds to allow the oracle to create the hotspot
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
-    const hotspot = (
-      await axios.get(
-        `https://onboarding.oracle.test-helium.com/api/v2/hotspots/${onboardingKey}`,
-      )
-    ).data.data
+    await axios.get(
+      `${Config.ONBOARDING_SERVER_URL}/v2/hotspots/${onboardingKey}`,
+    )
 
     // Sleep for 2 seconds to allow the oracle to create the hotspot
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     const result = await axios.post(
-      `https://onboarding.oracle.test-helium.com/api/v2/transactions/pay/${onboardingKey}`,
+      `${Config.ONBOARDING_SERVER_URL}/v2/transactions/pay/${onboardingKey}`,
       {
         transaction: (
           await new AddGatewayV1({
@@ -238,18 +242,18 @@ const useHotspots = (): {
       },
     )
 
-    const connection = new Connection('https://api.devnet.solana.com')
+    const connection = getConnection(cluster)
     // eslint-disable-next-line no-restricted-syntax
     for (const solanaTransaction of result.data.data.solanaTransactions) {
       // eslint-disable-next-line no-await-in-loop
-      const { txid } = await sendAndConfirmWithRetry(
+      await sendAndConfirmWithRetry(
         connection,
         Buffer.from(solanaTransaction),
         { skipPreflight: true },
         'confirmed',
       )
     }
-  }, [anchorProvider, currentAccount])
+  }, [anchorProvider, cluster, currentAccount])
 
   const pendingIotRewards = useMemo(() => {
     if (!currentAccount?.solanaAddress) return 0
