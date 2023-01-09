@@ -7,23 +7,39 @@ import {
   getAssociatedTokenAddress,
 } from '@solana/spl-token'
 import Balance, { AnyCurrencyType } from '@helium/currency'
-import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
+import { Metaplex } from '@metaplex-foundation/js'
 import axios from 'axios'
 import Config from 'react-native-config'
+import {
+  TreeConfig,
+  createTransferInstruction,
+  PROGRAM_ID as BUBBLEGUM_PROGRAM_ID,
+} from '@metaplex-foundation/mpl-bubblegum'
+import {
+  ConcurrentMerkleTreeAccount,
+  SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+  SPL_NOOP_PROGRAM_ID,
+} from '@solana/spl-account-compression'
+import bs58 from 'bs58'
+import BN from 'bn.js'
 import { getKeypair } from '../storage/secureStorage'
 import solInstructionsToActivity from './solInstructionsToActivity'
 import { Activity } from '../types/activity'
 import sleep from './sleep'
 import { Mints } from '../store/slices/walletRestApi'
-import { Collectable, EnrichedTransaction } from '../types/solana'
+import {
+  Collectable,
+  CompressedNFT,
+  EnrichedTransaction,
+} from '../types/solana'
 import * as Logger from './logger'
 import { WrappedConnection } from './WrappedConnection'
 
 const Connection = {
-  localnet: new web3.Connection('http://127.0.0.1:8899'),
-  devnet: new web3.Connection(web3.clusterApiUrl('devnet')),
-  testnet: new web3.Connection(web3.clusterApiUrl('testnet')),
-  'mainnet-beta': new web3.Connection(web3.clusterApiUrl('mainnet-beta')),
+  localnet: new WrappedConnection('http://127.0.0.1:8899'),
+  devnet: new WrappedConnection('https://rpc-devnet.aws.metaplex.com/'),
+  testnet: new WrappedConnection(web3.clusterApiUrl('testnet')),
+  'mainnet-beta': new WrappedConnection(web3.clusterApiUrl('mainnet-beta')),
 } as const
 
 export const getConnection = (cluster: web3.Cluster) =>
@@ -350,7 +366,7 @@ export const createTransferCollectableMessage = async (
   cluster: web3.Cluster,
   solanaAddress: string,
   heliumAddress: string,
-  collectable: Collectable,
+  collectable: CompressedNFT,
   payee: string,
 ) => {
   const payer = new web3.PublicKey(solanaAddress)
@@ -367,7 +383,7 @@ export const createTransferCollectableMessage = async (
   }
 
   const recipientPubKey = new web3.PublicKey(payee)
-  const mintPubkey = new web3.PublicKey(collectable.mint.address)
+  const mintPubkey = new web3.PublicKey(collectable.id)
 
   const instructions: web3.TransactionInstruction[] = []
 
@@ -427,7 +443,7 @@ export const transferCollectable = async (
   cluster: web3.Cluster,
   solanaAddress: string,
   heliumAddress: string,
-  collectable: Collectable,
+  collectable: CompressedNFT,
   payee: string,
 ) => {
   const payer = new web3.PublicKey(solanaAddress)
@@ -445,7 +461,7 @@ export const transferCollectable = async (
     }
 
     const recipientPubKey = new web3.PublicKey(payee)
-    const mintPubkey = new web3.PublicKey(collectable.mint.address)
+    const mintPubkey = new web3.PublicKey(collectable.id)
 
     const instructions: web3.TransactionInstruction[] = []
 
@@ -534,46 +550,181 @@ export const transferCollectable = async (
   }
 }
 
-export const confirmTransaction = async (
-  cluster: web3.Cluster,
-  signature: string,
-) => {
-  const conn = getConnection(cluster)
-  const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash()
-  await conn.confirmTransaction(
-    { signature, blockhash, lastValidBlockHeight },
-    'finalized',
-  )
-
-  const txn = await getTxn(cluster, signature)
-
-  if (txn?.meta?.err) {
-    throw new Error(txn.meta.err.toString())
+/**
+ * Convert a buffer to an array of numbers
+ * @param buffer
+ * @returns
+ */
+export function bufferToArray(buffer: Buffer): number[] {
+  const nums = []
+  for (let i = 0; i < buffer.length; i += 1) {
+    nums.push(buffer[i])
   }
-
-  return { signature, txn }
+  return nums
 }
 
 /**
- * Returns the account's collectables
- * @param pubKey public key of the account
- * @param metaplex metaplex connection
- * @returns collectables
+ * Get the Bubblegum Authority PDA for a given tree
+ * @param merkleRollPubKey
+ * @returns
  */
-export const getCollectables = async (
-  pubKey: web3.PublicKey,
-  metaplex: Metaplex,
-) => {
-  const collectables = (await metaplex
-    .nfts()
-    .findAllByOwner({ owner: pubKey })) as Metadata<JsonMetadata<string>>[]
-
-  // TODO: Remove this filter once the uri is fixed for HOTSPOTS
-  const filteredCollectables = collectables.filter(
-    (c) => c.symbol !== 'HOTSPOT',
+export async function getBubblegumAuthorityPDA(
+  merkleRollPubKey: web3.PublicKey,
+) {
+  const [bubblegumAuthorityPDAKey] = await web3.PublicKey.findProgramAddress(
+    [merkleRollPubKey.toBuffer()],
+    BUBBLEGUM_PROGRAM_ID,
   )
+  return bubblegumAuthorityPDAKey
+}
 
-  return filteredCollectables
+/**
+ * Get the nonce count for a given tree
+ * @param connection
+ * @param tree
+ * @returns
+ */
+export async function getNonceCount(
+  connection: web3.Connection,
+  tree: web3.PublicKey,
+): Promise<BN> {
+  const treeAuthority = await getBubblegumAuthorityPDA(tree)
+  return new BN(
+    (await TreeConfig.fromAccountAddress(connection, treeAuthority)).numMinted,
+  )
+}
+
+/**
+ * Transfer a compressed collectable to a new owner
+ * @param cluster
+ * @param solanaAddress
+ * @param heliumAddress
+ * @param collectable
+ * @param payee
+ * @returns
+ */
+export const transferCompressedCollectable = async (
+  cluster: web3.Cluster,
+  solanaAddress: string,
+  heliumAddress: string,
+  collectable: CompressedNFT,
+  payee: string,
+) => {
+  const payer = new web3.PublicKey(solanaAddress)
+  try {
+    const secureAcct = await getKeypair(heliumAddress)
+    const conn = getConnection(cluster)
+
+    if (!secureAcct) {
+      throw new Error('Secure account not found')
+    }
+
+    const signer = {
+      publicKey: payer,
+      secretKey: secureAcct.privateKey,
+    }
+
+    const recipientPubKey = new web3.PublicKey(payee)
+
+    const instructions: web3.TransactionInstruction[] = []
+
+    const assetProof = await conn.getAssetProof(collectable.id)
+
+    const nonceCount = await getNonceCount(
+      conn,
+      new web3.PublicKey(assetProof.tree_id),
+    )
+
+    const leafNonce = nonceCount.sub(new BN(1))
+
+    const treeAuthority = await getBubblegumAuthorityPDA(
+      new web3.PublicKey(assetProof.tree_id),
+    )
+
+    const leafDelegate = collectable.ownership.delegate
+      ? new web3.PublicKey(collectable.ownership.delegate)
+      : new web3.PublicKey(collectable.ownership.owner)
+
+    const merkleTree = new web3.PublicKey(assetProof.tree_id)
+
+    const tree = await ConcurrentMerkleTreeAccount.fromAccountAddress(
+      conn,
+      merkleTree,
+      'confirmed',
+    )
+
+    const canopyHeight = tree.getCanopyDepth()
+
+    instructions.push(
+      createTransferInstruction(
+        {
+          treeAuthority,
+          leafOwner: new web3.PublicKey(collectable.ownership.owner),
+          leafDelegate,
+          newLeafOwner: recipientPubKey,
+          merkleTree,
+          logWrapper: SPL_NOOP_PROGRAM_ID,
+          compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+          anchorRemainingAccounts: assetProof.proof.slice(
+            0,
+            assetProof.proof.length - (canopyHeight || 0),
+          ),
+        },
+        {
+          root: bufferToArray(Buffer.from(bs58.decode(assetProof.root))),
+          dataHash: bufferToArray(
+            Buffer.from(bs58.decode(collectable.compression.data_hash.trim())),
+          ),
+          creatorHash: bufferToArray(
+            Buffer.from(
+              bs58.decode(collectable.compression.creator_hash.trim()),
+            ),
+          ),
+          nonce: leafNonce,
+          index: 0,
+        },
+      ),
+    )
+
+    const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash()
+
+    const messageV0 = new web3.TransactionMessage({
+      payerKey: payer,
+      recentBlockhash: blockhash,
+      instructions,
+    }).compileToLegacyMessage()
+
+    const transaction = new web3.VersionedTransaction(
+      web3.VersionedMessage.deserialize(messageV0.serialize()),
+    )
+
+    transaction.sign([signer])
+
+    const signature = await conn.sendRawTransaction(transaction.serialize(), {
+      skipPreflight: true,
+      maxRetries: 5,
+    })
+
+    await conn.confirmTransaction(
+      { signature, blockhash, lastValidBlockHeight },
+      'finalized',
+    )
+
+    const txn = await getTxn(cluster, signature)
+
+    if (txn?.meta?.err) {
+      throw new Error(
+        typeof txn.meta.err === 'string'
+          ? txn.meta.err
+          : JSON.stringify(txn.meta.err),
+      )
+    }
+
+    return { signature, txn }
+  } catch (e) {
+    Logger.error(e)
+    throw new Error((e as Error).message)
+  }
 }
 
 /**
@@ -585,20 +736,21 @@ export const getCollectables = async (
  */
 export const getCompressedCollectables = async (
   pubKey: web3.PublicKey,
+  cluster: web3.Cluster,
   oldestCollectable?: string,
 ) => {
   // TODO: Replace with devnet when metaplex RPC is ready for all other txs to be sent to devnet
-  const conn = new WrappedConnection('https://rpc-devnet.aws.metaplex.com/')
+  const conn = getConnection(cluster)
   const { items } = await conn.getAssetsByOwner(
     pubKey.toString(),
     'created',
-    100,
+    50,
     1,
-    oldestCollectable || '',
     '',
+    oldestCollectable || '',
   )
 
-  return items as Metadata<JsonMetadata<string>>[]
+  return items as CompressedNFT[]
 }
 
 /**
@@ -608,21 +760,20 @@ export const getCompressedCollectables = async (
  * @returns collectables with metadata
  */
 export const getCollectablesMetadata = async (
-  collectables: Metadata<JsonMetadata<string>>[],
-  metaplex: Metaplex,
+  collectables: CompressedNFT[],
 ) => {
-  // TODO: Remove this filter once the uri is fixed for HOTSPOTS
-  const filteredCollectables = collectables.filter(
-    (c) => c.symbol !== 'HOTSPOT',
-  )
   const collectablesWithMetadata = await Promise.all(
-    filteredCollectables.map(async (col) => {
+    collectables.map(async (col) => {
       let json
       try {
-        json = await (await fetch(col.uri)).json()
-
-        const metadata = await metaplex.nfts().load({ metadata: col })
-        return { ...metadata, json }
+        json = await (await fetch(col.content.json_uri)).json()
+        return {
+          ...col,
+          content: {
+            ...col.content,
+            metadata: { ...col.content.metadata, ...json },
+          },
+        }
       } catch (e) {
         Logger.error(e)
         return null
@@ -630,7 +781,7 @@ export const getCollectablesMetadata = async (
     }),
   )
 
-  return collectablesWithMetadata.filter((c) => c !== null) as Collectable[]
+  return collectablesWithMetadata.filter((c) => c !== null) as CompressedNFT[]
 }
 
 /**
@@ -638,18 +789,20 @@ export const getCollectablesMetadata = async (
  * @param collectables collectables
  * @returns grouped collecables by token type
  */
-export const groupCollectables = (
-  collectables: Metadata<JsonMetadata<string>>[],
-) => {
+export const groupCollectables = (collectables: CompressedNFT[]) => {
   const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const { symbol } = cur
-    if (!acc[symbol]) {
-      acc[symbol] = [cur]
+    const {
+      content: {
+        metadata: { symbol },
+      },
+    } = cur
+    if (!acc[symbol || 'UNKNOWN']) {
+      acc[symbol || 'UNKNOWN'] = [cur]
     } else {
-      acc[symbol].push(cur)
+      acc[symbol || 'UNKOWN'].push(cur)
     }
     return acc
-  }, {} as Record<string, Metadata<JsonMetadata<string>>[]>)
+  }, {} as Record<string, CompressedNFT[]>)
 
   return collectablesGroupedByName
 }
@@ -659,16 +812,22 @@ export const groupCollectables = (
  * @param collectables collectables with metadata
  * @returns grouped collecables by token type
  */
-export const groupCollectablesWithMetaData = (collectables: Collectable[]) => {
+export const groupCollectablesWithMetaData = (
+  collectables: CompressedNFT[],
+) => {
   const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const { symbol } = cur
-    if (!acc[symbol]) {
-      acc[symbol] = [cur]
+    const {
+      content: {
+        metadata: { symbol },
+      },
+    } = cur
+    if (!acc[symbol || 'UNKNOWN']) {
+      acc[symbol || 'UNKNOWN'] = [cur]
     } else {
-      acc[symbol].push(cur)
+      acc[symbol || 'UNKNOWN'].push(cur)
     }
     return acc
-  }, {} as Record<string, Collectable[]>)
+  }, {} as Record<string, CompressedNFT[]>)
 
   return collectablesGroupedByName
 }

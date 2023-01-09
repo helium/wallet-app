@@ -12,7 +12,7 @@ import {
 import { DelayedFadeIn } from '../../components/FadeInOut'
 import globalStyles from '../../theme/globalStyles'
 import { useBorderRadii } from '../../theme/themeHooks'
-import { Collectable } from '../../types/solana'
+import { CompressedNFT } from '../../types/solana'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 
 LogBox.ignoreLogs([
@@ -30,16 +30,20 @@ const CollectionScreen = () => {
   const { lm: borderRadius } = useBorderRadii()
 
   const handleNavigateToCollectable = useCallback(
-    (collectable: Collectable) => {
-      navigation.navigate('NftDetailsScreen', { collectable })
+    (collectable: CompressedNFT) => {
+      if (collectable.content.metadata) {
+        navigation.navigate('NftDetailsScreen', { collectable })
+      }
     },
     [navigation],
   )
 
   const renderCollectable = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
-    ({ item }: { item: Collectable }) => {
-      const { json } = item
+    ({ item }: { item: CompressedNFT }) => {
+      const {
+        content: { metadata },
+      } = item
 
       return (
         <ReAnimatedBox
@@ -59,7 +63,7 @@ const CollectionScreen = () => {
               borderRadius={borderRadius}
               style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
               source={{
-                uri: json?.image,
+                uri: metadata?.image,
               }}
             />
           </TouchableOpacityBox>
@@ -69,15 +73,15 @@ const CollectionScreen = () => {
     [COLLECTABLE_HEIGHT, borderRadius, handleNavigateToCollectable],
   )
 
-  const keyExtractor = useCallback((item: Collectable) => {
-    return item.address.toString()
+  const keyExtractor = useCallback((item: CompressedNFT) => {
+    return item.id.toString()
   }, [])
 
   return (
     <BackScreen
       padding="none"
       headerBackgroundColor="primaryBackground"
-      title={`${collectables[0].symbol} ${collectables.length}`}
+      title={`${collectables[0].content.metadata.symbol} ${collectables.length}`}
     >
       <ReAnimatedBox
         marginTop="s"

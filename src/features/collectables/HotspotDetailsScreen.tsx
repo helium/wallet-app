@@ -1,6 +1,6 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState, memo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { ScrollView, LogBox } from 'react-native'
+import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
@@ -12,7 +12,6 @@ import {
 } from './collectablesTypes'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { DelayedFadeIn } from '../../components/FadeInOut'
-import globalStyles from '../../theme/globalStyles'
 import Box from '../../components/Box'
 import ImageBox from '../../components/ImageBox'
 import ButtonPressable from '../../components/ButtonPressable'
@@ -28,10 +27,6 @@ import InfoIcon from '../../assets/images/info.svg'
 import { useHotspot } from '../../hooks/useHotspot'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 
-LogBox.ignoreLogs([
-  'Non-serializable values were found in the navigation state',
-])
-
 type Route = RouteProp<CollectableStackParamList, 'HotspotDetailsScreen'>
 
 const HotspotDetailsScreen = () => {
@@ -46,19 +41,27 @@ const HotspotDetailsScreen = () => {
 
   const { collectable } = route.params
   const mint = useMemo(
-    () => new PublicKey(collectable.mint.address),
-    [collectable.mint],
+    () => new PublicKey(collectable.compression.asset_hash),
+    [collectable.compression.asset_hash],
   )
 
   const {
-    pendingRewards,
-    claimRewards,
-    rewardsLoading: loading,
+    pendingMobileRewards,
+    mobileRewardsLoading,
+    pendingIotRewards,
+    iotRewardsLoading,
+    iotRewardsError,
+    mobileRewardsError,
   } = useHotspot(mint)
 
   const hasMobileRewards = useMemo(
-    () => pendingRewards && pendingRewards > 0,
-    [pendingRewards],
+    () => pendingMobileRewards && pendingMobileRewards > 0,
+    [pendingMobileRewards],
+  )
+
+  const hasIotRewards = useMemo(
+    () => pendingIotRewards && pendingIotRewards > 0,
+    [pendingIotRewards],
   )
 
   const spacing = useSpacing()
@@ -78,16 +81,18 @@ const HotspotDetailsScreen = () => {
   }, [collectable, navigation])
 
   const handleClaimRewards = useCallback(() => {
-    claimRewards()
-  }, [claimRewards])
+    navigation.navigate('ClaimRewardsScreen', {
+      hotspot: collectable,
+    })
+  }, [collectable, navigation])
 
   const handleInfoPress = useCallback(() => {
-    if (collectable.json) {
+    if (collectable.content.metadata) {
       navigation.push('NftMetadataScreen', {
-        metadata: collectable.json,
+        metadata: collectable.content.metadata,
       })
     }
-  }, [collectable.json, navigation])
+  }, [collectable.content.metadata, navigation])
 
   const hotspotOptions = useCallback(
     () => (
@@ -103,20 +108,17 @@ const HotspotDetailsScreen = () => {
     [handleSend],
   )
 
-  if (!collectable.json) {
-    return null
-  }
-
   return (
-    <BackScreen
-      padding="none"
-      title={t('collectablesScreen.hotspots.hotspotDetailTitle')}
-      backgroundImageUri={collectable.json.image || ''}
-      edges={backEdges}
-      TrailingIcon={InfoIcon}
-      onTrailingIconPress={handleInfoPress}
-    >
-      <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
+    <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
+      <BackScreen
+        headerTopMargin="l"
+        padding="none"
+        title={t('collectablesScreen.hotspots.hotspotDetailTitle')}
+        backgroundImageUri={collectable.content.metadata.image || ''}
+        edges={backEdges}
+        TrailingIcon={InfoIcon}
+        onTrailingIconPress={handleInfoPress}
+      >
         <ScrollView>
           <SafeAreaBox
             edges={safeEdges}
@@ -125,7 +127,7 @@ const HotspotDetailsScreen = () => {
             padding="m"
             alignItems="center"
           >
-            {collectable.json && (
+            {collectable.content.metadata.image && (
               <Box
                 shadowColor="black"
                 shadowOpacity={0.4}
@@ -138,7 +140,10 @@ const HotspotDetailsScreen = () => {
                   backgroundColor="black"
                   height={COLLECTABLE_HEIGHT - spacing.xl * 2}
                   width={COLLECTABLE_HEIGHT - spacing.xl * 2}
-                  source={{ uri: collectable.json.image, cache: 'force-cache' }}
+                  source={{
+                    uri: collectable.content.metadata.image,
+                    cache: 'force-cache',
+                  }}
                   borderRadius="xxl"
                 />
               </Box>
@@ -150,10 +155,10 @@ const HotspotDetailsScreen = () => {
               textAlign="center"
               variant="h1Medium"
             >
-              {removeDashAndCapitalize(collectable.json.name || '')}
+              {removeDashAndCapitalize(collectable.content.metadata.name || '')}
             </Text>
             <Text variant="body3Medium" color="grey600" marginBottom="xl">
-              {collectable.json.description ||
+              {collectable.content.metadata.description ||
                 t('collectablesScreen.collectables.noDescription')}
             </Text>
             <Box
@@ -185,21 +190,31 @@ const HotspotDetailsScreen = () => {
                 titleColorDisabled="grey600"
                 title={t('collectablesScreen.hotspots.claimRewards')}
                 titleColor="black"
-                disabled={loading || !hasMobileRewards}
+                disabled={
+                  !mobileRewardsLoading ||
+                  !iotRewardsLoading ||
+                  !!iotRewardsError ||
+                  !!mobileRewardsError ||
+                  !hasMobileRewards ||
+                  !hasIotRewards
+                }
                 onPress={handleClaimRewards}
               />
             </Box>
             <Text marginBottom="s" variant="body2" color="grey600">
-              {t('collectablesScreen.collectables.pendingRewardsTitle')}
+              {t('collectablesScreen.hotspots.pendingRewardsTitle')}
             </Text>
             <Text variant="body2" marginBottom="m">
-              {
-                (t('collectablesScreen.collectables.pendingRewards'),
-                {
-                  amount: pendingRewards,
-                  ticker: 'MOBILE',
-                })
-              }
+              {t('collectablesScreen.hotspots.pendingRewards', {
+                amount: pendingMobileRewards || 0,
+                ticker: 'MOBILE',
+              })}
+            </Text>
+            <Text variant="body2" marginBottom="m">
+              {t('collectablesScreen.hotspots.pendingRewards', {
+                amount: pendingIotRewards || 0,
+                ticker: 'IOT',
+              })}
             </Text>
             <BlurActionSheet
               title={t('collectablesScreen.hotspots.hotspotActions')}
@@ -210,9 +225,9 @@ const HotspotDetailsScreen = () => {
             </BlurActionSheet>
           </SafeAreaBox>
         </ScrollView>
-      </ReAnimatedBox>
-    </BackScreen>
+      </BackScreen>
+    </ReAnimatedBox>
   )
 }
 
-export default HotspotDetailsScreen
+export default memo(HotspotDetailsScreen)

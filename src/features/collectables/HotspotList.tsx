@@ -3,22 +3,23 @@ import { times } from 'lodash'
 import { FlatList } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { RefreshControl } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { useColors } from '../../theme/themeHooks'
 import Box from '../../components/Box'
-import { CollectableSkeleton } from './NftListItem'
-import { Collectable } from '../../types/solana'
+import { NFTSkeleton } from './NftListItem'
+import { CompressedNFT } from '../../types/solana'
 import { CollectableNavigationProp } from './collectablesTypes'
 import HotspotListItem from './HotspotListItem'
 import ButtonPressable from '../../components/ButtonPressable'
 import useHotspots from '../../hooks/useHotspots'
-import FadeInOut from '../../components/FadeInOut'
+import CircleLoader from '../../components/CircleLoader'
 
 const HotspotList = () => {
   const { bottom } = useSafeAreaInsets()
   const navigation = useNavigation<CollectableNavigationProp>()
   const { t } = useTranslation()
+  const isFocused = useIsFocused()
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
   const { primaryText } = useColors()
@@ -27,45 +28,93 @@ const HotspotList = () => {
     hotspotsWithMeta,
     loading: loadingHotspots,
     refresh,
+    claimAllMobileRewards: { loading: loadingMobile, error: errorMobile },
+    claimAllIotRewards: { loading: loadingIot, error: errorIot },
+    pendingIotRewards,
+    pendingMobileRewards,
+    createHotspot,
+    fetchMore,
+    fetchingMore,
   } = useHotspots()
 
   const handleNavigateToCollectable = useCallback(
-    (collectable: Collectable) => {
-      navigation.navigate('HotspotDetailsScreen', { collectable })
+    (collectable: CompressedNFT) => {
+      if (collectable.content.metadata) {
+        navigation.navigate('HotspotDetailsScreen', { collectable })
+      }
     },
     [navigation],
   )
 
+  const handleOnEndReached = useCallback(() => {
+    if (!fetchingMore && isFocused) {
+      fetchMore()
+    }
+  }, [fetchingMore, isFocused, fetchMore])
+
+  const handleNavigateToClaimRewards = useCallback(() => {
+    navigation.navigate('ClaimAllRewardsScreen')
+  }, [navigation])
+
   const renderHeader = useCallback(() => {
     return (
-      <ButtonPressable
-        style={{ flexBasis: 0 }}
-        flexGrow={1}
-        marginTop="m"
-        borderRadius="round"
-        backgroundColor="white"
-        backgroundColorOpacityPressed={0.7}
-        backgroundColorDisabled="surfaceSecondary"
-        backgroundColorDisabledOpacity={0.5}
-        titleColorDisabled="white"
-        title={t('collectablesScreen.hotspots.claimAllRewards')}
-        titleColor="black"
-        marginBottom="m"
-        marginHorizontal="l"
-      />
+      <>
+        <ButtonPressable
+          style={{ flexBasis: 0 }}
+          flexGrow={1}
+          marginTop="l"
+          borderRadius="round"
+          backgroundColor="white"
+          backgroundColorOpacityPressed={0.7}
+          backgroundColorDisabled="surfaceSecondary"
+          backgroundColorDisabledOpacity={0.5}
+          titleColorDisabled="secondaryText"
+          title={t('collectablesScreen.hotspots.claimAllRewards')}
+          titleColor="black"
+          marginBottom="m"
+          marginHorizontal="l"
+          disabled={
+            loadingMobile ||
+            !!errorMobile ||
+            loadingIot ||
+            !!errorIot ||
+            (pendingIotRewards === 0 && pendingMobileRewards === 0)
+          }
+          onPress={handleNavigateToClaimRewards}
+        />
+        {__DEV__ && (
+          <ButtonPressable
+            style={{ flexBasis: 0 }}
+            flexGrow={1}
+            borderRadius="round"
+            backgroundColor="white"
+            backgroundColorOpacityPressed={0.7}
+            title="Create Hotspot"
+            titleColor="black"
+            marginBottom="m"
+            marginHorizontal="l"
+            onPress={createHotspot}
+          />
+        )}
+      </>
     )
-  }, [t])
+  }, [
+    createHotspot,
+    errorIot,
+    errorMobile,
+    handleNavigateToClaimRewards,
+    loadingIot,
+    loadingMobile,
+    pendingIotRewards,
+    pendingMobileRewards,
+    t,
+  ])
 
   const renderCollectable = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
-    ({ item }: { item: Collectable }) => {
+    ({ item }: { item: CompressedNFT }) => {
       return (
-        <FadeInOut>
-          <HotspotListItem
-            hotspot={item}
-            onPress={handleNavigateToCollectable}
-          />
-        </FadeInOut>
+        <HotspotListItem hotspot={item} onPress={handleNavigateToCollectable} />
       )
     },
     [handleNavigateToCollectable],
@@ -78,7 +127,7 @@ const HotspotList = () => {
       return (
         <Box flex={1} flexDirection="row">
           {times(hotspots.length).map((i) => (
-            <CollectableSkeleton key={i} />
+            <NFTSkeleton key={i} />
           ))}
         </Box>
       )
@@ -87,8 +136,8 @@ const HotspotList = () => {
     return null
   }, [hotspots, loadingHotspots])
 
-  const keyExtractor = useCallback((item: Collectable) => {
-    return item.mint.toString()
+  const keyExtractor = useCallback((item: CompressedNFT) => {
+    return item.id
   }, [])
 
   const contentContainerStyle = useMemo(
@@ -97,6 +146,14 @@ const HotspotList = () => {
     }),
     [bottomSpace],
   )
+
+  const Footer = useCallback(() => {
+    return fetchingMore ? (
+      <Box marginTop="m">
+        <CircleLoader loaderSize={40} />
+      </Box>
+    ) : null
+  }, [fetchingMore])
 
   return (
     <FlatList
@@ -118,7 +175,10 @@ const HotspotList = () => {
       contentContainerStyle={contentContainerStyle}
       renderItem={renderCollectable}
       ListEmptyComponent={renderEmptyComponent}
+      onEndReachedThreshold={0.01}
+      onEndReached={handleOnEndReached}
       keyExtractor={keyExtractor}
+      ListFooterComponent={Footer}
     />
   )
 }

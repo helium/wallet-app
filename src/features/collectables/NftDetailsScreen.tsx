@@ -1,6 +1,6 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, memo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { ScrollView, LogBox } from 'react-native'
+import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
@@ -22,10 +22,7 @@ import Trash from '../../assets/images/trash.svg'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import InfoIcon from '../../assets/images/info.svg'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
-
-LogBox.ignoreLogs([
-  'Non-serializable values were found in the navigation state',
-])
+import ArrowRight from '../../assets/images/arrowRight.svg'
 
 type Route = RouteProp<CollectableStackParamList, 'NftDetailsScreen'>
 
@@ -39,6 +36,9 @@ const NftDetailsScreen = () => {
   const { t } = useTranslation()
 
   const { collectable } = route.params
+  const {
+    content: { metadata },
+  } = collectable
 
   const spacing = useSpacing()
 
@@ -49,31 +49,28 @@ const NftDetailsScreen = () => {
   }, [collectable, navigation])
 
   const handleInfoPress = useCallback(() => {
-    if (collectable.json) {
+    if (metadata) {
       navigation.push('NftMetadataScreen', {
-        metadata: collectable.json,
+        metadata,
       })
     }
-  }, [collectable.json, navigation])
+  }, [metadata, navigation])
 
   const backgroundImageUri = useMemo(() => {
-    return collectable?.json?.image
-  }, [collectable.json])
-
-  if (!collectable.json || !backgroundImageUri) {
-    return null
-  }
+    return metadata.image
+  }, [metadata.image])
 
   return (
-    <BackScreen
-      padding="none"
-      title={t('collectablesScreen.nfts.nftDetialTitle')}
-      backgroundImageUri={backgroundImageUri}
-      edges={backEdges}
-      TrailingIcon={InfoIcon}
-      onTrailingIconPress={handleInfoPress}
-    >
-      <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
+    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
+      <BackScreen
+        padding="none"
+        title={t('collectablesScreen.nfts.nftDetialTitle')}
+        backgroundImageUri={backgroundImageUri}
+        edges={backEdges}
+        TrailingIcon={InfoIcon}
+        onTrailingIconPress={handleInfoPress}
+        headerTopMargin="l"
+      >
         <ScrollView>
           <SafeAreaBox
             edges={safeEdges}
@@ -82,7 +79,7 @@ const NftDetailsScreen = () => {
             padding="m"
             alignItems="center"
           >
-            {collectable.json && (
+            {metadata && (
               <Box
                 shadowColor="black"
                 shadowOpacity={0.4}
@@ -95,7 +92,7 @@ const NftDetailsScreen = () => {
                   backgroundColor="black"
                   height={COLLECTABLE_HEIGHT - spacing.xl * 2}
                   width={COLLECTABLE_HEIGHT - spacing.xl * 2}
-                  source={{ uri: collectable.json.image, cache: 'force-cache' }}
+                  source={{ uri: metadata.image, cache: 'force-cache' }}
                   borderRadius="xxl"
                 />
               </Box>
@@ -107,10 +104,10 @@ const NftDetailsScreen = () => {
               textAlign="center"
               variant="h1Medium"
             >
-              {collectable.json.name}
+              {metadata.name}
             </Text>
             <Text variant="body3Medium" color="grey600" marginBottom="xl">
-              {collectable.json.description || t('collectables.noDescription')}
+              {metadata.description || t('collectables.noDescription')}
             </Text>
             <Box
               flexDirection="row"
@@ -142,13 +139,16 @@ const NftDetailsScreen = () => {
                 title={t('collectablesScreen.transfer')}
                 titleColor="black"
                 onPress={handleSend}
+                TrailingComponent={
+                  <ArrowRight width={16} height={15} color="black" />
+                }
               />
             </Box>
           </SafeAreaBox>
         </ScrollView>
-      </ReAnimatedBox>
-    </BackScreen>
+      </BackScreen>
+    </ReAnimatedBox>
   )
 }
 
-export default NftDetailsScreen
+export default memo(NftDetailsScreen)

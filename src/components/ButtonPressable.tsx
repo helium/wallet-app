@@ -36,6 +36,7 @@ type Props = BoxProps<Theme> & {
   selected?: boolean
   debounceDuration?: number
   style?: ViewStyle
+  LeadingComponent?: React.ReactNode
   TrailingComponent?: React.ReactNode
 }
 
@@ -62,6 +63,7 @@ const ButtonPressable = ({
   padding,
   debounceDuration,
   height = 60,
+  LeadingComponent,
   TrailingComponent,
   ...boxProps
 }: Props) => {
@@ -171,6 +173,7 @@ const ButtonPressable = ({
             alignItems="center"
             {...containerProps}
           >
+            {LeadingComponent && <Box marginEnd="xs">{LeadingComponent}</Box>}
             {title && (
               <Text
                 variant="subtitle1"
@@ -183,7 +186,10 @@ const ButtonPressable = ({
               </Text>
             )}
             {Icon && <Icon color={getIconColor(pressed)} />}
-            {TrailingComponent && TrailingComponent}
+
+            {TrailingComponent && (
+              <Box marginStart="xs">{TrailingComponent}</Box>
+            )}
           </Box>
         )}
       </Pressable>

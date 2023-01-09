@@ -9,7 +9,7 @@ import OneSignal, { OpenedEvent } from 'react-native-onesignal'
 import Config from 'react-native-config'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import { PortalProvider } from '@gorhom/portal'
+import { PortalHost, PortalProvider } from '@gorhom/portal'
 import * as SplashLib from 'expo-splash-screen'
 import { useApolloClient } from './graphql/useApolloClient'
 import { theme, darkThemeColors, lightThemeColors } from './theme/theme'
@@ -46,6 +46,7 @@ const App = () => {
     "[react-native-gesture-handler] Seems like you're using an old API with gesture components",
     'console.error: {"context":"client"} {"context":"client/pairing"} Unauthorized pairing update request',
     'Require cycle:',
+    'ws error: received bad response code from server 403',
   ])
 
   const { appState } = useAppState()
@@ -98,6 +99,7 @@ const App = () => {
         <ThemeProvider theme={colorAdaptedTheme}>
           <SplashScreen>
             <PortalProvider>
+              <PortalHost name="portal-m" />
               <OnboardingProvider>
                 {client && (
                   <ApolloProvider client={client}>
