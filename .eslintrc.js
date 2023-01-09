@@ -18,6 +18,7 @@ module.exports = {
     jest: true,
   },
   rules: {
+    'prefer-exponentiation-operator': 'off',
     'prettier/prettier': 'error',
     'global-require': 'off',
     'no-prototype-builtins': 'off',

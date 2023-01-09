@@ -7,6 +7,7 @@ import {
 } from '@reduxjs/toolkit'
 import {
   Cluster,
+  PublicKey,
   SignaturesForAddressOptions,
   Transaction,
 } from '@solana/web3.js'
@@ -71,6 +72,7 @@ export const readBalances = createAsyncThunk(
       acct.solanaAddress,
       mints,
     )
+
     const solBalance = await solUtils.readSolanaBalance(
       cluster,
       acct.solanaAddress,
@@ -122,6 +124,13 @@ type ClaimAllRewardsInput = {
   txns: Transaction[]
   anchorProvider: AnchorProvider
   cluster: Cluster
+}
+
+type TreasurySwapTxn = {
+  anchorProvider: AnchorProvider
+  cluster: Cluster
+  amount: number
+  fromMint: PublicKey
 }
 
 export const makePayment = createAsyncThunk(
@@ -189,10 +198,41 @@ export const makeCollectablePayment = createAsyncThunk(
   },
 )
 
+export const sendTreasurySwap = createAsyncThunk(
+  'solana/sendTreasurySwap',
+  async (
+    { anchorProvider, amount, fromMint, cluster }: TreasurySwapTxn,
+    { dispatch },
+  ) => {
+    try {
+      const swap = await solUtils.createTreasurySwapTxn(
+        cluster,
+        amount,
+        fromMint,
+        anchorProvider,
+      )
+
+      return await dispatch(
+        walletRestApi.endpoints.postPayment.initiate({
+          txnSignature: swap.signature,
+          cluster,
+        }),
+      )
+    } catch (error) {
+      Logger.error(error)
+    }
+  },
+)
+
 export const sendAnchorTxn = createAsyncThunk(
   'solana/sendAnchorTxn',
   async ({ txn, anchorProvider, cluster }: AnchorTxnInput, { dispatch }) => {
     try {
+      const { blockhash } = await anchorProvider.connection.getLatestBlockhash(
+        'recent',
+      )
+      txn.recentBlockhash = blockhash
+      txn.feePayer = anchorProvider.wallet.publicKey
       const signed = await anchorProvider.wallet.signTransaction(txn)
       const { txid } = await sendAndConfirmWithRetry(
         anchorProvider.connection,
@@ -410,6 +450,19 @@ const solanaSlice = createSlice({
       state.payment = { success: false, loading: true, error: undefined }
     })
     builder.addCase(sendAnchorTxn.fulfilled, (state, _action) => {
+      state.payment = {
+        success: true,
+        loading: false,
+        error: undefined,
+      }
+    })
+    builder.addCase(sendTreasurySwap.rejected, (state, action) => {
+      state.payment = { success: false, loading: false, error: action.error }
+    })
+    builder.addCase(sendTreasurySwap.pending, (state, _action) => {
+      state.payment = { success: false, loading: true, error: undefined }
+    })
+    builder.addCase(sendTreasurySwap.fulfilled, (state, _action) => {
       state.payment = {
         success: true,
         loading: false,

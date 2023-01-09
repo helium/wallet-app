@@ -6,7 +6,7 @@ import Balance, {
   Ticker,
 } from '@helium/currency'
 import { PaymentV2 } from '@helium/transactions'
-import { Transaction } from '@solana/web3.js'
+import { PublicKey, Transaction } from '@solana/web3.js'
 import { useTransactions } from '../storage/TransactionProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAccountLazyQuery, useSubmitTxnMutation } from '../generated/graphql'
@@ -17,6 +17,7 @@ import {
   claimRewards,
   claimAllRewards,
   sendAnchorTxn,
+  sendTreasurySwap,
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import { useGetMintsQuery } from '../store/slices/walletRestApi'
@@ -159,6 +160,23 @@ export default () => {
     [cluster, currentAccount, dispatch],
   )
 
+  const submitTreasurySwap = useCallback(
+    async (fromMint: PublicKey, amount: number) => {
+      if (!anchorProvider) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+      dispatch(
+        sendTreasurySwap({
+          anchorProvider,
+          cluster,
+          fromMint,
+          amount,
+        }),
+      )
+    },
+    [anchorProvider, cluster, dispatch],
+  )
+
   const submitAnchorTxn = useCallback(
     async (txn: Transaction) => {
       if (!anchorProvider) {
@@ -252,6 +270,7 @@ export default () => {
   return {
     submit,
     submitCollectable,
+    submitTreasurySwap,
     submitAnchorTxn,
     submitClaimRewards,
     submitClaimAllRewards,

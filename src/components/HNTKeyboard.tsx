@@ -28,6 +28,7 @@ import { Edge } from 'react-native-safe-area-context'
 import { BoxProps } from '@shopify/restyle'
 import { floor } from 'lodash'
 import { differenceInMilliseconds } from 'date-fns'
+import { Portal } from '@gorhom/portal'
 import { useOpacity, useSafeTopPaddingStyle } from '../theme/themeHooks'
 import Keypad from './Keypad'
 import Box from './Box'
@@ -108,13 +109,25 @@ const HNTKeyboardSelector = forwardRef(
       floatToBalance,
       networkBalance,
       mobileBalance,
+      iotBalance,
       bonesToBalance,
     } = useBalance()
     const [timeStr, setTimeStr] = useState('')
 
+    const getHeliumBalance = useCallback(() => {
+      switch (ticker) {
+        case 'MOBILE':
+          return mobileBalance
+        case 'IOT':
+          return iotBalance
+        default:
+          return networkBalance
+      }
+    }, [iotBalance, mobileBalance, networkBalance, ticker])
+
     const balanceForTicker = useMemo(
-      () => (ticker === 'HNT' ? networkBalance : mobileBalance),
-      [mobileBalance, networkBalance, ticker],
+      () => (ticker === 'HNT' ? networkBalance : getHeliumBalance()),
+      [getHeliumBalance, networkBalance, ticker],
     )
 
     const snapPoints = useMemo(() => {
@@ -210,7 +223,7 @@ const HNTKeyboardSelector = forwardRef(
     const [maxEnabled, setMaxEnabled] = useState(false)
 
     const handleSetMax = useCallback(() => {
-      if (!networkBalance || !mobileBalance || !networkFee) return
+      if (!networkBalance || !getHeliumBalance() || !networkFee) return
 
       const currentAmount = getNextPayments()
         .filter((_v, index) => index !== paymentIndex || 0) // Remove the payment being updated
@@ -228,7 +241,7 @@ const HNTKeyboardSelector = forwardRef(
           maxBalance = maxBalance.minus(networkFee)
         }
       } else {
-        maxBalance = mobileBalance.minus(currentAmount)
+        maxBalance = getHeliumBalance().minus(currentAmount)
       }
 
       if (maxBalance.integerBalance < 0) {
@@ -247,7 +260,7 @@ const HNTKeyboardSelector = forwardRef(
       setMaxEnabled((m) => !m)
     }, [
       networkBalance,
-      mobileBalance,
+      getHeliumBalance,
       networkFee,
       getNextPayments,
       bonesToBalance,
@@ -256,6 +269,13 @@ const HNTKeyboardSelector = forwardRef(
       paymentIndex,
       l1Network,
     ])
+
+    const backdropEdges = useMemo(() => {
+      if (l1Network === 'helium') {
+        return [] as Edge[]
+      }
+      return ['top'] as Edge[]
+    }, [l1Network])
 
     const renderBackdrop = useCallback(
       (props) => (
@@ -266,7 +286,8 @@ const HNTKeyboardSelector = forwardRef(
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...props}
         >
-          <Box
+          <SafeAreaBox
+            edges={backdropEdges}
             backgroundColor="primaryBackground"
             flex={1}
             style={containerStyle}
@@ -312,10 +333,11 @@ const HNTKeyboardSelector = forwardRef(
                   : ''}
               </Text>
             </Box>
-          </Box>
+          </SafeAreaBox>
         </BottomSheetBackdrop>
       ),
       [
+        backdropEdges,
         balanceForTicker,
         containerStyle,
         handleHeaderLayout,
@@ -377,24 +399,29 @@ const HNTKeyboardSelector = forwardRef(
     const hasSufficientBalance = useMemo(() => {
       if (!payer) return true
 
-      if (!networkFee || !valueAsBalance || !networkBalance || !mobileBalance) {
+      if (
+        !networkFee ||
+        !valueAsBalance ||
+        !networkBalance ||
+        !getHeliumBalance()
+      ) {
         return false
       }
 
       if (l1Network === 'solana') {
-        if (ticker === 'MOBILE') {
-          return mobileBalance.minus(valueAsBalance).integerBalance >= 0
+        if (ticker !== 'HNT') {
+          return getHeliumBalance().minus(valueAsBalance).integerBalance >= 0
         }
         return networkBalance.minus(valueAsBalance).integerBalance >= 0
       }
 
       if (ticker === 'MOBILE') {
-        // If paying with mobile, they need to have enough mobile to cover the payment
+        // If paying with mobile on helium L1, they need to have enough mobile to cover the payment
         // and enough hnt to cover the fee
         const hasEnoughHnt =
           networkBalance.minus(networkFee).integerBalance >= 0
         const hasEnoughMobile =
-          mobileBalance.minus(valueAsBalance).integerBalance >= 0
+          getHeliumBalance().minus(valueAsBalance).integerBalance >= 0
         return hasEnoughHnt && hasEnoughMobile
       }
       return (
@@ -402,8 +429,8 @@ const HNTKeyboardSelector = forwardRef(
         0
       )
     }, [
+      getHeliumBalance,
       l1Network,
-      mobileBalance,
       networkBalance,
       networkFee,
       payer,
@@ -483,90 +510,98 @@ const HNTKeyboardSelector = forwardRef(
     }, [handleDismiss, handleVisible])
 
     return (
-      <BottomSheetModalProvider>
-        <Box flex={1} {...boxProps}>
-          <BottomSheetModal
-            onChange={handleChange}
-            ref={bottomSheetModalRef}
-            index={0}
-            backgroundStyle={backgroundStyle}
-            backdropComponent={renderBackdrop}
-            handleComponent={renderHandle}
-            snapPoints={snapPoints}
-            onDismiss={handleModalDismiss}
-          >
-            <SafeAreaBox
-              flex={1}
-              edges={safeEdges}
-              flexDirection="column"
-              alignItems="center"
+      <Box flex={1} {...boxProps}>
+        <Portal>
+          <BottomSheetModalProvider>
+            <BottomSheetModal
+              onChange={handleChange}
+              ref={bottomSheetModalRef}
+              index={0}
+              backgroundStyle={backgroundStyle}
+              backdropComponent={renderBackdrop}
+              handleComponent={renderHandle}
+              snapPoints={snapPoints}
+              onDismiss={handleModalDismiss}
             >
-              <Text
-                marginHorizontal="l"
-                variant="h1"
-                maxFontSizeMultiplier={1}
-                numberOfLines={1}
-                adjustsFontSizeToFit
+              <SafeAreaBox
+                flex={1}
+                edges={safeEdges}
+                flexDirection="column"
+                alignItems="center"
               >
-                {`${value || '0'} ${valueAsBalance?.type.ticker}`}
-              </Text>
-              {payer && networkFee && (
                 <Text
-                  paddingHorizontal="m"
+                  marginHorizontal="l"
+                  variant="h1"
                   maxFontSizeMultiplier={1}
                   numberOfLines={1}
-                  variant="body1"
-                  color="secondaryText"
-                  marginBottom="l"
+                  adjustsFontSizeToFit
                 >
-                  {t('hntKeyboard.fee', {
-                    value: balanceToString(networkFee, {
-                      maxDecimalPlaces: 4,
-                    }),
-                  })}
+                  {`${value || '0'} ${valueAsBalance?.type.ticker}`}
                 </Text>
-              )}
-              <Keypad
-                customButtonType="decimal"
-                onPress={handlePress}
-                marginHorizontal="l"
-                flex={1}
-              />
-              <Box flexDirection="row" marginHorizontal="l" marginVertical="l">
-                <TouchableOpacityBox
-                  minHeight={66}
-                  onPress={handleCancel}
-                  borderRadius="round"
-                  alignItems="center"
-                  justifyContent="center"
-                  flex={1}
-                  marginRight="xs"
-                  overflow="hidden"
-                >
-                  <BackgroundFill backgroundColor="error" />
-                  <Text variant="subtitle2" color="error">
-                    {t('generic.cancel')}
+                {payer && networkFee && (
+                  <Text
+                    paddingHorizontal="m"
+                    maxFontSizeMultiplier={1}
+                    numberOfLines={1}
+                    variant="body1"
+                    color="secondaryText"
+                    marginBottom="l"
+                  >
+                    {t('hntKeyboard.fee', {
+                      value: balanceToString(networkFee, {
+                        maxDecimalPlaces: 4,
+                      }),
+                    })}
                   </Text>
-                </TouchableOpacityBox>
-                <TouchableOpacityBox
-                  onPress={handleConfirm}
-                  marginLeft="xs"
-                  minHeight={66}
-                  alignItems="center"
-                  justifyContent="center"
-                  borderRadius="round"
+                )}
+                <Keypad
+                  customButtonType="decimal"
+                  onPress={handlePress}
+                  marginHorizontal="l"
                   flex={1}
-                  backgroundColor={hasSufficientBalance ? 'surface' : 'grey300'}
-                  disabled={!hasSufficientBalance}
+                />
+                <Box
+                  flexDirection="row"
+                  marginHorizontal="l"
+                  marginVertical="l"
                 >
-                  <Text variant="subtitle2">{t('generic.confirm')}</Text>
-                </TouchableOpacityBox>
-              </Box>
-            </SafeAreaBox>
-          </BottomSheetModal>
-          {children}
-        </Box>
-      </BottomSheetModalProvider>
+                  <TouchableOpacityBox
+                    minHeight={66}
+                    onPress={handleCancel}
+                    borderRadius="round"
+                    alignItems="center"
+                    justifyContent="center"
+                    flex={1}
+                    marginRight="xs"
+                    overflow="hidden"
+                  >
+                    <BackgroundFill backgroundColor="error" />
+                    <Text variant="subtitle2" color="error">
+                      {t('generic.cancel')}
+                    </Text>
+                  </TouchableOpacityBox>
+                  <TouchableOpacityBox
+                    onPress={handleConfirm}
+                    marginLeft="xs"
+                    minHeight={66}
+                    alignItems="center"
+                    justifyContent="center"
+                    borderRadius="round"
+                    flex={1}
+                    backgroundColor={
+                      hasSufficientBalance ? 'surface' : 'grey300'
+                    }
+                    disabled={!hasSufficientBalance}
+                  >
+                    <Text variant="subtitle2">{t('generic.confirm')}</Text>
+                  </TouchableOpacityBox>
+                </Box>
+              </SafeAreaBox>
+            </BottomSheetModal>
+          </BottomSheetModalProvider>
+        </Portal>
+        {children}
+      </Box>
     )
   },
 )

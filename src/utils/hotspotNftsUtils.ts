@@ -12,11 +12,16 @@ import { useAsync } from 'react-async-hook'
 import { Recipient } from '../hooks/useRecipient'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 
-export const IOT_MINT = '9NKNQDCW7xhJ9Snnqa7P6wK3RoBYKBk5h8ruGTcz3KbG'
-export const MOBILE_MINT = '7NU39idAXhxZCx3R8dgzwzH57Sb8YKTfCbV4B6SHU4RB'
+export const Mints: Record<string, string> = {
+  IOT: 'ANiWFcE7icb9dxusSndmgwvUrSSV8VLTGpG8UtPt4kpV',
+  MOBILE: '8YrFxCsRcdaG4uKtt9sMHCYEeHjHuLRFEvTd7mw91xY6',
+  HNT: '3hgw5vwMAnsAD5hqKsvA9U4D3G9xTfTJUZBdN5dYQ5C3',
+}
 
-export const MOBILE_LAZY_KEY = lazyDistributorKey(new PublicKey(MOBILE_MINT))[0]
-export const IOT_LAZY_KEY = lazyDistributorKey(new PublicKey(IOT_MINT))[0]
+export const MOBILE_LAZY_KEY = lazyDistributorKey(
+  new PublicKey(Mints.MOBILE),
+)[0]
+export const IOT_LAZY_KEY = lazyDistributorKey(new PublicKey(Mints.IOT))[0]
 
 export function useProgram() {
   const [program, setProgram] = useState<Program<LazyDistributor> | null>(null)

@@ -268,6 +268,21 @@ export default {
       TOKEN_MINT: 'Token Minted!',
     },
   },
+  swapsScreen: {
+    title: 'Swap my Tokens',
+    swapTokens: 'Swap Tokens',
+    youPay: 'You Pay',
+    youReceive: 'You Receive',
+    chooseTokenToSwap: 'Choose a token to swap',
+    chooseTokenToReceive: 'Choose a token to receive',
+    swapComplete: 'Tokens swapped!',
+    swapCompleteBody: 'We’ve updated the tokens on your wallet.',
+    swappingTokens: 'Swapping your tokens...',
+    swappingTokensBody:
+      'You can exit this screen while you wait. We’ll update your Wallet momentarily.',
+    swapError: 'Swap failed. Please try again later.',
+    returnToSwaps: 'Return to Swaps',
+  },
   accountTokenList: {
     tokens: 'Tokens',
   },

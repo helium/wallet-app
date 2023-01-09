@@ -5,9 +5,9 @@ import TokenDC from '@assets/images/tokenDC.svg'
 import TokenSOL from '@assets/images/tokenSolana.svg'
 import TokenIOT from '@assets/images/tokenIOT.svg'
 import { Ticker } from '@helium/currency'
-import { useColors } from '../../theme/themeHooks'
-import Box from '../../components/Box'
-import BackgroundFill from '../../components/BackgroundFill'
+import { useColors } from '../theme/themeHooks'
+import Box from './Box'
+import BackgroundFill from './BackgroundFill'
 
 type Props = {
   ticker: Ticker

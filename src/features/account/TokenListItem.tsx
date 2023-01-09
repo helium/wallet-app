@@ -7,7 +7,7 @@ import FadeInOut from '../../components/FadeInOut'
 import Text from '../../components/Text'
 import TouchableContainer from '../../components/TouchableContainer'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
-import TokenIcon from './TokenIcon'
+import TokenIcon from '../../components/TokenIcon'
 import { HomeNavigationProp } from '../home/homeTypes'
 import useHaptic from '../../hooks/useHaptic'
 
