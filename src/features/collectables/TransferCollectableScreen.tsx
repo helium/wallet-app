@@ -194,11 +194,6 @@ const TransferCollectableScreen = () => {
     if (networkError) return networkError
   }, [hasError, hasInsufficientBalance, networkError, t])
 
-  if (!metadata || !backgroundImageUri) {
-    // TODO: Show some error
-    return null
-  }
-
   return (
     <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
       <BackScreen

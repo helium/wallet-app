@@ -109,7 +109,15 @@ type AnchorTxnInput = {
   cluster: Cluster
 }
 
-type SendAllAnchorTxnsInput = {
+type ClaimRewardInput = {
+  account: CSAccount
+  txn: Transaction
+  anchorProvider: AnchorProvider
+  cluster: Cluster
+}
+
+type ClaimAllRewardsInput = {
+  account: CSAccount
   txns: Transaction[]
   anchorProvider: AnchorProvider
   cluster: Cluster
@@ -204,14 +212,47 @@ export const sendAnchorTxn = createAsyncThunk(
   },
 )
 
-export const sendAllAnchorTxns = createAsyncThunk(
-  'solana/sendAllAnchorTxns',
+export const claimRewards = createAsyncThunk(
+  'solana/claimRewards',
   async (
-    { txns, anchorProvider, cluster }: SendAllAnchorTxnsInput,
+    { account, txn, anchorProvider, cluster }: ClaimRewardInput,
+    { dispatch },
+  ) => {
+    try {
+      const signed = await anchorProvider.wallet.signTransaction(txn)
+      const { txid } = await sendAndConfirmWithRetry(
+        anchorProvider.connection,
+        signed.serialize(),
+        { skipPreflight: true },
+        'confirmed',
+      )
+
+      // If the transfer is successful, we need to update the collectables so pending rewards are updated.
+      dispatch(fetchCollectables({ account, cluster }))
+
+      return await dispatch(
+        walletRestApi.endpoints.postPayment.initiate({
+          txnSignature: txid,
+          cluster,
+        }),
+      )
+    } catch (error) {
+      Logger.error(error)
+    }
+  },
+)
+
+export const claimAllRewards = createAsyncThunk(
+  'solana/claimAllRewards',
+  async (
+    { account, txns, anchorProvider, cluster }: ClaimAllRewardsInput,
     { dispatch },
   ) => {
     try {
       const signed = await anchorProvider.wallet.signAllTransactions(txns)
+
+      // If the transfer is successful, we need to update the collectables so pending rewards are updated.
+      dispatch(fetchCollectables({ account, cluster }))
 
       const txIds = await Promise.all(
         signed.map(async (tx: Transaction) => {
@@ -348,6 +389,19 @@ const solanaSlice = createSlice({
         error: undefined,
       }
     })
+    builder.addCase(claimRewards.rejected, (state, action) => {
+      state.payment = { success: false, loading: false, error: action.error }
+    })
+    builder.addCase(claimRewards.pending, (state, _action) => {
+      state.payment = { success: false, loading: true, error: undefined }
+    })
+    builder.addCase(claimRewards.fulfilled, (state, _action) => {
+      state.payment = {
+        success: true,
+        loading: false,
+        error: undefined,
+      }
+    })
     builder.addCase(sendAnchorTxn.rejected, (state, action) => {
       state.payment = { success: false, loading: false, error: action.error }
     })
@@ -361,13 +415,13 @@ const solanaSlice = createSlice({
         error: undefined,
       }
     })
-    builder.addCase(sendAllAnchorTxns.rejected, (state, action) => {
+    builder.addCase(claimAllRewards.rejected, (state, action) => {
       state.payment = { success: false, loading: false, error: action.error }
     })
-    builder.addCase(sendAllAnchorTxns.pending, (state, _action) => {
+    builder.addCase(claimAllRewards.pending, (state, _action) => {
       state.payment = { success: false, loading: true, error: undefined }
     })
-    builder.addCase(sendAllAnchorTxns.fulfilled, (state, _action) => {
+    builder.addCase(claimAllRewards.fulfilled, (state, _action) => {
       state.payment = {
         success: true,
         loading: false,

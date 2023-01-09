@@ -14,8 +14,9 @@ import { useAppStorage } from '../storage/AppStorageProvider'
 import {
   makeCollectablePayment,
   makePayment,
+  claimRewards,
+  claimAllRewards,
   sendAnchorTxn,
-  sendAllAnchorTxns,
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import { useGetMintsQuery } from '../store/slices/walletRestApi'
@@ -172,20 +173,48 @@ export default () => {
     [anchorProvider, cluster, dispatch],
   )
 
-  const submitAllAnchorTxns = useCallback(
+  const submitClaimRewards = useCallback(
+    async (txn: Transaction) => {
+      if (!anchorProvider) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+
+      if (!currentAccount) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+
+      dispatch(
+        claimRewards({
+          account: currentAccount,
+          txn,
+          anchorProvider,
+          cluster,
+        }),
+      )
+    },
+    [anchorProvider, cluster, currentAccount, dispatch],
+  )
+
+  const submitClaimAllRewards = useCallback(
     async (txns: Transaction[]) => {
       if (!anchorProvider) {
         throw new Error('There must be an account selected to submit a txn')
       }
+
+      if (!currentAccount) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+
       dispatch(
-        sendAllAnchorTxns({
+        claimAllRewards({
+          account: currentAccount,
           txns,
           anchorProvider,
           cluster,
         }),
       )
     },
-    [anchorProvider, cluster, dispatch],
+    [anchorProvider, cluster, currentAccount, dispatch],
   )
 
   const submitHeliumLedger = useCallback(
@@ -222,7 +251,8 @@ export default () => {
     submit,
     submitCollectable,
     submitAnchorTxn,
-    submitAllAnchorTxns,
+    submitClaimRewards,
+    submitClaimAllRewards,
     submitLedger,
     data,
     error: accountError || submitError || nonceError,

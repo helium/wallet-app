@@ -42,7 +42,7 @@ export function useHotspot(mint: PublicKey): {
     useRecipient(recipientMobileKey)
   const { info: iotRecipient, loading: iotLoading } =
     useRecipient(recipientIotKey)
-  const { submitAnchorTxn } = useSubmitTxn()
+  const { submitClaimRewards } = useSubmitTxn()
 
   useAsync(async () => {
     try {
@@ -95,7 +95,7 @@ export function useHotspot(mint: PublicKey): {
         lazyDistributor: MOBILE_LAZY_KEY,
       })
 
-      await submitAnchorTxn(tx)
+      await submitClaimRewards(tx)
     }
   })
 
@@ -124,7 +124,7 @@ export function useHotspot(mint: PublicKey): {
         lazyDistributor: MOBILE_LAZY_KEY,
       })
 
-      await submitAnchorTxn(tx)
+      await submitClaimRewards(tx)
     }
   })
 

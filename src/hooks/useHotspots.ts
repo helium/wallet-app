@@ -63,7 +63,7 @@ const useHotspots = (): {
   const { currentAccount, anchorProvider } = useAccountStorage()
   const collectables = useSelector((state: RootState) => state.collectables)
   const hotspotsDetails = useSelector((state: RootState) => state.hotspots)
-  const { submitAllAnchorTxns } = useSubmitTxn()
+  const { submitClaimAllRewards } = useSubmitTxn()
 
   const oldestCollectableId = useMemo(() => {
     if (!currentAccount?.solanaAddress) return ''
@@ -104,7 +104,7 @@ const useHotspots = (): {
       }),
     )
 
-    await submitAllAnchorTxns(txns)
+    await submitClaimAllRewards(txns)
   }
 
   const onClaimAllIotRewards = async () => {
@@ -133,7 +133,7 @@ const useHotspots = (): {
       }),
     )
 
-    await submitAllAnchorTxns(txns)
+    await submitClaimAllRewards(txns)
   }
 
   const { execute, loading, error } = useAsyncCallback(onClaimAllMobileRewards)
