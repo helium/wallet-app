@@ -62,7 +62,15 @@ const HotspotListItem = ({
         },
       }),
     )
-  })
+  }, [
+    currentAccount,
+    dispatch,
+    hasIotRewards,
+    hasMobileRewards,
+    hotspot.id,
+    pendingIotRewards,
+    pendingMobileRewards,
+  ])
 
   return (
     <ReAnimatedBox

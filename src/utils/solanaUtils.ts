@@ -16,6 +16,7 @@ import {
   PROGRAM_ID as BUBBLEGUM_PROGRAM_ID,
 } from '@metaplex-foundation/mpl-bubblegum'
 import {
+  ConcurrentMerkleTreeAccount,
   SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
   SPL_NOOP_PROGRAM_ID,
 } from '@solana/spl-account-compression'
@@ -643,6 +644,16 @@ export const transferCompressedCollectable = async (
       ? new web3.PublicKey(collectable.ownership.delegate)
       : new web3.PublicKey(collectable.ownership.owner)
 
+    const merkleTree = new web3.PublicKey(assetProof.tree_id)
+
+    const tree = await ConcurrentMerkleTreeAccount.fromAccountAddress(
+      conn,
+      merkleTree,
+      'confirmed',
+    )
+
+    const canopyHeight = tree.getCanopyDepth()
+
     instructions.push(
       createTransferInstruction(
         {
@@ -650,9 +661,13 @@ export const transferCompressedCollectable = async (
           leafOwner: new web3.PublicKey(collectable.ownership.owner),
           leafDelegate,
           newLeafOwner: recipientPubKey,
-          merkleTree: new web3.PublicKey(assetProof.tree_id),
+          merkleTree,
           logWrapper: SPL_NOOP_PROGRAM_ID,
           compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+          anchorRemainingAccounts: assetProof.proof.slice(
+            0,
+            assetProof.proof.length - (canopyHeight || 0),
+          ),
         },
         {
           root: bufferToArray(Buffer.from(bs58.decode(assetProof.root))),
