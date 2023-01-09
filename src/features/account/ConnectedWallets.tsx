@@ -8,7 +8,6 @@ import React, {
   useMemo,
   useRef,
 } from 'react'
-import { Pressable } from 'react-native'
 import Checkmark from '@assets/images/checkmark.svg'
 import Add from '@assets/images/add.svg'
 import { useTranslation } from 'react-i18next'
@@ -23,13 +22,14 @@ import useLayoutHeight from '../../hooks/useLayoutHeight'
 import useBackHandler from '../../hooks/useBackHandler'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
-import { useColors, useCreateOpacity, useOpacity } from '../../theme/themeHooks'
+import { useColors, useOpacity } from '../../theme/themeHooks'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
 import AccountIcon from '../../components/AccountIcon'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import BackgroundFill from '../../components/BackgroundFill'
+import TouchableContainer from '../../components/TouchableContainer'
 
 export type ConnectedWalletsRef = {
   show: () => void
@@ -46,7 +46,6 @@ const ConnectedWallets = forwardRef(
   ({ onClose, onAddNew, children }: Props, ref: Ref<ConnectedWalletsRef>) => {
     useImperativeHandle(ref, () => ({ show, hide }))
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
-    const { backgroundStyle: generateBackgroundStyle } = useCreateOpacity()
     const keyExtractor = useCallback((item) => item.address, [])
     const { primaryText } = useColors()
     const { t } = useTranslation()
@@ -108,109 +107,80 @@ const ConnectedWallets = forwardRef(
       [hide, setCurrentAccount],
     )
 
-    const getBackgroundColorStyle = useCallback(
-      (pressed: boolean) => {
-        if (pressed) {
-          return generateBackgroundStyle('black500', 1.0)
-        }
-        return generateBackgroundStyle('surfaceSecondary', 1.0)
-      },
-      [generateBackgroundStyle],
-    )
-
     const renderItem = useCallback(
       // eslint-disable-next-line react/no-unused-prop-types
       ({ item }: { index: number; item: CSAccount }) => {
         const isSelected = item.address === currentAccount?.address
         return (
-          <Pressable
+          <TouchableContainer
             onPress={handleAccountChange(item)}
             onLayout={setListItemHeight}
+            flexDirection="row"
+            paddingHorizontal="l"
+            paddingVertical="lm"
+            alignItems="center"
           >
-            {({ pressed }) => (
-              <Box
-                flexDirection="row"
-                paddingHorizontal="l"
-                paddingVertical="lm"
-                style={getBackgroundColorStyle(pressed)}
-                alignItems="center"
-              >
-                {item.netType === NetTypes.TESTNET && (
-                  <BackgroundFill backgroundColor="testnet" opacity={0.4} />
-                )}
-                <AccountIcon address={item.address} size={25} />
-                <Text
-                  variant="subtitle1"
-                  color={isSelected ? 'primaryText' : 'secondaryText'}
-                  marginLeft="m"
-                >
-                  {item.alias}
-                </Text>
-                <Box flex={1} alignItems="flex-end">
-                  {isSelected && (
-                    <Checkmark color={primaryText} height={20} width={20} />
-                  )}
-                </Box>
-              </Box>
+            {item.netType === NetTypes.TESTNET && (
+              <BackgroundFill backgroundColor="testnet" opacity={0.4} />
             )}
-          </Pressable>
+            <AccountIcon address={item.address} size={25} />
+            <Text
+              variant="subtitle1"
+              color={isSelected ? 'primaryText' : 'secondaryText'}
+              marginLeft="m"
+            >
+              {item.alias}
+            </Text>
+            <Box flex={1} alignItems="flex-end">
+              {isSelected && (
+                <Checkmark color={primaryText} height={20} width={20} />
+              )}
+            </Box>
+          </TouchableContainer>
         )
       },
-      [
-        currentAccount,
-        getBackgroundColorStyle,
-        handleAccountChange,
-        primaryText,
-        setListItemHeight,
-      ],
+      [currentAccount, handleAccountChange, primaryText, setListItemHeight],
     )
 
     const footer = useCallback(
       () => (
         <Box>
           <BackgroundFill backgroundColor="secondary" />
-          <Pressable onPress={handleAddNew(NetTypes.MAINNET)}>
-            {({ pressed }) => (
-              <Box
-                flexDirection="row"
-                paddingHorizontal="l"
-                paddingVertical="lm"
-                borderTopColor="primaryBackground"
-                borderTopWidth={1}
-                alignItems="center"
-                style={getBackgroundColorStyle(pressed)}
-              >
-                <Add color={primaryText} />
-                <Text variant="subtitle1" color="primaryText" marginLeft="m">
-                  {t('connectedWallets.add')}
-                </Text>
-              </Box>
-            )}
-          </Pressable>
+          <TouchableContainer
+            onPress={handleAddNew(NetTypes.MAINNET)}
+            flexDirection="row"
+            paddingHorizontal="l"
+            paddingVertical="lm"
+            borderTopColor="primaryBackground"
+            borderTopWidth={1}
+            alignItems="center"
+          >
+            <Add color={primaryText} />
+            <Text variant="subtitle1" color="primaryText" marginLeft="m">
+              {t('connectedWallets.add')}
+            </Text>
+          </TouchableContainer>
+
           {enableTestnet && (
-            <Pressable onPress={handleAddNew(NetTypes.TESTNET)}>
-              {({ pressed }) => (
-                <Box
-                  flexDirection="row"
-                  paddingHorizontal="l"
-                  paddingVertical="lm"
-                  borderTopColor="primaryBackground"
-                  borderTopWidth={1}
-                  alignItems="center"
-                  style={getBackgroundColorStyle(pressed)}
-                >
-                  <BackgroundFill backgroundColor="testnet" opacity={0.4} />
-                  <Add color={primaryText} />
-                  <Text variant="subtitle1" color="primaryText" marginLeft="m">
-                    {t('connectedWallets.addTestnet')}
-                  </Text>
-                </Box>
-              )}
-            </Pressable>
+            <TouchableContainer
+              onPress={handleAddNew(NetTypes.TESTNET)}
+              flexDirection="row"
+              paddingHorizontal="l"
+              paddingVertical="lm"
+              borderTopColor="primaryBackground"
+              borderTopWidth={1}
+              alignItems="center"
+            >
+              <BackgroundFill backgroundColor="testnet" opacity={0.4} />
+              <Add color={primaryText} />
+              <Text variant="subtitle1" color="primaryText" marginLeft="m">
+                {t('connectedWallets.addTestnet')}
+              </Text>
+            </TouchableContainer>
           )}
         </Box>
       ),
-      [enableTestnet, getBackgroundColorStyle, handleAddNew, primaryText, t],
+      [enableTestnet, handleAddNew, primaryText, t],
     )
 
     const renderBackdrop = useCallback(

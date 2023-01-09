@@ -14,15 +14,17 @@ import HotspotListItem from './HotspotListItem'
 import ButtonPressable from '../../components/ButtonPressable'
 import useHotspots from '../../hooks/useHotspots'
 import CircleLoader from '../../components/CircleLoader'
+import useHaptic from '../../hooks/useHaptic'
 
 const HotspotList = () => {
   const { bottom } = useSafeAreaInsets()
   const navigation = useNavigation<CollectableNavigationProp>()
   const { t } = useTranslation()
   const isFocused = useIsFocused()
-
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
   const { primaryText } = useColors()
+  const { triggerImpact } = useHaptic()
+
   const {
     hotspots,
     hotspotsWithMeta,
@@ -40,10 +42,11 @@ const HotspotList = () => {
   const handleNavigateToCollectable = useCallback(
     (collectable: CompressedNFT) => {
       if (collectable.content.metadata) {
+        triggerImpact()
         navigation.navigate('HotspotDetailsScreen', { collectable })
       }
     },
-    [navigation],
+    [navigation, triggerImpact],
   )
 
   const handleOnEndReached = useCallback(() => {

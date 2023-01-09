@@ -18,6 +18,7 @@ import BackgroundFill from '../../components/BackgroundFill'
 import useLayoutWidth from '../../hooks/useLayoutWidth'
 import useNetworkColor from '../../hooks/useNetworkColor'
 import { useAppStorage } from '../../storage/AppStorageProvider'
+import useHaptic from '../../hooks/useHaptic'
 
 type Props = {
   onPressWallet: () => void
@@ -29,24 +30,27 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
   const { currentAccount, currentNetworkAddress } = useAccountStorage()
   const [barButtonsRightWidth, setBarButtonsRightWidth] = useLayoutWidth()
   const { l1Network } = useAppStorage()
+  const { triggerImpact } = useHaptic()
 
   const accountNetType = useMemo(
     () => AccountUtils.accountNetType(currentAccount?.address),
     [currentAccount],
   )
 
-  const navToSettings = useCallback(
-    () => navigation.navigate('SettingsNavigator'),
-    [navigation],
-  )
+  const navToSettings = useCallback(() => {
+    triggerImpact()
+    navigation.navigate('SettingsNavigator')
+  }, [navigation, triggerImpact])
 
   const handleAddressBook = useCallback(() => {
+    triggerImpact()
     navigation.push('AddressBookNavigator')
-  }, [navigation])
+  }, [navigation, triggerImpact])
 
   const handleNotificationsSelected = useCallback(() => {
+    triggerImpact()
     navigation.push('NotificationsNavigator')
-  }, [navigation])
+  }, [navigation, triggerImpact])
 
   const { top } = useSafeAreaInsets()
 

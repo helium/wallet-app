@@ -22,6 +22,7 @@ import globalStyles from '../../theme/globalStyles'
 import { DelayedFadeIn } from '../../components/FadeInOut'
 import { useCreateExplorerUrl } from '../../constants/urls'
 import useCopyText from '../../hooks/useCopyText'
+import useHaptic from '../../hooks/useHaptic'
 
 type Route = RouteProp<ActivityStackParamList, 'ActivityDetailsScreen'>
 
@@ -31,6 +32,7 @@ const ActivityDetailsScreen = () => {
   const { t, i18n } = useTranslation()
   const createExplorerUrl = useCreateExplorerUrl()
   const copyText = useCopyText()
+  const { triggerImpact } = useHaptic()
 
   const { transaction } = route.params
 
@@ -208,13 +210,13 @@ const ActivityDetailsScreen = () => {
 
   const handleCopyAddress = useCallback(() => {
     if (!selectedAddress) return
-
+    triggerImpact()
     copyText({
       message: ellipsizeAddress(selectedAddress),
       copyText: selectedAddress,
     })
     setOptionsOpen(false)
-  }, [copyText, selectedAddress])
+  }, [copyText, selectedAddress, triggerImpact])
 
   const accountOptions = useCallback(
     () => (
@@ -255,12 +257,9 @@ const ActivityDetailsScreen = () => {
                 flexGrow={1}
                 borderRadius="round"
                 backgroundColor="white"
-                backgroundColorOpacity={1}
-                backgroundColorOpacityPressed={0.05}
                 titleColorDisabled="grey600"
                 backgroundColorDisabled="white"
                 backgroundColorDisabledOpacity={0.1}
-                titleColorPressedOpacity={0.3}
                 title={t('activityScreen.viewOnExplorer')}
                 titleColor="black"
                 onPress={handleOpenExplorer}

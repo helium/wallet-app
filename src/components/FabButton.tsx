@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 /* eslint-disable react/jsx-props-no-spreading */
 import { BoxProps } from '@shopify/restyle'
 import React, { memo, useCallback } from 'react'
@@ -22,6 +23,7 @@ import { Color, FontWeight, Theme } from '../theme/theme'
 import { useColors, useCreateOpacity } from '../theme/themeHooks'
 import Box from './Box'
 import Text from './Text'
+import ButtonPressAnimation from './ButtonPressAnimation'
 
 type IconName =
   | 'arrowDown'
@@ -144,28 +146,28 @@ const ButtonPressable = ({
   }
 
   return (
-    <Box
-      overflow="hidden"
+    <ButtonPressAnimation
       height={size}
       width={size}
-      {...boxProps}
       borderRadius="round"
       visible={visible}
+      onPress={onPress}
+      pressableStyles={styles.pressable}
+      disabled={disabled}
+      {...boxProps}
     >
-      <Pressable onPress={onPress} style={styles.pressable} disabled={disabled}>
-        {({ pressed }) => (
-          <FabButtonCircle
-            pressed={pressed}
-            size={size}
-            icon={icon}
-            iconColor={iconColor}
-            iconColorPressed={iconColorPressed}
-            props={containerProps}
-            style={getBackgroundColorStyle(pressed)}
-          />
-        )}
-      </Pressable>
-    </Box>
+      {({ pressed }: { pressed: boolean }) => (
+        <FabButtonCircle
+          pressed={pressed}
+          size={size}
+          icon={icon}
+          iconColor={iconColor}
+          iconColorPressed={iconColorPressed}
+          props={containerProps}
+          style={getBackgroundColorStyle(pressed)}
+        />
+      )}
+    </ButtonPressAnimation>
   )
 }
 

@@ -3,8 +3,9 @@ import { NetTypes } from '@helium/address'
 import CurrencyFormatter from 'react-native-currency-format'
 import { addMinutes } from 'date-fns'
 import { BoxProps } from '@shopify/restyle'
-import { GestureResponderEvent } from 'react-native'
+import { GestureResponderEvent, ViewStyle } from 'react-native'
 import CarotDown from '@assets/images/triangleDown.svg'
+import ButtonPressAnimation from '../../components/ButtonPressAnimation'
 import * as AccountUtils from '../../utils/accountUtils'
 import { AccountBalance, AccountData } from '../../generated/graphql'
 import Text from '../../components/Text'
@@ -17,8 +18,8 @@ import useLayoutHeight from '../../hooks/useLayoutHeight'
 import Box from '../../components/Box'
 import DateModule from '../../utils/DateModule'
 import { Theme } from '../../theme/theme'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import TokenPricesTicker from '../../components/TokenPricesTicker'
+import { useSpacing } from '../../theme/themeHooks'
 
 type Props = {
   accountData?: AccountData | null
@@ -37,6 +38,7 @@ const AccountView = ({
 }: Props) => {
   const [balanceString, setBalanceString] = useState('')
   const [selectedDate, setSelectedDate] = useState('')
+  const spacing = useSpacing()
 
   const { toCurrencyString, networkBalance, networkStakedBalance } =
     useBalance()
@@ -47,6 +49,16 @@ const AccountView = ({
     () => AccountUtils.accountNetType(accountData?.address),
     [accountData],
   )
+
+  const currencySelectorStyles = useMemo(() => {
+    return {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingVertical: spacing.s,
+      paddingHorizontal: spacing.m,
+    } as ViewStyle
+  }, [spacing])
 
   useEffect(() => {
     if (!selectedBalance) {
@@ -94,16 +106,12 @@ const AccountView = ({
       <Box position="absolute" top={0}>
         <TokenPricesTicker marginTop="m" />
       </Box>
-      <TouchableOpacityBox
+      <ButtonPressAnimation
         backgroundColor="surfaceSecondary"
         borderRadius="round"
-        paddingVertical="s"
-        paddingHorizontal="m"
         marginBottom="l"
-        flexDirection="row"
-        justifyContent="center"
-        alignItems="center"
         onPress={onCurrencySelectorPress}
+        pressableStyles={currencySelectorStyles}
       >
         <Text
           variant="body2"
@@ -119,7 +127,7 @@ const AccountView = ({
         <Box marginTop="xxs">
           <CarotDown />
         </Box>
-      </TouchableOpacityBox>
+      </ButtonPressAnimation>
       {!balanceString && (
         <Text
           maxFontSizeMultiplier={1.1}
