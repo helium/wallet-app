@@ -301,12 +301,7 @@ const TransferCollectableScreen = () => {
               >
                 {showError}
               </Text>
-              <Box
-                flexDirection="row"
-                marginBottom="xl"
-                marginTop="m"
-                marginHorizontal="xl"
-              >
+              <Box flexDirection="row" marginTop="m" marginHorizontal="xl">
                 <ButtonPressable
                   height={65}
                   flexGrow={1}

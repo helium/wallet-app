@@ -46,7 +46,7 @@ const AddNewAccountScreen = () => {
   }, [navigation])
 
   return (
-    <Box flex={1} backgroundColor="secondary">
+    <Box flex={1} backgroundColor="surfaceSecondary">
       <Box flexDirection="row" paddingVertical="m">
         <Box flex={1} />
         <Text variant="subtitle1">{t('addNewAccount.title')}</Text>

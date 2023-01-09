@@ -66,7 +66,11 @@ const useHotspots = (): {
   const { submitClaimAllRewards } = useSubmitTxn()
 
   const oldestCollectableId = useMemo(() => {
-    if (!currentAccount?.solanaAddress) return ''
+    if (
+      !currentAccount?.solanaAddress ||
+      !collectables[currentAccount?.solanaAddress]
+    )
+      return ''
     return collectables[currentAccount?.solanaAddress].oldestCollectableId
   }, [collectables, currentAccount])
 

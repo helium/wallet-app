@@ -39,7 +39,6 @@ import { getJazzSeed, isTestnet } from '../../utils/accountUtils'
 import AccountsTopNav from './AccountsTopNav'
 import AccountTokenList from './AccountTokenList'
 import AccountView from './AccountView'
-import ConnectedWallets from './ConnectedWallets'
 import useLayoutHeight from '../../hooks/useLayoutHeight'
 import { OnboardingOpt } from '../onboarding/onboardingTypes'
 import AccountBalanceChart from './AccountBalanceChart'
@@ -54,6 +53,8 @@ import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import AccountActionBar from './AccountActionBar'
 import SUPPORTED_CURRENCIES from '../../utils/supportedCurrencies'
 import { NavBarHeight } from '../../components/NavBar'
+import { useAppDispatch } from '../../store/store'
+import { appSlice } from '../../store/slices/appSlice'
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
@@ -73,7 +74,6 @@ const AccountsScreen = () => {
   } = useAppStorage()
   const { reset } = useOnboarding()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
-  const [walletsVisible, setWalletsVisible] = useState(false)
   const [selectedBalance, setSelectedBalance] = useState<AccountBalanceType>()
   const { top } = useSafeAreaInsets()
   const { updateVars: refreshTokens, updating: updatingTokens } = useBalance()
@@ -83,6 +83,7 @@ const AccountsScreen = () => {
   const topHeaderRef = useRef<View>(null)
   const [currenciesOpen, setCurrenciesOpen] = useState(false)
   const bottomSheetStyle = useBackgroundStyle('secondaryBackground')
+  const dispatch = useAppDispatch()
 
   const { t } = useTranslation()
 
@@ -229,9 +230,9 @@ const AccountsScreen = () => {
   }, [defaultAccountAddress, sortedAccounts])
 
   const toggleWalletsVisible = useCallback(() => {
-    setWalletsVisible((v) => !v)
+    dispatch(appSlice.actions.toggleConnectedWallets())
     setSelectedBalance(undefined)
-  }, [])
+  }, [dispatch])
 
   const handleBalanceHistorySelected = useDebouncedCallback(
     (accountBalance?: AccountBalanceType) => {
@@ -243,11 +244,6 @@ const AccountsScreen = () => {
       trailing: true,
     },
   )
-
-  const handleAddNew = useCallback(() => {
-    navigation.navigate('AddNewAccountNavigator')
-    setWalletsVisible(false)
-  }, [navigation])
 
   const onTouchStart = useCallback(() => {
     handleBalanceHistorySelected(undefined)
@@ -398,13 +394,6 @@ const AccountsScreen = () => {
               )}
             </Box>
           </ReAnimatedBox>
-        )}
-        {walletsVisible && (
-          <ConnectedWallets
-            onClose={toggleWalletsVisible}
-            onAddNew={handleAddNew}
-            topOffset={navLayoutHeight + top}
-          />
         )}
         <StatusBanner />
       </Box>
