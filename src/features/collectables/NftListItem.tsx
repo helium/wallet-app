@@ -7,7 +7,7 @@ import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { CollectableNavigationProp } from './collectablesTypes'
 import { useBorderRadii } from '../../theme/themeHooks'
-import { Collectable } from '../../types/solana'
+import { CompressedNFT } from '../../types/solana'
 import { ww } from '../../utils/layout'
 import CircleLoader from '../../components/CircleLoader'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
@@ -18,19 +18,21 @@ const NftListItem = ({
   collectables,
 }: {
   item: string
-  collectables: Record<string, Collectable[]>
+  collectables: Record<string, CompressedNFT[]>
 }) => {
   const { lm } = useBorderRadii()
-  const { json } = collectables[item][0]
+  const {
+    content: { metadata },
+  } = collectables[item][0]
   const navigation = useNavigation<CollectableNavigationProp>()
 
   const handleCollectableNavigation = useCallback(
-    (collection: Collectable[]) => () => {
+    (collection: CompressedNFT[]) => () => {
       if (collection.length > 1) {
         navigation.navigate('CollectionScreen', {
           collection,
         })
-      } else if (collection[0]?.json?.image) {
+      } else if (collection[0]?.content.metadata) {
         // TODO: Cache image so we don't need to fetch uri in all the different nft screens
         navigation.navigate('NftDetailsScreen', {
           collectable: collection[0],
@@ -54,7 +56,7 @@ const NftListItem = ({
           borderRadius={lm}
           style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
           source={{
-            uri: json?.image,
+            uri: metadata?.image,
             cache: 'force-cache',
           }}
         />
@@ -81,7 +83,7 @@ const NftListItem = ({
   )
 }
 
-export const CollectableSkeleton = () => {
+export const NFTSkeleton = () => {
   return (
     <ReAnimatedBox style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
       <TouchableOpacityBox

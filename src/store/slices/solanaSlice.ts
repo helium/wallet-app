@@ -1,17 +1,24 @@
 import Balance, { AnyCurrencyType, Ticker } from '@helium/currency'
+import { AnchorProvider } from '@project-serum/anchor'
 import {
   createAsyncThunk,
   createSlice,
   SerializedError,
 } from '@reduxjs/toolkit'
-import { Cluster, SignaturesForAddressOptions } from '@solana/web3.js'
+import {
+  Cluster,
+  SignaturesForAddressOptions,
+  Transaction,
+} from '@solana/web3.js'
 import { first, last } from 'lodash'
+import { sendAndConfirmWithRetry } from '@helium/spl-utils'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
-import { Collectable, toMintAddress } from '../../types/solana'
+import { CompressedNFT, toMintAddress } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
 import { fetchCollectables } from './collectablesSlice'
 import { Mints, walletRestApi } from './walletRestApi'
+import * as Logger from '../../utils/logger'
 
 type Balances = {
   hntBalance?: bigint
@@ -92,8 +99,28 @@ type PaymentInput = {
 
 type CollectablePaymentInput = {
   account: CSAccount
-  collectable: Collectable
+  collectable: CompressedNFT
   payee: string
+  cluster: Cluster
+}
+
+type AnchorTxnInput = {
+  txn: Transaction
+  anchorProvider: AnchorProvider
+  cluster: Cluster
+}
+
+type ClaimRewardInput = {
+  account: CSAccount
+  txn: Transaction
+  anchorProvider: AnchorProvider
+  cluster: Cluster
+}
+
+type ClaimAllRewardsInput = {
+  account: CSAccount
+  txns: Transaction[]
+  anchorProvider: AnchorProvider
   cluster: Cluster
 }
 
@@ -132,13 +159,21 @@ export const makeCollectablePayment = createAsyncThunk(
   ) => {
     if (!account?.solanaAddress) throw new Error('No solana account found')
 
-    const transfer = await solUtils.transferCollectable(
-      cluster,
-      account.solanaAddress,
-      account.address,
-      collectable,
-      payee,
-    )
+    const transfer = collectable.compression.compressed
+      ? await solUtils.transferCompressedCollectable(
+          cluster,
+          account.solanaAddress,
+          account.address,
+          collectable,
+          payee,
+        )
+      : await solUtils.transferCollectable(
+          cluster,
+          account.solanaAddress,
+          account.address,
+          collectable,
+          payee,
+        )
 
     // If the transfer is successful, we need to update the collectables
     if (!transfer.txn?.meta?.err) {
@@ -151,6 +186,97 @@ export const makeCollectablePayment = createAsyncThunk(
         cluster,
       }),
     )
+  },
+)
+
+export const sendAnchorTxn = createAsyncThunk(
+  'solana/sendAnchorTxn',
+  async ({ txn, anchorProvider, cluster }: AnchorTxnInput, { dispatch }) => {
+    try {
+      const signed = await anchorProvider.wallet.signTransaction(txn)
+      const { txid } = await sendAndConfirmWithRetry(
+        anchorProvider.connection,
+        signed.serialize(),
+        { skipPreflight: true },
+        'confirmed',
+      )
+
+      return await dispatch(
+        walletRestApi.endpoints.postPayment.initiate({
+          txnSignature: txid,
+          cluster,
+        }),
+      )
+    } catch (error) {
+      Logger.error(error)
+    }
+  },
+)
+
+export const claimRewards = createAsyncThunk(
+  'solana/claimRewards',
+  async (
+    { account, txn, anchorProvider, cluster }: ClaimRewardInput,
+    { dispatch },
+  ) => {
+    try {
+      const signed = await anchorProvider.wallet.signTransaction(txn)
+      const { txid } = await sendAndConfirmWithRetry(
+        anchorProvider.connection,
+        signed.serialize(),
+        { skipPreflight: true },
+        'confirmed',
+      )
+
+      // If the transfer is successful, we need to update the collectables so pending rewards are updated.
+      dispatch(fetchCollectables({ account, cluster }))
+
+      return await dispatch(
+        walletRestApi.endpoints.postPayment.initiate({
+          txnSignature: txid,
+          cluster,
+        }),
+      )
+    } catch (error) {
+      Logger.error(error)
+    }
+  },
+)
+
+export const claimAllRewards = createAsyncThunk(
+  'solana/claimAllRewards',
+  async (
+    { account, txns, anchorProvider, cluster }: ClaimAllRewardsInput,
+    { dispatch },
+  ) => {
+    try {
+      const signed = await anchorProvider.wallet.signAllTransactions(txns)
+
+      // If the transfer is successful, we need to update the collectables so pending rewards are updated.
+      dispatch(fetchCollectables({ account, cluster }))
+
+      const txIds = await Promise.all(
+        signed.map(async (tx: Transaction) => {
+          const { txid } = await sendAndConfirmWithRetry(
+            anchorProvider.connection,
+            tx.serialize(),
+            { skipPreflight: true },
+            'confirmed',
+          )
+          return txid
+        }),
+      )
+
+      // TODO: This is a hack to get around the fact that we can't send multiple
+      return await dispatch(
+        walletRestApi.endpoints.postPayment.initiate({
+          txnSignature: txIds[0],
+          cluster,
+        }),
+      )
+    } catch (error) {
+      Logger.error(error)
+    }
   },
 )
 
@@ -258,6 +384,45 @@ const solanaSlice = createSlice({
       state.payment = { success: false, loading: true, error: undefined }
     })
     builder.addCase(makePayment.fulfilled, (state, _action) => {
+      state.payment = {
+        success: true,
+        loading: false,
+        error: undefined,
+      }
+    })
+    builder.addCase(claimRewards.rejected, (state, action) => {
+      state.payment = { success: false, loading: false, error: action.error }
+    })
+    builder.addCase(claimRewards.pending, (state, _action) => {
+      state.payment = { success: false, loading: true, error: undefined }
+    })
+    builder.addCase(claimRewards.fulfilled, (state, _action) => {
+      state.payment = {
+        success: true,
+        loading: false,
+        error: undefined,
+      }
+    })
+    builder.addCase(sendAnchorTxn.rejected, (state, action) => {
+      state.payment = { success: false, loading: false, error: action.error }
+    })
+    builder.addCase(sendAnchorTxn.pending, (state, _action) => {
+      state.payment = { success: false, loading: true, error: undefined }
+    })
+    builder.addCase(sendAnchorTxn.fulfilled, (state, _action) => {
+      state.payment = {
+        success: true,
+        loading: false,
+        error: undefined,
+      }
+    })
+    builder.addCase(claimAllRewards.rejected, (state, action) => {
+      state.payment = { success: false, loading: false, error: action.error }
+    })
+    builder.addCase(claimAllRewards.pending, (state, _action) => {
+      state.payment = { success: false, loading: true, error: undefined }
+    })
+    builder.addCase(claimAllRewards.fulfilled, (state, _action) => {
       state.payment = {
         success: true,
         loading: false,

@@ -5,6 +5,7 @@ import React, { memo, useMemo } from 'react'
 import { LayoutChangeEvent, Platform } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { SvgProps } from 'react-native-svg'
+import Animated from 'react-native-reanimated'
 import { Color, Spacing, Theme } from '../theme/theme'
 import { useHitSlop } from '../theme/themeHooks'
 import BackButton from './BackButton'
@@ -16,6 +17,7 @@ import Text from './Text'
 import { width, height } from '../utils/layout'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import BlurBox from './BlurBox'
+import { DelayedFadeIn } from './FadeInOut'
 
 type Props = BoxProps<Theme> & {
   children?: React.ReactNode
@@ -30,6 +32,7 @@ type Props = BoxProps<Theme> & {
   backgroundImageUri?: string
   TrailingIcon?: React.FC<SvgProps>
   onTrailingIconPress?: () => void
+  headerTopMargin?: Spacing
 }
 
 const BackScreen = ({
@@ -47,6 +50,7 @@ const BackScreen = ({
   backgroundImageUri,
   TrailingIcon,
   onTrailingIconPress,
+  headerTopMargin,
   ...rest
 }: Props) => {
   const navigation = useNavigation()
@@ -57,6 +61,7 @@ const BackScreen = ({
     <Box flex={1}>
       <SafeAreaBox edges={edges || undefined} onLayout={onLayout} flex={1}>
         <Box
+          marginTop={headerTopMargin}
           flexDirection="row"
           paddingHorizontal={headerHorizontalPadding}
           onLayout={onHeaderLayout}
@@ -106,8 +111,19 @@ const BackScreen = ({
       {/**
        * If backgroundImageUri is provided, we render a blurred version of the image
        */}
+
       {backgroundImageUri && (
-        <>
+        <Animated.View
+          entering={DelayedFadeIn}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: -2,
+          }}
+        >
           <ImageBox
             zIndex={-2}
             position="absolute"
@@ -131,7 +147,7 @@ const BackScreen = ({
             blurAmount={10}
             blurType={isAndroid ? 'dark' : 'thinMaterialDark'}
           />
-        </>
+        </Animated.View>
       )}
     </Box>
   )

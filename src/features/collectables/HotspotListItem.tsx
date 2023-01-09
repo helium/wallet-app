@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { PublicKey } from '@solana/web3.js'
+import { BoxProps } from '@shopify/restyle'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { Collectable } from '../../types/solana'
+import { CompressedNFT } from '../../types/solana'
 import { ww } from '../../utils/layout'
 import { useHotspot } from '../../hooks/useHotspot'
 import Box from '../../components/Box'
@@ -11,32 +12,72 @@ import MobileSymbol from '../../assets/images/mobileSymbol.svg'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 import ImageBox from '../../components/ImageBox'
+import { Theme } from '../../theme/theme'
+import IotSymbol from '../../assets/images/iotSymbol.svg'
+import { hotspots } from '../../store/slices/hotspotsSlice'
+import { useAppDispatch } from '../../store/store'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
 export type HotspotListItemProps = {
-  hotspot: Collectable
-  onPress: (hotspot: Collectable) => void
-}
+  hotspot: CompressedNFT
+  onPress: (hotspot: CompressedNFT) => void
+} & BoxProps<Theme>
 
-const HotspotListItem = ({ hotspot, onPress }: HotspotListItemProps) => {
+const HotspotListItem = ({
+  hotspot,
+  onPress,
+  ...rest
+}: HotspotListItemProps) => {
   const COLLECTABLE_HEIGHT = ww / 2
-  const { json } = hotspot
-  const mint = useMemo(
-    () => new PublicKey(hotspot.mint.address),
-    [hotspot.mint],
-  )
-  const { pendingRewards } = useHotspot(mint)
+  const dispatch = useAppDispatch()
+  const { currentAccount } = useAccountStorage()
+  const {
+    content: { metadata },
+  } = hotspot
+  const mint = useMemo(() => new PublicKey(hotspot.id), [hotspot.id])
+  const { pendingMobileRewards, pendingIotRewards } = useHotspot(mint)
 
-  // TODO: Add IOT Rewards once IOT MINT is available
-  const hasMobileRewards = useMemo(
-    () => pendingRewards && pendingRewards > 0,
-    [pendingRewards],
+  const hasIotRewards = useMemo(
+    () => pendingIotRewards && pendingIotRewards > 0,
+    [pendingIotRewards],
   )
+
+  const hasMobileRewards = useMemo(
+    () => pendingMobileRewards && pendingMobileRewards > 0,
+    [pendingMobileRewards],
+  )
+
+  useEffect(() => {
+    if (!currentAccount) return
+
+    dispatch(
+      hotspots.actions.updateHotspot({
+        account: currentAccount,
+        hotspotDetails: {
+          hotspotId: hotspot.id,
+          pendingIotRewards:
+            hasIotRewards && pendingIotRewards ? pendingIotRewards : 0,
+          pendingMobileRewards:
+            hasMobileRewards && pendingMobileRewards ? pendingMobileRewards : 0,
+        },
+      }),
+    )
+  }, [
+    currentAccount,
+    dispatch,
+    hasIotRewards,
+    hasMobileRewards,
+    hotspot.id,
+    pendingIotRewards,
+    pendingMobileRewards,
+  ])
 
   return (
     <ReAnimatedBox
-      style={{ width: '50%', justifyContent: 'center' }}
+      style={{ width: '50%', justifyContent: 'flex-start' }}
       entering={FadeIn}
       exiting={FadeOut}
+      {...rest}
     >
       <TouchableOpacityBox
         marginHorizontal="s"
@@ -51,7 +92,7 @@ const HotspotListItem = ({ hotspot, onPress }: HotspotListItemProps) => {
           height={COLLECTABLE_HEIGHT}
           width="100%"
           source={{
-            uri: json?.image,
+            uri: metadata?.image,
             cache: 'force-cache',
           }}
         />
@@ -79,10 +120,34 @@ const HotspotListItem = ({ hotspot, onPress }: HotspotListItemProps) => {
             <MobileSymbol color="black" />
           </Box>
         )}
+        {hasIotRewards && (
+          <Box
+            justifyContent="center"
+            alignItems="center"
+            backgroundColor="white"
+            borderRadius="round"
+            position="absolute"
+            top={hasMobileRewards ? 58 : 20}
+            right={16}
+            height={28}
+            width={28}
+            flexDirection="row"
+            shadowRadius={6}
+            shadowColor="black"
+            shadowOffset={{
+              width: 0,
+              height: 3,
+            }}
+            shadowOpacity={0.3}
+            elevation={2}
+          >
+            <IotSymbol color="black" />
+          </Box>
+        )}
       </TouchableOpacityBox>
-      {json?.name && (
+      {metadata?.name && (
         <Text textAlign="center" variant="subtitle1" marginHorizontal="m">
-          {removeDashAndCapitalize(json.name)}
+          {removeDashAndCapitalize(metadata.name)}
         </Text>
       )}
     </ReAnimatedBox>

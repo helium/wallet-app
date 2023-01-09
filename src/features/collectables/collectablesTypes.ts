@@ -1,30 +1,35 @@
 import { JsonMetadata } from '@metaplex-foundation/js'
 import { StackNavigationProp } from '@react-navigation/stack'
-import { Collectable } from '../../types/solana'
+import { CompressedNFT } from '../../types/solana'
 
 export type PaymentRouteParam = {
-  collectable?: Collectable
+  collectable?: CompressedNFT
 }
 
 export type CollectableStackParamList = {
   CollectionScreen: {
-    collection: Collectable[]
+    collection: CompressedNFT[]
   }
   NftDetailsScreen: {
-    collectable: Collectable
+    collectable: CompressedNFT
   }
   HotspotDetailsScreen: {
-    collectable: Collectable
+    collectable: CompressedNFT
   }
   NftMetadataScreen: {
     metadata: JsonMetadata<string>
   }
   TransferCollectableScreen: {
-    collectable: Collectable
+    collectable: CompressedNFT
   }
   TransferCompleteScreen: {
-    collectable: Collectable
+    collectable: CompressedNFT
   }
+  ClaimRewardsScreen: {
+    hotspot: CompressedNFT
+  }
+  ClaimAllRewardsScreen: undefined
+  ClaimingRewardsScreen: undefined
   AddNewContact: undefined
   PaymentQrScanner: undefined
   AddressBookNavigator: undefined
