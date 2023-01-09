@@ -3,22 +3,35 @@ import { times } from 'lodash'
 import { FlatList } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { RefreshControl } from 'react-native'
+import { useIsFocused } from '@react-navigation/native'
 import Box from '../../components/Box'
 import useCollectables from '../../hooks/useCollectables'
-import CollectableListItem, { CollectableSkeleton } from './NftListItem'
-import { useColors } from '../../theme/themeHooks'
+import NFTListItem, { NFTSkeleton } from './NftListItem'
+import { useColors, useSpacing } from '../../theme/themeHooks'
+import CircleLoader from '../../components/CircleLoader'
 
 const NftList = () => {
   const { bottom } = useSafeAreaInsets()
+  const spacing = useSpacing()
+  const isFocused = useIsFocused()
+
   const {
     collectables,
     collectablesWithMeta,
     loading: loadingCollectables,
     refresh,
+    fetchMore,
+    fetchingMore,
   } = useCollectables()
   const { primaryText } = useColors()
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
+
+  const handleOnEndReached = useCallback(() => {
+    if (!fetchingMore && isFocused) {
+      fetchMore()
+    }
+  }, [fetchingMore, isFocused, fetchMore])
 
   const flatListItems = useMemo(() => {
     return Object.keys(collectablesWithMeta).filter((key) => key !== 'HOTSPOT')
@@ -31,14 +44,12 @@ const NftList = () => {
       // eslint-disable-next-line react/no-unused-prop-types
       item: string
     }) => {
-      return (
-        <CollectableListItem item={token} collectables={collectablesWithMeta} />
-      )
+      return <NFTListItem item={token} collectables={collectablesWithMeta} />
     },
     [collectablesWithMeta],
   )
 
-  const renderFooter = useCallback(() => {
+  const renderEmptyComponent = useCallback(() => {
     if (!loadingCollectables) return null
 
     if (loadingCollectables) {
@@ -47,7 +58,7 @@ const NftList = () => {
           {times(
             Object.keys(collectables).filter((key) => key !== 'HOTSPOT').length,
           ).map((i) => (
-            <CollectableSkeleton key={i} />
+            <NFTSkeleton key={i} />
           ))}
         </Box>
       )
@@ -62,10 +73,19 @@ const NftList = () => {
 
   const contentContainerStyle = useMemo(
     () => ({
+      marginTop: spacing.m,
       paddingBottom: bottomSpace,
     }),
-    [bottomSpace],
+    [bottomSpace, spacing.m],
   )
+
+  const Footer = useCallback(() => {
+    return fetchingMore ? (
+      <Box marginTop="m">
+        <CircleLoader loaderSize={40} />
+      </Box>
+    ) : null
+  }, [fetchingMore])
 
   return (
     <FlatList
@@ -85,8 +105,11 @@ const NftList = () => {
       }}
       contentContainerStyle={contentContainerStyle}
       renderItem={renderItem}
-      ListEmptyComponent={renderFooter}
+      ListEmptyComponent={renderEmptyComponent}
       keyExtractor={keyExtractor}
+      onEndReachedThreshold={0.01}
+      onEndReached={handleOnEndReached}
+      ListFooterComponent={Footer}
     />
   )
 }

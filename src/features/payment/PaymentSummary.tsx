@@ -14,7 +14,6 @@ type Props = {
   errors?: string[]
   payments?: Payment[]
   alwaysShowRecipients?: boolean
-  collectableSymbol?: string
 }
 
 const MAX_ACCOUNT_ICONS = 3
@@ -26,7 +25,6 @@ const PaymentSummary = ({
   payments = [],
   errors,
   alwaysShowRecipients,
-  collectableSymbol,
 }: Props) => {
   const { t } = useTranslation()
 
@@ -103,12 +101,12 @@ const PaymentSummary = ({
           {t('payment.total')}
         </Text>
         <Text variant="h3" color="primaryText">
-          {!collectableSymbol ? total : `1 ${collectableSymbol}`}
+          {total}
         </Text>
       </Box>
 
       <Box flexDirection="row" alignItems="center">
-        {showRecipients && payments.length > 0 && !collectableSymbol && (
+        {showRecipients && payments.length > 0 && (
           <>
             {accountIcons}
             <Text variant="body2" color="secondaryText" marginLeft="s">

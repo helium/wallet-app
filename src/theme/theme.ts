@@ -133,6 +133,7 @@ const palette = {
   grey700: '#5A5E6C',
   grey800: '#54596F',
   grey900: '#2C2E37',
+  lightGrey: '#E2E2E2',
 
   havelockBlue: '#0C93E5',
 

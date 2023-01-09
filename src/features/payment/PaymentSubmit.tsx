@@ -21,7 +21,6 @@ type Props = {
   onRetry: () => void
   onSuccess: () => void
   actionTitle: string
-  collectableSymbol?: string
 }
 
 const PaymentSubmit = ({
@@ -34,7 +33,6 @@ const PaymentSubmit = ({
   onRetry,
   onSuccess,
   actionTitle,
-  collectableSymbol,
 }: Props) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<ApolloError | Error | SerializedError>()
@@ -95,7 +93,6 @@ const PaymentSubmit = ({
             payments={payments}
             onSuccess={onSuccess}
             actionTitle={actionTitle}
-            collectableSymbol={collectableSymbol}
           />
         </FadeInOut>
       )
@@ -110,14 +107,12 @@ const PaymentSubmit = ({
             payments={payments}
             error={submitError}
             onRetry={handleRetry}
-            collectableSymbol={collectableSymbol}
           />
         </FadeInOut>
       )
     }
   }, [
     actionTitle,
-    collectableSymbol,
     feeTokenBalance,
     handleRetry,
     handleVideoEnded,

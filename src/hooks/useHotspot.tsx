@@ -5,36 +5,63 @@ import { useAsync, useAsyncCallback } from 'react-async-hook'
 import * as client from '@helium/distributor-oracle'
 import {
   getPendingRewards,
-  LAZY_KEY,
   useProgram,
+  MOBILE_LAZY_KEY,
+  IOT_LAZY_KEY,
 } from '../utils/hotspotNftsUtils'
 import { useRecipient } from './useRecipient'
 import * as Logger from '../utils/logger'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
+import useSubmitTxn from '../graphql/useSubmitTxn'
 
 export function useHotspot(mint: PublicKey): {
-  pendingRewards: number | null
-  claimRewards: () => Promise<void>
-  rewardsLoading: boolean
-  error: string | null
+  iotRewardsError: Error | undefined
+  mobileRewardsError: Error | undefined
+  pendingIotRewards: number | null
+  pendingMobileRewards: number | null
+  claimIotRewards: () => Promise<void>
+  claimMobileRewards: () => Promise<void>
+  iotRewardsLoading: boolean
+  mobileRewardsLoading: boolean
 } {
   const program = useProgram()
-  const [pendingRewards, setPendingRewards] = useState<number | null>(null)
+  const [pendingMobileRewards, setPendingMobileRewards] = useState<
+    number | null
+  >(null)
+  const [pendingIotRewards, setPendingIotRewards] = useState<number | null>(
+    null,
+  )
   const [error, setError] = useState<string | null>(null)
-  const recipientKey = useMemo(() => {
-    return getRecipientKey(LAZY_KEY, mint)[0]
+  const recipientMobileKey = useMemo(() => {
+    return getRecipientKey(MOBILE_LAZY_KEY, mint)[0]
   }, [mint])
-  const { info: recipient, loading } = useRecipient(recipientKey)
+  const recipientIotKey = useMemo(() => {
+    return getRecipientKey(IOT_LAZY_KEY, mint)[0]
+  }, [mint])
+  const { info: mobileRecipient, loading: mobileLoading } =
+    useRecipient(recipientMobileKey)
+  const { info: iotRecipient, loading: iotLoading } =
+    useRecipient(recipientIotKey)
+  const { submitClaimRewards } = useSubmitTxn()
 
   useAsync(async () => {
     try {
-      if (program && !loading) {
-        const { pendingRewards: rewards } = await getPendingRewards(
+      if (program && !mobileLoading) {
+        const { pendingRewards: mobileRewards } = await getPendingRewards(
           program,
           mint,
-          recipient,
+          mobileRecipient,
         )
-        setPendingRewards(rewards)
+        setPendingMobileRewards(mobileRewards)
+      }
+
+      if (program && !iotLoading) {
+        const { pendingRewards: iotRewards } = await getPendingRewards(
+          program,
+          mint,
+          iotRecipient,
+        )
+        setPendingIotRewards(iotRewards)
       }
     } catch (e) {
       Logger.error(e)
@@ -44,41 +71,78 @@ export function useHotspot(mint: PublicKey): {
   const { anchorProvider } = useAccountStorage()
 
   const {
-    error: rewardsError,
-    execute,
-    loading: rewardsLoading,
+    error: mobileRewardsError,
+    execute: claimMobileRewards,
+    loading: mobileRewardsLoading,
   } = useAsyncCallback(async () => {
     if (mint && program && anchorProvider) {
-      if (loading) return
+      if (mobileLoading) return
       const rewards = await client.getCurrentRewards(
-        // TODO: Fix program type
+        // TODO: Fix program type once HPL is upgraded to anchor v0.26
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         program as any,
-        LAZY_KEY,
+        MOBILE_LAZY_KEY,
         mint,
       )
 
       const tx = await client.formTransaction({
-        // TODO: Fix program type
+        // TODO: Fix program type once HPL is upgraded to anchor v0.26
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         program: program as any,
         provider: anchorProvider,
         rewards,
         hotspot: mint,
-        lazyDistributor: LAZY_KEY,
+        lazyDistributor: MOBILE_LAZY_KEY,
       })
 
-      // TODO: Send this transaction via Solana Slice
-      await anchorProvider.sendAndConfirm(tx)
+      await submitClaimRewards(tx)
+    }
+  })
+
+  const {
+    error: iotRewardsError,
+    execute: claimIotRewards,
+    loading: iotRewardsLoading,
+  } = useAsyncCallback(async () => {
+    if (mint && program && anchorProvider) {
+      if (mobileLoading) return
+      const rewards = await client.getCurrentRewards(
+        // TODO: Fix program type once HPL is upgraded to anchor v0.26
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        program as any,
+        MOBILE_LAZY_KEY,
+        mint,
+      )
+
+      const tx = await client.formTransaction({
+        // TODO: Fix program type once HPL is upgraded to anchor v0.26
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        program: program as any,
+        provider: anchorProvider,
+        rewards,
+        hotspot: mint,
+        lazyDistributor: MOBILE_LAZY_KEY,
+      })
+
+      await submitClaimRewards(tx)
     }
   })
 
   useEffect(() => {
-    if (rewardsError) {
-      Logger.error(rewardsError)
-      setError(rewardsError.message)
+    if (mobileRewardsError) {
+      Logger.error(mobileRewardsError)
+      setError(mobileRewardsError.message)
     }
-  }, [error, rewardsError])
+  }, [error, mobileRewardsError])
 
-  return { pendingRewards, claimRewards: execute, rewardsLoading, error }
+  return {
+    pendingIotRewards,
+    pendingMobileRewards,
+    claimMobileRewards,
+    claimIotRewards,
+    mobileRewardsLoading,
+    iotRewardsLoading,
+    iotRewardsError,
+    mobileRewardsError,
+  }
 }

@@ -1,10 +1,15 @@
-import React, { FC, useCallback, useMemo } from 'react'
+import React, { FC, useCallback, useEffect, useMemo, useRef } from 'react'
 import { SvgProps } from 'react-native-svg'
 import {
   BottomTabBarProps,
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs'
 import { Edge } from 'react-native-safe-area-context'
+import { useNavigation } from '@react-navigation/native'
+import { useSelector } from 'react-redux'
+import ConnectedWallets, {
+  ConnectedWalletsRef,
+} from '../features/account/ConnectedWallets'
 import NavBar from '../components/NavBar'
 import Dollar from '../assets/images/dollar.svg'
 import Gem from '../assets/images/gem.svg'
@@ -12,18 +17,21 @@ import Transactions from '../assets/images/transactions.svg'
 import Notifications from '../assets/images/notifications.svg'
 import { Color } from '../theme/theme'
 import HomeNavigator from '../features/home/HomeNavigator'
-import CollectableNavigator from '../features/collectables/CollectablesNavigator'
+import CollectablesTabNavigator from '../features/collectables/CollectablesTabNavigator'
 import ActivityNavigator from '../features/activity/ActivityNavigator'
 import NotificationsNavigator from '../features/notifications/NotificationsNavigator'
 import SafeAreaBox from '../components/SafeAreaBox'
 import Box from '../components/Box'
 import useEnrichedTransactions from '../hooks/useEnrichedTransactions'
+import { RootState } from '../store/rootReducer'
+import { useAppDispatch } from '../store/store'
+import { appSlice } from '../store/slices/appSlice'
+import { HomeNavigationProp } from '../features/home/homeTypes'
 
 const Tab = createBottomTabNavigator()
 
 function MyTabBar({ state, navigation }: BottomTabBarProps) {
   const { hasNewTransactions, resetNewTransactions } = useEnrichedTransactions()
-  // TODO: Verify if it is even worth getting all pending rewards considering the amount of account fetches required for every hotspot.
   const tabData = useMemo((): Array<{
     value: string
     Icon: FC<SvgProps>
@@ -119,22 +127,48 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
 }
 
 const TabBarNavigator = () => {
+  const navigation = useNavigation<HomeNavigationProp>()
+  const connectedWalletsRef = useRef<ConnectedWalletsRef>(null)
+  const showConnectedWallets = useSelector(
+    (state: RootState) => state.app.showConnectedWallets,
+  )
+  const dispatch = useAppDispatch()
+  useEffect(() => {
+    if (showConnectedWallets) {
+      connectedWalletsRef.current?.show()
+    }
+  }, [showConnectedWallets])
+
+  const handleAddNew = useCallback(() => {
+    navigation.navigate('AddNewAccountNavigator')
+  }, [navigation])
+
+  const onConnectedWalletsClose = useCallback(() => {
+    dispatch(appSlice.actions.toggleConnectedWallets())
+  }, [dispatch])
+
   return (
-    <Tab.Navigator
-      tabBar={(props: BottomTabBarProps) => <MyTabBar {...props} />}
-      screenOptions={{
-        headerShown: false,
-      }}
+    <ConnectedWallets
+      onAddNew={handleAddNew}
+      ref={connectedWalletsRef}
+      onClose={onConnectedWalletsClose}
     >
-      <Tab.Screen name="Home" component={HomeNavigator} />
-      <Tab.Screen name="Collectables" component={CollectableNavigator} />
-      {/* <Tab.Screen name="Swaps" component={CollectableNavigator} /> */}
-      <Tab.Screen name="Activity" component={ActivityNavigator} />
-      <Tab.Screen
-        name="NotificationsNavigator"
-        component={NotificationsNavigator}
-      />
-    </Tab.Navigator>
+      <Tab.Navigator
+        tabBar={(props: BottomTabBarProps) => <MyTabBar {...props} />}
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Tab.Screen name="Home" component={HomeNavigator} />
+        <Tab.Screen name="Collectables" component={CollectablesTabNavigator} />
+        {/* <Tab.Screen name="Swaps" component={CollectableNavigator} /> */}
+        <Tab.Screen name="Activity" component={ActivityNavigator} />
+        <Tab.Screen
+          name="NotificationsNavigator"
+          component={NotificationsNavigator}
+        />
+      </Tab.Navigator>
+    </ConnectedWallets>
   )
 }
 

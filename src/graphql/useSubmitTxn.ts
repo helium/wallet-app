@@ -6,6 +6,7 @@ import Balance, {
   Ticker,
 } from '@helium/currency'
 import { PaymentV2 } from '@helium/transactions'
+import { Transaction } from '@solana/web3.js'
 import { useTransactions } from '../storage/TransactionProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAccountLazyQuery, useSubmitTxnMutation } from '../generated/graphql'
@@ -13,14 +14,17 @@ import { useAppStorage } from '../storage/AppStorageProvider'
 import {
   makeCollectablePayment,
   makePayment,
+  claimRewards,
+  claimAllRewards,
+  sendAnchorTxn,
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import { useGetMintsQuery } from '../store/slices/walletRestApi'
-import { Collectable } from '../types/solana'
+import { CompressedNFT } from '../types/solana'
 
 export default () => {
   const { makePaymentTxn } = useTransactions()
-  const { currentAccount } = useAccountStorage()
+  const { currentAccount, anchorProvider } = useAccountStorage()
   const { l1Network, solanaNetwork: cluster } = useAppStorage()
   const { data: mints } = useGetMintsQuery(cluster, {
     refetchOnMountOrArgChange: true,
@@ -139,7 +143,7 @@ export default () => {
   )
 
   const submitCollectable = useCallback(
-    async (collectable: Collectable, payee: string) => {
+    async (collectable: CompressedNFT, payee: string) => {
       if (!currentAccount) {
         throw new Error('There must be an account selected to submit a txn')
       }
@@ -153,6 +157,66 @@ export default () => {
       )
     },
     [cluster, currentAccount, dispatch],
+  )
+
+  const submitAnchorTxn = useCallback(
+    async (txn: Transaction) => {
+      if (!anchorProvider) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+      dispatch(
+        sendAnchorTxn({
+          txn,
+          anchorProvider,
+          cluster,
+        }),
+      )
+    },
+    [anchorProvider, cluster, dispatch],
+  )
+
+  const submitClaimRewards = useCallback(
+    async (txn: Transaction) => {
+      if (!anchorProvider) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+
+      if (!currentAccount) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+
+      dispatch(
+        claimRewards({
+          account: currentAccount,
+          txn,
+          anchorProvider,
+          cluster,
+        }),
+      )
+    },
+    [anchorProvider, cluster, currentAccount, dispatch],
+  )
+
+  const submitClaimAllRewards = useCallback(
+    async (txns: Transaction[]) => {
+      if (!anchorProvider) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+
+      if (!currentAccount) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+
+      dispatch(
+        claimAllRewards({
+          account: currentAccount,
+          txns,
+          anchorProvider,
+          cluster,
+        }),
+      )
+    },
+    [anchorProvider, cluster, currentAccount, dispatch],
   )
 
   const submitHeliumLedger = useCallback(
@@ -188,6 +252,9 @@ export default () => {
   return {
     submit,
     submitCollectable,
+    submitAnchorTxn,
+    submitClaimRewards,
+    submitClaimAllRewards,
     submitLedger,
     data,
     error: accountError || submitError || nonceError,

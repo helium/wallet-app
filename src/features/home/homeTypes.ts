@@ -1,7 +1,6 @@
 import { Ticker } from '@helium/currency'
 import { LinkWalletRequest, SignHotspotRequest } from '@helium/wallet-link'
 import { StackNavigationProp } from '@react-navigation/stack'
-import { Collectable } from '../../types/solana'
 
 export type PaymentRouteParam = {
   payer?: string
@@ -11,7 +10,6 @@ export type PaymentRouteParam = {
   memo?: string
   netType?: string
   defaultTokenType?: Ticker
-  collectable?: Collectable
 }
 
 export type BurnRouteParam = {
