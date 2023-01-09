@@ -74,7 +74,7 @@ const ContactsList = ({
         >
           <FabButton
             icon="add"
-            backgroundColor="black750"
+            backgroundColor="secondary"
             iconColor="white"
             size={40}
             disabled

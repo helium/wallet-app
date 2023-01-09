@@ -12,30 +12,21 @@ import Text from '../../components/Text'
 import { useColors } from '../../theme/themeHooks'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import * as AccountUtils from '../../utils/accountUtils'
 import AccountIcon from '../../components/AccountIcon'
-import BackgroundFill from '../../components/BackgroundFill'
-import useLayoutWidth from '../../hooks/useLayoutWidth'
-import useNetworkColor from '../../hooks/useNetworkColor'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import useHaptic from '../../hooks/useHaptic'
+import IconPressedContainer from '../../components/IconPressedContainer'
 
 type Props = {
   onPressWallet: () => void
   onLayout?: (event: LayoutChangeEvent) => void
 }
 const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
-  const { primaryIcon, primaryText } = useColors()
+  const { primaryText } = useColors()
   const navigation = useNavigation<HomeNavigationProp>()
   const { currentAccount, currentNetworkAddress } = useAccountStorage()
-  const [barButtonsRightWidth, setBarButtonsRightWidth] = useLayoutWidth()
   const { l1Network } = useAppStorage()
   const { triggerImpact } = useHaptic()
-
-  const accountNetType = useMemo(
-    () => AccountUtils.accountNetType(currentAccount?.address),
-    [currentAccount],
-  )
 
   const navToSettings = useCallback(() => {
     triggerImpact()
@@ -56,10 +47,6 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
 
   const containerStyle = useMemo(() => ({ marginTop: top }), [top])
 
-  const backgroundColor = useNetworkColor({
-    netType: accountNetType,
-  })
-
   return (
     <Box
       flexDirection="row"
@@ -69,17 +56,11 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
       style={containerStyle}
       zIndex={1}
     >
-      {backgroundColor && (
-        <BackgroundFill backgroundColor={backgroundColor} opacity={1} />
-      )}
-      <TouchableOpacityBox
-        paddingVertical="ms"
-        paddingHorizontal="l"
-        onPress={navToSettings}
-        width={barButtonsRightWidth || 94}
-      >
-        <CogIco color={primaryIcon} />
-      </TouchableOpacityBox>
+      <Box marginStart="m">
+        <IconPressedContainer onPress={navToSettings}>
+          <CogIco color="white" />
+        </IconPressedContainer>
+      </Box>
 
       <TouchableOpacityBox
         flexDirection="row"
@@ -103,24 +84,21 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
         </Text>
         <CarotDown color={primaryText} />
       </TouchableOpacityBox>
-      <Box
-        flexDirection="row"
-        paddingRight="l"
-        onLayout={setBarButtonsRightWidth}
-      >
+      <Box flexDirection="row" marginEnd="l">
         {l1Network === 'helium' && (
           <TouchableOpacityBox
             paddingVertical="ms"
             paddingLeft="s"
             onPress={handleNotificationsSelected}
-            marginRight="s"
+            marginEnd="m"
           >
             <NotificationIcon />
           </TouchableOpacityBox>
         )}
-        <TouchableOpacityBox onPress={handleAddressBook} paddingVertical="ms">
-          <AccountIco color={primaryIcon} />
-        </TouchableOpacityBox>
+
+        <IconPressedContainer onPress={handleAddressBook}>
+          <AccountIco color="white" />
+        </IconPressedContainer>
       </Box>
     </Box>
   )

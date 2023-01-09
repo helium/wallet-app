@@ -283,7 +283,7 @@ const RequestScreen = () => {
 
               <AccountButton
                 accountIconSize={41}
-                backgroundColor="secondary"
+                backgroundColor="surfaceSecondary"
                 showBubbleArrow
                 marginTop="l"
                 title={currentAccount?.alias}
@@ -297,7 +297,6 @@ const RequestScreen = () => {
                 })}
                 backgroundColor="secondary"
                 address={currentAccount?.address}
-                netType={currentAccount?.netType}
                 onPress={handleTickerSelected}
                 showBubbleArrow
                 ticker={ticker}

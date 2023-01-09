@@ -339,6 +339,7 @@ const AccountsScreen = () => {
             title={SUPPORTED_CURRENCIES[c]}
             selected={c === currency}
             onPress={handleCurrencyTypeChange(c)}
+            hasPressedState={false}
           />
         ))}
       </>

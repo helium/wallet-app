@@ -127,7 +127,7 @@ const PaymentCard = ({
         onLayout={handleLayout}
         overflow="hidden"
         minHeight={232}
-        backgroundColor="secondary"
+        backgroundColor="surfaceSecondary"
       >
         <PaymentSummary
           totalBalance={totalBalance}

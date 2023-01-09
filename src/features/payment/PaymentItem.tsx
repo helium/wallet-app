@@ -203,7 +203,7 @@ const PaymentItem = ({
   return (
     <Box
       marginHorizontal="l"
-      backgroundColor="secondary"
+      backgroundColor="surfaceSecondary"
       borderRadius="xl"
       overflow="hidden"
       {...boxProps}

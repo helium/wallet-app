@@ -1,15 +1,13 @@
 import React, { memo, ReactText, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
-import Close from '@assets/images/close.svg'
 import { Alert, Linking, Platform, SectionList } from 'react-native'
 import { Cluster } from '@solana/web3.js'
 import Config from 'react-native-config'
 import Text from '../../components/Text'
 import SafeAreaBox from '../../components/SafeAreaBox'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { HomeNavigationProp } from '../home/homeTypes'
-import { useColors, useHitSlop, useSpacing } from '../../theme/themeHooks'
+import { useHitSlop, useSpacing } from '../../theme/themeHooks'
 import Box from '../../components/Box'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
 import { useAppVersion } from '../../hooks/useDevice'
@@ -30,13 +28,13 @@ import { useApolloClient } from '../../graphql/useApolloClient'
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
 import { ellipsizeAddress } from '../../utils/accountUtils'
 import { RootNavigationProp } from '../../navigation/rootTypes'
+import CloseButton from '../../components/CloseButton'
 
 const Settings = () => {
   const { t } = useTranslation()
   const homeNav = useNavigation<HomeNavigationProp>()
   const settingsNav = useNavigation<SettingsNavigationProp>()
   const { client } = useApolloClient()
-  const { primaryText } = useColors()
   const rootNav = useNavigation<RootNavigationProp>()
   const spacing = useSpacing()
   const version = useAppVersion()
@@ -638,13 +636,11 @@ const Settings = () => {
         paddingTop="s"
       >
         <Text variant="h1">{t('settings.title')}</Text>
-        <TouchableOpacityBox
+        <CloseButton
           onPress={onRequestClose}
           hitSlop={hitSlop}
           paddingVertical="m"
-        >
-          <Close color={primaryText} height={16} width={16} />
-        </TouchableOpacityBox>
+        />
       </Box>
       <SectionList
         contentContainerStyle={contentContainer}

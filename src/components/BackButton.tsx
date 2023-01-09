@@ -2,8 +2,8 @@
 import React from 'react'
 import { BoxProps } from '@shopify/restyle'
 import { Insets } from 'react-native'
+import BackArrow from '@assets/images/backArrow.svg'
 import { Color, Spacing, Theme } from '../theme/theme'
-import BackArrow from '../assets/images/backArrow.svg'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import { useColors } from '../theme/themeHooks'
 

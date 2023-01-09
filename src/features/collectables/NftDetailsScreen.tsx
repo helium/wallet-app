@@ -4,6 +4,9 @@ import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
+import Trash from '@assets/images/trash.svg'
+import InfoIcon from '@assets/images/info.svg'
+import ArrowRight from '@assets/images/arrowRight.svg'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
@@ -18,11 +21,8 @@ import Text from '../../components/Text'
 import { ww } from '../../utils/layout'
 import BackScreen from '../../components/BackScreen'
 import { useSpacing } from '../../theme/themeHooks'
-import Trash from '../../assets/images/trash.svg'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import InfoIcon from '../../assets/images/info.svg'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
-import ArrowRight from '../../assets/images/arrowRight.svg'
 
 type Route = RouteProp<CollectableStackParamList, 'NftDetailsScreen'>
 

@@ -2,7 +2,6 @@ import React, { memo, useCallback, useMemo } from 'react'
 import ChevronDown from '@assets/images/chevronDown.svg'
 import { Keyboard, StyleSheet } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
-import { NetTypes as NetType } from '@helium/address'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenHNT from '@assets/images/tokenHNT.svg'
 import { Ticker } from '@helium/currency'
@@ -11,8 +10,6 @@ import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import { Color, Theme } from '../theme/theme'
-import { useAppStorage } from '../storage/AppStorageProvider'
-import useNetworkColor from '../hooks/useNetworkColor'
 
 const TokenItem = ({ ticker }: { ticker: Ticker }) => {
   const colors = useColors()
@@ -37,7 +34,6 @@ type Props = {
   title?: string
   subtitle?: string
   showBubbleArrow?: boolean
-  netType?: NetType.NetType
   innerBoxProps?: BoxProps<Theme>
   ticker: Ticker
 } & BoxProps<Theme>
@@ -48,14 +44,12 @@ const TokenButton = ({
   title,
   subtitle,
   showBubbleArrow,
-  netType = NetType.MAINNET,
   innerBoxProps,
   ticker,
   backgroundColor: backgroundColorProps,
   ...boxProps
 }: Props) => {
   const hitSlop = useHitSlop('l')
-  const { l1Network } = useAppStorage()
   const colors = useColors()
 
   const handlePress = useCallback(() => {
@@ -63,17 +57,9 @@ const TokenButton = ({
     onPress?.(address)
   }, [address, onPress])
 
-  const backgroundColor = useNetworkColor({
-    netType,
-    defaultColor: backgroundColorProps as Color,
-    muted: true,
-  })
-
   const textColor = useMemo((): Color => {
-    if (l1Network === 'solana' || netType === NetType.TESTNET)
-      return 'primaryText'
     return 'secondaryText'
-  }, [l1Network, netType])
+  }, [])
 
   return (
     <TouchableOpacityBox
@@ -84,7 +70,7 @@ const TokenButton = ({
       {...boxProps}
     >
       <Box
-        backgroundColor={backgroundColor}
+        backgroundColor={backgroundColorProps as Color}
         borderRadius="xl"
         alignItems="center"
         flexDirection="row"
@@ -108,7 +94,7 @@ const TokenButton = ({
       {showBubbleArrow && (
         <Box height={18}>
           <Box
-            backgroundColor={backgroundColor}
+            backgroundColor={backgroundColorProps as Color}
             alignSelf="center"
             style={styles.rotatedBox}
           />

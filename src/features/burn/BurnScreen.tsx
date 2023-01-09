@@ -283,7 +283,7 @@ const BurnScreen = () => {
           keyboardShouldPersistTaps="always"
         >
           <AccountButton
-            backgroundColor="secondary"
+            backgroundColor="surfaceSecondary"
             accountIconSize={41}
             paddingTop="l"
             title={formatAccountAlias(currentAccount)}
@@ -297,7 +297,7 @@ const BurnScreen = () => {
             marginBottom="xs"
           />
           <AccountButton
-            backgroundColor="secondary"
+            backgroundColor="surfaceSecondary"
             accountIconSize={41}
             subtitle={t('burn.recipient')}
             title={ellipsizeAddress(route.params.address)}

@@ -64,7 +64,6 @@ import { RootState } from '../../store/rootReducer'
 import { useAppDispatch } from '../../store/store'
 import useDisappear from '../../hooks/useDisappear'
 import { solanaSlice } from '../../store/slices/solanaSlice'
-import useNetworkColor from '../../hooks/useNetworkColor'
 
 type LinkedPayment = {
   amount?: string
@@ -161,7 +160,6 @@ const PaymentScreen = () => {
   })
 
   const { showAccountTypes } = useAccountSelector()
-  const backgroundColor = useNetworkColor({ netType: currentAccount?.netType })
 
   const {
     data: submitData,
@@ -648,12 +646,19 @@ const PaymentScreen = () => {
             ref={tokenSelectorRef}
             onTokenSelected={onTickerSelected}
           >
-            <Box flex={1} style={containerStyle}>
+            <Box
+              flex={1}
+              style={containerStyle}
+              borderTopStartRadius="xl"
+              borderTopEndRadius="xl"
+            >
               <Box
-                backgroundColor={backgroundColor}
+                backgroundColor="surfaceSecondary"
                 flexDirection="row"
                 justifyContent="space-between"
                 alignItems="center"
+                borderTopStartRadius="xl"
+                borderTopEndRadius="xl"
               >
                 <TouchableOpacityBox
                   onPress={handleQrScan}
@@ -685,7 +690,7 @@ const PaymentScreen = () => {
                 keyboardShouldPersistTaps="always"
               >
                 <AccountButton
-                  backgroundColor="secondary"
+                  backgroundColor="surfaceSecondary"
                   accountIconSize={41}
                   paddingTop="l"
                   title={formatAccountAlias(currentAccount)}
@@ -700,13 +705,12 @@ const PaymentScreen = () => {
                 />
 
                 <TokenButton
-                  backgroundColor="secondary"
+                  backgroundColor="surfaceSecondary"
                   title={t('payment.title', { ticker: currencyType.ticker })}
                   subtitle={balanceToString(
                     ticker === 'HNT' ? networkBalance : mobileBalance,
                   )}
                   address={currentAccount?.address}
-                  netType={currentAccount?.netType}
                   onPress={handleTokenTypeSelected}
                   showBubbleArrow
                   marginHorizontal="l"
@@ -755,10 +759,10 @@ const PaymentScreen = () => {
                     borderRadius="xl"
                     overflow="hidden"
                     marginHorizontal="l"
-                    marginVertical="l"
+                    marginBottom="l"
                     alignItems="center"
                     justifyContent="center"
-                    backgroundColor="secondary"
+                    backgroundColor="surfaceSecondary"
                   >
                     <Text variant="body1" color="surfaceSecondaryText">
                       {t('payment.addRecipient')}

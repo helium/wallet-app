@@ -10,8 +10,6 @@ import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import { Color, Theme } from '../theme/theme'
-import { useAppStorage } from '../storage/AppStorageProvider'
-import useNetworkColor from '../hooks/useNetworkColor'
 
 type Props = {
   onPress?: (address?: string) => void
@@ -31,7 +29,6 @@ const AccountButton = ({
   title,
   subtitle,
   showBubbleArrow,
-  netType = NetType.MAINNET,
   innerBoxProps,
   showChevron = true,
   accountIconSize = 28,
@@ -39,7 +36,6 @@ const AccountButton = ({
   ...boxProps
 }: Props) => {
   const hitSlop = useHitSlop('l')
-  const { l1Network } = useAppStorage()
   const colors = useColors()
 
   const handlePress = useCallback(() => {
@@ -47,17 +43,9 @@ const AccountButton = ({
     onPress?.(address)
   }, [address, onPress])
 
-  const backgroundColor = useNetworkColor({
-    netType,
-    defaultColor: backgroundColorProps as Color,
-    muted: true,
-  })
-
   const textColor = useMemo((): Color => {
-    if (l1Network === 'solana' || netType === NetType.TESTNET)
-      return 'primaryText'
     return 'secondaryText'
-  }, [l1Network, netType])
+  }, [])
 
   return (
     <TouchableOpacityBox
@@ -68,7 +56,7 @@ const AccountButton = ({
       {...boxProps}
     >
       <Box
-        backgroundColor={backgroundColor}
+        backgroundColor={backgroundColorProps as Color}
         borderRadius="xl"
         alignItems="center"
         flexDirection="row"
@@ -92,7 +80,7 @@ const AccountButton = ({
       {showBubbleArrow && (
         <Box height={18}>
           <Box
-            backgroundColor={backgroundColor}
+            backgroundColor={backgroundColorProps as Color}
             alignSelf="center"
             style={styles.rotatedBox}
           />

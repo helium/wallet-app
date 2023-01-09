@@ -3,6 +3,8 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { Linking, ScrollView } from 'react-native'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
 import { useTranslation } from 'react-i18next'
+import CheckmarkFilled from '@assets/images/checkmarkFill.svg'
+import Error from '@assets/images/error.svg'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 import ListItem from '../../components/ListItem'
 import { EnrichedTransaction } from '../../types/solana'
@@ -12,10 +14,8 @@ import Box from '../../components/Box'
 import Text from '../../components/Text'
 import AddressActivityItem from './AddressActivityItem'
 import ButtonPressable from '../../components/ButtonPressable'
-import CheckmarkFilled from '../../assets/images/checkmarkFill.svg'
 import { useColors } from '../../theme/themeHooks'
 import { ellipsizeAddress, solAddressIsValid } from '../../utils/accountUtils'
-import Error from '../../assets/images/error.svg'
 import { ActivityStackParamList } from './activityTypes'
 import BlurActionSheet from '../../components/BlurActionSheet'
 import globalStyles from '../../theme/globalStyles'
@@ -226,6 +226,7 @@ const ActivityDetailsScreen = () => {
           title={t('settings.sections.account.copyAddress')}
           onPress={handleCopyAddress}
           selected={false}
+          hasPressedState={false}
         />
       </>
     ),

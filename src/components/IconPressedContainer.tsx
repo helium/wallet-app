@@ -1,5 +1,5 @@
 import { BoxProps } from '@shopify/restyle'
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
   GestureResponderEvent,
   Insets,
@@ -8,72 +8,85 @@ import {
   StyleSheet,
   ViewStyle,
 } from 'react-native'
-import { useCreateOpacity } from '../theme/themeHooks'
+import { useAnimatedStyle, withSpring } from 'react-native-reanimated'
 import useHaptic from '../hooks/useHaptic'
-import Box from './Box'
 import { Theme } from '../theme/theme'
+import { ReAnimatedBox } from './AnimatedBox'
+
+export const ICON_CONTAINER_SIZE = 44
 
 export type ButtonPressAnimationProps = {
   onPress?: ((event: GestureResponderEvent) => void) | null | undefined
-  hasPressedState?: boolean
   disabled?: boolean
   children: React.ReactNode
   pressableStyles?: ViewStyle
   onLayout?: (event: LayoutChangeEvent) => void | undefined
   hitSlop?: Insets | undefined
+  activeOpacity?: number
+  idleOpacity?: number
 } & BoxProps<Theme>
 
-const TouchableContainer = ({
-  hasPressedState = true,
+const IconPressedContainer = ({
   onPress,
   disabled,
   children,
   pressableStyles,
   onLayout,
   hitSlop,
+  activeOpacity = 0.75,
+  idleOpacity = 0.35,
   ...boxProps
 }: ButtonPressAnimationProps) => {
   const { triggerImpact } = useHaptic()
+  const [iconPressed, setIconPressed] = useState(false)
 
   const onTouchEnd = useCallback(() => {
     triggerImpact()
   }, [triggerImpact])
 
-  const { backgroundStyle: generateBackgroundStyle } = useCreateOpacity()
-
-  const getBackgroundColorStyle = useCallback(
-    (pressed: boolean) => {
-      if (!hasPressedState) return undefined
-
-      if (pressed) {
-        return generateBackgroundStyle('black500', 1.0)
-      }
-      return generateBackgroundStyle('surfaceSecondary', 1.0)
+  const handleIconPressed = useCallback(
+    (pressed: boolean) => () => {
+      setIconPressed(pressed)
     },
-    [generateBackgroundStyle, hasPressedState],
+    [],
   )
+
+  const iconPressedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: withSpring(iconPressed ? activeOpacity : idleOpacity),
+    }
+  })
 
   return (
     <Pressable
       onPress={onPress}
+      onPressIn={handleIconPressed(true)}
+      onPressOut={handleIconPressed(false)}
       disabled={disabled}
       onTouchEnd={onTouchEnd}
       style={pressableStyles || styles.pressable}
     >
-      {({ pressed }) => (
-        <Box
-          style={getBackgroundColorStyle(pressed)}
+      {() => (
+        <ReAnimatedBox
           onLayout={onLayout}
           hitSlop={hitSlop}
+          style={iconPressedStyle}
           {...boxProps}
         >
           {children}
-        </Box>
+        </ReAnimatedBox>
       )}
     </Pressable>
   )
 }
 
-const styles = StyleSheet.create({ pressable: { width: '100%' } })
+const styles = StyleSheet.create({
+  pressable: {
+    height: ICON_CONTAINER_SIZE,
+    width: ICON_CONTAINER_SIZE,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+})
 
-export default TouchableContainer
+export default IconPressedContainer
