@@ -1,6 +1,5 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { LogBox } from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
@@ -18,10 +17,6 @@ import BackArrow from '../../assets/images/backArrow.svg'
 import { SwapNavigationProp, SwapStackParamList } from './swapTypes'
 import ArrowRight from '../../assets/images/arrowRight.svg'
 import TokenIcon from '../../components/TokenIcon'
-
-LogBox.ignoreLogs([
-  'Non-serializable values were found in the navigation state',
-])
 
 type Route = RouteProp<SwapStackParamList, 'SwappingScreen'>
 
@@ -194,4 +189,4 @@ const SwappingScreen = () => {
   )
 }
 
-export default SwappingScreen
+export default memo(SwappingScreen)

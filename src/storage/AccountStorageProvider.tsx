@@ -122,20 +122,6 @@ const useAccountStorageHook = () => {
 
     if (!secureAcct) return
 
-    /**
-     * 
-     * 
-      export default class NodeWallet implements Wallet {
-          readonly payer: Keypair;
-          constructor(payer: Keypair);
-          static local(): NodeWallet | never;
-          signTransaction(tx: Transaction): Promise<Transaction>;
-          signAllTransactions(txs: Transaction[]): Promise<Transaction[]>;
-          get publicKey(): PublicKey;
-      }
-     */
-    // Instatiating a wallet
-
     const anchorWallet = {
       signTransaction: async (transaction: Transaction) => {
         transaction.partialSign(secureAcct)

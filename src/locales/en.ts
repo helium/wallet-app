@@ -282,6 +282,8 @@ export default {
       'You can exit this screen while you wait. We’ll update your Wallet momentarily.',
     swapError: 'Swap failed. Please try again later.',
     returnToSwaps: 'Return to Swaps',
+    insufficientTokensToSwap:
+      'You do not have sufficient tokens to swap that will result in more than 0.00000001 HNT.',
   },
   accountTokenList: {
     tokens: 'Tokens',

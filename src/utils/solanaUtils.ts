@@ -991,7 +991,7 @@ export const getAllTransactions = async (
 
 /**
  *
- * @param connection Solana connection
+ * @param cluster Cluster
  * @param amount Amount to swap
  * @param fromMint Mint address of the token to swap
  * @param anchorProvider Anchor provider
@@ -1056,7 +1056,7 @@ export async function createTreasurySwapTxn(
 
 /**
  *
- * @param connection Solana connection
+ * @param cluster Cluster
  * @param amount Amount to swap
  * @param fromMint Mint address of the token to swap
  * @param anchorProvider Anchor provider

@@ -11,7 +11,7 @@ import { useOwnedAmount } from './useOwnedAmount'
 export function useTreasuryPrice(
   fromMint: PublicKey,
   amount: number,
-): { loading: boolean; price: number | undefined } {
+): { loading: boolean; price: number | undefined; freezeDate: Date } {
   const treasuryManagementKey = useMemo(
     () => tm.treasuryManagementKey(fromMint)[0],
     [fromMint],
@@ -22,6 +22,11 @@ export function useTreasuryPrice(
   const { info: treasuryMintAcc, loading: loadingTreasuryMint } = useMint(
     treasuryAcc?.treasuryMint,
   )
+  const freezeDate =
+    treasuryAcc?.freezeUnixTime &&
+    typeof treasuryAcc.freezeUnixTime === 'number'
+      ? new Date(treasuryAcc.freezeUnixTime * 1000)
+      : new Date()
 
   const {
     amount: r,
@@ -54,7 +59,9 @@ export function useTreasuryPrice(
         (R / Math.pow(S, k + 1)) *
         (Math.pow(S - amount, k + 1) - Math.pow(S, k + 1))
 
-      return Math.abs(dR)
+      const total = Math.abs(dR)
+      // Truncate to 8 decimal places only
+      return total.toFixed(rDecimals)
     }
   }, [fromMintAcc, treasuryMintAcc, treasuryAcc, r, rDecimals, amount])
 
@@ -63,5 +70,5 @@ export function useTreasuryPrice(
     loadingFromMint ||
     loadingTreasuryMint ||
     loadingR
-  return { price, loading }
+  return { price, loading, freezeDate }
 }

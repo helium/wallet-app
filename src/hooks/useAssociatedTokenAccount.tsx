@@ -29,21 +29,17 @@ export function useAssociatedTokenAccount(
     associatedTokenAddress,
   )
 
-  const { info: account, loading: loading3 } = useTokenAccount(
-    associatedTokenAddress || undefined,
-  )
-
   const result = useMemo(() => {
-    if (account?.mint === mint) {
+    if (associatedAccount?.mint === mint) {
       // The passed value is the ata
-      return account
+      return associatedAccount
     }
     return associatedAccount
-  }, [associatedAccount, account, mint])
+  }, [associatedAccount, mint])
 
   return {
     associatedAccount: result,
-    loading: loading || loading2 || loading3,
+    loading: loading || loading2,
     associatedAccountKey: associatedTokenAddress,
   }
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import Balance, { SolTokens, Ticker } from '@helium/currency'
 import { GestureResponderEvent, Pressable, StyleSheet } from 'react-native'
@@ -118,7 +118,7 @@ const SwapItem = ({
               <Text marginEnd="s" variant="h4">
                 {/** If last decimals are zeroes do not show */}
                 {!loading
-                  ? parseFloat(amount.bigBalance.toFixed(8))
+                  ? amount.floatBalance.toFixed(8).replace(/\.0+$/, '')
                   : t('generic.loading')}
               </Text>
               <Text
@@ -150,4 +150,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default SwapItem
+export default memo(SwapItem)

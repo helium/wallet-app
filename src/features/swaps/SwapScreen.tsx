@@ -1,10 +1,12 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Edge } from 'react-native-safe-area-context'
 import Balance, { SolTokens, Ticker } from '@helium/currency'
 import { useAsync } from 'react-async-hook'
 import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 import { useNavigation } from '@react-navigation/native'
+import Refresh from '@assets/images/refresh.svg'
+import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import Text from '../../components/Text'
 import Box from '../../components/Box'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
@@ -19,6 +21,7 @@ import TextTransform from '../../components/TextTransform'
 import {
   createTreasurySwapMessage,
   getConnection,
+  TXN_FEE_IN_SOL,
 } from '../../utils/solanaUtils'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import * as Logger from '../../utils/logger'
@@ -26,6 +29,7 @@ import { SwapNavigationProp } from './swapTypes'
 import { useTreasuryPrice } from '../../hooks/useTreasuryPrice'
 import { Mints } from '../../utils/hotspotNftsUtils'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
+import { useSpacing } from '../../theme/themeHooks'
 
 // Selector Mode enum
 enum SelectorMode {
@@ -62,18 +66,42 @@ const SwapScreen = () => {
   >()
   const [networkError, setNetworkError] = useState<undefined | string>()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-
-  const { price, loading: loadingPrice } = useTreasuryPrice(
+  const spacing = useSpacing()
+  const {
+    price,
+    loading: loadingPrice,
+    freezeDate,
+  } = useTreasuryPrice(
     new PublicKey(Mints[youPayTokenType]),
-    Number(youPayTokenAmount.bigInteger),
+    Number(youPayTokenAmount.floatBalance),
   )
+
+  // If user does not have enough tokens to swap for greater than 0.00000001 tokens
+  const insufficientTokensToSwap = useMemo(() => {
+    return !(price && price > 0) && youPayTokenAmount.floatBalance > 0
+  }, [price, youPayTokenAmount])
 
   const showError = useMemo(() => {
     if (hasInsufficientBalance) return t('generic.insufficientBalance')
     if (networkError) return networkError
-  }, [hasInsufficientBalance, networkError, t])
+    if (insufficientTokensToSwap)
+      return t('swapsScreen.insufficientTokensToSwap')
+  }, [hasInsufficientBalance, insufficientTokensToSwap, networkError, t])
 
-  useAsync(async () => {
+  const treasuryFrozen = useMemo(() => {
+    if (!freezeDate) return false
+    return freezeDate.getTime() > Date.now()
+  }, [freezeDate])
+
+  const refresh = useCallback(async () => {
+    setYouPayTokenAmount(Balance.fromIntAndTicker(0, Tokens.MOBILE))
+    setYouReceiveTokenType(Tokens.HNT)
+    setYouPayTokenType(Tokens.MOBILE)
+    setSelectorMode(SelectorMode.youPay)
+    setSolFee(undefined)
+    setHasInsufficientBalance(undefined)
+    setNetworkError(undefined)
+
     if (!currentAccount?.solanaAddress || !anchorProvider) return
     const connection = getConnection(cluster)
 
@@ -99,6 +127,10 @@ const SwapScreen = () => {
       Logger.error(error)
       setNetworkError((error as Error).message)
     }
+  }, [anchorProvider, cluster, currentAccount])
+
+  useAsync(async () => {
+    refresh()
   }, [])
 
   const toggleTokenSheetsOpen = useCallback(
@@ -119,9 +151,18 @@ const SwapScreen = () => {
         <Text variant="h4" color="white">
           {t('swapsScreen.title')}
         </Text>
+        <TouchableOpacityBox
+          position="absolute"
+          top={-spacing.m / 2}
+          right={spacing.m}
+          padding="m"
+          onPress={refresh}
+        >
+          <Refresh width={16} height={16} />
+        </TouchableOpacityBox>
       </Box>
     )
-  }, [t])
+  }, [refresh, spacing.m, t])
 
   const setTokenTypeHandler = useCallback(
     (ticker: Ticker) => () => {
@@ -215,7 +256,10 @@ const SwapScreen = () => {
       ref={hntKeyboardRef}
       onConfirmBalance={onConfirmBalance}
       ticker={youPayTokenType}
-      networkFee={Balance.fromFloatAndTicker(solFee || 0.000005, Tokens.SOL)}
+      networkFee={Balance.fromFloatAndTicker(
+        solFee || TXN_FEE_IN_SOL,
+        Tokens.SOL,
+      )}
     >
       <ReAnimatedBox flex={1}>
         <SafeAreaBox edges={edges} flex={1}>
@@ -266,7 +310,14 @@ const SwapScreen = () => {
                   </Text>
                 )}
                 <Text
-                  opacity={hasInsufficientBalance || networkError ? 100 : 0}
+                  marginTop="s"
+                  opacity={
+                    insufficientTokensToSwap ||
+                    hasInsufficientBalance ||
+                    networkError
+                      ? 100
+                      : 0
+                  }
                   marginHorizontal="m"
                   variant="body3Medium"
                   color="red500"
@@ -294,7 +345,11 @@ const SwapScreen = () => {
               titleColorDisabled="grey600"
               backgroundColorDisabled="white"
               backgroundColorDisabledOpacity={0.1}
-              disabled={youPayTokenAmount.integerBalance === 0}
+              disabled={
+                insufficientTokensToSwap ||
+                youPayTokenAmount.integerBalance === 0 ||
+                treasuryFrozen
+              }
               titleColorPressedOpacity={0.3}
               title={t('swapsScreen.swapTokens')}
               titleColor="black"
@@ -318,4 +373,4 @@ const SwapScreen = () => {
   )
 }
 
-export default SwapScreen
+export default memo(SwapScreen)

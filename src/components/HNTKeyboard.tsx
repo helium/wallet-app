@@ -114,7 +114,7 @@ const HNTKeyboardSelector = forwardRef(
     } = useBalance()
     const [timeStr, setTimeStr] = useState('')
 
-    const getHeliumBalance = useCallback(() => {
+    const getHeliumBalance = useMemo(() => {
       switch (ticker) {
         case 'MOBILE':
           return mobileBalance
@@ -126,7 +126,7 @@ const HNTKeyboardSelector = forwardRef(
     }, [iotBalance, mobileBalance, networkBalance, ticker])
 
     const balanceForTicker = useMemo(
-      () => (ticker === 'HNT' ? networkBalance : getHeliumBalance()),
+      () => (ticker === 'HNT' ? networkBalance : getHeliumBalance),
       [getHeliumBalance, networkBalance, ticker],
     )
 
@@ -223,7 +223,7 @@ const HNTKeyboardSelector = forwardRef(
     const [maxEnabled, setMaxEnabled] = useState(false)
 
     const handleSetMax = useCallback(() => {
-      if (!networkBalance || !getHeliumBalance() || !networkFee) return
+      if (!networkBalance || !getHeliumBalance || !networkFee) return
 
       const currentAmount = getNextPayments()
         .filter((_v, index) => index !== paymentIndex || 0) // Remove the payment being updated
@@ -241,7 +241,7 @@ const HNTKeyboardSelector = forwardRef(
           maxBalance = maxBalance.minus(networkFee)
         }
       } else {
-        maxBalance = getHeliumBalance().minus(currentAmount)
+        maxBalance = getHeliumBalance.minus(currentAmount)
       }
 
       if (maxBalance.integerBalance < 0) {
@@ -403,14 +403,14 @@ const HNTKeyboardSelector = forwardRef(
         !networkFee ||
         !valueAsBalance ||
         !networkBalance ||
-        !getHeliumBalance()
+        !getHeliumBalance
       ) {
         return false
       }
 
       if (l1Network === 'solana') {
         if (ticker !== 'HNT') {
-          return getHeliumBalance().minus(valueAsBalance).integerBalance >= 0
+          return getHeliumBalance.minus(valueAsBalance).integerBalance >= 0
         }
         return networkBalance.minus(valueAsBalance).integerBalance >= 0
       }
@@ -421,7 +421,7 @@ const HNTKeyboardSelector = forwardRef(
         const hasEnoughHnt =
           networkBalance.minus(networkFee).integerBalance >= 0
         const hasEnoughMobile =
-          getHeliumBalance().minus(valueAsBalance).integerBalance >= 0
+          getHeliumBalance.minus(valueAsBalance).integerBalance >= 0
         return hasEnoughHnt && hasEnoughMobile
       }
       return (
