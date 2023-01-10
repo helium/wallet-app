@@ -68,20 +68,21 @@ const VoteShow = () => {
     return orderBy(unsorted, ['hntVoted'], ['desc'])
   }, [outcomes])
 
-  const totalHntVoted = useMemo(
-    () =>
-      outcomes.reduce((prev, current) => prev + (current?.hntVoted || 0), 0),
-    [outcomes],
-  )
+  const totalHntVoted = useMemo(() => {
+    if (!outcomes || outcomes.length === 0) return 0
+    return outcomes.reduce(
+      (prev, current) => prev + (current?.hntVoted || 0),
+      0,
+    )
+  }, [outcomes])
 
-  const totalVotes = useMemo(
-    () =>
-      outcomes.reduce(
-        (prev, current) => prev + (current?.uniqueWallets || 0),
-        0,
-      ),
-    [outcomes],
-  )
+  const totalVotes = useMemo(() => {
+    if (!outcomes || outcomes.length === 0) return 0
+    return outcomes.reduce(
+      (prev, current) => prev + (current?.uniqueWallets || 0),
+      0,
+    )
+  }, [outcomes])
 
   useAsync(async () => {
     if (voteOpen && currentAccount?.address) {
@@ -133,9 +134,11 @@ const VoteShow = () => {
   }, [])
 
   const handleVoteSelected = useCallback(() => {
-    if (!voteOutcome || !currentAccount) return
+    if (!voteOutcome || !currentAccount || !outcomes) return
 
-    const index = outcomes.findIndex((v) => v === voteOutcome)
+    const index = outcomes?.findIndex((v) => v === voteOutcome)
+
+    if (!index || index === -1) return
 
     const memo = encodeMemoString(index.toString()) || ''
     navigation.navigate('VoteBurn', {
@@ -303,7 +306,7 @@ const VoteShow = () => {
               >
                 {t('vote.voteOptions')}
               </Text>
-              {outcomes.map((o, index) => (
+              {outcomes?.map((o, index) => (
                 <VoteOption
                   key={o.address}
                   index={index}
