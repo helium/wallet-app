@@ -136,9 +136,9 @@ const VoteShow = () => {
   const handleVoteSelected = useCallback(() => {
     if (!voteOutcome || !currentAccount || !outcomes) return
 
-    const index = outcomes?.findIndex((v) => v === voteOutcome)
+    const index = outcomes.findIndex((v) => v === voteOutcome)
 
-    if (!index || index === -1) return
+    if (index === -1) return
 
     const memo = encodeMemoString(index.toString()) || ''
     navigation.navigate('VoteBurn', {
