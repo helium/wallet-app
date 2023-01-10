@@ -90,6 +90,14 @@ const SwappingScreen = () => {
               <Text variant="h2" color="white" marginTop="xl">
                 {t('swapsScreen.swapComplete')}
               </Text>
+              <Text
+                variant="body2"
+                color="secondaryText"
+                marginTop="xl"
+                textAlign="center"
+              >
+                {t('swapsScreen.swapCompleteBody')}
+              </Text>
             </Animated.View>
           )}
 
@@ -111,7 +119,6 @@ const SwappingScreen = () => {
                 variant="body2"
                 color="secondaryText"
                 marginTop="xl"
-                numberOfLines={2}
                 textAlign="center"
               >
                 {solanaPayment.error.message}

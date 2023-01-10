@@ -127,10 +127,12 @@ type ClaimAllRewardsInput = {
 }
 
 type TreasurySwapTxn = {
+  account: CSAccount
   anchorProvider: AnchorProvider
   cluster: Cluster
   amount: number
   fromMint: PublicKey
+  mints: Mints
 }
 
 export const makePayment = createAsyncThunk(
@@ -201,7 +203,14 @@ export const makeCollectablePayment = createAsyncThunk(
 export const sendTreasurySwap = createAsyncThunk(
   'solana/sendTreasurySwap',
   async (
-    { anchorProvider, amount, fromMint, cluster }: TreasurySwapTxn,
+    {
+      account,
+      anchorProvider,
+      amount,
+      fromMint,
+      cluster,
+      mints,
+    }: TreasurySwapTxn,
     { dispatch },
   ) => {
     try {
@@ -211,6 +220,8 @@ export const sendTreasurySwap = createAsyncThunk(
         fromMint,
         anchorProvider,
       )
+
+      dispatch(readBalances({ cluster, acct: account, mints }))
 
       return await dispatch(
         walletRestApi.endpoints.postPayment.initiate({

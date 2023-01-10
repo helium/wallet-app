@@ -28,6 +28,7 @@ export function useAssociatedTokenAccount(
   const { info: associatedAccount, loading: loading2 } = useTokenAccount(
     associatedTokenAddress,
   )
+
   const { info: account, loading: loading3 } = useTokenAccount(
     associatedTokenAddress || undefined,
   )

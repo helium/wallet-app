@@ -7,11 +7,8 @@ import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 import { useNavigation } from '@react-navigation/native'
 import Text from '../../components/Text'
 import Box from '../../components/Box'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
-import Refresh from '../../assets/images/refresh.svg'
 import SafeAreaBox from '../../components/SafeAreaBox'
-import { useSpacing } from '../../theme/themeHooks'
 import SwapItem from './SwapItem'
 import BlurActionSheet from '../../components/BlurActionSheet'
 import ListItem from '../../components/ListItem'
@@ -25,7 +22,6 @@ import {
 } from '../../utils/solanaUtils'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import * as Logger from '../../utils/logger'
-import useLayoutHeight from '../../hooks/useLayoutHeight'
 import { SwapNavigationProp } from './swapTypes'
 import { useTreasuryPrice } from '../../hooks/useTreasuryPrice'
 import { Mints } from '../../utils/hotspotNftsUtils'
@@ -51,7 +47,6 @@ const SwapScreen = () => {
   const navigation = useNavigation<SwapNavigationProp>()
   const { submitTreasurySwap } = useSubmitTxn()
   const edges = useMemo(() => ['top'] as Edge[], [])
-  const spacing = useSpacing()
   const [tokenSheetOpen, setTokenSheetOpen] = useState(false)
   const [selectorMode, setSelectorMode] = useState(SelectorMode.youPay)
   const [youPayTokenType, setYouPayTokenType] = useState<Ticker>(Tokens.MOBILE)
@@ -72,8 +67,6 @@ const SwapScreen = () => {
     new PublicKey(Mints[youPayTokenType]),
     Number(youPayTokenAmount.bigInteger),
   )
-
-  const [solFeeLayoutHeight, setSolFeeLayoutHeight] = useLayoutHeight()
 
   const showError = useMemo(() => {
     if (hasInsufficientBalance) return t('generic.insufficientBalance')
@@ -126,17 +119,9 @@ const SwapScreen = () => {
         <Text variant="h4" color="white">
           {t('swapsScreen.title')}
         </Text>
-        <TouchableOpacityBox
-          position="absolute"
-          top={-spacing.m / 2}
-          right={spacing.m}
-          padding="m"
-        >
-          <Refresh width={16} height={16} />
-        </TouchableOpacityBox>
       </Box>
     )
-  }, [spacing.m, t])
+  }, [t])
 
   const setTokenTypeHandler = useCallback(
     (ticker: Ticker) => () => {
@@ -201,7 +186,7 @@ const SwapScreen = () => {
 
   const youReceiveTokenAmount = useMemo(() => {
     if (price) {
-      return Balance.fromIntAndTicker(price, Tokens.HNT)
+      return Balance.fromFloatAndTicker(price, Tokens.HNT)
     }
 
     return Balance.fromIntAndTicker(0, Tokens.HNT)
@@ -210,7 +195,7 @@ const SwapScreen = () => {
   const handleSwapTokens = useCallback(async () => {
     submitTreasurySwap(
       new PublicKey(Mints[youPayTokenType]),
-      Number(youPayTokenAmount.bigInteger),
+      Number(youPayTokenAmount.floatBalance),
     )
 
     navigation.push('SwappingScreen', {
@@ -220,7 +205,7 @@ const SwapScreen = () => {
   }, [
     navigation,
     submitTreasurySwap,
-    youPayTokenAmount.bigInteger,
+    youPayTokenAmount.floatBalance,
     youPayTokenType,
     youReceiveTokenType,
   ])
@@ -235,7 +220,7 @@ const SwapScreen = () => {
       <ReAnimatedBox flex={1}>
         <SafeAreaBox edges={edges} flex={1}>
           {Header}
-          <Box flexGrow={1} justifyContent="center">
+          <Box flexGrow={1} justifyContent="center" marginTop="xxxl">
             <SwapItem
               onPress={onTokenItemPressed}
               marginHorizontal="m"
@@ -255,30 +240,20 @@ const SwapScreen = () => {
                 amount={youReceiveTokenAmount}
                 loading={loadingPrice}
               />
-              {solFee ? (
-                <Box
-                  position="absolute"
-                  bottom={-spacing.m * 2}
-                  left={0}
-                  right={0}
-                >
-                  <TextTransform
-                    textAlign="center"
-                    marginHorizontal="m"
-                    variant="body3Medium"
-                    color="white"
-                    i18nKey="collectablesScreen.transferFee"
-                    values={{ amount: solFee }}
-                  />
-                </Box>
-              ) : (
-                <Box
-                  position="absolute"
-                  bottom={-spacing.m * 2}
-                  left={0}
-                  right={0}
-                  onLayout={setSolFeeLayoutHeight}
-                >
+
+              <Box marginTop="m">
+                {solFee ? (
+                  <Box marginTop="m">
+                    <TextTransform
+                      textAlign="center"
+                      marginHorizontal="m"
+                      variant="body3Medium"
+                      color="white"
+                      i18nKey="collectablesScreen.transferFee"
+                      values={{ amount: solFee }}
+                    />
+                  </Box>
+                ) : (
                   <Text
                     marginTop="m"
                     textAlign="center"
@@ -289,14 +264,7 @@ const SwapScreen = () => {
                   >
                     {t('generic.calculatingTransactionFee')}
                   </Text>
-                </Box>
-              )}
-              <Box
-                position="absolute"
-                bottom={-spacing.m - solFeeLayoutHeight}
-                left={0}
-                right={0}
-              >
+                )}
                 <Text
                   opacity={hasInsufficientBalance || networkError ? 100 : 0}
                   marginHorizontal="m"

@@ -1006,11 +1006,11 @@ export async function createTreasurySwapTxn(
   try {
     const program = await tm.init(anchorProvider)
     const fromMintAcc = await getMint(conn, fromMint)
-
     const treasuryManagement = tm.treasuryManagementKey(fromMint)[0]
+
     const tx = await program.methods
       .redeemV0({
-        amount: toBN(amount * fromMintAcc.decimals, fromMintAcc.decimals),
+        amount: toBN(amount, fromMintAcc.decimals),
         expectedOutputAmount: new BN(0),
       })
       .preInstructions([

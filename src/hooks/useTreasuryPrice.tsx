@@ -43,13 +43,13 @@ export function useTreasuryPrice(
           BigInt(Math.pow(10, (fromMintAcc as any).info.decimals)),
       )
 
-      const R = amountAsNum(r, rDecimals)
+      const R = amountAsNum(BigInt(r), rDecimals)
 
       const k =
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         treasuryAcc.curve.exponentialCurveV0.k.toNumber() / Math.pow(10, 12)
-      //   console.log('tm3', S, R, k)
+      // console.log('tm3', S, R, k)
       const dR =
         (R / Math.pow(S, k + 1)) *
         (Math.pow(S - amount, k + 1) - Math.pow(S, k + 1))

@@ -162,19 +162,30 @@ export default () => {
 
   const submitTreasurySwap = useCallback(
     async (fromMint: PublicKey, amount: number) => {
+      if (!currentAccount) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+
       if (!anchorProvider) {
         throw new Error('There must be an account selected to submit a txn')
       }
+
+      if (!mints) {
+        throw new Error('Mints not found')
+      }
+
       dispatch(
         sendTreasurySwap({
+          account: currentAccount,
           anchorProvider,
           cluster,
           fromMint,
           amount,
+          mints,
         }),
       )
     },
-    [anchorProvider, cluster, dispatch],
+    [anchorProvider, cluster, currentAccount, dispatch, mints],
   )
 
   const submitAnchorTxn = useCallback(
