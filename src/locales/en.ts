@@ -839,7 +839,7 @@ export default {
     noHNT: 'You must hold HNT to vote.',
     preliminaryResults: 'Preliminary Results',
     subtitle:
-      '<primaryText>Welcome to Helium Vote</primaryText>\n\nVote <greenBright500>For</greenBright500> or <blueBright500>Against</blueBright500> proposed Helium Improvement Proposals by burning HNT.',
+      '<primaryText>Welcome to Helium Vote</primaryText>\n\nVote <blueBright500>For</blueBright500> or <greenBright500>Against</greenBright500> proposed Helium Improvement Proposals by burning HNT.',
     swipeToVote: 'Swipe to Vote',
     title: 'Helium Vote',
     totalVotes: 'Total\nVotes',
