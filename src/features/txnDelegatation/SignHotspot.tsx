@@ -24,6 +24,7 @@ import { getKeypair } from '../../storage/secureStorage'
 import { useSubmitTxnMutation } from '../../generated/graphql'
 import { useColors } from '../../theme/themeHooks'
 import * as Logger from '../../utils/logger'
+import { useGetSolanaStatusQuery } from '../../store/slices/solanaStatusApi'
 
 type Route = RouteProp<HomeStackParamList, 'SignHotspot'>
 const SignHotspot = () => {
@@ -48,6 +49,7 @@ const SignHotspot = () => {
   const { accounts } = useAccountStorage()
   const { surfaceContrastText } = useColors()
   const [submitTxnMutation, { loading: submitLoading }] = useSubmitTxnMutation()
+  const { data: solData } = useGetSolanaStatusQuery()
 
   const linkInvalid = useMemo(() => {
     return !addGatewayTxn && !assertLocationTxn && !transferHotspotTxn
@@ -79,19 +81,28 @@ const SignHotspot = () => {
   }, [callback, validated])
 
   const gatewayTxn = useMemo(() => {
-    if (!addGatewayTxn) return
-    return AddGateway.txnFromString(addGatewayTxn)
-  }, [addGatewayTxn])
+    if (!addGatewayTxn || !solData) return
+
+    if (solData.migrationStatus === 'not_started') {
+      return AddGateway.txnFromString(addGatewayTxn)
+    }
+  }, [addGatewayTxn, solData])
 
   const locationTxn = useMemo(() => {
-    if (!assertLocationTxn) return
-    return Location.txnFromString(assertLocationTxn)
-  }, [assertLocationTxn])
+    if (!assertLocationTxn || !solData) return
+
+    if (solData.migrationStatus === 'not_started') {
+      return Location.txnFromString(assertLocationTxn)
+    }
+  }, [assertLocationTxn, solData])
 
   const transferTxn = useMemo(() => {
-    if (!transferHotspotTxn) return
-    return Transfer.txnFromString(transferHotspotTxn)
-  }, [transferHotspotTxn])
+    if (!transferHotspotTxn || !solData) return
+
+    if (solData.migrationStatus === 'not_started') {
+      return Transfer.txnFromString(transferHotspotTxn)
+    }
+  }, [solData, transferHotspotTxn])
 
   const gatewayAddress = useMemo(
     () =>
@@ -101,33 +112,8 @@ const SignHotspot = () => {
     [gatewayTxn, locationTxn, transferTxn],
   )
 
-  const handleLink = useCallback(async () => {
+  const handleHeliumLink = useCallback(async () => {
     if (!parsedToken) return
-
-    if (submit) {
-      // submitting signed transaction from hotspot app
-      const txn = assertLocationTxn || transferHotspotTxn
-      const txnObject = locationTxn || transferTxn
-
-      try {
-        if (!txn) throw new Error('no transaction')
-
-        await submitTxnMutation({
-          variables: {
-            address: parsedToken.address,
-            txn,
-            txnJson: JSON.stringify(txnObject),
-          },
-        })
-        Toast.show(t('generic.submitSuccess'))
-      } catch (e) {
-        Logger.error(e)
-        Toast.show(t('generic.somethingWentWrong'))
-      }
-      navigation.goBack()
-      return
-    }
-
     try {
       const ownerKeypair = await getKeypair(parsedToken.address || '')
 
@@ -181,18 +167,114 @@ const SignHotspot = () => {
       // Logger.error(e)
     }
   }, [
-    assertLocationTxn,
     callback,
     gatewayAddress,
     gatewayTxn,
     locationTxn,
+    parsedToken,
+    transferTxn,
+  ])
+
+  const handleSolLink = useCallback(async () => {
+    if (!parsedToken) return
+    try {
+      const ownerKeypair = await getKeypair(parsedToken.address || '')
+      if (!ownerKeypair) {
+        callback({ status: 'token_not_found' })
+        throw new Error('Failed to sign transfer txn')
+      }
+
+      const responseParams = {
+        status: 'success',
+        gatewayAddress,
+      } as SignHotspotResponse
+
+      if (gatewayTxn) {
+        // TODO:
+        // 1. Sign txn owner
+        // 2. responseParams.gatewayTxn = txnOwnerSigned.toString()
+      }
+
+      if (locationTxn) {
+        // TODO:
+        // 1. Decode txn
+        // 2. Determine who the payer is
+        // 3. Sign txn owner and payer (if owner is paying)
+        // 4. responseParams.assertTxn = txnOwnerSigned.toString()
+      }
+
+      if (transferTxn) {
+        // TODO:
+        // 1. Sign the owner
+        // 2. responseParams.transferTxn = txnTransferSigned.toString()
+      }
+
+      callback(responseParams)
+    } catch (e) {
+      // Logger.error(e)
+    }
+  }, [
+    callback,
+    gatewayAddress,
+    gatewayTxn,
+    locationTxn,
+    parsedToken,
+    transferTxn,
+  ])
+
+  const submitHelium = useCallback(async () => {
+    if (!parsedToken) return
+
+    // submitting signed transaction from hotspot app
+    const txn = assertLocationTxn || transferHotspotTxn
+    const txnObject = locationTxn || transferTxn
+
+    try {
+      if (!txn) throw new Error('no transaction')
+
+      await submitTxnMutation({
+        variables: {
+          address: parsedToken.address,
+          txn,
+          txnJson: JSON.stringify(txnObject),
+        },
+      })
+      Toast.show(t('generic.submitSuccess'))
+    } catch (e) {
+      Logger.error(e)
+      Toast.show(t('generic.somethingWentWrong'))
+    }
+    navigation.goBack()
+  }, [
+    assertLocationTxn,
+    locationTxn,
     navigation,
     parsedToken,
-    submit,
     submitTxnMutation,
     t,
     transferHotspotTxn,
     transferTxn,
+  ])
+
+  const handleLink = useCallback(async () => {
+    if (!parsedToken) return
+
+    if (submit) {
+      return submitHelium()
+    }
+
+    if (solData?.migrationStatus === 'not_started') {
+      return handleHeliumLink()
+    }
+
+    return handleSolLink()
+  }, [
+    handleHeliumLink,
+    handleSolLink,
+    parsedToken,
+    solData,
+    submit,
+    submitHelium,
   ])
 
   const handleCancel = useCallback(async () => {
