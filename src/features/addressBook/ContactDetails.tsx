@@ -54,10 +54,7 @@ const ContactDetails = ({ action, contact }: Props) => {
   const homeNav = useNavigation<HomeNavigationProp>()
   const addressBookNav = useNavigation<AddressBookNavigationProp>()
   const route = useRoute<Route>()
-  const { backgroundStyle } = useOpacity(
-    'surfaceSecondary',
-    keyboardShown ? 0.85 : 0.4,
-  )
+  const { backgroundStyle } = useOpacity('surface', keyboardShown ? 0.85 : 0.4)
   const { addContact, editContact, deleteContact } = useAccountStorage()
   const [nickname, setNickname] = useState(contact?.alias || '')
   const [address, setAddress] = useState('')
@@ -171,12 +168,12 @@ const ContactDetails = ({ action, contact }: Props) => {
   }, [data, isSolana, address])
 
   return (
-    <Box flex={1}>
+    <Box flex={1} backgroundColor="surfaceSecondary">
       <Box
+        marginTop="s"
         style={{ paddingTop: Platform.OS === 'android' ? 24 : 0 }}
         flexDirection="row"
         alignItems="center"
-        backgroundColor="surfaceSecondary"
       >
         <Box flex={1} />
         <Text variant="subtitle2">
