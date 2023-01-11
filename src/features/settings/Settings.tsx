@@ -615,7 +615,6 @@ const Settings = () => {
         paddingTop="xxl"
         paddingBottom="m"
         paddingHorizontal="l"
-        backgroundColor="primaryBackground"
       >
         {icon !== undefined && icon}
         <Text variant="body2" fontWeight="bold">
@@ -627,13 +626,12 @@ const Settings = () => {
   )
 
   return (
-    <SafeAreaBox>
+    <SafeAreaBox backgroundColor="surfaceSecondary">
       <Box
         flexDirection="row"
         justifyContent="space-between"
         alignItems="center"
         paddingHorizontal="l"
-        paddingTop="s"
       >
         <Text variant="h1">{t('settings.title')}</Text>
         <CloseButton
@@ -650,6 +648,7 @@ const Settings = () => {
         renderSectionHeader={renderSectionHeader}
         renderSectionFooter={renderSectionFooter}
         initialNumToRender={100}
+        stickySectionHeadersEnabled={false}
         // ^ Sometimes on initial page load there is a bug with SectionList
         // where it won't render all items right away. This seems to fix it.
       />

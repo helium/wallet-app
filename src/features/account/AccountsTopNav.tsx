@@ -87,10 +87,8 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
       <Box flexDirection="row" marginEnd="l">
         {l1Network === 'helium' && (
           <IconPressedContainer
-            paddingVertical="ms"
             paddingLeft="s"
             onPress={handleNotificationsSelected}
-            marginEnd="m"
           >
             <NotificationBell color="white" />
           </IconPressedContainer>

@@ -125,16 +125,15 @@ const SettingsListItem = ({
     <TouchableOpacityBox
       flexDirection="row"
       justifyContent="space-between"
-      backgroundColor="primaryBackground"
       alignItems="center"
       minHeight={56}
       paddingHorizontal="l"
       marginBottom="xxxs"
       onPress={handlePress}
       disabled={disabled || !(onPress || openUrl || select)}
-      borderBottomColor="surfaceSecondary"
+      borderBottomColor="black"
       borderBottomWidth={1}
-      borderTopColor="surfaceSecondary"
+      borderTopColor="black"
       borderTopWidth={isTop ? 1 : 0}
     >
       {renderModal && renderModal()}

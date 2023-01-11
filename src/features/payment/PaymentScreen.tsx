@@ -655,9 +655,9 @@ const PaymentScreen = () => {
                 style={containerStyle}
                 borderTopStartRadius="xl"
                 borderTopEndRadius="xl"
+                backgroundColor="surfaceSecondary"
               >
                 <Box
-                  backgroundColor="surfaceSecondary"
                   flexDirection="row"
                   justifyContent="space-between"
                   alignItems="center"
@@ -694,7 +694,7 @@ const PaymentScreen = () => {
                   keyboardShouldPersistTaps="always"
                 >
                   <AccountButton
-                    backgroundColor="surfaceSecondary"
+                    backgroundColor="secondary"
                     accountIconSize={41}
                     paddingTop="l"
                     title={formatAccountAlias(currentAccount)}
@@ -711,7 +711,7 @@ const PaymentScreen = () => {
                   />
 
                   <TokenButton
-                    backgroundColor="surfaceSecondary"
+                    backgroundColor="secondary"
                     title={t('payment.title', { ticker: currencyType.ticker })}
                     subtitle={balanceToString(
                       ticker === 'HNT' ? networkBalance : mobileBalance,
@@ -768,7 +768,7 @@ const PaymentScreen = () => {
                       marginBottom="l"
                       alignItems="center"
                       justifyContent="center"
-                      backgroundColor="surfaceSecondary"
+                      backgroundColor="secondary"
                     >
                       <Text variant="body1" color="surfaceSecondaryText">
                         {t('payment.addRecipient')}

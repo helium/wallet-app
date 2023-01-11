@@ -33,10 +33,10 @@ const AddressBook = () => {
   return (
     <Box flex={1} backgroundColor="surfaceSecondary">
       <Box
+        marginTop="s"
         style={{ paddingTop: Platform.OS === 'android' ? 24 : 0 }}
         flexDirection="row"
         alignItems="center"
-        backgroundColor="secondary"
       >
         <Box flex={1} />
         <Text variant="subtitle2">{t('addressBook.title')}</Text>

@@ -244,8 +244,8 @@ const RequestScreen = () => {
             flex={1}
             onLayout={handleContainerLayout}
             borderWidth={1}
-            borderTopStartRadius="xxl"
-            borderTopEndRadius="xxl"
+            borderTopStartRadius="xl"
+            borderTopEndRadius="xl"
           >
             <Text variant="subtitle2" paddingTop="l" textAlign="center">
               {t('request.title')}
@@ -298,7 +298,7 @@ const RequestScreen = () => {
 
                 <AccountButton
                   accountIconSize={41}
-                  backgroundColor="surfaceSecondary"
+                  backgroundColor="secondary"
                   showBubbleArrow
                   marginTop="l"
                   title={currentAccount?.alias}
