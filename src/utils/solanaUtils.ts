@@ -48,7 +48,12 @@ import {
   SPL_NOOP_PROGRAM_ID,
 } from '@solana/spl-account-compression'
 import bs58 from 'bs58'
-import { HNT_MINT, searchAssets, toBN } from '@helium/spl-utils'
+import {
+  HNT_MINT,
+  searchAssets,
+  toBN,
+  sendAndConfirmWithRetry,
+} from '@helium/spl-utils'
 import { AnchorProvider, BN } from '@coral-xyz/anchor'
 import * as tm from '@helium/treasury-management-sdk'
 import { getPendingRewards } from '@helium/distributor-oracle'
@@ -1238,4 +1243,22 @@ export const solInstructionsToActivity = (
   if (activity.type === 'unknown') return
 
   return activity
+}
+
+export const submitSolana = async ({
+  txn,
+  cluster,
+}: {
+  txn: Buffer
+  cluster: Cluster
+}) => {
+  const conn = getConnection(cluster)
+  const { txid } = await sendAndConfirmWithRetry(
+    conn,
+    txn,
+    { skipPreflight: true },
+    'confirmed',
+  )
+
+  return txid
 }
