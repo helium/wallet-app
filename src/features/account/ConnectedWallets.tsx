@@ -18,6 +18,7 @@ import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import useLayoutHeight from '../../hooks/useLayoutHeight'
 import useBackHandler from '../../hooks/useBackHandler'
 import Box from '../../components/Box'
@@ -54,14 +55,15 @@ const ConnectedWallets = forwardRef(
     const [listItemHeight, setListItemHeight] = useLayoutHeight()
     const { sortedAccounts, currentAccount, setCurrentAccount } =
       useAccountStorage()
+    const { top } = useSafeAreaInsets()
 
     const snapPoints = useMemo(
       () => [
         listItemHeight && sortedAccounts.length
-          ? listItemHeight * (sortedAccounts.length + 2)
+          ? listItemHeight * (sortedAccounts.length + 2) + top
           : '70%',
       ],
-      [listItemHeight, sortedAccounts],
+      [listItemHeight, sortedAccounts.length, top],
     )
     const { setOnboardingData } = useOnboarding()
     const { enableTestnet } = useAppStorage()

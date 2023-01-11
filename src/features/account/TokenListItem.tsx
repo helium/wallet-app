@@ -26,7 +26,7 @@ const TokenListItem = ({ ticker, balance, staked }: Props) => {
     if (ticker === 'SOL') {
       return
     }
-    triggerImpact()
+    triggerImpact('light')
     navigation.navigate('AccountTokenScreen', { tokenType: ticker })
   }, [navigation, ticker, triggerImpact])
 

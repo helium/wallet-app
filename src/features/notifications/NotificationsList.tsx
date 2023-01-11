@@ -114,7 +114,7 @@ const NotificationsList = ({
         !!item.viewedAt
 
       const onItemSelected = () => {
-        triggerImpact()
+        triggerImpact('light')
         navigator.navigate('NotificationDetails', { notification: item })
         setSelectedNotification(item)
       }

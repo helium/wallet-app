@@ -10,6 +10,7 @@ import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import { Color, Theme } from '../theme/theme'
+import useHaptic from '../hooks/useHaptic'
 
 const TokenItem = ({ ticker }: { ticker: Ticker }) => {
   const colors = useColors()
@@ -51,11 +52,13 @@ const TokenButton = ({
 }: Props) => {
   const hitSlop = useHitSlop('l')
   const colors = useColors()
+  const { triggerImpact } = useHaptic()
 
   const handlePress = useCallback(() => {
+    triggerImpact('light')
     Keyboard.dismiss()
     onPress?.(address)
-  }, [address, onPress])
+  }, [address, onPress, triggerImpact])
 
   const textColor = useMemo((): Color => {
     return 'secondaryText'

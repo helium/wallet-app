@@ -36,7 +36,7 @@ const TouchableContainer = ({
   const { triggerImpact } = useHaptic()
 
   const onTouchEnd = useCallback(() => {
-    triggerImpact()
+    triggerImpact('light')
   }, [triggerImpact])
 
   const { backgroundStyle: generateBackgroundStyle } = useCreateOpacity()

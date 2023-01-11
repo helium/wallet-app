@@ -42,7 +42,9 @@ import {
   solAddressIsValid,
 } from '../../utils/accountUtils'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useAccountSelector } from '../../components/AccountSelector'
+import AccountSelector, {
+  AccountSelectorRef,
+} from '../../components/AccountSelector'
 import TokenSelector, { TokenSelectorRef } from '../../components/TokenSelector'
 import AccountButton from '../../components/AccountButton'
 import AddressBookSelector, {
@@ -93,6 +95,7 @@ type Route = RouteProp<HomeStackParamList, 'PaymentScreen'>
 const PaymentScreen = () => {
   const route = useRoute<Route>()
   const addressBookRef = useRef<AddressBookRef>(null)
+  const accountSelectorRef = useRef<AccountSelectorRef>(null)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
   const { oraclePrice, networkBalance, solBalance, mobileBalance } =
@@ -158,8 +161,6 @@ const PaymentScreen = () => {
     netType: networkType,
     l1Network,
   })
-
-  const { showAccountTypes } = useAccountSelector()
 
   const {
     data: submitData,
@@ -616,6 +617,8 @@ const PaymentScreen = () => {
   )
 
   const handleShowAccounts = useCallback(() => {
+    if (!accountSelectorRef?.current) return
+
     let accts = [] as CSAccount[]
     if (l1Network === 'solana') {
       accts = sortedAccountsForNetType(NetTypes.MAINNET)
@@ -626,8 +629,8 @@ const PaymentScreen = () => {
 
     const netType = l1Network === 'solana' ? NetTypes.MAINNET : networkType
 
-    showAccountTypes(netType)()
-  }, [l1Network, networkType, showAccountTypes, sortedAccountsForNetType])
+    accountSelectorRef?.current.showAccountTypes(netType)()
+  }, [l1Network, networkType, sortedAccountsForNetType])
 
   return (
     <>
@@ -637,152 +640,156 @@ const PaymentScreen = () => {
         ticker={ticker}
         networkFee={paymentState.networkFee}
       >
-        <AddressBookSelector
-          ref={addressBookRef}
-          onContactSelected={handleContactSelected}
-          hideCurrentAccount
-        >
-          <TokenSelector
-            ref={tokenSelectorRef}
-            onTokenSelected={onTickerSelected}
+        <AccountSelector ref={accountSelectorRef}>
+          <AddressBookSelector
+            ref={addressBookRef}
+            onContactSelected={handleContactSelected}
+            hideCurrentAccount
           >
-            <Box
-              flex={1}
-              style={containerStyle}
-              borderTopStartRadius="xl"
-              borderTopEndRadius="xl"
+            <TokenSelector
+              ref={tokenSelectorRef}
+              onTokenSelected={onTickerSelected}
             >
               <Box
-                backgroundColor="surfaceSecondary"
-                flexDirection="row"
-                justifyContent="space-between"
-                alignItems="center"
+                flex={1}
+                style={containerStyle}
                 borderTopStartRadius="xl"
                 borderTopEndRadius="xl"
               >
-                <TouchableOpacityBox
-                  onPress={handleQrScan}
-                  padding="l"
-                  hitSlop={hitSlop}
-                >
-                  <QR color={primaryText} height={16} width={16} />
-                </TouchableOpacityBox>
-                <Text
-                  variant="subtitle2"
-                  textAlign="center"
-                  color="primaryText"
-                  maxFontSizeMultiplier={1}
-                >
-                  {t('payment.send')}
-                </Text>
-                <TouchableOpacityBox
-                  onPress={navigation.goBack}
-                  padding="l"
-                  hitSlop={hitSlop}
-                >
-                  <Close color={primaryText} height={16} width={16} />
-                </TouchableOpacityBox>
-              </Box>
-
-              <KeyboardAwareScrollView
-                enableOnAndroid
-                enableResetScrollToCoords={false}
-                keyboardShouldPersistTaps="always"
-              >
-                <AccountButton
+                <Box
                   backgroundColor="surfaceSecondary"
-                  accountIconSize={41}
-                  paddingTop="l"
-                  title={formatAccountAlias(currentAccount)}
-                  subtitle={t('payment.senderAccount')}
-                  showChevron={sortedAccountsForNetType(networkType).length > 1}
-                  address={currentAccount?.address}
-                  netType={currentAccount?.netType}
-                  onPress={handleShowAccounts}
-                  showBubbleArrow
-                  marginHorizontal="l"
-                  marginBottom="xs"
-                />
-
-                <TokenButton
-                  backgroundColor="surfaceSecondary"
-                  title={t('payment.title', { ticker: currencyType.ticker })}
-                  subtitle={balanceToString(
-                    ticker === 'HNT' ? networkBalance : mobileBalance,
-                  )}
-                  address={currentAccount?.address}
-                  onPress={handleTokenTypeSelected}
-                  showBubbleArrow
-                  marginHorizontal="l"
-                  ticker={ticker}
-                />
-
-                {paymentState.payments.map((p, index) => (
-                  // eslint-disable-next-line react/no-array-index-key
-                  <React.Fragment key={index}>
-                    <PaymentItem
-                      {...p}
-                      hideMemo={l1Network === 'solana'}
-                      marginTop={index === 0 ? 'xs' : 'none'}
-                      marginBottom="l"
-                      hasError={
-                        p.address === currentAccount?.address || p.hasError
-                      }
-                      fee={
-                        paymentState.payments.length === 1
-                          ? paymentState.dcFee
-                          : undefined
-                      }
-                      index={index}
-                      onAddressBookSelected={handleAddressBookSelected}
-                      onEditAmount={handleEditAmount}
-                      onToggleMax={handleToggleMax}
-                      onEditMemo={handleEditMemo}
-                      onEditAddress={handleEditAddress}
-                      handleAddressError={handleAddressError}
-                      onUpdateError={handleSetPaymentError}
-                      ticker={currencyType.ticker}
-                      onRemove={
-                        paymentState.payments.length > 1
-                          ? handleRemove
-                          : undefined
-                      }
-                      netType={networkType}
-                      showAmount
-                    />
-                  </React.Fragment>
-                ))}
-                {canAddPayee && (
+                  flexDirection="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  borderTopStartRadius="xl"
+                  borderTopEndRadius="xl"
+                >
                   <TouchableOpacityBox
-                    minHeight={75}
-                    onPress={handleAddPayee}
-                    borderRadius="xl"
-                    overflow="hidden"
-                    marginHorizontal="l"
-                    marginBottom="l"
-                    alignItems="center"
-                    justifyContent="center"
-                    backgroundColor="surfaceSecondary"
+                    onPress={handleQrScan}
+                    padding="l"
+                    hitSlop={hitSlop}
                   >
-                    <Text variant="body1" color="surfaceSecondaryText">
-                      {t('payment.addRecipient')}
-                    </Text>
+                    <QR color={primaryText} height={16} width={16} />
                   </TouchableOpacityBox>
-                )}
-              </KeyboardAwareScrollView>
+                  <Text
+                    variant="subtitle2"
+                    textAlign="center"
+                    color="primaryText"
+                    maxFontSizeMultiplier={1}
+                  >
+                    {t('payment.send')}
+                  </Text>
+                  <TouchableOpacityBox
+                    onPress={navigation.goBack}
+                    padding="l"
+                    hitSlop={hitSlop}
+                  >
+                    <Close color={primaryText} height={16} width={16} />
+                  </TouchableOpacityBox>
+                </Box>
 
-              <PaymentCard
-                ticker={ticker}
-                totalBalance={paymentState.totalAmount}
-                feeTokenBalance={paymentState.networkFee}
-                disabled={!isFormValid}
-                onSubmit={handleSubmit}
-                payments={payments}
-                errors={errors}
-              />
-            </Box>
-          </TokenSelector>
-        </AddressBookSelector>
+                <KeyboardAwareScrollView
+                  enableOnAndroid
+                  enableResetScrollToCoords={false}
+                  keyboardShouldPersistTaps="always"
+                >
+                  <AccountButton
+                    backgroundColor="surfaceSecondary"
+                    accountIconSize={41}
+                    paddingTop="l"
+                    title={formatAccountAlias(currentAccount)}
+                    subtitle={t('payment.senderAccount')}
+                    showChevron={
+                      sortedAccountsForNetType(networkType).length > 1
+                    }
+                    address={currentAccount?.address}
+                    netType={currentAccount?.netType}
+                    onPress={handleShowAccounts}
+                    showBubbleArrow
+                    marginHorizontal="l"
+                    marginBottom="xs"
+                  />
+
+                  <TokenButton
+                    backgroundColor="surfaceSecondary"
+                    title={t('payment.title', { ticker: currencyType.ticker })}
+                    subtitle={balanceToString(
+                      ticker === 'HNT' ? networkBalance : mobileBalance,
+                    )}
+                    address={currentAccount?.address}
+                    onPress={handleTokenTypeSelected}
+                    showBubbleArrow
+                    marginHorizontal="l"
+                    ticker={ticker}
+                  />
+
+                  {paymentState.payments.map((p, index) => (
+                    // eslint-disable-next-line react/no-array-index-key
+                    <React.Fragment key={index}>
+                      <PaymentItem
+                        {...p}
+                        hideMemo={l1Network === 'solana'}
+                        marginTop={index === 0 ? 'xs' : 'none'}
+                        marginBottom="l"
+                        hasError={
+                          p.address === currentAccount?.address || p.hasError
+                        }
+                        fee={
+                          paymentState.payments.length === 1
+                            ? paymentState.dcFee
+                            : undefined
+                        }
+                        index={index}
+                        onAddressBookSelected={handleAddressBookSelected}
+                        onEditAmount={handleEditAmount}
+                        onToggleMax={handleToggleMax}
+                        onEditMemo={handleEditMemo}
+                        onEditAddress={handleEditAddress}
+                        handleAddressError={handleAddressError}
+                        onUpdateError={handleSetPaymentError}
+                        ticker={currencyType.ticker}
+                        onRemove={
+                          paymentState.payments.length > 1
+                            ? handleRemove
+                            : undefined
+                        }
+                        netType={networkType}
+                        showAmount
+                      />
+                    </React.Fragment>
+                  ))}
+                  {canAddPayee && (
+                    <TouchableOpacityBox
+                      minHeight={75}
+                      onPress={handleAddPayee}
+                      borderRadius="xl"
+                      overflow="hidden"
+                      marginHorizontal="l"
+                      marginBottom="l"
+                      alignItems="center"
+                      justifyContent="center"
+                      backgroundColor="surfaceSecondary"
+                    >
+                      <Text variant="body1" color="surfaceSecondaryText">
+                        {t('payment.addRecipient')}
+                      </Text>
+                    </TouchableOpacityBox>
+                  )}
+                </KeyboardAwareScrollView>
+
+                <PaymentCard
+                  ticker={ticker}
+                  totalBalance={paymentState.totalAmount}
+                  feeTokenBalance={paymentState.networkFee}
+                  disabled={!isFormValid}
+                  onSubmit={handleSubmit}
+                  payments={payments}
+                  errors={errors}
+                />
+              </Box>
+            </TokenSelector>
+          </AddressBookSelector>
+        </AccountSelector>
       </HNTKeyboard>
       <PaymentSubmit
         submitLoading={paymentSubmitLoading || !!solanaPayment?.loading}

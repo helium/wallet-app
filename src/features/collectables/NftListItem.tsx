@@ -31,12 +31,12 @@ const NftListItem = ({
   const handleCollectableNavigation = useCallback(
     (collection: CompressedNFT[]) => () => {
       if (collection.length > 1) {
-        triggerImpact()
+        triggerImpact('light')
         navigation.navigate('CollectionScreen', {
           collection,
         })
       } else if (collection[0]?.content.metadata) {
-        triggerImpact()
+        triggerImpact('light')
         navigation.navigate('NftDetailsScreen', {
           collectable: collection[0],
         })

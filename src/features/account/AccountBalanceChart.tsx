@@ -11,7 +11,7 @@ import { ChartSelectEvent, LineChart } from 'react-native-charts-wrapper'
 import { ScrollView } from 'react-native-gesture-handler'
 import FadeInOut from '../../components/FadeInOut'
 import { AccountBalance } from '../../generated/graphql'
-import { useColors } from '../../theme/themeHooks'
+import { useColors, useSpacing } from '../../theme/themeHooks'
 import useHaptic from '../../hooks/useHaptic'
 import usePrevious from '../../hooks/usePrevious'
 
@@ -28,6 +28,7 @@ const AccountBalanceChart = ({
 }: Props) => {
   const { triggerImpact } = useHaptic()
   const { primaryBackground } = useColors()
+  const spacing = useSpacing()
 
   const chartsRef = useRef<
     LineChart & {
@@ -78,7 +79,10 @@ const AccountBalanceChart = ({
   }, [prevSelectedBalance, selectedBalance])
 
   const style = useMemo((): ViewStyle => {
-    return { justifyContent: 'center', height: CHART_HEIGHT }
+    return {
+      justifyContent: 'center',
+      height: CHART_HEIGHT,
+    }
   }, [])
 
   return (
@@ -88,21 +92,11 @@ const AccountBalanceChart = ({
           ref={chartsRef}
           style={{
             flex: 1,
-            marginHorizontal: 0,
+            marginHorizontal: -spacing.s,
             borderWidth: 0,
             maxHeight: CHART_HEIGHT,
           }}
           onSelect={handleSelect}
-          onTouchStart={(x) => {
-            if (Platform.OS === 'ios') {
-              handleSelect(x)
-            }
-          }}
-          onChange={(x) => {
-            if (Platform.OS === 'ios') {
-              handleSelect(x)
-            }
-          }}
           xAxis={{
             enabled: false,
             drawAxisLines: false,

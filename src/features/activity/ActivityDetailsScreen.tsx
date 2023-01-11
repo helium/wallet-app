@@ -210,7 +210,7 @@ const ActivityDetailsScreen = () => {
 
   const handleCopyAddress = useCallback(() => {
     if (!selectedAddress) return
-    triggerImpact()
+    triggerImpact('light')
     copyText({
       message: ellipsizeAddress(selectedAddress),
       copyText: selectedAddress,

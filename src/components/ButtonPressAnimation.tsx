@@ -33,6 +33,7 @@ const ButtonPressAnimation = ({
   const scale = animation.interpolate({ inputRange, outputRange })
 
   const onPressIn = () => {
+    triggerImpact('light')
     Animated.spring(animation, {
       toValue: 0.3,
       damping: 10,
@@ -40,10 +41,10 @@ const ButtonPressAnimation = ({
       stiffness: 100,
       overshootClamping: false,
       restSpeedThreshold: 0.001,
-      restDisplacementThreshold: 0.001,
+      restDisplacementThreshold: 2,
     }).start()
   }
-  const onPressOut = () => {
+  const onPressOut = (e: GestureResponderEvent) => {
     Animated.spring(animation, {
       toValue: 0,
       damping: 10,
@@ -51,13 +52,15 @@ const ButtonPressAnimation = ({
       stiffness: 100,
       overshootClamping: false,
       restSpeedThreshold: 0.001,
-      restDisplacementThreshold: 0.001,
-    }).start()
+      restDisplacementThreshold: 2,
+    }).start(({ finished }) => {
+      if (finished && onPress) {
+        onPress(e)
+      }
+    })
   }
 
-  const onTouchEnd = useCallback(() => {
-    triggerImpact()
-  }, [triggerImpact])
+  const onTouchEnd = useCallback(() => {}, [])
   return (
     <ReAnimatedBox
       overflow="hidden"
@@ -65,7 +68,6 @@ const ButtonPressAnimation = ({
       {...boxProps}
     >
       <Pressable
-        onPress={onPress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
         onTouchEnd={onTouchEnd}

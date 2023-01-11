@@ -53,8 +53,11 @@ const VoteListItem = ({ index: _index, vote, onPress }: Props) => {
   }, [onPress, vote, voteResultData])
 
   const sortedOutcomes = useMemo(() => {
-    const outcomes = voteResultData?.voteResult.outcomes
+    let outcomes = voteResultData?.voteResult.outcomes
     if (!outcomes) return []
+
+    // Sort by value in ascending descing order
+    outcomes = outcomes.slice().sort((a, b) => (a.value > b.value ? 1 : -1))
 
     const unsorted = outcomes.map((o, index) => ({
       color: voteAccentColors[index],

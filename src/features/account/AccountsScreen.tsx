@@ -11,7 +11,6 @@ import { useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import SharedGroupPreferences from 'react-native-shared-group-preferences'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useDebouncedCallback } from 'use-debounce/lib'
 import { toUpper } from 'lodash'
 import BottomSheet from '@gorhom/bottom-sheet'
 import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
@@ -55,6 +54,7 @@ import SUPPORTED_CURRENCIES from '../../utils/supportedCurrencies'
 import { NavBarHeight } from '../../components/NavBar'
 import { useAppDispatch } from '../../store/store'
 import { appSlice } from '../../store/slices/appSlice'
+import useHaptic from '../../hooks/useHaptic'
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
@@ -84,6 +84,7 @@ const AccountsScreen = () => {
   const [currenciesOpen, setCurrenciesOpen] = useState(false)
   const bottomSheetStyle = useBackgroundStyle('secondaryBackground')
   const dispatch = useAppDispatch()
+  const { triggerImpact } = useHaptic()
 
   const { t } = useTranslation()
 
@@ -230,19 +231,16 @@ const AccountsScreen = () => {
   }, [defaultAccountAddress, sortedAccounts])
 
   const toggleWalletsVisible = useCallback(() => {
+    triggerImpact('light')
     dispatch(appSlice.actions.toggleConnectedWallets())
     setSelectedBalance(undefined)
-  }, [dispatch])
+  }, [dispatch, triggerImpact])
 
-  const handleBalanceHistorySelected = useDebouncedCallback(
+  const handleBalanceHistorySelected = useCallback(
     (accountBalance?: AccountBalanceType) => {
       setSelectedBalance(accountBalance)
     },
-    100,
-    {
-      leading: false,
-      trailing: true,
-    },
+    [],
   )
 
   const onTouchStart = useCallback(() => {

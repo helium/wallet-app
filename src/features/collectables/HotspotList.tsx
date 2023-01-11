@@ -42,7 +42,7 @@ const HotspotList = () => {
   const handleNavigateToCollectable = useCallback(
     (collectable: CompressedNFT) => {
       if (collectable.content.metadata) {
-        triggerImpact()
+        triggerImpact('light')
         navigation.navigate('HotspotDetailsScreen', { collectable })
       }
     },
@@ -63,7 +63,6 @@ const HotspotList = () => {
     return (
       <>
         <ButtonPressable
-          style={{ flexBasis: 0 }}
           flexGrow={1}
           marginTop="l"
           borderRadius="round"
@@ -87,7 +86,6 @@ const HotspotList = () => {
         />
         {__DEV__ && (
           <ButtonPressable
-            style={{ flexBasis: 0 }}
             flexGrow={1}
             borderRadius="round"
             backgroundColor="white"

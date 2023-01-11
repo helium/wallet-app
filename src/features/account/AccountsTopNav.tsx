@@ -5,8 +5,8 @@ import AccountIco from '@assets/images/account.svg'
 import { LayoutChangeEvent } from 'react-native'
 import CarotDown from '@assets/images/carot-down.svg'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import NotificationBell from '@assets/images/notificationBell.svg'
 import Box from '../../components/Box'
-import NotificationIcon from '../../components/NotificationIcon'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import Text from '../../components/Text'
 import { useColors } from '../../theme/themeHooks'
@@ -29,17 +29,17 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
   const { triggerImpact } = useHaptic()
 
   const navToSettings = useCallback(() => {
-    triggerImpact()
+    triggerImpact('light')
     navigation.navigate('SettingsNavigator')
   }, [navigation, triggerImpact])
 
   const handleAddressBook = useCallback(() => {
-    triggerImpact()
+    triggerImpact('light')
     navigation.push('AddressBookNavigator')
   }, [navigation, triggerImpact])
 
   const handleNotificationsSelected = useCallback(() => {
-    triggerImpact()
+    triggerImpact('light')
     navigation.push('NotificationsNavigator')
   }, [navigation, triggerImpact])
 
@@ -86,14 +86,14 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
       </TouchableOpacityBox>
       <Box flexDirection="row" marginEnd="l">
         {l1Network === 'helium' && (
-          <TouchableOpacityBox
+          <IconPressedContainer
             paddingVertical="ms"
             paddingLeft="s"
             onPress={handleNotificationsSelected}
             marginEnd="m"
           >
-            <NotificationIcon />
-          </TouchableOpacityBox>
+            <NotificationBell color="white" />
+          </IconPressedContainer>
         )}
 
         <IconPressedContainer onPress={handleAddressBook}>

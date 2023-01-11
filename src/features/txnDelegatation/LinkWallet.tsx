@@ -1,5 +1,5 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import React, { memo, useCallback, useEffect } from 'react'
+import React, { memo, useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Linking } from 'react-native'
 import { getUnixTime } from 'date-fns'
@@ -14,7 +14,7 @@ import SafeAreaBox from '../../components/SafeAreaBox'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
-import { useAccountSelector } from '../../components/AccountSelector'
+import { AccountSelectorRef } from '../../components/AccountSelector'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { formatAccountAlias } from '../../utils/accountUtils'
 import { checkSecureAccount, getKeypair } from '../../storage/secureStorage'
@@ -28,7 +28,7 @@ const LinkWallet = () => {
   } = useRoute<Route>()
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
-  const { showAccountTypes } = useAccountSelector()
+  const accountSelectorRef = useRef<AccountSelectorRef>(null)
   const {
     currentAccount,
     setCurrentAccount,
@@ -112,6 +112,11 @@ const LinkWallet = () => {
     t,
   ])
 
+  const handleAccountButtonPress = useCallback(() => {
+    if (!accountSelectorRef?.current) return
+    accountSelectorRef.current.showAccountTypes(NetTypes.MAINNET)
+  }, [])
+
   return (
     <SafeAreaBox
       backgroundColor="primaryBackground"
@@ -132,7 +137,7 @@ const LinkWallet = () => {
         title={formatAccountAlias(currentAccount)}
         address={currentAccount?.address}
         netType={currentAccount?.netType}
-        onPress={showAccountTypes(NetTypes.MAINNET)}
+        onPress={handleAccountButtonPress}
       />
 
       <TouchableOpacityBox

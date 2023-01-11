@@ -51,12 +51,7 @@ const TokenSelector = forwardRef(
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
-    const { primary, white, blueBright500 } = useColors()
-
-    const flatListStyle = useMemo(
-      () => ({ borderTopColor: primary, borderTopWidth: 1 }),
-      [primary],
-    )
+    const { white, blueBright500 } = useColors()
 
     const showTokens = useCallback(() => {
       bottomSheetModalRef.current?.present()
@@ -96,7 +91,7 @@ const TokenSelector = forwardRef(
             onPress={handleTokenPress(item.value)}
             selected={item.value === currentToken}
             paddingStart="l"
-            hasDivider={false}
+            hasDivider
           />
         )
       },
@@ -140,7 +135,6 @@ const TokenSelector = forwardRef(
               data={data}
               renderItem={renderFlatlistItem}
               keyExtractor={keyExtractor}
-              style={flatListStyle}
             />
           </BottomSheetModal>
           {children}

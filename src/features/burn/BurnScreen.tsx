@@ -26,7 +26,9 @@ import {
   formatAccountAlias,
 } from '../../utils/accountUtils'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useAccountSelector } from '../../components/AccountSelector'
+import AccountSelector, {
+  AccountSelectorRef,
+} from '../../components/AccountSelector'
 import AccountButton from '../../components/AccountButton'
 import { useAccountQuery, useSubmitTxnMutation } from '../../generated/graphql'
 import { balanceToString, useBalance } from '../../utils/Balance'
@@ -63,7 +65,7 @@ const BurnScreen = () => {
   const { primaryText } = useColors()
   const ledgerPaymentRef = useRef<LedgerBurnModalRef>(null)
   const hitSlop = useHitSlop('l')
-  const { showAccountTypes } = useAccountSelector()
+  const accountSelectorRef = useRef<AccountSelectorRef>(null)
   const { floatToBalance, dcToNetworkTokens, networkTokensToDc } = useBalance()
   const [fee, setFee] = useState<Balance<DataCredits>>()
   const { makeBurnTxn } = useTransactions()
@@ -84,8 +86,9 @@ const BurnScreen = () => {
   )
 
   const handleShowAccounts = useCallback(() => {
-    showAccountTypes(networkType)()
-  }, [networkType, showAccountTypes])
+    if (!accountSelectorRef?.current) return
+    accountSelectorRef.current.showAccountTypes(networkType)()
+  }, [networkType])
 
   const amountBalance = useMemo(() => {
     const amount = parseFloat(route.params.amount)
@@ -238,162 +241,164 @@ const BurnScreen = () => {
   if (!amountBalance) return null
 
   return (
-    <LedgerBurnModal
-      ref={ledgerPaymentRef}
-      onConfirm={ledgerPaymentConfirmed}
-      onError={handleLedgerError}
-      title={t('burn.ledger.title')}
-      subtitle={t('burn.ledger.subtitle', {
-        name: currentAccount?.ledgerDevice?.name,
-      })}
-    >
-      <Box
-        backgroundColor="secondaryBackground"
-        flex={1}
-        style={containerStyle}
+    <AccountSelector ref={accountSelectorRef}>
+      <LedgerBurnModal
+        ref={ledgerPaymentRef}
+        onConfirm={ledgerPaymentConfirmed}
+        onError={handleLedgerError}
+        title={t('burn.ledger.title')}
+        subtitle={t('burn.ledger.subtitle', {
+          name: currentAccount?.ledgerDevice?.name,
+        })}
       >
         <Box
-          flexDirection="row"
-          justifyContent="space-between"
-          alignItems="center"
+          backgroundColor="secondaryBackground"
+          flex={1}
+          style={containerStyle}
         >
-          <Box width={64} />
-          <Text
-            variant="subtitle2"
-            flex={1}
-            textAlign="center"
-            color="primaryText"
-            maxFontSizeMultiplier={1}
-          >
-            {t('burn.title')}
-          </Text>
-          <TouchableOpacityBox
-            onPress={navigation.goBack}
-            width={64}
-            padding="l"
-            hitSlop={hitSlop}
-          >
-            <Close color={primaryText} height={16} width={16} />
-          </TouchableOpacityBox>
-        </Box>
-
-        <KeyboardAwareScrollView
-          enableOnAndroid
-          enableResetScrollToCoords={false}
-          keyboardShouldPersistTaps="always"
-        >
-          <AccountButton
-            backgroundColor="surfaceSecondary"
-            accountIconSize={41}
-            paddingTop="l"
-            title={formatAccountAlias(currentAccount)}
-            subtitle={t('payment.senderAccount')}
-            showChevron={sortedAccountsForNetType(networkType).length > 1}
-            address={currentAccount?.address}
-            netType={currentAccount?.netType}
-            onPress={handleShowAccounts}
-            showBubbleArrow
-            marginHorizontal="l"
-            marginBottom="xs"
-          />
-          <AccountButton
-            backgroundColor="surfaceSecondary"
-            accountIconSize={41}
-            subtitle={t('burn.recipient')}
-            title={ellipsizeAddress(route.params.address)}
-            showBubbleArrow
-            showChevron={false}
-            address={route.params.address}
-            netType={networkType}
-            marginHorizontal="l"
-          />
-
           <Box
-            marginTop="xs"
-            marginHorizontal="l"
-            backgroundColor="secondary"
-            borderRadius="xl"
-            paddingHorizontal="m"
-            overflow="hidden"
+            flexDirection="row"
+            justifyContent="space-between"
+            alignItems="center"
           >
-            <Text variant="body3" color="secondaryText" marginTop="m">
-              {t('burn.amount')}
+            <Box width={64} />
+            <Text
+              variant="subtitle2"
+              flex={1}
+              textAlign="center"
+              color="primaryText"
+              maxFontSizeMultiplier={1}
+            >
+              {t('burn.title')}
             </Text>
-            <Text variant="subtitle2" color="primaryText">
-              {amountBalance.toString()}
-            </Text>
-            <Text variant="body3" marginBottom="m" color="secondaryText">
-              {t('payment.fee', {
-                value: balanceToString(feeAsTokens, {
-                  maxDecimalPlaces: 4,
-                }),
-              })}
-            </Text>
-
-            <Box
-              height={1}
-              backgroundColor="primaryBackground"
-              marginHorizontal="n_m"
-            />
-
-            <Text variant="body3" color="secondaryText" marginTop="m">
-              {t('burn.equivalent')}
-            </Text>
-            <Text variant="subtitle2" color="primaryText" marginBottom="m">
-              {amountInDc?.toString()}
-            </Text>
-
-            <Box
-              height={1}
-              backgroundColor="primaryBackground"
-              marginHorizontal="n_m"
-            />
-
-            {route.params.memo && (
-              <>
-                <Text variant="body3" color="secondaryText" marginTop="m">
-                  {t('burn.memo')}
-                </Text>
-                <Text variant="body3" marginBottom="m">
-                  {route.params.memo}
-                </Text>
-              </>
-            )}
+            <TouchableOpacityBox
+              onPress={navigation.goBack}
+              width={64}
+              padding="l"
+              hitSlop={hitSlop}
+            >
+              <Close color={primaryText} height={16} width={16} />
+            </TouchableOpacityBox>
           </Box>
-        </KeyboardAwareScrollView>
-        <Box
-          borderTopLeftRadius="xl"
-          borderTopRightRadius="xl"
-          padding="l"
-          overflow="hidden"
-          minHeight={220}
-          backgroundColor="secondary"
-        >
-          <PaymentSummary
-            totalBalance={amountBalance}
-            feeTokenBalance={feeAsTokens}
-            errors={errors}
-          />
-          <Box flex={1} justifyContent="flex-end">
-            <SubmitButton
-              marginTop="l"
-              title={t('burn.swipeToBurn')}
-              onSubmit={handleSubmit}
+
+          <KeyboardAwareScrollView
+            enableOnAndroid
+            enableResetScrollToCoords={false}
+            keyboardShouldPersistTaps="always"
+          >
+            <AccountButton
+              backgroundColor="surfaceSecondary"
+              accountIconSize={41}
+              paddingTop="l"
+              title={formatAccountAlias(currentAccount)}
+              subtitle={t('payment.senderAccount')}
+              showChevron={sortedAccountsForNetType(networkType).length > 1}
+              address={currentAccount?.address}
+              netType={currentAccount?.netType}
+              onPress={handleShowAccounts}
+              showBubbleArrow
+              marginHorizontal="l"
+              marginBottom="xs"
             />
+            <AccountButton
+              backgroundColor="surfaceSecondary"
+              accountIconSize={41}
+              subtitle={t('burn.recipient')}
+              title={ellipsizeAddress(route.params.address)}
+              showBubbleArrow
+              showChevron={false}
+              address={route.params.address}
+              netType={networkType}
+              marginHorizontal="l"
+            />
+
+            <Box
+              marginTop="xs"
+              marginHorizontal="l"
+              backgroundColor="secondary"
+              borderRadius="xl"
+              paddingHorizontal="m"
+              overflow="hidden"
+            >
+              <Text variant="body3" color="secondaryText" marginTop="m">
+                {t('burn.amount')}
+              </Text>
+              <Text variant="subtitle2" color="primaryText">
+                {amountBalance.toString()}
+              </Text>
+              <Text variant="body3" marginBottom="m" color="secondaryText">
+                {t('payment.fee', {
+                  value: balanceToString(feeAsTokens, {
+                    maxDecimalPlaces: 4,
+                  }),
+                })}
+              </Text>
+
+              <Box
+                height={1}
+                backgroundColor="primaryBackground"
+                marginHorizontal="n_m"
+              />
+
+              <Text variant="body3" color="secondaryText" marginTop="m">
+                {t('burn.equivalent')}
+              </Text>
+              <Text variant="subtitle2" color="primaryText" marginBottom="m">
+                {amountInDc?.toString()}
+              </Text>
+
+              <Box
+                height={1}
+                backgroundColor="primaryBackground"
+                marginHorizontal="n_m"
+              />
+
+              {route.params.memo && (
+                <>
+                  <Text variant="body3" color="secondaryText" marginTop="m">
+                    {t('burn.memo')}
+                  </Text>
+                  <Text variant="body3" marginBottom="m">
+                    {route.params.memo}
+                  </Text>
+                </>
+              )}
+            </Box>
+          </KeyboardAwareScrollView>
+          <Box
+            borderTopLeftRadius="xl"
+            borderTopRightRadius="xl"
+            padding="l"
+            overflow="hidden"
+            minHeight={220}
+            backgroundColor="secondary"
+          >
+            <PaymentSummary
+              totalBalance={amountBalance}
+              feeTokenBalance={feeAsTokens}
+              errors={errors}
+            />
+            <Box flex={1} justifyContent="flex-end">
+              <SubmitButton
+                marginTop="l"
+                title={t('burn.swipeToBurn')}
+                onSubmit={handleSubmit}
+              />
+            </Box>
           </Box>
         </Box>
-      </Box>
-      <PaymentSubmit
-        submitLoading={submitLoading}
-        submitSucceeded={!!submitData?.submitTxn?.hash}
-        submitError={submitError}
-        totalBalance={amountBalance}
-        feeTokenBalance={feeAsTokens}
-        onRetry={handleSubmit}
-        onSuccess={navigation.popToTop}
-        actionTitle={t('generic.ok')}
-      />
-    </LedgerBurnModal>
+        <PaymentSubmit
+          submitLoading={submitLoading}
+          submitSucceeded={!!submitData?.submitTxn?.hash}
+          submitError={submitError}
+          totalBalance={amountBalance}
+          feeTokenBalance={feeAsTokens}
+          onRetry={handleSubmit}
+          onSuccess={navigation.popToTop}
+          actionTitle={t('generic.ok')}
+        />
+      </LedgerBurnModal>
+    </AccountSelector>
   )
 }
 
