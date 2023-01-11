@@ -30,6 +30,7 @@ type Props = BoxProps<Theme> & {
   backgroundImageUri?: string
   TrailingIcon?: React.FC<SvgProps>
   onTrailingIconPress?: () => void
+  headerTopMargin?: Spacing
 }
 
 const BackScreen = ({
@@ -47,6 +48,7 @@ const BackScreen = ({
   backgroundImageUri,
   TrailingIcon,
   onTrailingIconPress,
+  headerTopMargin,
   ...rest
 }: Props) => {
   const navigation = useNavigation()
@@ -61,6 +63,7 @@ const BackScreen = ({
           paddingHorizontal={headerHorizontalPadding}
           onLayout={onHeaderLayout}
           backgroundColor={headerBackgroundColor}
+          marginTop={headerTopMargin}
         >
           <Box
             position="absolute"
