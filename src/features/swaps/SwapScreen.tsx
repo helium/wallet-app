@@ -30,6 +30,7 @@ import { useTreasuryPrice } from '../../hooks/useTreasuryPrice'
 import { Mints } from '../../utils/hotspotNftsUtils'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
 import { useSpacing } from '../../theme/themeHooks'
+import useAlert from '../../hooks/useAlert'
 
 // Selector Mode enum
 enum SelectorMode {
@@ -67,6 +68,7 @@ const SwapScreen = () => {
   const [networkError, setNetworkError] = useState<undefined | string>()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
   const spacing = useSpacing()
+  const { showOKCancelAlert } = useAlert()
   const {
     price,
     loading: loadingPrice,
@@ -234,6 +236,12 @@ const SwapScreen = () => {
   }, [price])
 
   const handleSwapTokens = useCallback(async () => {
+    const decision = await showOKCancelAlert({
+      title: t('swapsScreen.swapAlertTitle'),
+      message: t('swapsScreen.swapAlertBody'),
+    })
+    if (!decision) return
+
     submitTreasurySwap(
       new PublicKey(Mints[youPayTokenType]),
       Number(youPayTokenAmount.floatBalance),
@@ -245,7 +253,9 @@ const SwapScreen = () => {
     })
   }, [
     navigation,
+    showOKCancelAlert,
     submitTreasurySwap,
+    t,
     youPayTokenAmount.floatBalance,
     youPayTokenType,
     youReceiveTokenType,

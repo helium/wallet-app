@@ -61,7 +61,7 @@ export function useTreasuryPrice(
 
       const total = Math.abs(dR)
       // Truncate to 8 decimal places only
-      return total.toFixed(rDecimals)
+      return parseFloat(total.toFixed(rDecimals))
     }
   }, [fromMintAcc, treasuryMintAcc, treasuryAcc, r, rDecimals, amount])
 

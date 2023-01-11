@@ -284,6 +284,8 @@ export default {
     returnToSwaps: 'Return to Swaps',
     insufficientTokensToSwap:
       'You do not have sufficient tokens to swap that will result in more than 0.00000001 HNT.',
+    swapAlertTitle: 'Are you sure you will like to swap your tokens?',
+    swapAlertBody: 'This action is irreversible.',
   },
   accountTokenList: {
     tokens: 'Tokens',

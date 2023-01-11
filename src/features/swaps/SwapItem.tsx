@@ -117,9 +117,7 @@ const SwapItem = ({
             <Box flexDirection="row">
               <Text marginEnd="s" variant="h4">
                 {/** If last decimals are zeroes do not show */}
-                {!loading
-                  ? amount.floatBalance.toFixed(8).replace(/\.0+$/, '')
-                  : t('generic.loading')}
+                {!loading ? amount.bigBalance.toString() : t('generic.loading')}
               </Text>
               <Text
                 variant="h4"
