@@ -5,10 +5,11 @@ import { useNavigation } from '@react-navigation/native'
 import Box from '../../components/Box'
 import FadeInOut from '../../components/FadeInOut'
 import Text from '../../components/Text'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
+import TouchableContainer from '../../components/TouchableContainer'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import TokenIcon from './TokenIcon'
 import { HomeNavigationProp } from '../home/homeTypes'
+import useHaptic from '../../hooks/useHaptic'
 
 export const ITEM_HEIGHT = 72
 type Props = {
@@ -19,17 +20,19 @@ type Props = {
 const TokenListItem = ({ ticker, balance, staked }: Props) => {
   const disabled = ticker === 'SOL' || ticker === 'IOT'
   const navigation = useNavigation<HomeNavigationProp>()
+  const { triggerImpact } = useHaptic()
 
   const handleNavigation = useCallback(() => {
     if (ticker === 'SOL') {
       return
     }
+    triggerImpact('light')
     navigation.navigate('AccountTokenScreen', { tokenType: ticker })
-  }, [navigation, ticker])
+  }, [navigation, ticker, triggerImpact])
 
   return (
     <FadeInOut>
-      <TouchableOpacityBox
+      <TouchableContainer
         onPress={handleNavigation}
         flexDirection="row"
         minHeight={ITEM_HEIGHT}
@@ -68,7 +71,7 @@ const TokenListItem = ({ ticker, balance, staked }: Props) => {
           )}
         </Box>
         {!disabled && <Arrow />}
-      </TouchableOpacityBox>
+      </TouchableContainer>
     </FadeInOut>
   )
 }

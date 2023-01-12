@@ -1,20 +1,16 @@
-import React, { FC, useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { FC, useCallback, useMemo } from 'react'
 import { SvgProps } from 'react-native-svg'
 import {
   BottomTabBarProps,
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs'
 import { Edge } from 'react-native-safe-area-context'
-import { useNavigation } from '@react-navigation/native'
-import { useSelector } from 'react-redux'
-import ConnectedWallets, {
-  ConnectedWalletsRef,
-} from '../features/account/ConnectedWallets'
+import Dollar from '@assets/images/dollar.svg'
+import Gem from '@assets/images/gem.svg'
+import Transactions from '@assets/images/transactions.svg'
+import Notifications from '@assets/images/notifications.svg'
 import NavBar from '../components/NavBar'
-import Dollar from '../assets/images/dollar.svg'
-import Gem from '../assets/images/gem.svg'
-import Transactions from '../assets/images/transactions.svg'
-import Notifications from '../assets/images/notifications.svg'
+
 import { Color } from '../theme/theme'
 import HomeNavigator from '../features/home/HomeNavigator'
 import CollectablesTabNavigator from '../features/collectables/CollectablesTabNavigator'
@@ -23,15 +19,13 @@ import NotificationsNavigator from '../features/notifications/NotificationsNavig
 import SafeAreaBox from '../components/SafeAreaBox'
 import Box from '../components/Box'
 import useEnrichedTransactions from '../hooks/useEnrichedTransactions'
-import { RootState } from '../store/rootReducer'
-import { useAppDispatch } from '../store/store'
-import { appSlice } from '../store/slices/appSlice'
-import { HomeNavigationProp } from '../features/home/homeTypes'
+import useHaptic from '../hooks/useHaptic'
 
 const Tab = createBottomTabNavigator()
 
 function MyTabBar({ state, navigation }: BottomTabBarProps) {
   const { hasNewTransactions, resetNewTransactions } = useEnrichedTransactions()
+  const { triggerImpact } = useHaptic()
   const tabData = useMemo((): Array<{
     value: string
     Icon: FC<SvgProps>
@@ -67,6 +61,7 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
 
   const onPress = useCallback(
     (type: string) => {
+      triggerImpact('light')
       const index = tabData.findIndex((item) => item.value === type)
       const isSelected = selectedValue === type
       const event = navigation.emit({
@@ -96,6 +91,7 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
       selectedValue,
       state.routes,
       tabData,
+      triggerImpact,
     ],
   )
 
@@ -127,48 +123,22 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
 }
 
 const TabBarNavigator = () => {
-  const navigation = useNavigation<HomeNavigationProp>()
-  const connectedWalletsRef = useRef<ConnectedWalletsRef>(null)
-  const showConnectedWallets = useSelector(
-    (state: RootState) => state.app.showConnectedWallets,
-  )
-  const dispatch = useAppDispatch()
-  useEffect(() => {
-    if (showConnectedWallets) {
-      connectedWalletsRef.current?.show()
-    }
-  }, [showConnectedWallets])
-
-  const handleAddNew = useCallback(() => {
-    navigation.navigate('AddNewAccountNavigator')
-  }, [navigation])
-
-  const onConnectedWalletsClose = useCallback(() => {
-    dispatch(appSlice.actions.toggleConnectedWallets())
-  }, [dispatch])
-
   return (
-    <ConnectedWallets
-      onAddNew={handleAddNew}
-      ref={connectedWalletsRef}
-      onClose={onConnectedWalletsClose}
+    <Tab.Navigator
+      tabBar={(props: BottomTabBarProps) => <MyTabBar {...props} />}
+      screenOptions={{
+        headerShown: false,
+      }}
     >
-      <Tab.Navigator
-        tabBar={(props: BottomTabBarProps) => <MyTabBar {...props} />}
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        <Tab.Screen name="Home" component={HomeNavigator} />
-        <Tab.Screen name="Collectables" component={CollectablesTabNavigator} />
-        {/* <Tab.Screen name="Swaps" component={CollectableNavigator} /> */}
-        <Tab.Screen name="Activity" component={ActivityNavigator} />
-        <Tab.Screen
-          name="NotificationsNavigator"
-          component={NotificationsNavigator}
-        />
-      </Tab.Navigator>
-    </ConnectedWallets>
+      <Tab.Screen name="Home" component={HomeNavigator} />
+      <Tab.Screen name="Collectables" component={CollectablesTabNavigator} />
+      {/* <Tab.Screen name="Swaps" component={CollectableNavigator} /> */}
+      <Tab.Screen name="Activity" component={ActivityNavigator} />
+      <Tab.Screen
+        name="NotificationsNavigator"
+        component={NotificationsNavigator}
+      />
+    </Tab.Navigator>
   )
 }
 

@@ -6,6 +6,7 @@ import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
+import BackArrow from '@assets/images/backArrow.svg'
 import IndeterminateProgressBar from '../../components/IndeterminateProgressBar'
 import {
   CollectableNavigationProp,
@@ -21,7 +22,6 @@ import BackScreen from '../../components/BackScreen'
 import { useSpacing } from '../../theme/themeHooks'
 import { RootState } from '../../store/rootReducer'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
-import BackArrow from '../../assets/images/backArrow.svg'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',

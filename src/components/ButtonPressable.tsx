@@ -1,17 +1,13 @@
-/* eslint-disable react/jsx-props-no-spreading */
+/* eslint-disable react/prop-types */
 import { BoxProps } from '@shopify/restyle'
 import React, { FC, memo, useCallback } from 'react'
-import {
-  GestureResponderEvent,
-  Pressable,
-  StyleSheet,
-  ViewStyle,
-} from 'react-native'
+import { GestureResponderEvent, ViewStyle } from 'react-native'
 import { SvgProps } from 'react-native-svg'
 import { useDebouncedCallback } from 'use-debounce'
 import { Color, FontWeight, Theme } from '../theme/theme'
 import { useCreateOpacity } from '../theme/themeHooks'
 import Box from './Box'
+import ButtonPressAnimation from './ButtonPressAnimation'
 import Text from './Text'
 
 type Props = BoxProps<Theme> & {
@@ -155,48 +151,43 @@ const ButtonPressable = ({
   )
 
   return (
-    <Box overflow="hidden" {...boxProps}>
-      <Pressable
-        onPress={handlePress}
-        style={styles.pressable}
-        disabled={disabled}
-      >
-        {({ pressed }) => (
-          <Box
-            height={height}
-            minHeight={boxProps.minHeight}
-            maxHeight={boxProps.maxHeight}
-            padding={height || boxProps.maxHeight || padding ? padding : 'l'}
-            style={getBackgroundColorStyle(pressed)}
-            flexDirection="row"
-            justifyContent={Icon ? 'space-between' : 'center'}
-            alignItems="center"
-            {...containerProps}
-          >
-            {LeadingComponent && <Box marginEnd="xs">{LeadingComponent}</Box>}
-            {title && (
-              <Text
-                variant="subtitle1"
-                fontSize={fontSize || 19}
-                fontWeight={fontWeight}
-                style={getTitleColorStyle(pressed)}
-                marginHorizontal="xs"
-              >
-                {title}
-              </Text>
-            )}
-            {Icon && <Icon color={getIconColor(pressed)} />}
+    <ButtonPressAnimation
+      overflow="hidden"
+      onPress={handlePress}
+      disabled={disabled}
+      {...boxProps}
+    >
+      {({ pressed }: { pressed: boolean }) => (
+        <Box
+          height={height}
+          minHeight={boxProps.minHeight}
+          maxHeight={boxProps.maxHeight}
+          padding={height || boxProps.maxHeight || padding ? padding : 'l'}
+          style={getBackgroundColorStyle(pressed)}
+          flexDirection="row"
+          justifyContent={Icon ? 'space-between' : 'center'}
+          alignItems="center"
+          {...containerProps}
+        >
+          {LeadingComponent && <Box marginEnd="xs">{LeadingComponent}</Box>}
 
-            {TrailingComponent && (
-              <Box marginStart="xs">{TrailingComponent}</Box>
-            )}
-          </Box>
-        )}
-      </Pressable>
-    </Box>
+          {title && (
+            <Text
+              variant="subtitle1"
+              fontSize={fontSize || 19}
+              fontWeight={fontWeight}
+              style={getTitleColorStyle(pressed)}
+              marginHorizontal="xs"
+            >
+              {title}
+            </Text>
+          )}
+          {Icon && <Icon color={getIconColor(pressed)} />}
+          {TrailingComponent && <Box marginStart="xs">{TrailingComponent}</Box>}
+        </Box>
+      )}
+    </ButtonPressAnimation>
   )
 }
-
-const styles = StyleSheet.create({ pressable: { width: '100%' } })
 
 export default memo(ButtonPressable)

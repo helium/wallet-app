@@ -655,6 +655,10 @@ export const transferCompressedCollectable = async (
 
     const canopyHeight = tree.getCanopyDepth()
 
+    const anchorRemainingAccounts = assetProof.proof
+      .slice(0, assetProof.proof.length - (canopyHeight || 0))
+      .map((proof: string) => new web3.PublicKey(proof))
+
     instructions.push(
       createTransferInstruction(
         {
@@ -665,10 +669,7 @@ export const transferCompressedCollectable = async (
           merkleTree,
           logWrapper: SPL_NOOP_PROGRAM_ID,
           compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-          anchorRemainingAccounts: assetProof.proof.slice(
-            0,
-            assetProof.proof.length - (canopyHeight || 0),
-          ),
+          anchorRemainingAccounts,
         },
         {
           root: bufferToArray(Buffer.from(bs58.decode(assetProof.root))),

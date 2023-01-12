@@ -1,6 +1,5 @@
 import React, { memo, useCallback, useMemo } from 'react'
 import Checkmark from '@assets/images/checkIco.svg'
-import TouchableOpacityBox from './TouchableOpacityBox'
 import Text from './Text'
 import Box from './Box'
 import AccountIcon from './AccountIcon'
@@ -8,6 +7,7 @@ import { useColors } from '../theme/themeHooks'
 import { ellipsizeAddress, formatAccountAlias } from '../utils/accountUtils'
 import { CSAccount } from '../storage/cloudStorage'
 import { useAppStorage } from '../storage/AppStorageProvider'
+import TouchableContainer from './TouchableContainer'
 
 type Props = {
   selected: boolean
@@ -29,7 +29,7 @@ const AccountListItem = ({ selected, account, onPress, disabled }: Props) => {
   }, [account.address, account.solanaAddress, l1Network])
 
   return (
-    <TouchableOpacityBox
+    <TouchableContainer
       minHeight={52}
       paddingVertical="m"
       paddingHorizontal="xl"
@@ -61,7 +61,7 @@ const AccountListItem = ({ selected, account, onPress, disabled }: Props) => {
           <Checkmark color={primary} />
         </Box>
       )}
-    </TouchableOpacityBox>
+    </TouchableContainer>
   )
 }
 

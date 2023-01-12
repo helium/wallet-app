@@ -5,7 +5,6 @@ import React, { memo, useMemo } from 'react'
 import { LayoutChangeEvent, Platform } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { SvgProps } from 'react-native-svg'
-import Animated from 'react-native-reanimated'
 import { Color, Spacing, Theme } from '../theme/theme'
 import { useHitSlop } from '../theme/themeHooks'
 import BackButton from './BackButton'
@@ -17,7 +16,6 @@ import Text from './Text'
 import { width, height } from '../utils/layout'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import BlurBox from './BlurBox'
-import { DelayedFadeIn } from './FadeInOut'
 
 type Props = BoxProps<Theme> & {
   children?: React.ReactNode
@@ -61,11 +59,11 @@ const BackScreen = ({
     <Box flex={1}>
       <SafeAreaBox edges={edges || undefined} onLayout={onLayout} flex={1}>
         <Box
-          marginTop={headerTopMargin}
           flexDirection="row"
           paddingHorizontal={headerHorizontalPadding}
           onLayout={onHeaderLayout}
           backgroundColor={headerBackgroundColor}
+          marginTop={headerTopMargin}
         >
           <Box
             position="absolute"
@@ -111,19 +109,8 @@ const BackScreen = ({
       {/**
        * If backgroundImageUri is provided, we render a blurred version of the image
        */}
-
       {backgroundImageUri && (
-        <Animated.View
-          entering={DelayedFadeIn}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: -2,
-          }}
-        >
+        <>
           <ImageBox
             zIndex={-2}
             position="absolute"
@@ -135,7 +122,7 @@ const BackScreen = ({
             width={width}
             source={{ uri: backgroundImageUri, cache: 'force-cache' }}
             resizeMode="cover"
-            opacity={0.3}
+            opacity={0.7}
           />
           <BlurBox
             zIndex={-1}
@@ -144,10 +131,10 @@ const BackScreen = ({
             left={0}
             right={0}
             bottom={0}
-            blurAmount={10}
+            blurAmount={5}
             blurType={isAndroid ? 'dark' : 'thinMaterialDark'}
           />
-        </Animated.View>
+        </>
       )}
     </Box>
   )

@@ -3,6 +3,8 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { Linking, ScrollView } from 'react-native'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
 import { useTranslation } from 'react-i18next'
+import CheckmarkFilled from '@assets/images/checkmarkFill.svg'
+import Error from '@assets/images/error.svg'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 import ListItem from '../../components/ListItem'
 import { EnrichedTransaction } from '../../types/solana'
@@ -12,16 +14,15 @@ import Box from '../../components/Box'
 import Text from '../../components/Text'
 import AddressActivityItem from './AddressActivityItem'
 import ButtonPressable from '../../components/ButtonPressable'
-import CheckmarkFilled from '../../assets/images/checkmarkFill.svg'
 import { useColors } from '../../theme/themeHooks'
 import { ellipsizeAddress, solAddressIsValid } from '../../utils/accountUtils'
-import Error from '../../assets/images/error.svg'
 import { ActivityStackParamList } from './activityTypes'
 import BlurActionSheet from '../../components/BlurActionSheet'
 import globalStyles from '../../theme/globalStyles'
 import { DelayedFadeIn } from '../../components/FadeInOut'
 import { useCreateExplorerUrl } from '../../constants/urls'
 import useCopyText from '../../hooks/useCopyText'
+import useHaptic from '../../hooks/useHaptic'
 
 type Route = RouteProp<ActivityStackParamList, 'ActivityDetailsScreen'>
 
@@ -31,6 +32,7 @@ const ActivityDetailsScreen = () => {
   const { t, i18n } = useTranslation()
   const createExplorerUrl = useCreateExplorerUrl()
   const copyText = useCopyText()
+  const { triggerImpact } = useHaptic()
 
   const { transaction } = route.params
 
@@ -208,13 +210,13 @@ const ActivityDetailsScreen = () => {
 
   const handleCopyAddress = useCallback(() => {
     if (!selectedAddress) return
-
+    triggerImpact('light')
     copyText({
       message: ellipsizeAddress(selectedAddress),
       copyText: selectedAddress,
     })
     setOptionsOpen(false)
-  }, [copyText, selectedAddress])
+  }, [copyText, selectedAddress, triggerImpact])
 
   const accountOptions = useCallback(
     () => (
@@ -224,6 +226,7 @@ const ActivityDetailsScreen = () => {
           title={t('settings.sections.account.copyAddress')}
           onPress={handleCopyAddress}
           selected={false}
+          hasPressedState={false}
         />
       </>
     ),
@@ -255,12 +258,9 @@ const ActivityDetailsScreen = () => {
                 flexGrow={1}
                 borderRadius="round"
                 backgroundColor="white"
-                backgroundColorOpacity={1}
-                backgroundColorOpacityPressed={0.05}
                 titleColorDisabled="grey600"
                 backgroundColorDisabled="white"
                 backgroundColorDisabledOpacity={0.1}
-                titleColorPressedOpacity={0.3}
                 title={t('activityScreen.viewOnExplorer')}
                 titleColor="black"
                 onPress={handleOpenExplorer}

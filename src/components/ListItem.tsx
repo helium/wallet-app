@@ -3,9 +3,8 @@ import CheckMarkFill from '@assets/images/checkmarkFill.svg'
 import Box from './Box'
 import Text from './Text'
 import { useColors } from '../theme/themeHooks'
-import TouchableOpacityBox, {
-  TouchableOpacityBoxProps,
-} from './TouchableOpacityBox'
+import { TouchableOpacityBoxProps } from './TouchableOpacityBox'
+import TouchableContainer from './TouchableContainer'
 
 export const LIST_ITEM_HEIGHT = 70
 export type ListItemProps = {
@@ -17,6 +16,7 @@ export type ListItemProps = {
   selected?: boolean
   disabled?: boolean
   hasDivider?: boolean
+  hasPressedState?: boolean
 } & TouchableOpacityBoxProps
 
 const ListItem = ({
@@ -28,6 +28,7 @@ const ListItem = ({
   selected,
   disabled,
   hasDivider = true,
+  hasPressedState = true,
   ...rest
 }: ListItemProps) => {
   const colors = useColors()
@@ -39,7 +40,7 @@ const ListItem = ({
   }
 
   return (
-    <TouchableOpacityBox
+    <TouchableContainer
       alignItems="center"
       flex={1}
       flexDirection="row"
@@ -47,6 +48,7 @@ const ListItem = ({
       borderBottomColor="black900"
       borderBottomWidth={hasDivider ? 1 : 0}
       onPress={handlePress}
+      hasPressedState={hasPressedState}
       {...rest}
     >
       {Icon && Icon}
@@ -60,7 +62,7 @@ const ListItem = ({
         ) : null}
         {SecondaryIcon && SecondaryIcon}
       </Box>
-    </TouchableOpacityBox>
+    </TouchableContainer>
   )
 }
 

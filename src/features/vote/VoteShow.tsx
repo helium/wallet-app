@@ -61,7 +61,11 @@ const VoteShow = () => {
   const sortedOutcomes = useMemo(() => {
     if (!outcomes) return []
 
-    const unsorted = outcomes.map((o, index) => ({
+    const outcomesSorted = outcomes
+      .slice()
+      .sort((a, b) => (a.value > b.value ? 1 : -1))
+
+    const unsorted = outcomesSorted.map((o, index) => ({
       color: voteAccentColors[index],
       ...o,
     }))
@@ -306,10 +310,10 @@ const VoteShow = () => {
               >
                 {t('vote.voteOptions')}
               </Text>
-              {outcomes?.map((o, index) => (
+              {sortedOutcomes.map((o) => (
                 <VoteOption
                   key={o.address}
-                  index={index}
+                  color={o.color}
                   toggleItem={handleToggle(o)}
                   value={o.value}
                   expanded={o.address === voteOutcome?.address}

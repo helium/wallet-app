@@ -13,6 +13,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated'
 import { SvgProps } from 'react-native-svg'
+import useHaptic from '../hooks/useHaptic'
 import { Color } from '../theme/theme'
 import { useColors, useVerticalHitSlop } from '../theme/themeHooks'
 import Box from './Box'
@@ -123,8 +124,8 @@ const TabBar = ({
 }: Props) => {
   const hitSlop = useVerticalHitSlop('l')
   const [itemRects, setItemRects] = useState<Record<string, LayoutRectangle>>()
-
   const offset = useSharedValue<number | null>(null)
+  const { triggerImpact } = useHaptic()
 
   const handleLayout = useCallback(
     (value: string) => (e: LayoutChangeEvent) => {
@@ -137,9 +138,10 @@ const TabBar = ({
 
   const handlePress = useCallback(
     (value: string) => () => {
+      triggerImpact('light')
       onItemSelected(value)
     },
-    [onItemSelected],
+    [onItemSelected, triggerImpact],
   )
 
   useEffect(() => {

@@ -9,7 +9,7 @@ import OneSignal, { OpenedEvent } from 'react-native-onesignal'
 import Config from 'react-native-config'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import { PortalHost, PortalProvider } from '@gorhom/portal'
+import { PortalProvider } from '@gorhom/portal'
 import * as SplashLib from 'expo-splash-screen'
 import { useApolloClient } from './graphql/useApolloClient'
 import { theme, darkThemeColors, lightThemeColors } from './theme/theme'
@@ -19,7 +19,6 @@ import LockScreen from './features/lock/LockScreen'
 import SecurityScreen from './features/security/SecurityScreen'
 import useMount from './hooks/useMount'
 import OnboardingProvider from './features/onboarding/OnboardingProvider'
-import AccountSelector from './components/AccountSelector'
 import TransactionProvider from './storage/TransactionProvider'
 import { BalanceProvider } from './utils/Balance'
 import { useColorScheme } from './theme/themeHooks'
@@ -99,7 +98,6 @@ const App = () => {
         <ThemeProvider theme={colorAdaptedTheme}>
           <SplashScreen>
             <PortalProvider>
-              <PortalHost name="portal-m" />
               <OnboardingProvider>
                 {client && (
                   <ApolloProvider client={client}>
@@ -107,7 +105,7 @@ const App = () => {
                       <SentinelScreen>
                         <WalletConnectProvider>
                           {accountsRestored && (
-                            <AccountSelector>
+                            <>
                               <NavigationContainer
                                 theme={navTheme}
                                 linking={linking}
@@ -126,7 +124,7 @@ const App = () => {
                                   appState !== 'unknown'
                                 }
                               />
-                            </AccountSelector>
+                            </>
                           )}
                         </WalletConnectProvider>
                       </SentinelScreen>

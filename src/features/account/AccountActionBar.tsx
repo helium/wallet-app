@@ -212,22 +212,37 @@ const AccountActionBar = ({
           )}
         </Box>
       )}
-      {isHeliumMainnet && !compact && !!maxCompact && (
+      {isHeliumMainnet && !maxCompact && (
         <Box
           marginEnd={fabMargin}
           flexDirection={hasBottomTitle ? 'column' : 'row'}
         >
-          <FabButton
-            zIndex={2}
-            icon="vote"
-            backgroundColor="purple500"
-            backgroundColorOpacity={0.3}
-            backgroundColorOpacityPressed={0.5}
-            onPress={handleAction('vote')}
-            width={maxCompact ? 47.5 : undefined}
-            height={maxCompact ? 47.5 : undefined}
-            justifyContent="center"
-          />
+          <Box>
+            <FabButton
+              zIndex={2}
+              icon="vote"
+              backgroundColor="purple500"
+              backgroundColorOpacity={0.3}
+              backgroundColorOpacityPressed={0.5}
+              onPress={handleAction('vote')}
+              width={maxCompact ? 47.5 : undefined}
+              height={maxCompact ? 47.5 : undefined}
+              justifyContent="center"
+            />
+            {voteData && unseenVotes?.length > 0 && (
+              <Box position="absolute" top={0} left={0} right={0} bottom={0}>
+                <Animated.View style={{ transform: [{ scale: anim.current }] }}>
+                  <Box
+                    opacity={0.3}
+                    borderRadius="round"
+                    width="100%"
+                    height="100%"
+                    backgroundColor="purple500"
+                  />
+                </Animated.View>
+              </Box>
+            )}
+          </Box>
           {hasBottomTitle && (
             <Box marginTop="s">
               <Text
@@ -238,26 +253,6 @@ const AccountActionBar = ({
               >
                 {t('accountView.vote')}
               </Text>
-            </Box>
-          )}
-          {voteData && unseenVotes?.length > 0 && (
-            <Box
-              position="absolute"
-              top={0}
-              left={0}
-              right={0}
-              bottom={0}
-              marginRight={fabMargin}
-            >
-              <Animated.View style={{ transform: [{ scale: anim.current }] }}>
-                <Box
-                  opacity={0.3}
-                  borderRadius="round"
-                  width="100%"
-                  height="100%"
-                  backgroundColor="purple500"
-                />
-              </Animated.View>
             </Box>
           )}
         </Box>
