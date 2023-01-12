@@ -84,6 +84,7 @@ const CollectionScreen = () => {
       padding="none"
       headerBackgroundColor="primaryBackground"
       title={`${collectables[0].content.metadata.symbol} ${collectables.length}`}
+      headerTopMargin="l"
     >
       <ReAnimatedBox
         marginTop="s"
