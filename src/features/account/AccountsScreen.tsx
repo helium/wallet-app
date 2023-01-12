@@ -82,7 +82,7 @@ const AccountsScreen = () => {
   const [topHeaderHeight, setTopHeaderHeight] = useState(0)
   const topHeaderRef = useRef<View>(null)
   const [currenciesOpen, setCurrenciesOpen] = useState(false)
-  const bottomSheetStyle = useBackgroundStyle('secondaryBackground')
+  const bottomSheetStyle = useBackgroundStyle('surfaceSecondary')
   const dispatch = useAppDispatch()
   const { triggerImpact } = useHaptic()
 
