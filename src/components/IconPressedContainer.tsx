@@ -18,7 +18,7 @@ export const ICON_CONTAINER_SIZE = 44
 export type ButtonPressAnimationProps = {
   onPress?: ((event: GestureResponderEvent) => void) | null | undefined
   disabled?: boolean
-  children: React.ReactNode
+  children?: React.ReactNode
   pressableStyles?: ViewStyle
   onLayout?: (event: LayoutChangeEvent) => void | undefined
   hitSlop?: Insets | undefined

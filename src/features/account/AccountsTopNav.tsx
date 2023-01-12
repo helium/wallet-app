@@ -56,12 +56,12 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
       style={containerStyle}
       zIndex={1}
     >
-      <Box marginStart="m">
+      <Box marginStart="s">
         <IconPressedContainer onPress={navToSettings}>
           <CogIco color="white" />
         </IconPressedContainer>
       </Box>
-
+      {l1Network === 'helium' && <IconPressedContainer />}
       <TouchableOpacityBox
         flexDirection="row"
         flex={1}
@@ -84,12 +84,9 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
         </Text>
         <CarotDown color={primaryText} />
       </TouchableOpacityBox>
-      <Box flexDirection="row" marginEnd="l">
+      <Box flexDirection="row" marginEnd="s">
         {l1Network === 'helium' && (
-          <IconPressedContainer
-            paddingLeft="s"
-            onPress={handleNotificationsSelected}
-          >
+          <IconPressedContainer onPress={handleNotificationsSelected}>
             <NotificationBell color="white" />
           </IconPressedContainer>
         )}
