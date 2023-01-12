@@ -78,7 +78,7 @@ const useHotspots = (): {
     if (!currentAccount?.solanaAddress) return []
 
     return (
-      collectables[currentAccount?.solanaAddress].collectables.HOTSPOT || []
+      collectables[currentAccount?.solanaAddress]?.collectables?.HOTSPOT || []
     )
   }, [collectables, currentAccount])
 
@@ -150,16 +150,21 @@ const useHotspots = (): {
   const refresh = useCallback(() => {
     if (
       !currentAccount?.solanaAddress ||
+      !collectables[currentAccount?.solanaAddress] ||
       l1Network !== 'solana' ||
-      collectables.loading
+      collectables[currentAccount?.solanaAddress].loading
     ) {
       return
     }
     dispatch(fetchCollectables({ account: currentAccount, cluster }))
-  }, [cluster, collectables.loading, currentAccount, dispatch, l1Network])
+  }, [cluster, collectables, currentAccount, dispatch, l1Network])
 
   const fetchingMore = useMemo(() => {
-    if (!currentAccount?.solanaAddress) return false
+    if (
+      !currentAccount?.solanaAddress ||
+      !collectables[currentAccount?.solanaAddress]
+    )
+      return false
 
     return collectables[currentAccount?.solanaAddress].fetchingMore
   }, [collectables, currentAccount])
@@ -168,7 +173,7 @@ const useHotspots = (): {
     if (
       !currentAccount?.solanaAddress ||
       l1Network !== 'solana' ||
-      collectables.loading
+      collectables[currentAccount?.solanaAddress].loading
     ) {
       return
     }
@@ -181,7 +186,7 @@ const useHotspots = (): {
     )
   }, [
     cluster,
-    collectables.loading,
+    collectables,
     currentAccount,
     dispatch,
     l1Network,
@@ -336,8 +341,8 @@ const useHotspots = (): {
   return {
     hotspots,
     hotspotsWithMeta:
-      collectables[currentAccount?.solanaAddress].collectablesWithMeta
-        .HOTSPOT || [],
+      collectables[currentAccount?.solanaAddress]?.collectablesWithMeta
+        ?.HOTSPOT || [],
     loading: collectables[currentAccount?.solanaAddress].loading,
     refresh,
     claimAllMobileRewards: {
