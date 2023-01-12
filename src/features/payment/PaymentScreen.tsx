@@ -655,7 +655,7 @@ const PaymentScreen = () => {
                 style={containerStyle}
                 borderTopStartRadius="xl"
                 borderTopEndRadius="xl"
-                backgroundColor="surfaceSecondary"
+                backgroundColor="secondaryBackground"
               >
                 <Box
                   flexDirection="row"

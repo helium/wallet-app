@@ -27,7 +27,6 @@ import { useAccountQuery, useSubmitTxnMutation } from '../../generated/graphql'
 import MemoInput, { getMemoStrValid } from '../../components/MemoInput'
 import { useTransactions } from '../../storage/TransactionProvider'
 import PaymentSubmit from '../payment/PaymentSubmit'
-import BackgroundFill from '../../components/BackgroundFill'
 import PaymentSummary from '../payment/PaymentSummary'
 import SubmitButton from '../../components/SubmitButton'
 import useAlert from '../../hooks/useAlert'
@@ -195,7 +194,7 @@ const VoteBurn = () => {
           <Box flex={1}>
             <BackButton paddingVertical="l" onPress={navigation.goBack} />
           </Box>
-          <Text variant="regular" fontSize={19} color="primaryText">
+          <Text variant="medium" fontSize={19} color="primaryText">
             {t('vote.burnTitle', { ticker: CurrencyType.networkToken.ticker })}
           </Text>
           <Box flex={1} />
@@ -207,6 +206,7 @@ const VoteBurn = () => {
           keyboardShouldPersistTaps="always"
         >
           <AccountButton
+            backgroundColor="secondary"
             paddingTop="xxl"
             title={account.alias}
             subtitle={accountHnt}
@@ -218,6 +218,7 @@ const VoteBurn = () => {
           />
 
           <AccountButton
+            backgroundColor="secondary"
             paddingTop="l"
             title={voteOutcome.value}
             subtitle={ellipsizeAddress(voteOutcome.address)}
@@ -266,9 +267,8 @@ const VoteBurn = () => {
           padding="l"
           overflow="hidden"
           minHeight={220}
+          backgroundColor="secondary"
         >
-          <BackgroundFill backgroundColor="secondary" opacity={0.4} />
-
           <PaymentSummary
             totalBalance={balance}
             feeTokenBalance={feeAsTokens}
