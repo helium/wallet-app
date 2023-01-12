@@ -18,6 +18,7 @@ import {
   VersionedTransaction,
   VersionedTransactionResponse,
   ComputeBudgetProgram,
+  AccountMeta,
 } from '@solana/web3.js'
 import {
   TOKEN_PROGRAM_ID,
@@ -609,12 +610,12 @@ export async function getNonceCount(
   )
 }
 
-const mapProof = (assetProof: { proof: string[] }): web3.AccountMeta[] => {
+const mapProof = (assetProof: { proof: string[] }): AccountMeta[] => {
   if (!assetProof.proof || assetProof.proof.length === 0) {
     throw new Error('Proof is empty')
   }
   return assetProof.proof.map((node) => ({
-    pubkey: new web3.PublicKey(node),
+    pubkey: new PublicKey(node),
     isSigner: false,
     isWritable: false,
   }))
