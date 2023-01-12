@@ -51,7 +51,9 @@ const CustomBlurBackdrop = ({
           alignItems="center"
           width="100%"
         >
-          <Text variant="h4">{title || ''}</Text>
+          <Text marginHorizontal="l" textAlign="center" variant="h4">
+            {title || ''}
+          </Text>
         </SafeAreaBox>
       </BlurBox>
     </Animated.View>
