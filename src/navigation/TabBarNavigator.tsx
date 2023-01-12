@@ -10,7 +10,6 @@ import Gem from '@assets/images/gem.svg'
 import Transactions from '@assets/images/transactions.svg'
 import Notifications from '@assets/images/notifications.svg'
 import NavBar from '../components/NavBar'
-
 import { Color } from '../theme/theme'
 import HomeNavigator from '../features/home/HomeNavigator'
 import CollectablesTabNavigator from '../features/collectables/CollectablesTabNavigator'
@@ -21,10 +20,6 @@ import SafeAreaBox from '../components/SafeAreaBox'
 import Box from '../components/Box'
 import useEnrichedTransactions from '../hooks/useEnrichedTransactions'
 import useHaptic from '../hooks/useHaptic'
-import { RootState } from '../store/rootReducer'
-import { useAppDispatch } from '../store/store'
-import { appSlice } from '../store/slices/appSlice'
-import { HomeNavigationProp } from '../features/home/homeTypes'
 import Swaps from '../assets/images/swaps.svg'
 
 const Tab = createBottomTabNavigator()
@@ -136,7 +131,7 @@ const TabBarNavigator = () => {
     >
       <Tab.Screen name="Home" component={HomeNavigator} />
       <Tab.Screen name="Collectables" component={CollectablesTabNavigator} />
-      {/* <Tab.Screen name="Swaps" component={CollectableNavigator} /> */}
+      <Tab.Screen name="Swaps" component={SwapNavigator} />
       <Tab.Screen name="Activity" component={ActivityNavigator} />
       <Tab.Screen
         name="NotificationsNavigator"
