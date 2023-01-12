@@ -14,7 +14,9 @@ import SafeAreaBox from '../../components/SafeAreaBox'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
-import { AccountSelectorRef } from '../../components/AccountSelector'
+import AccountSelector, {
+  AccountSelectorRef,
+} from '../../components/AccountSelector'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { formatAccountAlias } from '../../utils/accountUtils'
 import { checkSecureAccount, getKeypair } from '../../storage/secureStorage'
@@ -118,58 +120,60 @@ const LinkWallet = () => {
   }, [])
 
   return (
-    <SafeAreaBox
-      backgroundColor="primaryBackground"
-      flex={1}
-      padding="l"
-      justifyContent="center"
-    >
-      <Text variant="body1" fontSize={32} marginTop="m">
-        {t('linkWallet.title', { appName })}
-      </Text>
-      <Text variant="body1" marginVertical="m">
-        {t('linkWallet.body', { appName })}
-      </Text>
-
-      <AccountButton
-        accountIconSize={26}
-        paddingVertical="l"
-        title={formatAccountAlias(currentAccount)}
-        address={currentAccount?.address}
-        netType={currentAccount?.netType}
-        onPress={handleAccountButtonPress}
-      />
-
-      <TouchableOpacityBox
-        marginTop="ms"
-        minHeight={56}
-        backgroundColor="surfaceContrast"
+    <AccountSelector ref={accountSelectorRef}>
+      <SafeAreaBox
+        backgroundColor="primaryBackground"
+        flex={1}
+        padding="l"
         justifyContent="center"
-        borderRadius="round"
-        onPress={handleLink}
       >
-        <Text
-          variant="subtitle1"
-          color="surfaceContrastText"
-          textAlign="center"
+        <Text variant="body1" fontSize={32} marginTop="m">
+          {t('linkWallet.title', { appName })}
+        </Text>
+        <Text variant="body1" marginVertical="m">
+          {t('linkWallet.body', { appName })}
+        </Text>
+
+        <AccountButton
+          accountIconSize={26}
+          paddingVertical="l"
+          title={formatAccountAlias(currentAccount)}
+          address={currentAccount?.address}
+          netType={currentAccount?.netType}
+          onPress={handleAccountButtonPress}
+        />
+
+        <TouchableOpacityBox
+          marginTop="ms"
+          minHeight={56}
+          backgroundColor="surfaceContrast"
+          justifyContent="center"
+          borderRadius="round"
+          onPress={handleLink}
         >
-          {t('linkWallet.yes')}
-        </Text>
-      </TouchableOpacityBox>
+          <Text
+            variant="subtitle1"
+            color="surfaceContrastText"
+            textAlign="center"
+          >
+            {t('linkWallet.yes')}
+          </Text>
+        </TouchableOpacityBox>
 
-      <TouchableOpacityBox
-        minHeight={56}
-        justifyContent="center"
-        backgroundColor="secondary"
-        marginTop="ms"
-        borderRadius="round"
-        onPress={handleCancel}
-      >
-        <Text variant="subtitle1" color="primaryText" textAlign="center">
-          {t('linkWallet.no')}
-        </Text>
-      </TouchableOpacityBox>
-    </SafeAreaBox>
+        <TouchableOpacityBox
+          minHeight={56}
+          justifyContent="center"
+          backgroundColor="secondary"
+          marginTop="ms"
+          borderRadius="round"
+          onPress={handleCancel}
+        >
+          <Text variant="subtitle1" color="primaryText" textAlign="center">
+            {t('linkWallet.no')}
+          </Text>
+        </TouchableOpacityBox>
+      </SafeAreaBox>
+    </AccountSelector>
   )
 }
 

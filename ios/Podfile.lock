@@ -309,7 +309,7 @@ PODS:
   - react-native-onesignal (4.4.1):
     - OneSignalXCFramework (= 3.11.2)
     - React (< 1.0.0, >= 0.13.0)
-  - react-native-pager-view (6.1.2):
+  - react-native-pager-view (6.0.1):
     - React-Core
   - react-native-randombytes (3.6.1):
     - React-Core
@@ -779,7 +779,7 @@ SPEC CHECKSUMS:
   react-native-netinfo: 85b2a435c4d3705c08b0c42ff2d6ef6b9622ea0a
   react-native-network-info: d1290ffc0bd0709e11436f5b8d7f605dcc5c4530
   react-native-onesignal: e1f82b98767a9014d2c46f395b083330cfa29cea
-  react-native-pager-view: 54bed894cecebe28cede54c01038d9d1e122de43
+  react-native-pager-view: 3051346698a0ba0c4e13e40097cc11b00ee03cca
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-safe-area-context: 99b24a0c5acd0d5dcac2b1a7f18c49ea317be99a
   react-native-simple-toast: 8ee5d23f0b92b935ab7434cdb65159ce12dfb4b7
