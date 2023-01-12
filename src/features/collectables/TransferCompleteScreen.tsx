@@ -142,7 +142,12 @@ const TransferCollectableScreen = () => {
                 entering={FadeIn}
                 exiting={FadeOut}
               >
-                <Text variant="h2" color="white" marginTop="xl">
+                <Text
+                  variant="h2"
+                  color="white"
+                  marginTop="xl"
+                  textAlign="center"
+                >
                   {t('collectablesScreen.transferError')}
                 </Text>
               </Animated.View>

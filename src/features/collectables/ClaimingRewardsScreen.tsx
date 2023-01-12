@@ -9,7 +9,6 @@ import BackArrow from '@assets/images/backArrow.svg'
 import IndeterminateProgressBar from '../../components/IndeterminateProgressBar'
 import { CollectableNavigationProp } from './collectablesTypes'
 import { DelayedFadeIn } from '../../components/FadeInOut'
-import globalStyles from '../../theme/globalStyles'
 import Box from '../../components/Box'
 import ButtonPressable from '../../components/ButtonPressable'
 import Text from '../../components/Text'
@@ -37,7 +36,11 @@ const ClaimingRewardsScreen = () => {
   }
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
+    <ReAnimatedBox
+      entering={DelayedFadeIn}
+      flex={1}
+      backgroundColor="secondaryBackground"
+    >
       <BackScreen
         padding="none"
         edges={backEdges}

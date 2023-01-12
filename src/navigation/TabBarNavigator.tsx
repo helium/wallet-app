@@ -10,16 +10,17 @@ import Gem from '@assets/images/gem.svg'
 import Transactions from '@assets/images/transactions.svg'
 import Notifications from '@assets/images/notifications.svg'
 import NavBar from '../components/NavBar'
-
 import { Color } from '../theme/theme'
 import HomeNavigator from '../features/home/HomeNavigator'
 import CollectablesTabNavigator from '../features/collectables/CollectablesTabNavigator'
 import ActivityNavigator from '../features/activity/ActivityNavigator'
 import NotificationsNavigator from '../features/notifications/NotificationsNavigator'
+import SwapNavigator from '../features/swaps/SwapNavigator'
 import SafeAreaBox from '../components/SafeAreaBox'
 import Box from '../components/Box'
 import useEnrichedTransactions from '../hooks/useEnrichedTransactions'
 import useHaptic from '../hooks/useHaptic'
+import Swaps from '../assets/images/swaps.svg'
 
 const Tab = createBottomTabNavigator()
 
@@ -40,8 +41,7 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
         iconColor: 'white',
         hasBadge: false,
       },
-      // TODO: Uncomment once swap navigator is ready
-      // { value: 'swaps', Icon: Swaps, iconColor: 'white' },
+      { value: 'swaps', Icon: Swaps, iconColor: 'white' },
       {
         value: 'activity',
         Icon: Transactions,
@@ -111,7 +111,6 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
     <Box backgroundColor="black900">
       <SafeAreaBox edges={safeEdges}>
         <NavBar
-          backgroundColor="black900"
           navBarOptions={tabData}
           selectedValue={selectedValue}
           onItemSelected={onPress}
@@ -132,7 +131,7 @@ const TabBarNavigator = () => {
     >
       <Tab.Screen name="Home" component={HomeNavigator} />
       <Tab.Screen name="Collectables" component={CollectablesTabNavigator} />
-      {/* <Tab.Screen name="Swaps" component={CollectableNavigator} /> */}
+      <Tab.Screen name="Swaps" component={SwapNavigator} />
       <Tab.Screen name="Activity" component={ActivityNavigator} />
       <Tab.Screen
         name="NotificationsNavigator"

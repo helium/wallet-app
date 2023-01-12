@@ -123,16 +123,18 @@ const useAccountStorageHook = () => {
     if (!secureAcct) return
 
     const anchorWallet = {
-      publicKey: secureAcct?.publicKey,
+      signTransaction: async (transaction: Transaction) => {
+        transaction.partialSign(secureAcct)
+        return transaction
+      },
       signAllTransactions: async (transactions: Transaction[]) => {
         return transactions.map((tx) => {
           tx.partialSign(secureAcct)
           return tx
         })
       },
-      signTransaction: async (transaction: Transaction) => {
-        transaction.partialSign(secureAcct)
-        return transaction
+      get publicKey() {
+        return secureAcct?.publicKey
       },
     } as Wallet
 

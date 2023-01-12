@@ -1,10 +1,32 @@
-import * as web3 from '@solana/web3.js'
+/* eslint-disable no-underscore-dangle */
+import {
+  Cluster,
+  clusterApiUrl,
+  ConfirmedSignatureInfo,
+  Connection,
+  Keypair,
+  LAMPORTS_PER_SOL,
+  Logs,
+  PublicKey,
+  SignaturesForAddressOptions,
+  Signer,
+  SystemProgram,
+  SYSVAR_RENT_PUBKEY,
+  TransactionInstruction,
+  TransactionMessage,
+  VersionedMessage,
+  VersionedTransaction,
+  VersionedTransactionResponse,
+  ComputeBudgetProgram,
+  AccountMeta,
+} from '@solana/web3.js'
 import {
   TOKEN_PROGRAM_ID,
   AccountLayout,
   createTransferCheckedInstruction,
   getOrCreateAssociatedTokenAccount,
   getAssociatedTokenAddress,
+  getMint,
 } from '@solana/spl-token'
 import Balance, { AnyCurrencyType } from '@helium/currency'
 import { Metaplex } from '@metaplex-foundation/js'
@@ -21,12 +43,13 @@ import {
   SPL_NOOP_PROGRAM_ID,
 } from '@solana/spl-account-compression'
 import bs58 from 'bs58'
-import BN from 'bn.js'
+import { toBN } from '@helium/spl-utils'
+import { AnchorProvider, BN } from '@project-serum/anchor'
+import * as tm from '@helium/treasury-management-sdk'
 import { getKeypair } from '../storage/secureStorage'
 import solInstructionsToActivity from './solInstructionsToActivity'
 import { Activity } from '../types/activity'
 import sleep from './sleep'
-import { Mints } from '../store/slices/walletRestApi'
 import {
   Collectable,
   CompressedNFT,
@@ -34,35 +57,36 @@ import {
 } from '../types/solana'
 import * as Logger from './logger'
 import { WrappedConnection } from './WrappedConnection'
+import { Mints } from '../store/slices/walletRestApi'
 
-const Connection = {
+const SolanaConnection = {
   localnet: new WrappedConnection('http://127.0.0.1:8899'),
   devnet: new WrappedConnection('https://rpc-devnet.aws.metaplex.com/'),
-  testnet: new WrappedConnection(web3.clusterApiUrl('testnet')),
-  'mainnet-beta': new WrappedConnection(web3.clusterApiUrl('mainnet-beta')),
+  testnet: new WrappedConnection(clusterApiUrl('testnet')),
+  'mainnet-beta': new WrappedConnection(clusterApiUrl('mainnet-beta')),
 } as const
 
-export const getConnection = (cluster: web3.Cluster) =>
-  Connection[cluster] || Connection.devnet
+export const getConnection = (cluster: Cluster) =>
+  SolanaConnection[cluster] || SolanaConnection.devnet
 
 export const TXN_FEE_IN_LAMPORTS = 5000
-export const TXN_FEE_IN_SOL = TXN_FEE_IN_LAMPORTS / web3.LAMPORTS_PER_SOL
+export const TXN_FEE_IN_SOL = TXN_FEE_IN_LAMPORTS / LAMPORTS_PER_SOL
 
 export const solKeypairFromPK = (heliumPK: Buffer) => {
-  return web3.Keypair.fromSecretKey(heliumPK)
+  return Keypair.fromSecretKey(heliumPK)
 }
 
-export const airdrop = (cluster: web3.Cluster, address: string) => {
-  const key = new web3.PublicKey(address)
-  return getConnection(cluster).requestAirdrop(key, web3.LAMPORTS_PER_SOL)
+export const airdrop = (cluster: Cluster, address: string) => {
+  const key = new PublicKey(address)
+  return getConnection(cluster).requestAirdrop(key, LAMPORTS_PER_SOL)
 }
 
 export const readHeliumBalances = async (
-  cluster: web3.Cluster,
+  cluster: Cluster,
   address: string,
   mints: Mints,
 ) => {
-  const account = new web3.PublicKey(address)
+  const account = new PublicKey(address)
 
   const tokenAccounts = await getConnection(cluster).getTokenAccountsByOwner(
     account,
@@ -79,23 +103,20 @@ export const readHeliumBalances = async (
 
   return {
     hntBalance: vals[mints.HNT],
+    iotBalance: vals[mints.IOT],
     mobileBalance: vals[mints.MOBILE],
     dcBalance: vals[mints.DC],
-    iotBalance: vals[mints.IOT],
   }
 }
 
-export const readSolanaBalance = async (
-  cluster: web3.Cluster,
-  address: string,
-) => {
-  const key = new web3.PublicKey(address)
+export const readSolanaBalance = async (cluster: Cluster, address: string) => {
+  const key = new PublicKey(address)
   return getConnection(cluster).getBalance(key)
 }
 
 export const createTransferTxn = async (
-  cluster: web3.Cluster,
-  signer: web3.Signer,
+  cluster: Cluster,
+  signer: Signer,
   payments: {
     payee: string
     balanceAmount: Balance<AnyCurrencyType>
@@ -112,7 +133,7 @@ export const createTransferTxn = async (
 
   const payer = signer.publicKey
 
-  const mint = new web3.PublicKey(mintAddress)
+  const mint = new PublicKey(mintAddress)
 
   const payerATA = await getOrCreateAssociatedTokenAccount(
     conn,
@@ -127,12 +148,12 @@ export const createTransferTxn = async (
         conn,
         signer,
         mint,
-        new web3.PublicKey(p.payee),
+        new PublicKey(p.payee),
       ),
     ),
   )
 
-  let instructions: web3.TransactionInstruction[] = []
+  let instructions: TransactionInstruction[] = []
   payments.forEach((p, idx) => {
     const amount = p.balanceAmount.integerBalance
 
@@ -151,17 +172,17 @@ export const createTransferTxn = async (
 
   const { blockhash } = await getConnection(cluster).getLatestBlockhash()
 
-  const messageV0 = new web3.TransactionMessage({
+  const messageV0 = new TransactionMessage({
     payerKey: payer,
     recentBlockhash: blockhash,
     instructions,
   }).compileToV0Message()
 
-  return new web3.VersionedTransaction(messageV0)
+  return new VersionedTransaction(messageV0)
 }
 
 export const transferToken = async (
-  cluster: web3.Cluster,
+  cluster: Cluster,
   solanaAddress: string,
   heliumAddress: string,
   payments: {
@@ -172,7 +193,7 @@ export const transferToken = async (
   }[],
   mintAddress: string,
 ) => {
-  const payer = new web3.PublicKey(solanaAddress)
+  const payer = new PublicKey(solanaAddress)
   const secureAcct = await getKeypair(heliumAddress)
 
   if (!secureAcct) {
@@ -196,7 +217,7 @@ export const transferToken = async (
     maxRetries: 5,
   })
 
-  // The web3.sendAndConfirmTransaction socket connection occassionally blows up with the error
+  // The sendAndConfirmTransaction socket connection occassionally blows up with the error
   // signatureSubscribe error for argument ["your_signature", {"commitment": "finalized"}] INVALID_STATE_ERR
   // Just going to poll for the txn for now 👇
   const txn = await getTxn(cluster, signature, { maxTries: 20, waitMS: 1000 })
@@ -209,10 +230,10 @@ export const transferToken = async (
 }
 
 export const getTxn = async (
-  cluster: web3.Cluster,
+  cluster: Cluster,
   signature: string,
   config?: { maxTries?: number; waitMS?: number },
-): Promise<web3.VersionedTransactionResponse | null> => {
+): Promise<VersionedTransactionResponse | null> => {
   const maxTries = config?.maxTries || 1
   const waitMS = config?.waitMS || 500
 
@@ -228,7 +249,7 @@ export const getTxn = async (
   return getTxn(cluster, signature, { maxTries: remainingTries, waitMS })
 }
 
-export const confirmTxn = async (cluster: web3.Cluster, signature: string) => {
+export const confirmTxn = async (cluster: Cluster, signature: string) => {
   const { blockhash, lastValidBlockHeight } = await getConnection(
     cluster,
   ).getLatestBlockhash()
@@ -244,17 +265,17 @@ export const getAssocTokenAddress = (
   walletAddress: string,
   mintAddress: string,
 ) => {
-  const account = new web3.PublicKey(walletAddress)
-  const mint = new web3.PublicKey(mintAddress)
+  const account = new PublicKey(walletAddress)
+  const mint = new PublicKey(mintAddress)
   return getAssociatedTokenAddress(mint, account)
 }
 
 export const getTransactions = async (
-  cluster: web3.Cluster,
+  cluster: Cluster,
   walletAddress: string,
   mintAddress: string,
   mints: Mints,
-  options?: web3.SignaturesForAddressOptions,
+  options?: SignaturesForAddressOptions,
 ) => {
   const ata = await getAssocTokenAddress(walletAddress, mintAddress)
   const transactionList = await getConnection(cluster).getSignaturesForAddress(
@@ -276,22 +297,22 @@ export const getTransactions = async (
 }
 
 export const onAccountChange = (
-  cluster: web3.Cluster,
+  cluster: Cluster,
   address: string,
   callback: (address: string) => void,
 ) => {
-  const account = new web3.PublicKey(address)
+  const account = new PublicKey(address)
   return getConnection(cluster).onAccountChange(account, () => {
     callback(address)
   })
 }
 
 export const onLogs = (
-  cluster: web3.Cluster,
+  cluster: Cluster,
   address: string,
-  callback: (address: string, log: web3.Logs) => void,
+  callback: (address: string, log: Logs) => void,
 ) => {
-  const account = new web3.PublicKey(address)
+  const account = new PublicKey(address)
   return getConnection(cluster).onLogs(
     account,
     (log) => {
@@ -301,22 +322,19 @@ export const onLogs = (
   )
 }
 
-export const removeAccountChangeListener = (
-  cluster: web3.Cluster,
-  id: number,
-) => {
+export const removeAccountChangeListener = (cluster: Cluster, id: number) => {
   return getConnection(cluster).removeAccountChangeListener(id)
 }
 
-export const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new web3.PublicKey(
+export const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
   'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
 )
 
 export function createAssociatedTokenAccountInstruction(
-  associatedTokenAddress: web3.PublicKey,
-  payer: web3.PublicKey,
-  walletAddress: web3.PublicKey,
-  splTokenMintAddress: web3.PublicKey,
+  associatedTokenAddress: PublicKey,
+  payer: PublicKey,
+  walletAddress: PublicKey,
+  splTokenMintAddress: PublicKey,
 ) {
   const keys = [
     {
@@ -340,7 +358,7 @@ export function createAssociatedTokenAccountInstruction(
       isWritable: false,
     },
     {
-      pubkey: web3.SystemProgram.programId,
+      pubkey: SystemProgram.programId,
       isSigner: false,
       isWritable: false,
     },
@@ -350,12 +368,12 @@ export function createAssociatedTokenAccountInstruction(
       isWritable: false,
     },
     {
-      pubkey: web3.SYSVAR_RENT_PUBKEY,
+      pubkey: SYSVAR_RENT_PUBKEY,
       isSigner: false,
       isWritable: false,
     },
   ]
-  return new web3.TransactionInstruction({
+  return new TransactionInstruction({
     keys,
     programId: SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID,
     data: Buffer.from([]),
@@ -363,13 +381,13 @@ export function createAssociatedTokenAccountInstruction(
 }
 
 export const createTransferCollectableMessage = async (
-  cluster: web3.Cluster,
+  cluster: Cluster,
   solanaAddress: string,
   heliumAddress: string,
   collectable: CompressedNFT,
   payee: string,
 ) => {
-  const payer = new web3.PublicKey(solanaAddress)
+  const payer = new PublicKey(solanaAddress)
   const secureAcct = await getKeypair(heliumAddress)
   const conn = getConnection(cluster)
 
@@ -382,10 +400,10 @@ export const createTransferCollectableMessage = async (
     secretKey: secureAcct.privateKey,
   }
 
-  const recipientPubKey = new web3.PublicKey(payee)
-  const mintPubkey = new web3.PublicKey(collectable.id)
+  const recipientPubKey = new PublicKey(payee)
+  const mintPubkey = new PublicKey(collectable.id)
 
-  const instructions: web3.TransactionInstruction[] = []
+  const instructions: TransactionInstruction[] = []
 
   const ownerATA = await getAssociatedTokenAddress(mintPubkey, signer.publicKey)
 
@@ -430,7 +448,7 @@ export const createTransferCollectableMessage = async (
 
   const { blockhash } = await conn.getLatestBlockhash()
 
-  const message = new web3.TransactionMessage({
+  const message = new TransactionMessage({
     payerKey: payer,
     recentBlockhash: blockhash,
     instructions,
@@ -440,13 +458,13 @@ export const createTransferCollectableMessage = async (
 }
 
 export const transferCollectable = async (
-  cluster: web3.Cluster,
+  cluster: Cluster,
   solanaAddress: string,
   heliumAddress: string,
   collectable: CompressedNFT,
   payee: string,
 ) => {
-  const payer = new web3.PublicKey(solanaAddress)
+  const payer = new PublicKey(solanaAddress)
   try {
     const secureAcct = await getKeypair(heliumAddress)
     const conn = getConnection(cluster)
@@ -460,10 +478,10 @@ export const transferCollectable = async (
       secretKey: secureAcct.privateKey,
     }
 
-    const recipientPubKey = new web3.PublicKey(payee)
-    const mintPubkey = new web3.PublicKey(collectable.id)
+    const recipientPubKey = new PublicKey(payee)
+    const mintPubkey = new PublicKey(collectable.id)
 
-    const instructions: web3.TransactionInstruction[] = []
+    const instructions: TransactionInstruction[] = []
 
     const ownerATA = await getAssociatedTokenAddress(
       mintPubkey,
@@ -511,14 +529,14 @@ export const transferCollectable = async (
 
     const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash()
 
-    const messageV0 = new web3.TransactionMessage({
+    const messageV0 = new TransactionMessage({
       payerKey: payer,
       recentBlockhash: blockhash,
       instructions,
     }).compileToLegacyMessage()
 
-    const transaction = new web3.VersionedTransaction(
-      web3.VersionedMessage.deserialize(messageV0.serialize()),
+    const transaction = new VersionedTransaction(
+      VersionedMessage.deserialize(messageV0.serialize()),
     )
 
     transaction.sign([signer])
@@ -568,10 +586,8 @@ export function bufferToArray(buffer: Buffer): number[] {
  * @param merkleRollPubKey
  * @returns
  */
-export async function getBubblegumAuthorityPDA(
-  merkleRollPubKey: web3.PublicKey,
-) {
-  const [bubblegumAuthorityPDAKey] = await web3.PublicKey.findProgramAddress(
+export async function getBubblegumAuthorityPDA(merkleRollPubKey: PublicKey) {
+  const [bubblegumAuthorityPDAKey] = await PublicKey.findProgramAddress(
     [merkleRollPubKey.toBuffer()],
     BUBBLEGUM_PROGRAM_ID,
   )
@@ -585,8 +601,8 @@ export async function getBubblegumAuthorityPDA(
  * @returns
  */
 export async function getNonceCount(
-  connection: web3.Connection,
-  tree: web3.PublicKey,
+  connection: Connection,
+  tree: PublicKey,
 ): Promise<BN> {
   const treeAuthority = await getBubblegumAuthorityPDA(tree)
   return new BN(
@@ -594,12 +610,12 @@ export async function getNonceCount(
   )
 }
 
-const mapProof = (assetProof: { proof: string[] }): web3.AccountMeta[] => {
+const mapProof = (assetProof: { proof: string[] }): AccountMeta[] => {
   if (!assetProof.proof || assetProof.proof.length === 0) {
     throw new Error('Proof is empty')
   }
   return assetProof.proof.map((node) => ({
-    pubkey: new web3.PublicKey(node),
+    pubkey: new PublicKey(node),
     isSigner: false,
     isWritable: false,
   }))
@@ -615,13 +631,13 @@ const mapProof = (assetProof: { proof: string[] }): web3.AccountMeta[] => {
  * @returns
  */
 export const transferCompressedCollectable = async (
-  cluster: web3.Cluster,
+  cluster: Cluster,
   solanaAddress: string,
   heliumAddress: string,
   collectable: CompressedNFT,
   payee: string,
 ) => {
-  const payer = new web3.PublicKey(solanaAddress)
+  const payer = new PublicKey(solanaAddress)
   try {
     const secureAcct = await getKeypair(heliumAddress)
     const conn = getConnection(cluster)
@@ -635,28 +651,28 @@ export const transferCompressedCollectable = async (
       secretKey: secureAcct.privateKey,
     }
 
-    const recipientPubKey = new web3.PublicKey(payee)
+    const recipientPubKey = new PublicKey(payee)
 
-    const instructions: web3.TransactionInstruction[] = []
+    const instructions: TransactionInstruction[] = []
 
     const assetProof = await conn.getAssetProof(collectable.id)
 
     const nonceCount = await getNonceCount(
       conn,
-      new web3.PublicKey(assetProof.tree_id),
+      new PublicKey(assetProof.tree_id),
     )
 
     const leafNonce = nonceCount.sub(new BN(1))
 
     const treeAuthority = await getBubblegumAuthorityPDA(
-      new web3.PublicKey(assetProof.tree_id),
+      new PublicKey(assetProof.tree_id),
     )
 
     const leafDelegate = collectable.ownership.delegate
-      ? new web3.PublicKey(collectable.ownership.delegate)
-      : new web3.PublicKey(collectable.ownership.owner)
+      ? new PublicKey(collectable.ownership.delegate)
+      : new PublicKey(collectable.ownership.owner)
 
-    const merkleTree = new web3.PublicKey(assetProof.tree_id)
+    const merkleTree = new PublicKey(assetProof.tree_id)
 
     const tree = await ConcurrentMerkleTreeAccount.fromAccountAddress(
       conn,
@@ -676,7 +692,7 @@ export const transferCompressedCollectable = async (
       createTransferInstruction(
         {
           treeAuthority,
-          leafOwner: new web3.PublicKey(collectable.ownership.owner),
+          leafOwner: new PublicKey(collectable.ownership.owner),
           leafDelegate,
           newLeafOwner: recipientPubKey,
           merkleTree,
@@ -702,14 +718,14 @@ export const transferCompressedCollectable = async (
 
     const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash()
 
-    const messageV0 = new web3.TransactionMessage({
+    const messageV0 = new TransactionMessage({
       payerKey: payer,
       recentBlockhash: blockhash,
       instructions,
     }).compileToLegacyMessage()
 
-    const transaction = new web3.VersionedTransaction(
-      web3.VersionedMessage.deserialize(messageV0.serialize()),
+    const transaction = new VersionedTransaction(
+      VersionedMessage.deserialize(messageV0.serialize()),
     )
 
     transaction.sign([signer])
@@ -749,8 +765,8 @@ export const transferCompressedCollectable = async (
  * TODO: Need to add pagination via oldest collectable param in collectables slice
  */
 export const getCompressedCollectables = async (
-  pubKey: web3.PublicKey,
-  cluster: web3.Cluster,
+  pubKey: PublicKey,
+  cluster: Cluster,
   oldestCollectable?: string,
 ) => {
   // TODO: Replace with devnet when metaplex RPC is ready for all other txs to be sent to devnet
@@ -853,7 +869,7 @@ export const groupCollectablesWithMetaData = (
  * @returns collectable
  */
 export const getCollectableByMint = async (
-  mint: web3.PublicKey,
+  mint: PublicKey,
   metaplex: Metaplex,
 ): Promise<Collectable | null> => {
   try {
@@ -877,10 +893,10 @@ export const getCollectableByMint = async (
  */
 export const getAllTransactions = async (
   address: string,
-  cluster: web3.Cluster,
+  cluster: Cluster,
   oldestTransaction?: string,
-): Promise<(EnrichedTransaction | web3.ConfirmedSignatureInfo)[]> => {
-  const pubKey = new web3.PublicKey(address)
+): Promise<(EnrichedTransaction | ConfirmedSignatureInfo)[]> => {
+  const pubKey = new PublicKey(address)
   const conn = getConnection(cluster)
   const metaplex = new Metaplex(conn, { cluster })
   const parseTransactionsUrl = `${Config.HELIUS_API_URL}/v0/transactions/?api-key=${Config.HELIUS_API_KEY}`
@@ -909,7 +925,7 @@ export const getAllTransactions = async (
         const firstTokenTransfer = tx.tokenTransfers[0]
         if (firstTokenTransfer && firstTokenTransfer.mint) {
           const tokenMetadata = await getCollectableByMint(
-            new web3.PublicKey(firstTokenTransfer.mint),
+            new PublicKey(firstTokenTransfer.mint),
             metaplex,
           )
 
@@ -935,20 +951,20 @@ export const getAllTransactions = async (
     )
 
     const failedTxns = txList.filter((tx) => tx.err)
-    const allTxs: (EnrichedTransaction | web3.ConfirmedSignatureInfo)[] = [
+    const allTxs: (EnrichedTransaction | ConfirmedSignatureInfo)[] = [
       ...allTxnsWithMetadata,
       ...failedTxns,
     ]
     // Combine and sort all txns by date in descending order
     allTxs.sort(
       (
-        a: EnrichedTransaction | web3.ConfirmedSignatureInfo,
-        b: EnrichedTransaction | web3.ConfirmedSignatureInfo,
+        a: EnrichedTransaction | ConfirmedSignatureInfo,
+        b: EnrichedTransaction | ConfirmedSignatureInfo,
       ) => {
         const aEnrichedTransaction = a as EnrichedTransaction
-        const aSignatureInfo = a as web3.ConfirmedSignatureInfo
+        const aSignatureInfo = a as ConfirmedSignatureInfo
         const bEnrichedTransaction = b as EnrichedTransaction
-        const bSignatureInfo = b as web3.ConfirmedSignatureInfo
+        const bSignatureInfo = b as ConfirmedSignatureInfo
 
         const aDate = new Date()
         if (aEnrichedTransaction.timestamp) {
@@ -971,5 +987,118 @@ export const getAllTransactions = async (
     return allTxs
   } catch (e) {
     return []
+  }
+}
+
+/**
+ *
+ * @param cluster Cluster
+ * @param amount Amount to swap
+ * @param fromMint Mint address of the token to swap
+ * @param anchorProvider Anchor provider
+ */
+export async function createTreasurySwapTxn(
+  cluster: Cluster,
+  amount: number,
+  fromMint: PublicKey,
+  anchorProvider: AnchorProvider,
+) {
+  const conn = getConnection(cluster)
+  try {
+    const program = await tm.init(anchorProvider)
+    const fromMintAcc = await getMint(conn, fromMint)
+    const treasuryManagement = tm.treasuryManagementKey(fromMint)[0]
+
+    const tx = await program.methods
+      .redeemV0({
+        amount: toBN(amount, fromMintAcc.decimals),
+        expectedOutputAmount: new BN(0),
+      })
+      .preInstructions([
+        ComputeBudgetProgram.setComputeUnitLimit({ units: 350000 }),
+      ])
+      .accounts({
+        treasuryManagement,
+      })
+      .transaction()
+
+    const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash(
+      'recent',
+    )
+    tx.recentBlockhash = blockhash
+    tx.feePayer = anchorProvider.wallet.publicKey
+
+    const signedTx = await anchorProvider.wallet.signTransaction(tx)
+
+    const signature = await conn.sendRawTransaction(signedTx.serialize(), {
+      skipPreflight: true,
+    })
+
+    await conn.confirmTransaction(
+      { signature, blockhash, lastValidBlockHeight },
+      'finalized',
+    )
+
+    const txn = await getTxn(cluster, signature)
+
+    if (txn?.meta?.err) {
+      throw new Error(
+        typeof txn.meta.err === 'string'
+          ? txn.meta.err
+          : JSON.stringify(txn.meta.err),
+      )
+    }
+
+    return { signature, txn }
+  } catch (e) {
+    throw e as Error
+  }
+}
+
+/**
+ *
+ * @param cluster Cluster
+ * @param amount Amount to swap
+ * @param fromMint Mint address of the token to swap
+ * @param anchorProvider Anchor provider
+ */
+export async function createTreasurySwapMessage(
+  cluster: Cluster,
+  amount: number,
+  fromMint: PublicKey,
+  anchorProvider: AnchorProvider,
+) {
+  const conn = getConnection(cluster)
+
+  try {
+    const program = await tm.init(anchorProvider)
+    const fromMintAcc = await getMint(conn, fromMint)
+
+    const treasuryManagement = tm.treasuryManagementKey(fromMint)[0]
+    const tx = await program.methods
+      .redeemV0({
+        amount: toBN(amount, fromMintAcc.decimals),
+        expectedOutputAmount: new BN(0),
+      })
+      .preInstructions([
+        ComputeBudgetProgram.setComputeUnitLimit({ units: 350000 }),
+      ])
+      .accounts({
+        treasuryManagement,
+      })
+      .transaction()
+
+    const { blockhash } = await conn.getLatestBlockhash('recent')
+
+    const message = new TransactionMessage({
+      payerKey: anchorProvider.publicKey,
+      recentBlockhash: blockhash,
+      instructions: [...tx.instructions],
+    }).compileToLegacyMessage()
+
+    return { message }
+  } catch (e) {
+    Logger.error(e)
+    throw e as Error
   }
 }
