@@ -164,7 +164,7 @@ const VoteList = () => {
         <Box flex={1}>
           <BackButton paddingVertical="l" onPress={navigation.goBack} />
         </Box>
-        <Text variant="regular" fontSize={19} color="primaryText">
+        <Text variant="medium" fontSize={19} color="primaryText">
           {t('vote.title')}
         </Text>
         <Box flex={1} />

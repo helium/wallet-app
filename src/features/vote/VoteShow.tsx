@@ -140,7 +140,7 @@ const VoteShow = () => {
   const handleVoteSelected = useCallback(() => {
     if (!voteOutcome || !currentAccount || !outcomes) return
 
-    const index = outcomes.findIndex((v) => v === voteOutcome)
+    const index = sortedOutcomes.findIndex((v) => v === voteOutcome)
 
     if (index === -1) return
 
@@ -150,7 +150,7 @@ const VoteShow = () => {
       account: currentAccount,
       memo,
     })
-  }, [currentAccount, navigation, outcomes, voteOutcome])
+  }, [currentAccount, navigation, outcomes, sortedOutcomes, voteOutcome])
 
   const accountHnt = useMemo(() => {
     if (!accountData?.account?.balance) return '0'
@@ -169,7 +169,7 @@ const VoteShow = () => {
           <Box flex={1}>
             <BackButton paddingVertical="l" onPress={navigation.goBack} />
           </Box>
-          <Text variant="regular" fontSize={19} color="primaryText">
+          <Text variant="medium" fontSize={19} color="primaryText">
             {t('vote.title')}
           </Text>
           <Box flex={1} />
