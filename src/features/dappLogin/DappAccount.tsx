@@ -37,7 +37,7 @@ const DappLogin = ({ onLogin, onCancel, appName, loading }: Props) => {
   const handleAccountButtonPress = useCallback(() => {
     if (!accountSelectorRef?.current) return
 
-    accountSelectorRef.current.showAccountTypes(NetTypes.MAINNET)
+    accountSelectorRef.current.showAccountTypes(NetTypes.MAINNET)()
   }, [])
 
   useEffect(() => {

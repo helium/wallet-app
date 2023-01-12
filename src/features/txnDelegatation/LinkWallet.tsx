@@ -114,7 +114,7 @@ const LinkWallet = () => {
 
   const handleAccountButtonPress = useCallback(() => {
     if (!accountSelectorRef?.current) return
-    accountSelectorRef.current.showAccountTypes(NetTypes.MAINNET)
+    accountSelectorRef.current.showAccountTypes(NetTypes.MAINNET)()
   }, [])
 
   return (
