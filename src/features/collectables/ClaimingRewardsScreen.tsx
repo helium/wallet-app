@@ -5,6 +5,7 @@ import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
+import BackArrow from '@assets/images/backArrow.svg'
 import IndeterminateProgressBar from '../../components/IndeterminateProgressBar'
 import { CollectableNavigationProp } from './collectablesTypes'
 import { DelayedFadeIn } from '../../components/FadeInOut'
@@ -17,7 +18,6 @@ import { RootState } from '../../store/rootReducer'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 import AccountIcon from '../../components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import BackArrow from '../../assets/images/backArrow.svg'
 
 const ClaimingRewardsScreen = () => {
   const { currentAccount } = useAccountStorage()

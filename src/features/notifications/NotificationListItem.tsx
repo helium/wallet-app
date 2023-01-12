@@ -2,11 +2,10 @@ import React, { useMemo } from 'react'
 import { format } from 'date-fns'
 import Text from '../../components/Text'
 import Box from '../../components/Box'
-import TouchableOpacityBox, {
-  TouchableOpacityBoxProps,
-} from '../../components/TouchableOpacityBox'
+import { TouchableOpacityBoxProps } from '../../components/TouchableOpacityBox'
 import { Notification } from '../../generated/graphql'
 import parseMarkup from '../../utils/parseMarkup'
+import TouchableContainer from '../../components/TouchableContainer'
 
 export type NotificationListItemProps = {
   notification: Notification
@@ -36,7 +35,7 @@ const NotificationListItem = ({
   }, [notification.time])
 
   return (
-    <TouchableOpacityBox
+    <TouchableContainer
       backgroundColor="secondaryBackground"
       flexDirection="row"
       padding="m"
@@ -77,7 +76,7 @@ const NotificationListItem = ({
       >
         {time}
       </Text>
-    </TouchableOpacityBox>
+    </TouchableContainer>
   )
 }
 

@@ -5,7 +5,7 @@ import Box from '../../components/Box'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { useColors, useHitSlop } from '../../theme/themeHooks'
-import voteAccentColors from './voteAccentColors'
+import { Color } from '../../theme/theme'
 
 type Props = {
   expanded: boolean
@@ -13,7 +13,7 @@ type Props = {
   hnt: string
   voteSelected: () => void
   toggleItem: () => void
-  index: number
+  color: Color
   value: string
 }
 
@@ -23,7 +23,7 @@ const VoteOption = ({
   hnt,
   voteSelected,
   toggleItem,
-  index,
+  color,
   value,
 }: Props) => {
   const { t } = useTranslation()
@@ -34,8 +34,6 @@ const VoteOption = ({
     if (expanded) return {}
     return { transform: [{ rotate: '180deg' }] }
   }, [expanded])
-
-  const backgroundColor = useMemo(() => voteAccentColors[index], [index])
 
   const canVote = useMemo(() => hnt !== '0', [hnt])
 
@@ -59,7 +57,7 @@ const VoteOption = ({
           borderRadius="round"
           height={18}
           width={18}
-          backgroundColor={backgroundColor}
+          backgroundColor={color}
           marginRight="s"
         />
         <Text variant="regular" fontSize={19} color="primaryText" flex={1}>
@@ -82,7 +80,7 @@ const VoteOption = ({
           <TouchableOpacityBox
             onPress={voteSelected}
             disabled={!canVote}
-            backgroundColor={canVote ? backgroundColor : 'surface'}
+            backgroundColor={canVote ? color : 'surface'}
             marginVertical="lm"
             borderRadius="xl"
             paddingVertical="m"

@@ -8,7 +8,6 @@ import React, {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import Close from '@assets/images/close.svg'
 import {
   KeyboardAvoidingView,
   NativeSyntheticEvent,
@@ -21,7 +20,6 @@ import Checkmark from '@assets/images/checkmark.svg'
 import { useKeyboard } from '@react-native-community/hooks'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { useColors, useOpacity, useSpacing } from '../../theme/themeHooks'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { HomeNavigationProp } from '../home/homeTypes'
@@ -39,7 +37,7 @@ import AddressExtra from './AddressExtra'
 import useAlert from '../../hooks/useAlert'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useIsHotspotOrValidatorQuery } from '../../generated/graphql'
-import useNetworkColor from '../../hooks/useNetworkColor'
+import CloseButton from '../../components/CloseButton'
 
 const BUTTON_HEIGHT = 55
 
@@ -56,22 +54,17 @@ const ContactDetails = ({ action, contact }: Props) => {
   const homeNav = useNavigation<HomeNavigationProp>()
   const addressBookNav = useNavigation<AddressBookNavigationProp>()
   const route = useRoute<Route>()
-  const { backgroundStyle } = useOpacity(
-    'surfaceSecondary',
-    keyboardShown ? 0.85 : 0.4,
-  )
-  const { addContact, editContact, deleteContact, currentAccount } =
-    useAccountStorage()
+  const { backgroundStyle } = useOpacity('surface', keyboardShown ? 0.85 : 0.4)
+  const { addContact, editContact, deleteContact } = useAccountStorage()
   const [nickname, setNickname] = useState(contact?.alias || '')
   const [address, setAddress] = useState('')
   const nicknameInput = useRef<RNTextInput | null>(null)
-  const { blueBright500, primaryText } = useColors()
+  const { blueBright500 } = useColors()
   const { scannedAddress, setScannedAddress, l1Network } = useAppStorage()
   const spacing = useSpacing()
   const { showOKCancelAlert } = useAlert()
 
   const isSolana = useMemo(() => l1Network === 'solana', [l1Network])
-  const backgroundColor = useNetworkColor({ netType: currentAccount?.netType })
 
   useEffect(() => {
     if (route.params?.address) {
@@ -175,25 +168,23 @@ const ContactDetails = ({ action, contact }: Props) => {
   }, [data, isSolana, address])
 
   return (
-    <Box flex={1}>
+    <Box flex={1} backgroundColor="surfaceSecondary">
       <Box
+        marginTop="s"
         style={{ paddingTop: Platform.OS === 'android' ? 24 : 0 }}
         flexDirection="row"
         alignItems="center"
-        backgroundColor={backgroundColor}
       >
         <Box flex={1} />
         <Text variant="subtitle2">
           {isAddingContact ? t('addNewContact.title') : t('editContact.title')}
         </Text>
         <Box flex={1} alignItems="flex-end">
-          <TouchableOpacityBox
+          <CloseButton
             onPress={onRequestClose}
-            paddingVertical="m"
-            paddingHorizontal="xl"
-          >
-            <Close color={primaryText} height={16} width={16} />
-          </TouchableOpacityBox>
+            paddingVertical="s"
+            paddingHorizontal="m"
+          />
         </Box>
       </Box>
       <Box flex={1} alignItems="center" justifyContent="center">
@@ -283,7 +274,6 @@ const ContactDetails = ({ action, contact }: Props) => {
           <ButtonPressable
             visible={isAddingContact}
             backgroundColor="blueBright500"
-            height={BUTTON_HEIGHT}
             backgroundColorDisabled="plainInputBackground"
             titleColorDisabled="grey400"
             fontSize={19}
@@ -294,6 +284,7 @@ const ContactDetails = ({ action, contact }: Props) => {
             title={t('addNewContact.addContact')}
             disabled={!addressIsValid || !nickname}
             onPress={handleCreateNewContact}
+            marginBottom="l"
           />
           <Box
             flexDirection="row"

@@ -5,6 +5,8 @@ import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
 import { PublicKey } from '@solana/web3.js'
+import Menu from '@assets/images/menu.svg'
+import InfoIcon from '@assets/images/info.svg'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import {
   CollectableNavigationProp,
@@ -19,11 +21,9 @@ import Text from '../../components/Text'
 import { ww } from '../../utils/layout'
 import BackScreen from '../../components/BackScreen'
 import { useSpacing } from '../../theme/themeHooks'
-import Menu from '../../assets/images/menu.svg'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import BlurActionSheet from '../../components/BlurActionSheet'
 import ListItem from '../../components/ListItem'
-import InfoIcon from '../../assets/images/info.svg'
 import { useHotspot } from '../../hooks/useHotspot'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 
@@ -102,6 +102,7 @@ const HotspotDetailsScreen = () => {
           title="Transfer"
           onPress={handleSend}
           selected={false}
+          hasPressedState={false}
         />
       </>
     ),

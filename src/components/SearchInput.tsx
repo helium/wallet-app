@@ -21,13 +21,13 @@ const SearchInput = ({
   ...boxProps
 }: Props) => {
   const {
-    regular: { backgroundColor, borderRadius, padding, color },
+    regular: { borderRadius, padding, color },
   } = useInputVariants()
   const colors = useColors()
   return (
     <Box
       {...boxProps}
-      backgroundColor={backgroundColor as Color}
+      backgroundColor="secondary"
       borderRadius={borderRadius as BorderRadii}
       paddingStart={padding as Spacing}
       flexDirection="row"
@@ -42,7 +42,8 @@ const SearchInput = ({
           autoCorrect: false,
           autoComplete: 'off',
         }}
-        variant={variant || 'regular'}
+        variant={variant || 'transparent'}
+        backgroundColor="red500"
       />
     </Box>
   )

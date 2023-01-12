@@ -73,7 +73,7 @@ const HotspotsNavigator = () => {
       <CollectablesStack.Screen
         name="NftMetadataScreen"
         component={NftMetadataScreen}
-        options={modalPresentation}
+        options={cardFadePresentation}
       />
 
       <CollectablesStack.Screen

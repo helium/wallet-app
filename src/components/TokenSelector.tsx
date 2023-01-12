@@ -20,7 +20,7 @@ import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenHNT from '@assets/images/tokenHNT.svg'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ticker } from '@helium/currency'
-import { useColors, useOpacity, useSpacing } from '../theme/themeHooks'
+import { useColors, useOpacity } from '../theme/themeHooks'
 import { Theme } from '../theme/theme'
 import Box from './Box'
 import useBackHandler from '../hooks/useBackHandler'
@@ -49,16 +49,9 @@ const TokenSelector = forwardRef(
     const { bottom } = useSafeAreaInsets()
     const [currentToken, setCurrentToken] = useState<string>('HNT')
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-    const { backgroundStyle } = useOpacity('secondary', 1)
-    const { m } = useSpacing()
-    const sheetHandleStyle = useMemo(() => ({ padding: m }), [m])
+    const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
-    const { primary, white, blueBright500 } = useColors()
-
-    const flatListStyle = useMemo(
-      () => ({ borderTopColor: primary, borderTopWidth: 1 }),
-      [primary],
-    )
+    const { white, blueBright500 } = useColors()
 
     const showTokens = useCallback(() => {
       bottomSheetModalRef.current?.present()
@@ -97,8 +90,8 @@ const TokenSelector = forwardRef(
             Icon={item.icon}
             onPress={handleTokenPress(item.value)}
             selected={item.value === currentToken}
-            marginLeft="l"
-            hasDivider={false}
+            paddingStart="l"
+            hasDivider
           />
         )
       },
@@ -123,7 +116,7 @@ const TokenSelector = forwardRef(
     )
 
     const snapPoints = useMemo(
-      () => [data.length * LIST_ITEM_HEIGHT + bottom, '50%'],
+      () => [(data.length + 2) * LIST_ITEM_HEIGHT + bottom],
       [bottom, data.length],
     )
 
@@ -133,18 +126,15 @@ const TokenSelector = forwardRef(
           <BottomSheetModal
             ref={bottomSheetModalRef}
             index={0}
-            handleComponent={null}
             backgroundStyle={backgroundStyle}
             backdropComponent={renderBackdrop}
             snapPoints={snapPoints}
-            handleStyle={sheetHandleStyle}
             onDismiss={handleDismiss}
           >
             <BottomSheetFlatList
               data={data}
               renderItem={renderFlatlistItem}
               keyExtractor={keyExtractor}
-              style={flatListStyle}
             />
           </BottomSheetModal>
           {children}

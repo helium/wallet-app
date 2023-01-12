@@ -14,6 +14,7 @@ import { useGetNotificationsQuery } from '../../store/slices/walletRestApi'
 import { heliumAddressToSolAddress } from '../../utils/accountUtils'
 import NotificationListItem from './NotificationListItem'
 import FadeInOut from '../../components/FadeInOut'
+import useHaptic from '../../hooks/useHaptic'
 
 export type NotificationsListProps = {
   HeaderComponent: JSX.Element
@@ -30,6 +31,7 @@ const NotificationsList = ({
     useNotificationStorage()
   const { currentAccount } = useAccountStorage()
   const spacing = useSpacing()
+  const { triggerImpact } = useHaptic()
 
   const contentContainer = useMemo(
     () => ({
@@ -112,6 +114,7 @@ const NotificationsList = ({
         !!item.viewedAt
 
       const onItemSelected = () => {
+        triggerImpact('light')
         navigator.navigate('NotificationDetails', { notification: item })
         setSelectedNotification(item)
       }
@@ -132,7 +135,7 @@ const NotificationsList = ({
         </FadeInOut>
       )
     },
-    [lastViewedTimestamp, navigator, setSelectedNotification],
+    [lastViewedTimestamp, navigator, setSelectedNotification, triggerImpact],
   )
 
   const EmptyListView = useCallback(

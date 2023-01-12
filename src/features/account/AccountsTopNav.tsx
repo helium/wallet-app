@@ -5,56 +5,47 @@ import AccountIco from '@assets/images/account.svg'
 import { LayoutChangeEvent } from 'react-native'
 import CarotDown from '@assets/images/carot-down.svg'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import NotificationBell from '@assets/images/notificationBell.svg'
 import Box from '../../components/Box'
-import NotificationIcon from '../../components/NotificationIcon'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import Text from '../../components/Text'
 import { useColors } from '../../theme/themeHooks'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import * as AccountUtils from '../../utils/accountUtils'
 import AccountIcon from '../../components/AccountIcon'
-import BackgroundFill from '../../components/BackgroundFill'
-import useLayoutWidth from '../../hooks/useLayoutWidth'
-import useNetworkColor from '../../hooks/useNetworkColor'
 import { useAppStorage } from '../../storage/AppStorageProvider'
+import useHaptic from '../../hooks/useHaptic'
+import IconPressedContainer from '../../components/IconPressedContainer'
 
 type Props = {
   onPressWallet: () => void
   onLayout?: (event: LayoutChangeEvent) => void
 }
 const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
-  const { primaryIcon, primaryText } = useColors()
+  const { primaryText } = useColors()
   const navigation = useNavigation<HomeNavigationProp>()
   const { currentAccount, currentNetworkAddress } = useAccountStorage()
-  const [barButtonsRightWidth, setBarButtonsRightWidth] = useLayoutWidth()
   const { l1Network } = useAppStorage()
+  const { triggerImpact } = useHaptic()
 
-  const accountNetType = useMemo(
-    () => AccountUtils.accountNetType(currentAccount?.address),
-    [currentAccount],
-  )
-
-  const navToSettings = useCallback(
-    () => navigation.navigate('SettingsNavigator'),
-    [navigation],
-  )
+  const navToSettings = useCallback(() => {
+    triggerImpact('light')
+    navigation.navigate('SettingsNavigator')
+  }, [navigation, triggerImpact])
 
   const handleAddressBook = useCallback(() => {
+    triggerImpact('light')
     navigation.push('AddressBookNavigator')
-  }, [navigation])
+  }, [navigation, triggerImpact])
 
   const handleNotificationsSelected = useCallback(() => {
+    triggerImpact('light')
     navigation.push('NotificationsNavigator')
-  }, [navigation])
+  }, [navigation, triggerImpact])
 
   const { top } = useSafeAreaInsets()
 
   const containerStyle = useMemo(() => ({ marginTop: top }), [top])
-
-  const backgroundColor = useNetworkColor({
-    netType: accountNetType,
-  })
 
   return (
     <Box
@@ -65,17 +56,11 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
       style={containerStyle}
       zIndex={1}
     >
-      {backgroundColor && (
-        <BackgroundFill backgroundColor={backgroundColor} opacity={1} />
-      )}
-      <TouchableOpacityBox
-        paddingVertical="ms"
-        paddingHorizontal="l"
-        onPress={navToSettings}
-        width={barButtonsRightWidth || 94}
-      >
-        <CogIco color={primaryIcon} />
-      </TouchableOpacityBox>
+      <Box marginStart="m">
+        <IconPressedContainer onPress={navToSettings}>
+          <CogIco color="white" />
+        </IconPressedContainer>
+      </Box>
 
       <TouchableOpacityBox
         flexDirection="row"
@@ -99,24 +84,19 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
         </Text>
         <CarotDown color={primaryText} />
       </TouchableOpacityBox>
-      <Box
-        flexDirection="row"
-        paddingRight="l"
-        onLayout={setBarButtonsRightWidth}
-      >
+      <Box flexDirection="row" marginEnd="l">
         {l1Network === 'helium' && (
-          <TouchableOpacityBox
-            paddingVertical="ms"
+          <IconPressedContainer
             paddingLeft="s"
             onPress={handleNotificationsSelected}
-            marginRight="s"
           >
-            <NotificationIcon />
-          </TouchableOpacityBox>
+            <NotificationBell color="white" />
+          </IconPressedContainer>
         )}
-        <TouchableOpacityBox onPress={handleAddressBook} paddingVertical="ms">
-          <AccountIco color={primaryIcon} />
-        </TouchableOpacityBox>
+
+        <IconPressedContainer onPress={handleAddressBook}>
+          <AccountIco color="white" />
+        </IconPressedContainer>
       </Box>
     </Box>
   )

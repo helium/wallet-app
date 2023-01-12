@@ -16,12 +16,12 @@ PODS:
   - DoubleConversion (1.1.6)
   - EXApplication (5.0.1):
     - ExpoModulesCore
-  - EXBarCodeScanner (12.0.0):
+  - EXBarCodeScanner (12.1.0):
     - EXImageLoader
     - ExpoModulesCore
     - ZXingObjC/OneD
     - ZXingObjC/PDF417
-  - EXCamera (13.0.0):
+  - EXCamera (13.1.0):
     - ExpoModulesCore
   - EXConstants (14.0.2):
     - ExpoModulesCore
@@ -734,8 +734,8 @@ SPEC CHECKSUMS:
   Charts: 354f86803d11d9c35de280587fef50d1af063978
   DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
   EXApplication: 034b1c40a8e9fe1bff76a1e511ee90dff64ad834
-  EXBarCodeScanner: 50ad56220f9d543d4fe8884c0d3d46eae628b244
-  EXCamera: d7e91d5857faee493ca3cf8dafd42572db61849e
+  EXBarCodeScanner: cb4deb49e59b6c7ed6bbf38d187802359908d2a8
+  EXCamera: eaf52a96480d4ae1505a9b5e139c244581b5f8ca
   EXConstants: 3c86653c422dd77e40d10cbbabb3025003977415
   EXErrorRecovery: ae43433feb0608a64dc5b1c8363b3e7769a9ea24
   EXFileSystem: 60602b6eefa6873f97172c684b7537c9760b50d6

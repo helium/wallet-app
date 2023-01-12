@@ -45,7 +45,9 @@ import {
 } from '../../theme/themeHooks'
 import { balanceToString } from '../../utils/Balance'
 import AccountButton from '../../components/AccountButton'
-import { useAccountSelector } from '../../components/AccountSelector'
+import AccountSelector, {
+  AccountSelectorRef,
+} from '../../components/AccountSelector'
 import { makePayRequestLink } from '../../utils/linking'
 import useHaptic from '../../hooks/useHaptic'
 import BackgroundFill from '../../components/BackgroundFill'
@@ -69,7 +71,7 @@ const RequestScreen = () => {
   const [requestType, setRequestType] = useState<RequestType>('qr')
   const [containerHeight, setContainerHeight] = useState(0)
   const { colorStyle } = useOpacity('primaryText', 0.3)
-  const { show: showAccountSelector } = useAccountSelector()
+  const accountSelectorRef = useRef<AccountSelectorRef>(null)
   const { triggerNavHaptic } = useHaptic()
   const navigation = useNavigation()
   const { l } = useSpacing()
@@ -220,6 +222,11 @@ const RequestScreen = () => {
     setTicker(tick)
   }, [])
 
+  const handleAccountButtonPress = useCallback(() => {
+    if (!accountSelectorRef?.current) return
+    accountSelectorRef?.current?.show()
+  }, [])
+
   return (
     <HNTKeyboard
       ticker={ticker}
@@ -227,172 +234,180 @@ const RequestScreen = () => {
       onConfirmBalance={handleBalance}
       handleVisible={setHNTKeyboardVisible}
     >
-      <TokenSelector ref={tokenSelectorRef} onTokenSelected={onTickerSelected}>
-        <Box
-          backgroundColor="secondaryBackground"
-          flex={1}
-          onLayout={handleContainerLayout}
-          borderWidth={1}
-          borderTopStartRadius="xxl"
-          borderTopEndRadius="xxl"
+      <AccountSelector ref={accountSelectorRef}>
+        <TokenSelector
+          ref={tokenSelectorRef}
+          onTokenSelected={onTickerSelected}
         >
-          <Text variant="subtitle2" paddingTop="l" textAlign="center">
-            {t('request.title')}
-          </Text>
-          <TabBar
-            tabBarOptions={requestTypeOptions}
-            selectedValue={requestType}
-            onItemSelected={handleRequestTypePress}
-            marginVertical="l"
-          />
-          <KeyboardAwareScrollView enableOnAndroid>
-            <Box marginHorizontal="l">
-              <Box
-                height={QR_CONTAINER_SIZE}
-                alignItems="center"
-                justifyContent="center"
-              >
-                <Animated.View style={qrStyle}>
-                  {!isEditing ? (
-                    <QRCode
-                      size={QR_CONTAINER_SIZE - 2 * l}
-                      value={qrLink}
-                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                      // @ts-ignore
-                      getRef={qrRef}
-                    />
-                  ) : (
-                    <ActivityIndicator color={secondaryText} />
-                  )}
-                </Animated.View>
-
-                {requestType === 'link' && (
-                  <FadeInOut>
-                    <TouchableOpacityBox
-                      onPress={copyLink}
-                      borderRadius="xl"
-                      justifyContent="center"
-                    >
-                      <Text variant="body1" color="greenBright500" padding="l">
-                        {link}
-                      </Text>
-                    </TouchableOpacityBox>
-                  </FadeInOut>
-                )}
-              </Box>
-
-              <AccountButton
-                accountIconSize={41}
-                backgroundColor="secondary"
-                showBubbleArrow
-                marginTop="l"
-                title={currentAccount?.alias}
-                address={currentAccount?.address}
-                netType={currentAccount?.netType}
-                onPress={showAccountSelector}
-              />
-              <TokenButton
-                title={t('request.requestType', {
-                  ticker: currencyType.ticker,
-                })}
-                backgroundColor="secondary"
-                address={currentAccount?.address}
-                netType={currentAccount?.netType}
-                onPress={handleTickerSelected}
-                showBubbleArrow
-                ticker={ticker}
-              />
-              <Box
-                backgroundColor={
-                  currentAccount?.netType === NetType.TESTNET
-                    ? 'lividBrown'
-                    : 'secondary'
-                }
-                flexDirection="column"
-                marginBottom="l"
-                padding="lm"
-                marginTop={keyboardShown ? 'l' : undefined}
-                borderRadius="xl"
-              >
-                <TouchableOpacityBox
-                  justifyContent="center"
-                  onPress={handleShowPaymentKeyboard}
-                >
-                  <Text variant="body3" color="primaryText">
-                    {t('request.amount')}
-                  </Text>
-                  {!paymentAmount || paymentAmount.integerBalance === 0 ? (
-                    <Text variant="subtitle2" style={colorStyle}>
-                      {t('request.enterAmount', {
-                        ticker: paymentAmount?.type.ticker,
-                      })}
-                    </Text>
-                  ) : (
-                    <Text variant="subtitle2" color="primaryText">
-                      {balanceToString(paymentAmount)}
-                    </Text>
-                  )}
-                </TouchableOpacityBox>
-
-                {l1Network === 'helium' && (
-                  <>
-                    <Box
-                      height={1}
-                      backgroundColor="primaryBackground"
-                      marginHorizontal="n_l"
-                      marginVertical="ms"
-                    />
-                    <Text variant="body3" color="primaryText">
-                      {t('request.memo')}
-                    </Text>
-                    <MemoInput
-                      value={txnMemo}
-                      onChangeText={setTxnMemo}
-                      margin="n_m"
-                    />
-                  </>
-                )}
-              </Box>
-              <Box flexDirection="row" marginTop="l" paddingBottom="xxl">
-                <TouchableOpacityBox
-                  flex={1}
-                  minHeight={66}
-                  justifyContent="center"
-                  marginEnd="m"
-                  borderRadius="round"
-                  onPress={navigation.goBack}
-                  overflow="hidden"
-                >
-                  <BackgroundFill backgroundColor="error" />
-                  <Text variant="subtitle1" textAlign="center" color="error">
-                    {t('generic.cancel')}
-                  </Text>
-                </TouchableOpacityBox>
-                <TouchableOpacityBox
-                  flex={1}
-                  minHeight={66}
-                  backgroundColor="secondary"
-                  justifyContent="center"
+          <Box
+            backgroundColor="secondaryBackground"
+            flex={1}
+            onLayout={handleContainerLayout}
+            borderWidth={1}
+            borderTopStartRadius="xl"
+            borderTopEndRadius="xl"
+          >
+            <Text variant="subtitle2" paddingTop="l" textAlign="center">
+              {t('request.title')}
+            </Text>
+            <TabBar
+              tabBarOptions={requestTypeOptions}
+              selectedValue={requestType}
+              onItemSelected={handleRequestTypePress}
+              marginVertical="l"
+            />
+            <KeyboardAwareScrollView enableOnAndroid>
+              <Box marginHorizontal="l">
+                <Box
+                  height={QR_CONTAINER_SIZE}
                   alignItems="center"
-                  borderRadius="round"
-                  onPress={handleShare}
-                  flexDirection="row"
+                  justifyContent="center"
                 >
-                  <ShareIcon color={secondaryText} />
-                  <Text
-                    marginLeft="s"
-                    variant="subtitle1"
-                    textAlign="center"
-                    color="secondaryText"
+                  <Animated.View style={qrStyle}>
+                    {!isEditing ? (
+                      <QRCode
+                        size={QR_CONTAINER_SIZE - 2 * l}
+                        value={qrLink}
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        getRef={qrRef}
+                      />
+                    ) : (
+                      <ActivityIndicator color={secondaryText} />
+                    )}
+                  </Animated.View>
+
+                  {requestType === 'link' && (
+                    <FadeInOut>
+                      <TouchableOpacityBox
+                        onPress={copyLink}
+                        borderRadius="xl"
+                        justifyContent="center"
+                      >
+                        <Text
+                          variant="body1"
+                          color="greenBright500"
+                          padding="l"
+                        >
+                          {link}
+                        </Text>
+                      </TouchableOpacityBox>
+                    </FadeInOut>
+                  )}
+                </Box>
+
+                <AccountButton
+                  accountIconSize={41}
+                  backgroundColor="secondary"
+                  showBubbleArrow
+                  marginTop="l"
+                  title={currentAccount?.alias}
+                  address={currentAccount?.address}
+                  netType={currentAccount?.netType}
+                  onPress={handleAccountButtonPress}
+                />
+                <TokenButton
+                  title={t('request.requestType', {
+                    ticker: currencyType.ticker,
+                  })}
+                  backgroundColor="secondary"
+                  address={currentAccount?.address}
+                  onPress={handleTickerSelected}
+                  showBubbleArrow
+                  ticker={ticker}
+                />
+                <Box
+                  backgroundColor={
+                    currentAccount?.netType === NetType.TESTNET
+                      ? 'lividBrown'
+                      : 'secondary'
+                  }
+                  flexDirection="column"
+                  marginBottom="l"
+                  padding="lm"
+                  marginTop={keyboardShown ? 'l' : undefined}
+                  borderRadius="xl"
+                >
+                  <TouchableOpacityBox
+                    justifyContent="center"
+                    onPress={handleShowPaymentKeyboard}
                   >
-                    {t('generic.share')}
-                  </Text>
-                </TouchableOpacityBox>
+                    <Text variant="body3" color="primaryText">
+                      {t('request.amount')}
+                    </Text>
+                    {!paymentAmount || paymentAmount.integerBalance === 0 ? (
+                      <Text variant="subtitle2" style={colorStyle}>
+                        {t('request.enterAmount', {
+                          ticker: paymentAmount?.type.ticker,
+                        })}
+                      </Text>
+                    ) : (
+                      <Text variant="subtitle2" color="primaryText">
+                        {balanceToString(paymentAmount)}
+                      </Text>
+                    )}
+                  </TouchableOpacityBox>
+
+                  {l1Network === 'helium' && (
+                    <>
+                      <Box
+                        height={1}
+                        backgroundColor="primaryBackground"
+                        marginHorizontal="n_l"
+                        marginVertical="ms"
+                      />
+                      <Text variant="body3" color="primaryText">
+                        {t('request.memo')}
+                      </Text>
+                      <MemoInput
+                        value={txnMemo}
+                        onChangeText={setTxnMemo}
+                        margin="n_m"
+                      />
+                    </>
+                  )}
+                </Box>
+                <Box flexDirection="row" marginTop="l" paddingBottom="xxl">
+                  <TouchableOpacityBox
+                    flex={1}
+                    minHeight={66}
+                    justifyContent="center"
+                    marginEnd="m"
+                    borderRadius="round"
+                    onPress={navigation.goBack}
+                    overflow="hidden"
+                  >
+                    <BackgroundFill backgroundColor="error" />
+                    <Text variant="subtitle1" textAlign="center" color="error">
+                      {t('generic.cancel')}
+                    </Text>
+                  </TouchableOpacityBox>
+                  <TouchableOpacityBox
+                    flex={1}
+                    minHeight={66}
+                    backgroundColor="secondary"
+                    justifyContent="center"
+                    alignItems="center"
+                    borderRadius="round"
+                    onPress={handleShare}
+                    flexDirection="row"
+                  >
+                    <ShareIcon color={secondaryText} />
+                    <Text
+                      marginLeft="s"
+                      variant="subtitle1"
+                      textAlign="center"
+                      color="secondaryText"
+                    >
+                      {t('generic.share')}
+                    </Text>
+                  </TouchableOpacityBox>
+                </Box>
               </Box>
-            </Box>
-          </KeyboardAwareScrollView>
-        </Box>
-      </TokenSelector>
+            </KeyboardAwareScrollView>
+          </Box>
+        </TokenSelector>
+      </AccountSelector>
     </HNTKeyboard>
   )
 }

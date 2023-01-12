@@ -1,16 +1,15 @@
 import React, { useMemo } from 'react'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
 import { useTranslation } from 'react-i18next'
+import CheckmarkFilled from '@assets/images/checkmarkFill.svg'
+import Error from '@assets/images/error.svg'
 import { EnrichedTransaction } from '../../types/solana'
 import Text from '../../components/Text'
 import Box from '../../components/Box'
-import TouchableOpacityBox, {
-  TouchableOpacityBoxProps,
-} from '../../components/TouchableOpacityBox'
+import { TouchableOpacityBoxProps } from '../../components/TouchableOpacityBox'
 import { ellipsizeAddress, solAddressIsValid } from '../../utils/accountUtils'
-import CheckmarkFilled from '../../assets/images/checkmarkFill.svg'
-import Error from '../../assets/images/error.svg'
 import { useColors } from '../../theme/themeHooks'
+import TouchableContainer from '../../components/TouchableContainer'
 
 export type ActivityListItemProps = {
   transaction: EnrichedTransaction | ConfirmedSignatureInfo
@@ -76,8 +75,8 @@ const ActivityListItem = ({
   }, [transaction])
 
   return (
-    <TouchableOpacityBox
-      backgroundColor="secondaryBackground"
+    <TouchableContainer
+      backgroundColor="surfaceSecondary"
       flexDirection="row"
       padding="m"
       borderBottomWidth={hasDivider ? 1 : 0}
@@ -95,7 +94,7 @@ const ActivityListItem = ({
           {subtitle}
         </Text>
       </Box>
-    </TouchableOpacityBox>
+    </TouchableContainer>
   )
 }
 

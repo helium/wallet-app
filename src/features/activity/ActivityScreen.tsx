@@ -16,6 +16,7 @@ import globalStyles from '../../theme/globalStyles'
 import FadeInOut, { DelayedFadeIn } from '../../components/FadeInOut'
 import { ActivityNavigationProp } from './activityTypes'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
+import useHaptic from '../../hooks/useHaptic'
 
 const ActivityScreen = () => {
   const { transactions, loading, fetchingMore, fetchMore, refresh } =
@@ -24,6 +25,7 @@ const ActivityScreen = () => {
   const spacing = useSpacing()
   const colors = useColors()
   const navigation = useNavigation<ActivityNavigationProp>()
+  const { triggerImpact } = useHaptic()
 
   const contentContainer = useMemo(
     () => ({
@@ -110,11 +112,12 @@ const ActivityScreen = () => {
 
   const handleActivityItemPress = useCallback(
     (transaction: EnrichedTransaction | ConfirmedSignatureInfo) => () => {
+      triggerImpact()
       navigation.navigate('ActivityDetailsScreen', {
         transaction,
       })
     },
-    [navigation],
+    [navigation, triggerImpact],
   )
 
   const safeEdges = useMemo(() => ['top'] as Edge[], [])

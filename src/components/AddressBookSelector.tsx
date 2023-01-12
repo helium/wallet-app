@@ -45,7 +45,7 @@ const AddressBookSelector = forwardRef(
     useImperativeHandle(ref, () => ({ showAddressBook }))
 
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-    const { backgroundStyle } = useOpacity('primaryBackground', 1)
+    const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { m } = useSpacing()
     const snapPoints = useMemo(() => ['70%', '90%'], [])
     const sheetHandleStyle = useMemo(() => ({ padding: m }), [m])

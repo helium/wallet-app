@@ -36,7 +36,6 @@ import AccountTokenBalance from './AccountTokenBalance'
 import globalStyles from '../../theme/globalStyles'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { useColors } from '../../theme/themeHooks'
-import useNetworkColor from '../../hooks/useNetworkColor'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import ActivityIndicator from '../../components/ActivityIndicator'
 import { Activity } from '../../types/activity'
@@ -301,18 +300,21 @@ const AccountTokenScreen = () => {
           }`}
           selected={filterState.filter === 'all'}
           onPress={setFilter('all')}
+          hasPressedState={false}
         />
         <ListItem
           key="payment"
           title={t('accountsScreen.filterTypes.payment')}
           onPress={setFilter('payment')}
           selected={filterState.filter === 'payment'}
+          hasPressedState={false}
         />
         <ListItem
           key="mining"
           title={t('accountsScreen.filterTypes.mining')}
           onPress={setFilter('mining')}
           selected={filterState.filter === 'mining'}
+          hasPressedState={false}
         />
         {routeTicker === 'HNT' && (
           <>
@@ -321,18 +323,21 @@ const AccountTokenScreen = () => {
               title={t('accountsScreen.filterTypes.burn')}
               onPress={setFilter('burn')}
               selected={filterState.filter === 'burn'}
+              hasPressedState={false}
             />
             <ListItem
               key="hotspotAndValidators"
               title={t('accountsScreen.filterTypes.hotspotAndValidators')}
               onPress={setFilter('hotspotAndValidators')}
               selected={filterState.filter === 'hotspotAndValidators'}
+              hasPressedState={false}
             />
             <ListItem
               key="pending"
               title={t('accountsScreen.filterTypes.pending')}
               onPress={setFilter('pending')}
               selected={filterState.filter === 'pending'}
+              hasPressedState={false}
             />
           </>
         )}
@@ -366,15 +371,10 @@ const AccountTokenScreen = () => {
     })
   }, [setTopHeaderHeight])
 
-  const backgroundColor = useNetworkColor({
-    netType: currentAccount?.netType,
-  })
-
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <BackScreen
         padding="none"
-        headerBackgroundColor={backgroundColor}
         title={t('accountsScreen.title', {
           ticker: routeTicker,
         })}

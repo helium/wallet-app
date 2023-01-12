@@ -6,6 +6,7 @@ import MobileReward from '@assets/images/mobileRewardIcon.svg'
 import { Edge } from 'react-native-safe-area-context'
 import { Ticker } from '@helium/currency'
 import { PublicKey } from '@solana/web3.js'
+import RewardBG from '@assets/images/rewardBg.svg'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 import BackScreen from '../../components/BackScreen'
 import Box from '../../components/Box'
@@ -15,7 +16,6 @@ import {
   CollectableStackParamList,
 } from './collectablesTypes'
 import ButtonPressable from '../../components/ButtonPressable'
-import RewardBG from '../../assets/images/rewardBg.svg'
 import { DelayedFadeIn } from '../../components/FadeInOut'
 import { useHotspot } from '../../hooks/useHotspot'
 

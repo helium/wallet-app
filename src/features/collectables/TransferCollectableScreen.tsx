@@ -11,6 +11,9 @@ import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
 import { useAsync } from 'react-async-hook'
 import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
+import ArrowRight from '@assets/images/arrowRight.svg'
+import Menu from '@assets/images/menu.svg'
+import InfoIcon from '@assets/images/info.svg'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
 import {
   CollectableNavigationProp,
@@ -25,10 +28,8 @@ import Text from '../../components/Text'
 import { ww } from '../../utils/layout'
 import BackScreen from '../../components/BackScreen'
 import { useColors, useSpacing } from '../../theme/themeHooks'
-import InfoIcon from '../../assets/images/info.svg'
 import TextInput from '../../components/TextInput'
 import { solAddressIsValid } from '../../utils/accountUtils'
-import Menu from '../../assets/images/menu.svg'
 import ListItem from '../../components/ListItem'
 import BlurActionSheet from '../../components/BlurActionSheet'
 import {
@@ -44,7 +45,6 @@ import { CSAccount } from '../../storage/cloudStorage'
 import * as Logger from '../../utils/logger'
 import TextTransform from '../../components/TextTransform'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
-import ArrowRight from '../../assets/images/arrowRight.svg'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -178,6 +178,7 @@ const TransferCollectableScreen = () => {
           title={t('payment.selectContact')}
           onPress={handleAddressBookSelected}
           selected={false}
+          hasPressedState={false}
         />
       </>
     ),
