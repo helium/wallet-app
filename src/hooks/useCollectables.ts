@@ -22,25 +22,38 @@ const useCollectables = (): WalletCollectables & {
   const collectables = useSelector((state: RootState) => state.collectables)
 
   const fetchingMore = useMemo(() => {
-    if (!currentAccount?.solanaAddress) return false
+    if (
+      !currentAccount?.solanaAddress ||
+      !collectables[currentAccount?.solanaAddress]
+    )
+      return false
     return collectables[currentAccount?.solanaAddress].fetchingMore
   }, [collectables, currentAccount])
 
   const oldestCollectableId = useMemo(() => {
-    if (!currentAccount?.solanaAddress) return ''
+    if (
+      !currentAccount?.solanaAddress ||
+      !collectables[currentAccount?.solanaAddress]
+    )
+      return ''
     return collectables[currentAccount?.solanaAddress].oldestCollectableId
   }, [collectables, currentAccount])
 
   const onEndReached = useMemo(() => {
-    if (!currentAccount?.solanaAddress) return false
+    if (
+      !currentAccount?.solanaAddress ||
+      !collectables[currentAccount?.solanaAddress]
+    )
+      return false
     return collectables[currentAccount?.solanaAddress].onEndReached
   }, [collectables, currentAccount])
 
   const refresh = useCallback(() => {
     if (
       !currentAccount?.solanaAddress ||
+      !collectables[currentAccount?.solanaAddress] ||
       l1Network !== 'solana' ||
-      collectables.loading
+      collectables[currentAccount?.solanaAddress].loading
     ) {
       return
     }
@@ -50,13 +63,14 @@ const useCollectables = (): WalletCollectables & {
         cluster,
       }),
     )
-  }, [cluster, collectables.loading, currentAccount, dispatch, l1Network])
+  }, [cluster, collectables, currentAccount, dispatch, l1Network])
 
   const fetchMore = useCallback(() => {
     if (
       !currentAccount?.solanaAddress ||
+      !collectables[currentAccount?.solanaAddress] ||
       l1Network !== 'solana' ||
-      collectables.loading
+      collectables[currentAccount?.solanaAddress].loading
     ) {
       return
     }
@@ -69,7 +83,7 @@ const useCollectables = (): WalletCollectables & {
     )
   }, [
     cluster,
-    collectables.loading,
+    collectables,
     currentAccount,
     dispatch,
     l1Network,

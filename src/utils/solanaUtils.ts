@@ -594,6 +594,17 @@ export async function getNonceCount(
   )
 }
 
+const mapProof = (assetProof: { proof: string[] }): web3.AccountMeta[] => {
+  if (!assetProof.proof || assetProof.proof.length === 0) {
+    throw new Error('Proof is empty')
+  }
+  return assetProof.proof.map((node) => ({
+    pubkey: new web3.PublicKey(node),
+    isSigner: false,
+    isWritable: false,
+  }))
+}
+
 /**
  * Transfer a compressed collectable to a new owner
  * @param cluster
@@ -654,10 +665,12 @@ export const transferCompressedCollectable = async (
     )
 
     const canopyHeight = tree.getCanopyDepth()
+    const proofPath = mapProof(assetProof)
 
-    const anchorRemainingAccounts = assetProof.proof
-      .slice(0, assetProof.proof.length - (canopyHeight || 0))
-      .map((proof: string) => new web3.PublicKey(proof))
+    const anchorRemainingAccounts = proofPath.slice(
+      0,
+      proofPath.length - (canopyHeight || 0),
+    )
 
     instructions.push(
       createTransferInstruction(
