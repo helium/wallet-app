@@ -44,17 +44,12 @@ const useCollectables = (): WalletCollectables & {
       !currentAccount?.solanaAddress ||
       !collectables[currentAccount?.solanaAddress]
     )
-      return false
+      return true
     return collectables[currentAccount?.solanaAddress].onEndReached
   }, [collectables, currentAccount])
 
   const refresh = useCallback(() => {
-    if (
-      !currentAccount?.solanaAddress ||
-      !collectables[currentAccount?.solanaAddress] ||
-      l1Network !== 'solana' ||
-      collectables[currentAccount?.solanaAddress].loading
-    ) {
+    if (!currentAccount?.solanaAddress || l1Network !== 'solana') {
       return
     }
     dispatch(
@@ -63,15 +58,10 @@ const useCollectables = (): WalletCollectables & {
         cluster,
       }),
     )
-  }, [cluster, collectables, currentAccount, dispatch, l1Network])
+  }, [cluster, currentAccount, dispatch, l1Network])
 
   const fetchMore = useCallback(() => {
-    if (
-      !currentAccount?.solanaAddress ||
-      !collectables[currentAccount?.solanaAddress] ||
-      l1Network !== 'solana' ||
-      collectables[currentAccount?.solanaAddress].loading
-    ) {
+    if (!currentAccount?.solanaAddress || l1Network !== 'solana') {
       return
     }
     dispatch(
@@ -81,14 +71,7 @@ const useCollectables = (): WalletCollectables & {
         oldestCollectable: oldestCollectableId,
       }),
     )
-  }, [
-    cluster,
-    collectables,
-    currentAccount,
-    dispatch,
-    l1Network,
-    oldestCollectableId,
-  ])
+  }, [cluster, currentAccount, dispatch, l1Network, oldestCollectableId])
 
   useEffect(() => {
     if (!currentAccount?.solanaAddress) return

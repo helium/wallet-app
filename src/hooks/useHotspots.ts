@@ -148,16 +148,11 @@ const useHotspots = (): {
   } = useAsyncCallback(onClaimAllIotRewards)
 
   const refresh = useCallback(() => {
-    if (
-      !currentAccount?.solanaAddress ||
-      !collectables[currentAccount?.solanaAddress] ||
-      l1Network !== 'solana' ||
-      collectables[currentAccount?.solanaAddress].loading
-    ) {
+    if (!currentAccount?.solanaAddress || l1Network !== 'solana') {
       return
     }
     dispatch(fetchCollectables({ account: currentAccount, cluster }))
-  }, [cluster, collectables, currentAccount, dispatch, l1Network])
+  }, [cluster, currentAccount, dispatch, l1Network])
 
   const fetchingMore = useMemo(() => {
     if (
@@ -295,21 +290,6 @@ const useHotspots = (): {
 
     return total
   }, [hotspotsDetails, currentAccount])
-
-  useEffect(() => {
-    if (!currentAccount?.solanaAddress) return
-
-    refresh()
-
-    const subId = onLogs(cluster, currentAccount?.solanaAddress, () => {
-      refresh()
-    })
-
-    if (accountSubscriptionId.current !== undefined) {
-      removeAccountChangeListener(cluster, accountSubscriptionId.current)
-    }
-    accountSubscriptionId.current = subId
-  }, [cluster, currentAccount, dispatch, l1Network, refresh])
 
   if (
     !currentAccount?.solanaAddress ||
