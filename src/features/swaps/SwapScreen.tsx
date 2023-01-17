@@ -187,6 +187,7 @@ const SwapScreen = () => {
             title={Tokens.HNT}
             selected={youReceiveTokenType === Tokens.HNT}
             onPress={setTokenTypeHandler(Tokens.HNT)}
+            hasPressedState={false}
           />
         ) : (
           <>
@@ -195,12 +196,14 @@ const SwapScreen = () => {
               title={Tokens.IOT}
               selected={youPayTokenType === Tokens.IOT}
               onPress={setTokenTypeHandler(Tokens.IOT)}
+              hasPressedState={false}
             />
             <ListItem
               key="mobile"
               title={Tokens.MOBILE}
               selected={youPayTokenType === Tokens.MOBILE}
               onPress={setTokenTypeHandler(Tokens.MOBILE)}
+              hasPressedState={false}
             />
           </>
         )}

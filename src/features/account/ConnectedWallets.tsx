@@ -48,7 +48,7 @@ const ConnectedWallets = forwardRef(
     useImperativeHandle(ref, () => ({ show, hide }))
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const keyExtractor = useCallback((item) => item.address, [])
-    const { primaryText } = useColors()
+    const { primaryText, secondaryText } = useColors()
     const { t } = useTranslation()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
@@ -202,6 +202,12 @@ const ConnectedWallets = forwardRef(
       onClose()
     }, [handleDismiss, onClose])
 
+    const handleIndicatorStyle = useMemo(() => {
+      return {
+        backgroundColor: secondaryText,
+      }
+    }, [secondaryText])
+
     return (
       <BottomSheetModalProvider>
         {children}
@@ -212,6 +218,7 @@ const ConnectedWallets = forwardRef(
           backdropComponent={renderBackdrop}
           snapPoints={snapPoints}
           onDismiss={handleModalDismiss}
+          handleIndicatorStyle={handleIndicatorStyle}
         >
           <BottomSheetFlatList
             data={sortedAccounts}

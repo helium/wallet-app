@@ -17,7 +17,7 @@ import {
 } from '@gorhom/bottom-sheet'
 import { useNavigation } from '@react-navigation/native'
 import { BoxProps } from '@shopify/restyle'
-import { useOpacity, useSpacing } from '../theme/themeHooks'
+import { useColors, useOpacity, useSpacing } from '../theme/themeHooks'
 import ContactsList from '../features/addressBook/ContactsList'
 import { HomeNavigationProp } from '../features/home/homeTypes'
 import { Theme } from '../theme/theme'
@@ -53,6 +53,7 @@ const AddressBookSelector = forwardRef(
     const [address, setAddress] = useState<string>()
     const [index, setIndex] = useState<number>()
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
+    const colors = useColors()
 
     const showAddressBook = useCallback(
       (opts: { address?: string; index?: number }) => {
@@ -88,6 +89,12 @@ const AddressBookSelector = forwardRef(
       homeNav.navigate('AddNewContact')
     }, [homeNav])
 
+    const handleIndicatorStyle = useMemo(() => {
+      return {
+        backgroundColor: colors.secondaryText,
+      }
+    }, [colors.secondaryText])
+
     return (
       <Box flex={1} {...boxProps}>
         {children}
@@ -100,6 +107,7 @@ const AddressBookSelector = forwardRef(
             snapPoints={snapPoints}
             handleStyle={sheetHandleStyle}
             onDismiss={handleDismiss}
+            handleIndicatorStyle={handleIndicatorStyle}
           >
             <ContactsList
               showMyAccounts

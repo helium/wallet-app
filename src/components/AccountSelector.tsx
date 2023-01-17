@@ -17,7 +17,7 @@ import {
 } from '@gorhom/bottom-sheet'
 import { GestureResponderEvent } from 'react-native'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import { useOpacity, useSpacing } from '../theme/themeHooks'
+import { useColors, useOpacity, useSpacing } from '../theme/themeHooks'
 import { AccountNetTypeOpt } from '../utils/accountUtils'
 import AccountListItem from './AccountListItem'
 import { CSAccount } from '../storage/cloudStorage'
@@ -42,6 +42,7 @@ const AccountSelector = forwardRef(
     const { m, xl } = useSpacing()
     const [accountsType, setAccountsTypes] = useState<AccountNetTypeOpt>('all')
     const snapPoints = useMemo(() => ['60%', '80%'], [])
+    const colors = useColors()
 
     const sheetHandleStyle = useMemo(() => ({ padding: m }), [m])
     const flatListContainerStyle = useMemo(() => ({ paddingBottom: xl }), [xl])
@@ -93,6 +94,12 @@ const AccountSelector = forwardRef(
       return item.address
     }, [])
 
+    const handleIndicatorStyle = useMemo(() => {
+      return {
+        backgroundColor: colors.secondaryText,
+      }
+    }, [colors.secondaryText])
+
     const renderFlatlistItem = useCallback(
       // eslint-disable-next-line react/no-unused-prop-types
       ({ item: account }: { item: CSAccount; index: number }) => {
@@ -128,6 +135,7 @@ const AccountSelector = forwardRef(
           snapPoints={snapPoints}
           handleStyle={sheetHandleStyle}
           onDismiss={handleDismiss}
+          handleIndicatorStyle={handleIndicatorStyle}
         >
           <BottomSheetFlatList
             data={data}
