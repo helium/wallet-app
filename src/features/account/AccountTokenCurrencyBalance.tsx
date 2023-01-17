@@ -33,6 +33,7 @@ const AccountTokenCurrencyBalance = ({
     oraclePrice,
     dcBalance,
     networkBalance,
+    solBalance,
     networkStakedBalance,
   } = useBalance()
 
@@ -44,11 +45,14 @@ const AccountTokenCurrencyBalance = ({
 
     switch (ticker) {
       case 'HNT':
-        if (staked) {
-          toCurrencyString(networkStakedBalance).then(setBalanceString)
-        } else {
-          toCurrencyString(networkBalance).then(setBalanceString)
-        }
+        toCurrencyString(
+          networkStakedBalance
+            ? networkBalance?.plus(networkStakedBalance)
+            : networkBalance,
+        ).then(setBalanceString)
+        break
+      case 'SOL':
+        toCurrencyString(solBalance, 'SOL').then(setBalanceString)
         break
       case 'DC': {
         const balance = dcBalance

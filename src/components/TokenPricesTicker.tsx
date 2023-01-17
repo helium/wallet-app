@@ -3,8 +3,9 @@ import { BoxProps } from '@shopify/restyle'
 import { Easing } from 'react-native'
 import TextTicker from 'react-native-text-ticker'
 import { useTranslation } from 'react-i18next'
+import { useAsync } from 'react-async-hook'
 import Box from './Box'
-import { useGetTokenPricesQuery } from '../store/slices/walletRestApi'
+import { useLazyGetTokenPricesQuery } from '../store/slices/walletRestApi'
 import { useTextVariants, useColors } from '../theme/themeHooks'
 import { Theme } from '../theme/theme'
 import { useAppStorage } from '../storage/AppStorageProvider'
@@ -21,21 +22,27 @@ const TokenPricesTicker = ({ ...boxProps }: Props) => {
     [body2, colors],
   )
 
-  const { currentData: tokenPrices } = useGetTokenPricesQuery(
-    { tokens: 'helium,solana', currency },
-    {
-      refetchOnMountOrArgChange: true,
-    },
-  )
+  const [triggerGetTokenPrices, { isFetching, data: tokenPrices }] =
+    useLazyGetTokenPricesQuery({
+      pollingInterval: 1000 * 60,
+      refetchOnReconnect: true,
+      refetchOnFocus: true,
+    })
+
+  useAsync(async () => {
+    await triggerGetTokenPrices({ tokens: 'helium,solana', currency }, false)
+  }, [currency, triggerGetTokenPrices])
 
   const text = useMemo(() => {
     if (!tokenPrices) return t('generic.noData')
+    if (isFetching || !tokenPrices.helium || !tokenPrices.solana)
+      return t('generic.loading')
 
     const heliumPrice = tokenPrices.helium[currency.toLowerCase()]
     const solanaPrice = tokenPrices.solana[currency.toLowerCase()]
 
     return `HNT = $${heliumPrice} • SOL = $${solanaPrice}`
-  }, [currency, t, tokenPrices])
+  }, [currency, isFetching, t, tokenPrices])
 
   return (
     <Box {...boxProps}>

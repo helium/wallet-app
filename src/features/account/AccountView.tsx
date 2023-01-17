@@ -89,7 +89,7 @@ const AccountView = ({
       }
       toCurrencyString(bal).then(setBalanceString)
     } else {
-      setBalanceString('')
+      CurrencyFormatter.format(0, currency).then(setBalanceString)
     }
   }, [
     accountNetType,

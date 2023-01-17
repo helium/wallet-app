@@ -25,16 +25,17 @@ import {
   useAccountLazyQuery,
   useAccountQuery,
   useOracleDataLazyQuery,
-  useOracleDataQuery,
 } from '../generated/graphql'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
 import { readBalances } from '../store/slices/solanaSlice'
-import { useGetMintsQuery } from '../store/slices/walletRestApi'
+import {
+  useGetMintsQuery,
+  useGetTokenPricesQuery,
+} from '../store/slices/walletRestApi'
 import { useAppDispatch } from '../store/store'
 import { accountCurrencyType } from './accountUtils'
-import { CoinGeckoPrices, getCurrentPrices } from './coinGeckoClient'
 import { decimalSeparator, groupSeparator } from './i18n'
 import { onAccountChange, removeAccountChangeListener } from './solanaUtils'
 import useAppear from '../hooks/useAppear'
@@ -59,19 +60,15 @@ const useBalanceHook = () => {
     refetchOnMountOrArgChange: true,
   })
 
-  const {
-    data: oracleData,
-    loading: loadingOracle,
-    error,
-  } = useOracleDataQuery({
-    variables: {
-      address: currentAccount?.address || '',
+  const { currentData: tokenPrices, refetch } = useGetTokenPricesQuery(
+    { tokens: 'helium,solana', currency },
+    {
+      refetchOnMountOrArgChange: true,
+      refetchOnReconnect: true,
+      refetchOnFocus: true,
+      pollingInterval: 60 * 1000,
     },
-    fetchPolicy: 'cache-and-network',
-    pollInterval: ORACLE_POLL_INTERVAL,
-    notifyOnNetworkStatusChange: true,
-    skip: !currentAccount?.address,
-  })
+  )
 
   const [fetchOracle] = useOracleDataLazyQuery()
 
@@ -90,14 +87,8 @@ const useBalanceHook = () => {
     (state: RootState) => state.solana.balances,
   )
 
-  const prevLoadingOracle = usePrevious(loadingOracle)
   const [oracleDateTime, setOracleDateTime] = useState<Date>()
-  const [coinGeckoPrices, setCoinGeckoPrices] = useState<CoinGeckoPrices>()
 
-  const updateCoinGeckoPrices = useCallback(
-    () => getCurrentPrices().then(setCoinGeckoPrices),
-    [],
-  )
   const solAddress = useMemo(
     () => currentAccount?.solanaAddress,
     [currentAccount],
@@ -117,7 +108,7 @@ const useBalanceHook = () => {
   }, [currentAccount, dispatch, mints, cluster])
 
   useEffect(() => {
-    if (!currentAccount?.solanaAddress) {
+    if (!currentAccount?.solanaAddress || l1Network === 'helium') {
       return
     }
 
@@ -140,18 +131,19 @@ const useBalanceHook = () => {
     prevAccount,
     prevCluster,
     cluster,
+    l1Network,
   ])
 
   useAppear(() => {
     dispatchSolBalanceUpdate()
-    updateCoinGeckoPrices()
   })
 
   const updateVars = useCallback(async () => {
     if (!currentAccount?.address) return
 
     setUpdating(true)
-    await updateCoinGeckoPrices()
+
+    refetch()
 
     await fetchOracle({
       variables: {
@@ -165,22 +157,29 @@ const useBalanceHook = () => {
       },
     })
     setUpdating(false)
-  }, [currentAccount, fetchAccountData, fetchOracle, updateCoinGeckoPrices])
+  }, [currentAccount, fetchAccountData, fetchOracle, refetch])
 
   const oraclePrice = useMemo(() => {
-    if (!oracleData?.currentOraclePrice) return
+    if (!tokenPrices?.helium) return
 
-    const {
-      currentOraclePrice: { price },
-    } = oracleData
+    const heliumPrice = tokenPrices.helium[currency.toLowerCase()]
+
+    return new Balance(heliumPrice, CurrencyType.usd)
+  }, [currency, tokenPrices])
+
+  const solanaPrice = useMemo(() => {
+    if (!tokenPrices?.solana) return
+
+    const price = tokenPrices.solana[currency.toLowerCase()]
+
     return new Balance(price, CurrencyType.usd)
-  }, [oracleData])
+  }, [currency, tokenPrices])
 
   useEffect(() => {
-    if (prevLoadingOracle && !loadingOracle && oracleData && !error) {
+    if (!tokenPrices?.helium) {
       setOracleDateTime(new Date())
     }
-  }, [oracleData, error, loadingOracle, prevLoadingOracle])
+  }, [tokenPrices])
 
   const dcToNetworkTokens = useCallback(
     (
@@ -351,7 +350,7 @@ const useBalanceHook = () => {
       if (!balance) {
         return new Promise<string>((resolve) => resolve(''))
       }
-      const multiplier = coinGeckoPrices?.[currency.toLowerCase()] || 0
+      const multiplier = tokenPrices?.helium[currency.toLowerCase()] || 0
 
       const showAsHnt =
         !convertToCurrency ||
@@ -367,23 +366,35 @@ const useBalanceHook = () => {
         resolve(balanceToString(balance, opts)),
       )
     },
-    [coinGeckoPrices, convertToCurrency, currency],
+    [convertToCurrency, currency, tokenPrices],
   )
 
   const toCurrencyString = useCallback(
-    (balance?: Balance<NetworkTokens | TestNetworkTokens>): Promise<string> => {
+    (
+      balance?: Balance<NetworkTokens | TestNetworkTokens>,
+      ticker: Ticker = 'HNT',
+    ): Promise<string> => {
       const defaultResponse = new Promise<string>((resolve) => resolve(''))
-      if (!balance || balance?.floatBalance === undefined) {
-        return defaultResponse
+
+      let bal = Balance.fromIntAndTicker(0, ticker)
+      if (balance?.floatBalance !== undefined && ticker === 'HNT') {
+        bal = balance
       }
 
-      const multiplier = coinGeckoPrices?.[currency.toLowerCase()] || 0
+      if (solBalance?.floatBalance !== undefined && ticker === 'SOL') {
+        bal = solBalance
+      }
+
+      const tickerPrice =
+        ticker === 'HNT' ? tokenPrices?.helium : tokenPrices?.solana
+
+      const multiplier = tickerPrice?.[currency.toLowerCase()] || 0
       if (!multiplier) return defaultResponse
 
-      const convertedValue = multiplier * balance.floatBalance
+      const convertedValue = multiplier * bal.floatBalance
       return CurrencyFormatter.format(convertedValue, currency)
     },
-    [coinGeckoPrices, currency],
+    [currency, solBalance, tokenPrices],
   )
 
   const toUsd = useCallback(
@@ -391,11 +402,11 @@ const useBalanceHook = () => {
       if (!balance) {
         return 0
       }
-      const multiplier = coinGeckoPrices?.usd || 0
+      const multiplier = tokenPrices?.helium?.usd || 0
 
       return round(multiplier * (balance?.floatBalance || 0), 2)
     },
-    [coinGeckoPrices],
+    [tokenPrices],
   )
 
   return {
@@ -411,6 +422,7 @@ const useBalanceHook = () => {
     networkStakedBalance,
     oracleDateTime,
     oraclePrice,
+    solanaPrice,
     secBalance,
     solBalance,
     toCurrencyString,
@@ -434,6 +446,7 @@ const initialState = {
   networkStakedBalance: new Balance(0, CurrencyType.networkToken),
   oracleDateTime: undefined,
   oraclePrice: undefined,
+  solanaPrice: undefined,
   secBalance: new Balance(0, CurrencyType.security),
   solBalance: new Balance(0, CurrencyType.solTokens),
   toCurrencyString: () => new Promise<string>((resolve) => resolve('')),

@@ -95,6 +95,16 @@ export const walletRestApi = createApi({
       transformResponse: (response) => {
         return response as TokenPrices
       },
+      serializeQueryArgs: ({ endpointName }) => {
+        return endpointName
+      },
+      merge: (_, newItems) => {
+        return newItems
+      },
+      // Refetch when the page arg changes
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg !== previousArg
+      },
     }),
   }),
 })
@@ -107,5 +117,8 @@ export const {
   useGetMintsQuery,
   useGetBalanceHistoryQuery,
   useGetTokenPricesQuery,
+  useLazyGetTokenPricesQuery,
   reducer,
 } = walletRestApi
+
+export default walletRestApi
