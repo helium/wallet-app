@@ -376,10 +376,7 @@ const useBalanceHook = () => {
     ): Promise<string> => {
       const defaultResponse = new Promise<string>((resolve) => resolve(''))
 
-      let bal = new Balance(
-        0,
-        ticker === 'SOL' ? CurrencyType.solTokens : CurrencyType.networkToken,
-      )
+      let bal = Balance.fromIntAndTicker(0, ticker)
       if (balance?.floatBalance !== undefined && ticker === 'HNT') {
         bal = balance
       }
