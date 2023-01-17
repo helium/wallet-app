@@ -61,14 +61,12 @@ const TokenListItem = ({ ticker, balance, staked }: Props) => {
               {` ${balance?.type.ticker}${staked ? ' Staked' : ''}`}
             </Text>
           </Box>
-          {!disabled && (
-            <AccountTokenCurrencyBalance
-              variant="subtitle4"
-              color="secondaryText"
-              ticker={ticker}
-              staked={staked}
-            />
-          )}
+          <AccountTokenCurrencyBalance
+            variant="subtitle4"
+            color="secondaryText"
+            ticker={ticker}
+            staked={staked}
+          />
         </Box>
         {!disabled && <Arrow />}
       </TouchableContainer>
