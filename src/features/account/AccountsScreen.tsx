@@ -45,7 +45,7 @@ import useDisappear from '../../hooks/useDisappear'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useGetBalanceHistoryQuery } from '../../store/slices/walletRestApi'
 import { useBalance } from '../../utils/Balance'
-import { useBackgroundStyle } from '../../theme/themeHooks'
+import { useBackgroundStyle, useColors } from '../../theme/themeHooks'
 import { ITEM_HEIGHT } from './TokenListItem'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
@@ -85,6 +85,7 @@ const AccountsScreen = () => {
   const bottomSheetStyle = useBackgroundStyle('surfaceSecondary')
   const dispatch = useAppDispatch()
   const { triggerImpact } = useHaptic()
+  const colors = useColors()
 
   const { t } = useTranslation()
 
@@ -364,6 +365,12 @@ const AccountsScreen = () => {
     )
   }, [handleTopHeaderLayout, headerAnimatedStyle])
 
+  const handleIndicatorStyle = useMemo(() => {
+    return {
+      backgroundColor: colors.secondaryText,
+    }
+  }, [colors.secondaryText])
+
   return (
     <Box flex={1}>
       <Box onLayout={setPageHeight} flex={1}>
@@ -402,6 +409,7 @@ const AccountsScreen = () => {
         backgroundStyle={bottomSheetStyle}
         detached
         animatedPosition={listAnimatedPos}
+        handleIndicatorStyle={handleIndicatorStyle}
       >
         <AccountTokenList
           loading={accountLoading}

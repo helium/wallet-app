@@ -66,6 +66,7 @@ import { RootState } from '../../store/rootReducer'
 import { useAppDispatch } from '../../store/store'
 import useDisappear from '../../hooks/useDisappear'
 import { solanaSlice } from '../../store/slices/solanaSlice'
+import IconPressedContainer from '../../components/IconPressedContainer'
 
 type LinkedPayment = {
   amount?: string
@@ -664,13 +665,15 @@ const PaymentScreen = () => {
                   borderTopStartRadius="xl"
                   borderTopEndRadius="xl"
                 >
-                  <TouchableOpacityBox
-                    onPress={handleQrScan}
-                    padding="l"
-                    hitSlop={hitSlop}
-                  >
-                    <QR color={primaryText} height={16} width={16} />
-                  </TouchableOpacityBox>
+                  <Box hitSlop={hitSlop} padding="s">
+                    <IconPressedContainer
+                      onPress={handleQrScan}
+                      activeOpacity={0.75}
+                      idleOpacity={1.0}
+                    >
+                      <QR color={primaryText} height={16} width={16} />
+                    </IconPressedContainer>
+                  </Box>
                   <Text
                     variant="subtitle2"
                     textAlign="center"
@@ -679,13 +682,15 @@ const PaymentScreen = () => {
                   >
                     {t('payment.send')}
                   </Text>
-                  <TouchableOpacityBox
-                    onPress={navigation.goBack}
-                    padding="l"
-                    hitSlop={hitSlop}
-                  >
-                    <Close color={primaryText} height={16} width={16} />
-                  </TouchableOpacityBox>
+                  <Box hitSlop={hitSlop} padding="s">
+                    <IconPressedContainer
+                      onPress={navigation.goBack}
+                      activeOpacity={0.75}
+                      idleOpacity={1.0}
+                    >
+                      <Close color={primaryText} height={16} width={16} />
+                    </IconPressedContainer>
+                  </Box>
                 </Box>
 
                 <KeyboardAwareScrollView
