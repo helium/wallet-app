@@ -51,7 +51,7 @@ const TokenSelector = forwardRef(
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
-    const { white, blueBright500 } = useColors()
+    const { white, blueBright500, secondaryText } = useColors()
 
     const showTokens = useCallback(() => {
       bottomSheetModalRef.current?.present()
@@ -120,6 +120,12 @@ const TokenSelector = forwardRef(
       [bottom, data.length],
     )
 
+    const handleIndicatorStyle = useMemo(() => {
+      return {
+        backgroundColor: secondaryText,
+      }
+    }, [secondaryText])
+
     return (
       <BottomSheetModalProvider>
         <Box flex={1} {...boxProps}>
@@ -130,6 +136,7 @@ const TokenSelector = forwardRef(
             backdropComponent={renderBackdrop}
             snapPoints={snapPoints}
             onDismiss={handleDismiss}
+            handleIndicatorStyle={handleIndicatorStyle}
           >
             <BottomSheetFlatList
               data={data}
