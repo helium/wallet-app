@@ -105,6 +105,7 @@ export const walletRestApi = createApi({
       forceRefetch({ currentArg, previousArg }) {
         return currentArg !== previousArg
       },
+      keepUnusedDataFor: 60,
     }),
   }),
 })
