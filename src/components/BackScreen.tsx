@@ -77,7 +77,11 @@ const BackScreen = ({
             <Text variant="subtitle1">{title}</Text>
           </Box>
           {!hideBack && (
-            <BackButton marginHorizontal="n_lx" onPress={navigation.goBack} />
+            <BackButton
+              marginHorizontal="n_ms"
+              paddingHorizontal="none"
+              onPress={navigation.goBack}
+            />
           )}
           <Box flex={1} />
           {onClose && (
