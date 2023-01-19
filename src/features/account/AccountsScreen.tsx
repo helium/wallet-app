@@ -386,7 +386,6 @@ const AccountsScreen = () => {
               justifyContent="center"
               onTouchStart={onTouchStart}
               accountData={accountData?.account}
-              hntPrice={data?.currentPrices?.hnt}
               selectedBalance={selectedBalance}
               onCurrencySelectorPress={toggleCurrenciesOpen(true)}
             />

@@ -23,7 +23,6 @@ import { useSpacing } from '../../theme/themeHooks'
 
 type Props = {
   accountData?: AccountData | null
-  hntPrice?: number
   selectedBalance?: AccountBalance
   onTouchStart?: (event: GestureResponderEvent) => void
   onCurrencySelectorPress?: () => void
@@ -31,7 +30,6 @@ type Props = {
 
 const AccountView = ({
   accountData,
-  hntPrice,
   selectedBalance,
   onCurrencySelectorPress,
   ...boxProps
@@ -82,21 +80,18 @@ const AccountView = ({
       CurrencyFormatter.format(selectedBalance.balance, currency).then(
         setBalanceString,
       )
-    } else if (hntPrice) {
+    } else {
       let bal = networkBalance
       if (networkStakedBalance) {
         bal = networkBalance?.plus(networkStakedBalance)
       }
       toCurrencyString(bal).then(setBalanceString)
-    } else {
-      CurrencyFormatter.format(0, currency).then(setBalanceString)
     }
   }, [
     accountNetType,
     currency,
     networkBalance,
     networkStakedBalance,
-    hntPrice,
     selectedBalance,
     toCurrencyString,
   ])

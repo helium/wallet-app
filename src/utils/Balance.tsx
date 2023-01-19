@@ -60,12 +60,9 @@ const useBalanceHook = () => {
     refetchOnMountOrArgChange: true,
   })
 
-  const { currentData: tokenPrices, refetch } = useGetTokenPricesQuery(
+  const { currentData: tokenPrices } = useGetTokenPricesQuery(
     { tokens: 'helium,solana', currency },
     {
-      refetchOnMountOrArgChange: true,
-      refetchOnReconnect: true,
-      refetchOnFocus: true,
       pollingInterval: 60 * 1000,
     },
   )
@@ -143,8 +140,6 @@ const useBalanceHook = () => {
 
     setUpdating(true)
 
-    refetch()
-
     await fetchOracle({
       variables: {
         address: currentAccount.address,
@@ -157,7 +152,7 @@ const useBalanceHook = () => {
       },
     })
     setUpdating(false)
-  }, [currentAccount, fetchAccountData, fetchOracle, refetch])
+  }, [currentAccount, fetchAccountData, fetchOracle])
 
   const oraclePrice = useMemo(() => {
     if (!tokenPrices?.helium) return
