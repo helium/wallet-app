@@ -183,12 +183,11 @@ const DappLoginScreen = () => {
   const checkTimeoutError = useCallback(async () => {
     if (connectionState !== 'undetermined') return
     await showOKAlert({
-      title: 'Login Failed',
-      message:
-        'Please close and reopen the login screen in Crowdspot and scan a new QR code to try again.',
+      title: t('dappLogin.timeoutAlert.title'),
+      message: t('dappLogin.timeoutAlert.message'),
     })
     await goBack()
-  }, [connectionState, goBack, showOKAlert])
+  }, [connectionState, goBack, showOKAlert, t])
 
   // if connectionState doesn't update after 5 seconds show timeout error
   useEffect(() => {
