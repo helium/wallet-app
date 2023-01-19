@@ -53,10 +53,6 @@ const TransferCollectableScreen = () => {
     navigation.popToTop()
   }, [navigation])
 
-  if (!metadata || !backgroundImageUri) {
-    return null
-  }
-
   return (
     <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
       <BackScreen
@@ -90,7 +86,9 @@ const TransferCollectableScreen = () => {
               >
                 <ImageBox
                   marginTop="l"
-                  backgroundColor="black"
+                  backgroundColor={
+                    metadata.image ? 'black' : 'surfaceSecondary'
+                  }
                   height={COLLECTABLE_HEIGHT - spacing.xl * 5}
                   width={COLLECTABLE_HEIGHT - spacing.xl * 5}
                   source={{ uri: metadata.image, cache: 'force-cache' }}

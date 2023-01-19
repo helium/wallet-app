@@ -229,7 +229,9 @@ const TransferCollectableScreen = () => {
                 >
                   <ImageBox
                     marginTop="l"
-                    backgroundColor="black"
+                    backgroundColor={
+                      metadata.image ? 'black' : 'surfaceSecondary'
+                    }
                     height={COLLECTABLE_HEIGHT - spacing.xl * 5}
                     width={COLLECTABLE_HEIGHT - spacing.xl * 5}
                     source={{
@@ -250,7 +252,8 @@ const TransferCollectableScreen = () => {
                 {metadata.name}
               </Text>
               <Text variant="body3Medium" color="grey600" marginBottom="xl">
-                {metadata.description || t('collectables.noDescription')}
+                {metadata.description ||
+                  t('collectablesScreen.collectables.noDescription')}
               </Text>
               <TextInput
                 floatingLabel={t('collectablesScreen.transferTo')}

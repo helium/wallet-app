@@ -89,7 +89,9 @@ const NftDetailsScreen = () => {
               >
                 <ImageBox
                   marginTop="l"
-                  backgroundColor="black"
+                  backgroundColor={
+                    metadata.image ? 'black' : 'surfaceSecondary'
+                  }
                   height={COLLECTABLE_HEIGHT - spacing.xl * 2}
                   width={COLLECTABLE_HEIGHT - spacing.xl * 2}
                   source={{ uri: metadata.image, cache: 'force-cache' }}
