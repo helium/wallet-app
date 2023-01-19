@@ -77,7 +77,8 @@ const DappLoginScreen = () => {
 
   const handleDeny = useCallback(async () => {
     await denyPair()
-  }, [denyPair])
+    await goBack()
+  }, [denyPair, goBack])
 
   const handleAllowLogin = useDebouncedCallback(
     () => {
