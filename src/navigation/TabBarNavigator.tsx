@@ -17,6 +17,7 @@ import Box from '@components/Box'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import useHaptic from '@hooks/useHaptic'
 import BlurBox from '@components/BlurBox'
+import Globe from '@assets/images/earth-globe.svg'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import SolanaMigration from '../features/migration/SolanaMigration'
@@ -24,6 +25,7 @@ import HomeNavigator from '../features/home/HomeNavigator'
 import CollectablesTabNavigator from '../features/collectables/CollectablesTabNavigator'
 import ActivityNavigator from '../features/activity/ActivityNavigator'
 import NotificationsNavigator from '../features/notifications/NotificationsNavigator'
+import BrowserNavigator from '../features/browser/BrowserNavigator'
 import SwapNavigator from '../features/swaps/SwapNavigator'
 import Swaps from '../assets/images/swaps.svg'
 
@@ -58,6 +60,7 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
         Icon: Notifications,
         iconColor: 'white',
       },
+      { value: 'browser', Icon: Globe, iconColor: 'white' },
     ]
   }, [hasNewTransactions, state.index])
 
@@ -177,6 +180,7 @@ const TabBarNavigator = () => {
           component={NotificationsNavigator}
         />
       </Tab.Navigator>
+      <Tab.Screen name="Browser" component={BrowserNavigator} />
     </>
   )
 }
