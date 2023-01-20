@@ -87,7 +87,7 @@ const HotspotDetailsScreen = () => {
   }, [collectable, navigation])
 
   const handleInfoPress = useCallback(() => {
-    if (collectable.content.metadata) {
+    if (collectable.content?.metadata) {
       navigation.push('NftMetadataScreen', {
         metadata: collectable.content.metadata,
       })
@@ -115,7 +115,7 @@ const HotspotDetailsScreen = () => {
         headerTopMargin="l"
         padding="none"
         title={t('collectablesScreen.hotspots.hotspotDetailTitle')}
-        backgroundImageUri={collectable.content.metadata.image || ''}
+        backgroundImageUri={collectable.content?.metadata?.image || ''}
         edges={backEdges}
         TrailingIcon={InfoIcon}
         onTrailingIconPress={handleInfoPress}
@@ -128,27 +128,29 @@ const HotspotDetailsScreen = () => {
             padding="m"
             alignItems="center"
           >
-            {collectable.content.metadata.image && (
-              <Box
-                shadowColor="black"
-                shadowOpacity={0.4}
-                shadowOffset={{ width: 0, height: 10 }}
-                shadowRadius={10}
-                elevation={12}
-              >
-                <ImageBox
-                  marginTop="l"
-                  backgroundColor="black"
-                  height={COLLECTABLE_HEIGHT - spacing.xl * 2}
-                  width={COLLECTABLE_HEIGHT - spacing.xl * 2}
-                  source={{
-                    uri: collectable.content.metadata.image,
-                    cache: 'force-cache',
-                  }}
-                  borderRadius="xxl"
-                />
-              </Box>
-            )}
+            <Box
+              shadowColor="black"
+              shadowOpacity={0.4}
+              shadowOffset={{ width: 0, height: 10 }}
+              shadowRadius={10}
+              elevation={12}
+            >
+              <ImageBox
+                marginTop="l"
+                backgroundColor={
+                  !collectable?.content.metadata?.image
+                    ? 'surfaceSecondary'
+                    : 'black'
+                }
+                height={COLLECTABLE_HEIGHT - spacing.xl * 2}
+                width={COLLECTABLE_HEIGHT - spacing.xl * 2}
+                source={{
+                  uri: collectable?.content.metadata?.image,
+                  cache: 'force-cache',
+                }}
+                borderRadius="xxl"
+              />
+            </Box>
             <Text
               marginTop="l"
               marginBottom="s"
@@ -156,10 +158,12 @@ const HotspotDetailsScreen = () => {
               textAlign="center"
               variant="h1Medium"
             >
-              {removeDashAndCapitalize(collectable.content.metadata.name || '')}
+              {removeDashAndCapitalize(
+                collectable.content?.metadata?.name || '',
+              )}
             </Text>
             <Text variant="body3Medium" color="grey600" marginBottom="xl">
-              {collectable.content.metadata.description ||
+              {collectable.content?.metadata?.description ||
                 t('collectablesScreen.collectables.noDescription')}
             </Text>
             <Box

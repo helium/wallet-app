@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { init } from '@helium/lazy-distributor-sdk'
 import * as client from '@helium/distributor-oracle'
@@ -21,14 +20,11 @@ import {
   fetchMoreCollectables,
 } from '../store/slices/collectablesSlice'
 import { useAppDispatch } from '../store/store'
-import {
-  getConnection,
-  onLogs,
-  removeAccountChangeListener,
-} from '../utils/solanaUtils'
+import { getConnection } from '../utils/solanaUtils'
 import { CompressedNFT } from '../types/solana'
 import { MOBILE_LAZY_KEY, IOT_LAZY_KEY } from '../utils/hotspotNftsUtils'
 import useSubmitTxn from '../graphql/useSubmitTxn'
+import * as Logger from '../utils/logger'
 
 function random(len: number): string {
   return new Array(len).join().replace(/(.|$)/g, () => {
@@ -59,7 +55,6 @@ const useHotspots = (): {
 } => {
   const { solanaNetwork: cluster, l1Network } = useAppStorage()
   const dispatch = useAppDispatch()
-  const accountSubscriptionId = useRef<number>()
   const { currentAccount, anchorProvider } = useAccountStorage()
   const collectables = useSelector((state: RootState) => state.collectables)
   const hotspotsDetails = useSelector((state: RootState) => state.hotspots)
@@ -197,65 +192,69 @@ const useHotspots = (): {
     if (!secureStorage) return
 
     const owner = new Keypair(secureStorage.keypair)
-    const onboardingKey = random(10)
     const gateway = await Keypair.makeRandom()
+    const onboardingKey = gateway.address.b58
     // Random maker address
     const maker = Address.fromB58(
-      '13AjXWhBNWdxq63dSQmPvRx3uQtaa3pMu5wXB1bPUZTTYEiwpgC',
+      '13EYmQgDF1ScLxXfugVrFCa3HiJUALwsaLBHJpTsXx1KP6UncH7',
     )
 
-    await axios.post(
-      `${Config.ONBOARDING_SERVER_URL}/v2/hotspots`,
-      {
-        onboardingKey,
-        macWlan0: random(10),
-        macEth0: random(10),
-        rpiSerial: random(10),
-        heliumSerial: random(10),
-        batch: 'example-batch',
-      },
-      {
-        headers: {
-          authorization: Config.ONBOARDING_SERVER_AUTH,
+    try {
+      await axios.post(
+        `${Config.ONBOARDING_SERVER_URL}/v2/hotspots`,
+        {
+          onboardingKey,
+          macWlan0: random(10),
+          macEth0: random(10),
+          rpiSerial: random(10),
+          heliumSerial: random(10),
+          batch: 'example-batch',
         },
-      },
-    )
-
-    // Sleep for 2 seconds to allow the oracle to create the hotspot
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    await axios.get(
-      `${Config.ONBOARDING_SERVER_URL}/v2/hotspots/${onboardingKey}`,
-    )
-
-    // Sleep for 2 seconds to allow the oracle to create the hotspot
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    const result = await axios.post(
-      `${Config.ONBOARDING_SERVER_URL}/v2/transactions/pay/${onboardingKey}`,
-      {
-        transaction: (
-          await new AddGatewayV1({
-            owner: owner.address,
-            gateway: gateway.address,
-            payer: maker,
-          }).sign({
-            gateway,
-          })
-        ).toString(),
-      },
-    )
-
-    const connection = getConnection(cluster)
-    // eslint-disable-next-line no-restricted-syntax
-    for (const solanaTransaction of result.data.data.solanaTransactions) {
-      // eslint-disable-next-line no-await-in-loop
-      await sendAndConfirmWithRetry(
-        connection,
-        Buffer.from(solanaTransaction),
-        { skipPreflight: true },
-        'confirmed',
+        {
+          headers: {
+            authorization: Config.ONBOARDING_SERVER_AUTH,
+          },
+        },
       )
+
+      // Sleep for 2 seconds to allow the oracle to create the hotspot
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+
+      await axios.get(
+        `${Config.ONBOARDING_SERVER_URL}/v2/hotspots/${onboardingKey}`,
+      )
+
+      // Sleep for 2 seconds to allow the oracle to create the hotspot
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+
+      const result = await axios.post(
+        `${Config.ONBOARDING_SERVER_URL}/v3/transactions/create-hotspot`,
+        {
+          transaction: (
+            await new AddGatewayV1({
+              owner: owner.address,
+              gateway: gateway.address,
+              payer: maker,
+            }).sign({
+              gateway,
+            })
+          ).toString(),
+        },
+      )
+
+      const connection = getConnection(cluster)
+      // eslint-disable-next-line no-restricted-syntax
+      for (const solanaTransaction of result.data.data.solanaTransactions) {
+        // eslint-disable-next-line no-await-in-loop
+        await sendAndConfirmWithRetry(
+          connection,
+          Buffer.from(solanaTransaction),
+          { skipPreflight: true },
+          'confirmed',
+        )
+      }
+    } catch (e) {
+      Logger.error(e)
     }
   }, [anchorProvider, cluster, currentAccount])
 

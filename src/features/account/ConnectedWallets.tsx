@@ -19,6 +19,7 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useNavigation } from '@react-navigation/native'
 import useLayoutHeight from '../../hooks/useLayoutHeight'
 import useBackHandler from '../../hooks/useBackHandler'
 import Box from '../../components/Box'
@@ -31,6 +32,7 @@ import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import BackgroundFill from '../../components/BackgroundFill'
 import TouchableContainer from '../../components/TouchableContainer'
+import { TabBarNavigationProp } from '../../navigation/rootTypes'
 
 export type ConnectedWalletsRef = {
   show: () => void
@@ -56,17 +58,19 @@ const ConnectedWallets = forwardRef(
     const { sortedAccounts, currentAccount, setCurrentAccount } =
       useAccountStorage()
     const { top } = useSafeAreaInsets()
+    const navigation = useNavigation<TabBarNavigationProp>()
+    const { enableTestnet } = useAppStorage()
 
     const snapPoints = useMemo(
       () => [
         listItemHeight && sortedAccounts.length
-          ? listItemHeight * (sortedAccounts.length + 2) + top
+          ? listItemHeight * (sortedAccounts.length + (enableTestnet ? 2 : 1)) +
+            top
           : '70%',
       ],
-      [listItemHeight, sortedAccounts.length, top],
+      [enableTestnet, listItemHeight, sortedAccounts.length, top],
     )
     const { setOnboardingData } = useOnboarding()
-    const { enableTestnet } = useAppStorage()
 
     const show = useCallback(() => {
       bottomSheetModalRef.current?.present()
@@ -104,9 +108,14 @@ const ConnectedWallets = forwardRef(
     const handleAccountChange = useCallback(
       (item: CSAccount) => () => {
         setCurrentAccount(item)
+        // Reset Home & Collectables stack to first screen
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Home' }, { name: 'Collectables' }],
+        })
         hide()
       },
-      [hide, setCurrentAccount],
+      [hide, navigation, setCurrentAccount],
     )
 
     const renderItem = useCallback(

@@ -19,6 +19,7 @@ import {
   VersionedTransactionResponse,
   ComputeBudgetProgram,
   AccountMeta,
+  SignatureResult,
 } from '@solana/web3.js'
 import {
   TOKEN_PROGRAM_ID,
@@ -59,15 +60,39 @@ import * as Logger from './logger'
 import { WrappedConnection } from './WrappedConnection'
 import { Mints } from '../store/slices/walletRestApi'
 
-const SolanaConnection = {
+export const SolanaConnection = {
   localnet: new WrappedConnection('http://127.0.0.1:8899'),
   devnet: new WrappedConnection('https://rpc-devnet.aws.metaplex.com/'),
+  devnetNonAssetApi: new Connection(clusterApiUrl('devnet')),
   testnet: new WrappedConnection(clusterApiUrl('testnet')),
+  testnetNonAssetApi: new Connection(clusterApiUrl('testnet')),
   'mainnet-beta': new WrappedConnection(clusterApiUrl('mainnet-beta')),
 } as const
 
 export const getConnection = (cluster: Cluster) =>
   SolanaConnection[cluster] || SolanaConnection.devnet
+
+export const confirmTransaction = async (
+  cluster: Cluster,
+  signature: string,
+  blockhash: string,
+  lastValidBlockHeight: number,
+): Promise<SignatureResult> => {
+  let conn: WrappedConnection | Connection = getConnection(cluster)
+  if (cluster === 'devnet') {
+    conn = SolanaConnection.devnetNonAssetApi
+  }
+
+  if (cluster === 'testnet') {
+    conn = SolanaConnection.testnetNonAssetApi
+  }
+
+  const confirmation = await conn.confirmTransaction(
+    { signature, blockhash, lastValidBlockHeight },
+    'finalized',
+  )
+  return confirmation.value
+}
 
 export const TXN_FEE_IN_LAMPORTS = 5000
 export const TXN_FEE_IN_SOL = TXN_FEE_IN_LAMPORTS / LAMPORTS_PER_SOL
@@ -249,18 +274,6 @@ export const getTxn = async (
   return getTxn(cluster, signature, { maxTries: remainingTries, waitMS })
 }
 
-export const confirmTxn = async (cluster: Cluster, signature: string) => {
-  const { blockhash, lastValidBlockHeight } = await getConnection(
-    cluster,
-  ).getLatestBlockhash()
-
-  return getConnection(cluster).confirmTransaction({
-    blockhash,
-    lastValidBlockHeight,
-    signature,
-  })
-}
-
 export const getAssocTokenAddress = (
   walletAddress: string,
   mintAddress: string,
@@ -302,7 +315,14 @@ export const onAccountChange = (
   callback: (address: string) => void,
 ) => {
   const account = new PublicKey(address)
-  return getConnection(cluster).onAccountChange(account, () => {
+  let conn: WrappedConnection | Connection = getConnection(cluster)
+  if (cluster === 'devnet') {
+    conn = SolanaConnection.devnetNonAssetApi
+  }
+  if (cluster === 'testnet') {
+    conn = SolanaConnection.testnetNonAssetApi
+  }
+  return conn.onAccountChange(account, () => {
     callback(address)
   })
 }
@@ -313,7 +333,14 @@ export const onLogs = (
   callback: (address: string, log: Logs) => void,
 ) => {
   const account = new PublicKey(address)
-  return getConnection(cluster).onLogs(
+  let conn: WrappedConnection | Connection = getConnection(cluster)
+  if (cluster === 'devnet') {
+    conn = SolanaConnection.devnetNonAssetApi
+  }
+  if (cluster === 'testnet') {
+    conn = SolanaConnection.testnetNonAssetApi
+  }
+  return conn.onLogs(
     account,
     (log) => {
       callback(address, log)
@@ -323,7 +350,14 @@ export const onLogs = (
 }
 
 export const removeAccountChangeListener = (cluster: Cluster, id: number) => {
-  return getConnection(cluster).removeAccountChangeListener(id)
+  let conn: WrappedConnection | Connection = getConnection(cluster)
+  if (cluster === 'devnet') {
+    conn = SolanaConnection.devnetNonAssetApi
+  }
+  if (cluster === 'testnet') {
+    conn = SolanaConnection.testnetNonAssetApi
+  }
+  return conn.removeAccountChangeListener(id)
 }
 
 export const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
@@ -546,9 +580,11 @@ export const transferCollectable = async (
       maxRetries: 5,
     })
 
-    await conn.confirmTransaction(
-      { signature, blockhash, lastValidBlockHeight },
-      'finalized',
+    await confirmTransaction(
+      cluster,
+      signature,
+      blockhash,
+      lastValidBlockHeight,
     )
 
     const txn = await getTxn(cluster, signature)
@@ -657,13 +693,6 @@ export const transferCompressedCollectable = async (
 
     const assetProof = await conn.getAssetProof(collectable.id)
 
-    const nonceCount = await getNonceCount(
-      conn,
-      new PublicKey(assetProof.tree_id),
-    )
-
-    const leafNonce = nonceCount.sub(new BN(1))
-
     const treeAuthority = await getBubblegumAuthorityPDA(
       new PublicKey(assetProof.tree_id),
     )
@@ -710,8 +739,8 @@ export const transferCompressedCollectable = async (
               bs58.decode(collectable.compression.creator_hash.trim()),
             ),
           ),
-          nonce: leafNonce,
-          index: 0,
+          nonce: collectable.compression.leaf_id,
+          index: collectable.compression.leaf_id,
         },
       ),
     )
@@ -735,9 +764,11 @@ export const transferCompressedCollectable = async (
       maxRetries: 5,
     })
 
-    await conn.confirmTransaction(
-      { signature, blockhash, lastValidBlockHeight },
-      'finalized',
+    await confirmTransaction(
+      cluster,
+      signature,
+      blockhash,
+      lastValidBlockHeight,
     )
 
     const txn = await getTxn(cluster, signature)
@@ -769,7 +800,6 @@ export const getCompressedCollectables = async (
   cluster: Cluster,
   oldestCollectable?: string,
 ) => {
-  // TODO: Replace with devnet when metaplex RPC is ready for all other txs to be sent to devnet
   const conn = getConnection(cluster)
   const { items } = await conn.getAssetsByOwner(
     pubKey.toString(),
@@ -794,19 +824,20 @@ export const getCollectablesMetadata = async (
 ) => {
   const collectablesWithMetadata = await Promise.all(
     collectables.map(async (col) => {
-      let json
       try {
-        json = await (await fetch(col.content.json_uri)).json()
+        const { data } = await axios.get(col.content.json_uri, {
+          timeout: 3000,
+        })
         return {
           ...col,
           content: {
             ...col.content,
-            metadata: { ...col.content.metadata, ...json },
+            metadata: { ...col.content.metadata, ...data },
           },
         }
       } catch (e) {
         Logger.error(e)
-        return null
+        return col
       }
     }),
   )
@@ -826,6 +857,7 @@ export const groupCollectables = (collectables: CompressedNFT[]) => {
         metadata: { symbol },
       },
     } = cur
+
     if (!acc[symbol || 'UNKNOWN']) {
       acc[symbol || 'UNKNOWN'] = [cur]
     } else {
@@ -1034,9 +1066,11 @@ export async function createTreasurySwapTxn(
       skipPreflight: true,
     })
 
-    await conn.confirmTransaction(
-      { signature, blockhash, lastValidBlockHeight },
-      'finalized',
+    await confirmTransaction(
+      cluster,
+      signature,
+      blockhash,
+      lastValidBlockHeight,
     )
 
     const txn = await getTxn(cluster, signature)
