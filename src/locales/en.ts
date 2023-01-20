@@ -378,6 +378,11 @@ export default {
       title: 'Ledger Approval',
     },
     login: 'Login',
+    timeoutAlert: {
+      title: 'Login Failed',
+      message:
+        'Please close and reopen the login screen in Crowdspot and scan a new QR code to try again.',
+    },
   },
   editContact: {
     delete: 'Delete',
