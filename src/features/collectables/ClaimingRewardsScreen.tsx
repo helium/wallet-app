@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import BackArrow from '@assets/images/backArrow.svg'
 import IndeterminateProgressBar from '../../components/IndeterminateProgressBar'
-import { CollectableNavigationProp } from './collectablesTypes'
 import { DelayedFadeIn } from '../../components/FadeInOut'
 import Box from '../../components/Box'
 import ButtonPressable from '../../components/ButtonPressable'
@@ -17,10 +16,11 @@ import { RootState } from '../../store/rootReducer'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 import AccountIcon from '../../components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { TabBarNavigationProp } from '../../navigation/rootTypes'
 
 const ClaimingRewardsScreen = () => {
   const { currentAccount } = useAccountStorage()
-  const navigation = useNavigation<CollectableNavigationProp>()
+  const navigation = useNavigation<TabBarNavigationProp>()
   const backEdges = useMemo(() => ['top'] as Edge[], [])
 
   const { t } = useTranslation()
@@ -28,7 +28,11 @@ const ClaimingRewardsScreen = () => {
     (reduxState: RootState) => reduxState.solana.payment,
   )
   const onReturn = useCallback(() => {
-    navigation.popToTop()
+    // Reset Collectables stack to first screen
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Collectables' }],
+    })
   }, [navigation])
 
   if (!currentAccount) {

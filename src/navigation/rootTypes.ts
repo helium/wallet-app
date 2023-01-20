@@ -6,4 +6,13 @@ export type RootStackParamList = {
   TabBarNavigator: undefined
 }
 
+export type TabBarStackParamList = {
+  Home: undefined
+  Collectables: undefined
+  Swap: undefined
+  Activity: undefined
+  NotificationsNavigator: undefined
+}
+
 export type RootNavigationProp = StackNavigationProp<RootStackParamList>
+export type TabBarNavigationProp = StackNavigationProp<TabBarStackParamList>

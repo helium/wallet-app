@@ -156,6 +156,9 @@ export default {
       'You can exit this screen while you wait. We’ll update your Wallet momentarily.',
     claimComplete: 'Rewards Claimed!',
     claimCompleteBody: 'We’ve added your tokens to your wallet.',
+    transferCollectableAlertTitle:
+      'Are you sure you will like to transfer your collectable?',
+    transferCollectableAlertBody: 'This action is irreversible.',
     collectables: {
       noTraitType: 'No trait type',
       noTraitValue: 'No trait value',

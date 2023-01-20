@@ -170,33 +170,38 @@ export const makeCollectablePayment = createAsyncThunk(
   ) => {
     if (!account?.solanaAddress) throw new Error('No solana account found')
 
-    const transfer = collectable.compression.compressed
-      ? await solUtils.transferCompressedCollectable(
-          cluster,
-          account.solanaAddress,
-          account.address,
-          collectable,
-          payee,
-        )
-      : await solUtils.transferCollectable(
-          cluster,
-          account.solanaAddress,
-          account.address,
-          collectable,
-          payee,
-        )
+    try {
+      const transfer = collectable.compression.compressed
+        ? await solUtils.transferCompressedCollectable(
+            cluster,
+            account.solanaAddress,
+            account.address,
+            collectable,
+            payee,
+          )
+        : await solUtils.transferCollectable(
+            cluster,
+            account.solanaAddress,
+            account.address,
+            collectable,
+            payee,
+          )
 
-    // If the transfer is successful, we need to update the collectables
-    if (!transfer.txn?.meta?.err) {
-      dispatch(fetchCollectables({ account, cluster }))
+      // If the transfer is successful, we need to update the collectables
+      if (!transfer.txn?.meta?.err) {
+        dispatch(fetchCollectables({ account, cluster }))
+      }
+
+      return await dispatch(
+        walletRestApi.endpoints.postPayment.initiate({
+          txnSignature: transfer.signature,
+          cluster,
+        }),
+      )
+    } catch (error) {
+      Logger.error(error)
+      throw error
     }
-
-    return dispatch(
-      walletRestApi.endpoints.postPayment.initiate({
-        txnSignature: transfer.signature,
-        cluster,
-      }),
-    )
   },
 )
 
@@ -231,6 +236,7 @@ export const sendTreasurySwap = createAsyncThunk(
       )
     } catch (error) {
       Logger.error(error)
+      throw error
     }
   },
 )
@@ -260,6 +266,7 @@ export const sendAnchorTxn = createAsyncThunk(
       )
     } catch (error) {
       Logger.error(error)
+      throw error
     }
   },
 )
@@ -290,6 +297,7 @@ export const claimRewards = createAsyncThunk(
       )
     } catch (error) {
       Logger.error(error)
+      throw error
     }
   },
 )
@@ -327,6 +335,7 @@ export const claimAllRewards = createAsyncThunk(
       )
     } catch (error) {
       Logger.error(error)
+      throw error
     }
   },
 )

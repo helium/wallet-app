@@ -34,9 +34,7 @@ export const fetchCollectables = createAsyncThunk(
       pubKey,
       cluster,
     )
-    const groupedCollectables = await solUtils.groupCollectables(
-      fetchedCollectables,
-    )
+    const groupedCollectables = solUtils.groupCollectables(fetchedCollectables)
 
     const collectablesWithMetadata = await solUtils.getCollectablesMetadata(
       fetchedCollectables,
@@ -45,6 +43,7 @@ export const fetchCollectables = createAsyncThunk(
     const groupedCollectablesWithMeta = solUtils.groupCollectablesWithMetaData(
       collectablesWithMetadata,
     )
+
     return {
       groupedCollectables,
       groupedCollectablesWithMeta,
@@ -75,9 +74,7 @@ export const fetchMoreCollectables = createAsyncThunk(
       cluster,
       oldestCollectable,
     )
-    const groupedCollectables = await solUtils.groupCollectables(
-      fetchedCollectables,
-    )
+    const groupedCollectables = solUtils.groupCollectables(fetchedCollectables)
 
     const collectablesWithMetadata = await solUtils.getCollectablesMetadata(
       fetchedCollectables,
@@ -86,6 +83,7 @@ export const fetchMoreCollectables = createAsyncThunk(
     const groupedCollectablesWithMeta = solUtils.groupCollectablesWithMetaData(
       collectablesWithMetadata,
     )
+
     return {
       groupedCollectables,
       groupedCollectablesWithMeta,

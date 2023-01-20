@@ -34,6 +34,7 @@ const HotspotListItem = ({
   const {
     content: { metadata },
   } = hotspot
+
   const mint = useMemo(() => new PublicKey(hotspot.id), [hotspot.id])
   const { pendingMobileRewards, pendingIotRewards } = useHotspot(mint)
 
