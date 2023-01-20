@@ -59,17 +59,18 @@ const ConnectedWallets = forwardRef(
       useAccountStorage()
     const { top } = useSafeAreaInsets()
     const navigation = useNavigation<TabBarNavigationProp>()
+    const { enableTestnet } = useAppStorage()
 
     const snapPoints = useMemo(
       () => [
         listItemHeight && sortedAccounts.length
-          ? listItemHeight * (sortedAccounts.length + 2) + top
+          ? listItemHeight * (sortedAccounts.length + (enableTestnet ? 2 : 1)) +
+            top
           : '70%',
       ],
-      [listItemHeight, sortedAccounts.length, top],
+      [enableTestnet, listItemHeight, sortedAccounts.length, top],
     )
     const { setOnboardingData } = useOnboarding()
-    const { enableTestnet } = useAppStorage()
 
     const show = useCallback(() => {
       bottomSheetModalRef.current?.present()
