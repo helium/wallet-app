@@ -45,6 +45,7 @@ import { CSAccount } from '../../storage/cloudStorage'
 import * as Logger from '../../utils/logger'
 import TextTransform from '../../components/TextTransform'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
+import useAlert from '../../hooks/useAlert'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -77,6 +78,7 @@ const TransferCollectableScreen = () => {
   const { currentAccount } = useAccountStorage()
   const addressBookRef = useRef<AddressBookRef>(null)
   const colors = useColors()
+  const { showOKCancelAlert } = useAlert()
 
   const {
     content: { metadata },
@@ -152,6 +154,12 @@ const TransferCollectableScreen = () => {
   )
 
   const handleTransfer = useCallback(async () => {
+    const decision = await showOKCancelAlert({
+      title: t('collectablesScreen.transferCollectableAlertTitle'),
+      message: t('collectablesScreen.transferCollectableAlertBody'),
+    })
+    if (!decision) return
+
     try {
       submitCollectable(collectable, recipient)
       navigation.navigate('TransferCompleteScreen', {
@@ -161,7 +169,14 @@ const TransferCollectableScreen = () => {
       Logger.error(error)
       setNetworkError((error as Error).message)
     }
-  }, [collectable, navigation, recipient, submitCollectable])
+  }, [
+    collectable,
+    navigation,
+    recipient,
+    showOKCancelAlert,
+    submitCollectable,
+    t,
+  ])
 
   const toggleActionSheet = useCallback(
     (open) => () => {

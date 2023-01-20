@@ -14,15 +14,16 @@ import BackScreen from '../../components/BackScreen'
 import { RootState } from '../../store/rootReducer'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 import BackArrow from '../../assets/images/backArrow.svg'
-import { SwapNavigationProp, SwapStackParamList } from './swapTypes'
+import { SwapStackParamList } from './swapTypes'
 import ArrowRight from '../../assets/images/arrowRight.svg'
 import TokenIcon from '../../components/TokenIcon'
+import { TabBarNavigationProp } from '../../navigation/rootTypes'
 
 type Route = RouteProp<SwapStackParamList, 'SwappingScreen'>
 
 const SwappingScreen = () => {
   const route = useRoute<Route>()
-  const navigation = useNavigation<SwapNavigationProp>()
+  const navigation = useNavigation<TabBarNavigationProp>()
   const backEdges = useMemo(() => ['top'] as Edge[], [])
 
   const { t } = useTranslation()
@@ -33,7 +34,11 @@ const SwappingScreen = () => {
   )
 
   const onReturn = useCallback(() => {
-    navigation.popToTop()
+    // Reset Swap stack to first screen
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Swap' }],
+    })
   }, [navigation])
 
   const TokensSwappedContainer = useMemo(() => {

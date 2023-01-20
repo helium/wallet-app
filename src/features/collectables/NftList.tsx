@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 import { times } from 'lodash'
 import { FlatList } from 'react-native-gesture-handler'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { RefreshControl } from 'react-native'
 import { useIsFocused } from '@react-navigation/native'
 import Box from '../../components/Box'
@@ -11,7 +10,6 @@ import { useColors, useSpacing } from '../../theme/themeHooks'
 import CircleLoader from '../../components/CircleLoader'
 
 const NftList = () => {
-  const { bottom } = useSafeAreaInsets()
   const spacing = useSpacing()
   const isFocused = useIsFocused()
 
@@ -24,8 +22,6 @@ const NftList = () => {
     fetchingMore,
   } = useCollectables()
   const { primaryText } = useColors()
-
-  const bottomSpace = useMemo(() => bottom * 2, [bottom])
 
   const handleOnEndReached = useCallback(() => {
     if (!fetchingMore && isFocused) {
@@ -74,18 +70,17 @@ const NftList = () => {
   const contentContainerStyle = useMemo(
     () => ({
       marginTop: spacing.m,
-      paddingBottom: bottomSpace,
     }),
-    [bottomSpace, spacing.m],
+    [spacing.m],
   )
-
-  const Footer = useCallback(() => {
-    return fetchingMore ? (
-      <Box marginTop="m">
-        <CircleLoader loaderSize={40} />
+  const Footer = useCallback(
+    () => (
+      <Box marginTop="m" marginBottom="s">
+        {fetchingMore ? <CircleLoader loaderSize={40} /> : <Box height={40} />}
       </Box>
-    ) : null
-  }, [fetchingMore])
+    ),
+    [fetchingMore],
+  )
 
   return (
     <FlatList

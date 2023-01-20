@@ -693,13 +693,6 @@ export const transferCompressedCollectable = async (
 
     const assetProof = await conn.getAssetProof(collectable.id)
 
-    const nonceCount = await getNonceCount(
-      conn,
-      new PublicKey(assetProof.tree_id),
-    )
-
-    const leafNonce = nonceCount.sub(new BN(1))
-
     const treeAuthority = await getBubblegumAuthorityPDA(
       new PublicKey(assetProof.tree_id),
     )
@@ -746,8 +739,8 @@ export const transferCompressedCollectable = async (
               bs58.decode(collectable.compression.creator_hash.trim()),
             ),
           ),
-          nonce: leafNonce,
-          index: 0,
+          nonce: collectable.compression.leaf_id,
+          index: collectable.compression.leaf_id,
         },
       ),
     )

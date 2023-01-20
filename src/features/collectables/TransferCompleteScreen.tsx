@@ -8,10 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import BackArrow from '@assets/images/backArrow.svg'
 import IndeterminateProgressBar from '../../components/IndeterminateProgressBar'
-import {
-  CollectableNavigationProp,
-  CollectableStackParamList,
-} from './collectablesTypes'
+import { CollectableStackParamList } from './collectablesTypes'
 import { DelayedFadeIn } from '../../components/FadeInOut'
 import Box from '../../components/Box'
 import ImageBox from '../../components/ImageBox'
@@ -22,6 +19,7 @@ import BackScreen from '../../components/BackScreen'
 import { useSpacing } from '../../theme/themeHooks'
 import { RootState } from '../../store/rootReducer'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
+import { TabBarNavigationProp } from '../../navigation/rootTypes'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -31,7 +29,7 @@ type Route = RouteProp<CollectableStackParamList, 'TransferCompleteScreen'>
 
 const TransferCollectableScreen = () => {
   const route = useRoute<Route>()
-  const navigation = useNavigation<CollectableNavigationProp>()
+  const navigation = useNavigation<TabBarNavigationProp>()
   const COLLECTABLE_HEIGHT = ww
   const backEdges = useMemo(() => ['top'] as Edge[], [])
 
@@ -50,7 +48,11 @@ const TransferCollectableScreen = () => {
   }, [metadata.image])
 
   const onReturn = useCallback(() => {
-    navigation.popToTop()
+    // Reset Collectables stack to first screen
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Collectables' }],
+    })
   }, [navigation])
 
   return (

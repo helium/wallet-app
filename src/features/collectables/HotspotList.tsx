@@ -1,7 +1,6 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback } from 'react'
 import { times } from 'lodash'
 import { FlatList } from 'react-native-gesture-handler'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { RefreshControl } from 'react-native'
 import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
@@ -17,11 +16,9 @@ import CircleLoader from '../../components/CircleLoader'
 import useHaptic from '../../hooks/useHaptic'
 
 const HotspotList = () => {
-  const { bottom } = useSafeAreaInsets()
   const navigation = useNavigation<CollectableNavigationProp>()
   const { t } = useTranslation()
   const isFocused = useIsFocused()
-  const bottomSpace = useMemo(() => bottom * 2, [bottom])
   const { primaryText } = useColors()
   const { triggerImpact } = useHaptic()
 
@@ -141,20 +138,14 @@ const HotspotList = () => {
     return item.id
   }, [])
 
-  const contentContainerStyle = useMemo(
-    () => ({
-      paddingBottom: bottomSpace,
-    }),
-    [bottomSpace],
-  )
-
-  const Footer = useCallback(() => {
-    return fetchingMore ? (
-      <Box marginTop="m">
-        <CircleLoader loaderSize={40} />
+  const Footer = useCallback(
+    () => (
+      <Box marginTop="m" marginBottom="s">
+        {fetchingMore ? <CircleLoader loaderSize={40} /> : <Box height={40} />}
       </Box>
-    ) : null
-  }, [fetchingMore])
+    ),
+    [fetchingMore],
+  )
 
   return (
     <FlatList
@@ -173,10 +164,9 @@ const HotspotList = () => {
           tintColor={primaryText}
         />
       }
-      contentContainerStyle={contentContainerStyle}
       renderItem={renderCollectable}
       ListEmptyComponent={renderEmptyComponent}
-      onEndReachedThreshold={0.01}
+      onEndReachedThreshold={0.001}
       onEndReached={handleOnEndReached}
       keyExtractor={keyExtractor}
       ListFooterComponent={Footer}
