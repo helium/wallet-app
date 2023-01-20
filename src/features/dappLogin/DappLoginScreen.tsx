@@ -1,6 +1,6 @@
 import { TokenBurnV1 } from '@helium/transactions'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import React, { memo, useCallback, useMemo, useRef } from 'react'
+import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, Linking } from 'react-native'
 import { useDebouncedCallback } from 'use-debounce/lib'
@@ -19,7 +19,6 @@ import {
 } from '../../storage/TransactionProvider'
 import { useColors } from '../../theme/themeHooks'
 import useAlert from '../../hooks/useAlert'
-import useDisappear from '../../hooks/useDisappear'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import { useWalletConnect } from './WalletConnectProvider'
 import DappConnect from './DappConnect'
@@ -57,7 +56,7 @@ const DappLoginScreen = () => {
       try {
         await pairClient(params.uri)
       } catch (error) {
-        showOKAlert({
+        await showOKAlert({
           title: t('dappLogin.error', {
             appName: sessionProposal?.params.proposer.metadata.name,
           }),
@@ -67,22 +66,18 @@ const DappLoginScreen = () => {
     }
   }, [pairClient, params.callback, params.uri])
 
-  const goBack = useCallback(() => {
+  const goBack = useCallback(async () => {
+    await disconnect()
     if (navigation.canGoBack()) {
       navigation.goBack()
     } else {
       navigation.replace('AccountsScreen')
     }
-  }, [navigation])
-
-  useDisappear(() => {
-    goBack()
-    disconnect()
-  })
+  }, [disconnect, navigation])
 
   const handleDeny = useCallback(async () => {
     await denyPair()
-    goBack()
+    await goBack()
   }, [denyPair, goBack])
 
   const handleAllowLogin = useDebouncedCallback(
@@ -102,7 +97,7 @@ const DappLoginScreen = () => {
     try {
       await approvePair(currentAccount.address)
     } catch (error) {
-      showOKAlert({
+      await showOKAlert({
         title: t('dappLogin.error', {
           appName: sessionProposal?.params.proposer.metadata.name,
         }),
@@ -146,7 +141,7 @@ const DappLoginScreen = () => {
         address: currentAccount.address,
       })
     } catch (error) {
-      showOKAlert({
+      await showOKAlert({
         title: t('dappLogin.error', {
           appName: sessionProposal?.params.proposer.metadata.name,
         }),
@@ -154,10 +149,10 @@ const DappLoginScreen = () => {
       })
     }
 
-    goBack()
+    await goBack()
 
     if (params.callback && (await Linking.canOpenURL(params.callback))) {
-      Linking.openURL(params.callback)
+      await Linking.openURL(params.callback)
     }
   }, [currentAccount, loginRequest])
 
@@ -165,12 +160,12 @@ const DappLoginScreen = () => {
     async ({ txn: signedTxn }: { txn: TokenBurnV1; txnJson: string }) => {
       if (!currentAccount) return
 
-      login({
+      await login({
         txn: signedTxn.toString(),
         address: currentAccount.address,
       })
 
-      goBack()
+      await goBack()
     },
     [currentAccount, goBack, login],
   )
@@ -181,10 +176,27 @@ const DappLoginScreen = () => {
         title: t('generic.error'),
         message: error.toString(),
       })
-      goBack()
+      await goBack()
     },
     [goBack, showOKAlert, t],
   )
+
+  const checkTimeoutError = useCallback(async () => {
+    if (connectionState !== 'undetermined') return
+    await showOKAlert({
+      title: t('dappLogin.timeoutAlert.title'),
+      message: t('dappLogin.timeoutAlert.message'),
+    })
+    await goBack()
+  }, [connectionState, goBack, showOKAlert, t])
+
+  // if connectionState doesn't update after 5 seconds show timeout error
+  useEffect(() => {
+    const timer = setTimeout(checkTimeoutError, 5000)
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [connectionState, goBack, checkTimeoutError, showOKAlert, t])
 
   const body = useMemo(() => {
     if (!sessionProposal || connectionState === 'undetermined') {
