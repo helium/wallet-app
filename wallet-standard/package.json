@@ -1,5 +1,6 @@
 {
     "private": true,
+    "version": "1.0.0",
     "name": "helium-standard-wallet",
     "author": "Solana Maintainers <maintainers@solana.foundation>",
     "repository": "https://github.com/solana-labs/wallet-standard",
@@ -50,6 +51,5 @@
         "ts-jest-resolver": "^2.0.0",
         "ts-node": "^9.0.0",
         "tslib": "^2.3.1"
-    },
-    "version": null
+    }
 }

@@ -16,7 +16,7 @@ function registerWallet(wallet) {
     console.error('wallet-standard:app-ready event listener could not be added\n', error);
   }
 }
-class RegisterWalletEvent extends Event {
+class RegisterWalletEvent {
   #detail;
 
   get detail() {
