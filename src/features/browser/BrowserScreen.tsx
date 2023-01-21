@@ -1,10 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Edge } from 'react-native-safe-area-context'
-import { WebView, WebViewSharedProps } from 'react-native-webview'
-import {
-  withWebViewBridge,
-  WebViewWithBridgeProps,
-} from 'react-native-webview-bridge-seamless'
+import { WebView } from 'react-native-webview'
 import '@expo/browser-polyfill'
 // import 'events-polyfill'
 import { PublicKey } from '@solana/web3.js'
@@ -14,12 +10,10 @@ import { useAsync } from 'react-async-hook'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
-export const WebViewWithBridge = withWebViewBridge(WebView as any)
-
 const BrowserScreen = () => {
   const edges = useMemo(() => ['top'] as Edge[], [])
   const { currentAccount } = useAccountStorage()
-  const webview = useRef<WebView & WebViewWithBridgeProps>()
+  const webview = useRef<WebView>()
   const [jsUri, setUri] = useState<string | undefined>()
 
   useEffect(() => {
@@ -105,6 +99,7 @@ const BrowserScreen = () => {
     if (!webview?.current) return
 
     const script = `
+    async function asyncCall() {
     var wallet = {
       publicKey: 'publicKey',
       connect: () =>
@@ -135,8 +130,9 @@ const BrowserScreen = () => {
     };
 
     window.heliumWallet = wallet;
-    var timeout = 5000; // promise will fail if no response in 5 seconds
-    window.getReactNativeApi(timeout).intializeWallet(wallet);
+
+    var f = eval(${initialize});
+    f(wallet);
 
     // Attach the reference to the window, guarding against errors.
     try {
@@ -156,13 +152,16 @@ const BrowserScreen = () => {
     });
 
 
-    window.ReactNativeWebView.postMessage(JSON.stringify({"hi": "${currentAccount?.solanaAddress}", "wallet": JSON.stringify(wallet), "path": window.location.pathname}));
+    window.ReactNativeWebView.postMessage(JSON.stringify({"hi": "${currentAccount?.solanaAddress}", "wallet": f.toString(), "path": window.location.pathname}));
 
+    }
+    // noinspection JSIgnoredPromiseFromCall
+    asyncCall();
     true;
     `
 
-    console.log('webview.current', webview.current)
-    webview.current.webview.injectJavaScript(script)
+    // console.log('webview.current', webview.current)
+    webview.current.injectJavaScript(script)
   }, [currentAccount])
 
   useAsync(async () => {
@@ -173,14 +172,11 @@ const BrowserScreen = () => {
   return (
     <SafeAreaBox flex={1} edges={edges}>
       {jsUri && (
-        <WebViewWithBridge
+        <WebView
           ref={webview}
           javaScriptEnabled
           onLoad={injectModule}
           onMessage={onMessage}
-          reactNativeApi={{
-            intializeWallet: initialize,
-          }}
           source={{
             uri: 'https://solana-labs.github.io/wallet-adapter/example/',
           }}

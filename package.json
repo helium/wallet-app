@@ -177,7 +177,6 @@
     "react-native-udp": "2.7.0",
     "react-native-video": "5.2.0",
     "react-native-webview": "^11.26.0",
-    "react-native-webview-bridge-seamless": "^0.0.15",
     "react-redux": "8.0.4",
     "readable-stream": "3.6.0",
     "redux-persist": "6.0.0",
