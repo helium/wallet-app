@@ -35,13 +35,12 @@ const TokenPricesTicker = ({ ...boxProps }: Props) => {
 
   const text = useMemo(() => {
     if (!tokenPrices) return t('generic.noData')
-    if (isFetching || !tokenPrices.helium || !tokenPrices.solana)
+    if (isFetching && (!tokenPrices.helium || !tokenPrices.solana))
       return t('generic.loading')
 
     const heliumPrice = tokenPrices.helium[currency.toLowerCase()]
-    const solanaPrice = tokenPrices.solana[currency.toLowerCase()]
 
-    return `HNT = $${heliumPrice} • SOL = $${solanaPrice}`
+    return `HNT = $${heliumPrice}`
   }, [currency, isFetching, t, tokenPrices])
 
   return (
