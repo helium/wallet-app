@@ -158,9 +158,7 @@ const useBalanceHook = () => {
     if (!tokenPrices?.helium) return
 
     const heliumPrice = tokenPrices.helium[currency.toLowerCase()]
-    const bal = Balance.fromFloatAndTicker(heliumPrice, 'HNT')
-    bal.type = CurrencyType.usd
-    return bal
+    return Balance.fromFloatAndTicker(heliumPrice, 'USD')
   }, [currency, tokenPrices])
 
   const solanaPrice = useMemo(() => {
