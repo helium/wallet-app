@@ -158,8 +158,9 @@ const useBalanceHook = () => {
     if (!tokenPrices?.helium) return
 
     const heliumPrice = tokenPrices.helium[currency.toLowerCase()]
-    // Multiple by 10 the 8th power to get the price in USD
-    return new Balance(heliumPrice * 10 ** 8, CurrencyType.usd)
+    const bal = Balance.fromFloatAndTicker(heliumPrice, 'HNT')
+    bal.type = CurrencyType.usd
+    return bal
   }, [currency, tokenPrices])
 
   const solanaPrice = useMemo(() => {
