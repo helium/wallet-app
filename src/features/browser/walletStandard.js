@@ -294,7 +294,36 @@ class HeliumWallet {
     #signAndSendTransaction = async (...inputs) => {
         if (!this.#account) throw new Error('not connected')
         const outputs = []
-        return outputs
+
+        window.ReactNativeWebView.postMessage(
+            JSON.stringify({ type: 'signAndSendTransaction', inputs }),
+        )
+
+        return new Promise((resolve, reject) => {
+            const listener = (message) => {
+                window.removeEventListener('message', listener)
+                const parsedData = JSON.parse(message.data)
+                if (parsedData.type === 'signatureDeclined') {
+                    reject(new Error('Signature declined'))
+                }
+                const { data } = JSON.parse(message.data)
+
+                const signatures = data.map(({ signature }) => {
+                    return {
+                        signature: new Uint8Array(Object.keys(signature).map((key) => {
+                            return signature[key]
+                        })),
+                    }
+                })
+
+                window.ReactNativeWebView.postMessage(
+                    JSON.stringify({ "data": signatures }),
+                )
+
+                resolve(signatures)
+            }
+            window.addEventListener('message', listener)
+        })
     }
 
     #signTransaction = async (...inputs) => {
@@ -321,7 +350,6 @@ class HeliumWallet {
                         }),
                     }
                 })
-                window.ReactNativeWebView.postMessage(JSON.stringify({ data }))
                 resolve(signedTxns)
             }
             window.addEventListener('message', listener)
@@ -331,7 +359,36 @@ class HeliumWallet {
     #signMessage = async (...inputs) => {
         if (!this.#account) throw new Error('not connected')
         const outputs = []
-        return outputs
+        window.ReactNativeWebView.postMessage(
+            JSON.stringify({ type: 'signMessage', inputs }),
+        )
+
+        return new Promise((resolve, reject) => {
+            const listener = (message) => {
+                window.removeEventListener('message', listener)
+                const parsedData = JSON.parse(message.data)
+                if (parsedData.type === 'signatureDeclined') {
+                    reject(new Error('Signature declined'))
+                }
+                const { data } = JSON.parse(message.data)
+
+                const signedMessages = data.map(({ signature, signedMessage }) => {
+                    return {
+                        signedMessage: new Uint8Array(signedMessage),
+                        signature: new Uint8Array(Object.keys(signature).map((key) => {
+                            return signature[key]
+                        })),
+                    }
+                })
+
+                window.ReactNativeWebView.postMessage(
+                    JSON.stringify({ "data": signedMessages }),
+                )
+                
+                resolve(signedMessages)
+            }
+            window.addEventListener('message', listener)
+        })
     }
 }
 

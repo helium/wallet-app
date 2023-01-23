@@ -1,19 +1,20 @@
 /* eslint-disable no-case-declarations */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { Edge } from 'react-native-safe-area-context'
 import { WebView } from 'react-native-webview'
-import '@expo/browser-polyfill'
-// import 'events-polyfill'
+import nacl from 'tweetnacl'
 import { PublicKey, Transaction } from '@solana/web3.js'
-import { initialize } from '@helium/wallet-standard/dist'
 import { Asset } from 'expo-asset'
 import { useAsync } from 'react-async-hook'
 import bs58 from 'bs58'
-import util from 'util'
+// import util from 'util'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import useAlert from '../../hooks/useAlert'
 import injectWalletStandard from './walletStandard'
+import { getKeypair } from '../../storage/secureStorage'
+import { getConnection } from '../../utils/solanaUtils'
+import * as Logger from '../../utils/logger'
 
 const BrowserScreen = () => {
   const edges = useMemo(() => ['top'] as Edge[], [])
@@ -23,143 +24,182 @@ const BrowserScreen = () => {
   const [jsInjected, setJsInjected] = useState(false)
   const { showOKCancelAlert } = useAlert()
 
-  useEffect(() => {
-    if (!currentAccount?.solanaAddress) return
-
-    const publicKey = new PublicKey(currentAccount.solanaAddress)
-
-    const disconnect = async () => {
-      console.log('disconnect')
-    }
-
-    const signAndSendTransaction = async (transaction: any) => {
-      console.log('transaction', transaction)
-      return { signature: 'signature' }
-    }
-
-    const signTransaction = async (transaction: any) => {
-      console.log('transaction', transaction)
-      return { signature: 'signature' }
-    }
-
-    const signAllTransactions = async (transactions: any) => {
-      console.log('transactions', transactions)
-      return transactions
-    }
-
-    const signMessage = async (message: any) => {
-      console.log('message', message)
-      const uint8Arr = new Uint8Array(message)
-      return { signature: uint8Arr }
-    }
-
-    // Dummy Wallet API
-    const heliumWallet = {
-      publicKey,
-      connect: () =>
-        new Promise<{ publicKey: PublicKey }>(() => {
-          return { publicKey }
-        }),
-      disconnect,
-      signAndSendTransaction,
-      signTransaction,
-      signAllTransactions,
-      signMessage,
-      on: () => {},
-      off: () => {},
-    }
-
-    // initialize(heliumWallet)
-  }, [currentAccount])
-
   const onMessage = useCallback(
     async (msg) => {
-      console.log('msg', msg.nativeEvent.data)
-
+      if (!currentAccount?.address || !currentAccount?.solanaAddress) {
+        return
+      }
       const { data } = msg.nativeEvent
 
-      console.log(util.inspect(data, false, null, true /* enable colors */))
+      // console.log(util.inspect(data, false, null, true /* enable colors */))
+
+      const secureAcct = await getKeypair(currentAccount?.address)
+      const payer = new PublicKey(currentAccount?.solanaAddress)
+
+      if (!secureAcct) {
+        throw new Error('Secure account not found')
+      }
+
+      const signer = {
+        publicKey: payer,
+        secretKey: secureAcct.privateKey,
+      }
 
       const parsedData = JSON.parse(data)
+      const { type } = parsedData
 
-      switch (parsedData.type) {
-        case 'connect':
-          console.log('solana:connect')
-          break
-        case 'disconnect':
-          console.log('disconnect')
-          break
-        case 'signAndSendTransaction':
-          console.log('signAndSendTransaction')
-          break
-        case 'signTransaction':
-          console.log('signTransaction')
-          const decision = await showOKCancelAlert({
-            title: 'Sign Transaction?',
-            message: 'Are you sure you want to sign this transaction?',
-          })
-          if (!decision) {
-            // Signature declined
-            webview.current?.postMessage(
-              JSON.stringify({
-                type: 'signatureDeclined',
-              }),
-            )
-            return
-          }
+      if (type === 'signAndSendTransaction') {
+        Logger.breadcrumb('signAndSendTransaction')
+        const decision = await showOKCancelAlert({
+          title: 'Sign and send transaction?',
+          message: 'Are you sure you want to sign and send this transaction?',
+        })
+        if (!decision) {
+          // Signature declined
+          webview.current?.postMessage(
+            JSON.stringify({
+              type: 'signatureDeclined',
+            }),
+          )
+          return
+        }
 
-          console.log('parsedData.inputs', parsedData.inputs)
-          const outputs: { signedTransaction: Uint8Array }[] = []
-
-          // Converting int array objects to Uint8Array
-          const transactions = parsedData.inputs.map(({ transaction }) =>
-            Transaction.from(
+        // Converting int array objects to Uint8Array
+        const transactions = parsedData.inputs.map(
+          ({ transaction, chain, options }) => {
+            const tx = new Uint8Array(
               Object.keys(transaction).map(
                 (k) => parsedData.inputs[0].transaction[k],
               ),
-            ),
-          )
-          console.log('transactions', transactions)
-          const signedTransactions =
-            await anchorProvider?.wallet.signAllTransactions(transactions)
+            )
+            return { transaction: Transaction.from(tx), chain, options }
+          },
+        )
 
-          console.log('signedTransactions', signedTransactions)
+        const signatures = await Promise.all(
+          transactions.map(async ({ transaction, chain, options }) => {
+            const signedTransaction =
+              await anchorProvider?.wallet.signTransaction(transaction)
 
-          if (!signedTransactions) {
-            // TODO: Handle this
-            return
-          }
+            if (!signedTransaction) {
+              throw new Error('Failed to sign transaction')
+            }
 
-          outputs.push(
-            ...signedTransactions.map((signedTransaction) => {
-              return {
-                signedTransaction: new Uint8Array(
-                  signedTransaction.serialize(),
-                ),
-              }
-            }),
-          )
+            // Remove the 'solana:' prefix
+            const conn = getConnection(chain.slice(7))
 
+            const signature = await conn.sendRawTransaction(
+              signedTransaction.serialize(),
+              {
+                skipPreflight: true,
+                maxRetries: 5,
+                ...options,
+              },
+            )
+
+            // Return signature as int8array
+            return { signature: bs58.decode(signature) }
+          }),
+        )
+        webview.current?.postMessage(
+          JSON.stringify({
+            type: 'transactionSigned',
+            data: signatures,
+          }),
+        )
+      } else if (type === 'signTransaction') {
+        Logger.breadcrumb('signTransaction')
+        const decision = await showOKCancelAlert({
+          title: 'Sign Transaction?',
+          message: 'Are you sure you want to sign this transaction?',
+        })
+        if (!decision) {
+          // Signature declined
           webview.current?.postMessage(
             JSON.stringify({
-              type: 'transactionSigned',
-              data: outputs,
+              type: 'signatureDeclined',
             }),
           )
-          break
-        case 'signAllTransactions':
-          console.log('signAllTransactions')
-          break
-        case 'signMessage':
-          console.log('signMessage')
-          break
-        case 'app-ready':
-          console.log('app-ready')
-        default:
-          console.log('default')
+          return
+        }
+
+        const outputs: { signedTransaction: Uint8Array }[] = []
+
+        // Converting int array objects to Uint8Array
+        const transactions = parsedData.inputs.map(({ transaction }) =>
+          Transaction.from(
+            Object.keys(transaction).map(
+              (k) => parsedData.inputs[0].transaction[k],
+            ),
+          ),
+        )
+
+        const signedTransactions =
+          await anchorProvider?.wallet.signAllTransactions(transactions)
+
+        if (!signedTransactions) {
+          // TODO: Handle this
+          return
+        }
+
+        outputs.push(
+          ...signedTransactions.map((signedTransaction) => {
+            return {
+              signedTransaction: new Uint8Array(signedTransaction.serialize()),
+            }
+          }),
+        )
+
+        webview.current?.postMessage(
+          JSON.stringify({
+            type: 'transactionSigned',
+            data: outputs,
+          }),
+        )
+      } else if (type === 'signMessage') {
+        Logger.breadcrumb('signMessage')
+        const decision = await showOKCancelAlert({
+          title: 'Sign Message?',
+          message: 'Are you sure you want to sign this message?',
+        })
+        if (!decision) {
+          // Signature declined
+          webview.current?.postMessage(
+            JSON.stringify({
+              type: 'signatureDeclined',
+            }),
+          )
+          return
+        }
+
+        // Converting int array objects to Uint8Array
+        const messages: Uint8Array[] = parsedData.inputs.map(
+          ({ message }) =>
+            new Uint8Array(
+              Object.keys(message).map((k) => parsedData.inputs[0].message[k]),
+            ),
+        )
+
+        // Sign each message using nacl and return the signature
+        const signedMessages = messages.map((message) => {
+          const signedMessage = nacl.sign.detached(message, signer.secretKey)
+          return {
+            signedMessage,
+            signature: signedMessage,
+          }
+        })
+
+        webview.current?.postMessage(
+          JSON.stringify({
+            type: 'messageSigned',
+            data: signedMessages,
+          }),
+        )
+      } else {
+        Logger.breadcrumb('Unknown type', type)
       }
     },
-    [anchorProvider.wallet, showOKCancelAlert],
+    [anchorProvider, currentAccount, showOKCancelAlert],
   )
 
   // Call initialize(heliumWallet) in injected javascript
