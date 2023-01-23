@@ -35,6 +35,7 @@ import { useIsHotspotOrValidatorQuery } from '../../generated/graphql'
 import AccountIcon from '../../components/AccountIcon'
 import BackgroundFill from '../../components/BackgroundFill'
 import { Theme } from '../../theme/theme'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 export type Payment = {
   address?: string
@@ -96,6 +97,7 @@ const PaymentItem = ({
   const { dcToNetworkTokens } = useBalance()
   const { t } = useTranslation()
   const { secondaryText } = useColors()
+  const { l1Network } = useAppStorage()
 
   const { error, loading, data } = useIsHotspotOrValidatorQuery({
     variables: {
@@ -185,8 +187,8 @@ const PaymentItem = ({
   }, [index, onRemove])
 
   const isDeepLink = useMemo(
-    () => address && addressIsWrongNetType,
-    [address, addressIsWrongNetType],
+    () => address && l1Network === 'helium',
+    [address, l1Network],
   )
 
   const AddressIcon = useCallback(() => {
