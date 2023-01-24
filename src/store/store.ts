@@ -7,6 +7,12 @@ import reducer from './rootReducer'
 import { walletRestApi } from './slices/walletRestApi'
 import { solanaStatusApi } from './slices/solanaStatusApi'
 import { name as solanaSliceName } from './slices/solanaSlice'
+import Reactotron from '../../ReactotronConfig'
+
+const enhancers = []
+if (Reactotron.createEnhancer) {
+  enhancers.push(Reactotron.createEnhancer())
+}
 
 const persistConfig = {
   key: 'root',
@@ -22,6 +28,7 @@ const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: false,
     }).concat([solanaStatusApi.middleware, walletRestApi.middleware]),
+  enhancers,
 })
 
 setupListeners(store.dispatch)

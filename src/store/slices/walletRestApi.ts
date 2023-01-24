@@ -95,10 +95,17 @@ export const walletRestApi = createApi({
       transformResponse: (response) => {
         return response as TokenPrices
       },
-      serializeQueryArgs: ({ endpointName }) => {
-        return endpointName
+      serializeQueryArgs: ({
+        endpointName,
+        queryArgs: { currency, tokens },
+      }) => {
+        return {
+          currency,
+          tokens,
+          endpointName,
+        }
       },
-      merge: (_, newItems) => {
+      merge: (oldItems, newItems) => {
         return newItems
       },
       // Refetch when the page arg changes
