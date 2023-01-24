@@ -105,7 +105,7 @@ export const walletRestApi = createApi({
           endpointName,
         }
       },
-      merge: (oldItems, newItems) => {
+      merge: (_, newItems) => {
         return newItems
       },
       // Refetch when the page arg changes
