@@ -1,13 +1,14 @@
-/* eslint-disable no-case-declarations */
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { Ref, useCallback, useMemo, useRef, useState } from 'react'
 import { Edge } from 'react-native-safe-area-context'
-import { WebView } from 'react-native-webview'
+import { WebView, WebViewMessageEvent } from 'react-native-webview'
 import nacl from 'tweetnacl'
-import { PublicKey, Transaction } from '@solana/web3.js'
-import { Asset } from 'expo-asset'
-import { useAsync } from 'react-async-hook'
+import { Cluster, PublicKey, Transaction } from '@solana/web3.js'
 import bs58 from 'bs58'
-// import util from 'util'
+import {
+  SolanaSignMessageInput,
+  SolanaSignAndSendTransactionInput,
+  SolanaSignTransactionInput,
+} from '@solana/wallet-standard-features'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import useAlert from '../../hooks/useAlert'
@@ -15,23 +16,26 @@ import injectWalletStandard from './walletStandard'
 import { getKeypair } from '../../storage/secureStorage'
 import { getConnection } from '../../utils/solanaUtils'
 import * as Logger from '../../utils/logger'
+import WalletSignBottomSheet, {
+  WalletSignBottomSheetRef,
+} from './WalletSignBottomSheet'
 
 const BrowserScreen = () => {
   const edges = useMemo(() => ['top'] as Edge[], [])
   const { currentAccount, anchorProvider } = useAccountStorage()
-  const webview = useRef<WebView>()
-  const [jsUri, setUri] = useState<string | undefined>()
+  const webview = useRef<WebView | null>(null)
   const [jsInjected, setJsInjected] = useState(false)
   const { showOKCancelAlert } = useAlert()
+  const walletSignBottomSheetRef = useRef<WalletSignBottomSheetRef>()
 
   const onMessage = useCallback(
-    async (msg) => {
+    async (msg: WebViewMessageEvent) => {
       if (!currentAccount?.address || !currentAccount?.solanaAddress) {
         return
       }
+      // Prevents React from resetting its properties:
+      msg.persist()
       const { data } = msg.nativeEvent
-
-      // console.log(util.inspect(data, false, null, true /* enable colors */))
 
       const secureAcct = await getKeypair(currentAccount?.address)
       const payer = new PublicKey(currentAccount?.solanaAddress)
@@ -45,8 +49,7 @@ const BrowserScreen = () => {
         secretKey: secureAcct.privateKey,
       }
 
-      const parsedData = JSON.parse(data)
-      const { type } = parsedData
+      const { type, inputs } = JSON.parse(data)
 
       if (type === 'signAndSendTransaction') {
         Logger.breadcrumb('signAndSendTransaction')
@@ -65,41 +68,51 @@ const BrowserScreen = () => {
         }
 
         // Converting int array objects to Uint8Array
-        const transactions = parsedData.inputs.map(
-          ({ transaction, chain, options }) => {
+        const transactions = inputs.map(
+          ({
+            transaction,
+            chain,
+            options,
+          }: SolanaSignAndSendTransactionInput) => {
             const tx = new Uint8Array(
-              Object.keys(transaction).map(
-                (k) => parsedData.inputs[0].transaction[k],
-              ),
+              Object.keys(transaction).map((k) => inputs[0].transaction[k]),
             )
             return { transaction: Transaction.from(tx), chain, options }
           },
         )
 
         const signatures = await Promise.all(
-          transactions.map(async ({ transaction, chain, options }) => {
-            const signedTransaction =
-              await anchorProvider?.wallet.signTransaction(transaction)
+          transactions.map(
+            async ({
+              transaction,
+              chain,
+              options,
+            }: SolanaSignAndSendTransactionInput & {
+              transaction: Transaction
+            }) => {
+              const signedTransaction =
+                await anchorProvider?.wallet.signTransaction(transaction)
 
-            if (!signedTransaction) {
-              throw new Error('Failed to sign transaction')
-            }
+              if (!signedTransaction) {
+                throw new Error('Failed to sign transaction')
+              }
 
-            // Remove the 'solana:' prefix
-            const conn = getConnection(chain.slice(7))
+              // Remove the 'solana:' prefix
+              const conn = getConnection(chain.slice(7) as Cluster)
 
-            const signature = await conn.sendRawTransaction(
-              signedTransaction.serialize(),
-              {
-                skipPreflight: true,
-                maxRetries: 5,
-                ...options,
-              },
-            )
+              const signature = await conn.sendRawTransaction(
+                signedTransaction.serialize(),
+                {
+                  skipPreflight: true,
+                  maxRetries: 5,
+                  ...options,
+                },
+              )
 
-            // Return signature as int8array
-            return { signature: bs58.decode(signature) }
-          }),
+              // Return signature as int8array
+              return { signature: bs58.decode(signature) }
+            },
+          ),
         )
         webview.current?.postMessage(
           JSON.stringify({
@@ -126,12 +139,11 @@ const BrowserScreen = () => {
         const outputs: { signedTransaction: Uint8Array }[] = []
 
         // Converting int array objects to Uint8Array
-        const transactions = parsedData.inputs.map(({ transaction }) =>
-          Transaction.from(
-            Object.keys(transaction).map(
-              (k) => parsedData.inputs[0].transaction[k],
+        const transactions = inputs.map(
+          ({ transaction }: SolanaSignTransactionInput) =>
+            Transaction.from(
+              Object.keys(transaction).map((k) => inputs[0].transaction[k]),
             ),
-          ),
         )
 
         const signedTransactions =
@@ -158,10 +170,12 @@ const BrowserScreen = () => {
         )
       } else if (type === 'signMessage') {
         Logger.breadcrumb('signMessage')
-        const decision = await showOKCancelAlert({
-          title: 'Sign Message?',
-          message: 'Are you sure you want to sign this message?',
-        })
+        // const decision = await showOKCancelAlert({
+        //   title: 'Sign Message?',
+        //   message: 'Are you sure you want to sign this message?',
+        // })
+        const decision = await walletSignBottomSheetRef.current?.show()
+
         if (!decision) {
           // Signature declined
           webview.current?.postMessage(
@@ -173,10 +187,10 @@ const BrowserScreen = () => {
         }
 
         // Converting int array objects to Uint8Array
-        const messages: Uint8Array[] = parsedData.inputs.map(
-          ({ message }) =>
+        const messages: Uint8Array[] = inputs.map(
+          ({ message }: SolanaSignMessageInput) =>
             new Uint8Array(
-              Object.keys(message).map((k) => parsedData.inputs[0].message[k]),
+              Object.keys(message).map((k) => inputs[0].message[k]),
             ),
         )
 
@@ -202,7 +216,7 @@ const BrowserScreen = () => {
     [anchorProvider, currentAccount, showOKCancelAlert],
   )
 
-  // Call initialize(heliumWallet) in injected javascript
+  // Inject wallet standard into the webview
   const injectModule = useCallback(() => {
     if (!webview?.current || !currentAccount?.solanaAddress) return
 
@@ -220,14 +234,9 @@ const BrowserScreen = () => {
     setJsInjected(true)
   }, [currentAccount])
 
-  useAsync(async () => {
-    const { uri } = Asset.fromModule('../wallet-standard/index.js')
-    setUri(uri)
-  }, [])
-
   return (
-    <SafeAreaBox flex={1} edges={edges}>
-      {jsUri && (
+    <WalletSignBottomSheet ref={walletSignBottomSheetRef} onClose={() => {}}>
+      <SafeAreaBox flex={1} edges={edges}>
         <WebView
           ref={webview}
           javaScriptEnabled
@@ -237,8 +246,8 @@ const BrowserScreen = () => {
             uri: 'https://solana-labs.github.io/wallet-adapter/example/',
           }}
         />
-      )}
-    </SafeAreaBox>
+      </SafeAreaBox>
+    </WalletSignBottomSheet>
   )
 }
 

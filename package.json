@@ -80,6 +80,7 @@
     "@shopify/restyle": "1.8.0",
     "@solana/spl-account-compression": "0.1.4",
     "@solana/spl-token": "0.3.5",
+    "@solana/wallet-standard-features": "^1.0.0",
     "@solana/web3.js": "1.64.0",
     "@tradle/react-native-http": "2.0.1",
     "@walletconnect/react-native-compat": "2.2.1",
