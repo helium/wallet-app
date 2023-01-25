@@ -46,7 +46,7 @@ const RootNavigator = () => {
 
   // Edge case scenario where user is on testflight and has solana preview on then installs app store version.
   useEffect(() => {
-    if (!betaAccess?.publicKeys.includes(currentAccount?.address || '')) {
+    if (!betaAccess?.publicKeys?.includes(currentAccount?.address || '')) {
       updateL1Network('helium')
     }
   }, [betaAccess, currentAccount, updateL1Network])

@@ -397,7 +397,7 @@ const Settings = () => {
       },
     ]
 
-    if (betaAccess?.publicKeys.includes(currentAccount?.address || '')) {
+    if (betaAccess?.publicKeys?.includes(currentAccount?.address || '')) {
       devData.push({
         title: t('settings.sections.dev.solana.title'),
         value: l1Network === 'solana',
