@@ -803,7 +803,7 @@ export const getCompressedCollectables = async (
   const conn = getConnection(cluster)
   const { items } = await conn.getAssetsByOwner(
     pubKey.toString(),
-    'created',
+    JSON.stringify({ sortBy: 'created', sortDirection: 'asc' }),
     50,
     1,
     '',
