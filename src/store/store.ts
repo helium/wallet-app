@@ -10,7 +10,7 @@ import { name as solanaSliceName } from './slices/solanaSlice'
 import Reactotron from '../../ReactotronConfig'
 
 const enhancers = []
-if (Reactotron.createEnhancer) {
+if (Reactotron.createEnhancer && __DEV__) {
   enhancers.push(Reactotron.createEnhancer())
 }
 
