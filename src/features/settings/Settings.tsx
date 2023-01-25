@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
 import { Alert, Linking, Platform, SectionList } from 'react-native'
 import { Cluster } from '@solana/web3.js'
-import Config from 'react-native-config'
 import Text from '../../components/Text'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { HomeNavigationProp } from '../home/homeTypes'
@@ -29,6 +28,7 @@ import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
 import { ellipsizeAddress } from '../../utils/accountUtils'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import CloseButton from '../../components/CloseButton'
+import { useGetBetaPubkeysQuery } from '../../store/slices/walletRestApi'
 
 const Settings = () => {
   const { t } = useTranslation()
@@ -68,6 +68,7 @@ const Settings = () => {
   } = useAppStorage()
   const copyText = useCopyText()
   const { showOKAlert, showOKCancelAlert } = useAlert()
+  const { data: betaAccess } = useGetBetaPubkeysQuery()
 
   const isDefaultAccount = useMemo(
     () => defaultAccountAddress === currentAccount?.address,
@@ -396,7 +397,7 @@ const Settings = () => {
       },
     ]
 
-    if (Config.SOLANA_PREVIEW === 'true') {
+    if (betaAccess?.publicKeys.includes(currentAccount?.address || '')) {
       devData.push({
         title: t('settings.sections.dev.solana.title'),
         value: l1Network === 'solana',
@@ -568,6 +569,7 @@ const Settings = () => {
   }, [
     authInterval,
     authIntervals,
+    betaAccess,
     convertToCurrency,
     copyText,
     currency,

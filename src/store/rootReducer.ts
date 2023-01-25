@@ -28,7 +28,7 @@ const solanaConfig = {
 const walletRestConfig = {
   key: walletRestApi.reducerPath,
   storage: AsyncStorage,
-  blacklist: ['getTokenPrices'],
+  blacklist: ['getTokenPrices', 'getBetaPubkeys', 'getMints'],
 }
 
 const reducer = combineReducers({

@@ -4,7 +4,6 @@ import {
   createStackNavigator,
   StackNavigationOptions,
 } from '@react-navigation/stack'
-import Config from 'react-native-config'
 import { useNavigation } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 import { RootStackParamList } from './rootTypes'
@@ -21,15 +20,17 @@ import ConnectedWallets, {
   ConnectedWalletsRef,
 } from '../features/account/ConnectedWallets'
 import { RootState } from '../store/rootReducer'
+import { useGetBetaPubkeysQuery } from '../store/slices/walletRestApi'
 
 const RootNavigator = () => {
   const navigation = useNavigation<HomeNavigationProp>()
   const colors = useColors()
-  const { hasAccounts } = useAccountStorage()
+  const { hasAccounts, currentAccount } = useAccountStorage()
   const { l1Network, updateL1Network } = useAppStorage()
   const dispatch = useAppDispatch()
   const RootStack = createStackNavigator<RootStackParamList>()
   const connectedWalletsRef = useRef<ConnectedWalletsRef>(null)
+  const { data: betaAccess } = useGetBetaPubkeysQuery()
 
   const screenOptions = useMemo(
     () =>
@@ -45,10 +46,10 @@ const RootNavigator = () => {
 
   // Edge case scenario where user is on testflight and has solana preview on then installs app store version.
   useEffect(() => {
-    if (Config.SOLANA_PREVIEW !== 'true') {
+    if (!betaAccess?.publicKeys.includes(currentAccount?.address || '')) {
       updateL1Network('helium')
     }
-  }, [updateL1Network])
+  }, [betaAccess, currentAccount, updateL1Network])
 
   const initialRouteName = useMemo(() => {
     if (hasAccounts) {
