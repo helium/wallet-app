@@ -154,7 +154,7 @@ const TabBar = ({
     }
 
     offset.value = withSpring(nextOffset, { mass: 0.5 })
-  }, [itemRects, offset.value, selectedValue])
+  }, [itemRects, offset, selectedValue])
 
   const animatedStyles = useAnimatedStyle(() => {
     if (offset.value === null) return {}

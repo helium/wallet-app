@@ -60,7 +60,7 @@ const SentinelScreen = ({ children }: { children: ReactNode }) => {
 
   const handleClose = useCallback(() => {
     animValue.value = 0
-  }, [animValue.value])
+  }, [animValue])
 
   return (
     <View style={globalStyles.container}>
