@@ -55,7 +55,7 @@ const IntroScreen = () => {
         >
           <AccountIcon size={180} address={accounts[0].address} />
           <Box marginTop="xl" marginEnd="xl" top={top}>
-            <IotIcon />
+            <IotIcon width={69} height={69} />
           </Box>
         </Box>
         <Box flex={1} />

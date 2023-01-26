@@ -266,6 +266,7 @@ const SwapScreen = () => {
 
   return (
     <HNTKeyboard
+      usePortal
       ref={hntKeyboardRef}
       onConfirmBalance={onConfirmBalance}
       ticker={youPayTokenType}
