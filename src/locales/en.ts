@@ -292,6 +292,10 @@ export default {
   },
   accountTokenList: {
     tokens: 'Tokens',
+    manage: 'Manage token list',
+  },
+  accountManageTokenListScreen: {
+    title: 'Manage token list',
   },
   accountView: {
     balance: 'Balance',

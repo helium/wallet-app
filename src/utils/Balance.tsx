@@ -80,9 +80,9 @@ const useBalanceHook = () => {
 
   const [fetchAccountData] = useAccountLazyQuery()
 
-  const solanaBalances = useSelector(
-    (state: RootState) => state.solana.balances,
-  )
+  const solanaBalances = useSelector((state: RootState) => {
+    return state.solana.balances
+  })
 
   const [oracleDateTime, setOracleDateTime] = useState<Date>()
 
@@ -98,9 +98,10 @@ const useBalanceHook = () => {
   }, [solAddress, solanaBalances])
 
   const dispatchSolBalanceUpdate = useCallback(() => {
-    if (!currentAccount?.solanaAddress || !mints) {
+    if (!currentAccount?.solanaAddress) {
       return
     }
+
     dispatch(readBalances({ cluster, acct: currentAccount, mints }))
   }, [currentAccount, dispatch, mints, cluster])
 
@@ -324,12 +325,13 @@ const useBalanceHook = () => {
 
   const solBalance = useMemo(() => {
     let bal = 0
+
     switch (l1Network) {
       case 'helium':
         break
 
       case 'solana':
-        bal = solBalances?.solBalance ? Number(solBalances.solBalance) : 0
+        bal = solBalances?.solBalance ? Number(solBalances.solBalance / 10) : 0
         break
     }
 

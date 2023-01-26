@@ -414,6 +414,9 @@ const AccountsScreen = () => {
           loading={accountLoading}
           onRefresh={refreshTokens}
           refreshing={updatingTokens}
+          onManageTokenList={() => {
+            navigation.navigate('AccountManageTokenListScreen')
+          }}
         />
       </BottomSheet>
       <BlurActionSheet

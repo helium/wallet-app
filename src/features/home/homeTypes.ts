@@ -21,6 +21,7 @@ export type BurnRouteParam = {
 export type HomeStackParamList = {
   AccountsScreen: undefined
   AccountTokenScreen: { tokenType: Ticker }
+  AccountManageTokenListScreen: undefined
   AccountAssignScreen:
     | undefined
     | {

@@ -1,142 +1,75 @@
 import React, { useCallback, useMemo } from 'react'
-import Balance, {
-  DataCredits,
-  MobileTokens,
-  NetworkTokens,
-  SecurityTokens,
-  AnyCurrencyType,
-  SolTokens,
-  Ticker,
-  IotTokens,
-} from '@helium/currency'
 import { times } from 'lodash'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
+import { useTranslation } from 'react-i18next'
+import Config from '@assets/images/config.svg'
+import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { useBalance } from '../../utils/Balance'
+import Text from '../../components/Text'
 import TokenListItem, { TokenSkeleton } from './TokenListItem'
-
-type Token = {
-  type: Ticker
-  balance: Balance<AnyCurrencyType>
-  staked: boolean
-}
+import { Token, useTokenList } from '../../hooks/useTokensList'
 
 type Props = {
   loading?: boolean
   refreshing: boolean
   onRefresh?: () => void
   onLayout?: BottomSheetFlatListProps<Token>['onLayout']
+  onManageTokenList: () => void
 }
 
-const AccountTokenList = ({
+const AccountTokenList: React.FC<Props> = ({
   loading = false,
   refreshing,
   onRefresh,
   onLayout,
-}: Props) => {
-  const {
-    dcBalance,
-    mobileBalance,
-    iotBalance,
-    networkBalance,
-    networkStakedBalance,
-    secBalance,
-    solBalance,
-    updating: updatingTokens,
-  } = useBalance()
+  onManageTokenList,
+}) => {
+  const { updating: updatingTokens } = useBalance()
   const { bottom } = useSafeAreaInsets()
+  const { t } = useTranslation()
+  const { tokens } = useTokenList()
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
 
-  const tokens = useMemo(() => {
-    if (loading) {
-      return []
-    }
+  const filteredTokens = useMemo(() => {
+    if (updatingTokens || loading) return []
 
-    const allTokens = [
-      {
-        type: 'HNT',
-        balance: networkBalance as Balance<NetworkTokens>,
-        staked: false,
-      },
-      {
-        type: 'HNT',
-        balance: networkStakedBalance as Balance<NetworkTokens>,
-        staked: true,
-      },
-      {
-        type: 'MOBILE',
-        balance: mobileBalance as Balance<MobileTokens>,
-        staked: false,
-      },
-      {
-        type: 'IOT',
-        balance: iotBalance as Balance<IotTokens>,
-        staked: false,
-      },
-      {
-        type: 'DC',
-        balance: dcBalance as Balance<DataCredits>,
-        staked: false,
-      },
-      {
-        type: 'HST',
-        balance: secBalance as Balance<SecurityTokens>,
-        staked: false,
-      },
-      {
-        type: 'SOL',
-        balance: solBalance as Balance<SolTokens>,
-        staked: false,
-      },
-    ] as {
-      type: Ticker
-      balance: Balance<AnyCurrencyType>
-      staked: boolean
-    }[]
-    return allTokens.filter(
-      (token) =>
-        token?.balance?.integerBalance > 0 ||
-        token?.type === 'MOBILE' ||
-        (token?.type === 'HNT' && token?.staked === false),
-    )
-  }, [
-    dcBalance,
-    iotBalance,
-    loading,
-    mobileBalance,
-    networkBalance,
-    networkStakedBalance,
-    secBalance,
-    solBalance,
-  ])
+    return tokens.filter((token) => token.canShow)
+  }, [loading, tokens, updatingTokens])
 
   const renderItem = useCallback(
-    ({
-      item: token,
-    }: {
-      // eslint-disable-next-line react/no-unused-prop-types
-      item: {
-        type: Ticker
-        balance: Balance<AnyCurrencyType>
-        staked: boolean
-      }
-    }) => {
+    // eslint-disable-next-line react/no-unused-prop-types
+    ({ index, item: token }: { index: number; item: Token }) => {
       return (
         <TokenListItem
           ticker={token.type}
           balance={token.balance}
           staked={token.staked}
+          withoutBorderBottom={index === tokens.length - 1}
         />
       )
     },
-    [],
+    [tokens.length],
   )
 
-  const renderFooter = useCallback(() => {
-    if (!(updatingTokens || loading)) return null
+  const renderFooter = useMemo(() => {
+    if (!(updatingTokens || loading))
+      return (
+        <TouchableOpacityBox
+          onPress={() => onManageTokenList()}
+          flexDirection="row"
+          justifyContent="center"
+          mt="m"
+        >
+          <Config />
+          <Text ml="s" fontWeight="500" color="grey400">
+            {t('accountTokenList.manage')}
+          </Text>
+        </TouchableOpacityBox>
+      )
 
     return (
       <>
@@ -145,7 +78,7 @@ const AccountTokenList = ({
         ))}
       </>
     )
-  }, [loading, updatingTokens])
+  }, [loading, onManageTokenList, t, updatingTokens])
 
   const keyExtractor = useCallback((item: Token | string) => {
     if (typeof item === 'string') {
@@ -168,14 +101,14 @@ const AccountTokenList = ({
 
   return (
     <BottomSheetFlatList
-      data={tokens}
+      data={filteredTokens}
       numColumns={2}
       columnWrapperStyle={{
         flexDirection: 'column',
       }}
       contentContainerStyle={contentContainerStyle}
       renderItem={renderItem}
-      ListEmptyComponent={renderFooter}
+      ListFooterComponent={renderFooter}
       keyExtractor={keyExtractor}
       refreshing={refreshing}
       onRefresh={onRefresh}

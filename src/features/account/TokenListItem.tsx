@@ -2,6 +2,7 @@ import Balance, { AnyCurrencyType, Ticker } from '@helium/currency'
 import React, { useCallback } from 'react'
 import Arrow from '@assets/images/listItemRight.svg'
 import { useNavigation } from '@react-navigation/native'
+import CheckBox from '@react-native-community/checkbox'
 import Box from '../../components/Box'
 import FadeInOut from '../../components/FadeInOut'
 import Text from '../../components/Text'
@@ -10,17 +11,27 @@ import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import TokenIcon from '../../components/TokenIcon'
 import { HomeNavigationProp } from '../home/homeTypes'
 import useHaptic from '../../hooks/useHaptic'
+import { useColors } from '../../theme/themeHooks'
 
-export const ITEM_HEIGHT = 72
 type Props = {
   ticker: Ticker
   balance: Balance<AnyCurrencyType>
   staked?: boolean
+  withoutBorderBottom?: boolean
+  checkbox?: boolean
 }
-const TokenListItem = ({ ticker, balance, staked }: Props) => {
+
+const TokenListItem: React.FC<Props> = ({
+  ticker,
+  balance,
+  staked,
+  withoutBorderBottom,
+  checkbox,
+}) => {
   const disabled = ticker === 'SOL' || ticker === 'IOT'
   const navigation = useNavigation<HomeNavigationProp>()
   const { triggerImpact } = useHaptic()
+  const colors = useColors()
 
   const handleNavigation = useCallback(() => {
     if (ticker === 'SOL') {
@@ -40,8 +51,8 @@ const TokenListItem = ({ ticker, balance, staked }: Props) => {
         paddingHorizontal="m"
         paddingVertical="m"
         borderBottomColor="primaryBackground"
-        borderBottomWidth={1}
-        disabled={disabled}
+        borderBottomWidth={withoutBorderBottom ? 0 : 1}
+        disabled={disabled && checkbox === undefined}
       >
         <TokenIcon ticker={ticker} />
         <Box flex={1} paddingHorizontal="m">
@@ -68,7 +79,27 @@ const TokenListItem = ({ ticker, balance, staked }: Props) => {
             staked={staked}
           />
         </Box>
-        {!disabled && <Arrow />}
+        {!disabled && checkbox === undefined && <Arrow />}
+        {checkbox !== undefined && (
+          <Box justifyContent="center" alignItems="center" marginEnd="xs">
+            <CheckBox
+              value={false}
+              style={{ height: 20, width: 20 }}
+              tintColors={{
+                true: colors.primaryText,
+                false: colors.transparent10,
+              }}
+              onCheckColor={colors.secondary}
+              onTintColor={colors.primaryText}
+              tintColor={colors.transparent10}
+              onFillColor={colors.primaryText}
+              onAnimationType="fill"
+              offAnimationType="fill"
+              boxType="square"
+              onValueChange={() => {}}
+            />
+          </Box>
+        )}
       </TouchableContainer>
     </FadeInOut>
   )
@@ -102,3 +133,9 @@ export const TokenSkeleton = () => {
 }
 
 export default TokenListItem
+
+//
+// Utils
+//
+
+export const ITEM_HEIGHT = 72

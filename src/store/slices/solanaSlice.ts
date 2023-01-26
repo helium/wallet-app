@@ -63,15 +63,18 @@ export const readBalances = createAsyncThunk(
   }: {
     acct: CSAccount
     cluster: Cluster
-    mints: Mints
+    mints?: Mints
   }) => {
     if (!acct?.solanaAddress) throw new Error('No solana account found')
 
-    const heliumBals = await solUtils.readHeliumBalances(
-      cluster,
-      acct.solanaAddress,
-      mints,
-    )
+    let heliumBals = null
+    if (mints) {
+      heliumBals = await solUtils.readHeliumBalances(
+        cluster,
+        acct.solanaAddress,
+        mints,
+      )
+    }
 
     const solBalance = await solUtils.readSolanaBalance(
       cluster,
