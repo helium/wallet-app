@@ -114,7 +114,7 @@ const ConnectedWallets = forwardRef(
     const handleAccountChange = useCallback(
       (item: CSAccount) => () => {
         setCurrentAccount(item)
-        if (l1Network === 'helium') {
+        if (l1Network === 'solana') {
           // Reset Home & Collectables stack to first screen
           navigation.reset({
             index: 0,
