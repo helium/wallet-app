@@ -1,6 +1,10 @@
-import React, { Ref, useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { Edge } from 'react-native-safe-area-context'
-import { WebView, WebViewMessageEvent } from 'react-native-webview'
+import {
+  WebView,
+  WebViewMessageEvent,
+  WebViewNavigation,
+} from 'react-native-webview'
 import nacl from 'tweetnacl'
 import { Cluster, PublicKey, Transaction } from '@solana/web3.js'
 import bs58 from 'bs58'
@@ -9,15 +13,16 @@ import {
   SolanaSignAndSendTransactionInput,
   SolanaSignTransactionInput,
 } from '@solana/wallet-standard-features'
+import { Balance } from '@helium/currency'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import useAlert from '../../hooks/useAlert'
 import injectWalletStandard from './walletStandard'
 import { getKeypair } from '../../storage/secureStorage'
-import { getConnection } from '../../utils/solanaUtils'
+import { getConnection, TXN_FEE_IN_SOL } from '../../utils/solanaUtils'
 import * as Logger from '../../utils/logger'
 import WalletSignBottomSheet, {
   WalletSignBottomSheetRef,
+  WalletStandardMessageTypes,
 } from './WalletSignBottomSheet'
 
 const BrowserScreen = () => {
@@ -25,8 +30,8 @@ const BrowserScreen = () => {
   const { currentAccount, anchorProvider } = useAccountStorage()
   const webview = useRef<WebView | null>(null)
   const [jsInjected, setJsInjected] = useState(false)
-  const { showOKCancelAlert } = useAlert()
-  const walletSignBottomSheetRef = useRef<WalletSignBottomSheetRef>()
+  const walletSignBottomSheetRef = useRef<WalletSignBottomSheetRef | null>(null)
+  const [currentUrl, setCurrentUrl] = useState('')
 
   const onMessage = useCallback(
     async (msg: WebViewMessageEvent) => {
@@ -51,11 +56,34 @@ const BrowserScreen = () => {
 
       const { type, inputs } = JSON.parse(data)
 
-      if (type === 'signAndSendTransaction') {
+      if (type === WalletStandardMessageTypes.connect) {
+        Logger.breadcrumb('signMessage')
+        const decision = await walletSignBottomSheetRef.current?.show({
+          type,
+          url: currentUrl,
+        })
+
+        if (!decision) {
+          // Signature declined
+          webview.current?.postMessage(
+            JSON.stringify({
+              type: 'connectDeclined',
+            }),
+          )
+          return
+        }
+
+        webview.current?.postMessage(
+          JSON.stringify({
+            type: 'connectApproved',
+          }),
+        )
+      } else if (type === WalletStandardMessageTypes.signAndSendTransaction) {
         Logger.breadcrumb('signAndSendTransaction')
-        const decision = await showOKCancelAlert({
-          title: 'Sign and send transaction?',
-          message: 'Are you sure you want to sign and send this transaction?',
+        const decision = await walletSignBottomSheetRef.current?.show({
+          type,
+          url: currentUrl,
+          fee: Balance.fromFloatAndTicker(TXN_FEE_IN_SOL, 'SOL'),
         })
         if (!decision) {
           // Signature declined
@@ -120,11 +148,11 @@ const BrowserScreen = () => {
             data: signatures,
           }),
         )
-      } else if (type === 'signTransaction') {
+      } else if (type === WalletStandardMessageTypes.signTransaction) {
         Logger.breadcrumb('signTransaction')
-        const decision = await showOKCancelAlert({
-          title: 'Sign Transaction?',
-          message: 'Are you sure you want to sign this transaction?',
+        const decision = await walletSignBottomSheetRef.current?.show({
+          type,
+          url: currentUrl,
         })
         if (!decision) {
           // Signature declined
@@ -168,13 +196,12 @@ const BrowserScreen = () => {
             data: outputs,
           }),
         )
-      } else if (type === 'signMessage') {
+      } else if (type === WalletStandardMessageTypes.signMessage) {
         Logger.breadcrumb('signMessage')
-        // const decision = await showOKCancelAlert({
-        //   title: 'Sign Message?',
-        //   message: 'Are you sure you want to sign this message?',
-        // })
-        const decision = await walletSignBottomSheetRef.current?.show()
+        const decision = await walletSignBottomSheetRef.current?.show({
+          type,
+          url: currentUrl,
+        })
 
         if (!decision) {
           // Signature declined
@@ -213,7 +240,7 @@ const BrowserScreen = () => {
         Logger.breadcrumb('Unknown type', type)
       }
     },
-    [anchorProvider, currentAccount, showOKCancelAlert],
+    [anchorProvider, currentAccount, currentUrl],
   )
 
   // Inject wallet standard into the webview
@@ -234,6 +261,11 @@ const BrowserScreen = () => {
     setJsInjected(true)
   }, [currentAccount])
 
+  const onNavigationChange = useCallback((event: WebViewNavigation) => {
+    const baseUrl = event.url.replace('https://', '').split('/')
+    setCurrentUrl(baseUrl[0])
+  }, [])
+
   return (
     <WalletSignBottomSheet ref={walletSignBottomSheetRef} onClose={() => {}}>
       <SafeAreaBox flex={1} edges={edges}>
@@ -242,6 +274,7 @@ const BrowserScreen = () => {
           javaScriptEnabled
           onLoad={!jsInjected ? injectModule : undefined}
           onMessage={onMessage}
+          onNavigationStateChange={onNavigationChange}
           source={{
             uri: 'https://solana-labs.github.io/wallet-adapter/example/',
           }}

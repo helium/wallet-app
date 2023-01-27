@@ -3,6 +3,7 @@ const stringF = `async function injectWalletStandard(solanaAddress, pubKey) {
 // var my_awesome_script = document.createElement('script');
 // my_awesome_script.setAttribute('src','https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js');
 // document.head.appendChild(my_awesome_script);
+var isConnecting = false
 
 class PublicKey {
     constructor(publicKey) {
@@ -62,6 +63,9 @@ const features = [
     'solana:signAndSendTransaction',
     'solana:signTransaction',
     'solana:signMessage',
+    'solana:connect',
+    'solana:connected',
+    'solana:disconnect'
 ]
 
 const icon =
@@ -134,10 +138,7 @@ class HeliumWalletAccount {
 
 const wallet = {
     publicKey: solanaAddress,
-    connect: () =>
-        new Promise(() => {
-            return { publicKey: solanaAddress }
-        }),
+    connect: () => { return { publicKey: solanaAddress } },
     disconnect: async () => {
         console.log('disconnect')
     },
@@ -231,10 +232,6 @@ class HeliumWallet {
             Object.freeze(this)
         }
         this.#helium = helium
-        // helium.on('connect', this.#connected, this);
-        // helium.on('disconnect', this.#disconnected, this);
-        // helium.on('accountChanged', this.#reconnected, this);
-        this.#connected()
     }
 
     #on = (event, listener) => {
@@ -257,7 +254,8 @@ class HeliumWallet {
         const address = this.#helium.publicKey
         if (address) {
             const account = this.#account
-            if (!account || account.address !== address) {
+            if (isConnecting && (!account || account.address !== address || !bytesEqual(solanaAddress, pubKey))) {
+                isConnecting = false
                 this.#account = new HeliumWalletAccount({ address, publicKey: pubKey })
                 this.#emit('change', { accounts: this.accounts })
             }
@@ -280,15 +278,27 @@ class HeliumWallet {
     }
 
     #connect = async ({ silent } = {}) => {
-        if (!this.#account) {
-            await this.#helium.connect(silent ? { onlyIfTrusted: true } : undefined)
-        }
-        this.#connected()
-        return { accounts: this.accounts }
+        isConnecting = true
+        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'connect' }))
+
+        return new Promise((resolve, reject) => {
+            const listener = (message) => {
+                window.removeEventListener('message', listener)
+                const parsedData = JSON.parse(message.data)
+                if (parsedData.type === 'connectDeclined') {
+                    isConnecting = false
+                    reject(new Error('Connection declined'))
+                }
+        
+                this.#connected()
+                resolve({ accounts: this.accounts })
+            }
+            window.addEventListener('message', listener)
+        })
     }
 
     #disconnect = async () => {
-        await this.#helium.disconnect()
+        this.#disconnected()
     }
 
     #signAndSendTransaction = async (...inputs) => {
@@ -315,10 +325,6 @@ class HeliumWallet {
                         })),
                     }
                 })
-
-                window.ReactNativeWebView.postMessage(
-                    JSON.stringify({ "data": signatures }),
-                )
 
                 resolve(signatures)
             }
@@ -380,10 +386,6 @@ class HeliumWallet {
                         })),
                     }
                 })
-
-                window.ReactNativeWebView.postMessage(
-                    JSON.stringify({ "data": signedMessages }),
-                )
                 
                 resolve(signedMessages)
             }
@@ -412,7 +414,6 @@ try {
 }
 
 window.addEventListener('wallet-standard:app-ready', function (event) {
-    console.log('app-ready', event)
     window.ReactNativeWebView.postMessage(
         JSON.stringify({ type: 'app-ready', event: event.data }),
     )

@@ -641,6 +641,18 @@ export default {
     totalRecipients_plural: '{{count}} Recipients',
     wrongNetType: 'Wrong Net Type',
   },
+  browser: {
+    connectBullet1: 'View your wallet balance & activity',
+    connectBullet2: 'Request Approval for transactions',
+    connectToWebsitesYouTrust: 'Only connect to websites you trust',
+    estimatedChanges: 'Estimated Changes',
+    unableToSimulate:
+      'Unable to simulate. Make sure you trust this website since approving can lead to loss of funds.',
+    networkFee: 'Network Fee',
+    connect: 'Connect',
+    approve: 'Approve',
+    cancel: 'Cancel',
+  },
   placeholder: {
     accountBalanceValue: 'Account Balance: {{balance}}',
     enterAccountAddress: 'Enter Account Address',

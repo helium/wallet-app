@@ -39,11 +39,6 @@ module.exports = (api) => {
 
   return {
     ...baseConfig,
-    plugins: [
-      ...baseConfig.plugins,
-      'react-native-reanimated/plugin',
-      ['@babel/plugin-proposal-private-methods', { loose: false }],
-      ['@babel/plugin-proposal-class-properties', { loose: false }],
-    ],
+    plugins: [...baseConfig.plugins, 'react-native-reanimated/plugin'],
   }
 }
