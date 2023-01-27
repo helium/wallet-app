@@ -12,19 +12,15 @@ import { HomeNavigationProp } from '../../home/homeTypes'
 import IconPressedContainer from '../../../components/IconPressedContainer'
 import { useColors, useHitSlop } from '../../../theme/themeHooks'
 import TokenListItem from '../TokenListItem'
-import { Token, useTokenList } from '../../../hooks/useTokensList'
+import { Token, useTokens } from '../../../storage/TokensProvider'
 
-type Props = {
-  //
-}
-
-const AccountManageTokenListScreen: React.FC<Props> = () => {
+const AccountManageTokenListScreen: React.FC = () => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { primaryText } = useColors()
   const { top } = useSafeAreaInsets()
   const hitSlop = useHitSlop('l')
   const { t } = useTranslation()
-  const { tokens } = useTokenList()
+  const { tokens, handleUpdateTokens, isActiveToken } = useTokens()
 
   const containerStyle = useMemo(
     () => ({ marginTop: Platform.OS === 'android' ? top : undefined }),
@@ -40,11 +36,12 @@ const AccountManageTokenListScreen: React.FC<Props> = () => {
           balance={token.balance}
           staked={token.staked}
           withoutBorderBottom={index === tokens.length - 1}
-          checkbox={token.canShow}
+          checked={isActiveToken(token)}
+          onCheckedChange={(value) => handleUpdateTokens(token, value)}
         />
       )
     },
-    [tokens.length],
+    [handleUpdateTokens, isActiveToken, tokens.length],
   )
 
   const keyExtractor = useCallback((item: Token | string) => {

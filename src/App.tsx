@@ -30,6 +30,7 @@ import { navigationRef } from './navigation/NavigationHelper'
 import globalStyles from './theme/globalStyles'
 import SplashScreen from './components/SplashScreen'
 import SentinelScreen from './components/SentinelScreen'
+import TokensProvider from './storage/TokensProvider'
 
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -113,8 +114,10 @@ const App = () => {
                               >
                                 <BalanceProvider>
                                   <TransactionProvider>
-                                    <NetworkAwareStatusBar />
-                                    <RootNavigator />
+                                    <TokensProvider>
+                                      <NetworkAwareStatusBar />
+                                      <RootNavigator />
+                                    </TokensProvider>
                                   </TransactionProvider>
                                 </BalanceProvider>
                               </NavigationContainer>

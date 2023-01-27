@@ -10,7 +10,7 @@ import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { useBalance } from '../../utils/Balance'
 import Text from '../../components/Text'
 import TokenListItem, { TokenSkeleton } from './TokenListItem'
-import { Token, useTokenList } from '../../hooks/useTokensList'
+import { Token, useTokens } from '../../storage/TokensProvider'
 
 type Props = {
   loading?: boolean
@@ -30,15 +30,15 @@ const AccountTokenList: React.FC<Props> = ({
   const { updating: updatingTokens } = useBalance()
   const { bottom } = useSafeAreaInsets()
   const { t } = useTranslation()
-  const { tokens } = useTokenList()
+  const { tokensVisible } = useTokens()
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
 
   const filteredTokens = useMemo(() => {
     if (updatingTokens || loading) return []
 
-    return tokens.filter((token) => token.canShow)
-  }, [loading, tokens, updatingTokens])
+    return tokensVisible
+  }, [loading, tokensVisible, updatingTokens])
 
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
@@ -48,11 +48,11 @@ const AccountTokenList: React.FC<Props> = ({
           ticker={token.type}
           balance={token.balance}
           staked={token.staked}
-          withoutBorderBottom={index === tokens.length - 1}
+          withoutBorderBottom={index === filteredTokens.length - 1}
         />
       )
     },
-    [tokens.length],
+    [filteredTokens.length],
   )
 
   const renderFooter = useMemo(() => {

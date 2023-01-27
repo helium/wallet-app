@@ -18,7 +18,8 @@ type Props = {
   balance: Balance<AnyCurrencyType>
   staked?: boolean
   withoutBorderBottom?: boolean
-  checkbox?: boolean
+  checked?: boolean
+  onCheckedChange?: (checked: boolean) => void
 }
 
 const TokenListItem: React.FC<Props> = ({
@@ -26,7 +27,8 @@ const TokenListItem: React.FC<Props> = ({
   balance,
   staked,
   withoutBorderBottom,
-  checkbox,
+  checked,
+  onCheckedChange,
 }) => {
   const disabled = ticker === 'SOL' || ticker === 'IOT'
   const navigation = useNavigation<HomeNavigationProp>()
@@ -44,7 +46,7 @@ const TokenListItem: React.FC<Props> = ({
   return (
     <FadeInOut>
       <TouchableContainer
-        onPress={handleNavigation}
+        onPress={checked === undefined ? handleNavigation : () => {}}
         flexDirection="row"
         minHeight={ITEM_HEIGHT}
         alignItems="center"
@@ -52,7 +54,7 @@ const TokenListItem: React.FC<Props> = ({
         paddingVertical="m"
         borderBottomColor="primaryBackground"
         borderBottomWidth={withoutBorderBottom ? 0 : 1}
-        disabled={disabled && checkbox === undefined}
+        disabled={disabled && checked === undefined}
       >
         <TokenIcon ticker={ticker} />
         <Box flex={1} paddingHorizontal="m">
@@ -79,11 +81,11 @@ const TokenListItem: React.FC<Props> = ({
             staked={staked}
           />
         </Box>
-        {!disabled && checkbox === undefined && <Arrow />}
-        {checkbox !== undefined && (
+        {!disabled && checked === undefined && <Arrow />}
+        {checked !== undefined && (
           <Box justifyContent="center" alignItems="center" marginEnd="xs">
             <CheckBox
-              value={false}
+              value={checked}
               style={{ height: 20, width: 20 }}
               tintColors={{
                 true: colors.primaryText,
@@ -96,7 +98,7 @@ const TokenListItem: React.FC<Props> = ({
               onAnimationType="fill"
               offAnimationType="fill"
               boxType="square"
-              onValueChange={() => {}}
+              onValueChange={onCheckedChange}
             />
           </Box>
         )}

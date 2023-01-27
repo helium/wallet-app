@@ -3,6 +3,7 @@ import { sortBy, values } from 'lodash'
 import { Platform } from 'react-native'
 import iCloudStorage from 'react-native-icloudstore'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { Ticker } from '@helium/currency'
 
 export type LedgerDevice = {
   id: string
@@ -21,6 +22,8 @@ export type CSAccount = {
 }
 export type CSAccounts = Record<string, CSAccount>
 
+export type CSToken = Ticker | string // Ticker || Ticker-staked
+
 // for android we use AsyncStorage and auto backup to Google Drive using
 // https://developer.android.com/guide/topics/data/autobackup
 const CloudStorage = Platform.OS === 'ios' ? iCloudStorage : AsyncStorage
@@ -28,6 +31,7 @@ const CloudStorage = Platform.OS === 'ios' ? iCloudStorage : AsyncStorage
 enum CloudStorageKeys {
   ACCOUNTS = 'accounts',
   CONTACTS = 'contacts',
+  TOKENS = 'tokens',
   LAST_VIEWED_NOTIFICATIONS = 'lastViewedNotifications',
   DEFAULT_ACCOUNT_ADDRESS = 'defaultAccountAddress',
 }
@@ -56,6 +60,14 @@ const getAccounts = async (): Promise<CSAccounts> => {
   if (!csAccounts) return {}
 
   return JSON.parse(csAccounts) as CSAccounts
+}
+
+export const restoreTokens = async () => {
+  const tokens = await getFromCloudStorage<CSToken[]>(CloudStorageKeys.TOKENS)
+
+  if (!tokens) return []
+
+  return tokens
 }
 
 export const restoreAccounts = async () => {
@@ -94,6 +106,9 @@ export const updateLastViewedNotifications = async (time: number) =>
     CloudStorageKeys.LAST_VIEWED_NOTIFICATIONS,
     time.toString(),
   )
+
+export const updateTokens = (tokens: CSToken[]) =>
+  CloudStorage.setItem(CloudStorageKeys.TOKENS, JSON.stringify(tokens))
 
 export const getLastViewedNotifications = async () => {
   const timeString = await CloudStorage.getItem(
