@@ -19,6 +19,7 @@ import { Edge } from 'react-native-safe-area-context'
 import { Portal } from '@gorhom/portal'
 import { Balance, SolTokens } from '@helium/currency'
 import CurrencyFormatter from 'react-native-currency-format'
+import { useAsync } from 'react-async-hook'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
@@ -66,6 +67,7 @@ const WalletSignBottomSheet = forwardRef(
       url: '',
       fee: Balance.fromIntAndTicker(0, 'SOL'),
     })
+    const [currencyFee, setCurrencyFee] = useState('Loading')
 
     const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
     const snapPoints = useMemo(() => ['25%', 'CONTENT_HEIGHT'], [])
@@ -83,12 +85,10 @@ const WalletSignBottomSheet = forwardRef(
 
     const show = useCallback(({ type, url, fee }: WalletSignOpts) => {
       bottomSheetModalRef.current?.expand()
-      setWalletSignOpts((w) => {
-        return {
-          type,
-          url,
-          fee: fee || w.fee,
-        }
+      setWalletSignOpts({
+        type,
+        url,
+        fee: fee || Balance.fromIntAndTicker(0, 'SOL'),
       })
       const p = new Promise<boolean>((resolve) => {
         promiseResolve = resolve
@@ -135,8 +135,34 @@ const WalletSignBottomSheet = forwardRef(
       }
     }, [hide])
 
+    useAsync(async () => {
+      const { fee } = walletSignOpts
+      let feeCurrencyString = await CurrencyFormatter.format(
+        fee.integerBalance,
+        currency,
+      )
+
+      // Get number from feeCurrencyString
+      const numberFromFeeCurrencyString = feeCurrencyString.replace(
+        /[^0-9.-]+/g,
+        '',
+      )
+
+      const feeCurrencyTo8Decimals =
+        Number(numberFromFeeCurrencyString) /
+        10 ** fee.type.decimalPlaces.toNumber()
+
+      // Replace feeCurrencyString with feeCurrencyTo8Decimals
+      feeCurrencyString = feeCurrencyString.replace(
+        numberFromFeeCurrencyString,
+        feeCurrencyTo8Decimals.toString(),
+      )
+
+      setCurrencyFee(feeCurrencyString)
+    }, [walletSignOpts])
+
     const renderSheetBody = useCallback(() => {
-      const { type, fee } = walletSignOpts
+      const { type } = walletSignOpts
 
       if (type === WalletStandardMessageTypes.connect) {
         return (
@@ -219,7 +245,7 @@ const WalletSignBottomSheet = forwardRef(
                     <Text variant="body1Medium">{t('browser.networkFee')}</Text>
                   </Box>
                   <Text variant="body1Medium" color="secondaryText">
-                    {CurrencyFormatter.format(fee.floatBalance, currency)}
+                    {currencyFee}
                   </Text>
                 </Box>
               )}
@@ -227,7 +253,7 @@ const WalletSignBottomSheet = forwardRef(
           </>
         )
       }
-    }, [walletSignOpts, t, currency])
+    }, [walletSignOpts, t, currencyFee])
 
     const renderSheetFooter = useCallback(() => {
       if (!walletSignOpts) return null

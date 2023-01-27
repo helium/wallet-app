@@ -154,6 +154,7 @@ const AccountView = ({
         <FadeInOut>
           <AccountActionBar
             compact
+            hasSwaps
             hasBottomTitle
             onLayout={setActionBarHeight}
           />

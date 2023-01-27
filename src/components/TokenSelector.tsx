@@ -26,7 +26,7 @@ import useBackHandler from '@hooks/useBackHandler'
 import Box from './Box'
 import ListItem, { LIST_ITEM_HEIGHT } from './ListItem'
 
-type TokenListItem = {
+export type TokenListItem = {
   label: string
   icon: ReactNode
   value: Ticker
@@ -38,16 +38,19 @@ export type TokenSelectorRef = {
 type Props = {
   children: ReactNode
   onTokenSelected: (type: Ticker) => void
+  tokenData?: TokenListItem[]
 } & BoxProps<Theme>
 const TokenSelector = forwardRef(
   (
-    { children, onTokenSelected, ...boxProps }: Props,
+    { children, onTokenSelected, tokenData, ...boxProps }: Props,
     ref: Ref<TokenSelectorRef>,
   ) => {
     useImperativeHandle(ref, () => ({ showTokens }))
 
     const { bottom } = useSafeAreaInsets()
-    const [currentToken, setCurrentToken] = useState<string>('HNT')
+    const [currentToken, setCurrentToken] = useState<string>(
+      tokenData?.length ? tokenData[0].value : 'HNT',
+    )
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
@@ -102,12 +105,12 @@ const TokenSelector = forwardRef(
       (): TokenListItem[] => [
         {
           label: 'HNT',
-          icon: <TokenHNT color={white} />,
+          icon: <TokenHNT width={30} height={30} color={white} />,
           value: 'HNT',
         },
         {
           label: 'MOBILE',
-          icon: <TokenMOBILE color={blueBright500} />,
+          icon: <TokenMOBILE width={30} height={30} color={blueBright500} />,
           value: 'MOBILE',
         },
       ],
@@ -139,7 +142,7 @@ const TokenSelector = forwardRef(
             handleIndicatorStyle={handleIndicatorStyle}
           >
             <BottomSheetFlatList
-              data={data}
+              data={tokenData || data}
               renderItem={renderFlatlistItem}
               keyExtractor={keyExtractor}
             />

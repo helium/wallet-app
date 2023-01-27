@@ -322,7 +322,7 @@ export default {
     nonTransferable: 'Non-Transferable',
     payment: 'Payment',
     deposit: 'Deposit',
-    buy: 'Buy',
+    swaps: 'Swap',
     securityTokens: 'Security Tokens',
     send: 'Send',
     stake: 'Stake',

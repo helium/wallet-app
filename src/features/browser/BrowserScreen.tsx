@@ -85,6 +85,7 @@ const BrowserScreen = () => {
           url: currentUrl,
           fee: Balance.fromFloatAndTicker(TXN_FEE_IN_SOL, 'SOL'),
         })
+
         if (!decision) {
           // Signature declined
           webview.current?.postMessage(

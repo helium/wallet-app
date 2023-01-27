@@ -26,8 +26,6 @@ import CollectablesTabNavigator from '../features/collectables/CollectablesTabNa
 import ActivityNavigator from '../features/activity/ActivityNavigator'
 import NotificationsNavigator from '../features/notifications/NotificationsNavigator'
 import BrowserNavigator from '../features/browser/BrowserNavigator'
-import SwapNavigator from '../features/swaps/SwapNavigator'
-import Swaps from '../assets/images/swaps.svg'
 
 const Tab = createBottomTabNavigator()
 
@@ -48,7 +46,6 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
         iconColor: 'white',
         hasBadge: false,
       },
-      { value: 'swaps', Icon: Swaps, iconColor: 'white' },
       {
         value: 'activity',
         Icon: Transactions,
@@ -173,7 +170,6 @@ const TabBarNavigator = () => {
       >
         <Tab.Screen name="Home" component={HomeNavigator} />
         <Tab.Screen name="Collectables" component={CollectablesTabNavigator} />
-        <Tab.Screen name="Swaps" component={SwapNavigator} />
         <Tab.Screen name="Activity" component={ActivityNavigator} />
         <Tab.Screen
           name="NotificationsNavigator"

@@ -23,6 +23,7 @@ import AddNewAccountNavigator from './addNewAccount/AddNewAccountNavigator'
 import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
 import BurnScreen from '../burn/BurnScreen'
 import ImportPrivateKey from '../onboarding/import/ImportPrivateKey'
+import SwapNavigator from '../swaps/SwapNavigator'
 
 const HomeStack = createNativeStackNavigator()
 
@@ -72,6 +73,11 @@ const HomeStackScreen = () => {
       <HomeStack.Screen
         name="SettingsNavigator"
         component={SettingsNavigator}
+        options={screenOptions}
+      />
+      <HomeStack.Screen
+        name="SwapNavigator"
+        component={SwapNavigator}
         options={screenOptions}
       />
       <HomeStack.Screen name="AddNewContact" component={AddNewContact} />

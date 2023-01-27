@@ -70,7 +70,12 @@ const ListItem = ({
       </Box>
       <Box marginEnd="l">
         {selected ? (
-          <CheckMarkFill color={colors.white} opacity={disabled ? 0.6 : 1.0} />
+          <CheckMarkFill
+            color={colors.white}
+            opacity={disabled ? 0.6 : 1.0}
+            height={20}
+            width={20}
+          />
         ) : null}
         {SecondaryIcon && SecondaryIcon}
       </Box>
