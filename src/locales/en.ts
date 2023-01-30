@@ -302,6 +302,18 @@ export default {
         symbol: 'Symbol',
       },
     },
+    tokenAdded: {
+      title: 'Token added',
+      body: 'We’ve created the associated token account for your wallet.',
+    },
+    addingToken: {
+      title: 'Adding token...',
+      body: 'Were creating an associated token account. You can exit this screen while you wait. We’ll update your Wallet momentarily.',
+    },
+    erroAddToken: {
+      title: 'Error adding token, please try again later',
+    },
+    returnToWallet: 'Return to Wallet',
   },
   accountView: {
     balance: 'Balance',

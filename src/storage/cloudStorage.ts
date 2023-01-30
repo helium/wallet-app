@@ -22,9 +22,13 @@ export type CSAccount = {
 }
 export type CSAccounts = Record<string, CSAccount>
 
-export type CSToken = {
-  address: string
-  symbol: Ticker | string
+export type CSToken = Ticker | string
+
+export type CSTokenMetadata = {
+  mintAddress: string
+  name: string
+  symbol: string
+  decimalPlaces: number
 }
 
 // for android we use AsyncStorage and auto backup to Google Drive using
@@ -34,7 +38,8 @@ const CloudStorage = Platform.OS === 'ios' ? iCloudStorage : AsyncStorage
 enum CloudStorageKeys {
   ACCOUNTS = 'accounts',
   CONTACTS = 'contacts',
-  TOKENS = 'tokens',
+  VISIBLE_TOKENS = 'visibleTokens',
+  TOKENS_METADATA = 'tokensMetadata',
   LAST_VIEWED_NOTIFICATIONS = 'lastViewedNotifications',
   DEFAULT_ACCOUNT_ADDRESS = 'defaultAccountAddress',
 }
@@ -65,12 +70,24 @@ const getAccounts = async (): Promise<CSAccounts> => {
   return JSON.parse(csAccounts) as CSAccounts
 }
 
-export const restoreTokens = async () => {
-  const tokens = await getFromCloudStorage<CSToken[]>(CloudStorageKeys.TOKENS)
+export const restoreVisibleTokens = async () => {
+  const tokens = await getFromCloudStorage<CSToken[]>(
+    CloudStorageKeys.VISIBLE_TOKENS,
+  )
 
   if (!tokens) return []
 
   return tokens
+}
+
+export const restoreTokensMetadata = async () => {
+  const tokensMetadata = await getFromCloudStorage<CSTokenMetadata[]>(
+    CloudStorageKeys.TOKENS_METADATA,
+  )
+
+  if (!tokensMetadata) return []
+
+  return tokensMetadata
 }
 
 export const restoreAccounts = async () => {
@@ -110,8 +127,11 @@ export const updateLastViewedNotifications = async (time: number) =>
     time.toString(),
   )
 
-export const updateTokens = (tokens: CSToken[]) =>
-  CloudStorage.setItem(CloudStorageKeys.TOKENS, JSON.stringify(tokens))
+export const updateVisibleTokens = (tokens: CSToken[]) =>
+  CloudStorage.setItem(CloudStorageKeys.VISIBLE_TOKENS, JSON.stringify(tokens))
+
+export const updateTokensMetadata = (tokens: CSTokenMetadata[]) =>
+  CloudStorage.setItem(CloudStorageKeys.TOKENS_METADATA, JSON.stringify(tokens))
 
 export const getLastViewedNotifications = async () => {
   const timeString = await CloudStorage.getItem(

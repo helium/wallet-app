@@ -14,7 +14,11 @@ import {
 } from '@solana/web3.js'
 import { first, last } from 'lodash'
 import { sendAndConfirmWithRetry } from '@helium/spl-utils'
-import { CSAccount } from '../../storage/cloudStorage'
+import {
+  CSAccount,
+  restoreTokensMetadata,
+  updateTokensMetadata,
+} from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
 import { CompressedNFT, toMintAddress } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
@@ -30,6 +34,7 @@ type Balances = {
   secBalance?: bigint
   solBalance?: number
   stakedBalance?: bigint
+  splTokensBalance?: Record<string, bigint>
   loading?: boolean
 }
 
@@ -366,8 +371,8 @@ export const addNewSplToken = createAsyncThunk(
     {
       account,
       signer,
-      // symbol,
-      // name,
+      symbol,
+      name,
       mintAddress,
       cluster,
     }: AddNewSplTokenInput,
@@ -380,7 +385,18 @@ export const addNewSplToken = createAsyncThunk(
         mintAddress,
       )
 
+      const restoredTokensMetadata = await restoreTokensMetadata()
+
+      if (restoredTokensMetadata.find((f) => f.mintAddress === mintAddress)) {
+        throw new Error('Token already added')
+      }
+
       if (splTokenAccount?.address) {
+        updateTokensMetadata([
+          ...restoredTokensMetadata,
+          { symbol, name, mintAddress, decimalPlaces: 8 },
+        ])
+
         dispatch(
           readBalances({
             cluster,

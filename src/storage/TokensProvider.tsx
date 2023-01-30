@@ -8,17 +8,24 @@ import Balance, {
   Ticker,
   AnyCurrencyType,
 } from '@helium/currency'
+import { BaseCurrencyType } from '@helium/currency/build/currency_types'
 import React, {
   createContext,
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useBalance } from '../utils/Balance'
-import { CSToken, restoreTokens, updateTokens } from './cloudStorage'
+import {
+  CSToken,
+  restoreTokensMetadata,
+  restoreVisibleTokens,
+  updateVisibleTokens,
+} from './cloudStorage'
 
 const useTokensHook = () => {
   const {
@@ -29,122 +36,145 @@ const useTokensHook = () => {
     networkStakedBalance,
     secBalance,
     solBalance,
+    splTokensBalance,
   } = useBalance()
-  const [restoredTokens, setRestoredTokens] = useState<CSToken[]>([])
-
-  const defaultTokens: Token[] = useMemo(
-    () => [
-      {
-        type: 'HNT',
-        balance: networkBalance as Balance<NetworkTokens>,
-        staked: false,
-      },
-      {
-        type: 'HNT',
-        balance: networkStakedBalance as Balance<NetworkTokens>,
-        staked: true,
-      },
-      {
-        type: 'MOBILE',
-        balance: mobileBalance as Balance<MobileTokens>,
-        staked: false,
-      },
-      {
-        type: 'IOT',
-        balance: iotBalance as Balance<IotTokens>,
-        staked: false,
-      },
-      {
-        type: 'DC',
-        balance: dcBalance as Balance<DataCredits>,
-        staked: false,
-      },
-      {
-        type: 'HST',
-        balance: secBalance as Balance<SecurityTokens>,
-        staked: false,
-      },
-      {
-        type: 'SOL',
-        balance: solBalance as Balance<SolTokens>,
-        staked: false,
-      },
-    ],
-    [
-      dcBalance,
-      iotBalance,
-      mobileBalance,
-      networkBalance,
-      networkStakedBalance,
-      secBalance,
-      solBalance,
-    ],
+  const [restoredVisibleTokens, setRestoredVisibleTokens] = useState<CSToken[]>(
+    [],
   )
-
-  const tokens = useMemo(() => [...defaultTokens], [defaultTokens])
+  const [tokens, setTokens] = useState<Token[]>([
+    {
+      type: 'HNT',
+      balance: networkBalance as Balance<NetworkTokens>,
+      staked: false,
+    },
+    {
+      type: 'HNT',
+      balance: networkStakedBalance as Balance<NetworkTokens>,
+      staked: true,
+    },
+    {
+      type: 'MOBILE',
+      balance: mobileBalance as Balance<MobileTokens>,
+      staked: false,
+    },
+    {
+      type: 'IOT',
+      balance: iotBalance as Balance<IotTokens>,
+      staked: false,
+    },
+    {
+      type: 'DC',
+      balance: dcBalance as Balance<DataCredits>,
+      staked: false,
+    },
+    {
+      type: 'HST',
+      balance: secBalance as Balance<SecurityTokens>,
+      staked: false,
+    },
+    {
+      type: 'SOL',
+      balance: solBalance as Balance<SolTokens>,
+      staked: false,
+    },
+  ])
 
   const handleUpdateTokens = useCallback(
     (token: Token, value: boolean) => {
-      const key = token.staked ? `${token.type}-staked` : token.type
+      const key = getKey(token)
 
-      if (!restoredTokens) return
+      if (!restoredVisibleTokens) return
 
       if (!value) {
-        const newTokens = restoredTokens.filter((f) => f.symbol !== key)
+        const newTokens = restoredVisibleTokens.filter((item) => item !== key)
 
-        setRestoredTokens(newTokens)
-        updateTokens(newTokens)
+        setRestoredVisibleTokens(newTokens)
+        updateVisibleTokens(newTokens)
 
         return
       }
 
-      const newTokens = [...restoredTokens]
-      updateTokens(newTokens)
-      setRestoredTokens(newTokens)
+      const newTokens = [...restoredVisibleTokens, key]
+      updateVisibleTokens(newTokens)
+      setRestoredVisibleTokens(newTokens)
     },
-    [restoredTokens],
+    [restoredVisibleTokens],
   )
-
-  const tokensVisible = useMemo(() => {
-    if (!restoredTokens) return []
-
-    return tokens.filter((f) => {
-      const key = f.staked ? `${f.type}-staked` : f.type
-
-      return restoredTokens.find((item) => item.symbol !== key)
-    })
-  }, [restoredTokens, tokens])
 
   const isActiveToken = useCallback(
     (token: Token) => {
-      if (!restoredTokens) return false
+      if (!restoredVisibleTokens) return false
 
-      const key = token.staked ? `${token.type}-staked` : token.type
+      const key = getKey(token)
 
-      return !restoredTokens.find((item) => item.symbol !== key)
+      return restoredVisibleTokens.includes(key)
     },
-    [restoredTokens],
+    [restoredVisibleTokens],
   )
 
   useAsync(async () => {
     try {
-      const response = await restoreTokens()
+      const response = await restoreVisibleTokens()
 
       if (response) {
-        setRestoredTokens(response)
+        setRestoredVisibleTokens(response)
       }
     } catch {}
   }, [])
 
+  const updateWithSplTokens = useCallback(async () => {
+    try {
+      const response = await restoreTokensMetadata()
+
+      if (response) {
+        setTokens((prevTokens) => {
+          const newTokens = [...prevTokens]
+
+          response.forEach((item) => {
+            const index = newTokens.findIndex(
+              (token) => token.type === item.symbol,
+            )
+
+            if (index === -1) {
+              newTokens.push({
+                type: item.symbol as Ticker,
+                balance: new Balance(
+                  splTokensBalance[item.mintAddress],
+                  new BaseCurrencyType(item.symbol as Ticker, 9),
+                ),
+                staked: false,
+              })
+            }
+          })
+
+          return newTokens
+        })
+      }
+    } catch {}
+  }, [splTokensBalance])
+
+  useEffect(() => {
+    updateWithSplTokens()
+  }, [updateWithSplTokens])
+
+  const visibleTokens = useMemo(() => {
+    if (!restoredVisibleTokens) return tokens
+
+    return tokens.filter((token) => {
+      const key = getKey(token)
+
+      return restoredVisibleTokens.includes(key)
+    })
+  }, [restoredVisibleTokens, tokens])
+
   const value = useMemo(
     () => ({
       tokens,
-      defaultTokens,
       handleUpdateTokens,
-      tokensVisible,
+      visibleTokens,
       isActiveToken,
     }),
-    [tokens, defaultTokens, handleUpdateTokens, tokensVisible, isActiveToken],
+    [tokens, handleUpdateTokens, visibleTokens, isActiveToken],
   )
 
   return value
@@ -152,9 +182,8 @@ const useTokensHook = () => {
 
 const initialState = {
   tokens: [],
-  defaultTokens: [],
   handleUpdateTokens: () => {},
-  tokensVisible: [],
+  visibleTokens: [],
   isActiveToken: () => false,
 }
 
@@ -179,3 +208,6 @@ export type Token = {
   balance: Balance<AnyCurrencyType>
   staked: boolean
 }
+
+const getKey = (token: Token) =>
+  token.staked ? `${token.type}-staked` : token.type

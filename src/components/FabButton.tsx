@@ -247,7 +247,7 @@ const FabIcon = ({ icon, pressed, color, colorPressed, size }: IconProps) => {
         />
       )
     case 'arrowDown':
-      return <ArrowDown color={getIconColor()} />
+      return <ArrowDown color={getIconColor()} width={size} height={size} />
     case 'fatArrowUp':
       return <FatArrowUp color={getIconColor()} />
     case 'fatArrowDown':
@@ -268,7 +268,7 @@ const FabIcon = ({ icon, pressed, color, colorPressed, size }: IconProps) => {
     case 'vote':
       return <Vote color={getIconColor()} />
     case 'close':
-      return <Close color={getIconColor()} />
+      return <Close color={getIconColor()} width={size} height={size} />
     case 'filter':
       return <Filter color={getIconColor()} />
     case 'buy':

@@ -338,6 +338,29 @@ const useBalanceHook = () => {
     return new Balance(bal, CurrencyType.solTokens)
   }, [l1Network, solBalances])
 
+  const splTokensBalance = useMemo(() => {
+    const balances: { [address: string]: number } = {}
+
+    switch (l1Network) {
+      case 'helium':
+        break
+
+      case 'solana':
+        if (!solBalances?.splTokensBalance) {
+          break
+        }
+
+        Object.keys(solBalances.splTokensBalance).forEach((address) => {
+          if (!solBalances?.splTokensBalance) return
+
+          balances[address] = Number(solBalances.splTokensBalance[address])
+        })
+        break
+    }
+
+    return balances
+  }, [l1Network, solBalances])
+
   const toPreferredCurrencyString = useCallback(
     (
       balance?: Balance<DataCredits | NetworkTokens | TestNetworkTokens>,
@@ -421,6 +444,7 @@ const useBalanceHook = () => {
     solanaPrice,
     secBalance,
     solBalance,
+    splTokensBalance,
     toCurrencyString,
     toPreferredCurrencyString,
     toUsd,
@@ -445,6 +469,7 @@ const initialState = {
   solanaPrice: undefined,
   secBalance: new Balance(0, CurrencyType.security),
   solBalance: new Balance(0, CurrencyType.solTokens),
+  splTokensBalance: {},
   toCurrencyString: () => new Promise<string>((resolve) => resolve('')),
   toPreferredCurrencyString: () =>
     new Promise<string>((resolve) => resolve('')),

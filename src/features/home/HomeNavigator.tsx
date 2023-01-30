@@ -25,6 +25,7 @@ import BurnScreen from '../burn/BurnScreen'
 import ImportPrivateKey from '../onboarding/import/ImportPrivateKey'
 import AccountManageTokenListScreen from '../account/manageToken/AccountManageTokenListScreen'
 import AccountManageTokenAddScreen from '../account/manageToken/AccountManageTokenAddScreen'
+import AccountManageTokenCompleteScreen from '../account/manageToken/AccountManageTokenCompleteScreen'
 
 const HomeStack = createNativeStackNavigator()
 
@@ -58,6 +59,10 @@ const HomeStackScreen = () => {
       <HomeStack.Screen
         name="AccountManageTokenAddScreen"
         component={AccountManageTokenAddScreen}
+      />
+      <HomeStack.Screen
+        name="AccountManageTokenCompleteScreen"
+        component={AccountManageTokenCompleteScreen}
       />
       <HomeStack.Screen
         name="AccountAssignScreen"

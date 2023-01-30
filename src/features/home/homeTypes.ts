@@ -23,6 +23,7 @@ export type HomeStackParamList = {
   AccountTokenScreen: { tokenType: Ticker }
   AccountManageTokenListScreen: undefined
   AccountManageTokenAddScreen: undefined
+  AccountManageTokenCompleteScreen: undefined
   AccountAssignScreen:
     | undefined
     | {

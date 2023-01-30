@@ -58,6 +58,8 @@ const AccountManageTokenAddScreen: React.FC = () => {
 
     if (!secureAcct || !currentAccount?.solanaAddress) return
 
+    navigation.navigate('AccountManageTokenCompleteScreen')
+
     try {
       const signer = {
         publicKey: new PublicKey(currentAccount?.solanaAddress),
@@ -85,6 +87,7 @@ const AccountManageTokenAddScreen: React.FC = () => {
     form.name,
     form.symbol,
     isValidForm,
+    navigation,
   ])
 
   // TODO: get network fee from getFee useTxn hook
@@ -210,7 +213,7 @@ const AccountManageTokenAddScreen: React.FC = () => {
                 backgroundColor="surfaceContrast"
                 backgroundColorOpacityPressed={0.7}
                 backgroundColorDisabledOpacity={0.6}
-                // disabled={!isValidForm}
+                disabled={!isValidForm}
                 backgroundColorDisabled="surfaceContrast"
                 titleColorDisabled="secondaryText"
                 title={t('generic.save')}

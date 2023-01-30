@@ -30,15 +30,15 @@ const AccountTokenList: React.FC<Props> = ({
   const { updating: updatingTokens } = useBalance()
   const { bottom } = useSafeAreaInsets()
   const { t } = useTranslation()
-  const { tokensVisible } = useTokens()
+  const { visibleTokens } = useTokens()
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
 
   const filteredTokens = useMemo(() => {
     if (updatingTokens || loading) return []
 
-    return tokensVisible
-  }, [loading, tokensVisible, updatingTokens])
+    return visibleTokens
+  }, [loading, visibleTokens, updatingTokens])
 
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types

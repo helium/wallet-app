@@ -150,7 +150,7 @@ export const readSplTokensBalance = async (
     programId: TOKEN_PROGRAM_ID,
   })
 
-  const vals = {} as Record<string, bigint>
+  const vals: Record<string, bigint> = {}
   tokenAccounts.value.forEach(async (tokenAccount) => {
     const accountData = AccountLayout.decode(tokenAccount.account.data)
     vals[accountData.mint.toBase58()] = accountData.amount

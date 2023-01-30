@@ -48,12 +48,14 @@ const AccountManageTokenListScreen: React.FC = () => {
     if (typeof item === 'string') {
       return item
     }
+
     const currencyToken = item as Token
 
     if (currencyToken.staked) {
       return [currencyToken.type, 'staked'].join('-')
     }
-    return currencyToken.type
+
+    return `${currencyToken.type}-${Math.random()}`
   }, [])
 
   return (
