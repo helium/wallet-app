@@ -32,7 +32,7 @@ const useTokensHook = () => {
   } = useBalance()
   const [restoredTokens, setRestoredTokens] = useState<CSToken[]>([])
 
-  const tokens: Token[] = useMemo(
+  const defaultTokens: Token[] = useMemo(
     () => [
       {
         type: 'HNT',
@@ -81,6 +81,8 @@ const useTokensHook = () => {
     ],
   )
 
+  const tokens = useMemo(() => [...defaultTokens], [defaultTokens])
+
   const handleUpdateTokens = useCallback(
     (token: Token, value: boolean) => {
       const key = token.staked ? `${token.type}-staked` : token.type
@@ -88,7 +90,7 @@ const useTokensHook = () => {
       if (!restoredTokens) return
 
       if (!value) {
-        const newTokens = restoredTokens.filter((f) => f !== key)
+        const newTokens = restoredTokens.filter((f) => f.symbol !== key)
 
         setRestoredTokens(newTokens)
         updateTokens(newTokens)
@@ -96,7 +98,7 @@ const useTokensHook = () => {
         return
       }
 
-      const newTokens = [...restoredTokens, key]
+      const newTokens = [...restoredTokens]
       updateTokens(newTokens)
       setRestoredTokens(newTokens)
     },
@@ -109,7 +111,7 @@ const useTokensHook = () => {
     return tokens.filter((f) => {
       const key = f.staked ? `${f.type}-staked` : f.type
 
-      return restoredTokens.includes(key)
+      return restoredTokens.find((item) => item.symbol !== key)
     })
   }, [restoredTokens, tokens])
 
@@ -119,7 +121,7 @@ const useTokensHook = () => {
 
       const key = token.staked ? `${token.type}-staked` : token.type
 
-      return restoredTokens.includes(key)
+      return !restoredTokens.find((item) => item.symbol !== key)
     },
     [restoredTokens],
   )
@@ -137,11 +139,12 @@ const useTokensHook = () => {
   const value = useMemo(
     () => ({
       tokens,
+      defaultTokens,
       handleUpdateTokens,
       tokensVisible,
       isActiveToken,
     }),
-    [handleUpdateTokens, isActiveToken, tokens, tokensVisible],
+    [tokens, defaultTokens, handleUpdateTokens, tokensVisible, isActiveToken],
   )
 
   return value
@@ -149,6 +152,7 @@ const useTokensHook = () => {
 
 const initialState = {
   tokens: [],
+  defaultTokens: [],
   handleUpdateTokens: () => {},
   tokensVisible: [],
   isActiveToken: () => false,

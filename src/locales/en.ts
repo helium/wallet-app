@@ -293,9 +293,15 @@ export default {
   accountTokenList: {
     tokens: 'Tokens',
     manage: 'Manage token list',
-  },
-  accountManageTokenListScreen: {
-    title: 'Manage token list',
+    addToken: {
+      title: 'Add token metadata',
+      fee: 'This will cost {{value}}',
+      placeholder: {
+        mint: 'Mint address',
+        name: 'Name',
+        symbol: 'Symbol',
+      },
+    },
   },
   accountView: {
     balance: 'Balance',
@@ -435,6 +441,7 @@ export default {
     submitSuccess: 'Transaction Submit',
     understand: 'I Understand',
     noData: 'No Data',
+    save: 'Save',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',

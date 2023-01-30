@@ -86,7 +86,7 @@ const TokenListItem: React.FC<Props> = ({
           <Box justifyContent="center" alignItems="center" marginEnd="xs">
             <CheckBox
               value={checked}
-              style={{ height: 20, width: 20 }}
+              style={{ height: 18, width: 18 }}
               tintColors={{
                 true: colors.primaryText,
                 false: colors.transparent10,

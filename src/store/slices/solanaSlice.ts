@@ -9,6 +9,7 @@ import {
   Cluster,
   PublicKey,
   SignaturesForAddressOptions,
+  Signer,
   Transaction,
 } from '@solana/web3.js'
 import { first, last } from 'lodash'
@@ -42,6 +43,7 @@ type SolActivity = {
 export type SolanaState = {
   balances: Record<string, Balances>
   payment?: { loading?: boolean; error?: SerializedError; success?: boolean }
+  splToken?: { loading?: boolean; error?: SerializedError; success?: boolean }
   activity: {
     loading?: boolean
     data: Record<string, SolActivity>
@@ -81,10 +83,16 @@ export const readBalances = createAsyncThunk(
       acct.solanaAddress,
     )
 
+    const splTokensBalance = await solUtils.readSplTokensBalance(
+      cluster,
+      acct.solanaAddress,
+    )
+
     if (solBalance === 0 && cluster !== 'mainnet-beta') {
       solUtils.airdrop(cluster, acct.solanaAddress)
     }
-    return { ...heliumBals, solBalance }
+
+    return { ...heliumBals, solBalance, splTokensBalance }
   },
 )
 
@@ -136,6 +144,15 @@ type TreasurySwapTxn = {
   amount: number
   fromMint: PublicKey
   mints: Mints
+}
+
+type AddNewSplTokenInput = {
+  account: CSAccount
+  cluster: Cluster
+  signer: Signer
+  mintAddress: string
+  symbol: string
+  name: string
 }
 
 export const makePayment = createAsyncThunk(
@@ -336,6 +353,41 @@ export const claimAllRewards = createAsyncThunk(
           cluster,
         }),
       )
+    } catch (error) {
+      Logger.error(error)
+      throw error
+    }
+  },
+)
+
+export const addNewSplToken = createAsyncThunk(
+  'solana/addNewSplToken',
+  async (
+    {
+      account,
+      signer,
+      // symbol,
+      // name,
+      mintAddress,
+      cluster,
+    }: AddNewSplTokenInput,
+    { dispatch },
+  ) => {
+    try {
+      const splTokenAccount = await solUtils.getOrCreateSplTokenAccount(
+        cluster,
+        signer,
+        mintAddress,
+      )
+
+      if (splTokenAccount?.address) {
+        dispatch(
+          readBalances({
+            cluster,
+            acct: account,
+          }),
+        )
+      }
     } catch (error) {
       Logger.error(error)
       throw error
@@ -564,6 +616,19 @@ const solanaSlice = createSlice({
       // Only store the error if it was a fresh load
       if (meta.arg.requestType === 'start_fresh') {
         state.activity.error = error
+      }
+    })
+    builder.addCase(addNewSplToken.rejected, (state, action) => {
+      state.splToken = { success: false, loading: false, error: action.error }
+    })
+    builder.addCase(addNewSplToken.pending, (state, _action) => {
+      state.splToken = { success: false, loading: true, error: undefined }
+    })
+    builder.addCase(addNewSplToken.fulfilled, (state, _action) => {
+      state.splToken = {
+        success: true,
+        loading: false,
+        error: undefined,
       }
     })
   },

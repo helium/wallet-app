@@ -87,11 +87,11 @@ const AccountManageTokenListScreen: React.FC = () => {
           color="primaryText"
           maxFontSizeMultiplier={1}
         >
-          {t('accountManageTokenListScreen.title')}
+          {t('accountTokenList.manage')}
         </Text>
         <Box hitSlop={hitSlop} padding="s">
           <IconPressedContainer
-            onPress={navigation.goBack}
+            onPress={() => navigation.navigate('AccountManageTokenAddScreen')}
             activeOpacity={0.75}
             idleOpacity={1.0}
           >
@@ -110,7 +110,3 @@ const AccountManageTokenListScreen: React.FC = () => {
 }
 
 export default AccountManageTokenListScreen
-
-//
-// Utils
-//

@@ -139,6 +139,48 @@ export const readSolanaBalance = async (cluster: Cluster, address: string) => {
   return getConnection(cluster).getBalance(key)
 }
 
+export const readSplTokensBalance = async (
+  cluster: Cluster,
+  address: string,
+) => {
+  const account = new PublicKey(address)
+  const conn = getConnection(cluster)
+
+  const tokenAccounts = await conn.getTokenAccountsByOwner(account, {
+    programId: TOKEN_PROGRAM_ID,
+  })
+
+  const vals = {} as Record<string, bigint>
+  tokenAccounts.value.forEach(async (tokenAccount) => {
+    const accountData = AccountLayout.decode(tokenAccount.account.data)
+    vals[accountData.mint.toBase58()] = accountData.amount
+  })
+
+  return vals
+}
+
+export const getOrCreateSplTokenAccount = async (
+  cluster: Cluster,
+  signer: Signer,
+  mintAddress: string,
+) => {
+  const connection = getConnection(cluster)
+
+  const mintPublicKey = new PublicKey(mintAddress)
+  const payerPublicKey = signer.publicKey
+
+  try {
+    const response = await getOrCreateAssociatedTokenAccount(
+      connection,
+      signer,
+      mintPublicKey,
+      payerPublicKey,
+    )
+
+    return response
+  } catch {}
+}
+
 export const createTransferTxn = async (
   cluster: Cluster,
   signer: Signer,

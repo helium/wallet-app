@@ -22,7 +22,10 @@ export type CSAccount = {
 }
 export type CSAccounts = Record<string, CSAccount>
 
-export type CSToken = Ticker | string // Ticker || Ticker-staked
+export type CSToken = {
+  address: string
+  symbol: Ticker | string
+}
 
 // for android we use AsyncStorage and auto backup to Google Drive using
 // https://developer.android.com/guide/topics/data/autobackup

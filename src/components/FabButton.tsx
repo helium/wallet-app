@@ -48,6 +48,7 @@ type Props = BoxProps<Theme> & {
   icon?: IconName
   innerContainerProps?: BoxProps<Theme>
   iconColor?: Color
+  iconSize?: number
   iconColorPressed?: Color
   fontSize?: number
   fontWeight?: FontWeight
@@ -68,6 +69,7 @@ const ButtonPressable = ({
   onPress,
   iconColor,
   iconColorPressed,
+  iconSize = 16,
   size = 56,
   disabled,
   title,
@@ -162,6 +164,7 @@ const ButtonPressable = ({
           size={size}
           icon={icon}
           iconColor={iconColor}
+          iconSize={iconSize}
           iconColorPressed={iconColorPressed}
           props={containerProps}
           style={getBackgroundColorStyle(pressed)}
@@ -177,6 +180,7 @@ type FabButtonCircleProps = {
   icon?: IconName
   iconColor?: Color
   iconColorPressed?: Color
+  iconSize?: number
   props?: BoxProps<Theme>
   style?: ViewStyle
 }
@@ -187,6 +191,7 @@ const FabButtonCircle = ({
   icon,
   iconColor,
   iconColorPressed,
+  iconSize,
   props,
   style,
 }: FabButtonCircleProps) => {
@@ -204,6 +209,7 @@ const FabButtonCircle = ({
         pressed={pressed}
         color={iconColor}
         colorPressed={iconColorPressed}
+        size={iconSize}
       />
     </Box>
   )
@@ -214,9 +220,10 @@ type IconProps = {
   pressed: boolean
   color?: Color
   colorPressed?: Color
+  size?: number
 }
 
-const FabIcon = ({ icon, pressed, color, colorPressed }: IconProps) => {
+const FabIcon = ({ icon, pressed, color, colorPressed, size }: IconProps) => {
   const colors = useColors()
 
   const getIconColor = useCallback(() => {
@@ -257,7 +264,7 @@ const FabIcon = ({ icon, pressed, color, colorPressed }: IconProps) => {
     case 'lock':
       return <Lock color={getIconColor()} />
     case 'add':
-      return <Plus color={getIconColor()} />
+      return <Plus color={getIconColor()} width={size} height={size} />
     case 'vote':
       return <Vote color={getIconColor()} />
     case 'close':
