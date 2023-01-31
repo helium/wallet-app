@@ -30,7 +30,7 @@ const TokenListItem: React.FC<Props> = ({
   checked,
   onCheckedChange,
 }) => {
-  const disabled = ticker === 'SOL' || ticker === 'IOT'
+  const disabled = !ALLOWED_TICKERS.includes(ticker)
   const navigation = useNavigation<HomeNavigationProp>()
   const { triggerImpact } = useHaptic()
   const colors = useColors()
@@ -135,3 +135,13 @@ export default TokenListItem
 //
 
 export const ITEM_HEIGHT = 72
+
+const ALLOWED_TICKERS = [
+  'HNT',
+  'DC',
+  'TNT',
+  'MOBILE',
+  'HST',
+  'TNT Staked',
+  'HNT Staked',
+]
