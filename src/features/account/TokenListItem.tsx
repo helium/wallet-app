@@ -19,6 +19,7 @@ type Props = {
   staked?: boolean
   withoutBorderBottom?: boolean
   checked?: boolean
+  name?: string
   onCheckedChange?: (checked: boolean) => void
 }
 
@@ -28,6 +29,7 @@ const TokenListItem: React.FC<Props> = ({
   staked,
   withoutBorderBottom,
   checked,
+  name,
   onCheckedChange,
 }) => {
   const disabled = !ALLOWED_TICKERS.includes(ticker)
@@ -74,6 +76,7 @@ const TokenListItem: React.FC<Props> = ({
           color="secondaryText"
           ticker={ticker}
           staked={staked}
+          name={name}
         />
       </Box>
       {!disabled && checked === undefined && <Arrow />}

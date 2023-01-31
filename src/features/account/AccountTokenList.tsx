@@ -48,6 +48,7 @@ const AccountTokenList: React.FC<Props> = ({
           ticker={token.type}
           balance={token.balance}
           staked={token.staked}
+          name={token.name}
           withoutBorderBottom={index === filteredTokens.length - 1}
         />
       )

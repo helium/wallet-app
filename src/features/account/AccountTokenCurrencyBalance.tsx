@@ -12,11 +12,13 @@ import { locale } from '../../utils/i18n'
 type Props = {
   ticker: Ticker
   staked?: boolean
+  name?: string
 } & TextProps
 
 const AccountTokenCurrencyBalance = ({
   ticker,
   staked = false,
+  name,
   ...textProps
 }: Props) => {
   const { t } = useTranslation()
@@ -73,7 +75,7 @@ const AccountTokenCurrencyBalance = ({
         setBalanceString(t('accountView.securityTokens'))
         break
       default:
-        setBalanceString('-')
+        setBalanceString(name || '-')
     }
   }, [
     accountNetType,

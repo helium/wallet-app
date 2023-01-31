@@ -35,6 +35,7 @@ const AccountManageTokenListScreen: React.FC = () => {
           ticker={token.type}
           balance={token.balance}
           staked={token.staked}
+          name={token.name}
           withoutBorderBottom={index === tokens.length - 1}
           checked={isActiveToken(token)}
           onCheckedChange={(value) => handleUpdateTokens(token, value)}

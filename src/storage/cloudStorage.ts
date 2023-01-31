@@ -3,7 +3,6 @@ import { sortBy, values } from 'lodash'
 import { Platform } from 'react-native'
 import iCloudStorage from 'react-native-icloudstore'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { Ticker } from '@helium/currency'
 
 export type LedgerDevice = {
   id: string
@@ -22,14 +21,17 @@ export type CSAccount = {
 }
 export type CSAccounts = Record<string, CSAccount>
 
-export type CSToken = Ticker | string
+export type CSToken = Record<string, string[]>
 
-export type CSTokenMetadata = {
-  mintAddress: string
-  name: string
-  symbol: string
-  decimalPlaces: number
-}
+export type CSTokenMetadata = Record<
+  string,
+  {
+    mintAddress: string
+    name: string
+    symbol: string
+    decimalPlaces: number
+  }[]
+>
 
 // for android we use AsyncStorage and auto backup to Google Drive using
 // https://developer.android.com/guide/topics/data/autobackup
@@ -71,21 +73,21 @@ const getAccounts = async (): Promise<CSAccounts> => {
 }
 
 export const restoreVisibleTokens = async () => {
-  const tokens = await getFromCloudStorage<CSToken[]>(
+  const tokens = await getFromCloudStorage<CSToken>(
     CloudStorageKeys.VISIBLE_TOKENS,
   )
 
-  if (!tokens) return []
+  if (!tokens) return {}
 
   return tokens
 }
 
 export const restoreTokensMetadata = async () => {
-  const tokensMetadata = await getFromCloudStorage<CSTokenMetadata[]>(
+  const tokensMetadata = await getFromCloudStorage<CSTokenMetadata>(
     CloudStorageKeys.TOKENS_METADATA,
   )
 
-  if (!tokensMetadata) return []
+  if (!tokensMetadata) return {}
 
   return tokensMetadata
 }
@@ -127,10 +129,10 @@ export const updateLastViewedNotifications = async (time: number) =>
     time.toString(),
   )
 
-export const updateVisibleTokens = (tokens: CSToken[]) =>
+export const updateVisibleTokens = (tokens: CSToken) =>
   CloudStorage.setItem(CloudStorageKeys.VISIBLE_TOKENS, JSON.stringify(tokens))
 
-export const updateTokensMetadata = (tokens: CSTokenMetadata[]) =>
+export const updateTokensMetadata = (tokens: CSTokenMetadata) =>
   CloudStorage.setItem(CloudStorageKeys.TOKENS_METADATA, JSON.stringify(tokens))
 
 export const getLastViewedNotifications = async () => {

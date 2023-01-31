@@ -19,7 +19,9 @@ import React, {
   useState,
 } from 'react'
 import { useAsync } from 'react-async-hook'
+import usePrevious from '../hooks/usePrevious'
 import { useBalance } from '../utils/Balance'
+import { useAccountStorage } from './AccountStorageProvider'
 import {
   CSToken,
   restoreTokensMetadata,
@@ -38,70 +40,116 @@ const useTokensHook = () => {
     solBalance,
     splTokensBalance,
   } = useBalance()
-  const [restoredVisibleTokens, setRestoredVisibleTokens] = useState<CSToken[]>(
-    [],
+  const { currentAccount } = useAccountStorage()
+  const [restoredVisibleTokens, setRestoredVisibleTokens] =
+    useState<CSToken | null>(null)
+  const [tokens, setTokens] = useState<Token[]>([])
+
+  const defaultTokens: Token[] = useMemo(
+    () => [
+      {
+        type: 'HNT',
+        balance: networkBalance as Balance<NetworkTokens>,
+        staked: false,
+      },
+      {
+        type: 'HNT',
+        balance: networkStakedBalance as Balance<NetworkTokens>,
+        staked: true,
+      },
+      {
+        type: 'MOBILE',
+        balance: mobileBalance as Balance<MobileTokens>,
+        staked: false,
+      },
+      {
+        type: 'IOT',
+        balance: iotBalance as Balance<IotTokens>,
+        staked: false,
+      },
+      {
+        type: 'DC',
+        balance: dcBalance as Balance<DataCredits>,
+        staked: false,
+      },
+      {
+        type: 'HST',
+        balance: secBalance as Balance<SecurityTokens>,
+        staked: false,
+      },
+      {
+        type: 'SOL',
+        balance: solBalance as Balance<SolTokens>,
+        staked: false,
+      },
+    ],
+    [
+      dcBalance,
+      iotBalance,
+      mobileBalance,
+      networkBalance,
+      networkStakedBalance,
+      secBalance,
+      solBalance,
+    ],
   )
-  const [tokens, setTokens] = useState<Token[]>([
-    {
-      type: 'HNT',
-      balance: networkBalance as Balance<NetworkTokens>,
-      staked: false,
-    },
-    {
-      type: 'HNT',
-      balance: networkStakedBalance as Balance<NetworkTokens>,
-      staked: true,
-    },
-    {
-      type: 'MOBILE',
-      balance: mobileBalance as Balance<MobileTokens>,
-      staked: false,
-    },
-    {
-      type: 'IOT',
-      balance: iotBalance as Balance<IotTokens>,
-      staked: false,
-    },
-    {
-      type: 'DC',
-      balance: dcBalance as Balance<DataCredits>,
-      staked: false,
-    },
-    {
-      type: 'HST',
-      balance: secBalance as Balance<SecurityTokens>,
-      staked: false,
-    },
-    {
-      type: 'SOL',
-      balance: solBalance as Balance<SolTokens>,
-      staked: false,
-    },
-  ])
+
+  const updateCSTokens = useCallback((csToken: CSToken) => {
+    updateVisibleTokens(csToken)
+    setRestoredVisibleTokens(csToken)
+  }, [])
 
   const handleUpdateTokens = useCallback(
     (token: Token, value: boolean) => {
+      if (!currentAccount?.address) return
+
+      let newRestoredTokens: CSToken | null = restoredVisibleTokens
+
+      if (!newRestoredTokens) {
+        newRestoredTokens = {}
+      }
+
+      if (!newRestoredTokens[currentAccount.address]) {
+        newRestoredTokens = {
+          ...newRestoredTokens,
+          [currentAccount.address]: [],
+        }
+      }
+
       const key = getKey(token)
 
       if (!value) {
-        const newTokens = restoredVisibleTokens.filter((item) => item !== key)
+        const newTokens = newRestoredTokens[currentAccount.address].filter(
+          (item) => item !== key,
+        )
 
-        setRestoredVisibleTokens(newTokens)
-        updateVisibleTokens(newTokens)
+        updateCSTokens({
+          ...newRestoredTokens,
+          [currentAccount.address]: newTokens,
+        })
 
         return
       }
 
-      const newTokens = [...restoredVisibleTokens, key]
-      updateVisibleTokens(newTokens)
-      setRestoredVisibleTokens(newTokens)
+      updateCSTokens({
+        ...newRestoredTokens,
+        [currentAccount.address]: [
+          ...newRestoredTokens[currentAccount.address],
+          key,
+        ],
+      })
     },
-    [restoredVisibleTokens],
+    [currentAccount, restoredVisibleTokens, updateCSTokens],
   )
 
   const isActiveToken = useCallback(
-    (token: Token) => restoredVisibleTokens.includes(getKey(token)),
-    [restoredVisibleTokens],
+    (token: Token) =>
+      !!(
+        currentAccount &&
+        restoredVisibleTokens &&
+        restoredVisibleTokens[currentAccount.address]?.includes(getKey(token))
+      ),
+    [currentAccount, restoredVisibleTokens],
   )
 
   useAsync(async () => {
@@ -113,49 +161,72 @@ const useTokensHook = () => {
   }, [])
 
   const updateWithSplTokens = useCallback(async () => {
+    if (!currentAccount?.address) return
+
     try {
       const response = await restoreTokensMetadata()
 
-      if (response) {
-        setTokens((prevTokens) => {
-          const newTokens = [...prevTokens]
+      if (!response[currentAccount.address]) return []
 
-          response.forEach((item) => {
-            const index = newTokens.findIndex(
-              (token) => token.type === item.symbol,
-            )
+      setTokens((prevTokens) => {
+        const newTokens = [...prevTokens]
 
-            if (index === -1) {
-              newTokens.push({
-                type: item.symbol as Ticker,
-                balance: new Balance(
-                  splTokensBalance[item.mintAddress],
-                  new BaseCurrencyType(item.symbol as Ticker, 9),
-                ),
-                staked: false,
-              })
-            }
-          })
+        response[currentAccount.address].forEach((item) => {
+          const index = newTokens.findIndex(
+            (token) => token.type === item.symbol,
+          )
 
-          return newTokens
+          if (index === -1) {
+            newTokens.push({
+              type: item.symbol as Ticker,
+              balance: new Balance(
+                splTokensBalance[item.mintAddress],
+                new BaseCurrencyType(item.symbol as Ticker, 9),
+              ),
+              name: item.name,
+              staked: false,
+            })
+          }
         })
-      }
+
+        return newTokens
+      })
     } catch {}
-  }, [splTokensBalance])
+  }, [currentAccount, splTokensBalance])
 
   useEffect(() => {
     updateWithSplTokens()
   }, [updateWithSplTokens])
 
-  const visibleTokens = useMemo(
-    () =>
-      tokens.filter((token) => {
-        const key = getKey(token)
+  const prevAccount = usePrevious(currentAccount?.address)
+  useEffect(() => {
+    if (prevAccount !== currentAccount?.address) {
+      setTokens(defaultTokens)
+    }
+  }, [currentAccount, defaultTokens, prevAccount])
 
-        return restoredVisibleTokens.includes(key)
-      }),
-    [restoredVisibleTokens, tokens],
-  )
+  const visibleTokens = useMemo(() => {
+    if (!currentAccount?.address || !restoredVisibleTokens) return []
+
+    if (!restoredVisibleTokens[currentAccount.address]) return []
+
+    return tokens.filter((token) => {
+      const key = getKey(token)
+
+      return restoredVisibleTokens[currentAccount.address].includes(key)
+    })
+  }, [currentAccount, restoredVisibleTokens, tokens])
+
+  useEffect(() => {
+    if (!currentAccount?.address || !restoredVisibleTokens) return
+
+    if (restoredVisibleTokens[currentAccount.address]) return
+
+    updateCSTokens({
+      ...restoredVisibleTokens,
+      [currentAccount.address]: tokens.map((token) => getKey(token)),
+    })
+  }, [currentAccount, restoredVisibleTokens, tokens, updateCSTokens])
 
   const value = useMemo(
     () => ({
@@ -197,6 +268,7 @@ export type Token = {
   type: Ticker
   balance: Balance<AnyCurrencyType>
   staked: boolean
+  name?: string
 }
 
 const getKey = (token: Token) =>

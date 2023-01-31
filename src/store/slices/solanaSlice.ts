@@ -17,9 +17,7 @@ import { sendAndConfirmWithRetry } from '@helium/spl-utils'
 import {
   CSAccount,
   restoreTokensMetadata,
-  restoreVisibleTokens,
   updateTokensMetadata,
-  updateVisibleTokens,
 } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
 import { CompressedNFT, toMintAddress } from '../../types/solana'
@@ -389,28 +387,34 @@ export const addNewSplToken = createAsyncThunk(
 
       const restoredTokensMetadata = await restoreTokensMetadata()
 
-      if (restoredTokensMetadata.find((f) => f.mintAddress === mintAddress)) {
+      if (
+        restoredTokensMetadata[account.address]?.find(
+          (f) => f.mintAddress === mintAddress,
+        )
+      ) {
         throw new Error('Token already added')
       }
 
-      if (splTokenAccount?.address) {
-        updateTokensMetadata([
-          ...restoredTokensMetadata,
-          { symbol, name, mintAddress, decimalPlaces: 8 },
-        ])
+      if (!splTokenAccount?.address) return
 
-        const restoredVisibleTokens = await restoreVisibleTokens()
-
-        const newTokens = [...restoredVisibleTokens, symbol]
-        updateVisibleTokens(newTokens)
-
-        dispatch(
-          readBalances({
-            cluster,
-            acct: account,
-          }),
-        )
+      if (!restoredTokensMetadata[account.address]) {
+        restoredTokensMetadata[account.address] = []
       }
+
+      updateTokensMetadata({
+        ...restoredTokensMetadata,
+        [account.address]: [
+          ...restoredTokensMetadata[account.address],
+          { symbol, name, mintAddress, decimalPlaces: 8 },
+        ],
+      })
+
+      dispatch(
+        readBalances({
+          cluster,
+          acct: account,
+        }),
+      )
     } catch (error) {
       Logger.error(error)
       throw error
