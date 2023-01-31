@@ -14,12 +14,12 @@ jobs:
           # The branch to sync from
           #   Optional
           #   Default: github.ref_name
-          source: 'main'
+          source: "main"
           # The branch to sync to
           #   Optional
           #   Default: `beta`
-          target: 'feature/solana'
-          # The strategy to use, if fast-forward is not possible (merge, rebase, force,
+          target: "feature/solana"
+          # The strategy to use, if fast-forward is not possible (merge, rebase, force, 
           # fail).
           #   Optional
           #   Default: `merge`
@@ -28,19 +28,19 @@ jobs:
           #     - `rebase`: rebase the target branch onto the source branch
           #     - `force`:  force push the source branch to the target branch (overrides
           #                 any changes on the target branch)
-          #     - `fail`:   pushes the source branch to the target branch, fails if the
-          #                 target branch contains changes that are not present in the
+          #     - `fail`:   pushes the source branch to the target branch, fails if the 
+          #                 target branch contains changes that are not present in the 
           #                 source branch
-          strategy: 'force'
+          strategy: "force"
           # The changes to accept, if strategy `merge` leads to merge conflicts
           #   Optional
           #   Default: `target`
           #   Possible values:
           #     - `target`: forces conflicts to be auto-resolved cleanly by favoring
-          #                 the target version. All non-conflicting changes are reflected
+          #                 the target version. All non-conflicting changes are reflected 
           #                 in the merge result.
           #     - `source`: forces conflicts to be auto-resolved cleanly by favoring
-          #                 the source version. All non-conflicting changes are reflected
+          #                 the source version. All non-conflicting changes are reflected 
           #                 in the merge result.
           #     - `false`:  `merge` fails if any merge conflicts occur.
           # resolve_conflicts: "source"
