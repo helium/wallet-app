@@ -331,7 +331,7 @@ const useBalanceHook = () => {
         break
 
       case 'solana':
-        bal = solBalances?.solBalance ? Number(solBalances.solBalance / 10) : 0
+        bal = solBalances?.solBalance ? Number(solBalances.solBalance) : 0
         break
     }
 
