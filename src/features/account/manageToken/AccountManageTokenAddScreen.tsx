@@ -21,6 +21,7 @@ import { useAppStorage } from '../../../storage/AppStorageProvider'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import { useAppDispatch } from '../../../store/store'
 import { addNewSplToken } from '../../../store/slices/solanaSlice'
+import { solAddressIsValid } from '../../../utils/accountUtils'
 
 const AccountManageTokenAddScreen: React.FC = () => {
   const navigation = useNavigation<HomeNavigationProp>()
@@ -40,6 +41,10 @@ const AccountManageTokenAddScreen: React.FC = () => {
   const isValidForm = useMemo(() => {
     let isValid = true
 
+    if (!solAddressIsValid(form.mintAddress)) {
+      isValid = false
+    }
+
     if (
       form.name.length === 0 ||
       form.symbol.length === 0 ||
@@ -49,7 +54,7 @@ const AccountManageTokenAddScreen: React.FC = () => {
     }
 
     return isValid
-  }, [form.mintAddress.length, form.name.length, form.symbol.length])
+  }, [form.mintAddress, form.name.length, form.symbol.length])
 
   const addToken = useCallback(async () => {
     if (!currentAccount || !isValidForm) return
