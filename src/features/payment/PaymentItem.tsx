@@ -187,8 +187,8 @@ const PaymentItem = ({
   }, [index, onRemove])
 
   const isDeepLink = useMemo(
-    () => address && l1Network === 'helium',
-    [address, l1Network],
+    () => address && l1Network === 'helium' && !account?.address,
+    [account, address, l1Network],
   )
 
   const AddressIcon = useCallback(() => {
