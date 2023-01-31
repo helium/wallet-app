@@ -25,12 +25,21 @@ const solanaConfig = {
   blacklist: ['payment'],
 }
 
+const walletRestConfig = {
+  key: walletRestApi.reducerPath,
+  storage: AsyncStorage,
+  blacklist: ['getTokenPrices'],
+}
+
 const reducer = combineReducers({
   [solanaStatusApi.reducerPath]: solanaStatusReducer,
   [collectablesSliceName]: collectablesReducer,
   [solanaSliceName]: persistReducer(solanaConfig, solanaReducer),
   [authSliceName]: authReducer,
-  [walletRestApi.reducerPath]: walletRestApiReducer,
+  [walletRestApi.reducerPath]: persistReducer(
+    walletRestConfig,
+    walletRestApiReducer,
+  ),
   [appSliceName]: appReducer,
   [hotspotSliceName]: hotspotReducer,
 })
