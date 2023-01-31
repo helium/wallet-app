@@ -75,6 +75,7 @@ type Props = {
     payee?: string
     index?: number
   }) => void
+  usePortal?: boolean
 } & BoxProps<Theme>
 const HNTKeyboardSelector = forwardRef(
   (
@@ -84,6 +85,7 @@ const HNTKeyboardSelector = forwardRef(
       handleVisible,
       ticker,
       networkFee,
+      usePortal = false,
       ...boxProps
     }: Props,
     ref: Ref<HNTKeyboardRef>,
@@ -270,12 +272,24 @@ const HNTKeyboardSelector = forwardRef(
       l1Network,
     ])
 
-    const backdropEdges = useMemo(() => {
-      if (l1Network === 'helium') {
-        return [] as Edge[]
-      }
-      return ['top'] as Edge[]
-    }, [l1Network])
+    const BackdropWrapper = useCallback(
+      ({ children: backdropChildren }: { children: ReactNode }) => {
+        if (!usePortal) {
+          return (
+            <Box flex={1} style={containerStyle}>
+              {backdropChildren}
+            </Box>
+          )
+        }
+
+        return (
+          <SafeAreaBox edges={['top']} flex={1} style={containerStyle}>
+            {backdropChildren}
+          </SafeAreaBox>
+        )
+      },
+      [containerStyle, usePortal],
+    )
 
     const renderBackdrop = useCallback(
       (props) => (
@@ -286,12 +300,7 @@ const HNTKeyboardSelector = forwardRef(
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...props}
         >
-          <SafeAreaBox
-            edges={backdropEdges}
-            backgroundColor="primaryBackground"
-            flex={1}
-            style={containerStyle}
-          >
+          <BackdropWrapper>
             <Box padding="l" alignItems="center" onLayout={handleHeaderLayout}>
               <Text variant="subtitle2">
                 {t('hntKeyboard.enterAmount', {
@@ -333,18 +342,17 @@ const HNTKeyboardSelector = forwardRef(
                   : ''}
               </Text>
             </Box>
-          </SafeAreaBox>
+          </BackdropWrapper>
         </BottomSheetBackdrop>
       ),
       [
-        backdropEdges,
         balanceForTicker,
-        containerStyle,
         handleHeaderLayout,
         payeeAddress,
         payer,
         t,
         valueAsBalance,
+        BackdropWrapper,
       ],
     )
 
@@ -509,9 +517,19 @@ const HNTKeyboardSelector = forwardRef(
       handleVisible?.(false)
     }, [handleDismiss, handleVisible])
 
+    const PortalWrapper = useCallback(
+      ({ children: portalChildren }: { children: ReactNode }) => {
+        if (usePortal) {
+          return <Portal>{portalChildren}</Portal>
+        }
+        return <>{portalChildren}</>
+      },
+      [usePortal],
+    )
+
     return (
       <Box flex={1} {...boxProps}>
-        <Portal>
+        <PortalWrapper>
           <BottomSheetModalProvider>
             <BottomSheetModal
               onChange={handleChange}
@@ -598,9 +616,10 @@ const HNTKeyboardSelector = forwardRef(
                 </Box>
               </SafeAreaBox>
             </BottomSheetModal>
+            {!usePortal && children}
           </BottomSheetModalProvider>
-        </Portal>
-        {children}
+        </PortalWrapper>
+        {usePortal && children}
       </Box>
     )
   },

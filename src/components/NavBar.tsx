@@ -164,7 +164,7 @@ const NavBar = ({
     }
 
     offset.value = withSpring(nextOffset, { mass: 0.5 })
-  }, [itemRects, offset.value, selectedValue])
+  }, [itemRects, offset, selectedValue])
 
   const items = useMemo(() => {
     return navBarOptions.map((o) => (

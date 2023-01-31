@@ -26,7 +26,7 @@ const SplashScreen = ({ children }: { children: ReactNode }) => {
     if (isAppReady) {
       animValue.value = 0
     }
-  }, [isAppReady, animValue.value])
+  }, [isAppReady, animValue])
 
   const style = useAnimatedStyle(() => {
     const animVal = withTiming(animValue.value, { duration: 700 })
