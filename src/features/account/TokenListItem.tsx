@@ -44,66 +44,60 @@ const TokenListItem: React.FC<Props> = ({
   }, [navigation, ticker, triggerImpact])
 
   return (
-    <FadeInOut>
-      <TouchableContainer
-        onPress={checked === undefined ? handleNavigation : () => {}}
-        flexDirection="row"
-        minHeight={ITEM_HEIGHT}
-        alignItems="center"
-        paddingHorizontal="m"
-        paddingVertical="m"
-        borderBottomColor="primaryBackground"
-        borderBottomWidth={withoutBorderBottom ? 0 : 1}
-        disabled={disabled && checked === undefined}
-      >
-        <TokenIcon ticker={ticker} />
-        <Box flex={1} paddingHorizontal="m">
-          <Box flexDirection="row" alignItems="center">
-            <Text
-              variant="body1"
-              color="primaryText"
-              maxFontSizeMultiplier={1.3}
-            >
-              {balance?.toString(7, { showTicker: false })}
-            </Text>
-            <Text
-              variant="body2Medium"
-              color="secondaryText"
-              maxFontSizeMultiplier={1.3}
-            >
-              {` ${balance?.type.ticker}${staked ? ' Staked' : ''}`}
-            </Text>
-          </Box>
-          <AccountTokenCurrencyBalance
-            variant="subtitle4"
+    <TouchableContainer
+      onPress={checked === undefined ? handleNavigation : () => {}}
+      flexDirection="row"
+      minHeight={ITEM_HEIGHT}
+      alignItems="center"
+      paddingHorizontal="m"
+      paddingVertical="m"
+      borderBottomColor="primaryBackground"
+      borderBottomWidth={withoutBorderBottom ? 0 : 1}
+      disabled={disabled || checked !== undefined}
+    >
+      <TokenIcon ticker={ticker} />
+      <Box flex={1} paddingHorizontal="m">
+        <Box flexDirection="row" alignItems="center">
+          <Text variant="body1" color="primaryText" maxFontSizeMultiplier={1.3}>
+            {balance?.toString(7, { showTicker: false })}
+          </Text>
+          <Text
+            variant="body2Medium"
             color="secondaryText"
-            ticker={ticker}
-            staked={staked}
+            maxFontSizeMultiplier={1.3}
+          >
+            {` ${balance?.type.ticker}${staked ? ' Staked' : ''}`}
+          </Text>
+        </Box>
+        <AccountTokenCurrencyBalance
+          variant="subtitle4"
+          color="secondaryText"
+          ticker={ticker}
+          staked={staked}
+        />
+      </Box>
+      {!disabled && checked === undefined && <Arrow />}
+      {checked !== undefined && (
+        <Box justifyContent="center" alignItems="center" marginEnd="xs">
+          <CheckBox
+            value={checked}
+            style={{ height: 18, width: 18 }}
+            tintColors={{
+              true: colors.primaryText,
+              false: colors.transparent10,
+            }}
+            onCheckColor={colors.secondary}
+            onTintColor={colors.primaryText}
+            tintColor={colors.transparent10}
+            onFillColor={colors.primaryText}
+            onAnimationType="fill"
+            offAnimationType="fill"
+            boxType="square"
+            onValueChange={onCheckedChange}
           />
         </Box>
-        {!disabled && checked === undefined && <Arrow />}
-        {checked !== undefined && (
-          <Box justifyContent="center" alignItems="center" marginEnd="xs">
-            <CheckBox
-              value={checked}
-              style={{ height: 18, width: 18 }}
-              tintColors={{
-                true: colors.primaryText,
-                false: colors.transparent10,
-              }}
-              onCheckColor={colors.secondary}
-              onTintColor={colors.primaryText}
-              tintColor={colors.transparent10}
-              onFillColor={colors.primaryText}
-              onAnimationType="fill"
-              offAnimationType="fill"
-              boxType="square"
-              onValueChange={onCheckedChange}
-            />
-          </Box>
-        )}
-      </TouchableContainer>
-    </FadeInOut>
+      )}
+    </TouchableContainer>
   )
 }
 

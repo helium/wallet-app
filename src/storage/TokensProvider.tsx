@@ -83,8 +83,6 @@ const useTokensHook = () => {
     (token: Token, value: boolean) => {
       const key = getKey(token)
 
-      if (!restoredVisibleTokens) return
-
       if (!value) {
         const newTokens = restoredVisibleTokens.filter((item) => item !== key)
 
@@ -102,13 +100,7 @@ const useTokensHook = () => {
   )
 
   const isActiveToken = useCallback(
-    (token: Token) => {
-      if (!restoredVisibleTokens) return false
-
-      const key = getKey(token)
-
-      return restoredVisibleTokens.includes(key)
-    },
+    (token: Token) => restoredVisibleTokens.includes(getKey(token)),
     [restoredVisibleTokens],
   )
 
@@ -116,9 +108,7 @@ const useTokensHook = () => {
     try {
       const response = await restoreVisibleTokens()
 
-      if (response) {
-        setRestoredVisibleTokens(response)
-      }
+      setRestoredVisibleTokens(response)
     } catch {}
   }, [])
 
@@ -157,15 +147,15 @@ const useTokensHook = () => {
     updateWithSplTokens()
   }, [updateWithSplTokens])
 
-  const visibleTokens = useMemo(() => {
-    if (!restoredVisibleTokens) return tokens
+  const visibleTokens = useMemo(
+    () =>
+      tokens.filter((token) => {
+        const key = getKey(token)
 
-    return tokens.filter((token) => {
-      const key = getKey(token)
-
-      return restoredVisibleTokens.includes(key)
-    })
-  }, [restoredVisibleTokens, tokens])
+        return restoredVisibleTokens.includes(key)
+      }),
+    [restoredVisibleTokens, tokens],
+  )
 
   const value = useMemo(
     () => ({
