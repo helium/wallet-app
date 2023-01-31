@@ -17,7 +17,9 @@ import { sendAndConfirmWithRetry } from '@helium/spl-utils'
 import {
   CSAccount,
   restoreTokensMetadata,
+  restoreVisibleTokens,
   updateTokensMetadata,
+  updateVisibleTokens,
 } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
 import { CompressedNFT, toMintAddress } from '../../types/solana'
@@ -396,6 +398,11 @@ export const addNewSplToken = createAsyncThunk(
           ...restoredTokensMetadata,
           { symbol, name, mintAddress, decimalPlaces: 8 },
         ])
+
+        const restoredVisibleTokens = await restoreVisibleTokens()
+
+        const newTokens = [...restoredVisibleTokens, symbol]
+        updateVisibleTokens(newTokens)
 
         dispatch(
           readBalances({
