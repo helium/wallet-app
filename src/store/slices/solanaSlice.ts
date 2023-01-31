@@ -405,7 +405,7 @@ export const addNewSplToken = createAsyncThunk(
         ...restoredTokensMetadata,
         [account.address]: [
           ...restoredTokensMetadata[account.address],
-          { symbol, name, mintAddress, decimalPlaces: 8 },
+          { symbol, name, mintAddress, decimalPlaces: 9 },
         ],
       })
 
