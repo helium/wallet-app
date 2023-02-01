@@ -174,19 +174,23 @@ const useTokensHook = () => {
       setTokens((prevTokens) => {
         const newTokens = [...prevTokens]
 
-        response[currentAccount.address].forEach((item) => {
+        Object.keys(splTokensBalance).forEach((key) => {
           const index = newTokens.findIndex(
-            (token) => token.type === item.symbol,
+            (token) => token.type === key || token.mintAddress === key,
           )
 
           if (index === -1) {
+            const token = response[currentAccount.address].find(
+              (item) => item.mintAddress === key,
+            )
+
             newTokens.push({
-              type: item.symbol as Ticker,
+              type: (token?.symbol || key) as Ticker,
               balance: new Balance(
-                splTokensBalance[item.mintAddress],
-                new BaseCurrencyType(item.symbol as Ticker, 9),
+                splTokensBalance[key],
+                new BaseCurrencyType((token?.symbol || key) as Ticker, 9),
               ),
-              name: item.name,
+              name: token?.name || 'unknown',
               staked: false,
             })
           }
@@ -274,6 +278,7 @@ export type Token = {
   balance: Balance<AnyCurrencyType>
   staked: boolean
   name?: string
+  mintAddress?: string
 }
 
 const getKey = (token: Token) =>

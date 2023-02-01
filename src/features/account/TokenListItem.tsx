@@ -67,6 +67,7 @@ const TokenListItem: React.FC<Props> = ({
             variant="body2Medium"
             color="secondaryText"
             maxFontSizeMultiplier={1.3}
+            numberOfLines={1}
           >
             {` ${balance?.type.ticker}${staked ? ' Staked' : ''}`}
           </Text>
