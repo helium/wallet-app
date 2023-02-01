@@ -135,7 +135,6 @@ const AccountsScreen = () => {
       type: toUpper(currency) as CurrencyType,
     },
     skip: !currentAccount?.address,
-    fetchPolicy: 'cache-and-network',
     pollInterval: 30000,
   })
 

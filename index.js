@@ -13,6 +13,11 @@ import LanguageProvider from './src/storage/LanguageProvider'
 import NotificationStorageProvider from './src/storage/NotificationStorageProvider'
 import store from './src/store/store'
 
+// eslint-disable-next-line no-undef
+if (__DEV__) {
+  import('./ReactotronConfig')
+}
+
 export const persistor = persistStore(store)
 
 const render = () => {

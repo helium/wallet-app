@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react'
 import OnboardingClient, { Maker } from '@helium/onboarding'
@@ -19,10 +20,12 @@ type OnboardingData = {
 }
 
 const useOnboardingHook = () => {
-  const initialState = {
-    words: [],
-    netType: NetType.MAINNET,
-  } as OnboardingData
+  const initialState = useMemo(() => {
+    return {
+      words: [],
+      netType: NetType.MAINNET,
+    } as OnboardingData
+  }, [])
   const [onboardingData, setOnboardingData] =
     useState<OnboardingData>(initialState)
 

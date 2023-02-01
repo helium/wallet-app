@@ -6,6 +6,10 @@ import { AccountBalance } from '../../types/accountBalance'
 import { lang } from '../../utils/i18n'
 import { AuthState } from './authSlice'
 
+export type BetaAccess = {
+  publicKeys: string[]
+}
+
 export type Mints = Record<Ticker, string>
 
 type Notification = {
@@ -50,6 +54,9 @@ export const walletRestApi = createApi({
     },
   }),
   endpoints: (builder) => ({
+    getBetaPubkeys: builder.query<BetaAccess, void>({
+      query: () => '/betaAccess',
+    }),
     getMints: builder.query<Mints, string>({
       query: (cluster) => `/mints?cluster=${cluster}`,
     }),
@@ -95,8 +102,15 @@ export const walletRestApi = createApi({
       transformResponse: (response) => {
         return response as TokenPrices
       },
-      serializeQueryArgs: ({ endpointName }) => {
-        return endpointName
+      serializeQueryArgs: ({
+        endpointName,
+        queryArgs: { currency, tokens },
+      }) => {
+        return {
+          currency,
+          tokens,
+          endpointName,
+        }
       },
       merge: (_, newItems) => {
         return newItems
@@ -116,6 +130,7 @@ export const {
   usePostNotificationReadMutation,
   useLazyGetMintsQuery,
   useGetMintsQuery,
+  useGetBetaPubkeysQuery,
   useGetBalanceHistoryQuery,
   useGetTokenPricesQuery,
   useLazyGetTokenPricesQuery,

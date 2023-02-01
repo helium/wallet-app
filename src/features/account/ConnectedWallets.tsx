@@ -18,7 +18,10 @@ import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import {
+  useSafeAreaInsets,
+  initialWindowMetrics,
+} from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
 import useLayoutHeight from '../../hooks/useLayoutHeight'
 import useBackHandler from '../../hooks/useBackHandler'
@@ -59,17 +62,20 @@ const ConnectedWallets = forwardRef(
       useAccountStorage()
     const { top } = useSafeAreaInsets()
     const navigation = useNavigation<TabBarNavigationProp>()
-    const { enableTestnet } = useAppStorage()
+    const { enableTestnet, l1Network } = useAppStorage()
 
     const snapPoints = useMemo(
       () => [
         listItemHeight && sortedAccounts.length
           ? listItemHeight * (sortedAccounts.length + (enableTestnet ? 2 : 1)) +
-            top
+            (top === 0 && initialWindowMetrics?.insets
+              ? initialWindowMetrics?.insets.top
+              : top)
           : '70%',
       ],
       [enableTestnet, listItemHeight, sortedAccounts.length, top],
     )
+
     const { setOnboardingData } = useOnboarding()
 
     const show = useCallback(() => {
@@ -108,14 +114,16 @@ const ConnectedWallets = forwardRef(
     const handleAccountChange = useCallback(
       (item: CSAccount) => () => {
         setCurrentAccount(item)
-        // Reset Home & Collectables stack to first screen
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Home' }, { name: 'Collectables' }],
-        })
+        if (l1Network === 'solana') {
+          // Reset Home & Collectables stack to first screen
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Home' }, { name: 'Collectables' }],
+          })
+        }
         hide()
       },
-      [hide, navigation, setCurrentAccount],
+      [hide, l1Network, navigation, setCurrentAccount],
     )
 
     const renderItem = useCallback(
