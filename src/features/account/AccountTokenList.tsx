@@ -7,7 +7,6 @@ import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/co
 import { useTranslation } from 'react-i18next'
 import Config from '@assets/images/config.svg'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { useBalance } from '../../utils/Balance'
 import Text from '../../components/Text'
 import TokenListItem, { TokenSkeleton } from './TokenListItem'
 import { Token, useTokens } from '../../storage/TokensProvider'
@@ -27,7 +26,6 @@ const AccountTokenList: React.FC<Props> = ({
   onLayout,
   onManageTokenList,
 }) => {
-  const { updating: updatingTokens } = useBalance()
   const { bottom } = useSafeAreaInsets()
   const { t } = useTranslation()
   const { visibleTokens } = useTokens()
@@ -35,10 +33,10 @@ const AccountTokenList: React.FC<Props> = ({
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
 
   const filteredTokens = useMemo(() => {
-    if (updatingTokens || loading) return []
+    if (loading) return []
 
     return visibleTokens
-  }, [loading, visibleTokens, updatingTokens])
+  }, [loading, visibleTokens])
 
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
@@ -57,7 +55,7 @@ const AccountTokenList: React.FC<Props> = ({
   )
 
   const renderFooter = useMemo(() => {
-    if (!(updatingTokens || loading))
+    if (!loading)
       return (
         <TouchableOpacityBox
           onPress={() => onManageTokenList()}
@@ -79,7 +77,7 @@ const AccountTokenList: React.FC<Props> = ({
         ))}
       </>
     )
-  }, [loading, onManageTokenList, t, updatingTokens])
+  }, [loading, onManageTokenList, t])
 
   const keyExtractor = useCallback((item: Token | string) => {
     if (typeof item === 'string') {

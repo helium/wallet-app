@@ -178,7 +178,9 @@ export const getOrCreateSplTokenAccount = async (
     )
 
     return response
-  } catch {}
+  } catch {
+    Logger.error('Get or Create Spl Token Account')
+  }
 }
 
 export const createTransferTxn = async (

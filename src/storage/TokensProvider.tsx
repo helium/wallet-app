@@ -21,6 +21,7 @@ import React, {
 import { useAsync } from 'react-async-hook'
 import usePrevious from '../hooks/usePrevious'
 import { useBalance } from '../utils/Balance'
+import * as Logger from '../utils/logger'
 import { useAccountStorage } from './AccountStorageProvider'
 import {
   CSToken,
@@ -157,7 +158,9 @@ const useTokensHook = () => {
       const response = await restoreVisibleTokens()
 
       setRestoredVisibleTokens(response)
-    } catch {}
+    } catch {
+      Logger.error('Restore visible tokens failed')
+    }
   }, [])
 
   const updateWithSplTokens = useCallback(async () => {
@@ -191,7 +194,9 @@ const useTokensHook = () => {
 
         return newTokens
       })
-    } catch {}
+    } catch {
+      Logger.error('Update With Spl Tokens')
+    }
   }, [currentAccount, splTokensBalance])
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { memo, useCallback, useMemo, useState } from 'react'
 import BackArrow from '@assets/images/backArrow.svg'
 import { Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -106,6 +106,27 @@ const AccountManageTokenAddScreen: React.FC = () => {
     [top],
   )
 
+  const inputs: {
+    placeholder: string
+    value: 'mintAddress' | 'name' | 'symbol'
+  }[] = useMemo(
+    () => [
+      {
+        placeholder: 'accountTokenList.addToken.placeholder.mint',
+        value: 'mintAddress',
+      },
+      {
+        placeholder: 'accountTokenList.addToken.placeholder.name',
+        value: 'name',
+      },
+      {
+        placeholder: 'accountTokenList.addToken.placeholder.symbol',
+        value: 'symbol',
+      },
+    ],
+    [],
+  )
+
   return (
     <Box
       style={containerStyle}
@@ -157,7 +178,7 @@ const AccountManageTokenAddScreen: React.FC = () => {
             marginBottom="xl"
           />
 
-          {INPUTS.map((item) => (
+          {inputs.map((item) => (
             <TextInput
               key={item.value}
               backgroundColor="secondaryBackground"
@@ -165,7 +186,7 @@ const AccountManageTokenAddScreen: React.FC = () => {
               height={56}
               paddingHorizontal="m"
               borderRadius="m"
-              fontSize={18}
+              variant="regular"
               textInputProps={{
                 placeholder: t(item.placeholder),
                 onChangeText: (value) =>
@@ -233,28 +254,10 @@ const AccountManageTokenAddScreen: React.FC = () => {
   )
 }
 
-export default AccountManageTokenAddScreen
+export default memo(AccountManageTokenAddScreen)
 
 //
 // Utils
 //
-
-const INPUTS: {
-  placeholder: string
-  value: 'mintAddress' | 'name' | 'symbol'
-}[] = [
-  {
-    placeholder: 'accountTokenList.addToken.placeholder.mint',
-    value: 'mintAddress',
-  },
-  {
-    placeholder: 'accountTokenList.addToken.placeholder.name',
-    value: 'name',
-  },
-  {
-    placeholder: 'accountTokenList.addToken.placeholder.symbol',
-    value: 'symbol',
-  },
-]
 
 const NETWORK_FEE = 204000

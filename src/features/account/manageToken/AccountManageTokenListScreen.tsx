@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native'
-import React, { useCallback, useMemo } from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 import Close from '@assets/images/close.svg'
 import { Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -112,4 +112,4 @@ const AccountManageTokenListScreen: React.FC = () => {
   )
 }
 
-export default AccountManageTokenListScreen
+export default memo(AccountManageTokenListScreen)
