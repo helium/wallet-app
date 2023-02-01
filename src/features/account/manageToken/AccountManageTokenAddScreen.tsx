@@ -186,7 +186,6 @@ const AccountManageTokenAddScreen: React.FC = () => {
               height={56}
               paddingHorizontal="m"
               borderRadius="m"
-              variant="regular"
               textInputProps={{
                 placeholder: t(item.placeholder),
                 onChangeText: (value) =>
