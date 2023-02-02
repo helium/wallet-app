@@ -371,6 +371,28 @@ const AccountTokenScreen = () => {
     })
   }, [setTopHeaderHeight])
 
+  const actionBarProps = useMemo(() => {
+    let options = {
+      hasSend: true,
+      hasRequest: true,
+      hasMintAndDelegate: false,
+      compact: true,
+      hasBottomTitle: true,
+    }
+
+    if (routeTicker === 'DC') {
+      options = {
+        hasSend: false,
+        hasRequest: false,
+        hasMintAndDelegate: true,
+        compact: false,
+        hasBottomTitle: false,
+      }
+    }
+
+    return options
+  }, [routeTicker])
+
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <BackScreen
@@ -410,7 +432,13 @@ const AccountTokenScreen = () => {
                   color="secondaryText"
                 />
               </Box>
-              <AccountActionBar ticker={routeTicker} maxCompact />
+              <AccountActionBar
+                hasSend={actionBarProps.hasSend}
+                hasRequest={actionBarProps.hasRequest}
+                hasMintAndDelegate={actionBarProps.hasMintAndDelegate}
+                ticker={routeTicker}
+                maxCompact
+              />
             </Box>
           </Animated.View>
           <Animated.View style={bottomHeaderAnimatedStyle}>
@@ -426,7 +454,14 @@ const AccountTokenScreen = () => {
                 textAlign="center"
                 marginBottom="xl"
               />
-              <AccountActionBar ticker={routeTicker} compact hasBottomTitle />
+              <AccountActionBar
+                hasSend={actionBarProps.hasSend}
+                hasRequest={actionBarProps.hasRequest}
+                hasMintAndDelegate={actionBarProps.hasMintAndDelegate}
+                ticker={routeTicker}
+                compact={routeTicker !== 'DC'}
+                hasBottomTitle={routeTicker !== 'DC'}
+              />
             </Box>
           </Animated.View>
           <Box height={topHeaderHeight} />

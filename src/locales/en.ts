@@ -307,6 +307,7 @@ export default {
     stake: 'Stake',
     testnetTokens: 'Testnet Tokens',
     vote: 'Vote',
+    mintAndDelegate: 'Mint & Delegate',
   },
   addNewAccount: {
     title: 'Add New Account',
