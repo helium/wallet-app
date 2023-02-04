@@ -15,7 +15,9 @@ import { useAccountStorage } from '../storage/AccountStorageProvider'
 export const Mints: Record<string, string> = {
   IOT: 'ANiWFcE7icb9dxusSndmgwvUrSSV8VLTGpG8UtPt4kpV',
   MOBILE: '8YrFxCsRcdaG4uKtt9sMHCYEeHjHuLRFEvTd7mw91xY6',
-  HNT: '3hgw5vwMAnsAD5hqKsvA9U4D3G9xTfTJUZBdN5dYQ5C3',
+  // HNT: '3hgw5vwMAnsAD5hqKsvA9U4D3G9xTfTJUZBdN5dYQ5C3',
+  HNT: 'hntv1Vf5ZBG777xAHqHUTFS8UZBTNUN22MBnYramPFk',
+  DC: 'To9Wb2Xi3v2mNvdrXLfdaSo7836BEKwcA41P8dF3QhL',
 }
 
 export const MOBILE_LAZY_KEY = lazyDistributorKey(

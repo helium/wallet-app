@@ -307,7 +307,7 @@ export default {
     stake: 'Stake',
     testnetTokens: 'Testnet Tokens',
     vote: 'Vote',
-    mintAndDelegate: 'Mint & Delegate',
+    delegate: 'Delegate',
   },
   addNewAccount: {
     title: 'Add New Account',
@@ -360,6 +360,10 @@ export default {
     recipient: 'Recipient Address',
     swipeToBurn: 'Swipe to Burn',
     title: 'Burn',
+  },
+  delegate: {
+    title: 'Delegate',
+    swipe: 'Swipe to Delegate',
   },
   connectedWallets: {
     add: 'Add New Account',

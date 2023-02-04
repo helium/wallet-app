@@ -101,7 +101,13 @@ const useBalanceHook = () => {
     if (!currentAccount?.solanaAddress || !mints) {
       return
     }
-    dispatch(readBalances({ cluster, acct: currentAccount, mints }))
+
+    const newMints = {
+      ...mints,
+      HNT: 'hntv1Vf5ZBG777xAHqHUTFS8UZBTNUN22MBnYramPFk', // TODO: remove this, i think the api need update for the new mint
+    }
+
+    dispatch(readBalances({ cluster, acct: currentAccount, mints: newMints }))
   }, [currentAccount, dispatch, mints, cluster])
 
   useEffect(() => {
@@ -226,10 +232,10 @@ const useBalanceHook = () => {
       }
       return new Balance(
         opts.intValue,
-        accountCurrencyType(currentAccount.address),
+        accountCurrencyType(currentAccount.address, undefined, l1Network),
       )
     },
-    [currentAccount],
+    [currentAccount, l1Network],
   )
 
   const networkBalance = useMemo(() => {
@@ -244,7 +250,10 @@ const useBalanceHook = () => {
         break
     }
 
-    return new Balance(bal, accountCurrencyType(currentAccount?.address))
+    return new Balance(
+      bal,
+      accountCurrencyType(currentAccount?.address, undefined, l1Network),
+    )
   }, [accountData, currentAccount, l1Network, solBalances])
 
   const networkStakedBalance = useMemo(() => {
@@ -259,7 +268,10 @@ const useBalanceHook = () => {
         break
     }
 
-    return new Balance(bal, accountCurrencyType(currentAccount?.address))
+    return new Balance(
+      bal,
+      accountCurrencyType(currentAccount?.address, undefined, l1Network),
+    )
   }, [accountData, currentAccount, l1Network, solBalances])
 
   const mobileBalance = useMemo(() => {

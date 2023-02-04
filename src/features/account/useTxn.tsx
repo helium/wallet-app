@@ -63,11 +63,12 @@ const useTxn = (
     if (item?.payments?.length) {
       const firstPaymentTokenType = item.payments[0].tokenType
       if (firstPaymentTokenType) {
-        return accountCurrencyType(address, firstPaymentTokenType).ticker
+        return accountCurrencyType(address, firstPaymentTokenType, l1Network)
+          .ticker
       }
     }
-    return accountCurrencyType(address).ticker
-  }, [address, item])
+    return accountCurrencyType(address, undefined, l1Network).ticker
+  }, [address, item, l1Network])
 
   const dcBalance = (v: number | undefined | null) =>
     new Balance(v || 0, CurrencyType.dataCredit)

@@ -375,7 +375,7 @@ const AccountTokenScreen = () => {
     let options = {
       hasSend: true,
       hasRequest: true,
-      hasMintAndDelegate: false,
+      hasDelegate: false,
       compact: true,
       hasBottomTitle: true,
     }
@@ -384,7 +384,7 @@ const AccountTokenScreen = () => {
       options = {
         hasSend: false,
         hasRequest: false,
-        hasMintAndDelegate: true,
+        hasDelegate: true,
         compact: false,
         hasBottomTitle: false,
       }
@@ -435,7 +435,7 @@ const AccountTokenScreen = () => {
               <AccountActionBar
                 hasSend={actionBarProps.hasSend}
                 hasRequest={actionBarProps.hasRequest}
-                hasMintAndDelegate={actionBarProps.hasMintAndDelegate}
+                hasDelegate={actionBarProps.hasDelegate}
                 ticker={routeTicker}
                 maxCompact
               />
@@ -457,7 +457,7 @@ const AccountTokenScreen = () => {
               <AccountActionBar
                 hasSend={actionBarProps.hasSend}
                 hasRequest={actionBarProps.hasRequest}
-                hasMintAndDelegate={actionBarProps.hasMintAndDelegate}
+                hasDelegate={actionBarProps.hasDelegate}
                 ticker={routeTicker}
                 compact={routeTicker !== 'DC'}
                 hasBottomTitle={routeTicker !== 'DC'}

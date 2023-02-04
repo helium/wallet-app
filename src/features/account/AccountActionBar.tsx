@@ -20,7 +20,7 @@ export type Action =
   | 'vote'
   | '5G'
   | 'buy'
-  | 'mintAndDelegate'
+  | 'delegate'
 
 type Props = {
   ticker?: Ticker
@@ -31,7 +31,7 @@ type Props = {
   hasBuy?: boolean
   hasSend?: boolean
   hasRequest?: boolean
-  hasMintAndDelegate?: boolean
+  hasDelegate?: boolean
 }
 
 const AccountActionBar = ({
@@ -43,7 +43,7 @@ const AccountActionBar = ({
   hasBuy,
   hasSend = true,
   hasRequest = true,
-  hasMintAndDelegate,
+  hasDelegate,
 }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
@@ -125,8 +125,11 @@ const AccountActionBar = ({
           navigation.navigate('OnboardData')
           break
         }
-        case 'mintAndDelegate': {
-          navigation.navigate('PaymentScreen')
+        case 'delegate': {
+          navigation.navigate('BurnScreen', {
+            address: '',
+            amount: '10000',
+          })
           break
         }
         default: {
@@ -302,16 +305,14 @@ const AccountActionBar = ({
           )}
         </Box>
       )}
-      {hasMintAndDelegate && (
+      {hasDelegate && (
         <FabButton
           backgroundColor="blueBright500"
           backgroundColorOpacity={0.2}
           backgroundColorOpacityPressed={0.1}
           iconColor="blueBright500"
-          title={
-            compact || maxCompact ? undefined : t('accountView.mintAndDelegate')
-          }
-          onPress={handleAction('mintAndDelegate')}
+          title={compact || maxCompact ? undefined : t('accountView.delegate')}
+          onPress={handleAction('delegate')}
           reverse
           width={maxCompact ? 47.5 : undefined}
           height={maxCompact ? 47.5 : undefined}

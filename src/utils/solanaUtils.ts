@@ -21,6 +21,7 @@ import {
   AccountMeta,
   SignatureResult,
 } from '@solana/web3.js'
+import * as dc from '@helium/data-credits-sdk'
 import {
   TOKEN_PROGRAM_ID,
   AccountLayout,
@@ -601,6 +602,91 @@ export const transferCollectable = async (
   } catch (e) {
     Logger.error(e)
     throw new Error((e as Error).message)
+  }
+}
+
+export const mintDataCredits = async (
+  cluster: Cluster,
+  anchorProvider: AnchorProvider,
+  heliumAddress: string,
+  amount: number,
+  dcMint: PublicKey,
+) => {
+  try {
+    const connection = getConnection(cluster)
+    const { publicKey: payer } = anchorProvider.wallet
+    const secureAcct = await getKeypair(heliumAddress)
+
+    if (!secureAcct) {
+      throw new Error('Secure account not found')
+    }
+
+    const signer = {
+      publicKey: payer,
+      secretKey: secureAcct.privateKey,
+    }
+
+    const program = await dc.init(anchorProvider)
+
+    const payerATA = await getOrCreateAssociatedTokenAccount(
+      connection,
+      signer,
+      dcMint,
+      payer,
+    )
+
+    const tx = await program.methods
+      .mintDataCreditsV0({
+        hntAmount: new BN(amount, 8),
+      })
+      .preInstructions([
+        createAssociatedTokenAccountInstruction(
+          payerATA.address,
+          payer,
+          payer,
+          dcMint,
+        ),
+      ])
+      .accounts({
+        dcMint,
+        recipient: payer,
+      })
+      .transaction()
+
+    const { blockhash, lastValidBlockHeight } =
+      await connection.getLatestBlockhash()
+
+    tx.recentBlockhash = blockhash
+    tx.feePayer = payer
+
+    const signedTx = await anchorProvider.wallet.signTransaction(tx)
+
+    const signature = await connection.sendRawTransaction(
+      signedTx.serialize(),
+      {
+        skipPreflight: true,
+      },
+    )
+
+    await confirmTransaction(
+      cluster,
+      signature,
+      blockhash,
+      lastValidBlockHeight,
+    )
+    const txn = await getTxn(cluster, signature)
+
+    if (txn?.meta?.err) {
+      throw new Error(
+        typeof txn.meta.err === 'string'
+          ? txn.meta.err
+          : JSON.stringify(txn.meta.err),
+      )
+    }
+
+    return { signature, txn }
+  } catch (e) {
+    throw e as Error
   }
 }
 

@@ -43,6 +43,7 @@ enum Tokens {
   MOBILE = 'MOBILE',
   IOT = 'IOT',
   SOL = 'SOL',
+  DC = 'DC',
 }
 
 const SwapScreen = () => {
@@ -50,7 +51,7 @@ const SwapScreen = () => {
   const { currentAccount, anchorProvider } = useAccountStorage()
   const { solanaNetwork: cluster } = useAppStorage()
   const navigation = useNavigation<SwapNavigationProp>()
-  const { submitTreasurySwap } = useSubmitTxn()
+  const { submitTreasurySwap, submitDataCreditsMint } = useSubmitTxn()
   const edges = useMemo(() => ['top'] as Edge[], [])
   const [tokenSheetOpen, setTokenSheetOpen] = useState(false)
   const [selectorMode, setSelectorMode] = useState(SelectorMode.youPay)
@@ -119,17 +120,18 @@ const SwapScreen = () => {
         message,
         'singleGossip',
       )
-      setSolFee(response.value / LAMPORTS_PER_SOL)
+
+      setSolFee((response.value || 0) / LAMPORTS_PER_SOL)
 
       const balance = await connection.getBalance(
         new PublicKey(currentAccount?.solanaAddress),
       )
-      setHasInsufficientBalance(response.value > balance)
+      setHasInsufficientBalance((response.value || 0) > balance)
     } catch (error) {
       Logger.error(error)
       setNetworkError((error as Error).message)
     }
-  }, [anchorProvider, cluster, currentAccount])
+  }, [anchorProvider, cluster, currentAccount?.solanaAddress])
 
   useAsync(async () => {
     refresh()
@@ -169,48 +171,60 @@ const SwapScreen = () => {
   const setTokenTypeHandler = useCallback(
     (ticker: Ticker) => () => {
       setTokenSheetOpen(false)
+
       if (selectorMode === SelectorMode.youPay) {
         setYouPayTokenType(ticker)
-      } else {
+      }
+
+      if (selectorMode === SelectorMode.youReceive) {
         setYouReceiveTokenType(ticker)
       }
+
+      if (
+        selectorMode === SelectorMode.youPay &&
+        ticker !== Tokens.HNT &&
+        youReceiveTokenType === Tokens.DC
+      ) {
+        setYouReceiveTokenType(Tokens.HNT)
+      }
+
+      if (selectorMode === SelectorMode.youPay && ticker === Tokens.HNT) {
+        setYouReceiveTokenType(Tokens.DC)
+      }
+
+      if (selectorMode === SelectorMode.youReceive && ticker === Tokens.HNT) {
+        setYouPayTokenType(Tokens.MOBILE)
+      }
+
+      if (selectorMode === SelectorMode.youReceive && ticker === Tokens.DC) {
+        setYouPayTokenType(Tokens.HNT)
+      }
     },
-    [selectorMode],
+    [selectorMode, youReceiveTokenType],
   )
 
-  const tokenTypes = useCallback(
-    () => (
-      <>
-        {selectorMode === SelectorMode.youReceive ? (
-          <ListItem
-            key="hnt"
-            title={Tokens.HNT}
-            selected={youReceiveTokenType === Tokens.HNT}
-            onPress={setTokenTypeHandler(Tokens.HNT)}
-            hasPressedState={false}
-          />
-        ) : (
-          <>
-            <ListItem
-              key="iot"
-              title={Tokens.IOT}
-              selected={youPayTokenType === Tokens.IOT}
-              onPress={setTokenTypeHandler(Tokens.IOT)}
-              hasPressedState={false}
-            />
-            <ListItem
-              key="mobile"
-              title={Tokens.MOBILE}
-              selected={youPayTokenType === Tokens.MOBILE}
-              onPress={setTokenTypeHandler(Tokens.MOBILE)}
-              hasPressedState={false}
-            />
-          </>
-        )}
-      </>
-    ),
-    [selectorMode, setTokenTypeHandler, youPayTokenType, youReceiveTokenType],
-  )
+  const tokenTypes = useMemo(() => {
+    const tokens = {
+      [SelectorMode.youPay]: [Tokens.MOBILE, Tokens.HNT, Tokens.IOT],
+      [SelectorMode.youReceive]: [Tokens.HNT, Tokens.DC],
+    }
+
+    let selected = youPayTokenType
+
+    if (selectorMode === SelectorMode.youReceive) {
+      selected = youReceiveTokenType
+    }
+
+    return tokens[selectorMode].map((ticker) => (
+      <ListItem
+        key={ticker}
+        title={ticker}
+        selected={selected === ticker}
+        onPress={setTokenTypeHandler(ticker)}
+        hasPressedState={false}
+      />
+    ))
+  }, [selectorMode, setTokenTypeHandler, youPayTokenType, youReceiveTokenType])
 
   const onCurrencySelect = useCallback(
     (youPay: boolean) => () => {
@@ -245,18 +259,25 @@ const SwapScreen = () => {
     })
     if (!decision) return
 
-    submitTreasurySwap(
-      new PublicKey(Mints[youPayTokenType]),
-      Number(youPayTokenAmount.floatBalance),
-    )
+    if (youPayTokenType === Tokens.HNT) {
+      submitDataCreditsMint(youPayTokenAmount.floatBalance)
+    }
 
-    navigation.push('SwappingScreen', {
+    if (youPayTokenType !== Tokens.HNT) {
+      submitTreasurySwap(
+        new PublicKey(Mints[youPayTokenType]),
+        Number(youPayTokenAmount.floatBalance),
+      )
+    }
+
+    navigation.replace('SwappingScreen', {
       tokenA: youPayTokenType,
       tokenB: youReceiveTokenType,
     })
   }, [
     navigation,
     showOKCancelAlert,
+    submitDataCreditsMint,
     submitTreasurySwap,
     t,
     youPayTokenAmount.floatBalance,
@@ -380,7 +401,7 @@ const SwapScreen = () => {
           open={tokenSheetOpen}
           onClose={toggleTokenSheetsOpen(false)}
         >
-          {tokenTypes()}
+          <>{tokenTypes}</>
         </BlurActionSheet>
       </ReAnimatedBox>
     </HNTKeyboard>
