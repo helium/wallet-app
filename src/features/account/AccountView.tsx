@@ -40,7 +40,7 @@ const AccountView = ({
 
   const { toCurrencyString, networkBalance, networkStakedBalance } =
     useBalance()
-  const { currency } = useAppStorage()
+  const { currency, l1Network } = useAppStorage()
   const [actionBarHeight, setActionBarHeight] = useLayoutHeight()
 
   const accountNetType = useMemo(
@@ -154,7 +154,7 @@ const AccountView = ({
         <FadeInOut>
           <AccountActionBar
             compact
-            hasSwaps
+            hasSwaps={l1Network === 'solana'}
             hasBottomTitle
             onLayout={setActionBarHeight}
           />
