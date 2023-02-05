@@ -12,7 +12,9 @@ import { Color, theme, Theme } from '@theme/theme'
 import { useColors, useInputVariants, useTextVariants } from '@theme/themeHooks'
 import Box from './Box'
 import Text from './Text'
-import TouchableOpacityBox from './TouchableOpacityBox'
+import TouchableOpacityBox, {
+  TouchableOpacityBoxProps,
+} from './TouchableOpacityBox'
 
 const BoxWrapper = createRestyleComponent<
   VariantProps<Theme, 'inputVariants'> & React.ComponentProps<typeof Box>,
@@ -26,6 +28,7 @@ type Props = React.ComponentProps<typeof BoxWrapper> & {
   floatingLabel?: string
   onTrailingIconPress?: () => void
   TrailingIcon?: React.FC<SvgProps>
+  TrailingIconOptions?: TouchableOpacityBoxProps
   textInputProps?: React.ComponentProps<typeof TextInput>
 }
 
@@ -39,6 +42,10 @@ const TI = forwardRef(
       floatingLabel,
       TrailingIcon,
       onTrailingIconPress,
+      TrailingIconOptions = {
+        paddingVertical: 'm',
+        paddingHorizontal: 's',
+      },
       ...rest
     }: Props,
     ref: Ref<TextInput>,
@@ -93,9 +100,8 @@ const TI = forwardRef(
         </Box>
         {TrailingIcon && (
           <TouchableOpacityBox
-            paddingHorizontal="s"
-            paddingVertical="m"
             onPress={onTrailingIconPress}
+            {...TrailingIconOptions}
           >
             <TrailingIcon color="white" width={14} />
           </TouchableOpacityBox>

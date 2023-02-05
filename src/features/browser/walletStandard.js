@@ -1,8 +1,5 @@
 /* eslint-disable */
 const stringF = `async function injectWalletStandard(solanaAddress, pubKey) {
-// var my_awesome_script = document.createElement('script');
-// my_awesome_script.setAttribute('src','https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js');
-// document.head.appendChild(my_awesome_script);
 var isConnecting = false
 
 class PublicKey {
@@ -175,6 +172,8 @@ class HeliumWallet {
 
     #account = null
 
+    #url = 'https://helium.com'
+
     #helium
 
     get version() {
@@ -187,6 +186,10 @@ class HeliumWallet {
 
     get icon() {
         return this.#icon
+    }
+
+    get url() {
+        return this.#url
     }
 
     get features() {

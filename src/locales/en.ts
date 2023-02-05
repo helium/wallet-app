@@ -311,6 +311,20 @@ export default {
     swapAlertTitle: 'Are you sure you will like to swap your tokens?',
     swapAlertBody: 'This action is irreversible.',
   },
+  browserScreen: {
+    myFavorites: 'My Favorites',
+    recentlyVisited: 'Recently Visited',
+    connectBullet1: 'View your wallet balance & activity',
+    connectBullet2: 'Request Approval for transactions',
+    connectToWebsitesYouTrust: 'Only connect to websites you trust',
+    estimatedChanges: 'Estimated Changes',
+    unableToSimulate:
+      'Unable to simulate. Make sure you trust this website since approving can lead to loss of funds.',
+    networkFee: 'Network Fee',
+    connect: 'Connect',
+    approve: 'Approve',
+    cancel: 'Cancel',
+  },
   accountTokenList: {
     tokens: 'Tokens',
   },
@@ -640,18 +654,6 @@ export default {
     totalRecipients_other: '{{count}} Recipients',
     totalRecipients_plural: '{{count}} Recipients',
     wrongNetType: 'Wrong Net Type',
-  },
-  browser: {
-    connectBullet1: 'View your wallet balance & activity',
-    connectBullet2: 'Request Approval for transactions',
-    connectToWebsitesYouTrust: 'Only connect to websites you trust',
-    estimatedChanges: 'Estimated Changes',
-    unableToSimulate:
-      'Unable to simulate. Make sure you trust this website since approving can lead to loss of funds.',
-    networkFee: 'Network Fee',
-    connect: 'Connect',
-    approve: 'Approve',
-    cancel: 'Cancel',
   },
   placeholder: {
     accountBalanceValue: 'Account Balance: {{balance}}',

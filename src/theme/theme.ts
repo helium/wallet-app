@@ -354,6 +354,13 @@ export const theme = createTheme({
       borderRadius: 'xl',
       backgroundColor: 'transparent10',
     },
+    transparentSmall: {
+      color: 'primaryText',
+      fontSize: 16,
+      padding: 's',
+      paddingHorizontal: 'm',
+      backgroundColor: 'transparent',
+    },
   },
 })
 

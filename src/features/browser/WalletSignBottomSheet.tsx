@@ -4,6 +4,7 @@ import React, {
   ReactNode,
   Ref,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -11,12 +12,13 @@ import React, {
 } from 'react'
 import Checkmark from '@assets/images/checkmark.svg'
 import { useTranslation } from 'react-i18next'
-import BottomSheet, {
+import {
   BottomSheetBackdrop,
   useBottomSheetDynamicSnapPoints,
+  BottomSheetModal,
+  BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
 import { Edge } from 'react-native-safe-area-context'
-import { Portal } from '@gorhom/portal'
 import { Balance, SolTokens } from '@helium/currency'
 import CurrencyFormatter from 'react-native-currency-format'
 import { useAsync } from 'react-async-hook'
@@ -59,7 +61,7 @@ const WalletSignBottomSheet = forwardRef(
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { secondaryText } = useColors()
     const { t } = useTranslation()
-    const bottomSheetModalRef = useRef<BottomSheet>(null)
+    const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const [walletSignOpts, setWalletSignOpts] = useState<
       WalletSignOpts & { fee: Balance<SolTokens> }
     >({
@@ -177,13 +179,13 @@ const WalletSignBottomSheet = forwardRef(
                 <Box flexDirection="row" marginBottom="m">
                   <Checkmark color="white" />
                   <Text variant="body1" marginStart="s">
-                    {t('browser.connectBullet1')}
+                    {t('browserScreen.connectBullet1')}
                   </Text>
                 </Box>
                 <Box flexDirection="row">
                   <Checkmark color="white" />
                   <Text marginStart="s" variant="body1">
-                    {t('browser.connectBullet2')}
+                    {t('browserScreen.connectBullet2')}
                   </Text>
                 </Box>
               </Box>
@@ -194,7 +196,7 @@ const WalletSignBottomSheet = forwardRef(
                   textAlign="center"
                   marginTop="m"
                 >
-                  {t('browser.connectToWebsitesYouTrust')}
+                  {t('browserScreen.connectToWebsitesYouTrust')}
                 </Text>
               </Box>
             </Box>
@@ -218,7 +220,7 @@ const WalletSignBottomSheet = forwardRef(
                 borderBottomWidth={1}
               >
                 <Text variant="body1Medium">
-                  {t('browser.estimatedChanges')}
+                  {t('browserScreen.estimatedChanges')}
                 </Text>
               </Box>
 
@@ -229,7 +231,7 @@ const WalletSignBottomSheet = forwardRef(
                 padding="m"
               >
                 <Text variant="body1Medium" color="orange500">
-                  {t('browser.unableToSimulate')}
+                  {t('browserScreen.unableToSimulate')}
                 </Text>
               </Box>
 
@@ -242,7 +244,9 @@ const WalletSignBottomSheet = forwardRef(
                   flexDirection="row"
                 >
                   <Box flexGrow={1}>
-                    <Text variant="body1Medium">{t('browser.networkFee')}</Text>
+                    <Text variant="body1Medium">
+                      {t('browserScreen.networkFee')}
+                    </Text>
                   </Box>
                   <Text variant="body1Medium" color="secondaryText">
                     {currencyFee}
@@ -275,7 +279,7 @@ const WalletSignBottomSheet = forwardRef(
               backgroundColorOpacityPressed={0.05}
               titleColorPressedOpacity={0.3}
               titleColor="white"
-              title={t('browser.cancel')}
+              title={t('browserScreen.cancel')}
               onPress={onCancelHandler}
             />
 
@@ -289,8 +293,8 @@ const WalletSignBottomSheet = forwardRef(
               titleColorDisabled="secondaryText"
               title={
                 type === WalletStandardMessageTypes.connect
-                  ? t('browser.connect')
-                  : t('browser.approve')
+                  ? t('browserScreen.connect')
+                  : t('browserScreen.approve')
               }
               titleColor="black"
               onPress={onAcceptHandler}
@@ -299,17 +303,20 @@ const WalletSignBottomSheet = forwardRef(
         </>
       )
     }, [onAcceptHandler, onCancelHandler, walletSignOpts, t])
+
+    useEffect(() => {
+      bottomSheetModalRef.current?.present()
+    }, [bottomSheetModalRef])
     return (
       <Box flex={1}>
-        {children}
-        <Portal>
-          <BottomSheet
+        <BottomSheetModalProvider>
+          <BottomSheetModal
             ref={bottomSheetModalRef}
             index={-1}
             backgroundStyle={backgroundStyle}
             backdropComponent={renderBackdrop}
             snapPoints={animatedSnapPoints}
-            onClose={handleModalDismiss}
+            onDismiss={handleModalDismiss}
             handleIndicatorStyle={handleIndicatorStyle}
             // https://ethercreative.github.io/react-native-shadow-generator/
             style={{
@@ -343,8 +350,9 @@ const WalletSignBottomSheet = forwardRef(
               {renderSheetBody()}
               {renderSheetFooter()}
             </SafeAreaBox>
-          </BottomSheet>
-        </Portal>
+          </BottomSheetModal>
+          {children}
+        </BottomSheetModalProvider>
       </Box>
     )
   },
