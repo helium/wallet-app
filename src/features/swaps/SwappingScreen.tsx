@@ -37,7 +37,7 @@ const SwappingScreen = () => {
     // Reset Swap stack to first screen
     navigation.reset({
       index: 0,
-      routes: [{ name: 'Swap' }],
+      routes: [{ name: 'Swaps' }],
     })
   }, [navigation])
 
@@ -91,7 +91,7 @@ const SwappingScreen = () => {
                 {t('swapsScreen.swapComplete')}
               </Text>
               <Text
-                variant="body2"
+                variant="body1"
                 color="secondaryText"
                 marginTop="xl"
                 textAlign="center"

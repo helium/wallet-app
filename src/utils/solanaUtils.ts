@@ -45,7 +45,7 @@ import {
 } from '@solana/spl-account-compression'
 import bs58 from 'bs58'
 import { toBN } from '@helium/spl-utils'
-import { AnchorProvider, BN } from '@project-serum/anchor'
+import { AnchorProvider, BN } from '@coral-xyz/anchor'
 import * as tm from '@helium/treasury-management-sdk'
 import { getKeypair } from '../storage/secureStorage'
 import solInstructionsToActivity from './solInstructionsToActivity'
@@ -803,7 +803,7 @@ export const getCompressedCollectables = async (
   const conn = getConnection(cluster)
   const { items } = await conn.getAssetsByOwner(
     pubKey.toString(),
-    JSON.stringify({ sortBy: 'created', sortDirection: 'asc' }),
+    { sortBy: 'created', sortDirection: 'asc' },
     50,
     1,
     '',

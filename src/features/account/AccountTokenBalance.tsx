@@ -1,8 +1,9 @@
 import { Ticker } from '@helium/currency'
 import { BoxProps } from '@shopify/restyle'
 import React, { memo, useMemo } from 'react'
-import Box from '../../components/Box'
 import Text from '../../components/Text'
+import TextTransform from '../../components/TextTransform'
+import Box from '../../components/Box'
 import { Theme } from '../../theme/theme'
 import { useBalance } from '../../utils/Balance'
 
@@ -54,25 +55,30 @@ const AccountTokenBalance = ({
 
   return (
     <Box flexDirection="row" justifyContent="center" {...boxProps}>
-      <Text
-        variant={textVariant || 'h1'}
-        color="primaryText"
-        numberOfLines={1}
-        maxFontSizeMultiplier={1}
-        adjustsFontSizeToFit
-      >
-        {`${balance?.toString(2, { showTicker: false })} `}
-      </Text>
-      {showTicker && (
+      {!showTicker && (
         <Text
           variant={textVariant || 'h1'}
-          color="secondaryText"
+          color="primaryText"
           numberOfLines={1}
           maxFontSizeMultiplier={1}
           adjustsFontSizeToFit
         >
-          {balance?.type.ticker}
+          {`${balance?.toString(2, { showTicker: false })}`}
         </Text>
+      )}
+      {showTicker && (
+        <TextTransform
+          variant={textVariant || 'h1'}
+          color="primaryText"
+          numberOfLines={1}
+          maxFontSizeMultiplier={1}
+          adjustsFontSizeToFit
+          i18nKey="accountsScreen.tokenBalance"
+          values={{
+            amount: balance?.toString(2, { showTicker: false }),
+            ticker: balance?.type.ticker,
+          }}
+        />
       )}
     </Box>
   )

@@ -9,7 +9,7 @@ export type RootStackParamList = {
 export type TabBarStackParamList = {
   Home: undefined
   Collectables: undefined
-  Swap: undefined
+  Swaps: undefined
   Activity: undefined
   NotificationsNavigator: undefined
 }
