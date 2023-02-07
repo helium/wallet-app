@@ -364,6 +364,7 @@ export default {
   delegate: {
     title: 'Delegate',
     swipe: 'Swipe to Delegate',
+    amount: 'Amount (DC)',
   },
   connectedWallets: {
     add: 'Add New Account',
@@ -420,7 +421,7 @@ export default {
     mainnet: 'Mainnet',
     next: 'Next',
     solanaAddress: 'Solana Address',
-    notValidAddress: 'Not a valid Helium Wallet Address.',
+    notValidAddress: 'Not a valid Wallet Address.',
     notValidSolanaAddress: 'Not a valid Solana Address.',
     insufficientBalance: 'Insufficient balance',
     ok: 'OK',

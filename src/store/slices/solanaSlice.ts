@@ -143,6 +143,15 @@ type MintDataCreditsInput = {
   mints: Mints
 }
 
+type DelegateDataCreditsInput = {
+  account: CSAccount
+  anchorProvider: AnchorProvider
+  cluster: Cluster
+  delegateAddress: string
+  amount: number
+  mints: Mints
+}
+
 export const makePayment = createAsyncThunk(
   'solana/makePayment',
   async ({ account, payments, cluster, mints }: PaymentInput, { dispatch }) => {
@@ -249,21 +258,55 @@ export const sendTreasurySwap = createAsyncThunk(
   },
 )
 
-export const sendDataCreditsMint = createAsyncThunk(
-  'solana/sendDataCreditsMint',
+export const sendMintDataCredits = createAsyncThunk(
+  'solana/sendMintDataCredits',
   async (
     { cluster, anchorProvider, amount, account, mints }: MintDataCreditsInput,
     { dispatch },
   ) => {
-    if (!account?.address) throw new Error('No helium account found')
-
     try {
       const swap = await solUtils.mintDataCredits(
         cluster,
         anchorProvider,
-        account.address,
         amount,
         new PublicKey(mints.DC),
+      )
+
+      dispatch(readBalances({ cluster, acct: account, mints }))
+
+      return await dispatch(
+        walletRestApi.endpoints.postPayment.initiate({
+          txnSignature: swap.signature,
+          cluster,
+        }),
+      )
+    } catch (error) {
+      Logger.error(error)
+      throw error
+    }
+  },
+)
+
+export const sendDelegateDataCredits = createAsyncThunk(
+  'solana/sendDelegateDataCredits',
+  async (
+    {
+      cluster,
+      anchorProvider,
+      amount,
+      account,
+      delegateAddress,
+      mints,
+    }: DelegateDataCreditsInput,
+    { dispatch },
+  ) => {
+    try {
+      const swap = await solUtils.delegateDataCredits(
+        cluster,
+        anchorProvider,
+        delegateAddress,
+        amount,
+        'iotfeTXUVZKZvmFCTTHrgmep94seQJurjvMgKuqpHyx',
       )
 
       dispatch(readBalances({ cluster, acct: account, mints }))
@@ -529,13 +572,26 @@ const solanaSlice = createSlice({
         error: undefined,
       }
     })
-    builder.addCase(sendDataCreditsMint.rejected, (state, action) => {
+    builder.addCase(sendMintDataCredits.rejected, (state, action) => {
       state.payment = { success: false, loading: false, error: action.error }
     })
-    builder.addCase(sendDataCreditsMint.pending, (state, _action) => {
+    builder.addCase(sendMintDataCredits.pending, (state, _action) => {
       state.payment = { success: false, loading: true, error: undefined }
     })
-    builder.addCase(sendDataCreditsMint.fulfilled, (state, _action) => {
+    builder.addCase(sendMintDataCredits.fulfilled, (state, _action) => {
+      state.payment = {
+        success: true,
+        loading: false,
+        error: undefined,
+      }
+    })
+    builder.addCase(sendDelegateDataCredits.rejected, (state, action) => {
+      state.payment = { success: false, loading: false, error: action.error }
+    })
+    builder.addCase(sendDelegateDataCredits.pending, (state, _action) => {
+      state.payment = { success: false, loading: true, error: undefined }
+    })
+    builder.addCase(sendDelegateDataCredits.fulfilled, (state, _action) => {
       state.payment = {
         success: true,
         loading: false,

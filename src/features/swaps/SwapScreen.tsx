@@ -31,6 +31,9 @@ import { Mints } from '../../utils/hotspotNftsUtils'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
 import { useSpacing } from '../../theme/themeHooks'
 import useAlert from '../../hooks/useAlert'
+import { useBalance } from '../../utils/Balance'
+import { accountCurrencyType } from '../../utils/accountUtils'
+import { BONES_PER_HNT } from '../../utils/heliumUtils'
 
 // Selector Mode enum
 enum SelectorMode {
@@ -49,9 +52,9 @@ enum Tokens {
 const SwapScreen = () => {
   const { t } = useTranslation()
   const { currentAccount, anchorProvider } = useAccountStorage()
-  const { solanaNetwork: cluster } = useAppStorage()
+  const { solanaNetwork: cluster, l1Network } = useAppStorage()
   const navigation = useNavigation<SwapNavigationProp>()
-  const { submitTreasurySwap, submitDataCreditsMint } = useSubmitTxn()
+  const { submitTreasurySwap, submitMintDataCredits } = useSubmitTxn()
   const edges = useMemo(() => ['top'] as Edge[], [])
   const [tokenSheetOpen, setTokenSheetOpen] = useState(false)
   const [selectorMode, setSelectorMode] = useState(SelectorMode.youPay)
@@ -69,6 +72,7 @@ const SwapScreen = () => {
   const [networkError, setNetworkError] = useState<undefined | string>()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
   const spacing = useSpacing()
+  const { networkTokensToDc, networkBalance } = useBalance()
   const { showOKCancelAlert } = useAlert()
   const {
     price,
@@ -81,8 +85,19 @@ const SwapScreen = () => {
 
   // If user does not have enough tokens to swap for greater than 0.00000001 tokens
   const insufficientTokensToSwap = useMemo(() => {
-    return !(price && price > 0) && youPayTokenAmount.floatBalance > 0
-  }, [price, youPayTokenAmount])
+    if (
+      youPayTokenType === Tokens.HNT &&
+      networkBalance.floatBalance < 0.00000001
+    ) {
+      return true
+    }
+
+    return (
+      youPayTokenType !== Tokens.HNT &&
+      !(price && price > 0) &&
+      youPayTokenAmount.floatBalance > 0
+    )
+  }, [networkBalance, price, youPayTokenAmount.floatBalance, youPayTokenType])
 
   const showError = useMemo(() => {
     if (hasInsufficientBalance) return t('generic.insufficientBalance')
@@ -186,6 +201,7 @@ const SwapScreen = () => {
         youReceiveTokenType === Tokens.DC
       ) {
         setYouReceiveTokenType(Tokens.HNT)
+        setYouPayTokenAmount(Balance.fromIntAndTicker(0, ticker))
       }
 
       if (selectorMode === SelectorMode.youPay && ticker === Tokens.HNT) {
@@ -245,12 +261,30 @@ const SwapScreen = () => {
   }, [])
 
   const youReceiveTokenAmount = useMemo(() => {
-    if (price) {
+    if (price && youPayTokenType !== Tokens.HNT) {
       return Balance.fromFloatAndTicker(price, Tokens.HNT)
     }
 
+    if (youPayTokenType === Tokens.HNT && currentAccount) {
+      const amount = networkTokensToDc(
+        new Balance(
+          Number(youPayTokenAmount.floatBalance) * BONES_PER_HNT,
+          accountCurrencyType(currentAccount.address, undefined, l1Network),
+        ),
+      )
+
+      return amount || Balance.fromIntAndTicker(0, Tokens.DC)
+    }
+
     return Balance.fromIntAndTicker(0, Tokens.HNT)
-  }, [price])
+  }, [
+    currentAccount,
+    l1Network,
+    networkTokensToDc,
+    price,
+    youPayTokenAmount.floatBalance,
+    youPayTokenType,
+  ])
 
   const handleSwapTokens = useCallback(async () => {
     const decision = await showOKCancelAlert({
@@ -260,7 +294,7 @@ const SwapScreen = () => {
     if (!decision) return
 
     if (youPayTokenType === Tokens.HNT) {
-      submitDataCreditsMint(youPayTokenAmount.floatBalance)
+      submitMintDataCredits(youPayTokenAmount.floatBalance)
     }
 
     if (youPayTokenType !== Tokens.HNT) {
@@ -277,7 +311,7 @@ const SwapScreen = () => {
   }, [
     navigation,
     showOKCancelAlert,
-    submitDataCreditsMint,
+    submitMintDataCredits,
     submitTreasurySwap,
     t,
     youPayTokenAmount.floatBalance,

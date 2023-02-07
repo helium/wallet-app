@@ -16,6 +16,7 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
 import Balance, {
+  CurrencyType,
   NetworkTokens,
   SolTokens,
   TestNetworkTokens,
@@ -112,6 +113,7 @@ const HNTKeyboardSelector = forwardRef(
       networkBalance,
       mobileBalance,
       iotBalance,
+      dcBalance,
       bonesToBalance,
     } = useBalance()
     const [timeStr, setTimeStr] = useState('')
@@ -122,10 +124,12 @@ const HNTKeyboardSelector = forwardRef(
           return mobileBalance
         case 'IOT':
           return iotBalance
+        case 'DC':
+          return dcBalance
         default:
           return networkBalance
       }
-    }, [iotBalance, mobileBalance, networkBalance, ticker])
+    }, [dcBalance, iotBalance, mobileBalance, networkBalance, ticker])
 
     const balanceForTicker = useMemo(
       () => (ticker === 'HNT' ? networkBalance : getHeliumBalance),
@@ -165,6 +169,11 @@ const HNTKeyboardSelector = forwardRef(
         .replaceAll(groupSeparator, '')
         .replaceAll(decimalSeparator, '.')
       const numberVal = parseFloat(stripped)
+
+      if (ticker === 'DC') {
+        return new Balance(numberVal, CurrencyType.dataCredit)
+      }
+
       return floatToBalance(numberVal, ticker)
     }, [floatToBalance, ticker, value])
 
@@ -229,12 +238,17 @@ const HNTKeyboardSelector = forwardRef(
 
       const currentAmount = getNextPayments()
         .filter((_v, index) => index !== paymentIndex || 0) // Remove the payment being updated
-        .reduce((prev, current) => {
-          if (!current.amount) {
-            return prev
-          }
-          return prev.plus(current.amount)
-        }, bonesToBalance(0, ticker))
+        .reduce(
+          (prev, current) => {
+            if (!current.amount) {
+              return prev
+            }
+            return prev.plus(current.amount)
+          },
+          ticker === 'DC'
+            ? new Balance(0, CurrencyType.dataCredit)
+            : bonesToBalance(0, ticker),
+        )
 
       let maxBalance: Balance<NetworkTokens | TestNetworkTokens> | undefined
       if (ticker === 'HNT') {
@@ -246,8 +260,12 @@ const HNTKeyboardSelector = forwardRef(
         maxBalance = getHeliumBalance.minus(currentAmount)
       }
 
-      if (maxBalance.integerBalance < 0) {
+      if (maxBalance.integerBalance < 0 && ticker !== 'DC') {
         maxBalance = bonesToBalance(0, ticker)
+      }
+
+      if (maxBalance.integerBalance < 0 && ticker === 'DC') {
+        maxBalance = new Balance(0, CurrencyType.dataCredit)
       }
 
       const decimalPlaces = maxBalance.type.decimalPlaces.toNumber()

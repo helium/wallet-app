@@ -18,7 +18,8 @@ import {
   claimAllRewards,
   sendAnchorTxn,
   sendTreasurySwap,
-  sendDataCreditsMint,
+  sendMintDataCredits,
+  sendDelegateDataCredits,
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import { useGetMintsQuery } from '../store/slices/walletRestApi'
@@ -280,7 +281,7 @@ export default () => {
     [l1Network, submitHeliumLedger],
   )
 
-  const submitDataCreditsMint = useCallback(
+  const submitMintDataCredits = useCallback(
     async (amount: number) => {
       if (!currentAccount) {
         throw new Error('There must be an account selected to submit a txn')
@@ -295,10 +296,38 @@ export default () => {
       }
 
       dispatch(
-        sendDataCreditsMint({
+        sendMintDataCredits({
           account: currentAccount,
           anchorProvider,
           cluster,
+          amount,
+          mints,
+        }),
+      )
+    },
+    [anchorProvider, cluster, currentAccount, dispatch, mints],
+  )
+
+  const submitDelegateDataCredits = useCallback(
+    async (delegateAddress: string, amount: number) => {
+      if (!currentAccount) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+
+      if (!anchorProvider) {
+        throw new Error('There must be an account selected to submit a txn')
+      }
+
+      if (!mints) {
+        throw new Error('Mints not found')
+      }
+
+      dispatch(
+        sendDelegateDataCredits({
+          account: currentAccount,
+          anchorProvider,
+          cluster,
+          delegateAddress,
           amount,
           mints,
         }),
@@ -315,7 +344,8 @@ export default () => {
     submitClaimRewards,
     submitClaimAllRewards,
     submitLedger,
-    submitDataCreditsMint,
+    submitMintDataCredits,
+    submitDelegateDataCredits,
     data,
     error: accountError || submitError || nonceError,
     loading: accountLoading || submitLoading,

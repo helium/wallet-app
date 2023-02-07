@@ -16,6 +16,7 @@ export type BurnRouteParam = {
   address: string
   amount: string
   memo?: string
+  isDelegate?: boolean
 }
 
 export type HomeStackParamList = {

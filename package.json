@@ -43,6 +43,7 @@
     "@helium/address": "4.6.2",
     "@helium/crypto-react-native": "4.8.0",
     "@helium/currency": "4.8.1",
+    "@helium/data-credits-sdk": "0.0.27",
     "@helium/distributor-oracle": "0.0.11",
     "@helium/helium-react-hooks": "0.0.11",
     "@helium/http": "4.7.5",

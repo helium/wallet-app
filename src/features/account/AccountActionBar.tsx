@@ -128,7 +128,8 @@ const AccountActionBar = ({
         case 'delegate': {
           navigation.navigate('BurnScreen', {
             address: '',
-            amount: '10000',
+            amount: '',
+            isDelegate: true,
           })
           break
         }
