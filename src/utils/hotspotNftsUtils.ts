@@ -13,9 +13,9 @@ import { Recipient } from '../hooks/useRecipient'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 
 export const Mints: Record<string, string> = {
-  IOT: '6aG8vMriyPm3FgJ9BXGNKUzvmpcjAUzApCSx64Lahzmg',
-  MOBILE: 'ZAvnCmf6JgaCYzWZgRqNGn5ZvbE7mhPWFUB72ubE3D2',
-  HNT: 'yMduUu4k9BqLAGtJuwL9yRRfBGgyDQ9GVZygmxX5FD6',
+  IOT: 'iotfeTXUVZKZvmFCTTHrgmep94seQJurjvMgKuqpHyx',
+  MOBILE: 'mb1eaxqRn3VMUuA9MC1hXiNFG7hnJHfF8Cvq7vfYH4y',
+  HNT: 'hntv1Vf5ZBG777xAHqHUTFS8UZBTNUN22MBnYramPFk',
 }
 
 export const MOBILE_LAZY_KEY = lazyDistributorKey(
