@@ -91,7 +91,7 @@ const AccountTokenCurrencyBalance = ({
     <Text
       numberOfLines={1}
       adjustsFontSizeToFit
-      maxFontSizeMultiplier={1.3}
+      maxFontSizeMultiplier={1}
       {...textProps}
     >
       {balanceString || ' '}

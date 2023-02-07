@@ -14,7 +14,7 @@ import { NetTypes as NetType, NetTypes } from '@helium/address'
 import { useAppState } from '@react-native-community/hooks'
 import { AccountFetchCache } from '@helium/spl-utils'
 import { Transaction } from '@solana/web3.js'
-import { AnchorProvider, Wallet } from '@project-serum/anchor'
+import { AnchorProvider, Wallet } from '@coral-xyz/anchor'
 import {
   accountNetType,
   AccountNetTypeOpt,

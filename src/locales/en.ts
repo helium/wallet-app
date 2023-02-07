@@ -135,6 +135,7 @@ export default {
     title: 'My {{ticker}}',
     tokens: 'Tokens',
     chooseCurrency: 'Choose Currency',
+    tokenBalance: '{{amount}} <secondaryText>{{ticker}}</secondaryText>',
   },
   collectablesScreen: {
     title: 'Collectables',
