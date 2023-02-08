@@ -16,6 +16,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Balance, { CurrencyType, DataCredits } from '@helium/currency'
 import Address, { NetTypes } from '@helium/address'
 import { TokenBurnV1 } from '@helium/transactions'
+import { useSelector } from 'react-redux'
+import { RootState } from '../../store/rootReducer'
 import { TXN_FEE_IN_SOL } from '../../utils/solanaUtils'
 import Box from '../../components/Box'
 import Text from '../../components/Text'
@@ -102,6 +104,9 @@ const BurnScreen = () => {
   )
   const [delegateAddress, setDelegateAddress] = useState('')
   const [hasError, setHasError] = useState(false)
+  const delegatePayment = useSelector(
+    (reduxState: RootState) => reduxState.solana.delegate,
+  )
 
   const { isDelegate } = useMemo(() => route.params, [route.params])
 
@@ -586,9 +591,11 @@ const BurnScreen = () => {
               </Box>
             </Box>
             <PaymentSubmit
-              submitLoading={submitLoading}
-              submitSucceeded={!!submitData?.submitTxn?.hash}
-              submitError={submitError}
+              submitLoading={submitLoading || !!delegatePayment?.loading}
+              submitSucceeded={
+                !!submitData?.submitTxn?.hash || delegatePayment?.success
+              }
+              submitError={submitError || delegatePayment?.error}
               totalBalance={amountBalance}
               feeTokenBalance={feeAsTokens}
               onRetry={handleSubmit}

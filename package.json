@@ -46,6 +46,7 @@
     "@helium/data-credits-sdk": "0.0.27",
     "@helium/distributor-oracle": "0.0.11",
     "@helium/helium-react-hooks": "0.0.11",
+    "@helium/helium-sub-daos-sdk": "^0.0.27",
     "@helium/http": "4.7.5",
     "@helium/idls": "0.0.11",
     "@helium/lazy-distributor-sdk": "0.0.11",

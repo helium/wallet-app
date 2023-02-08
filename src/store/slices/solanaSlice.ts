@@ -47,6 +47,7 @@ export type SolanaState = {
     data: Record<string, SolActivity>
     error?: SerializedError
   }
+  delegate?: { loading?: boolean; error?: SerializedError; success?: boolean }
 }
 
 const initialState: SolanaState = {
@@ -586,13 +587,13 @@ const solanaSlice = createSlice({
       }
     })
     builder.addCase(sendDelegateDataCredits.rejected, (state, action) => {
-      state.payment = { success: false, loading: false, error: action.error }
+      state.delegate = { success: false, loading: false, error: action.error }
     })
     builder.addCase(sendDelegateDataCredits.pending, (state, _action) => {
-      state.payment = { success: false, loading: true, error: undefined }
+      state.delegate = { success: false, loading: true, error: undefined }
     })
     builder.addCase(sendDelegateDataCredits.fulfilled, (state, _action) => {
-      state.payment = {
+      state.delegate = {
         success: true,
         loading: false,
         error: undefined,

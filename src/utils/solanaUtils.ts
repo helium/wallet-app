@@ -22,6 +22,7 @@ import {
   SignatureResult,
 } from '@solana/web3.js'
 import * as dc from '@helium/data-credits-sdk'
+import { subDaoKey } from '@helium/helium-sub-daos-sdk'
 import {
   TOKEN_PROGRAM_ID,
   AccountLayout,
@@ -670,13 +671,14 @@ export const delegateDataCredits = async (
   anchorProvider: AnchorProvider,
   delegateAddress: string,
   amount: number,
-  subDao: string,
+  mintDao: string,
 ) => {
   try {
     const connection = getConnection(cluster)
     const { publicKey: payer } = anchorProvider.wallet
 
     const program = await dc.init(anchorProvider)
+    const subDao = subDaoKey(new PublicKey(mintDao))[0]
 
     const tx = await program.methods
       .delegateDataCreditsV0({
@@ -721,6 +723,7 @@ export const delegateDataCredits = async (
 
     return { signature, txn }
   } catch (e) {
+    Logger.error(e)
     throw e as Error
   }
 }
