@@ -102,13 +102,7 @@ const useBalanceHook = () => {
       return
     }
 
-    const newMints = {
-      ...mints,
-      DC: 'dc5Zu977Zan2BFt7iLxCCUoyPvxpxZGYK23d6GYZXq7',
-      HNT: 'hntv1Vf5ZBG777xAHqHUTFS8UZBTNUN22MBnYramPFk', // TODO: remove this, i think the api need update for the new mint
-    }
-
-    dispatch(readBalances({ cluster, acct: currentAccount, mints: newMints }))
+    dispatch(readBalances({ cluster, acct: currentAccount, mints }))
   }, [currentAccount, dispatch, mints, cluster])
 
   useEffect(() => {
