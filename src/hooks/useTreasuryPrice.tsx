@@ -4,9 +4,8 @@ import { PublicKey } from '@solana/web3.js'
 import { useMemo } from 'react'
 import * as tm from '@helium/treasury-management-sdk'
 import { amountAsNum } from '@helium/spl-utils'
-import { useMint } from './useMint'
+import { useOwnedAmount, useMint } from '@helium/helium-react-hooks'
 import { useTreasuryManagement } from './useTreasuryManagement'
-import { useOwnedAmount } from './useOwnedAmount'
 
 export function useTreasuryPrice(
   fromMint: PublicKey,

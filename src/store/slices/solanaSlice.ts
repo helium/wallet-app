@@ -1,5 +1,5 @@
 import Balance, { AnyCurrencyType, Ticker } from '@helium/currency'
-import { AnchorProvider } from '@project-serum/anchor'
+import { AnchorProvider } from '@coral-xyz/anchor'
 import {
   createAsyncThunk,
   createSlice,

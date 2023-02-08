@@ -234,7 +234,7 @@ const AccountTokenScreen = () => {
         </FadeInOut>
       )
     },
-    [activityData.length, bottomScreenHeaderHeight, now, showTransactionDetail],
+    [activityData, bottomScreenHeaderHeight, now, showTransactionDetail],
   )
 
   const renderFooter = useCallback(() => {
@@ -248,7 +248,7 @@ const AccountTokenScreen = () => {
           justifyContent="center"
           alignItems="center"
           style={{
-            marginTop: activityData.length > 0 ? 0 : bottomScreenHeaderHeight,
+            marginTop: activityData?.length > 0 ? 0 : bottomScreenHeaderHeight,
           }}
         >
           <Text
@@ -274,13 +274,7 @@ const AccountTokenScreen = () => {
         <ActivityIndicator animating={activityLoading} />
       </Box>
     )
-  }, [
-    activityData.length,
-    activityLoading,
-    bottomScreenHeaderHeight,
-    l1Network,
-    t,
-  ])
+  }, [activityData, activityLoading, bottomScreenHeaderHeight, l1Network, t])
 
   const setFilter = useCallback(
     (filterType: FilterType) => () => {

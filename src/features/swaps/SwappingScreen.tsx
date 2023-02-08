@@ -90,7 +90,7 @@ const SwappingScreen = () => {
                 {t('swapsScreen.swapComplete')}
               </Text>
               <Text
-                variant="body2"
+                variant="body1"
                 color="secondaryText"
                 marginTop="xl"
                 textAlign="center"
