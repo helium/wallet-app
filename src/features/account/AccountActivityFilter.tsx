@@ -7,6 +7,8 @@ const FilterTypeKeys = [
   'hotspotAndValidators',
   'burn',
   'pending',
+  'delegate',
+  'mint',
 ] as const
 export type FilterType = typeof FilterTypeKeys[number]
 

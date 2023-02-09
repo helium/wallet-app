@@ -30,6 +30,8 @@ const AccountActivityAPIFilters = {
   ],
   burn: ['token_burn_v1'],
   pending: [],
+  mint: ['dc_mint'],
+  delegate: ['dc_delegate'],
 } as Record<FilterType, string[]>
 
 export default ({

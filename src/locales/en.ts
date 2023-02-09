@@ -128,6 +128,8 @@ export default {
       mining: 'Mining Rewards',
       payment: 'Payments',
       pending: 'Pending Transactions',
+      delegate: 'Delegated',
+      mint: 'Received',
     },
     hideFilters: 'Hide Filters',
     myTransactions: 'My Transactions',
@@ -866,6 +868,7 @@ export default {
     txnFeePaidBy: 'Transaction Fee paid by {{feePayer}}',
     unstakeValidator: 'Unstake {{ticker}}',
     validator: 'Validator',
+    delegated: 'Delegated',
   },
   vote: {
     active: 'Active Votes',

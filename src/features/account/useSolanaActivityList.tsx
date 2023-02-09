@@ -82,15 +82,18 @@ export default ({
   }, [account, cluster, dispatch, isSolana, mints, ticker])
 
   const data = useMemo(() => {
-    if (!account?.solanaAddress) return []
-
-    if (
-      (filter !== 'payment' && filter !== 'all') ||
-      !solanaActivity?.data?.[account.solanaAddress]
-    )
+    if (!account?.solanaAddress || !solanaActivity.data[account.solanaAddress])
       return []
 
-    return solanaActivity.data[account.solanaAddress][filter][ticker]
+    if (ticker === 'DC' && (filter === 'delegate' || filter === 'mint')) {
+      return solanaActivity.data[account.solanaAddress][filter][ticker]
+    }
+
+    if (filter !== 'payment' && filter !== 'all') return []
+
+    return solanaActivity.data[account.solanaAddress][filter][ticker].filter(
+      (txn) => txn.tokenType === ticker,
+    )
   }, [account, filter, solanaActivity.data, ticker])
 
   const loading = useMemo(() => {

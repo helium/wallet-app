@@ -10,7 +10,6 @@ import { useTranslation } from 'react-i18next'
 import Close from '@assets/images/close.svg'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Platform } from 'react-native'
-import QR from '@assets/images/qr.svg'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Balance, { CurrencyType, DataCredits } from '@helium/currency'
@@ -48,7 +47,6 @@ import useAlert from '../../hooks/useAlert'
 import { checkSecureAccount } from '../../storage/secureStorage'
 import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
 import { useAppStorage } from '../../storage/AppStorageProvider'
-import IconPressedContainer from '../../components/IconPressedContainer'
 import PaymentItem from '../payment/PaymentItem'
 import AddressBookSelector, {
   AddressBookRef,
@@ -207,10 +205,6 @@ const BurnScreen = () => {
     sortedAccountsForNetType,
     t,
   ])
-
-  const handleQrScan = useCallback(() => {
-    navigation.navigate('PaymentQrScanner')
-  }, [navigation])
 
   const handleSubmit = useCallback(async () => {
     if (l1Network === 'solana' && isDelegate && amountBalance) {
@@ -413,15 +407,6 @@ const BurnScreen = () => {
                 justifyContent="space-between"
                 alignItems="center"
               >
-                <Box hitSlop={hitSlop} padding="s">
-                  <IconPressedContainer
-                    onPress={handleQrScan}
-                    activeOpacity={0.75}
-                    idleOpacity={1.0}
-                  >
-                    <QR color={primaryText} height={16} width={16} />
-                  </IconPressedContainer>
-                </Box>
                 <Text
                   variant="subtitle2"
                   flex={1}

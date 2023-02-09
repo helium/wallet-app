@@ -287,29 +287,51 @@ const AccountTokenScreen = () => {
   const filters = useCallback(
     () => (
       <>
-        <ListItem
-          key="all"
-          title={`${t('accountsScreen.filterTypes.all')}${
-            l1Network === 'helium' ? ' (24h)' : ''
-          }`}
-          selected={filterState.filter === 'all'}
-          onPress={setFilter('all')}
-          hasPressedState={false}
-        />
-        <ListItem
-          key="payment"
-          title={t('accountsScreen.filterTypes.payment')}
-          onPress={setFilter('payment')}
-          selected={filterState.filter === 'payment'}
-          hasPressedState={false}
-        />
-        <ListItem
-          key="mining"
-          title={t('accountsScreen.filterTypes.mining')}
-          onPress={setFilter('mining')}
-          selected={filterState.filter === 'mining'}
-          hasPressedState={false}
-        />
+        {routeTicker !== 'DC' && (
+          <>
+            <ListItem
+              key="all"
+              title={`${t('accountsScreen.filterTypes.all')}${
+                l1Network === 'helium' ? ' (24h)' : ''
+              }`}
+              selected={filterState.filter === 'all'}
+              onPress={setFilter('all')}
+              hasPressedState={false}
+            />
+            <ListItem
+              key="payment"
+              title={t('accountsScreen.filterTypes.payment')}
+              onPress={setFilter('payment')}
+              selected={filterState.filter === 'payment'}
+              hasPressedState={false}
+            />
+            <ListItem
+              key="mining"
+              title={t('accountsScreen.filterTypes.mining')}
+              onPress={setFilter('mining')}
+              selected={filterState.filter === 'mining'}
+              hasPressedState={false}
+            />
+          </>
+        )}
+        {routeTicker === 'DC' && (
+          <>
+            <ListItem
+              key="mint"
+              title={t('accountsScreen.filterTypes.mint')}
+              onPress={setFilter('mint')}
+              selected={filterState.filter === 'mint'}
+              hasPressedState={false}
+            />
+            <ListItem
+              key="delegate"
+              title={t('accountsScreen.filterTypes.delegate')}
+              onPress={setFilter('delegate')}
+              selected={filterState.filter === 'delegate'}
+              hasPressedState={false}
+            />
+          </>
+        )}
         {routeTicker === 'HNT' && (
           <>
             <ListItem

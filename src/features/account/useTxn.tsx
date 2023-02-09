@@ -44,6 +44,8 @@ export const TxnTypeKeys = [
   'stake_validator_v1',
   'transfer_validator_stake_v1',
   'subnetwork_rewards_v1',
+  'dc_delegate',
+  'dc_mint',
 ] as const
 type TxnType = typeof TxnTypeKeys[number]
 
@@ -128,8 +130,10 @@ const useTxn = (
       case 'rewards_v2':
       case 'stake_validator_v1':
       case 'transfer_validator_stake_v1':
+      case 'dc_mint':
         return 'greenBright500'
       case 'token_burn_v1':
+      case 'dc_delegate':
         return 'orange500'
       case 'unstake_validator_v1':
         return 'greenBright500'
@@ -195,6 +199,10 @@ const useTxn = (
         return item?.tokenType === 'IOT'
           ? t('transactions.iotRewards')
           : t('transactions.mobileRewards')
+      case 'dc_delegate':
+        return t('transactions.delegated')
+      case 'dc_mint':
+        return t('transactions.received', { ticker: '' })
     }
   }, [item, t, isSending, ticker, isSelling])
 
@@ -221,10 +229,12 @@ const useTxn = (
       case 'rewards_v2':
         return <TxnReceive color={iconColor} />
       case 'token_burn_v1':
+      case 'dc_delegate':
         return <TxnSend color={iconColor} />
       case 'transfer_hotspot_v1':
       case 'transfer_hotspot_v2':
       case 'add_gateway_v1':
+      case 'dc_mint':
       default:
         return <TxnReceive color={iconColor} />
     }
@@ -394,6 +404,16 @@ const useTxn = (
         return formatAmount('-', bonesToBalance(item.amount, 'HNT'))
       case 'payment_v1':
         return formatAmount('', bonesToBalance(item.amount, 'HNT'))
+      case 'dc_delegate':
+        return formatAmount(
+          '-',
+          new Balance(Number(item.amount), CurrencyType.dataCredit),
+        )
+      case 'dc_mint':
+        return formatAmount(
+          '+',
+          new Balance(Number(item.amount), CurrencyType.dataCredit),
+        )
       case 'payment_v2': {
         if (item.payer === address) {
           const paymentTotals = item.payments?.reduce(

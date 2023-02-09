@@ -60,6 +60,13 @@ export default (
     activity.type = 'payment_v2'
   }
 
+  const payment = activity.payments?.[0]
+  if (payment && payment.tokenType === 'DC') {
+    activity.type = payment.payee !== activity.payer ? 'dc_delegate' : 'dc_mint'
+    activity.amount = payment.amount
+    activity.tokenType = 'DC'
+  }
+
   if (activity.type === 'unknown') return
 
   return activity

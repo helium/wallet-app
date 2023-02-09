@@ -37,6 +37,8 @@ type TokenActivity = Record<Ticker, Activity[]>
 type SolActivity = {
   all: TokenActivity
   payment: TokenActivity
+  delegate: TokenActivity
+  mint: TokenActivity
 }
 
 export type SolanaState = {
@@ -636,21 +638,43 @@ const solanaSlice = createSlice({
       state.activity.data[address] = state.activity.data[address] || {
         all: {},
         payment: {},
+        delegate: {},
+        mint: {},
+      }
+
+      if (!state.activity.data[address].delegate) {
+        state.activity.data[address].delegate = state.activity.data[address].all
+      }
+
+      if (!state.activity.data[address].mint) {
+        state.activity.data[address].mint = state.activity.data[address].all
       }
 
       const prevAll = state.activity.data[address].all[ticker]
       const prevPayment = state.activity.data[address].payment[ticker]
+      const prevDelegate = state.activity.data[address].delegate[ticker]
+      const prevMint = state.activity.data[address].mint[ticker]
 
       switch (requestType) {
         case 'start_fresh': {
           state.activity.data[address].all[ticker] = payload
           state.activity.data[address].payment[ticker] = payload
+          state.activity.data[address].delegate[ticker] = payload
+          state.activity.data[address].mint[ticker] = payload
           break
         }
         case 'fetch_more': {
           state.activity.data[address].all[ticker] = [...prevAll, ...payload]
           state.activity.data[address].payment[ticker] = [
             ...prevPayment,
+            ...payload,
+          ]
+          state.activity.data[address].delegate[ticker] = [
+            ...prevDelegate,
+            ...payload,
+          ]
+          state.activity.data[address].mint[ticker] = [
+            ...prevDelegate,
             ...payload,
           ]
           break
@@ -661,6 +685,11 @@ const solanaSlice = createSlice({
             ...payload,
             ...prevPayment,
           ]
+          state.activity.data[address].delegate[ticker] = [
+            ...payload,
+            ...prevDelegate,
+          ]
+          state.activity.data[address].mint[ticker] = [...payload, ...prevMint]
           break
         }
       }
