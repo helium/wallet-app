@@ -8,6 +8,7 @@ import React, {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import Close from '@assets/images/close.svg'
+import QR from '@assets/images/qr.svg'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Platform } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
@@ -46,6 +47,7 @@ import PaymentSubmit from '../payment/PaymentSubmit'
 import useAlert from '../../hooks/useAlert'
 import { checkSecureAccount } from '../../storage/secureStorage'
 import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
+import IconPressedContainer from '../../components/IconPressedContainer'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import PaymentItem from '../payment/PaymentItem'
 import AddressBookSelector, {
@@ -100,7 +102,7 @@ const BurnScreen = () => {
   const [dcAmount, setDcAmount] = useState(
     new Balance(0, CurrencyType.dataCredit),
   )
-  const [delegateAddress, setDelegateAddress] = useState('')
+  const [delegateAddress, setDelegateAddress] = useState(route.params.address)
   const [hasError, setHasError] = useState(false)
   const delegatePayment = useSelector(
     (reduxState: RootState) => reduxState.solana.delegate,
@@ -259,6 +261,10 @@ const BurnScreen = () => {
     submitTxnMutation,
   ])
 
+  const handleQrScan = useCallback(() => {
+    navigation.navigate('PaymentQrScanner')
+  }, [navigation])
+
   const ledgerPaymentConfirmed = useCallback(
     ({ txn: signedTxn, txnJson }: { txn: TokenBurnV1; txnJson: string }) => {
       const variables = {
@@ -407,6 +413,15 @@ const BurnScreen = () => {
                 justifyContent="space-between"
                 alignItems="center"
               >
+                <Box hitSlop={hitSlop} padding="s">
+                  <IconPressedContainer
+                    onPress={handleQrScan}
+                    activeOpacity={0.75}
+                    idleOpacity={1.0}
+                  >
+                    <QR color={primaryText} height={16} width={16} />
+                  </IconPressedContainer>
+                </Box>
                 <Text
                   variant="subtitle2"
                   flex={1}
