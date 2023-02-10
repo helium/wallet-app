@@ -28,7 +28,6 @@ import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
 import { ellipsizeAddress } from '../../utils/accountUtils'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import CloseButton from '../../components/CloseButton'
-import { useGetBetaPubkeysQuery } from '../../store/slices/walletRestApi'
 
 const Settings = () => {
   const { t } = useTranslation()
@@ -68,7 +67,6 @@ const Settings = () => {
   } = useAppStorage()
   const copyText = useCopyText()
   const { showOKAlert, showOKCancelAlert } = useAlert()
-  const { data: betaAccess } = useGetBetaPubkeysQuery()
 
   const isDefaultAccount = useMemo(
     () => defaultAccountAddress === currentAccount?.address,
@@ -397,21 +395,19 @@ const Settings = () => {
       },
     ]
 
-    if (betaAccess?.publicKeys?.includes(currentAccount?.address || '')) {
-      devData.push({
-        title: t('settings.sections.dev.solana.title'),
-        value: l1Network === 'solana',
-        onToggle: () =>
-          updateL1Network(l1Network === 'helium' ? 'solana' : 'helium'),
-        helperText: t('settings.sections.dev.solana.helperText'),
-        onPress: () => {
-          showOKAlert({
-            message: t('settings.sections.dev.solana.prompt.message'),
-            title: t('settings.sections.dev.solana.prompt.title'),
-          })
-        },
-      })
-    }
+    devData.push({
+      title: t('settings.sections.dev.solana.title'),
+      value: l1Network === 'solana',
+      onToggle: () =>
+        updateL1Network(l1Network === 'helium' ? 'solana' : 'helium'),
+      helperText: t('settings.sections.dev.solana.helperText'),
+      onPress: () => {
+        showOKAlert({
+          message: t('settings.sections.dev.solana.prompt.message'),
+          title: t('settings.sections.dev.solana.prompt.title'),
+        })
+      },
+    })
 
     if (l1Network === 'solana') {
       const items = [
@@ -569,7 +565,6 @@ const Settings = () => {
   }, [
     authInterval,
     authIntervals,
-    betaAccess,
     convertToCurrency,
     copyText,
     currency,

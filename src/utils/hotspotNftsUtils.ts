@@ -1,8 +1,8 @@
 import * as client from '@helium/distributor-oracle'
 import { LazyDistributor } from '@helium/idls/lib/types/lazy_distributor'
 import { init, lazyDistributorKey } from '@helium/lazy-distributor-sdk'
-import { toNumber } from '@helium/spl-utils'
 import { Program, setProvider } from '@coral-xyz/anchor'
+import { HNT_MINT, IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
 import { getMint } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
@@ -13,9 +13,9 @@ import { Recipient } from '../hooks/useRecipient'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 
 export const Mints: Record<string, string> = {
-  IOT: 'iotfeTXUVZKZvmFCTTHrgmep94seQJurjvMgKuqpHyx',
-  MOBILE: 'mb1eaxqRn3VMUuA9MC1hXiNFG7hnJHfF8Cvq7vfYH4y',
-  HNT: 'hntv1Vf5ZBG777xAHqHUTFS8UZBTNUN22MBnYramPFk',
+  IOT: IOT_MINT.toBase58(),
+  MOBILE: MOBILE_MINT.toBase58(),
+  HNT: HNT_MINT.toBase58(),
 }
 
 export const MOBILE_LAZY_KEY = lazyDistributorKey(

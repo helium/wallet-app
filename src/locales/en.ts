@@ -137,6 +137,16 @@ export default {
     chooseCurrency: 'Choose Currency',
     tokenBalance: '{{amount}} <secondaryText>{{ticker}}</secondaryText>',
   },
+  solanaMigrationScreen: {
+    migrationComplete: "You've successfully migrated your tokens!",
+    migrationComplete2: 'Navigate back to your wallet',
+    error: 'Migration failed. Please try again later.',
+    disableSolana: 'Disable Solana Preview',
+    retry: 'Retry',
+    migrating: 'Migrating your wallet to Solana',
+    migratingBody: 'Please wait while we move your wallet over to Solana!',
+    done: 'Return to Home',
+  },
   collectablesScreen: {
     title: 'Collectables',
     metadata: 'Metadata',

@@ -29,6 +29,8 @@ import {
   getAssociatedTokenAddress,
   getMint,
 } from '@solana/spl-token'
+import { entityCreatorKey } from '@helium/helium-entity-manager-sdk'
+import { daoKey } from '@helium/helium-sub-daos-sdk'
 import Balance, { AnyCurrencyType } from '@helium/currency'
 import { Metaplex } from '@metaplex-foundation/js'
 import axios from 'axios'
@@ -44,8 +46,8 @@ import {
   SPL_NOOP_PROGRAM_ID,
 } from '@solana/spl-account-compression'
 import bs58 from 'bs58'
-import { toBN } from '@helium/spl-utils'
 import { AnchorProvider, BN } from '@coral-xyz/anchor'
+import { HNT_MINT, searchAssets, toBN } from '@helium/spl-utils'
 import * as tm from '@helium/treasury-management-sdk'
 import { getKeypair } from '../storage/secureStorage'
 import solInstructionsToActivity from './solInstructionsToActivity'
@@ -810,7 +812,7 @@ export const getCompressedCollectables = async (
     oldestCollectable || '',
   )
 
-  return items as CompressedNFT[]
+  return items as unknown as CompressedNFT[]
 }
 
 /**
@@ -851,18 +853,17 @@ export const getCollectablesMetadata = async (
  * @returns grouped collecables by token type
  */
 export const groupCollectables = (collectables: CompressedNFT[]) => {
+  const hotspotCreator = entityCreatorKey(daoKey(HNT_MINT)[0])[0]
   const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const {
-      content: {
-        metadata: { symbol },
-      },
-    } = cur
-
-    if (!acc[symbol || 'UNKNOWN']) {
-      acc[symbol || 'UNKNOWN'] = [cur]
+    const { creators } = cur
+    if (creators && creators[0].address.equals(hotspotCreator)) {
+      acc.entity = acc.entity || []
+      acc.entity.push(cur)
     } else {
-      acc[symbol || 'UNKOWN'].push(cur)
+      acc.unknown = acc.unknown || []
+      acc.unknown.push(cur)
     }
+
     return acc
   }, {} as Record<string, CompressedNFT[]>)
 

@@ -33,6 +33,9 @@ const useAppStorageHook = () => {
   const [scannedAddress, setScannedAddress] = useState<string>()
   const [voteTutorialShown, setVoteTutorialShown] = useState(false)
   const [showNumericChange, setShowNumericChange] = useState(false)
+  const [doneSolanaMigration, setDoneSolanaMigration] = useState<Set<string>>(
+    new Set<string>(),
+  )
 
   useAsync(async () => {
     // TODO: When performing an account restore pin will not be restored.
@@ -53,6 +56,7 @@ const useAppStorageHook = () => {
       )) as L1Network | null
       const nextVoteShown = await AsyncStorage.getItem(VOTE_TUTORIAL_SHOWN)
       const nextShowNumericChange = await getSecureItem('showNumericChange')
+      const nextDoneSolanaMigration = await getSecureItem('doneSolanaMigration')
 
       setPin({ value: nextPin || '', status: nextPin ? 'restored' : 'off' })
       setRequirePinForPayment(nextPinForPayment === 'true')
@@ -75,6 +79,9 @@ const useAppStorageHook = () => {
       setL1Network(nextL1Network || 'helium')
       setVoteTutorialShown(nextVoteShown === 'true')
       setShowNumericChange(nextShowNumericChange === 'true')
+      setDoneSolanaMigration(
+        new Set(JSON.parse(nextDoneSolanaMigration || '[]') as string[]),
+      )
 
       if (nextAuthInterval) {
         setAuthInterval(Number.parseInt(nextAuthInterval, 10))
@@ -162,6 +169,14 @@ const useAppStorageHook = () => {
     return storeSecureItem('showNumericChange', useNumeric ? 'true' : 'false')
   }, [])
 
+  const updateDoneSolanaMigration = useCallback(async (input: Set<string>) => {
+    setDoneSolanaMigration(input)
+    return storeSecureItem(
+      'doneSolanaMigration',
+      JSON.stringify(Array.from(input)),
+    )
+  }, [])
+
   return {
     authInterval,
     convertToCurrency,
@@ -177,6 +192,8 @@ const useAppStorageHook = () => {
     showNumericChange,
     solanaNetwork,
     toggleConvertToCurrency,
+    doneSolanaMigration,
+    updateDoneSolanaMigration,
     updateAuthInterval,
     updateConvertToCurrency,
     updateCurrency,
@@ -217,6 +234,9 @@ const initialState = {
   voteTutorialShown: false,
   updateShowNumericChange: async () => undefined,
   showNumericChange: false,
+  updateDoneSolanaMigration: async () => undefined,
+  // Set of wallet addresses that have been migrated to Solana
+  doneSolanaMigration: new Set<string>(),
 }
 
 const AppStorageContext =

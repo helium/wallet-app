@@ -9,6 +9,9 @@ import Dollar from '@assets/images/dollar.svg'
 import Gem from '@assets/images/gem.svg'
 import Transactions from '@assets/images/transactions.svg'
 import Notifications from '@assets/images/notifications.svg'
+import { useAppStorage } from '../storage/AppStorageProvider'
+import { useAccountStorage } from '../storage/AccountStorageProvider'
+import SolanaMigration from '../features/migration/SolanaMigration'
 import NavBar from '../components/NavBar'
 import { Color } from '../theme/theme'
 import HomeNavigator from '../features/home/HomeNavigator'
@@ -122,6 +125,23 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
 }
 
 const TabBarNavigator = () => {
+  const { doneSolanaMigration } = useAppStorage()
+  // // eslint-disable-next-line no-console
+  // console.log(doneSolanaMigration)
+  // if (doneSolanaMigration.size > 0) {
+  //   updateDoneSolanaMigration(new Set<string>())
+  // }
+  const { currentAccount, anchorProvider } = useAccountStorage()
+
+  if (
+    currentAccount &&
+    anchorProvider &&
+    currentAccount.solanaAddress &&
+    !doneSolanaMigration.has(currentAccount.solanaAddress)
+  ) {
+    return <SolanaMigration />
+  }
+
   return (
     <Tab.Navigator
       tabBar={(props: BottomTabBarProps) => <MyTabBar {...props} />}

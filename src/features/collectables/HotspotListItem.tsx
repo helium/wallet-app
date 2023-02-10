@@ -2,7 +2,6 @@ import React, { useEffect, useMemo } from 'react'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { PublicKey } from '@solana/web3.js'
 import { BoxProps } from '@shopify/restyle'
-import MobileSymbol from '@assets/images/mobileSymbol.svg'
 import IotSymbol from '@assets/images/iotSymbol.svg'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
@@ -97,7 +96,7 @@ const HotspotListItem = ({
             cache: 'force-cache',
           }}
         />
-        {hasMobileRewards && (
+        {/* {hasMobileRewards && (
           <Box
             justifyContent="center"
             alignItems="center"
@@ -120,8 +119,8 @@ const HotspotListItem = ({
           >
             <MobileSymbol color="black" />
           </Box>
-        )}
-        {hasIotRewards && (
+        )} */}
+        {Boolean(hasIotRewards) && (
           <Box
             justifyContent="center"
             alignItems="center"

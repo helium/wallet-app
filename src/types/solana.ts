@@ -9,6 +9,7 @@ import {
   SftWithToken,
 } from '@metaplex-foundation/js'
 import { TokenAmount } from '@solana/web3.js'
+import { Creator } from '@metaplex-foundation/mpl-bubblegum'
 import { Mints } from '../store/slices/walletRestApi'
 
 export type SolPayment = {
@@ -75,7 +76,7 @@ export type CompressedNFT = {
     primary_sale_happened: boolean
     locked: boolean
   }
-  creators: any[]
+  creators: Creator[]
   ownership: {
     frozen: boolean
     delegated: boolean
