@@ -1,8 +1,8 @@
 import * as client from '@helium/distributor-oracle'
 import { LazyDistributor } from '@helium/idls/lib/types/lazy_distributor'
 import { init, lazyDistributorKey } from '@helium/lazy-distributor-sdk'
-import { Program, setProvider } from '@coral-xyz/anchor'
 import { HNT_MINT, IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import { Program, setProvider } from '@coral-xyz/anchor'
 import { getMint } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
@@ -68,6 +68,7 @@ export async function getPendingRewards(
 
   const subbed = oracleMedian.sub(maybeRecipient?.totalRewards || new BN(0))
 
+  console.log(oracleMedian.toNumber())
   return {
     pendingRewards: Math.max(toNumber(subbed, rewardsMintAcc.decimals), 0),
     rewardsMint: lazyDistributor.rewardsMint,

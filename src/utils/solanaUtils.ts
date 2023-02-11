@@ -46,8 +46,8 @@ import {
   SPL_NOOP_PROGRAM_ID,
 } from '@solana/spl-account-compression'
 import bs58 from 'bs58'
-import { AnchorProvider, BN } from '@coral-xyz/anchor'
 import { HNT_MINT, searchAssets, toBN } from '@helium/spl-utils'
+import { AnchorProvider, BN } from '@coral-xyz/anchor'
 import * as tm from '@helium/treasury-management-sdk'
 import { getKeypair } from '../storage/secureStorage'
 import solInstructionsToActivity from './solInstructionsToActivity'

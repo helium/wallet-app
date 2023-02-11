@@ -4070,7 +4070,7 @@
     bn.js "^5.2.1"
     borsh "^0.7.0"
 
-"@solana/spl-account-compression@^0.1.4", "@solana/spl-account-compression@^0.1.5":
+"@solana/spl-account-compression@^0.1.4":
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/@solana/spl-account-compression/-/spl-account-compression-0.1.5.tgz#81f7bbd1120bf211ed2091b44b9f030fd08bf2d3"
   integrity sha512-ZrJNrc4fqxJtqOjws6fEeMKhiA/ile9aDP83mutee3MVxN2cloL9xVHb3p2g3JuNCw4jb+AClZt0JbLCthz47w==

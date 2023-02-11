@@ -160,7 +160,7 @@ const useAccountStorageHook = () => {
         ...result,
         [addy]: {
           ...acct,
-          solanaAddress: '2Cm9NrG5NezBjegT4PizykqwUpb6siSmowTt4dQ5YcBy',
+          solanaAddress: 'Azot2AdxKJvdjLZEbDrCzktwdU238fazRmGCGZqGQeKa',
         },
       }
     }, {} as CSAccounts)
@@ -181,7 +181,7 @@ const useAccountStorageHook = () => {
       if (c.solanaAddress) return c
       return {
         ...c,
-        solanaAddress: '2Cm9NrG5NezBjegT4PizykqwUpb6siSmowTt4dQ5YcBy',
+        solanaAddress: 'Azot2AdxKJvdjLZEbDrCzktwdU238fazRmGCGZqGQeKa',
       }
     })
 
