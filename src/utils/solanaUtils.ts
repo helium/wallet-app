@@ -795,7 +795,6 @@ export const transferCompressedCollectable = async (
  * @param pubKey public key of the account
  * @param oldestCollectable starting point for the query
  * @returns collectables
- * TODO: Need to add pagination via oldest collectable param in collectables slice
  */
 export const getCompressedCollectables = async (
   pubKey: PublicKey,
@@ -811,6 +810,23 @@ export const getCompressedCollectables = async (
     '',
     oldestCollectable || '',
   )
+
+  return items as CompressedNFT[]
+}
+
+export const getCompressedCollectablesByCreator = async (
+  pubKey: PublicKey,
+  cluster: Cluster,
+  oldestCollectable?: string,
+) => {
+  const conn = getConnection(cluster)
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const items = await searchAssets(conn.rpcEndpoint, {
+    ownerAddress: pubKey.toBase58(),
+    after: oldestCollectable || '',
+    creatorAddress: entityCreatorKey(daoKey(HNT_MINT)[0])[0].toBase58(),
+  })
 
   return items as unknown as CompressedNFT[]
 }
@@ -853,17 +869,18 @@ export const getCollectablesMetadata = async (
  * @returns grouped collecables by token type
  */
 export const groupCollectables = (collectables: CompressedNFT[]) => {
-  const hotspotCreator = entityCreatorKey(daoKey(HNT_MINT)[0])[0]
   const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const { creators } = cur
-    if (creators && creators[0].address.equals(hotspotCreator)) {
-      acc.entity = acc.entity || []
-      acc.entity.push(cur)
-    } else {
-      acc.unknown = acc.unknown || []
-      acc.unknown.push(cur)
-    }
+    const {
+      content: {
+        metadata: { symbol },
+      },
+    } = cur
 
+    if (!acc[symbol || 'UNKNOWN']) {
+      acc[symbol || 'UNKNOWN'] = [cur]
+    } else {
+      acc[symbol || 'UNKOWN'].push(cur)
+    }
     return acc
   }, {} as Record<string, CompressedNFT[]>)
 

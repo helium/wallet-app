@@ -19,6 +19,39 @@ export class WrappedConnection extends Connection {
     })
   }
 
+  async searchAssets(
+    ownerAddress: string,
+    creatorAddress: string,
+    creatorVerified?: boolean,
+    sortBy?: { sortBy: 'created'; sortDirection: 'asc' | 'desc' },
+    page?: number,
+    collection?: string,
+  ): Promise<any> {
+    try {
+      const response = await this.axiosInstance.post('searchAssets', {
+        jsonrpc: '2.0',
+        method: 'searchAssets',
+        id: 'get-assets-op-1',
+        params: {
+          page,
+          creatorVerified,
+          sortBy,
+          ownerAddress,
+          creatorAddress,
+          collection,
+        },
+        headers: {
+          'Cache-Control': 'no-cache',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+      })
+      return response.data.result
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
   async getAsset(assetId: any): Promise<any> {
     try {
       const response = await this.axiosInstance.post('get_asset', {

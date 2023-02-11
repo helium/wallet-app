@@ -30,7 +30,7 @@ const NftList = () => {
   }, [fetchingMore, isFocused, fetchMore])
 
   const flatListItems = useMemo(() => {
-    return Object.keys(collectablesWithMeta).filter((key) => key !== 'HOTSPOT')
+    return Object.keys(collectablesWithMeta)
   }, [collectablesWithMeta])
 
   const renderItem = useCallback(
@@ -51,9 +51,7 @@ const NftList = () => {
     if (loadingCollectables) {
       return (
         <Box flex={1} flexDirection="row">
-          {times(
-            Object.keys(collectables).filter((key) => key !== 'HOTSPOT').length,
-          ).map((i) => (
+          {times(Object.keys(collectables).length).map((i) => (
             <NFTSkeleton key={i} />
           ))}
         </Box>

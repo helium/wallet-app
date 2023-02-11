@@ -7,7 +7,6 @@ import { getMint } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import { useState } from 'react'
-import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
 import { useAsync } from 'react-async-hook'
 import { Recipient } from '../hooks/useRecipient'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
@@ -68,28 +67,10 @@ export async function getPendingRewards(
 
   const subbed = oracleMedian.sub(maybeRecipient?.totalRewards || new BN(0))
 
-  console.log(oracleMedian.toNumber())
   return {
     pendingRewards: Math.max(toNumber(subbed, rewardsMintAcc.decimals), 0),
     rewardsMint: lazyDistributor.rewardsMint,
   }
-}
-
-/**
- * Returns the account's collectables
- * @param pubKey public key of the account
- * @param metaplex metaplex connection
- * @returns hotspot collectables
- */
-export const getHotspotCollectables = async (
-  pubKey: PublicKey,
-  metaplex: Metaplex,
-) => {
-  const collectables = (await metaplex
-    .nfts()
-    .findAllByOwner({ owner: pubKey })) as Metadata<JsonMetadata<string>>[]
-
-  return collectables.filter((c) => c.symbol === 'HOTSPOT')
 }
 
 export const removeDashAndCapitalize = (str: string) => {

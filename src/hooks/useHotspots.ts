@@ -10,15 +10,12 @@ import { AddGatewayV1 } from '@helium/transactions'
 import Address from '@helium/address'
 import { Keypair } from '@helium/crypto'
 import { sendAndConfirmWithRetry } from '@helium/spl-utils'
-import Config from 'react-native-config'
+// import Config from 'react-native-config'
 import { getKeypair } from '../storage/secureStorage'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
-import {
-  fetchCollectables,
-  fetchMoreCollectables,
-} from '../store/slices/collectablesSlice'
+import { fetchHotspots, fetchMoreHotspots } from '../store/slices/hotspotsSlice'
 import { useAppDispatch } from '../store/store'
 import { getConnection } from '../utils/solanaUtils'
 import { CompressedNFT } from '../types/solana'
@@ -56,26 +53,23 @@ const useHotspots = (): {
   const { solanaNetwork: cluster, l1Network } = useAppStorage()
   const dispatch = useAppDispatch()
   const { currentAccount, anchorProvider } = useAccountStorage()
-  const collectables = useSelector((state: RootState) => state.collectables)
-  const hotspotsDetails = useSelector((state: RootState) => state.hotspots)
+  const hotspotsSlice = useSelector((state: RootState) => state.hotspots)
   const { submitClaimAllRewards } = useSubmitTxn()
 
-  const oldestCollectableId = useMemo(() => {
+  const page = useMemo(() => {
     if (
       !currentAccount?.solanaAddress ||
-      !collectables[currentAccount?.solanaAddress]
+      !hotspotsSlice[currentAccount?.solanaAddress]
     )
-      return ''
-    return collectables[currentAccount?.solanaAddress].oldestCollectableId
-  }, [collectables, currentAccount])
+      return 0
+    return hotspotsSlice[currentAccount?.solanaAddress].page
+  }, [hotspotsSlice, currentAccount])
 
   const hotspots = useMemo(() => {
     if (!currentAccount?.solanaAddress) return []
 
-    return (
-      collectables[currentAccount?.solanaAddress]?.collectables?.HOTSPOT || []
-    )
-  }, [collectables, currentAccount])
+    return hotspotsSlice[currentAccount?.solanaAddress]?.hotspots || []
+  }, [hotspotsSlice, currentAccount])
 
   const onClaimAllMobileRewards = async () => {
     if (!anchorProvider || !currentAccount?.solanaAddress) {
@@ -146,42 +140,40 @@ const useHotspots = (): {
     if (!currentAccount?.solanaAddress || l1Network !== 'solana') {
       return
     }
-    dispatch(fetchCollectables({ account: currentAccount, cluster }))
+    dispatch(
+      fetchHotspots({
+        account: currentAccount,
+        cluster,
+      }),
+    )
   }, [cluster, currentAccount, dispatch, l1Network])
 
   const fetchingMore = useMemo(() => {
     if (
       !currentAccount?.solanaAddress ||
-      !collectables[currentAccount?.solanaAddress]
+      !hotspotsSlice[currentAccount?.solanaAddress]
     )
       return false
 
-    return collectables[currentAccount?.solanaAddress].fetchingMore
-  }, [collectables, currentAccount])
+    return hotspotsSlice[currentAccount?.solanaAddress].fetchingMore
+  }, [hotspotsSlice, currentAccount])
 
   const fetchMore = useCallback(() => {
     if (
       !currentAccount?.solanaAddress ||
       l1Network !== 'solana' ||
-      collectables[currentAccount?.solanaAddress].loading
+      hotspotsSlice[currentAccount?.solanaAddress].loading
     ) {
       return
     }
     dispatch(
-      fetchMoreCollectables({
+      fetchMoreHotspots({
         account: currentAccount,
         cluster,
-        oldestCollectable: oldestCollectableId,
+        page,
       }),
     )
-  }, [
-    cluster,
-    collectables,
-    currentAccount,
-    dispatch,
-    l1Network,
-    oldestCollectableId,
-  ])
+  }, [cluster, hotspotsSlice, currentAccount, dispatch, l1Network, page])
 
   // FOR TESTING ONLY
   const createHotspot = useCallback(async () => {
@@ -196,12 +188,14 @@ const useHotspots = (): {
     const onboardingKey = gateway.address.b58
     // Random maker address
     const maker = Address.fromB58(
-      '13EYmQgDF1ScLxXfugVrFCa3HiJUALwsaLBHJpTsXx1KP6UncH7',
+      '14neTgRNZui1hSiHgE3LXjSfwkPU8BEB192MLXXDFnSY2xKjH51',
     )
+
+    const url = 'https://onboarding.web.test-helium.com/api'
 
     try {
       await axios.post(
-        `${Config.ONBOARDING_SERVER_URL}/v2/hotspots`,
+        `${url}/v3/hotspots`,
         {
           onboardingKey,
           macWlan0: random(10),
@@ -212,7 +206,8 @@ const useHotspots = (): {
         },
         {
           headers: {
-            authorization: Config.ONBOARDING_SERVER_AUTH,
+            authorization:
+              'pk_TgclExRP7rEXAEQlSgrrDwaZUHJAPcw/nNfkEpWOPCk=:sk_E1xc9OVq1/5oKLGD4RzxST7bl+LMnJhalkQ3vZp/QbOjNltvAmHyPolzA0Pb2HyTD68mZp4lETuC19Y+vI72nA=',
           },
         },
       )
@@ -220,27 +215,22 @@ const useHotspots = (): {
       // Sleep for 2 seconds to allow the oracle to create the hotspot
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
-      await axios.get(
-        `${Config.ONBOARDING_SERVER_URL}/v2/hotspots/${onboardingKey}`,
-      )
+      await axios.get(`${url}/v3/hotspots/${onboardingKey}`)
 
       // Sleep for 2 seconds to allow the oracle to create the hotspot
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
-      const result = await axios.post(
-        `${Config.ONBOARDING_SERVER_URL}/v3/transactions/create-hotspot`,
-        {
-          transaction: (
-            await new AddGatewayV1({
-              owner: owner.address,
-              gateway: gateway.address,
-              payer: maker,
-            }).sign({
-              gateway,
-            })
-          ).toString(),
-        },
-      )
+      const result = await axios.post(`${url}/v3/transactions/create-hotspot`, {
+        transaction: (
+          await new AddGatewayV1({
+            owner: owner.address,
+            gateway: gateway.address,
+            payer: maker,
+          }).sign({
+            gateway,
+          })
+        ).toString(),
+      })
 
       const connection = getConnection(cluster)
       // eslint-disable-next-line no-restricted-syntax
@@ -262,37 +252,39 @@ const useHotspots = (): {
     if (!currentAccount?.solanaAddress) return 0
 
     let total = 0
-    const walletHotspots = hotspotsDetails[currentAccount?.solanaAddress]
+    const walletHotspots =
+      hotspotsSlice[currentAccount?.solanaAddress]?.hotspotDetails
 
     if (!walletHotspots) return 0
 
     Object.keys(walletHotspots).forEach((hotspot) => {
-      const hotspotDetails = walletHotspots.hotspots[hotspot]
+      const hotspotDetails = walletHotspots[hotspot]
       total += hotspotDetails?.pendingIotRewards || 0
     })
 
     return total
-  }, [hotspotsDetails, currentAccount])
+  }, [hotspotsSlice, currentAccount])
 
   const pendingMobileRewards = useMemo(() => {
     if (!currentAccount?.solanaAddress) return 0
 
     let total = 0
-    const walletHotspots = hotspotsDetails[currentAccount?.solanaAddress]
+    const walletHotspots =
+      hotspotsSlice[currentAccount?.solanaAddress]?.hotspotDetails
 
     if (!walletHotspots) return 0
 
     Object.keys(walletHotspots).forEach((hotspot) => {
-      const hotspotDetails = walletHotspots.hotspots[hotspot]
+      const hotspotDetails = walletHotspots[hotspot]
       total += hotspotDetails?.pendingMobileRewards || 0
     })
 
     return total
-  }, [hotspotsDetails, currentAccount])
+  }, [hotspotsSlice, currentAccount])
 
   if (
     !currentAccount?.solanaAddress ||
-    !collectables[currentAccount?.solanaAddress]
+    !hotspotsSlice[currentAccount?.solanaAddress]
   ) {
     return {
       loading: false,
@@ -320,9 +312,8 @@ const useHotspots = (): {
   return {
     hotspots,
     hotspotsWithMeta:
-      collectables[currentAccount?.solanaAddress]?.collectablesWithMeta
-        ?.HOTSPOT || [],
-    loading: collectables[currentAccount?.solanaAddress].loading,
+      hotspotsSlice[currentAccount?.solanaAddress]?.hotspotsWithMeta,
+    loading: hotspotsSlice[currentAccount?.solanaAddress].loading,
     refresh,
     claimAllMobileRewards: {
       execute,

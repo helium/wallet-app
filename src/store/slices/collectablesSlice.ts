@@ -69,11 +69,13 @@ export const fetchMoreCollectables = createAsyncThunk(
     if (!account.solanaAddress) throw new Error('Solana address missing')
 
     const pubKey = new web3.PublicKey(account.solanaAddress)
+
     const fetchedCollectables = await solUtils.getCompressedCollectables(
       pubKey,
       cluster,
       oldestCollectable,
     )
+
     const groupedCollectables = solUtils.groupCollectables(fetchedCollectables)
 
     const collectablesWithMetadata = await solUtils.getCollectablesMetadata(
@@ -121,6 +123,7 @@ const collectables = createSlice({
         action.payload
 
       const address = action.meta.arg.account.solanaAddress
+
       state[address] = {
         collectables: groupedCollectables,
         collectablesWithMeta: groupedCollectablesWithMeta,

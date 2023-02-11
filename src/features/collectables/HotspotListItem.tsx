@@ -3,6 +3,7 @@ import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { PublicKey } from '@solana/web3.js'
 import { BoxProps } from '@shopify/restyle'
 import IotSymbol from '@assets/images/iotSymbol.svg'
+import MobileSymbol from '@assets/images/mobileSymbol.svg'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { CompressedNFT } from '../../types/solana'
@@ -96,7 +97,7 @@ const HotspotListItem = ({
             cache: 'force-cache',
           }}
         />
-        {/* {hasMobileRewards && (
+        {!!hasMobileRewards && (
           <Box
             justifyContent="center"
             alignItems="center"
@@ -119,8 +120,8 @@ const HotspotListItem = ({
           >
             <MobileSymbol color="black" />
           </Box>
-        )} */}
-        {Boolean(hasIotRewards) && (
+        )}
+        {!!hasIotRewards && (
           <Box
             justifyContent="center"
             alignItems="center"
