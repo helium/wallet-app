@@ -60,6 +60,7 @@ export function useHotspot(mint: PublicKey): {
           program,
           mint,
           iotRecipient,
+          IOT_LAZY_KEY,
         )
         setPendingIotRewards(iotRewards)
       }

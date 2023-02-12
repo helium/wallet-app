@@ -127,7 +127,6 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
 const TabBarNavigator = () => {
   const { doneSolanaMigration } = useAppStorage()
   // // eslint-disable-next-line no-console
-  // console.log(doneSolanaMigration)
   // if (doneSolanaMigration.size > 0) {
   //   updateDoneSolanaMigration(new Set<string>())
   // }
