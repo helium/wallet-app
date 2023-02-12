@@ -110,14 +110,16 @@ export function useHotspot(mint: PublicKey): {
     loading: iotRewardsLoading,
   } = useAsyncCallback(async () => {
     if (mint && program && anchorProvider) {
-      if (mobileLoading) return
+      if (iotLoading) return
       const rewards = await client.getCurrentRewards(
         // TODO: Fix program type once HPL is upgraded to anchor v0.26
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         program as any,
-        MOBILE_LAZY_KEY,
+        IOT_LAZY_KEY,
         mint,
       )
+
+      console.log('REWARDS => ', rewards)
 
       const tx = await client.formTransaction({
         // TODO: Fix program type once HPL is upgraded to anchor v0.26
@@ -126,7 +128,7 @@ export function useHotspot(mint: PublicKey): {
         provider: anchorProvider,
         rewards,
         hotspot: mint,
-        lazyDistributor: MOBILE_LAZY_KEY,
+        lazyDistributor: IOT_LAZY_KEY,
       })
 
       await submitClaimRewards(tx)

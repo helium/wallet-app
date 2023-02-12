@@ -111,7 +111,7 @@ const useHotspots = (): {
       hotspots.map(async (nft: CompressedNFT) => {
         const rewards = await client.getCurrentRewards(
           program as any,
-          MOBILE_LAZY_KEY,
+          IOT_LAZY_KEY,
           new PublicKey(nft.id),
         )
 

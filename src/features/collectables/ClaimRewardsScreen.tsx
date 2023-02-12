@@ -18,6 +18,7 @@ import {
 import ButtonPressable from '../../components/ButtonPressable'
 import { DelayedFadeIn } from '../../components/FadeInOut'
 import { useHotspot } from '../../hooks/useHotspot'
+import CircleLoader from '../../components/CircleLoader'
 
 type Route = RouteProp<CollectableStackParamList, 'ClaimRewardsScreen'>
 
@@ -28,10 +29,7 @@ const ClaimRewardsScreen = () => {
 
   const { hotspot } = route.params
 
-  const mint = useMemo(
-    () => new PublicKey(hotspot.compression.asset_hash),
-    [hotspot.compression.asset_hash],
-  )
+  const mint = useMemo(() => new PublicKey(hotspot.id), [hotspot.id])
 
   const {
     pendingMobileRewards,
@@ -53,9 +51,9 @@ const ClaimRewardsScreen = () => {
   }, [hotspot.content.metadata.name])
 
   const onClaimRewards = useCallback(async () => {
+    claimIotRewards()
+    claimMobileRewards()
     navigation.push('ClaimingRewardsScreen')
-    await claimIotRewards()
-    await claimMobileRewards()
   }, [claimIotRewards, claimMobileRewards, navigation])
 
   const RewardItem = useCallback((ticker: Ticker, amount: number) => {
@@ -75,7 +73,12 @@ const ClaimRewardsScreen = () => {
         </Box>
 
         {ticker === 'MOBILE' ? <MobileReward /> : <IotReward />}
-        <Text marginTop="xs" variant="h3Medium">
+        <Text
+          marginTop="xs"
+          variant="h3Medium"
+          numberOfLines={1}
+          adjustsFontSizeToFit
+        >
           {amountToText}
         </Text>
         <Text variant="subtitle3" color="secondaryText">
@@ -85,19 +88,22 @@ const ClaimRewardsScreen = () => {
     )
   }, [])
 
-  const addAllToAccountDisabled = useMemo(() => {
+  const loadingRewards = useMemo(() => {
     return (
       mobileRewardsLoading ||
       iotRewardsLoading ||
-      !!mobileRewardsError ||
-      !!iotRewardsError
+      (!pendingMobileRewards && !pendingIotRewards)
     )
   }, [
     mobileRewardsLoading,
     iotRewardsLoading,
-    mobileRewardsError,
-    iotRewardsError,
+    pendingMobileRewards,
+    pendingIotRewards,
   ])
+
+  const addAllToAccountDisabled = useMemo(() => {
+    return !!mobileRewardsError || !!iotRewardsError || loadingRewards
+  }, [mobileRewardsError, iotRewardsError, loadingRewards])
 
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
 
@@ -125,19 +131,19 @@ const ClaimRewardsScreen = () => {
             flexGrow={1}
             alignItems="center"
             justifyContent={
-              pendingMobileRewards &&
+              !!pendingMobileRewards &&
               pendingMobileRewards > 0 &&
-              pendingIotRewards &&
+              !!pendingIotRewards &&
               pendingIotRewards > 0
                 ? 'space-between'
                 : 'center'
             }
             flexDirection="row"
           >
-            {pendingMobileRewards &&
+            {!!pendingMobileRewards &&
               pendingMobileRewards > 0 &&
               RewardItem('MOBILE', pendingMobileRewards)}
-            {pendingIotRewards &&
+            {!!pendingIotRewards &&
               pendingIotRewards > 0 &&
               RewardItem('IOT', pendingIotRewards)}
           </Box>
@@ -156,6 +162,13 @@ const ClaimRewardsScreen = () => {
               marginHorizontal="l"
               onPress={onClaimRewards}
               disabled={addAllToAccountDisabled}
+              TrailingComponent={
+                loadingRewards ? (
+                  <CircleLoader loaderSize={40} />
+                ) : (
+                  <Box height={40} />
+                )
+              }
             />
           </Box>
         </Box>
