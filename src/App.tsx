@@ -9,7 +9,7 @@ import OneSignal, { OpenedEvent } from 'react-native-onesignal'
 import Config from 'react-native-config'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import { PortalProvider } from '@gorhom/portal'
+import { PortalHost, PortalProvider } from '@gorhom/portal'
 import * as SplashLib from 'expo-splash-screen'
 import { AccountProvider } from '@helium/helium-react-hooks'
 import { theme, darkThemeColors, lightThemeColors } from '@theme/theme'
@@ -102,6 +102,7 @@ const App = () => {
         <ThemeProvider theme={colorAdaptedTheme}>
           <SplashScreen>
             <PortalProvider>
+              <PortalHost name="browser-portal" />
               <OnboardingProvider baseUrl={Config.ONBOARDING_API_URL}>
                 {client && (
                   <ApolloProvider client={client}>

@@ -23,8 +23,7 @@ import BrowserListItem from './BrowserListItem'
 import useBrowser from '../../hooks/useBrowser'
 
 const BrowserScreen = () => {
-  const DEFAULT_URL =
-    'https://governance-m9zc1gwuf-solana-labs.vercel.app/realms'
+  const DEFAULT_URL = 'https://app.realms.today/'
   const edges = useMemo(() => ['top'] as Edge[], [])
   const [inputFocused, setInputFocused] = useState(false)
   const spacing = useSpacing()

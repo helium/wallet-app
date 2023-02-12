@@ -16,7 +16,7 @@ const cardPresentation: NativeStackNavigationOptions = {
 const modalPresentation: NativeStackNavigationOptions = {
   headerShown: false,
   presentation: 'transparentModal',
-  animation: 'slide_from_right',
+  animation: 'slide_from_bottom',
 }
 
 const BrowserStackScreen = () => {

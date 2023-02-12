@@ -21,6 +21,7 @@ import Close from '@assets/images/close.svg'
 import Bookmark from '@assets/images/bookmark.svg'
 import BookmarkFilled from '@assets/images/bookmarkFilled.svg'
 import Refresh from '@assets/images/refresh.svg'
+import { Portal } from '@gorhom/portal'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import injectWalletStandard from './walletStandard'
@@ -62,9 +63,14 @@ const BrowserWebViewScreen = () => {
       if (!currentAccount?.address || !currentAccount?.solanaAddress) {
         return
       }
+      console.log('HOLA')
+      console.log('msg', msg.nativeEvent)
+
       // Prevents React from resetting its properties:
-      msg.persist()
+      // msg.persist()
       const { data } = msg.nativeEvent
+
+      console.log('data', data)
 
       const secureAcct = await getKeypair(currentAccount?.address)
       const payer = new PublicKey(currentAccount?.solanaAddress)
@@ -82,6 +88,7 @@ const BrowserWebViewScreen = () => {
 
       if (type === WalletStandardMessageTypes.connect) {
         Logger.breadcrumb('signMessage')
+        console.log('Yo were here doe')
         const decision = await walletSignBottomSheetRef.current?.show({
           type,
           url: currentUrl,
@@ -367,39 +374,43 @@ const BrowserWebViewScreen = () => {
   }, [onBack, onForward, isFavorite, onFavorite, onRefresh])
 
   return (
-    <WalletSignBottomSheet ref={walletSignBottomSheetRef} onClose={() => {}}>
-      <Box
-        backgroundColor="black900"
-        height={top}
-        position="absolute"
-        top={0}
-        left={0}
-        right={0}
-      />
-      <SafeAreaBox flex={1} edges={edges}>
-        <BrowserHeader />
-        <WebView
-          ref={webview}
-          originWhitelist={['*']}
-          javaScriptEnabled
-          onLoad={!jsInjected ? injectModule : undefined}
-          onMessage={onMessage}
-          onNavigationStateChange={onNavigationChange}
-          source={{
-            uri,
-          }}
+    // <Portal name="browser-portal">
+    <Box position="absolute" top={0} left={0} right={0} bottom={0}>
+      <WalletSignBottomSheet ref={walletSignBottomSheetRef} onClose={() => {}}>
+        <Box
+          backgroundColor="black900"
+          height={top}
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
         />
-        <BrowserFooter />
-      </SafeAreaBox>
-      <Box
-        backgroundColor="black900"
-        height={bottom}
-        position="absolute"
-        bottom={0}
-        left={0}
-        right={0}
-      />
-    </WalletSignBottomSheet>
+        <SafeAreaBox flex={1} edges={edges}>
+          <BrowserHeader />
+          <WebView
+            ref={webview}
+            originWhitelist={['*']}
+            javaScriptEnabled
+            onLoad={!jsInjected ? injectModule : undefined}
+            onMessage={onMessage}
+            onNavigationStateChange={onNavigationChange}
+            source={{
+              uri,
+            }}
+          />
+          <BrowserFooter />
+        </SafeAreaBox>
+        <Box
+          backgroundColor="black900"
+          height={bottom}
+          position="absolute"
+          bottom={0}
+          left={0}
+          right={0}
+        />
+      </WalletSignBottomSheet>
+    </Box>
+    // </Portal>
   )
 }
 
