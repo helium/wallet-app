@@ -51,6 +51,7 @@ export function useHotspot(mint: PublicKey): {
           program,
           mint,
           mobileRecipient,
+          MOBILE_LAZY_KEY,
         )
         setPendingMobileRewards(mobileRewards)
       }

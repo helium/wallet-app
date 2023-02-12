@@ -40,7 +40,7 @@ export async function getPendingRewards(
   program: Program<LazyDistributor>,
   mint: PublicKey,
   maybeRecipient: Recipient | undefined,
-  lazyKey: PublicKey = MOBILE_LAZY_KEY,
+  lazyKey: PublicKey,
 ) {
   const lazyDistributor = await program.account.lazyDistributorV0.fetch(lazyKey)
 

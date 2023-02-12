@@ -12,7 +12,10 @@ import {
   Transaction,
 } from '@solana/web3.js'
 import { first, last } from 'lodash'
-import { sendAndConfirmWithRetry } from '@helium/spl-utils'
+import {
+  bulkSendRawTransactions,
+  sendAndConfirmWithRetry,
+} from '@helium/spl-utils'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
 import { CompressedNFT, toMintAddress } from '../../types/solana'
@@ -314,24 +317,9 @@ export const claimAllRewards = createAsyncThunk(
       // If the transfer is successful, we need to update the collectables so pending rewards are updated.
       dispatch(fetchCollectables({ account, cluster }))
 
-      const txIds = await Promise.all(
-        signed.map(async (tx: Transaction) => {
-          const { txid } = await sendAndConfirmWithRetry(
-            anchorProvider.connection,
-            tx.serialize(),
-            { skipPreflight: true },
-            'confirmed',
-          )
-          return txid
-        }),
-      )
-
-      // TODO: This is a hack to get around the fact that we can't send multiple
-      return await dispatch(
-        walletRestApi.endpoints.postPayment.initiate({
-          txnSignature: txIds[0],
-          cluster,
-        }),
+      await bulkSendRawTransactions(
+        anchorProvider.connection,
+        signed.map((s) => s.serialize()),
       )
     } catch (error) {
       Logger.error(error)
