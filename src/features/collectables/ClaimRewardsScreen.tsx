@@ -163,11 +163,7 @@ const ClaimRewardsScreen = () => {
               onPress={onClaimRewards}
               disabled={addAllToAccountDisabled}
               TrailingComponent={
-                loadingRewards ? (
-                  <CircleLoader loaderSize={40} />
-                ) : (
-                  <Box height={40} />
-                )
+                loadingRewards ? <CircleLoader loaderSize={24} /> : null
               }
             />
           </Box>
