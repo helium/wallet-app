@@ -53,6 +53,8 @@ export function useHotspot(mint: PublicKey): {
           mobileRecipient,
           MOBILE_LAZY_KEY,
         )
+
+        console.log('mobileRewards', mobileRewards)
         setPendingMobileRewards(mobileRewards)
       }
 
@@ -63,6 +65,7 @@ export function useHotspot(mint: PublicKey): {
           iotRecipient,
           IOT_LAZY_KEY,
         )
+        console.log('iotRewards', iotRewards)
         setPendingIotRewards(iotRewards)
       }
     } catch (e) {

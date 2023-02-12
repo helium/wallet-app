@@ -40,10 +40,7 @@ const HotspotDetailsScreen = () => {
   const { t } = useTranslation()
 
   const { collectable } = route.params
-  const mint = useMemo(
-    () => new PublicKey(collectable.compression.asset_hash),
-    [collectable.compression.asset_hash],
-  )
+  const mint = useMemo(() => new PublicKey(collectable.id), [collectable.id])
 
   const {
     pendingMobileRewards,
@@ -196,12 +193,11 @@ const HotspotDetailsScreen = () => {
                 title={t('collectablesScreen.hotspots.claimRewards')}
                 titleColor="black"
                 disabled={
-                  !mobileRewardsLoading ||
-                  !iotRewardsLoading ||
+                  mobileRewardsLoading ||
+                  iotRewardsLoading ||
                   !!iotRewardsError ||
                   !!mobileRewardsError ||
-                  !hasMobileRewards ||
-                  !hasIotRewards
+                  (!hasMobileRewards && !hasIotRewards)
                 }
                 onPress={handleClaimRewards}
               />
@@ -210,16 +206,20 @@ const HotspotDetailsScreen = () => {
               {t('collectablesScreen.hotspots.pendingRewardsTitle')}
             </Text>
             <Text variant="body2" marginBottom="m">
-              {t('collectablesScreen.hotspots.pendingRewards', {
-                amount: pendingMobileRewards || 0,
-                ticker: 'MOBILE',
-              })}
+              {mobileRewardsLoading || pendingMobileRewards === null
+                ? t('generic.loading')
+                : t('collectablesScreen.hotspots.pendingRewards', {
+                    amount: pendingMobileRewards || 0,
+                    ticker: 'MOBILE',
+                  })}
             </Text>
             <Text variant="body2" marginBottom="m">
-              {t('collectablesScreen.hotspots.pendingRewards', {
-                amount: pendingIotRewards || 0,
-                ticker: 'IOT',
-              })}
+              {iotRewardsLoading || pendingIotRewards === null
+                ? t('generic.loading')
+                : t('collectablesScreen.hotspots.pendingRewards', {
+                    amount: pendingIotRewards || 0,
+                    ticker: 'IOT',
+                  })}
             </Text>
             <BlurActionSheet
               title={t('collectablesScreen.hotspots.hotspotActions')}
