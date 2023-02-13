@@ -830,15 +830,16 @@ export const getCompressedCollectables = async (
 export const getCompressedCollectablesByCreator = async (
   pubKey: PublicKey,
   cluster: Cluster,
-  oldestCollectable?: string,
+  page?: number,
 ) => {
   const conn = getConnection(cluster)
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const items = await searchAssets(conn.rpcEndpoint, {
     ownerAddress: pubKey.toBase58(),
-    after: oldestCollectable || '',
+    creatorVerified: true,
     creatorAddress: entityCreatorKey(daoKey(HNT_MINT)[0])[0].toBase58(),
+    page,
   })
 
   return items as unknown as CompressedNFT[]

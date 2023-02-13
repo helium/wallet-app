@@ -193,7 +193,6 @@ const HotspotList = () => {
     [fetchingMore],
   )
 
-  console.log(hotspotsWithMeta)
   return (
     <FlatList
       data={hotspotsWithMeta}
