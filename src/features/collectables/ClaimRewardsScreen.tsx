@@ -1,8 +1,6 @@
 import React, { useCallback, useMemo, memo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import IotReward from '@assets/images/iotRewardIcon.svg'
-import MobileReward from '@assets/images/mobileRewardIcon.svg'
 import { Edge } from 'react-native-safe-area-context'
 import { Ticker } from '@helium/currency'
 import { PublicKey } from '@solana/web3.js'
@@ -18,7 +16,8 @@ import {
 import ButtonPressable from '../../components/ButtonPressable'
 import { DelayedFadeIn } from '../../components/FadeInOut'
 import { useHotspot } from '../../hooks/useHotspot'
-import CircleLoader from '../../components/CircleLoader'
+import TokenIcon from '../../components/TokenIcon'
+import useHotspots from '../../hooks/useHotspots'
 
 type Route = RouteProp<CollectableStackParamList, 'ClaimRewardsScreen'>
 
@@ -31,16 +30,14 @@ const ClaimRewardsScreen = () => {
 
   const mint = useMemo(() => new PublicKey(hotspot.id), [hotspot.id])
 
-  const {
-    pendingMobileRewards,
-    claimMobileRewards,
-    mobileRewardsLoading,
-    pendingIotRewards,
-    claimIotRewards,
-    iotRewardsLoading,
-    iotRewardsError,
-    mobileRewardsError,
-  } = useHotspot(mint)
+  const { claimMobileRewards, claimIotRewards } = useHotspot(mint)
+
+  const { getPendingHotspotRewards } = useHotspots()
+
+  const { pendingMobileRewards, pendingIotRewards } = useMemo(
+    () => getPendingHotspotRewards(mint.toBase58()),
+    [mint, getPendingHotspotRewards],
+  )
 
   const title = useMemo(() => {
     return t('collectablesScreen.hotspots.claimRewards')
@@ -72,12 +69,14 @@ const ClaimRewardsScreen = () => {
           <RewardBG />
         </Box>
 
-        {ticker === 'MOBILE' ? <MobileReward /> : <IotReward />}
+        <TokenIcon ticker={ticker} size={70} />
+
         <Text
-          marginTop="xs"
+          marginTop="m"
           variant="h3Medium"
           numberOfLines={1}
           adjustsFontSizeToFit
+          maxFontSizeMultiplier={1.1}
         >
           {amountToText}
         </Text>
@@ -88,22 +87,9 @@ const ClaimRewardsScreen = () => {
     )
   }, [])
 
-  const loadingRewards = useMemo(() => {
-    return (
-      mobileRewardsLoading ||
-      iotRewardsLoading ||
-      (!pendingMobileRewards && !pendingIotRewards)
-    )
-  }, [
-    mobileRewardsLoading,
-    iotRewardsLoading,
-    pendingMobileRewards,
-    pendingIotRewards,
-  ])
-
   const addAllToAccountDisabled = useMemo(() => {
-    return !!mobileRewardsError || !!iotRewardsError || loadingRewards
-  }, [mobileRewardsError, iotRewardsError, loadingRewards])
+    return pendingIotRewards === 0 && pendingMobileRewards === 0
+  }, [pendingIotRewards, pendingMobileRewards])
 
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
 
@@ -162,9 +148,6 @@ const ClaimRewardsScreen = () => {
               marginHorizontal="l"
               onPress={onClaimRewards}
               disabled={addAllToAccountDisabled}
-              TrailingComponent={
-                loadingRewards ? <CircleLoader loaderSize={24} /> : null
-              }
             />
           </Box>
         </Box>

@@ -4,7 +4,7 @@ import {
   BottomTabBarProps,
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs'
-import { Edge } from 'react-native-safe-area-context'
+import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Dollar from '@assets/images/dollar.svg'
 import Gem from '@assets/images/gem.svg'
 import Transactions from '@assets/images/transactions.svg'
@@ -12,7 +12,7 @@ import Notifications from '@assets/images/notifications.svg'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import SolanaMigration from '../features/migration/SolanaMigration'
-import NavBar from '../components/NavBar'
+import NavBar, { NavBarHeight } from '../components/NavBar'
 import { Color } from '../theme/theme'
 import HomeNavigator from '../features/home/HomeNavigator'
 import CollectablesTabNavigator from '../features/collectables/CollectablesTabNavigator'
@@ -24,6 +24,7 @@ import Box from '../components/Box'
 import useEnrichedTransactions from '../hooks/useEnrichedTransactions'
 import useHaptic from '../hooks/useHaptic'
 import Swaps from '../assets/images/swaps.svg'
+import BlurBox from '../components/BlurBox'
 
 const Tab = createBottomTabNavigator()
 
@@ -111,21 +112,30 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
   )
 
   return (
-    <Box backgroundColor="black900">
-      <SafeAreaBox edges={safeEdges}>
-        <NavBar
-          navBarOptions={tabData}
-          selectedValue={selectedValue}
-          onItemSelected={onPress}
-          onItemLongPress={onLongPress}
-        />
-      </SafeAreaBox>
-    </Box>
+    <BlurBox
+      backgroundColor="transparent10"
+      position="absolute"
+      bottom={0}
+      left={0}
+      right={0}
+    >
+      <Box backgroundColor="black900_9A">
+        <SafeAreaBox edges={safeEdges}>
+          <NavBar
+            navBarOptions={tabData}
+            selectedValue={selectedValue}
+            onItemSelected={onPress}
+            onItemLongPress={onLongPress}
+          />
+        </SafeAreaBox>
+      </Box>
+    </BlurBox>
   )
 }
 
 const TabBarNavigator = () => {
-  const { doneSolanaMigration } = useAppStorage()
+  const { doneSolanaMigration, l1Network } = useAppStorage()
+  const { bottom } = useSafeAreaInsets()
   // // eslint-disable-next-line no-console
   // if (doneSolanaMigration.size > 0) {
   //   updateDoneSolanaMigration(new Set<string>())
@@ -146,6 +156,10 @@ const TabBarNavigator = () => {
       tabBar={(props: BottomTabBarProps) => <MyTabBar {...props} />}
       screenOptions={{
         headerShown: false,
+      }}
+      sceneContainerStyle={{
+        paddingBottom:
+          l1Network === 'solana' ? NavBarHeight + bottom : undefined,
       }}
     >
       <Tab.Screen name="Home" component={HomeNavigator} />

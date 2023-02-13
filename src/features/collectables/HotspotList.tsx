@@ -14,6 +14,9 @@ import ButtonPressable from '../../components/ButtonPressable'
 import useHotspots from '../../hooks/useHotspots'
 import CircleLoader from '../../components/CircleLoader'
 import useHaptic from '../../hooks/useHaptic'
+import Text from '../../components/Text'
+import { formatLargeNumber } from '../../utils/accountUtils'
+import TokenIcon from '../../components/TokenIcon'
 
 const HotspotList = () => {
   const navigation = useNavigation<CollectableNavigationProp>()
@@ -56,9 +59,49 @@ const HotspotList = () => {
     navigation.navigate('ClaimAllRewardsScreen')
   }, [navigation])
 
+  const RewardItem = useCallback(({ ticker, amount, ...rest }) => {
+    return (
+      <Box
+        paddingVertical="m"
+        paddingHorizontal="m"
+        alignItems="center"
+        justifyContent="center"
+        backgroundColor="secondaryBackground"
+        borderRadius="xl"
+        flex={1}
+        flexDirection="row"
+        {...rest}
+      >
+        <TokenIcon ticker={ticker} size={30} />
+
+        <Box marginStart="s">
+          <Text
+            marginTop="xs"
+            variant="h4Medium"
+            numberOfLines={1}
+            adjustsFontSizeToFit
+          >
+            {formatLargeNumber(amount)}
+          </Text>
+          <Text variant="subtitle4" color="secondaryText">
+            {ticker}
+          </Text>
+        </Box>
+      </Box>
+    )
+  }, [])
+
   const renderHeader = useCallback(() => {
     return (
-      <>
+      <Box marginHorizontal="l" marginTop="l">
+        <Box flexDirection="row">
+          <RewardItem
+            ticker="MOBILE"
+            amount={pendingMobileRewards}
+            marginEnd="s"
+          />
+          <RewardItem ticker="IOT" amount={pendingIotRewards} marginStart="s" />
+        </Box>
         <ButtonPressable
           flexGrow={1}
           marginTop="l"
@@ -71,7 +114,6 @@ const HotspotList = () => {
           title={t('collectablesScreen.hotspots.claimAllRewards')}
           titleColor="black"
           marginBottom="m"
-          marginHorizontal="l"
           disabled={
             loadingMobile ||
             !!errorMobile ||
@@ -90,11 +132,10 @@ const HotspotList = () => {
             title="Create Hotspot"
             titleColor="black"
             marginBottom="m"
-            marginHorizontal="l"
             onPress={createHotspot}
           />
         )}
-      </>
+      </Box>
     )
   }, [
     createHotspot,
@@ -105,6 +146,7 @@ const HotspotList = () => {
     loadingMobile,
     pendingIotRewards,
     pendingMobileRewards,
+    RewardItem,
     t,
   ])
 
@@ -112,7 +154,11 @@ const HotspotList = () => {
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: CompressedNFT }) => {
       return (
-        <HotspotListItem hotspot={item} onPress={handleNavigateToCollectable} />
+        <HotspotListItem
+          hotspot={item}
+          onPress={handleNavigateToCollectable}
+          key={item.id}
+        />
       )
     },
     [handleNavigateToCollectable],

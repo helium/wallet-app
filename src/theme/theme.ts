@@ -106,6 +106,8 @@ const palette = {
   black800: '#1A1C22',
   black850: '#131313',
   black900: '#0E0E0E',
+  black900_9A: '#0000009A',
+
   black: '#000000',
 
   blueBright500: '#009FF9',

@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { PublicKey } from '@solana/web3.js'
 import { BoxProps } from '@shopify/restyle'
 import IotSymbol from '@assets/images/iotSymbol.svg'
 import MobileSymbol from '@assets/images/mobileSymbol.svg'
+import { useAsync } from 'react-async-hook'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { CompressedNFT } from '../../types/solana'
@@ -17,6 +18,8 @@ import { Theme } from '../../theme/theme'
 import { hotspots } from '../../store/slices/hotspotsSlice'
 import { useAppDispatch } from '../../store/store'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { formatLargeNumber } from '../../utils/accountUtils'
+import CircleLoader from '../../components/CircleLoader'
 
 export type HotspotListItemProps = {
   hotspot: CompressedNFT
@@ -28,15 +31,20 @@ const HotspotListItem = ({
   onPress,
   ...rest
 }: HotspotListItemProps) => {
+  const mint = useMemo(() => new PublicKey(hotspot.id), [hotspot.id])
+  const {
+    pendingMobileRewards,
+    pendingIotRewards,
+    mobileRewardsLoading,
+    iotRewardsLoading,
+  } = useHotspot(mint)
+
   const COLLECTABLE_HEIGHT = ww / 2
   const dispatch = useAppDispatch()
   const { currentAccount } = useAccountStorage()
   const {
     content: { metadata },
   } = hotspot
-
-  const mint = useMemo(() => new PublicKey(hotspot.id), [hotspot.id])
-  const { pendingMobileRewards, pendingIotRewards } = useHotspot(mint)
 
   const hasIotRewards = useMemo(
     () => pendingIotRewards && pendingIotRewards > 0,
@@ -48,7 +56,15 @@ const HotspotListItem = ({
     [pendingMobileRewards],
   )
 
-  useEffect(() => {
+  const loadingIotRewards = useMemo(() => {
+    return iotRewardsLoading || pendingIotRewards === null
+  }, [iotRewardsLoading, pendingIotRewards])
+
+  const loadingMobileRewards = useMemo(() => {
+    return mobileRewardsLoading || pendingMobileRewards === null
+  }, [mobileRewardsLoading, pendingMobileRewards])
+
+  useAsync(async () => {
     if (!currentAccount) return
 
     dispatch(
@@ -63,15 +79,7 @@ const HotspotListItem = ({
         },
       }),
     )
-  }, [
-    currentAccount,
-    dispatch,
-    hasIotRewards,
-    hasMobileRewards,
-    hotspot.id,
-    pendingIotRewards,
-    pendingMobileRewards,
-  ])
+  }, [pendingIotRewards, pendingMobileRewards])
 
   return (
     <ReAnimatedBox
@@ -97,17 +105,16 @@ const HotspotListItem = ({
             cache: 'force-cache',
           }}
         />
-        {!!hasMobileRewards && (
+        {(!!hasMobileRewards || loadingMobileRewards) && (
           <Box
             justifyContent="center"
             alignItems="center"
             backgroundColor="white"
-            borderRadius="round"
+            borderRadius="xl"
+            padding="xs"
             position="absolute"
             top={20}
             right={16}
-            height={28}
-            width={28}
             flexDirection="row"
             shadowRadius={6}
             shadowColor="black"
@@ -118,20 +125,30 @@ const HotspotListItem = ({
             shadowOpacity={0.3}
             elevation={2}
           >
+            {!loadingMobileRewards ? (
+              <Text variant="body2Medium" marginEnd="xs" color="black">
+                {formatLargeNumber(pendingMobileRewards || 0)}
+              </Text>
+            ) : (
+              <CircleLoader marginEnd="xs" loaderSize={14} />
+            )}
             <MobileSymbol color="black" />
           </Box>
         )}
-        {!!hasIotRewards && (
+        {(!!hasIotRewards || loadingIotRewards) && (
           <Box
             justifyContent="center"
             alignItems="center"
             backgroundColor="white"
-            borderRadius="round"
+            borderRadius="xl"
             position="absolute"
-            top={hasMobileRewards ? 58 : 20}
+            top={
+              hasMobileRewards || (loadingMobileRewards && loadingIotRewards)
+                ? 58
+                : 20
+            }
+            padding="xs"
             right={16}
-            height={28}
-            width={28}
             flexDirection="row"
             shadowRadius={6}
             shadowColor="black"
@@ -142,6 +159,13 @@ const HotspotListItem = ({
             shadowOpacity={0.3}
             elevation={2}
           >
+            {!loadingIotRewards ? (
+              <Text variant="body2Medium" marginEnd="xs" color="black">
+                {formatLargeNumber(pendingIotRewards || 0)}
+              </Text>
+            ) : (
+              <CircleLoader loaderSize={14} marginEnd="xs" />
+            )}
             <IotSymbol color="black" />
           </Box>
         )}

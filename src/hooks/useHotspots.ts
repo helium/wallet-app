@@ -49,6 +49,10 @@ const useHotspots = (): {
   createHotspot: () => Promise<void>
   fetchMore: () => void
   fetchingMore: boolean
+  getPendingHotspotRewards: (mint: string) => {
+    pendingIotRewards: number
+    pendingMobileRewards: number
+  }
 } => {
   const { solanaNetwork: cluster, l1Network } = useAppStorage()
   const dispatch = useAppDispatch()
@@ -70,6 +74,24 @@ const useHotspots = (): {
 
     return hotspotsSlice[currentAccount?.solanaAddress]?.hotspots || []
   }, [hotspotsSlice, currentAccount])
+
+  const getPendingHotspotRewards = useCallback(
+    (mint: string) => {
+      if (!currentAccount?.solanaAddress)
+        return { pendingIotRewards: 0, pendingMobileRewards: 0 }
+
+      const walletHotspots =
+        hotspotsSlice[currentAccount?.solanaAddress]?.hotspotDetails
+
+      if (!walletHotspots || !walletHotspots[mint])
+        return { pendingIotRewards: 0, pendingMobileRewards: 0 }
+      return {
+        pendingIotRewards: walletHotspots[mint].pendingIotRewards,
+        pendingMobileRewards: walletHotspots[mint].pendingMobileRewards,
+      }
+    },
+    [currentAccount, hotspotsSlice],
+  )
 
   const onClaimAllMobileRewards = async () => {
     if (!anchorProvider || !currentAccount?.solanaAddress) {
@@ -306,6 +328,7 @@ const useHotspots = (): {
       createHotspot,
       fetchMore,
       fetchingMore,
+      getPendingHotspotRewards,
     }
   }
 
@@ -330,6 +353,7 @@ const useHotspots = (): {
     createHotspot,
     fetchMore,
     fetchingMore,
+    getPendingHotspotRewards,
   }
 }
 export default useHotspots

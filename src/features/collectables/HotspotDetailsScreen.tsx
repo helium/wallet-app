@@ -24,8 +24,8 @@ import { useSpacing } from '../../theme/themeHooks'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import BlurActionSheet from '../../components/BlurActionSheet'
 import ListItem from '../../components/ListItem'
-import { useHotspot } from '../../hooks/useHotspot'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
+import useHotspots from '../../hooks/useHotspots'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotDetailsScreen'>
 
@@ -42,23 +42,10 @@ const HotspotDetailsScreen = () => {
   const { collectable } = route.params
   const mint = useMemo(() => new PublicKey(collectable.id), [collectable.id])
 
-  const {
-    pendingMobileRewards,
-    mobileRewardsLoading,
-    pendingIotRewards,
-    iotRewardsLoading,
-    iotRewardsError,
-    mobileRewardsError,
-  } = useHotspot(mint)
-
-  const hasMobileRewards = useMemo(
-    () => pendingMobileRewards && pendingMobileRewards > 0,
-    [pendingMobileRewards],
-  )
-
-  const hasIotRewards = useMemo(
-    () => pendingIotRewards && pendingIotRewards > 0,
-    [pendingIotRewards],
+  const { getPendingHotspotRewards } = useHotspots()
+  const { pendingMobileRewards, pendingIotRewards } = useMemo(
+    () => getPendingHotspotRewards(mint.toBase58()),
+    [mint, getPendingHotspotRewards],
   )
 
   const spacing = useSpacing()
@@ -192,13 +179,7 @@ const HotspotDetailsScreen = () => {
                 titleColorDisabled="grey600"
                 title={t('collectablesScreen.hotspots.claimRewards')}
                 titleColor="black"
-                disabled={
-                  mobileRewardsLoading ||
-                  iotRewardsLoading ||
-                  !!iotRewardsError ||
-                  !!mobileRewardsError ||
-                  (!hasMobileRewards && !hasIotRewards)
-                }
+                disabled={pendingIotRewards === 0 && pendingMobileRewards === 0}
                 onPress={handleClaimRewards}
               />
             </Box>
@@ -206,20 +187,16 @@ const HotspotDetailsScreen = () => {
               {t('collectablesScreen.hotspots.pendingRewardsTitle')}
             </Text>
             <Text variant="body2" marginBottom="m">
-              {mobileRewardsLoading || pendingMobileRewards === null
-                ? t('generic.loading')
-                : t('collectablesScreen.hotspots.pendingRewards', {
-                    amount: pendingMobileRewards || 0,
-                    ticker: 'MOBILE',
-                  })}
+              {t('collectablesScreen.hotspots.pendingRewards', {
+                amount: pendingMobileRewards,
+                ticker: 'MOBILE',
+              })}
             </Text>
             <Text variant="body2" marginBottom="m">
-              {iotRewardsLoading || pendingIotRewards === null
-                ? t('generic.loading')
-                : t('collectablesScreen.hotspots.pendingRewards', {
-                    amount: pendingIotRewards || 0,
-                    ticker: 'IOT',
-                  })}
+              {t('collectablesScreen.hotspots.pendingRewards', {
+                amount: pendingIotRewards,
+                ticker: 'IOT',
+              })}
             </Text>
             <BlurActionSheet
               title={t('collectablesScreen.hotspots.hotspotActions')}

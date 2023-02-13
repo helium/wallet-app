@@ -1,7 +1,7 @@
 import { PublicKey } from '@solana/web3.js'
 import { useEffect, useMemo, useState } from 'react'
 import { recipientKey as getRecipientKey } from '@helium/lazy-distributor-sdk'
-import { useAsync, useAsyncCallback } from 'react-async-hook'
+import { useAsyncCallback } from 'react-async-hook'
 import * as client from '@helium/distributor-oracle'
 import {
   getPendingRewards,
@@ -44,34 +44,26 @@ export function useHotspot(mint: PublicKey): {
     useRecipient(recipientIotKey)
   const { submitClaimRewards } = useSubmitTxn()
 
-  useAsync(async () => {
+  useEffect(() => {
     try {
       if (program && !mobileLoading) {
-        const { pendingRewards: mobileRewards } = await getPendingRewards(
-          program,
-          mint,
-          mobileRecipient,
-          MOBILE_LAZY_KEY,
+        getPendingRewards(program, mint, mobileRecipient, MOBILE_LAZY_KEY).then(
+          ({ pendingRewards: mobileRewards }) => {
+            setPendingMobileRewards(mobileRewards)
+          },
         )
-
-        console.log('mobileRewards', mobileRewards)
-        setPendingMobileRewards(mobileRewards)
       }
-
       if (program && !iotLoading) {
-        const { pendingRewards: iotRewards } = await getPendingRewards(
-          program,
-          mint,
-          iotRecipient,
-          IOT_LAZY_KEY,
+        getPendingRewards(program, mint, iotRecipient, IOT_LAZY_KEY).then(
+          ({ pendingRewards: iotRewards }) => {
+            setPendingIotRewards(iotRewards)
+          },
         )
-        console.log('iotRewards', iotRewards)
-        setPendingIotRewards(iotRewards)
       }
     } catch (e) {
       Logger.error(e)
     }
-  }, [mint, program])
+  }, [mint, program, mobileRecipient, iotRecipient, iotLoading, mobileLoading])
 
   const { anchorProvider } = useAccountStorage()
 
@@ -118,8 +110,6 @@ export function useHotspot(mint: PublicKey): {
         IOT_LAZY_KEY,
         mint,
       )
-
-      console.log('REWARDS => ', rewards)
 
       const tx = await client.formTransaction({
         // TODO: Fix program type once HPL is upgraded to anchor v0.26

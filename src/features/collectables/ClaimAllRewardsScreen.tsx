@@ -1,8 +1,6 @@
 import React, { memo, useCallback, useMemo } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import IotReward from '@assets/images/iotRewardIcon.svg'
-import MobileReward from '@assets/images/mobileRewardIcon.svg'
 import { Edge } from 'react-native-safe-area-context'
 import { Ticker } from '@helium/currency'
 import RewardBG from '@assets/images/rewardBg.svg'
@@ -14,6 +12,7 @@ import Text from '../../components/Text'
 import { CollectableNavigationProp } from './collectablesTypes'
 import ButtonPressable from '../../components/ButtonPressable'
 import { DelayedFadeIn } from '../../components/FadeInOut'
+import TokenIcon from '../../components/TokenIcon'
 
 const ClaimAllRewardsScreen = () => {
   const { t } = useTranslation()
@@ -59,8 +58,14 @@ const ClaimAllRewardsScreen = () => {
           <RewardBG />
         </Box>
 
-        {ticker === 'MOBILE' ? <MobileReward /> : <IotReward />}
-        <Text marginTop="xs" variant="h3Medium">
+        <TokenIcon ticker={ticker} size={70} />
+
+        <Text
+          marginTop="m"
+          variant="h3Medium"
+          adjustsFontSizeToFit
+          numberOfLines={1}
+        >
           {amountToText}
         </Text>
         <Text variant="subtitle3" color="secondaryText">
