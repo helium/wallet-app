@@ -30,14 +30,15 @@ import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
 import { readBalances } from '../store/slices/solanaSlice'
-import {
-  useGetMintsQuery,
-  useGetTokenPricesQuery,
-} from '../store/slices/walletRestApi'
+import { useGetTokenPricesQuery } from '../store/slices/walletRestApi'
 import { useAppDispatch } from '../store/store'
 import { accountCurrencyType } from './accountUtils'
 import { decimalSeparator, groupSeparator } from './i18n'
-import { onAccountChange, removeAccountChangeListener } from './solanaUtils'
+import {
+  onAccountChange,
+  removeAccountChangeListener,
+  Mints,
+} from './solanaUtils'
 import useAppear from '../hooks/useAppear'
 import usePrevious from '../hooks/usePrevious'
 
@@ -56,9 +57,6 @@ const useBalanceHook = () => {
   const [updating, setUpdating] = useState(false)
 
   const dispatch = useAppDispatch()
-  const { data: mints } = useGetMintsQuery(cluster, {
-    refetchOnMountOrArgChange: true,
-  })
 
   const { currentData: tokenPrices } = useGetTokenPricesQuery(
     { tokens: 'helium,solana', currency },
@@ -98,11 +96,11 @@ const useBalanceHook = () => {
   }, [solAddress, solanaBalances])
 
   const dispatchSolBalanceUpdate = useCallback(() => {
-    if (!currentAccount?.solanaAddress || !mints) {
+    if (!currentAccount?.solanaAddress || !Mints) {
       return
     }
-    dispatch(readBalances({ cluster, acct: currentAccount, mints }))
-  }, [currentAccount, dispatch, mints, cluster])
+    dispatch(readBalances({ cluster, acct: currentAccount, mints: Mints }))
+  }, [currentAccount, dispatch, cluster])
 
   useEffect(() => {
     if (!currentAccount?.solanaAddress || l1Network === 'helium') {

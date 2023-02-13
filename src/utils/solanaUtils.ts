@@ -20,6 +20,8 @@ import {
   ComputeBudgetProgram,
   AccountMeta,
   SignatureResult,
+  ParsedTransactionWithMeta,
+  ParsedInstruction,
 } from '@solana/web3.js'
 import {
   TOKEN_PROGRAM_ID,
@@ -46,21 +48,32 @@ import {
   SPL_NOOP_PROGRAM_ID,
 } from '@solana/spl-account-compression'
 import bs58 from 'bs58'
-import { HNT_MINT, searchAssets, toBN } from '@helium/spl-utils'
+import {
+  HNT_MINT,
+  IOT_MINT,
+  MOBILE_MINT,
+  searchAssets,
+  toBN,
+} from '@helium/spl-utils'
 import { AnchorProvider, BN } from '@coral-xyz/anchor'
 import * as tm from '@helium/treasury-management-sdk'
 import { getKeypair } from '../storage/secureStorage'
-import solInstructionsToActivity from './solInstructionsToActivity'
-import { Activity } from '../types/activity'
+import { Activity, Payment } from '../types/activity'
 import sleep from './sleep'
 import {
   Collectable,
   CompressedNFT,
   EnrichedTransaction,
+  mintToTicker,
 } from '../types/solana'
 import * as Logger from './logger'
 import { WrappedConnection } from './WrappedConnection'
-import { Mints } from '../store/slices/walletRestApi'
+
+export const Mints: Record<string, string> = {
+  IOT: IOT_MINT.toBase58(),
+  MOBILE: MOBILE_MINT.toBase58(),
+  HNT: HNT_MINT.toBase58(),
+}
 
 export const SolanaConnection = {
   localnet: new WrappedConnection('http://127.0.0.1:8899'),
@@ -111,7 +124,7 @@ export const airdrop = (cluster: Cluster, address: string) => {
 export const readHeliumBalances = async (
   cluster: Cluster,
   address: string,
-  mints: Mints,
+  mints: typeof Mints,
 ) => {
   const account = new PublicKey(address)
 
@@ -289,7 +302,7 @@ export const getTransactions = async (
   cluster: Cluster,
   walletAddress: string,
   mintAddress: string,
-  mints: Mints,
+  mints: typeof Mints,
   options?: SignaturesForAddressOptions,
 ) => {
   const ata = await getAssocTokenAddress(walletAddress, mintAddress)
@@ -1153,4 +1166,66 @@ export async function createTreasurySwapMessage(
     Logger.error(e)
     throw e as Error
   }
+}
+
+export const solInstructionsToActivity = (
+  parsedTxn: ParsedTransactionWithMeta | null,
+  signature: string,
+  mints: typeof Mints,
+) => {
+  if (!parsedTxn) return
+
+  const activity: Activity = { hash: signature, type: 'unknown' }
+
+  const { transaction, slot, blockTime, meta } = parsedTxn
+
+  activity.fee = meta?.fee
+  activity.height = slot
+
+  if (blockTime) {
+    activity.time = blockTime
+  }
+
+  if (meta?.preTokenBalances && meta.postTokenBalances) {
+    const { preTokenBalances, postTokenBalances } = meta
+    let payments = [] as Payment[]
+    postTokenBalances.forEach((post) => {
+      const preBalance = preTokenBalances.find(
+        ({ accountIndex }) => accountIndex === post.accountIndex,
+      )
+      const pre = preBalance || { uiTokenAmount: { amount: '0' } }
+      const preAmount = parseInt(pre.uiTokenAmount.amount, 10)
+      const postAmount = parseInt(post.uiTokenAmount.amount, 10)
+      const amount = postAmount - preAmount
+      if (amount < 0) {
+        // is payer
+        activity.payer = post.owner
+        activity.tokenType = mintToTicker(post.mint, mints)
+        activity.amount = -1 * amount
+      } else {
+        // is payee
+        const p: Payment = {
+          amount,
+          payee: post.owner || '',
+          tokenType: mintToTicker(post.mint, mints),
+        }
+        payments = [...payments, p]
+      }
+    })
+    activity.payments = payments
+  }
+
+  const transfer = transaction.message.instructions.find((i) => {
+    const instruction = i as ParsedInstruction
+    return instruction?.parsed?.type === 'transferChecked'
+  }) as ParsedInstruction
+
+  if (transfer) {
+    // We have a payment
+    activity.type = 'payment_v2'
+  }
+
+  if (activity.type === 'unknown') return
+
+  return activity
 }

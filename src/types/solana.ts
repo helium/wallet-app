@@ -10,7 +10,6 @@ import {
 } from '@metaplex-foundation/js'
 import { TokenAmount } from '@solana/web3.js'
 import { Creator } from '@metaplex-foundation/mpl-bubblegum'
-import { Mints } from '../store/slices/walletRestApi'
 
 export type SolPayment = {
   destination: string
@@ -29,12 +28,15 @@ export type SolPaymentInfo = {
   wallet: string
 }
 
-export const toMintAddress = (symbol: string, mints: Mints) => {
+export const toMintAddress = (
+  symbol: string,
+  mints: Record<string, string>,
+) => {
   const ticker = symbol.toUpperCase() as Ticker
   return mints[ticker]
 }
 
-export const mintToTicker = (mint: string, mints: Mints) => {
+export const mintToTicker = (mint: string, mints: Record<string, string>) => {
   const found = Object.keys(mints).find((key) => mints[key as Ticker] === mint)
   if (!found) throw new Error('Token type for mint not found')
 

@@ -130,8 +130,8 @@ const hotspots = createSlice({
 
       const address = action.meta.arg.account.solanaAddress
       const prev = state[address] || {
-        hotspotsWithMeta: {},
-        hotspots: {},
+        hotspotsWithMeta: [],
+        hotspots: [],
       }
       state[address] = {
         ...prev,
@@ -175,8 +175,8 @@ const hotspots = createSlice({
 
       const address = action.meta.arg.account.solanaAddress
       const prev = state[address] || {
-        hotspotsWithMeta: {},
-        hotspots: {},
+        hotspotsWithMeta: [],
+        hotspots: [],
       }
       state[address] = {
         ...prev,
@@ -210,8 +210,8 @@ const hotspots = createSlice({
 
       const address = action.meta.arg.account.solanaAddress
       const prev = state[address] || {
-        hotspotsWithMeta: {},
-        hotspots: {},
+        hotspotsWithMeta: [],
+        hotspots: [],
       }
       state[address] = {
         ...prev,

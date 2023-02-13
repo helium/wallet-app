@@ -21,7 +21,7 @@ import { Activity } from '../../types/activity'
 import { CompressedNFT, toMintAddress } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
 import { fetchCollectables } from './collectablesSlice'
-import { Mints, walletRestApi } from './walletRestApi'
+import { walletRestApi } from './walletRestApi'
 import * as Logger from '../../utils/logger'
 
 type Balances = {
@@ -66,7 +66,7 @@ export const readBalances = createAsyncThunk(
   }: {
     acct: CSAccount
     cluster: Cluster
-    mints: Mints
+    mints: Record<string, string>
   }) => {
     if (!acct?.solanaAddress) throw new Error('No solana account found')
 
@@ -99,7 +99,7 @@ type PaymentInput = {
   account: CSAccount
   payments: Payment[]
   cluster: Cluster
-  mints: Mints
+  mints: Record<string, string>
 }
 
 type CollectablePaymentInput = {
@@ -135,7 +135,7 @@ type TreasurySwapTxn = {
   cluster: Cluster
   amount: number
   fromMint: PublicKey
-  mints: Mints
+  mints: Record<string, string>
 }
 
 export const makePayment = createAsyncThunk(
@@ -341,7 +341,7 @@ export const getTxns = createAsyncThunk(
       account: CSAccount
       cluster: Cluster
       ticker: Ticker
-      mints: Mints
+      mints: Record<string, string>
       requestType: 'update_head' | 'start_fresh' | 'fetch_more'
     },
     { getState },
