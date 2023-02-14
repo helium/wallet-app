@@ -13,6 +13,8 @@ import { useRecipient } from './useRecipient'
 import * as Logger from '../utils/logger'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import useSubmitTxn from '../graphql/useSubmitTxn'
+import { getConnection } from '../utils/solanaUtils'
+import { useAppStorage } from '../storage/AppStorageProvider'
 
 export function useHotspot(mint: PublicKey): {
   iotRewardsError: Error | undefined
@@ -24,6 +26,9 @@ export function useHotspot(mint: PublicKey): {
   iotRewardsLoading: boolean
   mobileRewardsLoading: boolean
 } {
+  const { solanaNetwork: cluster } = useAppStorage()
+  const conn = getConnection(cluster)
+
   const program = useProgram()
   const [pendingMobileRewards, setPendingMobileRewards] = useState<
     number | null
@@ -90,6 +95,7 @@ export function useHotspot(mint: PublicKey): {
         rewards,
         hotspot: mint,
         lazyDistributor: MOBILE_LAZY_KEY,
+        assetEndpoint: conn.rpcEndpoint,
       })
 
       await submitClaimRewards(tx)
@@ -119,6 +125,7 @@ export function useHotspot(mint: PublicKey): {
         rewards,
         hotspot: mint,
         lazyDistributor: IOT_LAZY_KEY,
+        assetEndpoint: conn.rpcEndpoint,
       })
 
       await submitClaimRewards(tx)
