@@ -6,6 +6,7 @@ import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import 'text-encoding-polyfill'
+import { BoxProps } from '@shopify/restyle'
 import AccountIcon from '../../components/AccountIcon'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 import Box from '../../components/Box'
@@ -16,6 +17,9 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { useGetSolanaStatusQuery } from '../../store/slices/solanaStatusApi'
 import ButtonPressable from '../../components/ButtonPressable'
+import SafeAreaBox from '../../components/SafeAreaBox'
+import { Theme } from '../../theme/theme'
+import * as Logger from '../../utils/logger'
 
 async function migrateWallet(
   provider: Provider,
@@ -26,6 +30,7 @@ async function migrateWallet(
   const limit = 1000
   // eslint-disable-next-line no-constant-condition
   while (true) {
+    // TODO: Move to .env
     const url = `https://migration.web.test-helium.com/migrate/${wallet}`
     // eslint-disable-next-line no-await-in-loop
     const { transactions, count } = (await axios.get(url)).data
@@ -40,18 +45,17 @@ async function migrateWallet(
   }
 }
 
-const SolanaMigration = () => {
+const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
   const { currentAccount, anchorProvider } = useAccountStorage()
-  // const navigation = useNavigation<TabBarNavigationProp>()
   const { updateL1Network, updateDoneSolanaMigration, doneSolanaMigration } =
     useAppStorage()
   const [retry, updateRetry] = useState(0)
-
   const { t } = useTranslation()
   const { data: status } = useGetSolanaStatusQuery()
-
   const [total, setTotal] = useState<number>(0)
   const [progress, setProgress] = useState<number>(0)
+  const [migrationError, setMigrationError] = useState<string | undefined>()
+
   const onProgress = useCallback(
     (p: number, tot: number) => {
       setProgress(p)
@@ -67,16 +71,30 @@ const SolanaMigration = () => {
       _: number,
     ) => {
       if (addr && provider) {
-        await migrateWallet(provider, addr, onProg)
+        try {
+          await migrateWallet(provider, addr, onProg)
 
-        doneSolanaMigration.add(addr)
-        await updateDoneSolanaMigration(new Set(doneSolanaMigration))
+          doneSolanaMigration.add(addr)
+          await updateDoneSolanaMigration(new Set(doneSolanaMigration))
+        } catch (e) {
+          Logger.error(e)
+          setMigrationError((e as Error).message)
+        }
       }
     },
     [anchorProvider, currentAccount?.solanaAddress, onProgress, retry],
   )
+
+  const handleUpdateRetry = useCallback(() => {
+    setMigrationError(undefined)
+    updateRetry((r) => r + 1)
+  }, [])
+
+  const handleDisableSolana = useCallback(() => {
+    updateL1Network('helium')
+  }, [updateL1Network])
   if (error) {
-    console.error(error)
+    Logger.error(error)
   }
 
   if (!currentAccount) {
@@ -88,8 +106,9 @@ const SolanaMigration = () => {
       entering={DelayedFadeIn}
       flex={1}
       backgroundColor="secondaryBackground"
+      {...props}
     >
-      <Box
+      <SafeAreaBox
         backgroundColor="transparent"
         flex={1}
         padding="m"
@@ -106,13 +125,19 @@ const SolanaMigration = () => {
           >
             <AccountIcon address={currentAccount?.solanaAddress} size={76} />
           </Box>
-          {!error && !loading && (
+          {!error && !migrationError && !loading && (
             <Animated.View
               style={{ alignItems: 'center' }}
               entering={FadeIn}
               exiting={FadeOut}
             >
-              <Text variant="h1Medium" color="white" marginTop="xl">
+              <Text
+                variant="h1Medium"
+                color="white"
+                marginTop="xl"
+                numberOfLines={1}
+                adjustsFontSizeToFit
+              >
                 {t('solanaMigrationScreen.migrationComplete')}
               </Text>
               <Text
@@ -121,13 +146,14 @@ const SolanaMigration = () => {
                 marginTop="xl"
                 numberOfLines={2}
                 textAlign="center"
+                adjustsFontSizeToFit
               >
                 {t('solanaMigrationScreen.migrationComplete2')}
               </Text>
             </Animated.View>
           )}
 
-          {error && (
+          {(error || migrationError) && (
             <Animated.View
               style={{ alignItems: 'center' }}
               entering={FadeIn}
@@ -148,39 +174,8 @@ const SolanaMigration = () => {
                 numberOfLines={2}
                 textAlign="center"
               >
-                {error.message}
+                {error?.message || migrationError}
               </Text>
-
-              <Box flex={1} width="100%" justifyContent="flex-end">
-                {status?.migrationStatus === 'not_started' && (
-                  <ButtonPressable
-                    marginHorizontal="m"
-                    marginBottom="m"
-                    height={65}
-                    borderRadius="round"
-                    backgroundColor="white"
-                    backgroundColorOpacity={0.1}
-                    backgroundColorOpacityPressed={0.05}
-                    titleColorPressedOpacity={0.3}
-                    title={t('solanaMigrationScreen.disableSolana')}
-                    titleColor="white"
-                    onPress={() => updateL1Network('solana')}
-                  />
-                )}
-                <ButtonPressable
-                  marginHorizontal="m"
-                  marginBottom="m"
-                  height={65}
-                  borderRadius="round"
-                  backgroundColor="white"
-                  backgroundColorOpacity={0.1}
-                  backgroundColorOpacityPressed={0.05}
-                  titleColorPressedOpacity={0.3}
-                  title={t('solanaMigrationScreen.retry')}
-                  titleColor="white"
-                  onPress={() => updateRetry((r) => r + 1)}
-                />
-              </Box>
             </Animated.View>
           )}
 
@@ -195,6 +190,8 @@ const SolanaMigration = () => {
                 color="white"
                 marginTop="xl"
                 textAlign="center"
+                numberOfLines={2}
+                adjustsFontSizeToFit
               >
                 {t('solanaMigrationScreen.migrating')}
               </Text>
@@ -204,6 +201,8 @@ const SolanaMigration = () => {
                 textAlign="center"
                 marginBottom="m"
                 marginTop="s"
+                numberOfLines={2}
+                adjustsFontSizeToFit
               >
                 {t('solanaMigrationScreen.migratingBody')}
               </Text>
@@ -224,7 +223,52 @@ const SolanaMigration = () => {
             </Animated.View>
           )}
         </Box>
-      </Box>
+
+        {(error || migrationError) && (
+          <Box
+            flexDirection="row"
+            marginBottom="l"
+            marginHorizontal="l"
+            position="absolute"
+            bottom={0}
+            left={0}
+            right={0}
+            alignItems="flex-end"
+            justifyContent="center"
+          >
+            {status?.migrationStatus === 'not_started' && (
+              <ButtonPressable
+                flex={1}
+                marginEnd="s"
+                marginBottom="m"
+                height={65}
+                borderRadius="round"
+                backgroundColor="white"
+                backgroundColorOpacity={0.1}
+                backgroundColorOpacityPressed={0.05}
+                titleColorPressedOpacity={0.3}
+                title={t('solanaMigrationScreen.disableSolana')}
+                titleColor="white"
+                onPress={handleDisableSolana}
+              />
+            )}
+            <ButtonPressable
+              flex={1}
+              marginStart="m"
+              marginBottom="m"
+              height={65}
+              borderRadius="round"
+              backgroundColor="white"
+              backgroundColorOpacity={0.1}
+              backgroundColorOpacityPressed={0.05}
+              titleColorPressedOpacity={0.3}
+              title={t('solanaMigrationScreen.retry')}
+              titleColor="white"
+              onPress={handleUpdateRetry}
+            />
+          </Box>
+        )}
+      </SafeAreaBox>
     </ReAnimatedBox>
   )
 }

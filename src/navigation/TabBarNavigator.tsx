@@ -9,6 +9,7 @@ import Dollar from '@assets/images/dollar.svg'
 import Gem from '@assets/images/gem.svg'
 import Transactions from '@assets/images/transactions.svg'
 import Notifications from '@assets/images/notifications.svg'
+import { Portal } from '@gorhom/portal'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import SolanaMigration from '../features/migration/SolanaMigration'
@@ -142,35 +143,41 @@ const TabBarNavigator = () => {
   // }
   const { currentAccount, anchorProvider } = useAccountStorage()
 
-  if (
-    currentAccount &&
-    anchorProvider &&
-    currentAccount.solanaAddress &&
-    !doneSolanaMigration.has(currentAccount.solanaAddress)
-  ) {
-    return <SolanaMigration />
-  }
-
   return (
-    <Tab.Navigator
-      tabBar={(props: BottomTabBarProps) => <MyTabBar {...props} />}
-      screenOptions={{
-        headerShown: false,
-      }}
-      sceneContainerStyle={{
-        paddingBottom:
-          l1Network === 'solana' ? NavBarHeight + bottom : undefined,
-      }}
-    >
-      <Tab.Screen name="Home" component={HomeNavigator} />
-      <Tab.Screen name="Collectables" component={CollectablesTabNavigator} />
-      <Tab.Screen name="Swaps" component={SwapNavigator} />
-      <Tab.Screen name="Activity" component={ActivityNavigator} />
-      <Tab.Screen
-        name="NotificationsNavigator"
-        component={NotificationsNavigator}
-      />
-    </Tab.Navigator>
+    <>
+      {currentAccount?.solanaAddress &&
+        anchorProvider &&
+        !doneSolanaMigration.has(currentAccount.solanaAddress) && (
+          <Portal>
+            <SolanaMigration
+              position="absolute"
+              top={0}
+              left={0}
+              right={0}
+              bottom={0}
+            />
+          </Portal>
+        )}
+      <Tab.Navigator
+        tabBar={(props: BottomTabBarProps) => <MyTabBar {...props} />}
+        screenOptions={{
+          headerShown: false,
+        }}
+        sceneContainerStyle={{
+          paddingBottom:
+            l1Network === 'solana' ? NavBarHeight + bottom : undefined,
+        }}
+      >
+        <Tab.Screen name="Home" component={HomeNavigator} />
+        <Tab.Screen name="Collectables" component={CollectablesTabNavigator} />
+        <Tab.Screen name="Swaps" component={SwapNavigator} />
+        <Tab.Screen name="Activity" component={ActivityNavigator} />
+        <Tab.Screen
+          name="NotificationsNavigator"
+          component={NotificationsNavigator}
+        />
+      </Tab.Navigator>
+    </>
   )
 }
 

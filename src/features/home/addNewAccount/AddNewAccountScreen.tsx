@@ -46,17 +46,19 @@ const AddNewAccountScreen = () => {
   }, [navigation])
 
   return (
-    <Box flex={1} backgroundColor="surfaceSecondary">
-      <Box flexDirection="row" paddingVertical="m">
-        <Box flex={1} />
-        <Text variant="subtitle1">{t('addNewAccount.title')}</Text>
-        <Box flex={1} />
+    <Box flex={1} backgroundColor="secondaryBackground">
+      <Box backgroundColor="surfaceSecondary">
+        <Box flexDirection="row" paddingVertical="m">
+          <Box flex={1} />
+          <Text variant="subtitle1">{t('addNewAccount.title')}</Text>
+          <Box flex={1} />
+        </Box>
+        <TabBar
+          tabBarOptions={tabData}
+          selectedValue={selectedOption}
+          onItemSelected={handleItemSelected}
+        />
       </Box>
-      <TabBar
-        tabBarOptions={tabData}
-        selectedValue={selectedOption}
-        onItemSelected={handleItemSelected}
-      />
 
       <ScrollView contentContainerStyle={contentContainerStyle}>
         <Box flex={1}>

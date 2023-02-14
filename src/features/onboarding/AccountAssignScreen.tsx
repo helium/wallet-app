@@ -16,7 +16,7 @@ import { accountNetType } from '../../utils/accountUtils'
 import Text from '../../components/Text'
 import { ImportAccountNavigationProp } from './import/importAccountNavTypes'
 import { CreateAccountNavigationProp } from './create/createAccountNavTypes'
-import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
+import { HomeStackParamList } from '../home/homeTypes'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 
@@ -27,7 +27,6 @@ const AccountAssignScreen = () => {
   const onboardingNav = useNavigation<
     ImportAccountNavigationProp & CreateAccountNavigationProp
   >()
-  const homeNav = useNavigation<HomeNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
 
   const { t } = useTranslation()
@@ -62,9 +61,15 @@ const AccountAssignScreen = () => {
           await updateDefaultAccountAddress(account.address)
         }
         if (l1Network === 'helium') {
-          homeNav.replace('AccountsScreen')
+          rootNav.reset({
+            index: 0,
+            routes: [{ name: 'HomeNavigator' }],
+          })
         } else {
-          rootNav.replace('TabBarNavigator')
+          rootNav.reset({
+            index: 0,
+            routes: [{ name: 'TabBarNavigator' }],
+          })
         }
         reset()
         return
@@ -92,7 +97,6 @@ const AccountAssignScreen = () => {
     l1Network,
     reset,
     updateDefaultAccountAddress,
-    homeNav,
     rootNav,
   ])
 

@@ -131,11 +131,13 @@ const ImportPrivateKey = () => {
     if (navigation.canGoBack()) {
       navigation.goBack()
     } else if (hasAccounts) {
-      navigation.replace('HomeNavigator')
+      navigation.replace(
+        l1Network === 'helium' ? 'HomeNavigator' : 'TabBarNavigator',
+      )
     } else {
       navigation.replace('OnboardingNavigator')
     }
-  }, [hasAccounts, navigation])
+  }, [hasAccounts, navigation, l1Network])
 
   const onImportAccount = useCallback(() => {
     if (hasAccounts) {
