@@ -2,15 +2,21 @@
 import React, { memo, useRef, useEffect } from 'react'
 import { Animated, Easing } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
+import CircleLoaderSvg from '@assets/images/circleLoader.svg'
 import Box from './Box'
-import { Theme } from '../theme/theme'
+import { Color, Theme } from '../theme/theme'
 import Text from './Text'
 
-type Props = BoxProps<Theme> & { text?: string; loaderSize?: number }
+type Props = BoxProps<Theme> & {
+  text?: string
+  loaderSize?: number
+  color?: Color
+}
 const CircleLoader = ({
   text,
   loaderSize = 30,
   minHeight,
+  color = 'white',
   ...props
 }: Props) => {
   const rotateAnim = useRef(new Animated.Value(0))
@@ -49,9 +55,7 @@ const CircleLoader = ({
       alignItems="center"
       minHeight={minHeight || loaderSize}
     >
-      <Animated.Image
-        source={require('../assets/images/circleLoader.png')}
-        resizeMode="contain"
+      <Animated.View
         style={{
           flex: 1,
           maxHeight: 105,
@@ -67,7 +71,9 @@ const CircleLoader = ({
             },
           ],
         }}
-      />
+      >
+        <CircleLoaderSvg color={color} height={loaderSize} width={loaderSize} />
+      </Animated.View>
       {text && (
         <Text
           textAlign="center"

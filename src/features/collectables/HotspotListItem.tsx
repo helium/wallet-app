@@ -130,7 +130,7 @@ const HotspotListItem = ({
                 {formatLargeNumber(pendingMobileRewards || 0)}
               </Text>
             ) : (
-              <CircleLoader marginEnd="xs" loaderSize={14} />
+              <CircleLoader color="black" marginEnd="xs" loaderSize={14} />
             )}
             <MobileSymbol color="black" />
           </Box>
@@ -164,7 +164,7 @@ const HotspotListItem = ({
                 {formatLargeNumber(pendingIotRewards || 0)}
               </Text>
             ) : (
-              <CircleLoader loaderSize={14} marginEnd="xs" />
+              <CircleLoader color="black" loaderSize={14} marginEnd="xs" />
             )}
             <IotSymbol color="black" />
           </Box>

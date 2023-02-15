@@ -22,12 +22,12 @@ import {
   createTreasurySwapMessage,
   getConnection,
   TXN_FEE_IN_SOL,
+  Mints,
 } from '../../utils/solanaUtils'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import * as Logger from '../../utils/logger'
 import { SwapNavigationProp } from './swapTypes'
 import { useTreasuryPrice } from '../../hooks/useTreasuryPrice'
-import { Mints } from '../../utils/hotspotNftsUtils'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
 import { useSpacing } from '../../theme/themeHooks'
 import useAlert from '../../hooks/useAlert'

@@ -840,6 +840,7 @@ export const getCompressedCollectablesByCreator = async (
     creatorVerified: true,
     creatorAddress: entityCreatorKey(daoKey(HNT_MINT)[0])[0].toBase58(),
     page,
+    // limit: 10,
   })
 
   return items as unknown as CompressedNFT[]
