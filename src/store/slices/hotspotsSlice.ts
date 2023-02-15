@@ -1,19 +1,22 @@
+import { AnchorProvider } from '@coral-xyz/anchor'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Cluster, PublicKey } from '@solana/web3.js'
 import { merge } from 'lodash'
 import { CompressedNFT } from 'src/types/solana'
+import BN from 'bn.js'
 import { CSAccount } from '../../storage/cloudStorage'
 import * as solUtils from '../../utils/solanaUtils'
+import type { HotspotWithPendingRewards } from '../../utils/solanaUtils'
 
 export type HotspotDetails = {
-  pendingIotRewards: number
-  pendingMobileRewards: number
+  pendingIotRewards: BN
+  pendingMobileRewards: BN
 }
 
 export type WalletHotspots = {
   hotspotDetails: Record<string, HotspotDetails>
   hotspots: CompressedNFT[]
-  hotspotsWithMeta: CompressedNFT[]
+  hotspotsWithMeta: HotspotWithPendingRewards[]
   loading: boolean
   fetchingMore: boolean
   onEndReached: boolean
@@ -26,7 +29,15 @@ const initialState: HotspotsState = {}
 
 export const fetchHotspots = createAsyncThunk(
   'hotspots/fetchHotspots',
-  async ({ account, cluster }: { account: CSAccount; cluster: Cluster }) => {
+  async ({
+    provider,
+    account,
+    cluster,
+  }: {
+    provider: AnchorProvider
+    account: CSAccount
+    cluster: Cluster
+  }) => {
     if (!account.solanaAddress) throw new Error('Solana address missing')
 
     const pubKey = new PublicKey(account.solanaAddress)
@@ -38,10 +49,12 @@ export const fetchHotspots = createAsyncThunk(
     const hotspotsWithMetadata = await solUtils.getCollectablesMetadata(
       fetchedHotspots,
     )
+    const hotspotsWithPendingRewards =
+      await solUtils.annotateWithPendingRewards(provider, hotspotsWithMetadata)
 
     return {
       fetchedHotspots,
-      hotspotsWithMetadata,
+      hotspotsWithMetadata: hotspotsWithPendingRewards,
       page: 0,
     }
   },
@@ -53,10 +66,12 @@ export const fetchMoreHotspots = createAsyncThunk(
     account,
     cluster,
     page = 0,
+    provider,
   }: {
     account: CSAccount
     cluster: Cluster
     page: number
+    provider: AnchorProvider
   }) => {
     if (!account.solanaAddress) throw new Error('Solana address missing')
 
@@ -71,9 +86,12 @@ export const fetchMoreHotspots = createAsyncThunk(
     const hotspotsWithMetadata = await solUtils.getCollectablesMetadata(
       fetchedHotspots,
     )
+    const hotspotsWithPendingRewards =
+      await solUtils.annotateWithPendingRewards(provider, hotspotsWithMetadata)
+
     return {
       fetchedHotspots,
-      hotspotsWithMetadata,
+      hotspotsWithMetadata: hotspotsWithPendingRewards,
       page,
     }
   },

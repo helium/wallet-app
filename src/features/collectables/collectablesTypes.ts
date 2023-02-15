@@ -1,5 +1,6 @@
 import { JsonMetadata } from '@metaplex-foundation/js'
 import { StackNavigationProp } from '@react-navigation/stack'
+import { HotspotWithPendingRewards } from '../../utils/solanaUtils'
 import { CompressedNFT } from '../../types/solana'
 
 export type PaymentRouteParam = {
@@ -14,7 +15,7 @@ export type CollectableStackParamList = {
     collectable: CompressedNFT
   }
   HotspotDetailsScreen: {
-    collectable: CompressedNFT
+    collectable: HotspotWithPendingRewards
   }
   NftMetadataScreen: {
     metadata: JsonMetadata<string>
@@ -26,7 +27,7 @@ export type CollectableStackParamList = {
     collectable: CompressedNFT
   }
   ClaimRewardsScreen: {
-    hotspot: CompressedNFT
+    hotspot: HotspotWithPendingRewards
   }
   ClaimAllRewardsScreen: undefined
   ClaimingRewardsScreen: undefined

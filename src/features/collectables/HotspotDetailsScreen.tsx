@@ -4,9 +4,10 @@ import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
-import { PublicKey } from '@solana/web3.js'
 import Menu from '@assets/images/menu.svg'
 import InfoIcon from '@assets/images/info.svg'
+import BN from 'bn.js'
+import { Mints } from '../../utils/constants'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import {
   CollectableNavigationProp,
@@ -25,7 +26,6 @@ import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import BlurActionSheet from '../../components/BlurActionSheet'
 import ListItem from '../../components/ListItem'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
-import useHotspots from '../../hooks/useHotspots'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotDetailsScreen'>
 
@@ -40,13 +40,14 @@ const HotspotDetailsScreen = () => {
   const { t } = useTranslation()
 
   const { collectable } = route.params
-  const mint = useMemo(() => new PublicKey(collectable.id), [collectable.id])
-
-  const { getPendingHotspotRewards } = useHotspots()
-  const { pendingMobileRewards, pendingIotRewards } = useMemo(
-    () => getPendingHotspotRewards(mint.toBase58()),
-    [mint, getPendingHotspotRewards],
-  )
+  const pendingIotRewards =
+    collectable &&
+    collectable.pendingRewards &&
+    new BN(collectable.pendingRewards[Mints.IOT])
+  const pendingMobileRewards =
+    collectable &&
+    collectable.pendingRewards &&
+    new BN(collectable.pendingRewards[Mints.MOBILE])
 
   const spacing = useSpacing()
 
@@ -179,7 +180,12 @@ const HotspotDetailsScreen = () => {
                 titleColorDisabled="grey600"
                 title={t('collectablesScreen.hotspots.claimRewards')}
                 titleColor="black"
-                disabled={pendingIotRewards === 0 && pendingMobileRewards === 0}
+                disabled={
+                  pendingIotRewards &&
+                  pendingIotRewards.eq(new BN(0)) &&
+                  pendingMobileRewards &&
+                  pendingMobileRewards.eq(new BN(0))
+                }
                 onPress={handleClaimRewards}
               />
             </Box>

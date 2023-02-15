@@ -11,15 +11,16 @@ import Address from '@helium/address'
 import { Keypair } from '@helium/crypto'
 import { sendAndConfirmWithRetry } from '@helium/spl-utils'
 // import Config from 'react-native-config'
+import BN from 'bn.js'
 import { getKeypair } from '../storage/secureStorage'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
 import { fetchHotspots, fetchMoreHotspots } from '../store/slices/hotspotsSlice'
 import { useAppDispatch } from '../store/store'
-import { getConnection } from '../utils/solanaUtils'
+import { getConnection, HotspotWithPendingRewards } from '../utils/solanaUtils'
 import { CompressedNFT } from '../types/solana'
-import { MOBILE_LAZY_KEY, IOT_LAZY_KEY } from '../utils/hotspotNftsUtils'
+import { MOBILE_LAZY_KEY, IOT_LAZY_KEY, Mints } from '../utils/constants'
 import useSubmitTxn from '../graphql/useSubmitTxn'
 import * as Logger from '../utils/logger'
 
@@ -30,8 +31,10 @@ function random(len: number): string {
 }
 
 const useHotspots = (): {
+  pendingIotRewards: BN | undefined
+  pendingMobileRewards: BN | undefined
   hotspots: CompressedNFT[]
-  hotspotsWithMeta: CompressedNFT[]
+  hotspotsWithMeta: HotspotWithPendingRewards[]
   loading: boolean
   refresh: () => void
   claimAllMobileRewards: {
@@ -44,15 +47,9 @@ const useHotspots = (): {
     error: Error | undefined
     execute: () => Promise<void>
   }
-  pendingIotRewards: number
-  pendingMobileRewards: number
   createHotspot: () => Promise<void>
   fetchMore: () => void
   fetchingMore: boolean
-  getPendingHotspotRewards: (mint: string) => {
-    pendingIotRewards: number
-    pendingMobileRewards: number
-  }
 } => {
   const { solanaNetwork: cluster, l1Network } = useAppStorage()
   const dispatch = useAppDispatch()
@@ -74,24 +71,6 @@ const useHotspots = (): {
 
     return hotspotsSlice[currentAccount?.solanaAddress]?.hotspots || []
   }, [hotspotsSlice, currentAccount])
-
-  const getPendingHotspotRewards = useCallback(
-    (mint: string) => {
-      if (!currentAccount?.solanaAddress)
-        return { pendingIotRewards: 0, pendingMobileRewards: 0 }
-
-      const walletHotspots =
-        hotspotsSlice[currentAccount?.solanaAddress]?.hotspotDetails
-
-      if (!walletHotspots || !walletHotspots[mint])
-        return { pendingIotRewards: 0, pendingMobileRewards: 0 }
-      return {
-        pendingIotRewards: walletHotspots[mint].pendingIotRewards,
-        pendingMobileRewards: walletHotspots[mint].pendingMobileRewards,
-      }
-    },
-    [currentAccount, hotspotsSlice],
-  )
 
   const onClaimAllMobileRewards = async () => {
     if (!anchorProvider || !currentAccount?.solanaAddress) {
@@ -159,16 +138,21 @@ const useHotspots = (): {
   } = useAsyncCallback(onClaimAllIotRewards)
 
   const refresh = useCallback(() => {
-    if (!currentAccount?.solanaAddress || l1Network !== 'solana') {
+    if (
+      !anchorProvider ||
+      !currentAccount?.solanaAddress ||
+      l1Network !== 'solana'
+    ) {
       return
     }
     dispatch(
       fetchHotspots({
+        provider: anchorProvider,
         account: currentAccount,
         cluster,
       }),
     )
-  }, [cluster, currentAccount, dispatch, l1Network])
+  }, [anchorProvider, cluster, currentAccount, dispatch, l1Network])
 
   const fetchingMore = useMemo(() => {
     if (
@@ -184,18 +168,28 @@ const useHotspots = (): {
     if (
       !currentAccount?.solanaAddress ||
       l1Network !== 'solana' ||
+      !anchorProvider ||
       hotspotsSlice[currentAccount?.solanaAddress].loading
     ) {
       return
     }
     dispatch(
       fetchMoreHotspots({
+        provider: anchorProvider,
         account: currentAccount,
         cluster,
         page,
       }),
     )
-  }, [cluster, hotspotsSlice, currentAccount, dispatch, l1Network, page])
+  }, [
+    anchorProvider,
+    cluster,
+    hotspotsSlice,
+    currentAccount,
+    dispatch,
+    l1Network,
+    page,
+  ])
 
   // FOR TESTING ONLY
   const createHotspot = useCallback(async () => {
@@ -270,45 +264,40 @@ const useHotspots = (): {
     }
   }, [anchorProvider, cluster, currentAccount])
 
-  const pendingIotRewards = useMemo(() => {
-    if (!currentAccount?.solanaAddress) return 0
+  const hotspotsWithMeta = currentAccount?.solanaAddress
+    ? hotspotsSlice[currentAccount?.solanaAddress]?.hotspotsWithMeta
+    : undefined
 
-    let total = 0
-    const walletHotspots =
-      hotspotsSlice[currentAccount?.solanaAddress]?.hotspotDetails
+  const pendingIotRewards = useMemo(
+    () =>
+      hotspotsWithMeta?.reduce((acc, hotspot) => {
+        if (hotspot.pendingRewards) {
+          return acc.add(new BN(hotspot.pendingRewards[Mints.IOT] || '0'))
+        }
 
-    if (!walletHotspots) return 0
+        return acc
+      }, new BN(0)),
+    [hotspotsWithMeta],
+  )
+  const pendingMobileRewards = useMemo(
+    () =>
+      hotspotsWithMeta?.reduce((acc, hotspot) => {
+        if (hotspot.pendingRewards) {
+          return acc.add(new BN(hotspot.pendingRewards[Mints.MOBILE] || '0'))
+        }
 
-    Object.keys(walletHotspots).forEach((hotspot) => {
-      const hotspotDetails = walletHotspots[hotspot]
-      total += hotspotDetails?.pendingIotRewards || 0
-    })
-
-    return total
-  }, [hotspotsSlice, currentAccount])
-
-  const pendingMobileRewards = useMemo(() => {
-    if (!currentAccount?.solanaAddress) return 0
-
-    let total = 0
-    const walletHotspots =
-      hotspotsSlice[currentAccount?.solanaAddress]?.hotspotDetails
-
-    if (!walletHotspots) return 0
-
-    Object.keys(walletHotspots).forEach((hotspot) => {
-      const hotspotDetails = walletHotspots[hotspot]
-      total += hotspotDetails?.pendingMobileRewards || 0
-    })
-
-    return total
-  }, [hotspotsSlice, currentAccount])
+        return acc
+      }, new BN(0)),
+    [hotspotsWithMeta],
+  )
 
   if (
     !currentAccount?.solanaAddress ||
     !hotspotsSlice[currentAccount?.solanaAddress]
   ) {
     return {
+      pendingIotRewards,
+      pendingMobileRewards,
       loading: false,
       hotspots: [],
       hotspotsWithMeta: [],
@@ -323,16 +312,15 @@ const useHotspots = (): {
         error: errorIot,
         loading: loadingIot,
       },
-      pendingIotRewards,
-      pendingMobileRewards,
       createHotspot,
       fetchMore,
       fetchingMore,
-      getPendingHotspotRewards,
     }
   }
 
   return {
+    pendingIotRewards,
+    pendingMobileRewards,
     hotspots,
     hotspotsWithMeta:
       hotspotsSlice[currentAccount?.solanaAddress]?.hotspotsWithMeta,
@@ -348,12 +336,9 @@ const useHotspots = (): {
       error: errorIot,
       loading: loadingIot,
     },
-    pendingIotRewards,
-    pendingMobileRewards,
     createHotspot,
     fetchMore,
     fetchingMore,
-    getPendingHotspotRewards,
   }
 }
 export default useHotspots

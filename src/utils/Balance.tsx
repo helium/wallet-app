@@ -34,11 +34,8 @@ import { useGetTokenPricesQuery } from '../store/slices/walletRestApi'
 import { useAppDispatch } from '../store/store'
 import { accountCurrencyType } from './accountUtils'
 import { decimalSeparator, groupSeparator } from './i18n'
-import {
-  onAccountChange,
-  removeAccountChangeListener,
-  Mints,
-} from './solanaUtils'
+import { onAccountChange, removeAccountChangeListener } from './solanaUtils'
+import { Mints } from './constants'
 import useAppear from '../hooks/useAppear'
 import usePrevious from '../hooks/usePrevious'
 

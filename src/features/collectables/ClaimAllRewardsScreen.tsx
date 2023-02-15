@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Edge } from 'react-native-safe-area-context'
 import { Ticker } from '@helium/currency'
 import RewardBG from '@assets/images/rewardBg.svg'
+import BN from 'bn.js'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 import useHotspots from '../../hooks/useHotspots'
 import BackScreen from '../../components/BackScreen'
@@ -42,7 +43,7 @@ const ClaimAllRewardsScreen = () => {
     await executeMobile()
   }, [executeIot, executeMobile, navigation])
 
-  const RewardItem = useCallback((ticker: Ticker, amount: number) => {
+  const RewardItem = useCallback((ticker: Ticker, amount: BN) => {
     // add a comma to the amount
     const amountToText = amount.toLocaleString()
     return (
@@ -101,15 +102,21 @@ const ClaimAllRewardsScreen = () => {
             flexGrow={1}
             alignItems="center"
             justifyContent={
-              pendingMobileRewards > 0 && pendingIotRewards > 0
+              pendingMobileRewards &&
+              pendingMobileRewards.gt(new BN(0)) &&
+              pendingIotRewards &&
+              pendingIotRewards.gt(new BN(0))
                 ? 'space-between'
                 : 'center'
             }
             flexDirection="row"
           >
-            {pendingMobileRewards > 0 &&
+            {pendingMobileRewards &&
+              pendingMobileRewards.gt(new BN(0)) &&
               RewardItem('MOBILE', pendingMobileRewards)}
-            {pendingIotRewards > 0 && RewardItem('IOT', pendingIotRewards)}
+            {pendingIotRewards &&
+              pendingIotRewards.gt(new BN(0)) &&
+              RewardItem('IOT', pendingIotRewards)}
           </Box>
           <Box flexGrow={2}>
             <Box flexGrow={1} />

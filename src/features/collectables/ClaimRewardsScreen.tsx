@@ -5,6 +5,7 @@ import { Edge } from 'react-native-safe-area-context'
 import { Ticker } from '@helium/currency'
 import { PublicKey } from '@solana/web3.js'
 import RewardBG from '@assets/images/rewardBg.svg'
+import BN from 'bn.js'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 import BackScreen from '../../components/BackScreen'
 import Box from '../../components/Box'
@@ -17,7 +18,7 @@ import ButtonPressable from '../../components/ButtonPressable'
 import { DelayedFadeIn } from '../../components/FadeInOut'
 import { useHotspot } from '../../hooks/useHotspot'
 import TokenIcon from '../../components/TokenIcon'
-import useHotspots from '../../hooks/useHotspots'
+import { Mints } from '../../utils/constants'
 
 type Route = RouteProp<CollectableStackParamList, 'ClaimRewardsScreen'>
 
@@ -29,14 +30,21 @@ const ClaimRewardsScreen = () => {
   const { hotspot } = route.params
 
   const mint = useMemo(() => new PublicKey(hotspot.id), [hotspot.id])
-
   const { claimMobileRewards, claimIotRewards } = useHotspot(mint)
 
-  const { getPendingHotspotRewards } = useHotspots()
-
-  const { pendingMobileRewards, pendingIotRewards } = useMemo(
-    () => getPendingHotspotRewards(mint.toBase58()),
-    [mint, getPendingHotspotRewards],
+  const pendingIotRewards = useMemo(
+    () =>
+      hotspot &&
+      hotspot.pendingRewards &&
+      new BN(hotspot.pendingRewards[Mints.IOT]),
+    [hotspot],
+  )
+  const pendingMobileRewards = useMemo(
+    () =>
+      hotspot &&
+      hotspot.pendingRewards &&
+      new BN(hotspot.pendingRewards[Mints.MOBILE]),
+    [hotspot],
   )
 
   const title = useMemo(() => {
@@ -53,7 +61,7 @@ const ClaimRewardsScreen = () => {
     navigation.push('ClaimingRewardsScreen')
   }, [claimIotRewards, claimMobileRewards, navigation])
 
-  const RewardItem = useCallback((ticker: Ticker, amount: number) => {
+  const RewardItem = useCallback((ticker: Ticker, amount: BN) => {
     // add a comma to the amount
     const amountToText = amount.toLocaleString()
     return (
@@ -88,7 +96,12 @@ const ClaimRewardsScreen = () => {
   }, [])
 
   const addAllToAccountDisabled = useMemo(() => {
-    return pendingIotRewards === 0 && pendingMobileRewards === 0
+    return (
+      pendingIotRewards &&
+      pendingIotRewards.eq(new BN(0)) &&
+      pendingMobileRewards &&
+      pendingMobileRewards.eq(new BN(0))
+    )
   }, [pendingIotRewards, pendingMobileRewards])
 
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
@@ -118,19 +131,19 @@ const ClaimRewardsScreen = () => {
             alignItems="center"
             justifyContent={
               !!pendingMobileRewards &&
-              pendingMobileRewards > 0 &&
+              pendingMobileRewards.gt(new BN(0)) &&
               !!pendingIotRewards &&
-              pendingIotRewards > 0
+              pendingIotRewards.gt(new BN(0))
                 ? 'space-between'
                 : 'center'
             }
             flexDirection="row"
           >
             {!!pendingMobileRewards &&
-              pendingMobileRewards > 0 &&
+              pendingMobileRewards.gt(new BN(0)) &&
               RewardItem('MOBILE', pendingMobileRewards)}
             {!!pendingIotRewards &&
-              pendingIotRewards > 0 &&
+              pendingIotRewards.gt(new BN(0)) &&
               RewardItem('IOT', pendingIotRewards)}
           </Box>
           <Box flexGrow={2}>

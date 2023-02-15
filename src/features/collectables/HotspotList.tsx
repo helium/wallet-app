@@ -4,6 +4,8 @@ import { FlatList } from 'react-native-gesture-handler'
 import { RefreshControl } from 'react-native'
 import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
+import BN from 'bn.js'
+import type { HotspotWithPendingRewards } from '../../utils/solanaUtils'
 import { useColors } from '../../theme/themeHooks'
 import Box from '../../components/Box'
 import { NFTSkeleton } from './NftListItem'
@@ -32,15 +34,15 @@ const HotspotList = () => {
     refresh,
     claimAllMobileRewards: { loading: loadingMobile, error: errorMobile },
     claimAllIotRewards: { loading: loadingIot, error: errorIot },
-    pendingIotRewards,
-    pendingMobileRewards,
     createHotspot,
     fetchMore,
     fetchingMore,
+    pendingIotRewards,
+    pendingMobileRewards,
   } = useHotspots()
 
   const handleNavigateToCollectable = useCallback(
-    (collectable: CompressedNFT) => {
+    (collectable: HotspotWithPendingRewards) => {
       if (collectable.content.metadata) {
         triggerImpact('light')
         navigation.navigate('HotspotDetailsScreen', { collectable })
@@ -119,7 +121,10 @@ const HotspotList = () => {
             !!errorMobile ||
             loadingIot ||
             !!errorIot ||
-            (pendingIotRewards === 0 && pendingMobileRewards === 0)
+            (pendingIotRewards &&
+              pendingIotRewards.eq(new BN('0')) &&
+              pendingMobileRewards &&
+              pendingMobileRewards.eq(new BN('0')))
           }
           onPress={handleNavigateToClaimRewards}
         />
@@ -152,7 +157,7 @@ const HotspotList = () => {
 
   const renderCollectable = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
-    ({ item }: { item: CompressedNFT }) => {
+    ({ item }: { item: HotspotWithPendingRewards }) => {
       return (
         <HotspotListItem
           hotspot={item}

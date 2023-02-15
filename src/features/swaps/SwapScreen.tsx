@@ -24,6 +24,7 @@ import {
   TXN_FEE_IN_SOL,
   Mints,
 } from '../../utils/solanaUtils'
+import { Mints } from '../../utils/constants'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import * as Logger from '../../utils/logger'
 import { SwapNavigationProp } from './swapTypes'

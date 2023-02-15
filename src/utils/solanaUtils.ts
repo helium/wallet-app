@@ -48,15 +48,11 @@ import {
   SPL_NOOP_PROGRAM_ID,
 } from '@solana/spl-account-compression'
 import bs58 from 'bs58'
-import {
-  HNT_MINT,
-  IOT_MINT,
-  MOBILE_MINT,
-  searchAssets,
-  toBN,
-} from '@helium/spl-utils'
+import { HNT_MINT, searchAssets, toBN } from '@helium/spl-utils'
 import { AnchorProvider, BN } from '@coral-xyz/anchor'
 import * as tm from '@helium/treasury-management-sdk'
+import { getPendingRewards } from '@helium/distributor-oracle'
+import { init } from '@helium/lazy-distributor-sdk'
 import { getKeypair } from '../storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
 import sleep from './sleep'
@@ -68,12 +64,7 @@ import {
 } from '../types/solana'
 import * as Logger from './logger'
 import { WrappedConnection } from './WrappedConnection'
-
-export const Mints: Record<string, string> = {
-  IOT: IOT_MINT.toBase58(),
-  MOBILE: MOBILE_MINT.toBase58(),
-  HNT: HNT_MINT.toBase58(),
-}
+import { IOT_LAZY_KEY, Mints, MOBILE_LAZY_KEY } from './constants'
 
 export const SolanaConnection = {
   localnet: new WrappedConnection('http://127.0.0.1:8899'),
@@ -854,7 +845,7 @@ export const getCompressedCollectablesByCreator = async (
  */
 export const getCollectablesMetadata = async (
   collectables: CompressedNFT[],
-) => {
+): Promise<CompressedNFT[]> => {
   const collectablesWithMetadata = await Promise.all(
     collectables.map(async (col) => {
       try {
@@ -876,6 +867,43 @@ export const getCollectablesMetadata = async (
   )
 
   return collectablesWithMetadata.filter((c) => c !== null) as CompressedNFT[]
+}
+
+export type HotspotWithPendingRewards = CompressedNFT & {
+  // mint id to pending rewards
+  pendingRewards: Record<string, string> | undefined
+}
+
+export async function annotateWithPendingRewards(
+  provider: AnchorProvider,
+  hotspots: CompressedNFT[],
+): Promise<HotspotWithPendingRewards[]> {
+  const program = await init(provider)
+  const dao = daoKey(new PublicKey(Mints.HNT))[0]
+  const entityKeys = hotspots.map(
+    (h) => h.content.json_uri.split('/').slice(-1)[0],
+  )
+  const mobileRewards = await getPendingRewards(
+    program,
+    MOBILE_LAZY_KEY,
+    dao,
+    entityKeys,
+  )
+  const iotRewards = await getPendingRewards(
+    program,
+    IOT_LAZY_KEY,
+    dao,
+    entityKeys,
+  )
+  return hotspots.map((hotspot, index) => {
+    const hotspotWithMeta: HotspotWithPendingRewards =
+      hotspot as HotspotWithPendingRewards
+    hotspotWithMeta.pendingRewards = {
+      [Mints.MOBILE]: mobileRewards[entityKeys[index]],
+      [Mints.IOT]: iotRewards[entityKeys[index]],
+    }
+    return hotspotWithMeta
+  })
 }
 
 /**

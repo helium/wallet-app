@@ -1,26 +1,18 @@
-import { PublicKey } from '@solana/web3.js'
-import { useEffect, useMemo, useState } from 'react'
-import { recipientKey as getRecipientKey } from '@helium/lazy-distributor-sdk'
-import { useAsyncCallback } from 'react-async-hook'
 import * as client from '@helium/distributor-oracle'
-import {
-  getPendingRewards,
-  useProgram,
-  MOBILE_LAZY_KEY,
-  IOT_LAZY_KEY,
-} from '../utils/hotspotNftsUtils'
-import { useRecipient } from './useRecipient'
-import * as Logger from '../utils/logger'
-import { useAccountStorage } from '../storage/AccountStorageProvider'
+import { PublicKey } from '@solana/web3.js'
+import { useEffect, useState } from 'react'
+import { useAsyncCallback } from 'react-async-hook'
 import useSubmitTxn from '../graphql/useSubmitTxn'
-import { getConnection } from '../utils/solanaUtils'
+import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
+import { IOT_LAZY_KEY, MOBILE_LAZY_KEY } from '../utils/constants'
+import { useProgram } from '../utils/hotspotNftsUtils'
+import * as Logger from '../utils/logger'
+import { getConnection } from '../utils/solanaUtils'
 
 export function useHotspot(mint: PublicKey): {
   iotRewardsError: Error | undefined
   mobileRewardsError: Error | undefined
-  pendingIotRewards: number | null
-  pendingMobileRewards: number | null
   claimIotRewards: () => Promise<void>
   claimMobileRewards: () => Promise<void>
   iotRewardsLoading: boolean
@@ -30,46 +22,8 @@ export function useHotspot(mint: PublicKey): {
   const conn = getConnection(cluster)
 
   const program = useProgram()
-  const [pendingMobileRewards, setPendingMobileRewards] = useState<
-    number | null
-  >(null)
-  const [pendingIotRewards, setPendingIotRewards] = useState<number | null>(
-    null,
-  )
   const [error, setError] = useState<string | null>(null)
-  const recipientMobileKey = useMemo(() => {
-    return getRecipientKey(MOBILE_LAZY_KEY, mint)[0]
-  }, [mint])
-  const recipientIotKey = useMemo(() => {
-    return getRecipientKey(IOT_LAZY_KEY, mint)[0]
-  }, [mint])
-  const { info: mobileRecipient, loading: mobileLoading } =
-    useRecipient(recipientMobileKey)
-  const { info: iotRecipient, loading: iotLoading } =
-    useRecipient(recipientIotKey)
   const { submitClaimRewards } = useSubmitTxn()
-
-  useEffect(() => {
-    try {
-      if (program && !mobileLoading) {
-        getPendingRewards(program, mint, mobileRecipient, MOBILE_LAZY_KEY).then(
-          ({ pendingRewards: mobileRewards }) => {
-            setPendingMobileRewards(mobileRewards)
-          },
-        )
-      }
-      if (program && !iotLoading) {
-        getPendingRewards(program, mint, iotRecipient, IOT_LAZY_KEY).then(
-          ({ pendingRewards: iotRewards }) => {
-            setPendingIotRewards(iotRewards)
-          },
-        )
-      }
-    } catch (e) {
-      Logger.error(e)
-    }
-  }, [mint, program, mobileRecipient, iotRecipient, iotLoading, mobileLoading])
-
   const { anchorProvider } = useAccountStorage()
 
   const {
@@ -78,7 +32,6 @@ export function useHotspot(mint: PublicKey): {
     loading: mobileRewardsLoading,
   } = useAsyncCallback(async () => {
     if (mint && program && anchorProvider) {
-      if (mobileLoading) return
       const rewards = await client.getCurrentRewards(
         // TODO: Fix program type once HPL is upgraded to anchor v0.26
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -108,7 +61,6 @@ export function useHotspot(mint: PublicKey): {
     loading: iotRewardsLoading,
   } = useAsyncCallback(async () => {
     if (mint && program && anchorProvider) {
-      if (iotLoading) return
       const rewards = await client.getCurrentRewards(
         // TODO: Fix program type once HPL is upgraded to anchor v0.26
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -140,8 +92,6 @@ export function useHotspot(mint: PublicKey): {
   }, [error, mobileRewardsError])
 
   return {
-    pendingIotRewards,
-    pendingMobileRewards,
     claimMobileRewards,
     claimIotRewards,
     mobileRewardsLoading,

@@ -1,21 +1,9 @@
-import * as client from '@helium/distributor-oracle'
-import { LazyDistributor } from '@helium/idls/lib/types/lazy_distributor'
-import { init, lazyDistributorKey } from '@helium/lazy-distributor-sdk'
-import { toNumber } from '@helium/spl-utils'
 import { Program, setProvider } from '@coral-xyz/anchor'
-import { getMint } from '@solana/spl-token'
-import { PublicKey } from '@solana/web3.js'
-import BN from 'bn.js'
+import { LazyDistributor } from '@helium/idls/lib/types/lazy_distributor'
+import { init } from '@helium/lazy-distributor-sdk'
 import { useState } from 'react'
 import { useAsync } from 'react-async-hook'
-import { Recipient } from '../hooks/useRecipient'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import { Mints } from './solanaUtils'
-
-export const MOBILE_LAZY_KEY = lazyDistributorKey(
-  new PublicKey(Mints.MOBILE),
-)[0]
-export const IOT_LAZY_KEY = lazyDistributorKey(new PublicKey(Mints.IOT))[0]
 
 export function useProgram() {
   const [program, setProgram] = useState<Program<LazyDistributor> | null>(null)
@@ -29,43 +17,6 @@ export function useProgram() {
   }, [anchorProvider])
 
   return program
-}
-
-export async function getPendingRewards(
-  program: Program<LazyDistributor>,
-  mint: PublicKey,
-  maybeRecipient: Recipient | undefined,
-  lazyKey: PublicKey,
-) {
-  const lazyDistributor = await program.account.lazyDistributorV0.fetch(lazyKey)
-
-  const oracleRewards = await client.getCurrentRewards(
-    // TODO: Fix program type once HPL is upgraded to anchor v0.26
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    program as any,
-    lazyKey,
-    mint,
-  )
-
-  const rewardsMintAcc = await getMint(
-    program.provider.connection,
-    lazyDistributor.rewardsMint,
-  )
-
-  const sortedOracleRewards = oracleRewards
-    .map((rew) => rew.currentRewards)
-    .sort((a, b) => new BN(a).sub(new BN(b)).toNumber())
-
-  const oracleMedian = new BN(
-    sortedOracleRewards[Math.floor(sortedOracleRewards.length / 2)],
-  )
-
-  const subbed = oracleMedian.sub(maybeRecipient?.totalRewards || new BN(0))
-
-  return {
-    pendingRewards: Math.max(toNumber(subbed, rewardsMintAcc.decimals), 0),
-    rewardsMint: lazyDistributor.rewardsMint,
-  }
 }
 
 export const removeDashAndCapitalize = (str: string) => {
