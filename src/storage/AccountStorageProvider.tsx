@@ -160,7 +160,8 @@ const useAccountStorageHook = () => {
         ...result,
         [addy]: {
           ...acct,
-          solanaAddress: '3SjgEPbwauDyZGVzRL6Q6HN7EZv91vWUJdRyYJERzvXt',
+          solanaAddress: heliumAddressToSolAddress(addy),
+          // solanaAddress: '3SjgEPbwauDyZGVzRL6Q6HN7EZv91vWUJdRyYJERzvXt',
         },
       }
     }, {} as CSAccounts)
@@ -181,7 +182,7 @@ const useAccountStorageHook = () => {
       if (c.solanaAddress) return c
       return {
         ...c,
-        solanaAddress: '3SjgEPbwauDyZGVzRL6Q6HN7EZv91vWUJdRyYJERzvXt',
+        solanaAddress: heliumAddressToSolAddress(c.address),
       }
     })
 

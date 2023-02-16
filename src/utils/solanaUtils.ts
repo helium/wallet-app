@@ -68,7 +68,9 @@ import { IOT_LAZY_KEY, Mints, MOBILE_LAZY_KEY } from './constants'
 
 export const SolanaConnection = {
   localnet: new WrappedConnection('http://127.0.0.1:8899'),
-  devnet: new WrappedConnection('https://rpc-devnet.aws.metaplex.com/'),
+  devnet: new WrappedConnection(
+    'https://rpc-devnet.helius.xyz/?api-key=4eb6e438-25d1-4dcf-89dd-f54f2b42b846',
+  ),
   devnetNonAssetApi: new Connection(clusterApiUrl('devnet')),
   testnet: new WrappedConnection(clusterApiUrl('testnet')),
   testnetNonAssetApi: new Connection(clusterApiUrl('testnet')),

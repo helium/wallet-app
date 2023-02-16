@@ -72,6 +72,23 @@ const useHotspots = (): {
     return hotspotsSlice[currentAccount?.solanaAddress]?.hotspots || []
   }, [hotspotsSlice, currentAccount])
 
+  const refresh = useCallback(() => {
+    if (
+      !anchorProvider ||
+      !currentAccount?.solanaAddress ||
+      l1Network !== 'solana'
+    ) {
+      return
+    }
+    dispatch(
+      fetchHotspots({
+        provider: anchorProvider,
+        account: currentAccount,
+        cluster,
+      }),
+    )
+  }, [anchorProvider, cluster, currentAccount, dispatch, l1Network])
+
   const onClaimAllMobileRewards = async () => {
     if (!anchorProvider || !currentAccount?.solanaAddress) {
       return
@@ -99,6 +116,7 @@ const useHotspots = (): {
     )
 
     await submitClaimAllRewards(txns)
+    refresh()
   }
 
   const onClaimAllIotRewards = async () => {
@@ -128,6 +146,7 @@ const useHotspots = (): {
     )
 
     await submitClaimAllRewards(txns)
+    refresh()
   }
 
   const { execute, loading, error } = useAsyncCallback(onClaimAllMobileRewards)
@@ -136,23 +155,6 @@ const useHotspots = (): {
     loading: loadingIot,
     error: errorIot,
   } = useAsyncCallback(onClaimAllIotRewards)
-
-  const refresh = useCallback(() => {
-    if (
-      !anchorProvider ||
-      !currentAccount?.solanaAddress ||
-      l1Network !== 'solana'
-    ) {
-      return
-    }
-    dispatch(
-      fetchHotspots({
-        provider: anchorProvider,
-        account: currentAccount,
-        cluster,
-      }),
-    )
-  }, [anchorProvider, cluster, currentAccount, dispatch, l1Network])
 
   const fetchingMore = useMemo(() => {
     if (

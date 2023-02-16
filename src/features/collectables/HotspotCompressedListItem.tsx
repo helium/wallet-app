@@ -5,6 +5,7 @@ import IotSymbol from '@assets/images/iotSymbol.svg'
 import MobileSymbol from '@assets/images/mobileSymbol.svg'
 import { useAsync } from 'react-async-hook'
 import BN from 'bn.js'
+import { toNumber } from '@helium/spl-utils'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import Box from '../../components/Box'
@@ -136,7 +137,9 @@ const HotspotListItem = ({
               elevation={2}
             >
               <Text variant="body2Medium" marginEnd="xs" color="black">
-                {formatLargeNumber(pendingMobileRewards || new BN(0))}
+                {formatLargeNumber(
+                  toNumber(pendingMobileRewards || new BN(0), 6),
+                )}
               </Text>
               <MobileSymbol color="black" />
             </Box>
@@ -159,7 +162,7 @@ const HotspotListItem = ({
               elevation={2}
             >
               <Text variant="body2Medium" marginEnd="xs" color="black">
-                {formatLargeNumber(pendingIotRewards || new BN(0))}
+                {formatLargeNumber(toNumber(pendingIotRewards || new BN(0), 6))}
               </Text>
               <IotSymbol color="black" />
             </Box>

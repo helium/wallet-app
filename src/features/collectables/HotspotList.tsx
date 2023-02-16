@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import BN from 'bn.js'
 import listViewIcon from '@assets/images/listViewIcon.svg'
 import expandedViewIcon from '@assets/images/expandedViewIcon.svg'
+import { toNumber } from '@helium/spl-utils'
 import type { HotspotWithPendingRewards } from '../../utils/solanaUtils'
 import { useColors } from '../../theme/themeHooks'
 import Box from '../../components/Box'
@@ -105,7 +106,7 @@ const HotspotList = () => {
             numberOfLines={1}
             adjustsFontSizeToFit
           >
-            {formatLargeNumber(amount)}
+            {formatLargeNumber(toNumber(amount, 6))}
           </Text>
           <Text variant="subtitle4" color="secondaryText">
             {ticker}
