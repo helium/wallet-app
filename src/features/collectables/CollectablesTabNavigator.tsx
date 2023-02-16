@@ -90,7 +90,7 @@ function CollectablesTabNavigator() {
           position: undefined,
         },
         tabBarIndicatorContainerStyle: {
-          left: '-13%',
+          left: '-7%',
           justifyContent: 'flex-end',
           alignItems: 'center',
         },
