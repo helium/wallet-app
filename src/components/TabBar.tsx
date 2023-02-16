@@ -103,16 +103,13 @@ export type TabBarOption = {
   iconPosition?: 'top' | 'leading'
 }
 
-export type IndicatorOptions = {
-  indicatorPostion: 'top' | 'bottom'
-  indicatorWidthOffset: number
-}
-
 type Props = {
   tabBarOptions: Array<TabBarOption>
   selectedValue: string
   onItemSelected: (value: string) => void
   stretchItems?: boolean
+  hasDivider?: boolean
+  hasIndicator?: boolean
 } & TouchableOpacityBoxProps
 
 const TabBar = ({
@@ -120,6 +117,8 @@ const TabBar = ({
   selectedValue,
   onItemSelected,
   stretchItems = false,
+  hasDivider = true,
+  hasIndicator = true,
   ...containerProps
 }: Props) => {
   const hitSlop = useVerticalHitSlop('l')
@@ -193,16 +192,18 @@ const TabBar = ({
       <Box flexDirection="row" justifyContent="center" paddingVertical="ms">
         {items}
       </Box>
-      <Animated.View style={animatedStyles}>
-        <Box
-          backgroundColor="primaryText"
-          height={3}
-          position="absolute"
-          bottom={0.5}
-          width={itemRects?.[selectedValue]?.width || 0}
-        />
-      </Animated.View>
-      <Box backgroundColor="black200" height={1} width="100%" />
+      {hasIndicator && (
+        <Animated.View style={animatedStyles}>
+          <Box
+            backgroundColor="primaryText"
+            height={3}
+            position="absolute"
+            bottom={0.5}
+            width={itemRects?.[selectedValue]?.width || 0}
+          />
+        </Animated.View>
+      )}
+      {hasDivider && <Box backgroundColor="black200" height={1} width="100%" />}
     </Box>
   )
 }

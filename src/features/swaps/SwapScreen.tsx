@@ -22,7 +22,6 @@ import {
   createTreasurySwapMessage,
   getConnection,
   TXN_FEE_IN_SOL,
-  Mints,
 } from '../../utils/solanaUtils'
 import { Mints } from '../../utils/constants'
 import { useAppStorage } from '../../storage/AppStorageProvider'

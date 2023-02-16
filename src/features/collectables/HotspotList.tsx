@@ -1,10 +1,12 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { times } from 'lodash'
 import { FlatList } from 'react-native-gesture-handler'
 import { RefreshControl } from 'react-native'
 import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import BN from 'bn.js'
+import listViewIcon from '@assets/images/listViewIcon.svg'
+import expandedViewIcon from '@assets/images/expandedViewIcon.svg'
 import type { HotspotWithPendingRewards } from '../../utils/solanaUtils'
 import { useColors } from '../../theme/themeHooks'
 import Box from '../../components/Box'
@@ -12,6 +14,7 @@ import { NFTSkeleton } from './NftListItem'
 import { CompressedNFT } from '../../types/solana'
 import { CollectableNavigationProp } from './collectablesTypes'
 import HotspotListItem from './HotspotListItem'
+import HotspotCompressedListItem from './HotspotCompressedListItem'
 import ButtonPressable from '../../components/ButtonPressable'
 import useHotspots from '../../hooks/useHotspots'
 import CircleLoader from '../../components/CircleLoader'
@@ -19,6 +22,7 @@ import useHaptic from '../../hooks/useHaptic'
 import Text from '../../components/Text'
 import { formatLargeNumber } from '../../utils/accountUtils'
 import TokenIcon from '../../components/TokenIcon'
+import TabBar from '../../components/TabBar'
 
 const HotspotList = () => {
   const navigation = useNavigation<CollectableNavigationProp>()
@@ -26,6 +30,24 @@ const HotspotList = () => {
   const isFocused = useIsFocused()
   const { primaryText } = useColors()
   const { triggerImpact } = useHaptic()
+
+  const tabBarOptions = useMemo(
+    () => [
+      {
+        value: 'list',
+        Icon: listViewIcon,
+        iconSize: 32,
+      },
+      {
+        value: 'expanded',
+        Icon: expandedViewIcon,
+        iconSize: 32,
+      },
+    ],
+    [],
+  )
+
+  const [tabSelected, setTabSelected] = useState(tabBarOptions[0].value)
 
   const {
     hotspots,
@@ -93,9 +115,24 @@ const HotspotList = () => {
     )
   }, [])
 
+  const onTabSelected = useCallback(
+    (value) => {
+      setTabSelected(value)
+    },
+    [setTabSelected],
+  )
+
   const renderHeader = useCallback(() => {
     return (
       <Box marginHorizontal="l" marginTop="l">
+        <TabBar
+          tabBarOptions={tabBarOptions}
+          onItemSelected={onTabSelected}
+          selectedValue={tabSelected}
+          hasIndicator={false}
+          hasDivider={false}
+          marginBottom="l"
+        />
         <Box flexDirection="row">
           <RewardItem
             ticker="MOBILE"
@@ -153,11 +190,24 @@ const HotspotList = () => {
     pendingMobileRewards,
     RewardItem,
     t,
+    onTabSelected,
+    tabSelected,
+    tabBarOptions,
   ])
 
   const renderCollectable = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: HotspotWithPendingRewards }) => {
+      if (tabSelected === 'list') {
+        return (
+          <HotspotCompressedListItem
+            hotspot={item}
+            onPress={handleNavigateToCollectable}
+            key={item.id}
+            marginBottom="xs"
+          />
+        )
+      }
       return (
         <HotspotListItem
           hotspot={item}
@@ -166,7 +216,7 @@ const HotspotList = () => {
         />
       )
     },
-    [handleNavigateToCollectable],
+    [handleNavigateToCollectable, tabSelected],
   )
 
   const renderEmptyComponent = useCallback(() => {
@@ -203,7 +253,7 @@ const HotspotList = () => {
       data={hotspotsWithMeta}
       numColumns={2}
       columnWrapperStyle={{
-        flexDirection: 'row',
+        flexDirection: tabSelected === 'list' ? 'column' : 'row',
       }}
       ListHeaderComponent={renderHeader}
       refreshControl={
