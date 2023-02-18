@@ -7,8 +7,10 @@ import { useTranslation } from 'react-i18next'
 import BN from 'bn.js'
 import listViewIcon from '@assets/images/listViewIcon.svg'
 import expandedViewIcon from '@assets/images/expandedViewIcon.svg'
-import { toNumber } from '@helium/spl-utils'
-import type { HotspotWithPendingRewards } from '../../utils/solanaUtils'
+import { Balance } from '@helium/currency'
+import ListItem from '../../components/ListItem'
+import BlurActionSheet from '../../components/BlurActionSheet'
+import { HotspotWithPendingRewards } from '../../utils/solanaUtils'
 import { useColors } from '../../theme/themeHooks'
 import Box from '../../components/Box'
 import { NFTSkeleton } from './NftListItem'
@@ -24,6 +26,9 @@ import Text from '../../components/Text'
 import { formatLargeNumber } from '../../utils/accountUtils'
 import TokenIcon from '../../components/TokenIcon'
 import TabBar from '../../components/TabBar'
+import TouchableOpacityBox from '../../components/TouchableOpacityBox'
+
+const DEFAULT_PAGE_AMOUNT = 20
 
 const HotspotList = () => {
   const navigation = useNavigation<CollectableNavigationProp>()
@@ -31,6 +36,10 @@ const HotspotList = () => {
   const isFocused = useIsFocused()
   const { primaryText } = useColors()
   const { triggerImpact } = useHaptic()
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [pageAmount, setPageAmount] = useState<number | undefined>(
+    DEFAULT_PAGE_AMOUNT,
+  )
 
   const tabBarOptions = useMemo(
     () => [
@@ -55,13 +64,12 @@ const HotspotList = () => {
     hotspotsWithMeta,
     loading: loadingHotspots,
     refresh,
-    claimAllMobileRewards: { loading: loadingMobile, error: errorMobile },
-    claimAllIotRewards: { loading: loadingIot, error: errorIot },
     createHotspot,
     fetchMore,
     fetchingMore,
     pendingIotRewards,
     pendingMobileRewards,
+    onEndReached,
   } = useHotspots()
 
   const handleNavigateToCollectable = useCallback(
@@ -75,20 +83,67 @@ const HotspotList = () => {
   )
 
   const handleOnEndReached = useCallback(() => {
-    if (!fetchingMore && isFocused) {
-      fetchMore()
+    if (!fetchingMore && isFocused && !onEndReached) {
+      fetchMore(pageAmount)
     }
-  }, [fetchingMore, isFocused, fetchMore])
+  }, [fetchingMore, isFocused, fetchMore, pageAmount, onEndReached])
 
   const handleNavigateToClaimRewards = useCallback(() => {
     navigation.navigate('ClaimAllRewardsScreen')
   }, [navigation])
 
+  const toggleFiltersOpen = useCallback(
+    (open) => () => {
+      setFiltersOpen(open)
+    },
+    [],
+  )
+
+  const handleSetPageAmount = useCallback(
+    (amount?: number) => () => {
+      setFiltersOpen(false)
+      setPageAmount(amount)
+      refresh(amount)
+    },
+    [setPageAmount, setFiltersOpen, refresh],
+  )
+
+  const filters = useCallback(
+    () => (
+      <>
+        <ListItem
+          key="show-20"
+          title={t('collectablesScreen.hotspots.twenty')}
+          selected={pageAmount === DEFAULT_PAGE_AMOUNT}
+          onPress={handleSetPageAmount(DEFAULT_PAGE_AMOUNT)}
+          hasPressedState={false}
+        />
+        <ListItem
+          key="show-50"
+          title={t('collectablesScreen.hotspots.fifty')}
+          onPress={handleSetPageAmount(50)}
+          selected={pageAmount === 50}
+          hasPressedState={false}
+        />
+        <ListItem
+          key="show-all"
+          title={t('collectablesScreen.hotspots.all')}
+          subtitle={t('collectablesScreen.hotspots.showAllHotspotsWarning')}
+          onPress={handleSetPageAmount(undefined)}
+          selected={pageAmount === undefined}
+          hasPressedState={false}
+          subtitleColor="orange500"
+        />
+      </>
+    ),
+    [handleSetPageAmount, pageAmount, t],
+  )
+
   const RewardItem = useCallback(({ ticker, amount, ...rest }) => {
+    const realAmount = Balance.fromIntAndTicker(amount, ticker)
     return (
       <Box
-        paddingVertical="m"
-        paddingHorizontal="m"
+        padding="m"
         alignItems="center"
         justifyContent="center"
         backgroundColor="secondaryBackground"
@@ -102,11 +157,12 @@ const HotspotList = () => {
         <Box marginStart="s">
           <Text
             marginTop="xs"
-            variant="h4Medium"
+            variant="subtitle3"
             numberOfLines={1}
             adjustsFontSizeToFit
+            maxFontSizeMultiplier={1.1}
           >
-            {formatLargeNumber(toNumber(amount, 6))}
+            {formatLargeNumber(realAmount.bigBalance as unknown as BN)}
           </Text>
           <Text variant="subtitle4" color="secondaryText">
             {ticker}
@@ -126,14 +182,32 @@ const HotspotList = () => {
   const renderHeader = useCallback(() => {
     return (
       <Box marginHorizontal="l" marginTop="l">
-        <TabBar
-          tabBarOptions={tabBarOptions}
-          onItemSelected={onTabSelected}
-          selectedValue={tabSelected}
-          hasIndicator={false}
-          hasDivider={false}
-          marginBottom="l"
-        />
+        <Box flex={1} marginBottom="l">
+          <TabBar
+            flex={1}
+            tabBarOptions={tabBarOptions}
+            onItemSelected={onTabSelected}
+            selectedValue={tabSelected}
+            hasIndicator={false}
+            hasDivider={false}
+          />
+
+          <TouchableOpacityBox
+            onPress={toggleFiltersOpen(true)}
+            position="absolute"
+            top={0}
+            bottom={0}
+            right={0}
+            justifyContent="center"
+            marginTop="s"
+            marginEnd="m"
+          >
+            <Text variant="subtitle3" color="secondaryText" textAlign="right">
+              {t('collectablesScreen.hotspots.filter')}
+            </Text>
+          </TouchableOpacityBox>
+        </Box>
+        <Box />
         <Box flexDirection="row">
           <RewardItem
             ticker="MOBILE"
@@ -142,6 +216,16 @@ const HotspotList = () => {
           />
           <RewardItem ticker="IOT" amount={pendingIotRewards} marginStart="s" />
         </Box>
+        {pageAmount && hotspotsWithMeta.length > pageAmount && (
+          <Text
+            marginTop="m"
+            variant="subtitle4"
+            color="orange500"
+            textAlign="center"
+          >
+            {t('collectablesScreen.hotspots.currentDisplayedRewards')}
+          </Text>
+        )}
         <ButtonPressable
           flexGrow={1}
           marginTop="l"
@@ -155,14 +239,10 @@ const HotspotList = () => {
           titleColor="black"
           marginBottom="m"
           disabled={
-            loadingMobile ||
-            !!errorMobile ||
-            loadingIot ||
-            !!errorIot ||
-            (pendingIotRewards &&
-              pendingIotRewards.eq(new BN('0')) &&
-              pendingMobileRewards &&
-              pendingMobileRewards.eq(new BN('0')))
+            pendingIotRewards &&
+            pendingIotRewards.eq(new BN('0')) &&
+            pendingMobileRewards &&
+            pendingMobileRewards.eq(new BN('0'))
           }
           onPress={handleNavigateToClaimRewards}
         />
@@ -182,11 +262,7 @@ const HotspotList = () => {
     )
   }, [
     createHotspot,
-    errorIot,
-    errorMobile,
     handleNavigateToClaimRewards,
-    loadingIot,
-    loadingMobile,
     pendingIotRewards,
     pendingMobileRewards,
     RewardItem,
@@ -194,6 +270,9 @@ const HotspotList = () => {
     onTabSelected,
     tabSelected,
     tabBarOptions,
+    toggleFiltersOpen,
+    hotspotsWithMeta,
+    pageAmount,
   ])
 
   const renderCollectable = useCallback(
@@ -249,30 +328,43 @@ const HotspotList = () => {
     [fetchingMore],
   )
 
+  const handleRefresh = useCallback(() => {
+    refresh(pageAmount)
+  }, [pageAmount, refresh])
+
   return (
-    <FlatList
-      data={hotspotsWithMeta}
-      numColumns={2}
-      columnWrapperStyle={{
-        flexDirection: tabSelected === 'list' ? 'column' : 'row',
-      }}
-      ListHeaderComponent={renderHeader}
-      refreshControl={
-        <RefreshControl
-          enabled
-          refreshing={loadingHotspots}
-          onRefresh={refresh}
-          title=""
-          tintColor={primaryText}
-        />
-      }
-      renderItem={renderCollectable}
-      ListEmptyComponent={renderEmptyComponent}
-      onEndReachedThreshold={0.001}
-      onEndReached={handleOnEndReached}
-      keyExtractor={keyExtractor}
-      ListFooterComponent={Footer}
-    />
+    <>
+      <FlatList
+        data={hotspotsWithMeta}
+        numColumns={2}
+        columnWrapperStyle={{
+          flexDirection: tabSelected === 'list' ? 'column' : 'row',
+        }}
+        ListHeaderComponent={renderHeader}
+        refreshControl={
+          <RefreshControl
+            enabled
+            refreshing={loadingHotspots}
+            onRefresh={handleRefresh}
+            title=""
+            tintColor={primaryText}
+          />
+        }
+        renderItem={renderCollectable}
+        ListEmptyComponent={renderEmptyComponent}
+        onEndReachedThreshold={0.001}
+        onEndReached={handleOnEndReached}
+        keyExtractor={keyExtractor}
+        ListFooterComponent={Footer}
+      />
+      <BlurActionSheet
+        title={t('collectablesScreen.hotspots.chooseAmountOfHotspots')}
+        open={filtersOpen}
+        onClose={toggleFiltersOpen(false)}
+      >
+        {filters()}
+      </BlurActionSheet>
+    </>
   )
 }
 

@@ -85,7 +85,7 @@ const ClaimingRewardsScreen = () => {
                   numberOfLines={2}
                   textAlign="center"
                 >
-                  {t('collectablesScreen.claimComplete')}
+                  {t('collectablesScreen.claimCompleteBody')}
                 </Text>
               </Animated.View>
             )}
@@ -162,7 +162,7 @@ const ClaimingRewardsScreen = () => {
               </Animated.View>
             )}
           </Box>
-          <Box flex={1} width="100%" justifyContent="flex-end">
+          <Box width="100%" justifyContent="flex-end">
             <ButtonPressable
               marginHorizontal="m"
               marginBottom="m"

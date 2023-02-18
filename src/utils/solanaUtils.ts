@@ -824,6 +824,7 @@ export const getCompressedCollectablesByCreator = async (
   pubKey: PublicKey,
   cluster: Cluster,
   page?: number,
+  limit?: number,
 ) => {
   const conn = getConnection(cluster)
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -833,7 +834,7 @@ export const getCompressedCollectablesByCreator = async (
     creatorVerified: true,
     creatorAddress: entityCreatorKey(daoKey(HNT_MINT)[0])[0].toBase58(),
     page,
-    // limit: 10,
+    limit,
   })
 
   return items as unknown as CompressedNFT[]
@@ -897,6 +898,7 @@ export async function annotateWithPendingRewards(
     dao,
     entityKeys,
   )
+
   return hotspots.map((hotspot, index) => {
     const hotspotWithMeta: HotspotWithPendingRewards =
       hotspot as HotspotWithPendingRewards

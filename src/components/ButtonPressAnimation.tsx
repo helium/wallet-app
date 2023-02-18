@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import {
   GestureResponderEvent,
   Pressable,
@@ -44,7 +44,7 @@ const ButtonPressAnimation = ({
       restDisplacementThreshold: 2,
     }).start()
   }
-  const onPressOut = (e: GestureResponderEvent) => {
+  const onPressOut = () => {
     Animated.spring(animation, {
       toValue: 0,
       damping: 10,
@@ -53,14 +53,9 @@ const ButtonPressAnimation = ({
       overshootClamping: false,
       restSpeedThreshold: 0.001,
       restDisplacementThreshold: 2,
-    }).start(({ finished }) => {
-      if (finished && onPress) {
-        onPress(e)
-      }
-    })
+    }).start()
   }
 
-  const onTouchEnd = useCallback(() => {}, [])
   return (
     <ReAnimatedBox
       overflow="hidden"
@@ -70,7 +65,7 @@ const ButtonPressAnimation = ({
       <Pressable
         onPressIn={onPressIn}
         onPressOut={onPressOut}
-        onTouchEnd={onTouchEnd}
+        onPress={onPress}
         style={pressableStyles || styles.pressable}
         disabled={disabled}
       >

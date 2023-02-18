@@ -167,6 +167,7 @@ export default {
       'You can exit this screen while you wait. We’ll update your Wallet momentarily.',
     claimComplete: 'Rewards Claimed!',
     claimCompleteBody: 'We’ve added your tokens to your wallet.',
+    claimError: 'Claim failed. Please try again later.',
     transferCollectableAlertTitle:
       'Are you sure you will like to transfer your collectable?',
     transferCollectableAlertBody: 'This action is irreversible.',
@@ -196,6 +197,15 @@ export default {
       addToAccount: 'Add to Account',
       addAllToAccount: 'Add all to account',
       hotspotCount: '{{ count }} Hotspot(s)',
+      chooseAmountOfHotspots: 'Choose amount of hotspots to show per page',
+      filter: 'Filter',
+      currentDisplayedRewards:
+        'The rewards that are currently displayed as pending are only for the hotspots shown. Scroll to load more or click the filter to show more hotspots per page.',
+      showAllHotspotsWarning:
+        'Warning: Load times may be affected when showing all hotspots per page.',
+      twenty: '20',
+      fifty: '50',
+      all: 'All',
     },
   },
   activityScreen: {

@@ -23,6 +23,7 @@ import * as solUtils from '../../utils/solanaUtils'
 import { fetchCollectables } from './collectablesSlice'
 import { walletRestApi } from './walletRestApi'
 import * as Logger from '../../utils/logger'
+import { fetchHotspots } from './hotspotsSlice'
 
 type Balances = {
   hntBalance?: bigint
@@ -282,6 +283,7 @@ export const claimRewards = createAsyncThunk(
   ) => {
     try {
       const signed = await anchorProvider.wallet.signTransaction(txn)
+
       const { txid } = await sendAndConfirmWithRetry(
         anchorProvider.connection,
         signed.serialize(),
@@ -289,15 +291,15 @@ export const claimRewards = createAsyncThunk(
         'confirmed',
       )
 
-      // If the transfer is successful, we need to update the collectables so pending rewards are updated.
-      dispatch(fetchCollectables({ account, cluster }))
-
-      return await dispatch(
+      await dispatch(
         walletRestApi.endpoints.postPayment.initiate({
           txnSignature: txid,
           cluster,
         }),
       )
+
+      // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
+      dispatch(fetchHotspots({ account, cluster, provider: anchorProvider }))
     } catch (error) {
       Logger.error(error)
       throw error
@@ -314,13 +316,13 @@ export const claimAllRewards = createAsyncThunk(
     try {
       const signed = await anchorProvider.wallet.signAllTransactions(txns)
 
-      // If the transfer is successful, we need to update the collectables so pending rewards are updated.
-      dispatch(fetchCollectables({ account, cluster }))
-
       await bulkSendRawTransactions(
         anchorProvider.connection,
         signed.map((s) => s.serialize()),
       )
+
+      // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
+      dispatch(fetchHotspots({ account, cluster, provider: anchorProvider }))
     } catch (error) {
       Logger.error(error)
       throw error

@@ -1,20 +1,13 @@
 import { AnchorProvider } from '@coral-xyz/anchor'
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { Cluster, PublicKey } from '@solana/web3.js'
 import { merge } from 'lodash'
 import { CompressedNFT } from 'src/types/solana'
-import BN from 'bn.js'
 import { CSAccount } from '../../storage/cloudStorage'
 import * as solUtils from '../../utils/solanaUtils'
 import type { HotspotWithPendingRewards } from '../../utils/solanaUtils'
 
-export type HotspotDetails = {
-  pendingIotRewards: BN
-  pendingMobileRewards: BN
-}
-
 export type WalletHotspots = {
-  hotspotDetails: Record<string, HotspotDetails>
   hotspots: CompressedNFT[]
   hotspotsWithMeta: HotspotWithPendingRewards[]
   loading: boolean
@@ -33,10 +26,12 @@ export const fetchHotspots = createAsyncThunk(
     provider,
     account,
     cluster,
+    limit = 20,
   }: {
     provider: AnchorProvider
     account: CSAccount
     cluster: Cluster
+    limit?: number
   }) => {
     if (!account.solanaAddress) throw new Error('Solana address missing')
 
@@ -44,6 +39,8 @@ export const fetchHotspots = createAsyncThunk(
     const fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
       pubKey,
       cluster,
+      0,
+      limit,
     )
 
     const hotspotsWithMetadata = await solUtils.getCollectablesMetadata(
@@ -56,6 +53,7 @@ export const fetchHotspots = createAsyncThunk(
       fetchedHotspots,
       hotspotsWithMetadata: hotspotsWithPendingRewards,
       page: 0,
+      limit,
     }
   },
 )
@@ -67,11 +65,13 @@ export const fetchMoreHotspots = createAsyncThunk(
     cluster,
     page = 0,
     provider,
+    limit = 20,
   }: {
     account: CSAccount
     cluster: Cluster
     page: number
     provider: AnchorProvider
+    limit: number
   }) => {
     if (!account.solanaAddress) throw new Error('Solana address missing')
 
@@ -81,6 +81,8 @@ export const fetchMoreHotspots = createAsyncThunk(
     const fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
       pubKey,
       cluster,
+      page + 1,
+      limit,
     )
 
     const hotspotsWithMetadata = await solUtils.getCollectablesMetadata(
@@ -92,7 +94,8 @@ export const fetchMoreHotspots = createAsyncThunk(
     return {
       fetchedHotspots,
       hotspotsWithMetadata: hotspotsWithPendingRewards,
-      page,
+      page: page + 1,
+      limit,
     }
   },
 )
@@ -100,48 +103,7 @@ export const fetchMoreHotspots = createAsyncThunk(
 const hotspots = createSlice({
   name: 'hotspots',
   initialState,
-  reducers: {
-    updateHotspot: (
-      state,
-      action: PayloadAction<{
-        account: CSAccount
-        hotspotDetails: HotspotDetails & { hotspotId: string }
-      }>,
-    ) => {
-      const { solanaAddress } = action.payload.account
-
-      if (!solanaAddress) {
-        throw new Error('Solana address missing')
-      }
-
-      const prev = state[solanaAddress]?.hotspotDetails
-        ? state[solanaAddress].hotspotDetails
-        : ({} as Record<string, HotspotDetails>)
-
-      prev[action.payload.hotspotDetails.hotspotId] = {
-        pendingIotRewards: action.payload.hotspotDetails.pendingIotRewards,
-        pendingMobileRewards:
-          action.payload.hotspotDetails.pendingMobileRewards,
-      }
-
-      state[solanaAddress] = {
-        ...state[solanaAddress],
-        hotspotDetails: prev,
-      }
-    },
-    resetHotspots: (state, action: PayloadAction<CSAccount>) => {
-      const { solanaAddress } = action.payload
-
-      if (!solanaAddress) {
-        throw new Error('Solana address missing')
-      }
-
-      state[solanaAddress] = {
-        ...state[solanaAddress],
-        hotspotDetails: {},
-      }
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder.addCase(fetchHotspots.pending, (state, action) => {
       if (!action.meta.arg?.account.solanaAddress) return state
@@ -205,10 +167,10 @@ const hotspots = createSlice({
     })
     builder.addCase(fetchMoreHotspots.fulfilled, (state, action) => {
       if (!action.meta.arg?.account.solanaAddress) return state
-      const { fetchedHotspots, hotspotsWithMetadata } = action.payload
+      const { fetchedHotspots, hotspotsWithMetadata, limit } = action.payload
 
       const address = action.meta.arg.account.solanaAddress
-      const onEndReached = Object.keys(hotspotsWithMetadata).length === 0
+      const onEndReached = Object.keys(hotspotsWithMetadata).length < limit
 
       state[address] = {
         ...state[address],

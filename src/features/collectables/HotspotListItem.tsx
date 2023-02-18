@@ -1,11 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useMemo } from 'react'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { BoxProps } from '@shopify/restyle'
 import IotSymbol from '@assets/images/iotSymbol.svg'
 import MobileSymbol from '@assets/images/mobileSymbol.svg'
-import { useAsync } from 'react-async-hook'
 import BN from 'bn.js'
-import { toNumber } from '@helium/spl-utils'
+import { Balance } from '@helium/currency'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import { ww } from '../../utils/layout'
@@ -14,9 +14,6 @@ import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import { ReAnimatedBox } from '../../components/AnimatedBox'
 import ImageBox from '../../components/ImageBox'
 import { Theme } from '../../theme/theme'
-import { hotspots } from '../../store/slices/hotspotsSlice'
-import { useAppDispatch } from '../../store/store'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { formatLargeNumber } from '../../utils/accountUtils'
 import type { HotspotWithPendingRewards } from '../../utils/solanaUtils'
 import { Mints } from '../../utils/constants'
@@ -32,8 +29,6 @@ const HotspotListItem = ({
   ...rest
 }: HotspotListItemProps) => {
   const COLLECTABLE_HEIGHT = ww / 2
-  const dispatch = useAppDispatch()
-  const { currentAccount } = useAccountStorage()
   const {
     content: { metadata },
   } = hotspot
@@ -42,11 +37,29 @@ const HotspotListItem = ({
     () => hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.IOT]),
     [hotspot.pendingRewards],
   )
+  const pendingIotRewardsString = useMemo(() => {
+    if (!hotspot.pendingRewards) return
+    const realAmount = Balance.fromIntAndTicker(
+      new BN(hotspot.pendingRewards[Mints.IOT]) as any,
+      'IOT',
+    )
+    return formatLargeNumber(realAmount.bigBalance as unknown as BN)
+  }, [hotspot])
+
   const pendingMobileRewards = useMemo(
     () =>
       hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.MOBILE]),
     [hotspot.pendingRewards],
   )
+
+  const pendingMobileRewardsString = useMemo(() => {
+    if (!hotspot.pendingRewards) return
+    const realAmount = Balance.fromIntAndTicker(
+      new BN(hotspot.pendingRewards[Mints.MOBILE]) as any,
+      'MOBILE',
+    )
+    return formatLargeNumber(realAmount.bigBalance as unknown as BN)
+  }, [hotspot])
 
   const hasIotRewards = useMemo(
     () => pendingIotRewards && pendingIotRewards.gt(new BN(0)),
@@ -56,25 +69,6 @@ const HotspotListItem = ({
     () => pendingMobileRewards && pendingMobileRewards.gt(new BN(0)),
     [pendingMobileRewards],
   )
-
-  useAsync(async () => {
-    if (!currentAccount) return
-
-    dispatch(
-      hotspots.actions.updateHotspot({
-        account: currentAccount,
-        hotspotDetails: {
-          hotspotId: hotspot.id,
-          pendingIotRewards:
-            hasIotRewards && pendingIotRewards ? pendingIotRewards : new BN(0),
-          pendingMobileRewards:
-            hasMobileRewards && pendingMobileRewards
-              ? pendingMobileRewards
-              : new BN(0),
-        },
-      }),
-    )
-  }, [pendingIotRewards, pendingMobileRewards])
 
   return (
     <ReAnimatedBox
@@ -121,9 +115,7 @@ const HotspotListItem = ({
             elevation={2}
           >
             <Text variant="body2Medium" marginEnd="xs" color="black">
-              {formatLargeNumber(
-                toNumber(pendingMobileRewards || new BN(0), 6),
-              )}
+              {pendingMobileRewardsString}
             </Text>
             <MobileSymbol color="black" />
           </Box>
@@ -149,7 +141,7 @@ const HotspotListItem = ({
             elevation={2}
           >
             <Text variant="body2Medium" marginEnd="xs" color="black">
-              {formatLargeNumber(toNumber(pendingIotRewards || new BN(0), 6))}
+              {pendingIotRewardsString}
             </Text>
             <IotSymbol color="black" />
           </Box>
