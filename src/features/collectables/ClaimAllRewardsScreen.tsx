@@ -45,8 +45,15 @@ const ClaimAllRewardsScreen = () => {
     try {
       setClaimError(undefined)
       setRedeeming(true)
-      const iotTxs = await createClaimAllIotTxs()
-      const mobileTxns = await createClaimAllMobileTxs()
+
+      const iotTxs =
+        pendingIotRewards && !pendingIotRewards.eq(new BN(0))
+          ? await createClaimAllIotTxs()
+          : undefined
+      const mobileTxns =
+        pendingMobileRewards && !pendingMobileRewards.eq(new BN(0))
+          ? await createClaimAllMobileTxs()
+          : undefined
       const txs: Transaction[] = []
 
       if (iotTxs?.length) {
@@ -55,21 +62,28 @@ const ClaimAllRewardsScreen = () => {
 
       if (mobileTxns?.length) {
         txs.push(...mobileTxns)
-      } else {
-        setClaimError(t('collectablesScreen.claimError'))
       }
 
       if (txs.length > 0) {
         submitClaimAllRewards(txs)
         navigation.push('ClaimingRewardsScreen')
+      } else {
+        setClaimError(t('collectablesScreen.claimError'))
       }
-    } catch (e) {}
+
+      setRedeeming(false)
+    } catch (e) {
+      setClaimError((e as Error).message)
+      setRedeeming(false)
+    }
   }, [
     createClaimAllIotTxs,
     createClaimAllMobileTxs,
     navigation,
     submitClaimAllRewards,
     t,
+    pendingIotRewards,
+    pendingMobileRewards,
   ])
 
   const addAllToAccountDisabled = useMemo(() => {

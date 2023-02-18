@@ -63,8 +63,14 @@ const ClaimRewardsScreen = () => {
     try {
       setClaimError(undefined)
       setRedeeming(true)
-      const claimIotTx = await createClaimIotTx()
-      const claimMobileTx = await createClaimMobileTx()
+      const claimIotTx =
+        pendingIotRewards && !pendingIotRewards.eq(new BN(0))
+          ? await createClaimIotTx()
+          : undefined
+      const claimMobileTx =
+        pendingMobileRewards && !pendingMobileRewards.eq(new BN(0))
+          ? await createClaimMobileTx()
+          : undefined
       const transactions: Transaction[] = []
 
       if (claimIotTx) {
