@@ -1,11 +1,11 @@
 import React, { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import Chevron from '@assets/images/voteChevron.svg'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { useColors, useHitSlop } from '../../theme/themeHooks'
-import { Color } from '../../theme/theme'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useColors, useHitSlop } from '@theme/themeHooks'
+import { Color } from '@theme/theme'
 
 type Props = {
   expanded: boolean

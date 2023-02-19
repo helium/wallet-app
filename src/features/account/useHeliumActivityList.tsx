@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { differenceBy } from 'lodash'
 import { Ticker } from '@helium/currency'
+import useAppear from '@hooks/useAppear'
 import {
   useAccountActivityLazyQuery,
   useAccountActivityQuery,
@@ -9,7 +10,6 @@ import {
   Activity as HeliumActivity,
 } from '../../generated/graphql'
 import { FilterType } from './AccountActivityFilter'
-import useAppear from '../../hooks/useAppear'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { Activity } from '../../types/activity'

@@ -7,14 +7,14 @@ import {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated'
-import { Theme } from '../theme/theme'
-import { useColors } from '../theme/themeHooks'
+import { Theme } from '@theme/theme'
+import { useColors } from '@theme/themeHooks'
+import useDisappear from '@hooks/useDisappear'
 import Text from './Text'
 import Box from './Box'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import BlurBox from './BlurBox'
 import { ReAnimatedBox } from './AnimatedBox'
-import useDisappear from '../hooks/useDisappear'
 
 type Props = BoxProps<Theme> & {
   children?: React.ReactNode

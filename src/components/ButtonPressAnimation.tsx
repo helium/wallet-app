@@ -7,8 +7,8 @@ import {
 } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
 import Animated from 'react-native-reanimated'
-import { Theme } from '../theme/theme'
-import useHaptic from '../hooks/useHaptic'
+import { Theme } from '@theme/theme'
+import useHaptic from '@hooks/useHaptic'
 import { ReAnimatedBox } from './AnimatedBox'
 
 export type ButtonPressAnimationProps = {

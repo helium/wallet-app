@@ -6,10 +6,10 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated'
+import globalStyles from '@theme/globalStyles'
+import { useColors } from '@theme/themeHooks'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useApolloClient } from '../graphql/useApolloClient'
-import globalStyles from '../theme/globalStyles'
-import { useColors } from '../theme/themeHooks'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { ReAnimatedBox } from './AnimatedBox'
 

@@ -20,10 +20,10 @@ import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenHNT from '@assets/images/tokenHNT.svg'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ticker } from '@helium/currency'
-import { useColors, useOpacity } from '../theme/themeHooks'
-import { Theme } from '../theme/theme'
+import { useColors, useOpacity } from '@theme/themeHooks'
+import { Theme } from '@theme/theme'
+import useBackHandler from '@hooks/useBackHandler'
 import Box from './Box'
-import useBackHandler from '../hooks/useBackHandler'
 import ListItem, { LIST_ITEM_HEIGHT } from './ListItem'
 
 type TokenListItem = {

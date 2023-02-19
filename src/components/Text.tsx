@@ -1,6 +1,6 @@
 import React from 'react'
+import { Theme } from '@theme/theme'
 import createText from './createText'
-import { Theme } from '../theme/theme'
 
 const Text = createText<Theme>()
 

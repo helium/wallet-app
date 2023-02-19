@@ -6,12 +6,12 @@ import { useNavigation } from '@react-navigation/native'
 import CarotRight from '@assets/images/carot-right.svg'
 import LedgerCircle from '@assets/images/ledger-circle.svg'
 import Ledger from '@assets/images/ledger.svg'
-import Text from '../../components/Text'
-import Box from '../../components/Box'
+import Text from '@components/Text'
+import Box from '@components/Box'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useColors } from '@theme/themeHooks'
+import SafeAreaBox from '@components/SafeAreaBox'
 import { LedgerNavigatorNavigationProp } from './ledgerNavigatorTypes'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { useColors } from '../../theme/themeHooks'
-import SafeAreaBox from '../../components/SafeAreaBox'
 
 type Device = {
   deviceId: number

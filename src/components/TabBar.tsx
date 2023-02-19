@@ -13,9 +13,9 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated'
 import { SvgProps } from 'react-native-svg'
-import useHaptic from '../hooks/useHaptic'
-import { Color } from '../theme/theme'
-import { useColors, useVerticalHitSlop } from '../theme/themeHooks'
+import useHaptic from '@hooks/useHaptic'
+import { Color } from '@theme/theme'
+import { useColors, useVerticalHitSlop } from '@theme/themeHooks'
 import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox, {

@@ -3,11 +3,11 @@ import { times } from 'lodash'
 import { FlatList } from 'react-native-gesture-handler'
 import { RefreshControl } from 'react-native'
 import { useIsFocused } from '@react-navigation/native'
-import Box from '../../components/Box'
-import useCollectables from '../../hooks/useCollectables'
+import Box from '@components/Box'
+import useCollectables from '@hooks/useCollectables'
+import { useColors, useSpacing } from '@theme/themeHooks'
+import CircleLoader from '@components/CircleLoader'
 import NFTListItem, { NFTSkeleton } from './NftListItem'
-import { useColors, useSpacing } from '../../theme/themeHooks'
-import CircleLoader from '../../components/CircleLoader'
 
 const NftList = () => {
   const spacing = useSpacing()

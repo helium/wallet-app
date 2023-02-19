@@ -2,8 +2,8 @@
 import { BoxProps } from '@shopify/restyle'
 import React from 'react'
 import Search from '@assets/images/search.svg'
-import { BorderRadii, Color, Spacing, Theme } from '../theme/theme'
-import { useColors, useInputVariants } from '../theme/themeHooks'
+import { BorderRadii, Color, Spacing, Theme } from '@theme/theme'
+import { useColors, useInputVariants } from '@theme/themeHooks'
 import Box from './Box'
 import TextInput from './TextInput'
 

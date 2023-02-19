@@ -12,18 +12,18 @@ import {
   BottomSheetModalProvider,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
-import BackButton from '../../components/BackButton'
-import Text from '../../components/Text'
-import Box from '../../components/Box'
+import BackButton from '@components/BackButton'
+import Text from '@components/Text'
+import Box from '@components/Box'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useColors, useOpacity } from '@theme/themeHooks'
+import useBackHandler from '@hooks/useBackHandler'
+import useLedgerDeviceScan from '@hooks/useLedgerDeviceScan'
+import LedgerConnectSteps from './LedgerConnectSteps'
 import {
   LedgerNavigatorNavigationProp,
   LedgerNavigatorStackParamList,
 } from './ledgerNavigatorTypes'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import LedgerConnectSteps from './LedgerConnectSteps'
-import { useColors, useOpacity } from '../../theme/themeHooks'
-import useBackHandler from '../../hooks/useBackHandler'
-import useLedgerDeviceScan from '../../hooks/useLedgerDeviceScan'
 
 type Route = RouteProp<LedgerNavigatorStackParamList, 'DeviceScan'>
 const DeviceScan = () => {

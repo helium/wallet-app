@@ -1,7 +1,7 @@
 import { BoxProps } from '@shopify/restyle'
 import React, { memo } from 'react'
 import { StyleSheet } from 'react-native'
-import { Theme } from '../theme/theme'
+import { Theme } from '@theme/theme'
 import Box from './Box'
 
 type Props = BoxProps<Theme>

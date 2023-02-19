@@ -4,7 +4,7 @@ import {
   TouchableWithoutFeedback,
   TouchableWithoutFeedbackProps,
 } from 'react-native'
-import { Theme } from '../theme/theme'
+import { Theme } from '@theme/theme'
 import WithDebounce from './WithDebounce'
 
 const TouchableWithoutFeedbackBox = createBox<

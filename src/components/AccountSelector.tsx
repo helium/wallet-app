@@ -16,12 +16,12 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
 import { GestureResponderEvent } from 'react-native'
+import { useColors, useOpacity, useSpacing } from '@theme/themeHooks'
+import useBackHandler from '@hooks/useBackHandler'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import { useColors, useOpacity, useSpacing } from '../theme/themeHooks'
 import { AccountNetTypeOpt } from '../utils/accountUtils'
 import AccountListItem from './AccountListItem'
 import { CSAccount } from '../storage/cloudStorage'
-import useBackHandler from '../hooks/useBackHandler'
 
 export type AccountSelectorRef = {
   show: (_type?: AccountNetTypeOpt | GestureResponderEvent) => void

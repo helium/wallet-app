@@ -10,18 +10,18 @@ import {
   makeAppLinkAuthToken,
 } from '@helium/wallet-link'
 import { NetTypes } from '@helium/address'
-import SafeAreaBox from '../../components/SafeAreaBox'
-import Text from '../../components/Text'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
+import SafeAreaBox from '@components/SafeAreaBox'
+import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import AccountSelector, {
   AccountSelectorRef,
-} from '../../components/AccountSelector'
+} from '@components/AccountSelector'
+import AccountButton from '@components/AccountButton'
+import useAlert from '@hooks/useAlert'
+import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { formatAccountAlias } from '../../utils/accountUtils'
 import { checkSecureAccount, getKeypair } from '../../storage/secureStorage'
-import AccountButton from '../../components/AccountButton'
-import useAlert from '../../hooks/useAlert'
 
 type Route = RouteProp<HomeStackParamList, 'LinkWallet'>
 const LinkWallet = () => {

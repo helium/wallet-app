@@ -9,11 +9,11 @@ import React, {
 import { Platform, processColor, ViewStyle } from 'react-native'
 import { ChartSelectEvent, LineChart } from 'react-native-charts-wrapper'
 import { ScrollView } from 'react-native-gesture-handler'
-import FadeInOut from '../../components/FadeInOut'
+import FadeInOut from '@components/FadeInOut'
+import { useColors, useSpacing } from '@theme/themeHooks'
+import useHaptic from '@hooks/useHaptic'
+import usePrevious from '@hooks/usePrevious'
 import { AccountBalance } from '../../generated/graphql'
-import { useColors, useSpacing } from '../../theme/themeHooks'
-import useHaptic from '../../hooks/useHaptic'
-import usePrevious from '../../hooks/usePrevious'
 
 const CHART_HEIGHT = 140
 type Props = {

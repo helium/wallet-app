@@ -1,8 +1,8 @@
 import React, { memo, useMemo } from 'react'
 import { Image } from 'react-native'
-import Box from '../../components/Box'
+import Box from '@components/Box'
+import { useSpacing } from '@theme/themeHooks'
 import { ww } from '../../utils/layout'
-import { useSpacing } from '../../theme/themeHooks'
 
 const NotificationDetailBanner = ({ icon }: { icon: string }) => {
   const spacing = useSpacing()

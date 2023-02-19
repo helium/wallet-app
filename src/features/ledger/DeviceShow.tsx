@@ -6,21 +6,21 @@ import { useAsync } from 'react-async-hook'
 import Ledger from '@assets/images/ledger.svg'
 import ArrowRight from '@assets/images/arrowRight.svg'
 import { TouchableOpacity } from 'react-native-gesture-handler'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
-import ButtonPressable from '../../components/ButtonPressable'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import ButtonPressable from '@components/ButtonPressable'
+import { useColors, useSpacing } from '@theme/themeHooks'
+import BackButton from '@components/BackButton'
+import { CSAccounts } from '@storage/cloudStorage'
+import useLedger, { LedgerAccount } from '@hooks/useLedger'
 import {
   LedgerNavigatorNavigationProp,
   LedgerNavigatorStackParamList,
 } from './ledgerNavigatorTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useColors, useSpacing } from '../../theme/themeHooks'
 import LedgerAccountListItem, { Section } from './LedgerAccountListItem'
-import BackButton from '../../components/BackButton'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
-import { CSAccounts } from '../../storage/cloudStorage'
-import useLedger, { LedgerAccount } from '../../hooks/useLedger'
 
 const MAX_ACCOUNTS = 10
 

@@ -2,11 +2,11 @@ import Balance, { CurrencyType } from '@helium/currency'
 import { BoxProps } from '@shopify/restyle'
 import React, { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
-import { Color, Theme } from '../../theme/theme'
-import { balanceToString } from '../../utils/Balance'
-import { locale } from '../../utils/i18n'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import { Color, Theme } from '@theme/theme'
+import { balanceToString } from '@utils/Balance'
+import { locale } from '@utils/i18n'
 
 type Props = {
   uniqueWallets?: number | null

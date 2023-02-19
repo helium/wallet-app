@@ -1,10 +1,10 @@
 import { Ticker } from '@helium/currency'
 import { BoxProps } from '@shopify/restyle'
 import React, { memo, useMemo } from 'react'
-import Text from '../../components/Text'
-import TextTransform from '../../components/TextTransform'
-import Box from '../../components/Box'
-import { Theme } from '../../theme/theme'
+import Text from '@components/Text'
+import TextTransform from '@components/TextTransform'
+import Box from '@components/Box'
+import { Theme } from '@theme/theme'
 import { useBalance } from '../../utils/Balance'
 
 type Props = {

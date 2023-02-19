@@ -9,8 +9,8 @@ import {
   ViewStyle,
 } from 'react-native'
 import { useAnimatedStyle, withSpring } from 'react-native-reanimated'
-import useHaptic from '../hooks/useHaptic'
-import { Theme } from '../theme/theme'
+import useHaptic from '@hooks/useHaptic'
+import { Theme } from '@theme/theme'
 import { ReAnimatedBox } from './AnimatedBox'
 
 export const ICON_CONTAINER_SIZE = 44

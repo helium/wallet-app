@@ -5,12 +5,12 @@ import { useTranslation } from 'react-i18next'
 import Clipboard from '@react-native-community/clipboard'
 import Toast from 'react-native-simple-toast'
 import CopyAddressIcon from '@assets/images/copyAddress.svg'
-import { Theme } from '../theme/theme'
-import useHaptic from '../hooks/useHaptic'
+import { Theme } from '@theme/theme'
+import useHaptic from '@hooks/useHaptic'
+import { useColors } from '@theme/themeHooks'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import Text from './Text'
 import { ellipsizeAddress } from '../utils/accountUtils'
-import { useColors } from '../theme/themeHooks'
 
 type Props = BoxProps<Theme> & { address: string }
 

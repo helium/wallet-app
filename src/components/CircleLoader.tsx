@@ -3,8 +3,8 @@ import React, { memo, useRef, useEffect } from 'react'
 import { Animated, Easing } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
 import CircleLoaderSvg from '@assets/images/circleLoader.svg'
+import { Color, Theme } from '@theme/theme'
 import Box from './Box'
-import { Color, Theme } from '../theme/theme'
 import Text from './Text'
 
 type Props = BoxProps<Theme> & {

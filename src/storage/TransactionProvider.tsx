@@ -6,7 +6,7 @@ import Balance, {
 } from '@helium/currency'
 import { PaymentV2, TokenBurnV1, Transaction } from '@helium/transactions'
 import React, { createContext, ReactNode, useContext, useEffect } from 'react'
-import { encodeMemoString } from '../components/MemoInput'
+import { encodeMemoString } from '@components/MemoInput'
 import { useTxnConfigVarsQuery } from '../generated/graphql'
 import { useAccountStorage } from './AccountStorageProvider'
 import { useAppStorage } from './AppStorageProvider'

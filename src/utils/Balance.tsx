@@ -21,6 +21,8 @@ import React, {
 } from 'react'
 import CurrencyFormatter from 'react-native-currency-format'
 import { useSelector } from 'react-redux'
+import useAppear from '@hooks/useAppear'
+import usePrevious from '@hooks/usePrevious'
 import {
   useAccountLazyQuery,
   useAccountQuery,
@@ -36,8 +38,6 @@ import { accountCurrencyType } from './accountUtils'
 import { decimalSeparator, groupSeparator } from './i18n'
 import { onAccountChange, removeAccountChangeListener } from './solanaUtils'
 import { Mints } from './constants'
-import useAppear from '../hooks/useAppear'
-import usePrevious from '../hooks/usePrevious'
 
 export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
 const useBalanceHook = () => {

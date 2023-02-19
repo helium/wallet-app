@@ -1,11 +1,11 @@
 import React from 'react'
 import CheckMarkFill from '@assets/images/checkmarkFill.svg'
+import { useColors } from '@theme/themeHooks'
+import { Color } from '@theme/theme'
 import Box from './Box'
 import Text from './Text'
-import { useColors } from '../theme/themeHooks'
 import { TouchableOpacityBoxProps } from './TouchableOpacityBox'
 import TouchableContainer from './TouchableContainer'
-import { Color } from '../theme/theme'
 
 export const LIST_ITEM_HEIGHT = 70
 export type ListItemProps = {

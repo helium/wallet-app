@@ -7,7 +7,9 @@ export const Mints: Record<string, string> = {
   MOBILE: MOBILE_MINT.toBase58(),
   HNT: HNT_MINT.toBase58(),
 }
+
 export const MOBILE_LAZY_KEY = lazyDistributorKey(
   new PublicKey(Mints.MOBILE),
 )[0]
+
 export const IOT_LAZY_KEY = lazyDistributorKey(new PublicKey(Mints.IOT))[0]

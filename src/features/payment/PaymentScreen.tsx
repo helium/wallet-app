@@ -26,11 +26,24 @@ import Toast from 'react-native-simple-toast'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useAsync } from 'react-async-hook'
 import { useSelector } from 'react-redux'
-import TokenButton from '../../components/TokenButton'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { useColors, useHitSlop } from '../../theme/themeHooks'
+import TokenButton from '@components/TokenButton'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useColors, useHitSlop } from '@theme/themeHooks'
+import AccountSelector, {
+  AccountSelectorRef,
+} from '@components/AccountSelector'
+import TokenSelector, { TokenSelectorRef } from '@components/TokenSelector'
+import AccountButton from '@components/AccountButton'
+import AddressBookSelector, {
+  AddressBookRef,
+} from '@components/AddressBookSelector'
+import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
+import { getMemoStrValid } from '@components/MemoInput'
+import useAlert from '@hooks/useAlert'
+import useDisappear from '@hooks/useDisappear'
+import IconPressedContainer from '@components/IconPressedContainer'
 import {
   HomeNavigationProp,
   HomeStackParamList,
@@ -42,31 +55,18 @@ import {
   solAddressIsValid,
 } from '../../utils/accountUtils'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import AccountSelector, {
-  AccountSelectorRef,
-} from '../../components/AccountSelector'
-import TokenSelector, { TokenSelectorRef } from '../../components/TokenSelector'
-import AccountButton from '../../components/AccountButton'
-import AddressBookSelector, {
-  AddressBookRef,
-} from '../../components/AddressBookSelector'
 import { SendDetails } from '../../storage/TransactionProvider'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import PaymentItem from './PaymentItem'
 import usePaymentsReducer, { MAX_PAYMENTS } from './usePaymentsReducer'
-import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
 import PaymentCard from './PaymentCard'
-import { getMemoStrValid } from '../../components/MemoInput'
 import PaymentSubmit from './PaymentSubmit'
 import { CSAccount } from '../../storage/cloudStorage'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
-import useAlert from '../../hooks/useAlert'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { RootState } from '../../store/rootReducer'
 import { useAppDispatch } from '../../store/store'
-import useDisappear from '../../hooks/useDisappear'
 import { solanaSlice } from '../../store/slices/solanaSlice'
-import IconPressedContainer from '../../components/IconPressedContainer'
 
 type LinkedPayment = {
   amount?: string

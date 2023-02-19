@@ -3,6 +3,7 @@ import {
   createNativeStackNavigator,
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack'
+import ConfirmPinScreen from '@components/ConfirmPinScreen'
 import AccountAssignScreen from '../onboarding/AccountAssignScreen'
 import AccountsScreen from '../account/AccountsScreen'
 import PaymentScreen from '../payment/PaymentScreen'
@@ -14,7 +15,6 @@ import RequestScreen from '../request/RequestScreen'
 import LinkWallet from '../txnDelegatation/LinkWallet'
 import SignHotspot from '../txnDelegatation/SignHotspot'
 import PaymentQrScanner from '../payment/PaymentQrScanner'
-import ConfirmPinScreen from '../../components/ConfirmPinScreen'
 import AddressQrScanner from '../addressBook/AddressQrScanner'
 import VoteNavigator from '../vote/VoteNavigator'
 import DappLoginScreen from '../dappLogin/DappLoginScreen'

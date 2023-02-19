@@ -3,9 +3,9 @@ import React from 'react'
 import { BoxProps } from '@shopify/restyle'
 import { Insets } from 'react-native'
 import BackArrow from '@assets/images/backArrow.svg'
-import { Color, Spacing, Theme } from '../theme/theme'
+import { Color, Spacing, Theme } from '@theme/theme'
+import { useColors } from '@theme/themeHooks'
 import Box from './Box'
-import { useColors } from '../theme/themeHooks'
 import IconPressedContainer from './IconPressedContainer'
 
 type Props = BoxProps<Theme> & {

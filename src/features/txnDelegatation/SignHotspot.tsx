@@ -12,17 +12,17 @@ import {
   createSignHotspotCallbackUrl,
 } from '@helium/wallet-link'
 import Toast from 'react-native-simple-toast'
-import Box from '../../components/Box'
-import SafeAreaBox from '../../components/SafeAreaBox'
-import Text from '../../components/Text'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
+import Box from '@components/Box'
+import SafeAreaBox from '@components/SafeAreaBox'
+import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import AccountIcon from '@components/AccountIcon'
+import { useColors } from '@theme/themeHooks'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import AccountIcon from '../../components/AccountIcon'
 import { formatAccountAlias } from '../../utils/accountUtils'
 import { getKeypair } from '../../storage/secureStorage'
 import { useSubmitTxnMutation } from '../../generated/graphql'
-import { useColors } from '../../theme/themeHooks'
 import * as Logger from '../../utils/logger'
 
 type Route = RouteProp<HomeStackParamList, 'SignHotspot'>

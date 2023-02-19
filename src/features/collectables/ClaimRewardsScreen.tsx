@@ -4,21 +4,21 @@ import { useTranslation } from 'react-i18next'
 import { Edge } from 'react-native-safe-area-context'
 import { PublicKey, Transaction } from '@solana/web3.js'
 import BN from 'bn.js'
-import CircleLoader from '../../components/CircleLoader'
-import { ReAnimatedBox } from '../../components/AnimatedBox'
-import BackScreen from '../../components/BackScreen'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
+import CircleLoader from '@components/CircleLoader'
+import { ReAnimatedBox } from '@components/AnimatedBox'
+import BackScreen from '@components/BackScreen'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import ButtonPressable from '@components/ButtonPressable'
+import { DelayedFadeIn } from '@components/FadeInOut'
+import { useHotspot } from '@hooks/useHotspot'
+import RewardItem from '@components/RewardItem'
+import { Mints } from '../../utils/constants'
+import useSubmitTxn from '../../graphql/useSubmitTxn'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import ButtonPressable from '../../components/ButtonPressable'
-import { DelayedFadeIn } from '../../components/FadeInOut'
-import { useHotspot } from '../../hooks/useHotspot'
-import { Mints } from '../../utils/constants'
-import useSubmitTxn from '../../graphql/useSubmitTxn'
-import RewardItem from '../../components/RewardItem'
 
 type Route = RouteProp<CollectableStackParamList, 'ClaimRewardsScreen'>
 

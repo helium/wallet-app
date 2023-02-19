@@ -3,12 +3,12 @@ import { useTranslation } from 'react-i18next'
 import Balance, { SolTokens, Ticker } from '@helium/currency'
 import { GestureResponderEvent, Pressable, StyleSheet } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
-import { useCreateOpacity } from '../../theme/themeHooks'
-import Text from '../../components/Text'
-import Box from '../../components/Box'
+import { useCreateOpacity } from '@theme/themeHooks'
+import Text from '@components/Text'
+import Box from '@components/Box'
+import TokenIcon from '@components/TokenIcon'
+import { Theme } from '@theme/theme'
 import CarotDown from '../../assets/images/carotDownFull.svg'
-import TokenIcon from '../../components/TokenIcon'
-import { Theme } from '../../theme/theme'
 
 export type SwapItemProps = {
   isPaying: boolean

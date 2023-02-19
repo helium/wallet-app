@@ -6,13 +6,13 @@ import {
 } from '@react-navigation/stack'
 import { useNavigation } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
+import { useColors } from '@theme/themeHooks'
 import {
   RootStackParamList,
   RootNavigationProp,
   TabBarNavigationProp,
 } from './rootTypes'
 import HomeNavigator from '../features/home/HomeNavigator'
-import { useColors } from '../theme/themeHooks'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import OnboardingNavigator from '../features/onboarding/OnboardingNavigator'
 import TabBarNavigator from './TabBarNavigator'

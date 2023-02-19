@@ -17,13 +17,13 @@ import {
 } from '@gorhom/bottom-sheet'
 import { useNavigation } from '@react-navigation/native'
 import { BoxProps } from '@shopify/restyle'
-import { useColors, useOpacity, useSpacing } from '../theme/themeHooks'
+import { useColors, useOpacity, useSpacing } from '@theme/themeHooks'
+import { Theme } from '@theme/theme'
+import useBackHandler from '@hooks/useBackHandler'
 import ContactsList from '../features/addressBook/ContactsList'
 import { HomeNavigationProp } from '../features/home/homeTypes'
-import { Theme } from '../theme/theme'
 import Box from './Box'
 import { CSAccount } from '../storage/cloudStorage'
-import useBackHandler from '../hooks/useBackHandler'
 
 export type AddressBookRef = {
   showAddressBook: (opts: { address?: string; index?: number }) => void
