@@ -20,6 +20,10 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { useGetSolanaStatusQuery } from '../../store/slices/solanaStatusApi'
 import * as Logger from '../../utils/logger'
+import { useAppDispatch } from '../../store/store'
+import { fetchHotspots } from '../../store/slices/hotspotsSlice'
+import { readBalances } from '../../store/slices/solanaSlice'
+import { Mints } from '../../utils/constants'
 
 async function migrateWallet(
   provider: Provider,
@@ -47,14 +51,19 @@ async function migrateWallet(
 
 const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
   const { currentAccount, anchorProvider } = useAccountStorage()
-  const { updateL1Network, updateDoneSolanaMigration, doneSolanaMigration } =
-    useAppStorage()
+  const {
+    solanaNetwork: cluster,
+    updateL1Network,
+    updateDoneSolanaMigration,
+    doneSolanaMigration,
+  } = useAppStorage()
   const [retry, updateRetry] = useState(0)
   const { t } = useTranslation()
   const { data: status } = useGetSolanaStatusQuery()
   const [total, setTotal] = useState<number>(0)
   const [progress, setProgress] = useState<number>(0)
   const [migrationError, setMigrationError] = useState<string | undefined>()
+  const dispatch = useAppDispatch()
 
   const onProgress = useCallback(
     (p: number, tot: number) => {
@@ -76,6 +85,18 @@ const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
 
           doneSolanaMigration.add(addr)
           await updateDoneSolanaMigration(new Set(doneSolanaMigration))
+          if (anchorProvider && currentAccount && cluster) {
+            dispatch(
+              fetchHotspots({
+                provider: anchorProvider,
+                account: currentAccount,
+                cluster,
+              }),
+            )
+            dispatch(
+              readBalances({ cluster, acct: currentAccount, mints: Mints }),
+            )
+          }
         } catch (e) {
           Logger.error(e)
           setMigrationError((e as Error).message)

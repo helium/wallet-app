@@ -55,6 +55,7 @@ const useHotspots = (): {
   const dispatch = useAppDispatch()
   const { currentAccount, anchorProvider } = useAccountStorage()
   const hotspotsSlice = useSelector((state: RootState) => state.hotspots)
+  const conn = getConnection(cluster)
 
   const page = useMemo(() => {
     if (
@@ -105,6 +106,7 @@ const useHotspots = (): {
           rewards,
           hotspot: new PublicKey(nft.id),
           lazyDistributor: MOBILE_LAZY_KEY,
+          assetEndpoint: conn.rpcEndpoint,
           wallet,
         })
       }),
@@ -138,6 +140,7 @@ const useHotspots = (): {
           rewards,
           hotspot: new PublicKey(nft.id),
           lazyDistributor: IOT_LAZY_KEY,
+          assetEndpoint: conn.rpcEndpoint,
           wallet,
         })
       }),
