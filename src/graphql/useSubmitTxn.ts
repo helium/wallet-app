@@ -282,7 +282,7 @@ export default () => {
   )
 
   const submitMintDataCredits = useCallback(
-    async (amount: number) => {
+    async (hntAmount: number, dcAmount: number) => {
       if (!currentAccount) {
         throw new Error('There must be an account selected to submit a txn')
       }
@@ -300,7 +300,8 @@ export default () => {
           account: currentAccount,
           anchorProvider,
           cluster,
-          amount,
+          hntAmount,
+          dcAmount,
           mints,
         }),
       )

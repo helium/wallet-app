@@ -142,7 +142,8 @@ type MintDataCreditsInput = {
   account: CSAccount
   anchorProvider: AnchorProvider
   cluster: Cluster
-  amount: number
+  hntAmount: number
+  dcAmount: number
   mints: Mints
 }
 
@@ -264,14 +265,22 @@ export const sendTreasurySwap = createAsyncThunk(
 export const sendMintDataCredits = createAsyncThunk(
   'solana/sendMintDataCredits',
   async (
-    { cluster, anchorProvider, amount, account, mints }: MintDataCreditsInput,
+    {
+      cluster,
+      anchorProvider,
+      hntAmount,
+      dcAmount,
+      account,
+      mints,
+    }: MintDataCreditsInput,
     { dispatch },
   ) => {
     try {
       const swap = await solUtils.mintDataCredits(
         cluster,
         anchorProvider,
-        amount,
+        hntAmount,
+        dcAmount,
         new PublicKey(mints.DC),
       )
 
@@ -309,7 +318,7 @@ export const sendDelegateDataCredits = createAsyncThunk(
         anchorProvider,
         delegateAddress,
         amount,
-        'iotfeTXUVZKZvmFCTTHrgmep94seQJurjvMgKuqpHyx',
+        'iotEVVZLEywoTn1QdwNPddxPWszn3zFhEot3MfL9fns',
       )
 
       dispatch(readBalances({ cluster, acct: account, mints }))

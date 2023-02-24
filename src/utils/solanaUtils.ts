@@ -49,6 +49,10 @@ import bs58 from 'bs58'
 import { toBN } from '@helium/spl-utils'
 import { AnchorProvider, BN } from '@coral-xyz/anchor'
 import * as tm from '@helium/treasury-management-sdk'
+import {
+  delegatedDataCreditsKey,
+  escrowAccountKey,
+} from '@helium/data-credits-sdk'
 import { BONES_PER_HNT } from './heliumUtils'
 import { getKeypair } from '../storage/secureStorage'
 import solInstructionsToActivity from './solInstructionsToActivity'
@@ -610,7 +614,8 @@ export const transferCollectable = async (
 export const mintDataCredits = async (
   cluster: Cluster,
   anchorProvider: AnchorProvider,
-  amount: number,
+  hntAmount: number,
+  dcAmount: number,
   dcMint: PublicKey,
 ) => {
   try {
@@ -621,7 +626,8 @@ export const mintDataCredits = async (
 
     const tx = await program.methods
       .mintDataCreditsV0({
-        hntAmount: new BN(amount * BONES_PER_HNT),
+        hntAmount: new BN(hntAmount * BONES_PER_HNT),
+        dcAmount: new BN(dcAmount),
       })
       .accounts({
         dcMint,
@@ -722,6 +728,26 @@ export const delegateDataCredits = async (
     }
 
     return { signature, txn }
+  } catch (e) {
+    Logger.error(e)
+    throw e as Error
+  }
+}
+
+export const getDelegateDataCredits = async (
+  address: string,
+  mintDao: string,
+) => {
+  try {
+    const subDao = subDaoKey(new PublicKey(mintDao))[0]
+
+    const delegatedDataCredits = delegatedDataCreditsKey(
+      subDaoKey(subDao)[0],
+      address,
+    )[0]
+    const escrowTokenAccount = escrowAccountKey(delegatedDataCredits)[0]
+
+    return escrowTokenAccount
   } catch (e) {
     Logger.error(e)
     throw e as Error

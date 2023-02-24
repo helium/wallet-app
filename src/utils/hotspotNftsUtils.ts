@@ -13,7 +13,7 @@ import { Recipient } from '../hooks/useRecipient'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 
 export const Mints: Record<string, string> = {
-  IOT: 'iotfeTXUVZKZvmFCTTHrgmep94seQJurjvMgKuqpHyx',
+  IOT: 'iotEVVZLEywoTn1QdwNPddxPWszn3zFhEot3MfL9fns',
   HNT: 'hntv1Vf5ZBG777xAHqHUTFS8UZBTNUN22MBnYramPFk',
   DC: 'dc5Zu977Zan2BFt7iLxCCUoyPvxpxZGYK23d6GYZXq7',
   MOBILE: 'mb1eaxqRn3VMUuA9MC1hXiNFG7hnJHfF8Cvq7vfYH4y',

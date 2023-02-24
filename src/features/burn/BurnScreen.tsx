@@ -100,7 +100,7 @@ const BurnScreen = () => {
     { data: submitData, loading: submitLoading, error: submitError },
   ] = useSubmitTxnMutation()
   const [dcAmount, setDcAmount] = useState(
-    new Balance(0, CurrencyType.dataCredit),
+    new Balance(Number(route.params.amount), CurrencyType.dataCredit),
   )
   const [delegateAddress, setDelegateAddress] = useState(route.params.address)
   const [hasError, setHasError] = useState(false)

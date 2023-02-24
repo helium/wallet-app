@@ -29,7 +29,7 @@ const PaymentQrScanner = () => {
         navigation.replace('BurnScreen', {
           isDelegate: true,
           address: delegate.address,
-          amount: '',
+          amount: delegate.amount,
         })
       } else {
         await showOKAlert({

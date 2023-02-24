@@ -138,6 +138,8 @@ export default {
     tokens: 'Tokens',
     chooseCurrency: 'Choose Currency',
     tokenBalance: '{{amount}} <secondaryText>{{ticker}}</secondaryText>',
+    delegatedBalance: '{{amount}} Delegated',
+    receivedBalance: '{{amount}} Received',
   },
   collectablesScreen: {
     title: 'Collectables',

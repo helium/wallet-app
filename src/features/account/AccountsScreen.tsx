@@ -57,7 +57,7 @@ import { appSlice } from '../../store/slices/appSlice'
 import useHaptic from '../../hooks/useHaptic'
 
 const AccountsScreen = () => {
-  const widgetGroup = 'group.com.helium.mobile.wallet.widget'
+  const widgetGroup = 'group.com.dannpl.mobile.wallet.widget'
   const navigation = useNavigation<HomeNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
   const { sortedAccounts, currentAccount, defaultAccountAddress } =

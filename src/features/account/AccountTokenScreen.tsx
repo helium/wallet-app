@@ -409,6 +409,25 @@ const AccountTokenScreen = () => {
     return options
   }, [routeTicker])
 
+  const tokenDetails = useMemo(() => {
+    if (routeTicker !== 'DC') return
+
+    return (
+      <Box>
+        <Text variant="body1" color="secondaryText" textAlign="center">
+          {t('accountsScreen.receivedBalance', {
+            amount: 0,
+          })}
+        </Text>
+        <Text variant="body1" color="secondaryText" textAlign="center">
+          {t('accountsScreen.delegatedBalance', {
+            amount: 0,
+          })}
+        </Text>
+      </Box>
+    )
+  }, [routeTicker, t])
+
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <BackScreen
@@ -463,6 +482,7 @@ const AccountTokenScreen = () => {
                 <TokenIcon ticker={routeTicker} size={50} />
               </Box>
               <AccountTokenBalance marginTop="s" ticker={routeTicker} />
+              {tokenDetails}
               <AccountTokenCurrencyBalance
                 ticker={routeTicker}
                 variant="h4"
