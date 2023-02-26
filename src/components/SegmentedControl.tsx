@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { BoxProps, useResponsiveProp } from '@shopify/restyle'
 import React, { memo, useCallback, useMemo } from 'react'
-import { Spacing, Theme } from '../theme/theme'
+import { Spacing, Theme } from '@theme/theme'
 import Box from './Box'
 import SegmentedControlItem from './SegmentedControlItem'
 

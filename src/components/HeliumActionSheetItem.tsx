@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from 'react'
 import { SvgProps } from 'react-native-svg'
-import { Color } from '../theme/theme'
-import { useColors } from '../theme/themeHooks'
+import { Color } from '@theme/theme'
+import { useColors } from '@theme/themeHooks'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
 

@@ -6,15 +6,15 @@ import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import BackArrow from '@assets/images/backArrow.svg'
-import IndeterminateProgressBar from '../../components/IndeterminateProgressBar'
-import { DelayedFadeIn } from '../../components/FadeInOut'
-import Box from '../../components/Box'
-import ButtonPressable from '../../components/ButtonPressable'
-import Text from '../../components/Text'
-import BackScreen from '../../components/BackScreen'
+import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
+import { DelayedFadeIn } from '@components/FadeInOut'
+import Box from '@components/Box'
+import ButtonPressable from '@components/ButtonPressable'
+import Text from '@components/Text'
+import BackScreen from '@components/BackScreen'
+import { ReAnimatedBox } from '@components/AnimatedBox'
+import AccountIcon from '@components/AccountIcon'
 import { RootState } from '../../store/rootReducer'
-import { ReAnimatedBox } from '../../components/AnimatedBox'
-import AccountIcon from '../../components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
 
@@ -85,7 +85,7 @@ const ClaimingRewardsScreen = () => {
                   numberOfLines={2}
                   textAlign="center"
                 >
-                  {t('collectablesScreen.claimComplete')}
+                  {t('collectablesScreen.claimCompleteBody')}
                 </Text>
               </Animated.View>
             )}
@@ -162,7 +162,7 @@ const ClaimingRewardsScreen = () => {
               </Animated.View>
             )}
           </Box>
-          <Box flex={1} width="100%" justifyContent="flex-end">
+          <Box width="100%" justifyContent="flex-end">
             <ButtonPressable
               marginHorizontal="m"
               marginBottom="m"

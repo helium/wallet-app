@@ -8,10 +8,10 @@ import {
   StyleSheet,
   ViewStyle,
 } from 'react-native'
-import { useCreateOpacity } from '../theme/themeHooks'
-import useHaptic from '../hooks/useHaptic'
+import { useCreateOpacity } from '@theme/themeHooks'
+import useHaptic from '@hooks/useHaptic'
+import { Theme } from '@theme/theme'
 import Box from './Box'
-import { Theme } from '../theme/theme'
 
 export type ButtonPressAnimationProps = {
   onPress?: ((event: GestureResponderEvent) => void) | null | undefined

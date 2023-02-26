@@ -15,12 +15,12 @@ import Kabob from '@assets/images/kabob.svg'
 import { useTranslation } from 'react-i18next'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { FlatList } from 'react-native-gesture-handler'
-import { Color, Theme } from '../theme/theme'
+import { Color, Theme } from '@theme/theme'
+import { useColors, useHitSlop } from '@theme/themeHooks'
 import HeliumActionSheetItem, {
   HeliumActionSheetItemHeight,
   HeliumActionSheetItemType,
 } from './HeliumActionSheetItem'
-import { useColors, useHitSlop } from '../theme/themeHooks'
 import Text, { TextProps } from './Text'
 import Box from './Box'
 import TouchableOpacityBox from './TouchableOpacityBox'

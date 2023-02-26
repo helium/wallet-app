@@ -3,8 +3,8 @@ import {
   ActivityIndicatorProps,
   ActivityIndicator as RNActivityIndicator,
 } from 'react-native'
-import { Color } from '../theme/theme'
-import { useColors } from '../theme/themeHooks'
+import { Color } from '@theme/theme'
+import { useColors } from '@theme/themeHooks'
 
 type Props = { color?: Color } & ActivityIndicatorProps
 const ActivityIndicator = ({ color, ...props }: Props) => {

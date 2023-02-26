@@ -3,18 +3,18 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Dimensions, Image, LogBox, FlatList } from 'react-native'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 import 'text-encoding-polyfill'
-import BackScreen from '../../components/BackScreen'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
+import BackScreen from '@components/BackScreen'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { DelayedFadeIn } from '@components/FadeInOut'
+import { ReAnimatedBox } from '@components/AnimatedBox'
+import useHaptic from '@hooks/useHaptic'
+import globalStyles from '@theme/globalStyles'
+import { useBorderRadii } from '@theme/themeHooks'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import { DelayedFadeIn } from '../../components/FadeInOut'
-import globalStyles from '../../theme/globalStyles'
-import { useBorderRadii } from '../../theme/themeHooks'
 import { CompressedNFT } from '../../types/solana'
-import { ReAnimatedBox } from '../../components/AnimatedBox'
-import useHaptic from '../../hooks/useHaptic'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',

@@ -161,6 +161,7 @@ const useAccountStorageHook = () => {
         [addy]: {
           ...acct,
           solanaAddress: heliumAddressToSolAddress(addy),
+          // solanaAddress: '3SjgEPbwauDyZGVzRL6Q6HN7EZv91vWUJdRyYJERzvXt',
         },
       }
     }, {} as CSAccounts)

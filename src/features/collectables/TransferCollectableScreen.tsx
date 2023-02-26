@@ -14,38 +14,38 @@ import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 import ArrowRight from '@assets/images/arrowRight.svg'
 import Menu from '@assets/images/menu.svg'
 import InfoIcon from '@assets/images/info.svg'
-import useSubmitTxn from '../../graphql/useSubmitTxn'
-import {
-  CollectableNavigationProp,
-  CollectableStackParamList,
-} from './collectablesTypes'
-import SafeAreaBox from '../../components/SafeAreaBox'
-import { DelayedFadeIn } from '../../components/FadeInOut'
-import Box from '../../components/Box'
-import ImageBox from '../../components/ImageBox'
-import ButtonPressable from '../../components/ButtonPressable'
-import Text from '../../components/Text'
-import { ww } from '../../utils/layout'
-import BackScreen from '../../components/BackScreen'
-import { useColors, useSpacing } from '../../theme/themeHooks'
-import TextInput from '../../components/TextInput'
+import SafeAreaBox from '@components/SafeAreaBox'
+import { DelayedFadeIn } from '@components/FadeInOut'
+import Box from '@components/Box'
+import ImageBox from '@components/ImageBox'
+import ButtonPressable from '@components/ButtonPressable'
+import Text from '@components/Text'
+import BackScreen from '@components/BackScreen'
+import { useColors, useSpacing } from '@theme/themeHooks'
+import TextInput from '@components/TextInput'
+import ListItem from '@components/ListItem'
+import BlurActionSheet from '@components/BlurActionSheet'
+import AddressBookSelector, {
+  AddressBookRef,
+} from '@components/AddressBookSelector'
+import TextTransform from '@components/TextTransform'
+import { ReAnimatedBox } from '@components/AnimatedBox'
+import useAlert from '@hooks/useAlert'
 import { solAddressIsValid } from '../../utils/accountUtils'
-import ListItem from '../../components/ListItem'
-import BlurActionSheet from '../../components/BlurActionSheet'
 import {
   createTransferCollectableMessage,
   getConnection,
 } from '../../utils/solanaUtils'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import AddressBookSelector, {
-  AddressBookRef,
-} from '../../components/AddressBookSelector'
 import { CSAccount } from '../../storage/cloudStorage'
 import * as Logger from '../../utils/logger'
-import TextTransform from '../../components/TextTransform'
-import { ReAnimatedBox } from '../../components/AnimatedBox'
-import useAlert from '../../hooks/useAlert'
+import { ww } from '../../utils/layout'
+import {
+  CollectableNavigationProp,
+  CollectableStackParamList,
+} from './collectablesTypes'
+import useSubmitTxn from '../../graphql/useSubmitTxn'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',

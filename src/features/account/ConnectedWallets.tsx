@@ -23,18 +23,18 @@ import {
   initialWindowMetrics,
 } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
-import useLayoutHeight from '../../hooks/useLayoutHeight'
-import useBackHandler from '../../hooks/useBackHandler'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
-import { useColors, useOpacity } from '../../theme/themeHooks'
+import useLayoutHeight from '@hooks/useLayoutHeight'
+import useBackHandler from '@hooks/useBackHandler'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import { useColors, useOpacity } from '@theme/themeHooks'
+import AccountIcon from '@components/AccountIcon'
+import BackgroundFill from '@components/BackgroundFill'
+import TouchableContainer from '@components/TouchableContainer'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
-import AccountIcon from '../../components/AccountIcon'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
-import BackgroundFill from '../../components/BackgroundFill'
-import TouchableContainer from '../../components/TouchableContainer'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
 
 export type ConnectedWalletsRef = {
@@ -43,7 +43,7 @@ export type ConnectedWalletsRef = {
 }
 
 type Props = {
-  onClose: () => void
+  onClose?: () => void
   onAddNew: () => void
   children: ReactNode
 }
@@ -85,7 +85,8 @@ const ConnectedWallets = forwardRef(
 
     const hide = useCallback(() => {
       bottomSheetModalRef.current?.dismiss()
-    }, [])
+      setIsShowing(false)
+    }, [setIsShowing])
 
     const handleNetTypeChange = useCallback(
       (nextNetType?: NetTypes.NetType) => {
@@ -105,14 +106,16 @@ const ConnectedWallets = forwardRef(
 
     const handleAddNew = useCallback(
       (netType: NetTypes.NetType) => () => {
+        hide()
         handleNetTypeChange(netType)
         onAddNew()
       },
-      [handleNetTypeChange, onAddNew],
+      [handleNetTypeChange, onAddNew, hide],
     )
 
     const handleAccountChange = useCallback(
       (item: CSAccount) => () => {
+        hide()
         setCurrentAccount(item)
         if (l1Network === 'solana') {
           // Reset Home & Collectables stack to first screen
@@ -121,15 +124,16 @@ const ConnectedWallets = forwardRef(
             routes: [{ name: 'Home' }, { name: 'Collectables' }],
           })
         }
-        hide()
       },
-      [hide, l1Network, navigation, setCurrentAccount],
+      [hide, l1Network, setCurrentAccount, navigation],
     )
 
     const renderItem = useCallback(
       // eslint-disable-next-line react/no-unused-prop-types
       ({ item }: { index: number; item: CSAccount }) => {
         const isSelected = item.address === currentAccount?.address
+        const accountAddress =
+          l1Network === 'solana' ? item?.solanaAddress : item?.address
         return (
           <TouchableContainer
             onPress={handleAccountChange(item)}
@@ -142,7 +146,7 @@ const ConnectedWallets = forwardRef(
             {item.netType === NetTypes.TESTNET && (
               <BackgroundFill backgroundColor="testnet" opacity={0.4} />
             )}
-            <AccountIcon address={item.address} size={25} />
+            <AccountIcon address={accountAddress} size={25} />
             <Text
               variant="subtitle1"
               color={isSelected ? 'primaryText' : 'secondaryText'}
@@ -158,7 +162,13 @@ const ConnectedWallets = forwardRef(
           </TouchableContainer>
         )
       },
-      [currentAccount, handleAccountChange, primaryText, setListItemHeight],
+      [
+        currentAccount,
+        handleAccountChange,
+        primaryText,
+        setListItemHeight,
+        l1Network,
+      ],
     )
 
     const footer = useCallback(
@@ -207,6 +217,7 @@ const ConnectedWallets = forwardRef(
         <BottomSheetBackdrop
           disappearsOnIndex={-1}
           appearsOnIndex={0}
+          pressBehavior="close"
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...props}
         />
@@ -216,7 +227,9 @@ const ConnectedWallets = forwardRef(
 
     const handleModalDismiss = useCallback(() => {
       handleDismiss()
-      onClose()
+      if (onClose) {
+        onClose()
+      }
     }, [handleDismiss, onClose])
 
     const handleIndicatorStyle = useMemo(() => {

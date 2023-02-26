@@ -18,14 +18,16 @@ import {
 import Address from '@helium/address'
 import Checkmark from '@assets/images/checkmark.svg'
 import { useKeyboard } from '@react-native-community/hooks'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
-import { useColors, useOpacity, useSpacing } from '../../theme/themeHooks'
-import SafeAreaBox from '../../components/SafeAreaBox'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import { useColors, useOpacity, useSpacing } from '@theme/themeHooks'
+import SafeAreaBox from '@components/SafeAreaBox'
+import TextInput from '@components/TextInput'
+import ButtonPressable from '@components/ButtonPressable'
+import AccountIcon from '@components/AccountIcon'
+import useAlert from '@hooks/useAlert'
+import CloseButton from '@components/CloseButton'
 import { HomeNavigationProp } from '../home/homeTypes'
-import TextInput from '../../components/TextInput'
-import ButtonPressable from '../../components/ButtonPressable'
-import AccountIcon from '../../components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import {
   AddressBookNavigationProp,
@@ -34,10 +36,8 @@ import {
 import { solAddressIsValid, accountNetType } from '../../utils/accountUtils'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import AddressExtra from './AddressExtra'
-import useAlert from '../../hooks/useAlert'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useIsHotspotOrValidatorQuery } from '../../generated/graphql'
-import CloseButton from '../../components/CloseButton'
 
 const BUTTON_HEIGHT = 55
 

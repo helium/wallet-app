@@ -26,11 +26,24 @@ import Toast from 'react-native-simple-toast'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useAsync } from 'react-async-hook'
 import { useSelector } from 'react-redux'
-import TokenButton from '../../components/TokenButton'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { useColors, useHitSlop } from '../../theme/themeHooks'
+import TokenButton from '@components/TokenButton'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useColors, useHitSlop } from '@theme/themeHooks'
+import AccountSelector, {
+  AccountSelectorRef,
+} from '@components/AccountSelector'
+import TokenSelector, { TokenSelectorRef } from '@components/TokenSelector'
+import AccountButton from '@components/AccountButton'
+import AddressBookSelector, {
+  AddressBookRef,
+} from '@components/AddressBookSelector'
+import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
+import { getMemoStrValid } from '@components/MemoInput'
+import useAlert from '@hooks/useAlert'
+import useDisappear from '@hooks/useDisappear'
+import IconPressedContainer from '@components/IconPressedContainer'
 import {
   HomeNavigationProp,
   HomeStackParamList,
@@ -42,31 +55,18 @@ import {
   solAddressIsValid,
 } from '../../utils/accountUtils'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import AccountSelector, {
-  AccountSelectorRef,
-} from '../../components/AccountSelector'
-import TokenSelector, { TokenSelectorRef } from '../../components/TokenSelector'
-import AccountButton from '../../components/AccountButton'
-import AddressBookSelector, {
-  AddressBookRef,
-} from '../../components/AddressBookSelector'
 import { SendDetails } from '../../storage/TransactionProvider'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import PaymentItem from './PaymentItem'
 import usePaymentsReducer, { MAX_PAYMENTS } from './usePaymentsReducer'
-import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
 import PaymentCard from './PaymentCard'
-import { getMemoStrValid } from '../../components/MemoInput'
 import PaymentSubmit from './PaymentSubmit'
 import { CSAccount } from '../../storage/cloudStorage'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
-import useAlert from '../../hooks/useAlert'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { RootState } from '../../store/rootReducer'
 import { useAppDispatch } from '../../store/store'
-import useDisappear from '../../hooks/useDisappear'
 import { solanaSlice } from '../../store/slices/solanaSlice'
-import IconPressedContainer from '../../components/IconPressedContainer'
 
 type LinkedPayment = {
   amount?: string
@@ -99,8 +99,14 @@ const PaymentScreen = () => {
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const { oraclePrice, networkBalance, solBalance, mobileBalance } =
-    useBalance()
+  const {
+    oraclePrice,
+    networkBalance,
+    solBalance,
+    mobileBalance,
+    mobileSolBalance,
+    iotSolBalance,
+  } = useBalance()
 
   const { showOKAlert } = useAlert()
   const { l1Network } = useAppStorage()
@@ -313,7 +319,12 @@ const PaymentScreen = () => {
     value: boolean,
     errorTicker: string,
   ] => {
-    if (!networkBalance || !mobileBalance || !paymentState.totalAmount) {
+    if (
+      !networkBalance ||
+      !mobileSolBalance ||
+      !iotSolBalance ||
+      !paymentState.totalAmount
+    ) {
       return [true, '']
     }
     if (paymentState.networkFee?.integerBalance === undefined)
@@ -325,7 +336,12 @@ const PaymentScreen = () => {
         let hasEnoughToken = false
         if (ticker === 'MOBILE') {
           hasEnoughToken =
-            mobileBalance.minus(paymentState.totalAmount).integerBalance >= 0
+            mobileSolBalance -
+              paymentState.totalAmount.floatBalance.valueOf() >=
+            0
+        } else if (ticker === 'IOT') {
+          hasEnoughToken =
+            iotSolBalance - paymentState.totalAmount.floatBalance.valueOf() >= 0
         } else if (ticker === 'HNT') {
           hasEnoughToken =
             networkBalance.minus(paymentState.totalAmount).integerBalance >= 0
@@ -341,9 +357,19 @@ const PaymentScreen = () => {
         const hasEnoughNetwork =
           networkBalance.minus(paymentState.networkFee).integerBalance >= 0
         const hasEnoughMobile =
-          mobileBalance.minus(paymentState.totalAmount).integerBalance >= 0
+          mobileSolBalance - paymentState.totalAmount.floatBalance.valueOf() >=
+          0
         if (!hasEnoughNetwork) return [true, networkBalance.type.ticker]
-        if (!hasEnoughMobile) return [true, mobileBalance.type.ticker]
+        if (!hasEnoughMobile) return [true, 'MOBILE']
+      }
+
+      if (ticker === 'IOT') {
+        const hasEnoughNetwork =
+          networkBalance.minus(paymentState.networkFee).integerBalance >= 0
+        const hasEnoughIOT =
+          iotSolBalance - paymentState.totalAmount.floatBalance.valueOf() >= 0
+        if (!hasEnoughNetwork) return [true, networkBalance.type.ticker]
+        if (!hasEnoughIOT) return [true, 'IOT']
       }
 
       const hasEnoughNetwork =
@@ -363,11 +389,12 @@ const PaymentScreen = () => {
     }
   }, [
     l1Network,
-    mobileBalance,
+    mobileSolBalance,
     networkBalance,
     paymentState.networkFee,
     paymentState.totalAmount,
     solBalance,
+    iotSolBalance,
     ticker,
   ])
 
@@ -633,6 +660,26 @@ const PaymentScreen = () => {
     accountSelectorRef?.current.showAccountTypes(netType)()
   }, [l1Network, networkType, sortedAccountsForNetType])
 
+  const isDntToken = useMemo(() => {
+    return ticker === 'MOBILE' || ticker === 'IOT'
+  }, [ticker])
+
+  const tokeButtonBalance = useMemo(() => {
+    if (l1Network === 'helium' || !isDntToken) {
+      return balanceToString(ticker === 'HNT' ? networkBalance : mobileBalance)
+    }
+
+    return ticker === 'MOBILE' ? `${mobileSolBalance}` : `${iotSolBalance}`
+  }, [
+    iotSolBalance,
+    mobileSolBalance,
+    mobileBalance,
+    isDntToken,
+    l1Network,
+    networkBalance,
+    ticker,
+  ])
+
   return (
     <>
       <HNTKeyboard
@@ -718,9 +765,7 @@ const PaymentScreen = () => {
                   <TokenButton
                     backgroundColor="secondary"
                     title={t('payment.title', { ticker: currencyType.ticker })}
-                    subtitle={balanceToString(
-                      ticker === 'HNT' ? networkBalance : mobileBalance,
-                    )}
+                    subtitle={tokeButtonBalance}
                     address={currentAccount?.address}
                     onPress={handleTokenTypeSelected}
                     showBubbleArrow

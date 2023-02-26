@@ -1,6 +1,6 @@
 import React, { memo } from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { useOpacity } from '../../theme/themeHooks'
+import { useOpacity } from '@theme/themeHooks'
 import Settings from './Settings'
 import SettingsConfirmPinScreen from './SettingsConfirmPinScreen'
 import SettingsCreatePinScreen from './SettingsCreatePinScreen'

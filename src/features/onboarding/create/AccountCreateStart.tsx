@@ -2,13 +2,13 @@ import React, { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import CreateAccount from '@assets/images/createAccount.svg'
 import { useNavigation } from '@react-navigation/native'
-import Box from '../../../components/Box'
-import Text from '../../../components/Text'
-import ButtonPressable from '../../../components/ButtonPressable'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import ButtonPressable from '@components/ButtonPressable'
+import CloseButton from '@components/CloseButton'
+import SafeAreaBox from '@components/SafeAreaBox'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
-import CloseButton from '../../../components/CloseButton'
 import { CreateAccountNavigationProp } from './createAccountNavTypes'
-import SafeAreaBox from '../../../components/SafeAreaBox'
 
 type Props = { onCreate: () => void; inline?: boolean }
 const AccountCreateStart = ({ onCreate, inline }: Props) => {

@@ -4,28 +4,28 @@ import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
-import { PublicKey } from '@solana/web3.js'
 import Menu from '@assets/images/menu.svg'
 import InfoIcon from '@assets/images/info.svg'
-import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
+import BN from 'bn.js'
+import SafeAreaBox from '@components/SafeAreaBox'
+import { DelayedFadeIn } from '@components/FadeInOut'
+import Box from '@components/Box'
+import ImageBox from '@components/ImageBox'
+import ButtonPressable from '@components/ButtonPressable'
+import Text from '@components/Text'
+import BackScreen from '@components/BackScreen'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import BlurActionSheet from '@components/BlurActionSheet'
+import ListItem from '@components/ListItem'
+import { ReAnimatedBox } from '@components/AnimatedBox'
+import { useSpacing } from '@theme/themeHooks'
+import { ww } from '../../utils/layout'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import SafeAreaBox from '../../components/SafeAreaBox'
-import { DelayedFadeIn } from '../../components/FadeInOut'
-import Box from '../../components/Box'
-import ImageBox from '../../components/ImageBox'
-import ButtonPressable from '../../components/ButtonPressable'
-import Text from '../../components/Text'
-import { ww } from '../../utils/layout'
-import BackScreen from '../../components/BackScreen'
-import { useSpacing } from '../../theme/themeHooks'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import BlurActionSheet from '../../components/BlurActionSheet'
-import ListItem from '../../components/ListItem'
-import { useHotspot } from '../../hooks/useHotspot'
-import { ReAnimatedBox } from '../../components/AnimatedBox'
+import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
+import { Mints } from '../../utils/constants'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotDetailsScreen'>
 
@@ -40,29 +40,14 @@ const HotspotDetailsScreen = () => {
   const { t } = useTranslation()
 
   const { collectable } = route.params
-  const mint = useMemo(
-    () => new PublicKey(collectable.compression.asset_hash),
-    [collectable.compression.asset_hash],
-  )
-
-  const {
-    pendingMobileRewards,
-    mobileRewardsLoading,
-    pendingIotRewards,
-    iotRewardsLoading,
-    iotRewardsError,
-    mobileRewardsError,
-  } = useHotspot(mint)
-
-  const hasMobileRewards = useMemo(
-    () => pendingMobileRewards && pendingMobileRewards > 0,
-    [pendingMobileRewards],
-  )
-
-  const hasIotRewards = useMemo(
-    () => pendingIotRewards && pendingIotRewards > 0,
-    [pendingIotRewards],
-  )
+  const pendingIotRewards =
+    collectable &&
+    collectable.pendingRewards &&
+    new BN(collectable.pendingRewards[Mints.IOT])
+  const pendingMobileRewards =
+    collectable &&
+    collectable.pendingRewards &&
+    new BN(collectable.pendingRewards[Mints.MOBILE])
 
   const spacing = useSpacing()
 
@@ -196,12 +181,10 @@ const HotspotDetailsScreen = () => {
                 title={t('collectablesScreen.hotspots.claimRewards')}
                 titleColor="black"
                 disabled={
-                  !mobileRewardsLoading ||
-                  !iotRewardsLoading ||
-                  !!iotRewardsError ||
-                  !!mobileRewardsError ||
-                  !hasMobileRewards ||
-                  !hasIotRewards
+                  pendingIotRewards &&
+                  pendingIotRewards.eq(new BN(0)) &&
+                  pendingMobileRewards &&
+                  pendingMobileRewards.eq(new BN(0))
                 }
                 onPress={handleClaimRewards}
               />
@@ -211,13 +194,13 @@ const HotspotDetailsScreen = () => {
             </Text>
             <Text variant="body2" marginBottom="m">
               {t('collectablesScreen.hotspots.pendingRewards', {
-                amount: pendingMobileRewards || 0,
+                amount: pendingMobileRewards,
                 ticker: 'MOBILE',
               })}
             </Text>
             <Text variant="body2" marginBottom="m">
               {t('collectablesScreen.hotspots.pendingRewards', {
-                amount: pendingIotRewards || 0,
+                amount: pendingIotRewards,
                 ticker: 'IOT',
               })}
             </Text>

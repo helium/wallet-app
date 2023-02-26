@@ -8,12 +8,8 @@ import {
 import { TextInput } from 'react-native'
 import tinycolor from 'tinycolor2'
 import { SvgProps } from 'react-native-svg'
-import { Color, theme, Theme } from '../theme/theme'
-import {
-  useColors,
-  useInputVariants,
-  useTextVariants,
-} from '../theme/themeHooks'
+import { Color, theme, Theme } from '@theme/theme'
+import { useColors, useInputVariants, useTextVariants } from '@theme/themeHooks'
 import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'

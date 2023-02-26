@@ -7,6 +7,7 @@ import {
   fetchCollectables,
   fetchMoreCollectables,
   WalletCollectables,
+  collectables as collectablesSli,
 } from '../store/slices/collectablesSlice'
 import { useAppDispatch } from '../store/store'
 import { onLogs, removeAccountChangeListener } from '../utils/solanaUtils'
@@ -20,6 +21,12 @@ const useCollectables = (): WalletCollectables & {
   const accountSubscriptionId = useRef<number>()
   const { currentAccount } = useAccountStorage()
   const collectables = useSelector((state: RootState) => state.collectables)
+
+  useEffect(() => {
+    if (!currentAccount?.solanaAddress) return
+    // Reset loading on mount
+    dispatch(collectablesSli.actions.resetLoading({ acct: currentAccount }))
+  }, [currentAccount, dispatch])
 
   const fetchingMore = useMemo(() => {
     if (

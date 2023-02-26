@@ -12,14 +12,19 @@ import {
   Transaction,
 } from '@solana/web3.js'
 import { first, last } from 'lodash'
-import { sendAndConfirmWithRetry } from '@helium/spl-utils'
+import {
+  bulkSendRawTransactions,
+  sendAndConfirmWithRetry,
+} from '@helium/spl-utils'
+import { Mints } from '@utils/constants'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
 import { CompressedNFT, toMintAddress } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
 import { fetchCollectables } from './collectablesSlice'
-import { Mints, walletRestApi } from './walletRestApi'
+import { walletRestApi } from './walletRestApi'
 import * as Logger from '../../utils/logger'
+import { fetchHotspots } from './hotspotsSlice'
 
 type Balances = {
   hntBalance?: bigint
@@ -63,7 +68,7 @@ export const readBalances = createAsyncThunk(
   }: {
     acct: CSAccount
     cluster: Cluster
-    mints: Mints
+    mints: Record<string, string>
   }) => {
     if (!acct?.solanaAddress) throw new Error('No solana account found')
 
@@ -96,7 +101,7 @@ type PaymentInput = {
   account: CSAccount
   payments: Payment[]
   cluster: Cluster
-  mints: Mints
+  mints: Record<string, string>
 }
 
 type CollectablePaymentInput = {
@@ -132,7 +137,7 @@ type TreasurySwapTxn = {
   cluster: Cluster
   amount: number
   fromMint: PublicKey
-  mints: Mints
+  mints: Record<string, string>
 }
 
 export const makePayment = createAsyncThunk(
@@ -279,6 +284,7 @@ export const claimRewards = createAsyncThunk(
   ) => {
     try {
       const signed = await anchorProvider.wallet.signTransaction(txn)
+
       const { txid } = await sendAndConfirmWithRetry(
         anchorProvider.connection,
         signed.serialize(),
@@ -286,15 +292,15 @@ export const claimRewards = createAsyncThunk(
         'confirmed',
       )
 
-      // If the transfer is successful, we need to update the collectables so pending rewards are updated.
-      dispatch(fetchCollectables({ account, cluster }))
-
-      return await dispatch(
+      await dispatch(
         walletRestApi.endpoints.postPayment.initiate({
           txnSignature: txid,
           cluster,
         }),
       )
+
+      // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
+      dispatch(fetchHotspots({ account, cluster, provider: anchorProvider }))
     } catch (error) {
       Logger.error(error)
       throw error
@@ -311,28 +317,14 @@ export const claimAllRewards = createAsyncThunk(
     try {
       const signed = await anchorProvider.wallet.signAllTransactions(txns)
 
-      // If the transfer is successful, we need to update the collectables so pending rewards are updated.
-      dispatch(fetchCollectables({ account, cluster }))
-
-      const txIds = await Promise.all(
-        signed.map(async (tx: Transaction) => {
-          const { txid } = await sendAndConfirmWithRetry(
-            anchorProvider.connection,
-            tx.serialize(),
-            { skipPreflight: true },
-            'confirmed',
-          )
-          return txid
-        }),
+      await bulkSendRawTransactions(
+        anchorProvider.connection,
+        signed.map((s) => s.serialize()),
       )
 
-      // TODO: This is a hack to get around the fact that we can't send multiple
-      return await dispatch(
-        walletRestApi.endpoints.postPayment.initiate({
-          txnSignature: txIds[0],
-          cluster,
-        }),
-      )
+      // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
+      dispatch(fetchHotspots({ account, cluster, provider: anchorProvider }))
+      dispatch(readBalances({ cluster, acct: account, mints: Mints }))
     } catch (error) {
       Logger.error(error)
       throw error
@@ -353,7 +345,7 @@ export const getTxns = createAsyncThunk(
       account: CSAccount
       cluster: Cluster
       ticker: Ticker
-      mints: Mints
+      mints: Record<string, string>
       requestType: 'update_head' | 'start_fresh' | 'fetch_more'
     },
     { getState },

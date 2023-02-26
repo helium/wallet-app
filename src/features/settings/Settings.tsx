@@ -3,13 +3,16 @@ import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
 import { Alert, Linking, Platform, SectionList } from 'react-native'
 import { Cluster } from '@solana/web3.js'
-import Text from '../../components/Text'
-import SafeAreaBox from '../../components/SafeAreaBox'
+import Text from '@components/Text'
+import SafeAreaBox from '@components/SafeAreaBox'
+import { useHitSlop, useSpacing } from '@theme/themeHooks'
+import Box from '@components/Box'
+import { useAppVersion } from '@hooks/useDevice'
+import useCopyText from '@hooks/useCopyText'
+import useAlert from '@hooks/useAlert'
+import CloseButton from '@components/CloseButton'
 import { HomeNavigationProp } from '../home/homeTypes'
-import { useHitSlop, useSpacing } from '../../theme/themeHooks'
-import Box from '../../components/Box'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
-import { useAppVersion } from '../../hooks/useDevice'
 import { SUPPORTED_LANGUAGUES } from '../../utils/i18n'
 import useAuthIntervals from './useAuthIntervals'
 import SUPPORTED_CURRENCIES from '../../utils/supportedCurrencies'
@@ -17,8 +20,6 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { SettingsNavigationProp } from './settingsTypes'
 import { useLanguageStorage } from '../../storage/LanguageProvider'
-import useCopyText from '../../hooks/useCopyText'
-import useAlert from '../../hooks/useAlert'
 import {
   checkSecureAccount,
   getSecureAccount,
@@ -27,8 +28,6 @@ import { useApolloClient } from '../../graphql/useApolloClient'
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
 import { ellipsizeAddress } from '../../utils/accountUtils'
 import { RootNavigationProp } from '../../navigation/rootTypes'
-import CloseButton from '../../components/CloseButton'
-import { useGetBetaPubkeysQuery } from '../../store/slices/walletRestApi'
 
 const Settings = () => {
   const { t } = useTranslation()
@@ -68,7 +67,6 @@ const Settings = () => {
   } = useAppStorage()
   const copyText = useCopyText()
   const { showOKAlert, showOKCancelAlert } = useAlert()
-  const { data: betaAccess } = useGetBetaPubkeysQuery()
 
   const isDefaultAccount = useMemo(
     () => defaultAccountAddress === currentAccount?.address,
@@ -397,21 +395,19 @@ const Settings = () => {
       },
     ]
 
-    if (betaAccess?.publicKeys?.includes(currentAccount?.address || '')) {
-      devData.push({
-        title: t('settings.sections.dev.solana.title'),
-        value: l1Network === 'solana',
-        onToggle: () =>
-          updateL1Network(l1Network === 'helium' ? 'solana' : 'helium'),
-        helperText: t('settings.sections.dev.solana.helperText'),
-        onPress: () => {
-          showOKAlert({
-            message: t('settings.sections.dev.solana.prompt.message'),
-            title: t('settings.sections.dev.solana.prompt.title'),
-          })
-        },
-      })
-    }
+    devData.push({
+      title: t('settings.sections.dev.solana.title'),
+      value: l1Network === 'solana',
+      onToggle: () =>
+        updateL1Network(l1Network === 'helium' ? 'solana' : 'helium'),
+      helperText: t('settings.sections.dev.solana.helperText'),
+      onPress: () => {
+        showOKAlert({
+          message: t('settings.sections.dev.solana.prompt.message'),
+          title: t('settings.sections.dev.solana.prompt.title'),
+        })
+      },
+    })
 
     if (l1Network === 'solana') {
       const items = [
@@ -569,7 +565,6 @@ const Settings = () => {
   }, [
     authInterval,
     authIntervals,
-    betaAccess,
     convertToCurrency,
     copyText,
     currency,

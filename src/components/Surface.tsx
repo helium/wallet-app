@@ -2,8 +2,8 @@
 import { BoxProps } from '@shopify/restyle'
 import React, { memo, useMemo } from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
-import { Color, Theme } from '../theme/theme'
-import { useColorScheme, useCreateOpacity } from '../theme/themeHooks'
+import { Color, Theme } from '@theme/theme'
+import { useColorScheme, useCreateOpacity } from '@theme/themeHooks'
 import Box from './Box'
 
 type Props = BoxProps<Theme> & {

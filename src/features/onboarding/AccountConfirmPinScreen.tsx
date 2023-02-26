@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native'
+import ConfirmPinView from '@components/ConfirmPinView'
 import { OnboardingNavigationProp } from './onboardingTypes'
-import ConfirmPinView from '../../components/ConfirmPinView'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useOnboarding } from './OnboardingProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
@@ -22,7 +22,7 @@ const AccountConfirmPinScreen = () => {
   const { params } = route
   const { t } = useTranslation()
   const { upsertAccount } = useAccountStorage()
-  const { updatePin } = useAppStorage()
+  const { updatePin, l1Network } = useAppStorage()
   const { reset } = useOnboarding()
 
   const pinSuccess = useCallback(
@@ -39,7 +39,15 @@ const AccountConfirmPinScreen = () => {
             },
           })
           reset()
-          rootNav.replace('HomeNavigator')
+          rootNav.reset({
+            index: 0,
+            routes: [
+              {
+                name:
+                  l1Network === 'solana' ? 'TabBarNavigator' : 'HomeNavigator',
+              },
+            ],
+          })
         } catch (e) {
           console.error(e)
         }
@@ -47,7 +55,7 @@ const AccountConfirmPinScreen = () => {
 
       await updatePin(pin)
     },
-    [params.account, reset, rootNav, updatePin, upsertAccount],
+    [params.account, reset, rootNav, updatePin, upsertAccount, l1Network],
   )
 
   return (

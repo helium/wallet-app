@@ -5,19 +5,19 @@ import Terminal from '@assets/images/terminal.svg'
 import { TextStyle } from 'react-native'
 import RNSodium from 'react-native-sodium'
 import { useTranslation } from 'react-i18next'
-import Text from '../../../components/Text'
-import SafeAreaBox from '../../../components/SafeAreaBox'
+import Text from '@components/Text'
+import SafeAreaBox from '@components/SafeAreaBox'
+import ButtonPressable from '@components/ButtonPressable'
+import Box from '@components/Box'
+import CloseButton from '@components/CloseButton'
+import TextInput from '@components/TextInput'
+import { createSecureAccount } from '@storage/secureStorage'
+import useAlert from '@hooks/useAlert'
+import { accountNetType } from '@utils/accountUtils'
 import {
   CLIAccountNavigationProp,
   CLIAccountStackParamList,
 } from './CLIAccountNavigatorTypes'
-import ButtonPressable from '../../../components/ButtonPressable'
-import Box from '../../../components/Box'
-import CloseButton from '../../../components/CloseButton'
-import TextInput from '../../../components/TextInput'
-import { createSecureAccount } from '../../../storage/secureStorage'
-import useAlert from '../../../hooks/useAlert'
-import { accountNetType } from '../../../utils/accountUtils'
 import { useOnboarding } from '../OnboardingProvider'
 
 type Route = RouteProp<CLIAccountStackParamList, 'CLIPasswordScreen'>

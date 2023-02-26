@@ -1,10 +1,11 @@
 import { Ticker } from '@helium/currency'
 import { BoxProps } from '@shopify/restyle'
 import React, { memo, useMemo } from 'react'
-import Text from '../../components/Text'
-import TextTransform from '../../components/TextTransform'
-import Box from '../../components/Box'
-import { Theme } from '../../theme/theme'
+import Text from '@components/Text'
+import TextTransform from '@components/TextTransform'
+import Box from '@components/Box'
+import { Theme } from '@theme/theme'
+import { useAppStorage } from '@storage/AppStorageProvider'
 import { useBalance } from '../../utils/Balance'
 
 type Props = {
@@ -22,10 +23,16 @@ const AccountTokenBalance = ({
   const {
     dcBalance,
     mobileBalance,
+    mobileSolBalance,
+    iotBalance,
+    iotSolBalance,
+    solBalance,
     networkBalance,
     networkStakedBalance,
     secBalance,
   } = useBalance()
+
+  const { l1Network } = useAppStorage()
 
   const balance = useMemo(() => {
     switch (ticker) {
@@ -38,18 +45,27 @@ const AccountTokenBalance = ({
         return networkStakedBalance
       }
       case 'MOBILE':
-        return mobileBalance
+        return l1Network === 'solana' ? mobileSolBalance : mobileBalance
+      case 'IOT':
+        return l1Network === 'solana' ? iotSolBalance : iotBalance
+      case 'SOL':
+        return solBalance
       case 'DC':
         return dcBalance
       case 'HST':
         return secBalance
     }
   }, [
+    l1Network,
     dcBalance,
     mobileBalance,
+    mobileSolBalance,
     networkBalance,
     networkStakedBalance,
     secBalance,
+    solBalance,
+    iotBalance,
+    iotSolBalance,
     ticker,
   ])
 
@@ -75,8 +91,11 @@ const AccountTokenBalance = ({
           adjustsFontSizeToFit
           i18nKey="accountsScreen.tokenBalance"
           values={{
-            amount: balance?.toString(2, { showTicker: false }),
-            ticker: balance?.type.ticker,
+            amount:
+              typeof balance === 'number'
+                ? balance
+                : balance?.toString(2, { showTicker: false }),
+            ticker,
           }}
         />
       )}

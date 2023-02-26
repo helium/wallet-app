@@ -6,31 +6,35 @@ import {
 } from '@react-navigation/stack'
 import { useNavigation } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
-import { RootStackParamList } from './rootTypes'
+import { useColors } from '@theme/themeHooks'
+import {
+  RootStackParamList,
+  RootNavigationProp,
+  TabBarNavigationProp,
+} from './rootTypes'
 import HomeNavigator from '../features/home/HomeNavigator'
-import { useColors } from '../theme/themeHooks'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import OnboardingNavigator from '../features/onboarding/OnboardingNavigator'
 import TabBarNavigator from './TabBarNavigator'
 import { useAppStorage } from '../storage/AppStorageProvider'
-import { useAppDispatch } from '../store/store'
 import { HomeNavigationProp } from '../features/home/homeTypes'
-import { appSlice } from '../store/slices/appSlice'
 import ConnectedWallets, {
   ConnectedWalletsRef,
 } from '../features/account/ConnectedWallets'
 import { RootState } from '../store/rootReducer'
-import { useGetBetaPubkeysQuery } from '../store/slices/walletRestApi'
+import { appSlice } from '../store/slices/appSlice'
+import { useAppDispatch } from '../store/store'
 
 const RootNavigator = () => {
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<
+    RootNavigationProp & HomeNavigationProp & TabBarNavigationProp
+  >()
   const colors = useColors()
-  const { hasAccounts, currentAccount } = useAccountStorage()
-  const { l1Network, updateL1Network } = useAppStorage()
-  const dispatch = useAppDispatch()
+  const { hasAccounts } = useAccountStorage()
+  const { l1Network } = useAppStorage()
   const RootStack = createStackNavigator<RootStackParamList>()
   const connectedWalletsRef = useRef<ConnectedWalletsRef>(null)
-  const { data: betaAccess } = useGetBetaPubkeysQuery()
+  const dispatch = useAppDispatch()
 
   const screenOptions = useMemo(
     () =>
@@ -44,12 +48,29 @@ const RootNavigator = () => {
     changeNavigationBarColor(colors.primaryBackground, true, false)
   }, [colors.primaryBackground])
 
-  // Edge case scenario where user is on testflight and has solana preview on then installs app store version.
+  // Reset navigation when l1Network changes
   useEffect(() => {
-    if (!betaAccess?.publicKeys?.includes(currentAccount?.address || '')) {
-      updateL1Network('helium')
+    if (!navigation) return
+
+    if (hasAccounts) {
+      if (l1Network === 'helium') {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'HomeNavigator' }],
+        })
+      } else {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'TabBarNavigator' }],
+        })
+      }
+    } else {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'OnboardingNavigator' }],
+      })
     }
-  }, [betaAccess, currentAccount, updateL1Network])
+  }, [l1Network, navigation, hasAccounts])
 
   const initialRouteName = useMemo(() => {
     if (hasAccounts) {
@@ -62,13 +83,13 @@ const RootNavigator = () => {
     navigation.navigate('AddNewAccountNavigator')
   }, [navigation])
 
-  const onConnectedWalletsClose = useCallback(() => {
-    dispatch(appSlice.actions.toggleConnectedWallets())
-  }, [dispatch])
-
   const showConnectedWallets = useSelector(
     (state: RootState) => state.app.showConnectedWallets,
   )
+
+  const onClose = useCallback(() => {
+    dispatch(appSlice.actions.toggleConnectedWallets())
+  }, [dispatch])
 
   useEffect(() => {
     if (showConnectedWallets) {
@@ -80,28 +101,27 @@ const RootNavigator = () => {
     <ConnectedWallets
       onAddNew={handleAddNew}
       ref={connectedWalletsRef}
-      onClose={onConnectedWalletsClose}
+      onClose={onClose}
     >
       <RootStack.Navigator initialRouteName={initialRouteName}>
-        {l1Network === 'helium' ? (
+        <>
           <RootStack.Screen
             name="HomeNavigator"
             component={HomeNavigator}
             options={screenOptions}
           />
-        ) : (
           <RootStack.Screen
             name="TabBarNavigator"
             component={TabBarNavigator}
             options={screenOptions}
           />
-        )}
-
-        <RootStack.Screen
-          name="OnboardingNavigator"
-          component={OnboardingNavigator}
-          options={screenOptions}
-        />
+          <RootStack.Screen
+            key="OnboardingNavigator"
+            name="OnboardingNavigator"
+            component={OnboardingNavigator}
+            options={screenOptions}
+          />
+        </>
       </RootStack.Navigator>
     </ConnectedWallets>
   )

@@ -5,21 +5,21 @@ import { FlatList } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { upperCase } from 'lodash'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import Box from '@components/Box'
+import { useColors, usePaddingStyle } from '@theme/themeHooks'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import Text from '@components/Text'
+import useAlert from '@hooks/useAlert'
+import { Color } from '@theme/theme'
 import { OnboardingNavigationProp } from '../onboardingTypes'
 import PassphraseAutocomplete from './PassphraseAutocomplete'
-import Box from '../../../components/Box'
 import { useOnboarding } from '../OnboardingProvider'
-import { useColors, usePaddingStyle } from '../../../theme/themeHooks'
-import TouchableOpacityBox from '../../../components/TouchableOpacityBox'
 import {
   ImportAccountNavigationProp,
   ImportAccountStackParamList,
 } from './importAccountNavTypes'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
-import Text from '../../../components/Text'
 import { createSecureAccount } from '../../../storage/secureStorage'
-import useAlert from '../../../hooks/useAlert'
-import { Color } from '../../../theme/theme'
 
 const accentColors = [
   'purple500',

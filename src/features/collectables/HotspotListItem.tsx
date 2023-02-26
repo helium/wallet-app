@@ -1,26 +1,28 @@
-import React, { useEffect, useMemo } from 'react'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useMemo } from 'react'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
-import { PublicKey } from '@solana/web3.js'
 import { BoxProps } from '@shopify/restyle'
-import MobileSymbol from '@assets/images/mobileSymbol.svg'
 import IotSymbol from '@assets/images/iotSymbol.svg'
-import Text from '../../components/Text'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { CompressedNFT } from '../../types/solana'
-import { ww } from '../../utils/layout'
-import { useHotspot } from '../../hooks/useHotspot'
-import Box from '../../components/Box'
+import MobileSymbol from '@assets/images/mobileSymbol.svg'
+import BN from 'bn.js'
+import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import Box from '@components/Box'
+import { ReAnimatedBox } from '@components/AnimatedBox'
+import ImageBox from '@components/ImageBox'
+import { Theme } from '@theme/theme'
+import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import { useMint } from '@helium/helium-react-hooks'
+import BigNumber from 'bignumber.js'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
-import { ReAnimatedBox } from '../../components/AnimatedBox'
-import ImageBox from '../../components/ImageBox'
-import { Theme } from '../../theme/theme'
-import { hotspots } from '../../store/slices/hotspotsSlice'
-import { useAppDispatch } from '../../store/store'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { ww } from '../../utils/layout'
+import { formatLargeNumber } from '../../utils/accountUtils'
+import type { HotspotWithPendingRewards } from '../../utils/solanaUtils'
+import { Mints } from '../../utils/constants'
 
 export type HotspotListItemProps = {
-  hotspot: CompressedNFT
-  onPress: (hotspot: CompressedNFT) => void
+  hotspot: HotspotWithPendingRewards
+  onPress: (hotspot: HotspotWithPendingRewards) => void
 } & BoxProps<Theme>
 
 const HotspotListItem = ({
@@ -29,49 +31,49 @@ const HotspotListItem = ({
   ...rest
 }: HotspotListItemProps) => {
   const COLLECTABLE_HEIGHT = ww / 2
-  const dispatch = useAppDispatch()
-  const { currentAccount } = useAccountStorage()
   const {
     content: { metadata },
   } = hotspot
 
-  const mint = useMemo(() => new PublicKey(hotspot.id), [hotspot.id])
-  const { pendingMobileRewards, pendingIotRewards } = useHotspot(mint)
+  const { info: iotMint } = useMint(IOT_MINT)
+  const { info: mobileMint } = useMint(MOBILE_MINT)
+
+  const pendingIotRewards = useMemo(
+    () => hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.IOT]),
+    [hotspot.pendingRewards],
+  )
+  const pendingIotRewardsString = useMemo(() => {
+    if (!hotspot.pendingRewards) return
+    const num = toNumber(
+      new BN(hotspot.pendingRewards[Mints.IOT]),
+      iotMint?.info.decimals || 6,
+    )
+    return formatLargeNumber(new BigNumber(num))
+  }, [iotMint, hotspot])
+
+  const pendingMobileRewards = useMemo(
+    () =>
+      hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.MOBILE]),
+    [hotspot.pendingRewards],
+  )
+
+  const pendingMobileRewardsString = useMemo(() => {
+    if (!hotspot.pendingRewards) return
+    const num = toNumber(
+      new BN(hotspot.pendingRewards[Mints.MOBILE]),
+      mobileMint?.info.decimals || 6,
+    )
+    return formatLargeNumber(new BigNumber(num))
+  }, [hotspot, mobileMint])
 
   const hasIotRewards = useMemo(
-    () => pendingIotRewards && pendingIotRewards > 0,
+    () => pendingIotRewards && pendingIotRewards.gt(new BN(0)),
     [pendingIotRewards],
   )
-
   const hasMobileRewards = useMemo(
-    () => pendingMobileRewards && pendingMobileRewards > 0,
+    () => pendingMobileRewards && pendingMobileRewards.gt(new BN(0)),
     [pendingMobileRewards],
   )
-
-  useEffect(() => {
-    if (!currentAccount) return
-
-    dispatch(
-      hotspots.actions.updateHotspot({
-        account: currentAccount,
-        hotspotDetails: {
-          hotspotId: hotspot.id,
-          pendingIotRewards:
-            hasIotRewards && pendingIotRewards ? pendingIotRewards : 0,
-          pendingMobileRewards:
-            hasMobileRewards && pendingMobileRewards ? pendingMobileRewards : 0,
-        },
-      }),
-    )
-  }, [
-    currentAccount,
-    dispatch,
-    hasIotRewards,
-    hasMobileRewards,
-    hotspot.id,
-    pendingIotRewards,
-    pendingMobileRewards,
-  ])
 
   return (
     <ReAnimatedBox
@@ -97,17 +99,16 @@ const HotspotListItem = ({
             cache: 'force-cache',
           }}
         />
-        {hasMobileRewards && (
+        {!!hasMobileRewards && (
           <Box
             justifyContent="center"
             alignItems="center"
             backgroundColor="white"
-            borderRadius="round"
+            borderRadius="xl"
+            padding="xs"
             position="absolute"
             top={20}
             right={16}
-            height={28}
-            width={28}
             flexDirection="row"
             shadowRadius={6}
             shadowColor="black"
@@ -118,20 +119,22 @@ const HotspotListItem = ({
             shadowOpacity={0.3}
             elevation={2}
           >
+            <Text variant="body2Medium" marginEnd="xs" color="black">
+              {pendingMobileRewardsString}
+            </Text>
             <MobileSymbol color="black" />
           </Box>
         )}
-        {hasIotRewards && (
+        {!!hasIotRewards && (
           <Box
             justifyContent="center"
             alignItems="center"
             backgroundColor="white"
-            borderRadius="round"
+            borderRadius="xl"
             position="absolute"
             top={hasMobileRewards ? 58 : 20}
+            padding="xs"
             right={16}
-            height={28}
-            width={28}
             flexDirection="row"
             shadowRadius={6}
             shadowColor="black"
@@ -142,6 +145,9 @@ const HotspotListItem = ({
             shadowOpacity={0.3}
             elevation={2}
           >
+            <Text variant="body2Medium" marginEnd="xs" color="black">
+              {pendingIotRewardsString}
+            </Text>
             <IotSymbol color="black" />
           </Box>
         )}

@@ -2,13 +2,13 @@ import React, { memo, useCallback } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { Platform } from 'react-native'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import CloseButton from '@components/CloseButton'
+import { CSAccount } from '@storage/cloudStorage'
 import { HomeNavigationProp } from '../home/homeTypes'
 import ContactsList from './ContactsList'
 import { AddressBookNavigationProp } from './addressBookTypes'
-import { CSAccount } from '../../storage/cloudStorage'
-import CloseButton from '../../components/CloseButton'
 
 const AddressBook = () => {
   const { t } = useTranslation()

@@ -10,7 +10,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated'
-import globalStyles from '../theme/globalStyles'
+import globalStyles from '@theme/globalStyles'
 import { useGetSolanaStatusQuery } from '../store/slices/solanaStatusApi'
 import Text from './Text'
 import Box from './Box'

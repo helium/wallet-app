@@ -4,13 +4,13 @@ import ChevronDown from '@assets/images/chevronDown.svg'
 import { Keyboard, StyleSheet } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
 import { NetTypes as NetType } from '@helium/address'
-import { useColors, useHitSlop } from '../theme/themeHooks'
+import { useColors, useHitSlop } from '@theme/themeHooks'
+import { Color, Theme } from '@theme/theme'
+import useHaptic from '@hooks/useHaptic'
 import AccountIcon from './AccountIcon'
 import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
-import { Color, Theme } from '../theme/theme'
-import useHaptic from '../hooks/useHaptic'
 
 type Props = {
   onPress?: (address?: string) => void

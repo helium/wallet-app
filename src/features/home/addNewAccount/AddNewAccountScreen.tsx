@@ -3,11 +3,11 @@ import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Box from '../../../components/Box'
-import FadeInOut from '../../../components/FadeInOut'
-import TabBar from '../../../components/TabBar'
-import Text from '../../../components/Text'
-import globalStyles from '../../../theme/globalStyles'
+import Box from '@components/Box'
+import FadeInOut from '@components/FadeInOut'
+import TabBar from '@components/TabBar'
+import Text from '@components/Text'
+import globalStyles from '@theme/globalStyles'
 import PairStart from '../../ledger/PairStart'
 import AccountCreateStart from '../../onboarding/create/AccountCreateStart'
 import AccountImportStartScreen from '../../onboarding/import/AccountImportStartScreen'
@@ -46,17 +46,19 @@ const AddNewAccountScreen = () => {
   }, [navigation])
 
   return (
-    <Box flex={1} backgroundColor="surfaceSecondary">
-      <Box flexDirection="row" paddingVertical="m">
-        <Box flex={1} />
-        <Text variant="subtitle1">{t('addNewAccount.title')}</Text>
-        <Box flex={1} />
+    <Box flex={1} backgroundColor="secondaryBackground">
+      <Box backgroundColor="surfaceSecondary">
+        <Box flexDirection="row" paddingVertical="m">
+          <Box flex={1} />
+          <Text variant="subtitle1">{t('addNewAccount.title')}</Text>
+          <Box flex={1} />
+        </Box>
+        <TabBar
+          tabBarOptions={tabData}
+          selectedValue={selectedOption}
+          onItemSelected={handleItemSelected}
+        />
       </Box>
-      <TabBar
-        tabBarOptions={tabData}
-        selectedValue={selectedOption}
-        onItemSelected={handleItemSelected}
-      />
 
       <ScrollView contentContainerStyle={contentContainerStyle}>
         <Box flex={1}>

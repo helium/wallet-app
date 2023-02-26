@@ -9,10 +9,10 @@ import React, { memo, useCallback } from 'react'
 import DC from '@assets/images/dc.svg'
 import MobileIcon from '@assets/images/mobileIcon.svg'
 import Helium from '@assets/images/helium.svg'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import { useColors } from '@theme/themeHooks'
 import { balanceToString } from '../../utils/Balance'
-import { useColors } from '../../theme/themeHooks'
 
 type Props = {
   netType: NetTypes.NetType

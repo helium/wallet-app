@@ -15,10 +15,19 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Balance, { CurrencyType, DataCredits } from '@helium/currency'
 import { NetTypes } from '@helium/address'
 import { TokenBurnV1 } from '@helium/transactions'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { useColors, useHitSlop } from '../../theme/themeHooks'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useColors, useHitSlop } from '@theme/themeHooks'
+import AccountSelector, {
+  AccountSelectorRef,
+} from '@components/AccountSelector'
+import AccountButton from '@components/AccountButton'
+import SubmitButton from '@components/SubmitButton'
+import LedgerBurnModal, {
+  LedgerBurnModalRef,
+} from '@components/LedgerBurnModal'
+import useAlert from '@hooks/useAlert'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import {
   accountNetType,
@@ -26,20 +35,11 @@ import {
   formatAccountAlias,
 } from '../../utils/accountUtils'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import AccountSelector, {
-  AccountSelectorRef,
-} from '../../components/AccountSelector'
-import AccountButton from '../../components/AccountButton'
 import { useAccountQuery, useSubmitTxnMutation } from '../../generated/graphql'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import PaymentSummary from '../payment/PaymentSummary'
-import SubmitButton from '../../components/SubmitButton'
 import { useTransactions } from '../../storage/TransactionProvider'
-import LedgerBurnModal, {
-  LedgerBurnModalRef,
-} from '../../components/LedgerBurnModal'
 import PaymentSubmit from '../payment/PaymentSubmit'
-import useAlert from '../../hooks/useAlert'
 import { checkSecureAccount } from '../../storage/secureStorage'
 
 type Route = RouteProp<HomeStackParamList, 'BurnScreen'>

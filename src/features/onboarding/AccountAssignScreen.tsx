@@ -4,19 +4,19 @@ import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import CheckBox from '@react-native-community/checkbox'
-import Box from '../../components/Box'
-import SafeAreaBox from '../../components/SafeAreaBox'
-import TextInput from '../../components/TextInput'
+import Box from '@components/Box'
+import SafeAreaBox from '@components/SafeAreaBox'
+import TextInput from '@components/TextInput'
+import FabButton from '@components/FabButton'
+import AccountIcon from '@components/AccountIcon'
+import Text from '@components/Text'
+import { useColors, useSpacing } from '@theme/themeHooks'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import FabButton from '../../components/FabButton'
-import { useColors, useSpacing } from '../../theme/themeHooks'
 import { useOnboarding } from './OnboardingProvider'
-import AccountIcon from '../../components/AccountIcon'
 import { accountNetType } from '../../utils/accountUtils'
-import Text from '../../components/Text'
 import { ImportAccountNavigationProp } from './import/importAccountNavTypes'
 import { CreateAccountNavigationProp } from './create/createAccountNavTypes'
-import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
+import { HomeStackParamList } from '../home/homeTypes'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 
@@ -27,7 +27,6 @@ const AccountAssignScreen = () => {
   const onboardingNav = useNavigation<
     ImportAccountNavigationProp & CreateAccountNavigationProp
   >()
-  const homeNav = useNavigation<HomeNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
 
   const { t } = useTranslation()
@@ -62,9 +61,15 @@ const AccountAssignScreen = () => {
           await updateDefaultAccountAddress(account.address)
         }
         if (l1Network === 'helium') {
-          homeNav.replace('AccountsScreen')
+          rootNav.reset({
+            index: 0,
+            routes: [{ name: 'HomeNavigator' }],
+          })
         } else {
-          rootNav.replace('TabBarNavigator')
+          rootNav.reset({
+            index: 0,
+            routes: [{ name: 'TabBarNavigator' }],
+          })
         }
         reset()
         return
@@ -92,7 +97,6 @@ const AccountAssignScreen = () => {
     l1Network,
     reset,
     updateDefaultAccountAddress,
-    homeNav,
     rootNav,
   ])
 

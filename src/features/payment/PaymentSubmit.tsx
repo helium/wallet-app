@@ -3,13 +3,13 @@ import { StyleSheet } from 'react-native'
 import { ApolloError } from '@apollo/client'
 import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
 import { SerializedError } from '@reduxjs/toolkit'
-import Box from '../../components/Box'
+import Box from '@components/Box'
+import FadeInOut from '@components/FadeInOut'
+import globalStyles from '@theme/globalStyles'
 import PaymentSubmitLoading from './PaymentSubmitLoading'
 import PaymentSuccess from './PaymentSuccess'
 import { Payment } from './PaymentItem'
 import PaymentError from './PaymentError'
-import FadeInOut from '../../components/FadeInOut'
-import globalStyles from '../../theme/globalStyles'
 
 type Props = {
   submitLoading: boolean
