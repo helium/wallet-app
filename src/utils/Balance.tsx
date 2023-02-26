@@ -25,6 +25,7 @@ import useAppear from '@hooks/useAppear'
 import usePrevious from '@hooks/usePrevious'
 import { useMint } from '@helium/helium-react-hooks'
 import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import { BN } from 'bn.js'
 import {
   useAccountLazyQuery,
   useAccountQuery,
@@ -278,22 +279,15 @@ const useBalanceHook = () => {
   }, [accountData, l1Network, solBalances])
 
   const mobileSolBalance = useMemo(() => {
-    let bal = 0
-    switch (l1Network) {
-      case 'helium':
-        bal = accountData?.account?.mobileBalance || 0
-        break
-
-      case 'solana':
-        bal = solBalances?.mobileBalance ? Number(solBalances.mobileBalance) : 0
-        break
-    }
+    const bal = solBalances?.mobileBalance
+      ? solBalances.mobileBalance?.toString()
+      : 0
 
     /* TODO: Add new solana variation for IOT and MOBILE in @helium/currency that supports
      6 decimals and pulls from mint instead of ticker.
     */
-    return toNumber(bal, mobileMint?.info.decimals || 6)
-  }, [accountData, l1Network, solBalances, mobileMint])
+    return toNumber(new BN(bal), mobileMint?.info.decimals || 6)
+  }, [mobileMint, solBalances])
 
   const iotBalance = useMemo(() => {
     let bal = 0
@@ -311,22 +305,13 @@ const useBalanceHook = () => {
   }, [accountData, l1Network, solBalances])
 
   const iotSolBalance = useMemo(() => {
-    let bal = 0
-    switch (l1Network) {
-      case 'helium':
-        bal = accountData?.account?.iotBalance || 0
-        break
-
-      case 'solana':
-        bal = solBalances?.iotBalance ? Number(solBalances.iotBalance) : 0
-        break
-    }
+    const bal = solBalances?.iotBalance ? solBalances.iotBalance?.toString() : 0
 
     /* TODO: Add new solana variation for IOT and MOBILE in @helium/currency that supports
      6 decimals and pulls from mint instead of ticker.
     */
-    return toNumber(bal, iotMint?.info.decimals || 6)
-  }, [accountData, l1Network, solBalances, iotMint])
+    return toNumber(new BN(bal), iotMint?.info.decimals || 6)
+  }, [solBalances, iotMint])
 
   const secBalance = useMemo(() => {
     let bal = 0

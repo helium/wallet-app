@@ -110,6 +110,7 @@ const AccountTokenList = ({
       (token) =>
         token?.balance?.integerBalance > 0 ||
         token?.type === 'MOBILE' ||
+        token?.type === 'IOT' ||
         (token?.type === 'HNT' && token?.staked === false),
     )
   }, [

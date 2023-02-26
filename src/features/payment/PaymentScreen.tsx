@@ -99,8 +99,14 @@ const PaymentScreen = () => {
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const { oraclePrice, networkBalance, solBalance, mobileBalance } =
-    useBalance()
+  const {
+    oraclePrice,
+    networkBalance,
+    solBalance,
+    mobileBalance,
+    mobileSolBalance,
+    iotSolBalance,
+  } = useBalance()
 
   const { showOKAlert } = useAlert()
   const { l1Network } = useAppStorage()
@@ -313,7 +319,12 @@ const PaymentScreen = () => {
     value: boolean,
     errorTicker: string,
   ] => {
-    if (!networkBalance || !mobileBalance || !paymentState.totalAmount) {
+    if (
+      !networkBalance ||
+      !mobileSolBalance ||
+      !iotSolBalance ||
+      !paymentState.totalAmount
+    ) {
       return [true, '']
     }
     if (paymentState.networkFee?.integerBalance === undefined)
@@ -325,7 +336,12 @@ const PaymentScreen = () => {
         let hasEnoughToken = false
         if (ticker === 'MOBILE') {
           hasEnoughToken =
-            mobileBalance.minus(paymentState.totalAmount).integerBalance >= 0
+            mobileSolBalance -
+              paymentState.totalAmount.floatBalance.valueOf() >=
+            0
+        } else if (ticker === 'IOT') {
+          hasEnoughToken =
+            iotSolBalance - paymentState.totalAmount.floatBalance.valueOf() >= 0
         } else if (ticker === 'HNT') {
           hasEnoughToken =
             networkBalance.minus(paymentState.totalAmount).integerBalance >= 0
@@ -341,9 +357,19 @@ const PaymentScreen = () => {
         const hasEnoughNetwork =
           networkBalance.minus(paymentState.networkFee).integerBalance >= 0
         const hasEnoughMobile =
-          mobileBalance.minus(paymentState.totalAmount).integerBalance >= 0
+          mobileSolBalance - paymentState.totalAmount.floatBalance.valueOf() >=
+          0
         if (!hasEnoughNetwork) return [true, networkBalance.type.ticker]
-        if (!hasEnoughMobile) return [true, mobileBalance.type.ticker]
+        if (!hasEnoughMobile) return [true, 'MOBILE']
+      }
+
+      if (ticker === 'IOT') {
+        const hasEnoughNetwork =
+          networkBalance.minus(paymentState.networkFee).integerBalance >= 0
+        const hasEnoughIOT =
+          iotSolBalance - paymentState.totalAmount.floatBalance.valueOf() >= 0
+        if (!hasEnoughNetwork) return [true, networkBalance.type.ticker]
+        if (!hasEnoughIOT) return [true, 'IOT']
       }
 
       const hasEnoughNetwork =
@@ -363,11 +389,12 @@ const PaymentScreen = () => {
     }
   }, [
     l1Network,
-    mobileBalance,
+    mobileSolBalance,
     networkBalance,
     paymentState.networkFee,
     paymentState.totalAmount,
     solBalance,
+    iotSolBalance,
     ticker,
   ])
 
@@ -633,6 +660,26 @@ const PaymentScreen = () => {
     accountSelectorRef?.current.showAccountTypes(netType)()
   }, [l1Network, networkType, sortedAccountsForNetType])
 
+  const isDntToken = useMemo(() => {
+    return ticker === 'MOBILE' || ticker === 'IOT'
+  }, [ticker])
+
+  const tokeButtonBalance = useMemo(() => {
+    if (l1Network === 'helium' || !isDntToken) {
+      return balanceToString(ticker === 'HNT' ? networkBalance : mobileBalance)
+    }
+
+    return ticker === 'MOBILE' ? `${mobileSolBalance}` : `${iotSolBalance}`
+  }, [
+    iotSolBalance,
+    mobileSolBalance,
+    mobileBalance,
+    isDntToken,
+    l1Network,
+    networkBalance,
+    ticker,
+  ])
+
   return (
     <>
       <HNTKeyboard
@@ -718,9 +765,7 @@ const PaymentScreen = () => {
                   <TokenButton
                     backgroundColor="secondary"
                     title={t('payment.title', { ticker: currencyType.ticker })}
-                    subtitle={balanceToString(
-                      ticker === 'HNT' ? networkBalance : mobileBalance,
-                    )}
+                    subtitle={tokeButtonBalance}
                     address={currentAccount?.address}
                     onPress={handleTokenTypeSelected}
                     showBubbleArrow

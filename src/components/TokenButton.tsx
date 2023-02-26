@@ -2,6 +2,7 @@ import React, { memo, useCallback, useMemo } from 'react'
 import ChevronDown from '@assets/images/chevronDown.svg'
 import { Keyboard, StyleSheet } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
+import TokenIOT from '@assets/images/tokenIOT.svg'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenHNT from '@assets/images/tokenHNT.svg'
 import { Ticker } from '@helium/currency'
@@ -20,11 +21,15 @@ const TokenItem = ({ ticker }: { ticker: Ticker }) => {
 
   return (
     <Box alignItems="center">
-      {ticker === 'HNT' ? (
+      {ticker === 'HNT' && (
         <TokenHNT color={colors[color]} height={41} width={41} />
-      ) : (
+      )}
+
+      {ticker === 'MOBILE' && (
         <TokenMOBILE color={colors[color]} height={41} width={41} />
       )}
+
+      {ticker === 'IOT' && <TokenIOT height={41} width={41} />}
     </Box>
   )
 }
