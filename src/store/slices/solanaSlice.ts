@@ -16,6 +16,7 @@ import {
   bulkSendRawTransactions,
   sendAndConfirmWithRetry,
 } from '@helium/spl-utils'
+import { Mints } from '@utils/constants'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
 import { CompressedNFT, toMintAddress } from '../../types/solana'
@@ -323,6 +324,7 @@ export const claimAllRewards = createAsyncThunk(
 
       // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
       dispatch(fetchHotspots({ account, cluster, provider: anchorProvider }))
+      dispatch(readBalances({ cluster, acct: account, mints: Mints }))
     } catch (error) {
       Logger.error(error)
       throw error

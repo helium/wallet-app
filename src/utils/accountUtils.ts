@@ -4,7 +4,7 @@ import Bcrypt from 'bcrypt-react-native'
 import { PublicKey } from '@solana/web3.js'
 import bs58 from 'bs58'
 import { round } from 'lodash'
-import BN from 'bn.js'
+import BigNumber from 'bignumber.js'
 
 export type L1Network = 'helium' | 'solana'
 
@@ -128,10 +128,10 @@ export const getJazzSeed = (address: string | undefined) => {
   return parseInt(hexVal.slice(-8), 16)
 }
 
-export const formatLargeNumber = (number: BN) => {
-  const BILLION = new BN(1_000_000_000)
-  const MILLION = new BN(1_000_000)
-  const THOUSAND = new BN(1_000)
+export const formatLargeNumber = (number: BigNumber) => {
+  const BILLION = new BigNumber(1_000_000_000)
+  const MILLION = new BigNumber(1_000_000)
+  const THOUSAND = new BigNumber(1_000)
 
   if (number.gte(BILLION)) {
     return [round(number.div(BILLION).toNumber(), 2), 'B'].join('')

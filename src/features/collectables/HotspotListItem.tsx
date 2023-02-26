@@ -5,13 +5,15 @@ import { BoxProps } from '@shopify/restyle'
 import IotSymbol from '@assets/images/iotSymbol.svg'
 import MobileSymbol from '@assets/images/mobileSymbol.svg'
 import BN from 'bn.js'
-import { Balance } from '@helium/currency'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Box from '@components/Box'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import ImageBox from '@components/ImageBox'
 import { Theme } from '@theme/theme'
+import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import { useMint } from '@helium/helium-react-hooks'
+import BigNumber from 'bignumber.js'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import { ww } from '../../utils/layout'
 import { formatLargeNumber } from '../../utils/accountUtils'
@@ -33,18 +35,21 @@ const HotspotListItem = ({
     content: { metadata },
   } = hotspot
 
+  const { info: iotMint } = useMint(IOT_MINT)
+  const { info: mobileMint } = useMint(MOBILE_MINT)
+
   const pendingIotRewards = useMemo(
     () => hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.IOT]),
     [hotspot.pendingRewards],
   )
   const pendingIotRewardsString = useMemo(() => {
     if (!hotspot.pendingRewards) return
-    const realAmount = Balance.fromIntAndTicker(
-      new BN(hotspot.pendingRewards[Mints.IOT]) as any,
-      'IOT',
+    const num = toNumber(
+      new BN(hotspot.pendingRewards[Mints.IOT]),
+      iotMint?.info.decimals || 6,
     )
-    return formatLargeNumber(realAmount.bigBalance as unknown as BN)
-  }, [hotspot])
+    return formatLargeNumber(new BigNumber(num))
+  }, [iotMint, hotspot])
 
   const pendingMobileRewards = useMemo(
     () =>
@@ -54,12 +59,12 @@ const HotspotListItem = ({
 
   const pendingMobileRewardsString = useMemo(() => {
     if (!hotspot.pendingRewards) return
-    const realAmount = Balance.fromIntAndTicker(
-      new BN(hotspot.pendingRewards[Mints.MOBILE]) as any,
-      'MOBILE',
+    const num = toNumber(
+      new BN(hotspot.pendingRewards[Mints.MOBILE]),
+      mobileMint?.info.decimals || 6,
     )
-    return formatLargeNumber(realAmount.bigBalance as unknown as BN)
-  }, [hotspot])
+    return formatLargeNumber(new BigNumber(num))
+  }, [hotspot, mobileMint])
 
   const hasIotRewards = useMemo(
     () => pendingIotRewards && pendingIotRewards.gt(new BN(0)),

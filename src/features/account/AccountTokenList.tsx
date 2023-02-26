@@ -14,6 +14,7 @@ import { RefreshControl } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
+import { useAppStorage } from '@storage/AppStorageProvider'
 import { useBalance } from '../../utils/Balance'
 import TokenListItem, { TokenSkeleton } from './TokenListItem'
 
@@ -39,7 +40,9 @@ const AccountTokenList = ({
   const {
     dcBalance,
     mobileBalance,
+    mobileSolBalance,
     iotBalance,
+    iotSolBalance,
     networkBalance,
     networkStakedBalance,
     secBalance,
@@ -47,6 +50,7 @@ const AccountTokenList = ({
     updating: updatingTokens,
   } = useBalance()
   const { bottom } = useSafeAreaInsets()
+  const { l1Network } = useAppStorage()
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
 
@@ -68,12 +72,18 @@ const AccountTokenList = ({
       },
       {
         type: 'MOBILE',
-        balance: mobileBalance as Balance<MobileTokens>,
+        balance:
+          l1Network === 'solana'
+            ? mobileSolBalance
+            : (mobileBalance as Balance<MobileTokens>),
         staked: false,
       },
       {
         type: 'IOT',
-        balance: iotBalance as Balance<IotTokens>,
+        balance:
+          l1Network === 'solana'
+            ? iotSolBalance
+            : (iotBalance as Balance<IotTokens>),
         staked: false,
       },
       {
@@ -103,10 +113,13 @@ const AccountTokenList = ({
         (token?.type === 'HNT' && token?.staked === false),
     )
   }, [
+    l1Network,
     dcBalance,
     iotBalance,
+    iotSolBalance,
     loading,
     mobileBalance,
+    mobileSolBalance,
     networkBalance,
     networkStakedBalance,
     secBalance,

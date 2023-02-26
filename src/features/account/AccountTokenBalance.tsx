@@ -22,6 +22,8 @@ const AccountTokenBalance = ({
   const {
     dcBalance,
     mobileBalance,
+    iotBalance,
+    solBalance,
     networkBalance,
     networkStakedBalance,
     secBalance,
@@ -39,6 +41,10 @@ const AccountTokenBalance = ({
       }
       case 'MOBILE':
         return mobileBalance
+      case 'IOT':
+        return iotBalance
+      case 'SOL':
+        return solBalance
       case 'DC':
         return dcBalance
       case 'HST':
@@ -50,6 +56,8 @@ const AccountTokenBalance = ({
     networkBalance,
     networkStakedBalance,
     secBalance,
+    solBalance,
+    iotBalance,
     ticker,
   ])
 

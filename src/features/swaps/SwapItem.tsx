@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import Balance, { SolTokens, Ticker } from '@helium/currency'
+import { Ticker } from '@helium/currency'
 import { GestureResponderEvent, Pressable, StyleSheet } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
 import { useCreateOpacity } from '@theme/themeHooks'
@@ -14,7 +14,7 @@ export type SwapItemProps = {
   isPaying: boolean
   onCurrencySelect: () => void
   currencySelected: Ticker
-  amount: Balance<SolTokens>
+  amount: number
   loading?: boolean
   onPress?: ((event: GestureResponderEvent) => void) | null | undefined
   disabled?: boolean
@@ -117,7 +117,7 @@ const SwapItem = ({
             <Box flexDirection="row">
               <Text marginEnd="s" variant="h4">
                 {/** If last decimals are zeroes do not show */}
-                {!loading ? amount.bigBalance.toString() : t('generic.loading')}
+                {!loading ? amount.toString() : t('generic.loading')}
               </Text>
               <Text
                 variant="h4"

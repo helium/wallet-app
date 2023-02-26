@@ -69,11 +69,9 @@ import { IOT_LAZY_KEY, Mints, MOBILE_LAZY_KEY } from './constants'
 export const SolanaConnection = {
   localnet: new WrappedConnection('http://127.0.0.1:8899'),
   devnet: new WrappedConnection(
-    'https://rpc-devnet.helius.xyz/?api-key=4eb6e438-25d1-4dcf-89dd-f54f2b42b846',
+    `https://rpc-devnet.helius.xyz/?api-key=${Config.HELIUS_API_KEY}`,
   ),
-  devnetNonAssetApi: new Connection(clusterApiUrl('devnet')),
   testnet: new WrappedConnection(clusterApiUrl('testnet')),
-  testnetNonAssetApi: new Connection(clusterApiUrl('testnet')),
   'mainnet-beta': new WrappedConnection(clusterApiUrl('mainnet-beta')),
 } as const
 
@@ -86,14 +84,7 @@ export const confirmTransaction = async (
   blockhash: string,
   lastValidBlockHeight: number,
 ): Promise<SignatureResult> => {
-  let conn: WrappedConnection | Connection = getConnection(cluster)
-  if (cluster === 'devnet') {
-    conn = SolanaConnection.devnetNonAssetApi
-  }
-
-  if (cluster === 'testnet') {
-    conn = SolanaConnection.testnetNonAssetApi
-  }
+  const conn: WrappedConnection = getConnection(cluster)
 
   const confirmation = await conn.confirmTransaction(
     { signature, blockhash, lastValidBlockHeight },
@@ -323,13 +314,8 @@ export const onAccountChange = (
   callback: (address: string) => void,
 ) => {
   const account = new PublicKey(address)
-  let conn: WrappedConnection | Connection = getConnection(cluster)
-  if (cluster === 'devnet') {
-    conn = SolanaConnection.devnetNonAssetApi
-  }
-  if (cluster === 'testnet') {
-    conn = SolanaConnection.testnetNonAssetApi
-  }
+  const conn: WrappedConnection | Connection = getConnection(cluster)
+
   return conn.onAccountChange(account, () => {
     callback(address)
   })
@@ -341,13 +327,8 @@ export const onLogs = (
   callback: (address: string, log: Logs) => void,
 ) => {
   const account = new PublicKey(address)
-  let conn: WrappedConnection | Connection = getConnection(cluster)
-  if (cluster === 'devnet') {
-    conn = SolanaConnection.devnetNonAssetApi
-  }
-  if (cluster === 'testnet') {
-    conn = SolanaConnection.testnetNonAssetApi
-  }
+  const conn: WrappedConnection = getConnection(cluster)
+
   return conn.onLogs(
     account,
     (log) => {
@@ -358,13 +339,8 @@ export const onLogs = (
 }
 
 export const removeAccountChangeListener = (cluster: Cluster, id: number) => {
-  let conn: WrappedConnection | Connection = getConnection(cluster)
-  if (cluster === 'devnet') {
-    conn = SolanaConnection.devnetNonAssetApi
-  }
-  if (cluster === 'testnet') {
-    conn = SolanaConnection.testnetNonAssetApi
-  }
+  const conn: WrappedConnection = getConnection(cluster)
+
   return conn.removeAccountChangeListener(id)
 }
 

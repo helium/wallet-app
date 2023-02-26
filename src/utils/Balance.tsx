@@ -23,6 +23,8 @@ import CurrencyFormatter from 'react-native-currency-format'
 import { useSelector } from 'react-redux'
 import useAppear from '@hooks/useAppear'
 import usePrevious from '@hooks/usePrevious'
+import { useMint } from '@helium/helium-react-hooks'
+import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
 import {
   useAccountLazyQuery,
   useAccountQuery,
@@ -98,6 +100,9 @@ const useBalanceHook = () => {
     }
     dispatch(readBalances({ cluster, acct: currentAccount, mints: Mints }))
   }, [currentAccount, dispatch, cluster])
+
+  const { info: iotMint } = useMint(IOT_MINT)
+  const { info: mobileMint } = useMint(MOBILE_MINT)
 
   useEffect(() => {
     if (!currentAccount?.solanaAddress || l1Network === 'helium') {
@@ -272,6 +277,24 @@ const useBalanceHook = () => {
     return new Balance(bal, CurrencyType.mobile)
   }, [accountData, l1Network, solBalances])
 
+  const mobileSolBalance = useMemo(() => {
+    let bal = 0
+    switch (l1Network) {
+      case 'helium':
+        bal = accountData?.account?.mobileBalance || 0
+        break
+
+      case 'solana':
+        bal = solBalances?.mobileBalance ? Number(solBalances.mobileBalance) : 0
+        break
+    }
+
+    /* TODO: Add new solana variation for IOT and MOBILE in @helium/currency that supports
+     6 decimals and pulls from mint instead of ticker.
+    */
+    return toNumber(bal, mobileMint?.info.decimals || 6)
+  }, [accountData, l1Network, solBalances, mobileMint])
+
   const iotBalance = useMemo(() => {
     let bal = 0
     switch (l1Network) {
@@ -286,6 +309,24 @@ const useBalanceHook = () => {
 
     return new Balance(bal, CurrencyType.iot)
   }, [accountData, l1Network, solBalances])
+
+  const iotSolBalance = useMemo(() => {
+    let bal = 0
+    switch (l1Network) {
+      case 'helium':
+        bal = accountData?.account?.iotBalance || 0
+        break
+
+      case 'solana':
+        bal = solBalances?.iotBalance ? Number(solBalances.iotBalance) : 0
+        break
+    }
+
+    /* TODO: Add new solana variation for IOT and MOBILE in @helium/currency that supports
+     6 decimals and pulls from mint instead of ticker.
+    */
+    return toNumber(bal, iotMint?.info.decimals || 6)
+  }, [accountData, l1Network, solBalances, iotMint])
 
   const secBalance = useMemo(() => {
     let bal = 0
@@ -406,6 +447,8 @@ const useBalanceHook = () => {
     intToBalance,
     networkTokensToDc,
     iotBalance,
+    iotSolBalance,
+    mobileSolBalance,
     mobileBalance,
     networkBalance,
     networkStakedBalance,
@@ -430,6 +473,8 @@ const initialState = {
   intToBalance: () => undefined,
   networkTokensToDc: () => undefined,
   iotBalance: new Balance(0, CurrencyType.iot),
+  iotSolBalance: 0,
+  mobileSolBalance: 0,
   mobileBalance: new Balance(0, CurrencyType.mobile),
   networkBalance: new Balance(0, CurrencyType.networkToken),
   networkStakedBalance: new Balance(0, CurrencyType.networkToken),

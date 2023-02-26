@@ -55,9 +55,10 @@ const SwapScreen = () => {
   const [tokenSheetOpen, setTokenSheetOpen] = useState(false)
   const [selectorMode, setSelectorMode] = useState(SelectorMode.youPay)
   const [youPayTokenType, setYouPayTokenType] = useState<Ticker>(Tokens.MOBILE)
-  const [youPayTokenAmount, setYouPayTokenAmount] = useState<
-    Balance<SolTokens>
-  >(Balance.fromIntAndTicker(0, Tokens.MOBILE))
+  /* TODO: Add new solana variation for IOT and MOBILE in @helium/currency that supports
+     6 decimals and pulls from mint instead of ticker.
+  */
+  const [youPayTokenAmount, setYouPayTokenAmount] = useState<number>(0)
   const [youReceiveTokenType, setYouReceiveTokenType] = useState<Ticker>(
     Tokens.HNT,
   )
@@ -73,14 +74,11 @@ const SwapScreen = () => {
     price,
     loading: loadingPrice,
     freezeDate,
-  } = useTreasuryPrice(
-    new PublicKey(Mints[youPayTokenType]),
-    Number(youPayTokenAmount.floatBalance),
-  )
+  } = useTreasuryPrice(new PublicKey(Mints[youPayTokenType]), youPayTokenAmount)
 
   // If user does not have enough tokens to swap for greater than 0.00000001 tokens
   const insufficientTokensToSwap = useMemo(() => {
-    return !(price && price > 0) && youPayTokenAmount.floatBalance > 0
+    return !(price && price > 0) && youPayTokenAmount > 0
   }, [price, youPayTokenAmount])
 
   const showError = useMemo(() => {
@@ -96,7 +94,7 @@ const SwapScreen = () => {
   }, [freezeDate])
 
   const refresh = useCallback(async () => {
-    setYouPayTokenAmount(Balance.fromIntAndTicker(0, Tokens.MOBILE))
+    setYouPayTokenAmount(0)
     setYouReceiveTokenType(Tokens.HNT)
     setYouPayTokenType(Tokens.MOBILE)
     setSelectorMode(SelectorMode.youPay)
@@ -226,16 +224,20 @@ const SwapScreen = () => {
     })
   }, [currentAccount])
 
-  const onConfirmBalance = useCallback((opts) => {
-    setYouPayTokenAmount(opts.balance)
-  }, [])
+  const onConfirmBalance = useCallback(
+    ({ balance }: { balance: Balance<SolTokens> }) => {
+      const amount = balance.floatBalance.valueOf()
+      setYouPayTokenAmount(amount)
+    },
+    [],
+  )
 
   const youReceiveTokenAmount = useMemo(() => {
     if (price) {
-      return Balance.fromFloatAndTicker(price, Tokens.HNT)
+      return price
     }
 
-    return Balance.fromIntAndTicker(0, Tokens.HNT)
+    return 0
   }, [price])
 
   const handleSwapTokens = useCallback(async () => {
@@ -245,10 +247,7 @@ const SwapScreen = () => {
     })
     if (!decision) return
 
-    submitTreasurySwap(
-      new PublicKey(Mints[youPayTokenType]),
-      Number(youPayTokenAmount.floatBalance),
-    )
+    submitTreasurySwap(new PublicKey(Mints[youPayTokenType]), youPayTokenAmount)
 
     navigation.push('SwappingScreen', {
       tokenA: youPayTokenType,
@@ -259,7 +258,7 @@ const SwapScreen = () => {
     showOKCancelAlert,
     submitTreasurySwap,
     t,
-    youPayTokenAmount.floatBalance,
+    youPayTokenAmount,
     youPayTokenType,
     youReceiveTokenType,
   ])
@@ -361,7 +360,7 @@ const SwapScreen = () => {
               backgroundColorDisabledOpacity={0.1}
               disabled={
                 insufficientTokensToSwap ||
-                youPayTokenAmount.integerBalance === 0 ||
+                youPayTokenAmount === 0 ||
                 treasuryFrozen
               }
               titleColorPressedOpacity={0.3}

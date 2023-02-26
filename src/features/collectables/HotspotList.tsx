@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next'
 import BN from 'bn.js'
 import listViewIcon from '@assets/images/listViewIcon.svg'
 import expandedViewIcon from '@assets/images/expandedViewIcon.svg'
-import { Balance } from '@helium/currency'
 import ListItem from '@components/ListItem'
 import BlurActionSheet from '@components/BlurActionSheet'
 import { useColors } from '@theme/themeHooks'
@@ -20,6 +19,9 @@ import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TabBar from '@components/TabBar'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import { useMint } from '@helium/helium-react-hooks'
+import BigNumber from 'bignumber.js'
 import { formatLargeNumber } from '../../utils/accountUtils'
 import HotspotCompressedListItem from './HotspotCompressedListItem'
 import HotspotListItem from './HotspotListItem'
@@ -41,17 +43,22 @@ const HotspotList = () => {
     DEFAULT_PAGE_AMOUNT,
   )
 
+  const { info: iotMint } = useMint(IOT_MINT)
+  const { info: mobileMint } = useMint(MOBILE_MINT)
+
   const tabBarOptions = useMemo(
     () => [
       {
         value: 'list',
         Icon: listViewIcon,
         iconSize: 32,
+        IconPosition: 'top',
       },
       {
         value: 'expanded',
         Icon: expandedViewIcon,
         iconSize: 32,
+        IconPosition: 'top',
       },
     ],
     [],
@@ -139,38 +146,45 @@ const HotspotList = () => {
     [handleSetPageAmount, pageAmount, t],
   )
 
-  const RewardItem = useCallback(({ ticker, amount, ...rest }) => {
-    const realAmount = Balance.fromIntAndTicker(amount, ticker)
-    return (
-      <Box
-        padding="m"
-        alignItems="center"
-        justifyContent="center"
-        backgroundColor="secondaryBackground"
-        borderRadius="xl"
-        flex={1}
-        flexDirection="row"
-        {...rest}
-      >
-        <TokenIcon ticker={ticker} size={30} />
+  const RewardItem = useCallback(
+    ({ ticker, amount, ...rest }) => {
+      const decimals =
+        ticker === 'IOT' ? iotMint?.info.decimals : mobileMint?.info.decimals
+      const num = toNumber(amount, decimals || 6)
+      const realAmount = formatLargeNumber(new BigNumber(num))
 
-        <Box marginStart="s">
-          <Text
-            marginTop="xs"
-            variant="subtitle3"
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            maxFontSizeMultiplier={1.1}
-          >
-            {formatLargeNumber(realAmount.bigBalance as unknown as BN)}
-          </Text>
-          <Text variant="subtitle4" color="secondaryText">
-            {ticker}
-          </Text>
+      return (
+        <Box
+          padding="m"
+          alignItems="center"
+          justifyContent="center"
+          backgroundColor="secondaryBackground"
+          borderRadius="xl"
+          flex={1}
+          flexDirection="row"
+          {...rest}
+        >
+          <TokenIcon ticker={ticker} size={30} />
+
+          <Box marginStart="s">
+            <Text
+              marginTop="xs"
+              variant="subtitle3"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              maxFontSizeMultiplier={1.1}
+            >
+              {realAmount}
+            </Text>
+            <Text variant="subtitle4" color="secondaryText">
+              {ticker}
+            </Text>
+          </Box>
         </Box>
-      </Box>
-    )
-  }, [])
+      )
+    },
+    [iotMint, mobileMint],
+  )
 
   const onTabSelected = useCallback(
     (value) => {
@@ -184,6 +198,7 @@ const HotspotList = () => {
       <Box marginHorizontal="l" marginTop="l">
         <Box flex={1} marginBottom="l">
           <TabBar
+            marginStart="s"
             flex={1}
             tabBarOptions={tabBarOptions}
             onItemSelected={onTabSelected}
