@@ -1,7 +1,6 @@
 import { AnchorProvider } from '@coral-xyz/anchor'
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Cluster, PublicKey } from '@solana/web3.js'
-import { merge } from 'lodash'
 import { CompressedNFT } from 'src/types/solana'
 import { CSAccount } from '../../storage/cloudStorage'
 import * as solUtils from '../../utils/solanaUtils'
@@ -26,7 +25,7 @@ export const fetchHotspots = createAsyncThunk(
     provider,
     account,
     cluster,
-    limit = 20,
+    limit,
   }: {
     provider: AnchorProvider
     account: CSAccount
@@ -39,7 +38,7 @@ export const fetchHotspots = createAsyncThunk(
     const fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
       pubKey,
       cluster,
-      0,
+      1,
       limit,
     )
 
@@ -52,7 +51,7 @@ export const fetchHotspots = createAsyncThunk(
     return {
       fetchedHotspots,
       hotspotsWithMetadata: hotspotsWithPendingRewards,
-      page: 0,
+      page: 1,
       limit,
     }
   },
@@ -63,15 +62,15 @@ export const fetchMoreHotspots = createAsyncThunk(
   async ({
     account,
     cluster,
-    page = 0,
+    page = 1,
     provider,
-    limit = 20,
+    limit,
   }: {
     account: CSAccount
     cluster: Cluster
     page: number
     provider: AnchorProvider
-    limit: number
+    limit?: number
   }) => {
     if (!account.solanaAddress) throw new Error('Solana address missing')
 
@@ -103,7 +102,14 @@ export const fetchMoreHotspots = createAsyncThunk(
 const hotspots = createSlice({
   name: 'hotspots',
   initialState,
-  reducers: {},
+  reducers: {
+    resetLoading: (state, action: PayloadAction<{ acct: CSAccount }>) => {
+      const { acct } = action.payload
+      if (!acct.solanaAddress) throw new Error('Solana address missing')
+      const address = acct.solanaAddress
+      state[address] = { ...state[address], loading: false }
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(fetchHotspots.pending, (state, action) => {
       if (!action.meta.arg?.account.solanaAddress) return state
@@ -170,15 +176,17 @@ const hotspots = createSlice({
       const { fetchedHotspots, hotspotsWithMetadata, limit } = action.payload
 
       const address = action.meta.arg.account.solanaAddress
-      const onEndReached = Object.keys(hotspotsWithMetadata).length < limit
+      const onEndReached = limit
+        ? Object.keys(hotspotsWithMetadata).length < limit
+        : true
 
       state[address] = {
         ...state[address],
-        hotspots: merge(fetchedHotspots, state[address].hotspots),
-        hotspotsWithMeta: merge(
-          hotspotsWithMetadata,
-          state[address].hotspotsWithMeta,
-        ),
+        hotspots: [...state[address].hotspots, ...fetchedHotspots],
+        hotspotsWithMeta: [
+          ...state[address].hotspotsWithMeta,
+          ...hotspotsWithMetadata,
+        ],
         loading: false,
         fetchingMore: false,
         onEndReached,

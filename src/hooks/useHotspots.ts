@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { init } from '@helium/lazy-distributor-sdk'
 import * as client from '@helium/distributor-oracle'
@@ -16,7 +16,11 @@ import { getKeypair } from '../storage/secureStorage'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
-import { fetchHotspots, fetchMoreHotspots } from '../store/slices/hotspotsSlice'
+import {
+  fetchHotspots,
+  fetchMoreHotspots,
+  hotspots as hotspotsSli,
+} from '../store/slices/hotspotsSlice'
 import { useAppDispatch } from '../store/store'
 import { getConnection, HotspotWithPendingRewards } from '../utils/solanaUtils'
 import { CompressedNFT } from '../types/solana'
@@ -74,6 +78,12 @@ const useHotspots = (): {
       return true
     return hotspotsSlice[currentAccount?.solanaAddress].onEndReached
   }, [hotspotsSlice, currentAccount])
+
+  useEffect(() => {
+    if (!currentAccount?.solanaAddress) return
+    // Reset loading on mount
+    dispatch(hotspotsSli.actions.resetLoading({ acct: currentAccount }))
+  }, [currentAccount, dispatch])
 
   const hotspots = useMemo(() => {
     if (!currentAccount?.solanaAddress) return []
@@ -191,6 +201,7 @@ const useHotspots = (): {
       ) {
         return
       }
+
       dispatch(
         fetchMoreHotspots({
           provider: anchorProvider,

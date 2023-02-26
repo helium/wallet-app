@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import * as web3 from '@solana/web3.js'
 import { merge } from 'lodash'
 import { CSAccount } from '../../storage/cloudStorage'
@@ -100,7 +100,14 @@ export const fetchMoreCollectables = createAsyncThunk(
 const collectables = createSlice({
   name: 'collectables',
   initialState,
-  reducers: {},
+  reducers: {
+    resetLoading: (state, action: PayloadAction<{ acct: CSAccount }>) => {
+      const { acct } = action.payload
+      if (!acct.solanaAddress) throw new Error('Solana address missing')
+      const address = acct.solanaAddress
+      state[address] = { ...state[address], loading: false }
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(fetchCollectables.pending, (state, action) => {
       if (!action.meta.arg?.account.solanaAddress) return state
