@@ -129,9 +129,9 @@ export const getJazzSeed = (address: string | undefined) => {
 }
 
 export const formatLargeNumber = (number: BigNumber) => {
-  const BILLION = new BigNumber(1_000_000_000)
-  const MILLION = new BigNumber(1_000_000)
-  const THOUSAND = new BigNumber(1_000)
+  const BILLION = new BigNumber(1000000000)
+  const MILLION = new BigNumber(1000000)
+  const THOUSAND = new BigNumber(1000)
 
   if (number.gte(BILLION)) {
     return [round(number.div(BILLION).toNumber(), 2), 'B'].join('')
