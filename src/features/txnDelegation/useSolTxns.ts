@@ -56,7 +56,7 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
   >({} as Record<ValidTxn, Txn>)
 
   const transactionList = useMemo(() => {
-    const keys = ValidTxnKeys.filter((k) => k === 'mintDataCreditsV0')
+    const keys = ValidTxnKeys.filter((k) => k !== 'mintDataCreditsV0')
 
     let list = keys.flatMap((k) => {
       const t = transactions[k]
