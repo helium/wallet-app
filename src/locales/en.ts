@@ -799,6 +799,7 @@ export default {
     title: 'Settings',
   },
   signHotspot: {
+    burnAmounts: 'Amount To Be Burned',
     elevation: 'Elevation:',
     error: {
       subtitle:

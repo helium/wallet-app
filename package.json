@@ -51,13 +51,13 @@
     "@helium/http": "4.7.5",
     "@helium/idls": "0.0.40",
     "@helium/lazy-distributor-sdk": "0.0.40",
-    "@helium/onboarding": "4.6.2",
+    "@helium/onboarding": "4.9.0",
     "@helium/proto-ble": "4.0.0",
     "@helium/react-native-sdk": "1.0.0",
     "@helium/spl-utils": "0.0.40",
     "@helium/transactions": "4.7.5",
     "@helium/treasury-management-sdk": "0.0.40",
-    "@helium/wallet-link": "4.8.1",
+    "@helium/wallet-link": "4.9.0",
     "@ledgerhq/hw-app-helium": "6.29.1",
     "@ledgerhq/react-native-hid": "6.28.4",
     "@ledgerhq/react-native-hw-transport-ble": "6.27.2",
@@ -243,8 +243,7 @@
     "typescript": "4.6.3"
   },
   "resolutions": {
-    "@types/react": "17",
-    "@helium/transactions": "4.7.5"
+    "@types/react": "17"
   },
   "jest": {
     "preset": "react-native",

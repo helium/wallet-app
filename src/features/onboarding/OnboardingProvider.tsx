@@ -19,7 +19,7 @@ type OnboardingData = {
   netType: NetType.NetType
 }
 
-const useOnboardingHook = () => {
+const useOnboardingHook = ({ baseUrl }: { baseUrl: string }) => {
   const initialState = useMemo(() => {
     return {
       words: [],
@@ -36,8 +36,10 @@ const useOnboardingHook = () => {
   }, [initialState])
 
   useEffect(() => {
-    new OnboardingClient().getMakers().then(({ data }) => setMakers(data || []))
-  }, [])
+    new OnboardingClient(baseUrl)
+      .getMakers()
+      .then(({ data }) => setMakers(data || []))
+  }, [baseUrl])
 
   return {
     onboardingData,
@@ -62,8 +64,14 @@ const OnboardingContext =
   createContext<ReturnType<typeof useOnboardingHook>>(initialState)
 const { Provider } = OnboardingContext
 
-const OnboardingProvider = ({ children }: { children: ReactNode }) => {
-  return <Provider value={useOnboardingHook()}>{children}</Provider>
+const OnboardingProvider = ({
+  children,
+  baseUrl,
+}: {
+  children: ReactNode
+  baseUrl: string
+}) => {
+  return <Provider value={useOnboardingHook({ baseUrl })}>{children}</Provider>
 }
 
 export const useOnboarding = () => useContext(OnboardingContext)
