@@ -1,8 +1,8 @@
 import { AddGateway, Location, Transfer } from '@helium/react-native-sdk'
 import { SignHotspotResponse } from '@helium/wallet-link'
 import { useCallback, useMemo } from 'react'
+import { getKeypair } from '@storage/secureStorage'
 import { useSubmitTxnMutation } from '../../generated/graphql'
-import { getKeypair } from '../../storage/secureStorage'
 
 const useHeliumTxns = (
   heliumAddress: string,

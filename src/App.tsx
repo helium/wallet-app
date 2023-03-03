@@ -102,7 +102,7 @@ const App = () => {
         <ThemeProvider theme={colorAdaptedTheme}>
           <SplashScreen>
             <PortalProvider>
-              <OnboardingProvider baseUrl="https://onboarding.dewi.org/api/v2">
+              <OnboardingProvider baseUrl={Config.ONBOARDING_API_URL}>
                 {client && (
                   <ApolloProvider client={client}>
                     <LockScreen>
