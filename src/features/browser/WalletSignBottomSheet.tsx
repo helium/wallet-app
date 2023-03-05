@@ -20,14 +20,11 @@ import {
 } from '@gorhom/bottom-sheet'
 import { Edge } from 'react-native-safe-area-context'
 import { Balance, SolTokens } from '@helium/currency'
-import CurrencyFormatter from 'react-native-currency-format'
-import { useAsync } from 'react-async-hook'
-import SafeAreaBox from '../../components/SafeAreaBox'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
-import { useColors, useOpacity } from '../../theme/themeHooks'
-import ButtonPressable from '../../components/ButtonPressable'
-import { useAppStorage } from '../../storage/AppStorageProvider'
+import SafeAreaBox from '@components/SafeAreaBox'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import { useColors, useOpacity } from '@theme/themeHooks'
+import ButtonPressable from '@components/ButtonPressable'
 
 export enum WalletStandardMessageTypes {
   connect = 'connect',
@@ -57,7 +54,6 @@ let promiseResolve: (value: boolean | PromiseLike<boolean>) => void
 const WalletSignBottomSheet = forwardRef(
   ({ onClose, children }: Props, ref: Ref<WalletSignBottomSheetRef>) => {
     useImperativeHandle(ref, () => ({ show, hide }))
-    const { currency } = useAppStorage()
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { secondaryText } = useColors()
     const { t } = useTranslation()
@@ -69,7 +65,6 @@ const WalletSignBottomSheet = forwardRef(
       url: '',
       fee: Balance.fromIntAndTicker(0, 'SOL'),
     })
-    const [currencyFee, setCurrencyFee] = useState('Loading')
 
     const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
     const snapPoints = useMemo(() => ['25%', 'CONTENT_HEIGHT'], [])
@@ -82,7 +77,7 @@ const WalletSignBottomSheet = forwardRef(
     } = useBottomSheetDynamicSnapPoints(snapPoints)
 
     const hide = useCallback(() => {
-      bottomSheetModalRef.current?.close()
+      bottomSheetModalRef.current?.dismiss()
     }, [])
 
     const show = useCallback(({ type, url, fee }: WalletSignOpts) => {
@@ -114,6 +109,8 @@ const WalletSignBottomSheet = forwardRef(
       if (promiseResolve) {
         promiseResolve(false)
       }
+      // We need to re present the bottom sheet after it is dismissed so that it can be expanded again
+      bottomSheetModalRef.current?.present()
       onClose()
     }, [onClose])
 
@@ -125,46 +122,20 @@ const WalletSignBottomSheet = forwardRef(
 
     const onAcceptHandler = useCallback(() => {
       if (promiseResolve) {
-        promiseResolve(true)
         hide()
+        promiseResolve(true)
       }
     }, [hide])
 
     const onCancelHandler = useCallback(() => {
       if (promiseResolve) {
-        promiseResolve(false)
         hide()
+        promiseResolve(false)
       }
     }, [hide])
 
-    useAsync(async () => {
-      const { fee } = walletSignOpts
-      let feeCurrencyString = await CurrencyFormatter.format(
-        fee.integerBalance,
-        currency,
-      )
-
-      // Get number from feeCurrencyString
-      const numberFromFeeCurrencyString = feeCurrencyString.replace(
-        /[^0-9.-]+/g,
-        '',
-      )
-
-      const feeCurrencyTo8Decimals =
-        Number(numberFromFeeCurrencyString) /
-        10 ** fee.type.decimalPlaces.toNumber()
-
-      // Replace feeCurrencyString with feeCurrencyTo8Decimals
-      feeCurrencyString = feeCurrencyString.replace(
-        numberFromFeeCurrencyString,
-        feeCurrencyTo8Decimals.toString(),
-      )
-
-      setCurrencyFee(feeCurrencyString)
-    }, [walletSignOpts])
-
     const renderSheetBody = useCallback(() => {
-      const { type } = walletSignOpts
+      const { type, fee } = walletSignOpts
 
       if (type === WalletStandardMessageTypes.connect) {
         return (
@@ -249,7 +220,7 @@ const WalletSignBottomSheet = forwardRef(
                     </Text>
                   </Box>
                   <Text variant="body1Medium" color="secondaryText">
-                    {currencyFee}
+                    {`~${fee.floatBalance} ${fee.type.ticker}`}
                   </Text>
                 </Box>
               )}
@@ -257,7 +228,7 @@ const WalletSignBottomSheet = forwardRef(
           </>
         )
       }
-    }, [walletSignOpts, t, currencyFee])
+    }, [walletSignOpts, t])
 
     const renderSheetFooter = useCallback(() => {
       if (!walletSignOpts) return null
@@ -307,6 +278,7 @@ const WalletSignBottomSheet = forwardRef(
     useEffect(() => {
       bottomSheetModalRef.current?.present()
     }, [bottomSheetModalRef])
+
     return (
       <Box flex={1}>
         <BottomSheetModalProvider>
@@ -317,6 +289,7 @@ const WalletSignBottomSheet = forwardRef(
             backdropComponent={renderBackdrop}
             snapPoints={animatedSnapPoints}
             onDismiss={handleModalDismiss}
+            enableDismissOnClose
             handleIndicatorStyle={handleIndicatorStyle}
             // https://ethercreative.github.io/react-native-shadow-generator/
             style={{

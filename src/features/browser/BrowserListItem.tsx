@@ -1,8 +1,8 @@
 import React from 'react'
-import Text from '../../components/Text'
-import Box from '../../components/Box'
-import { TouchableOpacityBoxProps } from '../../components/TouchableOpacityBox'
-import TouchableContainer from '../../components/TouchableContainer'
+import Text from '@components/Text'
+import Box from '@components/Box'
+import { TouchableOpacityBoxProps } from '@components/TouchableOpacityBox'
+import TouchableContainer from '@components/TouchableContainer'
 
 export type ActivityListItemProps = {
   url: string

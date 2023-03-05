@@ -218,8 +218,8 @@ const TabBarNavigator = () => {
           name="NotificationsNavigator"
           component={NotificationsNavigator}
         />
+        <Tab.Screen name="Browser" component={BrowserNavigator} />
       </Tab.Navigator>
-      <Tab.Screen name="Browser" component={BrowserNavigator} />
     </>
   )
 }

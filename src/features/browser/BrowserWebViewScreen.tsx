@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
   WebView,
@@ -6,7 +6,12 @@ import {
   WebViewNavigation,
 } from 'react-native-webview'
 import nacl from 'tweetnacl'
-import { Cluster, PublicKey, Transaction } from '@solana/web3.js'
+import {
+  Cluster,
+  PublicKey,
+  Transaction,
+  VersionedTransaction,
+} from '@solana/web3.js'
 import bs58 from 'bs58'
 import {
   SolanaSignMessageInput,
@@ -14,7 +19,7 @@ import {
   SolanaSignTransactionInput,
 } from '@solana/wallet-standard-features'
 import { Balance } from '@helium/currency'
-import { StyleSheet } from 'react-native'
+import { Platform, StyleSheet } from 'react-native'
 import BackArrow from '@assets/images/backArrow.svg'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import Close from '@assets/images/close.svg'
@@ -22,6 +27,7 @@ import Bookmark from '@assets/images/bookmark.svg'
 import BookmarkFilled from '@assets/images/bookmarkFilled.svg'
 import Refresh from '@assets/images/refresh.svg'
 import { Portal } from '@gorhom/portal'
+import { useSpacing } from '@theme/themeHooks'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import injectWalletStandard from './walletStandard'
@@ -43,16 +49,24 @@ type Route = RouteProp<BrowserStackParamList, 'BrowserWebViewScreen'>
 const BrowserWebViewScreen = () => {
   const route = useRoute<Route>()
   const { uri } = route.params
-
   const edges = useMemo(() => ['top', 'bottom'] as Edge[], [])
   const { currentAccount, anchorProvider } = useAccountStorage()
   const webview = useRef<WebView | null>(null)
   const [jsInjected, setJsInjected] = useState(false)
   const walletSignBottomSheetRef = useRef<WalletSignBottomSheetRef | null>(null)
   const [currentUrl, setCurrentUrl] = useState(uri)
+  const [accountAddress, setAccountAddress] = useState<string>('')
   const { top, bottom } = useSafeAreaInsets()
   const navigation = useNavigation<BrowserNavigationProp>()
   const { favorites, addFavorite, removeFavorite } = useBrowser()
+  const isAndroid = useMemo(() => Platform.OS === 'android', [])
+  const spacing = useSpacing()
+
+  useEffect(() => {
+    if (currentAccount?.solanaAddress) {
+      setAccountAddress(currentAccount?.solanaAddress || '')
+    }
+  }, [currentAccount])
 
   const isFavorite = useMemo(() => {
     return favorites.some((favorite) => favorite === currentUrl)
@@ -63,14 +77,8 @@ const BrowserWebViewScreen = () => {
       if (!currentAccount?.address || !currentAccount?.solanaAddress) {
         return
       }
-      console.log('HOLA')
-      console.log('msg', msg.nativeEvent)
 
-      // Prevents React from resetting its properties:
-      // msg.persist()
       const { data } = msg.nativeEvent
-
-      console.log('data', data)
 
       const secureAcct = await getKeypair(currentAccount?.address)
       const payer = new PublicKey(currentAccount?.solanaAddress)
@@ -87,8 +95,7 @@ const BrowserWebViewScreen = () => {
       const { type, inputs } = JSON.parse(data)
 
       if (type === WalletStandardMessageTypes.connect) {
-        Logger.breadcrumb('signMessage')
-        console.log('Yo were here doe')
+        Logger.breadcrumb('connect')
         const decision = await walletSignBottomSheetRef.current?.show({
           type,
           url: currentUrl,
@@ -127,18 +134,35 @@ const BrowserWebViewScreen = () => {
           return
         }
 
+        let isVersionedTransaction = false
+
         // Converting int array objects to Uint8Array
-        const transactions = inputs.map(
-          ({
-            transaction,
-            chain,
-            options,
-          }: SolanaSignAndSendTransactionInput) => {
-            const tx = new Uint8Array(
-              Object.keys(transaction).map((k) => inputs[0].transaction[k]),
-            )
-            return { transaction: Transaction.from(tx), chain, options }
-          },
+        const transactions = await Promise.all(
+          inputs.map(
+            async ({
+              transaction,
+              chain,
+              options,
+            }: SolanaSignAndSendTransactionInput) => {
+              const tx = new Uint8Array(
+                Object.keys(transaction).map((k) => inputs[0].transaction[k]),
+              )
+              try {
+                const versionedTx = VersionedTransaction.deserialize(tx)
+                isVersionedTransaction = !!versionedTx
+              } catch (e) {
+                isVersionedTransaction = false
+              }
+
+              return {
+                transaction: isVersionedTransaction
+                  ? VersionedTransaction.deserialize(tx)
+                  : Transaction.from(tx),
+                chain,
+                options,
+              }
+            },
+          ),
         )
 
         const signatures = await Promise.all(
@@ -148,10 +172,23 @@ const BrowserWebViewScreen = () => {
               chain,
               options,
             }: SolanaSignAndSendTransactionInput & {
-              transaction: Transaction
+              transaction: Transaction | VersionedTransaction
             }) => {
-              const signedTransaction =
-                await anchorProvider?.wallet.signTransaction(transaction)
+              let signedTransaction:
+                | Transaction
+                | VersionedTransaction
+                | undefined
+              if (!isVersionedTransaction) {
+                // TODO: Verify when lookup table is needed
+                // transaction.add(lookupTableAddress)
+                signedTransaction =
+                  await anchorProvider?.wallet.signTransaction(
+                    transaction as Transaction,
+                  )
+              } else {
+                ;(transaction as VersionedTransaction).sign([signer])
+                signedTransaction = transaction
+              }
 
               if (!signedTransaction) {
                 throw new Error('Failed to sign transaction')
@@ -210,7 +247,11 @@ const BrowserWebViewScreen = () => {
           await anchorProvider?.wallet.signAllTransactions(transactions)
 
         if (!signedTransactions) {
-          // TODO: Handle this
+          webview.current?.postMessage(
+            JSON.stringify({
+              type: 'signatureDeclined',
+            }),
+          )
           return
         }
 
@@ -275,23 +316,27 @@ const BrowserWebViewScreen = () => {
     [anchorProvider, currentAccount, currentUrl],
   )
 
-  // Inject wallet standard into the webview
-  const injectModule = useCallback(() => {
-    if (!webview?.current || !currentAccount?.solanaAddress) return
-
+  const injectedJavascript = useCallback(() => {
     const script = `
     ${injectWalletStandard.toString()}
 
     // noinspection JSIgnoredPromiseFromCall
-    injectWalletStandard("${currentAccount.solanaAddress}", [${bs58.decode(
-      currentAccount.solanaAddress,
-    )}]);
+    injectWalletStandard("${accountAddress}", [${bs58.decode(accountAddress)}]);
     true;
     `
 
+    return script
+  }, [accountAddress])
+
+  // Inject wallet standard into the webview
+  const injectModule = useCallback(() => {
+    if (!webview?.current) return
+
+    const script = injectedJavascript()
+
     webview.current.injectJavaScript(script)
     setJsInjected(true)
-  }, [currentAccount])
+  }, [injectedJavascript])
 
   const onNavigationChange = useCallback((event: WebViewNavigation) => {
     const baseUrl = event.url.replace('https://', '').split('/')
@@ -310,17 +355,25 @@ const BrowserWebViewScreen = () => {
         paddingStart="m"
         flexDirection="row"
         alignItems="center"
+        justifyContent="center"
       >
-        <Text textAlign="center" variant="body2Medium" color="secondaryText">
-          {currentUrl}
-        </Text>
-        <Box flexGrow={1} />
+        <Box width={14 + spacing.m} height={14} />
+        <Box flex={1}>
+          <Text
+            textAlign="center"
+            variant="body2Medium"
+            color="secondaryText"
+            adjustsFontSizeToFit
+          >
+            {currentUrl}
+          </Text>
+        </Box>
         <TouchableOpacityBox onPress={closeModal} paddingHorizontal="m">
           <Close color="white" width={14} height={14} />
         </TouchableOpacityBox>
       </Box>
     )
-  }, [currentUrl, closeModal])
+  }, [currentUrl, closeModal, spacing])
 
   const onBack = useCallback(() => {
     webview.current?.goBack()
@@ -339,8 +392,11 @@ const BrowserWebViewScreen = () => {
   }, [addFavorite, removeFavorite, isFavorite, currentUrl])
 
   const onRefresh = useCallback(() => {
+    setJsInjected(false)
     webview.current?.reload()
-  }, [])
+    webview.current?.injectJavaScript('')
+    webview.current?.injectJavaScript(injectedJavascript())
+  }, [injectedJavascript])
 
   const BrowserFooter = useCallback(() => {
     return (
@@ -373,44 +429,59 @@ const BrowserWebViewScreen = () => {
     )
   }, [onBack, onForward, isFavorite, onFavorite, onRefresh])
 
+  const BrowserWrapper = useCallback(
+    ({ children }) => {
+      if (isAndroid) {
+        return <Portal name="browser-portal">{children}</Portal>
+      }
+      return <>{children}</>
+    },
+    [isAndroid],
+  )
+
   return (
-    // <Portal name="browser-portal">
-    <Box position="absolute" top={0} left={0} right={0} bottom={0}>
-      <WalletSignBottomSheet ref={walletSignBottomSheetRef} onClose={() => {}}>
-        <Box
-          backgroundColor="black900"
-          height={top}
-          position="absolute"
-          top={0}
-          left={0}
-          right={0}
-        />
-        <SafeAreaBox flex={1} edges={edges}>
-          <BrowserHeader />
-          <WebView
-            ref={webview}
-            originWhitelist={['*']}
-            javaScriptEnabled
-            onLoad={!jsInjected ? injectModule : undefined}
-            onMessage={onMessage}
-            onNavigationStateChange={onNavigationChange}
-            source={{
-              uri,
-            }}
+    <BrowserWrapper>
+      <Box position="absolute" top={0} left={0} right={0} bottom={0}>
+        <WalletSignBottomSheet
+          ref={walletSignBottomSheetRef}
+          onClose={() => {}}
+        >
+          <Box
+            backgroundColor="black900"
+            height={top}
+            position="absolute"
+            top={0}
+            left={0}
+            right={0}
           />
-          <BrowserFooter />
-        </SafeAreaBox>
-        <Box
-          backgroundColor="black900"
-          height={bottom}
-          position="absolute"
-          bottom={0}
-          left={0}
-          right={0}
-        />
-      </WalletSignBottomSheet>
-    </Box>
-    // </Portal>
+          <SafeAreaBox flex={1} edges={edges}>
+            <BrowserHeader />
+            <WebView
+              ref={webview}
+              originWhitelist={['*']}
+              javaScriptEnabled
+              onLoadEnd={!jsInjected ? injectModule : undefined}
+              injectedJavaScriptBeforeContentLoaded={injectedJavascript()}
+              injectedJavaScript={injectedJavascript()}
+              onNavigationStateChange={onNavigationChange}
+              onMessage={onMessage}
+              source={{
+                uri,
+              }}
+            />
+            <BrowserFooter />
+          </SafeAreaBox>
+          <Box
+            backgroundColor="black900"
+            height={bottom}
+            position="absolute"
+            bottom={0}
+            left={0}
+            right={0}
+          />
+        </WalletSignBottomSheet>
+      </Box>
+    </BrowserWrapper>
   )
 }
 

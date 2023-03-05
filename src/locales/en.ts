@@ -312,8 +312,12 @@ export default {
     swapAlertBody: 'This action is irreversible.',
   },
   browserScreen: {
+    topPicks: 'Top Picks',
     myFavorites: 'My Favorites',
+    myFavoritesEmpty:
+      'No favorites yet. Start browsing and add your favorite dApps!',
     recentlyVisited: 'Recently Visited',
+    recentlyVisitedEmpty: 'No recently visited dApps yet. Start browsing!',
     connectBullet1: 'View your wallet balance & activity',
     connectBullet2: 'Request Approval for transactions',
     connectToWebsitesYouTrust: 'Only connect to websites you trust',

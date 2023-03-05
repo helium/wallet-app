@@ -10,20 +10,22 @@ import {
 import CloseCircle from '@assets/images/CloseCircle.svg'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import FadeInOut from '../../components/FadeInOut'
-import SafeAreaBox from '../../components/SafeAreaBox'
-import TextInput from '../../components/TextInput'
-import Box from '../../components/Box'
-import { ReAnimatedBox } from '../../components/AnimatedBox'
-import { useColors, useSpacing } from '../../theme/themeHooks'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import Text from '../../components/Text'
+import FadeInOut from '@components/FadeInOut'
+import SafeAreaBox from '@components/SafeAreaBox'
+import TextInput from '@components/TextInput'
+import Box from '@components/Box'
+import { ReAnimatedBox } from '@components/AnimatedBox'
+import { useColors, useSpacing } from '@theme/themeHooks'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import Text from '@components/Text'
+import useBrowser from '@hooks/useBrowser'
+import { prependHttp } from '@utils/url'
 import { BrowserNavigationProp } from './browserTypes'
 import BrowserListItem from './BrowserListItem'
-import useBrowser from '../../hooks/useBrowser'
 
 const BrowserScreen = () => {
-  const DEFAULT_URL = 'https://app.realms.today/'
+  // TODO: Change default url based on cluster
+  const DEFAULT_URL = 'https://app.realms.today/?cluster=devnet'
   const edges = useMemo(() => ['top'] as Edge[], [])
   const [inputFocused, setInputFocused] = useState(false)
   const spacing = useSpacing()
@@ -40,12 +42,19 @@ const BrowserScreen = () => {
   }[] => {
     const sections = [
       {
+        title: t('browserScreen.topPicks'),
+        data: [
+          'https://solana-labs.github.io/wallet-adapter/example/',
+          'https://app.realms.today/realms?cluster=devnet',
+        ],
+      },
+      {
         title: t('browserScreen.myFavorites'),
-        data: favorites,
+        data: [...favorites].reverse(),
       },
       {
         title: t('browserScreen.recentlyVisited'),
-        data: recents,
+        data: [...recents].reverse(),
       },
     ]
 
@@ -89,9 +98,7 @@ const BrowserScreen = () => {
 
   const onSubmitEditing = useCallback(
     (event: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => {
-      // TODO: Validate browser text is a valid url
-
-      const browserText = event.nativeEvent.text
+      const browserText = prependHttp(event.nativeEvent.text)
       addRecent(browserText)
       navigation.push('BrowserWebViewScreen', {
         uri: browserText,
@@ -128,7 +135,7 @@ const BrowserScreen = () => {
               autoFocus: false,
               onFocus: onBrowserInputFocus,
               selectTextOnFocus: true,
-              selectionColor: colors.malachite,
+              selectionColor: colors.transparent10,
               onBlur: onBrowserInputBlur,
               onSubmitEditing,
               defaultValue: DEFAULT_URL,
@@ -190,7 +197,6 @@ const BrowserScreen = () => {
 
   const handleBrowserListItemPress = useCallback(
     (url: string) => () => {
-      // TODO: Validate url Maybe?
       navigation.push('BrowserWebViewScreen', {
         uri: url,
       })
@@ -221,6 +227,30 @@ const BrowserScreen = () => {
     [handleBrowserListItemPress],
   )
 
+  const renderSectionFooter = useCallback(
+    ({ section: { data, title } }) => {
+      if (data.length !== 0) {
+        return null
+      }
+
+      return (
+        <Box
+          backgroundColor="surfaceSecondary"
+          padding="m"
+          marginHorizontal="m"
+          borderRadius="xl"
+        >
+          <Text variant="body2Medium" color="white" textAlign="center">
+            {title === t('browserScreen.myFavorites')
+              ? t('browserScreen.myFavoritesEmpty')
+              : t('browserScreen.recentlyVisitedEmpty')}
+          </Text>
+        </Box>
+      )
+    },
+    [t],
+  )
+
   const contentContainer = useMemo(
     () => ({
       paddingTop: spacing.m,
@@ -249,6 +279,7 @@ const BrowserScreen = () => {
           renderItem={renderItem}
           renderSectionHeader={renderSectionHeader}
           onEndReachedThreshold={0.05}
+          renderSectionFooter={renderSectionFooter}
         />
         <Box />
       </SafeAreaBox>
