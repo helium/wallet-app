@@ -78,6 +78,7 @@
     "@shopify/restyle": "1.8.0",
     "@solana/spl-account-compression": "0.1.4",
     "@solana/spl-token": "0.3.5",
+    "@solana/wallet-standard-features": "^1.0.0",
     "@solana/web3.js": "1.64.0",
     "@tradle/react-native-http": "2.0.1",
     "@walletconnect/react-native-compat": "2.2.1",
@@ -170,6 +171,7 @@
     "react-native-text-ticker": "1.14.0",
     "react-native-udp": "2.7.0",
     "react-native-video": "5.2.0",
+    "react-native-webview": "^11.26.0",
     "react-redux": "8.0.4",
     "readable-stream": "3.6.0",
     "redux-persist": "6.0.0",
@@ -184,6 +186,7 @@
     "timers-browserify": "1.4.2",
     "tinycolor2": "1.4.2",
     "tty-browserify": "0.0.0",
+    "tweetnacl": "^1.0.3",
     "url": "0.10.3",
     "use-debounce": "7.0.1",
     "vm-browserify": "0.0.4"

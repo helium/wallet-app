@@ -11,26 +11,30 @@ import Text from '@components/Text'
 import Box from '@components/Box'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import SafeAreaBox from '@components/SafeAreaBox'
-import BlurActionSheet from '@components/BlurActionSheet'
-import ListItem from '@components/ListItem'
 import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
 import ButtonPressable from '@components/ButtonPressable'
 import TextTransform from '@components/TextTransform'
 import { useTreasuryPrice } from '@hooks/useTreasuryPrice'
 import useAlert from '@hooks/useAlert'
-import { useSpacing } from '@theme/themeHooks'
-import SwapItem from './SwapItem'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
+import TokenIOT from '@assets/images/tokenIOT.svg'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
 import {
   createTreasurySwapMessage,
   getConnection,
   TXN_FEE_IN_SOL,
-} from '../../utils/solanaUtils'
-import { Mints } from '../../utils/constants'
-import { useAppStorage } from '../../storage/AppStorageProvider'
-import * as Logger from '../../utils/logger'
+} from '@utils/solanaUtils'
+import { Mints } from '@utils/constants'
+import { useAppStorage } from '@storage/AppStorageProvider'
+import * as Logger from '@utils/logger'
+import TokenSelector, {
+  TokenSelectorRef,
+  TokenListItem,
+} from '@components/TokenSelector'
+import CloseButton from '@components/CloseButton'
 import { SwapNavigationProp } from './swapTypes'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
+import SwapItem from './SwapItem'
 
 // Selector Mode enum
 enum SelectorMode {
@@ -51,8 +55,7 @@ const SwapScreen = () => {
   const { solanaNetwork: cluster } = useAppStorage()
   const navigation = useNavigation<SwapNavigationProp>()
   const { submitTreasurySwap } = useSubmitTxn()
-  const edges = useMemo(() => ['top'] as Edge[], [])
-  const [tokenSheetOpen, setTokenSheetOpen] = useState(false)
+  const edges = useMemo(() => ['bottom'] as Edge[], [])
   const [selectorMode, setSelectorMode] = useState(SelectorMode.youPay)
   const [youPayTokenType, setYouPayTokenType] = useState<Ticker>(Tokens.MOBILE)
   /* TODO: Add new solana variation for IOT and MOBILE in @helium/currency that supports
@@ -68,8 +71,8 @@ const SwapScreen = () => {
   >()
   const [networkError, setNetworkError] = useState<undefined | string>()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const spacing = useSpacing()
   const { showOKCancelAlert } = useAlert()
+  const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const {
     price,
     loading: loadingPrice,
@@ -129,16 +132,13 @@ const SwapScreen = () => {
     }
   }, [anchorProvider, cluster, currentAccount])
 
+  const handleClose = useCallback(() => {
+    navigation.goBack()
+  }, [navigation])
+
   useAsync(async () => {
     refresh()
   }, [])
-
-  const toggleTokenSheetsOpen = useCallback(
-    (open: boolean) => () => {
-      setTokenSheetOpen(open)
-    },
-    [],
-  )
 
   const Header = useMemo(() => {
     return (
@@ -148,25 +148,19 @@ const SwapScreen = () => {
         alignItems="center"
         marginTop="l"
       >
-        <Text variant="h4" color="white">
+        <CloseButton marginStart="m" onPress={handleClose} />
+        <Text variant="h4" color="white" flex={1} textAlign="center">
           {t('swapsScreen.title')}
         </Text>
-        <TouchableOpacityBox
-          position="absolute"
-          top={-spacing.m / 2}
-          right={spacing.m}
-          padding="m"
-          onPress={refresh}
-        >
+        <TouchableOpacityBox padding="m" marginEnd="s" onPress={refresh}>
           <Refresh width={16} height={16} />
         </TouchableOpacityBox>
       </Box>
     )
-  }, [refresh, spacing.m, t])
+  }, [refresh, t, handleClose])
 
   const setTokenTypeHandler = useCallback(
-    (ticker: Ticker) => () => {
-      setTokenSheetOpen(false)
+    (ticker: Ticker) => {
       if (selectorMode === SelectorMode.youPay) {
         setYouPayTokenType(ticker)
       } else {
@@ -176,43 +170,25 @@ const SwapScreen = () => {
     [selectorMode],
   )
 
-  const tokenTypes = useCallback(
-    () => (
-      <>
-        {selectorMode === SelectorMode.youReceive ? (
-          <ListItem
-            key="hnt"
-            title={Tokens.HNT}
-            selected={youReceiveTokenType === Tokens.HNT}
-            onPress={setTokenTypeHandler(Tokens.HNT)}
-            hasPressedState={false}
-          />
-        ) : (
-          <>
-            <ListItem
-              key="iot"
-              title={Tokens.IOT}
-              selected={youPayTokenType === Tokens.IOT}
-              onPress={setTokenTypeHandler(Tokens.IOT)}
-              hasPressedState={false}
-            />
-            <ListItem
-              key="mobile"
-              title={Tokens.MOBILE}
-              selected={youPayTokenType === Tokens.MOBILE}
-              onPress={setTokenTypeHandler(Tokens.MOBILE)}
-              hasPressedState={false}
-            />
-          </>
-        )}
-      </>
-    ),
-    [selectorMode, setTokenTypeHandler, youPayTokenType, youReceiveTokenType],
+  const tokenData = useMemo(
+    (): TokenListItem[] => [
+      {
+        label: Tokens.MOBILE,
+        icon: <TokenMOBILE width={30} height={30} />,
+        value: Tokens.MOBILE,
+      },
+      {
+        label: Tokens.IOT,
+        icon: <TokenIOT width={30} height={30} />,
+        value: Tokens.IOT,
+      },
+    ],
+    [],
   )
 
   const onCurrencySelect = useCallback(
     (youPay: boolean) => () => {
-      setTokenSheetOpen(true)
+      tokenSelectorRef.current?.showTokens()
       setSelectorMode(youPay ? SelectorMode.youPay : SelectorMode.youReceive)
     },
     [],
@@ -265,7 +241,6 @@ const SwapScreen = () => {
 
   return (
     <HNTKeyboard
-      usePortal
       ref={hntKeyboardRef}
       onConfirmBalance={onConfirmBalance}
       ticker={youPayTokenType}
@@ -274,114 +249,109 @@ const SwapScreen = () => {
         Tokens.SOL,
       )}
     >
-      <ReAnimatedBox flex={1}>
-        <SafeAreaBox edges={edges} flex={1}>
-          {Header}
-          <Box flexGrow={1} justifyContent="center" marginTop="xxxl">
-            <SwapItem
-              onPress={onTokenItemPressed}
-              marginHorizontal="m"
-              isPaying
-              onCurrencySelect={onCurrencySelect(true)}
-              currencySelected={youPayTokenType}
-              amount={youPayTokenAmount}
-            />
-            <Box>
+      <TokenSelector
+        ref={tokenSelectorRef}
+        onTokenSelected={setTokenTypeHandler}
+        tokenData={tokenData}
+      >
+        <ReAnimatedBox flex={1}>
+          <SafeAreaBox backgroundColor="black900" edges={edges} flex={1}>
+            {Header}
+            <Box flexGrow={1} justifyContent="center" marginTop="xxxl">
               <SwapItem
-                disabled
-                marginTop="xxl"
+                onPress={onTokenItemPressed}
                 marginHorizontal="m"
-                isPaying={false}
-                onCurrencySelect={onCurrencySelect(false)}
-                currencySelected={youReceiveTokenType}
-                amount={youReceiveTokenAmount}
-                loading={loadingPrice}
+                isPaying
+                onCurrencySelect={onCurrencySelect(true)}
+                currencySelected={youPayTokenType}
+                amount={youPayTokenAmount}
               />
+              <Box>
+                <SwapItem
+                  disabled
+                  marginTop="xxl"
+                  marginHorizontal="m"
+                  isPaying={false}
+                  onCurrencySelect={onCurrencySelect(false)}
+                  currencySelected={youReceiveTokenType}
+                  amount={youReceiveTokenAmount}
+                  loading={loadingPrice}
+                />
 
-              <Box marginTop="m">
-                {solFee ? (
-                  <Box marginTop="m">
-                    <TextTransform
+                <Box marginTop="m">
+                  {solFee ? (
+                    <Box marginTop="m">
+                      <TextTransform
+                        textAlign="center"
+                        marginHorizontal="m"
+                        variant="body3Medium"
+                        color="white"
+                        i18nKey="collectablesScreen.transferFee"
+                        values={{ amount: solFee }}
+                      />
+                    </Box>
+                  ) : (
+                    <Text
+                      marginTop="m"
                       textAlign="center"
                       marginHorizontal="m"
-                      variant="body3Medium"
-                      color="white"
-                      i18nKey="collectablesScreen.transferFee"
-                      values={{ amount: solFee }}
-                    />
-                  </Box>
-                ) : (
+                      variant="body2"
+                      marginBottom="s"
+                      color="secondaryText"
+                    >
+                      {t('generic.calculatingTransactionFee')}
+                    </Text>
+                  )}
                   <Text
-                    marginTop="m"
-                    textAlign="center"
+                    marginTop="s"
+                    opacity={
+                      insufficientTokensToSwap ||
+                      hasInsufficientBalance ||
+                      networkError
+                        ? 100
+                        : 0
+                    }
                     marginHorizontal="m"
-                    variant="body2"
-                    marginBottom="s"
-                    color="secondaryText"
+                    variant="body3Medium"
+                    color="red500"
+                    textAlign="center"
                   >
-                    {t('generic.calculatingTransactionFee')}
+                    {showError}
                   </Text>
-                )}
-                <Text
-                  marginTop="s"
-                  opacity={
-                    insufficientTokensToSwap ||
-                    hasInsufficientBalance ||
-                    networkError
-                      ? 100
-                      : 0
-                  }
-                  marginHorizontal="m"
-                  variant="body3Medium"
-                  color="red500"
-                  textAlign="center"
-                >
-                  {showError}
-                </Text>
+                </Box>
               </Box>
             </Box>
-          </Box>
 
-          <Box
-            flexDirection="row"
-            marginBottom="xl"
-            marginTop="m"
-            marginHorizontal="xl"
-          >
-            <ButtonPressable
-              height={65}
-              flexGrow={1}
-              borderRadius="round"
-              backgroundColor="white"
-              backgroundColorOpacity={1}
-              backgroundColorOpacityPressed={0.05}
-              titleColorDisabled="grey600"
-              backgroundColorDisabled="white"
-              backgroundColorDisabledOpacity={0.1}
-              disabled={
-                insufficientTokensToSwap ||
-                youPayTokenAmount === 0 ||
-                treasuryFrozen
-              }
-              titleColorPressedOpacity={0.3}
-              title={t('swapsScreen.swapTokens')}
-              titleColor="black"
-              onPress={handleSwapTokens}
-            />
-          </Box>
-        </SafeAreaBox>
-        <BlurActionSheet
-          title={
-            selectorMode === SelectorMode.youPay
-              ? t('swapsScreen.chooseTokenToSwap')
-              : t('swapsScreen.chooseTokenToReceive')
-          }
-          open={tokenSheetOpen}
-          onClose={toggleTokenSheetsOpen(false)}
-        >
-          {tokenTypes()}
-        </BlurActionSheet>
-      </ReAnimatedBox>
+            <Box
+              flexDirection="row"
+              marginBottom="xl"
+              marginTop="m"
+              marginHorizontal="xl"
+            >
+              <ButtonPressable
+                height={65}
+                flexGrow={1}
+                borderRadius="round"
+                backgroundColor="white"
+                backgroundColorOpacity={1}
+                backgroundColorOpacityPressed={0.05}
+                titleColorDisabled="grey600"
+                backgroundColorDisabled="white"
+                backgroundColorDisabledOpacity={0.1}
+                disabled={
+                  insufficientTokensToSwap ||
+                  youPayTokenAmount === 0 ||
+                  treasuryFrozen
+                }
+                titleColorPressedOpacity={0.3}
+                title={t('swapsScreen.swapTokens')}
+                titleColor="black"
+                onPress={handleSwapTokens}
+              />
+            </Box>
+          </SafeAreaBox>
+        </ReAnimatedBox>
+      </TokenSelector>
     </HNTKeyboard>
   )
 }

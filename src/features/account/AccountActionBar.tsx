@@ -19,7 +19,7 @@ export type Action =
   | 'lock'
   | 'vote'
   | '5G'
-  | 'buy'
+  | 'swaps'
 
 type Props = {
   ticker?: Ticker
@@ -27,7 +27,7 @@ type Props = {
   compact?: boolean
   maxCompact?: boolean
   hasBottomTitle?: boolean
-  hasBuy?: boolean
+  hasSwaps?: boolean
 }
 
 const AccountActionBar = ({
@@ -36,7 +36,7 @@ const AccountActionBar = ({
   compact,
   maxCompact,
   hasBottomTitle,
-  hasBuy,
+  hasSwaps,
 }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
@@ -105,11 +105,10 @@ const AccountActionBar = ({
           navigation.navigate('RequestScreen')
           break
         }
-        // TODO: Uncomment when pay is ready
-        // case 'buy': {
-        //   navigation.navigate('BuyNavigator')
-        //   break
-        // }
+        case 'swaps': {
+          navigation.navigate('SwapNavigator')
+          break
+        }
         case 'vote': {
           navigation.navigate('VoteNavigator')
           break
@@ -181,19 +180,19 @@ const AccountActionBar = ({
           </Box>
         )}
       </Box>
-      {hasBuy && (
+      {hasSwaps && (
         <Box
           marginEnd={fabMargin}
           flexDirection={hasBottomTitle ? 'column' : 'row'}
         >
           <FabButton
-            icon="buy"
+            icon="swaps"
             backgroundColor="orange500"
             backgroundColorOpacity={0.2}
             backgroundColorOpacityPressed={0.4}
             iconColor="orange500"
-            title={compact || maxCompact ? undefined : t('accountView.buy')}
-            onPress={handleAction('buy')}
+            title={compact || maxCompact ? undefined : t('accountView.swaps')}
+            onPress={handleAction('swaps')}
             width={maxCompact ? 47.5 : undefined}
             height={maxCompact ? 47.5 : undefined}
             justifyContent="center"
@@ -206,7 +205,7 @@ const AccountActionBar = ({
                 marginTop="xs"
                 textAlign="center"
               >
-                {t('accountView.buy')}
+                {t('accountView.swaps')}
               </Text>
             </Box>
           )}

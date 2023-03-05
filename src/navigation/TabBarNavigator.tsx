@@ -16,7 +16,10 @@ import SafeAreaBox from '@components/SafeAreaBox'
 import Box from '@components/Box'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import useHaptic from '@hooks/useHaptic'
-import BlurBox from '@components/BlurBox'
+import Globe from '@assets/images/earth-globe.svg'
+import { isBefore, parseISO } from 'date-fns'
+import { useNotificationStorage } from '@storage/NotificationStorageProvider'
+import { useGetNotificationsQuery } from '../store/slices/walletRestApi'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import SolanaMigration from '../features/migration/SolanaMigration'
@@ -24,14 +27,52 @@ import HomeNavigator from '../features/home/HomeNavigator'
 import CollectablesTabNavigator from '../features/collectables/CollectablesTabNavigator'
 import ActivityNavigator from '../features/activity/ActivityNavigator'
 import NotificationsNavigator from '../features/notifications/NotificationsNavigator'
-import SwapNavigator from '../features/swaps/SwapNavigator'
-import Swaps from '../assets/images/swaps.svg'
+import BrowserNavigator from '../features/browser/BrowserNavigator'
+import { useNotificationsQuery } from '../generated/graphql'
 
 const Tab = createBottomTabNavigator()
 
 function MyTabBar({ state, navigation }: BottomTabBarProps) {
+  const { currentAccount } = useAccountStorage()
   const { hasNewTransactions, resetNewTransactions } = useEnrichedTransactions()
   const { triggerImpact } = useHaptic()
+  const { lastViewedTimestamp } = useNotificationStorage()
+  const { data: v1Notifications } = useNotificationsQuery({
+    variables: {
+      address: currentAccount?.address || '',
+      resource: currentAccount?.address || '',
+    },
+    skip: !currentAccount?.address,
+    fetchPolicy: 'cache-and-network',
+  })
+
+  const { currentData: v2Notifications } = useGetNotificationsQuery(
+    currentAccount?.solanaAddress,
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  )
+
+  const notifications = useMemo(() => {
+    const all = [
+      ...(v2Notifications || []),
+      ...(v1Notifications?.notifications || []),
+    ]
+
+    return all
+      .sort(
+        ({ time: timeA }, { time: timeB }) =>
+          parseISO(timeB).getTime() - parseISO(timeA).getTime(),
+      )
+      .filter((item) => {
+        const viewed =
+          (lastViewedTimestamp &&
+            isBefore(new Date(item.time), new Date(lastViewedTimestamp))) ||
+          !!item.viewedAt
+        return !viewed
+      })
+  }, [v1Notifications, v2Notifications, lastViewedTimestamp])
+
   const tabData = useMemo((): Array<{
     value: string
     Icon: FC<SvgProps>
@@ -46,20 +87,21 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
         iconColor: 'white',
         hasBadge: false,
       },
-      { value: 'swaps', Icon: Swaps, iconColor: 'white' },
       {
         value: 'activity',
         Icon: Transactions,
         iconColor: 'white',
-        hasBadge: hasNewTransactions && state.index !== 3,
+        hasBadge: hasNewTransactions && state.index !== 2,
       },
       {
         value: 'notifications',
         Icon: Notifications,
         iconColor: 'white',
+        hasBadge: notifications.length > 0 && state.index !== 4,
       },
+      { value: 'browser', Icon: Globe, iconColor: 'white' },
     ]
-  }, [hasNewTransactions, state.index])
+  }, [hasNewTransactions, state.index, notifications])
 
   const selectedValue = tabData[state.index].value
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
@@ -113,13 +155,7 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
   )
 
   return (
-    <BlurBox
-      backgroundColor="transparent10"
-      position="absolute"
-      bottom={0}
-      left={0}
-      right={0}
-    >
+    <Box position="absolute" bottom={0} left={0} right={0}>
       <Box backgroundColor="black900_9A">
         <SafeAreaBox edges={safeEdges}>
           <NavBar
@@ -130,7 +166,7 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
           />
         </SafeAreaBox>
       </Box>
-    </BlurBox>
+    </Box>
   )
 }
 
@@ -170,12 +206,12 @@ const TabBarNavigator = () => {
       >
         <Tab.Screen name="Home" component={HomeNavigator} />
         <Tab.Screen name="Collectables" component={CollectablesTabNavigator} />
-        <Tab.Screen name="Swaps" component={SwapNavigator} />
         <Tab.Screen name="Activity" component={ActivityNavigator} />
         <Tab.Screen
           name="NotificationsNavigator"
           component={NotificationsNavigator}
         />
+        <Tab.Screen name="Browser" component={BrowserNavigator} />
       </Tab.Navigator>
     </>
   )

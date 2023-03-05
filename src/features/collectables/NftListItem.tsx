@@ -45,6 +45,10 @@ const NftListItem = ({
     [navigation, triggerImpact],
   )
 
+  if (!metadata) {
+    return null
+  }
+
   return (
     <ReAnimatedBox style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
       <TouchableOpacityBox

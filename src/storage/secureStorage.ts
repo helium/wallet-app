@@ -93,7 +93,7 @@ export const checkSecureAccount = async (
           {
             text: forceShow
               ? t('generic.cancel')
-              : t('restoreAccount.missingAlert.button3'),
+              : t('restoreAccount.missingAlert.button1'),
             style: forceShow ? 'cancel' : 'destructive',
             onPress: () => {
               if (forceShow) return

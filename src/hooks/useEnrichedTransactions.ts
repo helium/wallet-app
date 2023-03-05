@@ -31,6 +31,13 @@ const useEnrichedTransactions = (): {
   const [hasNewTransactions, setHasNewTransactions] = useState(false)
   const accountSubscriptionId = useRef<number>()
 
+  // Reset new transactions when account changes. Maybe we add this all into a slice?
+  useEffect(() => {
+    if (currentAccount?.solanaAddress) {
+      setHasNewTransactions(false)
+    }
+  }, [currentAccount])
+
   const refresh = useCallback(async () => {
     if (!currentAccount || !currentAccount?.solanaAddress) return
     setLoading(true)
