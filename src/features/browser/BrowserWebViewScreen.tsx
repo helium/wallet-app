@@ -321,12 +321,14 @@ const BrowserWebViewScreen = () => {
     ${injectWalletStandard.toString()}
 
     // noinspection JSIgnoredPromiseFromCall
-    injectWalletStandard("${accountAddress}", [${bs58.decode(accountAddress)}]);
+    injectWalletStandard("${accountAddress}", [${bs58.decode(
+      accountAddress,
+    )}], ${isAndroid});
     true;
     `
 
     return script
-  }, [accountAddress])
+  }, [accountAddress, isAndroid])
 
   // Inject wallet standard into the webview
   const injectModule = useCallback(() => {
@@ -461,8 +463,6 @@ const BrowserWebViewScreen = () => {
               originWhitelist={['*']}
               javaScriptEnabled
               onLoadEnd={!jsInjected ? injectModule : undefined}
-              injectedJavaScriptBeforeContentLoaded={injectedJavascript()}
-              injectedJavaScript={injectedJavascript()}
               onNavigationStateChange={onNavigationChange}
               onMessage={onMessage}
               source={{

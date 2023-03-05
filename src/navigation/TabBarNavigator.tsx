@@ -16,7 +16,6 @@ import SafeAreaBox from '@components/SafeAreaBox'
 import Box from '@components/Box'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import useHaptic from '@hooks/useHaptic'
-import BlurBox from '@components/BlurBox'
 import Globe from '@assets/images/earth-globe.svg'
 import { isBefore, parseISO } from 'date-fns'
 import { useNotificationStorage } from '@storage/NotificationStorageProvider'
@@ -156,13 +155,7 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
   )
 
   return (
-    <BlurBox
-      backgroundColor="transparent10"
-      position="absolute"
-      bottom={0}
-      left={0}
-      right={0}
-    >
+    <Box position="absolute" bottom={0} left={0} right={0}>
       <Box backgroundColor="black900_9A">
         <SafeAreaBox edges={safeEdges}>
           <NavBar
@@ -173,7 +166,7 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
           />
         </SafeAreaBox>
       </Box>
-    </BlurBox>
+    </Box>
   )
 }
 

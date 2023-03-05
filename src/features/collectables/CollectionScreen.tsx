@@ -65,7 +65,7 @@ const CollectionScreen = () => {
               borderRadius={borderRadius}
               style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
               source={{
-                uri: metadata?.image,
+                uri: metadata?.image || '',
               }}
             />
           </TouchableOpacityBox>

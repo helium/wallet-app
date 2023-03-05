@@ -1,4 +1,11 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
 import {
   createStackNavigator,
@@ -35,6 +42,7 @@ const RootNavigator = () => {
   const RootStack = createStackNavigator<RootStackParamList>()
   const connectedWalletsRef = useRef<ConnectedWalletsRef>(null)
   const dispatch = useAppDispatch()
+  const [prevL1, setPrevL1] = useState(l1Network)
 
   const screenOptions = useMemo(
     () =>
@@ -48,12 +56,15 @@ const RootNavigator = () => {
     changeNavigationBarColor(colors.primaryBackground, true, false)
   }, [colors.primaryBackground])
 
+  useEffect(() => {
+    setPrevL1(l1Network)
+  }, [l1Network])
+
   // Reset navigation when l1Network changes
   useEffect(() => {
-    if (!navigation) return
-
+    if (!navigation || l1Network === prevL1) return
     if (hasAccounts) {
-      if (l1Network === 'helium') {
+      if (l1Network !== 'solana') {
         navigation.reset({
           index: 0,
           routes: [{ name: 'HomeNavigator' }],
@@ -70,11 +81,11 @@ const RootNavigator = () => {
         routes: [{ name: 'OnboardingNavigator' }],
       })
     }
-  }, [l1Network, navigation, hasAccounts])
+  }, [l1Network, navigation, hasAccounts, prevL1])
 
   const initialRouteName = useMemo(() => {
     if (hasAccounts) {
-      return l1Network === 'helium' ? 'HomeNavigator' : 'TabBarNavigator'
+      return l1Network !== 'solana' ? 'HomeNavigator' : 'TabBarNavigator'
     }
     return 'OnboardingNavigator'
   }, [hasAccounts, l1Network])

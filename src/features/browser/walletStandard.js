@@ -1,6 +1,7 @@
 /* eslint-disable */
-const stringF = `async function injectWalletStandard(solanaAddress, pubKey) {
+const stringF = `async function injectWalletStandard(solanaAddress, pubKey, isAndroid) {
 var isConnecting = false
+var parent = isAndroid ? document : window
 
 class PublicKey {
     constructor(publicKey) {
@@ -286,7 +287,7 @@ class HeliumWallet {
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
-                window.removeEventListener('message', listener)
+                parent.removeEventListener('message', listener)
                 const parsedData = JSON.parse(message.data)
                 if (parsedData.type === 'connectDeclined') {
                     isConnecting = false
@@ -296,7 +297,7 @@ class HeliumWallet {
                 this.#connected()
                 resolve({ accounts: this.accounts })
             }
-            window.addEventListener('message', listener)
+            parent.addEventListener('message', listener)
         })
     }
 
@@ -314,7 +315,7 @@ class HeliumWallet {
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
-                window.removeEventListener('message', listener)
+                parent.removeEventListener('message', listener)
                 const parsedData = JSON.parse(message.data)
                 if (parsedData.type === 'signatureDeclined') {
                     reject(new Error('Signature declined'))
@@ -331,7 +332,7 @@ class HeliumWallet {
 
                 resolve(signatures)
             }
-            window.addEventListener('message', listener)
+            parent.addEventListener('message', listener)
         })
     }
 
@@ -345,7 +346,7 @@ class HeliumWallet {
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
-                window.removeEventListener('message', listener)
+                parent.removeEventListener('message', listener)
                 const parsedData = JSON.parse(message.data)
                 if (parsedData.type === 'signatureDeclined') {
                     reject(new Error('Signature declined'))
@@ -361,7 +362,7 @@ class HeliumWallet {
                 })
                 resolve(signedTxns)
             }
-            window.addEventListener('message', listener)
+            parent.addEventListener('message', listener)
         })
     }
 
@@ -374,7 +375,7 @@ class HeliumWallet {
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
-                window.removeEventListener('message', listener)
+                parent.removeEventListener('message', listener)
                 const parsedData = JSON.parse(message.data)
                 if (parsedData.type === 'signatureDeclined') {
                     reject(new Error('Signature declined'))
@@ -392,7 +393,7 @@ class HeliumWallet {
                 
                 resolve(signedMessages)
             }
-            window.addEventListener('message', listener)
+            parent.addEventListener('message', listener)
         })
     }
 }
@@ -416,7 +417,7 @@ try {
     console.error(error)
 }
 
-window.addEventListener('wallet-standard:app-ready', function (event) {
+parent.addEventListener('wallet-standard:app-ready', function (event) {
     window.ReactNativeWebView.postMessage(
         JSON.stringify({ type: 'app-ready', event: event.data }),
     )

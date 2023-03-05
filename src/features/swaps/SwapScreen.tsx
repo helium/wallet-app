@@ -11,14 +11,11 @@ import Text from '@components/Text'
 import Box from '@components/Box'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import SafeAreaBox from '@components/SafeAreaBox'
-import BlurActionSheet from '@components/BlurActionSheet'
-import ListItem from '@components/ListItem'
 import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
 import ButtonPressable from '@components/ButtonPressable'
 import TextTransform from '@components/TextTransform'
 import { useTreasuryPrice } from '@hooks/useTreasuryPrice'
 import useAlert from '@hooks/useAlert'
-import { useSpacing } from '@theme/themeHooks'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenIOT from '@assets/images/tokenIOT.svg'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
@@ -34,6 +31,7 @@ import TokenSelector, {
   TokenSelectorRef,
   TokenListItem,
 } from '@components/TokenSelector'
+import CloseButton from '@components/CloseButton'
 import { SwapNavigationProp } from './swapTypes'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
 import SwapItem from './SwapItem'
@@ -73,7 +71,6 @@ const SwapScreen = () => {
   >()
   const [networkError, setNetworkError] = useState<undefined | string>()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const spacing = useSpacing()
   const { showOKCancelAlert } = useAlert()
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const {
@@ -135,6 +132,10 @@ const SwapScreen = () => {
     }
   }, [anchorProvider, cluster, currentAccount])
 
+  const handleClose = useCallback(() => {
+    navigation.goBack()
+  }, [navigation])
+
   useAsync(async () => {
     refresh()
   }, [])
@@ -147,21 +148,16 @@ const SwapScreen = () => {
         alignItems="center"
         marginTop="l"
       >
-        <Text variant="h4" color="white">
+        <CloseButton marginStart="m" onPress={handleClose} />
+        <Text variant="h4" color="white" flex={1} textAlign="center">
           {t('swapsScreen.title')}
         </Text>
-        <TouchableOpacityBox
-          position="absolute"
-          top={-spacing.m / 2}
-          right={spacing.m}
-          padding="m"
-          onPress={refresh}
-        >
+        <TouchableOpacityBox padding="m" marginEnd="s" onPress={refresh}>
           <Refresh width={16} height={16} />
         </TouchableOpacityBox>
       </Box>
     )
-  }, [refresh, spacing.m, t])
+  }, [refresh, t, handleClose])
 
   const setTokenTypeHandler = useCallback(
     (ticker: Ticker) => {
@@ -354,51 +350,6 @@ const SwapScreen = () => {
               />
             </Box>
           </SafeAreaBox>
-          {/* <BlurActionSheet
-            title={
-              selectorMode === SelectorMode.youPay
-                ? t('swapsScreen.chooseTokenToSwap')
-                : t('swapsScreen.chooseTokenToReceive')
-            }
-            open={tokenSheetOpen}
-            onClose={toggleTokenSheetsOpen(false)}
-          >
-            <ButtonPressable
-              height={65}
-              flexGrow={1}
-              borderRadius="round"
-              backgroundColor="white"
-              backgroundColorOpacity={1}
-              backgroundColorOpacityPressed={0.05}
-              titleColorDisabled="grey600"
-              backgroundColorDisabled="white"
-              backgroundColorDisabledOpacity={0.1}
-              disabled={
-                insufficientTokensToSwap ||
-                youPayTokenAmount === 0 ||
-                treasuryFrozen
-              }
-              titleColorPressedOpacity={0.3}
-              title={t('swapsScreen.swapTokens')}
-              titleColor="black"
-              onPress={handleSwapTokens}
-            />
-          </Box>
-        </SafeAreaBox>
-        <BlurActionSheet
-          title={
-            selectorMode === SelectorMode.youPay
-              ? t('swapsScreen.chooseTokenToSwap')
-              : t('swapsScreen.chooseTokenToReceive')
-          }
-          open={tokenSheetOpen}
-          onClose={toggleTokenSheetsOpen(false)}
-        >
-          {tokenTypes()}
-        </BlurActionSheet>
-      </ReAnimatedBox>
-            {tokenTypes()}
-          </BlurActionSheet> */}
         </ReAnimatedBox>
       </TokenSelector>
     </HNTKeyboard>

@@ -1206,6 +1206,13 @@
   dependencies:
     regenerator-runtime "^0.13.11"
 
+"@babel/runtime@^7.15.4":
+  version "7.21.0"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.21.0.tgz#5b55c9d394e5fcf304909a8b00c07dc217b56673"
+  integrity sha512-xwII0//EObnq89Ji5AKYQaRYiW/nZ3llSv29d49IuxPhKbtJoLP+9QUUZ4nVragQVtaVGeZrpB+ZtG/Pdy/POw==
+  dependencies:
+    regenerator-runtime "^0.13.11"
+
 "@babel/template@^7.0.0", "@babel/template@^7.18.10", "@babel/template@^7.20.7", "@babel/template@^7.3.3":
   version "7.20.7"
   resolved "https://registry.yarnpkg.com/@babel/template/-/template-7.20.7.tgz#a15090c2839a83b02aa996c0b4994005841fd5a8"
@@ -2734,12 +2741,13 @@
     bn.js "^5.2.0"
     bs58 "^4.0.1"
 
-"@helium/onboarding@4.6.2":
-  version "4.6.2"
-  resolved "https://registry.yarnpkg.com/@helium/onboarding/-/onboarding-4.6.2.tgz#29a54b2e799bf7fad978c81de2ac4499571e1449"
-  integrity sha512-WDdXJIxXGp4cRyhqizSDjGO1+YsbOtBXRgKz7zeXnJ2CueILpzOZUpWRGW084H/svKs06/EGIf2Nw8FKL6M7fw==
+"@helium/onboarding@4.9.0":
+  version "4.9.0"
+  resolved "https://registry.yarnpkg.com/@helium/onboarding/-/onboarding-4.9.0.tgz#3327746d2f64dc640113f0587ce7be224557a824"
+  integrity sha512-6Ye4X2yc1SYh5m9cakO0tPCEUL1bpJBhVP6BxVwZmT0iIT3hv5XRuuYUFTJRvzJ6PcpM1i39ypx5kp2ZBQ6MDA==
   dependencies:
     axios "^0.24.0"
+    axios-retry "^3.4.0"
     qs "^6.10.3"
 
 "@helium/proto-ble@4.0.0":
@@ -2774,12 +2782,23 @@
     borsh "^0.7.0"
     bs58 "^5.0.0"
 
-"@helium/transactions@4.7.5", "@helium/transactions@^4.7.5", "@helium/transactions@^4.8.1":
+"@helium/transactions@4.7.5", "@helium/transactions@^4.7.5":
   version "4.7.5"
   resolved "https://registry.yarnpkg.com/@helium/transactions/-/transactions-4.7.5.tgz#a50d3e59524e038dfdd0e35b64468e1c312c3a1d"
   integrity sha512-SCJI9lYVUTec9Ub60TpYcMEKmdiTV4qjib8yh63C4l1ACM5sHMSHoJwKSVxpjEEA8q+j6fnEBBEnJMtTSoK9/Q==
   dependencies:
     "@helium/address" "^4.6.2"
+    "@helium/proto" "^1.6.0"
+    "@types/libsodium-wrappers" "^0.7.8"
+    long "^4.0.0"
+    path "^0.12.7"
+
+"@helium/transactions@^4.8.1":
+  version "4.8.1"
+  resolved "https://registry.yarnpkg.com/@helium/transactions/-/transactions-4.8.1.tgz#ef87cb82e1deffc1cb703bddf75d94e603c50a8d"
+  integrity sha512-7soAzxJkfBWUhTyMWM9SP3PhzU2qd2x0vP4iDHushsLq2VQLM5Gu86Ks2OgcGUNCopkNFXaTZkfl6YKl23NzfA==
+  dependencies:
+    "@helium/address" "^4.8.1"
     "@helium/proto" "^1.6.0"
     "@types/libsodium-wrappers" "^0.7.8"
     long "^4.0.0"
@@ -2811,10 +2830,10 @@
     bn.js "^5.2.0"
     bs58 "^4.0.1"
 
-"@helium/wallet-link@4.8.1":
-  version "4.8.1"
-  resolved "https://registry.yarnpkg.com/@helium/wallet-link/-/wallet-link-4.8.1.tgz#435ce81e3023f3be113551f5aaa60e2598bf749a"
-  integrity sha512-BpYn1cnxEdlpghW0aXK0ZYNec6F5LkUY9bnojJ9Q/3VvRYiwtJlwbFfs71VoH1Bm6kAREgHAIOCbHzCmEyvWIQ==
+"@helium/wallet-link@4.9.0":
+  version "4.9.0"
+  resolved "https://registry.yarnpkg.com/@helium/wallet-link/-/wallet-link-4.9.0.tgz#20ac4209007c5e6167f31ed90bb9a508173ce837"
+  integrity sha512-yj4cgZdjuYAS96TEi1gkK7QfJb6GERWaTfltwUfnNQkvhfa3Vga8CxgAB0clwsevZrUsrdBuSEDp6B4rI0CwxQ==
   dependencies:
     "@helium/address" "^4.8.1"
     "@helium/transactions" "^4.8.1"
@@ -6083,6 +6102,14 @@ axios-proxy-builder@^0.1.1:
   integrity sha512-6uBVsBZzkB3tCC8iyx59mCjQckhB8+GQrI9Cop8eC7ybIsvs/KtnNgEBfRMSEa7GqK2VBGUzgjNYMdPIfotyPA==
   dependencies:
     tunnel "^0.0.6"
+
+axios-retry@^3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/axios-retry/-/axios-retry-3.4.0.tgz#f464dbe9408e5aa78fa319afd38bb69b533d8854"
+  integrity sha512-VdgaP+gHH4iQYCCNUWF2pcqeciVOdGrBBAYUfTY+wPcO5Ltvp/37MLFNCmJKo7Gj3SHvCSdL8ouI1qLYJN3liA==
+  dependencies:
+    "@babel/runtime" "^7.15.4"
+    is-retry-allowed "^2.2.0"
 
 axios@1.3.2:
   version "1.3.2"
@@ -10949,6 +10976,11 @@ is-retry-allowed@^1.1.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/is-retry-allowed/-/is-retry-allowed-1.2.0.tgz#d778488bd0a4666a3be8a1482b9f2baafedea8b4"
   integrity sha512-RUbUeKwvm3XG2VYamhJL1xFktgjvPzL0Hq8C+6yrWIswDy3BIXGqCxhxkc30N9jqK311gVU137K8Ei55/zVJRg==
+
+is-retry-allowed@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/is-retry-allowed/-/is-retry-allowed-2.2.0.tgz#88f34cbd236e043e71b6932d09b0c65fb7b4d71d"
+  integrity sha512-XVm7LOeLpTW4jV19QSH38vkswxoLud8sQ57YwJVTPWdiaI9I8keEhGFpBlslyVsgdQy4Opg8QOLb8YRgsyZiQg==
 
 is-root@^2.1.0:
   version "2.1.0"
