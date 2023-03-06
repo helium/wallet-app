@@ -231,7 +231,7 @@ const HotspotList = () => {
           />
           <RewardItem ticker="IOT" amount={pendingIotRewards} marginStart="s" />
         </Box>
-        {pageAmount && hotspotsWithMeta.length >= pageAmount && (
+        {pageAmount && hotspotsWithMeta?.length >= pageAmount && (
           <Text
             marginTop="m"
             variant="subtitle4"

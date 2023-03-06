@@ -198,7 +198,7 @@ const BrowserScreen = () => {
   const handleBrowserListItemPress = useCallback(
     (url: string) => () => {
       navigation.push('BrowserWebViewScreen', {
-        uri: url,
+        uri: prependHttp(url),
       })
     },
     [navigation],

@@ -51,7 +51,7 @@ const NftList = () => {
     if (loadingCollectables) {
       return (
         <Box flex={1} flexDirection="row">
-          {times(Object.keys(collectables).length).map((i) => (
+          {times(Object.keys(collectables || []).length).map((i) => (
             <NFTSkeleton key={i} />
           ))}
         </Box>
