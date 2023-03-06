@@ -79,7 +79,9 @@ const AccountTokenBalance = ({
           maxFontSizeMultiplier={1}
           adjustsFontSizeToFit
         >
-          {`${balance?.toString(2, { showTicker: false })}`}
+          {typeof balance === 'number'
+            ? balance
+            : `${balance?.toString(2, { showTicker: false })}`}
         </Text>
       )}
       {showTicker && (
