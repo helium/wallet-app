@@ -348,7 +348,7 @@ const PaymentScreen = () => {
         return [false, '']
       }
 
-      if (l1Network === 'helium' || l1Network === 'solana') {
+      if (l1Network === 'helium') {
         if (ticker === 'MOBILE') {
           // If paying with mobile, they need to have enough mobile to cover the payment
           // and enough hnt to cover the fee
