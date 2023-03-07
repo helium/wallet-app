@@ -18,6 +18,7 @@ import {
 import { BoxProps } from '@shopify/restyle'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenHNT from '@assets/images/tokenHNT.svg'
+import TokenIOT from '@assets/images/tokenIOT.svg'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ticker } from '@helium/currency'
 import { useColors, useOpacity } from '@theme/themeHooks'
@@ -112,6 +113,11 @@ const TokenSelector = forwardRef(
           label: 'MOBILE',
           icon: <TokenMOBILE width={30} height={30} color={blueBright500} />,
           value: 'MOBILE',
+        },
+        {
+          label: 'IOT',
+          icon: <TokenIOT width={30} height={30} />,
+          value: 'IOT',
         },
       ],
 

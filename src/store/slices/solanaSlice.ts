@@ -158,6 +158,8 @@ export const makePayment = createAsyncThunk(
       mintAddress,
     )
 
+    dispatch(readBalances({ cluster, acct: account, mints }))
+
     return dispatch(
       walletRestApi.endpoints.postPayment.initiate({
         txnSignature: transfer.signature,

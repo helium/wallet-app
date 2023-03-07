@@ -103,6 +103,7 @@ const PaymentScreen = () => {
     oraclePrice,
     networkBalance,
     solBalance,
+    iotBalance,
     mobileBalance,
     mobileSolBalance,
     iotSolBalance,
@@ -164,6 +165,7 @@ const PaymentScreen = () => {
     currencyType,
     oraclePrice,
     accountMobileBalance: mobileBalance,
+    accountIotBalance: iotBalance,
     accountNetworkBalance: networkBalance,
     netType: networkType,
     l1Network,
@@ -319,12 +321,7 @@ const PaymentScreen = () => {
     value: boolean,
     errorTicker: string,
   ] => {
-    if (
-      !networkBalance ||
-      !mobileSolBalance ||
-      !iotSolBalance ||
-      !paymentState.totalAmount
-    ) {
+    if (!networkBalance || !paymentState.totalAmount) {
       return [true, '']
     }
     if (paymentState.networkFee?.integerBalance === undefined)
@@ -351,25 +348,17 @@ const PaymentScreen = () => {
         return [false, '']
       }
 
-      if (ticker === 'MOBILE') {
-        // If paying with mobile, they need to have enough mobile to cover the payment
-        // and enough hnt to cover the fee
-        const hasEnoughNetwork =
-          networkBalance.minus(paymentState.networkFee).integerBalance >= 0
-        const hasEnoughMobile =
-          mobileSolBalance - paymentState.totalAmount.floatBalance.valueOf() >=
-          0
-        if (!hasEnoughNetwork) return [true, networkBalance.type.ticker]
-        if (!hasEnoughMobile) return [true, 'MOBILE']
-      }
-
-      if (ticker === 'IOT') {
-        const hasEnoughNetwork =
-          networkBalance.minus(paymentState.networkFee).integerBalance >= 0
-        const hasEnoughIOT =
-          iotSolBalance - paymentState.totalAmount.floatBalance.valueOf() >= 0
-        if (!hasEnoughNetwork) return [true, networkBalance.type.ticker]
-        if (!hasEnoughIOT) return [true, 'IOT']
+      if (l1Network === 'helium') {
+        if (ticker === 'MOBILE') {
+          // If paying with mobile, they need to have enough mobile to cover the payment
+          // and enough hnt to cover the fee
+          const hasEnoughNetwork =
+            networkBalance.minus(paymentState.networkFee).integerBalance >= 0
+          const hasEnoughMobile =
+            mobileBalance.minus(paymentState.totalAmount).integerBalance >= 0
+          if (!hasEnoughNetwork) return [true, networkBalance.type.ticker]
+          if (!hasEnoughMobile) return [true, mobileBalance.type.ticker]
+        }
       }
 
       const hasEnoughNetwork =
@@ -391,11 +380,11 @@ const PaymentScreen = () => {
     l1Network,
     mobileSolBalance,
     networkBalance,
-    paymentState.networkFee,
-    paymentState.totalAmount,
     solBalance,
     iotSolBalance,
     ticker,
+    mobileBalance,
+    paymentState,
   ])
 
   const selfPay = useMemo(
@@ -664,7 +653,7 @@ const PaymentScreen = () => {
     return ticker === 'MOBILE' || ticker === 'IOT'
   }, [ticker])
 
-  const tokeButtonBalance = useMemo(() => {
+  const tokenButtonBalance = useMemo(() => {
     if (l1Network === 'helium' || !isDntToken) {
       return balanceToString(ticker === 'HNT' ? networkBalance : mobileBalance)
     }
@@ -765,7 +754,7 @@ const PaymentScreen = () => {
                   <TokenButton
                     backgroundColor="secondary"
                     title={t('payment.title', { ticker: currencyType.ticker })}
-                    subtitle={tokeButtonBalance}
+                    subtitle={tokenButtonBalance}
                     address={currentAccount?.address}
                     onPress={handleTokenTypeSelected}
                     showBubbleArrow
