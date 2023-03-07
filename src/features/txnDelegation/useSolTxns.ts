@@ -126,9 +126,22 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
 
       const gatewayAddress = bs58.encode(entityKey)
 
+      const { location, elevation, gain } = get(
+        decodedInstruction,
+        'data.args',
+      ) as {
+        location: BN
+        elevation: number
+        gain: number
+        index: number
+      }
+
       return {
         name: decodedInstruction.name || '',
         gatewayAddress,
+        location: location.toString('hex'),
+        elevation,
+        gain,
       }
     },
     [],

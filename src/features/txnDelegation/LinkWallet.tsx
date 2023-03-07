@@ -49,7 +49,14 @@ const LinkWallet = () => {
       )
       Linking.openURL(url)
 
-      navigation.goBack()
+      if (navigation.canGoBack()) {
+        navigation.goBack()
+      } else {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'AccountsScreen' }],
+        })
+      }
     },
     [callbackUrl, currentAccount, navigation],
   )

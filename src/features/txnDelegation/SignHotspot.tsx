@@ -42,10 +42,6 @@ const SignHotspot = () => {
   const { accounts } = useAccountStorage()
   const { surfaceContrastText } = useColors()
 
-  /** ********************************************************************************
-   ** TODO: Verify they have enough hnt (Helium) or dc (solana) to pay for meta txn **
-   *********************************************************************************** */
-
   const linkInvalid = useMemo(() => {
     return (
       !params.addGatewayTxn &&
