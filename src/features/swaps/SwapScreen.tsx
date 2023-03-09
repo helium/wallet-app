@@ -301,7 +301,7 @@ const SwapScreen = () => {
     if (!decision) return
 
     if (youPayTokenType === Tokens.HNT) {
-      submitMintDataCredits(youPayTokenAmount, youReceiveTokenAmount)
+      submitMintDataCredits(youPayTokenAmount)
     }
 
     if (youPayTokenType !== Tokens.HNT) {
@@ -323,7 +323,6 @@ const SwapScreen = () => {
     t,
     youPayTokenAmount,
     youPayTokenType,
-    youReceiveTokenAmount,
     youReceiveTokenType,
   ])
 

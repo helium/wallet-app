@@ -40,7 +40,7 @@ struct HNTBalanceWidgetProvider: IntentTimelineProvider {
     }
 
     func getTimeline(for configuration: ConfigurationIntent, in _: Context, completion: @escaping (Timeline<BalanceWidgetEntry>) -> Void) {
-        let userDefaults = UserDefaults(suiteName: "group.com.dannpl.mobile.wallet.widget")
+        let userDefaults = UserDefaults(suiteName: "group.com.helium.mobile.wallet.widget")
         if userDefaults != nil {
             let entryDate = Date()
             if let savedData = userDefaults!.value(forKey: "heliumWalletWidgetKey") as? String {

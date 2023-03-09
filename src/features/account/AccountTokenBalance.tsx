@@ -6,6 +6,7 @@ import TextTransform from '@components/TextTransform'
 import Box from '@components/Box'
 import { Theme } from '@theme/theme'
 import { useAppStorage } from '@storage/AppStorageProvider'
+import { useTranslation } from 'react-i18next'
 import { useBalance } from '../../utils/Balance'
 
 type Props = {
@@ -30,7 +31,10 @@ const AccountTokenBalance = ({
     networkBalance,
     networkStakedBalance,
     secBalance,
+    dcDelegatedBalance,
+    dcReceivedBalance,
   } = useBalance()
+  const { t } = useTranslation()
 
   const { l1Network } = useAppStorage()
 
@@ -69,6 +73,25 @@ const AccountTokenBalance = ({
     ticker,
   ])
 
+  const tokenDetails = useMemo(() => {
+    if (ticker !== 'DC' || !showTicker) return
+
+    return (
+      <Box>
+        <Text variant="body1" color="secondaryText" textAlign="center">
+          {t('accountsScreen.receivedBalance', {
+            amount: dcReceivedBalance?.toString(2, { showTicker: false }),
+          })}
+        </Text>
+        <Text variant="body1" color="secondaryText" textAlign="center">
+          {t('accountsScreen.delegatedBalance', {
+            amount: dcDelegatedBalance?.toString(2, { showTicker: false }),
+          })}
+        </Text>
+      </Box>
+    )
+  }, [ticker, showTicker, t, dcReceivedBalance, dcDelegatedBalance])
+
   return (
     <Box flexDirection="row" justifyContent="center" {...boxProps}>
       {!showTicker && (
@@ -84,23 +107,26 @@ const AccountTokenBalance = ({
             : `${balance?.toString(2, { showTicker: false })}`}
         </Text>
       )}
-      {showTicker && (
-        <TextTransform
-          variant={textVariant || 'h1'}
-          color="primaryText"
-          numberOfLines={1}
-          maxFontSizeMultiplier={1}
-          adjustsFontSizeToFit
-          i18nKey="accountsScreen.tokenBalance"
-          values={{
-            amount:
-              typeof balance === 'number'
-                ? balance
-                : balance?.toString(2, { showTicker: false }),
-            ticker,
-          }}
-        />
-      )}
+      <Box>
+        {showTicker && (
+          <TextTransform
+            variant={textVariant || 'h1'}
+            color="primaryText"
+            numberOfLines={1}
+            maxFontSizeMultiplier={1}
+            adjustsFontSizeToFit
+            i18nKey="accountsScreen.tokenBalance"
+            values={{
+              amount:
+                typeof balance === 'number'
+                  ? balance
+                  : balance?.toString(2, { showTicker: false }),
+              ticker,
+            }}
+          />
+        )}
+        {tokenDetails}
+      </Box>
     </Box>
   )
 }

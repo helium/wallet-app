@@ -334,6 +334,36 @@ const useBalanceHook = () => {
     return new Balance(bal, CurrencyType.security)
   }, [accountData, l1Network, solBalances])
 
+  const dcReceivedBalance = useMemo(() => {
+    let bal = 0
+    switch (l1Network) {
+      case 'helium':
+        bal = 0
+        break
+
+      case 'solana':
+        bal = solBalances?.dcReceived ? Number(solBalances.dcReceived) : 0
+        break
+    }
+
+    return new Balance(bal, CurrencyType.dataCredit)
+  }, [l1Network, solBalances])
+
+  const dcDelegatedBalance = useMemo(() => {
+    let bal = 0
+    switch (l1Network) {
+      case 'helium':
+        bal = accountData?.account?.dcBalance || 0
+        break
+
+      case 'solana':
+        bal = solBalances?.dcDelegated ? Number(solBalances.dcDelegated) : 0
+        break
+    }
+
+    return new Balance(bal, CurrencyType.dataCredit)
+  }, [accountData, l1Network, solBalances])
+
   const dcBalance = useMemo(() => {
     let bal = 0
     switch (l1Network) {
@@ -432,7 +462,6 @@ const useBalanceHook = () => {
 
   return {
     bonesToBalance,
-    dcBalance,
     dcToNetworkTokens,
     floatToBalance,
     intToBalance,
@@ -448,6 +477,9 @@ const useBalanceHook = () => {
     solanaPrice,
     secBalance,
     solBalance,
+    dcBalance,
+    dcReceivedBalance,
+    dcDelegatedBalance,
     toCurrencyString,
     toPreferredCurrencyString,
     toUsd,
@@ -458,7 +490,6 @@ const useBalanceHook = () => {
 
 const initialState = {
   bonesToBalance: () => new Balance(0, CurrencyType.networkToken),
-  dcBalance: new Balance(0, CurrencyType.dataCredit),
   dcToNetworkTokens: () => undefined,
   floatToBalance: () => undefined,
   intToBalance: () => undefined,
@@ -474,6 +505,9 @@ const initialState = {
   solanaPrice: undefined,
   secBalance: new Balance(0, CurrencyType.security),
   solBalance: new Balance(0, CurrencyType.solTokens),
+  dcBalance: new Balance(0, CurrencyType.dataCredit),
+  dcReceivedBalance: new Balance(0, CurrencyType.dataCredit),
+  dcDelegatedBalance: new Balance(0, CurrencyType.dataCredit),
   toCurrencyString: () => new Promise<string>((resolve) => resolve('')),
   toPreferredCurrencyString: () =>
     new Promise<string>((resolve) => resolve('')),

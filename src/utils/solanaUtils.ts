@@ -53,7 +53,9 @@ import {
   HNT_MINT,
   searchAssets,
   toBN,
+  DC_MINT,
   sendAndConfirmWithRetry,
+  IOT_MINT,
 } from '@helium/spl-utils'
 import { AnchorProvider, BN } from '@coral-xyz/anchor'
 import * as tm from '@helium/treasury-management-sdk'
@@ -63,7 +65,6 @@ import {
 } from '@helium/data-credits-sdk'
 import { getPendingRewards } from '@helium/distributor-oracle'
 import { init } from '@helium/lazy-distributor-sdk'
-import { BONES_PER_HNT } from './heliumUtils'
 import { getKeypair } from '../storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
 import sleep from './sleep'
@@ -76,6 +77,7 @@ import {
 import * as Logger from './logger'
 import { WrappedConnection } from './WrappedConnection'
 import { IOT_LAZY_KEY, Mints, MOBILE_LAZY_KEY } from './constants'
+import { BONES_PER_HNT } from './heliumUtils'
 
 export const SolanaConnection = {
   localnet: new WrappedConnection('http://127.0.0.1:8899'),
@@ -114,6 +116,23 @@ export const solKeypairFromPK = (heliumPK: Buffer) => {
 export const airdrop = (cluster: Cluster, address: string) => {
   const key = new PublicKey(address)
   return getConnection(cluster).requestAirdrop(key, LAMPORTS_PER_SOL)
+}
+
+export const getBalanceFromTokenAccount = async (
+  cluster: Cluster,
+  address: string,
+) => {
+  const account = new PublicKey(address)
+
+  const accountInfo = await getConnection(cluster).getAccountInfo(account)
+
+  if (!accountInfo) {
+    return BigInt(0)
+  }
+
+  const accountData = AccountLayout.decode(accountInfo.data)
+
+  return accountData.amount
 }
 
 export const readHeliumBalances = async (
@@ -603,8 +622,6 @@ export const mintDataCredits = async (
   cluster: Cluster,
   anchorProvider: AnchorProvider,
   hntAmount: number,
-  dcAmount: number,
-  dcMint: PublicKey,
 ) => {
   try {
     const connection = getConnection(cluster)
@@ -615,11 +632,10 @@ export const mintDataCredits = async (
     const tx = await program.methods
       .mintDataCreditsV0({
         hntAmount: new BN(hntAmount * BONES_PER_HNT),
-        dcAmount: new BN(dcAmount),
+        dcAmount: null,
       })
       .accounts({
-        dcMint,
-        recipient: payer,
+        dcMint: DC_MINT,
       })
       .transaction()
 
@@ -665,14 +681,13 @@ export const delegateDataCredits = async (
   anchorProvider: AnchorProvider,
   delegateAddress: string,
   amount: number,
-  mintDao: string,
 ) => {
   try {
     const connection = getConnection(cluster)
     const { publicKey: payer } = anchorProvider.wallet
 
     const program = await dc.init(anchorProvider)
-    const subDao = subDaoKey(new PublicKey(mintDao))[0]
+    const subDao = subDaoKey(IOT_MINT)[0]
 
     const tx = await program.methods
       .delegateDataCreditsV0({
@@ -722,17 +737,11 @@ export const delegateDataCredits = async (
   }
 }
 
-export const getDelegateDataCredits = async (
-  address: string,
-  mintDao: string,
-) => {
+export const getEscrowTokenAccount = (address: string) => {
   try {
-    const subDao = subDaoKey(new PublicKey(mintDao))[0]
+    const subDao = subDaoKey(IOT_MINT)[0]
 
-    const delegatedDataCredits = delegatedDataCreditsKey(
-      subDaoKey(subDao)[0],
-      address,
-    )[0]
+    const delegatedDataCredits = delegatedDataCreditsKey(subDao, address)[0]
     const escrowTokenAccount = escrowAccountKey(delegatedDataCredits)[0]
 
     return escrowTokenAccount

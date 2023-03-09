@@ -1,11 +1,12 @@
 import { lazyDistributorKey } from '@helium/lazy-distributor-sdk'
-import { HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
+import { HNT_MINT, IOT_MINT, MOBILE_MINT, DC_MINT } from '@helium/spl-utils'
 import { PublicKey } from '@solana/web3.js'
 
 export const Mints: Record<string, string> = {
   IOT: IOT_MINT.toBase58(),
   MOBILE: MOBILE_MINT.toBase58(),
   HNT: HNT_MINT.toBase58(),
+  DC: DC_MINT.toBase58(),
 }
 
 export const MOBILE_LAZY_KEY = lazyDistributorKey(

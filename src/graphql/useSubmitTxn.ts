@@ -282,17 +282,9 @@ export default () => {
   )
 
   const submitMintDataCredits = useCallback(
-    async (hntAmount: number, dcAmount: number) => {
-      if (!currentAccount) {
+    async (hntAmount: number) => {
+      if (!currentAccount || !anchorProvider) {
         throw new Error('There must be an account selected to submit a txn')
-      }
-
-      if (!anchorProvider) {
-        throw new Error('There must be an account selected to submit a txn')
-      }
-
-      if (!mints) {
-        throw new Error('Mints not found')
       }
 
       dispatch(
@@ -301,26 +293,16 @@ export default () => {
           anchorProvider,
           cluster,
           hntAmount,
-          dcAmount,
-          mints,
         }),
       )
     },
-    [anchorProvider, cluster, currentAccount, dispatch, mints],
+    [anchorProvider, cluster, currentAccount, dispatch],
   )
 
   const submitDelegateDataCredits = useCallback(
     async (delegateAddress: string, amount: number) => {
-      if (!currentAccount) {
+      if (!currentAccount || !anchorProvider) {
         throw new Error('There must be an account selected to submit a txn')
-      }
-
-      if (!anchorProvider) {
-        throw new Error('There must be an account selected to submit a txn')
-      }
-
-      if (!mints) {
-        throw new Error('Mints not found')
       }
 
       dispatch(
@@ -330,11 +312,10 @@ export default () => {
           cluster,
           delegateAddress,
           amount,
-          mints,
         }),
       )
     },
-    [anchorProvider, cluster, currentAccount, dispatch, mints],
+    [anchorProvider, cluster, currentAccount, dispatch],
   )
 
   return {

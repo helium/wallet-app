@@ -29,6 +29,8 @@ import { fetchHotspots } from './hotspotsSlice'
 type Balances = {
   hntBalance?: bigint
   dcBalance?: bigint
+  dcReceived?: bigint
+  dcDelegated?: bigint
   mobileBalance?: bigint
   iotBalance?: bigint
   secBalance?: bigint
@@ -86,10 +88,15 @@ export const readBalances = createAsyncThunk(
       acct.solanaAddress,
     )
 
+    const dcReceived = await solUtils.getBalanceFromTokenAccount(
+      cluster,
+      solUtils.getEscrowTokenAccount(acct.solanaAddress).toBase58(),
+    )
+
     if (solBalance === 0 && cluster !== 'mainnet-beta') {
       solUtils.airdrop(cluster, acct.solanaAddress)
     }
-    return { ...heliumBals, solBalance }
+    return { ...heliumBals, solBalance, dcReceived }
   },
 )
 
@@ -148,8 +155,6 @@ type MintDataCreditsInput = {
   anchorProvider: AnchorProvider
   cluster: Cluster
   hntAmount: number
-  dcAmount: number
-  mints: Mints
 }
 
 type DelegateDataCreditsInput = {
@@ -158,7 +163,6 @@ type DelegateDataCreditsInput = {
   cluster: Cluster
   delegateAddress: string
   amount: number
-  mints: Mints
 }
 
 export const makePayment = createAsyncThunk(
@@ -272,14 +276,7 @@ export const sendTreasurySwap = createAsyncThunk(
 export const sendMintDataCredits = createAsyncThunk(
   'solana/sendMintDataCredits',
   async (
-    {
-      cluster,
-      anchorProvider,
-      hntAmount,
-      dcAmount,
-      account,
-      mints,
-    }: MintDataCreditsInput,
+    { cluster, anchorProvider, hntAmount, account }: MintDataCreditsInput,
     { dispatch },
   ) => {
     try {
@@ -287,11 +284,9 @@ export const sendMintDataCredits = createAsyncThunk(
         cluster,
         anchorProvider,
         hntAmount,
-        dcAmount,
-        new PublicKey(mints.DC),
       )
 
-      dispatch(readBalances({ cluster, acct: account, mints }))
+      dispatch(readBalances({ cluster, acct: account, mints: Mints }))
 
       return await dispatch(
         walletRestApi.endpoints.postPayment.initiate({
@@ -315,7 +310,6 @@ export const sendDelegateDataCredits = createAsyncThunk(
       amount,
       account,
       delegateAddress,
-      mints,
     }: DelegateDataCreditsInput,
     { dispatch },
   ) => {
@@ -325,10 +319,9 @@ export const sendDelegateDataCredits = createAsyncThunk(
         anchorProvider,
         delegateAddress,
         amount,
-        'iotEVVZLEywoTn1QdwNPddxPWszn3zFhEot3MfL9fns',
       )
 
-      dispatch(readBalances({ cluster, acct: account, mints }))
+      dispatch(readBalances({ cluster, acct: account, mints: Mints }))
 
       return await dispatch(
         walletRestApi.endpoints.postPayment.initiate({
@@ -456,6 +449,7 @@ export const getTxns = createAsyncThunk(
     const { solana } = (await getState()) as {
       solana: SolanaState
     }
+
     const existing = solana.activity.data[account.solanaAddress]?.all?.[ticker]
 
     if (requestType === 'fetch_more') {

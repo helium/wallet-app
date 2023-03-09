@@ -91,7 +91,7 @@ export default ({
 
     if (filter !== 'payment' && filter !== 'all') return []
 
-    return solanaActivity.data[account.solanaAddress][filter][ticker].filter(
+    return solanaActivity.data[account.solanaAddress][filter][ticker]?.filter(
       (txn) => txn.tokenType === ticker,
     )
   }, [account, filter, solanaActivity.data, ticker])
