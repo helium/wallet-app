@@ -1,8 +1,8 @@
 import React, { memo } from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { useOpacity } from '@theme/themeHooks'
 import AddressBook from './AddressBook'
 import AddNewContact from './AddNewContact'
-import { useOpacity } from '../../theme/themeHooks'
 import EditContact from './EditContact'
 import AddressQrScanner from './AddressQrScanner'
 

@@ -3,9 +3,9 @@ import React, { useMemo } from 'react'
 import { StatusBar } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAppState } from '@react-native-community/hooks'
+import { useColors, useColorScheme } from '@theme/themeHooks'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
-import { useColors, useColorScheme } from '../theme/themeHooks'
 import Box from './Box'
 import { useOnboarding } from '../features/onboarding/OnboardingProvider'
 
@@ -34,7 +34,7 @@ const NetworkAwareStatusBar = () => {
     return 'testnet'
   }, [l1Network])
 
-  if (l1Network === 'helium' && !isTestnet)
+  if ((l1Network === 'helium' || l1Network === 'solana') && !isTestnet)
     return (
       <StatusBar
         animated

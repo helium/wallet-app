@@ -2,10 +2,10 @@ import React, { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import Crowdspot from '@assets/images/crowdspot.svg'
 import AddDapp from '@assets/images/addDapp.svg'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { useColors } from '../../theme/themeHooks'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useColors } from '@theme/themeHooks'
 
 type Props = { appName: string; onApprove: () => void; onDeny: () => void }
 const DappConnect = ({ appName, onApprove, onDeny }: Props) => {

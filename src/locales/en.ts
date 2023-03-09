@@ -141,6 +141,16 @@ export default {
     delegatedBalance: '{{amount}} Delegated',
     receivedBalance: '{{amount}} Received',
   },
+  solanaMigrationScreen: {
+    migrationComplete: "You've successfully migrated your tokens!",
+    migrationComplete2: 'Navigate back to your wallet',
+    error: 'Migration failed. Please try again later.',
+    disableSolana: 'Disable Solana Preview',
+    retry: 'Retry',
+    migrating: 'Migrating your wallet to Solana',
+    migratingBody: 'Please wait while we move your wallet over to Solana!',
+    done: 'Return to Home',
+  },
   collectablesScreen: {
     title: 'Collectables',
     metadata: 'Metadata',
@@ -161,6 +171,7 @@ export default {
       'You can exit this screen while you wait. We’ll update your Wallet momentarily.',
     claimComplete: 'Rewards Claimed!',
     claimCompleteBody: 'We’ve added your tokens to your wallet.',
+    claimError: 'Claim failed. Please try again later.',
     transferCollectableAlertTitle:
       'Are you sure you will like to transfer your collectable?',
     transferCollectableAlertBody: 'This action is irreversible.',
@@ -190,6 +201,15 @@ export default {
       addToAccount: 'Add to Account',
       addAllToAccount: 'Add all to account',
       hotspotCount: '{{ count }} Hotspot(s)',
+      chooseAmountOfHotspots: 'Choose amount of hotspots to show per page',
+      filter: 'Filter',
+      currentDisplayedRewards:
+        'The rewards that are currently displayed as pending are only for the hotspots shown. Scroll to load more or click the filter to show more hotspots per page.',
+      showAllHotspotsWarning:
+        'Warning: Load times may be affected when showing all hotspots per page.',
+      twenty: '20',
+      fifty: '50',
+      all: 'All',
     },
   },
   activityScreen: {
@@ -295,6 +315,24 @@ export default {
     swapAlertTitle: 'Are you sure you will like to swap your tokens?',
     swapAlertBody: 'This action is irreversible.',
   },
+  browserScreen: {
+    topPicks: 'Top Picks',
+    myFavorites: 'My Favorites',
+    myFavoritesEmpty:
+      'No favorites yet. Start browsing and add your favorite dApps!',
+    recentlyVisited: 'Recently Visited',
+    recentlyVisitedEmpty: 'No recently visited dApps yet. Start browsing!',
+    connectBullet1: 'View your wallet balance & activity',
+    connectBullet2: 'Request Approval for transactions',
+    connectToWebsitesYouTrust: 'Only connect to websites you trust',
+    estimatedChanges: 'Estimated Changes',
+    unableToSimulate:
+      'Unable to simulate. Make sure you trust this website since approving can lead to loss of funds.',
+    networkFee: 'Network Fee',
+    connect: 'Connect',
+    approve: 'Approve',
+    cancel: 'Cancel',
+  },
   accountTokenList: {
     tokens: 'Tokens',
   },
@@ -306,7 +344,7 @@ export default {
     nonTransferable: 'Non-Transferable',
     payment: 'Payment',
     deposit: 'Deposit',
-    buy: 'Buy',
+    swaps: 'Swap',
     securityTokens: 'Security Tokens',
     send: 'Send',
     stake: 'Stake',
@@ -789,6 +827,7 @@ export default {
     title: 'Settings',
   },
   signHotspot: {
+    burnAmounts: 'Amount To Be Burned',
     elevation: 'Elevation:',
     error: {
       subtitle:

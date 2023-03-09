@@ -15,7 +15,18 @@ const baseConfig = {
     [
       'module-resolver',
       {
-        alias: getAliasesFromTsConfig(),
+        alias: {
+          // This needs to be mirrored in tsconfig.json
+          '@helium/crypto': './node_modules/@helium/crypto-react-native',
+          '@assets': './src/assets',
+          '@components': './src/components',
+          '@constants': './src/constants',
+          '@hooks': './src/hooks',
+          '@theme': './src/theme',
+          '@utils': './src/utils',
+          '@storage': './src/storage',
+          '@types': './src/types',
+        },
         extensions: ['.ios.js', '.android.js', '.js', '.ts', '.tsx', '.json'],
         root: ['./src'],
       },

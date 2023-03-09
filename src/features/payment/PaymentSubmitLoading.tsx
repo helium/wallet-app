@@ -3,11 +3,11 @@ import { StyleSheet } from 'react-native'
 import Video from 'react-native-video'
 import videoSource from '@assets/videos/paymentSent.mp4'
 import { useTranslation } from 'react-i18next'
-import Text from '../../components/Text'
-import Box from '../../components/Box'
-import ActivityIndicator from '../../components/ActivityIndicator'
-import FadeInOut from '../../components/FadeInOut'
-import globalStyles from '../../theme/globalStyles'
+import Text from '@components/Text'
+import Box from '@components/Box'
+import ActivityIndicator from '@components/ActivityIndicator'
+import FadeInOut from '@components/FadeInOut'
+import globalStyles from '@theme/globalStyles'
 
 type Props = {
   onVideoEnd: () => void

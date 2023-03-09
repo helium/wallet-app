@@ -3,11 +3,12 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native'
 import Balance, { CurrencyType, DataCredits } from '@helium/currency'
-import BackButton from '../../components/BackButton'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
-import TextTransform from '../../components/TextTransform'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
+import BackButton from '@components/BackButton'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import TextTransform from '@components/TextTransform'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { encodeMemoString } from '@components/MemoInput'
 import { useVotesQuery, Vote, VoteResult } from '../../generated/graphql'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { VoteNavigatorNavigationProp } from './voteNavigatorTypes'
@@ -17,7 +18,6 @@ import {
   EMPTY_B58_ADDRESS,
   useTransactions,
 } from '../../storage/TransactionProvider'
-import { encodeMemoString } from '../../components/MemoInput'
 
 const VoteList = () => {
   const { t } = useTranslation()

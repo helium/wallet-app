@@ -1,6 +1,6 @@
 import React, { useEffect, memo, useRef, useMemo, useState } from 'react'
 import { Animated, ImageStyle, Image, Platform } from 'react-native'
-import Box from '../../components/Box'
+import Box from '@components/Box'
 
 const AnimatedImage = Animated.createAnimatedComponent(Image)
 

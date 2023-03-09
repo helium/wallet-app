@@ -1,28 +1,32 @@
-import React, { memo, useCallback, useMemo } from 'react'
+import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import IotReward from '@assets/images/iotRewardIcon.svg'
-import MobileReward from '@assets/images/mobileRewardIcon.svg'
 import { Edge } from 'react-native-safe-area-context'
-import { Ticker } from '@helium/currency'
-import RewardBG from '@assets/images/rewardBg.svg'
-import { ReAnimatedBox } from '../../components/AnimatedBox'
-import useHotspots from '../../hooks/useHotspots'
-import BackScreen from '../../components/BackScreen'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
+import BN from 'bn.js'
+import { Transaction } from '@solana/web3.js'
+import { ReAnimatedBox } from '@components/AnimatedBox'
+import useHotspots from '@hooks/useHotspots'
+import BackScreen from '@components/BackScreen'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import ButtonPressable from '@components/ButtonPressable'
+import { DelayedFadeIn } from '@components/FadeInOut'
+import CircleLoader from '@components/CircleLoader'
+import RewardItem from '@components/RewardItem'
+import useSubmitTxn from '../../graphql/useSubmitTxn'
 import { CollectableNavigationProp } from './collectablesTypes'
-import ButtonPressable from '../../components/ButtonPressable'
-import { DelayedFadeIn } from '../../components/FadeInOut'
 
 const ClaimAllRewardsScreen = () => {
+  const { submitClaimAllRewards } = useSubmitTxn()
   const { t } = useTranslation()
   const navigation = useNavigation<CollectableNavigationProp>()
+  const [redeeming, setRedeeming] = useState(false)
+  const [claimError, setClaimError] = useState<string | undefined>()
 
   const {
     hotspots,
-    claimAllIotRewards: { execute: executeIot },
-    claimAllMobileRewards: { execute: executeMobile },
+    createClaimAllIotTxs: { execute: createClaimAllIotTxs },
+    createClaimAllMobileTxs: { execute: createClaimAllMobileTxs },
     pendingIotRewards,
     pendingMobileRewards,
   } = useHotspots()
@@ -38,37 +42,58 @@ const ClaimAllRewardsScreen = () => {
   }, [hotspots.length, t])
 
   const onClaimRewards = useCallback(async () => {
-    navigation.push('ClaimingRewardsScreen')
-    await executeIot()
-    await executeMobile()
-  }, [executeIot, executeMobile, navigation])
+    try {
+      setClaimError(undefined)
+      setRedeeming(true)
 
-  const RewardItem = useCallback((ticker: Ticker, amount: number) => {
-    // add a comma to the amount
-    const amountToText = amount.toLocaleString()
+      const iotTxs =
+        pendingIotRewards && !pendingIotRewards.eq(new BN(0))
+          ? await createClaimAllIotTxs()
+          : undefined
+      const mobileTxns =
+        pendingMobileRewards && !pendingMobileRewards.eq(new BN(0))
+          ? await createClaimAllMobileTxs()
+          : undefined
+      const txs: Transaction[] = []
+
+      if (iotTxs?.length) {
+        txs.push(...iotTxs)
+      }
+
+      if (mobileTxns?.length) {
+        txs.push(...mobileTxns)
+      }
+
+      if (txs.length > 0) {
+        submitClaimAllRewards(txs)
+        navigation.push('ClaimingRewardsScreen')
+      } else {
+        setClaimError(t('collectablesScreen.claimError'))
+      }
+
+      setRedeeming(false)
+    } catch (e) {
+      setClaimError((e as Error).message)
+      setRedeeming(false)
+    }
+  }, [
+    createClaimAllIotTxs,
+    createClaimAllMobileTxs,
+    navigation,
+    submitClaimAllRewards,
+    t,
+    pendingIotRewards,
+    pendingMobileRewards,
+  ])
+
+  const addAllToAccountDisabled = useMemo(() => {
     return (
-      <Box
-        paddingVertical="l"
-        paddingHorizontal="xl"
-        justifyContent="center"
-        alignItems="center"
-        height={197}
-        width={167}
-      >
-        <Box position="absolute" top={0} right={0} bottom={0} left={0}>
-          <RewardBG />
-        </Box>
-
-        {ticker === 'MOBILE' ? <MobileReward /> : <IotReward />}
-        <Text marginTop="xs" variant="h3Medium">
-          {amountToText}
-        </Text>
-        <Text variant="subtitle3" color="secondaryText">
-          {ticker}
-        </Text>
-      </Box>
+      pendingIotRewards &&
+      pendingIotRewards.eq(new BN(0)) &&
+      pendingMobileRewards &&
+      pendingMobileRewards.eq(new BN(0))
     )
-  }, [])
+  }, [pendingIotRewards, pendingMobileRewards])
 
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
 
@@ -95,33 +120,57 @@ const ClaimAllRewardsScreen = () => {
           <Box
             flexGrow={1}
             alignItems="center"
-            justifyContent={
-              pendingMobileRewards > 0 && pendingIotRewards > 0
-                ? 'space-between'
-                : 'center'
-            }
+            justifyContent="center"
             flexDirection="row"
           >
-            {pendingMobileRewards > 0 &&
-              RewardItem('MOBILE', pendingMobileRewards)}
-            {pendingIotRewards > 0 && RewardItem('IOT', pendingIotRewards)}
+            {pendingMobileRewards && pendingMobileRewards.gt(new BN(0)) && (
+              <RewardItem
+                ticker="MOBILE"
+                amount={pendingMobileRewards}
+                marginEnd="s"
+              />
+            )}
+            {pendingIotRewards && pendingIotRewards.gt(new BN(0)) && (
+              <RewardItem
+                ticker="IOT"
+                amount={pendingIotRewards}
+                marginStart="s"
+              />
+            )}
           </Box>
-          <Box flexGrow={2}>
-            <Box flexGrow={1} />
-            <ButtonPressable
-              marginBottom="l"
-              borderRadius="round"
-              backgroundColor="white"
-              backgroundColorOpacityPressed={0.7}
-              backgroundColorDisabled="surfaceSecondary"
-              backgroundColorDisabledOpacity={0.5}
-              titleColorDisabled="secondaryText"
-              title={t('collectablesScreen.hotspots.addAllToAccount')}
-              titleColor="black"
-              marginHorizontal="l"
-              onPress={onClaimRewards}
-            />
-          </Box>
+          {claimError && (
+            <Box>
+              <Text
+                variant="body2"
+                color="red500"
+                marginTop="xl"
+                numberOfLines={2}
+                textAlign="center"
+              >
+                {claimError}
+              </Text>
+            </Box>
+          )}
+          <Box flexGrow={1} />
+          <ButtonPressable
+            marginBottom="l"
+            borderRadius="round"
+            backgroundColor="white"
+            backgroundColorOpacityPressed={0.7}
+            backgroundColorDisabled="surfaceSecondary"
+            backgroundColorDisabledOpacity={0.5}
+            titleColorDisabled="secondaryText"
+            title={t('collectablesScreen.hotspots.addAllToAccount')}
+            titleColor="black"
+            marginHorizontal="l"
+            onPress={onClaimRewards}
+            disabled={addAllToAccountDisabled || redeeming}
+            TrailingComponent={
+              redeeming ? (
+                <CircleLoader loaderSize={20} color="white" />
+              ) : undefined
+            }
+          />
         </Box>
       </BackScreen>
     </ReAnimatedBox>

@@ -5,21 +5,21 @@ import { addMinutes } from 'date-fns'
 import { BoxProps } from '@shopify/restyle'
 import { GestureResponderEvent, ViewStyle } from 'react-native'
 import CarotDown from '@assets/images/triangleDown.svg'
-import ButtonPressAnimation from '../../components/ButtonPressAnimation'
+import ButtonPressAnimation from '@components/ButtonPressAnimation'
+import Text from '@components/Text'
+import FadeInOut from '@components/FadeInOut'
+import useLayoutHeight from '@hooks/useLayoutHeight'
+import Box from '@components/Box'
+import { Theme } from '@theme/theme'
+import TokenPricesTicker from '@components/TokenPricesTicker'
+import { useSpacing } from '@theme/themeHooks'
 import * as AccountUtils from '../../utils/accountUtils'
 import { AccountBalance, AccountData } from '../../generated/graphql'
-import Text from '../../components/Text'
 import { useBalance } from '../../utils/Balance'
-import FadeInOut from '../../components/FadeInOut'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import supportedCurrencies from '../../utils/supportedCurrencies'
 import AccountActionBar from './AccountActionBar'
-import useLayoutHeight from '../../hooks/useLayoutHeight'
-import Box from '../../components/Box'
 import DateModule from '../../utils/DateModule'
-import { Theme } from '../../theme/theme'
-import TokenPricesTicker from '../../components/TokenPricesTicker'
-import { useSpacing } from '../../theme/themeHooks'
 
 type Props = {
   accountData?: AccountData | null
@@ -40,7 +40,7 @@ const AccountView = ({
 
   const { toCurrencyString, networkBalance, networkStakedBalance } =
     useBalance()
-  const { currency } = useAppStorage()
+  const { currency, l1Network } = useAppStorage()
   const [actionBarHeight, setActionBarHeight] = useLayoutHeight()
 
   const accountNetType = useMemo(
@@ -154,6 +154,7 @@ const AccountView = ({
         <FadeInOut>
           <AccountActionBar
             compact
+            hasSwaps={l1Network === 'solana'}
             hasBottomTitle
             onLayout={setActionBarHeight}
           />

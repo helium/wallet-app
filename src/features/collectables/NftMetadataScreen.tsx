@@ -1,11 +1,11 @@
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useRoute } from '@react-navigation/native'
-import BackScreen from '../../components/BackScreen'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
+import BackScreen from '@components/BackScreen'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import SafeAreaBox from '@components/SafeAreaBox'
 import { CollectableStackParamList } from './collectablesTypes'
-import SafeAreaBox from '../../components/SafeAreaBox'
 
 type Route = RouteProp<CollectableStackParamList, 'NftMetadataScreen'>
 

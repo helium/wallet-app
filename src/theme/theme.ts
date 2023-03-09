@@ -106,6 +106,8 @@ const palette = {
   black800: '#1A1C22',
   black850: '#131313',
   black900: '#0E0E0E',
+  black900_9A: '#0000009A',
+
   black: '#000000',
 
   blueBright500: '#009FF9',
@@ -351,6 +353,13 @@ export const theme = createTheme({
       padding: 'm',
       borderRadius: 'xl',
       backgroundColor: 'transparent10',
+    },
+    transparentSmall: {
+      color: 'primaryText',
+      fontSize: 16,
+      padding: 's',
+      paddingHorizontal: 'm',
+      backgroundColor: 'transparent',
     },
   },
 })

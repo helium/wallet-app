@@ -8,11 +8,11 @@ import { Linking } from 'react-native'
 import { formatDistanceToNow, parseISO } from 'date-fns'
 import { useTranslation } from 'react-i18next'
 import Close from '@assets/images/closeModal.svg'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useColors, useHitSlop } from '@theme/themeHooks'
 import useStatusPage from './useStatusPage'
 import { HELIUM_STATUS_URL } from './statusPageTypes'
 import shortLocale from '../../utils/formatDistance'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import { useColors, useHitSlop } from '../../theme/themeHooks'
 
 const onTapStatusBanner = async () => {
   await Linking.openURL(HELIUM_STATUS_URL)

@@ -18,6 +18,7 @@ import authReducer, { name as authSliceName } from './slices/authSlice'
 import hotspotReducer, {
   name as hotspotSliceName,
 } from './slices/hotspotsSlice'
+import browserReducer, { name as browserSliceName } from './slices/browserSlice'
 
 const solanaConfig = {
   key: solanaSliceName,
@@ -42,6 +43,7 @@ const reducer = combineReducers({
   ),
   [appSliceName]: appReducer,
   [hotspotSliceName]: hotspotReducer,
+  [browserSliceName]: browserReducer,
 })
 
 export const rootReducer = (state: RootState, action: AnyAction) => {

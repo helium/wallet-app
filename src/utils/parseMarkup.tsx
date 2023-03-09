@@ -9,9 +9,9 @@ import parse5, {
 } from 'parse5'
 import get from 'lodash/get'
 import isEmpty from 'lodash/isEmpty'
-import Text from '../components/Text'
-import Link from '../components/Link'
-import Bullet from '../components/Bullet'
+import Text from '@components/Text'
+import Link from '@components/Link'
+import Bullet from '@components/Bullet'
 import * as Logger from './logger'
 
 const symbols: Record<string, JSX.Element> = {

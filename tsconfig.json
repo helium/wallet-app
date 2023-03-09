@@ -12,12 +12,20 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "baseUrl": ".",
-    "paths": {
-      "@helium/crypto": ["./node_modules/@helium/crypto-react-native"],
-      "@assets": ["./src/assets"]
-    },
     "resolveJsonModule": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      // This needs to be mirrored in babel.config.js
+      "@helium/crypto": ["./node_modules/@helium/crypto-react-native"],
+      "@assets": ["./src/assets"],
+      "@components/*": ["./src/components/*"],
+      "@constants/*": ["./src/constants/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@theme/*": ["./src/theme/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@storage/*": ["./src/storage/*"],
+      "@types/*": ["./src/types/*"]
+    }
   },
   "exclude": [
     "node_modules",

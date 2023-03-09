@@ -1,9 +1,9 @@
 import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
 import React, { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import AccountIcon from '../../components/AccountIcon'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
+import AccountIcon from '@components/AccountIcon'
+import Box from '@components/Box'
+import Text from '@components/Text'
 import { balanceToString } from '../../utils/Balance'
 import { Payment } from './PaymentItem'
 

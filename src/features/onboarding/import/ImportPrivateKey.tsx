@@ -7,9 +7,12 @@ import RNSodium from 'react-native-sodium'
 import { TESTNET } from '@helium/address/build/NetTypes'
 import { useTranslation } from 'react-i18next'
 import { Buffer } from 'buffer'
-import Text from '../../../components/Text'
-import SafeAreaBox from '../../../components/SafeAreaBox'
-import BackButton from '../../../components/BackButton'
+import Text from '@components/Text'
+import SafeAreaBox from '@components/SafeAreaBox'
+import BackButton from '@components/BackButton'
+import ButtonPressable from '@components/ButtonPressable'
+import Box from '@components/Box'
+import TextInput from '@components/TextInput'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import { RootNavigationProp } from '../../../navigation/rootTypes'
 import { OnboardingStackParamList } from '../onboardingTypes'
@@ -19,9 +22,6 @@ import {
   SecureAccount,
 } from '../../../storage/secureStorage'
 import * as Logger from '../../../utils/logger'
-import ButtonPressable from '../../../components/ButtonPressable'
-import Box from '../../../components/Box'
-import TextInput from '../../../components/TextInput'
 import { useAppStorage } from '../../../storage/AppStorageProvider'
 
 type Route = RouteProp<OnboardingStackParamList, 'ImportPrivateKey'>
@@ -131,11 +131,13 @@ const ImportPrivateKey = () => {
     if (navigation.canGoBack()) {
       navigation.goBack()
     } else if (hasAccounts) {
-      navigation.replace('HomeNavigator')
+      navigation.replace(
+        l1Network === 'helium' ? 'HomeNavigator' : 'TabBarNavigator',
+      )
     } else {
       navigation.replace('OnboardingNavigator')
     }
-  }, [hasAccounts, navigation])
+  }, [hasAccounts, navigation, l1Network])
 
   const onImportAccount = useCallback(() => {
     if (hasAccounts) {

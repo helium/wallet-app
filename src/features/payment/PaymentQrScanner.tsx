@@ -1,11 +1,11 @@
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
-import useHaptic from '../../hooks/useHaptic'
+import useHaptic from '@hooks/useHaptic'
+import useAlert from '@hooks/useAlert'
+import QrScanner from '@components/QrScanner'
 import { parseBurn, parseDelagate, parsePaymentLink } from '../../utils/linking'
-import useAlert from '../../hooks/useAlert'
 import { HomeNavigationProp } from '../home/homeTypes'
-import QrScanner from '../../components/QrScanner'
 
 const PaymentQrScanner = () => {
   const { triggerNotification } = useHaptic()

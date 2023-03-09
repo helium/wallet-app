@@ -1,4 +1,4 @@
-import { Color } from '../../theme/theme'
+import { Color } from '@theme/theme'
 
 const voteAccentColors = [
   'blueRibbon', // from figma

@@ -95,6 +95,7 @@ type PaymentState = {
   networkFee?: Balance<TestNetworkTokens | NetworkTokens | SolTokens>
   dcFee?: Balance<DataCredits>
   accountMobileBalance?: Balance<MobileTokens>
+  accountIotBalance?: Balance<IotTokens>
   accountNetworkBalance?: Balance<TestNetworkTokens | NetworkTokens>
 }
 
@@ -105,6 +106,7 @@ const initialState = (opts: {
   l1Network: L1Network
   oraclePrice?: Balance<USDollars>
   accountMobileBalance?: Balance<MobileTokens>
+  accountIotBalance?: Balance<IotTokens>
   accountNetworkBalance?: Balance<TestNetworkTokens | NetworkTokens>
 }): PaymentState => ({
   error: undefined,
@@ -217,13 +219,21 @@ const recalculate = (payments: Payment[], state: PaymentState) => {
 }
 
 const getAccountBalance = ({
+  accountIotBalance,
   accountMobileBalance,
   accountNetworkBalance,
   currencyType,
-}: PaymentState) =>
-  currencyType.ticker === CurrencyType.mobile.ticker
-    ? accountMobileBalance
-    : accountNetworkBalance
+}: PaymentState) => {
+  if (currencyType.ticker === CurrencyType.iot.ticker) {
+    return accountIotBalance
+  }
+
+  if (currencyType.ticker === CurrencyType.mobile.ticker) {
+    return accountMobileBalance
+  }
+
+  return accountNetworkBalance
+}
 
 function reducer(
   state: PaymentState,
@@ -339,6 +349,7 @@ function reducer(
         payments: newPayments,
         oraclePrice: state.oraclePrice,
         accountMobileBalance: state.accountMobileBalance,
+        accountIotBalance: state.accountIotBalance,
         accountNetworkBalance: state.accountNetworkBalance,
         netType: state.netType,
         l1Network: state.l1Network,
@@ -351,6 +362,7 @@ function reducer(
           currencyType: state.currencyType,
           oraclePrice: state.oraclePrice,
           accountMobileBalance: state.accountMobileBalance,
+          accountIotBalance: state.accountIotBalance,
           accountNetworkBalance: state.accountNetworkBalance,
           netType: state.netType,
           l1Network: state.l1Network,
@@ -410,5 +422,6 @@ export default (opts: {
   currencyType: PaymentCurrencyType
   oraclePrice?: Balance<USDollars>
   accountMobileBalance?: Balance<MobileTokens>
+  accountIotBalance?: Balance<MobileTokens>
   accountNetworkBalance?: Balance<TestNetworkTokens | NetworkTokens>
 }) => useReducer(reducer, initialState(opts))

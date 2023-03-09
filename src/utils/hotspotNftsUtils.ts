@@ -1,28 +1,9 @@
-import * as client from '@helium/distributor-oracle'
-import { LazyDistributor } from '@helium/idls/lib/types/lazy_distributor'
-import { init, lazyDistributorKey } from '@helium/lazy-distributor-sdk'
-import { toNumber } from '@helium/spl-utils'
 import { Program, setProvider } from '@coral-xyz/anchor'
-import { getMint } from '@solana/spl-token'
-import { PublicKey } from '@solana/web3.js'
-import BN from 'bn.js'
+import { LazyDistributor } from '@helium/idls/lib/types/lazy_distributor'
+import { init } from '@helium/lazy-distributor-sdk'
 import { useState } from 'react'
-import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
 import { useAsync } from 'react-async-hook'
-import { Recipient } from '../hooks/useRecipient'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-
-export const Mints: Record<string, string> = {
-  IOT: 'iotEVVZLEywoTn1QdwNPddxPWszn3zFhEot3MfL9fns',
-  HNT: 'hntv1Vf5ZBG777xAHqHUTFS8UZBTNUN22MBnYramPFk',
-  DC: 'dc5Zu977Zan2BFt7iLxCCUoyPvxpxZGYK23d6GYZXq7',
-  MOBILE: 'mb1eaxqRn3VMUuA9MC1hXiNFG7hnJHfF8Cvq7vfYH4y',
-}
-
-export const MOBILE_LAZY_KEY = lazyDistributorKey(
-  new PublicKey(Mints.MOBILE),
-)[0]
-export const IOT_LAZY_KEY = lazyDistributorKey(new PublicKey(Mints.IOT))[0]
 
 export function useProgram() {
   const [program, setProgram] = useState<Program<LazyDistributor> | null>(null)
@@ -36,60 +17,6 @@ export function useProgram() {
   }, [anchorProvider])
 
   return program
-}
-
-export async function getPendingRewards(
-  program: Program<LazyDistributor>,
-  mint: PublicKey,
-  maybeRecipient: Recipient | undefined,
-  lazyKey: PublicKey = MOBILE_LAZY_KEY,
-) {
-  const lazyDistributor = await program.account.lazyDistributorV0.fetch(lazyKey)
-
-  const oracleRewards = await client.getCurrentRewards(
-    // TODO: Fix program type once HPL is upgraded to anchor v0.26
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    program as any,
-    lazyKey,
-    mint,
-  )
-
-  const rewardsMintAcc = await getMint(
-    program.provider.connection,
-    lazyDistributor.rewardsMint,
-  )
-
-  const sortedOracleRewards = oracleRewards
-    .map((rew) => rew.currentRewards)
-    .sort((a, b) => new BN(a).sub(new BN(b)).toNumber())
-
-  const oracleMedian = new BN(
-    sortedOracleRewards[Math.floor(sortedOracleRewards.length / 2)],
-  )
-
-  const subbed = oracleMedian.sub(maybeRecipient?.totalRewards || new BN(0))
-
-  return {
-    pendingRewards: Math.max(toNumber(subbed, rewardsMintAcc.decimals), 0),
-    rewardsMint: lazyDistributor.rewardsMint,
-  }
-}
-
-/**
- * Returns the account's collectables
- * @param pubKey public key of the account
- * @param metaplex metaplex connection
- * @returns hotspot collectables
- */
-export const getHotspotCollectables = async (
-  pubKey: PublicKey,
-  metaplex: Metaplex,
-) => {
-  const collectables = (await metaplex
-    .nfts()
-    .findAllByOwner({ owner: pubKey })) as Metadata<JsonMetadata<string>>[]
-
-  return collectables.filter((c) => c.symbol === 'HOTSPOT')
 }
 
 export const removeDashAndCapitalize = (str: string) => {

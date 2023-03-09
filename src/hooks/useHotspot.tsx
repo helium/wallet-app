@@ -1,82 +1,35 @@
-import { PublicKey } from '@solana/web3.js'
-import { useEffect, useMemo, useState } from 'react'
-import { recipientKey as getRecipientKey } from '@helium/lazy-distributor-sdk'
-import { useAsync, useAsyncCallback } from 'react-async-hook'
 import * as client from '@helium/distributor-oracle'
-import {
-  getPendingRewards,
-  useProgram,
-  MOBILE_LAZY_KEY,
-  IOT_LAZY_KEY,
-} from '../utils/hotspotNftsUtils'
-import { useRecipient } from './useRecipient'
-import * as Logger from '../utils/logger'
+import { PublicKey, Transaction } from '@solana/web3.js'
+import { useEffect, useState } from 'react'
+import { useAsyncCallback } from 'react-async-hook'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import useSubmitTxn from '../graphql/useSubmitTxn'
+import { useAppStorage } from '../storage/AppStorageProvider'
+import { IOT_LAZY_KEY, MOBILE_LAZY_KEY } from '../utils/constants'
+import { useProgram } from '../utils/hotspotNftsUtils'
+import * as Logger from '../utils/logger'
+import { getConnection } from '../utils/solanaUtils'
 
 export function useHotspot(mint: PublicKey): {
   iotRewardsError: Error | undefined
   mobileRewardsError: Error | undefined
-  pendingIotRewards: number | null
-  pendingMobileRewards: number | null
-  claimIotRewards: () => Promise<void>
-  claimMobileRewards: () => Promise<void>
+  createClaimIotTx: () => Promise<Transaction | undefined>
+  createClaimMobileTx: () => Promise<Transaction | undefined>
   iotRewardsLoading: boolean
   mobileRewardsLoading: boolean
 } {
+  const { solanaNetwork: cluster } = useAppStorage()
+  const conn = getConnection(cluster)
+
   const program = useProgram()
-  const [pendingMobileRewards, setPendingMobileRewards] = useState<
-    number | null
-  >(null)
-  const [pendingIotRewards, setPendingIotRewards] = useState<number | null>(
-    null,
-  )
   const [error, setError] = useState<string | null>(null)
-  const recipientMobileKey = useMemo(() => {
-    return getRecipientKey(MOBILE_LAZY_KEY, mint)[0]
-  }, [mint])
-  const recipientIotKey = useMemo(() => {
-    return getRecipientKey(IOT_LAZY_KEY, mint)[0]
-  }, [mint])
-  const { info: mobileRecipient, loading: mobileLoading } =
-    useRecipient(recipientMobileKey)
-  const { info: iotRecipient, loading: iotLoading } =
-    useRecipient(recipientIotKey)
-  const { submitClaimRewards } = useSubmitTxn()
-
-  useAsync(async () => {
-    try {
-      if (program && !mobileLoading) {
-        const { pendingRewards: mobileRewards } = await getPendingRewards(
-          program,
-          mint,
-          mobileRecipient,
-        )
-        setPendingMobileRewards(mobileRewards)
-      }
-
-      if (program && !iotLoading) {
-        const { pendingRewards: iotRewards } = await getPendingRewards(
-          program,
-          mint,
-          iotRecipient,
-        )
-        setPendingIotRewards(iotRewards)
-      }
-    } catch (e) {
-      Logger.error(e)
-    }
-  }, [mint, program])
-
   const { anchorProvider } = useAccountStorage()
 
   const {
     error: mobileRewardsError,
-    execute: claimMobileRewards,
+    execute: createClaimMobileTx,
     loading: mobileRewardsLoading,
   } = useAsyncCallback(async () => {
     if (mint && program && anchorProvider) {
-      if (mobileLoading) return
       const rewards = await client.getCurrentRewards(
         // TODO: Fix program type once HPL is upgraded to anchor v0.26
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -93,24 +46,24 @@ export function useHotspot(mint: PublicKey): {
         rewards,
         hotspot: mint,
         lazyDistributor: MOBILE_LAZY_KEY,
+        assetEndpoint: conn.rpcEndpoint,
       })
 
-      await submitClaimRewards(tx)
+      return tx
     }
   })
 
   const {
     error: iotRewardsError,
-    execute: claimIotRewards,
+    execute: createClaimIotTx,
     loading: iotRewardsLoading,
   } = useAsyncCallback(async () => {
     if (mint && program && anchorProvider) {
-      if (mobileLoading) return
       const rewards = await client.getCurrentRewards(
         // TODO: Fix program type once HPL is upgraded to anchor v0.26
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         program as any,
-        MOBILE_LAZY_KEY,
+        IOT_LAZY_KEY,
         mint,
       )
 
@@ -121,10 +74,11 @@ export function useHotspot(mint: PublicKey): {
         provider: anchorProvider,
         rewards,
         hotspot: mint,
-        lazyDistributor: MOBILE_LAZY_KEY,
+        lazyDistributor: IOT_LAZY_KEY,
+        assetEndpoint: conn.rpcEndpoint,
       })
 
-      await submitClaimRewards(tx)
+      return tx
     }
   })
 
@@ -136,10 +90,8 @@ export function useHotspot(mint: PublicKey): {
   }, [error, mobileRewardsError])
 
   return {
-    pendingIotRewards,
-    pendingMobileRewards,
-    claimMobileRewards,
-    claimIotRewards,
+    createClaimMobileTx,
+    createClaimIotTx,
     mobileRewardsLoading,
     iotRewardsLoading,
     iotRewardsError,

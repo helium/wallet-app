@@ -4,29 +4,75 @@ import {
   BottomTabBarProps,
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs'
-import { Edge } from 'react-native-safe-area-context'
+import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Dollar from '@assets/images/dollar.svg'
 import Gem from '@assets/images/gem.svg'
 import Transactions from '@assets/images/transactions.svg'
 import Notifications from '@assets/images/notifications.svg'
-import NavBar from '../components/NavBar'
-import { Color } from '../theme/theme'
+import { Portal } from '@gorhom/portal'
+import NavBar, { NavBarHeight } from '@components/NavBar'
+import { Color } from '@theme/theme'
+import SafeAreaBox from '@components/SafeAreaBox'
+import Box from '@components/Box'
+import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
+import useHaptic from '@hooks/useHaptic'
+import Globe from '@assets/images/earth-globe.svg'
+import { isBefore, parseISO } from 'date-fns'
+import { useNotificationStorage } from '@storage/NotificationStorageProvider'
+import { useGetNotificationsQuery } from '../store/slices/walletRestApi'
+import { useAppStorage } from '../storage/AppStorageProvider'
+import { useAccountStorage } from '../storage/AccountStorageProvider'
+import SolanaMigration from '../features/migration/SolanaMigration'
 import HomeNavigator from '../features/home/HomeNavigator'
 import CollectablesTabNavigator from '../features/collectables/CollectablesTabNavigator'
 import ActivityNavigator from '../features/activity/ActivityNavigator'
 import NotificationsNavigator from '../features/notifications/NotificationsNavigator'
-import SwapNavigator from '../features/swaps/SwapNavigator'
-import SafeAreaBox from '../components/SafeAreaBox'
-import Box from '../components/Box'
-import useEnrichedTransactions from '../hooks/useEnrichedTransactions'
-import useHaptic from '../hooks/useHaptic'
-import Swaps from '../assets/images/swaps.svg'
+import BrowserNavigator from '../features/browser/BrowserNavigator'
+import { useNotificationsQuery } from '../generated/graphql'
 
 const Tab = createBottomTabNavigator()
 
 function MyTabBar({ state, navigation }: BottomTabBarProps) {
+  const { currentAccount } = useAccountStorage()
   const { hasNewTransactions, resetNewTransactions } = useEnrichedTransactions()
   const { triggerImpact } = useHaptic()
+  const { lastViewedTimestamp } = useNotificationStorage()
+  const { data: v1Notifications } = useNotificationsQuery({
+    variables: {
+      address: currentAccount?.address || '',
+      resource: currentAccount?.address || '',
+    },
+    skip: !currentAccount?.address,
+    fetchPolicy: 'cache-and-network',
+  })
+
+  const { currentData: v2Notifications } = useGetNotificationsQuery(
+    currentAccount?.solanaAddress,
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  )
+
+  const notifications = useMemo(() => {
+    const all = [
+      ...(v2Notifications || []),
+      ...(v1Notifications?.notifications || []),
+    ]
+
+    return all
+      .sort(
+        ({ time: timeA }, { time: timeB }) =>
+          parseISO(timeB).getTime() - parseISO(timeA).getTime(),
+      )
+      .filter((item) => {
+        const viewed =
+          (lastViewedTimestamp &&
+            isBefore(new Date(item.time), new Date(lastViewedTimestamp))) ||
+          !!item.viewedAt
+        return !viewed
+      })
+  }, [v1Notifications, v2Notifications, lastViewedTimestamp])
+
   const tabData = useMemo((): Array<{
     value: string
     Icon: FC<SvgProps>
@@ -41,20 +87,21 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
         iconColor: 'white',
         hasBadge: false,
       },
-      { value: 'swaps', Icon: Swaps, iconColor: 'white' },
       {
         value: 'activity',
         Icon: Transactions,
         iconColor: 'white',
-        hasBadge: hasNewTransactions && state.index !== 3,
+        hasBadge: hasNewTransactions && state.index !== 2,
       },
       {
         value: 'notifications',
         Icon: Notifications,
         iconColor: 'white',
+        hasBadge: notifications.length > 0 && state.index !== 4,
       },
+      { value: 'browser', Icon: Globe, iconColor: 'white' },
     ]
-  }, [hasNewTransactions, state.index])
+  }, [hasNewTransactions, state.index, notifications])
 
   const selectedValue = tabData[state.index].value
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
@@ -108,36 +155,65 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
   )
 
   return (
-    <Box backgroundColor="black900">
-      <SafeAreaBox edges={safeEdges}>
-        <NavBar
-          navBarOptions={tabData}
-          selectedValue={selectedValue}
-          onItemSelected={onPress}
-          onItemLongPress={onLongPress}
-        />
-      </SafeAreaBox>
+    <Box position="absolute" bottom={0} left={0} right={0}>
+      <Box backgroundColor="black900_9A">
+        <SafeAreaBox edges={safeEdges}>
+          <NavBar
+            navBarOptions={tabData}
+            selectedValue={selectedValue}
+            onItemSelected={onPress}
+            onItemLongPress={onLongPress}
+          />
+        </SafeAreaBox>
+      </Box>
     </Box>
   )
 }
 
 const TabBarNavigator = () => {
+  const { doneSolanaMigration, l1Network } = useAppStorage()
+  const { bottom } = useSafeAreaInsets()
+  // // eslint-disable-next-line no-console
+  // if (doneSolanaMigration.size > 0) {
+  //   updateDoneSolanaMigration(new Set<string>())
+  // }
+  const { currentAccount, anchorProvider } = useAccountStorage()
+
   return (
-    <Tab.Navigator
-      tabBar={(props: BottomTabBarProps) => <MyTabBar {...props} />}
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Tab.Screen name="Home" component={HomeNavigator} />
-      <Tab.Screen name="Collectables" component={CollectablesTabNavigator} />
-      <Tab.Screen name="Swaps" component={SwapNavigator} />
-      <Tab.Screen name="Activity" component={ActivityNavigator} />
-      <Tab.Screen
-        name="NotificationsNavigator"
-        component={NotificationsNavigator}
-      />
-    </Tab.Navigator>
+    <>
+      {currentAccount?.solanaAddress &&
+        anchorProvider &&
+        !doneSolanaMigration.has(currentAccount.solanaAddress) && (
+          <Portal>
+            <SolanaMigration
+              position="absolute"
+              top={0}
+              left={0}
+              right={0}
+              bottom={0}
+            />
+          </Portal>
+        )}
+      <Tab.Navigator
+        tabBar={(props: BottomTabBarProps) => <MyTabBar {...props} />}
+        screenOptions={{
+          headerShown: false,
+        }}
+        sceneContainerStyle={{
+          paddingBottom:
+            l1Network === 'solana' ? NavBarHeight + bottom : undefined,
+        }}
+      >
+        <Tab.Screen name="Home" component={HomeNavigator} />
+        <Tab.Screen name="Collectables" component={CollectablesTabNavigator} />
+        <Tab.Screen name="Activity" component={ActivityNavigator} />
+        <Tab.Screen
+          name="NotificationsNavigator"
+          component={NotificationsNavigator}
+        />
+        <Tab.Screen name="Browser" component={BrowserNavigator} />
+      </Tab.Navigator>
+    </>
   )
 }
 

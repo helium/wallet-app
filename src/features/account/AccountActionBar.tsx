@@ -4,13 +4,13 @@ import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent, Animated } from 'react-native'
 import { NetTypes } from '@helium/address'
 import { Ticker } from '@helium/currency'
+import Box from '@components/Box'
+import FabButton from '@components/FabButton'
+import Text from '@components/Text'
 import { useAppStorage } from '../../storage/AppStorageProvider'
-import Box from '../../components/Box'
-import FabButton from '../../components/FabButton'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useVotesQuery } from '../../generated/graphql'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import Text from '../../components/Text'
 
 export type Action =
   | 'send'
@@ -21,6 +21,7 @@ export type Action =
   | '5G'
   | 'buy'
   | 'delegate'
+  | 'swaps'
 
 type Props = {
   ticker?: Ticker
@@ -28,10 +29,10 @@ type Props = {
   compact?: boolean
   maxCompact?: boolean
   hasBottomTitle?: boolean
-  hasBuy?: boolean
   hasSend?: boolean
   hasRequest?: boolean
   hasDelegate?: boolean
+  hasSwaps?: boolean
 }
 
 const AccountActionBar = ({
@@ -40,10 +41,10 @@ const AccountActionBar = ({
   compact,
   maxCompact,
   hasBottomTitle,
-  hasBuy,
   hasSend = true,
   hasRequest = true,
   hasDelegate,
+  hasSwaps,
 }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
@@ -112,11 +113,10 @@ const AccountActionBar = ({
           navigation.navigate('RequestScreen')
           break
         }
-        // TODO: Uncomment when pay is ready
-        // case 'buy': {
-        //   navigation.navigate('BuyNavigator')
-        //   break
-        // }
+        case 'swaps': {
+          navigation.navigate('SwapNavigator')
+          break
+        }
         case 'vote': {
           navigation.navigate('VoteNavigator')
           break
@@ -198,19 +198,19 @@ const AccountActionBar = ({
           )}
         </Box>
       )}
-      {hasBuy && (
+      {hasSwaps && (
         <Box
           marginEnd={fabMargin}
           flexDirection={hasBottomTitle ? 'column' : 'row'}
         >
           <FabButton
-            icon="buy"
+            icon="swaps"
             backgroundColor="orange500"
             backgroundColorOpacity={0.2}
             backgroundColorOpacityPressed={0.4}
             iconColor="orange500"
-            title={compact || maxCompact ? undefined : t('accountView.buy')}
-            onPress={handleAction('buy')}
+            title={compact || maxCompact ? undefined : t('accountView.swaps')}
+            onPress={handleAction('swaps')}
             width={maxCompact ? 47.5 : undefined}
             height={maxCompact ? 47.5 : undefined}
             justifyContent="center"
@@ -223,7 +223,7 @@ const AccountActionBar = ({
                 marginTop="xs"
                 textAlign="center"
               >
-                {t('accountView.buy')}
+                {t('accountView.swaps')}
               </Text>
             </Box>
           )}

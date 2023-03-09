@@ -1,8 +1,9 @@
 import React from 'react'
 import CheckMarkFill from '@assets/images/checkmarkFill.svg'
+import { useColors } from '@theme/themeHooks'
+import { Color } from '@theme/theme'
 import Box from './Box'
 import Text from './Text'
-import { useColors } from '../theme/themeHooks'
 import { TouchableOpacityBoxProps } from './TouchableOpacityBox'
 import TouchableContainer from './TouchableContainer'
 
@@ -12,6 +13,7 @@ export type ListItemProps = {
   SecondaryIcon?: React.ReactNode
   title: string
   subtitle?: string
+  subtitleColor?: Color
   onPress?: () => void
   selected?: boolean
   disabled?: boolean
@@ -24,6 +26,7 @@ const ListItem = ({
   SecondaryIcon,
   title,
   subtitle,
+  subtitleColor,
   onPress,
   selected,
   disabled,
@@ -44,7 +47,7 @@ const ListItem = ({
       alignItems="center"
       flex={1}
       flexDirection="row"
-      height={LIST_ITEM_HEIGHT}
+      paddingVertical="m"
       borderBottomColor="black900"
       borderBottomWidth={hasDivider ? 1 : 0}
       onPress={handlePress}
@@ -52,13 +55,27 @@ const ListItem = ({
       {...rest}
     >
       {Icon && Icon}
-      <Box flexGrow={1} justifyContent="center" marginStart={Icon ? 'm' : 'l'}>
+      <Box
+        flex={1}
+        justifyContent="center"
+        marginStart={Icon ? 'm' : 'l'}
+        marginEnd="m"
+      >
         <Text variant="subtitle2">{title}</Text>
-        {subtitle && <Text>{subtitle}</Text>}
+        {subtitle && (
+          <Text marginTop="xs" color={subtitleColor}>
+            {subtitle}
+          </Text>
+        )}
       </Box>
       <Box marginEnd="l">
         {selected ? (
-          <CheckMarkFill color={colors.white} opacity={disabled ? 0.6 : 1.0} />
+          <CheckMarkFill
+            color={colors.white}
+            opacity={disabled ? 0.6 : 1.0}
+            height={20}
+            width={20}
+          />
         ) : null}
         {SecondaryIcon && SecondaryIcon}
       </Box>

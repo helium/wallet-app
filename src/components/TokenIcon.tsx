@@ -5,7 +5,7 @@ import TokenDC from '@assets/images/tokenDC.svg'
 import TokenSOL from '@assets/images/tokenSolana.svg'
 import TokenIOT from '@assets/images/tokenIOT.svg'
 import { Ticker } from '@helium/currency'
-import { useColors } from '../theme/themeHooks'
+import { useColors } from '@theme/themeHooks'
 import Box from './Box'
 import BackgroundFill from './BackgroundFill'
 

@@ -22,6 +22,7 @@ export enum SecureStorageKeys {
   L1_NETWORK = 'l1Network',
   HIDE_PRIVATE_KEY_ALERT = 'hidePrivateKeyAlert',
   SHOW_NUMERIC_CHANGE = 'showNumericChange',
+  DONE_SOLANA_MIGRATION = 'doneSolanaMigration',
 }
 type SecureStorageKeyTypes = `${SecureStorageKeys}`
 
@@ -92,7 +93,7 @@ export const checkSecureAccount = async (
           {
             text: forceShow
               ? t('generic.cancel')
-              : t('restoreAccount.missingAlert.button3'),
+              : t('restoreAccount.missingAlert.button1'),
             style: forceShow ? 'cancel' : 'destructive',
             onPress: () => {
               if (forceShow) return

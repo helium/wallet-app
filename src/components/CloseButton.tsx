@@ -3,10 +3,10 @@ import React, { memo } from 'react'
 import Close from '@assets/images/closeModal.svg'
 import { GestureResponderEvent, Insets } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
-import { useColors } from '../theme/themeHooks'
+import { useColors } from '@theme/themeHooks'
+import { Theme } from '@theme/theme'
 import IconPressedContainer from './IconPressedContainer'
 import Box from './Box'
-import { Theme } from '../theme/theme'
 
 export type CloseButtonProps = {
   onPress?: ((event: GestureResponderEvent) => void) | null | undefined

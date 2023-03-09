@@ -1,13 +1,13 @@
 import React, { useCallback, memo, useMemo } from 'react'
 import CheckBox from '@react-native-community/checkbox'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
-import Surface from '../../components/Surface'
-import AccountIcon from '../../components/AccountIcon'
-import { useColors } from '../../theme/themeHooks'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import Surface from '@components/Surface'
+import AccountIcon from '@components/AccountIcon'
+import { useColors } from '@theme/themeHooks'
+import { LedgerAccount } from '@hooks/useLedger'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import { ellipsizeAddress, isTestnet } from '../../utils/accountUtils'
-import { LedgerAccount } from '../../hooks/useLedger'
 
 export enum Section {
   NEW_ACCOUNT = 0,

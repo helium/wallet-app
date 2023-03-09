@@ -9,12 +9,14 @@ import OneSignal, { OpenedEvent } from 'react-native-onesignal'
 import Config from 'react-native-config'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import { PortalProvider } from '@gorhom/portal'
+import { PortalHost, PortalProvider } from '@gorhom/portal'
 import * as SplashLib from 'expo-splash-screen'
 import { AccountProvider } from '@helium/helium-react-hooks'
+import { theme, darkThemeColors, lightThemeColors } from '@theme/theme'
+import { useColorScheme } from '@theme/themeHooks'
+import globalStyles from '@theme/globalStyles'
 import useMount from './hooks/useMount'
 import { useApolloClient } from './graphql/useApolloClient'
-import { theme, darkThemeColors, lightThemeColors } from './theme/theme'
 import RootNavigator from './navigation/RootNavigator'
 import { useAccountStorage } from './storage/AccountStorageProvider'
 import LockScreen from './features/lock/LockScreen'
@@ -22,13 +24,11 @@ import SecurityScreen from './features/security/SecurityScreen'
 import OnboardingProvider from './features/onboarding/OnboardingProvider'
 import TransactionProvider from './storage/TransactionProvider'
 import { BalanceProvider } from './utils/Balance'
-import { useColorScheme } from './theme/themeHooks'
 import { linking } from './utils/linking'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
 import NetworkAwareStatusBar from './components/NetworkAwareStatusBar'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
 import { navigationRef } from './navigation/NavigationHelper'
-import globalStyles from './theme/globalStyles'
 import SplashScreen from './components/SplashScreen'
 import SentinelScreen from './components/SentinelScreen'
 import { useAppStorage } from './storage/AppStorageProvider'
@@ -102,7 +102,8 @@ const App = () => {
         <ThemeProvider theme={colorAdaptedTheme}>
           <SplashScreen>
             <PortalProvider>
-              <OnboardingProvider>
+              <PortalHost name="browser-portal" />
+              <OnboardingProvider baseUrl={Config.ONBOARDING_API_URL}>
                 {client && (
                   <ApolloProvider client={client}>
                     <LockScreen>

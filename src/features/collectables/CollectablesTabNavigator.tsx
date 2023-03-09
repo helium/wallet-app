@@ -11,19 +11,19 @@ import { useAnimatedStyle, withSpring } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import Hotspot from '@assets/images/hotspot.svg'
 import NFT from '@assets/images/nft.svg'
+import { ReAnimatedBox } from '@components/AnimatedBox'
+import SafeAreaBox from '@components/SafeAreaBox'
+import { DelayedFadeIn } from '@components/FadeInOut'
+import Text from '@components/Text'
+import Box from '@components/Box'
+import useLayoutHeight from '@hooks/useLayoutHeight'
+import { Font } from '@theme/theme'
+import { useColors } from '@theme/themeHooks'
 import NftsNavigator from './NFTsNavigator'
 import HotspotsNavigator from './HotspotsNavigator'
-import { ReAnimatedBox } from '../../components/AnimatedBox'
-import SafeAreaBox from '../../components/SafeAreaBox'
-import { DelayedFadeIn } from '../../components/FadeInOut'
-import Text from '../../components/Text'
-import { Font } from '../../theme/theme'
-import { useColors } from '../../theme/themeHooks'
-import Box from '../../components/Box'
 import { appSlice } from '../../store/slices/appSlice'
 import { useAppDispatch } from '../../store/store'
 import { RootState } from '../../store/rootReducer'
-import useLayoutHeight from '../../hooks/useLayoutHeight'
 
 const Tab = createMaterialTopTabNavigator()
 
@@ -90,6 +90,7 @@ function CollectablesTabNavigator() {
           position: undefined,
         },
         tabBarIndicatorContainerStyle: {
+          // TODO: Fix this hacky solution
           left: '-13%',
           justifyContent: 'flex-end',
           alignItems: 'center',

@@ -3,6 +3,7 @@ import {
   createNativeStackNavigator,
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack'
+import ConfirmPinScreen from '@components/ConfirmPinScreen'
 import AccountAssignScreen from '../onboarding/AccountAssignScreen'
 import AccountsScreen from '../account/AccountsScreen'
 import PaymentScreen from '../payment/PaymentScreen'
@@ -11,10 +12,9 @@ import SettingsNavigator from '../settings/SettingsNavigator'
 import AddNewContact from '../addressBook/AddNewContact'
 import NotificationsNavigator from '../notifications/NotificationsNavigator'
 import RequestScreen from '../request/RequestScreen'
-import LinkWallet from '../txnDelegatation/LinkWallet'
-import SignHotspot from '../txnDelegatation/SignHotspot'
+import LinkWallet from '../txnDelegation/LinkWallet'
+import SignHotspot from '../txnDelegation/SignHotspot'
 import PaymentQrScanner from '../payment/PaymentQrScanner'
-import ConfirmPinScreen from '../../components/ConfirmPinScreen'
 import AddressQrScanner from '../addressBook/AddressQrScanner'
 import VoteNavigator from '../vote/VoteNavigator'
 import DappLoginScreen from '../dappLogin/DappLoginScreen'
@@ -23,6 +23,7 @@ import AddNewAccountNavigator from './addNewAccount/AddNewAccountNavigator'
 import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
 import BurnScreen from '../burn/BurnScreen'
 import ImportPrivateKey from '../onboarding/import/ImportPrivateKey'
+import SwapNavigator from '../swaps/SwapNavigator'
 
 const HomeStack = createNativeStackNavigator()
 
@@ -72,6 +73,11 @@ const HomeStackScreen = () => {
       <HomeStack.Screen
         name="SettingsNavigator"
         component={SettingsNavigator}
+        options={screenOptions}
+      />
+      <HomeStack.Screen
+        name="SwapNavigator"
+        component={SwapNavigator}
         options={screenOptions}
       />
       <HomeStack.Screen name="AddNewContact" component={AddNewContact} />

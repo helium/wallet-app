@@ -13,11 +13,11 @@ import Lock from '@assets/images/lockClosed.svg'
 import { LayoutChangeEvent } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
 import { format } from 'date-fns'
-import Box from './Box'
+import { useColors } from '@theme/themeHooks'
+import useDisappear from '@hooks/useDisappear'
+import { Theme } from '@theme/theme'
 import Text from './Text'
-import { useColors } from '../theme/themeHooks'
-import useDisappear from '../hooks/useDisappear'
-import { Theme } from '../theme/theme'
+import Box from './Box'
 
 export type TimerRef = {
   start: (duration: number) => void

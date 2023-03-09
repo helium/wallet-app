@@ -1,59 +1,213 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { AnchorProvider } from '@coral-xyz/anchor'
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { Cluster, PublicKey } from '@solana/web3.js'
+import { CompressedNFT } from 'src/types/solana'
 import { CSAccount } from '../../storage/cloudStorage'
-
-export type HotspotDetails = {
-  pendingIotRewards: number
-  pendingMobileRewards: number
-}
+import * as solUtils from '../../utils/solanaUtils'
+import type { HotspotWithPendingRewards } from '../../utils/solanaUtils'
 
 export type WalletHotspots = {
-  hotspots: Record<string, HotspotDetails>
+  hotspots: CompressedNFT[]
+  hotspotsWithMeta: HotspotWithPendingRewards[]
+  loading: boolean
+  fetchingMore: boolean
+  onEndReached: boolean
+  page: number
 }
 
 export type HotspotsState = Record<string, WalletHotspots>
 
 const initialState: HotspotsState = {}
 
+export const fetchHotspots = createAsyncThunk(
+  'hotspots/fetchHotspots',
+  async ({
+    provider,
+    account,
+    cluster,
+    limit,
+  }: {
+    provider: AnchorProvider
+    account: CSAccount
+    cluster: Cluster
+    limit?: number
+  }) => {
+    if (!account.solanaAddress) throw new Error('Solana address missing')
+
+    const pubKey = new PublicKey(account.solanaAddress)
+    const fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
+      pubKey,
+      cluster,
+      1,
+      limit,
+    )
+
+    const hotspotsWithMetadata = await solUtils.getCollectablesMetadata(
+      fetchedHotspots,
+    )
+    const hotspotsWithPendingRewards =
+      await solUtils.annotateWithPendingRewards(provider, hotspotsWithMetadata)
+
+    return {
+      fetchedHotspots,
+      hotspotsWithMetadata: hotspotsWithPendingRewards,
+      page: 1,
+      limit,
+    }
+  },
+)
+
+export const fetchMoreHotspots = createAsyncThunk(
+  'hotspots/fetchMoreHotspots',
+  async ({
+    account,
+    cluster,
+    page = 1,
+    provider,
+    limit,
+  }: {
+    account: CSAccount
+    cluster: Cluster
+    page: number
+    provider: AnchorProvider
+    limit?: number
+  }) => {
+    if (!account.solanaAddress) throw new Error('Solana address missing')
+
+    const pubKey = new PublicKey(account.solanaAddress)
+
+    // TODO: Add pagination
+    const fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
+      pubKey,
+      cluster,
+      page + 1,
+      limit,
+    )
+
+    const hotspotsWithMetadata = await solUtils.getCollectablesMetadata(
+      fetchedHotspots,
+    )
+    const hotspotsWithPendingRewards =
+      await solUtils.annotateWithPendingRewards(provider, hotspotsWithMetadata)
+
+    return {
+      fetchedHotspots,
+      hotspotsWithMetadata: hotspotsWithPendingRewards,
+      page: page + 1,
+      limit,
+    }
+  },
+)
+
 const hotspots = createSlice({
   name: 'hotspots',
   initialState,
   reducers: {
-    updateHotspot: (
-      state,
-      action: PayloadAction<{
-        account: CSAccount
-        hotspotDetails: HotspotDetails & { hotspotId: string }
-      }>,
-    ) => {
-      const { solanaAddress } = action.payload.account
+    resetLoading: (state, action: PayloadAction<{ acct: CSAccount }>) => {
+      const { acct } = action.payload
+      if (!acct.solanaAddress) throw new Error('Solana address missing')
+      const address = acct.solanaAddress
+      state[address] = { ...state[address], loading: false }
+    },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(fetchHotspots.pending, (state, action) => {
+      if (!action.meta.arg?.account.solanaAddress) return state
 
-      if (!solanaAddress) {
-        throw new Error('Solana address missing')
+      const address = action.meta.arg.account.solanaAddress
+      const prev = state[address] || {
+        hotspotsWithMeta: [],
+        hotspots: [],
       }
+      state[address] = {
+        ...prev,
+        loading: true,
+        fetchingMore: false,
+        onEndReached: false,
+      }
+    })
+    builder.addCase(fetchHotspots.fulfilled, (state, action) => {
+      if (!action.meta.arg?.account.solanaAddress) return state
+      const { fetchedHotspots, hotspotsWithMetadata } = action.payload
 
-      const prev = state[solanaAddress] || {
+      const address = action.meta.arg.account.solanaAddress
+      state[address] = {
+        ...state[address],
+        hotspots: fetchedHotspots,
+        hotspotsWithMeta: hotspotsWithMetadata,
+        loading: false,
+        fetchingMore: false,
+        onEndReached: false,
+        page: action.payload.page,
+      }
+    })
+    builder.addCase(fetchHotspots.rejected, (state, action) => {
+      if (!action.meta.arg?.account.solanaAddress) return state
+
+      const address = action.meta.arg.account.solanaAddress
+      const prev = state[address] || {
+        hotspotsWithMeta: [],
         hotspots: {},
       }
-
-      prev.hotspots[action.payload.hotspotDetails.hotspotId] = {
-        pendingIotRewards: action.payload.hotspotDetails.pendingIotRewards,
-        pendingMobileRewards:
-          action.payload.hotspotDetails.pendingMobileRewards,
+      state[address] = {
+        ...prev,
+        loading: false,
+        fetchingMore: false,
+        onEndReached: false,
       }
+    })
+    builder.addCase(fetchMoreHotspots.pending, (state, action) => {
+      if (!action.meta.arg?.account.solanaAddress) return state
 
-      state[solanaAddress] = prev
-    },
-    resetHotspots: (state, action: PayloadAction<CSAccount>) => {
-      const { solanaAddress } = action.payload
-
-      if (!solanaAddress) {
-        throw new Error('Solana address missing')
+      const address = action.meta.arg.account.solanaAddress
+      const prev = state[address] || {
+        hotspotsWithMeta: [],
+        hotspots: [],
       }
-
-      state[solanaAddress] = {
-        hotspots: {},
+      state[address] = {
+        ...prev,
+        loading: true,
+        fetchingMore: true,
+        onEndReached: false,
       }
-    },
+    })
+    builder.addCase(fetchMoreHotspots.fulfilled, (state, action) => {
+      if (!action.meta.arg?.account.solanaAddress) return state
+      const { fetchedHotspots, hotspotsWithMetadata, limit } = action.payload
+
+      const address = action.meta.arg.account.solanaAddress
+      const onEndReached = limit
+        ? Object.keys(hotspotsWithMetadata).length < limit
+        : true
+
+      state[address] = {
+        ...state[address],
+        hotspots: [...state[address].hotspots, ...fetchedHotspots],
+        hotspotsWithMeta: [
+          ...state[address].hotspotsWithMeta,
+          ...hotspotsWithMetadata,
+        ],
+        loading: false,
+        fetchingMore: false,
+        onEndReached,
+        page: action.payload.page,
+      }
+    })
+    builder.addCase(fetchMoreHotspots.rejected, (state, action) => {
+      if (!action.meta.arg?.account.solanaAddress) return state
+
+      const address = action.meta.arg.account.solanaAddress
+      const prev = state[address] || {
+        hotspotsWithMeta: [],
+        hotspots: [],
+      }
+      state[address] = {
+        ...prev,
+        loading: false,
+        fetchingMore: false,
+        onEndReached: false,
+      }
+    })
   },
 })
 

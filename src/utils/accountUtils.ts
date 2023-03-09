@@ -3,6 +3,8 @@ import { CurrencyType, Ticker } from '@helium/currency'
 import Bcrypt from 'bcrypt-react-native'
 import { PublicKey } from '@solana/web3.js'
 import bs58 from 'bs58'
+import { round } from 'lodash'
+import BigNumber from 'bignumber.js'
 
 export type L1Network = 'helium' | 'solana'
 
@@ -124,4 +126,22 @@ export const getJazzSeed = (address: string | undefined) => {
   }
 
   return parseInt(hexVal.slice(-8), 16)
+}
+
+export const formatLargeNumber = (number: BigNumber) => {
+  const BILLION = new BigNumber(1000000000)
+  const MILLION = new BigNumber(1000000)
+  const THOUSAND = new BigNumber(1000)
+
+  if (number.gte(BILLION)) {
+    return [round(number.div(BILLION).toNumber(), 2), 'B'].join('')
+  }
+  if (number.gte(MILLION)) {
+    return [round(number.div(MILLION).toNumber(), 2), 'M'].join('')
+  }
+  if (number.gte(THOUSAND)) {
+    return [round(number.div(THOUSAND).toNumber(), 2), 'K'].join('')
+  }
+
+  return number.toString()
 }

@@ -3,22 +3,18 @@ import DetailArrow from '@assets/images/detailArrow.svg'
 import { Linking } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
-import { ellipsizeAddress } from '../../utils/accountUtils'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import {
-  useColors,
-  useHitSlop,
-  useVerticalHitSlop,
-} from '../../theme/themeHooks'
-import { Color } from '../../theme/theme'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useColors, useHitSlop, useVerticalHitSlop } from '@theme/themeHooks'
+import { Color } from '@theme/theme'
+import useCopyText from '@hooks/useCopyText'
+import useAlert from '@hooks/useAlert'
+import AccountIcon from '@components/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import useCopyText from '../../hooks/useCopyText'
-import useAlert from '../../hooks/useAlert'
 import { AddressBookNavigationProp } from '../addressBook/addressBookTypes'
 import { locale } from '../../utils/i18n'
-import AccountIcon from '../../components/AccountIcon'
+import { ellipsizeAddress } from '../../utils/accountUtils'
 
 type Props = {
   title: string

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { NetTypes } from '@helium/address'
+import { Color } from '@theme/theme'
 import { useAppStorage } from '../storage/AppStorageProvider'
-import { Color } from '../theme/theme'
 
 export default ({
   defaultColor,

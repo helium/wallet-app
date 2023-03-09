@@ -2,30 +2,26 @@ import Balance, { AnyCurrencyType, Ticker } from '@helium/currency'
 import React, { useCallback } from 'react'
 import Arrow from '@assets/images/listItemRight.svg'
 import { useNavigation } from '@react-navigation/native'
-import Box from '../../components/Box'
-import FadeInOut from '../../components/FadeInOut'
-import Text from '../../components/Text'
-import TouchableContainer from '../../components/TouchableContainer'
+import Box from '@components/Box'
+import FadeInOut from '@components/FadeInOut'
+import Text from '@components/Text'
+import TouchableContainer from '@components/TouchableContainer'
+import TokenIcon from '@components/TokenIcon'
+import useHaptic from '@hooks/useHaptic'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
-import TokenIcon from '../../components/TokenIcon'
 import { HomeNavigationProp } from '../home/homeTypes'
-import useHaptic from '../../hooks/useHaptic'
 
 export const ITEM_HEIGHT = 72
 type Props = {
   ticker: Ticker
-  balance: Balance<AnyCurrencyType>
+  balance: Balance<AnyCurrencyType> | number
   staked?: boolean
 }
 const TokenListItem = ({ ticker, balance, staked }: Props) => {
-  const disabled = ticker === 'SOL' || ticker === 'IOT'
   const navigation = useNavigation<HomeNavigationProp>()
   const { triggerImpact } = useHaptic()
 
   const handleNavigation = useCallback(() => {
-    if (ticker === 'SOL') {
-      return
-    }
     triggerImpact('light')
     navigation.navigate('AccountTokenScreen', { tokenType: ticker })
   }, [navigation, ticker, triggerImpact])
@@ -41,7 +37,6 @@ const TokenListItem = ({ ticker, balance, staked }: Props) => {
         paddingVertical="m"
         borderBottomColor="primaryBackground"
         borderBottomWidth={1}
-        disabled={disabled}
       >
         <TokenIcon ticker={ticker} />
         <Box flex={1} paddingHorizontal="m">
@@ -51,14 +46,16 @@ const TokenListItem = ({ ticker, balance, staked }: Props) => {
               color="primaryText"
               maxFontSizeMultiplier={1.3}
             >
-              {balance?.toString(7, { showTicker: false })}
+              {typeof balance === 'number'
+                ? balance
+                : balance?.toString(7, { showTicker: false })}
             </Text>
             <Text
               variant="body2Medium"
               color="secondaryText"
               maxFontSizeMultiplier={1.3}
             >
-              {` ${balance?.type.ticker}${staked ? ' Staked' : ''}`}
+              {` ${ticker}${staked ? ' Staked' : ''}`}
             </Text>
           </Box>
           <AccountTokenCurrencyBalance
@@ -68,7 +65,7 @@ const TokenListItem = ({ ticker, balance, staked }: Props) => {
             staked={staked}
           />
         </Box>
-        {!disabled && <Arrow />}
+        <Arrow />
       </TouchableContainer>
     </FadeInOut>
   )

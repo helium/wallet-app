@@ -1,29 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { init } from '@helium/lazy-distributor-sdk'
 import * as client from '@helium/distributor-oracle'
-import { PublicKey } from '@solana/web3.js'
+import { PublicKey, Transaction } from '@solana/web3.js'
 import { useAsyncCallback } from 'react-async-hook'
 import axios from 'axios'
 import { AddGatewayV1 } from '@helium/transactions'
 import Address from '@helium/address'
 import { Keypair } from '@helium/crypto'
 import { sendAndConfirmWithRetry } from '@helium/spl-utils'
-import Config from 'react-native-config'
+// import Config from 'react-native-config'
+import BN from 'bn.js'
 import { getKeypair } from '../storage/secureStorage'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
 import {
-  fetchCollectables,
-  fetchMoreCollectables,
-} from '../store/slices/collectablesSlice'
+  fetchHotspots,
+  fetchMoreHotspots,
+  hotspots as hotspotsSli,
+} from '../store/slices/hotspotsSlice'
 import { useAppDispatch } from '../store/store'
-import { getConnection } from '../utils/solanaUtils'
+import { getConnection, HotspotWithPendingRewards } from '../utils/solanaUtils'
 import { CompressedNFT } from '../types/solana'
-import { MOBILE_LAZY_KEY, IOT_LAZY_KEY } from '../utils/hotspotNftsUtils'
-import useSubmitTxn from '../graphql/useSubmitTxn'
+import { MOBILE_LAZY_KEY, IOT_LAZY_KEY, Mints } from '../utils/constants'
 import * as Logger from '../utils/logger'
 
 function random(len: number): string {
@@ -33,51 +34,68 @@ function random(len: number): string {
 }
 
 const useHotspots = (): {
+  pendingIotRewards: BN | undefined
+  pendingMobileRewards: BN | undefined
   hotspots: CompressedNFT[]
-  hotspotsWithMeta: CompressedNFT[]
+  hotspotsWithMeta: HotspotWithPendingRewards[]
   loading: boolean
-  refresh: () => void
-  claimAllMobileRewards: {
+  refresh: (limit?: number) => void
+  createClaimAllMobileTxs: {
     loading: boolean
     error: Error | undefined
-    execute: () => Promise<void>
+    execute: () => Promise<Transaction[] | undefined>
   }
-  claimAllIotRewards: {
+  createClaimAllIotTxs: {
     loading: boolean
     error: Error | undefined
-    execute: () => Promise<void>
+    execute: () => Promise<Transaction[] | undefined>
   }
-  pendingIotRewards: number
-  pendingMobileRewards: number
   createHotspot: () => Promise<void>
-  fetchMore: () => void
+  fetchMore: (limit?: number) => void
   fetchingMore: boolean
+  onEndReached: boolean
 } => {
   const { solanaNetwork: cluster, l1Network } = useAppStorage()
   const dispatch = useAppDispatch()
   const { currentAccount, anchorProvider } = useAccountStorage()
-  const collectables = useSelector((state: RootState) => state.collectables)
-  const hotspotsDetails = useSelector((state: RootState) => state.hotspots)
-  const { submitClaimAllRewards } = useSubmitTxn()
+  const hotspotsSlice = useSelector((state: RootState) => state.hotspots)
+  const conn = getConnection(cluster)
 
-  const oldestCollectableId = useMemo(() => {
+  const page = useMemo(() => {
     if (
       !currentAccount?.solanaAddress ||
-      !collectables[currentAccount?.solanaAddress]
+      !hotspotsSlice[currentAccount?.solanaAddress]
     )
-      return ''
-    return collectables[currentAccount?.solanaAddress].oldestCollectableId
-  }, [collectables, currentAccount])
+      return 0
+    return hotspotsSlice[currentAccount?.solanaAddress].page
+  }, [hotspotsSlice, currentAccount])
+
+  const onEndReached = useMemo(() => {
+    if (
+      !currentAccount?.solanaAddress ||
+      !hotspotsSlice[currentAccount?.solanaAddress]
+    )
+      return true
+    return hotspotsSlice[currentAccount?.solanaAddress].onEndReached
+  }, [hotspotsSlice, currentAccount])
+
+  useEffect(() => {
+    if (!currentAccount?.solanaAddress) return
+    // Reset loading on mount
+    dispatch(hotspotsSli.actions.resetLoading({ acct: currentAccount }))
+  }, [currentAccount, dispatch])
 
   const hotspots = useMemo(() => {
     if (!currentAccount?.solanaAddress) return []
 
-    return (
-      collectables[currentAccount?.solanaAddress]?.collectables?.HOTSPOT || []
-    )
-  }, [collectables, currentAccount])
+    return hotspotsSlice[currentAccount?.solanaAddress]?.hotspots || []
+  }, [hotspotsSlice, currentAccount])
 
-  const onClaimAllMobileRewards = async () => {
+  const {
+    execute: createClaimAllMobileTxs,
+    loading: loadingClaimAllMobileTxs,
+    error: errorClaimAllMobileTxs,
+  } = useAsyncCallback(async () => {
     if (!anchorProvider || !currentAccount?.solanaAddress) {
       return
     }
@@ -98,15 +116,20 @@ const useHotspots = (): {
           rewards,
           hotspot: new PublicKey(nft.id),
           lazyDistributor: MOBILE_LAZY_KEY,
+          assetEndpoint: conn.rpcEndpoint,
           wallet,
         })
       }),
     )
 
-    await submitClaimAllRewards(txns)
-  }
+    return txns
+  })
 
-  const onClaimAllIotRewards = async () => {
+  const {
+    execute: createClaimAllIotTxs,
+    loading: loadingClaimAllIotTxs,
+    error: errorClaimAllIotTxs,
+  } = useAsyncCallback(async () => {
     if (!anchorProvider || !currentAccount?.solanaAddress) {
       return
     }
@@ -117,7 +140,7 @@ const useHotspots = (): {
       hotspots.map(async (nft: CompressedNFT) => {
         const rewards = await client.getCurrentRewards(
           program as any,
-          MOBILE_LAZY_KEY,
+          IOT_LAZY_KEY,
           new PublicKey(nft.id),
         )
 
@@ -127,61 +150,78 @@ const useHotspots = (): {
           rewards,
           hotspot: new PublicKey(nft.id),
           lazyDistributor: IOT_LAZY_KEY,
+          assetEndpoint: conn.rpcEndpoint,
           wallet,
         })
       }),
     )
 
-    await submitClaimAllRewards(txns)
-  }
+    return txns
+  })
 
-  const { execute, loading, error } = useAsyncCallback(onClaimAllMobileRewards)
-  const {
-    execute: executeIot,
-    loading: loadingIot,
-    error: errorIot,
-  } = useAsyncCallback(onClaimAllIotRewards)
+  const refresh = useCallback(
+    (limit?) => {
+      if (
+        !anchorProvider ||
+        !currentAccount?.solanaAddress ||
+        l1Network !== 'solana'
+      ) {
+        return
+      }
 
-  const refresh = useCallback(() => {
-    if (!currentAccount?.solanaAddress || l1Network !== 'solana') {
-      return
-    }
-    dispatch(fetchCollectables({ account: currentAccount, cluster }))
-  }, [cluster, currentAccount, dispatch, l1Network])
+      dispatch(
+        fetchHotspots({
+          provider: anchorProvider,
+          account: currentAccount,
+          cluster,
+          limit,
+        }),
+      )
+    },
+    [anchorProvider, cluster, currentAccount, dispatch, l1Network],
+  )
 
   const fetchingMore = useMemo(() => {
     if (
       !currentAccount?.solanaAddress ||
-      !collectables[currentAccount?.solanaAddress]
+      !hotspotsSlice[currentAccount?.solanaAddress]
     )
       return false
 
-    return collectables[currentAccount?.solanaAddress].fetchingMore
-  }, [collectables, currentAccount])
+    return hotspotsSlice[currentAccount?.solanaAddress].fetchingMore
+  }, [hotspotsSlice, currentAccount])
 
-  const fetchMore = useCallback(() => {
-    if (
-      !currentAccount?.solanaAddress ||
-      l1Network !== 'solana' ||
-      collectables[currentAccount?.solanaAddress].loading
-    ) {
-      return
-    }
-    dispatch(
-      fetchMoreCollectables({
-        account: currentAccount,
-        cluster,
-        oldestCollectable: oldestCollectableId,
-      }),
-    )
-  }, [
-    cluster,
-    collectables,
-    currentAccount,
-    dispatch,
-    l1Network,
-    oldestCollectableId,
-  ])
+  const fetchMore = useCallback(
+    (limit?) => {
+      if (
+        !currentAccount?.solanaAddress ||
+        l1Network !== 'solana' ||
+        !anchorProvider ||
+        hotspotsSlice[currentAccount?.solanaAddress].loading
+      ) {
+        return
+      }
+
+      dispatch(
+        fetchMoreHotspots({
+          provider: anchorProvider,
+          account: currentAccount,
+          cluster,
+          page,
+          limit,
+        }),
+      )
+    },
+    [
+      anchorProvider,
+      cluster,
+      hotspotsSlice,
+      currentAccount,
+      dispatch,
+      l1Network,
+      page,
+    ],
+  )
 
   // FOR TESTING ONLY
   const createHotspot = useCallback(async () => {
@@ -196,12 +236,14 @@ const useHotspots = (): {
     const onboardingKey = gateway.address.b58
     // Random maker address
     const maker = Address.fromB58(
-      '13EYmQgDF1ScLxXfugVrFCa3HiJUALwsaLBHJpTsXx1KP6UncH7',
+      '14neTgRNZui1hSiHgE3LXjSfwkPU8BEB192MLXXDFnSY2xKjH51',
     )
+
+    const url = 'https://onboarding.web.test-helium.com/api'
 
     try {
       await axios.post(
-        `${Config.ONBOARDING_SERVER_URL}/v2/hotspots`,
+        `${url}/v3/hotspots`,
         {
           onboardingKey,
           macWlan0: random(10),
@@ -212,7 +254,8 @@ const useHotspots = (): {
         },
         {
           headers: {
-            authorization: Config.ONBOARDING_SERVER_AUTH,
+            authorization:
+              'pk_TgclExRP7rEXAEQlSgrrDwaZUHJAPcw/nNfkEpWOPCk=:sk_E1xc9OVq1/5oKLGD4RzxST7bl+LMnJhalkQ3vZp/QbOjNltvAmHyPolzA0Pb2HyTD68mZp4lETuC19Y+vI72nA=',
           },
         },
       )
@@ -220,27 +263,22 @@ const useHotspots = (): {
       // Sleep for 2 seconds to allow the oracle to create the hotspot
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
-      await axios.get(
-        `${Config.ONBOARDING_SERVER_URL}/v2/hotspots/${onboardingKey}`,
-      )
+      await axios.get(`${url}/v3/hotspots/${onboardingKey}`)
 
       // Sleep for 2 seconds to allow the oracle to create the hotspot
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
-      const result = await axios.post(
-        `${Config.ONBOARDING_SERVER_URL}/v3/transactions/create-hotspot`,
-        {
-          transaction: (
-            await new AddGatewayV1({
-              owner: owner.address,
-              gateway: gateway.address,
-              payer: maker,
-            }).sign({
-              gateway,
-            })
-          ).toString(),
-        },
-      )
+      const result = await axios.post(`${url}/v3/transactions/create-hotspot`, {
+        transaction: (
+          await new AddGatewayV1({
+            owner: owner.address,
+            gateway: gateway.address,
+            payer: maker,
+          }).sign({
+            gateway,
+          })
+        ).toString(),
+      })
 
       const connection = getConnection(cluster)
       // eslint-disable-next-line no-restricted-syntax
@@ -258,87 +296,83 @@ const useHotspots = (): {
     }
   }, [anchorProvider, cluster, currentAccount])
 
-  const pendingIotRewards = useMemo(() => {
-    if (!currentAccount?.solanaAddress) return 0
+  const hotspotsWithMeta = currentAccount?.solanaAddress
+    ? hotspotsSlice[currentAccount?.solanaAddress]?.hotspotsWithMeta
+    : undefined
 
-    let total = 0
-    const walletHotspots = hotspotsDetails[currentAccount?.solanaAddress]
+  const pendingIotRewards = useMemo(
+    () =>
+      hotspotsWithMeta?.reduce((acc, hotspot) => {
+        if (hotspot.pendingRewards) {
+          return acc.add(new BN(hotspot.pendingRewards[Mints.IOT] || '0'))
+        }
 
-    if (!walletHotspots) return 0
+        return acc
+      }, new BN(0)),
+    [hotspotsWithMeta],
+  )
+  const pendingMobileRewards = useMemo(
+    () =>
+      hotspotsWithMeta?.reduce((acc, hotspot) => {
+        if (hotspot.pendingRewards) {
+          return acc.add(new BN(hotspot.pendingRewards[Mints.MOBILE] || '0'))
+        }
 
-    Object.keys(walletHotspots).forEach((hotspot) => {
-      const hotspotDetails = walletHotspots.hotspots[hotspot]
-      total += hotspotDetails?.pendingIotRewards || 0
-    })
-
-    return total
-  }, [hotspotsDetails, currentAccount])
-
-  const pendingMobileRewards = useMemo(() => {
-    if (!currentAccount?.solanaAddress) return 0
-
-    let total = 0
-    const walletHotspots = hotspotsDetails[currentAccount?.solanaAddress]
-
-    if (!walletHotspots) return 0
-
-    Object.keys(walletHotspots).forEach((hotspot) => {
-      const hotspotDetails = walletHotspots.hotspots[hotspot]
-      total += hotspotDetails?.pendingMobileRewards || 0
-    })
-
-    return total
-  }, [hotspotsDetails, currentAccount])
+        return acc
+      }, new BN(0)),
+    [hotspotsWithMeta],
+  )
 
   if (
     !currentAccount?.solanaAddress ||
-    !collectables[currentAccount?.solanaAddress]
+    !hotspotsSlice[currentAccount?.solanaAddress]
   ) {
     return {
+      pendingIotRewards,
+      pendingMobileRewards,
       loading: false,
       hotspots: [],
       hotspotsWithMeta: [],
       refresh,
-      claimAllMobileRewards: {
-        execute,
-        error,
-        loading,
+      createClaimAllMobileTxs: {
+        execute: createClaimAllMobileTxs,
+        loading: loadingClaimAllMobileTxs,
+        error: errorClaimAllMobileTxs,
       },
-      claimAllIotRewards: {
-        execute: executeIot,
-        error: errorIot,
-        loading: loadingIot,
+      createClaimAllIotTxs: {
+        execute: createClaimAllIotTxs,
+        loading: loadingClaimAllIotTxs,
+        error: errorClaimAllIotTxs,
       },
-      pendingIotRewards,
-      pendingMobileRewards,
       createHotspot,
       fetchMore,
       fetchingMore,
+      onEndReached,
     }
   }
 
   return {
-    hotspots,
-    hotspotsWithMeta:
-      collectables[currentAccount?.solanaAddress]?.collectablesWithMeta
-        ?.HOTSPOT || [],
-    loading: collectables[currentAccount?.solanaAddress].loading,
-    refresh,
-    claimAllMobileRewards: {
-      execute,
-      error,
-      loading,
-    },
-    claimAllIotRewards: {
-      execute: executeIot,
-      error: errorIot,
-      loading: loadingIot,
-    },
     pendingIotRewards,
     pendingMobileRewards,
+    hotspots,
+    hotspotsWithMeta:
+      hotspotsSlice[currentAccount?.solanaAddress]?.hotspotsWithMeta,
+    loading: hotspotsSlice[currentAccount?.solanaAddress].loading,
+    refresh,
+    createClaimAllMobileTxs: {
+      execute: createClaimAllMobileTxs,
+      loading: loadingClaimAllMobileTxs,
+      error: errorClaimAllMobileTxs,
+    },
+    createClaimAllIotTxs: {
+      execute: createClaimAllIotTxs,
+      loading: loadingClaimAllIotTxs,
+      error: errorClaimAllIotTxs,
+    },
     createHotspot,
     fetchMore,
     fetchingMore,
+    onEndReached,
   }
 }
 export default useHotspots

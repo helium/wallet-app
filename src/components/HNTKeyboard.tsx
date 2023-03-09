@@ -30,7 +30,9 @@ import { BoxProps } from '@shopify/restyle'
 import { floor } from 'lodash'
 import { differenceInMilliseconds } from 'date-fns'
 import { Portal } from '@gorhom/portal'
-import { useOpacity, useSafeTopPaddingStyle } from '../theme/themeHooks'
+import { useOpacity, useSafeTopPaddingStyle } from '@theme/themeHooks'
+import { Theme } from '@theme/theme'
+import useBackHandler from '@hooks/useBackHandler'
 import Keypad from './Keypad'
 import Box from './Box'
 import Text from './Text'
@@ -46,9 +48,7 @@ import { KeypadInput } from './KeypadButton'
 import { decimalSeparator, groupSeparator, locale } from '../utils/i18n'
 import BackgroundFill from './BackgroundFill'
 import HandleBasic from './HandleBasic'
-import { Theme } from '../theme/theme'
 import { CSAccount } from '../storage/cloudStorage'
-import useBackHandler from '../hooks/useBackHandler'
 import { Payment } from '../features/payment/PaymentItem'
 import { useAppStorage } from '../storage/AppStorageProvider'
 
@@ -131,6 +131,10 @@ const HNTKeyboardSelector = forwardRef(
       }
     }, [dcBalance, iotBalance, mobileBalance, networkBalance, ticker])
 
+    const isDntToken = useMemo(() => {
+      return l1Network === 'solana' && (ticker === 'IOT' || ticker === 'MOBILE')
+    }, [l1Network, ticker])
+
     const balanceForTicker = useMemo(
       () => (ticker === 'HNT' ? networkBalance : getHeliumBalance),
       [getHeliumBalance, networkBalance, ticker],
@@ -185,8 +189,11 @@ const HNTKeyboardSelector = forwardRef(
       if (!valueString.includes('.')) return false
 
       const [, decimals] = valueString.split('.')
-      return decimals.length >= valueAsBalance?.type.decimalPlaces.toNumber()
-    }, [value, valueAsBalance])
+      return (
+        decimals.length >=
+        (isDntToken ? 6 : valueAsBalance?.type.decimalPlaces.toNumber())
+      )
+    }, [value, valueAsBalance, isDntToken])
 
     const getNextPayments = useCallback(() => {
       if (payments && paymentIndex !== undefined) {
@@ -264,11 +271,9 @@ const HNTKeyboardSelector = forwardRef(
         maxBalance = bonesToBalance(0, ticker)
       }
 
-      if (maxBalance.integerBalance < 0 && ticker === 'DC') {
-        maxBalance = new Balance(0, CurrencyType.dataCredit)
-      }
-
-      const decimalPlaces = maxBalance.type.decimalPlaces.toNumber()
+      const decimalPlaces = isDntToken
+        ? 6
+        : maxBalance.type.decimalPlaces.toNumber()
 
       const val = floor(maxBalance.floatBalance, decimalPlaces)
         .toLocaleString(locale, {
@@ -279,6 +284,7 @@ const HNTKeyboardSelector = forwardRef(
       setValue(maxEnabled ? '0' : val)
       setMaxEnabled((m) => !m)
     }, [
+      isDntToken,
       networkBalance,
       getHeliumBalance,
       networkFee,

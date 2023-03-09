@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
-import Text from '../../components/Text'
-import PinDisplay from '../../components/PinDisplay'
-import Keypad from '../../components/Keypad'
-import Box from '../../components/Box'
+import Text from '@components/Text'
+import PinDisplay from '@components/PinDisplay'
+import Keypad from '@components/Keypad'
+import Box from '@components/Box'
+import { KeypadInput } from '@components/KeypadButton'
 import { SettingsNavigationProp } from './settingsTypes'
-import { KeypadInput } from '../../components/KeypadButton'
 
 const SettingsCreatePinScreen = () => {
   const { t } = useTranslation()

@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next'
 import Check from '@assets/images/checkmark.svg'
 import { LayoutChangeEvent } from 'react-native'
 import InfoError from '@assets/images/infoError.svg'
-import Box from '../../components/Box'
-import Text from '../../components/Text'
-import { useColors } from '../../theme/themeHooks'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import { useColors } from '@theme/themeHooks'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
 
 type Props = {
   onLayout?: (event: LayoutChangeEvent) => void

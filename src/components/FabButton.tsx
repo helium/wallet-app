@@ -18,9 +18,9 @@ import Vote from '@assets/images/vote-thumbs.svg'
 import Close from '@assets/images/close.svg'
 import Dots from '@assets/images/dots.svg'
 import Filter from '@assets/images/filter.svg'
-import Buy from '@assets/images/buy.svg'
-import { Color, FontWeight, Theme } from '../theme/theme'
-import { useColors, useCreateOpacity } from '../theme/themeHooks'
+import { Color, FontWeight, Theme } from '@theme/theme'
+import { useColors, useCreateOpacity } from '@theme/themeHooks'
+import Swaps from '@assets/images/swaps.svg'
 import Box from './Box'
 import Text from './Text'
 import ButtonPressAnimation from './ButtonPressAnimation'
@@ -38,7 +38,7 @@ type IconName =
   | 'close'
   | 'dots'
   | 'filter'
-  | 'buy'
+  | 'swaps'
 
 type Props = BoxProps<Theme> & {
   backgroundColor?: Color
@@ -264,8 +264,8 @@ const FabIcon = ({ icon, pressed, color, colorPressed }: IconProps) => {
       return <Close color={getIconColor()} />
     case 'filter':
       return <Filter color={getIconColor()} />
-    case 'buy':
-      return <Buy color={getIconColor()} />
+    case 'swaps':
+      return <Swaps color={getIconColor()} />
     default:
     case 'dots':
       return <Dots color={getIconColor()} />

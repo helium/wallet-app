@@ -20,9 +20,11 @@ import {
   ComputeBudgetProgram,
   AccountMeta,
   SignatureResult,
+  ParsedTransactionWithMeta,
+  ParsedInstruction,
 } from '@solana/web3.js'
 import * as dc from '@helium/data-credits-sdk'
-import { subDaoKey } from '@helium/helium-sub-daos-sdk'
+import { subDaoKey, daoKey } from '@helium/helium-sub-daos-sdk'
 import {
   TOKEN_PROGRAM_ID,
   AccountLayout,
@@ -31,6 +33,7 @@ import {
   getAssociatedTokenAddress,
   getMint,
 } from '@solana/spl-token'
+import { entityCreatorKey } from '@helium/helium-entity-manager-sdk'
 import Balance, { AnyCurrencyType } from '@helium/currency'
 import { Metaplex } from '@metaplex-foundation/js'
 import axios from 'axios'
@@ -46,33 +49,40 @@ import {
   SPL_NOOP_PROGRAM_ID,
 } from '@solana/spl-account-compression'
 import bs58 from 'bs58'
-import { toBN } from '@helium/spl-utils'
+import {
+  HNT_MINT,
+  searchAssets,
+  toBN,
+  sendAndConfirmWithRetry,
+} from '@helium/spl-utils'
 import { AnchorProvider, BN } from '@coral-xyz/anchor'
 import * as tm from '@helium/treasury-management-sdk'
 import {
   delegatedDataCreditsKey,
   escrowAccountKey,
 } from '@helium/data-credits-sdk'
+import { getPendingRewards } from '@helium/distributor-oracle'
+import { init } from '@helium/lazy-distributor-sdk'
 import { BONES_PER_HNT } from './heliumUtils'
 import { getKeypair } from '../storage/secureStorage'
-import solInstructionsToActivity from './solInstructionsToActivity'
-import { Activity } from '../types/activity'
+import { Activity, Payment } from '../types/activity'
 import sleep from './sleep'
 import {
   Collectable,
   CompressedNFT,
   EnrichedTransaction,
+  mintToTicker,
 } from '../types/solana'
 import * as Logger from './logger'
 import { WrappedConnection } from './WrappedConnection'
-import { Mints } from '../store/slices/walletRestApi'
+import { IOT_LAZY_KEY, Mints, MOBILE_LAZY_KEY } from './constants'
 
 export const SolanaConnection = {
   localnet: new WrappedConnection('http://127.0.0.1:8899'),
-  devnet: new WrappedConnection('https://rpc-devnet.aws.metaplex.com/'),
-  devnetNonAssetApi: new Connection(clusterApiUrl('devnet')),
+  devnet: new WrappedConnection(
+    `https://rpc-devnet.helius.xyz/?api-key=${Config.HELIUS_API_KEY}`,
+  ),
   testnet: new WrappedConnection(clusterApiUrl('testnet')),
-  testnetNonAssetApi: new Connection(clusterApiUrl('testnet')),
   'mainnet-beta': new WrappedConnection(clusterApiUrl('mainnet-beta')),
 } as const
 
@@ -85,14 +95,7 @@ export const confirmTransaction = async (
   blockhash: string,
   lastValidBlockHeight: number,
 ): Promise<SignatureResult> => {
-  let conn: WrappedConnection | Connection = getConnection(cluster)
-  if (cluster === 'devnet') {
-    conn = SolanaConnection.devnetNonAssetApi
-  }
-
-  if (cluster === 'testnet') {
-    conn = SolanaConnection.testnetNonAssetApi
-  }
+  const conn: WrappedConnection = getConnection(cluster)
 
   const confirmation = await conn.confirmTransaction(
     { signature, blockhash, lastValidBlockHeight },
@@ -116,7 +119,7 @@ export const airdrop = (cluster: Cluster, address: string) => {
 export const readHeliumBalances = async (
   cluster: Cluster,
   address: string,
-  mints: Mints,
+  mints: typeof Mints,
 ) => {
   const account = new PublicKey(address)
 
@@ -294,7 +297,7 @@ export const getTransactions = async (
   cluster: Cluster,
   walletAddress: string,
   mintAddress: string,
-  mints: Mints,
+  mints: typeof Mints,
   options?: SignaturesForAddressOptions,
 ) => {
   const ata = await getAssocTokenAddress(walletAddress, mintAddress)
@@ -322,13 +325,8 @@ export const onAccountChange = (
   callback: (address: string) => void,
 ) => {
   const account = new PublicKey(address)
-  let conn: WrappedConnection | Connection = getConnection(cluster)
-  if (cluster === 'devnet') {
-    conn = SolanaConnection.devnetNonAssetApi
-  }
-  if (cluster === 'testnet') {
-    conn = SolanaConnection.testnetNonAssetApi
-  }
+  const conn: WrappedConnection | Connection = getConnection(cluster)
+
   return conn.onAccountChange(account, () => {
     callback(address)
   })
@@ -340,13 +338,8 @@ export const onLogs = (
   callback: (address: string, log: Logs) => void,
 ) => {
   const account = new PublicKey(address)
-  let conn: WrappedConnection | Connection = getConnection(cluster)
-  if (cluster === 'devnet') {
-    conn = SolanaConnection.devnetNonAssetApi
-  }
-  if (cluster === 'testnet') {
-    conn = SolanaConnection.testnetNonAssetApi
-  }
+  const conn: WrappedConnection = getConnection(cluster)
+
   return conn.onLogs(
     account,
     (log) => {
@@ -357,13 +350,8 @@ export const onLogs = (
 }
 
 export const removeAccountChangeListener = (cluster: Cluster, id: number) => {
-  let conn: WrappedConnection | Connection = getConnection(cluster)
-  if (cluster === 'devnet') {
-    conn = SolanaConnection.devnetNonAssetApi
-  }
-  if (cluster === 'testnet') {
-    conn = SolanaConnection.testnetNonAssetApi
-  }
+  const conn: WrappedConnection = getConnection(cluster)
+
   return conn.removeAccountChangeListener(id)
 }
 
@@ -943,7 +931,6 @@ export const transferCompressedCollectable = async (
  * @param pubKey public key of the account
  * @param oldestCollectable starting point for the query
  * @returns collectables
- * TODO: Need to add pagination via oldest collectable param in collectables slice
  */
 export const getCompressedCollectables = async (
   pubKey: PublicKey,
@@ -963,6 +950,26 @@ export const getCompressedCollectables = async (
   return items as CompressedNFT[]
 }
 
+export const getCompressedCollectablesByCreator = async (
+  pubKey: PublicKey,
+  cluster: Cluster,
+  page?: number,
+  limit?: number,
+) => {
+  const conn = getConnection(cluster)
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const items = await searchAssets(conn.rpcEndpoint, {
+    ownerAddress: pubKey.toBase58(),
+    creatorVerified: true,
+    creatorAddress: entityCreatorKey(daoKey(HNT_MINT)[0])[0].toBase58(),
+    page,
+    limit,
+  })
+
+  return items as unknown as CompressedNFT[]
+}
+
 /**
  * Returns the account's collectables with metadata
  * @param collectables collectables without metadata
@@ -971,7 +978,7 @@ export const getCompressedCollectables = async (
  */
 export const getCollectablesMetadata = async (
   collectables: CompressedNFT[],
-) => {
+): Promise<CompressedNFT[]> => {
   const collectablesWithMetadata = await Promise.all(
     collectables.map(async (col) => {
       try {
@@ -993,6 +1000,44 @@ export const getCollectablesMetadata = async (
   )
 
   return collectablesWithMetadata.filter((c) => c !== null) as CompressedNFT[]
+}
+
+export type HotspotWithPendingRewards = CompressedNFT & {
+  // mint id to pending rewards
+  pendingRewards: Record<string, string> | undefined
+}
+
+export async function annotateWithPendingRewards(
+  provider: AnchorProvider,
+  hotspots: CompressedNFT[],
+): Promise<HotspotWithPendingRewards[]> {
+  const program = await init(provider)
+  const dao = daoKey(new PublicKey(Mints.HNT))[0]
+  const entityKeys = hotspots.map(
+    (h) => h.content.json_uri.split('/').slice(-1)[0],
+  )
+  const mobileRewards = await getPendingRewards(
+    program,
+    MOBILE_LAZY_KEY,
+    dao,
+    entityKeys,
+  )
+  const iotRewards = await getPendingRewards(
+    program,
+    IOT_LAZY_KEY,
+    dao,
+    entityKeys,
+  )
+
+  return hotspots.map((hotspot, index) => {
+    const hotspotWithMeta: HotspotWithPendingRewards =
+      hotspot as HotspotWithPendingRewards
+    hotspotWithMeta.pendingRewards = {
+      [Mints.MOBILE]: mobileRewards[entityKeys[index]],
+      [Mints.IOT]: iotRewards[entityKeys[index]],
+    }
+    return hotspotWithMeta
+  })
 }
 
 /**
@@ -1285,4 +1330,91 @@ export async function createTreasurySwapMessage(
     Logger.error(e)
     throw e as Error
   }
+}
+
+export const solInstructionsToActivity = (
+  parsedTxn: ParsedTransactionWithMeta | null,
+  signature: string,
+  mints: typeof Mints,
+) => {
+  if (!parsedTxn) return
+
+  const activity: Activity = { hash: signature, type: 'unknown' }
+
+  const { transaction, slot, blockTime, meta } = parsedTxn
+
+  activity.fee = meta?.fee
+  activity.height = slot
+
+  if (blockTime) {
+    activity.time = blockTime
+  }
+
+  if (meta?.preTokenBalances && meta.postTokenBalances) {
+    const { preTokenBalances, postTokenBalances } = meta
+    let payments = [] as Payment[]
+    postTokenBalances.forEach((post) => {
+      const preBalance = preTokenBalances.find(
+        ({ accountIndex }) => accountIndex === post.accountIndex,
+      )
+      const pre = preBalance || { uiTokenAmount: { amount: '0' } }
+      const preAmount = parseInt(pre.uiTokenAmount.amount, 10)
+      const postAmount = parseInt(post.uiTokenAmount.amount, 10)
+      const amount = postAmount - preAmount
+      if (amount < 0) {
+        // is payer
+        activity.payer = post.owner
+        activity.tokenType = mintToTicker(post.mint, mints)
+        activity.amount = -1 * amount
+      } else {
+        // is payee
+        const p: Payment = {
+          amount,
+          payee: post.owner || '',
+          tokenType: mintToTicker(post.mint, mints),
+        }
+        payments = [...payments, p]
+      }
+    })
+    activity.payments = payments
+  }
+
+  const transfer = transaction.message.instructions.find((i) => {
+    const instruction = i as ParsedInstruction
+    return instruction?.parsed?.type === 'transferChecked'
+  }) as ParsedInstruction
+
+  if (transfer) {
+    // We have a payment
+    activity.type = 'payment_v2'
+  }
+
+  if (activity.type === 'unknown') return
+
+  const payment = activity.payments?.[0]
+  if (payment && payment.tokenType === 'DC') {
+    activity.type = payment.payee !== activity.payer ? 'dc_delegate' : 'dc_mint'
+    activity.amount = payment.amount
+    activity.tokenType = 'DC'
+  }
+
+  return activity
+}
+
+export const submitSolana = async ({
+  txn,
+  cluster,
+}: {
+  txn: Buffer
+  cluster: Cluster
+}) => {
+  const conn = getConnection(cluster)
+  const { txid } = await sendAndConfirmWithRetry(
+    conn,
+    txn,
+    { skipPreflight: true },
+    'confirmed',
+  )
+
+  return txid
 }

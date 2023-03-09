@@ -8,17 +8,17 @@ import Close from '@assets/images/close.svg'
 import { useAsync } from 'react-async-hook'
 import LedgerBurnModal, {
   LedgerBurnModalRef,
-} from '../../components/LedgerBurnModal'
-import { encodeMemoString } from '../../components/MemoInput'
-import SafeAreaBox from '../../components/SafeAreaBox'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
+} from '@components/LedgerBurnModal'
+import { encodeMemoString } from '@components/MemoInput'
+import SafeAreaBox from '@components/SafeAreaBox'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useColors } from '@theme/themeHooks'
+import useAlert from '@hooks/useAlert'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import {
   EMPTY_B58_ADDRESS,
   useTransactions,
 } from '../../storage/TransactionProvider'
-import { useColors } from '../../theme/themeHooks'
-import useAlert from '../../hooks/useAlert'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import { useWalletConnect } from './WalletConnectProvider'
 import DappConnect from './DappConnect'

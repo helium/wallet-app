@@ -1,9 +1,9 @@
 import React, { memo, useCallback } from 'react'
 import { BoxProps } from '@shopify/restyle'
-import useHaptic from '../hooks/useHaptic'
+import useHaptic from '@hooks/useHaptic'
+import { Theme } from '@theme/theme'
 import Box from './Box'
 import KeypadButton, { KeypadCustomInput, KeypadInput } from './KeypadButton'
-import { Theme } from '../theme/theme'
 
 type Props = {
   onPress?: (value?: KeypadInput) => void

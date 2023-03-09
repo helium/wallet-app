@@ -4,17 +4,17 @@ import * as LocalAuthentication from 'expo-local-authentication'
 import useAppState from 'react-native-appstate-hook'
 import { useAsync } from 'react-async-hook'
 import { FadeIn, FadeOutDown } from 'react-native-reanimated'
-import ConfirmPinView from '../../components/ConfirmPinView'
+import ConfirmPinView from '@components/ConfirmPinView'
+import useAlert from '@hooks/useAlert'
+import usePrevious from '@hooks/usePrevious'
+import { ReAnimatedBox } from '@components/AnimatedBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import useAlert from '../../hooks/useAlert'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import {
   deleteSecureItem,
   getSecureItem,
   storeSecureItem,
 } from '../../storage/secureStorage'
-import usePrevious from '../../hooks/usePrevious'
-import { ReAnimatedBox } from '../../components/AnimatedBox'
 
 type Props = { children: React.ReactNode }
 const LockScreen = ({ children }: Props) => {

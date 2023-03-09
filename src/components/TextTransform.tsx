@@ -2,8 +2,8 @@
 import React, { useMemo } from 'react'
 import { Trans } from 'react-i18next'
 import { ResponsiveValue, TextProps } from '@shopify/restyle'
+import { TextVariant, Theme } from '@theme/theme'
 import Text from './Text'
-import { TextVariant, Theme } from '../theme/theme'
 
 const getComponents = (variant?: ResponsiveValue<TextVariant, Theme>) => ({
   b: <Text fontWeight="700" variant={variant} />,

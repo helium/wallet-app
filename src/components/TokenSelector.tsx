@@ -18,15 +18,16 @@ import {
 import { BoxProps } from '@shopify/restyle'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenHNT from '@assets/images/tokenHNT.svg'
+import TokenIOT from '@assets/images/tokenIOT.svg'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ticker } from '@helium/currency'
-import { useColors, useOpacity } from '../theme/themeHooks'
-import { Theme } from '../theme/theme'
+import { useColors, useOpacity } from '@theme/themeHooks'
+import { Theme } from '@theme/theme'
+import useBackHandler from '@hooks/useBackHandler'
 import Box from './Box'
-import useBackHandler from '../hooks/useBackHandler'
 import ListItem, { LIST_ITEM_HEIGHT } from './ListItem'
 
-type TokenListItem = {
+export type TokenListItem = {
   label: string
   icon: ReactNode
   value: Ticker
@@ -38,16 +39,19 @@ export type TokenSelectorRef = {
 type Props = {
   children: ReactNode
   onTokenSelected: (type: Ticker) => void
+  tokenData?: TokenListItem[]
 } & BoxProps<Theme>
 const TokenSelector = forwardRef(
   (
-    { children, onTokenSelected, ...boxProps }: Props,
+    { children, onTokenSelected, tokenData, ...boxProps }: Props,
     ref: Ref<TokenSelectorRef>,
   ) => {
     useImperativeHandle(ref, () => ({ showTokens }))
 
     const { bottom } = useSafeAreaInsets()
-    const [currentToken, setCurrentToken] = useState<string>('HNT')
+    const [currentToken, setCurrentToken] = useState<string>(
+      tokenData?.length ? tokenData[0].value : 'HNT',
+    )
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
@@ -102,13 +106,18 @@ const TokenSelector = forwardRef(
       (): TokenListItem[] => [
         {
           label: 'HNT',
-          icon: <TokenHNT color={white} />,
+          icon: <TokenHNT width={30} height={30} color={white} />,
           value: 'HNT',
         },
         {
           label: 'MOBILE',
-          icon: <TokenMOBILE color={blueBright500} />,
+          icon: <TokenMOBILE width={30} height={30} color={blueBright500} />,
           value: 'MOBILE',
+        },
+        {
+          label: 'IOT',
+          icon: <TokenIOT width={30} height={30} />,
+          value: 'IOT',
         },
       ],
 
@@ -139,7 +148,7 @@ const TokenSelector = forwardRef(
             handleIndicatorStyle={handleIndicatorStyle}
           >
             <BottomSheetFlatList
-              data={data}
+              data={tokenData || data}
               renderItem={renderFlatlistItem}
               keyExtractor={keyExtractor}
             />

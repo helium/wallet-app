@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { memo } from 'react'
-import { Spacing } from '../theme/theme'
+import { Spacing } from '@theme/theme'
 import ButtonPressable from './ButtonPressable'
 
 type Props = {

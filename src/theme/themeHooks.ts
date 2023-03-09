@@ -3,8 +3,8 @@ import tinycolor from 'tinycolor2'
 import { Platform, ViewStyle } from 'react-native'
 import { useCallback, useMemo } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { ww } from '../utils/layout'
-import { Color, Spacing, Theme } from './theme'
+import { Color, Spacing, Theme } from '@theme/theme'
+import { ww } from '@utils/layout'
 
 const colorScheme = 'dark' as 'dark' | 'light'
 export const useColorScheme = () => {

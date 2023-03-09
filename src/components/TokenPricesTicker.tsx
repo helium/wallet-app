@@ -4,10 +4,10 @@ import { Easing } from 'react-native'
 import TextTicker from 'react-native-text-ticker'
 import { useTranslation } from 'react-i18next'
 import { useAsync } from 'react-async-hook'
+import { useTextVariants, useColors } from '@theme/themeHooks'
+import { Theme } from '@theme/theme'
 import Box from './Box'
 import { useLazyGetTokenPricesQuery } from '../store/slices/walletRestApi'
-import { useTextVariants, useColors } from '../theme/themeHooks'
-import { Theme } from '../theme/theme'
 import { useAppStorage } from '../storage/AppStorageProvider'
 
 type Props = BoxProps<Theme>
