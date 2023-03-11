@@ -79,6 +79,14 @@ const AccountTokenList = ({
         staked: false,
       },
       {
+        type: 'IOT',
+        balance:
+          l1Network === 'solana'
+            ? iotSolBalance
+            : (iotBalance as Balance<IotTokens>),
+        staked: false,
+      },
+      {
         type: 'DC',
         balance: dcBalance as Balance<DataCredits>,
         staked: false,
@@ -99,23 +107,12 @@ const AccountTokenList = ({
       staked: boolean
     }[]
 
-    if (l1Network === 'solana') {
-      allTokens.push({
-        type: 'IOT',
-        balance:
-          l1Network === 'solana'
-            ? iotSolBalance
-            : (iotBalance as Balance<IotTokens>),
-        staked: false,
-      })
-    }
-
     return allTokens.filter(
       (token) =>
         (typeof token !== 'number' &&
           (token?.balance as Balance<AnyCurrencyType>).integerBalance > 0) ||
         token?.type === 'MOBILE' ||
-        token?.type === 'IOT' ||
+        (token?.type === 'IOT' && l1Network === 'solana') ||
         (token?.type === 'HNT' && token?.staked === false),
     )
   }, [
@@ -187,7 +184,8 @@ const AccountTokenList = ({
 
   return (
     <BottomSheetFlatList
-      data={tokens}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data={tokens as any}
       numColumns={2}
       columnWrapperStyle={{
         flexDirection: 'column',
