@@ -107,7 +107,7 @@ const App = () => {
                 {client && (
                   <ApolloProvider client={client}>
                     <LockScreen>
-                      <SentinelScreen>
+                      <SentinelScreen migrationStatusOverride={undefined}>
                         <AccountProvider
                           extendConnection={false}
                           commitment="confirmed"

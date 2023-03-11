@@ -11,6 +11,7 @@ import { useAppVersion } from '@hooks/useDevice'
 import useCopyText from '@hooks/useCopyText'
 import useAlert from '@hooks/useAlert'
 import CloseButton from '@components/CloseButton'
+import { useGetSolanaStatusQuery } from '../../store/slices/solanaStatusApi'
 import { HomeNavigationProp } from '../home/homeTypes'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
 import { SUPPORTED_LANGUAGUES } from '../../utils/i18n'
@@ -67,6 +68,7 @@ const Settings = () => {
   } = useAppStorage()
   const copyText = useCopyText()
   const { showOKAlert, showOKCancelAlert } = useAlert()
+  const { data: status } = useGetSolanaStatusQuery()
 
   const isDefaultAccount = useMemo(
     () => defaultAccountAddress === currentAccount?.address,
@@ -395,19 +397,21 @@ const Settings = () => {
       },
     ]
 
-    devData.push({
-      title: t('settings.sections.dev.solana.title'),
-      value: l1Network === 'solana',
-      onToggle: () =>
-        updateL1Network(l1Network === 'helium' ? 'solana' : 'helium'),
-      helperText: t('settings.sections.dev.solana.helperText'),
-      onPress: () => {
-        showOKAlert({
-          message: t('settings.sections.dev.solana.prompt.message'),
-          title: t('settings.sections.dev.solana.prompt.title'),
-        })
-      },
-    })
+    if (status?.migrationStatus !== 'complete') {
+      devData.push({
+        title: t('settings.sections.dev.solana.title'),
+        value: l1Network === 'solana',
+        onToggle: () =>
+          updateL1Network(l1Network === 'helium' ? 'solana' : 'helium'),
+        helperText: t('settings.sections.dev.solana.helperText'),
+        onPress: () => {
+          showOKAlert({
+            message: t('settings.sections.dev.solana.prompt.message'),
+            title: t('settings.sections.dev.solana.prompt.title'),
+          })
+        },
+      })
+    }
 
     if (l1Network === 'solana') {
       const items = [
@@ -597,6 +601,7 @@ const Settings = () => {
     updateConvertToCurrency,
     updateL1Network,
     version,
+    status,
   ])
 
   const renderItem = useCallback(

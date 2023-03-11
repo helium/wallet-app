@@ -79,14 +79,6 @@ const AccountTokenList = ({
         staked: false,
       },
       {
-        type: 'IOT',
-        balance:
-          l1Network === 'solana'
-            ? iotSolBalance
-            : (iotBalance as Balance<IotTokens>),
-        staked: false,
-      },
-      {
         type: 'DC',
         balance: dcBalance as Balance<DataCredits>,
         staked: false,
@@ -103,12 +95,25 @@ const AccountTokenList = ({
       },
     ] as {
       type: Ticker
-      balance: Balance<AnyCurrencyType>
+      balance: Balance<AnyCurrencyType> | number
       staked: boolean
     }[]
+
+    if (l1Network === 'solana') {
+      allTokens.push({
+        type: 'IOT',
+        balance:
+          l1Network === 'solana'
+            ? iotSolBalance
+            : (iotBalance as Balance<IotTokens>),
+        staked: false,
+      })
+    }
+
     return allTokens.filter(
       (token) =>
-        token?.balance?.integerBalance > 0 ||
+        (typeof token !== 'number' &&
+          (token?.balance as Balance<AnyCurrencyType>).integerBalance > 0) ||
         token?.type === 'MOBILE' ||
         token?.type === 'IOT' ||
         (token?.type === 'HNT' && token?.staked === false),

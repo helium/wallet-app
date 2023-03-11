@@ -138,22 +138,17 @@ const wallet = {
     publicKey: solanaAddress,
     connect: () => { return { publicKey: solanaAddress } },
     disconnect: async () => {
-        console.log('disconnect')
     },
     signAndSendTransaction: async (transaction) => {
-        console.log('transaction', transaction)
         return { signature: 'signature' }
     },
     signTransaction: async (transaction) => {
-        console.log('transaction', transaction)
         return { signature: 'signature' }
     },
     signAllTransactions: async (transactions) => {
-        console.log('transactions', transactions)
         return transactions
     },
     signMessage: async (message) => {
-        console.log('message', message)
         return { signature: message }
     },
     on: () => { },

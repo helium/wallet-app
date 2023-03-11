@@ -1,6 +1,5 @@
 export default {
   sentinel: {
-    action: 'Understood',
     in_progress: {
       title: 'Helium Blockchain Stopped',
       body: 'Helium is transitioning to Solana.',
@@ -310,6 +309,10 @@ export default {
       'You do not have sufficient tokens to swap that will result in more than 0.00000001 HNT.',
     swapAlertTitle: 'Are you sure you will like to swap your tokens?',
     swapAlertBody: 'This action is irreversible.',
+    understood: 'Understood',
+    treasurySwapWarningTitle: 'Treasury Swap Warning',
+    treasurySwapWarningBody:
+      'Please be advised to refrain from swapping any tokens for a minimum of 30 days post migration. This recommendation is due to the fact that HNT is currently entering the treasury and large pre-mines are commencing. It is recommended to proceed with caution to guarantee the best possible outcome.',
   },
   browserScreen: {
     topPicks: 'Top Picks',
