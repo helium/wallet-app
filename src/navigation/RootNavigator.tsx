@@ -131,14 +131,13 @@ const RootNavigator = () => {
     >
       <RootStack.Navigator initialRouteName={initialRouteName}>
         <>
-          {!status ||
-            (status.migrationStatus !== 'complete' && (
-              <RootStack.Screen
-                name="HomeNavigator"
-                component={HomeNavigator}
-                options={screenOptions}
-              />
-            ))}
+          {(!status || status.migrationStatus !== 'complete') && (
+            <RootStack.Screen
+              name="HomeNavigator"
+              component={HomeNavigator}
+              options={screenOptions}
+            />
+          )}
           <RootStack.Screen
             name="TabBarNavigator"
             component={TabBarNavigator}

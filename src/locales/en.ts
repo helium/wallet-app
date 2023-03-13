@@ -312,7 +312,7 @@ export default {
     understood: 'Understood',
     treasurySwapWarningTitle: 'Treasury Swap Warning',
     treasurySwapWarningBody:
-      'Please be advised to refrain from swapping any tokens for a minimum of 30 days post migration. This recommendation is due to the fact that HNT is currently entering the treasury and large pre-mines are commencing. It is recommended to proceed with caution to guarantee the best possible outcome.',
+      'Please be advised that the subDAO treasury has only been active for a few days since the Solana migration. Swapping subtokens to HNT may be affected by a limited HNT supply in the subDAO treasury. Please proceed with caution.',
   },
   browserScreen: {
     topPicks: 'Top Picks',

@@ -49,6 +49,7 @@ const App = () => {
     'console.error: {"context":"client"} {"context":"client/pairing"} Unauthorized pairing update request',
     'Require cycle:',
     'ws error: received bad response code from server 403',
+    'ImmutableStateInvariantMiddleware',
   ])
 
   const { appState } = useAppState()

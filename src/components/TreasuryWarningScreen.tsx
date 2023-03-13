@@ -1,4 +1,4 @@
-import React, { memo, ReactNode, useCallback, useState } from 'react'
+import React, { memo, ReactNode, useCallback, useEffect, useState } from 'react'
 import { View } from 'react-native'
 import InfoWarning from '@assets/images/warning.svg'
 import { useTranslation } from 'react-i18next'
@@ -12,15 +12,25 @@ import globalStyles from '@theme/globalStyles'
 import Text from './Text'
 import Box from './Box'
 import ButtonPressable from './ButtonPressable'
+import { useGetTreasuryStatusQuery } from '../store/slices/walletRestApi'
 
 const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
   const { t } = useTranslation()
   const animValue = useSharedValue(1)
   const [animationComplete, setAnimationComplete] = useState(false)
+  const { data: status } = useGetTreasuryStatusQuery(undefined)
 
   const animationCompleted = useCallback(() => {
     setAnimationComplete(true)
   }, [])
+
+  useEffect(() => {
+    if (!status?.showWarning) {
+      setAnimationComplete(true)
+    } else {
+      setAnimationComplete(false)
+    }
+  }, [status])
 
   const style = useAnimatedStyle(() => {
     let animVal = animValue.value
@@ -61,7 +71,7 @@ const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
               <InfoWarning height={80} width={80} />
             </Box>
             <Text variant="h1" textAlign="center" fontSize={40} lineHeight={42}>
-              {t('swapsScreen.treasurySwapWarningTitle')}
+              {status?.title || t('swapsScreen.treasurySwapWarningTitle')}
             </Text>
 
             <Text
@@ -72,7 +82,7 @@ const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
               marginHorizontal="l"
               adjustsFontSizeToFit
             >
-              {t('swapsScreen.treasurySwapWarningBody')}
+              {status?.body || t('swapsScreen.treasurySwapWarningBody')}
             </Text>
 
             <ButtonPressable
