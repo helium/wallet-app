@@ -1,10 +1,9 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import CogIco from '@assets/images/cog.svg'
 import AccountIco from '@assets/images/account.svg'
 import { LayoutChangeEvent } from 'react-native'
 import CarotDown from '@assets/images/carot-down.svg'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import NotificationBell from '@assets/images/notificationBell.svg'
 import Box from '@components/Box'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -43,17 +42,12 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
     navigation.push('NotificationsNavigator')
   }, [navigation, triggerImpact])
 
-  const { top } = useSafeAreaInsets()
-
-  const containerStyle = useMemo(() => ({ marginTop: top }), [top])
-
   return (
     <Box
       flexDirection="row"
       justifyContent="space-between"
       alignItems="center"
       onLayout={onLayout}
-      style={containerStyle}
       zIndex={1}
     >
       <Box marginStart="s">

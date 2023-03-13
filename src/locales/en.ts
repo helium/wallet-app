@@ -473,6 +473,7 @@ export default {
     submitSuccess: 'Transaction Submit',
     understand: 'I Understand',
     noData: 'No Data',
+    devnetTokensWarning: 'Warning! These are devnet tokens for testing only.',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',
