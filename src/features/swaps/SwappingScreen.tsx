@@ -37,7 +37,7 @@ const SwappingScreen = () => {
     // Reset Swap stack to first screen
     navigation.reset({
       index: 0,
-      routes: [{ name: 'Swaps' }],
+      routes: [{ name: 'Home' }],
     })
   }, [navigation])
 

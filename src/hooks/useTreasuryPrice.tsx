@@ -38,7 +38,8 @@ export function useTreasuryPrice(
       fromMintAcc &&
       treasuryMintAcc &&
       treasuryAcc &&
-      typeof r !== 'undefined'
+      typeof r !== 'undefined' &&
+      rDecimals !== undefined
     ) {
       // only works for basic exponential curves
       // dR = (R / S^(1 + k)) ((S + dS)^(1 + k) - S^(1 + k))
@@ -47,7 +48,7 @@ export function useTreasuryPrice(
           BigInt(Math.pow(10, (fromMintAcc as any).info.decimals)),
       )
 
-      const R = amountAsNum(BigInt(r), rDecimals)
+      const R = amountAsNum(r, rDecimals)
 
       const k =
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -58,9 +59,9 @@ export function useTreasuryPrice(
         (R / Math.pow(S, k + 1)) *
         (Math.pow(S - amount, k + 1) - Math.pow(S, k + 1))
 
-      const total = Math.abs(dR)
-      // Truncate to 8 decimal places only
-      return parseFloat(total.toFixed(rDecimals))
+      const total = toFixed(Math.abs(dR))
+
+      return total
     }
   }, [fromMintAcc, treasuryMintAcc, treasuryAcc, r, rDecimals, amount])
 
@@ -70,4 +71,35 @@ export function useTreasuryPrice(
     loadingTreasuryMint ||
     loadingR
   return { price, loading, freezeDate }
+}
+
+function toFixed(x: any): any {
+  let realNumber = x.toString()
+  let xCopy = x
+
+  if (realNumber.split('e-')[1]) {
+    if (Math.abs(x) < 1.0) {
+      const e = parseInt(x.toString().split('e-')[1], 10)
+      if (e) {
+        xCopy = x * Math.pow(10, e - 1)
+        realNumber = `0.${new Array(e).join('0')}${xCopy
+          .toString()
+          .substring(2)}`
+      }
+    } else {
+      let e = parseInt(x.toString().split('+')[1], 10)
+      if (e > 20) {
+        e -= 20
+        xCopy /= Math.pow(10, e)
+        realNumber = xCopy + new Array(e + 1).join('0')
+      }
+    }
+  }
+
+  // Only allow max 8 decimal places
+  const decimalIndex = realNumber.indexOf('.')
+  if (decimalIndex !== -1) {
+    realNumber = realNumber.substring(0, decimalIndex + 9)
+  }
+  return realNumber
 }

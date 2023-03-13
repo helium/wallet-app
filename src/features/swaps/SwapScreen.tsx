@@ -163,12 +163,13 @@ const SwapScreen = () => {
   const setTokenTypeHandler = useCallback(
     (ticker: Ticker) => {
       if (selectorMode === SelectorMode.youPay) {
+        refresh()
         setYouPayTokenType(ticker)
       } else {
         setYouReceiveTokenType(ticker)
       }
     },
-    [selectorMode],
+    [selectorMode, refresh],
   )
 
   const tokenData = useMemo(

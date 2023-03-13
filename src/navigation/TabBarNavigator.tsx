@@ -1,10 +1,14 @@
-import React, { FC, useCallback, useMemo } from 'react'
+import React, { FC, useCallback, useMemo, useState } from 'react'
 import { SvgProps } from 'react-native-svg'
 import {
   BottomTabBarProps,
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs'
-import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
+import {
+  Edge,
+  useSafeAreaInsets,
+  initialWindowMetrics,
+} from 'react-native-safe-area-context'
 import Dollar from '@assets/images/dollar.svg'
 import Gem from '@assets/images/gem.svg'
 import Transactions from '@assets/images/transactions.svg'
@@ -19,6 +23,14 @@ import useHaptic from '@hooks/useHaptic'
 import Globe from '@assets/images/earth-globe.svg'
 import { isBefore, parseISO } from 'date-fns'
 import { useNotificationStorage } from '@storage/NotificationStorageProvider'
+import Text from '@components/Text'
+import InfoWarning from '@assets/images/warning.svg'
+import CloseCircle from '@assets/images/closeCircleFilled.svg'
+import { ReAnimatedBox } from '@components/AnimatedBox'
+import { useAnimatedStyle, withSpring } from 'react-native-reanimated'
+import useLayoutHeight from '@hooks/useLayoutHeight'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useTranslation } from 'react-i18next'
 import { useGetNotificationsQuery } from '../store/slices/walletRestApi'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
@@ -171,16 +183,95 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
 }
 
 const TabBarNavigator = () => {
+  const [bannerClosed, setBannerClosed] = useState(false)
   const { doneSolanaMigration, l1Network } = useAppStorage()
-  const { bottom } = useSafeAreaInsets()
   // // eslint-disable-next-line no-console
   // if (doneSolanaMigration.size > 0) {
   //   updateDoneSolanaMigration(new Set<string>())
   // }
+  const { bottom } = useSafeAreaInsets()
+  const [bannerHeight, setBannerHeight] = useLayoutHeight()
   const { currentAccount, anchorProvider } = useAccountStorage()
+  const { top } = useSafeAreaInsets()
+  const { t } = useTranslation()
+
+  const bannerTopMargin = useMemo(() => {
+    return top === 0 && initialWindowMetrics?.insets
+      ? initialWindowMetrics?.insets.top
+      : top
+  }, [top])
+
+  const bannerAnimatedStyles = useAnimatedStyle(() => {
+    if (bannerClosed) {
+      return {
+        opacity: withSpring(0, {
+          damping: 100,
+          mass: 0.5,
+          stiffness: 100,
+          overshootClamping: false,
+          restDisplacementThreshold: 0.01,
+          restSpeedThreshold: 2,
+        }),
+        marginTop: -bannerHeight * 2,
+        marginBottom: bannerTopMargin,
+        paddingTop: withSpring(bannerTopMargin, {
+          damping: 100,
+          mass: 0.5,
+          stiffness: 100,
+          overshootClamping: false,
+          restDisplacementThreshold: 0.01,
+          restSpeedThreshold: 2,
+        }),
+      }
+    }
+    // Animate margin
+    return {
+      opacity: withSpring(1, {
+        damping: 100,
+        mass: 0.5,
+        stiffness: 100,
+        overshootClamping: false,
+        restDisplacementThreshold: 0.01,
+        restSpeedThreshold: 2,
+      }),
+      marginTop: 0,
+      marginBottom: 0,
+      paddingTop: withSpring(bannerTopMargin, {
+        damping: 100,
+        mass: 0.5,
+        stiffness: 100,
+        overshootClamping: false,
+        restDisplacementThreshold: 0.01,
+        restSpeedThreshold: 2,
+      }),
+    }
+  }, [bannerClosed])
+
+  const handleBannerClose = useCallback(() => {
+    setBannerClosed(true)
+  }, [])
 
   return (
     <>
+      <ReAnimatedBox backgroundColor="black650" style={bannerAnimatedStyles}>
+        <Box
+          padding="s"
+          paddingHorizontal="m"
+          flexDirection="row"
+          alignItems="center"
+          onLayout={setBannerHeight}
+        >
+          <Box>
+            <InfoWarning width={24} height={24} />
+          </Box>
+          <Text variant="body2" marginStart="s" flex={1} adjustsFontSizeToFit>
+            {t('generic.devnetTokensWarning')}
+          </Text>
+          <TouchableOpacityBox onPress={handleBannerClose}>
+            <CloseCircle width={24} height={24} />
+          </TouchableOpacityBox>
+        </Box>
+      </ReAnimatedBox>
       {currentAccount?.solanaAddress &&
         anchorProvider &&
         !doneSolanaMigration.has(currentAccount.solanaAddress) && (
