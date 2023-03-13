@@ -384,33 +384,34 @@ const Settings = () => {
       ]
     }
 
-    let devData: SettingsListItemType[] = [
-      {
-        title: t('settings.sections.dev.testnet.title'),
-        value: enableTestnet,
-        onToggle: handleToggleEnableTestnet,
-        disabled: !!sortedTestnetAccounts.length && enableTestnet,
-        helperText:
-          sortedTestnetAccounts.length && enableTestnet
-            ? t('settings.sections.dev.testnet.helperText')
-            : undefined,
-      },
-    ]
+    let devData: SettingsListItemType[] = []
 
     if (status?.migrationStatus !== 'complete') {
-      devData.push({
-        title: t('settings.sections.dev.solana.title'),
-        value: l1Network === 'solana',
-        onToggle: () =>
-          updateL1Network(l1Network === 'helium' ? 'solana' : 'helium'),
-        helperText: t('settings.sections.dev.solana.helperText'),
-        onPress: () => {
-          showOKAlert({
-            message: t('settings.sections.dev.solana.prompt.message'),
-            title: t('settings.sections.dev.solana.prompt.title'),
-          })
+      devData.push(
+        {
+          title: t('settings.sections.dev.solana.title'),
+          value: l1Network === 'solana',
+          onToggle: () =>
+            updateL1Network(l1Network === 'helium' ? 'solana' : 'helium'),
+          helperText: t('settings.sections.dev.solana.helperText'),
+          onPress: () => {
+            showOKAlert({
+              message: t('settings.sections.dev.solana.prompt.message'),
+              title: t('settings.sections.dev.solana.prompt.title'),
+            })
+          },
         },
-      })
+        {
+          title: t('settings.sections.dev.testnet.title'),
+          value: enableTestnet,
+          onToggle: handleToggleEnableTestnet,
+          disabled: !!sortedTestnetAccounts.length && enableTestnet,
+          helperText:
+            sortedTestnetAccounts.length && enableTestnet
+              ? t('settings.sections.dev.testnet.helperText')
+              : undefined,
+        },
+      )
     }
 
     if (l1Network === 'solana') {

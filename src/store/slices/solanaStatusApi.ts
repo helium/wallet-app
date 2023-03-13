@@ -4,6 +4,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 export type SolanaStatusResponse = {
   migrationStatus: 'not_started' | 'in_progress' | 'complete'
   minimumVersions: Record<string, string>
+  treasuryWarning: boolean
   finalBlockHeight?: number
 }
 

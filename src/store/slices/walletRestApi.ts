@@ -10,12 +10,6 @@ export type BetaAccess = {
   publicKeys: string[]
 }
 
-export type TreasuryStatus = {
-  title: string
-  body: string
-  showWarning: boolean
-}
-
 export type Mints = Record<Ticker, string>
 
 type Notification = {
@@ -62,25 +56,6 @@ export const walletRestApi = createApi({
   endpoints: (builder) => ({
     getBetaPubkeys: builder.query<BetaAccess, void>({
       query: () => '/betaAccess',
-    }),
-    getTreasuryStatus: builder.query<TreasuryStatus, void>({
-      query: () => '/treasuryStatus',
-      transformResponse: (response) => {
-        return response as TreasuryStatus
-      },
-      serializeQueryArgs: ({ endpointName, queryArgs: _ }) => {
-        return {
-          endpointName,
-        }
-      },
-      merge: (_, newItems) => {
-        return newItems
-      },
-      // Refetch when the page arg changes
-      forceRefetch({ currentArg, previousArg }) {
-        return currentArg !== previousArg
-      },
-      keepUnusedDataFor: 0,
     }),
     getMints: builder.query<Mints, string>({
       query: (cluster) => `/mints?cluster=${cluster}`,
@@ -158,7 +133,6 @@ export const {
   useGetBetaPubkeysQuery,
   useGetBalanceHistoryQuery,
   useGetTokenPricesQuery,
-  useGetTreasuryStatusQuery,
   useLazyGetTokenPricesQuery,
   reducer,
 } = walletRestApi

@@ -12,20 +12,20 @@ import globalStyles from '@theme/globalStyles'
 import Text from './Text'
 import Box from './Box'
 import ButtonPressable from './ButtonPressable'
-import { useGetTreasuryStatusQuery } from '../store/slices/walletRestApi'
+import { useGetSolanaStatusQuery } from '../store/slices/solanaStatusApi'
 
 const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
   const { t } = useTranslation()
   const animValue = useSharedValue(1)
   const [animationComplete, setAnimationComplete] = useState(false)
-  const { data: status } = useGetTreasuryStatusQuery(undefined)
+  const { data: status } = useGetSolanaStatusQuery(undefined)
 
   const animationCompleted = useCallback(() => {
     setAnimationComplete(true)
   }, [])
 
   useEffect(() => {
-    if (!status?.showWarning) {
+    if (!status?.treasuryWarning) {
       setAnimationComplete(true)
     } else {
       setAnimationComplete(false)
@@ -71,7 +71,7 @@ const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
               <InfoWarning height={80} width={80} />
             </Box>
             <Text variant="h1" textAlign="center" fontSize={40} lineHeight={42}>
-              {status?.title || t('swapsScreen.treasurySwapWarningTitle')}
+              {t('swapsScreen.treasurySwapWarningTitle')}
             </Text>
 
             <Text
@@ -82,7 +82,7 @@ const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
               marginHorizontal="l"
               adjustsFontSizeToFit
             >
-              {status?.body || t('swapsScreen.treasurySwapWarningBody')}
+              {t('swapsScreen.treasurySwapWarningBody')}
             </Text>
 
             <ButtonPressable
