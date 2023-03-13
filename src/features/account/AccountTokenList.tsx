@@ -103,14 +103,16 @@ const AccountTokenList = ({
       },
     ] as {
       type: Ticker
-      balance: Balance<AnyCurrencyType>
+      balance: Balance<AnyCurrencyType> | number
       staked: boolean
     }[]
+
     return allTokens.filter(
       (token) =>
-        token?.balance?.integerBalance > 0 ||
+        (typeof token !== 'number' &&
+          (token?.balance as Balance<AnyCurrencyType>).integerBalance > 0) ||
         token?.type === 'MOBILE' ||
-        token?.type === 'IOT' ||
+        (token?.type === 'IOT' && l1Network === 'solana') ||
         (token?.type === 'HNT' && token?.staked === false),
     )
   }, [
@@ -182,7 +184,8 @@ const AccountTokenList = ({
 
   return (
     <BottomSheetFlatList
-      data={tokens}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data={tokens as any}
       numColumns={2}
       columnWrapperStyle={{
         flexDirection: 'column',

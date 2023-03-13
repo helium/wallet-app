@@ -32,6 +32,7 @@ import TokenSelector, {
   TokenListItem,
 } from '@components/TokenSelector'
 import CloseButton from '@components/CloseButton'
+import TreasuryWarningScreen from '@components/TreasuryWarningScreen'
 import { SwapNavigationProp } from './swapTypes'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
 import SwapItem from './SwapItem'
@@ -240,119 +241,121 @@ const SwapScreen = () => {
   ])
 
   return (
-    <HNTKeyboard
-      ref={hntKeyboardRef}
-      onConfirmBalance={onConfirmBalance}
-      ticker={youPayTokenType}
-      networkFee={Balance.fromFloatAndTicker(
-        solFee || TXN_FEE_IN_SOL,
-        Tokens.SOL,
-      )}
-    >
-      <TokenSelector
-        ref={tokenSelectorRef}
-        onTokenSelected={setTokenTypeHandler}
-        tokenData={tokenData}
+    <TreasuryWarningScreen>
+      <HNTKeyboard
+        ref={hntKeyboardRef}
+        onConfirmBalance={onConfirmBalance}
+        ticker={youPayTokenType}
+        networkFee={Balance.fromFloatAndTicker(
+          solFee || TXN_FEE_IN_SOL,
+          Tokens.SOL,
+        )}
       >
-        <ReAnimatedBox flex={1}>
-          <SafeAreaBox backgroundColor="black900" edges={edges} flex={1}>
-            {Header}
-            <Box flexGrow={1} justifyContent="center" marginTop="xxxl">
-              <SwapItem
-                onPress={onTokenItemPressed}
-                marginHorizontal="m"
-                isPaying
-                onCurrencySelect={onCurrencySelect(true)}
-                currencySelected={youPayTokenType}
-                amount={youPayTokenAmount}
-              />
-              <Box>
+        <TokenSelector
+          ref={tokenSelectorRef}
+          onTokenSelected={setTokenTypeHandler}
+          tokenData={tokenData}
+        >
+          <ReAnimatedBox flex={1}>
+            <SafeAreaBox backgroundColor="black900" edges={edges} flex={1}>
+              {Header}
+              <Box flexGrow={1} justifyContent="center" marginTop="xxxl">
                 <SwapItem
-                  disabled
-                  marginTop="xxl"
+                  onPress={onTokenItemPressed}
                   marginHorizontal="m"
-                  isPaying={false}
-                  onCurrencySelect={onCurrencySelect(false)}
-                  currencySelected={youReceiveTokenType}
-                  amount={youReceiveTokenAmount}
-                  loading={loadingPrice}
+                  isPaying
+                  onCurrencySelect={onCurrencySelect(true)}
+                  currencySelected={youPayTokenType}
+                  amount={youPayTokenAmount}
                 />
+                <Box>
+                  <SwapItem
+                    disabled
+                    marginTop="xxl"
+                    marginHorizontal="m"
+                    isPaying={false}
+                    onCurrencySelect={onCurrencySelect(false)}
+                    currencySelected={youReceiveTokenType}
+                    amount={youReceiveTokenAmount}
+                    loading={loadingPrice}
+                  />
 
-                <Box marginTop="m">
-                  {solFee ? (
-                    <Box marginTop="m">
-                      <TextTransform
+                  <Box marginTop="m">
+                    {solFee ? (
+                      <Box marginTop="m">
+                        <TextTransform
+                          textAlign="center"
+                          marginHorizontal="m"
+                          variant="body3Medium"
+                          color="white"
+                          i18nKey="collectablesScreen.transferFee"
+                          values={{ amount: solFee }}
+                        />
+                      </Box>
+                    ) : (
+                      <Text
+                        marginTop="m"
                         textAlign="center"
                         marginHorizontal="m"
-                        variant="body3Medium"
-                        color="white"
-                        i18nKey="collectablesScreen.transferFee"
-                        values={{ amount: solFee }}
-                      />
-                    </Box>
-                  ) : (
+                        variant="body2"
+                        marginBottom="s"
+                        color="secondaryText"
+                      >
+                        {t('generic.calculatingTransactionFee')}
+                      </Text>
+                    )}
                     <Text
-                      marginTop="m"
-                      textAlign="center"
+                      marginTop="s"
+                      opacity={
+                        insufficientTokensToSwap ||
+                        hasInsufficientBalance ||
+                        networkError
+                          ? 100
+                          : 0
+                      }
                       marginHorizontal="m"
-                      variant="body2"
-                      marginBottom="s"
-                      color="secondaryText"
+                      variant="body3Medium"
+                      color="red500"
+                      textAlign="center"
                     >
-                      {t('generic.calculatingTransactionFee')}
+                      {showError}
                     </Text>
-                  )}
-                  <Text
-                    marginTop="s"
-                    opacity={
-                      insufficientTokensToSwap ||
-                      hasInsufficientBalance ||
-                      networkError
-                        ? 100
-                        : 0
-                    }
-                    marginHorizontal="m"
-                    variant="body3Medium"
-                    color="red500"
-                    textAlign="center"
-                  >
-                    {showError}
-                  </Text>
+                  </Box>
                 </Box>
               </Box>
-            </Box>
 
-            <Box
-              flexDirection="row"
-              marginBottom="xl"
-              marginTop="m"
-              marginHorizontal="xl"
-            >
-              <ButtonPressable
-                height={65}
-                flexGrow={1}
-                borderRadius="round"
-                backgroundColor="white"
-                backgroundColorOpacity={1}
-                backgroundColorOpacityPressed={0.05}
-                titleColorDisabled="grey600"
-                backgroundColorDisabled="white"
-                backgroundColorDisabledOpacity={0.1}
-                disabled={
-                  insufficientTokensToSwap ||
-                  youPayTokenAmount === 0 ||
-                  treasuryFrozen
-                }
-                titleColorPressedOpacity={0.3}
-                title={t('swapsScreen.swapTokens')}
-                titleColor="black"
-                onPress={handleSwapTokens}
-              />
-            </Box>
-          </SafeAreaBox>
-        </ReAnimatedBox>
-      </TokenSelector>
-    </HNTKeyboard>
+              <Box
+                flexDirection="row"
+                marginBottom="xl"
+                marginTop="m"
+                marginHorizontal="xl"
+              >
+                <ButtonPressable
+                  height={65}
+                  flexGrow={1}
+                  borderRadius="round"
+                  backgroundColor="white"
+                  backgroundColorOpacity={1}
+                  backgroundColorOpacityPressed={0.05}
+                  titleColorDisabled="grey600"
+                  backgroundColorDisabled="white"
+                  backgroundColorDisabledOpacity={0.1}
+                  disabled={
+                    insufficientTokensToSwap ||
+                    youPayTokenAmount === 0 ||
+                    treasuryFrozen
+                  }
+                  titleColorPressedOpacity={0.3}
+                  title={t('swapsScreen.swapTokens')}
+                  titleColor="black"
+                  onPress={handleSwapTokens}
+                />
+              </Box>
+            </SafeAreaBox>
+          </ReAnimatedBox>
+        </TokenSelector>
+      </HNTKeyboard>
+    </TreasuryWarningScreen>
   )
 }
 
