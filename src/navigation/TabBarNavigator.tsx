@@ -253,7 +253,7 @@ const TabBarNavigator = () => {
 
   return (
     <>
-      <ReAnimatedBox backgroundColor="black600" style={bannerAnimatedStyles}>
+      <ReAnimatedBox backgroundColor="black650" style={bannerAnimatedStyles}>
         <Box
           padding="s"
           paddingHorizontal="m"

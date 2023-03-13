@@ -10,7 +10,6 @@ import { Platform, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import SharedGroupPreferences from 'react-native-shared-group-preferences'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { toUpper } from 'lodash'
 import BottomSheet from '@gorhom/bottom-sheet'
 import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
@@ -75,7 +74,6 @@ const AccountsScreen = () => {
   const { reset } = useOnboarding()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const [selectedBalance, setSelectedBalance] = useState<AccountBalanceType>()
-  const { top } = useSafeAreaInsets()
   const { updateVars: refreshTokens, updating: updatingTokens } = useBalance()
   const bottomSheetRef = useRef<BottomSheet>(null)
   const listAnimatedPos = useSharedValue<number>(0)
@@ -93,9 +91,9 @@ const AccountsScreen = () => {
     if (!pageHeight) return undefined
     const collapsedHeight = ITEM_HEIGHT * 2
     // Get safe area top height
-    const expandedHeight = pageHeight - navLayoutHeight - top - topHeaderHeight
+    const expandedHeight = pageHeight - navLayoutHeight - topHeaderHeight
     return [collapsedHeight, expandedHeight]
-  }, [navLayoutHeight, pageHeight, top, topHeaderHeight])
+  }, [navLayoutHeight, pageHeight, topHeaderHeight])
 
   useAppear(() => {
     reset()
@@ -260,7 +258,6 @@ const AccountsScreen = () => {
     const diff = realHeight - listAnimatedPos.value
     const opacity =
       (listAnimatedPos.value -
-        top -
         topHeaderHeight -
         navLayoutHeight -
         pageHeight * 0.3) /
@@ -278,20 +275,20 @@ const AccountsScreen = () => {
       return {
         opacity: 0,
         position: 'absolute',
-        top: top + navLayoutHeight,
+        top: navLayoutHeight,
         left: 0,
         right: 0,
       }
     }
 
     const opacity =
-      (listAnimatedPos.value - top - topHeaderHeight - navLayoutHeight) /
+      (listAnimatedPos.value - topHeaderHeight - navLayoutHeight) /
       (snapPoints[1] - snapPoints[0])
 
     return {
       opacity: 1 - opacity,
       position: 'absolute',
-      top: top + navLayoutHeight,
+      top: navLayoutHeight,
       left: 0,
       right: 0,
     }
