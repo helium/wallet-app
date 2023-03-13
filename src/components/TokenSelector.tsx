@@ -24,6 +24,7 @@ import { Ticker } from '@helium/currency'
 import { useColors, useOpacity } from '@theme/themeHooks'
 import { Theme } from '@theme/theme'
 import useBackHandler from '@hooks/useBackHandler'
+import { useAppStorage } from '@storage/AppStorageProvider'
 import Box from './Box'
 import ListItem, { LIST_ITEM_HEIGHT } from './ListItem'
 
@@ -56,6 +57,7 @@ const TokenSelector = forwardRef(
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
     const { white, blueBright500, secondaryText } = useColors()
+    const { l1Network } = useAppStorage()
 
     const showTokens = useCallback(() => {
       bottomSheetModalRef.current?.present()
@@ -102,27 +104,30 @@ const TokenSelector = forwardRef(
       [currentToken, handleTokenPress],
     )
 
-    const data = useMemo(
-      (): TokenListItem[] => [
+    const data = useMemo((): TokenListItem[] => {
+      const tokens = [
         {
           label: 'HNT',
           icon: <TokenHNT width={30} height={30} color={white} />,
-          value: 'HNT',
+          value: 'HNT' as Ticker,
         },
         {
           label: 'MOBILE',
           icon: <TokenMOBILE width={30} height={30} color={blueBright500} />,
-          value: 'MOBILE',
+          value: 'MOBILE' as Ticker,
         },
-        {
+      ]
+
+      if (l1Network === 'solana') {
+        tokens.push({
           label: 'IOT',
           icon: <TokenIOT width={30} height={30} />,
-          value: 'IOT',
-        },
-      ],
+          value: 'IOT' as Ticker,
+        })
+      }
 
-      [blueBright500, white],
-    )
+      return tokens
+    }, [blueBright500, white, l1Network])
 
     const snapPoints = useMemo(
       () => [(data.length + 2) * LIST_ITEM_HEIGHT + bottom],

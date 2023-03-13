@@ -271,12 +271,19 @@ const useBalanceHook = () => {
         break
 
       case 'solana':
-        bal = solBalances?.mobileBalance ? Number(solBalances.mobileBalance) : 0
+        bal = solBalances?.mobileBalance
+          ? toNumber(
+              new BN(solBalances?.mobileBalance?.toString() || 0),
+              mobileMint?.info.decimals || 6,
+            )
+          : 0
         break
     }
 
-    return new Balance(bal, CurrencyType.mobile)
-  }, [accountData, l1Network, solBalances])
+    return l1Network === 'helium'
+      ? new Balance(bal, CurrencyType.mobile)
+      : Balance.fromFloatAndTicker(bal, 'MOBILE')
+  }, [accountData, l1Network, solBalances, mobileMint])
 
   const mobileSolBalance = useMemo(() => {
     const bal = solBalances?.mobileBalance
@@ -297,12 +304,19 @@ const useBalanceHook = () => {
         break
 
       case 'solana':
-        bal = solBalances?.iotBalance ? Number(solBalances.iotBalance) : 0
+        bal = solBalances?.iotBalance
+          ? toNumber(
+              new BN(solBalances?.iotBalance?.toString() || 0),
+              iotMint?.info.decimals || 6,
+            )
+          : 0
         break
     }
 
-    return new Balance(bal, CurrencyType.iot)
-  }, [accountData, l1Network, solBalances])
+    return l1Network === 'helium'
+      ? new Balance(bal, CurrencyType.iot)
+      : Balance.fromFloatAndTicker(bal, 'IOT')
+  }, [accountData, l1Network, solBalances, iotMint])
 
   const iotSolBalance = useMemo(() => {
     const bal = solBalances?.iotBalance ? solBalances.iotBalance?.toString() : 0
