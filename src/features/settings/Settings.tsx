@@ -11,6 +11,7 @@ import { useAppVersion } from '@hooks/useDevice'
 import useCopyText from '@hooks/useCopyText'
 import useAlert from '@hooks/useAlert'
 import CloseButton from '@components/CloseButton'
+import { NetTypes } from '@helium/address'
 import { useGetSolanaStatusQuery } from '../../store/slices/solanaStatusApi'
 import { HomeNavigationProp } from '../home/homeTypes'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
@@ -386,7 +387,10 @@ const Settings = () => {
 
     let devData: SettingsListItemType[] = []
 
-    if (status?.migrationStatus !== 'complete') {
+    if (
+      status?.migrationStatus !== 'complete' &&
+      currentAccount?.netType === NetTypes.MAINNET
+    ) {
       devData.push(
         {
           title: t('settings.sections.dev.solana.title'),
