@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo, useState } from 'react'
+import React, { FC, useCallback, useEffect, useMemo } from 'react'
 import { SvgProps } from 'react-native-svg'
 import {
   BottomTabBarProps,
@@ -27,10 +27,11 @@ import Text from '@components/Text'
 import InfoWarning from '@assets/images/warning.svg'
 import CloseCircle from '@assets/images/closeCircleFilled.svg'
 import { ReAnimatedBox } from '@components/AnimatedBox'
-import { useAnimatedStyle, withSpring } from 'react-native-reanimated'
+import { useAnimatedStyle } from 'react-native-reanimated'
 import useLayoutHeight from '@hooks/useLayoutHeight'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useTranslation } from 'react-i18next'
+import { useDispatch, useSelector } from 'react-redux'
 import { useGetNotificationsQuery } from '../store/slices/walletRestApi'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
@@ -41,6 +42,8 @@ import ActivityNavigator from '../features/activity/ActivityNavigator'
 import NotificationsNavigator from '../features/notifications/NotificationsNavigator'
 import BrowserNavigator from '../features/browser/BrowserNavigator'
 import { useNotificationsQuery } from '../generated/graphql'
+import { appSlice } from '../store/slices/appSlice'
+import { RootState } from '../store/rootReducer'
 
 const Tab = createBottomTabNavigator()
 
@@ -183,7 +186,7 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
 }
 
 const TabBarNavigator = () => {
-  const [bannerClosed, setBannerClosed] = useState(false)
+  const dispatch = useDispatch()
   const { doneSolanaMigration, l1Network } = useAppStorage()
   // // eslint-disable-next-line no-console
   // if (doneSolanaMigration.size > 0) {
@@ -194,6 +197,7 @@ const TabBarNavigator = () => {
   const { currentAccount, anchorProvider } = useAccountStorage()
   const { top } = useSafeAreaInsets()
   const { t } = useTranslation()
+  const { showBanner } = useSelector((state: RootState) => state.app)
 
   const bannerTopMargin = useMemo(() => {
     return top === 0 && initialWindowMetrics?.insets
@@ -202,54 +206,27 @@ const TabBarNavigator = () => {
   }, [top])
 
   const bannerAnimatedStyles = useAnimatedStyle(() => {
-    if (bannerClosed) {
+    if (!showBanner) {
       return {
-        opacity: withSpring(0, {
-          damping: 100,
-          mass: 0.5,
-          stiffness: 100,
-          overshootClamping: false,
-          restDisplacementThreshold: 0.01,
-          restSpeedThreshold: 2,
-        }),
-        marginTop: -bannerHeight * 2,
-        marginBottom: bannerTopMargin,
-        paddingTop: withSpring(bannerTopMargin, {
-          damping: 100,
-          mass: 0.5,
-          stiffness: 100,
-          overshootClamping: false,
-          restDisplacementThreshold: 0.01,
-          restSpeedThreshold: 2,
-        }),
+        marginTop: -bannerHeight - bannerTopMargin,
+        paddingTop: bannerTopMargin,
       }
     }
+
     // Animate margin
     return {
-      opacity: withSpring(1, {
-        damping: 100,
-        mass: 0.5,
-        stiffness: 100,
-        overshootClamping: false,
-        restDisplacementThreshold: 0.01,
-        restSpeedThreshold: 2,
-      }),
       marginTop: 0,
-      marginBottom: 0,
-      paddingTop: withSpring(bannerTopMargin, {
-        damping: 100,
-        mass: 0.5,
-        stiffness: 100,
-        overshootClamping: false,
-        restDisplacementThreshold: 0.01,
-        restSpeedThreshold: 2,
-      }),
+      paddingTop: bannerTopMargin,
     }
-  }, [bannerClosed])
+  }, [showBanner])
 
   const handleBannerClose = useCallback(() => {
-    setBannerClosed(true)
-  }, [])
+    dispatch(appSlice.actions.setShowBanner(false))
+  }, [dispatch])
+
+  useEffect(() => {
+    dispatch(appSlice.actions.setShowBanner(true))
+  }, [dispatch])
 
   return (
     <>
