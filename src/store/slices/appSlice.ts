@@ -3,11 +3,13 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 export type AppState = {
   showCollectablesTabBar: boolean
   showConnectedWallets: boolean
+  showBanner: boolean
 }
 
 const initialState: AppState = {
   showCollectablesTabBar: true,
   showConnectedWallets: false,
+  showBanner: true,
 }
 
 const appSlice = createSlice({
@@ -19,6 +21,9 @@ const appSlice = createSlice({
     },
     toggleConnectedWallets: (state) => {
       state.showConnectedWallets = !state.showConnectedWallets
+    },
+    setShowBanner: (state, action: PayloadAction<boolean>) => {
+      state.showBanner = action.payload
     },
   },
 })
