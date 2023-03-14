@@ -27,7 +27,7 @@ import Text from '@components/Text'
 import InfoWarning from '@assets/images/warning.svg'
 import CloseCircle from '@assets/images/closeCircleFilled.svg'
 import { ReAnimatedBox } from '@components/AnimatedBox'
-import { useAnimatedStyle, withTiming } from 'react-native-reanimated'
+import { useAnimatedStyle } from 'react-native-reanimated'
 import useLayoutHeight from '@hooks/useLayoutHeight'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useTranslation } from 'react-i18next'
@@ -208,14 +208,14 @@ const TabBarNavigator = () => {
   const bannerAnimatedStyles = useAnimatedStyle(() => {
     if (!showBanner) {
       return {
-        marginTop: withTiming(-bannerHeight - bannerTopMargin),
+        marginTop: -bannerHeight - bannerTopMargin,
         paddingTop: bannerTopMargin,
       }
     }
 
     // Animate margin
     return {
-      marginTop: withTiming(0),
+      marginTop: 0,
       paddingTop: bannerTopMargin,
     }
   }, [showBanner])
