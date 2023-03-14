@@ -64,6 +64,13 @@ const ConnectedWallets = forwardRef(
     const navigation = useNavigation<TabBarNavigationProp>()
     const { enableTestnet, l1Network } = useAppStorage()
 
+    const filteredAccounts = useMemo(() => {
+      if (l1Network === 'solana') {
+        return sortedAccounts.filter((a) => a.netType !== NetTypes.TESTNET)
+      }
+      return sortedAccounts
+    }, [sortedAccounts, l1Network])
+
     const snapPoints = useMemo(
       () => [
         listItemHeight && sortedAccounts.length
@@ -251,7 +258,7 @@ const ConnectedWallets = forwardRef(
           handleIndicatorStyle={handleIndicatorStyle}
         >
           <BottomSheetFlatList
-            data={sortedAccounts}
+            data={filteredAccounts}
             keyExtractor={keyExtractor}
             renderItem={renderItem}
             ListFooterComponent={footer}

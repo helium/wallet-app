@@ -4,11 +4,7 @@ import {
   BottomTabBarProps,
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs'
-import {
-  Edge,
-  useSafeAreaInsets,
-  initialWindowMetrics,
-} from 'react-native-safe-area-context'
+import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Dollar from '@assets/images/dollar.svg'
 import Gem from '@assets/images/gem.svg'
 import Transactions from '@assets/images/transactions.svg'
@@ -23,15 +19,7 @@ import useHaptic from '@hooks/useHaptic'
 import Globe from '@assets/images/earth-globe.svg'
 import { isBefore, parseISO } from 'date-fns'
 import { useNotificationStorage } from '@storage/NotificationStorageProvider'
-import Text from '@components/Text'
-import InfoWarning from '@assets/images/warning.svg'
-import CloseCircle from '@assets/images/closeCircleFilled.svg'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import { useAnimatedStyle } from 'react-native-reanimated'
-import useLayoutHeight from '@hooks/useLayoutHeight'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useTranslation } from 'react-i18next'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useGetNotificationsQuery } from '../store/slices/walletRestApi'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
@@ -43,7 +31,6 @@ import NotificationsNavigator from '../features/notifications/NotificationsNavig
 import BrowserNavigator from '../features/browser/BrowserNavigator'
 import { useNotificationsQuery } from '../generated/graphql'
 import { appSlice } from '../store/slices/appSlice'
-import { RootState } from '../store/rootReducer'
 
 const Tab = createBottomTabNavigator()
 
@@ -193,36 +180,7 @@ const TabBarNavigator = () => {
   //   updateDoneSolanaMigration(new Set<string>())
   // }
   const { bottom } = useSafeAreaInsets()
-  const [bannerHeight, setBannerHeight] = useLayoutHeight()
   const { currentAccount, anchorProvider } = useAccountStorage()
-  const { top } = useSafeAreaInsets()
-  const { t } = useTranslation()
-  const { showBanner } = useSelector((state: RootState) => state.app)
-
-  const bannerTopMargin = useMemo(() => {
-    return top === 0 && initialWindowMetrics?.insets
-      ? initialWindowMetrics?.insets.top
-      : top
-  }, [top])
-
-  const bannerAnimatedStyles = useAnimatedStyle(() => {
-    if (!showBanner) {
-      return {
-        marginTop: -bannerHeight - bannerTopMargin,
-        paddingTop: bannerTopMargin,
-      }
-    }
-
-    // Animate margin
-    return {
-      marginTop: 0,
-      paddingTop: bannerTopMargin,
-    }
-  }, [showBanner])
-
-  const handleBannerClose = useCallback(() => {
-    dispatch(appSlice.actions.setShowBanner(false))
-  }, [dispatch])
 
   useEffect(() => {
     dispatch(appSlice.actions.setShowBanner(true))
@@ -230,25 +188,6 @@ const TabBarNavigator = () => {
 
   return (
     <>
-      <ReAnimatedBox backgroundColor="black650" style={bannerAnimatedStyles}>
-        <Box
-          padding="s"
-          paddingHorizontal="m"
-          flexDirection="row"
-          alignItems="center"
-          onLayout={setBannerHeight}
-        >
-          <Box>
-            <InfoWarning width={24} height={24} />
-          </Box>
-          <Text variant="body2" marginStart="s" flex={1} adjustsFontSizeToFit>
-            {t('generic.devnetTokensWarning')}
-          </Text>
-          <TouchableOpacityBox onPress={handleBannerClose}>
-            <CloseCircle width={24} height={24} />
-          </TouchableOpacityBox>
-        </Box>
-      </ReAnimatedBox>
       {currentAccount?.solanaAddress &&
         anchorProvider &&
         !doneSolanaMigration.has(currentAccount.solanaAddress) && (
