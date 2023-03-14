@@ -49,8 +49,8 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
   const { top } = useSafeAreaInsets()
 
   const containerStyle = useMemo(
-    () => ({ marginTop: showBanner ? 0 : top }),
-    [showBanner, top],
+    () => ({ marginTop: showBanner && l1Network === 'solana' ? 0 : top }),
+    [showBanner, top, l1Network],
   )
 
   return (

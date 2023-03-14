@@ -95,11 +95,11 @@ const AccountsScreen = () => {
   const { t } = useTranslation()
 
   const actualBannerHeight = useMemo(() => {
-    if (showBanner) {
+    if (showBanner && l1Network === 'solana') {
       return bannerHeight
     }
     return 0
-  }, [bannerHeight, showBanner])
+  }, [bannerHeight, showBanner, l1Network])
 
   const snapPoints = useMemo(() => {
     if (!pageHeight) return undefined
@@ -391,7 +391,7 @@ const AccountsScreen = () => {
   return (
     <Box flex={1}>
       <Box onLayout={setPageHeight} flex={1}>
-        <WarningBanner onLayout={setBannerHeight} />
+        {l1Network === 'solana' && <WarningBanner onLayout={setBannerHeight} />}
         <AccountsTopNav
           onPressWallet={toggleWalletsVisible}
           onLayout={setNavLayoutHeight}
