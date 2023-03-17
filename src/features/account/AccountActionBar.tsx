@@ -19,7 +19,6 @@ export type Action =
   | 'lock'
   | 'vote'
   | '5G'
-  | 'buy'
   | 'delegate'
   | 'swaps'
 

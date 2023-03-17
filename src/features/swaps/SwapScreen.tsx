@@ -313,7 +313,7 @@ const SwapScreen = () => {
       )
     }
 
-    navigation.replace('SwappingScreen', {
+    navigation.push('SwappingScreen', {
       tokenA: youPayTokenType,
       tokenB: youReceiveTokenType,
     })

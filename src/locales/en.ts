@@ -14,6 +14,9 @@ export default {
     setDefault: 'Set as Default',
     title: 'Name this account',
   },
+  errors: {
+    accountNotSelected: 'There must be an account selected to submit a txn',
+  },
   accountImport: {
     accountLimit:
       'You have reached the account limit.\nTo add another account, sign out of a wallet account and try again.',

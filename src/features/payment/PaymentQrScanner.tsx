@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native'
 import useHaptic from '@hooks/useHaptic'
 import useAlert from '@hooks/useAlert'
 import QrScanner from '@components/QrScanner'
-import { parseBurn, parseDelagate, parsePaymentLink } from '../../utils/linking'
+import { parseBurn, parseDelegate, parsePaymentLink } from '../../utils/linking'
 import { HomeNavigationProp } from '../home/homeTypes'
 
 const PaymentQrScanner = () => {
@@ -17,7 +17,7 @@ const PaymentQrScanner = () => {
     async (data: string) => {
       const payment = parsePaymentLink(data)
       const burn = parseBurn(data)
-      const delegate = parseDelagate(data)
+      const delegate = parseDelegate(data)
       if (payment) {
         triggerNotification('success')
         navigation.navigate('PaymentScreen', payment)

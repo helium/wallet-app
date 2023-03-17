@@ -4,7 +4,7 @@ import { Mnemonic } from '@helium/crypto-react-native'
 import bs58 from 'bs58'
 import { useAsync } from 'react-async-hook'
 import RNSodium from 'react-native-sodium'
-import { TESTNET } from '@helium/address/build/NetTypes'
+import { MAINNET } from '@helium/address/build/NetTypes'
 import { useTranslation } from 'react-i18next'
 import { Buffer } from 'buffer'
 import Text from '@components/Text'
@@ -44,7 +44,7 @@ const ImportPrivateKey = () => {
     async (mnemonic: Mnemonic) => {
       const account = await createSecureAccount({
         givenMnemonic: mnemonic,
-        netType: TESTNET,
+        netType: MAINNET,
       })
       if (
         accounts &&

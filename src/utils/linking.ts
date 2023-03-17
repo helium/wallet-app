@@ -99,10 +99,10 @@ export const parseBurn = (qrContent: string) => {
   }
 }
 
-export const parseDelagate = (qrContent: string) => {
+export const parseDelegate = (qrContent: string) => {
   try {
     const parsedJson = JSON.parse(qrContent)
-    const isDelegate = parsedJson.type === 'dc_delagate'
+    const isDelegate = parsedJson.type === 'dc_delegate'
 
     if (!isDelegate) return false
 
