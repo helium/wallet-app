@@ -13,9 +13,11 @@ import { useColors } from '@theme/themeHooks'
 import AccountIcon from '@components/AccountIcon'
 import useHaptic from '@hooks/useHaptic'
 import IconPressedContainer from '@components/IconPressedContainer'
+import { useSelector } from 'react-redux'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
+import { RootState } from '../../store/rootReducer'
 
 type Props = {
   onPressWallet: () => void
@@ -27,6 +29,7 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
   const { currentAccount, currentNetworkAddress } = useAccountStorage()
   const { l1Network } = useAppStorage()
   const { triggerImpact } = useHaptic()
+  const { showBanner } = useSelector((state: RootState) => state.app)
 
   const navToSettings = useCallback(() => {
     triggerImpact('light')
@@ -45,7 +48,10 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
 
   const { top } = useSafeAreaInsets()
 
-  const containerStyle = useMemo(() => ({ marginTop: top }), [top])
+  const containerStyle = useMemo(
+    () => ({ marginTop: showBanner && l1Network === 'solana' ? 0 : top }),
+    [showBanner, top, l1Network],
+  )
 
   return (
     <Box

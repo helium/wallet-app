@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo } from 'react'
+import React, { FC, useCallback, useEffect, useMemo } from 'react'
 import { SvgProps } from 'react-native-svg'
 import {
   BottomTabBarProps,
@@ -19,6 +19,7 @@ import useHaptic from '@hooks/useHaptic'
 import Globe from '@assets/images/earth-globe.svg'
 import { isBefore, parseISO } from 'date-fns'
 import { useNotificationStorage } from '@storage/NotificationStorageProvider'
+import { useDispatch } from 'react-redux'
 import { useGetNotificationsQuery } from '../store/slices/walletRestApi'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
@@ -29,6 +30,7 @@ import ActivityNavigator from '../features/activity/ActivityNavigator'
 import NotificationsNavigator from '../features/notifications/NotificationsNavigator'
 import BrowserNavigator from '../features/browser/BrowserNavigator'
 import { useNotificationsQuery } from '../generated/graphql'
+import { appSlice } from '../store/slices/appSlice'
 
 const Tab = createBottomTabNavigator()
 
@@ -171,13 +173,18 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
 }
 
 const TabBarNavigator = () => {
+  const dispatch = useDispatch()
   const { doneSolanaMigration, l1Network } = useAppStorage()
-  const { bottom } = useSafeAreaInsets()
   // // eslint-disable-next-line no-console
   // if (doneSolanaMigration.size > 0) {
   //   updateDoneSolanaMigration(new Set<string>())
   // }
+  const { bottom } = useSafeAreaInsets()
   const { currentAccount, anchorProvider } = useAccountStorage()
+
+  useEffect(() => {
+    dispatch(appSlice.actions.setShowBanner(true))
+  }, [dispatch])
 
   return (
     <>

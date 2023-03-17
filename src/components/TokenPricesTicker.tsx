@@ -39,6 +39,12 @@ const TokenPricesTicker = ({ ...boxProps }: Props) => {
       return t('generic.loading')
 
     const heliumPrice = tokenPrices.helium[currency.toLowerCase()]
+
+    if (tokenPrices?.solana[currency.toLowerCase()]) {
+      const solanaPrice = tokenPrices.solana[currency.toLowerCase()]
+      return `HNT = $${heliumPrice} • SOL = $${solanaPrice}`
+    }
+
     return `HNT = $${heliumPrice}`
   }, [currency, isFetching, t, tokenPrices])
 

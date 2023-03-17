@@ -1,4 +1,11 @@
-import React, { memo, ReactNode, useCallback, useEffect, useState } from 'react'
+import React, {
+  memo,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { View } from 'react-native'
 import DeviceInfo from 'react-native-device-info'
 import semver from 'semver'
@@ -11,17 +18,33 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import globalStyles from '@theme/globalStyles'
+import HeliumLogo from '@assets/images/helium.svg'
+import SolanaLogo from '@assets/images/tokenSOL.svg'
+import Multiply from '@assets/images/multiply.svg'
 import { useGetSolanaStatusQuery } from '../store/slices/solanaStatusApi'
 import Text from './Text'
 import Box from './Box'
-import ButtonPressable from './ButtonPressable'
 
-const SentinelScreen = ({ children }: { children: ReactNode }) => {
+const SentinelScreen = ({
+  children,
+  migrationStatusOverride,
+}: {
+  children: ReactNode
+  migrationStatusOverride?: string
+}) => {
   const { t } = useTranslation()
   const { data: status } = useGetSolanaStatusQuery()
   const [showSentinel, setShowSentinel] = useState<boolean>()
   const animValue = useSharedValue(1)
   const [animationComplete, setAnimationComplete] = useState(false)
+
+  const statusWrapper = useMemo(() => {
+    const statusCopy = {
+      ...status,
+      migrationStatus: migrationStatusOverride || status?.migrationStatus,
+    }
+    return statusCopy
+  }, [status, migrationStatusOverride])
 
   const animationCompleted = useCallback(() => {
     setAnimationComplete(true)
@@ -48,19 +71,18 @@ const SentinelScreen = ({ children }: { children: ReactNode }) => {
   })
 
   useEffect(() => {
-    if (!status || status.migrationStatus === 'not_started') return
+    if (!statusWrapper || statusWrapper.migrationStatus === 'not_started') {
+      setShowSentinel(false)
+      return
+    }
 
-    const { minimumVersions } = status
+    const { minimumVersions } = statusWrapper
     const bundleId = DeviceInfo.getBundleId()
-    const minVersion = minimumVersions[bundleId]
+    const minVersion = minimumVersions ? minimumVersions[bundleId] : '2.0.0'
     const version = DeviceInfo.getVersion()
     const valid = semver.gte(version, minVersion)
     setShowSentinel(!valid)
-  }, [status])
-
-  const handleClose = useCallback(() => {
-    animValue.value = 0
-  }, [animValue])
+  }, [statusWrapper])
 
   return (
     <View style={globalStyles.container}>
@@ -77,8 +99,22 @@ const SentinelScreen = ({ children }: { children: ReactNode }) => {
               <InfoError />
             </Box>
             <Text variant="h1" textAlign="center" fontSize={40} lineHeight={42}>
-              {t(`sentinel.${status?.migrationStatus}.title`)}
+              {t(`sentinel.${statusWrapper?.migrationStatus}.title`)}
             </Text>
+            <Box
+              marginTop="l"
+              flexDirection="row"
+              justifyContent="center"
+              alignItems="center"
+            >
+              <Box marginEnd="s">
+                <HeliumLogo color="white" height={40} width={40} />
+              </Box>
+              <Multiply color="white" height={24} width={24} />
+              <Box marginStart="s">
+                <SolanaLogo color="white" height={40} width={40} />
+              </Box>
+            </Box>
             <Text
               variant="subtitle1"
               color="secondaryText"
@@ -86,22 +122,8 @@ const SentinelScreen = ({ children }: { children: ReactNode }) => {
               marginTop="m"
               marginHorizontal="l"
             >
-              {t(`sentinel.${status?.migrationStatus}.body`)}
+              {t(`sentinel.${statusWrapper?.migrationStatus}.body`)}
             </Text>
-
-            <ButtonPressable
-              borderRadius="round"
-              onPress={handleClose}
-              backgroundColor="primaryText"
-              backgroundColorOpacityPressed={0.7}
-              backgroundColorDisabled="surfaceSecondary"
-              backgroundColorDisabledOpacity={0.5}
-              titleColorDisabled="black500"
-              titleColor="primary"
-              fontWeight="500"
-              title={t('sentinel.action')}
-              marginTop="l"
-            />
           </Box>
         </Animated.View>
       )}

@@ -25,6 +25,8 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import { NavBarHeight } from '@components/NavBar'
 import useHaptic from '@hooks/useHaptic'
 import { useBackgroundStyle, useColors } from '@theme/themeHooks'
+import WarningBanner from '@components/WarningBanner'
+import { useSelector } from 'react-redux'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
@@ -35,7 +37,6 @@ import {
   useAccountLazyQuery,
   useAccountQuery,
 } from '../../generated/graphql'
-import { withTransactionDetail } from './TransactionDetail'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import StatusBanner from '../StatusPage/StatusBanner'
@@ -55,6 +56,8 @@ import AccountActionBar from './AccountActionBar'
 import SUPPORTED_CURRENCIES from '../../utils/supportedCurrencies'
 import { useAppDispatch } from '../../store/store'
 import { appSlice } from '../../store/slices/appSlice'
+import { RootState } from '../../store/rootReducer'
+import { withTransactionDetail } from './TransactionDetail'
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
@@ -62,6 +65,7 @@ const AccountsScreen = () => {
   const rootNav = useNavigation<RootNavigationProp>()
   const { sortedAccounts, currentAccount, defaultAccountAddress } =
     useAccountStorage()
+  const [bannerHeight, setBannerHeight] = useLayoutHeight()
   const [navLayoutHeight, setNavLayoutHeight] = useLayoutHeight()
   const [pageHeight, setPageHeight] = useLayoutHeight(0)
   const { openedNotification } = useNotificationStorage()
@@ -86,16 +90,25 @@ const AccountsScreen = () => {
   const dispatch = useAppDispatch()
   const { triggerImpact } = useHaptic()
   const colors = useColors()
+  const { showBanner } = useSelector((state: RootState) => state.app)
 
   const { t } = useTranslation()
+
+  const actualBannerHeight = useMemo(() => {
+    if (showBanner && l1Network === 'solana') {
+      return bannerHeight
+    }
+    return 0
+  }, [bannerHeight, showBanner, l1Network])
 
   const snapPoints = useMemo(() => {
     if (!pageHeight) return undefined
     const collapsedHeight = ITEM_HEIGHT * 2
     // Get safe area top height
-    const expandedHeight = pageHeight - navLayoutHeight - top - topHeaderHeight
+    const expandedHeight =
+      pageHeight - navLayoutHeight - top - topHeaderHeight - actualBannerHeight
     return [collapsedHeight, expandedHeight]
-  }, [navLayoutHeight, pageHeight, top, topHeaderHeight])
+  }, [navLayoutHeight, pageHeight, top, topHeaderHeight, actualBannerHeight])
 
   useAppear(() => {
     reset()
@@ -263,6 +276,7 @@ const AccountsScreen = () => {
         top -
         topHeaderHeight -
         navLayoutHeight -
+        actualBannerHeight -
         pageHeight * 0.3) /
       (snapPoints[1] - snapPoints[0] - pageHeight * 0.3)
 
@@ -278,20 +292,24 @@ const AccountsScreen = () => {
       return {
         opacity: 0,
         position: 'absolute',
-        top: top + navLayoutHeight,
+        top: top + navLayoutHeight + actualBannerHeight,
         left: 0,
         right: 0,
       }
     }
 
     const opacity =
-      (listAnimatedPos.value - top - topHeaderHeight - navLayoutHeight) /
+      (listAnimatedPos.value -
+        top -
+        topHeaderHeight -
+        navLayoutHeight -
+        actualBannerHeight) /
       (snapPoints[1] - snapPoints[0])
 
     return {
       opacity: 1 - opacity,
       position: 'absolute',
-      top: top + navLayoutHeight,
+      top: top + navLayoutHeight + actualBannerHeight,
       left: 0,
       right: 0,
     }
@@ -373,6 +391,7 @@ const AccountsScreen = () => {
   return (
     <Box flex={1}>
       <Box onLayout={setPageHeight} flex={1}>
+        {l1Network === 'solana' && <WarningBanner onLayout={setBannerHeight} />}
         <AccountsTopNav
           onPressWallet={toggleWalletsVisible}
           onLayout={setNavLayoutHeight}

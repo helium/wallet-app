@@ -1022,9 +1022,9 @@ export async function annotateWithPendingRewards(
 ): Promise<HotspotWithPendingRewards[]> {
   const program = await init(provider)
   const dao = daoKey(new PublicKey(Mints.HNT))[0]
-  const entityKeys = hotspots.map(
-    (h) => h.content.json_uri.split('/').slice(-1)[0],
-  )
+  const entityKeys = hotspots.map((h) => {
+    return h.content.json_uri.split('/').slice(-1)[0]
+  })
   const mobileRewards = await getPendingRewards(
     program,
     MOBILE_LAZY_KEY,
