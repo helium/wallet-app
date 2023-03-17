@@ -7,7 +7,7 @@ import Balance, {
 } from '@helium/currency'
 import { PaymentV2 } from '@helium/transactions'
 import { PublicKey, Transaction } from '@solana/web3.js'
-import { useTranslation } from 'react-i18next'
+import i18n from '@utils/i18n'
 import { useTransactions } from '../storage/TransactionProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAccountLazyQuery, useSubmitTxnMutation } from '../generated/graphql'
@@ -30,7 +30,7 @@ export default () => {
   const { makePaymentTxn } = useTransactions()
   const { currentAccount, anchorProvider } = useAccountStorage()
   const { l1Network, solanaNetwork: cluster } = useAppStorage()
-  const { t } = useTranslation()
+  const { t } = i18n
   const { data: mints } = useGetMintsQuery(cluster, {
     refetchOnMountOrArgChange: true,
   })
