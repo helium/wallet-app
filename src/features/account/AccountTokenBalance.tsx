@@ -31,7 +31,6 @@ const AccountTokenBalance = ({
     networkBalance,
     networkStakedBalance,
     secBalance,
-    dcDelegatedBalance,
     dcReceivedBalance,
   } = useBalance()
   const { t } = useTranslation()
@@ -83,14 +82,9 @@ const AccountTokenBalance = ({
             amount: dcReceivedBalance?.toString(2, { showTicker: false }),
           })}
         </Text>
-        <Text variant="body1" color="secondaryText" textAlign="center">
-          {t('accountsScreen.delegatedBalance', {
-            amount: dcDelegatedBalance?.toString(2, { showTicker: false }),
-          })}
-        </Text>
       </Box>
     )
-  }, [ticker, showTicker, t, dcReceivedBalance, dcDelegatedBalance])
+  }, [ticker, showTicker, t, dcReceivedBalance])
 
   return (
     <Box flexDirection="row" justifyContent="center" {...boxProps}>

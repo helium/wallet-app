@@ -363,21 +363,6 @@ const useBalanceHook = () => {
     return new Balance(bal, CurrencyType.dataCredit)
   }, [l1Network, solBalances])
 
-  const dcDelegatedBalance = useMemo(() => {
-    let bal = 0
-    switch (l1Network) {
-      case 'helium':
-        bal = accountData?.account?.dcBalance || 0
-        break
-
-      case 'solana':
-        bal = solBalances?.dcDelegated ? Number(solBalances.dcDelegated) : 0
-        break
-    }
-
-    return new Balance(bal, CurrencyType.dataCredit)
-  }, [accountData, l1Network, solBalances])
-
   const dcBalance = useMemo(() => {
     let bal = 0
     switch (l1Network) {
@@ -493,7 +478,6 @@ const useBalanceHook = () => {
     solBalance,
     dcBalance,
     dcReceivedBalance,
-    dcDelegatedBalance,
     toCurrencyString,
     toPreferredCurrencyString,
     toUsd,
