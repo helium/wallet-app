@@ -8,6 +8,7 @@ import Balance, {
 import { PaymentV2 } from '@helium/transactions'
 import { PublicKey, Transaction } from '@solana/web3.js'
 import i18n from '@utils/i18n'
+import { Mints } from '@utils/constants'
 import { useTransactions } from '../storage/TransactionProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAccountLazyQuery, useSubmitTxnMutation } from '../generated/graphql'
@@ -21,6 +22,7 @@ import {
   sendTreasurySwap,
   sendMintDataCredits,
   sendDelegateDataCredits,
+  readBalances,
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import { useGetMintsQuery } from '../store/slices/walletRestApi'
@@ -289,7 +291,7 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      dispatch(
+      await dispatch(
         sendMintDataCredits({
           account: currentAccount,
           anchorProvider,
@@ -297,6 +299,8 @@ export default () => {
           hntAmount,
         }),
       )
+
+      dispatch(readBalances({ cluster, acct: currentAccount, mints: Mints }))
     },
     [anchorProvider, cluster, currentAccount, dispatch, t],
   )
@@ -307,7 +311,7 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      dispatch(
+      await dispatch(
         sendDelegateDataCredits({
           account: currentAccount,
           anchorProvider,
@@ -316,6 +320,8 @@ export default () => {
           amount,
         }),
       )
+
+      dispatch(readBalances({ cluster, acct: currentAccount, mints: Mints }))
     },
     [anchorProvider, cluster, currentAccount, dispatch, t],
   )
