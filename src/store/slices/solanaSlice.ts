@@ -17,7 +17,6 @@ import {
   sendAndConfirmWithRetry,
 } from '@helium/spl-utils'
 import { Mints } from '@utils/constants'
-import { useTokenAccount } from '@helium/helium-react-hooks'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
 import { CompressedNFT, toMintAddress } from '../../types/solana'
@@ -89,9 +88,10 @@ export const readBalances = createAsyncThunk(
       acct.solanaAddress,
     )
 
-    const dcReceived = useTokenAccount(
-      solUtils.getEscrowTokenAccount(acct.solanaAddress),
-    ).info?.amount
+    const dcReceived = await solUtils.getBalanceFromTokenAccount(
+      cluster,
+      solUtils.getEscrowTokenAccount(acct.solanaAddress).toBase58(),
+    )
 
     if (solBalance === 0 && cluster !== 'mainnet-beta') {
       solUtils.airdrop(cluster, acct.solanaAddress)

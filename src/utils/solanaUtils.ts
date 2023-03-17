@@ -118,6 +118,23 @@ export const airdrop = (cluster: Cluster, address: string) => {
   return getConnection(cluster).requestAirdrop(key, LAMPORTS_PER_SOL)
 }
 
+export const getBalanceFromTokenAccount = async (
+  cluster: Cluster,
+  address: string,
+) => {
+  const account = new PublicKey(address)
+
+  const accountInfo = await getConnection(cluster).getAccountInfo(account)
+
+  if (!accountInfo) {
+    return BigInt(0)
+  }
+
+  const accountData = AccountLayout.decode(accountInfo.data)
+
+  return accountData.amount
+}
+
 export const readHeliumBalances = async (
   cluster: Cluster,
   address: string,
