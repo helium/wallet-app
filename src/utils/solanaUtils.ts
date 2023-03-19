@@ -110,11 +110,7 @@ export const airdrop = (cluster: Cluster, address: string) => {
   return getConnection(cluster).requestAirdrop(key, LAMPORTS_PER_SOL)
 }
 
-export const readHeliumBalances = async (
-  cluster: Cluster,
-  address: string,
-  mints: typeof Mints,
-) => {
+export const readHeliumBalances = async (cluster: Cluster, address: string) => {
   const account = new PublicKey(address)
 
   const tokenAccounts = await getConnection(cluster).getTokenAccountsByOwner(
@@ -124,23 +120,14 @@ export const readHeliumBalances = async (
     },
   )
 
-  const vals = {} as Record<string, bigint>
+  const tokenAccountAddresses = {} as Record<string, string>
   tokenAccounts.value.forEach((tokenAccount) => {
     const accountData = AccountLayout.decode(tokenAccount.account.data)
-    vals[accountData.mint.toBase58()] = accountData.amount
+    tokenAccountAddresses[accountData.mint.toBase58()] =
+      tokenAccount.pubkey.toBase58()
   })
 
-  return {
-    hntBalance: vals[mints.HNT],
-    iotBalance: vals[mints.IOT],
-    mobileBalance: vals[mints.MOBILE],
-    dcBalance: vals[mints.DC],
-  }
-}
-
-export const readSolanaBalance = async (cluster: Cluster, address: string) => {
-  const key = new PublicKey(address)
-  return getConnection(cluster).getBalance(key)
+  return tokenAccountAddresses
 }
 
 export const createTransferTxn = async (
@@ -786,16 +773,15 @@ export const transferCompressedCollectable = async (
 export const getCompressedCollectables = async (
   pubKey: PublicKey,
   cluster: Cluster,
-  oldestCollectable?: string,
 ) => {
   const conn = getConnection(cluster)
   const { items } = await conn.getAssetsByOwner(
     pubKey.toString(),
     { sortBy: 'created', sortDirection: 'asc' },
-    50,
-    1,
+    500,
+    0,
     '',
-    oldestCollectable || '',
+    '',
   )
 
   return items as CompressedNFT[]
@@ -828,6 +814,38 @@ export const getCompressedCollectablesByCreator = async (
  * @returns collectables with metadata
  */
 export const getCollectablesMetadata = async (
+  collectables: CompressedNFT[],
+) => {
+  const collectablesWithMetadata = await Promise.all(
+    collectables.map(async (col) => {
+      try {
+        const { data } = await axios.get(col.content.json_uri, {
+          timeout: 3000,
+        })
+        return {
+          ...col,
+          content: {
+            ...col.content,
+            metadata: { ...col.content.metadata, ...data },
+          },
+        }
+      } catch (e) {
+        Logger.error(e)
+        return col
+      }
+    }),
+  )
+
+  return collectablesWithMetadata.filter((c) => c !== null) as CompressedNFT[]
+}
+
+/**
+ * Returns the account's collectables with metadata
+ * @param collectables collectables without metadata
+ * @param metaplex metaplex connection
+ * @returns collectables with metadata
+ */
+export const getCompressedNFTMetadata = async (
   collectables: CompressedNFT[],
 ): Promise<CompressedNFT[]> => {
   const collectablesWithMetadata = await Promise.all(
@@ -977,7 +995,9 @@ export const getAllTransactions = async (
   const pubKey = new PublicKey(address)
   const conn = getConnection(cluster)
   const metaplex = new Metaplex(conn, { cluster })
-  const parseTransactionsUrl = `${Config.HELIUS_API_URL}/v0/transactions/?api-key=${Config.HELIUS_API_KEY}`
+  const parseTransactionsUrl = `${
+    cluster === 'devnet' ? Config.HELIUS_DEVNET_API_URL : Config.HELIUS_API_URL
+  }/v0/transactions/?api-key=${Config.HELIUS_API_KEY}`
 
   try {
     const txList = await conn.getSignaturesForAddress(pubKey, {
@@ -985,10 +1005,6 @@ export const getAllTransactions = async (
       limit: 100,
     })
     const sigList = txList.map((tx) => tx.signature)
-
-    if (cluster !== 'mainnet-beta') {
-      return txList
-    }
 
     const { data } = await axios.post(parseTransactionsUrl, {
       transactions: sigList,
@@ -1033,6 +1049,7 @@ export const getAllTransactions = async (
       ...allTxnsWithMetadata,
       ...failedTxns,
     ]
+
     // Combine and sort all txns by date in descending order
     allTxs.sort(
       (

@@ -23,7 +23,6 @@ import * as Logger from '../../utils/logger'
 import { useAppDispatch } from '../../store/store'
 import { fetchHotspots } from '../../store/slices/hotspotsSlice'
 import { readBalances } from '../../store/slices/solanaSlice'
-import { Mints } from '../../utils/constants'
 
 async function migrateWallet(
   provider: Provider,
@@ -93,9 +92,7 @@ const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
                 cluster,
               }),
             )
-            dispatch(
-              readBalances({ cluster, acct: currentAccount, mints: Mints }),
-            )
+            dispatch(readBalances({ cluster, acct: currentAccount }))
           }
         } catch (e) {
           Logger.error(e)

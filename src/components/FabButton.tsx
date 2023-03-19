@@ -21,6 +21,7 @@ import Filter from '@assets/images/filter.svg'
 import { Color, FontWeight, Theme } from '@theme/theme'
 import { useColors, useCreateOpacity } from '@theme/themeHooks'
 import Swaps from '@assets/images/swaps.svg'
+import Airdrop from '@assets/images/airdrop.svg'
 import Box from './Box'
 import Text from './Text'
 import ButtonPressAnimation from './ButtonPressAnimation'
@@ -39,6 +40,7 @@ type IconName =
   | 'dots'
   | 'filter'
   | 'swaps'
+  | 'airdrop'
 
 type Props = BoxProps<Theme> & {
   backgroundColor?: Color
@@ -266,6 +268,8 @@ const FabIcon = ({ icon, pressed, color, colorPressed }: IconProps) => {
       return <Filter color={getIconColor()} />
     case 'swaps':
       return <Swaps color={getIconColor()} />
+    case 'airdrop':
+      return <Airdrop width={17} height={17} color={getIconColor()} />
     default:
     case 'dots':
       return <Dots color={getIconColor()} />

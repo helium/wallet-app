@@ -24,7 +24,7 @@ type Route = RouteProp<SwapStackParamList, 'SwappingScreen'>
 const SwappingScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<TabBarNavigationProp>()
-  const backEdges = useMemo(() => ['top'] as Edge[], [])
+  const backEdges = useMemo(() => ['bottom'] as Edge[], [])
 
   const { t } = useTranslation()
   const { tokenA, tokenB } = route.params

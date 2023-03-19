@@ -19,6 +19,8 @@ import Text from './Text'
 import { appSlice } from '../store/slices/appSlice'
 import TouchableOpacityBox from './TouchableOpacityBox'
 
+const MIN_HEIGHT = 52
+
 const Banner = ({
   onLayout,
   ...rest
@@ -38,7 +40,9 @@ const Banner = ({
   const bannerAnimatedStyles = useAnimatedStyle(() => {
     if (!showBanner) {
       return {
-        marginTop: withTiming(-bannerHeight - bannerTopMargin),
+        marginTop: withTiming(
+          -Math.max(bannerHeight, MIN_HEIGHT) - bannerTopMargin,
+        ),
         paddingTop: bannerTopMargin,
       }
     }
@@ -47,7 +51,7 @@ const Banner = ({
       marginTop: withTiming(0),
       paddingTop: bannerTopMargin,
     }
-  }, [showBanner])
+  }, [showBanner, bannerTopMargin])
 
   const handleBannerClose = useCallback(() => {
     dispatch(appSlice.actions.setShowBanner(false))
@@ -61,6 +65,7 @@ const Banner = ({
       {...rest}
     >
       <Box
+        minHeight={MIN_HEIGHT}
         padding="s"
         paddingHorizontal="m"
         flexDirection="row"
