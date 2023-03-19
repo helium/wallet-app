@@ -2,9 +2,7 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "commonjs",
-    "lib": [
-      "es2021"
-    ],
+    "lib": ["es2021"],
     "allowJs": true,
     "jsx": "react-native",
     "noEmit": true,
@@ -17,33 +15,15 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "paths": {
-      "@helium/crypto": [
-        "./node_modules/@helium/crypto-react-native"
-      ],
-      "@assets": [
-        "./src/assets"
-      ],
-      "@components/*": [
-        "./src/components/*"
-      ],
-      "@constants/*": [
-        "./src/constants/*"
-      ],
-      "@hooks/*": [
-        "./src/hooks/*"
-      ],
-      "@theme/*": [
-        "./src/theme/*"
-      ],
-      "@utils/*": [
-        "./src/utils/*"
-      ],
-      "@storage/*": [
-        "./src/storage/*"
-      ],
-      "@types/*": [
-        "./src/types/*"
-      ]
+      "@helium/crypto": ["./node_modules/@helium/crypto-react-native"],
+      "@assets": ["./src/assets"],
+      "@components/*": ["./src/components/*"],
+      "@constants/*": ["./src/constants/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@theme/*": ["./src/theme/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@storage/*": ["./src/storage/*"],
+      "@types/*": ["./src/types/*"]
     }
   },
   "exclude": [
