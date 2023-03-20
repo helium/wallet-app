@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Commitment, Connection, ConnectionConfig } from '@solana/web3.js'
 import axios from 'axios'
+import * as logger from '@utils/logger'
 
 export class WrappedConnection extends Connection {
   baseURL: string
@@ -15,6 +16,19 @@ export class WrappedConnection extends Connection {
      * Eventually we want to have a hosted RPC node that supports this API
      */
     this.baseURL = endpoint
+  }
+
+  async getHealth(): Promise<any> {
+    try {
+      const response = await axios.post(this.baseURL, {
+        jsonrpc: '2.0',
+        method: 'getHealth',
+        id: 'rpd-op-123',
+      })
+      return { result: response.data.result, error: response.data.error }
+    } catch (error) {
+      logger.error(error)
+    }
   }
 
   async searchAssets(
@@ -46,7 +60,7 @@ export class WrappedConnection extends Connection {
       })
       return response.data.result
     } catch (error) {
-      console.error(error)
+      logger.error(error)
     }
   }
 
@@ -60,7 +74,7 @@ export class WrappedConnection extends Connection {
       })
       return response.data
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       throw error
     }
   }
@@ -82,7 +96,7 @@ export class WrappedConnection extends Connection {
       })
       return response.data.result
     } catch (error) {
-      console.error(error)
+      logger.error(error)
     }
   }
 

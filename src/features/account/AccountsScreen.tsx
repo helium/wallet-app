@@ -25,8 +25,9 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import { NavBarHeight } from '@components/NavBar'
 import useHaptic from '@hooks/useHaptic'
 import { useBackgroundStyle, useColors } from '@theme/themeHooks'
-import WarningBanner from '@components/WarningBanner'
+import WarningBanner, { BannerType } from '@components/WarningBanner'
 import { useSelector } from 'react-redux'
+import useSolanaHealth from '@hooks/useSolanaHealth'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
@@ -89,6 +90,7 @@ const AccountsScreen = () => {
   const { triggerImpact } = useHaptic()
   const colors = useColors()
   const { showBanner } = useSelector((state: RootState) => state.app)
+  const { isHealthy } = useSolanaHealth()
 
   const { t } = useTranslation()
 
@@ -407,7 +409,12 @@ const AccountsScreen = () => {
   return (
     <Box flex={1}>
       <Box onLayout={setPageHeight} flex={1}>
-        {l1Network === 'solana' && <WarningBanner onLayout={setBannerHeight} />}
+        {l1Network === 'solana' && (
+          <WarningBanner
+            type={isHealthy ? BannerType.Treasury : BannerType.SolanaHealth}
+            onLayout={setBannerHeight}
+          />
+        )}
         <AccountsTopNav
           onPressWallet={toggleWalletsVisible}
           onLayout={setNavLayoutHeight}
