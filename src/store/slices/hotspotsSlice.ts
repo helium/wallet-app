@@ -42,7 +42,7 @@ export const fetchHotspots = createAsyncThunk(
       limit,
     )
 
-    const hotspotsWithMetadata = await solUtils.getCollectablesMetadata(
+    const hotspotsWithMetadata = await solUtils.getCompressedNFTMetadata(
       fetchedHotspots,
     )
     const hotspotsWithPendingRewards =
@@ -84,7 +84,7 @@ export const fetchMoreHotspots = createAsyncThunk(
       limit,
     )
 
-    const hotspotsWithMetadata = await solUtils.getCollectablesMetadata(
+    const hotspotsWithMetadata = await solUtils.getCompressedNFTMetadata(
       fetchedHotspots,
     )
     const hotspotsWithPendingRewards =

@@ -24,11 +24,17 @@ import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
 import BurnScreen from '../burn/BurnScreen'
 import ImportPrivateKey from '../onboarding/import/ImportPrivateKey'
 import SwapNavigator from '../swaps/SwapNavigator'
+import AirdropScreen from '../account/AirdropScreen'
 
 const HomeStack = createNativeStackNavigator()
 
 const screenOptions = {
   presentation: 'modal',
+} as NativeStackNavigationOptions
+
+const screenOptionsTransparentModal = {
+  presentation: 'transparentModal',
+  animation: 'fade',
 } as NativeStackNavigationOptions
 
 const navigatorScreenOptions = {
@@ -59,6 +65,11 @@ const HomeStackScreen = () => {
       <HomeStack.Screen name="BurnScreen" component={BurnScreen} />
       <HomeStack.Screen name="PaymentQrScanner" component={PaymentQrScanner} />
       <HomeStack.Screen name="RequestScreen" component={RequestScreen} />
+      <HomeStack.Screen
+        name="AirdropScreen"
+        component={AirdropScreen}
+        options={screenOptionsTransparentModal}
+      />
       <HomeStack.Screen name="DappLoginScreen" component={DappLoginScreen} />
       <HomeStack.Screen
         name="AddressBookNavigator"

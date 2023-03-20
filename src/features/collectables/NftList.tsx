@@ -30,7 +30,7 @@ const NftList = () => {
   }, [fetchingMore, isFocused, fetchMore])
 
   const flatListItems = useMemo(() => {
-    return collectablesWithMeta?.length ? Object.keys(collectablesWithMeta) : []
+    return collectablesWithMeta ? Object.keys(collectablesWithMeta) : []
   }, [collectablesWithMeta])
 
   const renderItem = useCallback(

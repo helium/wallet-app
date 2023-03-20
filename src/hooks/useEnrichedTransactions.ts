@@ -8,6 +8,8 @@ import {
   onLogs,
   removeAccountChangeListener,
 } from '../utils/solanaUtils'
+import { useAppDispatch } from '../store/store'
+import { readBalances } from '../store/slices/solanaSlice'
 
 const useEnrichedTransactions = (): {
   transactions: (EnrichedTransaction | ConfirmedSignatureInfo)[]
@@ -30,6 +32,7 @@ const useEnrichedTransactions = (): {
   const [onEndReached, setOnEndReached] = useState<boolean>(false)
   const [hasNewTransactions, setHasNewTransactions] = useState(false)
   const accountSubscriptionId = useRef<number>()
+  const dispatch = useAppDispatch()
 
   // Reset new transactions when account changes. Maybe we add this all into a slice?
   useEffect(() => {
@@ -92,6 +95,7 @@ const useEnrichedTransactions = (): {
 
     const subId = onLogs(cluster, currentAccount?.solanaAddress, () => {
       refresh()
+      dispatch(readBalances({ cluster, acct: currentAccount }))
       setHasNewTransactions(true)
     })
 
@@ -99,7 +103,7 @@ const useEnrichedTransactions = (): {
       removeAccountChangeListener(cluster, accountSubscriptionId.current)
     }
     accountSubscriptionId.current = subId
-  }, [cluster, currentAccount, refresh])
+  }, [cluster, currentAccount, refresh, dispatch])
 
   const resetNewTransactions = useCallback(() => {
     setHasNewTransactions(false)

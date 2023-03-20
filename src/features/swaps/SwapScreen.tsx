@@ -16,6 +16,7 @@ import ButtonPressable from '@components/ButtonPressable'
 import TextTransform from '@components/TextTransform'
 import { useTreasuryPrice } from '@hooks/useTreasuryPrice'
 import useAlert from '@hooks/useAlert'
+import TokenHNT from '@assets/images/tokenHNT.svg'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenIOT from '@assets/images/tokenIOT.svg'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
@@ -27,10 +28,7 @@ import {
 import { Mints } from '@utils/constants'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import * as Logger from '@utils/logger'
-import TokenSelector, {
-  TokenSelectorRef,
-  TokenListItem,
-} from '@components/TokenSelector'
+import TokenSelector, { TokenSelectorRef } from '@components/TokenSelector'
 import CloseButton from '@components/CloseButton'
 import TreasuryWarningScreen from '@components/TreasuryWarningScreen'
 import { SwapNavigationProp } from './swapTypes'
@@ -172,21 +170,34 @@ const SwapScreen = () => {
     [selectorMode, refresh],
   )
 
-  const tokenData = useMemo(
-    (): TokenListItem[] => [
-      {
-        label: Tokens.MOBILE,
-        icon: <TokenMOBILE width={30} height={30} />,
-        value: Tokens.MOBILE,
-      },
-      {
-        label: Tokens.IOT,
-        icon: <TokenIOT width={30} height={30} />,
-        value: Tokens.IOT,
-      },
-    ],
-    [],
-  )
+  const tokenData = useMemo(() => {
+    const tokens = {
+      [SelectorMode.youPay]: [
+        {
+          label: Tokens.MOBILE,
+          icon: <TokenMOBILE width={30} height={30} />,
+          value: Tokens.MOBILE,
+          selected: youPayTokenType === Tokens.MOBILE,
+        },
+        {
+          label: Tokens.IOT,
+          icon: <TokenIOT width={30} height={30} />,
+          value: Tokens.IOT,
+          selected: youPayTokenType === Tokens.IOT,
+        },
+      ],
+      [SelectorMode.youReceive]: [
+        {
+          label: Tokens.HNT,
+          icon: <TokenHNT width={30} height={30} />,
+          value: Tokens.HNT,
+          selected: youPayTokenType === Tokens.HNT,
+        },
+      ],
+    }
+
+    return tokens[selectorMode]
+  }, [selectorMode, youPayTokenType])
 
   const onCurrencySelect = useCallback(
     (youPay: boolean) => () => {

@@ -128,7 +128,7 @@ const ConnectedWallets = forwardRef(
           // Reset Home & Collectables stack to first screen
           navigation.reset({
             index: 0,
-            routes: [{ name: 'Home' }, { name: 'Collectables' }],
+            routes: [{ name: 'Home' }],
           })
         }
       },

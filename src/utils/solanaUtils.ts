@@ -50,6 +50,7 @@ import {
 import bs58 from 'bs58'
 import {
   HNT_MINT,
+  getAsset,
   searchAssets,
   toBN,
   sendAndConfirmWithRetry,
@@ -110,11 +111,7 @@ export const airdrop = (cluster: Cluster, address: string) => {
   return getConnection(cluster).requestAirdrop(key, LAMPORTS_PER_SOL)
 }
 
-export const readHeliumBalances = async (
-  cluster: Cluster,
-  address: string,
-  mints: typeof Mints,
-) => {
+export const readHeliumBalances = async (cluster: Cluster, address: string) => {
   const account = new PublicKey(address)
 
   const tokenAccounts = await getConnection(cluster).getTokenAccountsByOwner(
@@ -124,23 +121,14 @@ export const readHeliumBalances = async (
     },
   )
 
-  const vals = {} as Record<string, bigint>
+  const tokenAccountAddresses = {} as Record<string, string>
   tokenAccounts.value.forEach((tokenAccount) => {
     const accountData = AccountLayout.decode(tokenAccount.account.data)
-    vals[accountData.mint.toBase58()] = accountData.amount
+    tokenAccountAddresses[accountData.mint.toBase58()] =
+      tokenAccount.pubkey.toBase58()
   })
 
-  return {
-    hntBalance: vals[mints.HNT],
-    iotBalance: vals[mints.IOT],
-    mobileBalance: vals[mints.MOBILE],
-    dcBalance: vals[mints.DC],
-  }
-}
-
-export const readSolanaBalance = async (cluster: Cluster, address: string) => {
-  const key = new PublicKey(address)
-  return getConnection(cluster).getBalance(key)
+  return tokenAccountAddresses
 }
 
 export const createTransferTxn = async (
@@ -786,16 +774,15 @@ export const transferCompressedCollectable = async (
 export const getCompressedCollectables = async (
   pubKey: PublicKey,
   cluster: Cluster,
-  oldestCollectable?: string,
 ) => {
   const conn = getConnection(cluster)
   const { items } = await conn.getAssetsByOwner(
     pubKey.toString(),
     { sortBy: 'created', sortDirection: 'asc' },
-    50,
-    1,
+    500,
+    0,
     '',
-    oldestCollectable || '',
+    '',
   )
 
   return items as CompressedNFT[]
@@ -828,6 +815,38 @@ export const getCompressedCollectablesByCreator = async (
  * @returns collectables with metadata
  */
 export const getCollectablesMetadata = async (
+  collectables: CompressedNFT[],
+) => {
+  const collectablesWithMetadata = await Promise.all(
+    collectables.map(async (col) => {
+      try {
+        const { data } = await axios.get(col.content.json_uri, {
+          timeout: 3000,
+        })
+        return {
+          ...col,
+          content: {
+            ...col.content,
+            metadata: { ...col.content.metadata, ...data },
+          },
+        }
+      } catch (e) {
+        Logger.error(e)
+        return col
+      }
+    }),
+  )
+
+  return collectablesWithMetadata.filter((c) => c !== null) as CompressedNFT[]
+}
+
+/**
+ * Returns the account's collectables with metadata
+ * @param collectables collectables without metadata
+ * @param metaplex metaplex connection
+ * @returns collectables with metadata
+ */
+export const getCompressedNFTMetadata = async (
   collectables: CompressedNFT[],
 ): Promise<CompressedNFT[]> => {
   const collectablesWithMetadata = await Promise.all(
@@ -977,7 +996,9 @@ export const getAllTransactions = async (
   const pubKey = new PublicKey(address)
   const conn = getConnection(cluster)
   const metaplex = new Metaplex(conn, { cluster })
-  const parseTransactionsUrl = `${Config.HELIUS_API_URL}/v0/transactions/?api-key=${Config.HELIUS_API_KEY}`
+  const parseTransactionsUrl = `${
+    cluster === 'devnet' ? Config.HELIUS_DEVNET_API_URL : Config.HELIUS_API_URL
+  }/v0/transactions/?api-key=${Config.HELIUS_API_KEY}`
 
   try {
     const txList = await conn.getSignaturesForAddress(pubKey, {
@@ -986,7 +1007,7 @@ export const getAllTransactions = async (
     })
     const sigList = txList.map((tx) => tx.signature)
 
-    if (cluster !== 'mainnet-beta') {
+    if (cluster !== 'mainnet-beta' && cluster !== 'devnet') {
       return txList
     }
 
@@ -1000,31 +1021,74 @@ export const getAllTransactions = async (
      */
     const allTxnsWithMetadata: EnrichedTransaction[] = await Promise.all(
       data.map(async (tx: EnrichedTransaction) => {
-        const firstTokenTransfer = tx.tokenTransfers[0]
-        if (firstTokenTransfer && firstTokenTransfer.mint) {
-          const tokenMetadata = await getCollectableByMint(
-            new PublicKey(firstTokenTransfer.mint),
-            metaplex,
-          )
+        try {
+          const firstTokenTransfer = tx.tokenTransfers[0]
+          if (firstTokenTransfer && firstTokenTransfer.mint) {
+            const tokenMetadata = await getCollectableByMint(
+              new PublicKey(firstTokenTransfer.mint),
+              metaplex,
+            )
 
-          return {
-            ...tx,
-            tokenTransfers: [
-              {
-                ...firstTokenTransfer,
-                tokenMetadata: {
-                  model: tokenMetadata?.model,
-                  name: tokenMetadata?.name,
-                  symbol: tokenMetadata?.symbol,
-                  uri: tokenMetadata?.uri,
-                  json: tokenMetadata?.json,
+            return {
+              ...tx,
+              tokenTransfers: [
+                {
+                  ...firstTokenTransfer,
+                  tokenMetadata: {
+                    model: tokenMetadata?.model,
+                    name: tokenMetadata?.name,
+                    symbol: tokenMetadata?.symbol,
+                    uri: tokenMetadata?.uri,
+                    json: tokenMetadata?.json,
+                  },
                 },
-              },
-            ],
+              ],
+            }
           }
-        }
 
-        return tx
+          if (tx?.events?.compressed?.length) {
+            const { assetId } = tx.events.compressed[0]
+            if (assetId) {
+              const compressedNFT = await getAsset(
+                conn.rpcEndpoint,
+                new PublicKey(assetId),
+              )
+
+              if (!compressedNFT) {
+                return tx
+              }
+
+              const { data: metadata } = await axios.get(
+                compressedNFT.content.json_uri,
+                {
+                  timeout: 3000,
+                },
+              )
+
+              return {
+                ...tx,
+                events: {
+                  ...tx.events,
+                  compressed: [
+                    {
+                      ...tx.events.compressed[0],
+                      metadata: {
+                        ...compressedNFT.content.metadata,
+                        ...metadata,
+                      },
+                    },
+                    ...tx.events.compressed.slice(1),
+                  ],
+                },
+              }
+            }
+          }
+
+          return tx
+        } catch (e) {
+          Logger.error(e)
+          return tx
+        }
       }),
     )
 
@@ -1033,6 +1097,7 @@ export const getAllTransactions = async (
       ...allTxnsWithMetadata,
       ...failedTxns,
     ]
+
     // Combine and sort all txns by date in descending order
     allTxs.sort(
       (

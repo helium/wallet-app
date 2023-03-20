@@ -23,9 +23,21 @@ import CurrencyFormatter from 'react-native-currency-format'
 import { useSelector } from 'react-redux'
 import useAppear from '@hooks/useAppear'
 import usePrevious from '@hooks/usePrevious'
-import { useMint } from '@helium/helium-react-hooks'
-import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import {
+  useAccount,
+  useMint,
+  useTokenAccount,
+} from '@helium/helium-react-hooks'
+import {
+  DC_MINT,
+  HNT_MINT,
+  IOT_MINT,
+  MOBILE_MINT,
+  toNumber,
+} from '@helium/spl-utils'
 import { BN } from 'bn.js'
+import { PublicKey } from '@solana/web3.js'
+import { AccountLayout } from '@solana/spl-token'
 import {
   useAccountLazyQuery,
   useAccountQuery,
@@ -34,7 +46,7 @@ import {
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
-import { readBalances } from '../store/slices/solanaSlice'
+import { readBalances, solanaSlice } from '../store/slices/solanaSlice'
 import { useGetTokenPricesQuery } from '../store/slices/walletRestApi'
 import { useAppDispatch } from '../store/store'
 import { accountCurrencyType } from './accountUtils'
@@ -78,16 +90,22 @@ const useBalanceHook = () => {
 
   const [fetchAccountData] = useAccountLazyQuery()
 
-  const solanaBalances = useSelector(
-    (state: RootState) => state.solana.balances,
+  const { balances: solanaBalances, tokenAccounts } = useSelector(
+    (state: RootState) => state.solana,
   )
-
-  const [oracleDateTime, setOracleDateTime] = useState<Date>()
 
   const solAddress = useMemo(
     () => currentAccount?.solanaAddress,
     [currentAccount],
   )
+
+  const allTokenAccounts = useMemo(() => {
+    if (!solAddress) return
+
+    return tokenAccounts[solAddress]
+  }, [solAddress, tokenAccounts])
+
+  const [oracleDateTime, setOracleDateTime] = useState<Date>()
 
   const solBalances = useMemo(() => {
     if (!solAddress) return
@@ -95,15 +113,55 @@ const useBalanceHook = () => {
     return solanaBalances[solAddress]
   }, [solAddress, solanaBalances])
 
+  const solBalancesLoading = useMemo(() => {
+    if (!solBalances) return
+
+    return solBalances.loading
+  }, [solBalances])
+
+  // On mount reset the loading state for the balances
+  useEffect(() => {
+    if (!solAddress) return
+    dispatch(solanaSlice.actions.resetBalancesLoading(solAddress))
+  }, [dispatch, solAddress])
+
   const dispatchSolBalanceUpdate = useCallback(() => {
     if (!currentAccount?.solanaAddress || !Mints) {
       return
     }
-    dispatch(readBalances({ cluster, acct: currentAccount, mints: Mints }))
+    dispatch(readBalances({ cluster, acct: currentAccount }))
   }, [currentAccount, dispatch, cluster])
 
-  const { info: iotMint } = useMint(IOT_MINT)
   const { info: mobileMint } = useMint(MOBILE_MINT)
+  const { info: iotMint } = useMint(IOT_MINT)
+
+  const solTokenAccount = useAccount(
+    solAddress ? new PublicKey(solAddress) : undefined,
+  )
+
+  const hntTokenAccount = useTokenAccount(
+    allTokenAccounts && allTokenAccounts[HNT_MINT.toBase58()]
+      ? new PublicKey(allTokenAccounts[HNT_MINT.toBase58()])
+      : undefined,
+  )
+
+  const dcTokenAccount = useTokenAccount(
+    allTokenAccounts && allTokenAccounts[DC_MINT.toBase58()]
+      ? new PublicKey(allTokenAccounts[DC_MINT.toBase58()])
+      : undefined,
+  )
+
+  const iotTokenAccount = useTokenAccount(
+    allTokenAccounts && allTokenAccounts[IOT_MINT.toBase58()]
+      ? new PublicKey(allTokenAccounts[IOT_MINT.toBase58()])
+      : undefined,
+  )
+
+  const mobileTokenAccount = useTokenAccount(
+    allTokenAccounts && allTokenAccounts[MOBILE_MINT.toBase58()]
+      ? new PublicKey(allTokenAccounts[MOBILE_MINT.toBase58()])
+      : undefined,
+  )
 
   useEffect(() => {
     if (!currentAccount?.solanaAddress || l1Network === 'helium') {
@@ -233,6 +291,11 @@ const useBalanceHook = () => {
     [currentAccount],
   )
 
+  const getTokenAccountData = useCallback((tokenAccount) => {
+    if (!tokenAccount.account) return
+    return AccountLayout.decode(tokenAccount.account?.data)
+  }, [])
+
   const networkBalance = useMemo(() => {
     let bal = 0
     switch (l1Network) {
@@ -241,12 +304,22 @@ const useBalanceHook = () => {
         break
 
       case 'solana':
-        bal = solBalances?.hntBalance ? Number(solBalances.hntBalance) : 0
+        bal =
+          allTokenAccounts && allTokenAccounts[HNT_MINT.toBase58()]
+            ? Number(getTokenAccountData(hntTokenAccount)?.amount || 0)
+            : 0
         break
     }
 
     return new Balance(bal, accountCurrencyType(currentAccount?.address))
-  }, [accountData, currentAccount, l1Network, solBalances])
+  }, [
+    accountData,
+    currentAccount,
+    l1Network,
+    getTokenAccountData,
+    hntTokenAccount,
+    allTokenAccounts,
+  ])
 
   const networkStakedBalance = useMemo(() => {
     let bal = 0
@@ -261,7 +334,7 @@ const useBalanceHook = () => {
     }
 
     return new Balance(bal, accountCurrencyType(currentAccount?.address))
-  }, [accountData, currentAccount, l1Network, solBalances])
+  }, [currentAccount, solBalances, accountData, l1Network])
 
   const mobileBalance = useMemo(() => {
     let bal = 0
@@ -271,30 +344,44 @@ const useBalanceHook = () => {
         break
 
       case 'solana':
-        bal = solBalances?.mobileBalance
-          ? toNumber(
-              new BN(solBalances?.mobileBalance?.toString() || 0),
-              mobileMint?.info.decimals || 6,
-            )
-          : 0
+        bal =
+          allTokenAccounts && allTokenAccounts[MOBILE_MINT.toBase58()]
+            ? toNumber(
+                new BN(
+                  getTokenAccountData(mobileTokenAccount)?.amount.toString() ||
+                    0,
+                ),
+                mobileMint?.info.decimals || 6,
+              )
+            : 0
         break
     }
 
     return l1Network === 'helium'
       ? new Balance(bal, CurrencyType.mobile)
       : Balance.fromFloatAndTicker(bal, 'MOBILE')
-  }, [accountData, l1Network, solBalances, mobileMint])
+  }, [
+    accountData,
+    l1Network,
+    getTokenAccountData,
+    mobileMint,
+    mobileTokenAccount,
+    allTokenAccounts,
+  ])
 
   const mobileSolBalance = useMemo(() => {
-    const bal = solBalances?.mobileBalance
-      ? solBalances.mobileBalance?.toString()
-      : 0
-
     /* TODO: Add new solana variation for IOT and MOBILE in @helium/currency that supports
      6 decimals and pulls from mint instead of ticker.
     */
-    return toNumber(new BN(bal), mobileMint?.info.decimals || 6)
-  }, [mobileMint, solBalances])
+    return allTokenAccounts && allTokenAccounts[MOBILE_MINT.toBase58()]
+      ? toNumber(
+          new BN(
+            getTokenAccountData(mobileTokenAccount)?.amount.toString() || 0,
+          ),
+          mobileMint?.info.decimals || 6,
+        )
+      : 0
+  }, [mobileMint, getTokenAccountData, mobileTokenAccount, allTokenAccounts])
 
   const iotBalance = useMemo(() => {
     let bal = 0
@@ -304,28 +391,41 @@ const useBalanceHook = () => {
         break
 
       case 'solana':
-        bal = solBalances?.iotBalance
-          ? toNumber(
-              new BN(solBalances?.iotBalance?.toString() || 0),
-              iotMint?.info.decimals || 6,
-            )
-          : 0
+        bal =
+          allTokenAccounts && allTokenAccounts[IOT_MINT.toBase58()]
+            ? toNumber(
+                new BN(
+                  getTokenAccountData(iotTokenAccount)?.amount.toString() || 0,
+                ),
+                iotMint?.info.decimals || 6,
+              )
+            : 0
         break
     }
 
     return l1Network === 'helium'
       ? new Balance(bal, CurrencyType.iot)
       : Balance.fromFloatAndTicker(bal, 'IOT')
-  }, [accountData, l1Network, solBalances, iotMint])
+  }, [
+    accountData,
+    l1Network,
+    iotTokenAccount,
+    iotMint,
+    getTokenAccountData,
+    allTokenAccounts,
+  ])
 
   const iotSolBalance = useMemo(() => {
-    const bal = solBalances?.iotBalance ? solBalances.iotBalance?.toString() : 0
-
     /* TODO: Add new solana variation for IOT and MOBILE in @helium/currency that supports
      6 decimals and pulls from mint instead of ticker.
     */
-    return toNumber(new BN(bal), iotMint?.info.decimals || 6)
-  }, [solBalances, iotMint])
+    return allTokenAccounts && allTokenAccounts[IOT_MINT.toBase58()]
+      ? toNumber(
+          new BN(getTokenAccountData(iotTokenAccount)?.amount.toString() || 0),
+          iotMint?.info.decimals || 6,
+        )
+      : 0
+  }, [iotTokenAccount, iotMint, getTokenAccountData, allTokenAccounts])
 
   const secBalance = useMemo(() => {
     let bal = 0
@@ -340,7 +440,7 @@ const useBalanceHook = () => {
     }
 
     return new Balance(bal, CurrencyType.security)
-  }, [accountData, l1Network, solBalances])
+  }, [solBalances, accountData, l1Network])
 
   const dcBalance = useMemo(() => {
     let bal = 0
@@ -350,12 +450,21 @@ const useBalanceHook = () => {
         break
 
       case 'solana':
-        bal = solBalances?.dcBalance ? Number(solBalances.dcBalance) : 0
+        bal =
+          allTokenAccounts && allTokenAccounts[DC_MINT.toBase58()]
+            ? Number(getTokenAccountData(dcTokenAccount)?.amount || 0)
+            : 0
         break
     }
 
     return new Balance(bal, CurrencyType.dataCredit)
-  }, [accountData, l1Network, solBalances])
+  }, [
+    accountData,
+    l1Network,
+    dcTokenAccount,
+    getTokenAccountData,
+    allTokenAccounts,
+  ])
 
   const solBalance = useMemo(() => {
     let bal = 0
@@ -364,12 +473,12 @@ const useBalanceHook = () => {
         break
 
       case 'solana':
-        bal = solBalances?.solBalance ? Number(solBalances.solBalance) : 0
+        bal = Number(solTokenAccount.account?.lamports || 0)
         break
     }
 
     return new Balance(bal, CurrencyType.solTokens)
-  }, [l1Network, solBalances])
+  }, [solTokenAccount, l1Network])
 
   const toPreferredCurrencyString = useCallback(
     (
@@ -461,6 +570,8 @@ const useBalanceHook = () => {
     toUsd,
     updateVars,
     updating,
+    tokenAccounts: allTokenAccounts,
+    solBalancesLoading,
   }
 }
 
@@ -488,6 +599,8 @@ const initialState = {
   toUsd: () => 0,
   updateVars: () => new Promise<void>((resolve) => resolve()),
   updating: false,
+  tokenAccounts: {},
+  solBalancesLoading: false,
 }
 const BalanceContext =
   createContext<ReturnType<typeof useBalanceHook>>(initialState)
