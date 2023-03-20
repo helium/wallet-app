@@ -113,7 +113,7 @@ const AccountActionBar = ({
           break
         }
         case 'airdrop': {
-          navigation.navigate('AirdropScreen', { ticker })
+          navigation.navigate('AirdropScreen', { ticker: ticker || 'HNT' })
           break
         }
         case 'vote': {
