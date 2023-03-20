@@ -13,8 +13,10 @@ import { PublicKey } from '@solana/web3.js'
 import { AccountLayout } from '@solana/spl-token'
 import { BN } from 'bn.js'
 import { toNumber } from '@helium/spl-utils'
+import { useBalance } from '@utils/Balance'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import { HomeNavigationProp } from '../home/homeTypes'
+import { locale } from '../../utils/i18n'
 
 export const ITEM_HEIGHT = 72
 type Props = {
@@ -26,6 +28,7 @@ type Props = {
 const TokenListItem = ({ ticker, balance, staked, tokenAccount }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { triggerImpact } = useHaptic()
+  const { dcBalance, oraclePrice } = useBalance()
   const tokenAccountCache = useTokenAccount(
     tokenAccount ? new PublicKey(tokenAccount) : undefined,
   )
@@ -44,6 +47,12 @@ const TokenListItem = ({ ticker, balance, staked, tokenAccount }: Props) => {
 
   const balanceToDisplay = useMemo(() => {
     if (tokenAcountData) {
+      if (ticker === 'DC') {
+        return dcBalance
+          ?.toUsd(oraclePrice)
+          .floatBalance.toLocaleString(locale, { maximumFractionDigits: 2 })
+      }
+
       return toNumber(
         new BN(tokenAcountData.amount.toString() || 0),
         mint?.info.decimals || 6,
@@ -51,7 +60,7 @@ const TokenListItem = ({ ticker, balance, staked, tokenAccount }: Props) => {
     }
     if (typeof balance === 'number') return balance
     return balance?.toString(7, { showTicker: false })
-  }, [balance, mint, tokenAcountData])
+  }, [balance, mint, tokenAcountData, oraclePrice, dcBalance, ticker])
 
   return (
     <FadeInOut>

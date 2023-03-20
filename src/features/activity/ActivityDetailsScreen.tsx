@@ -18,6 +18,7 @@ import globalStyles from '@theme/globalStyles'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import useCopyText from '@hooks/useCopyText'
 import useHaptic from '@hooks/useHaptic'
+import CircleLoader from '@components/CircleLoader'
 import { useCreateExplorerUrl } from '../../constants/urls'
 import { ActivityStackParamList } from './activityTypes'
 import { ellipsizeAddress, solAddressIsValid } from '../../utils/accountUtils'
@@ -75,7 +76,38 @@ const ActivityDetailsScreen = () => {
       return <Error color={colors.error} width={150} height={150} />
     }
 
-    const { tokenTransfers } = enrichedTx
+    const { tokenTransfers, events } = enrichedTx
+
+    if (events?.compressed?.length) {
+      const nft = events.compressed[0]
+
+      if (!nft?.metadata.image) {
+        return (
+          <Box
+            backgroundColor="surface"
+            borderRadius="xl"
+            width={250}
+            height={250}
+            justifyContent="center"
+            alignItems="center"
+          >
+            <CircleLoader loaderSize={80} />
+          </Box>
+        )
+      }
+
+      return (
+        <ImageBox
+          source={{
+            uri: nft?.metadata?.image || '',
+            cache: 'force-cache',
+          }}
+          width={250}
+          height={250}
+          borderRadius="xxl"
+        />
+      )
+    }
 
     if (
       tokenTransfers?.length &&
@@ -93,6 +125,7 @@ const ActivityDetailsScreen = () => {
         />
       )
     }
+
     return (
       <CheckmarkFilled color={colors.greenBright500} width={150} height={150} />
     )
@@ -127,8 +160,12 @@ const ActivityDetailsScreen = () => {
     const toAccount =
       firstTokenTransfer?.toUserAccount || firstNativeTransfer?.toUserAccount
 
+    if (!fromAccount && !toAccount) {
+      return null
+    }
+
     return (
-      <Box marginTop="l" flex={1} width="100%">
+      <Box marginTop="l" flex={1} width="100%" justifyContent="center">
         {fromAccount && (
           <AddressActivityItem
             accountAddress={fromAccount}
@@ -169,6 +206,18 @@ const ActivityDetailsScreen = () => {
     const enrichedTx = transaction as EnrichedTransaction
     const confirmedSig = transaction as ConfirmedSignatureInfo
 
+    if (enrichedTx.events?.compressed?.length) {
+      const { symbol } = enrichedTx.events.compressed[0].metadata
+      const count = enrichedTx.events.compressed.length
+      if (symbol) {
+        return t('activityScreen.compressedNFTDescription', {
+          symbol: symbol.toLowerCase(),
+          count,
+        })
+      }
+    }
+
+    // compressedNFTDescription
     // Custom description that ellipsizes the address
     if (enrichedTx.description) {
       const customDescription = enrichedTx.description
@@ -193,7 +242,7 @@ const ActivityDetailsScreen = () => {
       return t('generic.error')
     }
 
-    return 'Transaction Successful'
+    return t('activityScreen.transactionSuccessful')
   }, [t, transaction])
 
   const handleOpenExplorer = useCallback(async () => {
@@ -236,26 +285,44 @@ const ActivityDetailsScreen = () => {
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: 'center',
+        }}
       >
-        <BackScreen title={t('activityScreen.activityDetails')}>
-          <Box alignItems="center" justifyContent="center" height="100%">
-            {activityImage}
-            <Text variant="h1Medium" marginTop="m" marginBottom="s">
-              {title}
-            </Text>
-            <Text variant="subtitle3" marginBottom="s" textAlign="center">
-              {description}
-            </Text>
-            <Text variant="body3" textAlign="center" color="secondaryText">
-              {dateLabel}
-            </Text>
+        <BackScreen
+          title={t('activityScreen.activityDetails')}
+          flex={1}
+          headerTopMargin="m"
+        >
+          <Box alignItems="center" justifyContent="center" flex={1}>
+            <Box justifyContent="center" alignItems="center" marginTop="m">
+              {activityImage}
+              <Text
+                variant="h1Medium"
+                marginTop="m"
+                marginBottom="s"
+                textAlign="center"
+              >
+                {title}
+              </Text>
+              <Text
+                variant="subtitle3"
+                color="offWhite"
+                marginBottom="s"
+                textAlign="center"
+              >
+                {description}
+              </Text>
+              <Text variant="body3" textAlign="center" color="secondaryText">
+                {dateLabel}
+              </Text>
+            </Box>
             {AccountAddressListItems}
             <Box width="100%">
               <ButtonPressable
                 marginTop="xl"
                 marginHorizontal="m"
-                flexGrow={1}
                 borderRadius="round"
                 backgroundColor="white"
                 titleColorDisabled="grey600"

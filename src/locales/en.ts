@@ -216,10 +216,12 @@ export default {
   },
   activityScreen: {
     title: 'My Activity',
+    transactionSuccessful: 'Transaction Successful',
     transactionFailed: 'Transaction Failed',
     viewOnExplorer: 'View on Explorer',
     activityDetails: 'Activity Details',
     myAccount: 'My Account',
+    compressedNFTDescription: 'Minted {{ count }} {{ symbol }}(s).',
     enrichedTransactionTypes: {
       UNKNOWN: 'App Interaction',
       NFT_BID: 'NFT Bid',
@@ -296,6 +298,7 @@ export default {
       REJECT_SWAP: 'Reject Swap',
       INITIALIZE_ACCOUNT: 'Initialize Account',
       TOKEN_MINT: 'Token Minted!',
+      COMPRESSED_NFT_MINT: 'Compressed NFT Minted!',
     },
   },
   swapsScreen: {

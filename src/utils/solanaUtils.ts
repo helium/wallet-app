@@ -50,6 +50,7 @@ import {
 import bs58 from 'bs58'
 import {
   HNT_MINT,
+  getAsset,
   searchAssets,
   toBN,
   sendAndConfirmWithRetry,
@@ -1006,6 +1007,10 @@ export const getAllTransactions = async (
     })
     const sigList = txList.map((tx) => tx.signature)
 
+    if (cluster !== 'mainnet-beta' && cluster !== 'devnet') {
+      return txList
+    }
+
     const { data } = await axios.post(parseTransactionsUrl, {
       transactions: sigList,
     })
@@ -1016,31 +1021,74 @@ export const getAllTransactions = async (
      */
     const allTxnsWithMetadata: EnrichedTransaction[] = await Promise.all(
       data.map(async (tx: EnrichedTransaction) => {
-        const firstTokenTransfer = tx.tokenTransfers[0]
-        if (firstTokenTransfer && firstTokenTransfer.mint) {
-          const tokenMetadata = await getCollectableByMint(
-            new PublicKey(firstTokenTransfer.mint),
-            metaplex,
-          )
+        try {
+          const firstTokenTransfer = tx.tokenTransfers[0]
+          if (firstTokenTransfer && firstTokenTransfer.mint) {
+            const tokenMetadata = await getCollectableByMint(
+              new PublicKey(firstTokenTransfer.mint),
+              metaplex,
+            )
 
-          return {
-            ...tx,
-            tokenTransfers: [
-              {
-                ...firstTokenTransfer,
-                tokenMetadata: {
-                  model: tokenMetadata?.model,
-                  name: tokenMetadata?.name,
-                  symbol: tokenMetadata?.symbol,
-                  uri: tokenMetadata?.uri,
-                  json: tokenMetadata?.json,
+            return {
+              ...tx,
+              tokenTransfers: [
+                {
+                  ...firstTokenTransfer,
+                  tokenMetadata: {
+                    model: tokenMetadata?.model,
+                    name: tokenMetadata?.name,
+                    symbol: tokenMetadata?.symbol,
+                    uri: tokenMetadata?.uri,
+                    json: tokenMetadata?.json,
+                  },
                 },
-              },
-            ],
+              ],
+            }
           }
-        }
 
-        return tx
+          if (tx?.events?.compressed?.length) {
+            const { assetId } = tx.events.compressed[0]
+            if (assetId) {
+              const compressedNFT = await getAsset(
+                conn.rpcEndpoint,
+                new PublicKey(assetId),
+              )
+
+              if (!compressedNFT) {
+                return tx
+              }
+
+              const { data: metadata } = await axios.get(
+                compressedNFT.content.json_uri,
+                {
+                  timeout: 3000,
+                },
+              )
+
+              return {
+                ...tx,
+                events: {
+                  ...tx.events,
+                  compressed: [
+                    {
+                      ...tx.events.compressed[0],
+                      metadata: {
+                        ...compressedNFT.content.metadata,
+                        ...metadata,
+                      },
+                    },
+                    ...tx.events.compressed.slice(1),
+                  ],
+                },
+              }
+            }
+          }
+
+          return tx
+        } catch (e) {
+          Logger.error(e)
+          return tx
+        }
       }),
     )
 

@@ -71,37 +71,44 @@ const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
     },
     [setProgress, setTotal],
   )
-  const { loading, error } = useAsync(
-    async (
-      provider: Provider | undefined,
-      addr: string | undefined,
-      onProg: (progress: number, total: number) => void,
-      _: number,
-    ) => {
-      if (addr && provider) {
-        try {
-          await migrateWallet(provider, addr, onProg)
 
-          doneSolanaMigration.add(addr)
-          await updateDoneSolanaMigration(new Set(doneSolanaMigration))
-          if (anchorProvider && currentAccount && cluster) {
-            dispatch(
-              fetchHotspots({
-                provider: anchorProvider,
-                account: currentAccount,
-                cluster,
-              }),
-            )
-            dispatch(readBalances({ cluster, acct: currentAccount }))
-          }
-        } catch (e) {
-          Logger.error(e)
-          setMigrationError((e as Error).message)
-        }
-      }
-    },
-    [anchorProvider, currentAccount?.solanaAddress, onProgress, retry],
-  )
+  const { loading, error } = useAsync(async () => {
+    if (!currentAccount?.solanaAddress || !anchorProvider || !cluster) return
+
+    try {
+      await migrateWallet(
+        anchorProvider,
+        currentAccount?.solanaAddress,
+        onProgress,
+      )
+
+      doneSolanaMigration.add(currentAccount?.solanaAddress)
+      await updateDoneSolanaMigration(new Set(doneSolanaMigration))
+
+      dispatch(
+        fetchHotspots({
+          provider: anchorProvider,
+          account: currentAccount,
+          cluster,
+        }),
+      )
+
+      dispatch(readBalances({ cluster, acct: currentAccount }))
+    } catch (e) {
+      Logger.error(e)
+      setMigrationError((e as Error).message)
+    }
+  }, [
+    anchorProvider,
+    currentAccount?.solanaAddress,
+    onProgress,
+    retry,
+    cluster,
+    currentAccount,
+    dispatch,
+    doneSolanaMigration,
+    updateDoneSolanaMigration,
+  ])
 
   const handleUpdateRetry = useCallback(() => {
     setMigrationError(undefined)
