@@ -73,7 +73,13 @@ const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
   )
 
   const { loading, error } = useAsync(async () => {
-    if (!currentAccount?.solanaAddress || !anchorProvider || !cluster) return
+    if (
+      !currentAccount?.solanaAddress ||
+      !anchorProvider ||
+      !cluster ||
+      doneSolanaMigration.has(currentAccount?.solanaAddress)
+    )
+      return
 
     try {
       await migrateWallet(
