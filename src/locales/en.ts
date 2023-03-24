@@ -486,6 +486,10 @@ export default {
     understand: 'I Understand',
     noData: 'No Data',
     devnetTokensWarning: 'Warning! These are devnet tokens for testing only.',
+    solanaHealthy: 'Solana RPC is healthy.',
+    solanaHealthDown: 'Solana RPC is down. Please try again later.',
+    solanaPingSlow:
+      'Solana RPC is slow. {{ mean_ms }} ms response time and {{ loss }} loss.',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',

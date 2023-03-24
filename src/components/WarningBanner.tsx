@@ -12,6 +12,7 @@ import CloseCircle from '@assets/images/closeCircleFilled.svg'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
 import { LayoutChangeEvent } from 'react-native'
+import useSolanaHealth from '@hooks/useSolanaHealth'
 import { RootState } from '../store/rootReducer'
 import { ReAnimatedBox } from './AnimatedBox'
 import Box from './Box'
@@ -21,15 +22,23 @@ import TouchableOpacityBox from './TouchableOpacityBox'
 
 const MIN_HEIGHT = 52
 
-const Banner = ({
-  onLayout,
-  ...rest
-}: BoxProps<Theme> & { onLayout?: (event: LayoutChangeEvent) => void }) => {
+export enum BannerType {
+  Treasury = 'treasury',
+  SolanaHealth = 'solanaHealth',
+}
+
+type BannerProps = {
+  onLayout?: (event: LayoutChangeEvent) => void
+  type: BannerType
+} & BoxProps<Theme>
+
+const Banner = ({ type, onLayout, ...rest }: BannerProps) => {
   const dispatch = useDispatch()
   const [bannerHeight, setBannerHeight] = useLayoutHeight()
   const { top } = useSafeAreaInsets()
   const { t } = useTranslation()
   const { showBanner } = useSelector((state: RootState) => state.app)
+  const { healthMessage } = useSolanaHealth()
 
   const bannerTopMargin = useMemo(() => {
     return top === 0 && initialWindowMetrics?.insets
@@ -75,8 +84,16 @@ const Banner = ({
         <Box>
           <InfoWarning width={24} height={24} />
         </Box>
-        <Text variant="body2" marginStart="s" flex={1} adjustsFontSizeToFit>
-          {t('generic.devnetTokensWarning')}
+        <Text
+          variant="body2"
+          marginStart="s"
+          flex={1}
+          adjustsFontSizeToFit
+          textAlign="center"
+        >
+          {type === 'treasury'
+            ? t('generic.devnetTokensWarning')
+            : healthMessage}
         </Text>
         <TouchableOpacityBox onPress={handleBannerClose}>
           <CloseCircle width={24} height={24} />
