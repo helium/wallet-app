@@ -60,7 +60,6 @@ export const fetchMoreCollectables = createAsyncThunk(
   async ({
     account,
     cluster,
-    oldestCollectable = '',
   }: {
     account: CSAccount
     cluster: web3.Cluster
@@ -73,7 +72,6 @@ export const fetchMoreCollectables = createAsyncThunk(
     const fetchedCollectables = await solUtils.getCompressedCollectables(
       pubKey,
       cluster,
-      oldestCollectable,
     )
 
     const groupedCollectables = solUtils.groupCollectables(fetchedCollectables)

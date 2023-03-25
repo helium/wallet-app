@@ -4,6 +4,7 @@ import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenDC from '@assets/images/tokenDC.svg'
 import TokenSOL from '@assets/images/tokenSolana.svg'
 import TokenIOT from '@assets/images/tokenIOT.svg'
+import TokenSolWhite from '@assets/images/tokenSOL.svg'
 import { Ticker } from '@helium/currency'
 import { useColors } from '@theme/themeHooks'
 import Box from './Box'
@@ -12,9 +13,10 @@ import BackgroundFill from './BackgroundFill'
 type Props = {
   ticker: Ticker
   size?: number
+  white?: boolean
 }
 
-const TokenIcon = ({ ticker, size = 40 }: Props) => {
+const TokenIcon = ({ ticker, size = 40, white }: Props) => {
   const colors = useColors()
 
   switch (ticker) {
@@ -30,6 +32,21 @@ const TokenIcon = ({ ticker, size = 40 }: Props) => {
     case 'HST':
       return <TokenHNT color={colors.purple500} width={size} height={size} />
     case 'SOL':
+      if (white) {
+        return (
+          <Box
+            backgroundColor="black900"
+            width={size}
+            height={size}
+            alignItems="center"
+            justifyContent="center"
+            borderRadius="round"
+            overflow="hidden"
+          >
+            <TokenSolWhite width={size * 0.5} height={size * 0.5} />
+          </Box>
+        )
+      }
       return (
         <Box
           width={size}

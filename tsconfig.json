@@ -15,7 +15,6 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "paths": {
-      // This needs to be mirrored in babel.config.js
       "@helium/crypto": ["./node_modules/@helium/crypto-react-native"],
       "@assets": ["./src/assets"],
       "@components/*": ["./src/components/*"],
@@ -33,5 +32,6 @@
     "metro.config.js",
     "jest.config.js",
     "src/graphql/__generated__/*.ts"
-  ]
+  ],
+  "extends": "expo/tsconfig.base"
 }

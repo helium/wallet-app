@@ -16,9 +16,9 @@ import ButtonPressable from '@components/ButtonPressable'
 import TextTransform from '@components/TextTransform'
 import { useTreasuryPrice } from '@hooks/useTreasuryPrice'
 import useAlert from '@hooks/useAlert'
+import TokenHNT from '@assets/images/tokenHNT.svg'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenIOT from '@assets/images/tokenIOT.svg'
-import TokenHNT from '@assets/images/tokenHNT.svg'
 import TokenDC from '@assets/images/tokenDC.svg'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import {
@@ -218,16 +218,19 @@ const SwapScreen = () => {
           label: Tokens.MOBILE,
           icon: <TokenMOBILE width={30} height={30} />,
           value: Tokens.MOBILE,
+          selected: youPayTokenType === Tokens.MOBILE,
         },
         {
           label: Tokens.HNT,
           icon: <TokenHNT width={30} height={30} />,
           value: Tokens.HNT,
+          selected: youPayTokenType === Tokens.HNT,
         },
         {
           label: Tokens.IOT,
           icon: <TokenIOT width={30} height={30} />,
           value: Tokens.IOT,
+          selected: youPayTokenType === Tokens.IOT,
         },
       ],
       [SelectorMode.youReceive]: [
@@ -235,17 +238,19 @@ const SwapScreen = () => {
           label: Tokens.HNT,
           icon: <TokenHNT width={30} height={30} />,
           value: Tokens.HNT,
+          selected: youReceiveTokenType === Tokens.HNT,
         },
         {
           label: Tokens.DC,
           icon: <TokenDC width={30} height={30} />,
           value: Tokens.DC,
+          selected: youReceiveTokenType === Tokens.DC,
         },
       ],
     }
 
     return tokens[selectorMode]
-  }, [selectorMode])
+  }, [selectorMode, youPayTokenType, youReceiveTokenType])
 
   const onCurrencySelect = useCallback(
     (youPay: boolean) => () => {

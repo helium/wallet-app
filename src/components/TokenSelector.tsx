@@ -7,7 +7,6 @@ import React, {
   useImperativeHandle,
   useMemo,
   useRef,
-  useState,
 } from 'react'
 import {
   BottomSheetBackdrop,
@@ -16,15 +15,11 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
 import { BoxProps } from '@shopify/restyle'
-import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
-import TokenHNT from '@assets/images/tokenHNT.svg'
-import TokenIOT from '@assets/images/tokenIOT.svg'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ticker } from '@helium/currency'
 import { useColors, useOpacity } from '@theme/themeHooks'
 import { Theme } from '@theme/theme'
 import useBackHandler from '@hooks/useBackHandler'
-import { useAppStorage } from '@storage/AppStorageProvider'
 import Box from './Box'
 import ListItem, { LIST_ITEM_HEIGHT } from './ListItem'
 
@@ -32,6 +27,7 @@ export type TokenListItem = {
   label: string
   icon: ReactNode
   value: Ticker
+  selected: boolean
 }
 
 export type TokenSelectorRef = {
@@ -40,7 +36,7 @@ export type TokenSelectorRef = {
 type Props = {
   children: ReactNode
   onTokenSelected: (type: Ticker) => void
-  tokenData?: TokenListItem[]
+  tokenData: TokenListItem[]
 } & BoxProps<Theme>
 const TokenSelector = forwardRef(
   (
@@ -50,14 +46,10 @@ const TokenSelector = forwardRef(
     useImperativeHandle(ref, () => ({ showTokens }))
 
     const { bottom } = useSafeAreaInsets()
-    const [currentToken, setCurrentToken] = useState<string>(
-      tokenData?.length ? tokenData[0].value : 'HNT',
-    )
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
-    const { white, blueBright500, secondaryText } = useColors()
-    const { l1Network } = useAppStorage()
+    const { secondaryText } = useColors()
 
     const showTokens = useCallback(() => {
       bottomSheetModalRef.current?.present()
@@ -78,7 +70,6 @@ const TokenSelector = forwardRef(
     const handleTokenPress = useCallback(
       (token: string) => () => {
         bottomSheetModalRef.current?.dismiss()
-        setCurrentToken(token)
         onTokenSelected(token as Ticker)
       },
       [onTokenSelected],
@@ -95,43 +86,18 @@ const TokenSelector = forwardRef(
             title={item.label}
             Icon={item.icon}
             onPress={handleTokenPress(item.value)}
-            selected={item.value === currentToken}
+            selected={item.selected}
             paddingStart="l"
             hasDivider
           />
         )
       },
-      [currentToken, handleTokenPress],
+      [handleTokenPress],
     )
 
-    const data = useMemo((): TokenListItem[] => {
-      const tokens = [
-        {
-          label: 'HNT',
-          icon: <TokenHNT width={30} height={30} color={white} />,
-          value: 'HNT' as Ticker,
-        },
-        {
-          label: 'MOBILE',
-          icon: <TokenMOBILE width={30} height={30} color={blueBright500} />,
-          value: 'MOBILE' as Ticker,
-        },
-      ]
-
-      if (l1Network === 'solana') {
-        tokens.push({
-          label: 'IOT',
-          icon: <TokenIOT width={30} height={30} />,
-          value: 'IOT' as Ticker,
-        })
-      }
-
-      return tokens
-    }, [blueBright500, white, l1Network])
-
     const snapPoints = useMemo(
-      () => [(data.length + 2) * LIST_ITEM_HEIGHT + bottom],
-      [bottom, data.length],
+      () => [(tokenData.length + 2) * LIST_ITEM_HEIGHT + bottom],
+      [bottom, tokenData.length],
     )
 
     const handleIndicatorStyle = useMemo(() => {
@@ -153,7 +119,7 @@ const TokenSelector = forwardRef(
             handleIndicatorStyle={handleIndicatorStyle}
           >
             <BottomSheetFlatList
-              data={tokenData || data}
+              data={tokenData}
               renderItem={renderFlatlistItem}
               keyExtractor={keyExtractor}
             />

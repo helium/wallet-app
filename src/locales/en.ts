@@ -117,6 +117,13 @@ export default {
       'Please ensure these are written down, kept safe, and never shared.',
     title: 'Create New\nAccount',
   },
+  airdropScreen: {
+    title: 'Token Faucet',
+    subtitle: 'Airdrop tokens to test your wallet.',
+    airdrop: 'Airdrop',
+    airdropTicker: 'Airdrop {{ticker}}',
+    error: 'Airdrop failed. Please try again later.',
+  },
   accountsScreen: {
     activity: 'Activity',
     allFilterFooter:
@@ -216,10 +223,12 @@ export default {
   },
   activityScreen: {
     title: 'My Activity',
+    transactionSuccessful: 'Transaction Successful',
     transactionFailed: 'Transaction Failed',
     viewOnExplorer: 'View on Explorer',
     activityDetails: 'Activity Details',
     myAccount: 'My Account',
+    compressedNFTDescription: 'Minted {{ count }} {{ symbol }}(s).',
     enrichedTransactionTypes: {
       UNKNOWN: 'App Interaction',
       NFT_BID: 'NFT Bid',
@@ -296,6 +305,7 @@ export default {
       REJECT_SWAP: 'Reject Swap',
       INITIALIZE_ACCOUNT: 'Initialize Account',
       TOKEN_MINT: 'Token Minted!',
+      COMPRESSED_NFT_MINT: 'Compressed NFT Minted!',
     },
   },
   swapsScreen: {
@@ -357,6 +367,7 @@ export default {
     testnetTokens: 'Testnet Tokens',
     vote: 'Vote',
     delegate: 'Delegate',
+    airdrop: 'Airdrop',
   },
   addNewAccount: {
     title: 'Add New Account',
@@ -454,6 +465,7 @@ export default {
     body: 'By continuing, you agree to the',
   },
   generic: {
+    airdrop: 'Airdrop',
     account: 'Account',
     and: 'and',
     back: 'Back',
@@ -487,6 +499,10 @@ export default {
     understand: 'I Understand',
     noData: 'No Data',
     devnetTokensWarning: 'Warning! These are devnet tokens for testing only.',
+    solanaHealthy: 'Solana RPC is healthy.',
+    solanaHealthDown: 'Solana RPC is down. Please try again later.',
+    solanaPingSlow:
+      'Solana RPC is slow. {{ mean_ms }} ms response time and {{ loss }} loss.',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',

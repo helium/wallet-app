@@ -10,12 +10,12 @@ import Balance, {
   IotTokens,
 } from '@helium/currency'
 import { times } from 'lodash'
-import { RefreshControl } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
 import { useAppStorage } from '@storage/AppStorageProvider'
-import { useBalance } from '../../utils/Balance'
+import { useBalance } from '@utils/Balance'
+import { Mints } from '@utils/constants'
 import TokenListItem, { TokenSkeleton } from './TokenListItem'
 
 type Token = {
@@ -26,17 +26,10 @@ type Token = {
 
 type Props = {
   loading?: boolean
-  refreshing: boolean
-  onRefresh?: () => void
   onLayout?: BottomSheetFlatListProps<Token>['onLayout']
 }
 
-const AccountTokenList = ({
-  loading = false,
-  refreshing,
-  onRefresh,
-  onLayout,
-}: Props) => {
+const AccountTokenList = ({ loading = false, onLayout }: Props) => {
   const {
     dcBalance,
     mobileBalance,
@@ -48,6 +41,8 @@ const AccountTokenList = ({
     secBalance,
     solBalance,
     updating: updatingTokens,
+    solBalancesLoading,
+    tokenAccounts,
   } = useBalance()
   const { bottom } = useSafeAreaInsets()
   const { l1Network } = useAppStorage()
@@ -59,11 +54,16 @@ const AccountTokenList = ({
       return []
     }
 
+    if (l1Network === 'solana' && solBalancesLoading) {
+      return []
+    }
+
     const allTokens = [
       {
         type: 'HNT',
         balance: networkBalance as Balance<NetworkTokens>,
         staked: false,
+        tokenAccount: tokenAccounts ? tokenAccounts[Mints.HNT] : undefined,
       },
       {
         type: 'HNT',
@@ -77,6 +77,7 @@ const AccountTokenList = ({
             ? mobileSolBalance
             : (mobileBalance as Balance<MobileTokens>),
         staked: false,
+        tokenAccount: tokenAccounts ? tokenAccounts[Mints.MOBILE] : undefined,
       },
       {
         type: 'IOT',
@@ -85,11 +86,13 @@ const AccountTokenList = ({
             ? iotSolBalance
             : (iotBalance as Balance<IotTokens>),
         staked: false,
+        tokenAccount: tokenAccounts ? tokenAccounts[Mints.IOT] : undefined,
       },
       {
         type: 'DC',
         balance: dcBalance as Balance<DataCredits>,
         staked: false,
+        tokenAccount: tokenAccounts ? tokenAccounts[Mints.DC] : undefined,
       },
       {
         type: 'HST',
@@ -100,11 +103,13 @@ const AccountTokenList = ({
         type: 'SOL',
         balance: solBalance as Balance<SolTokens>,
         staked: false,
+        tokenAccount: tokenAccounts ? tokenAccounts[Mints.SOL] : undefined,
       },
     ] as {
       type: Ticker
       balance: Balance<AnyCurrencyType> | number
       staked: boolean
+      tokenAccount?: string
     }[]
 
     return allTokens.filter(
@@ -127,6 +132,8 @@ const AccountTokenList = ({
     networkStakedBalance,
     secBalance,
     solBalance,
+    tokenAccounts,
+    solBalancesLoading,
   ])
 
   const renderItem = useCallback(
@@ -138,6 +145,7 @@ const AccountTokenList = ({
         type: Ticker
         balance: Balance<AnyCurrencyType>
         staked: boolean
+        tokenAccount?: string
       }
     }) => {
       return (
@@ -145,6 +153,7 @@ const AccountTokenList = ({
           ticker={token.type}
           balance={token.balance}
           staked={token.staked}
+          tokenAccount={token.tokenAccount}
         />
       )
     },
@@ -194,16 +203,7 @@ const AccountTokenList = ({
       renderItem={renderItem}
       ListEmptyComponent={renderFooter}
       keyExtractor={keyExtractor}
-      refreshing={refreshing}
-      onRefresh={onRefresh}
       onLayout={onLayout}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor="white"
-        />
-      }
     />
   )
 }

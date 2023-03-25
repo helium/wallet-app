@@ -16,7 +16,6 @@ import {
   bulkSendRawTransactions,
   sendAndConfirmWithRetry,
 } from '@helium/spl-utils'
-import { Mints } from '@utils/constants'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
 import { CompressedNFT, toMintAddress } from '../../types/solana'
@@ -27,14 +26,8 @@ import * as Logger from '../../utils/logger'
 import { fetchHotspots } from './hotspotsSlice'
 
 type Balances = {
-  hntBalance?: bigint
-  dcBalance?: bigint
   dcReceived?: bigint
-  dcDelegated?: bigint
-  mobileBalance?: bigint
-  iotBalance?: bigint
   secBalance?: bigint
-  solBalance?: number
   stakedBalance?: bigint
   loading?: boolean
 }
@@ -49,6 +42,7 @@ type SolActivity = {
 }
 
 export type SolanaState = {
+  tokenAccounts: Record<string, Record<string, string>>
   balances: Record<string, Balances>
   payment?: { loading?: boolean; error?: SerializedError; success?: boolean }
   activity: {
@@ -60,43 +54,22 @@ export type SolanaState = {
 }
 
 const initialState: SolanaState = {
+  tokenAccounts: {},
   balances: {},
   activity: { data: {} },
 }
 
 export const readBalances = createAsyncThunk(
   'solana/readBalance',
-  async ({
-    acct,
-    cluster,
-    mints,
-  }: {
-    acct: CSAccount
-    cluster: Cluster
-    mints: Record<string, string>
-  }) => {
+  async ({ acct, cluster }: { acct: CSAccount; cluster: Cluster }) => {
     if (!acct?.solanaAddress) throw new Error('No solana account found')
 
-    const heliumBals = await solUtils.readHeliumBalances(
-      cluster,
-      acct.solanaAddress,
-      mints,
-    )
-
-    const solBalance = await solUtils.readSolanaBalance(
+    const tokenAccounts = await solUtils.readHeliumBalances(
       cluster,
       acct.solanaAddress,
     )
 
-    const dcReceived = await solUtils.getBalanceFromTokenAccount(
-      cluster,
-      solUtils.getEscrowTokenAccount(acct.solanaAddress).toBase58(),
-    )
-
-    if (solBalance === 0 && cluster !== 'mainnet-beta') {
-      solUtils.airdrop(cluster, acct.solanaAddress)
-    }
-    return { ...heliumBals, solBalance, dcReceived }
+    return tokenAccounts
   },
 )
 
@@ -183,7 +156,7 @@ export const makePayment = createAsyncThunk(
       mintAddress,
     )
 
-    dispatch(readBalances({ cluster, acct: account, mints }))
+    dispatch(readBalances({ cluster, acct: account }))
 
     return dispatch(
       walletRestApi.endpoints.postPayment.initiate({
@@ -240,14 +213,7 @@ export const makeCollectablePayment = createAsyncThunk(
 export const sendTreasurySwap = createAsyncThunk(
   'solana/sendTreasurySwap',
   async (
-    {
-      account,
-      anchorProvider,
-      amount,
-      fromMint,
-      cluster,
-      mints,
-    }: TreasurySwapTxn,
+    { account, anchorProvider, amount, fromMint, cluster }: TreasurySwapTxn,
     { dispatch },
   ) => {
     try {
@@ -258,7 +224,7 @@ export const sendTreasurySwap = createAsyncThunk(
         anchorProvider,
       )
 
-      dispatch(readBalances({ cluster, acct: account, mints }))
+      dispatch(readBalances({ cluster, acct: account }))
 
       return await dispatch(
         walletRestApi.endpoints.postPayment.initiate({
@@ -286,7 +252,7 @@ export const sendMintDataCredits = createAsyncThunk(
         hntAmount,
       )
 
-      dispatch(readBalances({ cluster, acct: account, mints: Mints }))
+      dispatch(readBalances({ cluster, acct: account }))
 
       return await dispatch(
         walletRestApi.endpoints.postPayment.initiate({
@@ -321,7 +287,7 @@ export const sendDelegateDataCredits = createAsyncThunk(
         amount,
       )
 
-      dispatch(readBalances({ cluster, acct: account, mints: Mints }))
+      dispatch(readBalances({ cluster, acct: account }))
 
       return await dispatch(
         walletRestApi.endpoints.postPayment.initiate({
@@ -414,7 +380,7 @@ export const claimAllRewards = createAsyncThunk(
 
       // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
       dispatch(fetchHotspots({ account, cluster, provider: anchorProvider }))
-      dispatch(readBalances({ cluster, acct: account, mints: Mints }))
+      dispatch(readBalances({ cluster, acct: account }))
     } catch (error) {
       Logger.error(error)
       throw error
@@ -481,6 +447,15 @@ const solanaSlice = createSlice({
   name: 'solana',
   initialState,
   reducers: {
+    resetBalancesLoading: (state, action) => {
+      const { solanaAddress } = action.payload
+      const prev = state.balances[solanaAddress] || {}
+
+      state.balances[solanaAddress] = {
+        ...prev,
+        loading: true,
+      }
+    },
     resetPayment: (state) => {
       state.payment = { success: false, loading: false, error: undefined }
     },
@@ -497,8 +472,12 @@ const solanaSlice = createSlice({
     })
     builder.addCase(readBalances.fulfilled, (state, action) => {
       if (!action.meta.arg?.acct.solanaAddress) return state
-      state.balances[action.meta.arg?.acct.solanaAddress] = {
+
+      state.tokenAccounts[action.meta.arg?.acct.solanaAddress] = {
         ...action.payload,
+      }
+
+      state.balances[action.meta.arg?.acct.solanaAddress] = {
         loading: false,
       }
     })

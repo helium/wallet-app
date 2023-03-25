@@ -61,7 +61,7 @@ const AccountTokenScreen = () => {
   const [topHeaderYPos, setTopHeaderYPos] = useState(0)
   const [headerContainerYPos, setHeaderContainerYPos] = useState(0)
   const listAnimatedPos = useSharedValue<number>(0)
-  const { l1Network } = useAppStorage()
+  const { l1Network, solanaNetwork: cluster } = useAppStorage()
   const insets = useSafeAreaInsets()
   const colors = useColors()
 
@@ -161,6 +161,18 @@ const AccountTokenScreen = () => {
     },
     [currentAccount, showTxnDetail],
   )
+
+  const hasAirdrop = useMemo(() => {
+    if (l1Network === 'solana' && cluster === 'devnet') {
+      return (
+        routeTicker === 'SOL' ||
+        routeTicker === 'HNT' ||
+        routeTicker === 'IOT' ||
+        routeTicker === 'MOBILE'
+      )
+    }
+    return false
+  }, [l1Network, routeTicker, cluster])
 
   const renderHeader = useCallback(() => {
     const filterName = t(`accountsScreen.filterTypes.${filterState.filter}`)
@@ -477,6 +489,7 @@ const AccountTokenScreen = () => {
                 ticker={routeTicker}
                 compact={routeTicker !== 'DC'}
                 hasBottomTitle={routeTicker !== 'DC'}
+                hasAirdrop={hasAirdrop}
               />
             </Box>
           </Animated.View>

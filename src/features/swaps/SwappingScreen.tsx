@@ -15,15 +15,16 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import TokenIcon from '@components/TokenIcon'
 import { RootState } from '../../store/rootReducer'
 import BackArrow from '../../assets/images/backArrow.svg'
-import { SwapNavigationProp, SwapStackParamList } from './swapTypes'
+import { SwapStackParamList } from './swapTypes'
 import ArrowRight from '../../assets/images/arrowRight.svg'
+import { TabBarNavigationProp } from '../../navigation/rootTypes'
 
 type Route = RouteProp<SwapStackParamList, 'SwappingScreen'>
 
 const SwappingScreen = () => {
   const route = useRoute<Route>()
-  const navigation = useNavigation<SwapNavigationProp>()
-  const backEdges = useMemo(() => ['top'] as Edge[], [])
+  const navigation = useNavigation<TabBarNavigationProp>()
+  const backEdges = useMemo(() => ['bottom'] as Edge[], [])
 
   const { t } = useTranslation()
   const { tokenA, tokenB } = route.params

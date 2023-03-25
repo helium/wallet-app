@@ -35,6 +35,7 @@ export type HomeStackParamList = {
     action: 'payment'
   }
   PaymentScreen: undefined | PaymentRouteParam
+  AirdropScreen: { ticker: Ticker }
   BurnScreen: BurnRouteParam
   PaymentQrScanner: undefined
   RequestScreen: undefined

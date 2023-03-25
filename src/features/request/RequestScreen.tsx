@@ -54,8 +54,14 @@ import BackgroundFill from '@components/BackgroundFill'
 import animateTransition from '@utils/animateTransition'
 import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
 import TokenButton from '@components/TokenButton'
-import TokenSelector, { TokenSelectorRef } from '@components/TokenSelector'
+import TokenSelector, {
+  TokenListItem,
+  TokenSelectorRef,
+} from '@components/TokenSelector'
 import FadeInOut from '@components/FadeInOut'
+import TokenIOT from '@assets/images/tokenIOT.svg'
+import TokenHNT from '@assets/images/tokenHNT.svg'
+import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 
 const QR_CONTAINER_SIZE = 220
@@ -76,7 +82,7 @@ const RequestScreen = () => {
   const navigation = useNavigation()
   const { l } = useSpacing()
   const { l: borderRadius } = useBorderRadii()
-  const { secondaryText, primaryText } = useColors()
+  const { secondaryText, primaryText, white, blueBright500 } = useColors()
   const [isEditing, setIsEditing] = useState(false)
   const { keyboardShown } = useKeyboard()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
@@ -227,6 +233,34 @@ const RequestScreen = () => {
     accountSelectorRef?.current?.show()
   }, [])
 
+  const data = useMemo((): TokenListItem[] => {
+    const tokens = [
+      {
+        label: 'HNT',
+        icon: <TokenHNT width={30} height={30} color={white} />,
+        value: 'HNT' as Ticker,
+        selected: ticker === 'HNT',
+      },
+      {
+        label: 'MOBILE',
+        icon: <TokenMOBILE width={30} height={30} color={blueBright500} />,
+        value: 'MOBILE' as Ticker,
+        selected: ticker === 'MOBILE',
+      },
+    ]
+
+    if (l1Network === 'solana') {
+      tokens.push({
+        label: 'IOT',
+        icon: <TokenIOT width={30} height={30} />,
+        value: 'IOT' as Ticker,
+        selected: ticker === 'IOT',
+      })
+    }
+
+    return tokens
+  }, [blueBright500, white, l1Network, ticker])
+
   return (
     <HNTKeyboard
       ticker={ticker}
@@ -238,6 +272,7 @@ const RequestScreen = () => {
         <TokenSelector
           ref={tokenSelectorRef}
           onTokenSelected={onTickerSelected}
+          tokenData={data}
         >
           <Box
             backgroundColor="secondaryBackground"

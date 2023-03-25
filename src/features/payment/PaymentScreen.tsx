@@ -34,7 +34,10 @@ import { useColors, useHitSlop } from '@theme/themeHooks'
 import AccountSelector, {
   AccountSelectorRef,
 } from '@components/AccountSelector'
-import TokenSelector, { TokenSelectorRef } from '@components/TokenSelector'
+import TokenSelector, {
+  TokenListItem,
+  TokenSelectorRef,
+} from '@components/TokenSelector'
 import AccountButton from '@components/AccountButton'
 import AddressBookSelector, {
   AddressBookRef,
@@ -44,6 +47,9 @@ import { getMemoStrValid } from '@components/MemoInput'
 import useAlert from '@hooks/useAlert'
 import useDisappear from '@hooks/useDisappear'
 import IconPressedContainer from '@components/IconPressedContainer'
+import TokenIOT from '@assets/images/tokenIOT.svg'
+import TokenHNT from '@assets/images/tokenHNT.svg'
+import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import {
   HomeNavigationProp,
   HomeStackParamList,
@@ -115,7 +121,7 @@ const PaymentScreen = () => {
 
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
-  const { primaryText } = useColors()
+  const { primaryText, blueBright500, white } = useColors()
   const hitSlop = useHitSlop('l')
   const {
     currentAccount,
@@ -669,6 +675,34 @@ const PaymentScreen = () => {
     ticker,
   ])
 
+  const data = useMemo((): TokenListItem[] => {
+    const tokens = [
+      {
+        label: 'HNT',
+        icon: <TokenHNT width={30} height={30} color={white} />,
+        value: 'HNT' as Ticker,
+        selected: ticker === 'HNT',
+      },
+      {
+        label: 'MOBILE',
+        icon: <TokenMOBILE width={30} height={30} color={blueBright500} />,
+        value: 'MOBILE' as Ticker,
+        selected: ticker === 'MOBILE',
+      },
+    ]
+
+    if (l1Network === 'solana') {
+      tokens.push({
+        label: 'IOT',
+        icon: <TokenIOT width={30} height={30} />,
+        value: 'IOT' as Ticker,
+        selected: ticker === 'IOT',
+      })
+    }
+
+    return tokens
+  }, [blueBright500, white, l1Network, ticker])
+
   return (
     <>
       <HNTKeyboard
@@ -686,6 +720,7 @@ const PaymentScreen = () => {
             <TokenSelector
               ref={tokenSelectorRef}
               onTokenSelected={onTickerSelected}
+              tokenData={data}
             >
               <Box
                 flex={1}

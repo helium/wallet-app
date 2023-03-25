@@ -25,8 +25,9 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import { NavBarHeight } from '@components/NavBar'
 import useHaptic from '@hooks/useHaptic'
 import { useBackgroundStyle, useColors } from '@theme/themeHooks'
-import WarningBanner from '@components/WarningBanner'
+import WarningBanner, { BannerType } from '@components/WarningBanner'
 import { useSelector } from 'react-redux'
+import useSolanaHealth from '@hooks/useSolanaHealth'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
@@ -49,7 +50,6 @@ import { OnboardingOpt } from '../onboarding/onboardingTypes'
 import AccountBalanceChart from './AccountBalanceChart'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useGetBalanceHistoryQuery } from '../../store/slices/walletRestApi'
-import { useBalance } from '../../utils/Balance'
 import { ITEM_HEIGHT } from './TokenListItem'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import AccountActionBar from './AccountActionBar'
@@ -80,7 +80,6 @@ const AccountsScreen = () => {
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const [selectedBalance, setSelectedBalance] = useState<AccountBalanceType>()
   const { top } = useSafeAreaInsets()
-  const { updateVars: refreshTokens, updating: updatingTokens } = useBalance()
   const bottomSheetRef = useRef<BottomSheet>(null)
   const listAnimatedPos = useSharedValue<number>(0)
   const [topHeaderHeight, setTopHeaderHeight] = useState(0)
@@ -91,8 +90,16 @@ const AccountsScreen = () => {
   const { triggerImpact } = useHaptic()
   const colors = useColors()
   const { showBanner } = useSelector((state: RootState) => state.app)
+  const { isHealthy } = useSolanaHealth()
 
   const { t } = useTranslation()
+
+  const actualTop = useMemo(() => {
+    if (showBanner && l1Network === 'solana') {
+      return 0
+    }
+    return top
+  }, [top, showBanner, l1Network])
 
   const actualBannerHeight = useMemo(() => {
     if (showBanner && l1Network === 'solana') {
@@ -106,9 +113,19 @@ const AccountsScreen = () => {
     const collapsedHeight = ITEM_HEIGHT * 2
     // Get safe area top height
     const expandedHeight =
-      pageHeight - navLayoutHeight - top - topHeaderHeight - actualBannerHeight
+      pageHeight -
+      navLayoutHeight -
+      actualTop -
+      topHeaderHeight -
+      actualBannerHeight
     return [collapsedHeight, expandedHeight]
-  }, [navLayoutHeight, pageHeight, top, topHeaderHeight, actualBannerHeight])
+  }, [
+    navLayoutHeight,
+    pageHeight,
+    actualTop,
+    topHeaderHeight,
+    actualBannerHeight,
+  ])
 
   useAppear(() => {
     reset()
@@ -273,7 +290,7 @@ const AccountsScreen = () => {
     const diff = realHeight - listAnimatedPos.value
     const opacity =
       (listAnimatedPos.value -
-        top -
+        actualTop -
         topHeaderHeight -
         navLayoutHeight -
         actualBannerHeight -
@@ -292,7 +309,7 @@ const AccountsScreen = () => {
       return {
         opacity: 0,
         position: 'absolute',
-        top: top + navLayoutHeight + actualBannerHeight,
+        top: actualTop + navLayoutHeight + actualBannerHeight,
         left: 0,
         right: 0,
       }
@@ -300,7 +317,7 @@ const AccountsScreen = () => {
 
     const opacity =
       (listAnimatedPos.value -
-        top -
+        actualTop -
         topHeaderHeight -
         navLayoutHeight -
         actualBannerHeight) /
@@ -309,7 +326,7 @@ const AccountsScreen = () => {
     return {
       opacity: 1 - opacity,
       position: 'absolute',
-      top: top + navLayoutHeight + actualBannerHeight,
+      top: actualTop + navLayoutHeight + actualBannerHeight,
       left: 0,
       right: 0,
     }
@@ -365,6 +382,7 @@ const AccountsScreen = () => {
   const RetractedView = useMemo(() => {
     return (
       <ReAnimatedBox
+        flexGrow={1}
         style={headerAnimatedStyle}
         paddingTop="m"
         paddingBottom={Platform.OS === 'android' ? 'l' : 'm'}
@@ -391,7 +409,12 @@ const AccountsScreen = () => {
   return (
     <Box flex={1}>
       <Box onLayout={setPageHeight} flex={1}>
-        {l1Network === 'solana' && <WarningBanner onLayout={setBannerHeight} />}
+        {l1Network === 'solana' && (
+          <WarningBanner
+            type={isHealthy ? BannerType.Treasury : BannerType.SolanaHealth}
+            onLayout={setBannerHeight}
+          />
+        )}
         <AccountsTopNav
           onPressWallet={toggleWalletsVisible}
           onLayout={setNavLayoutHeight}
@@ -428,11 +451,7 @@ const AccountsScreen = () => {
         animatedPosition={listAnimatedPos}
         handleIndicatorStyle={handleIndicatorStyle}
       >
-        <AccountTokenList
-          loading={accountLoading}
-          onRefresh={refreshTokens}
-          refreshing={updatingTokens}
-        />
+        <AccountTokenList loading={accountLoading} />
       </BottomSheet>
       <BlurActionSheet
         title={t('accountsScreen.chooseCurrency')}

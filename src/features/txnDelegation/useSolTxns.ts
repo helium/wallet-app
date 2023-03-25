@@ -9,7 +9,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import * as web3 from '@solana/web3.js'
 import { useAsync } from 'react-async-hook'
 import bs58 from 'bs58'
-import { get } from 'lodash'
+import { get, last } from 'lodash'
 import { SignHotspotResponse } from '@helium/wallet-link'
 import { getLeafAssetId } from '@metaplex-foundation/mpl-bubblegum'
 import {
@@ -101,21 +101,24 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
       const sigs = await connection.getSignaturesForAddress(
         new PublicKey(keyToAssetAccount.pubkey),
         {
-          limit: 1,
+          limit: 2,
         },
       )
 
+      const signature = last(sigs)?.signature
+      if (!signature) return {}
+
       const getTransactionWithInstruction =
-        await connection.getParsedTransaction(sigs[0].signature)
+        await connection.getParsedTransaction(signature)
 
       const instructions =
         getTransactionWithInstruction?.transaction.message.instructions
-      if (!instructions || instructions.length < 2) {
+      if (!instructions || !instructions.length) {
         return {}
       }
 
       const bs58Decoded = bs58.decode(
-        (instructions[1] as web3.PartiallyDecodedInstruction).data,
+        (last(instructions) as web3.PartiallyDecodedInstruction).data,
       )
       const decodedBs58Instruction = coder.decode(Buffer.from(bs58Decoded))
       if (!decodedBs58Instruction) {

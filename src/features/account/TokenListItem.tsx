@@ -1,5 +1,5 @@
 import Balance, { AnyCurrencyType, Ticker } from '@helium/currency'
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import Arrow from '@assets/images/listItemRight.svg'
 import { useNavigation } from '@react-navigation/native'
 import Box from '@components/Box'
@@ -8,6 +8,12 @@ import Text from '@components/Text'
 import TouchableContainer from '@components/TouchableContainer'
 import TokenIcon from '@components/TokenIcon'
 import useHaptic from '@hooks/useHaptic'
+import { useMint, useTokenAccount } from '@helium/helium-react-hooks'
+import { PublicKey } from '@solana/web3.js'
+import { AccountLayout } from '@solana/spl-token'
+import { BN } from 'bn.js'
+import { toNumber } from '@helium/spl-utils'
+import { useAppStorage } from '@storage/AppStorageProvider'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import { HomeNavigationProp } from '../home/homeTypes'
 
@@ -16,15 +22,42 @@ type Props = {
   ticker: Ticker
   balance: Balance<AnyCurrencyType> | number
   staked?: boolean
+  tokenAccount?: string
 }
-const TokenListItem = ({ ticker, balance, staked }: Props) => {
+const TokenListItem = ({ ticker, balance, staked, tokenAccount }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { triggerImpact } = useHaptic()
+  const { l1Network } = useAppStorage()
+  const tokenAccountCache = useTokenAccount(
+    tokenAccount ? new PublicKey(tokenAccount) : undefined,
+  )
+
+  const tokenAcountData = useMemo(() => {
+    if (!tokenAccountCache.account) return
+    return AccountLayout.decode(tokenAccountCache.account?.data)
+  }, [tokenAccountCache])
+
+  const { info: mint } = useMint(tokenAcountData?.mint)
 
   const handleNavigation = useCallback(() => {
     triggerImpact('light')
     navigation.navigate('AccountTokenScreen', { tokenType: ticker })
   }, [navigation, ticker, triggerImpact])
+
+  const balanceToDisplay = useMemo(() => {
+    if (tokenAcountData && l1Network === 'solana') {
+      if (ticker === 'DC') {
+        return tokenAcountData.amount.toLocaleString()
+      }
+
+      return toNumber(
+        new BN(tokenAcountData.amount.toString() || 0),
+        mint?.info.decimals || 6,
+      )
+    }
+    if (typeof balance === 'number') return balance
+    return balance?.toString(7, { showTicker: false })
+  }, [balance, mint, tokenAcountData, ticker, l1Network])
 
   return (
     <FadeInOut>
@@ -46,9 +79,7 @@ const TokenListItem = ({ ticker, balance, staked }: Props) => {
               color="primaryText"
               maxFontSizeMultiplier={1.3}
             >
-              {typeof balance === 'number'
-                ? balance
-                : balance?.toString(7, { showTicker: false })}
+              {balanceToDisplay}
             </Text>
             <Text
               variant="body2Medium"

@@ -21,6 +21,7 @@ export type Action =
   | '5G'
   | 'delegate'
   | 'swaps'
+  | 'airdrop'
 
 type Props = {
   ticker?: Ticker
@@ -32,10 +33,10 @@ type Props = {
   hasRequest?: boolean
   hasDelegate?: boolean
   hasSwaps?: boolean
+  hasAirdrop?: boolean
 }
 
 const AccountActionBar = ({
-  ticker,
   onLayout,
   compact,
   maxCompact,
@@ -44,6 +45,8 @@ const AccountActionBar = ({
   hasRequest = true,
   hasDelegate,
   hasSwaps,
+  hasAirdrop,
+  ticker,
 }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
@@ -114,6 +117,10 @@ const AccountActionBar = ({
         }
         case 'swaps': {
           navigation.navigate('SwapNavigator')
+          break
+        }
+        case 'airdrop': {
+          navigation.navigate('AirdropScreen', { ticker: ticker || 'HNT' })
           break
         }
         case 'vote': {
@@ -223,6 +230,39 @@ const AccountActionBar = ({
                 textAlign="center"
               >
                 {t('accountView.swaps')}
+              </Text>
+            </Box>
+          )}
+        </Box>
+      )}
+      {hasAirdrop && (
+        <Box
+          marginEnd={fabMargin}
+          flexDirection={hasBottomTitle ? 'column' : 'row'}
+        >
+          <FabButton
+            icon="airdrop"
+            backgroundColor="electricViolet"
+            backgroundColorOpacity={0.2}
+            backgroundColorOpacityPressed={0.4}
+            iconColor="electricViolet"
+            title={
+              compact || maxCompact ? undefined : t('airdropScreen.airdrop')
+            }
+            onPress={handleAction('airdrop')}
+            width={maxCompact ? 47.5 : undefined}
+            height={maxCompact ? 47.5 : undefined}
+            justifyContent="center"
+          />
+          {hasBottomTitle && (
+            <Box marginTop="s">
+              <Text
+                variant="body2Medium"
+                color="secondaryText"
+                marginTop="xs"
+                textAlign="center"
+              >
+                {t('airdropScreen.airdrop')}
               </Text>
             </Box>
           )}

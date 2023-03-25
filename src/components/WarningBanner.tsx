@@ -12,6 +12,7 @@ import CloseCircle from '@assets/images/closeCircleFilled.svg'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
 import { LayoutChangeEvent } from 'react-native'
+import useSolanaHealth from '@hooks/useSolanaHealth'
 import { RootState } from '../store/rootReducer'
 import { ReAnimatedBox } from './AnimatedBox'
 import Box from './Box'
@@ -19,15 +20,25 @@ import Text from './Text'
 import { appSlice } from '../store/slices/appSlice'
 import TouchableOpacityBox from './TouchableOpacityBox'
 
-const Banner = ({
-  onLayout,
-  ...rest
-}: BoxProps<Theme> & { onLayout?: (event: LayoutChangeEvent) => void }) => {
+const MIN_HEIGHT = 52
+
+export enum BannerType {
+  Treasury = 'treasury',
+  SolanaHealth = 'solanaHealth',
+}
+
+type BannerProps = {
+  onLayout?: (event: LayoutChangeEvent) => void
+  type: BannerType
+} & BoxProps<Theme>
+
+const Banner = ({ type, onLayout, ...rest }: BannerProps) => {
   const dispatch = useDispatch()
   const [bannerHeight, setBannerHeight] = useLayoutHeight()
   const { top } = useSafeAreaInsets()
   const { t } = useTranslation()
   const { showBanner } = useSelector((state: RootState) => state.app)
+  const { healthMessage } = useSolanaHealth()
 
   const bannerTopMargin = useMemo(() => {
     return top === 0 && initialWindowMetrics?.insets
@@ -38,7 +49,9 @@ const Banner = ({
   const bannerAnimatedStyles = useAnimatedStyle(() => {
     if (!showBanner) {
       return {
-        marginTop: withTiming(-bannerHeight - bannerTopMargin),
+        marginTop: withTiming(
+          -Math.max(bannerHeight, MIN_HEIGHT) - bannerTopMargin,
+        ),
         paddingTop: bannerTopMargin,
       }
     }
@@ -47,7 +60,7 @@ const Banner = ({
       marginTop: withTiming(0),
       paddingTop: bannerTopMargin,
     }
-  }, [showBanner])
+  }, [showBanner, bannerTopMargin])
 
   const handleBannerClose = useCallback(() => {
     dispatch(appSlice.actions.setShowBanner(false))
@@ -61,6 +74,7 @@ const Banner = ({
       {...rest}
     >
       <Box
+        minHeight={MIN_HEIGHT}
         padding="s"
         paddingHorizontal="m"
         flexDirection="row"
@@ -70,8 +84,16 @@ const Banner = ({
         <Box>
           <InfoWarning width={24} height={24} />
         </Box>
-        <Text variant="body2" marginStart="s" flex={1} adjustsFontSizeToFit>
-          {t('generic.devnetTokensWarning')}
+        <Text
+          variant="body2"
+          marginStart="s"
+          flex={1}
+          adjustsFontSizeToFit
+          textAlign="center"
+        >
+          {type === 'treasury'
+            ? t('generic.devnetTokensWarning')
+            : healthMessage}
         </Text>
         <TouchableOpacityBox onPress={handleBannerClose}>
           <CloseCircle width={24} height={24} />
