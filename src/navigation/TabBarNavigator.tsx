@@ -198,7 +198,9 @@ const TabBarNavigator = () => {
 
     if (
       status?.migrationStatus === 'complete' &&
-      !doneSolanaMigration[cluster].includes(currentAccount.solanaAddress)
+      !doneSolanaMigration['mainnet-beta'].includes(
+        currentAccount.solanaAddress,
+      )
     ) {
       updateSolanaNetwork('mainnet-beta')
     }
