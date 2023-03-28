@@ -35,13 +35,13 @@ const PhraseChip = ({
     return 'transparent10'
   }, [fail, success])
 
-  const getIcon = () => {
+  const getIcon = useCallback(() => {
     if (success) return <CheckMark color={primary} />
 
     if (fail) return <Fail color={primary} />
 
     return null
-  }
+  }, [fail, primary, success])
 
   const handleUnderlayChange = useCallback(
     (val: boolean) => () => setUnderlayShowing(val),
