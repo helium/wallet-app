@@ -422,7 +422,11 @@ const Settings = () => {
       const items = [
         { label: 'Devnet', value: 'devnet' },
         { label: 'Testnet', value: 'testnet', disabled: true },
-        { label: 'Mainnet-Beta', value: 'mainnet-beta', disabled: true },
+        {
+          label: 'Mainnet-Beta',
+          value: 'mainnet-beta',
+          disabled: status?.migrationStatus !== 'complete',
+        },
       ]
 
       if (__DEV__) {

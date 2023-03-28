@@ -78,7 +78,9 @@ export const SolanaConnection = {
     `https://rpc-devnet.helius.xyz/?api-key=${Config.HELIUS_API_KEY}`,
   ),
   testnet: new WrappedConnection(clusterApiUrl('testnet')),
-  'mainnet-beta': new WrappedConnection(clusterApiUrl('mainnet-beta')),
+  'mainnet-beta': new WrappedConnection(
+    `https://rpc.helius.xyz/?api-key=${Config.HELIUS_API_KEY}`,
+  ),
 } as const
 
 export const getConnection = (cluster: Cluster) =>

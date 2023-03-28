@@ -3,6 +3,7 @@ import React, {
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useState,
 } from 'react'
 import { useAsync } from 'react-async-hook'
@@ -33,9 +34,13 @@ const useAppStorageHook = () => {
   const [scannedAddress, setScannedAddress] = useState<string>()
   const [voteTutorialShown, setVoteTutorialShown] = useState(false)
   const [showNumericChange, setShowNumericChange] = useState(false)
-  const [doneSolanaMigration, setDoneSolanaMigration] = useState<Set<string>>(
-    new Set<string>(),
-  )
+  const [doneSolanaMigration, setDoneSolanaMigration] = useState<
+    Record<Cluster, string[]>
+  >({
+    devnet: [],
+    testnet: [],
+    'mainnet-beta': [],
+  })
 
   useAsync(async () => {
     // TODO: When performing an account restore pin will not be restored.
@@ -80,7 +85,7 @@ const useAppStorageHook = () => {
       setVoteTutorialShown(nextVoteShown === 'true')
       setShowNumericChange(nextShowNumericChange === 'true')
       setDoneSolanaMigration(
-        new Set(JSON.parse(nextDoneSolanaMigration || '[]') as string[]),
+        JSON.parse(nextDoneSolanaMigration || '{}') as Record<string, string[]>,
       )
 
       if (nextAuthInterval) {
@@ -169,13 +174,24 @@ const useAppStorageHook = () => {
     return storeSecureItem('showNumericChange', useNumeric ? 'true' : 'false')
   }, [])
 
-  const updateDoneSolanaMigration = useCallback(async (input: Set<string>) => {
-    setDoneSolanaMigration(input)
-    return storeSecureItem(
-      'doneSolanaMigration',
-      JSON.stringify(Array.from(input)),
-    )
-  }, [])
+  const updateDoneSolanaMigration = useCallback(
+    async ({ cluster, address }: { cluster: Cluster; address: string }) => {
+      setDoneSolanaMigration((s) => ({
+        ...s,
+        [cluster]: [...s[cluster], address],
+      }))
+    },
+    [],
+  )
+
+  useEffect(() => {
+    if (doneSolanaMigration) {
+      storeSecureItem(
+        'doneSolanaMigration',
+        JSON.stringify(doneSolanaMigration),
+      )
+    }
+  }, [doneSolanaMigration])
 
   return {
     authInterval,
@@ -236,7 +252,11 @@ const initialState = {
   showNumericChange: false,
   updateDoneSolanaMigration: async () => undefined,
   // Set of wallet addresses that have been migrated to Solana
-  doneSolanaMigration: new Set<string>(),
+  doneSolanaMigration: {
+    devnet: [],
+    testnet: [],
+    'mainnet-beta': [],
+  },
 }
 
 const AppStorageContext =

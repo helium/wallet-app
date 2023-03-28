@@ -50,6 +50,7 @@ const App = () => {
     'Require cycle:',
     'ws error: received bad response code from server 403',
     'ImmutableStateInvariantMiddleware',
+    'ws error: received bad response code from server 429',
   ])
 
   const { appState } = useAppState()
