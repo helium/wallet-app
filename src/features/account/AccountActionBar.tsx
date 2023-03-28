@@ -19,6 +19,7 @@ export type Action =
   | 'lock'
   | 'vote'
   | '5G'
+  | 'delegate'
   | 'swaps'
   | 'airdrop'
 
@@ -28,6 +29,9 @@ type Props = {
   compact?: boolean
   maxCompact?: boolean
   hasBottomTitle?: boolean
+  hasSend?: boolean
+  hasRequest?: boolean
+  hasDelegate?: boolean
   hasSwaps?: boolean
   hasAirdrop?: boolean
 }
@@ -37,6 +41,9 @@ const AccountActionBar = ({
   compact,
   maxCompact,
   hasBottomTitle,
+  hasSend = true,
+  hasRequest = true,
+  hasDelegate,
   hasSwaps,
   hasAirdrop,
   ticker,
@@ -124,6 +131,14 @@ const AccountActionBar = ({
           navigation.navigate('OnboardData')
           break
         }
+        case 'delegate': {
+          navigation.navigate('BurnScreen', {
+            address: '',
+            amount: '',
+            isDelegate: true,
+          })
+          break
+        }
         default: {
           // show()
           break
@@ -157,36 +172,38 @@ const AccountActionBar = ({
       onLayout={onLayout}
       width={compact || maxCompact ? undefined : '100%'}
     >
-      <Box
-        flexDirection={hasBottomTitle ? 'column' : 'row'}
-        flex={compact || maxCompact ? undefined : 1}
-        marginEnd={fabMargin}
-      >
-        <FabButton
-          icon="fatArrowDown"
-          backgroundColor="greenBright500"
-          backgroundColorOpacity={0.2}
-          backgroundColorOpacityPressed={0.4}
-          iconColor="greenBright500"
-          title={compact || maxCompact ? undefined : t('accountView.deposit')}
-          onPress={handleAction('request')}
-          width={maxCompact ? 47.5 : undefined}
-          height={maxCompact ? 47.5 : undefined}
-          justifyContent="center"
-        />
-        {hasBottomTitle && (
-          <Box marginTop="s">
-            <Text
-              variant="body2Medium"
-              color="secondaryText"
-              marginTop="xs"
-              textAlign="center"
-            >
-              {t('accountView.deposit')}
-            </Text>
-          </Box>
-        )}
-      </Box>
+      {hasRequest && (
+        <Box
+          flexDirection={hasBottomTitle ? 'column' : 'row'}
+          flex={compact || maxCompact ? undefined : 1}
+          marginEnd={fabMargin}
+        >
+          <FabButton
+            icon="fatArrowDown"
+            backgroundColor="greenBright500"
+            backgroundColorOpacity={0.2}
+            backgroundColorOpacityPressed={0.4}
+            iconColor="greenBright500"
+            title={compact || maxCompact ? undefined : t('accountView.deposit')}
+            onPress={handleAction('request')}
+            width={maxCompact ? 47.5 : undefined}
+            height={maxCompact ? 47.5 : undefined}
+            justifyContent="center"
+          />
+          {hasBottomTitle && (
+            <Box marginTop="s">
+              <Text
+                variant="body2Medium"
+                color="secondaryText"
+                marginTop="xs"
+                textAlign="center"
+              >
+                {t('accountView.deposit')}
+              </Text>
+            </Box>
+          )}
+        </Box>
+      )}
       {hasSwaps && (
         <Box
           marginEnd={fabMargin}
@@ -296,36 +313,52 @@ const AccountActionBar = ({
           )}
         </Box>
       )}
-      <Box
-        flexDirection={hasBottomTitle ? 'column' : 'row'}
-        flex={compact || maxCompact ? undefined : 1}
-      >
+      {hasSend && (
+        <Box
+          flexDirection={hasBottomTitle ? 'column' : 'row'}
+          flex={compact || maxCompact ? undefined : 1}
+        >
+          <FabButton
+            icon="fatArrowUp"
+            backgroundColor="blueBright500"
+            backgroundColorOpacity={0.2}
+            backgroundColorOpacityPressed={0.4}
+            iconColor="blueBright500"
+            title={compact || maxCompact ? undefined : t('accountView.send')}
+            onPress={handleAction('send')}
+            reverse
+            width={maxCompact ? 47.5 : undefined}
+            height={maxCompact ? 47.5 : undefined}
+            justifyContent="center"
+          />
+          {hasBottomTitle && (
+            <Box marginTop="s">
+              <Text
+                variant="body2Medium"
+                color="secondaryText"
+                marginTop="xs"
+                textAlign="center"
+              >
+                {t('accountView.send')}
+              </Text>
+            </Box>
+          )}
+        </Box>
+      )}
+      {hasDelegate && (
         <FabButton
-          icon="fatArrowUp"
           backgroundColor="blueBright500"
           backgroundColorOpacity={0.2}
-          backgroundColorOpacityPressed={0.4}
+          backgroundColorOpacityPressed={0.1}
           iconColor="blueBright500"
-          title={compact || maxCompact ? undefined : t('accountView.send')}
-          onPress={handleAction('send')}
+          title={compact || maxCompact ? undefined : t('accountView.delegate')}
+          onPress={handleAction('delegate')}
           reverse
           width={maxCompact ? 47.5 : undefined}
           height={maxCompact ? 47.5 : undefined}
           justifyContent="center"
         />
-        {hasBottomTitle && (
-          <Box marginTop="s">
-            <Text
-              variant="body2Medium"
-              color="secondaryText"
-              marginTop="xs"
-              textAlign="center"
-            >
-              {t('accountView.send')}
-            </Text>
-          </Box>
-        )}
-      </Box>
+      )}
     </Box>
   )
 }

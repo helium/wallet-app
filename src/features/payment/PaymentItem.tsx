@@ -52,8 +52,8 @@ type Props = {
   fee?: Balance<DataCredits>
   onAddressBookSelected: (opts: { address?: string; index: number }) => void
   onEditAmount: (opts: { address?: string; index: number }) => void
-  onToggleMax: (opts: { address?: string; index: number }) => void
-  onEditMemo: (opts: { address?: string; index: number; memo: string }) => void
+  onToggleMax?: (opts: { address?: string; index: number }) => void
+  onEditMemo?: (opts: { address?: string; index: number; memo: string }) => void
   onEditAddress: (opts: { index: number; address: string }) => void
   handleAddressError: (opts: {
     index: number
@@ -153,11 +153,15 @@ const PaymentItem = ({
   }, [address, index, onEditAmount])
 
   const handleToggleMax = useCallback(() => {
+    if (!onToggleMax) return
+
     onToggleMax({ address, index })
   }, [address, index, onToggleMax])
 
   const handleEditMemo = useCallback(
     (text?: string) => {
+      if (!onEditMemo) return
+
       onEditMemo({ memo: text || '', address, index })
     },
     [address, index, onEditMemo],
@@ -187,9 +191,7 @@ const PaymentItem = ({
   }, [index, onRemove])
 
   const isDeepLink = useMemo(
-    () =>
-      address &&
-      !(l1Network === 'helium' ? account?.address : account?.solanaAddress),
+    () => address && l1Network === 'helium' && !account?.address,
     [account, address, l1Network],
   )
 

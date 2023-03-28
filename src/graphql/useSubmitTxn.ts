@@ -7,6 +7,8 @@ import Balance, {
 } from '@helium/currency'
 import { PaymentV2 } from '@helium/transactions'
 import { PublicKey, Transaction } from '@solana/web3.js'
+import i18n from '@utils/i18n'
+import { Mints } from '@utils/constants'
 import { useTransactions } from '../storage/TransactionProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAccountLazyQuery, useSubmitTxnMutation } from '../generated/graphql'
@@ -18,6 +20,9 @@ import {
   claimAllRewards,
   sendAnchorTxn,
   sendTreasurySwap,
+  sendMintDataCredits,
+  sendDelegateDataCredits,
+  readBalances,
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import { useGetMintsQuery } from '../store/slices/walletRestApi'
@@ -27,9 +32,11 @@ export default () => {
   const { makePaymentTxn } = useTransactions()
   const { currentAccount, anchorProvider } = useAccountStorage()
   const { l1Network, solanaNetwork: cluster } = useAppStorage()
+  const { t } = i18n
   const { data: mints } = useGetMintsQuery(cluster, {
     refetchOnMountOrArgChange: true,
   })
+
   const dispatch = useAppDispatch()
 
   const [fetchAccount, { loading: accountLoading, error: accountError }] =
@@ -58,7 +65,7 @@ export default () => {
       ticker: Ticker,
     ) => {
       if (!currentAccount) {
-        throw new Error('There must be an account selected to submit a txn')
+        throw new Error(t('errors.account'))
       }
 
       try {
@@ -91,7 +98,7 @@ export default () => {
         submitTxnMutation({ variables })
       } catch (e) {}
     },
-    [currentAccount, fetchAccount, makePaymentTxn, submitTxnMutation],
+    [currentAccount, fetchAccount, makePaymentTxn, submitTxnMutation, t],
   )
   const submitSolDev = useCallback(
     async (
@@ -103,7 +110,7 @@ export default () => {
       }[],
     ) => {
       if (!currentAccount) {
-        throw new Error('There must be an account selected to submit a txn')
+        throw new Error(t('errors.account'))
       }
       if (!mints) {
         throw new Error('Mints not found')
@@ -118,7 +125,7 @@ export default () => {
         }),
       )
     },
-    [currentAccount, dispatch, mints, cluster],
+    [currentAccount, mints, dispatch, cluster, t],
   )
 
   const submit = useCallback(
@@ -146,7 +153,7 @@ export default () => {
   const submitCollectable = useCallback(
     async (collectable: CompressedNFT, payee: string) => {
       if (!currentAccount) {
-        throw new Error('There must be an account selected to submit a txn')
+        throw new Error(t('errors.account'))
       }
       dispatch(
         makeCollectablePayment({
@@ -157,17 +164,17 @@ export default () => {
         }),
       )
     },
-    [cluster, currentAccount, dispatch],
+    [cluster, currentAccount, dispatch, t],
   )
 
   const submitTreasurySwap = useCallback(
     async (fromMint: PublicKey, amount: number) => {
       if (!currentAccount) {
-        throw new Error('There must be an account selected to submit a txn')
+        throw new Error(t('errors.account'))
       }
 
       if (!anchorProvider) {
-        throw new Error('There must be an account selected to submit a txn')
+        throw new Error(t('errors.account'))
       }
 
       if (!mints) {
@@ -185,13 +192,13 @@ export default () => {
         }),
       )
     },
-    [anchorProvider, cluster, currentAccount, dispatch, mints],
+    [anchorProvider, cluster, currentAccount, dispatch, mints, t],
   )
 
   const submitAnchorTxn = useCallback(
     async (txn: Transaction) => {
       if (!anchorProvider) {
-        throw new Error('There must be an account selected to submit a txn')
+        throw new Error(t('errors.account'))
       }
       dispatch(
         sendAnchorTxn({
@@ -201,17 +208,17 @@ export default () => {
         }),
       )
     },
-    [anchorProvider, cluster, dispatch],
+    [anchorProvider, cluster, dispatch, t],
   )
 
   const submitClaimRewards = useCallback(
     async (txn: Transaction) => {
       if (!anchorProvider) {
-        throw new Error('There must be an account selected to submit a txn')
+        throw new Error(t('errors.account'))
       }
 
       if (!currentAccount) {
-        throw new Error('There must be an account selected to submit a txn')
+        throw new Error(t('errors.account'))
       }
 
       dispatch(
@@ -223,17 +230,17 @@ export default () => {
         }),
       )
     },
-    [anchorProvider, cluster, currentAccount, dispatch],
+    [anchorProvider, cluster, currentAccount, dispatch, t],
   )
 
   const submitClaimAllRewards = useCallback(
     async (txns: Transaction[]) => {
       if (!anchorProvider) {
-        throw new Error('There must be an account selected to submit a txn')
+        throw new Error(t('errors.account'))
       }
 
       if (!currentAccount) {
-        throw new Error('There must be an account selected to submit a txn')
+        throw new Error(t('errors.account'))
       }
 
       dispatch(
@@ -245,13 +252,13 @@ export default () => {
         }),
       )
     },
-    [anchorProvider, cluster, currentAccount, dispatch],
+    [anchorProvider, cluster, currentAccount, dispatch, t],
   )
 
   const submitHeliumLedger = useCallback(
     async ({ txn, txnJson }: { txn: PaymentV2; txnJson: string }) => {
       if (!currentAccount?.address) {
-        throw new Error('There must be an account selected to submit a txn')
+        throw new Error(t('errors.account'))
       }
 
       const variables = {
@@ -262,7 +269,7 @@ export default () => {
 
       submitTxnMutation({ variables })
     },
-    [currentAccount, submitTxnMutation],
+    [currentAccount, submitTxnMutation, t],
   )
 
   const submitLedger = useCallback(
@@ -278,6 +285,47 @@ export default () => {
     [l1Network, submitHeliumLedger],
   )
 
+  const submitMintDataCredits = useCallback(
+    async (hntAmount: number) => {
+      if (!currentAccount || !anchorProvider) {
+        throw new Error(t('errors.account'))
+      }
+
+      await dispatch(
+        sendMintDataCredits({
+          account: currentAccount,
+          anchorProvider,
+          cluster,
+          hntAmount,
+        }),
+      )
+
+      dispatch(readBalances({ cluster, acct: currentAccount, mints: Mints }))
+    },
+    [anchorProvider, cluster, currentAccount, dispatch, t],
+  )
+
+  const submitDelegateDataCredits = useCallback(
+    async (delegateAddress: string, amount: number) => {
+      if (!currentAccount || !anchorProvider) {
+        throw new Error(t('errors.account'))
+      }
+
+      await dispatch(
+        sendDelegateDataCredits({
+          account: currentAccount,
+          anchorProvider,
+          cluster,
+          delegateAddress,
+          amount,
+        }),
+      )
+
+      dispatch(readBalances({ cluster, acct: currentAccount, mints: Mints }))
+    },
+    [anchorProvider, cluster, currentAccount, dispatch, t],
+  )
+
   return {
     submit,
     submitCollectable,
@@ -286,6 +334,8 @@ export default () => {
     submitClaimRewards,
     submitClaimAllRewards,
     submitLedger,
+    submitMintDataCredits,
+    submitDelegateDataCredits,
     data,
     error: accountError || submitError || nonceError,
     loading: accountLoading || submitLoading,

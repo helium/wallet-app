@@ -51,7 +51,11 @@ import { useGetTokenPricesQuery } from '../store/slices/walletRestApi'
 import { useAppDispatch } from '../store/store'
 import { accountCurrencyType } from './accountUtils'
 import { decimalSeparator, groupSeparator } from './i18n'
-import { onAccountChange, removeAccountChangeListener } from './solanaUtils'
+import {
+  onAccountChange,
+  removeAccountChangeListener,
+  getEscrowTokenAccount,
+} from './solanaUtils'
 import { Mints } from './constants'
 
 export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
@@ -285,10 +289,10 @@ const useBalanceHook = () => {
       }
       return new Balance(
         opts.intValue,
-        accountCurrencyType(currentAccount.address),
+        accountCurrencyType(currentAccount.address, undefined, l1Network),
       )
     },
-    [currentAccount],
+    [currentAccount, l1Network],
   )
 
   const getTokenAccountData = useCallback((tokenAccount) => {
@@ -442,6 +446,36 @@ const useBalanceHook = () => {
     return new Balance(bal, CurrencyType.security)
   }, [solBalances, accountData, l1Network])
 
+  const dcReceivedBalance = useMemo(() => {
+    if (!accountData?.account?.address) {
+      return new Balance(0, CurrencyType.dataCredit)
+    }
+
+    const escrowAccount = getEscrowTokenAccount(
+      accountData?.account?.address,
+    ).toBase58()
+
+    let bal = 0
+    switch (l1Network) {
+      case 'helium':
+        bal = 0
+        break
+
+      case 'solana':
+        bal = solBalances?.dcReceived
+          ? Number(getTokenAccountData(escrowAccount)?.amount || 0)
+          : 0
+        break
+    }
+
+    return new Balance(bal, CurrencyType.dataCredit)
+  }, [
+    accountData?.account?.address,
+    getTokenAccountData,
+    l1Network,
+    solBalances?.dcReceived,
+  ])
+
   const dcBalance = useMemo(() => {
     let bal = 0
     switch (l1Network) {
@@ -549,7 +583,6 @@ const useBalanceHook = () => {
 
   return {
     bonesToBalance,
-    dcBalance,
     dcToNetworkTokens,
     floatToBalance,
     intToBalance,
@@ -565,6 +598,8 @@ const useBalanceHook = () => {
     solanaPrice,
     secBalance,
     solBalance,
+    dcBalance,
+    dcReceivedBalance,
     toCurrencyString,
     toPreferredCurrencyString,
     toUsd,
@@ -577,7 +612,6 @@ const useBalanceHook = () => {
 
 const initialState = {
   bonesToBalance: () => new Balance(0, CurrencyType.networkToken),
-  dcBalance: new Balance(0, CurrencyType.dataCredit),
   dcToNetworkTokens: () => undefined,
   floatToBalance: () => undefined,
   intToBalance: () => undefined,
@@ -593,6 +627,9 @@ const initialState = {
   solanaPrice: undefined,
   secBalance: new Balance(0, CurrencyType.security),
   solBalance: new Balance(0, CurrencyType.solTokens),
+  dcBalance: new Balance(0, CurrencyType.dataCredit),
+  dcReceivedBalance: new Balance(0, CurrencyType.dataCredit),
+  dcDelegatedBalance: new Balance(0, CurrencyType.dataCredit),
   toCurrencyString: () => new Promise<string>((resolve) => resolve('')),
   toPreferredCurrencyString: () =>
     new Promise<string>((resolve) => resolve('')),

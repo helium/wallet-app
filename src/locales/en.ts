@@ -14,6 +14,9 @@ export default {
     setDefault: 'Set as Default',
     title: 'Name this account',
   },
+  errors: {
+    accountNotSelected: 'There must be an account selected to submit a txn',
+  },
   accountImport: {
     accountLimit:
       'You have reached the account limit.\nTo add another account, sign out of a wallet account and try again.',
@@ -134,6 +137,8 @@ export default {
       mining: 'Mining Rewards',
       payment: 'Payments',
       pending: 'Pending Transactions',
+      delegate: 'Delegated',
+      mint: 'Received',
     },
     hideFilters: 'Hide Filters',
     myTransactions: 'My Transactions',
@@ -142,6 +147,8 @@ export default {
     tokens: 'Tokens',
     chooseCurrency: 'Choose Currency',
     tokenBalance: '{{amount}} <secondaryText>{{ticker}}</secondaryText>',
+    delegatedBalance: '{{amount}} Delegated',
+    receivedBalance: '{{amount}} Received',
   },
   solanaMigrationScreen: {
     migrationComplete: "You've successfully migrated your tokens!",
@@ -359,6 +366,7 @@ export default {
     stake: 'Stake',
     testnetTokens: 'Testnet Tokens',
     vote: 'Vote',
+    delegate: 'Delegate',
     airdrop: 'Airdrop',
   },
   addNewAccount: {
@@ -412,6 +420,11 @@ export default {
     recipient: 'Recipient Address',
     swipeToBurn: 'Swipe to Burn',
     title: 'Burn',
+  },
+  delegate: {
+    title: 'Delegate',
+    swipe: 'Swipe to Delegate',
+    amount: 'Amount (DC)',
   },
   connectedWallets: {
     add: 'Add New Account',
@@ -469,7 +482,7 @@ export default {
     mainnet: 'Mainnet',
     next: 'Next',
     solanaAddress: 'Solana Address',
-    notValidAddress: 'Not a valid Helium Wallet Address.',
+    notValidAddress: 'Not a valid Wallet Address.',
     notValidSolanaAddress: 'Not a valid Solana Address.',
     insufficientBalance: 'Insufficient balance',
     ok: 'OK',
@@ -919,6 +932,7 @@ export default {
     txnFeePaidBy: 'Transaction Fee paid by {{feePayer}}',
     unstakeValidator: 'Unstake {{ticker}}',
     validator: 'Validator',
+    delegated: 'Delegated',
   },
   vote: {
     active: 'Active Votes',

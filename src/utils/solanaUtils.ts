@@ -23,6 +23,8 @@ import {
   ParsedTransactionWithMeta,
   ParsedInstruction,
 } from '@solana/web3.js'
+import * as dc from '@helium/data-credits-sdk'
+import { subDaoKey, daoKey } from '@helium/helium-sub-daos-sdk'
 import {
   TOKEN_PROGRAM_ID,
   AccountLayout,
@@ -32,7 +34,6 @@ import {
   getMint,
 } from '@solana/spl-token'
 import { entityCreatorKey } from '@helium/helium-entity-manager-sdk'
-import { daoKey } from '@helium/helium-sub-daos-sdk'
 import Balance, { AnyCurrencyType } from '@helium/currency'
 import { Metaplex } from '@metaplex-foundation/js'
 import axios from 'axios'
@@ -53,10 +54,16 @@ import {
   getAsset,
   searchAssets,
   toBN,
+  DC_MINT,
   sendAndConfirmWithRetry,
+  IOT_MINT,
 } from '@helium/spl-utils'
 import { AnchorProvider, BN } from '@coral-xyz/anchor'
 import * as tm from '@helium/treasury-management-sdk'
+import {
+  delegatedDataCreditsKey,
+  escrowAccountKey,
+} from '@helium/data-credits-sdk'
 import { getPendingRewards } from '@helium/distributor-oracle'
 import { init } from '@helium/lazy-distributor-sdk'
 import { getKeypair } from '../storage/secureStorage'
@@ -71,6 +78,7 @@ import {
 import * as Logger from './logger'
 import { WrappedConnection } from './WrappedConnection'
 import { IOT_LAZY_KEY, Mints, MOBILE_LAZY_KEY } from './constants'
+import { BONES_PER_HNT } from './heliumUtils'
 
 export const SolanaConnection = {
   localnet: new WrappedConnection('http://127.0.0.1:8899'),
@@ -109,6 +117,23 @@ export const solKeypairFromPK = (heliumPK: Buffer) => {
 export const airdrop = (cluster: Cluster, address: string) => {
   const key = new PublicKey(address)
   return getConnection(cluster).requestAirdrop(key, LAMPORTS_PER_SOL)
+}
+
+export const getBalanceFromTokenAccount = async (
+  cluster: Cluster,
+  address: string,
+) => {
+  const account = new PublicKey(address)
+
+  const accountInfo = await getConnection(cluster).getAccountInfo(account)
+
+  if (!accountInfo) {
+    return BigInt(0)
+  }
+
+  const accountData = AccountLayout.decode(accountInfo.data)
+
+  return accountData.amount
 }
 
 export const readHeliumBalances = async (cluster: Cluster, address: string) => {
@@ -578,6 +603,140 @@ export const transferCollectable = async (
   } catch (e) {
     Logger.error(e)
     throw new Error((e as Error).message)
+  }
+}
+
+export const mintDataCredits = async (
+  cluster: Cluster,
+  anchorProvider: AnchorProvider,
+  hntAmount: number,
+) => {
+  try {
+    const connection = getConnection(cluster)
+    const { publicKey: payer } = anchorProvider.wallet
+
+    const program = await dc.init(anchorProvider)
+
+    const tx = await program.methods
+      .mintDataCreditsV0({
+        hntAmount: new BN(hntAmount * BONES_PER_HNT),
+        dcAmount: null,
+      })
+      .accounts({
+        dcMint: DC_MINT,
+      })
+      .transaction()
+
+    const { blockhash, lastValidBlockHeight } =
+      await connection.getLatestBlockhash()
+
+    tx.recentBlockhash = blockhash
+    tx.feePayer = payer
+
+    const signedTx = await anchorProvider.wallet.signTransaction(tx)
+
+    const signature = await connection.sendRawTransaction(
+      signedTx.serialize(),
+      {
+        skipPreflight: true,
+      },
+    )
+
+    await confirmTransaction(
+      cluster,
+      signature,
+      blockhash,
+      lastValidBlockHeight,
+    )
+    const txn = await getTxn(cluster, signature)
+
+    if (txn?.meta?.err) {
+      throw new Error(
+        typeof txn.meta.err === 'string'
+          ? txn.meta.err
+          : JSON.stringify(txn.meta.err),
+      )
+    }
+
+    return { signature, txn }
+  } catch (e) {
+    Logger.error(e)
+    throw e as Error
+  }
+}
+
+export const delegateDataCredits = async (
+  cluster: Cluster,
+  anchorProvider: AnchorProvider,
+  delegateAddress: string,
+  amount: number,
+) => {
+  try {
+    const connection = getConnection(cluster)
+    const { publicKey: payer } = anchorProvider.wallet
+
+    const program = await dc.init(anchorProvider)
+    const subDao = subDaoKey(IOT_MINT)[0]
+
+    const tx = await program.methods
+      .delegateDataCreditsV0({
+        amount: new BN(amount, 0),
+        routerKey: delegateAddress,
+      })
+      .accounts({
+        subDao,
+      })
+      .transaction()
+
+    const { blockhash, lastValidBlockHeight } =
+      await connection.getLatestBlockhash()
+
+    tx.recentBlockhash = blockhash
+    tx.feePayer = payer
+
+    const signedTx = await anchorProvider.wallet.signTransaction(tx)
+
+    const signature = await connection.sendRawTransaction(
+      signedTx.serialize(),
+      {
+        skipPreflight: true,
+      },
+    )
+
+    await confirmTransaction(
+      cluster,
+      signature,
+      blockhash,
+      lastValidBlockHeight,
+    )
+    const txn = await getTxn(cluster, signature)
+
+    if (txn?.meta?.err) {
+      throw new Error(
+        typeof txn.meta.err === 'string'
+          ? txn.meta.err
+          : JSON.stringify(txn.meta.err),
+      )
+    }
+
+    return { signature, txn }
+  } catch (e) {
+    Logger.error(e)
+    throw e as Error
+  }
+}
+
+export const getEscrowTokenAccount = (address: string) => {
+  try {
+    const subDao = subDaoKey(IOT_MINT)[0]
+
+    const delegatedDataCredits = delegatedDataCreditsKey(subDao, address)[0]
+    const escrowTokenAccount = escrowAccountKey(delegatedDataCredits)[0]
+
+    return escrowTokenAccount
+  } catch (e) {
+    Logger.error(e)
+    throw e as Error
   }
 }
 
@@ -1306,6 +1465,13 @@ export const solInstructionsToActivity = (
   }
 
   if (activity.type === 'unknown') return
+
+  const payment = activity.payments?.[0]
+  if (payment && payment.tokenType === 'DC') {
+    activity.type = payment.payee !== activity.payer ? 'dc_delegate' : 'dc_mint'
+    activity.amount = payment.amount
+    activity.tokenType = 'DC'
+  }
 
   return activity
 }

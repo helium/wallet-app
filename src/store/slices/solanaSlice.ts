@@ -26,6 +26,7 @@ import * as Logger from '../../utils/logger'
 import { fetchHotspots } from './hotspotsSlice'
 
 type Balances = {
+  dcReceived?: bigint
   secBalance?: bigint
   stakedBalance?: bigint
   loading?: boolean
@@ -36,6 +37,8 @@ type TokenActivity = Record<Ticker, Activity[]>
 type SolActivity = {
   all: TokenActivity
   payment: TokenActivity
+  delegate: TokenActivity
+  mint: TokenActivity
 }
 
 export type SolanaState = {
@@ -47,6 +50,7 @@ export type SolanaState = {
     data: Record<string, SolActivity>
     error?: SerializedError
   }
+  delegate?: { loading?: boolean; error?: SerializedError; success?: boolean }
 }
 
 const initialState: SolanaState = {
@@ -117,6 +121,21 @@ type TreasurySwapTxn = {
   amount: number
   fromMint: PublicKey
   mints: Record<string, string>
+}
+
+type MintDataCreditsInput = {
+  account: CSAccount
+  anchorProvider: AnchorProvider
+  cluster: Cluster
+  hntAmount: number
+}
+
+type DelegateDataCreditsInput = {
+  account: CSAccount
+  anchorProvider: AnchorProvider
+  cluster: Cluster
+  delegateAddress: string
+  amount: number
 }
 
 export const makePayment = createAsyncThunk(
@@ -203,6 +222,69 @@ export const sendTreasurySwap = createAsyncThunk(
         amount,
         fromMint,
         anchorProvider,
+      )
+
+      dispatch(readBalances({ cluster, acct: account }))
+
+      return await dispatch(
+        walletRestApi.endpoints.postPayment.initiate({
+          txnSignature: swap.signature,
+          cluster,
+        }),
+      )
+    } catch (error) {
+      Logger.error(error)
+      throw error
+    }
+  },
+)
+
+export const sendMintDataCredits = createAsyncThunk(
+  'solana/sendMintDataCredits',
+  async (
+    { cluster, anchorProvider, hntAmount, account }: MintDataCreditsInput,
+    { dispatch },
+  ) => {
+    try {
+      const swap = await solUtils.mintDataCredits(
+        cluster,
+        anchorProvider,
+        hntAmount,
+      )
+
+      dispatch(readBalances({ cluster, acct: account }))
+
+      return await dispatch(
+        walletRestApi.endpoints.postPayment.initiate({
+          txnSignature: swap.signature,
+          cluster,
+        }),
+      )
+    } catch (error) {
+      Logger.error(error)
+      throw error
+    }
+  },
+)
+
+export const sendDelegateDataCredits = createAsyncThunk(
+  'solana/sendDelegateDataCredits',
+  async (
+    {
+      cluster,
+      anchorProvider,
+      amount,
+      account,
+      delegateAddress,
+    }: DelegateDataCreditsInput,
+    { dispatch },
+  ) => {
+    try {
+      const swap = await solUtils.delegateDataCredits(
+        cluster,
+        anchorProvider,
+        delegateAddress,
+        amount,
       )
 
       dispatch(readBalances({ cluster, acct: account }))
@@ -333,6 +415,7 @@ export const getTxns = createAsyncThunk(
     const { solana } = (await getState()) as {
       solana: SolanaState
     }
+
     const existing = solana.activity.data[account.solanaAddress]?.all?.[ticker]
 
     if (requestType === 'fetch_more') {
@@ -468,6 +551,32 @@ const solanaSlice = createSlice({
         error: undefined,
       }
     })
+    builder.addCase(sendMintDataCredits.rejected, (state, action) => {
+      state.payment = { success: false, loading: false, error: action.error }
+    })
+    builder.addCase(sendMintDataCredits.pending, (state, _action) => {
+      state.payment = { success: false, loading: true, error: undefined }
+    })
+    builder.addCase(sendMintDataCredits.fulfilled, (state, _action) => {
+      state.payment = {
+        success: true,
+        loading: false,
+        error: undefined,
+      }
+    })
+    builder.addCase(sendDelegateDataCredits.rejected, (state, action) => {
+      state.delegate = { success: false, loading: false, error: action.error }
+    })
+    builder.addCase(sendDelegateDataCredits.pending, (state, _action) => {
+      state.delegate = { success: false, loading: true, error: undefined }
+    })
+    builder.addCase(sendDelegateDataCredits.fulfilled, (state, _action) => {
+      state.delegate = {
+        success: true,
+        loading: false,
+        error: undefined,
+      }
+    })
     builder.addCase(claimAllRewards.rejected, (state, action) => {
       state.payment = { success: false, loading: false, error: action.error }
     })
@@ -505,21 +614,43 @@ const solanaSlice = createSlice({
       state.activity.data[address] = state.activity.data[address] || {
         all: {},
         payment: {},
+        delegate: {},
+        mint: {},
+      }
+
+      if (!state.activity.data[address].delegate) {
+        state.activity.data[address].delegate = state.activity.data[address].all
+      }
+
+      if (!state.activity.data[address].mint) {
+        state.activity.data[address].mint = state.activity.data[address].all
       }
 
       const prevAll = state.activity.data[address].all[ticker]
       const prevPayment = state.activity.data[address].payment[ticker]
+      const prevDelegate = state.activity.data[address].delegate[ticker]
+      const prevMint = state.activity.data[address].mint[ticker]
 
       switch (requestType) {
         case 'start_fresh': {
           state.activity.data[address].all[ticker] = payload
           state.activity.data[address].payment[ticker] = payload
+          state.activity.data[address].delegate[ticker] = payload
+          state.activity.data[address].mint[ticker] = payload
           break
         }
         case 'fetch_more': {
           state.activity.data[address].all[ticker] = [...prevAll, ...payload]
           state.activity.data[address].payment[ticker] = [
             ...prevPayment,
+            ...payload,
+          ]
+          state.activity.data[address].delegate[ticker] = [
+            ...prevDelegate,
+            ...payload,
+          ]
+          state.activity.data[address].mint[ticker] = [
+            ...prevDelegate,
             ...payload,
           ]
           break
@@ -530,6 +661,11 @@ const solanaSlice = createSlice({
             ...payload,
             ...prevPayment,
           ]
+          state.activity.data[address].delegate[ticker] = [
+            ...payload,
+            ...prevDelegate,
+          ]
+          state.activity.data[address].mint[ticker] = [...payload, ...prevMint]
           break
         }
       }

@@ -99,6 +99,19 @@ export const parseBurn = (qrContent: string) => {
   }
 }
 
+export const parseDelegate = (qrContent: string) => {
+  try {
+    const parsedJson = JSON.parse(qrContent)
+    const isDelegate = parsedJson.type === 'dc_delegate'
+
+    if (!isDelegate) return false
+
+    return parsedJson as BurnRouteParam
+  } catch (e) {
+    return false
+  }
+}
+
 export const parsePaymentLink = (
   urlOrAddress: string,
 ): PaymentRouteParam | undefined => {

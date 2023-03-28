@@ -19,6 +19,7 @@ import useAlert from '@hooks/useAlert'
 import TokenHNT from '@assets/images/tokenHNT.svg'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenIOT from '@assets/images/tokenIOT.svg'
+import TokenDC from '@assets/images/tokenDC.svg'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import {
   createTreasurySwapMessage,
@@ -33,6 +34,9 @@ import CloseButton from '@components/CloseButton'
 import TreasuryWarningScreen from '@components/TreasuryWarningScreen'
 import { SwapNavigationProp } from './swapTypes'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
+import { useBalance } from '../../utils/Balance'
+import { accountCurrencyType } from '../../utils/accountUtils'
+import { BONES_PER_HNT } from '../../utils/heliumUtils'
 import SwapItem from './SwapItem'
 
 // Selector Mode enum
@@ -46,14 +50,15 @@ enum Tokens {
   MOBILE = 'MOBILE',
   IOT = 'IOT',
   SOL = 'SOL',
+  DC = 'DC',
 }
 
 const SwapScreen = () => {
   const { t } = useTranslation()
   const { currentAccount, anchorProvider } = useAccountStorage()
-  const { solanaNetwork: cluster } = useAppStorage()
+  const { solanaNetwork: cluster, l1Network } = useAppStorage()
   const navigation = useNavigation<SwapNavigationProp>()
-  const { submitTreasurySwap } = useSubmitTxn()
+  const { submitTreasurySwap, submitMintDataCredits } = useSubmitTxn()
   const edges = useMemo(() => ['bottom'] as Edge[], [])
   const [selectorMode, setSelectorMode] = useState(SelectorMode.youPay)
   const [youPayTokenType, setYouPayTokenType] = useState<Ticker>(Tokens.MOBILE)
@@ -70,6 +75,7 @@ const SwapScreen = () => {
   >()
   const [networkError, setNetworkError] = useState<undefined | string>()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
+  const { networkTokensToDc, networkBalance } = useBalance()
   const { showOKCancelAlert } = useAlert()
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const {
@@ -80,8 +86,19 @@ const SwapScreen = () => {
 
   // If user does not have enough tokens to swap for greater than 0.00000001 tokens
   const insufficientTokensToSwap = useMemo(() => {
-    return !(price && price > 0) && youPayTokenAmount > 0
-  }, [price, youPayTokenAmount])
+    if (
+      youPayTokenType === Tokens.HNT &&
+      networkBalance.floatBalance < 0.00000001
+    ) {
+      return true
+    }
+
+    return (
+      youPayTokenType !== Tokens.HNT &&
+      !(price && price > 0) &&
+      youPayTokenAmount > 0
+    )
+  }, [networkBalance, price, youPayTokenAmount, youPayTokenType])
 
   const showError = useMemo(() => {
     if (hasInsufficientBalance) return t('generic.insufficientBalance')
@@ -119,17 +136,18 @@ const SwapScreen = () => {
         message,
         'singleGossip',
       )
-      setSolFee(response.value / LAMPORTS_PER_SOL)
+
+      setSolFee((response.value || 0) / LAMPORTS_PER_SOL)
 
       const balance = await connection.getBalance(
         new PublicKey(currentAccount?.solanaAddress),
       )
-      setHasInsufficientBalance(response.value > balance)
+      setHasInsufficientBalance((response.value || 0) > balance)
     } catch (error) {
       Logger.error(error)
       setNetworkError((error as Error).message)
     }
-  }, [anchorProvider, cluster, currentAccount])
+  }, [anchorProvider, cluster, currentAccount?.solanaAddress])
 
   const handleClose = useCallback(() => {
     navigation.goBack()
@@ -163,11 +181,34 @@ const SwapScreen = () => {
       if (selectorMode === SelectorMode.youPay) {
         refresh()
         setYouPayTokenType(ticker)
-      } else {
+      }
+
+      if (selectorMode === SelectorMode.youReceive) {
         setYouReceiveTokenType(ticker)
       }
+
+      if (
+        selectorMode === SelectorMode.youPay &&
+        ticker !== Tokens.HNT &&
+        youReceiveTokenType === Tokens.DC
+      ) {
+        setYouReceiveTokenType(Tokens.HNT)
+        setYouPayTokenAmount(0)
+      }
+
+      if (selectorMode === SelectorMode.youPay && ticker === Tokens.HNT) {
+        setYouReceiveTokenType(Tokens.DC)
+      }
+
+      if (selectorMode === SelectorMode.youReceive && ticker === Tokens.HNT) {
+        setYouPayTokenType(Tokens.MOBILE)
+      }
+
+      if (selectorMode === SelectorMode.youReceive && ticker === Tokens.DC) {
+        setYouPayTokenType(Tokens.HNT)
+      }
     },
-    [selectorMode, refresh],
+    [refresh, selectorMode, youReceiveTokenType],
   )
 
   const tokenData = useMemo(() => {
@@ -178,6 +219,12 @@ const SwapScreen = () => {
           icon: <TokenMOBILE width={30} height={30} />,
           value: Tokens.MOBILE,
           selected: youPayTokenType === Tokens.MOBILE,
+        },
+        {
+          label: Tokens.HNT,
+          icon: <TokenHNT width={30} height={30} />,
+          value: Tokens.HNT,
+          selected: youPayTokenType === Tokens.HNT,
         },
         {
           label: Tokens.IOT,
@@ -191,13 +238,19 @@ const SwapScreen = () => {
           label: Tokens.HNT,
           icon: <TokenHNT width={30} height={30} />,
           value: Tokens.HNT,
-          selected: youPayTokenType === Tokens.HNT,
+          selected: youReceiveTokenType === Tokens.HNT,
+        },
+        {
+          label: Tokens.DC,
+          icon: <TokenDC width={30} height={30} />,
+          value: Tokens.DC,
+          selected: youReceiveTokenType === Tokens.DC,
         },
       ],
     }
 
     return tokens[selectorMode]
-  }, [selectorMode, youPayTokenType])
+  }, [selectorMode, youPayTokenType, youReceiveTokenType])
 
   const onCurrencySelect = useCallback(
     (youPay: boolean) => () => {
@@ -222,12 +275,30 @@ const SwapScreen = () => {
   )
 
   const youReceiveTokenAmount = useMemo(() => {
-    if (price) {
+    if (price && youPayTokenType !== Tokens.HNT) {
       return price
     }
 
+    if (youPayTokenType === Tokens.HNT && currentAccount) {
+      const amount = networkTokensToDc(
+        new Balance(
+          Number(youPayTokenAmount) * BONES_PER_HNT,
+          accountCurrencyType(currentAccount.address, undefined, l1Network),
+        ),
+      )?.floatBalance
+
+      return amount || 0
+    }
+
     return 0
-  }, [price])
+  }, [
+    currentAccount,
+    l1Network,
+    networkTokensToDc,
+    price,
+    youPayTokenAmount,
+    youPayTokenType,
+  ])
 
   const handleSwapTokens = useCallback(async () => {
     const decision = await showOKCancelAlert({
@@ -236,7 +307,16 @@ const SwapScreen = () => {
     })
     if (!decision) return
 
-    submitTreasurySwap(new PublicKey(Mints[youPayTokenType]), youPayTokenAmount)
+    if (youPayTokenType === Tokens.HNT) {
+      submitMintDataCredits(youPayTokenAmount)
+    }
+
+    if (youPayTokenType !== Tokens.HNT) {
+      submitTreasurySwap(
+        new PublicKey(Mints[youPayTokenType]),
+        youPayTokenAmount,
+      )
+    }
 
     navigation.push('SwappingScreen', {
       tokenA: youPayTokenType,
@@ -245,6 +325,7 @@ const SwapScreen = () => {
   }, [
     navigation,
     showOKCancelAlert,
+    submitMintDataCredits,
     submitTreasurySwap,
     t,
     youPayTokenAmount,
