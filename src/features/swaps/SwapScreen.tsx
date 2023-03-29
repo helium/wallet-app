@@ -364,9 +364,10 @@ const SwapScreen = () => {
     if (!currentAccount || !currentAccount.solanaAddress)
       throw new Error('No account found')
 
-    const recipientAddr = hasRecipientError
-      ? new PublicKey(currentAccount.solanaAddress)
-      : new PublicKey(recipient)
+    const recipientAddr =
+      recipient && !hasRecipientError
+        ? new PublicKey(recipient)
+        : new PublicKey(currentAccount.solanaAddress)
     if (!decision) return
 
     if (youPayTokenType === Tokens.HNT) {

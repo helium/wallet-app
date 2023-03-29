@@ -105,7 +105,7 @@ export const confirmTransaction = async (
 
   const confirmation = await conn.confirmTransaction(
     { signature, blockhash, lastValidBlockHeight },
-    'finalized',
+    'confirmed',
   )
   return confirmation.value
 }
