@@ -4,7 +4,7 @@ import TokenDC from '@assets/images/tokenDC.svg'
 import TokenHNT from '@assets/images/tokenHNT.svg'
 import TokenIOT from '@assets/images/tokenIOT.svg'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
-import ChevronDown from '@assets/images/chevronDown.svg'
+import Plus from '@assets/images/plus.svg'
 import AddressBookSelector, {
   AddressBookRef,
 } from '@components/AddressBookSelector'
@@ -44,6 +44,7 @@ import {
   TextInputEndEditingEventData,
 } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
+import { useColors, useHitSlop } from '@theme/themeHooks'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
 import {
   accountCurrencyType,
@@ -53,7 +54,6 @@ import { useBalance } from '../../utils/Balance'
 import { BONES_PER_HNT } from '../../utils/heliumUtils'
 import SwapItem from './SwapItem'
 import { SwapNavigationProp } from './swapTypes'
-import { useHitSlop } from '@theme/themeHooks'
 
 // Selector Mode enum
 enum SelectorMode {
@@ -78,6 +78,7 @@ const SwapScreen = () => {
   const edges = useMemo(() => ['bottom'] as Edge[], [])
   const [selectorMode, setSelectorMode] = useState(SelectorMode.youPay)
   const [youPayTokenType, setYouPayTokenType] = useState<Ticker>(Tokens.MOBILE)
+  const colors = useColors()
   /* TODO: Add new solana variation for IOT and MOBILE in @helium/currency that supports
      6 decimals and pulls from mint instead of ticker.
   */
@@ -276,7 +277,7 @@ const SwapScreen = () => {
         },
         {
           label: Tokens.HNT,
-          icon: <TokenHNT width={30} height={30} />,
+          icon: <TokenHNT color="white" width={30} height={30} />,
           value: Tokens.HNT,
           selected: youPayTokenType === Tokens.HNT,
         },
@@ -443,50 +444,9 @@ const SwapScreen = () => {
                       loading={loadingPrice}
                     />
 
-                    <Box marginTop="m">
-                      {solFee ? (
-                        <Box marginTop="m">
-                          <TextTransform
-                            textAlign="center"
-                            marginHorizontal="m"
-                            variant="body3Medium"
-                            color="white"
-                            i18nKey="collectablesScreen.transferFee"
-                            values={{ amount: solFee }}
-                          />
-                        </Box>
-                      ) : (
-                        <Text
-                          marginTop="m"
-                          textAlign="center"
-                          marginHorizontal="m"
-                          variant="body2"
-                          marginBottom="s"
-                          color="secondaryText"
-                        >
-                          {t('generic.calculatingTransactionFee')}
-                        </Text>
-                      )}
-                      <Text
-                        marginTop="s"
-                        opacity={
-                          insufficientTokensToSwap ||
-                          hasInsufficientBalance ||
-                          networkError
-                            ? 100
-                            : 0
-                        }
-                        marginHorizontal="m"
-                        variant="body3Medium"
-                        color="red500"
-                        textAlign="center"
-                      >
-                        {showError}
-                      </Text>
-                    </Box>
-
                     {!isRecipientOpen && (
                       <TouchableOpacityBox
+                        marginTop="l"
                         hitSlop={hitSlop}
                         alignItems="center"
                         onPress={handleRecipientClick}
@@ -504,15 +464,17 @@ const SwapScreen = () => {
                           >
                             {t('swapsScreen.addRecipient')}
                           </Text>
-                          <ChevronDown color="grey" />
+                          <Plus color={colors.secondaryText} />
                         </Box>
                       </TouchableOpacityBox>
                     )}
 
                     {isRecipientOpen && (
                       <TextInput
+                        marginTop="l"
                         floatingLabel={t('collectablesScreen.transferTo')}
-                        variant="thickBlur"
+                        variant="thickDark"
+                        backgroundColor="red500"
                         marginHorizontal="m"
                         marginBottom="s"
                         height={80}
@@ -531,11 +493,25 @@ const SwapScreen = () => {
                         }}
                       />
                     )}
+
+                    {showError && (
+                      <Box marginTop="s">
+                        <Text
+                          marginTop="s"
+                          marginHorizontal="m"
+                          variant="body3Medium"
+                          color="red500"
+                          textAlign="center"
+                        >
+                          {showError}
+                        </Text>
+                      </Box>
+                    )}
                   </Box>
                 </Box>
 
                 <Box
-                  flexDirection="row"
+                  flexDirection="column"
                   marginBottom="xl"
                   marginTop="m"
                   marginHorizontal="xl"
@@ -560,6 +536,29 @@ const SwapScreen = () => {
                     titleColor="black"
                     onPress={handleSwapTokens}
                   />
+
+                  {solFee ? (
+                    <Box marginTop="m">
+                      <TextTransform
+                        textAlign="center"
+                        marginHorizontal="m"
+                        variant="body3Medium"
+                        color="white"
+                        i18nKey="collectablesScreen.transferFee"
+                        values={{ amount: solFee }}
+                      />
+                    </Box>
+                  ) : (
+                    <Text
+                      marginTop="m"
+                      textAlign="center"
+                      marginHorizontal="m"
+                      variant="body2"
+                      color="secondaryText"
+                    >
+                      {t('generic.calculatingTransactionFee')}
+                    </Text>
+                  )}
                 </Box>
               </SafeAreaBox>
             </ReAnimatedBox>

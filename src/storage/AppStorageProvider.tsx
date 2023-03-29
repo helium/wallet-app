@@ -3,7 +3,6 @@ import React, {
   ReactNode,
   useCallback,
   useContext,
-  useEffect,
   useState,
 } from 'react'
 import { useAsync } from 'react-async-hook'
@@ -176,22 +175,15 @@ const useAppStorageHook = () => {
 
   const updateDoneSolanaMigration = useCallback(
     async ({ cluster, address }: { cluster: Cluster; address: string }) => {
-      setDoneSolanaMigration((s) => ({
-        ...s,
-        [cluster]: [...s[cluster], address],
-      }))
+      const newState = {
+        ...doneSolanaMigration,
+        [cluster]: [...(doneSolanaMigration[cluster] || []), address],
+      }
+      setDoneSolanaMigration(newState)
+      return storeSecureItem('doneSolanaMigration', JSON.stringify(newState))
     },
-    [],
+    [doneSolanaMigration],
   )
-
-  useEffect(() => {
-    if (doneSolanaMigration) {
-      storeSecureItem(
-        'doneSolanaMigration',
-        JSON.stringify(doneSolanaMigration),
-      )
-    }
-  }, [doneSolanaMigration])
 
   return {
     authInterval,
