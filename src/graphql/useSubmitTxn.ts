@@ -8,7 +8,6 @@ import Balance, {
 import { PaymentV2 } from '@helium/transactions'
 import { PublicKey, Transaction } from '@solana/web3.js'
 import i18n from '@utils/i18n'
-import { Mints } from '@utils/constants'
 import { useTransactions } from '../storage/TransactionProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAccountLazyQuery, useSubmitTxnMutation } from '../generated/graphql'
@@ -302,7 +301,7 @@ export default () => {
         }),
       )
 
-      dispatch(readBalances({ cluster, acct: currentAccount, mints: Mints }))
+      dispatch(readBalances({ cluster, acct: currentAccount }))
     },
     [anchorProvider, cluster, currentAccount, dispatch, t],
   )
@@ -323,7 +322,7 @@ export default () => {
         }),
       )
 
-      dispatch(readBalances({ cluster, acct: currentAccount, mints: Mints }))
+      dispatch(readBalances({ cluster, acct: currentAccount }))
     },
     [anchorProvider, cluster, currentAccount, dispatch, t],
   )
