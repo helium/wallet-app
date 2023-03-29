@@ -32,6 +32,7 @@ import {
   getOrCreateAssociatedTokenAccount,
   getAssociatedTokenAddress,
   getMint,
+  getAssociatedTokenAddressSync,
 } from '@solana/spl-token'
 import { entityCreatorKey } from '@helium/helium-entity-manager-sdk'
 import Balance, { AnyCurrencyType } from '@helium/currency'
@@ -612,6 +613,7 @@ export const mintDataCredits = async (
   cluster: Cluster,
   anchorProvider: AnchorProvider,
   hntAmount: number,
+  recipient: PublicKey,
 ) => {
   try {
     const connection = getConnection(cluster)
@@ -626,6 +628,7 @@ export const mintDataCredits = async (
       })
       .accounts({
         dcMint: DC_MINT,
+        recipient,
       })
       .transaction()
 
@@ -1306,6 +1309,7 @@ export async function createTreasurySwapTxn(
   amount: number,
   fromMint: PublicKey,
   anchorProvider: AnchorProvider,
+  recipient: PublicKey,
 ) {
   const conn = getConnection(cluster)
   try {
@@ -1323,6 +1327,7 @@ export async function createTreasurySwapTxn(
       ])
       .accounts({
         treasuryManagement,
+        to: getAssociatedTokenAddressSync(HNT_MINT, recipient),
       })
       .transaction()
 

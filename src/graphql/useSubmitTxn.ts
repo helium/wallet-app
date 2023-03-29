@@ -168,7 +168,7 @@ export default () => {
   )
 
   const submitTreasurySwap = useCallback(
-    async (fromMint: PublicKey, amount: number) => {
+    async (fromMint: PublicKey, amount: number, recipient: PublicKey) => {
       if (!currentAccount) {
         throw new Error(t('errors.account'))
       }
@@ -189,6 +189,7 @@ export default () => {
           fromMint,
           amount,
           mints,
+          recipient,
         }),
       )
     },
@@ -286,7 +287,7 @@ export default () => {
   )
 
   const submitMintDataCredits = useCallback(
-    async (hntAmount: number) => {
+    async (hntAmount: number, recipient: PublicKey) => {
       if (!currentAccount || !anchorProvider) {
         throw new Error(t('errors.account'))
       }
@@ -297,6 +298,7 @@ export default () => {
           anchorProvider,
           cluster,
           hntAmount,
+          recipient,
         }),
       )
 
