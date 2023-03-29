@@ -20,6 +20,7 @@ import Globe from '@assets/images/earth-globe.svg'
 import { isBefore, parseISO } from 'date-fns'
 import { useNotificationStorage } from '@storage/NotificationStorageProvider'
 import { useDispatch } from 'react-redux'
+import { useGetSolanaStatusQuery } from '../store/slices/solanaStatusApi'
 import { useGetNotificationsQuery } from '../store/slices/walletRestApi'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
@@ -174,11 +175,14 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
 
 const TabBarNavigator = () => {
   const dispatch = useDispatch()
-  const { doneSolanaMigration, l1Network } = useAppStorage()
-  // // eslint-disable-next-line no-console
-  // if (doneSolanaMigration.size > 0) {
-  //   updateDoneSolanaMigration(new Set<string>())
-  // }
+  const { data: status } = useGetSolanaStatusQuery()
+
+  const {
+    doneSolanaMigration,
+    l1Network,
+    solanaNetwork: cluster,
+    updateSolanaNetwork,
+  } = useAppStorage()
   const { bottom } = useSafeAreaInsets()
   const { currentAccount, anchorProvider } = useAccountStorage()
 
@@ -186,11 +190,35 @@ const TabBarNavigator = () => {
     dispatch(appSlice.actions.setShowBanner(true))
   }, [dispatch])
 
+  // Switch to mainnet-beta if migration is complete & user hasn't already migrated
+  useEffect(() => {
+    if (!currentAccount?.solanaAddress) {
+      return
+    }
+
+    if (
+      status?.migrationStatus === 'complete' &&
+      !doneSolanaMigration['mainnet-beta'].includes(
+        currentAccount.solanaAddress,
+      )
+    ) {
+      updateSolanaNetwork('mainnet-beta')
+    }
+  }, [
+    currentAccount,
+    doneSolanaMigration,
+    updateSolanaNetwork,
+    status,
+    cluster,
+  ])
+
   return (
     <>
       {currentAccount?.solanaAddress &&
         anchorProvider &&
-        !doneSolanaMigration.has(currentAccount.solanaAddress) && (
+        !doneSolanaMigration[cluster].includes(
+          currentAccount.solanaAddress,
+        ) && (
           <Portal>
             <SolanaMigration
               position="absolute"

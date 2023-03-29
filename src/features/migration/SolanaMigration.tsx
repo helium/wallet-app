@@ -77,7 +77,7 @@ const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
       !currentAccount?.solanaAddress ||
       !anchorProvider ||
       !cluster ||
-      doneSolanaMigration.has(currentAccount?.solanaAddress)
+      doneSolanaMigration[cluster].includes(currentAccount?.solanaAddress)
     )
       return
 
@@ -88,8 +88,10 @@ const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
         onProgress,
       )
 
-      doneSolanaMigration.add(currentAccount?.solanaAddress)
-      await updateDoneSolanaMigration(new Set(doneSolanaMigration))
+      await updateDoneSolanaMigration({
+        cluster,
+        address: currentAccount?.solanaAddress,
+      })
 
       dispatch(
         fetchHotspots({
