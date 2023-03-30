@@ -354,6 +354,11 @@ export const theme = createTheme({
       borderRadius: 'xl',
       backgroundColor: 'transparent10',
     },
+    thickDark: {
+      padding: 'm',
+      borderRadius: 'xl',
+      backgroundColor: 'surfaceSecondary',
+    },
     transparentSmall: {
       color: 'primaryText',
       fontSize: 16,

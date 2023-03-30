@@ -121,6 +121,7 @@ type TreasurySwapTxn = {
   amount: number
   fromMint: PublicKey
   mints: Record<string, string>
+  recipient: PublicKey
 }
 
 type MintDataCreditsInput = {
@@ -128,6 +129,7 @@ type MintDataCreditsInput = {
   anchorProvider: AnchorProvider
   cluster: Cluster
   hntAmount: number
+  recipient: PublicKey
 }
 
 type DelegateDataCreditsInput = {
@@ -213,7 +215,14 @@ export const makeCollectablePayment = createAsyncThunk(
 export const sendTreasurySwap = createAsyncThunk(
   'solana/sendTreasurySwap',
   async (
-    { account, anchorProvider, amount, fromMint, cluster }: TreasurySwapTxn,
+    {
+      account,
+      anchorProvider,
+      amount,
+      fromMint,
+      cluster,
+      recipient,
+    }: TreasurySwapTxn,
     { dispatch },
   ) => {
     try {
@@ -222,6 +231,7 @@ export const sendTreasurySwap = createAsyncThunk(
         amount,
         fromMint,
         anchorProvider,
+        recipient,
       )
 
       dispatch(readBalances({ cluster, acct: account }))
@@ -242,7 +252,13 @@ export const sendTreasurySwap = createAsyncThunk(
 export const sendMintDataCredits = createAsyncThunk(
   'solana/sendMintDataCredits',
   async (
-    { cluster, anchorProvider, hntAmount, account }: MintDataCreditsInput,
+    {
+      cluster,
+      anchorProvider,
+      hntAmount,
+      account,
+      recipient,
+    }: MintDataCreditsInput,
     { dispatch },
   ) => {
     try {
@@ -250,6 +266,7 @@ export const sendMintDataCredits = createAsyncThunk(
         cluster,
         anchorProvider,
         hntAmount,
+        recipient,
       )
 
       dispatch(readBalances({ cluster, acct: account }))

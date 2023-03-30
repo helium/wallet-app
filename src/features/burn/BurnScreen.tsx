@@ -447,7 +447,7 @@ const BurnScreen = () => {
                 keyboardShouldPersistTaps="always"
               >
                 <AccountButton
-                  backgroundColor="surfaceSecondary"
+                  backgroundColor="secondary"
                   accountIconSize={41}
                   paddingTop="l"
                   title={formatAccountAlias(currentAccount)}

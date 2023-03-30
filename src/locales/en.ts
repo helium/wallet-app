@@ -330,6 +330,7 @@ export default {
     treasurySwapWarningTitle: 'Treasury Swap Warning',
     treasurySwapWarningBody:
       'Please be advised that the subDAO treasury has only been active for a few days since the Solana migration. Swapping subtokens to HNT may be affected by a limited HNT supply in the subDAO treasury. Please proceed with caution.',
+    addRecipient: 'Add Recipient',
   },
   browserScreen: {
     topPicks: 'Top Picks',

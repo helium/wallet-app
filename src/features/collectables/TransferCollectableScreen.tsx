@@ -103,6 +103,9 @@ const TransferCollectableScreen = () => {
         message,
         'singleGossip',
       )
+
+      if (!response?.value) return
+
       setSolFee(response.value / LAMPORTS_PER_SOL)
 
       const balance = await connection.getBalance(
