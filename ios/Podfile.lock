@@ -417,7 +417,7 @@ PODS:
     - React
   - RNReactNativeSharedGroupPreferences (1.1.23):
     - React
-  - RNReanimated (2.3.1):
+  - RNReanimated (2.12.0):
     - DoubleConversion
     - FBLazyVector
     - FBReactNativeSpec
@@ -425,7 +425,6 @@ PODS:
     - RCT-Folly
     - RCTRequired
     - RCTTypeSafety
-    - React
     - React-callinvoker
     - React-Core
     - React-Core/DevSupport
@@ -758,11 +757,11 @@ SPEC CHECKSUMS:
   FBLazyVector: affa4ba1bfdaac110a789192f4d452b053a86624
   FBReactNativeSpec: fe8b5f1429cfe83a8d72dc8ed61dc7704cac8745
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  glog: 791fe035093b84822da7f0870421a25839ca7870
+  glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
   helium-react-native-sdk: 32c0a7e3abc733a7f3d291013b2db31475fc6980
   MultiplatformBleAdapter: 5a6a897b006764392f9cef785e4360f54fb9477d
   OneSignalXCFramework: 81ceac017a290f23793443323090cfbe888f74ea
-  RCT-Folly: 766adb69dc1d6294bcc94a950a818a87adb3a766
+  RCT-Folly: 0080d0a6ebf2577475bda044aa59e2ca1f909cda
   RCTRequired: 21229f84411088e5d8538f21212de49e46cc83e2
   RCTTypeSafety: 62eed57a32924b09edaaf170a548d1fc96223086
   React: f0254ccddeeef1defe66c6b1bb9133a4f040792b
@@ -814,7 +813,7 @@ SPEC CHECKSUMS:
   RNLocalize: a64514b46a01375fdfae9349036b4dc7130333b5
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNReactNativeSharedGroupPreferences: de0121a4224c267bc7e9fb16c398f3f087c8da81
-  RNReanimated: b3e54f4501b3b22bacb3acd0e7c34dfd0932d9fc
+  RNReanimated: 2a91e85fcd343f8af3c58d3425b99fdd285590a5
   RNScreens: f3230dd008a7d0ce5c0a8bc78ff12cf2315bda24
   RNShare: be91a5c149585affb02c25b351bd07ba927c7006
   RNSVG: 3a79c0c4992213e4f06c08e62730c5e7b9e4dc17
