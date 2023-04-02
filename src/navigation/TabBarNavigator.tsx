@@ -216,7 +216,7 @@ const TabBarNavigator = () => {
     <>
       {currentAccount?.solanaAddress &&
         anchorProvider &&
-        !doneSolanaMigration[cluster].includes(
+        !doneSolanaMigration[cluster]?.includes(
           currentAccount.solanaAddress,
         ) && (
           <Portal>

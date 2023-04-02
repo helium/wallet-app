@@ -77,7 +77,7 @@ const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
       !currentAccount?.solanaAddress ||
       !anchorProvider ||
       !cluster ||
-      doneSolanaMigration[cluster].includes(currentAccount?.solanaAddress)
+      doneSolanaMigration[cluster]?.includes(currentAccount?.solanaAddress)
     )
       return
 
