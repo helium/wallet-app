@@ -13,7 +13,7 @@ import { getSecureItem, storeSecureItem } from './secureStorage'
 import { L1Network } from '../utils/accountUtils'
 
 const VOTE_TUTORIAL_SHOWN = 'voteTutorialShown'
-const DEFI_TUTORIAL_SHOWN = 'defiTutorialShown'
+const DAPP_TUTORIAL_SHOWN = 'dAppTutorialShown'
 
 const useAppStorageHook = () => {
   const [pin, setPin] = useState<{
@@ -32,7 +32,7 @@ const useAppStorageHook = () => {
   const [solanaNetwork, setSolanaNetwork] = useState<Cluster>('devnet')
   const [l1Network, setL1Network] = useState<L1Network>('helium')
   const [scannedAddress, setScannedAddress] = useState<string>()
-  const [defiTutorialShown, setDefiTutorialShown] = useState<
+  const [dAppTutorialShown, setDAppTutorialShown] = useState<
     Record<Cluster, boolean>
   >({
     devnet: false,
@@ -66,7 +66,7 @@ const useAppStorageHook = () => {
       const nextL1Network = (await getSecureItem(
         'l1Network',
       )) as L1Network | null
-      const nextDefiShown = await AsyncStorage.getItem(DEFI_TUTORIAL_SHOWN)
+      const nextDAppShown = await AsyncStorage.getItem(DAPP_TUTORIAL_SHOWN)
       const nextVoteShown = await AsyncStorage.getItem(VOTE_TUTORIAL_SHOWN)
       const nextShowNumericChange = await getSecureItem('showNumericChange')
       const nextDoneSolanaMigration = await getSecureItem('doneSolanaMigration')
@@ -90,8 +90,8 @@ const useAppStorageHook = () => {
       setEnableTestnet(nextEnableTestnet === 'true')
       setSolanaNetwork(nextSolanaNetwork || 'devnet')
       setL1Network(nextL1Network || 'helium')
-      setDefiTutorialShown(
-        JSON.parse(nextDefiShown || '{}') as Record<string, boolean>,
+      setDAppTutorialShown(
+        JSON.parse(nextDAppShown || '{}') as Record<string, boolean>,
       )
       setVoteTutorialShown(nextVoteShown === 'true')
       setShowNumericChange(nextShowNumericChange === 'true')
@@ -175,16 +175,16 @@ const useAppStorageHook = () => {
     })
   }, [])
 
-  const setDeFiTutorialCompleted = useCallback(
+  const setDAppTutorialCompleted = useCallback(
     (cluster: Cluster) => {
       const newState = {
-        ...defiTutorialShown,
+        ...dAppTutorialShown,
         [cluster]: true,
       }
-      setDefiTutorialShown(newState)
-      return AsyncStorage.setItem(DEFI_TUTORIAL_SHOWN, JSON.stringify(newState))
+      setDAppTutorialShown(newState)
+      return AsyncStorage.setItem(DAPP_TUTORIAL_SHOWN, JSON.stringify(newState))
     },
-    [defiTutorialShown],
+    [dAppTutorialShown],
   )
 
   const setVoteTutorialCompleted = useCallback(() => {
@@ -221,7 +221,7 @@ const useAppStorageHook = () => {
     scannedAddress,
     setScannedAddress,
     setVoteTutorialCompleted,
-    setDeFiTutorialCompleted,
+    setDAppTutorialCompleted,
     showNumericChange,
     solanaNetwork,
     toggleConvertToCurrency,
@@ -238,7 +238,7 @@ const useAppStorageHook = () => {
     updateShowNumericChange,
     updateSolanaNetwork,
     voteTutorialShown,
-    defiTutorialShown,
+    dAppTutorialShown,
   }
 }
 
@@ -253,7 +253,7 @@ const initialState = {
   requirePinForPayment: false,
   scannedAddress: undefined,
   setScannedAddress: () => undefined,
-  setDeFiTutorialCompleted: async () => undefined,
+  setDAppTutorialCompleted: async () => undefined,
   setVoteTutorialCompleted: () => new Promise<void>((resolve) => resolve()),
   solanaNetwork: 'devnet' as Cluster,
   toggleConvertToCurrency: async () => undefined,
@@ -276,7 +276,7 @@ const initialState = {
     testnet: [],
     'mainnet-beta': [],
   },
-  defiTutorialShown: {
+  dAppTutorialShown: {
     devnet: false,
     testnet: false,
     'mainnet-beta': false,

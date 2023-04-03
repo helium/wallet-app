@@ -49,7 +49,7 @@ const slides: Array<CarouselItem> = [
     imageVerticalOffset: 'n_xxl',
   },
 ]
-const DefiTutorial = () => {
+const DAppTutorial = () => {
   const { t } = useTranslation()
   const carouselRef = useRef<Carousel<CarouselItem>>(null)
   const [slideIndex, setSlideIndex] = useState(0)
@@ -57,13 +57,13 @@ const DefiTutorial = () => {
   const spacing = useSpacing()
   const colors = useColors()
   const navigation = useNavigation<BrowserNavigationProp>()
-  const { setDeFiTutorialCompleted, solanaNetwork: cluster } = useAppStorage()
+  const { setDAppTutorialCompleted, solanaNetwork: cluster } = useAppStorage()
   const edges = useMemo((): Edge[] => ['top'], [])
 
-  const handleEnterDefiPressed = useCallback(() => {
-    setDeFiTutorialCompleted(cluster)
+  const handleEnterDAppPressed = useCallback(() => {
+    setDAppTutorialCompleted(cluster)
     navigation.replace('BrowserScreen')
-  }, [navigation, setDeFiTutorialCompleted, cluster])
+  }, [navigation, setDAppTutorialCompleted, cluster])
 
   const onSnapToItem = useCallback((index: number) => {
     setSlideIndex(index)
@@ -156,10 +156,10 @@ const DefiTutorial = () => {
             backgroundColorDisabled="surfaceSecondary"
             backgroundColorDisabledOpacity={0.5}
             titleColorDisabled="secondaryText"
-            title={t('defiTutorial.enterDefi')}
+            title={t('defiTutorial.enterDApps')}
             titleColor="black"
             marginHorizontal="l"
-            onPress={handleEnterDefiPressed}
+            onPress={handleEnterDAppPressed}
             disabled={!viewedSlides}
           />
         </Box>
@@ -168,4 +168,4 @@ const DefiTutorial = () => {
   )
 }
 
-export default memo(DefiTutorial)
+export default memo(DAppTutorial)

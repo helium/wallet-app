@@ -334,7 +334,7 @@ export default {
   },
   defiTutorial: {
     title: 'Safety Tips',
-    enterDefi: 'Enter DeFi',
+    enterDApps: 'Enter dApps',
     slides: [
       {
         body: "Always double-check the URL of the dApp to ensure you're on the correct website before entering any sensitive information",

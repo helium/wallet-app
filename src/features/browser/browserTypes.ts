@@ -1,7 +1,7 @@
 import { StackNavigationProp } from '@react-navigation/stack'
 
 export type BrowserStackParamList = {
-  DefiTutorial: undefined
+  DAppTutorial: undefined
   BrowserScreen: undefined
   BrowserWebViewScreen: {
     uri: string
