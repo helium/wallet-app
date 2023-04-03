@@ -3,8 +3,10 @@ import {
   createNativeStackNavigator,
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack'
+import { useAppStorage } from '@storage/AppStorageProvider'
 import BrowserScreen from './BrowserScreen'
 import BrowserWebViewScreen from './BrowserWebViewScreen'
+import DefiTutorial from './DefiTutorial'
 
 const BrowserStack = createNativeStackNavigator()
 
@@ -20,8 +22,13 @@ const modalPresentation: NativeStackNavigationOptions = {
 }
 
 const BrowserStackScreen = () => {
+  const { defiTutorialShown } = useAppStorage()
+
   return (
     <BrowserStack.Navigator screenOptions={cardPresentation}>
+      {!defiTutorialShown && (
+        <BrowserStack.Screen name="DefiTutorial" component={DefiTutorial} />
+      )}
       <BrowserStack.Screen name="BrowserScreen" component={BrowserScreen} />
       <BrowserStack.Screen
         name="BrowserWebViewScreen"
