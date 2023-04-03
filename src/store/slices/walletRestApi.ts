@@ -35,6 +35,12 @@ export type TokenPrices = {
   helium: { [key: string]: number }
 }
 
+export type RecommendedDapps = {
+  devnet: string[]
+  testnet: string[]
+  'mainnet-beta': string[]
+}
+
 export const walletRestApi = createApi({
   reducerPath: 'walletRestApi',
   tagTypes: ['Notifications'],
@@ -121,6 +127,9 @@ export const walletRestApi = createApi({
       },
       keepUnusedDataFor: 60,
     }),
+    getRecommendedDapps: builder.query<RecommendedDapps, void>({
+      query: () => '/recommendedDapps',
+    }),
   }),
 })
 
@@ -134,6 +143,8 @@ export const {
   useGetBalanceHistoryQuery,
   useGetTokenPricesQuery,
   useLazyGetTokenPricesQuery,
+  useGetRecommendedDappsQuery,
+  useLazyGetRecommendedDappsQuery,
   reducer,
 } = walletRestApi
 
