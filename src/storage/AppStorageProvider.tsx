@@ -253,6 +253,7 @@ const initialState = {
   requirePinForPayment: false,
   scannedAddress: undefined,
   setScannedAddress: () => undefined,
+  setDeFiTutorialCompleted: async () => undefined,
   setVoteTutorialCompleted: () => new Promise<void>((resolve) => resolve()),
   solanaNetwork: 'devnet' as Cluster,
   toggleConvertToCurrency: async () => undefined,
@@ -274,6 +275,11 @@ const initialState = {
     devnet: [],
     testnet: [],
     'mainnet-beta': [],
+  },
+  defiTutorialShown: {
+    devnet: false,
+    testnet: false,
+    'mainnet-beta': false,
   },
 }
 
