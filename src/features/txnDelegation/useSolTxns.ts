@@ -100,9 +100,6 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
 
       const sigs = await connection.getSignaturesForAddress(
         new PublicKey(keyToAssetAccount.pubkey),
-        {
-          limit: 2,
-        },
       )
 
       const signature = last(sigs)?.signature

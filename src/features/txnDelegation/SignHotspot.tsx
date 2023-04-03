@@ -17,6 +17,8 @@ import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import AccountIcon from '@components/AccountIcon'
 import { useColors } from '@theme/themeHooks'
+import Config from 'react-native-config'
+import OnboardingClient, { OnboardingRecord } from '@helium/onboarding'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { formatAccountAlias } from '../../utils/accountUtils'
@@ -26,9 +28,12 @@ import useSolTxns from './useSolTxns'
 import useHeliumTxns from './useHeliumTxns'
 
 type Route = RouteProp<HomeStackParamList, 'SignHotspot'>
+
+const onboardingClient = new OnboardingClient(Config.ONBOARDING_API_URL)
 const SignHotspot = () => {
   const { params } = useRoute<Route>()
   const { token, submit } = params
+  const [onboardingRecord, setOnboardingRecord] = useState<OnboardingRecord>()
 
   const solana = useSolTxns(
     parseWalletLinkToken(token).address,
@@ -87,6 +92,14 @@ const SignHotspot = () => {
     () => solana.gatewayAddress || helium.gatewayAddress,
     [helium.gatewayAddress, solana.gatewayAddress],
   )
+
+  useEffect(() => {
+    if (!gatewayAddress) return
+    onboardingClient.getOnboardingRecord(gatewayAddress).then((response) => {
+      if (!response.data) return
+      setOnboardingRecord(response.data)
+    })
+  }, [gatewayAddress])
 
   const submitNow = useCallback(async () => {
     if (!parsedToken) return
@@ -354,13 +367,13 @@ const SignHotspot = () => {
             </Box>
           </>
         )}
-        {!!parsedToken?.appName && (
+        {!!gatewayAddress && (
           <>
             <Text variant="body1" color="surfaceContrastText">
               {t('signHotspot.maker')}
             </Text>
             <Text variant="subtitle1" color="surfaceContrastText">
-              {parsedToken.appName}
+              {onboardingRecord?.maker.name || 'Unknown'}
             </Text>
           </>
         )}
