@@ -22,11 +22,14 @@ const modalPresentation: NativeStackNavigationOptions = {
 }
 
 const BrowserStackScreen = () => {
-  const { dAppTutorialShown } = useAppStorage()
+  const { dAppTutorialShown, solanaNetwork: cluster } = useAppStorage()
 
   return (
-    <BrowserStack.Navigator screenOptions={cardPresentation}>
-      {!dAppTutorialShown && (
+    <BrowserStack.Navigator
+      screenOptions={cardPresentation}
+      initialRouteName="DAppTutorial"
+    >
+      {!dAppTutorialShown[cluster] && (
         <BrowserStack.Screen name="DAppTutorial" component={DAppTutorial} />
       )}
       <BrowserStack.Screen name="BrowserScreen" component={BrowserScreen} />
