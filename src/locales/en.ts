@@ -332,6 +332,28 @@ export default {
       'Please be advised that the subDAO treasury has only been active for a few days since the Solana migration. Swapping subtokens to HNT may be affected by a limited HNT supply in the subDAO treasury. Please proceed with caution.',
     addRecipient: 'Add Recipient',
   },
+  defiTutorial: {
+    title: 'Safety Tips',
+    enterDApps: 'Enter dApps',
+    slides: [
+      {
+        body: "Always double-check the URL of the dApp to ensure you're on the correct website before entering any sensitive information",
+        title: 'Verify the URL',
+      },
+      {
+        body: 'Be cautious of phishing attacks and only enter your wallet information on trusted websites.',
+        title: 'Use Trusted Websites',
+      },
+      {
+        body: "Do your research before using a dApp to ensure it's trustworthy and has been audited for security.",
+        title: 'Research the dApp',
+      },
+      {
+        body: 'Never share your private keys or seed phrases with anyone.',
+        title: 'Protect Your Private Keys',
+      },
+    ],
+  },
   browserScreen: {
     topPicks: 'Top Picks',
     myFavorites: 'My Favorites',
