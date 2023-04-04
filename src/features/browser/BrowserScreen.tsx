@@ -20,12 +20,15 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Text from '@components/Text'
 import useBrowser from '@hooks/useBrowser'
 import { prependHttp } from '@utils/url'
+import { useAppStorage } from '@storage/AppStorageProvider'
+import { useGetRecommendedDappsQuery } from '../../store/slices/walletRestApi'
 import { BrowserNavigationProp } from './browserTypes'
 import BrowserListItem from './BrowserListItem'
 
 const BrowserScreen = () => {
   // TODO: Change default url based on cluster
   const DEFAULT_URL = 'https://app.realms.today/?cluster=devnet'
+  const { solanaNetwork: cluster } = useAppStorage()
   const edges = useMemo(() => ['top'] as Edge[], [])
   const [inputFocused, setInputFocused] = useState(false)
   const spacing = useSpacing()
@@ -35,6 +38,7 @@ const BrowserScreen = () => {
   const navigation = useNavigation<BrowserNavigationProp>()
   const { favorites, recents, addRecent } = useBrowser()
   const { t } = useTranslation()
+  const { data: recommendedDappsData } = useGetRecommendedDappsQuery()
 
   const SectionData = useMemo((): {
     title: string
@@ -43,10 +47,7 @@ const BrowserScreen = () => {
     const sections = [
       {
         title: t('browserScreen.topPicks'),
-        data: [
-          'https://solana-labs.github.io/wallet-adapter/example/',
-          'https://app.realms.today/realms?cluster=devnet',
-        ],
+        data: recommendedDappsData ? recommendedDappsData[cluster] : [],
       },
       {
         title: t('browserScreen.myFavorites'),
@@ -59,7 +60,7 @@ const BrowserScreen = () => {
     ]
 
     return sections
-  }, [favorites, recents, t])
+  }, [favorites, recents, t, recommendedDappsData, cluster])
 
   const onBrowserInputFocus = useCallback(() => {
     setInputFocused(true)
