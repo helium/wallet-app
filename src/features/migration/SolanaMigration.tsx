@@ -34,7 +34,7 @@ async function migrateWallet(
   // eslint-disable-next-line no-constant-condition
   while (true) {
     // TODO: Move to .env
-    const url = `https://migration.web.test-helium.com/migrate/${wallet}`
+    const url = `https://migration.web.helium.io/migrate/${wallet}`
     // eslint-disable-next-line no-await-in-loop
     const { transactions, count } = (await axios.get(url)).data
     const txs = transactions.map(Buffer.from)
