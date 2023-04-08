@@ -176,6 +176,10 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
 const TabBarNavigator = () => {
   const dispatch = useDispatch()
   const { data: status } = useGetSolanaStatusQuery()
+  // Simulate migration complete
+  // const status = useMemo(() => {
+  //   return { migrationStatus: 'complete' }
+  // }, [])
 
   const {
     doneSolanaMigration,
@@ -187,8 +191,8 @@ const TabBarNavigator = () => {
   const { currentAccount, anchorProvider } = useAccountStorage()
 
   useEffect(() => {
-    dispatch(appSlice.actions.setShowBanner(true))
-  }, [dispatch])
+    dispatch(appSlice.actions.setShowBanner(cluster === 'devnet'))
+  }, [dispatch, cluster])
 
   // Switch to mainnet-beta if migration is complete & user hasn't already migrated
   useEffect(() => {
