@@ -18,7 +18,7 @@ import {
 } from '@helium/spl-utils'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
-import { CompressedNFT, toMintAddress } from '../../types/solana'
+import { Collectable, CompressedNFT, toMintAddress } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
 import { fetchCollectables } from './collectablesSlice'
 import { walletRestApi } from './walletRestApi'
@@ -89,7 +89,7 @@ type PaymentInput = {
 
 type CollectablePaymentInput = {
   account: CSAccount
-  collectable: CompressedNFT
+  collectable: CompressedNFT | Collectable
   payee: string
   cluster: Cluster
 }
@@ -177,20 +177,23 @@ export const makeCollectablePayment = createAsyncThunk(
   ) => {
     if (!account?.solanaAddress) throw new Error('No solana account found')
 
+    const compressedNFT = collectable as CompressedNFT
+    const nft = collectable as Collectable
+
     try {
-      const transfer = collectable.compression.compressed
+      const transfer = compressedNFT?.compression?.compressed
         ? await solUtils.transferCompressedCollectable(
             cluster,
             account.solanaAddress,
             account.address,
-            collectable,
+            compressedNFT,
             payee,
           )
         : await solUtils.transferCollectable(
             cluster,
             account.solanaAddress,
             account.address,
-            collectable,
+            nft,
             payee,
           )
 

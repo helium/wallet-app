@@ -36,9 +36,7 @@ const NftDetailsScreen = () => {
   const { t } = useTranslation()
 
   const { collectable } = route.params
-  const {
-    content: { metadata },
-  } = collectable
+  const { json } = collectable
 
   const spacing = useSpacing()
 
@@ -49,16 +47,16 @@ const NftDetailsScreen = () => {
   }, [collectable, navigation])
 
   const handleInfoPress = useCallback(() => {
-    if (metadata) {
+    if (json) {
       navigation.push('NftMetadataScreen', {
-        metadata,
+        metadata: json,
       })
     }
-  }, [metadata, navigation])
+  }, [navigation, json])
 
   const backgroundImageUri = useMemo(() => {
-    return metadata.image
-  }, [metadata.image])
+    return json?.image
+  }, [json])
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
@@ -79,7 +77,7 @@ const NftDetailsScreen = () => {
             padding="m"
             alignItems="center"
           >
-            {metadata && (
+            {json && (
               <Box
                 shadowColor="black"
                 shadowOpacity={0.4}
@@ -89,12 +87,10 @@ const NftDetailsScreen = () => {
               >
                 <ImageBox
                   marginTop="l"
-                  backgroundColor={
-                    metadata.image ? 'black' : 'surfaceSecondary'
-                  }
+                  backgroundColor={json.image ? 'black' : 'surfaceSecondary'}
                   height={COLLECTABLE_HEIGHT - spacing.xl * 2}
                   width={COLLECTABLE_HEIGHT - spacing.xl * 2}
-                  source={{ uri: metadata.image, cache: 'force-cache' }}
+                  source={{ uri: json.image, cache: 'force-cache' }}
                   borderRadius="xxl"
                 />
               </Box>
@@ -106,10 +102,10 @@ const NftDetailsScreen = () => {
               textAlign="center"
               variant="h1Medium"
             >
-              {metadata.name}
+              {json?.name}
             </Text>
             <Text variant="body3Medium" color="grey600" marginBottom="xl">
-              {metadata.description || t('collectables.noDescription')}
+              {json?.description || t('collectables.noDescription')}
             </Text>
             <Box
               flexDirection="row"
