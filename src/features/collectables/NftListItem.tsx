@@ -10,7 +10,7 @@ import CircleLoader from '@components/CircleLoader'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import useHaptic from '@hooks/useHaptic'
 import { ww } from '../../utils/layout'
-import { CompressedNFT } from '../../types/solana'
+import { Collectable } from '../../types/solana'
 import { CollectableNavigationProp } from './collectablesTypes'
 
 const COLLECTABLE_HEIGHT = ww / 2
@@ -19,35 +19,29 @@ const NftListItem = ({
   collectables,
 }: {
   item: string
-  collectables: Record<string, CompressedNFT[]>
+  collectables: Collectable[]
 }) => {
   const { lm } = useBorderRadii()
-  const {
-    content: { metadata },
-  } = collectables[item][0]
+  const { json } = collectables[0]
   const navigation = useNavigation<CollectableNavigationProp>()
   const { triggerImpact } = useHaptic()
 
   const handleCollectableNavigation = useCallback(
-    (collection: CompressedNFT[]) => () => {
+    (collection: Collectable[]) => () => {
       if (collection.length > 1) {
         triggerImpact('light')
         navigation.navigate('CollectionScreen', {
           collection,
         })
-      } else if (collection[0]?.content.metadata) {
+      } else if (json) {
         triggerImpact('light')
         navigation.navigate('NftDetailsScreen', {
           collectable: collection[0],
         })
       }
     },
-    [navigation, triggerImpact],
+    [navigation, triggerImpact, json],
   )
-
-  if (!metadata) {
-    return null
-  }
 
   return (
     <ReAnimatedBox style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
@@ -57,13 +51,13 @@ const NftListItem = ({
         alignItems="center"
         backgroundColor="surfaceSecondary"
         borderRadius="xxl"
-        onPress={handleCollectableNavigation(collectables[item])}
+        onPress={handleCollectableNavigation(collectables)}
       >
         <Image
           borderRadius={lm}
           style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
           source={{
-            uri: metadata?.image,
+            uri: json?.image || '',
             cache: 'force-cache',
           }}
         />
@@ -82,7 +76,7 @@ const NftListItem = ({
             {item}
           </Text>
           <Text variant="body2" color="secondaryText">
-            {collectables[item].length}
+            {collectables?.length}
           </Text>
         </Box>
       </TouchableOpacityBox>

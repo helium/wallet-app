@@ -20,6 +20,7 @@ import { ww } from '../../utils/layout'
 import { RootState } from '../../store/rootReducer'
 import { CollectableStackParamList } from './collectablesTypes'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
+import { Collectable, CompressedNFT } from '../../types/solana'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -39,9 +40,16 @@ const TransferCollectableScreen = () => {
     (reduxState: RootState) => reduxState.solana.payment,
   )
   const spacing = useSpacing()
-  const {
-    content: { metadata },
-  } = collectable
+
+  const compressedNFT = useMemo(
+    () => collectable as CompressedNFT,
+    [collectable],
+  )
+  const nft = useMemo(() => collectable as Collectable, [collectable])
+
+  const metadata = useMemo(() => {
+    return compressedNFT?.content?.metadata || nft?.json
+  }, [compressedNFT, nft])
 
   const backgroundImageUri = useMemo(() => {
     return metadata?.image

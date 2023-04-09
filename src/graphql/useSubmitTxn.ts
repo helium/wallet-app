@@ -25,7 +25,7 @@ import {
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import { useGetMintsQuery } from '../store/slices/walletRestApi'
-import { CompressedNFT } from '../types/solana'
+import { Collectable, CompressedNFT } from '../types/solana'
 
 export default () => {
   const { makePaymentTxn } = useTransactions()
@@ -150,7 +150,7 @@ export default () => {
   )
 
   const submitCollectable = useCallback(
-    async (collectable: CompressedNFT, payee: string) => {
+    async (collectable: CompressedNFT | Collectable, payee: string) => {
       if (!currentAccount) {
         throw new Error(t('errors.account'))
       }

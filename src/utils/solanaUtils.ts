@@ -36,7 +36,7 @@ import {
 } from '@solana/spl-token'
 import { entityCreatorKey } from '@helium/helium-entity-manager-sdk'
 import Balance, { AnyCurrencyType } from '@helium/currency'
-import { Metaplex } from '@metaplex-foundation/js'
+import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
 import axios from 'axios'
 import Config from 'react-native-config'
 import {
@@ -423,9 +423,11 @@ export const createTransferCollectableMessage = async (
   cluster: Cluster,
   solanaAddress: string,
   heliumAddress: string,
-  collectable: CompressedNFT,
+  collectable: Collectable | CompressedNFT,
   payee: string,
 ) => {
+  const compressedNFT = collectable as CompressedNFT
+  const nft = collectable as Collectable
   const payer = new PublicKey(solanaAddress)
   const secureAcct = await getKeypair(heliumAddress)
   const conn = getConnection(cluster)
@@ -440,7 +442,7 @@ export const createTransferCollectableMessage = async (
   }
 
   const recipientPubKey = new PublicKey(payee)
-  const mintPubkey = new PublicKey(collectable.id)
+  const mintPubkey = new PublicKey(nft.address || compressedNFT.id)
 
   const instructions: TransactionInstruction[] = []
 
@@ -500,7 +502,7 @@ export const transferCollectable = async (
   cluster: Cluster,
   solanaAddress: string,
   heliumAddress: string,
-  collectable: CompressedNFT,
+  collectable: Collectable,
   payee: string,
 ) => {
   const payer = new PublicKey(solanaAddress)
@@ -518,7 +520,7 @@ export const transferCollectable = async (
     }
 
     const recipientPubKey = new PublicKey(payee)
-    const mintPubkey = new PublicKey(collectable.id)
+    const mintPubkey = new PublicKey(collectable.address)
 
     const instructions: TransactionInstruction[] = []
 
@@ -930,6 +932,20 @@ export const transferCompressedCollectable = async (
 }
 
 /**
+ * Returns the account's NFTs
+ * @param pubKey public key of the account
+ * @param metaplex metaplex connection
+ * @returns NFTs
+ */
+export const getNFTs = async (pubKey: PublicKey, metaplex: Metaplex) => {
+  const collectables = (await metaplex
+    .nfts()
+    .findAllByOwner({ owner: pubKey })) as Metadata<JsonMetadata<string>>[]
+
+  return collectables
+}
+
+/**
  * Returns the account's collectables
  * @param pubKey public key of the account
  * @param oldestCollectable starting point for the query
@@ -978,30 +994,65 @@ export const getCompressedCollectablesByCreator = async (
  * @param metaplex metaplex connection
  * @returns collectables with metadata
  */
-export const getCollectablesMetadata = async (
-  collectables: CompressedNFT[],
+export const getNFTsMetadata = async (
+  collectables: Metadata<JsonMetadata<string>>[],
+  metaplex: Metaplex,
 ) => {
   const collectablesWithMetadata = await Promise.all(
     collectables.map(async (col) => {
       try {
-        const { data } = await axios.get(col.content.json_uri, {
+        const { data } = await axios.get(col.uri, {
           timeout: 3000,
         })
-        return {
-          ...col,
-          content: {
-            ...col.content,
-            metadata: { ...col.content.metadata, ...data },
-          },
-        }
+
+        const metadata = await metaplex.nfts().load({ metadata: col })
+        return { ...metadata, json: data }
       } catch (e) {
         Logger.error(e)
-        return col
+        return null
       }
     }),
   )
 
-  return collectablesWithMetadata.filter((c) => c !== null) as CompressedNFT[]
+  return collectablesWithMetadata.filter((c) => c !== null) as Collectable[]
+}
+
+/**
+ * Returns the account's collectables grouped by token type
+ * @param collectables collectables
+ * @returns grouped collecables by token type
+ */
+export const groupNFTs = (collectables: Metadata<JsonMetadata<string>>[]) => {
+  const collectablesGroupedByName = collectables.reduce((acc, cur) => {
+    const { symbol } = cur
+    if (!acc[symbol]) {
+      acc[symbol] = [cur]
+    } else {
+      acc[symbol].push(cur)
+    }
+    return acc
+  }, {} as Record<string, Metadata<JsonMetadata<string>>[]>)
+
+  return collectablesGroupedByName
+}
+
+/**
+ * Returns the account's collectables grouped by token type
+ * @param collectables collectables with metadata
+ * @returns grouped collecables by token type
+ */
+export const groupNFTsWithMetaData = (collectables: Collectable[]) => {
+  const collectablesGroupedByName = collectables.reduce((acc, cur) => {
+    const { symbol } = cur
+    if (!acc[symbol]) {
+      acc[symbol] = [cur]
+    } else {
+      acc[symbol].push(cur)
+    }
+    return acc
+  }, {} as Record<string, Collectable[]>)
+
+  return collectablesGroupedByName
 }
 
 /**

@@ -14,7 +14,7 @@ import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import { CompressedNFT } from '../../types/solana'
+import { Collectable } from '../../types/solana'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -31,8 +31,8 @@ const CollectionScreen = () => {
   const { triggerImpact } = useHaptic()
 
   const handleNavigateToCollectable = useCallback(
-    (collectable: CompressedNFT) => {
-      if (collectable.content.metadata) {
+    (collectable: Collectable) => {
+      if (collectable) {
         triggerImpact()
         navigation.navigate('NftDetailsScreen', { collectable })
       }
@@ -42,10 +42,8 @@ const CollectionScreen = () => {
 
   const renderCollectable = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
-    ({ item }: { item: CompressedNFT }) => {
-      const {
-        content: { metadata },
-      } = item
+    ({ item }: { item: Collectable }) => {
+      const { json } = item
 
       return (
         <ReAnimatedBox
@@ -65,7 +63,7 @@ const CollectionScreen = () => {
               borderRadius={borderRadius}
               style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
               source={{
-                uri: metadata?.image || '',
+                uri: json?.image || '',
               }}
             />
           </TouchableOpacityBox>
@@ -75,15 +73,15 @@ const CollectionScreen = () => {
     [COLLECTABLE_HEIGHT, borderRadius, handleNavigateToCollectable],
   )
 
-  const keyExtractor = useCallback((item: CompressedNFT) => {
-    return item.id.toString()
+  const keyExtractor = useCallback((item: Collectable) => {
+    return item.address.toString()
   }, [])
 
   return (
     <BackScreen
       padding="none"
       headerBackgroundColor="primaryBackground"
-      title={`${collectables[0].content.metadata.symbol} ${collectables.length}`}
+      title={`${collectables[0].json?.symbol} ${collectables.length}`}
       headerTopMargin="l"
     >
       <ReAnimatedBox

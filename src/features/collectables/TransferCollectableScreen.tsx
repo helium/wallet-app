@@ -31,6 +31,7 @@ import AddressBookSelector, {
 import TextTransform from '@components/TextTransform'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import useAlert from '@hooks/useAlert'
+import { Collectable, CompressedNFT } from '../../types/solana'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import {
   createTransferCollectableMessage,
@@ -80,9 +81,15 @@ const TransferCollectableScreen = () => {
   const colors = useColors()
   const { showOKCancelAlert } = useAlert()
 
-  const {
-    content: { metadata },
-  } = collectable
+  const compressedNFT = useMemo(
+    () => collectable as CompressedNFT,
+    [collectable],
+  )
+  const nft = useMemo(() => collectable as Collectable, [collectable])
+
+  const metadata = useMemo(() => {
+    return compressedNFT?.content?.metadata || nft?.json
+  }, [compressedNFT, nft])
 
   const { submitCollectable } = useSubmitTxn()
 
@@ -141,8 +148,8 @@ const TransferCollectableScreen = () => {
   )
 
   const backgroundImageUri = useMemo(() => {
-    return metadata?.image
-  }, [metadata.image])
+    return metadata.image
+  }, [metadata])
 
   const handleEditAddress = useCallback((text?: string) => {
     setRecipient(text || '')
@@ -218,7 +225,7 @@ const TransferCollectableScreen = () => {
       <BackScreen
         padding="none"
         title={t('collectablesScreen.transferCollectable')}
-        backgroundImageUri={backgroundImageUri}
+        backgroundImageUri={backgroundImageUri || ''}
         edges={backEdges}
         TrailingIcon={InfoIcon}
         onTrailingIconPress={handleInfoPress}
