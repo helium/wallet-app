@@ -336,7 +336,10 @@ const BrowserWebViewScreen = () => {
 
     const script = injectedJavascript()
 
-    webview.current.injectJavaScript(script)
+    // Weird hack to make sure the script is injected after the webview is loaded
+    setTimeout(() => {
+      webview?.current?.injectJavaScript(script)
+    }, 1000)
     setJsInjected(true)
   }, [injectedJavascript])
 
@@ -395,10 +398,10 @@ const BrowserWebViewScreen = () => {
 
   const onRefresh = useCallback(() => {
     setJsInjected(false)
-    webview.current?.reload()
     webview.current?.injectJavaScript('')
-    webview.current?.injectJavaScript(injectedJavascript())
-  }, [injectedJavascript])
+    webview.current?.reload()
+    injectModule()
+  }, [injectModule])
 
   const BrowserFooter = useCallback(() => {
     return (
@@ -462,6 +465,8 @@ const BrowserWebViewScreen = () => {
               ref={webview}
               originWhitelist={['*']}
               javaScriptEnabled
+              injectedJavaScript={injectedJavascript()}
+              injectedJavaScriptBeforeContentLoaded={injectedJavascript()}
               onLoadEnd={!jsInjected ? injectModule : undefined}
               onNavigationStateChange={onNavigationChange}
               onMessage={onMessage}
