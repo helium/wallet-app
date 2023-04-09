@@ -91,7 +91,7 @@ const Banner = ({ type, onLayout, ...rest }: BannerProps) => {
           adjustsFontSizeToFit
           textAlign="center"
         >
-          {type === 'devnetTokens'
+          {type === BannerType.DevnetTokens
             ? t('generic.devnetTokensWarning')
             : healthMessage}
         </Text>
