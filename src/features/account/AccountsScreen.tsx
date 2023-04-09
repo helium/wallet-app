@@ -406,12 +406,21 @@ const AccountsScreen = () => {
     }
   }, [colors.secondaryText])
 
+  const bannerVisible = useMemo(() => {
+    if (l1Network === 'solana') {
+      if (cluster === 'devnet') {
+        return true
+      }
+      return !isHealthy
+    }
+  }, [cluster, isHealthy, l1Network])
+
   return (
     <Box flex={1}>
       <Box onLayout={setPageHeight} flex={1}>
-        {l1Network === 'solana' && (
+        {bannerVisible && (
           <WarningBanner
-            type={isHealthy ? BannerType.Treasury : BannerType.SolanaHealth}
+            type={isHealthy ? BannerType.DevnetTokens : BannerType.SolanaHealth}
             onLayout={setBannerHeight}
           />
         )}

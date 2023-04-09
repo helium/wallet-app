@@ -32,6 +32,7 @@ import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
 import { useGetSolanaStatusQuery } from '../store/slices/solanaStatusApi'
+import { walletRestApi } from '../store/slices/walletRestApi'
 
 const RootNavigator = () => {
   const navigation = useNavigation<
@@ -109,6 +110,10 @@ const RootNavigator = () => {
 
   const onClose = useCallback(() => {
     dispatch(appSlice.actions.toggleConnectedWallets())
+  }, [dispatch])
+
+  useEffect(() => {
+    dispatch(walletRestApi.util.resetApiState())
   }, [dispatch])
 
   useEffect(() => {

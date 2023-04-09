@@ -23,7 +23,7 @@ import TouchableOpacityBox from './TouchableOpacityBox'
 const MIN_HEIGHT = 52
 
 export enum BannerType {
-  Treasury = 'treasury',
+  DevnetTokens = 'devnetTokens',
   SolanaHealth = 'solanaHealth',
 }
 
@@ -91,7 +91,7 @@ const Banner = ({ type, onLayout, ...rest }: BannerProps) => {
           adjustsFontSizeToFit
           textAlign="center"
         >
-          {type === 'treasury'
+          {type === BannerType.DevnetTokens
             ? t('generic.devnetTokensWarning')
             : healthMessage}
         </Text>

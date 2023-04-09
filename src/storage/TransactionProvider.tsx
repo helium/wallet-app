@@ -48,9 +48,6 @@ const useTransactionHook = () => {
     shouldSign?: boolean
     payerB58?: string
   }) => {
-    if (l1Network !== 'helium') {
-      throw new Error(`makeBurnTxn not supported for ${l1Network}`)
-    }
     const {
       payeeB58,
       amount,

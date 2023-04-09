@@ -70,6 +70,10 @@ const Settings = () => {
   const copyText = useCopyText()
   const { showOKAlert, showOKCancelAlert } = useAlert()
   const { data: status } = useGetSolanaStatusQuery()
+  // Override status to always show migration
+  // const status = useMemo(() => {
+  //   return { migrationStatus: 'complete' }
+  // }, [])
 
   const isDefaultAccount = useMemo(
     () => defaultAccountAddress === currentAccount?.address,

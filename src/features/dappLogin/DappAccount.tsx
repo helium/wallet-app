@@ -23,8 +23,12 @@ type Props = {
   loading: boolean
 }
 const DappLogin = ({ onLogin, onCancel, appName, loading }: Props) => {
-  const { currentAccount, setCurrentAccount, sortedMainnetAccounts } =
-    useAccountStorage()
+  const {
+    currentAccount,
+    setCurrentAccount,
+    sortedMainnetAccounts,
+    currentNetworkAddress,
+  } = useAccountStorage()
   const { t } = useTranslation()
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
   const colors = useColors()
@@ -83,7 +87,7 @@ const DappLogin = ({ onLogin, onCancel, appName, loading }: Props) => {
         </Text>
         <AccountButton
           title={currentAccount?.alias}
-          address={currentAccount?.address}
+          address={currentNetworkAddress}
           netType={NetType.MAINNET}
           onPress={handleAccountButtonPress}
         />
