@@ -208,7 +208,7 @@ const BrowserScreen = () => {
   const renderItem = useCallback(
     ({ item, index, section }) => {
       const firstItem = index === 0
-      const lastItem = index === section.data.length - 1
+      const lastItem = index === section.data?.length - 1
 
       return (
         <FadeInOut>
@@ -217,7 +217,7 @@ const BrowserScreen = () => {
             borderTopEndRadius={firstItem ? 'xl' : undefined}
             borderBottomStartRadius={lastItem ? 'xl' : undefined}
             borderBottomEndRadius={lastItem ? 'xl' : undefined}
-            hasDivider={!lastItem || (firstItem && section.data.length !== 1)}
+            hasDivider={!lastItem || (firstItem && section.data?.length !== 1)}
             marginHorizontal="m"
             url={item}
             onPress={handleBrowserListItemPress(item)}
@@ -230,7 +230,7 @@ const BrowserScreen = () => {
 
   const renderSectionFooter = useCallback(
     ({ section: { data, title } }) => {
-      if (data.length !== 0) {
+      if (data?.length !== 0) {
         return null
       }
 

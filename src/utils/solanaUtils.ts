@@ -83,12 +83,11 @@ import { BONES_PER_HNT } from './heliumUtils'
 
 export const SolanaConnection = {
   localnet: new WrappedConnection('http://127.0.0.1:8899'),
-  devnet: new WrappedConnection(
-    `https://rpc-devnet.helius.xyz/?api-key=${Config.HELIUS_API_KEY}`,
-  ),
+  // TODO: Replace with Devnet RPC URL when available
+  devnet: new WrappedConnection(`${Config.MAINNET_RPC_URL}/?session-key=Pluto`),
   testnet: new WrappedConnection(clusterApiUrl('testnet')),
   'mainnet-beta': new WrappedConnection(
-    `https://rpc.helius.xyz/?api-key=${Config.HELIUS_API_KEY}`,
+    `${Config.MAINNET_RPC_URL}/?session-key=Pluto`,
   ),
 } as const
 
@@ -1211,8 +1210,10 @@ export const getAllTransactions = async (
   const pubKey = new PublicKey(address)
   const conn = getConnection(cluster)
   const metaplex = new Metaplex(conn, { cluster })
+
+  // TODO: Replace with Devnet RPC URL when available
   const parseTransactionsUrl = `${
-    cluster === 'devnet' ? Config.HELIUS_DEVNET_API_URL : Config.HELIUS_API_URL
+    cluster === 'devnet' ? Config.DEVNET_RPC_URL : Config.MAINNET_RPC_URL
   }/v0/transactions/?api-key=${Config.HELIUS_API_KEY}`
 
   try {

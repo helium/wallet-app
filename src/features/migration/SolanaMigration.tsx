@@ -16,9 +16,9 @@ import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
 import SafeAreaBox from '@components/SafeAreaBox'
 import { Theme } from '@theme/theme'
+import Config from 'react-native-config'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
-import { useGetSolanaStatusQuery } from '../../store/slices/solanaStatusApi'
 import * as Logger from '../../utils/logger'
 import { useAppDispatch } from '../../store/store'
 import { fetchHotspots } from '../../store/slices/hotspotsSlice'
@@ -33,17 +33,21 @@ async function migrateWallet(
   const limit = 1000
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    // TODO: Move to .env
-    const url = `https://migration.web.helium.io/migrate/${wallet}`
-    // eslint-disable-next-line no-await-in-loop
-    const { transactions, count } = (await axios.get(url)).data
-    const txs = transactions.map(Buffer.from)
-    // eslint-disable-next-line no-await-in-loop
-    await bulkSendRawTransactions(provider.connection, txs)
-    onProgress(offset, count)
-    offset += limit
-    if (offset > count) {
-      break
+    const url = `${Config.MIGRATION_SERVER_URL}/migrate/${wallet}`
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      const { transactions, count } = (await axios.get(url)).data
+      const txs = transactions.map(Buffer.from)
+      // eslint-disable-next-line no-await-in-loop
+      await bulkSendRawTransactions(provider.connection, txs)
+      onProgress(offset, count)
+      offset += limit
+      if (offset > count) {
+        break
+      }
+    } catch (e) {
+      Logger.error(e)
+      throw e
     }
   }
 }
@@ -52,13 +56,11 @@ const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
   const { currentAccount, anchorProvider } = useAccountStorage()
   const {
     solanaNetwork: cluster,
-    updateL1Network,
     updateDoneSolanaMigration,
     doneSolanaMigration,
   } = useAppStorage()
   const [retry, updateRetry] = useState(0)
   const { t } = useTranslation()
-  const { data: status } = useGetSolanaStatusQuery()
   const [total, setTotal] = useState<number>(0)
   const [progress, setProgress] = useState<number>(0)
   const [migrationError, setMigrationError] = useState<string | undefined>()
@@ -123,9 +125,6 @@ const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
     updateRetry((r) => r + 1)
   }, [])
 
-  const handleDisableSolana = useCallback(() => {
-    updateL1Network('helium')
-  }, [updateL1Network])
   if (error) {
     Logger.error(error)
   }
@@ -269,22 +268,6 @@ const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
             alignItems="flex-end"
             justifyContent="center"
           >
-            {status?.migrationStatus === 'not_started' && (
-              <ButtonPressable
-                flex={1}
-                marginEnd="s"
-                marginBottom="m"
-                height={65}
-                borderRadius="round"
-                backgroundColor="white"
-                backgroundColorOpacity={0.1}
-                backgroundColorOpacityPressed={0.05}
-                titleColorPressedOpacity={0.3}
-                title={t('solanaMigrationScreen.disableSolana')}
-                titleColor="white"
-                onPress={handleDisableSolana}
-              />
-            )}
             <ButtonPressable
               flex={1}
               marginStart="m"
