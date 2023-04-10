@@ -31,8 +31,6 @@ import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
 import { navigationRef } from './navigation/NavigationHelper'
 import SplashScreen from './components/SplashScreen'
 import SentinelScreen from './components/SentinelScreen'
-import { useAppStorage } from './storage/AppStorageProvider'
-import { getConnection } from './utils/solanaUtils'
 
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -54,8 +52,7 @@ const App = () => {
   ])
 
   const { appState } = useAppState()
-  const { restored: accountsRestored } = useAccountStorage()
-  const { solanaNetwork: cluster } = useAppStorage()
+  const { restored: accountsRestored, anchorProvider } = useAccountStorage()
   const { setOpenedNotification } = useNotificationStorage()
 
   const { client } = useApolloClient()
@@ -113,7 +110,7 @@ const App = () => {
                         <AccountProvider
                           extendConnection={false}
                           commitment="confirmed"
-                          connection={getConnection(cluster)}
+                          connection={anchorProvider?.connection}
                         >
                           <WalletConnectProvider>
                             {accountsRestored && (

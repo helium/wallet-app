@@ -108,7 +108,7 @@ export default () => {
         max?: boolean
       }[],
     ) => {
-      if (!currentAccount) {
+      if (!currentAccount || !anchorProvider) {
         throw new Error(t('errors.account'))
       }
       if (!mints) {
@@ -120,11 +120,12 @@ export default () => {
           account: currentAccount,
           payments,
           cluster,
+          anchorProvider,
           mints,
         }),
       )
     },
-    [currentAccount, mints, dispatch, cluster, t],
+    [currentAccount, mints, dispatch, t, anchorProvider, cluster],
   )
 
   const submit = useCallback(
@@ -151,7 +152,7 @@ export default () => {
 
   const submitCollectable = useCallback(
     async (collectable: CompressedNFT | Collectable, payee: string) => {
-      if (!currentAccount) {
+      if (!currentAccount || !anchorProvider) {
         throw new Error(t('errors.account'))
       }
       dispatch(
@@ -160,10 +161,11 @@ export default () => {
           collectable,
           payee,
           cluster,
+          anchorProvider,
         }),
       )
     },
-    [cluster, currentAccount, dispatch, t],
+    [cluster, currentAccount, dispatch, t, anchorProvider],
   )
 
   const submitTreasurySwap = useCallback(
@@ -301,7 +303,7 @@ export default () => {
         }),
       )
 
-      dispatch(readBalances({ cluster, acct: currentAccount }))
+      dispatch(readBalances({ anchorProvider, acct: currentAccount }))
     },
     [anchorProvider, cluster, currentAccount, dispatch, t],
   )
@@ -322,7 +324,7 @@ export default () => {
         }),
       )
 
-      dispatch(readBalances({ cluster, acct: currentAccount }))
+      dispatch(readBalances({ anchorProvider, acct: currentAccount }))
     },
     [anchorProvider, cluster, currentAccount, dispatch, t],
   )

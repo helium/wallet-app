@@ -32,7 +32,7 @@ import SafeAreaBox from '../../components/SafeAreaBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import injectWalletStandard from './walletStandard'
 import { getKeypair } from '../../storage/secureStorage'
-import { getConnection, TXN_FEE_IN_SOL } from '../../utils/solanaUtils'
+import { TXN_FEE_IN_SOL } from '../../utils/solanaUtils'
 import * as Logger from '../../utils/logger'
 import WalletSignBottomSheet, {
   WalletSignBottomSheetRef,
@@ -195,7 +195,7 @@ const BrowserWebViewScreen = () => {
               }
 
               // Remove the 'solana:' prefix
-              const conn = getConnection(chain.slice(7) as Cluster)
+              const conn = anchorProvider?.connection(chain.slice(7) as Cluster)
 
               const signature = await conn.sendRawTransaction(
                 signedTransaction.serialize(),

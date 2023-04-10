@@ -21,7 +21,7 @@ const useEnrichedTransactions = (): {
   resetNewTransactions: () => void
   hasNewTransactions: boolean
 } => {
-  const { currentAccount } = useAccountStorage()
+  const { currentAccount, anchorProvider } = useAccountStorage()
   const { solanaNetwork: cluster } = useAppStorage()
   const [transactions, setTransactions] = useState<
     (EnrichedTransaction | ConfirmedSignatureInfo)[]
@@ -42,10 +42,11 @@ const useEnrichedTransactions = (): {
   }, [currentAccount])
 
   const refresh = useCallback(async () => {
-    if (!currentAccount || !currentAccount?.solanaAddress) return
+    if (!currentAccount?.solanaAddress || !anchorProvider) return
     setLoading(true)
     const fetchTransactions = await getAllTransactions(
       currentAccount?.solanaAddress,
+      anchorProvider,
       cluster,
     )
     setTransactions(fetchTransactions)
@@ -56,14 +57,14 @@ const useEnrichedTransactions = (): {
     )
     setLoading(false)
     setOnEndReached(false)
-  }, [currentAccount, cluster])
+  }, [currentAccount, cluster, anchorProvider])
 
   const fetchMore = useCallback(async () => {
     if (
-      !currentAccount ||
       !currentAccount?.solanaAddress ||
       fetchingMore ||
-      onEndReached
+      onEndReached ||
+      !anchorProvider
     ) {
       return
     }
@@ -71,6 +72,7 @@ const useEnrichedTransactions = (): {
     setFetchingMore(true)
     const fetchTransactions = await getAllTransactions(
       currentAccount?.solanaAddress,
+      anchorProvider,
       cluster,
       oldestTransaction,
     )
@@ -86,24 +88,31 @@ const useEnrichedTransactions = (): {
       setOnEndReached(true)
     }
     setFetchingMore(false)
-  }, [currentAccount, fetchingMore, onEndReached, cluster, oldestTransaction])
+  }, [
+    currentAccount,
+    fetchingMore,
+    onEndReached,
+    cluster,
+    oldestTransaction,
+    anchorProvider,
+  ])
 
   useEffect(() => {
-    if (!currentAccount?.solanaAddress) return
+    if (!currentAccount?.solanaAddress || !anchorProvider) return
 
     refresh()
 
-    const subId = onLogs(cluster, currentAccount?.solanaAddress, () => {
+    const subId = onLogs(anchorProvider, currentAccount?.solanaAddress, () => {
       refresh()
-      dispatch(readBalances({ cluster, acct: currentAccount }))
+      dispatch(readBalances({ anchorProvider, acct: currentAccount }))
       setHasNewTransactions(true)
     })
 
     if (accountSubscriptionId.current !== undefined) {
-      removeAccountChangeListener(cluster, accountSubscriptionId.current)
+      removeAccountChangeListener(anchorProvider, accountSubscriptionId.current)
     }
     accountSubscriptionId.current = subId
-  }, [cluster, currentAccount, refresh, dispatch])
+  }, [anchorProvider, currentAccount, refresh, dispatch])
 
   const resetNewTransactions = useCallback(() => {
     setHasNewTransactions(false)

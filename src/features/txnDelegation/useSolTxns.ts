@@ -19,8 +19,7 @@ import {
   NetworkTokens,
 } from '@helium/currency'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useAppStorage } from '../../storage/AppStorageProvider'
-import { getConnection, submitSolana } from '../../utils/solanaUtils'
+import { submitSolana } from '../../utils/solanaUtils'
 import { getSolanaKeypair } from '../../storage/secureStorage'
 import { Asset, WrappedConnection } from '../../utils/WrappedConnection'
 import { heliumAddressToSolAddress } from '../../utils/accountUtils'
@@ -47,7 +46,6 @@ type Txn = {
 }
 
 const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
-  const { solanaNetwork: cluster } = useAppStorage()
   const { anchorProvider } = useAccountStorage()
   const [submitLoading, setSubmitLoading] = useState(false)
   const handledTxnStr = useRef('')
@@ -289,8 +287,10 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
 
   const decode = useCallback(
     async (instruction: web3.TransactionInstruction) => {
+      if (!anchorProvider) return
+      const connection = anchorProvider.connection as WrappedConnection
+
       try {
-        const connection = getConnection(cluster)
         const idl = await fetchIdl(instruction.programId)
         const coder = new BorshInstructionCoder(idl)
         const decodedInstruction = coder.decode(instruction.data)
@@ -336,12 +336,12 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
       }
     },
     [
-      cluster,
       fetchIdl,
       handleBurn,
       handleOnboard,
       handleTransfer,
       handleUpdateMeta,
+      anchorProvider,
     ],
   )
 
@@ -464,6 +464,8 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
   const hasTransactions = useMemo(() => !!gatewayAddress, [gatewayAddress])
 
   const submit = useCallback(async () => {
+    if (!anchorProvider) return
+
     setSubmitLoading(true)
     const txnBuffs = transactionList.map(({ transaction }) =>
       transaction.serialize(),
@@ -471,11 +473,11 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
 
     // TODO: Confirm this works
     const ids = await Promise.all(
-      txnBuffs.map((txn) => submitSolana({ cluster, txn })),
+      txnBuffs.map((txn) => submitSolana({ anchorProvider, txn })),
     )
     setSubmitLoading(false)
     return ids
-  }, [cluster, transactionList])
+  }, [anchorProvider, transactionList])
 
   return {
     assertData,

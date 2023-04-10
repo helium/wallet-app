@@ -103,7 +103,7 @@ const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
         }),
       )
 
-      dispatch(readBalances({ cluster, acct: currentAccount }))
+      dispatch(readBalances({ anchorProvider, acct: currentAccount }))
     } catch (e) {
       Logger.error(e)
       setMigrationError((e as Error).message)

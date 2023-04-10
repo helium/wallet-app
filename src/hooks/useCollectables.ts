@@ -17,7 +17,7 @@ const useCollectables = (): WalletCollectables & {
   const { solanaNetwork: cluster, l1Network } = useAppStorage()
   const dispatch = useAppDispatch()
   const accountSubscriptionId = useRef<number>()
-  const { currentAccount } = useAccountStorage()
+  const { currentAccount, anchorProvider } = useAccountStorage()
   const collectables = useSelector((state: RootState) => state.collectables)
 
   useEffect(() => {
@@ -27,31 +27,38 @@ const useCollectables = (): WalletCollectables & {
   }, [currentAccount, dispatch])
 
   const refresh = useCallback(() => {
-    if (!currentAccount?.solanaAddress || l1Network !== 'solana') {
+    if (
+      !currentAccount?.solanaAddress ||
+      l1Network !== 'solana' ||
+      !anchorProvider
+    ) {
       return
     }
+    const { connection } = anchorProvider
+
     dispatch(
       fetchCollectables({
         account: currentAccount,
         cluster,
+        connection,
       }),
     )
-  }, [cluster, currentAccount, dispatch, l1Network])
+  }, [cluster, currentAccount, dispatch, l1Network, anchorProvider])
 
   useEffect(() => {
-    if (!currentAccount?.solanaAddress) return
+    if (!currentAccount?.solanaAddress || !anchorProvider) return
 
     refresh()
 
-    const subId = onLogs(cluster, currentAccount?.solanaAddress, () => {
+    const subId = onLogs(anchorProvider, currentAccount?.solanaAddress, () => {
       refresh()
     })
 
     if (accountSubscriptionId.current !== undefined) {
-      removeAccountChangeListener(cluster, accountSubscriptionId.current)
+      removeAccountChangeListener(anchorProvider, accountSubscriptionId.current)
     }
     accountSubscriptionId.current = subId
-  }, [cluster, currentAccount, dispatch, l1Network, refresh])
+  }, [anchorProvider, currentAccount, dispatch, l1Network, refresh])
 
   if (
     !currentAccount?.solanaAddress ||

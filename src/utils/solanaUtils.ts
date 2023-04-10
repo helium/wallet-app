@@ -67,7 +67,7 @@ import {
 } from '@helium/data-credits-sdk'
 import { getPendingRewards } from '@helium/distributor-oracle'
 import { init } from '@helium/lazy-distributor-sdk'
-import { getKeypair } from '../storage/secureStorage'
+import { getKeypair, getSessionKey } from '../storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
 import sleep from './sleep'
 import {
@@ -81,26 +81,28 @@ import { WrappedConnection } from './WrappedConnection'
 import { IOT_LAZY_KEY, Mints, MOBILE_LAZY_KEY } from './constants'
 import { BONES_PER_HNT } from './heliumUtils'
 
-export const SolanaConnection = {
-  localnet: new WrappedConnection('http://127.0.0.1:8899'),
-  // TODO: Replace with Devnet RPC URL when available
-  devnet: new WrappedConnection(`${Config.MAINNET_RPC_URL}/?session-key=Pluto`),
-  testnet: new WrappedConnection(clusterApiUrl('testnet')),
-  'mainnet-beta': new WrappedConnection(
-    `${Config.MAINNET_RPC_URL}/?session-key=Pluto`,
-  ),
-} as const
+export const SolanaConnection = (sessionKey: string) =>
+  ({
+    localnet: new WrappedConnection('http://127.0.0.1:8899'),
+    devnet: new WrappedConnection(
+      `${Config.DEVNET_RPC_URL}/?session-key=${sessionKey}`,
+    ),
+    testnet: new WrappedConnection(clusterApiUrl('testnet')),
+    'mainnet-beta': new WrappedConnection(
+      `${Config.MAINNET_RPC_URL}/?session-key=${sessionKey}`,
+    ),
+  } as const)
 
-export const getConnection = (cluster: Cluster) =>
-  SolanaConnection[cluster] || SolanaConnection.devnet
+export const getConnection = (cluster: Cluster, sessionKey: string) =>
+  SolanaConnection(sessionKey)[cluster] || SolanaConnection(sessionKey).devnet
 
 export const confirmTransaction = async (
-  cluster: Cluster,
+  anchorProvider: AnchorProvider,
   signature: string,
   blockhash: string,
   lastValidBlockHeight: number,
 ): Promise<SignatureResult> => {
-  const conn: WrappedConnection = getConnection(cluster)
+  const conn = anchorProvider.connection as WrappedConnection
 
   const confirmation = await conn.confirmTransaction(
     { signature, blockhash, lastValidBlockHeight },
@@ -116,18 +118,18 @@ export const solKeypairFromPK = (heliumPK: Buffer) => {
   return Keypair.fromSecretKey(heliumPK)
 }
 
-export const airdrop = (cluster: Cluster, address: string) => {
+export const airdrop = (anchorProvider: AnchorProvider, address: string) => {
   const key = new PublicKey(address)
-  return getConnection(cluster).requestAirdrop(key, LAMPORTS_PER_SOL)
+  return anchorProvider.connection.requestAirdrop(key, LAMPORTS_PER_SOL)
 }
 
 export const getBalanceFromTokenAccount = async (
-  cluster: Cluster,
+  anchorProvider: AnchorProvider,
   address: string,
 ) => {
   const account = new PublicKey(address)
 
-  const accountInfo = await getConnection(cluster).getAccountInfo(account)
+  const accountInfo = await anchorProvider.connection.getAccountInfo(account)
 
   if (!accountInfo) {
     return BigInt(0)
@@ -138,10 +140,13 @@ export const getBalanceFromTokenAccount = async (
   return accountData.amount
 }
 
-export const readHeliumBalances = async (cluster: Cluster, address: string) => {
+export const readHeliumBalances = async (
+  anchorProvider: AnchorProvider,
+  address: string,
+) => {
   const account = new PublicKey(address)
 
-  const tokenAccounts = await getConnection(cluster).getTokenAccountsByOwner(
+  const tokenAccounts = await anchorProvider.connection.getTokenAccountsByOwner(
     account,
     {
       programId: TOKEN_PROGRAM_ID,
@@ -159,7 +164,7 @@ export const readHeliumBalances = async (cluster: Cluster, address: string) => {
 }
 
 export const createTransferTxn = async (
-  cluster: Cluster,
+  anchorProvider: AnchorProvider,
   signer: Signer,
   payments: {
     payee: string
@@ -171,7 +176,7 @@ export const createTransferTxn = async (
 ) => {
   if (!payments.length) throw new Error('No payment found')
 
-  const conn = getConnection(cluster)
+  const conn = anchorProvider.connection
 
   const [firstPayment] = payments
 
@@ -214,7 +219,7 @@ export const createTransferTxn = async (
     instructions = [...instructions, instruction]
   })
 
-  const { blockhash } = await getConnection(cluster).getLatestBlockhash()
+  const { blockhash } = await anchorProvider.connection.getLatestBlockhash()
 
   const messageV0 = new TransactionMessage({
     payerKey: payer,
@@ -227,6 +232,7 @@ export const createTransferTxn = async (
 
 export const transferToken = async (
   cluster: Cluster,
+  anchorProvider: AnchorProvider,
   solanaAddress: string,
   heliumAddress: string,
   payments: {
@@ -250,21 +256,27 @@ export const transferToken = async (
   }
 
   const transaction = await createTransferTxn(
-    cluster,
+    anchorProvider,
     signer,
     payments,
     mintAddress,
   )
   transaction.sign([signer])
 
-  const signature = await getConnection(cluster).sendTransaction(transaction, {
-    maxRetries: 5,
-  })
+  const signature = await anchorProvider.connection.sendTransaction(
+    transaction,
+    {
+      maxRetries: 5,
+    },
+  )
 
   // The sendAndConfirmTransaction socket connection occassionally blows up with the error
   // signatureSubscribe error for argument ["your_signature", {"commitment": "finalized"}] INVALID_STATE_ERR
   // Just going to poll for the txn for now 👇
-  const txn = await getTxn(cluster, signature, { maxTries: 20, waitMS: 1000 })
+  const txn = await getTxn(anchorProvider, signature, {
+    maxTries: 20,
+    waitMS: 1000,
+  })
 
   if (txn?.meta?.err) {
     throw new Error(txn.meta.err.toString())
@@ -274,14 +286,14 @@ export const transferToken = async (
 }
 
 export const getTxn = async (
-  cluster: Cluster,
+  anchorProvider: AnchorProvider,
   signature: string,
   config?: { maxTries?: number; waitMS?: number },
 ): Promise<VersionedTransactionResponse | null> => {
   const maxTries = config?.maxTries || 1
   const waitMS = config?.waitMS || 500
 
-  const txn = await getConnection(cluster).getTransaction(signature, {
+  const txn = await anchorProvider.connection.getTransaction(signature, {
     maxSupportedTransactionVersion: 0,
   })
 
@@ -290,7 +302,10 @@ export const getTxn = async (
 
   await sleep(waitMS)
 
-  return getTxn(cluster, signature, { maxTries: remainingTries, waitMS })
+  return getTxn(anchorProvider, signature, {
+    maxTries: remainingTries,
+    waitMS,
+  })
 }
 
 export const getAssocTokenAddress = (
@@ -303,25 +318,21 @@ export const getAssocTokenAddress = (
 }
 
 export const getTransactions = async (
-  cluster: Cluster,
+  anchorProvider: AnchorProvider,
   walletAddress: string,
   mintAddress: string,
   mints: typeof Mints,
   options?: SignaturesForAddressOptions,
 ) => {
   const ata = await getAssocTokenAddress(walletAddress, mintAddress)
-  const transactionList = await getConnection(cluster).getSignaturesForAddress(
-    ata,
-    options,
-  )
+  const transactionList =
+    await anchorProvider.connection.getSignaturesForAddress(ata, options)
   const sigs = transactionList.map(({ signature }) => signature)
 
-  const transactionDetails = await getConnection(cluster).getParsedTransactions(
-    sigs,
-    {
+  const transactionDetails =
+    await anchorProvider.connection.getParsedTransactions(sigs, {
       maxSupportedTransactionVersion: 0,
-    },
-  )
+    })
 
   return transactionDetails
     .map((td, idx) => solInstructionsToActivity(td, sigs[idx], mints))
@@ -329,12 +340,12 @@ export const getTransactions = async (
 }
 
 export const onAccountChange = (
-  cluster: Cluster,
+  anchorProvider: AnchorProvider,
   address: string,
   callback: (address: string) => void,
 ) => {
   const account = new PublicKey(address)
-  const conn: WrappedConnection | Connection = getConnection(cluster)
+  const conn: WrappedConnection | Connection = anchorProvider.connection
 
   return conn.onAccountChange(account, () => {
     callback(address)
@@ -342,12 +353,12 @@ export const onAccountChange = (
 }
 
 export const onLogs = (
-  cluster: Cluster,
+  anchorProvider: AnchorProvider,
   address: string,
   callback: (address: string, log: Logs) => void,
 ) => {
   const account = new PublicKey(address)
-  const conn: WrappedConnection = getConnection(cluster)
+  const conn = anchorProvider.connection as WrappedConnection
 
   return conn.onLogs(
     account,
@@ -358,8 +369,11 @@ export const onLogs = (
   )
 }
 
-export const removeAccountChangeListener = (cluster: Cluster, id: number) => {
-  const conn: WrappedConnection = getConnection(cluster)
+export const removeAccountChangeListener = (
+  anchorProvider: AnchorProvider,
+  id: number,
+) => {
+  const conn = anchorProvider.connection as WrappedConnection
 
   return conn.removeAccountChangeListener(id)
 }
@@ -419,7 +433,7 @@ export function createAssociatedTokenAccountInstruction(
 }
 
 export const createTransferCollectableMessage = async (
-  cluster: Cluster,
+  anchorProvider: AnchorProvider,
   solanaAddress: string,
   heliumAddress: string,
   collectable: Collectable | CompressedNFT,
@@ -429,7 +443,7 @@ export const createTransferCollectableMessage = async (
   const nft = collectable as Collectable
   const payer = new PublicKey(solanaAddress)
   const secureAcct = await getKeypair(heliumAddress)
-  const conn = getConnection(cluster)
+  const conn = anchorProvider.connection
 
   if (!secureAcct) {
     throw new Error('Secure account not found')
@@ -498,7 +512,7 @@ export const createTransferCollectableMessage = async (
 }
 
 export const transferCollectable = async (
-  cluster: Cluster,
+  anchorProvider: AnchorProvider,
   solanaAddress: string,
   heliumAddress: string,
   collectable: Collectable,
@@ -507,7 +521,7 @@ export const transferCollectable = async (
   const payer = new PublicKey(solanaAddress)
   try {
     const secureAcct = await getKeypair(heliumAddress)
-    const conn = getConnection(cluster)
+    const conn = anchorProvider.connection
 
     if (!secureAcct) {
       throw new Error('Secure account not found')
@@ -587,13 +601,13 @@ export const transferCollectable = async (
     })
 
     await confirmTransaction(
-      cluster,
+      anchorProvider,
       signature,
       blockhash,
       lastValidBlockHeight,
     )
 
-    const txn = await getTxn(cluster, signature)
+    const txn = await getTxn(anchorProvider, signature)
 
     if (txn?.meta?.err) {
       throw new Error(
@@ -611,13 +625,12 @@ export const transferCollectable = async (
 }
 
 export const mintDataCredits = async (
-  cluster: Cluster,
   anchorProvider: AnchorProvider,
   hntAmount: number,
   recipient: PublicKey,
 ) => {
   try {
-    const connection = getConnection(cluster)
+    const { connection } = anchorProvider
     const { publicKey: payer } = anchorProvider.wallet
 
     const program = await dc.init(anchorProvider)
@@ -649,12 +662,12 @@ export const mintDataCredits = async (
     )
 
     await confirmTransaction(
-      cluster,
+      anchorProvider,
       signature,
       blockhash,
       lastValidBlockHeight,
     )
-    const txn = await getTxn(cluster, signature)
+    const txn = await getTxn(anchorProvider, signature)
 
     if (txn?.meta?.err) {
       throw new Error(
@@ -672,13 +685,12 @@ export const mintDataCredits = async (
 }
 
 export const delegateDataCredits = async (
-  cluster: Cluster,
   anchorProvider: AnchorProvider,
   delegateAddress: string,
   amount: number,
 ) => {
   try {
-    const connection = getConnection(cluster)
+    const { connection } = anchorProvider
     const { publicKey: payer } = anchorProvider.wallet
 
     const program = await dc.init(anchorProvider)
@@ -710,12 +722,12 @@ export const delegateDataCredits = async (
     )
 
     await confirmTransaction(
-      cluster,
+      anchorProvider,
       signature,
       blockhash,
       lastValidBlockHeight,
     )
-    const txn = await getTxn(cluster, signature)
+    const txn = await getTxn(anchorProvider, signature)
 
     if (txn?.meta?.err) {
       throw new Error(
@@ -809,7 +821,7 @@ const mapProof = (assetProof: { proof: string[] }): AccountMeta[] => {
  * @returns
  */
 export const transferCompressedCollectable = async (
-  cluster: Cluster,
+  anchorProvider: AnchorProvider,
   solanaAddress: string,
   heliumAddress: string,
   collectable: CompressedNFT,
@@ -818,7 +830,7 @@ export const transferCompressedCollectable = async (
   const payer = new PublicKey(solanaAddress)
   try {
     const secureAcct = await getKeypair(heliumAddress)
-    const conn = getConnection(cluster)
+    const conn = anchorProvider.connection as WrappedConnection
 
     if (!secureAcct) {
       throw new Error('Secure account not found')
@@ -907,13 +919,13 @@ export const transferCompressedCollectable = async (
     })
 
     await confirmTransaction(
-      cluster,
+      anchorProvider,
       signature,
       blockhash,
       lastValidBlockHeight,
     )
 
-    const txn = await getTxn(cluster, signature)
+    const txn = await getTxn(anchorProvider, signature)
 
     if (txn?.meta?.err) {
       throw new Error(
@@ -952,9 +964,9 @@ export const getNFTs = async (pubKey: PublicKey, metaplex: Metaplex) => {
  */
 export const getCompressedCollectables = async (
   pubKey: PublicKey,
-  cluster: Cluster,
+  anchorProvider: AnchorProvider,
 ) => {
-  const conn = getConnection(cluster)
+  const conn = anchorProvider.connection as WrappedConnection
   const { items } = await conn.getAssetsByOwner(
     pubKey.toString(),
     { sortBy: 'created', sortDirection: 'asc' },
@@ -969,11 +981,11 @@ export const getCompressedCollectables = async (
 
 export const getCompressedCollectablesByCreator = async (
   pubKey: PublicKey,
-  cluster: Cluster,
+  anchorProvider: AnchorProvider,
   page?: number,
   limit?: number,
 ) => {
-  const conn = getConnection(cluster)
+  const conn = anchorProvider.connection
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const items = await searchAssets(conn.rpcEndpoint, {
@@ -1204,17 +1216,20 @@ export const getCollectableByMint = async (
  */
 export const getAllTransactions = async (
   address: string,
+  anchorProvider: AnchorProvider,
   cluster: Cluster,
   oldestTransaction?: string,
 ): Promise<(EnrichedTransaction | ConfirmedSignatureInfo)[]> => {
   const pubKey = new PublicKey(address)
-  const conn = getConnection(cluster)
+  const conn = anchorProvider.connection
   const metaplex = new Metaplex(conn, { cluster })
+  const sessionKey = await getSessionKey()
 
-  // TODO: Replace with Devnet RPC URL when available
   const parseTransactionsUrl = `${
     cluster === 'devnet' ? Config.DEVNET_RPC_URL : Config.MAINNET_RPC_URL
-  }/v0/transactions/?api-key=${Config.HELIUS_API_KEY}`
+  }/v0/transactions/?session-key=${
+    sessionKey || Config.RPC_SESSION_KEY_FALLBACK
+  }`
 
   try {
     const txList = await conn.getSignaturesForAddress(pubKey, {
@@ -1357,13 +1372,12 @@ export const getAllTransactions = async (
  * @param anchorProvider Anchor provider
  */
 export async function createTreasurySwapTxn(
-  cluster: Cluster,
   amount: number,
   fromMint: PublicKey,
   anchorProvider: AnchorProvider,
   recipient: PublicKey,
 ) {
-  const conn = getConnection(cluster)
+  const conn = anchorProvider.connection
   try {
     const program = await tm.init(anchorProvider)
     const fromMintAcc = await getMint(conn, fromMint)
@@ -1396,13 +1410,13 @@ export async function createTreasurySwapTxn(
     })
 
     await confirmTransaction(
-      cluster,
+      anchorProvider,
       signature,
       blockhash,
       lastValidBlockHeight,
     )
 
-    const txn = await getTxn(cluster, signature)
+    const txn = await getTxn(anchorProvider, signature)
 
     if (txn?.meta?.err) {
       throw new Error(
@@ -1426,12 +1440,11 @@ export async function createTreasurySwapTxn(
  * @param anchorProvider Anchor provider
  */
 export async function createTreasurySwapMessage(
-  cluster: Cluster,
   amount: number,
   fromMint: PublicKey,
   anchorProvider: AnchorProvider,
 ) {
-  const conn = getConnection(cluster)
+  const conn = anchorProvider.connection
 
   try {
     const program = await tm.init(anchorProvider)
@@ -1537,12 +1550,12 @@ export const solInstructionsToActivity = (
 
 export const submitSolana = async ({
   txn,
-  cluster,
+  anchorProvider,
 }: {
   txn: Buffer
-  cluster: Cluster
+  anchorProvider: AnchorProvider
 }) => {
-  const conn = getConnection(cluster)
+  const conn = anchorProvider.connection
   const { txid } = await sendAndConfirmWithRetry(
     conn,
     txn,
