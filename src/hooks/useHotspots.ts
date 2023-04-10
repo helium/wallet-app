@@ -55,7 +55,7 @@ const useHotspots = (): {
   fetchingMore: boolean
   onEndReached: boolean
 } => {
-  const { solanaNetwork: cluster, l1Network } = useAppStorage()
+  const { l1Network } = useAppStorage()
   const dispatch = useAppDispatch()
   const { currentAccount, anchorProvider } = useAccountStorage()
   const hotspotsSlice = useSelector((state: RootState) => state.hotspots)
@@ -172,14 +172,13 @@ const useHotspots = (): {
 
       dispatch(
         fetchHotspots({
-          provider: anchorProvider,
+          anchorProvider,
           account: currentAccount,
-          cluster,
           limit,
         }),
       )
     },
-    [anchorProvider, cluster, currentAccount, dispatch, l1Network],
+    [anchorProvider, currentAccount, dispatch, l1Network],
   )
 
   const fetchingMore = useMemo(() => {
@@ -207,21 +206,12 @@ const useHotspots = (): {
         fetchMoreHotspots({
           provider: anchorProvider,
           account: currentAccount,
-          cluster,
           page,
           limit,
         }),
       )
     },
-    [
-      anchorProvider,
-      cluster,
-      hotspotsSlice,
-      currentAccount,
-      dispatch,
-      l1Network,
-      page,
-    ],
+    [anchorProvider, hotspotsSlice, currentAccount, dispatch, l1Network, page],
   )
 
   // FOR TESTING ONLY

@@ -6,12 +6,7 @@ import {
   WebViewNavigation,
 } from 'react-native-webview'
 import nacl from 'tweetnacl'
-import {
-  Cluster,
-  PublicKey,
-  Transaction,
-  VersionedTransaction,
-} from '@solana/web3.js'
+import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js'
 import bs58 from 'bs58'
 import {
   SolanaSignMessageInput,
@@ -74,7 +69,11 @@ const BrowserWebViewScreen = () => {
 
   const onMessage = useCallback(
     async (msg: WebViewMessageEvent) => {
-      if (!currentAccount?.address || !currentAccount?.solanaAddress) {
+      if (
+        !currentAccount?.address ||
+        !currentAccount?.solanaAddress ||
+        !anchorProvider
+      ) {
         return
       }
 
@@ -169,7 +168,6 @@ const BrowserWebViewScreen = () => {
           transactions.map(
             async ({
               transaction,
-              chain,
               options,
             }: SolanaSignAndSendTransactionInput & {
               transaction: Transaction | VersionedTransaction
@@ -194,8 +192,7 @@ const BrowserWebViewScreen = () => {
                 throw new Error('Failed to sign transaction')
               }
 
-              // Remove the 'solana:' prefix
-              const conn = anchorProvider?.connection(chain.slice(7) as Cluster)
+              const conn = anchorProvider.connection
 
               const signature = await conn.sendRawTransaction(
                 signedTransaction.serialize(),

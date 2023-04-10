@@ -15,6 +15,7 @@ import { AccountProvider } from '@helium/helium-react-hooks'
 import { theme, darkThemeColors, lightThemeColors } from '@theme/theme'
 import { useColorScheme } from '@theme/themeHooks'
 import globalStyles from '@theme/globalStyles'
+import { getConnection } from '@utils/solanaUtils'
 import useMount from './hooks/useMount'
 import { useApolloClient } from './graphql/useApolloClient'
 import RootNavigator from './navigation/RootNavigator'
@@ -110,7 +111,13 @@ const App = () => {
                         <AccountProvider
                           extendConnection={false}
                           commitment="confirmed"
-                          connection={anchorProvider?.connection}
+                          connection={
+                            anchorProvider?.connection ||
+                            getConnection(
+                              'devnet',
+                              Config.RPC_SESSION_KEY_FALLBACK,
+                            )
+                          }
                         >
                           <WalletConnectProvider>
                             {accountsRestored && (

@@ -1,6 +1,6 @@
 import { AnchorProvider } from '@coral-xyz/anchor'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Cluster, PublicKey } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import { CompressedNFT } from 'src/types/solana'
 import { CSAccount } from '../../storage/cloudStorage'
 import * as solUtils from '../../utils/solanaUtils'
@@ -22,14 +22,12 @@ const initialState: HotspotsState = {}
 export const fetchHotspots = createAsyncThunk(
   'hotspots/fetchHotspots',
   async ({
-    provider,
     account,
-    cluster,
+    anchorProvider,
     limit,
   }: {
-    provider: AnchorProvider
     account: CSAccount
-    cluster: Cluster
+    anchorProvider: AnchorProvider
     limit?: number
   }) => {
     if (!account.solanaAddress) throw new Error('Solana address missing')
@@ -37,7 +35,7 @@ export const fetchHotspots = createAsyncThunk(
     const pubKey = new PublicKey(account.solanaAddress)
     const fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
       pubKey,
-      cluster,
+      anchorProvider,
       1,
       limit,
     )
@@ -46,7 +44,10 @@ export const fetchHotspots = createAsyncThunk(
       fetchedHotspots,
     )
     const hotspotsWithPendingRewards =
-      await solUtils.annotateWithPendingRewards(provider, hotspotsWithMetadata)
+      await solUtils.annotateWithPendingRewards(
+        anchorProvider,
+        hotspotsWithMetadata,
+      )
 
     return {
       fetchedHotspots,
@@ -61,13 +62,11 @@ export const fetchMoreHotspots = createAsyncThunk(
   'hotspots/fetchMoreHotspots',
   async ({
     account,
-    cluster,
     page = 1,
     provider,
     limit,
   }: {
     account: CSAccount
-    cluster: Cluster
     page: number
     provider: AnchorProvider
     limit?: number
@@ -79,7 +78,7 @@ export const fetchMoreHotspots = createAsyncThunk(
     // TODO: Add pagination
     const fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
       pubKey,
-      cluster,
+      provider,
       page + 1,
       limit,
     )
