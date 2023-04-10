@@ -97,9 +97,8 @@ const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
 
       dispatch(
         fetchHotspots({
-          provider: anchorProvider,
+          anchorProvider,
           account: currentAccount,
-          cluster,
         }),
       )
 
