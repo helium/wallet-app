@@ -33,11 +33,7 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import useAlert from '@hooks/useAlert'
 import { Collectable, CompressedNFT } from '../../types/solana'
 import { solAddressIsValid } from '../../utils/accountUtils'
-import {
-  createTransferCollectableMessage,
-  getConnection,
-} from '../../utils/solanaUtils'
-import { useAppStorage } from '../../storage/AppStorageProvider'
+import { createTransferCollectableMessage } from '../../utils/solanaUtils'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
 import * as Logger from '../../utils/logger'
@@ -75,8 +71,7 @@ const TransferCollectableScreen = () => {
   >()
   const [optionsOpen, setOptionsOpen] = useState(false)
   const [solFee, setSolFee] = useState<number | undefined>(undefined)
-  const { solanaNetwork: cluster } = useAppStorage()
-  const { currentAccount } = useAccountStorage()
+  const { currentAccount, anchorProvider } = useAccountStorage()
   const addressBookRef = useRef<AddressBookRef>(null)
   const colors = useColors()
   const { showOKCancelAlert } = useAlert()
@@ -94,12 +89,13 @@ const TransferCollectableScreen = () => {
   const { submitCollectable } = useSubmitTxn()
 
   useAsync(async () => {
-    if (!currentAccount?.solanaAddress) return
+    if (!currentAccount?.solanaAddress || !anchorProvider?.connection) return
 
-    const connection = getConnection(cluster)
+    const { connection } = anchorProvider
+
     try {
       const { message } = await createTransferCollectableMessage(
-        cluster,
+        anchorProvider,
         currentAccount?.solanaAddress,
         currentAccount?.address || '',
         collectable,

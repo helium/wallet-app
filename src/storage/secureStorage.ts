@@ -3,6 +3,7 @@ import Address, { NetTypes as NetType } from '@helium/address'
 import * as SecureStore from 'expo-secure-store'
 import { Alert } from 'react-native'
 import { Keypair as SolanaKeypair } from '@solana/web3.js'
+import Config from 'react-native-config'
 import { CSAccount } from './cloudStorage'
 import i18n from '../utils/i18n'
 import { navToImportAccount } from '../navigation/NavigationHelper'
@@ -23,6 +24,7 @@ export enum SecureStorageKeys {
   HIDE_PRIVATE_KEY_ALERT = 'hidePrivateKeyAlert',
   SHOW_NUMERIC_CHANGE = 'showNumericChange',
   DONE_SOLANA_MIGRATION = 'doneSolanaMigration',
+  SESSION_KEY = 'sessionKey',
 }
 type SecureStorageKeyTypes = `${SecureStorageKeys}`
 
@@ -119,6 +121,15 @@ export const getSecureAccount = async (
     const item = await SecureStore.getItemAsync(address)
     if (!item) return
     return JSON.parse(item) as SecureAccount
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+export const getSessionKey = async (): Promise<string | undefined> => {
+  try {
+    const item = await SecureStore.getItemAsync(SecureStorageKeys.SESSION_KEY)
+    return item || Config.RPC_SESSION_KEY_FALLBACK
   } catch (e) {
     console.error(e)
   }

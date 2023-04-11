@@ -9,7 +9,11 @@ import { useAsync } from 'react-async-hook'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Cluster } from '@solana/web3.js'
 import { Intervals } from '../features/settings/useAuthIntervals'
-import { getSecureItem, storeSecureItem } from './secureStorage'
+import {
+  getSecureItem,
+  SecureStorageKeys,
+  storeSecureItem,
+} from './secureStorage'
 import { L1Network } from '../utils/accountUtils'
 
 const VOTE_TUTORIAL_SHOWN = 'voteTutorialShown'
@@ -48,6 +52,7 @@ const useAppStorageHook = () => {
     testnet: [],
     'mainnet-beta': [],
   })
+  const [sessionKey, setSessionKey] = useState('')
 
   useAsync(async () => {
     // TODO: When performing an account restore pin will not be restored.
@@ -69,7 +74,10 @@ const useAppStorageHook = () => {
       const nextDAppShown = await AsyncStorage.getItem(DAPP_TUTORIAL_SHOWN)
       const nextVoteShown = await AsyncStorage.getItem(VOTE_TUTORIAL_SHOWN)
       const nextShowNumericChange = await getSecureItem('showNumericChange')
-      const nextDoneSolanaMigration = await getSecureItem('doneSolanaMigration')
+      const nextDoneSolanaMigration = await getSecureItem(
+        SecureStorageKeys.DONE_SOLANA_MIGRATION,
+      )
+      const nextSessionKey = await getSecureItem(SecureStorageKeys.SESSION_KEY)
 
       setPin({ value: nextPin || '', status: nextPin ? 'restored' : 'off' })
       setRequirePinForPayment(nextPinForPayment === 'true')
@@ -95,6 +103,7 @@ const useAppStorageHook = () => {
       )
       setVoteTutorialShown(nextVoteShown === 'true')
       setShowNumericChange(nextShowNumericChange === 'true')
+      setSessionKey(nextSessionKey || '')
       setDoneSolanaMigration(
         JSON.parse(nextDoneSolanaMigration || '{}') as Record<string, string[]>,
       )
@@ -197,6 +206,14 @@ const useAppStorageHook = () => {
     return storeSecureItem('showNumericChange', useNumeric ? 'true' : 'false')
   }, [])
 
+  const updateSessionKey = useCallback(
+    async ({ sessionKey: newSessionKey }: { sessionKey: string }) => {
+      setSessionKey(newSessionKey)
+      return storeSecureItem(SecureStorageKeys.SESSION_KEY, newSessionKey)
+    },
+    [],
+  )
+
   const updateDoneSolanaMigration = useCallback(
     async ({ cluster, address }: { cluster: Cluster; address: string }) => {
       const newState = {
@@ -204,7 +221,10 @@ const useAppStorageHook = () => {
         [cluster]: [...(doneSolanaMigration[cluster] || []), address],
       }
       setDoneSolanaMigration(newState)
-      return storeSecureItem('doneSolanaMigration', JSON.stringify(newState))
+      return storeSecureItem(
+        SecureStorageKeys.DONE_SOLANA_MIGRATION,
+        JSON.stringify(newState),
+      )
     },
     [doneSolanaMigration],
   )
@@ -225,8 +245,10 @@ const useAppStorageHook = () => {
     showNumericChange,
     solanaNetwork,
     toggleConvertToCurrency,
+    sessionKey,
     doneSolanaMigration,
     updateDoneSolanaMigration,
+    updateSessionKey,
     updateAuthInterval,
     updateConvertToCurrency,
     updateCurrency,
@@ -276,6 +298,8 @@ const initialState = {
     testnet: [],
     'mainnet-beta': [],
   },
+  sessionKey: '',
+  updateSessionKey: async () => undefined,
   dAppTutorialShown: {
     devnet: false,
     testnet: false,

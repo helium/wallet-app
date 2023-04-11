@@ -30,11 +30,7 @@ import { useAppStorage } from '@storage/AppStorageProvider'
 import { CSAccount } from '@storage/cloudStorage'
 import { Mints } from '@utils/constants'
 import * as Logger from '@utils/logger'
-import {
-  createTreasurySwapMessage,
-  getConnection,
-  TXN_FEE_IN_SOL,
-} from '@utils/solanaUtils'
+import { createTreasurySwapMessage, TXN_FEE_IN_SOL } from '@utils/solanaUtils'
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
@@ -72,7 +68,7 @@ enum Tokens {
 const SwapScreen = () => {
   const { t } = useTranslation()
   const { currentAccount, anchorProvider } = useAccountStorage()
-  const { solanaNetwork: cluster, l1Network } = useAppStorage()
+  const { l1Network } = useAppStorage()
   const navigation = useNavigation<SwapNavigationProp>()
   const { submitTreasurySwap, submitMintDataCredits } = useSubmitTxn()
   const edges = useMemo(() => ['bottom'] as Edge[], [])
@@ -177,11 +173,10 @@ const SwapScreen = () => {
     setNetworkError(undefined)
 
     if (!currentAccount?.solanaAddress || !anchorProvider) return
-    const connection = getConnection(cluster)
+    const { connection } = anchorProvider
 
     try {
       const { message } = await createTreasurySwapMessage(
-        cluster,
         0,
         new PublicKey(Mints.MOBILE),
         anchorProvider,
@@ -202,7 +197,7 @@ const SwapScreen = () => {
       Logger.error(error)
       setNetworkError((error as Error).message)
     }
-  }, [anchorProvider, cluster, currentAccount?.solanaAddress])
+  }, [anchorProvider, currentAccount?.solanaAddress])
 
   const handleClose = useCallback(() => {
     navigation.goBack()

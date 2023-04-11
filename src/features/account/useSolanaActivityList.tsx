@@ -1,4 +1,5 @@
 import { Ticker } from '@helium/currency'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useAppStorage } from '../../storage/AppStorageProvider'
@@ -21,6 +22,7 @@ export default ({
   const [now, setNow] = useState(new Date())
   const dispatch = useAppDispatch()
   const { l1Network, solanaNetwork: cluster } = useAppStorage()
+  const { anchorProvider } = useAccountStorage()
   const solanaActivity = useSelector(
     (state: RootState) => state.solana.activity,
   )
@@ -39,22 +41,22 @@ export default ({
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!account?.address || !isSolana || !mints) return
+      if (!account?.address || !isSolana || !mints || !anchorProvider) return
       dispatch(
         getTxns({
           account,
           ticker,
           mints,
           requestType: 'update_head',
-          cluster,
+          anchorProvider,
         }),
       )
     }, 5000) // Every 5 seconds update the head of the list
     return () => clearInterval(interval)
-  }, [account, cluster, dispatch, isSolana, mints, ticker])
+  }, [account, dispatch, isSolana, mints, ticker, anchorProvider])
 
   useEffect(() => {
-    if (!account?.address || !isSolana || !mints) return
+    if (!account?.address || !isSolana || !mints || !anchorProvider) return
 
     dispatch(
       getTxns({
@@ -62,13 +64,13 @@ export default ({
         ticker,
         mints,
         requestType: 'start_fresh',
-        cluster,
+        anchorProvider,
       }),
     )
-  }, [account, cluster, dispatch, filter, isSolana, mints, ticker])
+  }, [account, dispatch, filter, isSolana, mints, ticker, anchorProvider])
 
   const requestMore = useCallback(() => {
-    if (!account?.address || !isSolana || !mints) return
+    if (!account?.address || !isSolana || !mints || !anchorProvider) return
 
     dispatch(
       getTxns({
@@ -76,10 +78,10 @@ export default ({
         mints,
         ticker,
         requestType: 'fetch_more',
-        cluster,
+        anchorProvider,
       }),
     )
-  }, [account, cluster, dispatch, isSolana, mints, ticker])
+  }, [account, dispatch, isSolana, mints, ticker, anchorProvider])
 
   const data = useMemo(() => {
     if (!account?.solanaAddress || !solanaActivity.data[account.solanaAddress])

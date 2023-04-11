@@ -41,6 +41,10 @@ export type RecommendedDapps = {
   'mainnet-beta': string[]
 }
 
+export type SessionKey = {
+  sessionKey: string
+}
+
 export const walletRestApi = createApi({
   reducerPath: 'walletRestApi',
   tagTypes: ['Notifications'],
@@ -130,6 +134,9 @@ export const walletRestApi = createApi({
     getRecommendedDapps: builder.query<RecommendedDapps, void>({
       query: () => '/recommendedDapps',
     }),
+    getSessionKey: builder.query<SessionKey, void>({
+      query: () => '/sessionKey',
+    }),
   }),
 })
 
@@ -145,6 +152,8 @@ export const {
   useLazyGetTokenPricesQuery,
   useGetRecommendedDappsQuery,
   useLazyGetRecommendedDappsQuery,
+  useGetSessionKeyQuery,
+  useLazyGetSessionKeyQuery,
   reducer,
 } = walletRestApi
 

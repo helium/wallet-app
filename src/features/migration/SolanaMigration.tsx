@@ -97,13 +97,12 @@ const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
 
       dispatch(
         fetchHotspots({
-          provider: anchorProvider,
+          anchorProvider,
           account: currentAccount,
-          cluster,
         }),
       )
 
-      dispatch(readBalances({ cluster, acct: currentAccount }))
+      dispatch(readBalances({ anchorProvider, acct: currentAccount }))
     } catch (e) {
       Logger.error(e)
       setMigrationError((e as Error).message)

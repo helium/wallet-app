@@ -22,7 +22,7 @@ import {
   hotspots as hotspotsSli,
 } from '../store/slices/hotspotsSlice'
 import { useAppDispatch } from '../store/store'
-import { getConnection, HotspotWithPendingRewards } from '../utils/solanaUtils'
+import { HotspotWithPendingRewards } from '../utils/solanaUtils'
 import { CompressedNFT } from '../types/solana'
 import { MOBILE_LAZY_KEY, IOT_LAZY_KEY, Mints } from '../utils/constants'
 import * as Logger from '../utils/logger'
@@ -55,11 +55,10 @@ const useHotspots = (): {
   fetchingMore: boolean
   onEndReached: boolean
 } => {
-  const { solanaNetwork: cluster, l1Network } = useAppStorage()
+  const { l1Network } = useAppStorage()
   const dispatch = useAppDispatch()
   const { currentAccount, anchorProvider } = useAccountStorage()
   const hotspotsSlice = useSelector((state: RootState) => state.hotspots)
-  const conn = getConnection(cluster)
 
   const page = useMemo(() => {
     if (
@@ -99,6 +98,7 @@ const useHotspots = (): {
     if (!anchorProvider || !currentAccount?.solanaAddress) {
       return
     }
+    const { connection } = anchorProvider
     const program = await init(anchorProvider)
     const wallet = new PublicKey(currentAccount?.solanaAddress)
 
@@ -116,7 +116,7 @@ const useHotspots = (): {
           rewards,
           hotspot: new PublicKey(nft.id),
           lazyDistributor: MOBILE_LAZY_KEY,
-          assetEndpoint: conn.rpcEndpoint,
+          assetEndpoint: connection.rpcEndpoint,
           wallet,
         })
       }),
@@ -135,6 +135,7 @@ const useHotspots = (): {
     }
     const program = await init(anchorProvider)
     const wallet = new PublicKey(currentAccount?.solanaAddress)
+    const { connection } = anchorProvider
 
     const txns = await Promise.all(
       hotspots.map(async (nft: CompressedNFT) => {
@@ -150,7 +151,7 @@ const useHotspots = (): {
           rewards,
           hotspot: new PublicKey(nft.id),
           lazyDistributor: IOT_LAZY_KEY,
-          assetEndpoint: conn.rpcEndpoint,
+          assetEndpoint: connection.rpcEndpoint,
           wallet,
         })
       }),
@@ -171,14 +172,13 @@ const useHotspots = (): {
 
       dispatch(
         fetchHotspots({
-          provider: anchorProvider,
+          anchorProvider,
           account: currentAccount,
-          cluster,
           limit,
         }),
       )
     },
-    [anchorProvider, cluster, currentAccount, dispatch, l1Network],
+    [anchorProvider, currentAccount, dispatch, l1Network],
   )
 
   const fetchingMore = useMemo(() => {
@@ -206,21 +206,12 @@ const useHotspots = (): {
         fetchMoreHotspots({
           provider: anchorProvider,
           account: currentAccount,
-          cluster,
           page,
           limit,
         }),
       )
     },
-    [
-      anchorProvider,
-      cluster,
-      hotspotsSlice,
-      currentAccount,
-      dispatch,
-      l1Network,
-      page,
-    ],
+    [anchorProvider, hotspotsSlice, currentAccount, dispatch, l1Network, page],
   )
 
   // FOR TESTING ONLY
@@ -280,7 +271,7 @@ const useHotspots = (): {
         ).toString(),
       })
 
-      const connection = getConnection(cluster)
+      const { connection } = anchorProvider
       // eslint-disable-next-line no-restricted-syntax
       for (const solanaTransaction of result.data.data.solanaTransactions) {
         // eslint-disable-next-line no-await-in-loop
@@ -294,7 +285,7 @@ const useHotspots = (): {
     } catch (e) {
       Logger.error(e)
     }
-  }, [anchorProvider, cluster, currentAccount])
+  }, [anchorProvider, currentAccount])
 
   const hotspotsWithMeta = currentAccount?.solanaAddress
     ? hotspotsSlice[currentAccount?.solanaAddress]?.hotspotsWithMeta

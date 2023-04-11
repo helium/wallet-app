@@ -61,11 +61,17 @@ const initialState: SolanaState = {
 
 export const readBalances = createAsyncThunk(
   'solana/readBalance',
-  async ({ acct, cluster }: { acct: CSAccount; cluster: Cluster }) => {
+  async ({
+    acct,
+    anchorProvider,
+  }: {
+    acct: CSAccount
+    anchorProvider: AnchorProvider
+  }) => {
     if (!acct?.solanaAddress) throw new Error('No solana account found')
 
     const tokenAccounts = await solUtils.readHeliumBalances(
-      cluster,
+      anchorProvider,
       acct.solanaAddress,
     )
 
@@ -85,6 +91,7 @@ type PaymentInput = {
   payments: Payment[]
   cluster: Cluster
   mints: Record<string, string>
+  anchorProvider: AnchorProvider
 }
 
 type CollectablePaymentInput = {
@@ -92,6 +99,7 @@ type CollectablePaymentInput = {
   collectable: CompressedNFT | Collectable
   payee: string
   cluster: Cluster
+  anchorProvider: AnchorProvider
 }
 
 type AnchorTxnInput = {
@@ -116,8 +124,8 @@ type ClaimAllRewardsInput = {
 
 type TreasurySwapTxn = {
   account: CSAccount
-  anchorProvider: AnchorProvider
   cluster: Cluster
+  anchorProvider: AnchorProvider
   amount: number
   fromMint: PublicKey
   mints: Record<string, string>
@@ -142,7 +150,10 @@ type DelegateDataCreditsInput = {
 
 export const makePayment = createAsyncThunk(
   'solana/makePayment',
-  async ({ account, payments, cluster, mints }: PaymentInput, { dispatch }) => {
+  async (
+    { account, payments, cluster, mints, anchorProvider }: PaymentInput,
+    { dispatch },
+  ) => {
     if (!account?.solanaAddress) throw new Error('No solana account found')
 
     const [firstPayment] = payments
@@ -152,13 +163,14 @@ export const makePayment = createAsyncThunk(
     )
     const transfer = await solUtils.transferToken(
       cluster,
+      anchorProvider,
       account.solanaAddress,
       account.address,
       payments,
       mintAddress,
     )
 
-    dispatch(readBalances({ cluster, acct: account }))
+    dispatch(readBalances({ anchorProvider, acct: account }))
 
     return dispatch(
       walletRestApi.endpoints.postPayment.initiate({
@@ -172,7 +184,13 @@ export const makePayment = createAsyncThunk(
 export const makeCollectablePayment = createAsyncThunk(
   'solana/makeCollectablePayment',
   async (
-    { account, collectable, payee, cluster }: CollectablePaymentInput,
+    {
+      account,
+      collectable,
+      payee,
+      cluster,
+      anchorProvider,
+    }: CollectablePaymentInput,
     { dispatch },
   ) => {
     if (!account?.solanaAddress) throw new Error('No solana account found')
@@ -183,14 +201,14 @@ export const makeCollectablePayment = createAsyncThunk(
     try {
       const transfer = compressedNFT?.compression?.compressed
         ? await solUtils.transferCompressedCollectable(
-            cluster,
+            anchorProvider,
             account.solanaAddress,
             account.address,
             compressedNFT,
             payee,
           )
         : await solUtils.transferCollectable(
-            cluster,
+            anchorProvider,
             account.solanaAddress,
             account.address,
             nft,
@@ -199,7 +217,13 @@ export const makeCollectablePayment = createAsyncThunk(
 
       // If the transfer is successful, we need to update the collectables
       if (!transfer.txn?.meta?.err) {
-        dispatch(fetchCollectables({ account, cluster }))
+        dispatch(
+          fetchCollectables({
+            account,
+            cluster,
+            connection: anchorProvider.connection,
+          }),
+        )
       }
 
       return await dispatch(
@@ -220,24 +244,23 @@ export const sendTreasurySwap = createAsyncThunk(
   async (
     {
       account,
+      cluster,
       anchorProvider,
       amount,
       fromMint,
-      cluster,
       recipient,
     }: TreasurySwapTxn,
     { dispatch },
   ) => {
     try {
       const swap = await solUtils.createTreasurySwapTxn(
-        cluster,
         amount,
         fromMint,
         anchorProvider,
         recipient,
       )
 
-      dispatch(readBalances({ cluster, acct: account }))
+      dispatch(readBalances({ anchorProvider, acct: account }))
 
       return await dispatch(
         walletRestApi.endpoints.postPayment.initiate({
@@ -266,13 +289,12 @@ export const sendMintDataCredits = createAsyncThunk(
   ) => {
     try {
       const swap = await solUtils.mintDataCredits(
-        cluster,
         anchorProvider,
         hntAmount,
         recipient,
       )
 
-      dispatch(readBalances({ cluster, acct: account }))
+      dispatch(readBalances({ anchorProvider, acct: account }))
 
       return await dispatch(
         walletRestApi.endpoints.postPayment.initiate({
@@ -301,13 +323,12 @@ export const sendDelegateDataCredits = createAsyncThunk(
   ) => {
     try {
       const swap = await solUtils.delegateDataCredits(
-        cluster,
         anchorProvider,
         delegateAddress,
         amount,
       )
 
-      dispatch(readBalances({ cluster, acct: account }))
+      dispatch(readBalances({ anchorProvider, acct: account }))
 
       return await dispatch(
         walletRestApi.endpoints.postPayment.initiate({
@@ -376,7 +397,7 @@ export const claimRewards = createAsyncThunk(
       )
 
       // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
-      dispatch(fetchHotspots({ account, cluster, provider: anchorProvider }))
+      dispatch(fetchHotspots({ account, anchorProvider }))
     } catch (error) {
       Logger.error(error)
       throw error
@@ -387,7 +408,7 @@ export const claimRewards = createAsyncThunk(
 export const claimAllRewards = createAsyncThunk(
   'solana/claimAllRewards',
   async (
-    { account, txns, anchorProvider, cluster }: ClaimAllRewardsInput,
+    { account, txns, anchorProvider }: ClaimAllRewardsInput,
     { dispatch },
   ) => {
     try {
@@ -399,8 +420,8 @@ export const claimAllRewards = createAsyncThunk(
       )
 
       // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
-      dispatch(fetchHotspots({ account, cluster, provider: anchorProvider }))
-      dispatch(readBalances({ cluster, acct: account }))
+      dispatch(fetchHotspots({ account, anchorProvider }))
+      dispatch(readBalances({ anchorProvider, acct: account }))
     } catch (error) {
       Logger.error(error)
       throw error
@@ -413,13 +434,13 @@ export const getTxns = createAsyncThunk(
   async (
     {
       account,
-      cluster,
+      anchorProvider,
       ticker,
       requestType,
       mints,
     }: {
       account: CSAccount
-      cluster: Cluster
+      anchorProvider: AnchorProvider
       ticker: Ticker
       mints: Record<string, string>
       requestType: 'update_head' | 'start_fresh' | 'fetch_more'
@@ -454,7 +475,7 @@ export const getTxns = createAsyncThunk(
     }
 
     return solUtils.getTransactions(
-      cluster,
+      anchorProvider,
       account.solanaAddress,
       toMintAddress(ticker, mints),
       mints,

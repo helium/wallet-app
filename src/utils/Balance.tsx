@@ -60,7 +60,7 @@ import { Mints } from './constants'
 
 export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
 const useBalanceHook = () => {
-  const { currentAccount } = useAccountStorage()
+  const { currentAccount, anchorProvider } = useAccountStorage()
   const prevAccount = usePrevious(currentAccount)
   const accountSubscriptionId = useRef<number>()
   const {
@@ -130,11 +130,11 @@ const useBalanceHook = () => {
   }, [dispatch, solAddress])
 
   const dispatchSolBalanceUpdate = useCallback(() => {
-    if (!currentAccount?.solanaAddress || !Mints) {
+    if (!currentAccount?.solanaAddress || !Mints || !anchorProvider) {
       return
     }
-    dispatch(readBalances({ cluster, acct: currentAccount }))
-  }, [currentAccount, dispatch, cluster])
+    dispatch(readBalances({ anchorProvider, acct: currentAccount }))
+  }, [currentAccount, dispatch, anchorProvider])
 
   const { info: mobileMint } = useMint(MOBILE_MINT)
   const { info: iotMint } = useMint(IOT_MINT)
@@ -168,23 +168,31 @@ const useBalanceHook = () => {
   )
 
   useEffect(() => {
-    if (!currentAccount?.solanaAddress || l1Network === 'helium') {
+    if (
+      !currentAccount?.solanaAddress ||
+      l1Network === 'helium' ||
+      !anchorProvider
+    ) {
       return
     }
 
     if (prevAccount !== currentAccount || cluster !== prevCluster) {
       dispatchSolBalanceUpdate()
       const subId = onAccountChange(
-        cluster,
+        anchorProvider,
         currentAccount?.solanaAddress,
         dispatchSolBalanceUpdate,
       )
       if (accountSubscriptionId.current !== undefined) {
-        removeAccountChangeListener(cluster, accountSubscriptionId.current)
+        removeAccountChangeListener(
+          anchorProvider,
+          accountSubscriptionId.current,
+        )
       }
       accountSubscriptionId.current = subId
     }
   }, [
+    anchorProvider,
     currentAccount,
     dispatch,
     dispatchSolBalanceUpdate,

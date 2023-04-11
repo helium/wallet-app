@@ -20,13 +20,14 @@ export const fetchCollectables = createAsyncThunk(
   async ({
     account,
     cluster,
+    connection,
   }: {
     account: CSAccount
     cluster: web3.Cluster
+    connection: web3.Connection
   }) => {
     if (!account.solanaAddress) throw new Error('Solana address missing')
 
-    const connection = solUtils.getConnection(cluster)
     const metaplex = new Metaplex(connection, { cluster })
 
     const pubKey = new web3.PublicKey(account.solanaAddress)

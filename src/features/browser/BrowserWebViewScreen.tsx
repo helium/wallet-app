@@ -6,12 +6,7 @@ import {
   WebViewNavigation,
 } from 'react-native-webview'
 import nacl from 'tweetnacl'
-import {
-  Cluster,
-  PublicKey,
-  Transaction,
-  VersionedTransaction,
-} from '@solana/web3.js'
+import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js'
 import bs58 from 'bs58'
 import {
   SolanaSignMessageInput,
@@ -32,7 +27,7 @@ import SafeAreaBox from '../../components/SafeAreaBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import injectWalletStandard from './walletStandard'
 import { getKeypair } from '../../storage/secureStorage'
-import { getConnection, TXN_FEE_IN_SOL } from '../../utils/solanaUtils'
+import { TXN_FEE_IN_SOL } from '../../utils/solanaUtils'
 import * as Logger from '../../utils/logger'
 import WalletSignBottomSheet, {
   WalletSignBottomSheetRef,
@@ -74,7 +69,11 @@ const BrowserWebViewScreen = () => {
 
   const onMessage = useCallback(
     async (msg: WebViewMessageEvent) => {
-      if (!currentAccount?.address || !currentAccount?.solanaAddress) {
+      if (
+        !currentAccount?.address ||
+        !currentAccount?.solanaAddress ||
+        !anchorProvider
+      ) {
         return
       }
 
@@ -169,7 +168,6 @@ const BrowserWebViewScreen = () => {
           transactions.map(
             async ({
               transaction,
-              chain,
               options,
             }: SolanaSignAndSendTransactionInput & {
               transaction: Transaction | VersionedTransaction
@@ -194,8 +192,7 @@ const BrowserWebViewScreen = () => {
                 throw new Error('Failed to sign transaction')
               }
 
-              // Remove the 'solana:' prefix
-              const conn = getConnection(chain.slice(7) as Cluster)
+              const conn = anchorProvider.connection
 
               const signature = await conn.sendRawTransaction(
                 signedTransaction.serialize(),

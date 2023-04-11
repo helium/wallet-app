@@ -15,6 +15,7 @@ import { useAppState } from '@react-native-community/hooks'
 import { AccountFetchCache } from '@helium/spl-utils'
 import { Transaction } from '@solana/web3.js'
 import { AnchorProvider, Wallet } from '@coral-xyz/anchor'
+import Config from 'react-native-config'
 import {
   accountNetType,
   AccountNetTypeOpt,
@@ -23,6 +24,7 @@ import {
 import {
   createSecureAccount,
   deleteSecureAccount,
+  getSessionKey,
   getSolanaKeypair,
   SecureAccount,
   signoutSecureStore,
@@ -46,6 +48,7 @@ import { useAppDispatch } from '../store/store'
 import makeApiToken from '../utils/makeApiToken'
 import { authSlice } from '../store/slices/authSlice'
 import { getConnection } from '../utils/solanaUtils'
+import { useLazyGetSessionKeyQuery } from '../store/slices/walletRestApi'
 
 const useAccountStorageHook = () => {
   const [currentAccount, setCurrentAccount] = useState<
@@ -60,9 +63,15 @@ const useAccountStorageHook = () => {
   >()
   const solanaAccountsUpdateComplete = useRef(false)
   const solanaContactsUpdateComplete = useRef(false)
-  const { updateL1Network, l1Network, solanaNetwork: cluster } = useAppStorage()
+  const {
+    updateL1Network,
+    l1Network,
+    solanaNetwork: cluster,
+    updateSessionKey,
+  } = useAppStorage()
   const dispatch = useAppDispatch()
   const currentAppState = useAppState()
+  const [fetchAPISessionKey] = useLazyGetSessionKeyQuery()
 
   const updateApiToken = useCallback(async () => {
     const apiToken = await makeApiToken(currentAccount?.address)
@@ -115,7 +124,17 @@ const useAccountStorageHook = () => {
   )
 
   useAsync(async () => {
-    const connection = getConnection(cluster)
+    // We can cache this for a certain amount of time but for now we fetch the session key every time we load the app
+    const { data } = await fetchAPISessionKey()
+    if (data?.sessionKey) {
+      updateSessionKey({ sessionKey: data?.sessionKey })
+    }
+  }, [])
+
+  useAsync(async () => {
+    const sessionKey =
+      (await getSessionKey()) || Config.RPC_SESSION_KEY_FALLBACK
+    const connection = getConnection(cluster, sessionKey)
 
     if (!currentAccount || !currentAccount.address || !connection) return
     const secureAcct = await getSolanaKeypair(currentAccount.address)
@@ -161,7 +180,6 @@ const useAccountStorageHook = () => {
         [addy]: {
           ...acct,
           solanaAddress: heliumAddressToSolAddress(addy),
-          // solanaAddress: '3SjgEPbwauDyZGVzRL6Q6HN7EZv91vWUJdRyYJERzvXt',
         },
       }
     }, {} as CSAccounts)
@@ -441,13 +459,15 @@ const useAccountStorageHook = () => {
   )
 
   useEffect(() => {
-    const connection = getConnection(cluster)
+    if (!anchorProvider) return
+
+    const { connection } = anchorProvider
     if (connection) {
       cache?.close()
       setCache((c) =>
         !c
           ? new AccountFetchCache({
-              connection,
+              connection: anchorProvider?.connection,
               delay: 50,
               commitment: 'confirmed',
               extendConnection: true,
@@ -455,7 +475,7 @@ const useAccountStorageHook = () => {
           : c,
       )
     }
-  }, [cache, cluster])
+  }, [cache, anchorProvider])
 
   return {
     accountAddresses,

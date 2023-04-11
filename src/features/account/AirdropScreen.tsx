@@ -4,7 +4,6 @@ import ButtonPressable from '@components/ButtonPressable'
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import * as solUtils from '@utils/solanaUtils'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { useAppStorage } from '@storage/AppStorageProvider'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import SafeAreaBox from '@components/SafeAreaBox'
@@ -33,8 +32,7 @@ type Route = RouteProp<HomeStackParamList, 'AirdropScreen'>
 
 const AirdropScreen = () => {
   const navigation = useNavigation<HomeNavigationProp>()
-  const { currentAccount } = useAccountStorage()
-  const { solanaNetwork: cluster } = useAppStorage()
+  const { currentAccount, anchorProvider } = useAccountStorage()
   const { t } = useTranslation()
   const ring = useSharedValue(0)
   const ringDrop = useSharedValue(0)
@@ -45,11 +43,11 @@ const AirdropScreen = () => {
   const { ticker } = route.params
 
   const onAirdrop = useCallback(async () => {
-    if (!currentAccount?.solanaAddress) return
+    if (!currentAccount?.solanaAddress || !anchorProvider) return
 
     setLoading(true)
     if (ticker === 'SOL') {
-      solUtils.airdrop(cluster, currentAccount?.solanaAddress)
+      solUtils.airdrop(anchorProvider, currentAccount?.solanaAddress)
       setLoading(false)
       navigation.goBack()
     } else {
@@ -68,7 +66,7 @@ const AirdropScreen = () => {
         setErrorMessage((error as Error).message)
       }
     }
-  }, [cluster, currentAccount, navigation, ticker])
+  }, [anchorProvider, currentAccount, navigation, ticker])
 
   const edges = useMemo(() => ['bottom'] as Edge[], [])
 
