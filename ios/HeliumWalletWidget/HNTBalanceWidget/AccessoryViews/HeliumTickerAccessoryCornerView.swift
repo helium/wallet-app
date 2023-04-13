@@ -32,7 +32,7 @@ struct HeliumTickerAccessoryCornerView: View {
     var body: some View {
         HStack(spacing: 0) {
             Spacer()
-            AssetViewCorner(assetPrice: "$\(String(format: "%.2f", entry.hntPrice))")
+          AssetViewCorner(assetPrice: "$\(String(format: "%.2f", entry.widgetData.heliumPrice))")
             Spacer()
         }.aspectRatio(1.0, contentMode: .fill).background(.clear)
     }

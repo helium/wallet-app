@@ -14,7 +14,6 @@ import WidgetKit
 struct AssetPillView: View {
     var imageName: String
     var assetBalance: String
-    var isTestnet: Bool
 
     var body: some View {
         let size = imageName == "data-credits-logo" ? 12.0 : 16.0
@@ -27,7 +26,7 @@ struct AssetPillView: View {
                 .bold()
                 .font(.system(size: 10.0)).foregroundColor(.white).privacySensitive()
             Spacer().frame(width: 6)
-        }.frame(height: 25).background(.clear).clipShape(Rectangle()).cornerRadius(12.5)
+        }.frame(height: 25).background(Color("surfaceColor")).clipShape(Rectangle()).cornerRadius(12.5)
     }
 }
 
@@ -36,8 +35,8 @@ struct HeliumWalletWidgetMediumView: View {
     var entry: Provider.Entry
     @ViewBuilder
     var body: some View {
-        let assets = entry.accountDetails.assets
-        let data = entry.accountDetails.chartValues.count > 1 ? entry.accountDetails.chartValues : [1.0, 1.0]
+      let widgetData = entry.widgetData.widgetData
+      let data =  entry.widgetData.chartData != nil ? Utils.convertBalanceHistoryToChartData(history: entry.widgetData.chartData ?? []) : [1.0, 1.0]
 
         HStack {
             VStack {
@@ -48,9 +47,7 @@ struct HeliumWalletWidgetMediumView: View {
                         VStack(alignment: .leading, spacing: 0) {
                             HStack(spacing: 4) {
                                 Spacer().frame(width: 8)
-                                if entry.accountDetails.isTestnet { Image("testnet-balance-logo").resizable().frame(width: 9, height: 10)
-                                }
-                                Text(String(localized: !entry.accountDetails.isTestnet ? "Wallet_Widget_Balance" : "TESTNET_Wallet_Widget_Balance",
+                                Text(String(localized:  "Wallet_Widget_Balance",
                                             comment: "Helium wallet widget balance label."))
                                     .font(.system(size: 12.0)).foregroundColor(.white).opacity(0.6)
                                 Spacer()
@@ -58,27 +55,28 @@ struct HeliumWalletWidgetMediumView: View {
                             Spacer().frame(height: 4)
                             HStack {
                                 Spacer().frame(width: 8)
-                                Text("$\(entry.accountDetails.totalFiatBalance.kmFormatted)").bold()
+                              Text("$\(String(format: "%.2f", (Utils.calculateFiatBalance(assetPrice: widgetData!.heliumPrice, assetBalance: widgetData!.hntBalance))))").bold()
                                     .font(.system(size: 24.0)).foregroundColor(.white).privacySensitive()
 
                                 VStack {
                                     Spacer().frame(height: 8)
-                                    Text("\(entry.accountDetails.totalHNTBalance.fromBones.kmFormatted) \(Utils.networkTokenLabel(isTestnet: entry.accountDetails.isTestnet))")
+                                  Text("\(widgetData!.hntBalance.kmFormatted) HNT")
                                         .lineLimit(1).font(.system(size: 12.0)).foregroundColor(.white).opacity(0.6).privacySensitive()
                                 }
 
                                 Spacer()
                             }
                         }
-                        VStack(alignment: .leading, spacing: 4) {
-                            ForEach(0 ..< 2, id: \.self) { i in
-                                AssetPillView(imageName: Utils.getCoinImageName(assets[i].symbol), assetBalance: Utils.getCurrentBalance(asset: assets[i]), isTestnet: entry.accountDetails.isTestnet)
-                            }
-                        }.padding(.top, 0).padding(.trailing, 0)
+  
                     }
                     Spacer()
                 }
-
+              HStack(spacing: 4) {
+                AssetPillView(imageName: Utils.getCoinImageName("HNT"), assetBalance: widgetData!.hntBalance.kmFormatted)
+                AssetPillView(imageName: Utils.getCoinImageName("MOBILE"), assetBalance: widgetData!.mobileBalance.kmFormatted)
+                AssetPillView(imageName: Utils.getCoinImageName("IOT"), assetBalance: widgetData!.iotBalance.kmFormatted)
+                Spacer()
+              }.padding(.top, 0).padding(.trailing, 0)
                 Spacer().frame(height: 6)
 
                 ZStack {

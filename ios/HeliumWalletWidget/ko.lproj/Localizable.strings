@@ -6,7 +6,8 @@
   
 */
 
-"Wallet_Title" = "내 지갑";
+"HNT_BALANCE" = "HNT Balance";
+"SOL_BALANCE" = "SOL Balance";
 "Balance" = "Balance";
 "Balance_Widget_Title" = "Helium Balance Widget";
 "Balance_Widget_Description" = "Track your daily HNT earnings and current HNT balance in your default account.";

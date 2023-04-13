@@ -56,16 +56,16 @@ struct HeliumTickerAccessoryRectangularView: View {
     var body: some View {
         if #available(iOSApplicationExtension 16.0, *) {
             VStack(spacing: 4) {
-                AssetViewRectangular(imageName: Utils.getCoinImageName("HNT"), assetPrice: "$\(String(format: "%.2f", entry.hntPrice))")
+              AssetViewRectangular(imageName: Utils.getCoinImageName("HNT"), assetPrice: "$\(String(format: "%.2f", entry.widgetData.heliumPrice))")
                 Spacer().frame(height: 4)
-                MyWalletRectangularView(balance: "\(String(format: "%.2f", entry.balance.fromBones))")
+              MyWalletRectangularView(balance: entry.widgetData.hntBalance.kmFormatted)
             }.padding(4.0).aspectRatio(1.0, contentMode: .fill).background(.clear).cornerRadius(4.0)
         } else {
             // Fallback on earlier versions
             VStack(spacing: 4) {
-                AssetViewRectangular(imageName: Utils.getCoinImageName("HNT"), assetPrice: "$\(String(format: "%.2f", entry.hntPrice))")
+              AssetViewRectangular(imageName: Utils.getCoinImageName("HNT"), assetPrice: "$\(String(format: "%.2f", entry.widgetData.heliumPrice))")
                 Spacer().frame(height: 4)
-                MyWalletRectangularView(balance: "\(String(format: "%.2f", entry.balance.fromBones))")
+              MyWalletRectangularView(balance: entry.widgetData.hntBalance.kmFormatted)
             }.padding(4.0).aspectRatio(1.0, contentMode: .fill).background(.clear).cornerRadius(4.0)
         }
     }

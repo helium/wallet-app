@@ -12,37 +12,16 @@ import WidgetKit
 // Widget Data being injected via app groups.
 struct HeliumWalletWidgetData: Decodable {
     let defaultAccountAddress: String
-    let jazzSeed: Int
+    let cluster: String
     let defaultAccountAlias: String
-    let isTestnet: Bool
     let currencyType: String
-}
-
-// Struct for each asset held by account.
-struct HeliumAsset {
-    let name: String
-    let symbol: String
-    let balance: Int
-    let price: Double
-}
-
-// Default Account details including all held assets.
-struct DefaultAccountDetails {
-    let accountName: String
-    let accountAddress: String
-    let jazzSeed: Int
-    let isTestnet: Bool
-    let totalFiatBalance: Double
-    let totalHNTBalance: Int
-    let assets: [HeliumAsset]
-    let chartValues: [Double]
 }
 
 // WidgetEntry extending from TimelineEntry in order to refresh based on date.
 struct WalletWidgetEntry: TimelineEntry {
     var date: Date
     var configuration: ConfigurationIntent
-    var accountDetails: DefaultAccountDetails
+    var widgetData: WidgetChartData
 }
 
 class EntryCache {
@@ -53,11 +32,11 @@ class EntryCache {
 struct Provider: IntentTimelineProvider {
     private let entryCache = EntryCache()
     func placeholder(in _: Context) -> WalletWidgetEntry {
-        WalletWidgetEntry(date: Date(), configuration: ConfigurationIntent(), accountDetails: Utils.mockAccountDetails())
+        WalletWidgetEntry(date: Date(), configuration: ConfigurationIntent(), widgetData: Utils.mockAccountDetails())
     }
 
     func getSnapshot(for configuration: ConfigurationIntent, in _: Context, completion: @escaping (WalletWidgetEntry) -> Void) {
-        let entry = WalletWidgetEntry(date: Date(), configuration: configuration, accountDetails: Utils.mockAccountDetails())
+        let entry = WalletWidgetEntry(date: Date(), configuration: configuration, widgetData: Utils.mockAccountDetails())
         completion(entry)
     }
 
@@ -71,13 +50,12 @@ struct Provider: IntentTimelineProvider {
 
                 // Decode widget data being injected via app groups. (https://github.com/KjellConnelly/react-native-shared-group-preferences)
                 if let parsedData = try? decoder.decode(HeliumWalletWidgetData.self, from: data!) {
-                    let fallback = entryCache.previousEntry?.accountDetails ?? Utils.emptyAccountDetails()
                     // Fetch data from nova-wallet-api
-                    Network().fetchWalletData(parsedWidgetData: parsedData, fallback: fallback) { _, defaultAccountDetails in
-                        if let defaultAccountDetails = defaultAccountDetails {
+                  Network().getWidgetDataAndCharts(address: parsedData.defaultAccountAddress, cluster: parsedData.cluster, currency: parsedData.currencyType) { _, widgetData in
+                        if let widgetData = widgetData {
                             // Refresh every 15 mins
                             let nextRefresh = Calendar.current.date(byAdding: .minute, value: 15, to: entryDate)!
-                            let entry = WalletWidgetEntry(date: nextRefresh, configuration: configuration, accountDetails: defaultAccountDetails)
+                            let entry = WalletWidgetEntry(date: nextRefresh, configuration: configuration, widgetData: widgetData)
                             let timeline = Timeline(entries: [entry], policy: .atEnd)
                             entryCache.previousEntry = entry
                             completion(timeline)
@@ -87,7 +65,7 @@ struct Provider: IntentTimelineProvider {
             } else {
                 // If not found refresh in 5 mins
                 let nextRefresh = Calendar.current.date(byAdding: .minute, value: 5, to: entryDate)!
-                let entry = WalletWidgetEntry(date: nextRefresh, configuration: configuration, accountDetails: Utils.emptyAccountDetails())
+                let entry = WalletWidgetEntry(date: nextRefresh, configuration: configuration, widgetData: Utils.emptyAccountDetails())
                 let fallback = entryCache.previousEntry ?? entry
                 let timeline = Timeline(entries: [fallback], policy: .atEnd)
                 completion(timeline)
