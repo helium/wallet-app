@@ -1,7 +1,7 @@
 import { Provider } from '@coral-xyz/anchor'
 import { bulkSendRawTransactions } from '@helium/spl-utils'
 import axios from 'axios'
-import React, { memo, useCallback, useState } from 'react'
+import React, { memo, ReactNode, useCallback, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
@@ -14,9 +14,10 @@ import { DelayedFadeIn } from '@components/FadeInOut'
 import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
-import SafeAreaBox from '@components/SafeAreaBox'
+import BackScreen from '@components/BackScreen'
 import { Theme } from '@theme/theme'
 import Config from 'react-native-config'
+import SafeAreaBox from '@components/SafeAreaBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import * as Logger from '../../utils/logger'
@@ -52,12 +53,16 @@ async function migrateWallet(
   }
 }
 
-const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
+const SolanaMigration = ({
+  hideBack = true,
+  ...props
+}: BoxProps<Theme> & { hideBack?: boolean }) => {
   const { currentAccount, anchorProvider } = useAccountStorage()
   const {
     solanaNetwork: cluster,
     updateDoneSolanaMigration,
     doneSolanaMigration,
+    updateManualMigration,
   } = useAppStorage()
   const [retry, updateRetry] = useState(0)
   const { t } = useTranslation()
@@ -124,12 +129,36 @@ const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
     updateRetry((r) => r + 1)
   }, [])
 
+  const handleManualMigration = useCallback(async () => {
+    if (!currentAccount?.solanaAddress || !cluster) return
+
+    await updateManualMigration({
+      cluster,
+      address: currentAccount?.solanaAddress,
+    })
+  }, [cluster, updateManualMigration, currentAccount])
+
   if (error) {
     Logger.error(error)
   }
 
   if (!currentAccount) {
     return null
+  }
+
+  const Wrapper = ({ children }: { children: ReactNode }) => {
+    const boxProps = {
+      backgroundColor: 'transparent',
+      flex: 1,
+      padding: 'm',
+      alignItems: 'center',
+      justifyContent: 'center',
+    } as BoxProps<Theme>
+
+    if (hideBack) {
+      return <SafeAreaBox {...boxProps}>{children}</SafeAreaBox>
+    }
+    return <BackScreen {...boxProps}>{children}</BackScreen>
   }
 
   return (
@@ -139,13 +168,7 @@ const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
       backgroundColor="secondaryBackground"
       {...props}
     >
-      <SafeAreaBox
-        backgroundColor="transparent"
-        flex={1}
-        padding="m"
-        alignItems="center"
-        justifyContent="center"
-      >
+      <Wrapper>
         <Box flexGrow={1} justifyContent="center" alignItems="center">
           <Box
             shadowColor="black"
@@ -259,7 +282,7 @@ const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
           <Box
             flexDirection="row"
             marginBottom="l"
-            marginHorizontal="l"
+            marginHorizontal="m"
             position="absolute"
             bottom={0}
             left={0}
@@ -267,6 +290,22 @@ const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
             alignItems="flex-end"
             justifyContent="center"
           >
+            {retry > 0 && (
+              <ButtonPressable
+                flex={1}
+                marginStart="m"
+                marginBottom="m"
+                height={65}
+                borderRadius="round"
+                backgroundColor="white"
+                backgroundColorOpacity={0.1}
+                backgroundColorOpacityPressed={0.05}
+                titleColorPressedOpacity={0.3}
+                title={t('solanaMigrationScreen.migrateLater')}
+                titleColor="white"
+                onPress={handleManualMigration}
+              />
+            )}
             <ButtonPressable
               flex={1}
               marginStart="m"
@@ -283,7 +322,7 @@ const SolanaMigration = ({ ...props }: BoxProps<Theme>) => {
             />
           </Box>
         )}
-      </SafeAreaBox>
+      </Wrapper>
     </ReAnimatedBox>
   )
 }

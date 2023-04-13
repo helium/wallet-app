@@ -354,6 +354,10 @@ const Settings = () => {
     settingsNav.navigate('ShareAddress')
   }, [settingsNav])
 
+  const handleMigrateWallet = useCallback(() => {
+    settingsNav.navigate('MigrateWallet')
+  }, [settingsNav])
+
   const SectionData = useMemo((): {
     title: string
     data: SettingsListItemType[]
@@ -451,58 +455,68 @@ const Settings = () => {
       ]
     }
 
+    const accountSettings = [
+      {
+        label: t('settings.sections.account.alias'),
+        title: currentAccount?.alias || '',
+        onPress: handleUpdateAlias,
+      },
+      {
+        title: t('settings.sections.defaultAccount.title'),
+        onToggle: handleSetDefaultAccount,
+        value: isDefaultAccount,
+      },
+      {
+        title: t('settings.sections.account.copyAddress'),
+        onPress: l1Network === 'solana' ? undefined : handleCopyAddress,
+        select:
+          l1Network === 'solana'
+            ? {
+                items: [
+                  { label: 'Helium', value: 'helium' },
+                  { label: 'Solana', value: 'solana' },
+                ],
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onValueSelect: (val: any) => {
+                  const address =
+                    val === 'helium'
+                      ? currentAccount?.address
+                      : currentAccount?.solanaAddress
+
+                  if (!address) return
+
+                  copyText({
+                    message: ellipsizeAddress(address),
+                    copyText: address,
+                  })
+                },
+              }
+            : undefined,
+      },
+      {
+        title: t('settings.sections.account.shareAddress'),
+        onPress: handleShareAddress,
+      },
+      {
+        title: t('settings.sections.account.signOut'),
+        onPress: handleSignOut,
+        destructive: true,
+      },
+    ]
+
+    if (l1Network === 'solana') {
+      accountSettings.push({
+        title: t('settings.sections.account.migrateWallet'),
+        onPress: handleMigrateWallet,
+      })
+    }
+
     return [
       {
         title: t('settings.sections.account.title', {
           alias: currentAccount?.alias,
         }),
-        data: [
-          {
-            label: t('settings.sections.account.alias'),
-            title: currentAccount?.alias || '',
-            onPress: handleUpdateAlias,
-          },
-          {
-            title: t('settings.sections.defaultAccount.title'),
-            onToggle: handleSetDefaultAccount,
-            value: isDefaultAccount,
-          },
-          {
-            title: t('settings.sections.account.copyAddress'),
-            onPress: l1Network === 'solana' ? undefined : handleCopyAddress,
-            select:
-              l1Network === 'solana'
-                ? {
-                    items: [
-                      { label: 'Helium', value: 'helium' },
-                      { label: 'Solana', value: 'solana' },
-                    ],
-                    onValueSelect: (val) => {
-                      const address =
-                        val === 'helium'
-                          ? currentAccount?.address
-                          : currentAccount?.solanaAddress
-
-                      if (!address) return
-
-                      copyText({
-                        message: ellipsizeAddress(address),
-                        copyText: address,
-                      })
-                    },
-                  }
-                : undefined,
-          },
-          {
-            title: t('settings.sections.account.shareAddress'),
-            onPress: handleShareAddress,
-          },
-          {
-            title: t('settings.sections.account.signOut'),
-            onPress: handleSignOut,
-            destructive: true,
-          },
-        ],
+        data: accountSettings,
       },
       {
         title: t('settings.sections.backup.title', {
@@ -615,6 +629,7 @@ const Settings = () => {
     updateL1Network,
     version,
     status,
+    handleMigrateWallet,
   ])
 
   const renderItem = useCallback(

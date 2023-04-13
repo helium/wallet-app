@@ -183,6 +183,7 @@ const TabBarNavigator = () => {
 
   const {
     doneSolanaMigration,
+    manualMigration,
     l1Network,
     solanaNetwork: cluster,
     updateSolanaNetwork,
@@ -204,7 +205,8 @@ const TabBarNavigator = () => {
       status?.migrationStatus === 'complete' &&
       !doneSolanaMigration['mainnet-beta'].includes(
         currentAccount.solanaAddress,
-      )
+      ) &&
+      !manualMigration['mainnet-beta'].includes(currentAccount.solanaAddress)
     ) {
       updateSolanaNetwork('mainnet-beta')
     }
@@ -214,15 +216,15 @@ const TabBarNavigator = () => {
     updateSolanaNetwork,
     status,
     cluster,
+    manualMigration,
   ])
 
   return (
     <>
       {currentAccount?.solanaAddress &&
         anchorProvider &&
-        !doneSolanaMigration[cluster]?.includes(
-          currentAccount.solanaAddress,
-        ) && (
+        !doneSolanaMigration[cluster]?.includes(currentAccount.solanaAddress) &&
+        !manualMigration[cluster]?.includes(currentAccount.solanaAddress) && (
           <Portal>
             <SolanaMigration
               position="absolute"

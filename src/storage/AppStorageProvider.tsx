@@ -52,6 +52,14 @@ const useAppStorageHook = () => {
     testnet: [],
     'mainnet-beta': [],
   })
+  const [manualMigration, setManualMigration] = useState<
+    Record<Cluster, string[]>
+  >({
+    devnet: [],
+    testnet: [],
+    'mainnet-beta': [],
+  })
+
   const [sessionKey, setSessionKey] = useState('')
 
   useAsync(async () => {
@@ -229,6 +237,21 @@ const useAppStorageHook = () => {
     [doneSolanaMigration],
   )
 
+  const updateManualMigration = useCallback(
+    async ({ cluster, address }: { cluster: Cluster; address: string }) => {
+      const newState = {
+        ...manualMigration,
+        [cluster]: [...(manualMigration[cluster] || []), address],
+      }
+      setManualMigration(newState)
+      return storeSecureItem(
+        SecureStorageKeys.MANUAL_SOLANA_MIGRATION,
+        JSON.stringify(newState),
+      )
+    },
+    [manualMigration],
+  )
+
   return {
     authInterval,
     convertToCurrency,
@@ -248,6 +271,8 @@ const useAppStorageHook = () => {
     sessionKey,
     doneSolanaMigration,
     updateDoneSolanaMigration,
+    manualMigration,
+    updateManualMigration,
     updateSessionKey,
     updateAuthInterval,
     updateConvertToCurrency,
@@ -292,7 +317,13 @@ const initialState = {
   updateShowNumericChange: async () => undefined,
   showNumericChange: false,
   updateDoneSolanaMigration: async () => undefined,
+  updateManualMigration: async () => undefined,
   // Set of wallet addresses that have been migrated to Solana
+  manualMigration: {
+    devnet: [],
+    testnet: [],
+    'mainnet-beta': [],
+  },
   doneSolanaMigration: {
     devnet: [],
     testnet: [],
