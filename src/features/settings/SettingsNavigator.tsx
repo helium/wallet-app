@@ -9,8 +9,13 @@ import UpdateAliasScreen from './UpdateAliasScreen'
 import ShareAddressScreen from './ShareAddressScreen'
 import ConfirmSignoutScreen from './ConfirmSignoutScreen'
 import RevealPrivateKeyScreen from './RevealPrivateKeyScreen'
+import SolanaMigration from '../migration/SolanaMigration'
 
 const SettingsStack = createNativeStackNavigator()
+
+const SolanaMigrationWrapper = () => {
+  return <SolanaMigration hideBack={false} />
+}
 
 const SettingsNavigator = () => {
   const { backgroundStyle } = useOpacity('primaryBackground', 0.98)
@@ -45,6 +50,11 @@ const SettingsNavigator = () => {
       <SettingsStack.Screen
         name="ConfirmSignout"
         component={ConfirmSignoutScreen}
+      />
+      <SettingsStack.Screen
+        name="MigrateWallet"
+        component={SolanaMigrationWrapper}
+        options={{ presentation: 'transparentModal' }}
       />
     </SettingsStack.Navigator>
   )

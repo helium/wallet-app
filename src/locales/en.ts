@@ -158,6 +158,7 @@ export default {
     retry: 'Retry',
     migrating: 'Migrating your wallet to Solana',
     migratingBody: 'Please wait while we move your wallet over to Solana!',
+    migrateLater: 'Migrate Later',
     done: 'Return to Home',
   },
   collectablesScreen: {
@@ -801,6 +802,7 @@ export default {
           title: 'Sign Out of {{alias}}?',
         },
         title: '{{alias}} Account Settings',
+        migrateWallet: 'Migrate Wallet',
       },
       app: {
         convertHntToCurrency: 'Convert HNT to Currency',

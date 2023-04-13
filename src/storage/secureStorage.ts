@@ -24,6 +24,7 @@ export enum SecureStorageKeys {
   HIDE_PRIVATE_KEY_ALERT = 'hidePrivateKeyAlert',
   SHOW_NUMERIC_CHANGE = 'showNumericChange',
   DONE_SOLANA_MIGRATION = 'doneSolanaMigration',
+  MANUAL_SOLANA_MIGRATION = 'manualSolanaMigration',
   SESSION_KEY = 'sessionKey',
 }
 type SecureStorageKeyTypes = `${SecureStorageKeys}`
