@@ -108,7 +108,7 @@ struct HeliumWalletWidgetLargeView: View {
     var body: some View {
         let widgetData = entry.widgetData.widgetData
       
-      let data =  entry.widgetData.chartData != nil ? Utils.convertBalanceHistoryToChartData(history: entry.widgetData.chartData ?? []) : [1.0, 1.0]
+      let data =  entry.widgetData.chartData != nil && entry.widgetData.chartData!.count > 1  ? Utils.convertBalanceHistoryToChartData(history: entry.widgetData.chartData ?? []) : [1.0, 1.0]
 
         VStack {
             VStack(alignment: .center, spacing: 4) {

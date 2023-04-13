@@ -5,7 +5,6 @@
 //  Created by Luis Perrone on 6/8/22.
 //
 
-import Apollo
 import Foundation
 
 extension Double {
@@ -64,7 +63,7 @@ enum Utils {
   // Mock account details.
   static func mockAccountDetails() -> WidgetChartData {
     let widgetData = WidgetData(heliumPrice: 200.28, solanaPrice: 400.20, hntBalance: 400.29837485, mobileBalance: 329.948764, iotBalance: 196.233847, dcBalance: 320, solBalance: 42.592758932)
-    let chartData = AccountBalance(hntBalance: 23, stakedHntBalance: 22, iotBalance: 100, mobileBalance: 329, date: "Tue Apr 11 2023 14:52:12 GMT-0400 (Eastern Daylight Time)", hntPrice: 3.29, balance: 329)
+    let chartData = AccountBalance(hntBalance: 23, mobileBalance: 329, solBalance: 0, date: "Tue Apr 11 2023 14:52:12 GMT-0400 (Eastern Daylight Time)", hntPrice: 3.29, balance: 329)
     let widgetChartData = WidgetChartData(chartData: [chartData, chartData], widgetData: widgetData)
     return widgetChartData
   }

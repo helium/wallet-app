@@ -65,39 +65,39 @@ struct HeliumBalanceWidget: Widget {
 
 // DEBUGGING: Uncomment this to run preview with SwiftUI
 
- extension WidgetFamily: EnvironmentKey {
-
-    public static var defaultValue: WidgetFamily = .systemSmall
-
- }
-
- extension EnvironmentValues {
-
-  var widgetFamily: WidgetFamily {
-
-    get { self[WidgetFamily.self] }
-
-    set { self[WidgetFamily.self] = newValue }
-
-  }
-
- }
-
- struct HeliumBalanceWidget_Previews: PreviewProvider {
-   static var previews: some View {
-     let entry = BalanceWidgetEntry(date: Date(), configuration: ConfigurationIntent(), widgetData: Utils.mockHNTBalanceWidget())
-
-     Group {
-       if #available(iOSApplicationExtension 16.0, *) {
-         HeliumBalanceWidgetEntryView(entry: entry)
-           .previewContext(WidgetPreviewContext(family: .accessoryCircular)).previewDisplayName("Circular Widget").environment(\.widgetFamily, .accessoryCircular).environment(\.colorScheme, .light)
-         HeliumBalanceWidgetEntryView(entry: entry)
-           .previewContext(WidgetPreviewContext(family: .accessoryRectangular)).previewDisplayName("Rectangular Widget").environment(\.widgetFamily, .accessoryRectangular).environment(\.colorScheme, .light)
-         HeliumBalanceWidgetEntryView(entry: entry)
-           .previewContext(WidgetPreviewContext(family: .accessoryInline)).previewDisplayName("Inline Widget").environment(\.widgetFamily, .accessoryInline).environment(\.colorScheme, .light)
-       }
-       HeliumBalanceWidgetEntryView(entry: entry)
-         .previewContext(WidgetPreviewContext(family: .systemSmall)).previewDisplayName("Small Widget").environment(\.widgetFamily, .systemSmall).environment(\.colorScheme, .light)
-     }
-   }
- }
+// extension WidgetFamily: EnvironmentKey {
+//
+//    public static var defaultValue: WidgetFamily = .systemSmall
+//
+// }
+//
+// extension EnvironmentValues {
+//
+//  var widgetFamily: WidgetFamily {
+//
+//    get { self[WidgetFamily.self] }
+//
+//    set { self[WidgetFamily.self] = newValue }
+//
+//  }
+//
+// }
+//
+// struct HeliumBalanceWidget_Previews: PreviewProvider {
+//   static var previews: some View {
+//     let entry = BalanceWidgetEntry(date: Date(), configuration: ConfigurationIntent(), widgetData: Utils.mockHNTBalanceWidget())
+//
+//     Group {
+//       if #available(iOSApplicationExtension 16.0, *) {
+//         HeliumBalanceWidgetEntryView(entry: entry)
+//           .previewContext(WidgetPreviewContext(family: .accessoryCircular)).previewDisplayName("Circular Widget").environment(\.widgetFamily, .accessoryCircular).environment(\.colorScheme, .light)
+//         HeliumBalanceWidgetEntryView(entry: entry)
+//           .previewContext(WidgetPreviewContext(family: .accessoryRectangular)).previewDisplayName("Rectangular Widget").environment(\.widgetFamily, .accessoryRectangular).environment(\.colorScheme, .light)
+//         HeliumBalanceWidgetEntryView(entry: entry)
+//           .previewContext(WidgetPreviewContext(family: .accessoryInline)).previewDisplayName("Inline Widget").environment(\.widgetFamily, .accessoryInline).environment(\.colorScheme, .light)
+//       }
+//       HeliumBalanceWidgetEntryView(entry: entry)
+//         .previewContext(WidgetPreviewContext(family: .systemSmall)).previewDisplayName("Small Widget").environment(\.widgetFamily, .systemSmall).environment(\.colorScheme, .light)
+//     }
+//   }
+// }

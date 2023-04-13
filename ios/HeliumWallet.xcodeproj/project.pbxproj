@@ -37,6 +37,7 @@
 		9D1EF62B2861C2A200E4A111 /* Mersenne.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D1EF6292861C2A200E4A111 /* Mersenne.swift */; };
 		9D235EA429E5B0E100749F56 /* WidgetAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D235EA329E5B0E100749F56 /* WidgetAPI.swift */; };
 		9D235EA529E5BD6800749F56 /* WidgetAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D235EA329E5B0E100749F56 /* WidgetAPI.swift */; };
+		9D6837A029E8504400785952 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE3051D28510E3900E46F9B /* Utils.swift */; };
 		9D68A27C28A0403E008CE4C8 /* HeliumTickerAccessoryCirclularView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D68A27B28A0403E008CE4C8 /* HeliumTickerAccessoryCirclularView.swift */; };
 		9D7DB3AF2850EC14004D9409 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D24073A284F9CCD0014D926 /* WidgetKit.framework */; };
 		9D7DB3B02850EC14004D9409 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D24073C284F9CCD0014D926 /* SwiftUI.framework */; };
@@ -844,6 +845,7 @@
 			files = (
 				9D235EA429E5B0E100749F56 /* WidgetAPI.swift in Sources */,
 				9609D00027F4DE8D00CE3F93 /* RCTDateModule.m in Sources */,
+				9D6837A029E8504400785952 /* Utils.swift in Sources */,
 				9D7DB3B92850EC15004D9409 /* HeliumWalletWidget.intentdefinition in Sources */,
 				9DBB0EED2862867000561AF8 /* WidgetKitHelper.swift in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,

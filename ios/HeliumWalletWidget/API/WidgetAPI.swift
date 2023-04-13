@@ -15,17 +15,81 @@ struct WidgetData: Decodable {
   var iotBalance: Double
   var dcBalance: Int
   var solBalance: Double
+  
+  enum CodingKeys: String, CodingKey {
+       case heliumPrice, solanaPrice, hntBalance, mobileBalance, iotBalance, dcBalance, solBalance
+   }
+  
+  init(heliumPrice: Double, solanaPrice: Double, hntBalance: Double, mobileBalance: Double, iotBalance: Double, dcBalance: Int, solBalance: Double) {
+    self.heliumPrice = heliumPrice
+    self.solanaPrice = solanaPrice
+    self.hntBalance = hntBalance
+    self.mobileBalance = mobileBalance
+    self.iotBalance = iotBalance
+    self.dcBalance = dcBalance
+    self.solBalance = solBalance
+  }
+  
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    
+    dcBalance = try container.decode(Int.self, forKey: .dcBalance)
+    
+    do {
+      heliumPrice = try container.decode(Double.self, forKey: .heliumPrice)
+      solanaPrice = try container.decode(Double.self, forKey: .solanaPrice)
+      hntBalance = try container.decode(Double.self, forKey: .hntBalance)
+      mobileBalance = try container.decode(Double.self, forKey: .mobileBalance)
+      iotBalance = try container.decode(Double.self, forKey: .iotBalance)
+      solBalance = try container.decode(Double.self, forKey: .solBalance)
+    } catch DecodingError.typeMismatch {
+      heliumPrice = try Double(container.decode(Int.self, forKey: .heliumPrice))
+      solanaPrice = try  Double(container.decode(Int.self, forKey: .solanaPrice))
+      hntBalance = try  Double(container.decode(Int.self, forKey: .hntBalance))
+      mobileBalance = try  Double(container.decode(Int.self, forKey: .mobileBalance))
+      iotBalance = try  Double(container.decode(Int.self, forKey: .iotBalance))
+      solBalance = try  Double(container.decode(Int.self, forKey: .solBalance))
+    }
+  }
 }
 
 struct AccountBalance: Decodable {
   var hntBalance: Int
-  var stakedHntBalance: Int?
-  var iotBalance: Int?
   var mobileBalance: Int
-  var solBalance: Int?
+  var solBalance: Int
   var date: String
   var hntPrice: Double
   var balance: Double
+  
+  enum CodingKeys: String, CodingKey {
+       case hntBalance, stakedHntBalance, iotBalance, mobileBalance, solBalance, date, hntPrice, balance
+   }
+  
+  init(hntBalance: Int, mobileBalance: Int, solBalance: Int, date: String, hntPrice: Double, balance: Double) {
+    self.hntBalance = hntBalance
+    self.mobileBalance = mobileBalance
+    self.solBalance = solBalance
+    self.date = date
+    self.hntPrice = hntPrice
+    self.balance = balance
+  }
+  
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    
+    hntBalance = try container.decode(Int.self, forKey: .hntBalance)
+    mobileBalance = try container.decode(Int.self, forKey: .mobileBalance)
+    solBalance = try container.decode(Int.self, forKey: .solBalance)
+    date = try container.decode(String.self, forKey: .date)
+
+    do {
+      hntPrice = try container.decode(Double.self, forKey: .hntPrice)
+      balance = try container.decode(Double.self, forKey: .balance)
+    } catch DecodingError.typeMismatch {
+      hntPrice = try Double(container.decode(Int.self, forKey: .hntPrice))
+      balance = try  Double(container.decode(Int.self, forKey: .balance))
+    }
+  }
 }
 
 struct WidgetChartData: Decodable {
@@ -65,7 +129,7 @@ class Network {
    * Fetch widget data
    */
   func fetchWidgetData(address: String, cluster: String, currency: String, completion: @escaping (Error?, WidgetData?) -> Void) {
-    let urlComps = URLComponents(string: "\(clientUrl)/widgetData?address=\(address)?cluster=\(cluster)?currency=\(currency.lowercased())")!
+    let urlComps = URLComponents(string: "\(clientUrl)/widgetData?address=\(address)&cluster=\(cluster)&currency=\(currency.lowercased())")!
     let url = urlComps.url!
     
     var request = URLRequest(url: url)
