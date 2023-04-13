@@ -134,7 +134,7 @@
     "react": "18.1.0",
     "react-async-hook": "4.0.0",
     "react-i18next": "11.18.4",
-    "react-native": "0.70.5",
+    "react-native": "0.70.8",
     "react-native-appstate-hook": "1.0.6",
     "react-native-ble-plx": "2.0.3",
     "react-native-charts-wrapper": "0.5.10",
