@@ -91,7 +91,8 @@ const ClaimRewardsScreen = () => {
       setRedeeming(false)
     } catch (e) {
       setRedeeming(false)
-      setClaimError((e as Error).message)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setClaimError((e as any)?.response?.data?.error || (e as Error)?.message)
     }
   }
 
