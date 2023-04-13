@@ -23,17 +23,17 @@ struct HeliumBalanceWidgetSmallView: View {
                     Text("Helium (HNT)")
                         .bold()
                         .font(.system(size: 10.0)).foregroundColor(.white)
-                    Text("$\(String(format: "%.2f", entry.hntPrice))")
+                  Text("$\(String(format: "%.2f", entry.widgetData.heliumPrice))")
                         .font(.system(size: 12.0)).foregroundColor(.white)
                 }
             }
             Divider()
             Spacer()
             HStack(alignment: .center) {
-                Text(dateToShortFormat())
-                    .font(.system(size: 12.0)).foregroundColor(.white)
-                Spacer()
-                Text("\(String(format: "%.2f", entry.hntDailyEarnings)) HNT")
+              Text("HNT_BALANCE", comment: "Wallet title for users wallet.")
+                  .font(.system(size: 12.0)).foregroundColor(.white)
+              Spacer()
+              Text(entry.widgetData.hntBalance.kmFormatted)
                     .bold()
                     .font(.system(size: 12.0)).foregroundColor(.white)
             }
@@ -42,10 +42,10 @@ struct HeliumBalanceWidgetSmallView: View {
             Spacer()
 
             HStack(spacing: 0) {
-                Text("Wallet_Title", comment: "Wallet title for users wallet.")
+                Text("SOL_BALANCE", comment: "Wallet title for users wallet.")
                     .font(.system(size: 12.0)).foregroundColor(.white)
                 Spacer()
-                Text("\(String(format: "%.2f", entry.balance.fromBones)) HNT")
+              Text(entry.widgetData.solBalance.kmFormatted)
                     .bold()
                     .font(.system(size: 12.0)).foregroundColor(.white)
             }

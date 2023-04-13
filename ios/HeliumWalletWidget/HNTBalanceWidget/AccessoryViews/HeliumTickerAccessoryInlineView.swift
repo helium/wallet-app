@@ -36,7 +36,7 @@ struct HeliumTickerAccessoryInlineView: View {
     var body: some View {
         ViewThatFits {
             CustomView(content: {
-                AssetViewInline(imageName: Utils.getCoinImageName("HNT"), assetPrice: "$\(String(format: "%.2f", entry.hntPrice))")
+              AssetViewInline(imageName: Utils.getCoinImageName("HNT"), assetPrice: "$\(String(format: "%.2f", entry.widgetData.heliumPrice))")
             })
         }.frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity).background(.clear)
     }

@@ -33,7 +33,6 @@ struct AssetListItemView: View {
     var assetBalance: String
     var symbolName: String
     var assetPrice: String
-    var isTestnet: Bool
 
     @ViewBuilder
     var body: some View {
@@ -62,34 +61,6 @@ struct AssetListItemView: View {
             Image("right-arrow").resizable().frame(width: 5, height: 10)
             Spacer().frame(width: 16)
         }.frame(width: .infinity, height: 40).background(.clear).clipShape(Rectangle())
-    }
-}
-
-// Request button view
-struct RequestButton: View {
-    var body: some View {
-        // Deep link into app
-        Link(destination: URL(string: "heliumwallet://request")!) {
-            HStack {
-                Image("request-arrow").resizable().frame(width: 17, height: 20)
-                Text(String(localized: "Wallet_Widget_Request",
-                            comment: "Helium wallet widget request label.")).font(.system(size: 16.0)).foregroundColor(Color("malachite")).bold()
-            }.clipShape(Rectangle()).frame(width: 132, height: 45).background(Color("RequestButtonColor")).cornerRadius(22.5)
-        }
-    }
-}
-
-// Send button view
-struct SendButton: View {
-    var body: some View {
-        // Deep link into app
-        Link(destination: URL(string: "heliumwallet://payment")!) {
-            HStack {
-                Text(String(localized: "Wallet_Widget_Send",
-                            comment: "Helium wallet widget send label.")).font(.system(size: 16.0)).foregroundColor(Color("azure-radiance")).bold()
-                Image("send-arrow").resizable().frame(width: 17, height: 20)
-            }.clipShape(Rectangle()).frame(width: 132, height: 45).background(Color("SendButtonColor")).cornerRadius(22.5)
-        }
     }
 }
 
@@ -128,16 +99,6 @@ private struct CompositeChartDemo: View {
     }
 }
 
-/**
- * Get fiat amount from current asset balance
- */
-func getCurrentAssetPrice(_ asset: HeliumAsset) -> Double {
-    if asset.symbol == "DC" {
-        return Double(asset.balance) * asset.price
-    } else {
-        return asset.balance.fromBones * asset.price
-    }
-}
 
 // Wallet Large Widget View
 struct HeliumWalletWidgetLargeView: View {
@@ -145,34 +106,26 @@ struct HeliumWalletWidgetLargeView: View {
 
     @ViewBuilder
     var body: some View {
-        let assets = entry.accountDetails.assets
-        let data = entry.accountDetails.chartValues.count > 1 ? entry.accountDetails.chartValues : [1.0, 1.0]
+        let widgetData = entry.widgetData.widgetData
+      
+      let data =  entry.widgetData.chartData != nil && entry.widgetData.chartData!.count > 1  ? Utils.convertBalanceHistoryToChartData(history: entry.widgetData.chartData ?? []) : [1.0, 1.0]
 
         VStack {
             VStack(alignment: .center, spacing: 4) {
                 Spacer().frame(height: 16.0)
 
-                HStack(spacing: 4) {
-                    if entry.accountDetails.isTestnet { Image("testnet-balance-logo").resizable().frame(width: 9, height: 10)
-                    }
-                    Text(String(localized: !entry.accountDetails.isTestnet ? "Wallet_Widget_Balance" : "TESTNET_Wallet_Widget_Balance",
+              HStack(spacing: 4) {
+                    Text(String(localized: "Wallet_Widget_Balance",
                                 comment: "Helium wallet widget balance label."))
                         .font(.system(size: 12.0)).foregroundColor(.white).opacity(0.6)
                 }
 
-                Text("$\(entry.accountDetails.totalFiatBalance.kmFormatted)").bold().lineLimit(1)
+              Text("$\(String(format: "%.2f", Utils.calculateFiatBalance(assetPrice: widgetData!.heliumPrice, assetBalance: widgetData!.hntBalance)))").bold().lineLimit(1)
                     .font(.system(size: 28.0)).foregroundColor(.white).privacySensitive()
 
-                Text("\(entry.accountDetails.totalHNTBalance.fromBones.kmFormatted) \(Utils.networkTokenLabel(isTestnet: entry.accountDetails.isTestnet))")
+              Text(widgetData!.hntBalance.kmFormatted)
                     .lineLimit(1).font(.system(size: 12.0)).foregroundColor(.white).opacity(0.6).privacySensitive()
 
-                Spacer()
-                HStack(alignment: .center) {
-                    Spacer()
-                    RequestButton()
-                    SendButton()
-                    Spacer()
-                }
                 Spacer()
 
                 Spacer().frame(height: 4.0)
@@ -192,9 +145,9 @@ struct HeliumWalletWidgetLargeView: View {
 
                 VStack(spacing: 0) {
                     Divider().padding(.leading, 16).padding(.trailing, 16)
-                    ForEach(0 ..< 2, id: \.self) { i in
-                        AssetListItemView(imageName: Utils.getCoinImageName(assets[i].symbol), assetBalance: Utils.getCurrentBalance(asset: assets[i]), symbolName: assets[i].symbol, assetPrice: "$\(String(format: "%.2f", getCurrentAssetPrice(assets[i]))) \(assetPriceConversion(assets[i].symbol))", isTestnet: entry.accountDetails.isTestnet).padding(.leading, 4).padding(.trailing, 4)
-                    }
+                  AssetListItemView(imageName: Utils.getCoinImageName("HNT"), assetBalance: widgetData!.hntBalance.kmFormatted, symbolName: "HNT", assetPrice: "$\(String(format: "%.2f", widgetData!.heliumPrice))").padding(.leading, 4).padding(.trailing, 4)
+                  AssetListItemView(imageName: Utils.getCoinImageName("MOBILE"), assetBalance: widgetData!.mobileBalance.kmFormatted, symbolName: "MOBILE", assetPrice: "In Genesis").padding(.leading, 4).padding(.trailing, 4)
+                  AssetListItemView(imageName: Utils.getCoinImageName("IOT"), assetBalance: widgetData!.iotBalance.kmFormatted, symbolName: "IOT", assetPrice: "In Genesis").padding(.leading, 4).padding(.trailing, 4)
                     Spacer().frame(height: 8.0)
                 }
 

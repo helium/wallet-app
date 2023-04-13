@@ -5,7 +5,6 @@
 //  Created by Luis Perrone on 6/8/22.
 //
 
-import Apollo
 import Foundation
 
 extension Double {
@@ -49,80 +48,99 @@ extension Int {
 }
 
 enum Utils {
-    static func networkTokenLabel(isTestnet: Bool) -> String {
-        return isTestnet ? "TNT" : "HNT"
+  static func networkTokenLabel(isTestnet: Bool) -> String {
+    return isTestnet ? "TNT" : "HNT"
+  }
+  
+  static func getSurfaceColorName(isTestnet: Bool) -> String {
+    return isTestnet ? "TestnetColor" : "surfaceColor"
+  }
+  
+  static func renderConstructionEmoji(isTestnet: Bool) -> String {
+    return isTestnet ? "🚧" : ""
+  }
+  
+  // Mock account details.
+  static func mockAccountDetails() -> WidgetChartData {
+    let widgetData = WidgetData(heliumPrice: 200.28, solanaPrice: 400.20, hntBalance: 400.29837485, mobileBalance: 329.948764, iotBalance: 196.233847, dcBalance: 320, solBalance: 42.592758932)
+    let chartData = AccountBalance(hntBalance: 23, mobileBalance: 329, solBalance: 0, date: "Tue Apr 11 2023 14:52:12 GMT-0400 (Eastern Daylight Time)", hntPrice: 3.29, balance: 329)
+    let widgetChartData = WidgetChartData(chartData: [chartData, chartData], widgetData: widgetData)
+    return widgetChartData
+  }
+  
+  // Empty account details for when Network issues occur
+  static func emptyAccountDetails() -> WidgetChartData {
+    let widgetData = WidgetData(heliumPrice: 0, solanaPrice: 0, hntBalance: 0, mobileBalance: 0, iotBalance: 0, dcBalance: 0, solBalance: 0)
+    let widgetChartData = WidgetChartData(chartData: [], widgetData: widgetData)
+    return widgetChartData
+  }
+  
+  static func emptyHNTBalanceWidgetDetails() -> WidgetData {
+    let widgetData = WidgetData(heliumPrice: 0, solanaPrice: 0, hntBalance: 0, mobileBalance: 0, iotBalance: 0, dcBalance: 0, solBalance: 0)
+    return widgetData
+  }
+  
+  static func mockHNTBalanceWidget() -> WidgetData {
+    let widgetData = WidgetData(heliumPrice: 200.28, solanaPrice: 400.20, hntBalance: 400.29837485, mobileBalance: 329.948764, iotBalance: 196.233847, dcBalance: 320, solBalance: 42.592758932)
+    return widgetData
+  }
+  
+  // Get coin image name.
+  static func getCoinImageName(_ symbol: String) -> String {
+    switch symbol {
+    case "HNT":
+      return "hnt-logo"
+    case "SOL":
+      return "sol-logo"
+    case "MOBILE":
+      return "MOBILE"
+    case "IOT":
+      return "iot-logo"
+    case "HST":
+      return "hst-logo"
+    case "DC":
+      return "data-credits-logo"
+    default:
+      return ""
     }
-
-    static func getSurfaceColorName(isTestnet: Bool) -> String {
-        return isTestnet ? "TestnetColor" : "surfaceColor"
+  }
+  
+  // Calculate fiat balance.
+  static func calculateFiatBalance(assetPrice: Double, assetBalance: Double) -> Double {
+    return assetBalance * assetPrice
+  }
+  
+  // Get date string for date. Used for graphql queries to get past weeks and current week.
+  static func getDateStringFrom(_ increment: Int, _ byDay: Bool) -> String {
+    let date = Calendar(identifier: .iso8601).date(byAdding: byDay ? .day : .weekOfYear, value: increment, to: Date())!
+    
+    // Formatting to ISO8601 String
+    let dateFormatter = DateFormatter()
+    let enUSPosixLocale = Locale(identifier: "en_US_POSIX")
+    dateFormatter.locale = enUSPosixLocale
+    dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
+    dateFormatter.calendar = Calendar(identifier: .gregorian)
+    
+    return dateFormatter.string(from: date)
+  }
+  
+  static func convertBalanceHistoryToChartData(history: [AccountBalance]) -> [Double]  {
+    var chartValues: [Double] = []
+    
+    let balanceHis = history.map { $0.balance }
+    let maxBalance = balanceHis.max()
+    let minBalance = balanceHis.min()
+    
+    // Calculate diff to use as divisor to get a number between 0 and 1 for Charts Package
+    let diff = (maxBalance ?? 0.0) - (minBalance ?? 0.0)
+    
+    for (_, element) in history.enumerated() {
+      if diff != 0 {
+        chartValues.append((element.balance - minBalance!) / diff)
+      } else {
+        chartValues.append(0.5)
+      }
     }
-
-    static func renderConstructionEmoji(isTestnet: Bool) -> String {
-        return isTestnet ? "🚧" : ""
-    }
-
-    // Mock account details.
-    static func mockAccountDetails() -> DefaultAccountDetails {
-        let assets: [HeliumAsset] = [HeliumAsset(name: "Helium", symbol: "HNT", balance: 9_504_123_000_000_000, price: 11.72), HeliumAsset(name: "Mobile", symbol: "MOBILE", balance: 119_992_453_143_221, price: 1.00), HeliumAsset(name: "Data Credits", symbol: "DC", balance: 33850, price: 0.00001)]
-
-        let accountDetails = DefaultAccountDetails(accountName: "Satoshi", accountAddress: "13M8dUbxymE3xtiAXszRkGMmezMhBS8Li7wEsMojLdb4Sdxc4wc", jazzSeed: 71, isTestnet: false, totalFiatBalance: 96231.52, totalHNTBalance: 1_969_009_293_847_000_000, assets: assets, chartValues: [])
-        return accountDetails
-    }
-
-    // Empty account details for when Network issues occur
-    static func emptyAccountDetails() -> DefaultAccountDetails {
-        let assets: [HeliumAsset] = []
-        let accountDetails = DefaultAccountDetails(accountName: "", accountAddress: "", jazzSeed: 0, isTestnet: false, totalFiatBalance: 0, totalHNTBalance: 0, assets: assets, chartValues: [0, 1.0])
-        return accountDetails
-    }
-
-    static func emptyHNTBalanceWidgetDetails() -> BalanceWidgetEntry {
-        let entry = BalanceWidgetEntry(date: Date(), configuration: ConfigurationIntent(), hntPrice: 0, hntDailyEarnings: 0, balance: 0)
-        return entry
-    }
-
-    // Get coin image name.
-    static func getCoinImageName(_ symbol: String) -> String {
-        switch symbol {
-        case "HNT":
-            return "hnt-logo"
-        case "MOBILE":
-            return "mobile-logo"
-        case "HST":
-            return "hst-logo"
-        case "DC":
-            return "data-credits-logo"
-        default:
-            return ""
-        }
-    }
-
-    // Get balance from asset
-    static func getCurrentBalance(asset: HeliumAsset) -> String {
-        if asset.symbol == "DC" {
-            return asset.balance.kmFormatted
-        } else {
-            return asset.balance.fromBones.kmFormatted
-        }
-    }
-
-    // Calculate fiat balance.
-    static func calculateFiatBalance(assetPrice: Double, assetBalance: Int) -> Double {
-        let realBalance = assetBalance.fromBones
-        return realBalance * assetPrice
-    }
-
-    // Get date string for date. Used for graphql queries to get past weeks and current week.
-    static func getDateStringFrom(_ increment: Int, _ byDay: Bool) -> String {
-        let date = Calendar(identifier: .iso8601).date(byAdding: byDay ? .day : .weekOfYear, value: increment, to: Date())!
-
-        // Formatting to ISO8601 String
-        let dateFormatter = DateFormatter()
-        let enUSPosixLocale = Locale(identifier: "en_US_POSIX")
-        dateFormatter.locale = enUSPosixLocale
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
-        dateFormatter.calendar = Calendar(identifier: .gregorian)
-
-        return dateFormatter.string(from: date)
-    }
+    return chartValues
+  }
 }

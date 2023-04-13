@@ -85,7 +85,7 @@ struct HeliumBalanceWidget: Widget {
 //
 // struct HeliumBalanceWidget_Previews: PreviewProvider {
 //   static var previews: some View {
-//     let entry = BalanceWidgetEntry(date: Date(), configuration: ConfigurationIntent(), hntPrice: 50.41234, hntDailyEarnings: 52.37, balance: 1_500_000)
+//     let entry = BalanceWidgetEntry(date: Date(), configuration: ConfigurationIntent(), widgetData: Utils.mockHNTBalanceWidget())
 //
 //     Group {
 //       if #available(iOSApplicationExtension 16.0, *) {

@@ -56,7 +56,6 @@ struct AssetView: View {
     var imageName: String
     var assetBalance: String?
     var title: String?
-    var isTestNet: Bool
 
     @ViewBuilder
     var body: some View {
@@ -78,44 +77,33 @@ struct AssetView: View {
 }
 
 struct SmallWidgetContainer: View {
-    var accountDetails: DefaultAccountDetails
+    var widgetData: WidgetData
     var jazzIcon: UIImage
 
     @ViewBuilder
     var body: some View {
-        let asset1 = self.accountDetails.assets[0]
-        let asset2 = accountDetails.assets[1]
-        let asset3 = accountDetails.assets.count > 2 ? accountDetails.assets[2] : nil
 
         VStack(spacing: 0) {
             Spacer()
             HStack {
                 Spacer()
                 CustomView(content: {
-                    AccountImageView(accountName: accountDetails.accountName, jazzIcon: jazzIcon)
+                  AssetView(imageName: Utils.getCoinImageName("HNT"), assetBalance: widgetData.hntBalance.kmFormatted)
                 }).frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                 Spacer()
                 CustomView(content: {
-                    AssetView(imageName: Utils.getCoinImageName(asset1.symbol), assetBalance: Utils.getCurrentBalance(asset: asset1), isTestNet: accountDetails.isTestnet)
+                  AssetView(imageName: Utils.getCoinImageName("MOBILE"), assetBalance:  widgetData.mobileBalance.kmFormatted)
                 }).frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                 Spacer()
             }
             HStack {
                 Spacer()
                 CustomView(content: {
-                    if let asset = asset3 {
-                        AssetView(imageName: Utils.getCoinImageName(asset.symbol), assetBalance: Utils.getCurrentBalance(asset: asset), isTestNet: accountDetails.isTestnet)
-                    } else {
-                        AssetView(imageName: "", title: "", isTestNet: accountDetails.isTestnet)
-                    }
+                  AssetView(imageName: Utils.getCoinImageName("IOT"), assetBalance: widgetData.iotBalance.kmFormatted)
                 }).frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                 Spacer()
                 CustomView(content: {
-                    if let asset = asset2 {
-                        AssetView(imageName: Utils.getCoinImageName(asset.symbol), assetBalance: Utils.getCurrentBalance(asset: asset), isTestNet: accountDetails.isTestnet)
-                    } else {
-                        AssetView(imageName: "", title: "", isTestNet: accountDetails.isTestnet)
-                    }
+                  AssetView(imageName: Utils.getCoinImageName("SOL"), assetBalance: widgetData.solBalance.kmFormatted)
                 }).frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                 Spacer()
             }

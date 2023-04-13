@@ -21,7 +21,7 @@ struct HeliumWalletWidgetSmallView: View {
 
     @ViewBuilder
     var body: some View {
-        SmallWidgetContainer(accountDetails: entry.accountDetails, jazzIcon: generateImage(jazzSeed: entry.accountDetails.jazzSeed))
+      SmallWidgetContainer(widgetData: entry.widgetData.widgetData ?? Utils.emptyHNTBalanceWidgetDetails(), jazzIcon: generateImage(jazzSeed: 1))
     }
 }
 

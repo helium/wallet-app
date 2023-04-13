@@ -28,6 +28,7 @@ import { useBackgroundStyle, useColors } from '@theme/themeHooks'
 import WarningBanner, { BannerType } from '@components/WarningBanner'
 import { useSelector } from 'react-redux'
 import useSolanaHealth from '@hooks/useSolanaHealth'
+import { CSAccount } from '@storage/cloudStorage'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
@@ -42,7 +43,6 @@ import { useNotificationStorage } from '../../storage/NotificationStorageProvide
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import StatusBanner from '../StatusPage/StatusBanner'
 import { checkSecureAccount } from '../../storage/secureStorage'
-import { getJazzSeed, isTestnet } from '../../utils/accountUtils'
 import AccountsTopNav from './AccountsTopNav'
 import AccountTokenList from './AccountTokenList'
 import AccountView from './AccountView'
@@ -241,19 +241,16 @@ const AccountsScreen = () => {
   useAsync(async () => {
     if (Platform.OS === 'ios') {
       const defaultAccount = sortedAccounts.find(
-        (account) => account.address === defaultAccountAddress,
+        (account: CSAccount) => account.address === defaultAccountAddress,
       )
-
-      const jazzSeed = getJazzSeed(defaultAccountAddress)
 
       await SharedGroupPreferences.setItem(
         'heliumWalletWidgetKey',
         {
-          isTestnet: isTestnet(defaultAccountAddress ?? ''),
-          jazzSeed,
-          defaultAccountAddress,
+          defaultAccountAddress: defaultAccount?.solanaAddress,
           defaultAccountAlias: defaultAccount?.alias,
           currencyType: currency,
+          cluster,
         },
         widgetGroup,
       )

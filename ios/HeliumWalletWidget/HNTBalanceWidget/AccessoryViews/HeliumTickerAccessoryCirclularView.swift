@@ -38,7 +38,7 @@ struct HeliumTickerAccessoryCirclularView: View {
         VStack(spacing: 0) {
             Spacer()
             CustomView(content: {
-                AssetViewCircular(imageName: Utils.getCoinImageName("HNT"), assetPrice: "$\(String(format: "%.2f", entry.hntPrice))")
+              AssetViewCircular(imageName: Utils.getCoinImageName("HNT"), assetPrice: "$\(String(format: "%.2f", entry.widgetData.heliumPrice))")
             }).frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
             Spacer()
         }.aspectRatio(1.0, contentMode: .fit).background(.black)
