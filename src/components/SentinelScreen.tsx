@@ -21,7 +21,10 @@ import globalStyles from '@theme/globalStyles'
 import HeliumLogo from '@assets/images/helium.svg'
 import SolanaLogo from '@assets/images/tokenSOL.svg'
 import Multiply from '@assets/images/multiply.svg'
-import { useGetSolanaStatusQuery } from '../store/slices/solanaStatusApi'
+import {
+  parseSolanaStatus,
+  useGetSolanaStatusQuery,
+} from '../store/slices/solanaStatusApi'
 import Text from './Text'
 import Box from './Box'
 
@@ -38,13 +41,15 @@ const SentinelScreen = ({
   const animValue = useSharedValue(1)
   const [animationComplete, setAnimationComplete] = useState(false)
 
+  const realStatus = useMemo(() => parseSolanaStatus(status), [status])
+
   const statusWrapper = useMemo(() => {
     const statusCopy = {
-      ...status,
-      migrationStatus: migrationStatusOverride || status?.migrationStatus,
+      ...realStatus,
+      migrationStatus: migrationStatusOverride || realStatus?.migrationStatus,
     }
     return statusCopy
-  }, [status, migrationStatusOverride])
+  }, [realStatus, migrationStatusOverride])
 
   const animationCompleted = useCallback(() => {
     setAnimationComplete(true)

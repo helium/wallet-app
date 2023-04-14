@@ -31,7 +31,10 @@ import ConnectedWallets, {
 import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
-import { useGetSolanaStatusQuery } from '../store/slices/solanaStatusApi'
+import {
+  parseSolanaStatus,
+  useGetSolanaStatusQuery,
+} from '../store/slices/solanaStatusApi'
 import { walletRestApi } from '../store/slices/walletRestApi'
 
 const RootNavigator = () => {
@@ -46,10 +49,8 @@ const RootNavigator = () => {
   const dispatch = useAppDispatch()
   const [prevL1, setPrevL1] = useState(l1Network)
   const { data: status } = useGetSolanaStatusQuery()
-  // Override status to always show migration
-  // const status = useMemo(() => {
-  //   return { migrationStatus: 'complete' }
-  // }, [])
+
+  const realStatus = useMemo(() => parseSolanaStatus(status), [status])
 
   const screenOptions = useMemo(
     () =>
@@ -93,12 +94,12 @@ const RootNavigator = () => {
   const initialRouteName = useMemo(() => {
     if (hasAccounts) {
       return l1Network !== 'solana' &&
-        (!status || status.migrationStatus !== 'complete')
+        (!realStatus || realStatus.migrationStatus !== 'complete')
         ? 'HomeNavigator'
         : 'TabBarNavigator'
     }
     return 'OnboardingNavigator'
-  }, [hasAccounts, l1Network, status])
+  }, [hasAccounts, l1Network, realStatus])
 
   const handleAddNew = useCallback(() => {
     navigation.navigate('AddNewAccountNavigator')
@@ -123,10 +124,10 @@ const RootNavigator = () => {
   }, [showConnectedWallets])
 
   useEffect(() => {
-    if (status?.migrationStatus === 'complete' && l1Network === 'helium') {
+    if (realStatus?.migrationStatus === 'complete' && l1Network === 'helium') {
       updateL1Network('solana')
     }
-  }, [status, l1Network, updateL1Network])
+  }, [realStatus, l1Network, updateL1Network])
 
   return (
     <ConnectedWallets
@@ -136,7 +137,7 @@ const RootNavigator = () => {
     >
       <RootStack.Navigator initialRouteName={initialRouteName}>
         <>
-          {(!status || status.migrationStatus !== 'complete') && (
+          {(!realStatus || realStatus.migrationStatus !== 'complete') && (
             <RootStack.Screen
               name="HomeNavigator"
               component={HomeNavigator}

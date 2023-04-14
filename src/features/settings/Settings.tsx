@@ -12,7 +12,10 @@ import useCopyText from '@hooks/useCopyText'
 import useAlert from '@hooks/useAlert'
 import CloseButton from '@components/CloseButton'
 import { NetTypes } from '@helium/address'
-import { useGetSolanaStatusQuery } from '../../store/slices/solanaStatusApi'
+import {
+  parseSolanaStatus,
+  useGetSolanaStatusQuery,
+} from '../../store/slices/solanaStatusApi'
 import { HomeNavigationProp } from '../home/homeTypes'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
 import { SUPPORTED_LANGUAGUES } from '../../utils/i18n'
@@ -70,10 +73,8 @@ const Settings = () => {
   const copyText = useCopyText()
   const { showOKAlert, showOKCancelAlert } = useAlert()
   const { data: status } = useGetSolanaStatusQuery()
-  // Override status to always show migration
-  // const status = useMemo(() => {
-  //   return { migrationStatus: 'complete' }
-  // }, [])
+
+  const realStatus = useMemo(() => parseSolanaStatus(status), [status])
 
   const isDefaultAccount = useMemo(
     () => defaultAccountAddress === currentAccount?.address,
@@ -396,7 +397,7 @@ const Settings = () => {
     let devData: SettingsListItemType[] = []
 
     if (
-      status?.migrationStatus !== 'complete' &&
+      realStatus?.migrationStatus !== 'complete' &&
       currentAccount?.netType === NetTypes.MAINNET
     ) {
       devData.push(
@@ -433,7 +434,7 @@ const Settings = () => {
         {
           label: 'Mainnet-Beta',
           value: 'mainnet-beta',
-          disabled: status?.migrationStatus !== 'complete',
+          disabled: realStatus?.migrationStatus !== 'complete',
         },
       ]
 
@@ -497,12 +498,11 @@ const Settings = () => {
         title: t('settings.sections.account.shareAddress'),
         onPress: handleShareAddress,
       },
-      {
-        title: t('settings.sections.account.signOut'),
-        onPress: handleSignOut,
-        destructive: true,
-      },
-    ]
+    ] as {
+      title: string
+      onPress?: () => void
+      destructive?: boolean
+    }[]
 
     if (l1Network === 'solana') {
       accountSettings.push({
@@ -510,6 +510,12 @@ const Settings = () => {
         onPress: handleMigrateWallet,
       })
     }
+
+    accountSettings.push({
+      title: t('settings.sections.account.signOut'),
+      onPress: handleSignOut,
+      destructive: true,
+    })
 
     return [
       {
@@ -628,7 +634,7 @@ const Settings = () => {
     updateConvertToCurrency,
     updateL1Network,
     version,
-    status,
+    realStatus,
     handleMigrateWallet,
   ])
 
