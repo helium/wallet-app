@@ -31,7 +31,6 @@ const TokenListItem = ({ ticker, balance, staked, tokenAccount }: Props) => {
   const tokenAccountCache = useTokenAccount(
     tokenAccount ? new PublicKey(tokenAccount) : undefined,
   )
-
   const tokenAcountData = useMemo(() => {
     if (!tokenAccountCache.account) return
     return AccountLayout.decode(tokenAccountCache.account?.data)
@@ -45,16 +44,20 @@ const TokenListItem = ({ ticker, balance, staked, tokenAccount }: Props) => {
   }, [navigation, ticker, triggerImpact])
 
   const balanceToDisplay = useMemo(() => {
-    if (tokenAcountData && l1Network === 'solana') {
-      if (ticker === 'DC') {
-        return tokenAcountData.amount.toLocaleString()
-      }
+    if (l1Network === 'solana') {
+      if (tokenAcountData) {
+        if (ticker === 'DC') {
+          return tokenAcountData.amount.toLocaleString()
+        }
 
-      return toNumber(
-        new BN(tokenAcountData.amount.toString() || 0),
-        mint?.info.decimals || 6,
-      )
+        return toNumber(
+          new BN(tokenAcountData.amount.toString() || 0),
+          mint?.info.decimals || 6,
+        )
+      }
+      return 0
     }
+
     if (typeof balance === 'number') return balance
     return balance?.toString(7, { showTicker: false })
   }, [balance, mint, tokenAcountData, ticker, l1Network])

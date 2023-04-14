@@ -279,7 +279,7 @@ export const transferToken = async (
   })
 
   if (txn?.meta?.err) {
-    throw new Error(txn.meta.err.toString())
+    throw new Error(txn?.meta?.err?.toString())
   }
 
   return { signature, txn }
