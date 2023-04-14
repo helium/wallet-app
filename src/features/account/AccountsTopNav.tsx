@@ -14,6 +14,7 @@ import AccountIcon from '@components/AccountIcon'
 import useHaptic from '@hooks/useHaptic'
 import IconPressedContainer from '@components/IconPressedContainer'
 import { useSelector } from 'react-redux'
+import useSolanaHealth from '@hooks/useSolanaHealth'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
@@ -27,9 +28,10 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
   const { primaryText } = useColors()
   const navigation = useNavigation<HomeNavigationProp>()
   const { currentAccount, currentNetworkAddress } = useAccountStorage()
-  const { l1Network } = useAppStorage()
+  const { l1Network, solanaNetwork: cluster } = useAppStorage()
   const { triggerImpact } = useHaptic()
   const { showBanner } = useSelector((state: RootState) => state.app)
+  const { isHealthy } = useSolanaHealth()
 
   const navToSettings = useCallback(() => {
     triggerImpact('light')
@@ -48,9 +50,18 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
 
   const { top } = useSafeAreaInsets()
 
+  const bannerVisible = useMemo(() => {
+    if (l1Network === 'solana') {
+      if (cluster === 'devnet') {
+        return true
+      }
+      return !isHealthy
+    }
+  }, [cluster, isHealthy, l1Network])
+
   const containerStyle = useMemo(
-    () => ({ marginTop: showBanner && l1Network === 'solana' ? 0 : top }),
-    [showBanner, top, l1Network],
+    () => ({ marginTop: bannerVisible && showBanner ? 0 : top }),
+    [top, bannerVisible, showBanner],
   )
 
   return (

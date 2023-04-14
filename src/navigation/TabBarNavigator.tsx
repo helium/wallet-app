@@ -203,7 +203,7 @@ const TabBarNavigator = () => {
 
     if (
       status?.migrationStatus === 'complete' &&
-      !doneSolanaMigration['mainnet-beta'].includes(
+      !doneSolanaMigration['mainnet-beta']?.includes(
         currentAccount.solanaAddress,
       ) &&
       !manualMigration['mainnet-beta'].includes(currentAccount.solanaAddress)

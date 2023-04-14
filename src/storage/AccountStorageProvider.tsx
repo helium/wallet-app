@@ -49,6 +49,7 @@ import makeApiToken from '../utils/makeApiToken'
 import { authSlice } from '../store/slices/authSlice'
 import { getConnection } from '../utils/solanaUtils'
 import { useLazyGetSessionKeyQuery } from '../store/slices/walletRestApi'
+import { readBalances } from '../store/slices/solanaSlice'
 
 const useAccountStorageHook = () => {
   const [currentAccount, setCurrentAccount] = useState<
@@ -72,6 +73,11 @@ const useAccountStorageHook = () => {
   const dispatch = useAppDispatch()
   const currentAppState = useAppState()
   const [fetchAPISessionKey] = useLazyGetSessionKeyQuery()
+
+  useEffect(() => {
+    if (!anchorProvider || !currentAccount) return
+    dispatch(readBalances({ anchorProvider, acct: currentAccount }))
+  }, [cluster, anchorProvider, currentAccount, dispatch])
 
   const updateApiToken = useCallback(async () => {
     const apiToken = await makeApiToken(currentAccount?.address)
@@ -162,7 +168,7 @@ const useAccountStorageHook = () => {
         preflightCommitment: 'confirmed',
       }),
     )
-  }, [currentAccount])
+  }, [currentAccount, cluster])
 
   useEffect(() => {
     // Ensure all accounts have solana address

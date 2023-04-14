@@ -81,7 +81,8 @@ const SentinelScreen = ({
     const minVersion = minimumVersions ? minimumVersions[bundleId] : '2.0.0'
     const version = DeviceInfo.getVersion()
     const valid = semver.gte(version, minVersion)
-    setShowSentinel(!valid)
+
+    setShowSentinel(!valid || statusWrapper.migrationStatus !== 'complete')
   }, [statusWrapper])
 
   return (

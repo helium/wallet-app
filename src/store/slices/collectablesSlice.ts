@@ -54,6 +54,8 @@ const collectables = createSlice({
   name: 'collectables',
   initialState,
   reducers: {
+    // TODO: This whole slice should be keyed by cluster
+    resetState: () => initialState,
     resetLoading: (state, action: PayloadAction<{ acct: CSAccount }>) => {
       const { acct } = action.payload
       if (!acct.solanaAddress) throw new Error('Solana address missing')
