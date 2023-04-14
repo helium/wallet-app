@@ -19,6 +19,19 @@ export const solanaStatusApi = createApi({
   }),
 })
 
+export const parseSolanaStatus = (status?: SolanaStatusResponse) => {
+  if (!status?.migrationStatus) {
+    return {
+      migrationStatus: 'complete',
+      minimumVersions: {
+        'com.helium.wallet.app': '2.0.0',
+      } as Record<string, string>,
+      treasuryWarning: true,
+    }
+  }
+  return status
+}
+
 // Export hooks for usage in function components, which are
 // auto-generated based on the defined endpoints
 export const { useGetSolanaStatusQuery, reducer } = solanaStatusApi

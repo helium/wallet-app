@@ -54,9 +54,10 @@ async function migrateWallet(
 }
 
 const SolanaMigration = ({
+  manual = false,
   hideBack = true,
   ...props
-}: BoxProps<Theme> & { hideBack?: boolean }) => {
+}: BoxProps<Theme> & { hideBack?: boolean; manual?: boolean }) => {
   const { currentAccount, anchorProvider } = useAccountStorage()
   const {
     solanaNetwork: cluster,
@@ -84,7 +85,8 @@ const SolanaMigration = ({
       !currentAccount?.solanaAddress ||
       !anchorProvider ||
       !cluster ||
-      doneSolanaMigration[cluster]?.includes(currentAccount?.solanaAddress)
+      (doneSolanaMigration[cluster]?.includes(currentAccount?.solanaAddress) &&
+        !manual)
     )
       return
 
@@ -95,10 +97,12 @@ const SolanaMigration = ({
         onProgress,
       )
 
-      await updateDoneSolanaMigration({
-        cluster,
-        address: currentAccount?.solanaAddress,
-      })
+      if (!manual) {
+        await updateDoneSolanaMigration({
+          cluster,
+          address: currentAccount?.solanaAddress,
+        })
+      }
 
       dispatch(
         fetchHotspots({

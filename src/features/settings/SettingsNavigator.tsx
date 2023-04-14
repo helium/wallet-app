@@ -14,7 +14,7 @@ import SolanaMigration from '../migration/SolanaMigration'
 const SettingsStack = createNativeStackNavigator()
 
 const SolanaMigrationWrapper = () => {
-  return <SolanaMigration hideBack={false} />
+  return <SolanaMigration hideBack={false} manual />
 }
 
 const SettingsNavigator = () => {

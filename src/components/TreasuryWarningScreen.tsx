@@ -1,4 +1,11 @@
-import React, { memo, ReactNode, useCallback, useEffect, useState } from 'react'
+import React, {
+  memo,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { View } from 'react-native'
 import InfoWarning from '@assets/images/warning.svg'
 import { useTranslation } from 'react-i18next'
@@ -12,7 +19,10 @@ import globalStyles from '@theme/globalStyles'
 import Text from './Text'
 import Box from './Box'
 import ButtonPressable from './ButtonPressable'
-import { useGetSolanaStatusQuery } from '../store/slices/solanaStatusApi'
+import {
+  parseSolanaStatus,
+  useGetSolanaStatusQuery,
+} from '../store/slices/solanaStatusApi'
 
 const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
   const { t } = useTranslation()
@@ -20,17 +30,19 @@ const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
   const [animationComplete, setAnimationComplete] = useState(false)
   const { data: status } = useGetSolanaStatusQuery(undefined)
 
+  const realStatus = useMemo(() => parseSolanaStatus(status), [status])
+
   const animationCompleted = useCallback(() => {
     setAnimationComplete(true)
   }, [])
 
   useEffect(() => {
-    if (!status?.treasuryWarning) {
+    if (!realStatus?.treasuryWarning) {
       setAnimationComplete(true)
     } else {
       setAnimationComplete(false)
     }
-  }, [status])
+  }, [realStatus])
 
   const style = useAnimatedStyle(() => {
     let animVal = animValue.value
