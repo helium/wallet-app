@@ -137,7 +137,7 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
       return {
         name: decodedInstruction.name || '',
         gatewayAddress,
-        location: location.toString('hex'),
+        location: location?.toString('hex'),
         elevation,
         gain,
       }
@@ -187,7 +187,7 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
         .slice(-1)[0]
 
       return {
-        location: location.toString('hex'),
+        location: location?.toString('hex'),
         elevation,
         gain,
         name: decodedInstruction.name,
