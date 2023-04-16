@@ -103,7 +103,6 @@ const AccountTokenList = ({ loading = false, onLayout }: Props) => {
         type: 'SOL',
         balance: solBalance as Balance<SolTokens>,
         staked: false,
-        tokenAccount: tokenAccounts ? tokenAccounts[Mints.SOL] : undefined,
       },
     ] as {
       type: Ticker

@@ -55,10 +55,8 @@ const TokenListItem = ({ ticker, balance, staked, tokenAccount }: Props) => {
           mint?.info.decimals || 6,
         )
       }
-      return 0
+      return balance?.toString(7, { showTicker: false }) || 0
     }
-
-    if (typeof balance === 'number') return balance
     return balance?.toString(7, { showTicker: false })
   }, [balance, mint, tokenAcountData, ticker, l1Network])
 
