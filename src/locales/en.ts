@@ -19,7 +19,7 @@ export default {
   },
   accountImport: {
     accountLimit:
-      'You have reached the account limit.\nTo add another account, delete another wallet account and try again.',
+      'You have reached the account limit.\nTo add another account, delete a wallet account and try again.',
     accountLimitLedger:
       'You have reached the account limit.\nTo add another account, uncheck an account and try again.',
     alert: {
@@ -423,7 +423,7 @@ export default {
     error: 'Incorrect PIN',
     signOut: 'Delete Account',
     signOutAlert: {
-      body: 'You are deleting of all your accounts. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your Address Book\n- your HNT\n- your Wallet',
+      body: 'You are deleting all of your accounts. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your Address Book\n- your HNT\n- your Wallet',
       title: 'Warning! Delete all accounts?',
     },
     title: 'Enter Your PIN',
