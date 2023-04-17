@@ -11,9 +11,7 @@ export type SolanaStatusResponse = {
 // Define a service using a base URL and expected endpoints
 export const solanaStatusApi = createApi({
   reducerPath: 'solanaStatusApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: 'https://d95b-135-135-19-28.ngrok-free.app/',
-  }),
+  baseQuery: fetchBaseQuery({ baseUrl: 'https://solana-status.helium.com/' }),
   endpoints: (builder) => ({
     getSolanaStatus: builder.query<SolanaStatusResponse, void>({
       query: () => '',
