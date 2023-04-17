@@ -73,6 +73,7 @@ import { useAppStorage } from '../../storage/AppStorageProvider'
 import { RootState } from '../../store/rootReducer'
 import { useAppDispatch } from '../../store/store'
 import { solanaSlice } from '../../store/slices/solanaSlice'
+import { RootNavigationProp } from '../../navigation/rootTypes'
 
 type LinkedPayment = {
   amount?: string
@@ -118,8 +119,8 @@ const PaymentScreen = () => {
   const { showOKAlert } = useAlert()
   const { l1Network } = useAppStorage()
   const appDispatch = useAppDispatch()
-
   const navigation = useNavigation<HomeNavigationProp>()
+  const rootNav = useNavigation<RootNavigationProp>()
   const { t } = useTranslation()
   const { primaryText, blueBright500, white } = useColors()
   const hitSlop = useHitSlop('l')
@@ -151,6 +152,24 @@ const PaymentScreen = () => {
     })
     AsyncStorage.setItem('mobilePaymentPrompt', 'true')
   }, [ticker])
+
+  const navBack = useCallback(() => {
+    if (navigation.canGoBack()) {
+      navigation.goBack()
+    } else if (rootNav.canGoBack()) {
+      rootNav.goBack()
+    } else if (l1Network === 'helium') {
+      rootNav.reset({
+        index: 0,
+        routes: [{ name: 'HomeNavigator' }],
+      })
+    } else {
+      rootNav.reset({
+        index: 0,
+        routes: [{ name: 'TabBarNavigator' }],
+      })
+    }
+  }, [l1Network, navigation, rootNav])
 
   const networkType = useMemo(() => {
     if (!route.params || !route.params.payer) {
@@ -207,7 +226,7 @@ const PaymentScreen = () => {
       if (!acctsForNetType.length) {
         // They don't have an account that can handle a payment for this network type
         Toast.show(t('payment.netTypeQrError'))
-        navigation.goBack()
+        navBack()
         return
       }
       if (!currentAccount || currentAccount.netType !== networkType) {
@@ -634,10 +653,13 @@ const PaymentScreen = () => {
     dispatch({ type: 'addPayee' })
   }, [dispatch])
 
-  const containerStyle = useMemo(
-    () => ({ marginTop: Platform.OS === 'android' ? top : undefined }),
-    [top],
-  )
+  const containerStyle = useMemo(() => {
+    // if navigation cannot go back then this is not being presented in a modal so we need top margin
+    return {
+      marginTop:
+        Platform.OS === 'android' || !navigation.canGoBack() ? top : undefined,
+    }
+  }, [navigation, top])
 
   const handleShowAccounts = useCallback(() => {
     if (!accountSelectorRef?.current) return
@@ -755,7 +777,7 @@ const PaymentScreen = () => {
                   </Text>
                   <Box hitSlop={hitSlop} padding="s">
                     <IconPressedContainer
-                      onPress={navigation.goBack}
+                      onPress={navBack}
                       activeOpacity={0.75}
                       idleOpacity={1.0}
                     >
@@ -859,6 +881,7 @@ const PaymentScreen = () => {
                   onSubmit={handleSubmit}
                   payments={payments}
                   errors={errors}
+                  handleCancel={navBack}
                 />
               </Box>
             </TokenSelector>

@@ -25,7 +25,7 @@ import SecurityScreen from './features/security/SecurityScreen'
 import OnboardingProvider from './features/onboarding/OnboardingProvider'
 import TransactionProvider from './storage/TransactionProvider'
 import { BalanceProvider } from './utils/Balance'
-import { linking } from './utils/linking'
+import { useDeepLinking } from './utils/linking'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
 import NetworkAwareStatusBar from './components/NetworkAwareStatusBar'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
@@ -55,6 +55,8 @@ const App = () => {
   const { appState } = useAppState()
   const { restored: accountsRestored, anchorProvider } = useAccountStorage()
   const { setOpenedNotification } = useNotificationStorage()
+
+  const linking = useDeepLinking()
 
   const { client } = useApolloClient()
 

@@ -18,17 +18,24 @@ import AccountSelector, {
 } from '@components/AccountSelector'
 import AccountButton from '@components/AccountButton'
 import useAlert from '@hooks/useAlert'
-import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
+import { HomeNavigationProp } from '../home/homeTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { formatAccountAlias } from '../../utils/accountUtils'
 import { checkSecureAccount, getKeypair } from '../../storage/secureStorage'
+import {
+  RootNavigationProp,
+  RootStackParamList,
+} from '../../navigation/rootTypes'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
-type Route = RouteProp<HomeStackParamList, 'LinkWallet'>
+type Route = RouteProp<RootStackParamList, 'LinkWallet'>
 const LinkWallet = () => {
   const {
     params: { requestAppId, callbackUrl, appName },
   } = useRoute<Route>()
   const navigation = useNavigation<HomeNavigationProp>()
+  const rootNav = useNavigation<RootNavigationProp>()
+  const { l1Network } = useAppStorage()
   const { t } = useTranslation()
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
   const {
@@ -51,14 +58,19 @@ const LinkWallet = () => {
 
       if (navigation.canGoBack()) {
         navigation.goBack()
-      } else {
-        navigation.reset({
+      } else if (l1Network === 'helium') {
+        rootNav.reset({
           index: 0,
-          routes: [{ name: 'AccountsScreen' }],
+          routes: [{ name: 'HomeNavigator' }],
+        })
+      } else {
+        rootNav.reset({
+          index: 0,
+          routes: [{ name: 'TabBarNavigator' }],
         })
       }
     },
-    [callbackUrl, currentAccount, navigation],
+    [callbackUrl, currentAccount?.address, l1Network, navigation, rootNav],
   )
 
   const handleLink = useCallback(async () => {

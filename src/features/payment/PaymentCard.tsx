@@ -4,7 +4,6 @@ import Balance, {
   Ticker,
 } from '@helium/currency'
 import { PaymentV2 } from '@helium/transactions'
-import { useNavigation } from '@react-navigation/native'
 import React, { memo, useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent } from 'react-native'
@@ -22,6 +21,7 @@ import { checkSecureAccount } from '../../storage/secureStorage'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Props = {
+  handleCancel: () => void
   totalBalance: Balance<TestNetworkTokens | NetworkTokens>
   feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
   onSubmit: (opts?: { txn: PaymentV2; txnJson: string }) => void
@@ -32,6 +32,7 @@ type Props = {
 }
 
 const PaymentCard = ({
+  handleCancel,
   totalBalance,
   feeTokenBalance,
   onSubmit,
@@ -43,7 +44,6 @@ const PaymentCard = ({
   const { t } = useTranslation()
   const [payEnabled, setPayEnabled] = useState(false)
   const [height, setHeight] = useState(0)
-  const nav = useNavigation()
   const ledgerPaymentRef = useRef<LedgerPaymentRef>(null)
   const { showOKAlert, showOKCancelAlert } = useAlert()
   const { currentAccount } = useAccountStorage()
@@ -148,7 +148,7 @@ const PaymentCard = ({
                   borderRadius="round"
                   overflow="hidden"
                   backgroundColor="secondaryIcon"
-                  onPress={nav.goBack}
+                  onPress={handleCancel}
                 >
                   <Text variant="subtitle1" textAlign="center" color="grey600">
                     {t('generic.cancel')}

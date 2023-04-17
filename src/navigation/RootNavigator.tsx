@@ -36,6 +36,10 @@ import {
   useGetSolanaStatusQuery,
 } from '../store/slices/solanaStatusApi'
 import { walletRestApi } from '../store/slices/walletRestApi'
+import LinkWallet from '../features/txnDelegation/LinkWallet'
+import PaymentScreen from '../features/payment/PaymentScreen'
+import SignHotspot from '../features/txnDelegation/SignHotspot'
+import DappLoginScreen from '../features/dappLogin/DappLoginScreen'
 
 const RootNavigator = () => {
   const navigation = useNavigation<
@@ -153,6 +157,27 @@ const RootNavigator = () => {
             key="OnboardingNavigator"
             name="OnboardingNavigator"
             component={OnboardingNavigator}
+            options={screenOptions}
+          />
+
+          <RootStack.Screen
+            name="LinkWallet"
+            component={LinkWallet}
+            options={screenOptions}
+          />
+          <RootStack.Screen
+            name="SignHotspot"
+            component={SignHotspot}
+            options={screenOptions}
+          />
+          <RootStack.Screen
+            name="PaymentScreen"
+            component={PaymentScreen}
+            options={screenOptions}
+          />
+          <RootStack.Screen
+            name="DappLoginScreen"
+            component={DappLoginScreen}
             options={screenOptions}
           />
         </>

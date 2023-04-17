@@ -19,15 +19,22 @@ import {
   EMPTY_B58_ADDRESS,
   useTransactions,
 } from '../../storage/TransactionProvider'
-import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
+import { HomeNavigationProp } from '../home/homeTypes'
 import { useWalletConnect } from './WalletConnectProvider'
 import DappConnect from './DappConnect'
 import DappAccount from './DappAccount'
+import {
+  RootNavigationProp,
+  RootStackParamList,
+} from '../../navigation/rootTypes'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
-type Route = RouteProp<HomeStackParamList, 'DappLoginScreen'>
+type Route = RouteProp<RootStackParamList, 'DappLoginScreen'>
 const DappLoginScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<HomeNavigationProp>()
+  const rootNav = useNavigation<RootNavigationProp>()
+  const { l1Network } = useAppStorage()
   const { params } = route
   const {
     allowLogin,
@@ -68,12 +75,21 @@ const DappLoginScreen = () => {
 
   const goBack = useCallback(async () => {
     await disconnect()
+
     if (navigation.canGoBack()) {
       navigation.goBack()
+    } else if (l1Network === 'helium') {
+      rootNav.reset({
+        index: 0,
+        routes: [{ name: 'HomeNavigator' }],
+      })
     } else {
-      navigation.replace('AccountsScreen')
+      rootNav.reset({
+        index: 0,
+        routes: [{ name: 'TabBarNavigator' }],
+      })
     }
-  }, [disconnect, navigation])
+  }, [disconnect, l1Network, navigation, rootNav])
 
   const handleDeny = useCallback(async () => {
     await denyPair()

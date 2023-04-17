@@ -9,6 +9,7 @@ import { encodeMemoString } from '../components/MemoInput'
 import { BurnRouteParam, PaymentRouteParam } from '../features/home/homeTypes'
 import { SendDetails } from '../storage/TransactionProvider'
 import { RootStackParamList } from '../navigation/rootTypes'
+import { useAccountStorage } from '../storage/AccountStorageProvider'
 
 export const APP_LINK_SCHEME = Linking.createURL('')
 export const PAYMENT_PATH = 'payment'
@@ -19,19 +20,14 @@ const formatMemo = (memo: string | undefined, isUtf8: boolean) => {
   return isUtf8 ? encodeMemoString(memo) : memo
 }
 
-export const linking: LinkingOptions<RootStackParamList> = {
+export const authenticatedLinking: LinkingOptions<RootStackParamList> = {
   prefixes: [APP_LINK_SCHEME, HELIUM_WALLET_LINK_SCHEME],
   config: {
     screens: {
-      HomeNavigator: {
-        screens: {
-          LinkWallet: 'link_wallet',
-          SignHotspot: 'sign_hotspot',
-          PaymentScreen: 'payment',
-          RequestScreen: 'request',
-          DappLoginScreen: 'dapp_login',
-        },
-      },
+      LinkWallet: 'link_wallet',
+      SignHotspot: 'sign_hotspot',
+      PaymentScreen: 'payment',
+      DappLoginScreen: 'dapp_login',
       OnboardingNavigator: {
         screens: {
           ImportPrivateKey: 'import_key/:key',
@@ -39,6 +35,29 @@ export const linking: LinkingOptions<RootStackParamList> = {
       },
     },
   },
+}
+
+export const unauthenticatedLinking: LinkingOptions<RootStackParamList> = {
+  prefixes: [APP_LINK_SCHEME, HELIUM_WALLET_LINK_SCHEME],
+  config: {
+    screens: {
+      OnboardingNavigator: {
+        screens: {
+          ImportPrivateKey: 'import_key/:key',
+        },
+      },
+    },
+  },
+}
+
+export const useDeepLinking = () => {
+  const { restored: accountsRestored } = useAccountStorage()
+
+  if (accountsRestored) {
+    return authenticatedLinking
+  }
+
+  return unauthenticatedLinking
 }
 
 export const makePayRequestLink = ({
@@ -174,4 +193,4 @@ export const parsePaymentLink = (
   } catch (e) {}
 }
 
-export default linking
+export default authenticatedLinking
