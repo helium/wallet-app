@@ -28,11 +28,7 @@ export const authenticatedLinking: LinkingOptions<RootStackParamList> = {
       SignHotspot: 'sign_hotspot',
       PaymentScreen: 'payment',
       DappLoginScreen: 'dapp_login',
-      OnboardingNavigator: {
-        screens: {
-          ImportPrivateKey: 'import_key/:key',
-        },
-      },
+      ImportPrivateKey: 'import_key/:key',
     },
   },
 }

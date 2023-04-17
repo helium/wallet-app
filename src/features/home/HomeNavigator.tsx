@@ -19,7 +19,6 @@ import AccountTokenScreen from '../account/AccountTokenScreen'
 import AddNewAccountNavigator from './addNewAccount/AddNewAccountNavigator'
 import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
 import BurnScreen from '../burn/BurnScreen'
-import ImportPrivateKey from '../onboarding/import/ImportPrivateKey'
 import SwapNavigator from '../swaps/SwapNavigator'
 import AirdropScreen from '../account/AirdropScreen'
 
@@ -102,8 +101,6 @@ const HomeStackScreen = () => {
         name="ReImportAccountNavigator"
         component={ImportAccountNavigator}
       />
-
-      <HomeStack.Screen name="ImportPrivateKey" component={ImportPrivateKey} />
     </HomeStack.Navigator>
   )
 }

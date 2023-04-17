@@ -11,6 +11,7 @@ export type RootStackParamList = {
   PaymentScreen: undefined | PaymentRouteParam
   RequestScreen: undefined
   DappLoginScreen: { uri: string; callback: string }
+  ImportPrivateKey: { key?: string }
 }
 
 export type TabBarStackParamList = {

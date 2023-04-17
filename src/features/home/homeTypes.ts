@@ -55,7 +55,6 @@ export type HomeStackParamList = {
         }
       }
   VoteNavigator: undefined
-  ImportPrivateKey: { key?: string }
 }
 
 export type HomeNavigationProp = StackNavigationProp<HomeStackParamList>
