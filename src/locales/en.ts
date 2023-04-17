@@ -15,7 +15,7 @@ export default {
     title: 'Name this wallet',
   },
   errors: {
-    accountNotSelected: 'There must be an wallet selected to submit a txn',
+    accountNotSelected: 'There must be a wallet selected to submit a txn',
   },
   accountImport: {
     accountLimit:
@@ -624,7 +624,7 @@ export default {
     no: 'No, Cancel',
     testnet: {
       message: 'Linking requires a mainnet wallet.',
-      title: 'Walletss not found',
+      title: 'Wallets not found',
     },
     title: 'Link Helium Wallet\nto {{appName}}?',
     yes: 'Yes, Link my Wallet',
