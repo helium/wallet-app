@@ -111,8 +111,7 @@ export default {
       subtitle2: 'No one can recover these words',
       title: 'Keep these\nwords safe',
     },
-    subtitle1:
-      'Every new wallet is accessed via 24 secure words - your ‘key’.',
+    subtitle1: 'Every new wallet is accessed via 24 secure words - your ‘key’.',
     subtitle2:
       'Please ensure these are written down, kept safe, and never shared.',
     title: 'Create New\nWallet',
