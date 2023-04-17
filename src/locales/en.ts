@@ -19,7 +19,7 @@ export default {
   },
   accountImport: {
     accountLimit:
-      'You have reached the account limit.\nTo add another account, delete a wallet account and try again.',
+      'You have reached the account limit.\nTo add another account, remove a wallet account and try again.',
     accountLimitLedger:
       'You have reached the account limit.\nTo add another account, uncheck an account and try again.',
     alert: {
