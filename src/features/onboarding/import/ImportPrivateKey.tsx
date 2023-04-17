@@ -153,9 +153,13 @@ const ImportPrivateKey = () => {
       } else {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        navigation.push('AccountAssignScreen', {
+        navigation.replace('TabBarNavigator', {
+          screen: 'Home',
           params: {
-            secureAccount,
+            screen: 'AccountAssignScreen',
+            params: {
+              secureAccount,
+            },
           },
         })
       }

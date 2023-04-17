@@ -19,15 +19,20 @@ import AccountIcon from '@components/AccountIcon'
 import { useColors } from '@theme/themeHooks'
 import Config from 'react-native-config'
 import OnboardingClient, { OnboardingRecord } from '@helium/onboarding'
-import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
+import { HomeNavigationProp } from '../home/homeTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { formatAccountAlias } from '../../utils/accountUtils'
 import { getKeypair } from '../../storage/secureStorage'
 import * as Logger from '../../utils/logger'
 import useSolTxns from './useSolTxns'
 import useHeliumTxns from './useHeliumTxns'
+import {
+  RootNavigationProp,
+  RootStackParamList,
+} from '../../navigation/rootTypes'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
-type Route = RouteProp<HomeStackParamList, 'SignHotspot'>
+type Route = RouteProp<RootStackParamList, 'SignHotspot'>
 
 const onboardingClient = new OnboardingClient(Config.ONBOARDING_API_URL)
 const SignHotspot = () => {
@@ -42,6 +47,8 @@ const SignHotspot = () => {
   const helium = useHeliumTxns(parseWalletLinkToken(token).address, params)
 
   const navigation = useNavigation<HomeNavigationProp>()
+  const rootNav = useNavigation<RootNavigationProp>()
+  const { l1Network } = useAppStorage()
   const { t } = useTranslation()
   const [validated, setValidated] = useState<boolean>()
   const { accounts } = useAccountStorage()
@@ -72,14 +79,19 @@ const SignHotspot = () => {
 
       if (navigation.canGoBack()) {
         navigation.goBack()
-      } else {
-        navigation.reset({
+      } else if (l1Network === 'helium') {
+        rootNav.reset({
           index: 0,
-          routes: [{ name: 'AccountsScreen' }],
+          routes: [{ name: 'HomeNavigator' }],
+        })
+      } else {
+        rootNav.reset({
+          index: 0,
+          routes: [{ name: 'TabBarNavigator' }],
         })
       }
     },
-    [navigation, parsedToken],
+    [l1Network, navigation, parsedToken, rootNav],
   )
 
   useEffect(() => {

@@ -36,6 +36,11 @@ import {
   useGetSolanaStatusQuery,
 } from '../store/slices/solanaStatusApi'
 import { walletRestApi } from '../store/slices/walletRestApi'
+import LinkWallet from '../features/txnDelegation/LinkWallet'
+import PaymentScreen from '../features/payment/PaymentScreen'
+import SignHotspot from '../features/txnDelegation/SignHotspot'
+import DappLoginScreen from '../features/dappLogin/DappLoginScreen'
+import ImportPrivateKey from '../features/onboarding/import/ImportPrivateKey'
 
 const RootNavigator = () => {
   const navigation = useNavigation<
@@ -48,7 +53,7 @@ const RootNavigator = () => {
   const connectedWalletsRef = useRef<ConnectedWalletsRef>(null)
   const dispatch = useAppDispatch()
   const [prevL1, setPrevL1] = useState(l1Network)
-  const { data: status } = useGetSolanaStatusQuery()
+  const { data: status, isSuccess, isError } = useGetSolanaStatusQuery()
 
   const realStatus = useMemo(() => parseSolanaStatus(status), [status])
 
@@ -91,16 +96,6 @@ const RootNavigator = () => {
     }
   }, [l1Network, navigation, hasAccounts, prevL1])
 
-  const initialRouteName = useMemo(() => {
-    if (hasAccounts) {
-      return l1Network !== 'solana' &&
-        (!realStatus || realStatus.migrationStatus !== 'complete')
-        ? 'HomeNavigator'
-        : 'TabBarNavigator'
-    }
-    return 'OnboardingNavigator'
-  }, [hasAccounts, l1Network, realStatus])
-
   const handleAddNew = useCallback(() => {
     navigation.navigate('AddNewAccountNavigator')
   }, [navigation])
@@ -124,10 +119,14 @@ const RootNavigator = () => {
   }, [showConnectedWallets])
 
   useEffect(() => {
-    if (realStatus?.migrationStatus === 'complete' && l1Network === 'helium') {
+    if (
+      realStatus?.migrationStatus === 'complete' &&
+      l1Network === 'helium' &&
+      (isSuccess || isError)
+    ) {
       updateL1Network('solana')
     }
-  }, [realStatus, l1Network, updateL1Network])
+  }, [realStatus, l1Network, updateL1Network, isSuccess, isError])
 
   return (
     <ConnectedWallets
@@ -135,27 +134,52 @@ const RootNavigator = () => {
       ref={connectedWalletsRef}
       onClose={onClose}
     >
-      <RootStack.Navigator initialRouteName={initialRouteName}>
-        <>
-          {(!realStatus || realStatus.migrationStatus !== 'complete') && (
-            <RootStack.Screen
-              name="HomeNavigator"
-              component={HomeNavigator}
-              options={screenOptions}
-            />
-          )}
+      <RootStack.Navigator>
+        {l1Network === 'solana' ? (
           <RootStack.Screen
             name="TabBarNavigator"
             component={TabBarNavigator}
             options={screenOptions}
           />
+        ) : (
           <RootStack.Screen
-            key="OnboardingNavigator"
-            name="OnboardingNavigator"
-            component={OnboardingNavigator}
+            name="HomeNavigator"
+            component={HomeNavigator}
             options={screenOptions}
           />
-        </>
+        )}
+        <RootStack.Screen
+          key="OnboardingNavigator"
+          name="OnboardingNavigator"
+          component={OnboardingNavigator}
+          options={screenOptions}
+        />
+
+        <RootStack.Screen
+          name="LinkWallet"
+          component={LinkWallet}
+          options={screenOptions}
+        />
+        <RootStack.Screen
+          name="SignHotspot"
+          component={SignHotspot}
+          options={screenOptions}
+        />
+        <RootStack.Screen
+          name="PaymentScreen"
+          component={PaymentScreen}
+          options={screenOptions}
+        />
+        <RootStack.Screen
+          name="DappLoginScreen"
+          component={DappLoginScreen}
+          options={screenOptions}
+        />
+        <RootStack.Screen
+          name="ImportPrivateKey"
+          component={ImportPrivateKey}
+          options={screenOptions}
+        />
       </RootStack.Navigator>
     </ConnectedWallets>
   )

@@ -1,5 +1,4 @@
 import { Ticker } from '@helium/currency'
-import { LinkWalletRequest, SignHotspotRequest } from '@helium/wallet-link'
 import { StackNavigationProp } from '@react-navigation/stack'
 
 export type PaymentRouteParam = {
@@ -40,13 +39,10 @@ export type HomeStackParamList = {
   PaymentQrScanner: undefined
   RequestScreen: undefined
   OnboardData: undefined
-  DappLoginScreen: { uri: string; callback: string }
   AddressBookNavigator: undefined
   NotificationsNavigator: undefined
   SettingsNavigator: undefined
   AddNewContact: undefined
-  LinkWallet: LinkWalletRequest
-  SignHotspot: SignHotspotRequest & { submit?: boolean }
   AddNewAccountNavigator: undefined
   SwapNavigator: undefined
   ReImportAccountNavigator:
@@ -59,7 +55,6 @@ export type HomeStackParamList = {
         }
       }
   VoteNavigator: undefined
-  ImportPrivateKey: { key?: string }
 }
 
 export type HomeNavigationProp = StackNavigationProp<HomeStackParamList>

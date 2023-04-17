@@ -178,7 +178,7 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
 
 const TabBarNavigator = () => {
   const dispatch = useDispatch()
-  const { data: status } = useGetSolanaStatusQuery()
+  const { data: status, isSuccess, isError } = useGetSolanaStatusQuery()
 
   const realStatus = useMemo(() => parseSolanaStatus(status), [status])
 
@@ -204,6 +204,7 @@ const TabBarNavigator = () => {
 
     if (
       realStatus?.migrationStatus === 'complete' &&
+      (isSuccess || isError) &&
       !doneSolanaMigration['mainnet-beta']?.includes(
         currentAccount.solanaAddress,
       ) &&
@@ -218,6 +219,8 @@ const TabBarNavigator = () => {
     realStatus,
     cluster,
     manualMigration,
+    isSuccess,
+    isError,
   ])
 
   return (

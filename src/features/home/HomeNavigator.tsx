@@ -12,17 +12,13 @@ import SettingsNavigator from '../settings/SettingsNavigator'
 import AddNewContact from '../addressBook/AddNewContact'
 import NotificationsNavigator from '../notifications/NotificationsNavigator'
 import RequestScreen from '../request/RequestScreen'
-import LinkWallet from '../txnDelegation/LinkWallet'
-import SignHotspot from '../txnDelegation/SignHotspot'
 import PaymentQrScanner from '../payment/PaymentQrScanner'
 import AddressQrScanner from '../addressBook/AddressQrScanner'
 import VoteNavigator from '../vote/VoteNavigator'
-import DappLoginScreen from '../dappLogin/DappLoginScreen'
 import AccountTokenScreen from '../account/AccountTokenScreen'
 import AddNewAccountNavigator from './addNewAccount/AddNewAccountNavigator'
 import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
 import BurnScreen from '../burn/BurnScreen'
-import ImportPrivateKey from '../onboarding/import/ImportPrivateKey'
 import SwapNavigator from '../swaps/SwapNavigator'
 import AirdropScreen from '../account/AirdropScreen'
 
@@ -70,7 +66,6 @@ const HomeStackScreen = () => {
         component={AirdropScreen}
         options={screenOptionsTransparentModal}
       />
-      <HomeStack.Screen name="DappLoginScreen" component={DappLoginScreen} />
       <HomeStack.Screen
         name="AddressBookNavigator"
         component={AddressBookNavigator}
@@ -92,16 +87,6 @@ const HomeStackScreen = () => {
         options={screenOptions}
       />
       <HomeStack.Screen name="AddNewContact" component={AddNewContact} />
-      <HomeStack.Screen
-        name="LinkWallet"
-        component={LinkWallet}
-        options={screenOptions}
-      />
-      <HomeStack.Screen
-        name="SignHotspot"
-        component={SignHotspot}
-        options={screenOptions}
-      />
       <HomeStack.Screen name="ScanAddress" component={AddressQrScanner} />
 
       <HomeStack.Screen
@@ -116,8 +101,6 @@ const HomeStackScreen = () => {
         name="ReImportAccountNavigator"
         component={ImportAccountNavigator}
       />
-
-      <HomeStack.Screen name="ImportPrivateKey" component={ImportPrivateKey} />
     </HomeStack.Navigator>
   )
 }

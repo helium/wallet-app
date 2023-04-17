@@ -162,6 +162,11 @@ const calculateFee = (
   })
 
   const dcFee = new Balance(paymentTxn.fee || 0, CurrencyType.dataCredit)
+
+  if (!oraclePrice) {
+    return { dcFee, networkFee: undefined }
+  }
+
   let networkFee =
     netType === NetTypes.TESTNET
       ? dcFee.toTestNetworkTokens(oraclePrice)
@@ -199,7 +204,8 @@ const recalculate = (payments: Payment[], state: PaymentState) => {
 
   if (
     state.l1Network !== 'solana' &&
-    state.currencyType.ticker !== CurrencyType.mobile.ticker
+    state.currencyType.ticker !== CurrencyType.mobile.ticker &&
+    networkFee
   ) {
     maxBalance = maxBalance?.minus(networkFee)
   }
