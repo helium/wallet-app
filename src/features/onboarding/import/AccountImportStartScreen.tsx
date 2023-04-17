@@ -14,14 +14,14 @@ import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import { useOnboarding } from '../OnboardingProvider'
 import { MultiAccountStackParamList } from '../multiAccount/MultiAccountNavigatorTypes'
 import { AddNewAccountNavigationProp } from '../../home/addNewAccount/addNewAccountTypes'
-import { HomeNavigationProp } from '../../home/homeTypes'
+import { RootNavigationProp } from '../../../navigation/rootTypes'
 
 type Route = RouteProp<MultiAccountStackParamList, 'AccountImportStartScreen'>
 
 const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
   const { setOnboardingData } = useOnboarding()
   const navigation = useNavigation<ImportAccountNavigationProp>()
-  const homeNav = useNavigation<HomeNavigationProp>()
+  const rootNav = useNavigation<RootNavigationProp>()
   const addNewAcctNav = useNavigation<AddNewAccountNavigationProp>()
   const { hasAccounts, reachedAccountLimit } = useAccountStorage()
   const { t } = useTranslation()
@@ -54,8 +54,8 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
   }, [navigation])
 
   const importPrivateKey = useCallback(() => {
-    homeNav.navigate('ImportPrivateKey', { key: undefined })
-  }, [homeNav])
+    rootNav.navigate('ImportPrivateKey', { key: undefined })
+  }, [rootNav])
 
   const cliExport = useCallback(
     () => () => {
