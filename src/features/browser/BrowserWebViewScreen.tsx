@@ -11,7 +11,6 @@ import bs58 from 'bs58'
 import {
   SolanaSignMessageInput,
   SolanaSignAndSendTransactionInput,
-  SolanaSignTransactionInput,
 } from '@solana/wallet-standard-features'
 import { Balance } from '@helium/currency'
 import { Platform, StyleSheet } from 'react-native'
@@ -232,25 +231,68 @@ const BrowserWebViewScreen = () => {
 
         const outputs: { signedTransaction: Uint8Array }[] = []
 
+        let isVersionedTransaction = false
+
         // Converting int array objects to Uint8Array
-        const transactions = inputs.map(
-          ({ transaction }: SolanaSignTransactionInput) =>
-            Transaction.from(
-              Object.keys(transaction).map((k) => inputs[0].transaction[k]),
-            ),
+        const transactions = await Promise.all(
+          inputs.map(
+            async ({
+              transaction,
+              chain,
+              options,
+            }: SolanaSignAndSendTransactionInput) => {
+              const tx = new Uint8Array(
+                Object.keys(transaction).map((k) => inputs[0].transaction[k]),
+              )
+              try {
+                const versionedTx = VersionedTransaction.deserialize(tx)
+                isVersionedTransaction = !!versionedTx
+              } catch (e) {
+                isVersionedTransaction = false
+              }
+
+              return {
+                transaction: isVersionedTransaction
+                  ? VersionedTransaction.deserialize(tx)
+                  : Transaction.from(tx),
+                chain,
+                options,
+              }
+            },
+          ),
         )
 
-        const signedTransactions =
-          await anchorProvider?.wallet.signAllTransactions(transactions)
+        const signedTransactions = await Promise.all(
+          transactions.map(
+            async ({
+              transaction,
+            }: SolanaSignAndSendTransactionInput & {
+              transaction: Transaction | VersionedTransaction
+            }) => {
+              let signedTransaction:
+                | Transaction
+                | VersionedTransaction
+                | undefined
+              if (!isVersionedTransaction) {
+                // TODO: Verify when lookup table is needed
+                // transaction.add(lookupTableAddress)
+                signedTransaction =
+                  await anchorProvider?.wallet.signTransaction(
+                    transaction as Transaction,
+                  )
+              } else {
+                ;(transaction as VersionedTransaction).sign([signer])
+                signedTransaction = transaction
+              }
 
-        if (!signedTransactions) {
-          webview.current?.postMessage(
-            JSON.stringify({
-              type: 'signatureDeclined',
-            }),
-          )
-          return
-        }
+              if (!signedTransaction) {
+                throw new Error('Failed to sign transaction')
+              }
+
+              return signedTransaction
+            },
+          ),
+        )
 
         outputs.push(
           ...signedTransactions.map((signedTransaction) => {
