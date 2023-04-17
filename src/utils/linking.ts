@@ -31,6 +31,10 @@ export const authenticatedLinking: LinkingOptions<RootStackParamList> = {
       ImportPrivateKey: 'import_key/:key',
     },
   },
+  getInitialURL: async () => {
+    const url = await Linking.getInitialURL()
+    return url
+  },
 }
 
 export const unauthenticatedLinking: LinkingOptions<RootStackParamList> = {

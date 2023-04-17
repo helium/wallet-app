@@ -94,7 +94,7 @@ const PaymentItem = ({
   ...boxProps
 }: Props) => {
   const { colorStyle } = useOpacity('primaryText', 0.3)
-  const { dcToNetworkTokens } = useBalance()
+  const { dcToNetworkTokens, oraclePrice } = useBalance()
   const { t } = useTranslation()
   const { secondaryText } = useColors()
   const { l1Network } = useAppStorage()
@@ -138,10 +138,10 @@ const PaymentItem = ({
   ])
 
   const feeAsTokens = useMemo(() => {
-    if (!fee) return
+    if (!fee || !oraclePrice) return
 
     return dcToNetworkTokens(fee)
-  }, [dcToNetworkTokens, fee])
+  }, [dcToNetworkTokens, fee, oraclePrice])
 
   const handleAddressBookSelected = useCallback(() => {
     Keyboard.dismiss()
