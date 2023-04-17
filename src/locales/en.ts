@@ -10,20 +10,20 @@ export default {
     },
   },
   accountAssign: {
-    AccountNamePlaceholder: 'Account Name',
+    AccountNamePlaceholder: 'Wallet Name',
     setDefault: 'Set as Default',
-    title: 'Name this account',
+    title: 'Name this wallet',
   },
   errors: {
-    accountNotSelected: 'There must be an account selected to submit a txn',
+    accountNotSelected: 'There must be a wallet selected to submit a txn',
   },
   accountImport: {
     accountLimit:
-      'You have reached the account limit.\nTo add another account, sign out of a wallet account and try again.',
+      'You have reached the wallet limit.\nTo add another wallet, remove a wallet account and try again.',
     accountLimitLedger:
-      'You have reached the account limit.\nTo add another account, uncheck an account and try again.',
+      'You have reached the wallet limit.\nTo add another wallet, uncheck a wallet and try again.',
     alert: {
-      body: "This seed phrase doesn't correspond to a Helium account",
+      body: "This seed phrase doesn't correspond to a Helium wallet",
       title: 'Error',
     },
     cli: {
@@ -45,7 +45,7 @@ export default {
     cliImport: 'CLI',
     complete: {
       subtitle: 'This will just take a moment.',
-      title: 'Recovering Account...',
+      title: 'Recovering Wallet...',
     },
     confirm: {
       next: 'Submit Seed Phrase',
@@ -57,12 +57,12 @@ export default {
     recoveryPhrase: 'Secret Phrase',
     keyImport: 'Private Key',
     subTitle:
-      'To import your existing Helium account, enter its <havelockBlue>12</havelockBlue> or <jazzberryJam>24</jazzberryJam> word security key.',
-    title: 'Import\nAccount',
+      'To import your existing Helium wallet, enter its <havelockBlue>12</havelockBlue> or <jazzberryJam>24</jazzberryJam> word security key.',
+    title: 'Import\nWallet',
     wordEntry: {
       changeWordAmount: 'I have a {{totalWords}}-word recovery phrase',
       placeholder: '{{ordinal}} word',
-      title: "Enter your\naccount's 12 or 24\nsecurity words.",
+      title: "Enter your\nwallet's 12 or 24\nsecurity words.",
       word: 'Word {{ordinal}}',
     },
     privateKey: {
@@ -72,9 +72,9 @@ export default {
       error: 'Invalid Private Key',
       errorPassword: 'Invalid Password',
       exists:
-        'The account you\'re importing already exists as "{{alias}}". No further action is required.',
+        'The wallet you\'re importing already exists as "{{alias}}". No further action is required.',
       body: 'You are importing a private key with the following public key.',
-      action: 'Import Account',
+      action: 'Import Wallet',
       passwordError: 'You must enter a password to decrypt your private key',
       passwordPlaceholder: 'Enter Password',
     },
@@ -90,18 +90,18 @@ export default {
       subtitle: 'Re-enter your PIN',
       title: 'Repeat PIN',
     },
-    createButtonTitle: 'Create an Account',
+    createButtonTitle: 'Create a Wallet',
     createImport: {
       create: 'Create a new Wallet',
       helperText:
-        'Coming from Helium App? Use the\nsame 12 words to import an Account.',
+        'Coming from Helium App? Use the\nsame 12 words to import a Wallet.',
       import: 'Import a Wallet',
       importPrivateKey: 'Import a Private Key',
       ledger: 'Pair with Ledger',
       title: 'What would\nyou like to do?',
     },
     createPin: {
-      subtitle: 'Let’s secure your account with a PIN Code.',
+      subtitle: 'Let’s secure your wallet with a PIN Code.',
       title: 'Set PIN Code',
     },
     passphrase: {
@@ -111,11 +111,10 @@ export default {
       subtitle2: 'No one can recover these words',
       title: 'Keep these\nwords safe',
     },
-    subtitle1:
-      'Every new account is accessed via 24 secure words - your ‘key’.',
+    subtitle1: 'Every new wallet is accessed via 24 secure words - your ‘key’.',
     subtitle2:
       'Please ensure these are written down, kept safe, and never shared.',
-    title: 'Create New\nAccount',
+    title: 'Create New\nWallet',
   },
   airdropScreen: {
     title: 'Token Faucet',
@@ -394,7 +393,7 @@ export default {
     airdrop: 'Airdrop',
   },
   addNewAccount: {
-    title: 'Add New Account',
+    title: 'Add New Wallet',
   },
   addNewContact: {
     addContact: 'Add Contact',
@@ -421,10 +420,10 @@ export default {
   auth: {
     enterCurrent: 'Enter your current PIN to continue',
     error: 'Incorrect PIN',
-    signOut: 'Sign Out',
+    signOut: 'Remove Wallet',
     signOutAlert: {
-      body: 'You are signing out of all your accounts. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your Address Book\n- your HNT\n- your Wallet',
-      title: 'Warning! Sign out of all accounts?',
+      body: 'You are removing all of your wallets. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your Address Book\n- your HNT\n- your Wallet',
+      title: 'Warning! Remove all wallets?',
     },
     title: 'Enter Your PIN',
   },
@@ -438,8 +437,8 @@ export default {
     },
     memo: 'Memo',
     noAcct: {
-      message: 'No account for this network found',
-      title: 'Account not found',
+      message: 'No wallet for this network found',
+      title: 'Wallet not found',
     },
     recipient: 'Recipient Address',
     swipeToBurn: 'Swipe to Burn',
@@ -451,13 +450,13 @@ export default {
     amount: 'Amount (DC)',
   },
   connectedWallets: {
-    add: 'Add New Account',
-    addTestnet: 'Add New Testnet Account',
+    add: 'Add New Wallet',
+    addTestnet: 'Add New Testnet Wallet',
   },
   dappLogin: {
     account: {
-      subtitle: 'Which account do you want to authenticate with {{appName}}?',
-      title: 'Choose your\nAccount',
+      subtitle: 'Which wallet do you want to authenticate with {{appName}}?',
+      title: 'Choose your\nWallet',
     },
     connect: {
       continue: 'Continue',
@@ -490,7 +489,7 @@ export default {
   },
   generic: {
     airdrop: 'Airdrop',
-    account: 'Account',
+    account: 'Wallet',
     and: 'and',
     back: 'Back',
     cancel: 'Cancel',
@@ -593,19 +592,19 @@ export default {
       title: 'Looking\nfor Devices',
     },
     show: {
-      accountsAlreadyLinked: 'Accounts Already Linked ({{count}})',
-      addNewAccount: 'Add New Account',
-      alias: 'Ledger Account {{accountIndex}}',
+      accountsAlreadyLinked: 'Wallets Already Linked ({{count}})',
+      addNewAccount: 'Add New Wallet',
+      alias: 'Ledger Wallet {{accountIndex}}',
       close: 'Close',
       deselectAll: 'Deselect All',
       emptyAccount:
-        "Can't add a new account before you've received assets on your {{account}}",
+        "Can't add a new wallet before you've received assets on your {{account}}",
       help: 'Verify that the address shown on the Ledger device matches.',
-      next: 'Import Account(s)',
+      next: 'Import Wallet(s)',
       selectAll: 'Select All',
       subtitle:
         'This Ledger device can authorize transactions for the below Helium Account. ',
-      title: 'Select Accounts',
+      title: 'Select Wallets',
     },
     start: {
       help: 'How does it work?',
@@ -615,8 +614,8 @@ export default {
       title: 'Pair with Ledger',
     },
     success: {
-      next: 'View Account',
-      subtitle: 'Your Ledger account is now available in your Helium Wallet.',
+      next: 'View Wallet',
+      subtitle: 'Your Ledger wallet is now available in your Helium Wallet.',
       title: 'Ledger Paired Successfully',
     },
   },
@@ -624,8 +623,8 @@ export default {
     body: 'By Linking Helium Wallet to {{appName}}, you can safely sign blockchain transactions without re-entering your seed phrase.',
     no: 'No, Cancel',
     testnet: {
-      message: 'Linking requires a mainnet account.',
-      title: 'Accounts not found',
+      message: 'Linking requires a mainnet wallet.',
+      title: 'Wallets not found',
     },
     title: 'Link Helium Wallet\nto {{appName}}?',
     yes: 'Yes, Link my Wallet',
@@ -670,7 +669,7 @@ export default {
   ],
   payment: {
     addRecipient: '+ Add Recipient',
-    backToAccounts: 'Back to Accounts',
+    backToAccounts: 'Back to Wallets',
     enterAddress: 'Enter Address',
     enterAmount: 'Enter {{ticker}} Amount',
     enterMemo: 'Enter Memo (Optional)',
@@ -685,7 +684,7 @@ export default {
         "Sending MOBILE has a small transaction fee that's paid from your HNT balance. If you have a 0 HNT balance, the payment will not succeed.",
       title: 'MOBILE Payment',
     },
-    netTypeQrError: "No accounts support the scanned address's network type.",
+    netTypeQrError: "No wallets support the scanned address's network type.",
     pay: 'Pay',
     qrScanFail: {
       message:
@@ -696,7 +695,7 @@ export default {
     selfPay: 'Self Pay',
     send: 'Send',
     sendButton: 'Swipe to Send {{ticker}}',
-    senderAccount: 'Sender Account',
+    senderAccount: 'Sender Wallet',
     sending: 'Sending...',
     solana: {
       warning: {
@@ -717,10 +716,10 @@ export default {
     wrongNetType: 'Wrong Net Type',
   },
   placeholder: {
-    accountBalanceValue: 'Account Balance: {{balance}}',
-    enterAccountAddress: 'Enter Account Address',
+    accountBalanceValue: 'Wallet Balance: {{balance}}',
+    enterAccountAddress: 'Enter Wallet Address',
     fetchMoreActivity: 'Fetch More Activity',
-    getAccountData: 'Get Account Data',
+    getAccountData: 'Get Wallet Data',
   },
   qrScanner: {
     deniedAlert: {
@@ -745,29 +744,29 @@ export default {
     alert: {
       button12: '12 Words',
       button24: '24 Words',
-      message: 'Does your account {{address}} have 12 or 24 security words?',
-      title: 'Restore Account',
+      message: 'Does your wallet {{address}} have 12 or 24 security words?',
+      title: 'Restore Wallet',
     },
     errorAlert: {
       message:
-        'The words you entered do not match the account you are restoring.',
-      title: 'Error Restoring Account',
+        'The words you entered do not match the wallet you are restoring.',
+      title: 'Error Restoring Wallet',
     },
-    missing: 'Account has no private key. Tap to restore.',
+    missing: 'Wallet has no private key. Tap to restore.',
     missingAlert: {
-      button1: 'Restore account with 12-24 Words',
+      button1: 'Restore wallet with 12-24 Words',
       message:
-        'Your private key for account {{address}} is missing and must be restored.',
+        'Your private key for wallet {{address}} is missing and must be restored.',
       title: 'Private Key Not Found',
     },
   },
   settings: {
     confirmSignout: {
       forgotAlert: {
-        body: 'Would you like to reveal your accounts words?',
+        body: 'Would you like to reveal your wallets words?',
         title: 'Reveal Words',
       },
-      title: 'Confirm Your\nWords To Sign Out',
+      title: 'Confirm Your\nWords To Remove Wallet Data.',
     },
     revealPrivateKey: {
       alertMessage:
@@ -788,20 +787,20 @@ export default {
     },
     sections: {
       account: {
-        alias: 'Account Alias',
+        alias: 'Wallet Alias',
         copyAddress: 'Copy Address',
         revealWords: 'Reveal Words',
         shareAddress: 'Share Address',
-        signOut: 'Sign Out',
+        signOut: 'Remove Wallet',
         signOutAlert: {
-          body: 'You are signing out of your account, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your HNT\n- your Wallet',
+          body: 'You are removing your wallet, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your HNT\n- your Wallet',
           bodyLastAccount:
-            'You are signing out of your only account, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your Address Book\n- your HNT\n- your Wallet',
+            'You are removing your only wallet, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your Address Book\n- your HNT\n- your Wallet',
           iCloudMessage:
             '\n\nAny device using the same iCloud account will also be signed out.',
-          title: 'Sign Out of {{alias}}?',
+          title: 'Remove {{alias}}?',
         },
-        title: '{{alias}} Account Settings',
+        title: '{{alias}} Wallet Settings',
         migrateWallet: 'Migrate Wallet',
       },
       app: {
@@ -814,16 +813,16 @@ export default {
       backup: {
         revealPrivateKey: 'Reveal Private Key',
         revealWords: 'Reveal Words',
-        title: '{{alias}} Account Backup',
+        title: '{{alias}} Wallet Backup',
       },
       defaultAccount: {
         disableMessage:
-          'Wallet app requires a default account. Select a different account by tapping its account settings to set as default.',
-        disableTitle: 'Default Account Required',
+          'Wallet app requires a default wallet. Select a different account by tapping its account settings to set as default.',
+        disableTitle: 'Default Wallet Required',
         enableMessage:
-          'This will update your default account from {{aliasOld}} to {{aliasNew}}. You can update this in Settings later if you change your mind.',
-        enableTitle: 'Update Default Account?',
-        title: 'Default Account',
+          'This will update your default wallet from {{aliasOld}} to {{aliasNew}}. You can update this in Settings later if you change your mind.',
+        enableTitle: 'Update Default Wallet?',
+        title: 'Default Wallet',
       },
       dev: {
         solana: {
@@ -840,7 +839,7 @@ export default {
           enablePrompt: {
             getTnt: 'Get TNT',
             message:
-              'Importing and Creating Testnet accounts enabled. To acquire TNT (Testnet tokens), go to faucet.helium.wtf.',
+              'Importing and Creating Testnet wallets enabled. To acquire TNT (Testnet tokens), go to faucet.helium.wtf.',
             title: 'Enable Testnet Access',
           },
           helperText: 'To disable Testnet, signout of of\nall Testnet accounts',
