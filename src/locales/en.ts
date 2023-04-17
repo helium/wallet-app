@@ -421,10 +421,10 @@ export default {
   auth: {
     enterCurrent: 'Enter your current PIN to continue',
     error: 'Incorrect PIN',
-    signOut: 'Delete Account',
+    signOut: 'Remove Account',
     signOutAlert: {
-      body: 'You are deleting all of your accounts. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your Address Book\n- your HNT\n- your Wallet',
-      title: 'Warning! Delete all accounts?',
+      body: 'You are removing all of your accounts. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your Address Book\n- your HNT\n- your Wallet',
+      title: 'Warning! Remove all accounts?',
     },
     title: 'Enter Your PIN',
   },
@@ -767,7 +767,7 @@ export default {
         body: 'Would you like to reveal your accounts words?',
         title: 'Reveal Words',
       },
-      title: 'Confirm Your\nWords To Delete Account Data.',
+      title: 'Confirm Your\nWords To Remove Account Data.',
     },
     revealPrivateKey: {
       alertMessage:
@@ -792,14 +792,14 @@ export default {
         copyAddress: 'Copy Address',
         revealWords: 'Reveal Words',
         shareAddress: 'Share Address',
-        signOut: 'Delete Account',
+        signOut: 'Remove Account',
         signOutAlert: {
-          body: 'You are deleting your account, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your HNT\n- your Wallet',
+          body: 'You are removing your account, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your HNT\n- your Wallet',
           bodyLastAccount:
-            'You are deleting your only account, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your Address Book\n- your HNT\n- your Wallet',
+            'You are removing your only account, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your Address Book\n- your HNT\n- your Wallet',
           iCloudMessage:
             '\n\nAny device using the same iCloud account will also be signed out.',
-          title: 'Delete {{alias}}?',
+          title: 'Remove {{alias}}?',
         },
         title: '{{alias}} Account Settings',
         migrateWallet: 'Migrate Wallet',
