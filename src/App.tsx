@@ -31,7 +31,6 @@ import NetworkAwareStatusBar from './components/NetworkAwareStatusBar'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
 import { navigationRef } from './navigation/NavigationHelper'
 import SplashScreen from './components/SplashScreen'
-import SentinelScreen from './components/SentinelScreen'
 
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -109,44 +108,42 @@ const App = () => {
                 {client && (
                   <ApolloProvider client={client}>
                     <LockScreen>
-                      <SentinelScreen migrationStatusOverride={undefined}>
-                        <AccountProvider
-                          extendConnection={false}
-                          commitment="confirmed"
-                          connection={
-                            anchorProvider?.connection ||
-                            getConnection(
-                              'devnet',
-                              Config.RPC_SESSION_KEY_FALLBACK,
-                            )
-                          }
-                        >
-                          <WalletConnectProvider>
-                            {accountsRestored && (
-                              <>
-                                <NavigationContainer
-                                  theme={navTheme}
-                                  linking={linking}
-                                  ref={navigationRef}
-                                >
-                                  <BalanceProvider>
-                                    <TransactionProvider>
-                                      <NetworkAwareStatusBar />
-                                      <RootNavigator />
-                                    </TransactionProvider>
-                                  </BalanceProvider>
-                                </NavigationContainer>
-                                <SecurityScreen
-                                  visible={
-                                    appState !== 'active' &&
-                                    appState !== 'unknown'
-                                  }
-                                />
-                              </>
-                            )}
-                          </WalletConnectProvider>
-                        </AccountProvider>
-                      </SentinelScreen>
+                      <AccountProvider
+                        extendConnection={false}
+                        commitment="confirmed"
+                        connection={
+                          anchorProvider?.connection ||
+                          getConnection(
+                            'devnet',
+                            Config.RPC_SESSION_KEY_FALLBACK,
+                          )
+                        }
+                      >
+                        <WalletConnectProvider>
+                          {accountsRestored && (
+                            <>
+                              <NavigationContainer
+                                theme={navTheme}
+                                linking={linking}
+                                ref={navigationRef}
+                              >
+                                <BalanceProvider>
+                                  <TransactionProvider>
+                                    <NetworkAwareStatusBar />
+                                    <RootNavigator />
+                                  </TransactionProvider>
+                                </BalanceProvider>
+                              </NavigationContainer>
+                              <SecurityScreen
+                                visible={
+                                  appState !== 'active' &&
+                                  appState !== 'unknown'
+                                }
+                              />
+                            </>
+                          )}
+                        </WalletConnectProvider>
+                      </AccountProvider>
                     </LockScreen>
                   </ApolloProvider>
                 )}
