@@ -11,11 +11,6 @@ import { useAppVersion } from '@hooks/useDevice'
 import useCopyText from '@hooks/useCopyText'
 import useAlert from '@hooks/useAlert'
 import CloseButton from '@components/CloseButton'
-import { NetTypes } from '@helium/address'
-import {
-  parseSolanaStatus,
-  useGetSolanaStatusQuery,
-} from '../../store/slices/solanaStatusApi'
 import { HomeNavigationProp } from '../home/homeTypes'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
 import { SUPPORTED_LANGUAGUES } from '../../utils/i18n'
@@ -47,7 +42,6 @@ const Settings = () => {
   const {
     currentAccount,
     accounts,
-    sortedTestnetAccounts,
     defaultAccountAddress,
     updateDefaultAccountAddress,
     signOut,
@@ -57,24 +51,18 @@ const Settings = () => {
     authInterval,
     convertToCurrency,
     currency,
-    enableTestnet,
     pin: appPin,
     requirePinForPayment,
     solanaNetwork,
     updateAuthInterval,
     updateConvertToCurrency,
     updateCurrency,
-    updateEnableTestnet,
     updateRequirePinForPayment,
     updateSolanaNetwork,
     l1Network,
-    updateL1Network,
   } = useAppStorage()
   const copyText = useCopyText()
   const { showOKAlert, showOKCancelAlert } = useAlert()
-  const { data: status } = useGetSolanaStatusQuery()
-
-  const realStatus = useMemo(() => parseSolanaStatus(status), [status])
 
   const isDefaultAccount = useMemo(
     () => defaultAccountAddress === currentAccount?.address,
@@ -280,29 +268,6 @@ const Settings = () => {
     [updateSolanaNetwork],
   )
 
-  const handleToggleEnableTestnet = useCallback(async () => {
-    updateEnableTestnet(!enableTestnet)
-    if (enableTestnet) {
-      return
-    }
-
-    Alert.alert(
-      t('settings.sections.dev.testnet.enablePrompt.title'),
-      t('settings.sections.dev.testnet.enablePrompt.message'),
-      [
-        {
-          text: t('generic.cancel'),
-          style: 'destructive',
-          onPress: () => updateEnableTestnet(false),
-        },
-        {
-          text: t('generic.ok'),
-          style: 'default',
-        },
-      ],
-    )
-  }, [enableTestnet, t, updateEnableTestnet])
-
   const handleUpdateAlias = useCallback(
     () => settingsNav.push('UpdateAlias'),
     [settingsNav],
@@ -396,37 +361,6 @@ const Settings = () => {
 
     let devData: SettingsListItemType[] = []
 
-    if (
-      realStatus?.migrationStatus !== 'complete' &&
-      currentAccount?.netType === NetTypes.MAINNET
-    ) {
-      devData.push(
-        {
-          title: t('settings.sections.dev.solana.title'),
-          value: l1Network === 'solana',
-          onToggle: () =>
-            updateL1Network(l1Network === 'helium' ? 'solana' : 'helium'),
-          helperText: t('settings.sections.dev.solana.helperText'),
-          onPress: () => {
-            showOKAlert({
-              message: t('settings.sections.dev.solana.prompt.message'),
-              title: t('settings.sections.dev.solana.prompt.title'),
-            })
-          },
-        },
-        {
-          title: t('settings.sections.dev.testnet.title'),
-          value: enableTestnet,
-          onToggle: handleToggleEnableTestnet,
-          disabled: !!sortedTestnetAccounts.length && enableTestnet,
-          helperText:
-            sortedTestnetAccounts.length && enableTestnet
-              ? t('settings.sections.dev.testnet.helperText')
-              : undefined,
-        },
-      )
-    }
-
     if (l1Network === 'solana') {
       const items = [
         { label: 'Devnet', value: 'devnet' },
@@ -434,7 +368,6 @@ const Settings = () => {
         {
           label: 'Mainnet-Beta',
           value: 'mainnet-beta',
-          disabled: realStatus?.migrationStatus !== 'complete',
         },
       ]
 
@@ -606,7 +539,6 @@ const Settings = () => {
     copyText,
     currency,
     currentAccount,
-    enableTestnet,
     handleCopyAddress,
     handleCurrencyTypeChange,
     handleIntervalSelected,
@@ -620,21 +552,16 @@ const Settings = () => {
     handleShareAddress,
     handleSignOut,
     handleSolanaNetworkChange,
-    handleToggleEnableTestnet,
     handleUpdateAlias,
     isDefaultAccount,
     isPinRequired,
     l1Network,
     language,
     requirePinForPayment,
-    showOKAlert,
     solanaNetwork,
-    sortedTestnetAccounts.length,
     t,
     updateConvertToCurrency,
-    updateL1Network,
     version,
-    realStatus,
     handleMigrateWallet,
   ])
 

@@ -19,7 +19,6 @@ import {
   RootNavigationProp,
   TabBarNavigationProp,
 } from './rootTypes'
-import HomeNavigator from '../features/home/HomeNavigator'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import OnboardingNavigator from '../features/onboarding/OnboardingNavigator'
 import TabBarNavigator from './TabBarNavigator'
@@ -31,10 +30,6 @@ import ConnectedWallets, {
 import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
-import {
-  parseSolanaStatus,
-  useGetSolanaStatusQuery,
-} from '../store/slices/solanaStatusApi'
 import { walletRestApi } from '../store/slices/walletRestApi'
 import LinkWallet from '../features/txnDelegation/LinkWallet'
 import PaymentScreen from '../features/payment/PaymentScreen'
@@ -48,14 +43,11 @@ const RootNavigator = () => {
   >()
   const colors = useColors()
   const { hasAccounts } = useAccountStorage()
-  const { l1Network, updateL1Network } = useAppStorage()
+  const { l1Network } = useAppStorage()
   const RootStack = createStackNavigator<RootStackParamList>()
   const connectedWalletsRef = useRef<ConnectedWalletsRef>(null)
   const dispatch = useAppDispatch()
   const [prevL1, setPrevL1] = useState(l1Network)
-  const { data: status, isSuccess, isError } = useGetSolanaStatusQuery()
-
-  const realStatus = useMemo(() => parseSolanaStatus(status), [status])
 
   const screenOptions = useMemo(
     () =>
@@ -77,17 +69,10 @@ const RootNavigator = () => {
   useEffect(() => {
     if (!navigation || l1Network === prevL1) return
     if (hasAccounts) {
-      if (l1Network !== 'solana') {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'HomeNavigator' }],
-        })
-      } else {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'TabBarNavigator' }],
-        })
-      }
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'HomeNavigator' }],
+      })
     } else {
       navigation.reset({
         index: 0,
@@ -118,16 +103,6 @@ const RootNavigator = () => {
     }
   }, [showConnectedWallets])
 
-  useEffect(() => {
-    if (
-      realStatus?.migrationStatus === 'complete' &&
-      l1Network === 'helium' &&
-      (isSuccess || isError)
-    ) {
-      updateL1Network('solana')
-    }
-  }, [realStatus, l1Network, updateL1Network, isSuccess, isError])
-
   return (
     <ConnectedWallets
       onAddNew={handleAddNew}
@@ -135,19 +110,11 @@ const RootNavigator = () => {
       onClose={onClose}
     >
       <RootStack.Navigator>
-        {l1Network === 'solana' ? (
-          <RootStack.Screen
-            name="TabBarNavigator"
-            component={TabBarNavigator}
-            options={screenOptions}
-          />
-        ) : (
-          <RootStack.Screen
-            name="HomeNavigator"
-            component={HomeNavigator}
-            options={screenOptions}
-          />
-        )}
+        <RootStack.Screen
+          name="TabBarNavigator"
+          component={TabBarNavigator}
+          options={screenOptions}
+        />
         <RootStack.Screen
           key="OnboardingNavigator"
           name="OnboardingNavigator"

@@ -20,10 +20,6 @@ import Globe from '@assets/images/earth-globe.svg'
 import { isBefore, parseISO } from 'date-fns'
 import { useNotificationStorage } from '@storage/NotificationStorageProvider'
 import { useDispatch } from 'react-redux'
-import {
-  parseSolanaStatus,
-  useGetSolanaStatusQuery,
-} from '../store/slices/solanaStatusApi'
 import { useGetNotificationsQuery } from '../store/slices/walletRestApi'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
@@ -178,9 +174,6 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
 
 const TabBarNavigator = () => {
   const dispatch = useDispatch()
-  const { data: status, isSuccess, isError } = useGetSolanaStatusQuery()
-
-  const realStatus = useMemo(() => parseSolanaStatus(status), [status])
 
   const {
     doneSolanaMigration,
@@ -203,8 +196,6 @@ const TabBarNavigator = () => {
     }
 
     if (
-      realStatus?.migrationStatus === 'complete' &&
-      (isSuccess || isError) &&
       !doneSolanaMigration['mainnet-beta']?.includes(
         currentAccount.solanaAddress,
       ) &&
@@ -215,12 +206,9 @@ const TabBarNavigator = () => {
   }, [
     currentAccount,
     doneSolanaMigration,
-    updateSolanaNetwork,
-    realStatus,
     cluster,
     manualMigration,
-    isSuccess,
-    isError,
+    updateSolanaNetwork,
   ])
 
   return (
