@@ -143,7 +143,8 @@ const BrowserWebViewScreen = () => {
               options,
             }: SolanaSignAndSendTransactionInput) => {
               const tx = new Uint8Array(
-                Object.keys(transaction).map((k) => inputs[0].transaction[k]),
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                Object.keys(transaction).map((k) => (transaction as any)[k]),
               )
               try {
                 const versionedTx = VersionedTransaction.deserialize(tx)
@@ -183,8 +184,9 @@ const BrowserWebViewScreen = () => {
                     transaction as Transaction,
                   )
               } else {
-                ;(transaction as VersionedTransaction).sign([signer])
-                signedTransaction = transaction
+                const vt = transaction as VersionedTransaction
+                vt.sign([signer])
+                signedTransaction = vt
               }
 
               if (!signedTransaction) {
@@ -242,7 +244,8 @@ const BrowserWebViewScreen = () => {
               options,
             }: SolanaSignAndSendTransactionInput) => {
               const tx = new Uint8Array(
-                Object.keys(transaction).map((k) => inputs[0].transaction[k]),
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                Object.keys(transaction).map((k) => (transaction as any)[k]),
               )
               try {
                 const versionedTx = VersionedTransaction.deserialize(tx)
@@ -281,8 +284,9 @@ const BrowserWebViewScreen = () => {
                     transaction as Transaction,
                   )
               } else {
-                ;(transaction as VersionedTransaction).sign([signer])
-                signedTransaction = transaction
+                const vt = transaction as VersionedTransaction
+                vt.sign([signer])
+                signedTransaction = vt
               }
 
               if (!signedTransaction) {
