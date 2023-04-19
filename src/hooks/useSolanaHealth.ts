@@ -78,8 +78,7 @@ const useSolanaHealth = () => {
   }, [isHealthy, t, slowPing])
 
   useEffect(() => {
-    if (isHealthy) return
-    dispatch(appSlice.actions.setShowBanner(true))
+    dispatch(appSlice.actions.setShowBanner(!isHealthy))
   }, [dispatch, isHealthy])
 
   return {
