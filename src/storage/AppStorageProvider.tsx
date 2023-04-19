@@ -34,7 +34,7 @@ const useAppStorageHook = () => {
   const [convertToCurrency, setConvertToCurrency] = useState(false)
   const [enableTestnet, setEnableTestnet] = useState(false)
   const [solanaNetwork, setSolanaNetwork] = useState<Cluster>('mainnet-beta')
-  const [l1Network, setL1Network] = useState<L1Network>('helium')
+  const [l1Network, setL1Network] = useState<L1Network>('solana')
   const [scannedAddress, setScannedAddress] = useState<string>()
   const [dAppTutorialShown, setDAppTutorialShown] = useState<
     Record<Cluster, boolean>
@@ -76,9 +76,6 @@ const useAppStorageHook = () => {
       const nextSolanaNetwork = (await getSecureItem(
         'solanaNetwork',
       )) as Cluster | null
-      const nextL1Network = (await getSecureItem(
-        'l1Network',
-      )) as L1Network | null
       const nextDAppShown = await AsyncStorage.getItem(DAPP_TUTORIAL_SHOWN)
       const nextVoteShown = await AsyncStorage.getItem(VOTE_TUTORIAL_SHOWN)
       const nextShowNumericChange = await getSecureItem('showNumericChange')
@@ -105,7 +102,7 @@ const useAppStorageHook = () => {
       setConvertToCurrency(nextConvertToCurrency === 'true')
       setEnableTestnet(nextEnableTestnet === 'true')
       setSolanaNetwork(nextSolanaNetwork || 'mainnet-beta')
-      setL1Network(nextL1Network || 'helium')
+      setL1Network('solana')
       setDAppTutorialShown(
         JSON.parse(nextDAppShown || '{}') as Record<string, boolean>,
       )
@@ -294,7 +291,7 @@ const initialState = {
   convertToCurrency: false,
   currency: 'USD',
   enableTestnet: false,
-  l1Network: 'helium' as L1Network,
+  l1Network: 'solana' as L1Network,
   locked: false,
   pin: undefined,
   requirePinForPayment: false,
