@@ -14,7 +14,6 @@ import { useTranslation } from 'react-i18next'
 import Remove from '@assets/images/remove.svg'
 import ContactIcon from '@assets/images/account.svg'
 import {
-  ActivityIndicator,
   Keyboard,
   NativeSyntheticEvent,
   TextInputEndEditingEventData,
@@ -31,7 +30,6 @@ import TextInput from '@components/TextInput'
 import AccountIcon from '@components/AccountIcon'
 import BackgroundFill from '@components/BackgroundFill'
 import { Theme } from '@theme/theme'
-import { useIsHotspotOrValidatorQuery } from '../../generated/graphql'
 import { CSAccount } from '../../storage/cloudStorage'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import { accountNetType, ellipsizeAddress } from '../../utils/accountUtils'
@@ -99,18 +97,6 @@ const PaymentItem = ({
   const { secondaryText } = useColors()
   const { l1Network } = useAppStorage()
 
-  const { error, loading, data } = useIsHotspotOrValidatorQuery({
-    variables: {
-      address: address || '',
-    },
-    skip: !address || !Address.isValid(address),
-  })
-
-  const addressIsHotspot = useMemo(
-    () => data?.isHotspotOrValidator === true,
-    [data],
-  )
-
   const addressIsWrongNetType = useMemo(
     () =>
       address !== undefined &&
@@ -121,21 +107,8 @@ const PaymentItem = ({
 
   useEffect(() => {
     if (!onUpdateError) return
-    onUpdateError(
-      index,
-      addressIsHotspot ||
-        addressIsWrongNetType ||
-        error !== undefined ||
-        loading,
-    )
-  }, [
-    addressIsHotspot,
-    addressIsWrongNetType,
-    error,
-    index,
-    loading,
-    onUpdateError,
-  ])
+    onUpdateError(index, addressIsWrongNetType)
+  }, [index, onUpdateError, addressIsWrongNetType])
 
   const feeAsTokens = useMemo(() => {
     if (!fee || !oraclePrice) return
@@ -180,10 +153,10 @@ const PaymentItem = ({
       handleAddressError({
         address: text || '',
         index,
-        isHotspotOrValidator: addressIsHotspot,
+        isHotspotOrValidator: false,
       })
     },
-    [addressIsHotspot, handleAddressError, index],
+    [handleAddressError, index],
   )
 
   const handleRemove = useCallback(() => {
@@ -253,30 +226,13 @@ const PaymentItem = ({
                       returnKeyType: 'done',
                     }}
                   />
-                  <Text
-                    opacity={
-                      error || data?.isHotspotOrValidator || hasError ? 100 : 0
-                    }
-                    marginHorizontal="m"
-                    variant="body3"
-                    marginBottom="xxs"
-                    color="red500"
-                  >
-                    {error
-                      ? t('generic.loadFailed')
-                      : t('generic.notValidAddress')}
-                  </Text>
                 </Box>
-                {loading ? (
-                  <ActivityIndicator size="small" color={secondaryText} />
-                ) : (
-                  <TouchableOpacityBox
-                    marginEnd="l"
-                    onPress={handleAddressBookSelected}
-                  >
-                    <AddressIcon />
-                  </TouchableOpacityBox>
-                )}
+                <TouchableOpacityBox
+                  marginEnd="l"
+                  onPress={handleAddressBookSelected}
+                >
+                  <AddressIcon />
+                </TouchableOpacityBox>
               </Box>
             </Box>
           </Box>

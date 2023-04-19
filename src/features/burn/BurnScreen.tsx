@@ -360,13 +360,10 @@ const BurnScreen = () => {
     ({ address }: { address: string }) => {
       let invalidAddress = false
 
-      switch (l1Network) {
-        case 'helium':
-          invalidAddress = !!address && !Address.isValid(address)
-          break
-        case 'solana':
-          invalidAddress = !!address && !solAddressIsValid(address)
-          break
+      if (isDelegate) {
+        invalidAddress = !!address && !Address.isValid(address)
+      } else {
+        invalidAddress = !!address && !solAddressIsValid(address)
       }
 
       const wrongNetType =
@@ -376,7 +373,7 @@ const BurnScreen = () => {
 
       setHasError(invalidAddress || wrongNetType)
     },
-    [l1Network, networkType],
+    [networkType, isDelegate],
   )
 
   if (!amountBalance) return null
