@@ -114,7 +114,7 @@ const App = () => {
                         connection={
                           anchorProvider?.connection ||
                           getConnection(
-                            'devnet',
+                            'mainnet-beta',
                             Config.RPC_SESSION_KEY_FALLBACK,
                           )
                         }
