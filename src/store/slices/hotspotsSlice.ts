@@ -1,6 +1,6 @@
 import { AnchorProvider } from '@coral-xyz/anchor'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { PublicKey } from '@solana/web3.js'
+import { Cluster, PublicKey } from '@solana/web3.js'
 import { CompressedNFT } from 'src/types/solana'
 import { CSAccount } from '../../storage/cloudStorage'
 import * as solUtils from '../../utils/solanaUtils'
@@ -15,9 +15,14 @@ export type WalletHotspots = {
   page: number
 }
 
-export type HotspotsState = Record<string, WalletHotspots>
+export type HotspotsByWallet = Record<string, WalletHotspots>
+export type HotspotsByCluster = Record<Cluster, HotspotsByWallet>
 
-const initialState: HotspotsState = {}
+const initialState: HotspotsByCluster = {
+  'mainnet-beta': {},
+  devnet: {},
+  testnet: {},
+}
 
 export const fetchHotspots = createAsyncThunk(
   'hotspots/fetchHotspots',
@@ -25,9 +30,11 @@ export const fetchHotspots = createAsyncThunk(
     account,
     anchorProvider,
     limit,
+    cluster: _cluster,
   }: {
     account: CSAccount
     anchorProvider: AnchorProvider
+    cluster: Cluster
     limit?: number
   }) => {
     if (!account.solanaAddress) throw new Error('Solana address missing')
@@ -65,8 +72,10 @@ export const fetchMoreHotspots = createAsyncThunk(
     page = 1,
     provider,
     limit,
+    cluster: _cluster,
   }: {
     account: CSAccount
+    cluster: Cluster
     page: number
     provider: AnchorProvider
     limit?: number
@@ -98,17 +107,22 @@ export const fetchMoreHotspots = createAsyncThunk(
   },
 )
 
-const hotspots = createSlice({
+const hotspotSlice = createSlice({
   name: 'hotspots',
   initialState,
   reducers: {
-    // TODO: This whole slice should be keyed by cluster
     resetState: () => initialState,
-    resetLoading: (state, action: PayloadAction<{ acct: CSAccount }>) => {
-      const { acct } = action.payload
+    resetLoading: (
+      state,
+      action: PayloadAction<{ acct: CSAccount; cluster: Cluster }>,
+    ) => {
+      const { acct, cluster } = action.payload
       if (!acct.solanaAddress) throw new Error('Solana address missing')
       const address = acct.solanaAddress
-      state[address] = { ...state[address], loading: false }
+      if (!state[cluster]) {
+        state[cluster] = {}
+      }
+      state[cluster][address] = { ...state[cluster][address], loading: false }
     },
   },
   extraReducers: (builder) => {
@@ -116,11 +130,12 @@ const hotspots = createSlice({
       if (!action.meta.arg?.account.solanaAddress) return state
 
       const address = action.meta.arg.account.solanaAddress
-      const prev = state[address] || {
+      const { cluster } = action.meta.arg
+      const prev = state[cluster][address] || {
         hotspotsWithMeta: [],
         hotspots: [],
       }
-      state[address] = {
+      state[cluster][address] = {
         ...prev,
         loading: true,
         fetchingMore: false,
@@ -132,8 +147,9 @@ const hotspots = createSlice({
       const { fetchedHotspots, hotspotsWithMetadata } = action.payload
 
       const address = action.meta.arg.account.solanaAddress
-      state[address] = {
-        ...state[address],
+      const { cluster } = action.meta.arg
+      state[cluster][address] = {
+        ...state[cluster][address],
         hotspots: fetchedHotspots,
         hotspotsWithMeta: hotspotsWithMetadata,
         loading: false,
@@ -146,11 +162,12 @@ const hotspots = createSlice({
       if (!action.meta.arg?.account.solanaAddress) return state
 
       const address = action.meta.arg.account.solanaAddress
-      const prev = state[address] || {
+      const { cluster } = action.meta.arg
+      const prev = state[cluster][address] || {
         hotspotsWithMeta: [],
         hotspots: {},
       }
-      state[address] = {
+      state[cluster][address] = {
         ...prev,
         loading: false,
         fetchingMore: false,
@@ -161,11 +178,12 @@ const hotspots = createSlice({
       if (!action.meta.arg?.account.solanaAddress) return state
 
       const address = action.meta.arg.account.solanaAddress
-      const prev = state[address] || {
+      const { cluster } = action.meta.arg
+      const prev = state[cluster][address] || {
         hotspotsWithMeta: [],
         hotspots: [],
       }
-      state[address] = {
+      state[cluster][address] = {
         ...prev,
         loading: true,
         fetchingMore: true,
@@ -174,6 +192,7 @@ const hotspots = createSlice({
     })
     builder.addCase(fetchMoreHotspots.fulfilled, (state, action) => {
       if (!action.meta.arg?.account.solanaAddress) return state
+      const { cluster } = action.meta.arg
       const { fetchedHotspots, hotspotsWithMetadata, limit } = action.payload
 
       const address = action.meta.arg.account.solanaAddress
@@ -181,11 +200,11 @@ const hotspots = createSlice({
         ? Object.keys(hotspotsWithMetadata).length < limit
         : true
 
-      state[address] = {
-        ...state[address],
-        hotspots: [...state[address].hotspots, ...fetchedHotspots],
+      state[cluster][address] = {
+        ...state[cluster][address],
+        hotspots: [...state[cluster][address].hotspots, ...fetchedHotspots],
         hotspotsWithMeta: [
-          ...state[address].hotspotsWithMeta,
+          ...state[cluster][address].hotspotsWithMeta,
           ...hotspotsWithMetadata,
         ],
         loading: false,
@@ -196,13 +215,14 @@ const hotspots = createSlice({
     })
     builder.addCase(fetchMoreHotspots.rejected, (state, action) => {
       if (!action.meta.arg?.account.solanaAddress) return state
+      const { cluster } = action.meta.arg
 
       const address = action.meta.arg.account.solanaAddress
-      const prev = state[address] || {
+      const prev = state[cluster][address] || {
         hotspotsWithMeta: [],
         hotspots: [],
       }
-      state[address] = {
+      state[cluster][address] = {
         ...prev,
         loading: false,
         fetchingMore: false,
@@ -212,6 +232,6 @@ const hotspots = createSlice({
   },
 })
 
-const { reducer, name } = hotspots
-export { name, hotspots }
+const { reducer, name } = hotspotSlice
+export { name, hotspotSlice as hotspotsSlice }
 export default reducer

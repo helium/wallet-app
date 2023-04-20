@@ -18,11 +18,11 @@ import {
   DataCredits,
   NetworkTokens,
 } from '@helium/currency'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { submitSolana } from '../../utils/solanaUtils'
 import { getSolanaKeypair } from '../../storage/secureStorage'
 import { Asset, WrappedConnection } from '../../utils/WrappedConnection'
 import { heliumAddressToSolAddress } from '../../utils/accountUtils'
+import { useSolana } from '../../solana/SolanaProvider'
 
 const ValidTxnKeys = [
   'onboardIotHotspotV0',
@@ -46,7 +46,7 @@ type Txn = {
 }
 
 const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
-  const { anchorProvider } = useAccountStorage()
+  const { anchorProvider } = useSolana()
   const [submitLoading, setSubmitLoading] = useState(false)
   const handledTxnStr = useRef('')
   const [transactions, setTransactions] = useState<

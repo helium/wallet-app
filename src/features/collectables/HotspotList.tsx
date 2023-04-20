@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { times } from 'lodash'
 import { FlatList } from 'react-native-gesture-handler'
 import { RefreshControl } from 'react-native'
@@ -71,7 +71,6 @@ const HotspotList = () => {
     hotspotsWithMeta,
     loading: loadingHotspots,
     refresh,
-    createHotspot,
     fetchMore,
     fetchingMore,
     pendingIotRewards,
@@ -261,22 +260,9 @@ const HotspotList = () => {
           }
           onPress={handleNavigateToClaimRewards}
         />
-        {__DEV__ && (
-          <ButtonPressable
-            flexGrow={1}
-            borderRadius="round"
-            backgroundColor="white"
-            backgroundColorOpacityPressed={0.7}
-            title="Create Hotspot"
-            titleColor="black"
-            marginBottom="m"
-            onPress={createHotspot}
-          />
-        )}
       </Box>
     )
   }, [
-    createHotspot,
     handleNavigateToClaimRewards,
     pendingIotRewards,
     pendingMobileRewards,
@@ -346,6 +332,12 @@ const HotspotList = () => {
   const handleRefresh = useCallback(() => {
     refresh(pageAmount)
   }, [pageAmount, refresh])
+
+  useEffect(() => {
+    return navigation.addListener('focus', () => {
+      refresh()
+    })
+  }, [navigation, refresh])
 
   return (
     <>

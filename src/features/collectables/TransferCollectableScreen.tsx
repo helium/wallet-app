@@ -43,6 +43,7 @@ import {
   CollectableStackParamList,
 } from './collectablesTypes'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
+import { useSolana } from '../../solana/SolanaProvider'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -71,7 +72,8 @@ const TransferCollectableScreen = () => {
   >()
   const [optionsOpen, setOptionsOpen] = useState(false)
   const [solFee, setSolFee] = useState<number | undefined>(undefined)
-  const { currentAccount, anchorProvider } = useAccountStorage()
+  const { currentAccount } = useAccountStorage()
+  const { anchorProvider } = useSolana()
   const addressBookRef = useRef<AddressBookRef>(null)
   const colors = useColors()
   const { showOKCancelAlert } = useAlert()

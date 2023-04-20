@@ -15,7 +15,6 @@ import { AccountProvider } from '@helium/helium-react-hooks'
 import { theme, darkThemeColors, lightThemeColors } from '@theme/theme'
 import { useColorScheme } from '@theme/themeHooks'
 import globalStyles from '@theme/globalStyles'
-import { getConnection } from '@utils/solanaUtils'
 import useMount from './hooks/useMount'
 import { useApolloClient } from './graphql/useApolloClient'
 import RootNavigator from './navigation/RootNavigator'
@@ -31,6 +30,7 @@ import NetworkAwareStatusBar from './components/NetworkAwareStatusBar'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
 import { navigationRef } from './navigation/NavigationHelper'
 import SplashScreen from './components/SplashScreen'
+import { useSolana } from './solana/SolanaProvider'
 
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -52,7 +52,8 @@ const App = () => {
   ])
 
   const { appState } = useAppState()
-  const { restored: accountsRestored, anchorProvider } = useAccountStorage()
+  const { restored: accountsRestored } = useAccountStorage()
+  const { connection } = useSolana()
   const { setOpenedNotification } = useNotificationStorage()
 
   const linking = useDeepLinking()
@@ -108,42 +109,38 @@ const App = () => {
                 {client && (
                   <ApolloProvider client={client}>
                     <LockScreen>
-                      <AccountProvider
-                        extendConnection={false}
-                        commitment="confirmed"
-                        connection={
-                          anchorProvider?.connection ||
-                          getConnection(
-                            'mainnet-beta',
-                            Config.RPC_SESSION_KEY_FALLBACK,
-                          )
-                        }
-                      >
-                        <WalletConnectProvider>
-                          {accountsRestored && (
-                            <>
-                              <NavigationContainer
-                                theme={navTheme}
-                                linking={linking}
-                                ref={navigationRef}
-                              >
-                                <BalanceProvider>
-                                  <TransactionProvider>
-                                    <NetworkAwareStatusBar />
-                                    <RootNavigator />
-                                  </TransactionProvider>
-                                </BalanceProvider>
-                              </NavigationContainer>
-                              <SecurityScreen
-                                visible={
-                                  appState !== 'active' &&
-                                  appState !== 'unknown'
-                                }
-                              />
-                            </>
-                          )}
-                        </WalletConnectProvider>
-                      </AccountProvider>
+                      {connection && (
+                        <AccountProvider
+                          extendConnection={false}
+                          commitment="confirmed"
+                          connection={connection}
+                        >
+                          <WalletConnectProvider>
+                            {accountsRestored && (
+                              <>
+                                <NavigationContainer
+                                  theme={navTheme}
+                                  linking={linking}
+                                  ref={navigationRef}
+                                >
+                                  <BalanceProvider>
+                                    <TransactionProvider>
+                                      <NetworkAwareStatusBar />
+                                      <RootNavigator />
+                                    </TransactionProvider>
+                                  </BalanceProvider>
+                                </NavigationContainer>
+                                <SecurityScreen
+                                  visible={
+                                    appState !== 'active' &&
+                                    appState !== 'unknown'
+                                  }
+                                />
+                              </>
+                            )}
+                          </WalletConnectProvider>
+                        </AccountProvider>
+                      )}
                     </LockScreen>
                   </ApolloProvider>
                 )}

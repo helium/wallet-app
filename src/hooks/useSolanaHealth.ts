@@ -1,5 +1,3 @@
-import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { useAppStorage } from '@storage/AppStorageProvider'
 import { WrappedConnection } from '@utils/WrappedConnection'
 import axios from 'axios'
 import { useEffect, useMemo, useState } from 'react'
@@ -7,6 +5,7 @@ import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
+import { useSolana } from '../solana/SolanaProvider'
 
 type PingItem = {
   submitted: number
@@ -19,8 +18,7 @@ type PingItem = {
 }
 
 const useSolanaHealth = () => {
-  const { solanaNetwork: cluster } = useAppStorage()
-  const { anchorProvider } = useAccountStorage()
+  const { cluster, anchorProvider } = useSolana()
   const [isHealthy, setIsHealthy] = useState(true)
   const [slowPing, setSlowPing] = useState<PingItem | undefined>()
   const dispatch = useAppDispatch()

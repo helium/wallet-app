@@ -33,7 +33,6 @@ const useAppStorageHook = () => {
   const [locked, setLocked] = useState<boolean>()
   const [convertToCurrency, setConvertToCurrency] = useState(false)
   const [enableTestnet, setEnableTestnet] = useState(false)
-  const [solanaNetwork, setSolanaNetwork] = useState<Cluster>('mainnet-beta')
   const [l1Network, setL1Network] = useState<L1Network>('solana')
   const [scannedAddress, setScannedAddress] = useState<string>()
   const [dAppTutorialShown, setDAppTutorialShown] = useState<
@@ -73,9 +72,6 @@ const useAppStorageHook = () => {
       const nextCurrency = await getSecureItem('currency')
       const nextConvertToCurrency = await getSecureItem('convertToCurrency')
       const nextEnableTestnet = await getSecureItem('enableTestnet')
-      const nextSolanaNetwork = (await getSecureItem(
-        'solanaNetwork',
-      )) as Cluster | null
       const nextDAppShown = await AsyncStorage.getItem(DAPP_TUTORIAL_SHOWN)
       const nextVoteShown = await AsyncStorage.getItem(VOTE_TUTORIAL_SHOWN)
       const nextShowNumericChange = await getSecureItem('showNumericChange')
@@ -101,7 +97,6 @@ const useAppStorageHook = () => {
       setCurrency(nextCurrency || 'USD')
       setConvertToCurrency(nextConvertToCurrency === 'true')
       setEnableTestnet(nextEnableTestnet === 'true')
-      setSolanaNetwork(nextSolanaNetwork || 'mainnet-beta')
       setL1Network('solana')
       setDAppTutorialShown(
         JSON.parse(nextDAppShown || '{}') as Record<string, boolean>,
@@ -175,11 +170,6 @@ const useAppStorageHook = () => {
   const updateL1Network = useCallback(async (nextL1Network: L1Network) => {
     setL1Network(nextL1Network)
     return storeSecureItem('l1Network', nextL1Network)
-  }, [])
-
-  const updateSolanaNetwork = useCallback(async (nextSolNetwork: Cluster) => {
-    setSolanaNetwork(nextSolNetwork)
-    return storeSecureItem('solanaNetwork', nextSolNetwork)
   }, [])
 
   const toggleConvertToCurrency = useCallback(async () => {
@@ -263,7 +253,6 @@ const useAppStorageHook = () => {
     setVoteTutorialCompleted,
     setDAppTutorialCompleted,
     showNumericChange,
-    solanaNetwork,
     toggleConvertToCurrency,
     sessionKey,
     doneSolanaMigration,
@@ -280,7 +269,6 @@ const useAppStorageHook = () => {
     updatePin,
     updateRequirePinForPayment,
     updateShowNumericChange,
-    updateSolanaNetwork,
     voteTutorialShown,
     dAppTutorialShown,
   }
@@ -299,7 +287,6 @@ const initialState = {
   setScannedAddress: () => undefined,
   setDAppTutorialCompleted: async () => undefined,
   setVoteTutorialCompleted: () => new Promise<void>((resolve) => resolve()),
-  solanaNetwork: 'mainnet-beta' as Cluster,
   toggleConvertToCurrency: async () => undefined,
   updateAuthInterval: async () => undefined,
   updateConvertToCurrency: async () => undefined,
@@ -309,7 +296,6 @@ const initialState = {
   updateLocked: async () => undefined,
   updatePin: async () => undefined,
   updateRequirePinForPayment: async () => undefined,
-  updateSolanaNetwork: async () => undefined,
   voteTutorialShown: false,
   updateShowNumericChange: async () => undefined,
   showNumericChange: false,

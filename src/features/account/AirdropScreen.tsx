@@ -25,6 +25,7 @@ import axios from 'axios'
 import * as logger from '@utils/logger'
 import CircleLoader from '@components/CircleLoader'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
+import { useSolana } from '../../solana/SolanaProvider'
 
 const DROP_HEIGHT = 79
 
@@ -32,7 +33,8 @@ type Route = RouteProp<HomeStackParamList, 'AirdropScreen'>
 
 const AirdropScreen = () => {
   const navigation = useNavigation<HomeNavigationProp>()
-  const { currentAccount, anchorProvider } = useAccountStorage()
+  const { currentAccount } = useAccountStorage()
+  const { anchorProvider } = useSolana()
   const { t } = useTranslation()
   const ring = useSharedValue(0)
   const ringDrop = useSharedValue(0)

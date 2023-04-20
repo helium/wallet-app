@@ -19,6 +19,7 @@ import animateTransition from '../../utils/animateTransition'
 import PaymentSummary from './PaymentSummary'
 import { checkSecureAccount } from '../../storage/secureStorage'
 import { useAppStorage } from '../../storage/AppStorageProvider'
+import { useSolana } from '../../solana/SolanaProvider'
 
 type Props = {
   handleCancel: () => void
@@ -47,7 +48,8 @@ const PaymentCard = ({
   const ledgerPaymentRef = useRef<LedgerPaymentRef>(null)
   const { showOKAlert, showOKCancelAlert } = useAlert()
   const { currentAccount } = useAccountStorage()
-  const { l1Network, solanaNetwork: cluster } = useAppStorage()
+  const { l1Network } = useAppStorage()
+  const { cluster } = useSolana()
   const [options, setOptions] = useState<{
     txn: PaymentV2
     txnJson: string

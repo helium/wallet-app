@@ -28,6 +28,7 @@ import { useApolloClient } from '../../graphql/useApolloClient'
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
 import { ellipsizeAddress } from '../../utils/accountUtils'
 import { RootNavigationProp } from '../../navigation/rootTypes'
+import { useSolana } from '../../solana/SolanaProvider'
 
 const Settings = () => {
   const { t } = useTranslation()
@@ -53,16 +54,15 @@ const Settings = () => {
     currency,
     pin: appPin,
     requirePinForPayment,
-    solanaNetwork,
     updateAuthInterval,
     updateConvertToCurrency,
     updateCurrency,
     updateRequirePinForPayment,
-    updateSolanaNetwork,
     l1Network,
   } = useAppStorage()
   const copyText = useCopyText()
   const { showOKAlert, showOKCancelAlert } = useAlert()
+  const { updateCluster, cluster } = useSolana()
 
   const isDefaultAccount = useMemo(
     () => defaultAccountAddress === currentAccount?.address,
@@ -260,12 +260,12 @@ const Settings = () => {
     [updateCurrency],
   )
 
-  const handleSolanaNetworkChange = useCallback(
+  const handleSolanaClusterChange = useCallback(
     async (network: ReactText, _index: number) => {
       // TODO: Should we reset the solana and collectable slices when cluster changes?
-      await updateSolanaNetwork(network as Cluster)
+      updateCluster(network as Cluster)
     },
-    [updateSolanaNetwork],
+    [updateCluster],
   )
 
   const handleUpdateAlias = useCallback(
@@ -371,19 +371,14 @@ const Settings = () => {
         },
       ]
 
-      if (__DEV__) {
-        // push the localnet option to the front of the list
-        items.unshift({ label: 'Localnet', value: 'localnet' })
-      }
-
       devData = [
         ...devData,
         {
-          title: t('settings.sections.dev.solanaNetwork.title'),
-          value: solanaNetwork,
+          title: t('settings.sections.dev.solanaCluster.title'),
+          value: cluster,
           select: {
             items,
-            onValueSelect: handleSolanaNetworkChange,
+            onValueSelect: handleSolanaClusterChange,
           },
         },
       ]
@@ -535,6 +530,7 @@ const Settings = () => {
   }, [
     authInterval,
     authIntervals,
+    cluster,
     convertToCurrency,
     copyText,
     currency,
@@ -551,14 +547,13 @@ const Settings = () => {
     handleSetDefaultAccount,
     handleShareAddress,
     handleSignOut,
-    handleSolanaNetworkChange,
+    handleSolanaClusterChange,
     handleUpdateAlias,
     isDefaultAccount,
     isPinRequired,
     l1Network,
     language,
     requirePinForPayment,
-    solanaNetwork,
     t,
     updateConvertToCurrency,
     version,

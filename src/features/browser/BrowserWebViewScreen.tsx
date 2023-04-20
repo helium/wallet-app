@@ -37,6 +37,7 @@ import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import Text from '../../components/Text'
 import { BrowserNavigationProp, BrowserStackParamList } from './browserTypes'
 import useBrowser from '../../hooks/useBrowser'
+import { useSolana } from '../../solana/SolanaProvider'
 
 type Route = RouteProp<BrowserStackParamList, 'BrowserWebViewScreen'>
 
@@ -44,7 +45,8 @@ const BrowserWebViewScreen = () => {
   const route = useRoute<Route>()
   const { uri } = route.params
   const edges = useMemo(() => ['top', 'bottom'] as Edge[], [])
-  const { currentAccount, anchorProvider } = useAccountStorage()
+  const { currentAccount } = useAccountStorage()
+  const { anchorProvider } = useSolana()
   const webview = useRef<WebView | null>(null)
   const [jsInjected, setJsInjected] = useState(false)
   const walletSignBottomSheetRef = useRef<WalletSignBottomSheetRef | null>(null)

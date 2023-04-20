@@ -57,18 +57,15 @@ import {
   getEscrowTokenAccount,
 } from './solanaUtils'
 import { Mints } from './constants'
+import { useSolana } from '../solana/SolanaProvider'
 
 export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
 const useBalanceHook = () => {
-  const { currentAccount, anchorProvider } = useAccountStorage()
+  const { currentAccount } = useAccountStorage()
   const prevAccount = usePrevious(currentAccount)
   const accountSubscriptionId = useRef<number>()
-  const {
-    convertToCurrency,
-    currency,
-    l1Network,
-    solanaNetwork: cluster,
-  } = useAppStorage()
+  const { convertToCurrency, currency, l1Network } = useAppStorage()
+  const { cluster, anchorProvider } = useSolana()
   const prevCluster = usePrevious(cluster)
   const [updating, setUpdating] = useState(false)
 

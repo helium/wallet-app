@@ -1,14 +1,17 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useEffect } from 'react'
 import { times } from 'lodash'
 import { FlatList } from 'react-native-gesture-handler'
 import { RefreshControl } from 'react-native'
 import Box from '@components/Box'
 import useCollectables from '@hooks/useCollectables'
 import { useColors, useSpacing } from '@theme/themeHooks'
+import { useNavigation } from '@react-navigation/native'
 import NFTListItem, { NFTSkeleton } from './NftListItem'
+import { CollectableNavigationProp } from './collectablesTypes'
 
 const NftList = () => {
   const spacing = useSpacing()
+  const navigation = useNavigation<CollectableNavigationProp>()
 
   const {
     collectables,
@@ -17,6 +20,12 @@ const NftList = () => {
     refresh,
   } = useCollectables()
   const { primaryText } = useColors()
+
+  useEffect(() => {
+    return navigation.addListener('focus', () => {
+      refresh()
+    })
+  }, [navigation, refresh])
 
   const flatListItems = useMemo(() => {
     return collectablesWithMeta ? Object.keys(collectablesWithMeta) : []

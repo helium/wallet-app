@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { isMainnet } from '../utils/accountUtils'
+import { useSolana } from '../solana/SolanaProvider'
 
 export const EXPLORER_MAINNET_BASE_URL = 'https://explorer.helium.com'
 export const EXPLORER_TESTNET_BASE_URL = 'https://testnet-explorer.helium.com/'
@@ -17,7 +18,8 @@ type UrlType = 'block' | 'txn' | 'account' | 'validator' | 'hotspot'
 
 const useCreateExplorerUrl = () => {
   const { currentAccount } = useAccountStorage()
-  const { l1Network, solanaNetwork: cluster } = useAppStorage()
+  const { l1Network } = useAppStorage()
+  const { cluster } = useSolana()
 
   const getPath = useCallback(
     (type: UrlType) => {

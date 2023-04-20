@@ -399,7 +399,7 @@ export const claimRewards = createAsyncThunk(
       )
 
       // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
-      dispatch(fetchHotspots({ account, anchorProvider }))
+      dispatch(fetchHotspots({ account, anchorProvider, cluster }))
     } catch (error) {
       Logger.error(error)
       throw error
@@ -410,7 +410,7 @@ export const claimRewards = createAsyncThunk(
 export const claimAllRewards = createAsyncThunk(
   'solana/claimAllRewards',
   async (
-    { account, txns, anchorProvider }: ClaimAllRewardsInput,
+    { account, txns, anchorProvider, cluster }: ClaimAllRewardsInput,
     { dispatch },
   ) => {
     try {
@@ -422,7 +422,7 @@ export const claimAllRewards = createAsyncThunk(
       )
 
       // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
-      dispatch(fetchHotspots({ account, anchorProvider }))
+      dispatch(fetchHotspots({ account, anchorProvider, cluster }))
       dispatch(readBalances({ anchorProvider, acct: account }))
     } catch (error) {
       Logger.error(error)

@@ -1,5 +1,4 @@
 import { Ticker } from '@helium/currency'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Mints } from '@utils/constants'
@@ -9,6 +8,7 @@ import { RootState } from '../../store/rootReducer'
 import { getTxns } from '../../store/slices/solanaSlice'
 import { useAppDispatch } from '../../store/store'
 import { FilterType } from './AccountActivityFilter'
+import { useSolana } from '../../solana/SolanaProvider'
 
 export default ({
   account,
@@ -22,7 +22,7 @@ export default ({
   const [now, setNow] = useState(new Date())
   const dispatch = useAppDispatch()
   const { l1Network } = useAppStorage()
-  const { anchorProvider } = useAccountStorage()
+  const { anchorProvider } = useSolana()
   const solanaActivity = useSelector(
     (state: RootState) => state.solana.activity,
   )

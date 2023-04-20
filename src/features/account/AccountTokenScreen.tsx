@@ -41,6 +41,7 @@ import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import AccountTokenBalance from './AccountTokenBalance'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { Activity } from '../../types/activity'
+import { useSolana } from '../../solana/SolanaProvider'
 
 const delayedAnimation = FadeIn.delay(300)
 
@@ -61,7 +62,8 @@ const AccountTokenScreen = () => {
   const [topHeaderYPos, setTopHeaderYPos] = useState(0)
   const [headerContainerYPos, setHeaderContainerYPos] = useState(0)
   const listAnimatedPos = useSharedValue<number>(0)
-  const { l1Network, solanaNetwork: cluster } = useAppStorage()
+  const { l1Network } = useAppStorage()
+  const { cluster } = useSolana()
   const insets = useSafeAreaInsets()
   const colors = useColors()
 

@@ -2,10 +2,9 @@ import * as client from '@helium/distributor-oracle'
 import { PublicKey, Transaction } from '@solana/web3.js'
 import { useEffect, useState } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
-import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { IOT_LAZY_KEY, MOBILE_LAZY_KEY } from '../utils/constants'
-import { useProgram } from '../utils/hotspotNftsUtils'
 import * as Logger from '../utils/logger'
+import { useSolana } from '../solana/SolanaProvider'
 
 export function useHotspot(mint: PublicKey): {
   iotRewardsError: Error | undefined
@@ -15,9 +14,8 @@ export function useHotspot(mint: PublicKey): {
   iotRewardsLoading: boolean
   mobileRewardsLoading: boolean
 } {
-  const { anchorProvider } = useAccountStorage()
+  const { anchorProvider: provider, lazyProgram: program } = useSolana()
 
-  const program = useProgram()
   const [error, setError] = useState<string | null>(null)
 
   const {
@@ -25,14 +23,14 @@ export function useHotspot(mint: PublicKey): {
     execute: createClaimMobileTx,
     loading: mobileRewardsLoading,
   } = useAsyncCallback(async () => {
-    if (!anchorProvider) return
+    if (!provider) return
 
-    const { connection } = anchorProvider
-    if (mint && program && anchorProvider) {
+    const { connection } = provider
+    if (mint && program && provider) {
       const rewards = await client.getCurrentRewards(
         // TODO: Fix program type once HPL is upgraded to anchor v0.26
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        program as any,
+        program,
         MOBILE_LAZY_KEY,
         mint,
       )
@@ -40,8 +38,8 @@ export function useHotspot(mint: PublicKey): {
       const tx = await client.formTransaction({
         // TODO: Fix program type once HPL is upgraded to anchor v0.26
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        program: program as any,
-        provider: anchorProvider,
+        program,
+        provider,
         rewards,
         hotspot: mint,
         lazyDistributor: MOBILE_LAZY_KEY,
@@ -57,14 +55,14 @@ export function useHotspot(mint: PublicKey): {
     execute: createClaimIotTx,
     loading: iotRewardsLoading,
   } = useAsyncCallback(async () => {
-    if (!anchorProvider) return
-    const { connection } = anchorProvider
+    if (!provider) return
+    const { connection } = provider
 
-    if (mint && program && anchorProvider) {
+    if (mint && program && provider) {
       const rewards = await client.getCurrentRewards(
         // TODO: Fix program type once HPL is upgraded to anchor v0.26
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        program as any,
+        program,
         IOT_LAZY_KEY,
         mint,
       )
@@ -72,8 +70,8 @@ export function useHotspot(mint: PublicKey): {
       const tx = await client.formTransaction({
         // TODO: Fix program type once HPL is upgraded to anchor v0.26
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        program: program as any,
-        provider: anchorProvider,
+        program,
+        provider,
         rewards,
         hotspot: mint,
         lazyDistributor: IOT_LAZY_KEY,

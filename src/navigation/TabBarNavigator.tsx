@@ -31,6 +31,7 @@ import NotificationsNavigator from '../features/notifications/NotificationsNavig
 import BrowserNavigator from '../features/browser/BrowserNavigator'
 import { useNotificationsQuery } from '../generated/graphql'
 import { appSlice } from '../store/slices/appSlice'
+import { useSolana } from '../solana/SolanaProvider'
 
 const Tab = createBottomTabNavigator()
 
@@ -175,15 +176,11 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
 const TabBarNavigator = () => {
   const dispatch = useDispatch()
 
-  const {
-    doneSolanaMigration,
-    manualMigration,
-    l1Network,
-    solanaNetwork: cluster,
-    updateSolanaNetwork,
-  } = useAppStorage()
+  const { doneSolanaMigration, manualMigration, l1Network } = useAppStorage()
+  const { cluster, updateCluster } = useSolana()
   const { bottom } = useSafeAreaInsets()
-  const { currentAccount, anchorProvider } = useAccountStorage()
+  const { currentAccount } = useAccountStorage()
+  const { anchorProvider } = useSolana()
 
   useEffect(() => {
     dispatch(appSlice.actions.setShowBanner(cluster === 'devnet'))
@@ -201,14 +198,14 @@ const TabBarNavigator = () => {
       ) &&
       !manualMigration['mainnet-beta'].includes(currentAccount.solanaAddress)
     ) {
-      updateSolanaNetwork('mainnet-beta')
+      updateCluster('mainnet-beta')
     }
   }, [
     currentAccount,
     doneSolanaMigration,
     cluster,
     manualMigration,
-    updateSolanaNetwork,
+    updateCluster,
   ])
 
   return (

@@ -1,6 +1,6 @@
 import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import * as web3 from '@solana/web3.js'
+import { PublicKey, Cluster, Connection } from '@solana/web3.js'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Collectable } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
@@ -11,9 +11,14 @@ export type WalletCollectables = {
   loading: boolean
 }
 
-export type CollectablesState = Record<string, WalletCollectables>
+export type CollectablesByWallet = Record<string, WalletCollectables>
+export type CollectablesByCluster = Record<Cluster, CollectablesByWallet>
 
-const initialState: CollectablesState = {}
+const initialState: CollectablesByCluster = {
+  'mainnet-beta': {},
+  devnet: {},
+  testnet: {},
+}
 
 export const fetchCollectables = createAsyncThunk(
   'collectables/fetchCollectables',
@@ -23,14 +28,14 @@ export const fetchCollectables = createAsyncThunk(
     connection,
   }: {
     account: CSAccount
-    cluster: web3.Cluster
-    connection: web3.Connection
+    cluster: Cluster
+    connection: Connection
   }) => {
     if (!account.solanaAddress) throw new Error('Solana address missing')
 
     const metaplex = new Metaplex(connection, { cluster })
 
-    const pubKey = new web3.PublicKey(account.solanaAddress)
+    const pubKey = new PublicKey(account.solanaAddress)
     const fetchedCollectables = await solUtils.getNFTs(pubKey, metaplex)
     const groupedCollectables = solUtils.groupNFTs(fetchedCollectables)
 
@@ -54,37 +59,44 @@ const collectables = createSlice({
   name: 'collectables',
   initialState,
   reducers: {
-    // TODO: This whole slice should be keyed by cluster
     resetState: () => initialState,
-    resetLoading: (state, action: PayloadAction<{ acct: CSAccount }>) => {
-      const { acct } = action.payload
+    resetLoading: (
+      state,
+      action: PayloadAction<{ acct: CSAccount; cluster: Cluster }>,
+    ) => {
+      const { acct, cluster } = action.payload
       if (!acct.solanaAddress) throw new Error('Solana address missing')
       const address = acct.solanaAddress
-      state[address] = { ...state[address], loading: false }
+      if (!state[cluster]) {
+        state[cluster] = {}
+      }
+      state[cluster][address] = { ...state[cluster][address], loading: false }
     },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchCollectables.pending, (state, action) => {
       if (!action.meta.arg?.account.solanaAddress) return state
+      const { cluster } = action.meta.arg
 
       const address = action.meta.arg.account.solanaAddress
-      const prev = state[address] || {
+      const prev = state[cluster][address] || {
         collectablesWithMeta: {},
         collectables: {},
       }
-      state[address] = {
+      state[cluster][address] = {
         ...prev,
         loading: true,
       }
     })
     builder.addCase(fetchCollectables.fulfilled, (state, action) => {
       if (!action.meta.arg?.account.solanaAddress) return state
+      const { cluster } = action.meta.arg
       const { groupedCollectables, groupedCollectablesWithMeta } =
         action.payload
 
       const address = action.meta.arg.account.solanaAddress
 
-      state[address] = {
+      state[cluster][address] = {
         collectables: groupedCollectables,
         collectablesWithMeta: groupedCollectablesWithMeta,
         loading: false,
@@ -92,13 +104,14 @@ const collectables = createSlice({
     })
     builder.addCase(fetchCollectables.rejected, (state, action) => {
       if (!action.meta.arg?.account.solanaAddress) return state
+      const { cluster } = action.meta.arg
 
       const address = action.meta.arg.account.solanaAddress
-      const prev = state[address] || {
+      const prev = state[cluster][address] || {
         collectablesWithMeta: {},
         collectables: {},
       }
-      state[address] = {
+      state[cluster][address] = {
         ...prev,
         loading: false,
       }
