@@ -8,6 +8,7 @@ import Balance, {
 import { PaymentV2 } from '@helium/transactions'
 import { PublicKey, Transaction } from '@solana/web3.js'
 import i18n from '@utils/i18n'
+import { Mints } from '@utils/constants'
 import { useTransactions } from '../storage/TransactionProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAccountLazyQuery, useSubmitTxnMutation } from '../generated/graphql'
@@ -24,7 +25,6 @@ import {
   readBalances,
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
-import { useGetMintsQuery } from '../store/slices/walletRestApi'
 import { Collectable, CompressedNFT } from '../types/solana'
 
 export default () => {
@@ -32,9 +32,6 @@ export default () => {
   const { currentAccount, anchorProvider } = useAccountStorage()
   const { l1Network, solanaNetwork: cluster } = useAppStorage()
   const { t } = i18n
-  const { data: mints } = useGetMintsQuery(cluster, {
-    refetchOnMountOrArgChange: true,
-  })
 
   const dispatch = useAppDispatch()
 
@@ -111,9 +108,6 @@ export default () => {
       if (!currentAccount || !anchorProvider) {
         throw new Error(t('errors.account'))
       }
-      if (!mints) {
-        throw new Error('Mints not found')
-      }
 
       dispatch(
         makePayment({
@@ -121,11 +115,11 @@ export default () => {
           payments,
           cluster,
           anchorProvider,
-          mints,
+          mints: Mints,
         }),
       )
     },
-    [currentAccount, mints, dispatch, t, anchorProvider, cluster],
+    [currentAccount, dispatch, t, anchorProvider, cluster],
   )
 
   const submit = useCallback(
@@ -178,10 +172,6 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      if (!mints) {
-        throw new Error('Mints not found')
-      }
-
       dispatch(
         sendTreasurySwap({
           account: currentAccount,
@@ -189,12 +179,12 @@ export default () => {
           cluster,
           fromMint,
           amount,
-          mints,
+          mints: Mints,
           recipient,
         }),
       )
     },
-    [anchorProvider, cluster, currentAccount, dispatch, mints, t],
+    [anchorProvider, cluster, currentAccount, dispatch, t],
   )
 
   const submitAnchorTxn = useCallback(

@@ -47,6 +47,7 @@ import { getMemoStrValid } from '@components/MemoInput'
 import useAlert from '@hooks/useAlert'
 import useDisappear from '@hooks/useDisappear'
 import IconPressedContainer from '@components/IconPressedContainer'
+import TokenSOL from '@assets/images/tokenSOL.svg'
 import TokenIOT from '@assets/images/tokenIOT.svg'
 import TokenHNT from '@assets/images/tokenHNT.svg'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
@@ -367,6 +368,9 @@ const PaymentScreen = () => {
         } else if (ticker === 'HNT') {
           hasEnoughToken =
             networkBalance.minus(paymentState.totalAmount).integerBalance >= 0
+        } else if (ticker === 'SOL') {
+          hasEnoughToken =
+            solBalance.minus(paymentState.totalAmount).integerBalance >= 0
         }
         if (!hasEnoughSol) return [true, solBalance.type.ticker]
         if (!hasEnoughToken) return [true, paymentState.totalAmount.type.ticker]
@@ -677,25 +681,17 @@ const PaymentScreen = () => {
     accountSelectorRef?.current.showAccountTypes(netType)()
   }, [l1Network, networkType, sortedAccountsForNetType])
 
-  const isDntToken = useMemo(() => {
-    return ticker === 'MOBILE' || ticker === 'IOT'
-  }, [ticker])
-
   const tokenButtonBalance = useMemo(() => {
-    if (l1Network === 'helium' || !isDntToken) {
-      return balanceToString(ticker === 'HNT' ? networkBalance : mobileBalance)
+    if (ticker === 'HNT') {
+      return balanceToString(networkBalance)
+    }
+
+    if (ticker === 'SOL') {
+      return `${solBalance}`
     }
 
     return ticker === 'MOBILE' ? `${mobileSolBalance}` : `${iotSolBalance}`
-  }, [
-    iotSolBalance,
-    mobileSolBalance,
-    mobileBalance,
-    isDntToken,
-    l1Network,
-    networkBalance,
-    ticker,
-  ])
+  }, [iotSolBalance, mobileSolBalance, networkBalance, ticker, solBalance])
 
   const data = useMemo((): TokenListItem[] => {
     const tokens = [
@@ -711,19 +707,22 @@ const PaymentScreen = () => {
         value: 'MOBILE' as Ticker,
         selected: ticker === 'MOBILE',
       },
-    ]
-
-    if (l1Network === 'solana') {
-      tokens.push({
+      {
         label: 'IOT',
         icon: <TokenIOT width={30} height={30} />,
         value: 'IOT' as Ticker,
         selected: ticker === 'IOT',
-      })
-    }
+      },
+      {
+        label: 'SOL',
+        icon: <TokenSOL width={30} height={30} />,
+        value: 'SOL' as Ticker,
+        selected: ticker === 'SOL',
+      },
+    ]
 
     return tokens
-  }, [blueBright500, white, l1Network, ticker])
+  }, [blueBright500, white, ticker])
 
   return (
     <>

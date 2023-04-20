@@ -163,6 +163,44 @@ export const readHeliumBalances = async (
   return tokenAccountAddresses
 }
 
+export const createTransferSolTxn = async (
+  anchorProvider: AnchorProvider,
+  signer: Signer,
+  payments: {
+    payee: string
+    balanceAmount: Balance<AnyCurrencyType>
+    memo: string
+    max?: boolean
+  }[],
+) => {
+  if (!payments.length) throw new Error('No payment found')
+
+  const payer = signer.publicKey
+
+  let instructions: TransactionInstruction[] = []
+  payments.forEach((p) => {
+    const amount = p.balanceAmount.integerBalance
+
+    const instruction = SystemProgram.transfer({
+      fromPubkey: payer,
+      toPubkey: new PublicKey(p.payee),
+      lamports: amount,
+    })
+
+    instructions = [...instructions, instruction]
+  })
+
+  const { blockhash } = await anchorProvider.connection.getLatestBlockhash()
+
+  const messageV0 = new TransactionMessage({
+    payerKey: payer,
+    recentBlockhash: blockhash,
+    instructions,
+  }).compileToV0Message()
+
+  return new VersionedTransaction(messageV0)
+}
+
 export const createTransferTxn = async (
   anchorProvider: AnchorProvider,
   signer: Signer,
@@ -231,7 +269,6 @@ export const createTransferTxn = async (
 }
 
 export const transferToken = async (
-  cluster: Cluster,
   anchorProvider: AnchorProvider,
   solanaAddress: string,
   heliumAddress: string,
@@ -241,7 +278,7 @@ export const transferToken = async (
     memo: string
     max?: boolean
   }[],
-  mintAddress: string,
+  mintAddress?: string,
 ) => {
   const payer = new PublicKey(solanaAddress)
   const secureAcct = await getKeypair(heliumAddress)
@@ -255,12 +292,9 @@ export const transferToken = async (
     secretKey: secureAcct.privateKey,
   }
 
-  const transaction = await createTransferTxn(
-    anchorProvider,
-    signer,
-    payments,
-    mintAddress,
-  )
+  const transaction = !mintAddress
+    ? await createTransferSolTxn(anchorProvider, signer, payments)
+    : await createTransferTxn(anchorProvider, signer, payments, mintAddress)
   transaction.sign([signer])
 
   const signature = await anchorProvider.connection.sendTransaction(

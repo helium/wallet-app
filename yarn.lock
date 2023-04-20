@@ -2633,10 +2633,10 @@
     react-native-sodium "^0.4.0"
     safe-buffer "^5.2.1"
 
-"@helium/currency@4.9.0":
-  version "4.9.0"
-  resolved "https://registry.yarnpkg.com/@helium/currency/-/currency-4.9.0.tgz#bf401f90dcae437d50957f3b32736d23e0819fc8"
-  integrity sha512-RzIdgY3o31MDKwJnmNELhoNUpKTEKeMnM4aGZU2Pf0x/QW2NW/UOwGFeFUd/lmnNCIc5yzcQe6fiDcRIDYtfqw==
+"@helium/currency@4.11.1":
+  version "4.11.1"
+  resolved "https://registry.yarnpkg.com/@helium/currency/-/currency-4.11.1.tgz#4658037197638406f0e60b246db70acd3323e46b"
+  integrity sha512-WxsMm3TvIXV8itR36yYxjXjtWAgJlId/OOrHivNTXUIdnxi6/j3JO/hY7EUHYygcw57O90Zqg4EBnypXzI4EKw==
   dependencies:
     bignumber.js "^9.0.0"
 

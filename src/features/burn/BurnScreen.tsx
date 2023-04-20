@@ -511,8 +511,8 @@ const BurnScreen = () => {
 
                   <TokenButton
                     backgroundColor="secondary"
-                    title={t('payment.title', { ticker })}
-                    subtitle="Choose subdao"
+                    title={t('burn.subdao', { subdao: ticker })}
+                    subtitle={t('burn.choooseSubDAO')}
                     address={currentAccount?.address}
                     onPress={handleTokenTypeSelected}
                     showBubbleArrow
