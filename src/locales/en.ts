@@ -443,6 +443,8 @@ export default {
     recipient: 'Recipient Address',
     swipeToBurn: 'Swipe to Burn',
     title: 'Burn',
+    subdao: '{{subdao}} subDAO',
+    choooseSubDAO: 'Choose a subDAO',
   },
   delegate: {
     title: 'Delegate',
