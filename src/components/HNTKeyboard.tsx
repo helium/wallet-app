@@ -115,11 +115,14 @@ const HNTKeyboardSelector = forwardRef(
       iotBalance,
       dcBalance,
       bonesToBalance,
+      solBalance,
     } = useBalance()
     const [timeStr, setTimeStr] = useState('')
 
     const getHeliumBalance = useMemo(() => {
       switch (ticker) {
+        case 'SOL':
+          return solBalance
         case 'MOBILE':
           return mobileBalance
         case 'IOT':
@@ -129,7 +132,14 @@ const HNTKeyboardSelector = forwardRef(
         default:
           return networkBalance
       }
-    }, [dcBalance, iotBalance, mobileBalance, networkBalance, ticker])
+    }, [
+      dcBalance,
+      iotBalance,
+      mobileBalance,
+      networkBalance,
+      ticker,
+      solBalance,
+    ])
 
     const isDntToken = useMemo(() => {
       return l1Network === 'solana' && (ticker === 'IOT' || ticker === 'MOBILE')

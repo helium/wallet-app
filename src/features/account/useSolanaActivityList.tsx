@@ -2,11 +2,11 @@ import { Ticker } from '@helium/currency'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { Mints } from '@utils/constants'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
 import { RootState } from '../../store/rootReducer'
 import { getTxns } from '../../store/slices/solanaSlice'
-import { useGetMintsQuery } from '../../store/slices/walletRestApi'
 import { useAppDispatch } from '../../store/store'
 import { FilterType } from './AccountActivityFilter'
 
@@ -21,14 +21,11 @@ export default ({
 }) => {
   const [now, setNow] = useState(new Date())
   const dispatch = useAppDispatch()
-  const { l1Network, solanaNetwork: cluster } = useAppStorage()
+  const { l1Network } = useAppStorage()
   const { anchorProvider } = useAccountStorage()
   const solanaActivity = useSelector(
     (state: RootState) => state.solana.activity,
   )
-  const { data: mints } = useGetMintsQuery(cluster, {
-    refetchOnMountOrArgChange: true,
-  })
 
   const isSolana = useMemo(() => l1Network === 'solana', [l1Network])
 
@@ -41,47 +38,47 @@ export default ({
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!account?.address || !isSolana || !mints || !anchorProvider) return
+      if (!account?.address || !isSolana || !anchorProvider) return
       dispatch(
         getTxns({
           account,
           ticker,
-          mints,
+          mints: Mints,
           requestType: 'update_head',
           anchorProvider,
         }),
       )
     }, 5000) // Every 5 seconds update the head of the list
     return () => clearInterval(interval)
-  }, [account, dispatch, isSolana, mints, ticker, anchorProvider])
+  }, [account, dispatch, isSolana, ticker, anchorProvider])
 
   useEffect(() => {
-    if (!account?.address || !isSolana || !mints || !anchorProvider) return
+    if (!account?.address || !isSolana || !anchorProvider) return
 
     dispatch(
       getTxns({
         account,
         ticker,
-        mints,
+        mints: Mints,
         requestType: 'start_fresh',
         anchorProvider,
       }),
     )
-  }, [account, dispatch, filter, isSolana, mints, ticker, anchorProvider])
+  }, [account, dispatch, filter, isSolana, ticker, anchorProvider])
 
   const requestMore = useCallback(() => {
-    if (!account?.address || !isSolana || !mints || !anchorProvider) return
+    if (!account?.address || !isSolana || !anchorProvider) return
 
     dispatch(
       getTxns({
         account,
-        mints,
+        mints: Mints,
         ticker,
         requestType: 'fetch_more',
         anchorProvider,
       }),
     )
-  }, [account, dispatch, isSolana, mints, ticker, anchorProvider])
+  }, [account, dispatch, isSolana, ticker, anchorProvider])
 
   const data = useMemo(() => {
     if (!account?.solanaAddress || !solanaActivity.data[account.solanaAddress])

@@ -158,12 +158,11 @@ export const makePayment = createAsyncThunk(
     if (!account?.solanaAddress) throw new Error('No solana account found')
 
     const [firstPayment] = payments
-    const mintAddress = toMintAddress(
-      firstPayment.balanceAmount.type.ticker,
-      mints,
-    )
+    const mintAddress =
+      firstPayment.balanceAmount.type.ticker !== 'SOL'
+        ? toMintAddress(firstPayment.balanceAmount.type.ticker, mints)
+        : undefined
     const transfer = await solUtils.transferToken(
-      cluster,
       anchorProvider,
       account.solanaAddress,
       account.address,
