@@ -9,6 +9,8 @@ import BackgroundFill from '@components/BackgroundFill'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { parseTransactionError } from '@utils/solanaUtils'
+import { useBalance } from '@utils/Balance'
 import { Payment } from './PaymentItem'
 import PaymentSummary from './PaymentSummary'
 
@@ -29,11 +31,13 @@ const PaymentError = ({
 }: Props) => {
   const navigation = useNavigation()
   const { t } = useTranslation()
+  const { solBalance } = useBalance()
+
   const errorMessage = useMemo(() => {
     if (!error) return ''
 
-    return error.message
-  }, [error])
+    return parseTransactionError(solBalance, error.message)
+  }, [error, solBalance])
 
   return (
     <Box flex={1} justifyContent="flex-end">

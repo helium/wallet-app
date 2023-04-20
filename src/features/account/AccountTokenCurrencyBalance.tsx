@@ -10,7 +10,7 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { locale } from '../../utils/i18n'
 
 type Props = {
-  ticker: Ticker
+  ticker: Ticker | 'ALL'
   staked?: boolean
 } & TextProps
 
@@ -35,6 +35,9 @@ const AccountTokenCurrencyBalance = ({
     networkBalance,
     solBalance,
     networkStakedBalance,
+    mobileBalance,
+    iotBalance,
+    totalBalance,
   } = useBalance()
 
   useAsync(async () => {
@@ -44,6 +47,9 @@ const AccountTokenCurrencyBalance = ({
     }
 
     switch (ticker) {
+      case 'ALL':
+        totalBalance().then(setBalanceString)
+        break
       case 'HNT':
         toCurrencyString(
           networkStakedBalance
@@ -64,10 +70,10 @@ const AccountTokenCurrencyBalance = ({
         break
       }
       case 'MOBILE':
-        setBalanceString(t('accountView.genesis'))
+        toCurrencyString(mobileBalance, 'MOBILE').then(setBalanceString)
         break
       case 'IOT':
-        setBalanceString(t('accountView.genesis'))
+        toCurrencyString(iotBalance, 'IOT').then(setBalanceString)
         break
       case 'HST':
         setBalanceString(t('accountView.securityTokens'))

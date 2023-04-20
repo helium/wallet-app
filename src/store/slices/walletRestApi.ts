@@ -33,6 +33,8 @@ type Notification = {
 export type TokenPrices = {
   solana: { [key: string]: number }
   helium: { [key: string]: number }
+  'helium-mobile': { [key: string]: number }
+  'helium-iot': { [key: string]: number }
 }
 
 export type RecommendedDapps = {

@@ -30,7 +30,10 @@ const TokenPricesTicker = ({ ...boxProps }: Props) => {
     })
 
   useAsync(async () => {
-    await triggerGetTokenPrices({ tokens: 'helium,solana', currency }, false)
+    await triggerGetTokenPrices(
+      { tokens: 'helium,solana,helium-mobile,helium-iot', currency },
+      false,
+    )
   }, [currency, triggerGetTokenPrices])
 
   const text = useMemo(() => {
@@ -38,21 +41,25 @@ const TokenPricesTicker = ({ ...boxProps }: Props) => {
     if (isFetching && !tokenPrices?.helium[currency.toLowerCase()])
       return t('generic.loading')
 
-    const heliumPrice = tokenPrices.helium[currency.toLowerCase()]
+    const heliumPrice = tokenPrices?.helium[currency.toLowerCase()]
+    const solanaPrice = tokenPrices?.solana[currency.toLowerCase()]
+    const mobilePrice = tokenPrices['helium-mobile'][currency.toLowerCase()]
+    const iotPrice = tokenPrices['helium-iot'][currency.toLowerCase()]
 
-    if (tokenPrices?.solana[currency.toLowerCase()]) {
-      const solanaPrice = tokenPrices.solana[currency.toLowerCase()]
-      return `HNT = $${heliumPrice} • SOL = $${solanaPrice}`
-    }
-
-    return `HNT = $${heliumPrice}`
+    // Construct the text to display
+    let priceText = ''
+    if (heliumPrice) priceText += ` HNT = $${heliumPrice} • `
+    if (solanaPrice) priceText += `SOL = $${solanaPrice} • `
+    if (mobilePrice) priceText += `MOBILE = $${mobilePrice} • `
+    if (iotPrice) priceText += `IOT = $${iotPrice} • `
+    return priceText.slice(0, -3)
   }, [currency, isFetching, t, tokenPrices])
 
   return (
     <Box {...boxProps}>
       <TextTicker
         style={textStyle}
-        scrollSpeed={200}
+        scrollSpeed={100}
         loop
         repeatSpacer={0}
         easing={Easing.linear}

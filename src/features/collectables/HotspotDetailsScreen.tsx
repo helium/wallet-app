@@ -22,6 +22,7 @@ import { useSpacing } from '@theme/themeHooks'
 import useHaptic from '@hooks/useHaptic'
 import useCopyText from '@hooks/useCopyText'
 import { ellipsizeAddress } from '@utils/accountUtils'
+import { toNumber } from '@helium/spl-utils'
 import { ww } from '../../utils/layout'
 import {
   CollectableNavigationProp,
@@ -223,13 +224,15 @@ const HotspotDetailsScreen = () => {
             </Text>
             <Text variant="body2" marginBottom="m">
               {t('collectablesScreen.hotspots.pendingRewards', {
-                amount: pendingMobileRewards,
+                amount: pendingMobileRewards
+                  ? toNumber(pendingMobileRewards, 6)
+                  : 0,
                 ticker: 'MOBILE',
               })}
             </Text>
             <Text variant="body2" marginBottom="m">
               {t('collectablesScreen.hotspots.pendingRewards', {
-                amount: pendingIotRewards,
+                amount: pendingIotRewards ? toNumber(pendingIotRewards, 6) : 0,
                 ticker: 'IOT',
               })}
             </Text>

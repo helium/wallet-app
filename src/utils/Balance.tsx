@@ -72,7 +72,7 @@ const useBalanceHook = () => {
   const dispatch = useAppDispatch()
 
   const { currentData: tokenPrices } = useGetTokenPricesQuery(
-    { tokens: 'helium,solana', currency },
+    { tokens: 'helium,solana,helium-mobile,helium-iot', currency },
     {
       pollingInterval: 60 * 1000,
     },
@@ -546,6 +546,42 @@ const useBalanceHook = () => {
     [convertToCurrency, currency, tokenPrices],
   )
 
+  const totalBalance = useCallback((): Promise<string> => {
+    let bal = 0
+
+    if (networkBalance?.floatBalance !== undefined) {
+      bal +=
+        networkBalance.floatBalance *
+        (tokenPrices?.helium?.[currency.toLowerCase()] || 0)
+    }
+
+    if (solBalance?.floatBalance !== undefined) {
+      bal +=
+        solBalance.floatBalance *
+        (tokenPrices?.solana?.[currency.toLowerCase()] || 0)
+    }
+
+    if (iotBalance?.floatBalance !== undefined) {
+      const iotPrice = tokenPrices?.['helium-iot']?.[currency.toLowerCase()]
+      bal += iotBalance.floatBalance * (iotPrice || 0)
+    }
+
+    if (mobileBalance?.floatBalance !== undefined) {
+      const mobilePrice =
+        tokenPrices?.['helium-mobile']?.[currency.toLowerCase()]
+      bal += mobileBalance.floatBalance * (mobilePrice || 0)
+    }
+
+    return CurrencyFormatter.format(bal, currency)
+  }, [
+    currency,
+    solBalance,
+    tokenPrices,
+    iotBalance,
+    mobileBalance,
+    networkBalance,
+  ])
+
   const toCurrencyString = useCallback(
     (
       balance?: Balance<NetworkTokens | TestNetworkTokens>,
@@ -554,16 +590,26 @@ const useBalanceHook = () => {
       const defaultResponse = new Promise<string>((resolve) => resolve(''))
 
       let bal = Balance.fromIntAndTicker(0, ticker)
+      let tickerPrice = tokenPrices?.helium
+
       if (balance?.floatBalance !== undefined && ticker === 'HNT') {
         bal = balance
       }
 
       if (solBalance?.floatBalance !== undefined && ticker === 'SOL') {
+        tickerPrice = tokenPrices?.solana
         bal = solBalance
       }
 
-      const tickerPrice =
-        ticker === 'HNT' ? tokenPrices?.helium : tokenPrices?.solana
+      if (iotBalance?.floatBalance !== undefined && ticker === 'IOT') {
+        tickerPrice = tokenPrices ? tokenPrices['helium-iot'] : undefined
+        bal = iotBalance
+      }
+
+      if (mobileBalance?.floatBalance !== undefined && ticker === 'MOBILE') {
+        tickerPrice = tokenPrices ? tokenPrices['helium-mobile'] : undefined
+        bal = mobileBalance
+      }
 
       const multiplier = tickerPrice?.[currency.toLowerCase()] || 0
       if (!multiplier) return defaultResponse
@@ -571,7 +617,7 @@ const useBalanceHook = () => {
       const convertedValue = multiplier * bal.floatBalance
       return CurrencyFormatter.format(convertedValue, currency)
     },
-    [currency, solBalance, tokenPrices],
+    [currency, solBalance, tokenPrices, iotBalance, mobileBalance],
   )
 
   const toUsd = useCallback(
@@ -592,6 +638,7 @@ const useBalanceHook = () => {
     floatToBalance,
     intToBalance,
     networkTokensToDc,
+    totalBalance,
     iotBalance,
     iotSolBalance,
     mobileSolBalance,
@@ -621,6 +668,7 @@ const initialState = {
   floatToBalance: () => undefined,
   intToBalance: () => undefined,
   networkTokensToDc: () => undefined,
+  totalBalance: () => new Promise<string>((resolve) => resolve('')),
   iotBalance: new Balance(0, CurrencyType.iot),
   iotSolBalance: 0,
   mobileSolBalance: 0,

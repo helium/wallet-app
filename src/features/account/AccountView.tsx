@@ -38,8 +38,7 @@ const AccountView = ({
   const [selectedDate, setSelectedDate] = useState('')
   const spacing = useSpacing()
 
-  const { toCurrencyString, networkBalance, networkStakedBalance } =
-    useBalance()
+  const { totalBalance, networkBalance, networkStakedBalance } = useBalance()
   const { currency, l1Network } = useAppStorage()
   const [actionBarHeight, setActionBarHeight] = useLayoutHeight()
 
@@ -81,11 +80,7 @@ const AccountView = ({
         setBalanceString,
       )
     } else {
-      let bal = networkBalance
-      if (networkStakedBalance) {
-        bal = networkBalance?.plus(networkStakedBalance)
-      }
-      toCurrencyString(bal).then(setBalanceString)
+      totalBalance().then(setBalanceString)
     }
   }, [
     accountNetType,
@@ -93,7 +88,7 @@ const AccountView = ({
     networkBalance,
     networkStakedBalance,
     selectedBalance,
-    toCurrencyString,
+    totalBalance,
   ])
 
   return (

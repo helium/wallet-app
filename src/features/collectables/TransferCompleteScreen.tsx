@@ -16,6 +16,8 @@ import Text from '@components/Text'
 import BackScreen from '@components/BackScreen'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import { useSpacing } from '@theme/themeHooks'
+import { parseTransactionError } from '@utils/solanaUtils'
+import { useBalance } from '@utils/Balance'
 import { ww } from '../../utils/layout'
 import { RootState } from '../../store/rootReducer'
 import { CollectableStackParamList } from './collectablesTypes'
@@ -33,6 +35,7 @@ const TransferCollectableScreen = () => {
   const navigation = useNavigation<TabBarNavigationProp>()
   const COLLECTABLE_HEIGHT = ww
   const backEdges = useMemo(() => ['top'] as Edge[], [])
+  const { solBalance } = useBalance()
 
   const { t } = useTranslation()
   const { collectable } = route.params
@@ -139,7 +142,10 @@ const TransferCollectableScreen = () => {
                   numberOfLines={2}
                   textAlign="center"
                 >
-                  {solanaPayment.error.message}
+                  {parseTransactionError(
+                    solBalance,
+                    solanaPayment?.error?.message,
+                  )}
                 </Text>
               </Animated.View>
             )}
