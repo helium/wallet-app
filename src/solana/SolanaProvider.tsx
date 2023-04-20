@@ -11,15 +11,11 @@ import { init as initHsd } from '@helium/helium-sub-daos-sdk'
 import { init as initDc } from '@helium/data-credits-sdk'
 import { init as initHem } from '@helium/helium-entity-manager-sdk'
 import { init as initLazy } from '@helium/lazy-distributor-sdk'
-import { AnchorProvider, Wallet, Program } from '@coral-xyz/anchor'
-import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'
-import { HeliumSubDaos } from '@helium/idls/lib/types/helium_sub_daos'
-import { DataCredits } from '@helium/idls/lib/types/data_credits'
+import { AnchorProvider, Wallet } from '@coral-xyz/anchor'
 import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
 import { Cluster, Transaction } from '@solana/web3.js'
 import { AccountFetchCache } from '@helium/spl-utils'
-import { LazyDistributor } from '@helium/idls/lib/types/lazy_distributor'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { getSessionKey, getSolanaKeypair } from '../storage/secureStorage'
 import { getConnection } from '../utils/solanaUtils'
@@ -29,6 +25,7 @@ import { useAppDispatch } from '../store/store'
 import usePrevious from '../hooks/usePrevious'
 import { readBalances } from '../store/slices/solanaSlice'
 import { WrappedConnection } from '../utils/WrappedConnection'
+import { DcProgram, HemProgram, HsdProgram, LazyProgram } from '../types/solana'
 
 const useSolanaHook = () => {
   const { currentAccount } = useAccountStorage()
@@ -37,10 +34,10 @@ const useSolanaHook = () => {
     (state: RootState) => state.app.cluster || 'mainnet-beta',
   )
   const [connection, setConnection] = useState<WrappedConnection>()
-  const [dcProgram, setDcProgram] = useState<Program<DataCredits>>()
-  const [hemProgram, setHemProgram] = useState<Program<HeliumEntityManager>>()
-  const [hsdProgram, setHsdProgram] = useState<Program<HeliumSubDaos>>()
-  const [lazyProgram, setLazyProgram] = useState<Program<LazyDistributor>>()
+  const [dcProgram, setDcProgram] = useState<DcProgram>()
+  const [hemProgram, setHemProgram] = useState<HemProgram>()
+  const [hsdProgram, setHsdProgram] = useState<HsdProgram>()
+  const [lazyProgram, setLazyProgram] = useState<LazyProgram>()
   const [anchorProvider, setAnchorProvider] = useState<AnchorProvider>()
   const [cache, setCache] = useState<AccountFetchCache>()
 
