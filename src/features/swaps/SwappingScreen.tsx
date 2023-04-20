@@ -14,6 +14,7 @@ import BackScreen from '@components/BackScreen'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import TokenIcon from '@components/TokenIcon'
 import { parseTransactionError } from '@utils/solanaUtils'
+import { useBalance } from '@utils/Balance'
 import { RootState } from '../../store/rootReducer'
 import BackArrow from '../../assets/images/backArrow.svg'
 import { SwapStackParamList } from './swapTypes'
@@ -26,6 +27,7 @@ const SwappingScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<TabBarNavigationProp>()
   const backEdges = useMemo(() => ['bottom'] as Edge[], [])
+  const { solBalance } = useBalance()
 
   const { t } = useTranslation()
   const { tokenA, tokenB } = route.params
