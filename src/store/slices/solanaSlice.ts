@@ -146,6 +146,7 @@ type DelegateDataCreditsInput = {
   cluster: Cluster
   delegateAddress: string
   amount: number
+  mint: PublicKey
 }
 
 export const makePayment = createAsyncThunk(
@@ -318,6 +319,7 @@ export const sendDelegateDataCredits = createAsyncThunk(
       amount,
       account,
       delegateAddress,
+      mint,
     }: DelegateDataCreditsInput,
     { dispatch },
   ) => {
@@ -326,6 +328,7 @@ export const sendDelegateDataCredits = createAsyncThunk(
         anchorProvider,
         delegateAddress,
         amount,
+        mint,
       )
 
       dispatch(readBalances({ anchorProvider, acct: account }))

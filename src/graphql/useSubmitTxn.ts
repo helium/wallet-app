@@ -309,7 +309,7 @@ export default () => {
   )
 
   const submitDelegateDataCredits = useCallback(
-    async (delegateAddress: string, amount: number) => {
+    async (delegateAddress: string, amount: number, mint: PublicKey) => {
       if (!currentAccount || !anchorProvider) {
         throw new Error(t('errors.account'))
       }
@@ -321,6 +321,7 @@ export default () => {
           cluster,
           delegateAddress,
           amount,
+          mint,
         }),
       )
 

@@ -688,13 +688,14 @@ export const delegateDataCredits = async (
   anchorProvider: AnchorProvider,
   delegateAddress: string,
   amount: number,
+  mint: PublicKey,
 ) => {
   try {
     const { connection } = anchorProvider
     const { publicKey: payer } = anchorProvider.wallet
 
     const program = await dc.init(anchorProvider)
-    const subDao = subDaoKey(IOT_MINT)[0]
+    const subDao = subDaoKey(mint)[0]
 
     const tx = await program.methods
       .delegateDataCreditsV0({
