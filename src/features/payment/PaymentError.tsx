@@ -9,6 +9,7 @@ import BackgroundFill from '@components/BackgroundFill'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { parseTransactionError } from '@utils/solanaUtils'
 import { Payment } from './PaymentItem'
 import PaymentSummary from './PaymentSummary'
 
@@ -32,7 +33,7 @@ const PaymentError = ({
   const errorMessage = useMemo(() => {
     if (!error) return ''
 
-    return error.message
+    return parseTransactionError(error.message)
   }, [error])
 
   return (

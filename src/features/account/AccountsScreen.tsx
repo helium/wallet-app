@@ -386,7 +386,7 @@ const AccountsScreen = () => {
         marginHorizontal="l"
       >
         <Box flex={1}>
-          <AccountTokenCurrencyBalance ticker="HNT" variant="h2Medium" />
+          <AccountTokenCurrencyBalance ticker="ALL" variant="h2Medium" />
         </Box>
         <AccountActionBar ticker="HNT" maxCompact />
       </ReAnimatedBox>

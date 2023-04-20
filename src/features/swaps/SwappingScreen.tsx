@@ -13,6 +13,7 @@ import Text from '@components/Text'
 import BackScreen from '@components/BackScreen'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import TokenIcon from '@components/TokenIcon'
+import { parseTransactionError } from '@utils/solanaUtils'
 import { RootState } from '../../store/rootReducer'
 import BackArrow from '../../assets/images/backArrow.svg'
 import { SwapStackParamList } from './swapTypes'
@@ -35,10 +36,7 @@ const SwappingScreen = () => {
 
   const onReturn = useCallback(() => {
     // Reset Swap stack to first screen
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Home' }],
-    })
+    navigation.goBack()
   }, [navigation])
 
   const TokensSwappedContainer = useMemo(() => {
@@ -121,7 +119,7 @@ const SwappingScreen = () => {
                 marginTop="xl"
                 textAlign="center"
               >
-                {solanaPayment.error.message}
+                {parseTransactionError(solanaPayment?.error?.message)}
               </Text>
             </Animated.View>
           )}

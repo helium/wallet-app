@@ -83,7 +83,7 @@ const SwapScreen = () => {
   >()
   const [networkError, setNetworkError] = useState<undefined | string>()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const { networkTokensToDc, networkBalance } = useBalance()
+  const { networkTokensToDc, networkBalance, solBalance } = useBalance()
   const { showOKCancelAlert } = useAlert()
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const {
@@ -164,7 +164,6 @@ const SwapScreen = () => {
     setYouPayTokenType(Tokens.MOBILE)
     setSelectorMode(SelectorMode.youPay)
     setSolFee(undefined)
-    setHasInsufficientBalance(undefined)
     setNetworkError(undefined)
   }, [])
 
@@ -183,11 +182,10 @@ const SwapScreen = () => {
 
     setSolFee(fee)
 
-    const balance = await connection.getBalance(
-      new PublicKey(currentAccount.solanaAddress),
+    setHasInsufficientBalance(
+      fee > solBalance.integerBalance || solBalance.floatBalance < 0.000005,
     )
-    setHasInsufficientBalance(fee > balance)
-  }, [youPayTokenType])
+  }, [anchorProvider, currentAccount?.solanaAddress, solBalance])
 
   const handleClose = useCallback(() => {
     navigation.goBack()
@@ -515,6 +513,7 @@ const SwapScreen = () => {
                     backgroundColorDisabled="white"
                     backgroundColorDisabledOpacity={0.1}
                     disabled={
+                      hasInsufficientBalance ||
                       insufficientTokensToSwap ||
                       youPayTokenAmount === 0 ||
                       treasuryFrozen

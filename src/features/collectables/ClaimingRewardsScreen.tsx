@@ -14,6 +14,7 @@ import Text from '@components/Text'
 import BackScreen from '@components/BackScreen'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import AccountIcon from '@components/AccountIcon'
+import { parseTransactionError } from '@utils/solanaUtils'
 import { RootState } from '../../store/rootReducer'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
@@ -111,7 +112,7 @@ const ClaimingRewardsScreen = () => {
                   numberOfLines={2}
                   textAlign="center"
                 >
-                  {solanaPayment.error.message}
+                  {parseTransactionError(solanaPayment?.error?.message)}
                 </Text>
               </Animated.View>
             )}
