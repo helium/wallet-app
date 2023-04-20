@@ -219,6 +219,7 @@ export default {
       twenty: '20',
       fifty: '50',
       all: 'All',
+      copyEccCompact: 'Copy ecc compact',
     },
   },
   activityScreen: {
