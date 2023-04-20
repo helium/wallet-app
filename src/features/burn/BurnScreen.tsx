@@ -13,7 +13,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Platform } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Balance, { CurrencyType, DataCredits } from '@helium/currency'
+import Balance, { CurrencyType, DataCredits, Ticker } from '@helium/currency'
 import Address, { NetTypes } from '@helium/address'
 import { TokenBurnV1 } from '@helium/transactions'
 import { useSelector } from 'react-redux'
@@ -30,6 +30,15 @@ import LedgerBurnModal, {
   LedgerBurnModalRef,
 } from '@components/LedgerBurnModal'
 import useAlert from '@hooks/useAlert'
+import TokenSelector, {
+  TokenListItem,
+  TokenSelectorRef,
+} from '@components/TokenSelector'
+import TokenButton from '@components/TokenButton'
+import TokenIOT from '@assets/images/tokenIOT.svg'
+import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
+import { Mints } from '@utils/constants'
+import { PublicKey } from '@solana/web3.js'
 import { TXN_FEE_IN_SOL } from '../../utils/solanaUtils'
 import { RootState } from '../../store/rootReducer'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
@@ -76,7 +85,7 @@ const BurnScreen = () => {
   const { top } = useSafeAreaInsets()
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
-  const { primaryText } = useColors()
+  const { primaryText, blueBright500 } = useColors()
   const ledgerPaymentRef = useRef<LedgerBurnModalRef>(null)
   const hitSlop = useHitSlop('l')
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
@@ -107,6 +116,10 @@ const BurnScreen = () => {
   const delegatePayment = useSelector(
     (reduxState: RootState) => reduxState.solana.delegate,
   )
+  const [ticker, setTicker] = useState<Ticker>('MOBILE')
+  const tokenSelectorRef = useRef<TokenSelectorRef>(null)
+
+  const mint = useMemo(() => new PublicKey(Mints[ticker]), [ticker])
 
   const { isDelegate } = useMemo(() => route.params, [route.params])
 
@@ -210,7 +223,11 @@ const BurnScreen = () => {
 
   const handleSubmit = useCallback(async () => {
     if (l1Network === 'solana' && isDelegate && amountBalance) {
-      submitDelegateDataCredits(delegateAddress, amountBalance.integerBalance)
+      submitDelegateDataCredits(
+        delegateAddress,
+        amountBalance.integerBalance,
+        mint,
+      )
 
       return
     }
@@ -259,6 +276,7 @@ const BurnScreen = () => {
     route.params.memo,
     submitDelegateDataCredits,
     submitTxnMutation,
+    mint,
   ])
 
   const handleQrScan = useCallback(() => {
@@ -376,6 +394,32 @@ const BurnScreen = () => {
     [networkType, isDelegate],
   )
 
+  const onTickerSelected = useCallback((tick: Ticker) => {
+    setTicker(tick)
+  }, [])
+
+  const handleTokenTypeSelected = useCallback(() => {
+    tokenSelectorRef?.current?.showTokens()
+  }, [])
+
+  const data = useMemo(
+    (): TokenListItem[] => [
+      {
+        label: 'MOBILE',
+        icon: <TokenMOBILE width={30} height={30} color={blueBright500} />,
+        value: 'MOBILE' as Ticker,
+        selected: ticker === 'MOBILE',
+      },
+      {
+        label: 'IOT',
+        icon: <TokenIOT width={30} height={30} />,
+        value: 'IOT' as Ticker,
+        selected: ticker === 'IOT',
+      },
+    ],
+    [blueBright500, ticker],
+  )
+
   if (!amountBalance) return null
 
   return (
@@ -385,223 +429,252 @@ const BurnScreen = () => {
       ticker={amountBalance?.type.ticker}
       networkFee={Balance.fromFloatAndTicker(TXN_FEE_IN_SOL, 'SOL')}
     >
-      <AccountSelector ref={accountSelectorRef}>
-        <AddressBookSelector
-          ref={addressBookRef}
-          onContactSelected={handleContactSelected}
-          hideCurrentAccount
-        >
-          <LedgerBurnModal
-            ref={ledgerPaymentRef}
-            onConfirm={ledgerPaymentConfirmed}
-            onError={handleLedgerError}
-            title={t('burn.ledger.title')}
-            subtitle={t('burn.ledger.subtitle', {
-              name: currentAccount?.ledgerDevice?.name,
-            })}
+      <TokenSelector
+        ref={tokenSelectorRef}
+        onTokenSelected={onTickerSelected}
+        tokenData={data}
+      >
+        <AccountSelector ref={accountSelectorRef}>
+          <AddressBookSelector
+            ref={addressBookRef}
+            onContactSelected={handleContactSelected}
+            hideCurrentAccount
           >
-            <Box
-              backgroundColor="secondaryBackground"
-              flex={1}
-              style={containerStyle}
+            <LedgerBurnModal
+              ref={ledgerPaymentRef}
+              onConfirm={ledgerPaymentConfirmed}
+              onError={handleLedgerError}
+              title={t('burn.ledger.title')}
+              subtitle={t('burn.ledger.subtitle', {
+                name: currentAccount?.ledgerDevice?.name,
+              })}
             >
               <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                alignItems="center"
+                backgroundColor="secondaryBackground"
+                flex={1}
+                style={containerStyle}
               >
-                <Box hitSlop={hitSlop} padding="s">
-                  <IconPressedContainer
-                    onPress={handleQrScan}
-                    activeOpacity={0.75}
-                    idleOpacity={1.0}
-                  >
-                    <QR color={primaryText} height={16} width={16} />
-                  </IconPressedContainer>
-                </Box>
-                <Text
-                  variant="subtitle2"
-                  flex={1}
-                  textAlign="center"
-                  color="primaryText"
-                  maxFontSizeMultiplier={1}
+                <Box
+                  flexDirection="row"
+                  justifyContent="space-between"
+                  alignItems="center"
                 >
-                  {t(isDelegate ? 'delegate.title' : 'burn.title')}
-                </Text>
-                <TouchableOpacityBox
-                  onPress={navigation.goBack}
-                  width={64}
-                  padding="l"
-                  hitSlop={hitSlop}
-                >
-                  <Close color={primaryText} height={16} width={16} />
-                </TouchableOpacityBox>
-              </Box>
-
-              <KeyboardAwareScrollView
-                enableOnAndroid
-                enableResetScrollToCoords={false}
-                keyboardShouldPersistTaps="always"
-              >
-                <AccountButton
-                  backgroundColor="secondary"
-                  accountIconSize={41}
-                  paddingTop="l"
-                  title={formatAccountAlias(currentAccount)}
-                  subtitle={t('payment.senderAccount')}
-                  showChevron={sortedAccountsForNetType(networkType).length > 1}
-                  address={currentAccount?.address}
-                  netType={currentAccount?.netType}
-                  onPress={handleShowAccounts}
-                  showBubbleArrow
-                  marginHorizontal="l"
-                  marginBottom="xs"
-                />
-
-                {isDelegate && l1Network === 'solana' ? (
-                  <PaymentItem
-                    index={0}
-                    onAddressBookSelected={handleAddressBookSelected}
-                    onEditAmount={onTokenItemPressed}
-                    onEditAddress={({ address }) => {
-                      setDelegateAddress(address)
-                      handleAddressError({
-                        address,
-                      })
-                    }}
-                    handleAddressError={handleAddressError}
-                    ticker={amountBalance?.type.ticker}
-                    address={delegateAddress}
-                    amount={amountBalance}
-                    hasError={hasError}
-                    hideMemo
-                  />
-                ) : (
-                  <>
-                    <AccountButton
-                      backgroundColor="surfaceSecondary"
-                      accountIconSize={41}
-                      subtitle={t('burn.recipient')}
-                      title={ellipsizeAddress(
-                        route.params.address || delegateAddress,
-                      )}
-                      showBubbleArrow
-                      showChevron={false}
-                      address={route.params.address}
-                      netType={networkType}
-                      marginHorizontal="l"
-                    />
-                    <Box
-                      marginTop="xs"
-                      marginHorizontal="l"
-                      backgroundColor="secondary"
-                      borderRadius="xl"
-                      paddingHorizontal="m"
-                      overflow="hidden"
+                  <Box hitSlop={hitSlop} padding="s">
+                    <IconPressedContainer
+                      onPress={handleQrScan}
+                      activeOpacity={0.75}
+                      idleOpacity={1.0}
                     >
-                      <Text variant="body3" color="secondaryText" marginTop="m">
-                        {t('burn.amount')}
-                      </Text>
-                      <Text variant="subtitle2" color="primaryText">
-                        {amountBalance.toString()}
-                      </Text>
-                      <Text
-                        variant="body3"
-                        marginBottom="m"
-                        color="secondaryText"
-                      >
-                        {t('payment.fee', {
-                          value: balanceToString(feeAsTokens, {
-                            maxDecimalPlaces: 4,
-                          }),
-                        })}
-                      </Text>
+                      <QR color={primaryText} height={16} width={16} />
+                    </IconPressedContainer>
+                  </Box>
+                  <Text
+                    variant="subtitle2"
+                    flex={1}
+                    textAlign="center"
+                    color="primaryText"
+                    maxFontSizeMultiplier={1}
+                  >
+                    {t(isDelegate ? 'delegate.title' : 'burn.title')}
+                  </Text>
+                  <TouchableOpacityBox
+                    onPress={navigation.goBack}
+                    width={64}
+                    padding="l"
+                    hitSlop={hitSlop}
+                  >
+                    <Close color={primaryText} height={16} width={16} />
+                  </TouchableOpacityBox>
+                </Box>
 
-                      <Box
-                        height={1}
-                        backgroundColor="primaryBackground"
-                        marginHorizontal="n_m"
-                      />
-
-                      <Text variant="body3" color="secondaryText" marginTop="m">
-                        {t('burn.equivalent')}
-                      </Text>
-                      <Text
-                        variant="subtitle2"
-                        color="primaryText"
-                        marginBottom="m"
-                      >
-                        {amountInDc?.toString()}
-                      </Text>
-
-                      <Box
-                        height={1}
-                        backgroundColor="primaryBackground"
-                        marginHorizontal="n_m"
-                      />
-
-                      {route.params.memo && (
-                        <>
-                          <Text
-                            variant="body3"
-                            color="secondaryText"
-                            marginTop="m"
-                          >
-                            {t('burn.memo')}
-                          </Text>
-                          <Text variant="body3" marginBottom="m">
-                            {route.params.memo}
-                          </Text>
-                        </>
-                      )}
-                    </Box>
-                  </>
-                )}
-              </KeyboardAwareScrollView>
-              <Box
-                borderTopLeftRadius="xl"
-                borderTopRightRadius="xl"
-                padding="l"
-                overflow="hidden"
-                minHeight={220}
-                backgroundColor="secondary"
-              >
-                <PaymentSummary
-                  totalBalance={amountBalance}
-                  feeTokenBalance={feeAsTokens}
-                  errors={errors}
-                />
-                <Box flex={1} justifyContent="flex-end">
-                  <SubmitButton
-                    disabled={
-                      amountBalance.floatBalance === 0 ||
-                      hasError ||
-                      (!delegateAddress && l1Network === 'solana' && isDelegate)
+                <KeyboardAwareScrollView
+                  enableOnAndroid
+                  enableResetScrollToCoords={false}
+                  keyboardShouldPersistTaps="always"
+                >
+                  <AccountButton
+                    backgroundColor="secondary"
+                    accountIconSize={41}
+                    paddingTop="l"
+                    title={formatAccountAlias(currentAccount)}
+                    subtitle={t('payment.senderAccount')}
+                    showChevron={
+                      sortedAccountsForNetType(networkType).length > 1
                     }
-                    marginTop="l"
-                    title={t(
-                      isDelegate ? 'delegate.swipe' : 'burn.swipeToBurn',
-                    )}
-                    onSubmit={handleSubmit}
+                    address={currentAccount?.address}
+                    netType={currentAccount?.netType}
+                    onPress={handleShowAccounts}
+                    showBubbleArrow
+                    marginHorizontal="l"
+                    marginBottom="xs"
                   />
+
+                  <TokenButton
+                    backgroundColor="secondary"
+                    title={t('payment.title', { ticker })}
+                    subtitle="Choose subdao"
+                    address={currentAccount?.address}
+                    onPress={handleTokenTypeSelected}
+                    showBubbleArrow
+                    marginHorizontal="l"
+                    ticker={ticker}
+                  />
+
+                  {isDelegate && l1Network === 'solana' ? (
+                    <PaymentItem
+                      index={0}
+                      onAddressBookSelected={handleAddressBookSelected}
+                      onEditAmount={onTokenItemPressed}
+                      onEditAddress={({ address }) => {
+                        setDelegateAddress(address)
+                        handleAddressError({
+                          address,
+                        })
+                      }}
+                      handleAddressError={handleAddressError}
+                      ticker={amountBalance?.type.ticker}
+                      address={delegateAddress}
+                      amount={amountBalance}
+                      hasError={hasError}
+                      hideMemo
+                    />
+                  ) : (
+                    <>
+                      <AccountButton
+                        backgroundColor="surfaceSecondary"
+                        accountIconSize={41}
+                        subtitle={t('burn.recipient')}
+                        title={ellipsizeAddress(
+                          route.params.address || delegateAddress,
+                        )}
+                        showBubbleArrow
+                        showChevron={false}
+                        address={route.params.address}
+                        netType={networkType}
+                        marginHorizontal="l"
+                      />
+                      <Box
+                        marginTop="xs"
+                        marginHorizontal="l"
+                        backgroundColor="secondary"
+                        borderRadius="xl"
+                        paddingHorizontal="m"
+                        overflow="hidden"
+                      >
+                        <Text
+                          variant="body3"
+                          color="secondaryText"
+                          marginTop="m"
+                        >
+                          {t('burn.amount')}
+                        </Text>
+                        <Text variant="subtitle2" color="primaryText">
+                          {amountBalance.toString()}
+                        </Text>
+                        <Text
+                          variant="body3"
+                          marginBottom="m"
+                          color="secondaryText"
+                        >
+                          {t('payment.fee', {
+                            value: balanceToString(feeAsTokens, {
+                              maxDecimalPlaces: 4,
+                            }),
+                          })}
+                        </Text>
+
+                        <Box
+                          height={1}
+                          backgroundColor="primaryBackground"
+                          marginHorizontal="n_m"
+                        />
+
+                        <Text
+                          variant="body3"
+                          color="secondaryText"
+                          marginTop="m"
+                        >
+                          {t('burn.equivalent')}
+                        </Text>
+                        <Text
+                          variant="subtitle2"
+                          color="primaryText"
+                          marginBottom="m"
+                        >
+                          {amountInDc?.toString()}
+                        </Text>
+
+                        <Box
+                          height={1}
+                          backgroundColor="primaryBackground"
+                          marginHorizontal="n_m"
+                        />
+
+                        {route.params.memo && (
+                          <>
+                            <Text
+                              variant="body3"
+                              color="secondaryText"
+                              marginTop="m"
+                            >
+                              {t('burn.memo')}
+                            </Text>
+                            <Text variant="body3" marginBottom="m">
+                              {route.params.memo}
+                            </Text>
+                          </>
+                        )}
+                      </Box>
+                    </>
+                  )}
+                </KeyboardAwareScrollView>
+                <Box
+                  borderTopLeftRadius="xl"
+                  borderTopRightRadius="xl"
+                  padding="l"
+                  overflow="hidden"
+                  minHeight={220}
+                  backgroundColor="secondary"
+                >
+                  <PaymentSummary
+                    totalBalance={amountBalance}
+                    feeTokenBalance={feeAsTokens}
+                    errors={errors}
+                  />
+                  <Box flex={1} justifyContent="flex-end">
+                    <SubmitButton
+                      disabled={
+                        amountBalance.floatBalance === 0 ||
+                        hasError ||
+                        (!delegateAddress &&
+                          l1Network === 'solana' &&
+                          isDelegate)
+                      }
+                      marginTop="l"
+                      title={t(
+                        isDelegate ? 'delegate.swipe' : 'burn.swipeToBurn',
+                      )}
+                      onSubmit={handleSubmit}
+                    />
+                  </Box>
                 </Box>
               </Box>
-            </Box>
-            <PaymentSubmit
-              submitLoading={submitLoading || !!delegatePayment?.loading}
-              submitSucceeded={
-                !!submitData?.submitTxn?.hash || delegatePayment?.success
-              }
-              submitError={submitError || delegatePayment?.error}
-              totalBalance={amountBalance}
-              feeTokenBalance={feeAsTokens}
-              onRetry={handleSubmit}
-              onSuccess={navigation.popToTop}
-              actionTitle={t('generic.ok')}
-            />
-          </LedgerBurnModal>
-        </AddressBookSelector>
-      </AccountSelector>
+              <PaymentSubmit
+                submitLoading={submitLoading || !!delegatePayment?.loading}
+                submitSucceeded={
+                  !!submitData?.submitTxn?.hash || delegatePayment?.success
+                }
+                submitError={submitError || delegatePayment?.error}
+                totalBalance={amountBalance}
+                feeTokenBalance={feeAsTokens}
+                onRetry={handleSubmit}
+                onSuccess={navigation.popToTop}
+                actionTitle={t('generic.ok')}
+              />
+            </LedgerBurnModal>
+          </AddressBookSelector>
+        </AccountSelector>
+      </TokenSelector>
     </HNTKeyboard>
   )
 }
