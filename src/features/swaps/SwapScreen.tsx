@@ -24,12 +24,11 @@ import Balance, { CurrencyType, SolTokens, Ticker } from '@helium/currency'
 import useAlert from '@hooks/useAlert'
 import { useTreasuryPrice } from '@hooks/useTreasuryPrice'
 import { useNavigation } from '@react-navigation/native'
-import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { CSAccount } from '@storage/cloudStorage'
 import { Mints } from '@utils/constants'
-import * as Logger from '@utils/logger'
-import { createTreasurySwapMessage, TXN_FEE_IN_SOL } from '@utils/solanaUtils'
+import { getAtaAccountCreationFee, TXN_FEE_IN_SOL } from '@utils/solanaUtils'
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
@@ -142,10 +141,10 @@ const SwapScreen = () => {
 
   const showError = useMemo(() => {
     if (hasRecipientError) return t('generic.notValidSolanaAddress')
-    if (hasInsufficientBalance) return t('generic.insufficientBalance')
-    if (networkError) return networkError
     if (insufficientTokensToSwap)
       return t('swapsScreen.insufficientTokensToSwap')
+    if (hasInsufficientBalance) return t('generic.insufficientBalance')
+    if (networkError) return networkError
   }, [
     hasRecipientError,
     hasInsufficientBalance,
@@ -167,32 +166,28 @@ const SwapScreen = () => {
     setSolFee(undefined)
     setHasInsufficientBalance(undefined)
     setNetworkError(undefined)
+  }, [])
 
+  useAsync(async () => {
     if (!currentAccount?.solanaAddress || !anchorProvider || !connection) return
 
-    try {
-      const { message } = await createTreasurySwapMessage(
-        0,
-        new PublicKey(Mints.MOBILE),
-        anchorProvider,
-      )
+    const toMint = new PublicKey(Mints[youReceiveTokenType])
+    let fee = TXN_FEE_IN_SOL
 
-      const response = await connection.getFeeForMessage(
-        message,
-        'singleGossip',
-      )
+    const ataFee = await getAtaAccountCreationFee({
+      solanaAddress: currentAccount.solanaAddress,
+      connection,
+      mint: toMint,
+    })
+    fee += ataFee.floatBalance
 
-      setSolFee((response.value || 0) / LAMPORTS_PER_SOL)
+    setSolFee(fee)
 
-      const balance = await connection.getBalance(
-        new PublicKey(currentAccount?.solanaAddress),
-      )
-      setHasInsufficientBalance((response.value || 0) > balance)
-    } catch (error) {
-      Logger.error(error)
-      setNetworkError((error as Error).message)
-    }
-  }, [anchorProvider, connection, currentAccount?.solanaAddress])
+    const balance = await connection.getBalance(
+      new PublicKey(currentAccount.solanaAddress),
+    )
+    setHasInsufficientBalance(fee > balance)
+  }, [youPayTokenType])
 
   const handleClose = useCallback(() => {
     navigation.goBack()

@@ -33,9 +33,10 @@ import {
   getAssociatedTokenAddress,
   getMint,
   getAssociatedTokenAddressSync,
+  getAccount,
 } from '@solana/spl-token'
 import { entityCreatorKey } from '@helium/helium-entity-manager-sdk'
-import Balance, { AnyCurrencyType } from '@helium/currency'
+import Balance, { AnyCurrencyType, CurrencyType } from '@helium/currency'
 import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
 import axios from 'axios'
 import Config from 'react-native-config'
@@ -55,9 +56,9 @@ import {
   getAsset,
   searchAssets,
   toBN,
-  DC_MINT,
   sendAndConfirmWithRetry,
   IOT_MINT,
+  DC_MINT,
 } from '@helium/spl-utils'
 import { AnchorProvider, BN } from '@coral-xyz/anchor'
 import * as tm from '@helium/treasury-management-sdk'
@@ -653,6 +654,29 @@ export const transferCollectable = async (
   } catch (e) {
     Logger.error(e)
     throw new Error((e as Error).message)
+  }
+}
+
+export const getAtaAccountCreationFee = async ({
+  solanaAddress,
+  connection,
+  mint,
+}: {
+  solanaAddress: string
+  connection: Connection
+  mint: PublicKey
+}) => {
+  const ataAddress = getAssociatedTokenAddressSync(
+    mint,
+    new PublicKey(solanaAddress),
+    true,
+  )
+
+  try {
+    await getAccount(connection, ataAddress)
+    return new Balance(0, CurrencyType.solTokens)
+  } catch {
+    return Balance.fromFloat(0.00203928, CurrencyType.solTokens)
   }
 }
 
