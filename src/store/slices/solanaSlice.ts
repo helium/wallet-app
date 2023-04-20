@@ -136,7 +136,7 @@ type MintDataCreditsInput = {
   account: CSAccount
   anchorProvider: AnchorProvider
   cluster: Cluster
-  hntAmount: number
+  dcAmount: number
   recipient: PublicKey
 }
 
@@ -281,18 +281,18 @@ export const sendMintDataCredits = createAsyncThunk(
     {
       cluster,
       anchorProvider,
-      hntAmount,
+      dcAmount,
       account,
       recipient,
     }: MintDataCreditsInput,
     { dispatch },
   ) => {
     try {
-      const swap = await solUtils.mintDataCredits(
+      const swap = await solUtils.mintDataCredits({
         anchorProvider,
-        hntAmount,
+        dcAmount,
         recipient,
-      )
+      })
 
       dispatch(readBalances({ anchorProvider, acct: account }))
 

@@ -280,7 +280,13 @@ export default () => {
   )
 
   const submitMintDataCredits = useCallback(
-    async (hntAmount: number, recipient: PublicKey) => {
+    async ({
+      dcAmount,
+      recipient,
+    }: {
+      dcAmount: number
+      recipient: PublicKey
+    }) => {
       if (!currentAccount || !anchorProvider) {
         throw new Error(t('errors.account'))
       }
@@ -290,7 +296,7 @@ export default () => {
           account: currentAccount,
           anchorProvider,
           cluster,
-          hntAmount,
+          dcAmount,
           recipient,
         }),
       )

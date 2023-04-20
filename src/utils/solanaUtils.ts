@@ -33,9 +33,10 @@ import {
   getAssociatedTokenAddress,
   getMint,
   getAssociatedTokenAddressSync,
+  getAccount,
 } from '@solana/spl-token'
 import { entityCreatorKey } from '@helium/helium-entity-manager-sdk'
-import Balance, { AnyCurrencyType } from '@helium/currency'
+import Balance, { AnyCurrencyType, CurrencyType } from '@helium/currency'
 import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
 import axios from 'axios'
 import Config from 'react-native-config'
@@ -55,9 +56,9 @@ import {
   getAsset,
   searchAssets,
   toBN,
-  DC_MINT,
   sendAndConfirmWithRetry,
   IOT_MINT,
+  DC_MINT,
 } from '@helium/spl-utils'
 import { AnchorProvider, BN } from '@coral-xyz/anchor'
 import * as tm from '@helium/treasury-management-sdk'
@@ -79,7 +80,6 @@ import {
 import * as Logger from './logger'
 import { WrappedConnection } from './WrappedConnection'
 import { IOT_LAZY_KEY, Mints, MOBILE_LAZY_KEY } from './constants'
-import { BONES_PER_HNT } from './heliumUtils'
 
 export const SolanaConnection = (sessionKey: string) =>
   ({
@@ -657,11 +657,38 @@ export const transferCollectable = async (
   }
 }
 
-export const mintDataCredits = async (
-  anchorProvider: AnchorProvider,
-  hntAmount: number,
-  recipient: PublicKey,
-) => {
+export const getAtaAccountCreationFee = async ({
+  solanaAddress,
+  connection,
+  mint,
+}: {
+  solanaAddress: string
+  connection: Connection
+  mint: PublicKey
+}) => {
+  const ataAddress = getAssociatedTokenAddressSync(
+    mint,
+    new PublicKey(solanaAddress),
+    true,
+  )
+
+  try {
+    await getAccount(connection, ataAddress)
+    return new Balance(0, CurrencyType.solTokens)
+  } catch {
+    return Balance.fromFloat(0.00203928, CurrencyType.solTokens)
+  }
+}
+
+export const mintDataCredits = async ({
+  anchorProvider,
+  dcAmount,
+  recipient,
+}: {
+  anchorProvider: AnchorProvider
+  dcAmount: number
+  recipient: PublicKey
+}) => {
   try {
     const { connection } = anchorProvider
     const { publicKey: payer } = anchorProvider.wallet
@@ -670,8 +697,8 @@ export const mintDataCredits = async (
 
     const tx = await program.methods
       .mintDataCreditsV0({
-        hntAmount: new BN(hntAmount * BONES_PER_HNT),
-        dcAmount: null,
+        hntAmount: null,
+        dcAmount: toBN(dcAmount, 0),
       })
       .accounts({
         dcMint: DC_MINT,

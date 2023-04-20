@@ -20,17 +20,15 @@ import TextTransform from '@components/TextTransform'
 import TokenSelector, { TokenSelectorRef } from '@components/TokenSelector'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import TreasuryWarningScreen from '@components/TreasuryWarningScreen'
-import Balance, { SolTokens, Ticker } from '@helium/currency'
+import Balance, { CurrencyType, SolTokens, Ticker } from '@helium/currency'
 import useAlert from '@hooks/useAlert'
 import { useTreasuryPrice } from '@hooks/useTreasuryPrice'
 import { useNavigation } from '@react-navigation/native'
-import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { useAppStorage } from '@storage/AppStorageProvider'
 import { CSAccount } from '@storage/cloudStorage'
 import { Mints } from '@utils/constants'
-import * as Logger from '@utils/logger'
-import { createTreasurySwapMessage, TXN_FEE_IN_SOL } from '@utils/solanaUtils'
+import { getAtaAccountCreationFee, TXN_FEE_IN_SOL } from '@utils/solanaUtils'
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
@@ -42,12 +40,8 @@ import {
 import { Edge } from 'react-native-safe-area-context'
 import { useColors, useHitSlop } from '@theme/themeHooks'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
-import {
-  accountCurrencyType,
-  solAddressIsValid,
-} from '../../utils/accountUtils'
+import { solAddressIsValid } from '../../utils/accountUtils'
 import { useBalance } from '../../utils/Balance'
-import { BONES_PER_HNT } from '../../utils/heliumUtils'
 import SwapItem from './SwapItem'
 import { SwapNavigationProp } from './swapTypes'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -69,8 +63,7 @@ enum Tokens {
 const SwapScreen = () => {
   const { t } = useTranslation()
   const { currentAccount } = useAccountStorage()
-  const { anchorProvider } = useSolana()
-  const { l1Network } = useAppStorage()
+  const { anchorProvider, connection } = useSolana()
   const navigation = useNavigation<SwapNavigationProp>()
   const { submitTreasurySwap, submitMintDataCredits } = useSubmitTxn()
   const edges = useMemo(() => ['bottom'] as Edge[], [])
@@ -148,10 +141,10 @@ const SwapScreen = () => {
 
   const showError = useMemo(() => {
     if (hasRecipientError) return t('generic.notValidSolanaAddress')
-    if (hasInsufficientBalance) return t('generic.insufficientBalance')
-    if (networkError) return networkError
     if (insufficientTokensToSwap)
       return t('swapsScreen.insufficientTokensToSwap')
+    if (hasInsufficientBalance) return t('generic.insufficientBalance')
+    if (networkError) return networkError
   }, [
     hasRecipientError,
     hasInsufficientBalance,
@@ -173,33 +166,28 @@ const SwapScreen = () => {
     setSolFee(undefined)
     setHasInsufficientBalance(undefined)
     setNetworkError(undefined)
+  }, [])
 
-    if (!currentAccount?.solanaAddress || !anchorProvider) return
-    const { connection } = anchorProvider
+  useAsync(async () => {
+    if (!currentAccount?.solanaAddress || !anchorProvider || !connection) return
 
-    try {
-      const { message } = await createTreasurySwapMessage(
-        0,
-        new PublicKey(Mints.MOBILE),
-        anchorProvider,
-      )
+    const toMint = new PublicKey(Mints[youReceiveTokenType])
+    let fee = TXN_FEE_IN_SOL
 
-      const response = await connection.getFeeForMessage(
-        message,
-        'singleGossip',
-      )
+    const ataFee = await getAtaAccountCreationFee({
+      solanaAddress: currentAccount.solanaAddress,
+      connection,
+      mint: toMint,
+    })
+    fee += ataFee.floatBalance
 
-      setSolFee((response.value || 0) / LAMPORTS_PER_SOL)
+    setSolFee(fee)
 
-      const balance = await connection.getBalance(
-        new PublicKey(currentAccount?.solanaAddress),
-      )
-      setHasInsufficientBalance((response.value || 0) > balance)
-    } catch (error) {
-      Logger.error(error)
-      setNetworkError((error as Error).message)
-    }
-  }, [anchorProvider, currentAccount?.solanaAddress])
+    const balance = await connection.getBalance(
+      new PublicKey(currentAccount.solanaAddress),
+    )
+    setHasInsufficientBalance(fee > balance)
+  }, [youPayTokenType])
 
   const handleClose = useCallback(() => {
     navigation.goBack()
@@ -333,12 +321,11 @@ const SwapScreen = () => {
     }
 
     if (youPayTokenType === Tokens.HNT && currentAccount) {
-      const amount = networkTokensToDc(
-        new Balance(
-          Number(youPayTokenAmount) * BONES_PER_HNT,
-          accountCurrencyType(currentAccount.address, undefined, l1Network),
-        ),
-      )?.floatBalance
+      const networkTokens = Balance.fromFloat(
+        Number(youPayTokenAmount),
+        CurrencyType.networkToken,
+      )
+      const amount = networkTokensToDc(networkTokens)?.floatBalance
 
       return amount || 0
     }
@@ -346,7 +333,6 @@ const SwapScreen = () => {
     return 0
   }, [
     currentAccount,
-    l1Network,
     networkTokensToDc,
     price,
     youPayTokenAmount,
@@ -368,7 +354,10 @@ const SwapScreen = () => {
     if (!decision) return
 
     if (youPayTokenType === Tokens.HNT) {
-      submitMintDataCredits(youPayTokenAmount, recipientAddr)
+      submitMintDataCredits({
+        dcAmount: youReceiveTokenAmount,
+        recipient: recipientAddr,
+      })
     }
 
     if (youPayTokenType !== Tokens.HNT) {
@@ -387,14 +376,15 @@ const SwapScreen = () => {
     showOKCancelAlert,
     t,
     currentAccount,
-    hasRecipientError,
     recipient,
+    hasRecipientError,
     youPayTokenType,
     navigation,
     youReceiveTokenType,
     submitMintDataCredits,
-    youPayTokenAmount,
+    youReceiveTokenAmount,
     submitTreasurySwap,
+    youPayTokenAmount,
   ])
 
   return (

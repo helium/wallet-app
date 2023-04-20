@@ -1,1 +1,0 @@
-export const BONES_PER_HNT = 100000000
