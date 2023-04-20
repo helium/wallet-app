@@ -20,13 +20,12 @@ import TextTransform from '@components/TextTransform'
 import TokenSelector, { TokenSelectorRef } from '@components/TokenSelector'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import TreasuryWarningScreen from '@components/TreasuryWarningScreen'
-import Balance, { SolTokens, Ticker } from '@helium/currency'
+import Balance, { CurrencyType, SolTokens, Ticker } from '@helium/currency'
 import useAlert from '@hooks/useAlert'
 import { useTreasuryPrice } from '@hooks/useTreasuryPrice'
 import { useNavigation } from '@react-navigation/native'
 import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { useAppStorage } from '@storage/AppStorageProvider'
 import { CSAccount } from '@storage/cloudStorage'
 import { Mints } from '@utils/constants'
 import * as Logger from '@utils/logger'
@@ -42,12 +41,8 @@ import {
 import { Edge } from 'react-native-safe-area-context'
 import { useColors, useHitSlop } from '@theme/themeHooks'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
-import {
-  accountCurrencyType,
-  solAddressIsValid,
-} from '../../utils/accountUtils'
+import { solAddressIsValid } from '../../utils/accountUtils'
 import { useBalance } from '../../utils/Balance'
-import { BONES_PER_HNT } from '../../utils/heliumUtils'
 import SwapItem from './SwapItem'
 import { SwapNavigationProp } from './swapTypes'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -69,8 +64,7 @@ enum Tokens {
 const SwapScreen = () => {
   const { t } = useTranslation()
   const { currentAccount } = useAccountStorage()
-  const { anchorProvider } = useSolana()
-  const { l1Network } = useAppStorage()
+  const { anchorProvider, connection } = useSolana()
   const navigation = useNavigation<SwapNavigationProp>()
   const { submitTreasurySwap, submitMintDataCredits } = useSubmitTxn()
   const edges = useMemo(() => ['bottom'] as Edge[], [])
@@ -174,8 +168,7 @@ const SwapScreen = () => {
     setHasInsufficientBalance(undefined)
     setNetworkError(undefined)
 
-    if (!currentAccount?.solanaAddress || !anchorProvider) return
-    const { connection } = anchorProvider
+    if (!currentAccount?.solanaAddress || !anchorProvider || !connection) return
 
     try {
       const { message } = await createTreasurySwapMessage(
@@ -199,7 +192,7 @@ const SwapScreen = () => {
       Logger.error(error)
       setNetworkError((error as Error).message)
     }
-  }, [anchorProvider, currentAccount?.solanaAddress])
+  }, [anchorProvider, connection, currentAccount?.solanaAddress])
 
   const handleClose = useCallback(() => {
     navigation.goBack()
@@ -333,12 +326,11 @@ const SwapScreen = () => {
     }
 
     if (youPayTokenType === Tokens.HNT && currentAccount) {
-      const amount = networkTokensToDc(
-        new Balance(
-          Number(youPayTokenAmount) * BONES_PER_HNT,
-          accountCurrencyType(currentAccount.address, undefined, l1Network),
-        ),
-      )?.floatBalance
+      const networkTokens = Balance.fromFloat(
+        Number(youPayTokenAmount),
+        CurrencyType.networkToken,
+      )
+      const amount = networkTokensToDc(networkTokens)?.floatBalance
 
       return amount || 0
     }
@@ -346,7 +338,6 @@ const SwapScreen = () => {
     return 0
   }, [
     currentAccount,
-    l1Network,
     networkTokensToDc,
     price,
     youPayTokenAmount,
@@ -368,7 +359,10 @@ const SwapScreen = () => {
     if (!decision) return
 
     if (youPayTokenType === Tokens.HNT) {
-      submitMintDataCredits(youPayTokenAmount, recipientAddr)
+      submitMintDataCredits({
+        dcAmount: youReceiveTokenAmount,
+        recipient: recipientAddr,
+      })
     }
 
     if (youPayTokenType !== Tokens.HNT) {
@@ -387,14 +381,15 @@ const SwapScreen = () => {
     showOKCancelAlert,
     t,
     currentAccount,
-    hasRecipientError,
     recipient,
+    hasRecipientError,
     youPayTokenType,
     navigation,
     youReceiveTokenType,
     submitMintDataCredits,
-    youPayTokenAmount,
+    youReceiveTokenAmount,
     submitTreasurySwap,
+    youPayTokenAmount,
   ])
 
   return (

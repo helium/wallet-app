@@ -79,7 +79,6 @@ import {
 import * as Logger from './logger'
 import { WrappedConnection } from './WrappedConnection'
 import { IOT_LAZY_KEY, Mints, MOBILE_LAZY_KEY } from './constants'
-import { BONES_PER_HNT } from './heliumUtils'
 
 export const SolanaConnection = (sessionKey: string) =>
   ({
@@ -657,11 +656,15 @@ export const transferCollectable = async (
   }
 }
 
-export const mintDataCredits = async (
-  anchorProvider: AnchorProvider,
-  hntAmount: number,
-  recipient: PublicKey,
-) => {
+export const mintDataCredits = async ({
+  anchorProvider,
+  dcAmount,
+  recipient,
+}: {
+  anchorProvider: AnchorProvider
+  dcAmount: number
+  recipient: PublicKey
+}) => {
   try {
     const { connection } = anchorProvider
     const { publicKey: payer } = anchorProvider.wallet
@@ -670,8 +673,8 @@ export const mintDataCredits = async (
 
     const tx = await program.methods
       .mintDataCreditsV0({
-        hntAmount: new BN(hntAmount * BONES_PER_HNT),
-        dcAmount: null,
+        hntAmount: null,
+        dcAmount: toBN(dcAmount, 0),
       })
       .accounts({
         dcMint: DC_MINT,
