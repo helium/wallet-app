@@ -19,6 +19,9 @@ import BlurActionSheet from '@components/BlurActionSheet'
 import ListItem from '@components/ListItem'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import { useSpacing } from '@theme/themeHooks'
+import useHaptic from '@hooks/useHaptic'
+import useCopyText from '@hooks/useCopyText'
+import { ellipsizeAddress } from '@utils/accountUtils'
 import { ww } from '../../utils/layout'
 import {
   CollectableNavigationProp,
@@ -38,6 +41,8 @@ const HotspotDetailsScreen = () => {
   const [optionsOpen, setOptionsOpen] = useState(false)
 
   const { t } = useTranslation()
+  const { triggerImpact } = useHaptic()
+  const copyText = useCopyText()
 
   const { collectable } = route.params
   const pendingIotRewards =
@@ -79,6 +84,23 @@ const HotspotDetailsScreen = () => {
     }
   }, [collectable.content.metadata, navigation])
 
+  const handleCopyAddress = useCallback(() => {
+    if (!collectable?.content?.metadata) return
+
+    const attribute = collectable?.content?.metadata.attributes?.find(
+      (a) => a.trait_type === 'ecc_compact',
+    )
+
+    if (!attribute?.value) return
+
+    triggerImpact('light')
+    copyText({
+      message: ellipsizeAddress(attribute.value),
+      copyText: attribute.value,
+    })
+    setOptionsOpen(false)
+  }, [copyText, collectable, triggerImpact])
+
   const hotspotOptions = useCallback(
     () => (
       <>
@@ -89,9 +111,16 @@ const HotspotDetailsScreen = () => {
           selected={false}
           hasPressedState={false}
         />
+        <ListItem
+          key="copyAddress"
+          title={t('collectablesScreen.hotspots.copyEccCompact')}
+          onPress={handleCopyAddress}
+          selected={false}
+          hasPressedState={false}
+        />
       </>
     ),
-    [handleSend],
+    [handleSend, handleCopyAddress, t],
   )
 
   return (
