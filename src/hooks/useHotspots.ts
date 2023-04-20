@@ -10,7 +10,7 @@ import { RootState } from '../store/rootReducer'
 import {
   fetchHotspots,
   fetchMoreHotspots,
-  hotspots as hotspotsSli,
+  hotspotsSlice,
 } from '../store/slices/hotspotsSlice'
 import { useAppDispatch } from '../store/store'
 import { HotspotWithPendingRewards } from '../utils/solanaUtils'
@@ -42,38 +42,42 @@ const useHotspots = (): {
   const { l1Network } = useAppStorage()
   const dispatch = useAppDispatch()
   const { currentAccount } = useAccountStorage()
-  const { anchorProvider, lazyProgram } = useSolana()
-  const hotspotsSlice = useSelector((state: RootState) => state.hotspots)
+  const { anchorProvider, lazyProgram, cluster } = useSolana()
+  const hotspots = useSelector(
+    (state: RootState) => state.hotspots[cluster] || {},
+  )
 
   const page = useMemo(() => {
     if (
       !currentAccount?.solanaAddress ||
-      !hotspotsSlice[currentAccount?.solanaAddress]
+      !hotspots[currentAccount?.solanaAddress]
     )
       return 0
-    return hotspotsSlice[currentAccount?.solanaAddress].page
-  }, [hotspotsSlice, currentAccount])
+    return hotspots[currentAccount?.solanaAddress].page
+  }, [currentAccount?.solanaAddress, hotspots])
 
   const onEndReached = useMemo(() => {
     if (
       !currentAccount?.solanaAddress ||
-      !hotspotsSlice[currentAccount?.solanaAddress]
+      !hotspots[currentAccount?.solanaAddress]
     )
       return true
-    return hotspotsSlice[currentAccount?.solanaAddress].onEndReached
-  }, [hotspotsSlice, currentAccount])
+    return hotspots[currentAccount?.solanaAddress].onEndReached
+  }, [currentAccount?.solanaAddress, hotspots])
 
   useEffect(() => {
     if (!currentAccount?.solanaAddress) return
     // Reset loading on mount
-    dispatch(hotspotsSli.actions.resetLoading({ acct: currentAccount }))
-  }, [currentAccount, dispatch])
+    dispatch(
+      hotspotsSlice.actions.resetLoading({ acct: currentAccount, cluster }),
+    )
+  }, [cluster, currentAccount, dispatch])
 
-  const hotspots = useMemo(() => {
+  const hotspotsForClusterAcct = useMemo(() => {
     if (!currentAccount?.solanaAddress) return []
 
-    return hotspotsSlice[currentAccount?.solanaAddress]?.hotspots || []
-  }, [hotspotsSlice, currentAccount])
+    return hotspots[currentAccount?.solanaAddress]?.hotspots || []
+  }, [currentAccount?.solanaAddress, hotspots])
 
   const {
     execute: createClaimAllMobileTxs,
@@ -87,7 +91,7 @@ const useHotspots = (): {
     const wallet = new PublicKey(currentAccount?.solanaAddress)
 
     const txns = await Promise.all(
-      hotspots.map(async (nft: CompressedNFT) => {
+      hotspotsForClusterAcct.map(async (nft: CompressedNFT) => {
         const rewards = await client.getCurrentRewards(
           lazyProgram,
           MOBILE_LAZY_KEY,
@@ -121,23 +125,25 @@ const useHotspots = (): {
     const { connection } = anchorProvider
 
     const txns = await Promise.all(
-      hotspots.map(async (nft: CompressedNFT) => {
-        const rewards = await client.getCurrentRewards(
-          lazyProgram,
-          IOT_LAZY_KEY,
-          new PublicKey(nft.id),
-        )
+      hotspots[currentAccount.solanaAddress].hotspots.map(
+        async (nft: CompressedNFT) => {
+          const rewards = await client.getCurrentRewards(
+            lazyProgram,
+            IOT_LAZY_KEY,
+            new PublicKey(nft.id),
+          )
 
-        return client.formTransaction({
-          program: lazyProgram,
-          provider: anchorProvider,
-          rewards,
-          hotspot: new PublicKey(nft.id),
-          lazyDistributor: IOT_LAZY_KEY,
-          assetEndpoint: connection.rpcEndpoint,
-          wallet,
-        })
-      }),
+          return client.formTransaction({
+            program: lazyProgram,
+            provider: anchorProvider,
+            rewards,
+            hotspot: new PublicKey(nft.id),
+            lazyDistributor: IOT_LAZY_KEY,
+            assetEndpoint: connection.rpcEndpoint,
+            wallet,
+          })
+        },
+      ),
     )
 
     return txns
@@ -145,11 +151,7 @@ const useHotspots = (): {
 
   const refresh = useCallback(
     (limit?) => {
-      if (
-        !anchorProvider ||
-        !currentAccount?.solanaAddress ||
-        l1Network !== 'solana'
-      ) {
+      if (!anchorProvider || !currentAccount?.solanaAddress) {
         return
       }
 
@@ -157,22 +159,23 @@ const useHotspots = (): {
         fetchHotspots({
           anchorProvider,
           account: currentAccount,
+          cluster,
           limit,
         }),
       )
     },
-    [anchorProvider, currentAccount, dispatch, l1Network],
+    [anchorProvider, cluster, currentAccount, dispatch],
   )
 
   const fetchingMore = useMemo(() => {
     if (
       !currentAccount?.solanaAddress ||
-      !hotspotsSlice[currentAccount?.solanaAddress]
+      !hotspots[currentAccount?.solanaAddress]
     )
       return false
 
-    return hotspotsSlice[currentAccount?.solanaAddress].fetchingMore
-  }, [hotspotsSlice, currentAccount])
+    return hotspots[currentAccount?.solanaAddress].fetchingMore
+  }, [currentAccount?.solanaAddress, hotspots])
 
   const fetchMore = useCallback(
     (limit?) => {
@@ -180,7 +183,7 @@ const useHotspots = (): {
         !currentAccount?.solanaAddress ||
         l1Network !== 'solana' ||
         !anchorProvider ||
-        hotspotsSlice[currentAccount?.solanaAddress].loading
+        hotspots[currentAccount?.solanaAddress].loading
       ) {
         return
       }
@@ -188,17 +191,26 @@ const useHotspots = (): {
       dispatch(
         fetchMoreHotspots({
           provider: anchorProvider,
+          cluster,
           account: currentAccount,
           page,
           limit,
         }),
       )
     },
-    [anchorProvider, hotspotsSlice, currentAccount, dispatch, l1Network, page],
+    [
+      currentAccount,
+      l1Network,
+      anchorProvider,
+      hotspots,
+      cluster,
+      dispatch,
+      page,
+    ],
   )
 
   const hotspotsWithMeta = currentAccount?.solanaAddress
-    ? hotspotsSlice[currentAccount?.solanaAddress]?.hotspotsWithMeta
+    ? hotspots[currentAccount?.solanaAddress]?.hotspotsWithMeta
     : undefined
 
   const pendingIotRewards = useMemo(
@@ -226,7 +238,7 @@ const useHotspots = (): {
 
   if (
     !currentAccount?.solanaAddress ||
-    !hotspotsSlice[currentAccount?.solanaAddress]
+    !hotspots[currentAccount?.solanaAddress]
   ) {
     return {
       pendingIotRewards,
@@ -254,10 +266,9 @@ const useHotspots = (): {
   return {
     pendingIotRewards,
     pendingMobileRewards,
-    hotspots,
-    hotspotsWithMeta:
-      hotspotsSlice[currentAccount?.solanaAddress]?.hotspotsWithMeta,
-    loading: hotspotsSlice[currentAccount?.solanaAddress].loading,
+    hotspots: hotspots[currentAccount?.solanaAddress].hotspots,
+    hotspotsWithMeta: hotspots[currentAccount?.solanaAddress]?.hotspotsWithMeta,
+    loading: hotspots[currentAccount?.solanaAddress].loading,
     refresh,
     createClaimAllMobileTxs: {
       execute: createClaimAllMobileTxs,

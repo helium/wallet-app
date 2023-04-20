@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { times } from 'lodash'
 import { FlatList } from 'react-native-gesture-handler'
 import { RefreshControl } from 'react-native'
@@ -332,6 +332,12 @@ const HotspotList = () => {
   const handleRefresh = useCallback(() => {
     refresh(pageAmount)
   }, [pageAmount, refresh])
+
+  useEffect(() => {
+    return navigation.addListener('focus', () => {
+      refresh()
+    })
+  }, [navigation, refresh])
 
   return (
     <>

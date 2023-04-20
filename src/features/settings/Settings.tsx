@@ -371,11 +371,6 @@ const Settings = () => {
         },
       ]
 
-      if (__DEV__) {
-        // push the localnet option to the front of the list
-        items.unshift({ label: 'Localnet', value: 'localnet' })
-      }
-
       devData = [
         ...devData,
         {

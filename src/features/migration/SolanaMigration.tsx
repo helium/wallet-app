@@ -110,6 +110,7 @@ const SolanaMigration = ({
         fetchHotspots({
           anchorProvider,
           account: currentAccount,
+          cluster,
         }),
       )
 

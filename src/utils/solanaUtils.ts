@@ -83,7 +83,6 @@ import { BONES_PER_HNT } from './heliumUtils'
 
 export const SolanaConnection = (sessionKey: string) =>
   ({
-    localnet: new WrappedConnection('http://127.0.0.1:8899'),
     devnet: new WrappedConnection(
       `${Config.DEVNET_RPC_URL}/?session-key=${sessionKey}`,
     ),
