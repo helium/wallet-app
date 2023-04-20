@@ -1,19 +1,9 @@
 import React, { useCallback, useMemo } from 'react'
-import Balance, {
-  DataCredits,
-  MobileTokens,
-  NetworkTokens,
-  SecurityTokens,
-  AnyCurrencyType,
-  SolTokens,
-  Ticker,
-  IotTokens,
-} from '@helium/currency'
+import Balance, { AnyCurrencyType, SolTokens, Ticker } from '@helium/currency'
 import { times } from 'lodash'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
-import { useAppStorage } from '@storage/AppStorageProvider'
 import { useBalance } from '@utils/Balance'
 import { Mints } from '@utils/constants'
 import TokenListItem, { TokenSkeleton } from './TokenListItem'
@@ -31,21 +21,12 @@ type Props = {
 
 const AccountTokenList = ({ loading = false, onLayout }: Props) => {
   const {
-    dcBalance,
-    mobileBalance,
-    mobileSolBalance,
-    iotBalance,
-    iotSolBalance,
-    networkBalance,
-    networkStakedBalance,
-    secBalance,
     solBalance,
     updating: updatingTokens,
     solBalancesLoading,
     tokenAccounts,
   } = useBalance()
   const { bottom } = useSafeAreaInsets()
-  const { l1Network } = useAppStorage()
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
 
@@ -54,50 +35,30 @@ const AccountTokenList = ({ loading = false, onLayout }: Props) => {
       return []
     }
 
-    if (l1Network === 'solana' && solBalancesLoading) {
+    if (solBalancesLoading) {
       return []
     }
 
     const allTokens = [
       {
         type: 'HNT',
-        balance: networkBalance as Balance<NetworkTokens>,
         staked: false,
         tokenAccount: tokenAccounts ? tokenAccounts[Mints.HNT] : undefined,
       },
       {
-        type: 'HNT',
-        balance: networkStakedBalance as Balance<NetworkTokens>,
-        staked: true,
-      },
-      {
         type: 'MOBILE',
-        balance:
-          l1Network === 'solana'
-            ? mobileSolBalance
-            : (mobileBalance as Balance<MobileTokens>),
         staked: false,
         tokenAccount: tokenAccounts ? tokenAccounts[Mints.MOBILE] : undefined,
       },
       {
         type: 'IOT',
-        balance:
-          l1Network === 'solana'
-            ? iotSolBalance
-            : (iotBalance as Balance<IotTokens>),
         staked: false,
         tokenAccount: tokenAccounts ? tokenAccounts[Mints.IOT] : undefined,
       },
       {
         type: 'DC',
-        balance: dcBalance as Balance<DataCredits>,
         staked: false,
         tokenAccount: tokenAccounts ? tokenAccounts[Mints.DC] : undefined,
-      },
-      {
-        type: 'HST',
-        balance: secBalance as Balance<SecurityTokens>,
-        staked: false,
       },
       {
         type: 'SOL',
@@ -106,34 +67,13 @@ const AccountTokenList = ({ loading = false, onLayout }: Props) => {
       },
     ] as {
       type: Ticker
-      balance: Balance<AnyCurrencyType> | number
+      balance?: Balance<AnyCurrencyType> | number
       staked: boolean
       tokenAccount?: string
     }[]
 
-    return allTokens.filter(
-      (token) =>
-        (typeof token !== 'number' &&
-          (token?.balance as Balance<AnyCurrencyType>).integerBalance > 0) ||
-        token?.type === 'MOBILE' ||
-        (token?.type === 'IOT' && l1Network === 'solana') ||
-        (token?.type === 'HNT' && token?.staked === false),
-    )
-  }, [
-    l1Network,
-    dcBalance,
-    iotBalance,
-    iotSolBalance,
-    loading,
-    mobileBalance,
-    mobileSolBalance,
-    networkBalance,
-    networkStakedBalance,
-    secBalance,
-    solBalance,
-    tokenAccounts,
-    solBalancesLoading,
-  ])
+    return allTokens
+  }, [loading, solBalance, tokenAccounts, solBalancesLoading])
 
   const renderItem = useCallback(
     ({
