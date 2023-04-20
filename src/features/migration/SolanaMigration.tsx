@@ -24,6 +24,7 @@ import * as Logger from '../../utils/logger'
 import { useAppDispatch } from '../../store/store'
 import { fetchHotspots } from '../../store/slices/hotspotsSlice'
 import { readBalances } from '../../store/slices/solanaSlice'
+import { useSolana } from '../../solana/SolanaProvider'
 
 async function migrateWallet(
   provider: Provider,
@@ -58,13 +59,14 @@ const SolanaMigration = ({
   hideBack = true,
   ...props
 }: BoxProps<Theme> & { hideBack?: boolean; manual?: boolean }) => {
-  const { currentAccount, anchorProvider } = useAccountStorage()
+  const { currentAccount } = useAccountStorage()
+  const { anchorProvider } = useSolana()
   const {
-    solanaNetwork: cluster,
     updateDoneSolanaMigration,
     doneSolanaMigration,
     updateManualMigration,
   } = useAppStorage()
+  const { cluster } = useSolana()
   const [retry, updateRetry] = useState(0)
   const { t } = useTranslation()
   const [total, setTotal] = useState<number>(0)

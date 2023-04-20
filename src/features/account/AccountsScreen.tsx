@@ -58,6 +58,7 @@ import { useAppDispatch } from '../../store/store'
 import { appSlice } from '../../store/slices/appSlice'
 import { RootState } from '../../store/rootReducer'
 import { withTransactionDetail } from './TransactionDetail'
+import { useSolana } from '../../solana/SolanaProvider'
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
@@ -69,13 +70,8 @@ const AccountsScreen = () => {
   const [navLayoutHeight, setNavLayoutHeight] = useLayoutHeight()
   const [pageHeight, setPageHeight] = useLayoutHeight(0)
   const { openedNotification } = useNotificationStorage()
-  const {
-    locked,
-    l1Network,
-    solanaNetwork: cluster,
-    currency,
-    updateCurrency,
-  } = useAppStorage()
+  const { locked, l1Network, currency, updateCurrency } = useAppStorage()
+  const { cluster } = useSolana()
   const { reset } = useOnboarding()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const [selectedBalance, setSelectedBalance] = useState<AccountBalanceType>()

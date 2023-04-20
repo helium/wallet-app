@@ -71,7 +71,6 @@ const HotspotList = () => {
     hotspotsWithMeta,
     loading: loadingHotspots,
     refresh,
-    createHotspot,
     fetchMore,
     fetchingMore,
     pendingIotRewards,
@@ -261,22 +260,9 @@ const HotspotList = () => {
           }
           onPress={handleNavigateToClaimRewards}
         />
-        {__DEV__ && (
-          <ButtonPressable
-            flexGrow={1}
-            borderRadius="round"
-            backgroundColor="white"
-            backgroundColorOpacityPressed={0.7}
-            title="Create Hotspot"
-            titleColor="black"
-            marginBottom="m"
-            onPress={createHotspot}
-          />
-        )}
       </Box>
     )
   }, [
-    createHotspot,
     handleNavigateToClaimRewards,
     pendingIotRewards,
     pendingMobileRewards,

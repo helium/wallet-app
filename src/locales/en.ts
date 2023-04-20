@@ -837,7 +837,7 @@ export default {
           },
           title: 'Preview Solana Experience',
         },
-        solanaNetwork: { title: 'Solana Network' },
+        solanaCluster: { title: 'Solana Cluster' },
         testnet: {
           enablePrompt: {
             getTnt: 'Get TNT',

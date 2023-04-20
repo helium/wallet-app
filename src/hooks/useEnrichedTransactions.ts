@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
-import { useAppStorage } from '../storage/AppStorageProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { EnrichedTransaction } from '../types/solana'
 import {
@@ -10,6 +9,7 @@ import {
 } from '../utils/solanaUtils'
 import { useAppDispatch } from '../store/store'
 import { readBalances } from '../store/slices/solanaSlice'
+import { useSolana } from '../solana/SolanaProvider'
 
 const useEnrichedTransactions = (): {
   transactions: (EnrichedTransaction | ConfirmedSignatureInfo)[]
@@ -21,8 +21,8 @@ const useEnrichedTransactions = (): {
   resetNewTransactions: () => void
   hasNewTransactions: boolean
 } => {
-  const { currentAccount, anchorProvider } = useAccountStorage()
-  const { solanaNetwork: cluster } = useAppStorage()
+  const { currentAccount } = useAccountStorage()
+  const { cluster, anchorProvider } = useSolana()
   const [transactions, setTransactions] = useState<
     (EnrichedTransaction | ConfirmedSignatureInfo)[]
   >([])

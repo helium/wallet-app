@@ -20,14 +20,14 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Text from '@components/Text'
 import useBrowser from '@hooks/useBrowser'
 import { prependHttp } from '@utils/url'
-import { useAppStorage } from '@storage/AppStorageProvider'
 import { useGetRecommendedDappsQuery } from '../../store/slices/walletRestApi'
 import { BrowserNavigationProp } from './browserTypes'
 import BrowserListItem from './BrowserListItem'
+import { useSolana } from '../../solana/SolanaProvider'
 
 const BrowserScreen = () => {
   const DEFAULT_URL = ''
-  const { solanaNetwork: cluster } = useAppStorage()
+  const { cluster } = useSolana()
   const edges = useMemo(() => ['top'] as Edge[], [])
   const [inputFocused, setInputFocused] = useState(false)
   const spacing = useSpacing()

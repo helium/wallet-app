@@ -26,11 +26,13 @@ import {
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import { Collectable, CompressedNFT } from '../types/solana'
+import { useSolana } from '../solana/SolanaProvider'
 
 export default () => {
   const { makePaymentTxn } = useTransactions()
-  const { currentAccount, anchorProvider } = useAccountStorage()
-  const { l1Network, solanaNetwork: cluster } = useAppStorage()
+  const { currentAccount } = useAccountStorage()
+  const { l1Network } = useAppStorage()
+  const { cluster, anchorProvider } = useSolana()
   const { t } = i18n
 
   const dispatch = useAppDispatch()

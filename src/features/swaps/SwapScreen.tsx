@@ -50,6 +50,7 @@ import { useBalance } from '../../utils/Balance'
 import { BONES_PER_HNT } from '../../utils/heliumUtils'
 import SwapItem from './SwapItem'
 import { SwapNavigationProp } from './swapTypes'
+import { useSolana } from '../../solana/SolanaProvider'
 
 // Selector Mode enum
 enum SelectorMode {
@@ -67,7 +68,8 @@ enum Tokens {
 
 const SwapScreen = () => {
   const { t } = useTranslation()
-  const { currentAccount, anchorProvider } = useAccountStorage()
+  const { currentAccount } = useAccountStorage()
+  const { anchorProvider } = useSolana()
   const { l1Network } = useAppStorage()
   const navigation = useNavigation<SwapNavigationProp>()
   const { submitTreasurySwap, submitMintDataCredits } = useSubmitTxn()

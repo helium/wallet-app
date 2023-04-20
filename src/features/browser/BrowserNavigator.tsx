@@ -7,6 +7,7 @@ import { useAppStorage } from '@storage/AppStorageProvider'
 import BrowserScreen from './BrowserScreen'
 import BrowserWebViewScreen from './BrowserWebViewScreen'
 import DAppTutorial from './DAppTutorial'
+import { useSolana } from '../../solana/SolanaProvider'
 
 const BrowserStack = createNativeStackNavigator()
 
@@ -22,7 +23,8 @@ const modalPresentation: NativeStackNavigationOptions = {
 }
 
 const BrowserStackScreen = () => {
-  const { dAppTutorialShown, solanaNetwork: cluster } = useAppStorage()
+  const { dAppTutorialShown } = useAppStorage()
+  const { cluster } = useSolana()
 
   return (
     <BrowserStack.Navigator

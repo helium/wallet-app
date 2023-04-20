@@ -16,6 +16,7 @@ import ButtonPressable from '@components/ButtonPressable'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import { BrowserNavigationProp } from './browserTypes'
+import { useSolana } from '../../solana/SolanaProvider'
 
 type CarouselItem = {
   titleKey: string
@@ -57,7 +58,8 @@ const DAppTutorial = () => {
   const spacing = useSpacing()
   const colors = useColors()
   const navigation = useNavigation<BrowserNavigationProp>()
-  const { setDAppTutorialCompleted, solanaNetwork: cluster } = useAppStorage()
+  const { setDAppTutorialCompleted } = useAppStorage()
+  const { cluster } = useSolana()
   const edges = useMemo((): Edge[] => ['top'], [])
 
   const handleEnterDAppPressed = useCallback(() => {

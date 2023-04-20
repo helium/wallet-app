@@ -10,14 +10,16 @@ import {
 } from '../store/slices/collectablesSlice'
 import { useAppDispatch } from '../store/store'
 import { onLogs, removeAccountChangeListener } from '../utils/solanaUtils'
+import { useSolana } from '../solana/SolanaProvider'
 
 const useCollectables = (): WalletCollectables & {
   refresh: () => void
 } => {
-  const { solanaNetwork: cluster, l1Network } = useAppStorage()
+  const { l1Network } = useAppStorage()
+  const { cluster, anchorProvider } = useSolana()
   const dispatch = useAppDispatch()
   const accountSubscriptionId = useRef<number>()
-  const { currentAccount, anchorProvider } = useAccountStorage()
+  const { currentAccount } = useAccountStorage()
   const collectables = useSelector((state: RootState) => state.collectables)
 
   useEffect(() => {

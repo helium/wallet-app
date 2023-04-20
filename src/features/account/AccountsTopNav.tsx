@@ -19,6 +19,7 @@ import { HomeNavigationProp } from '../home/homeTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { RootState } from '../../store/rootReducer'
+import { useSolana } from '../../solana/SolanaProvider'
 
 type Props = {
   onPressWallet: () => void
@@ -28,7 +29,8 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
   const { primaryText } = useColors()
   const navigation = useNavigation<HomeNavigationProp>()
   const { currentAccount, currentNetworkAddress } = useAccountStorage()
-  const { l1Network, solanaNetwork: cluster } = useAppStorage()
+  const { l1Network } = useAppStorage()
+  const { cluster } = useSolana()
   const { triggerImpact } = useHaptic()
   const { showBanner } = useSelector((state: RootState) => state.app)
   const { isHealthy } = useSolanaHealth()
