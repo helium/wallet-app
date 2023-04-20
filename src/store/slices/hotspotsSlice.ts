@@ -111,7 +111,6 @@ const hotspotSlice = createSlice({
   name: 'hotspots',
   initialState,
   reducers: {
-    // TODO: This whole slice should be keyed by cluster
     resetState: () => initialState,
     resetLoading: (
       state,

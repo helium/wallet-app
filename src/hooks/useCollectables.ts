@@ -25,8 +25,10 @@ const useCollectables = (): WalletCollectables & {
   useEffect(() => {
     if (!currentAccount?.solanaAddress) return
     // Reset loading on mount
-    dispatch(collectablesSli.actions.resetLoading({ acct: currentAccount }))
-  }, [currentAccount, dispatch])
+    dispatch(
+      collectablesSli.actions.resetLoading({ acct: currentAccount, cluster }),
+    )
+  }, [cluster, currentAccount, dispatch])
 
   const refresh = useCallback(() => {
     if (
@@ -64,7 +66,7 @@ const useCollectables = (): WalletCollectables & {
 
   if (
     !currentAccount?.solanaAddress ||
-    !collectables[currentAccount?.solanaAddress]
+    !collectables[cluster]?.[currentAccount?.solanaAddress]
   ) {
     return {
       loading: false,
@@ -75,7 +77,7 @@ const useCollectables = (): WalletCollectables & {
   }
 
   return {
-    ...collectables[currentAccount?.solanaAddress],
+    ...collectables[cluster][currentAccount?.solanaAddress],
     refresh,
   }
 }
