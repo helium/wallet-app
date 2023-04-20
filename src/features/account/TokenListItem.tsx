@@ -1,4 +1,4 @@
-import Balance, { AnyCurrencyType, Ticker } from '@helium/currency'
+import Balance, { SolTokens, Ticker } from '@helium/currency'
 import React, { useCallback, useMemo } from 'react'
 import Arrow from '@assets/images/listItemRight.svg'
 import { useNavigation } from '@react-navigation/native'
@@ -13,21 +13,20 @@ import { PublicKey } from '@solana/web3.js'
 import { AccountLayout } from '@solana/spl-token'
 import { BN } from 'bn.js'
 import { toNumber } from '@helium/spl-utils'
-import { useAppStorage } from '@storage/AppStorageProvider'
+import { balanceToString } from '@utils/Balance'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import { HomeNavigationProp } from '../home/homeTypes'
 
 export const ITEM_HEIGHT = 72
 type Props = {
   ticker: Ticker
-  balance: Balance<AnyCurrencyType> | number
+  balance?: Balance<SolTokens>
   staked?: boolean
   tokenAccount?: string
 }
 const TokenListItem = ({ ticker, balance, staked, tokenAccount }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { triggerImpact } = useHaptic()
-  const { l1Network } = useAppStorage()
   const tokenAccountCache = useTokenAccount(
     tokenAccount ? new PublicKey(tokenAccount) : undefined,
   )
@@ -44,21 +43,23 @@ const TokenListItem = ({ ticker, balance, staked, tokenAccount }: Props) => {
   }, [navigation, ticker, triggerImpact])
 
   const balanceToDisplay = useMemo(() => {
-    if (l1Network === 'solana') {
-      if (tokenAcountData) {
-        if (ticker === 'DC') {
-          return tokenAcountData.amount.toLocaleString()
-        }
-
-        return toNumber(
-          new BN(tokenAcountData.amount.toString() || 0),
-          mint?.info.decimals || 6,
-        )
+    if (tokenAcountData) {
+      if (ticker === 'DC') {
+        return tokenAcountData.amount.toLocaleString()
       }
-      return balance?.toString(7, { showTicker: false }) || 0
+
+      return toNumber(
+        new BN(tokenAcountData.amount.toString() || 0),
+        mint?.info.decimals || 6,
+      )
     }
-    return balance?.toString(7, { showTicker: false })
-  }, [balance, mint, tokenAcountData, ticker, l1Network])
+    return (
+      balanceToString(balance, {
+        maxDecimalPlaces: 9,
+        showTicker: false,
+      }) || 0
+    )
+  }, [balance, mint, tokenAcountData, ticker])
 
   return (
     <FadeInOut>

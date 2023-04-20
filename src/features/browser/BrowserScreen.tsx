@@ -26,8 +26,7 @@ import { BrowserNavigationProp } from './browserTypes'
 import BrowserListItem from './BrowserListItem'
 
 const BrowserScreen = () => {
-  // TODO: Change default url based on cluster
-  const DEFAULT_URL = 'https://app.realms.today/?cluster=devnet'
+  const DEFAULT_URL = ''
   const { solanaNetwork: cluster } = useAppStorage()
   const edges = useMemo(() => ['top'] as Edge[], [])
   const [inputFocused, setInputFocused] = useState(false)
