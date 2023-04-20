@@ -28,6 +28,7 @@ import { useApolloClient } from '../../graphql/useApolloClient'
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
 import { ellipsizeAddress } from '../../utils/accountUtils'
 import { RootNavigationProp } from '../../navigation/rootTypes'
+import { useSolana } from '../../solana/SolanaProvider'
 
 const Settings = () => {
   const { t } = useTranslation()
@@ -63,6 +64,7 @@ const Settings = () => {
   } = useAppStorage()
   const copyText = useCopyText()
   const { showOKAlert, showOKCancelAlert } = useAlert()
+  const { updateCluster } = useSolana()
 
   const isDefaultAccount = useMemo(
     () => defaultAccountAddress === currentAccount?.address,
@@ -264,8 +266,9 @@ const Settings = () => {
     async (network: ReactText, _index: number) => {
       // TODO: Should we reset the solana and collectable slices when cluster changes?
       await updateSolanaNetwork(network as Cluster)
+      updateCluster(network as Cluster)
     },
-    [updateSolanaNetwork],
+    [updateCluster, updateSolanaNetwork],
   )
 
   const handleUpdateAlias = useCallback(

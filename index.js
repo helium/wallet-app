@@ -12,6 +12,7 @@ import AppStorageProvider from './src/storage/AppStorageProvider'
 import LanguageProvider from './src/storage/LanguageProvider'
 import NotificationStorageProvider from './src/storage/NotificationStorageProvider'
 import store from './src/store/store'
+import SolanaProvider from './src/solana/SolanaProvider'
 
 // eslint-disable-next-line no-undef
 if (__DEV__) {
@@ -27,9 +28,11 @@ const render = () => {
         <LanguageProvider>
           <AppStorageProvider>
             <AccountStorageProvider>
-              <NotificationStorageProvider>
-                <App />
-              </NotificationStorageProvider>
+              <SolanaProvider>
+                <NotificationStorageProvider>
+                  <App />
+                </NotificationStorageProvider>
+              </SolanaProvider>
             </AccountStorageProvider>
           </AppStorageProvider>
         </LanguageProvider>
