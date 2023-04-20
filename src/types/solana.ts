@@ -8,8 +8,17 @@ import {
   Sft,
   SftWithToken,
 } from '@metaplex-foundation/js'
+import { init as initHsd } from '@helium/helium-sub-daos-sdk'
+import { init as initDc } from '@helium/data-credits-sdk'
+import { init as initHem } from '@helium/helium-entity-manager-sdk'
+import { init as initLazy } from '@helium/lazy-distributor-sdk'
 import { TokenAmount } from '@solana/web3.js'
 import { Creator } from '@metaplex-foundation/mpl-bubblegum'
+
+export type HemProgram = Awaited<ReturnType<typeof initHem>>
+export type DcProgram = Awaited<ReturnType<typeof initDc>>
+export type LazyProgram = Awaited<ReturnType<typeof initLazy>>
+export type HsdProgram = Awaited<ReturnType<typeof initHsd>>
 
 export type SolPayment = {
   destination: string
