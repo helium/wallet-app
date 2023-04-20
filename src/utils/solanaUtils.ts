@@ -1627,12 +1627,15 @@ export const submitSolana = async ({
   return txid
 }
 
-export const parseTransactionError = (message?: string) => {
+export const parseTransactionError = (
+  balance: Balance<AnyCurrencyType>,
+  message?: string,
+) => {
   if (!message) return 'UNKNOWN ERROR'
 
   // Check if error has instructionError from {"InstructionError":[1,{"Custom":1}]}
   const instructionError = message.includes('InstructionError')
-  if (instructionError) {
+  if (instructionError && balance.floatBalance > 0.02) {
     return 'The SOL balance on this account is too low to complete this transaction'
   }
 

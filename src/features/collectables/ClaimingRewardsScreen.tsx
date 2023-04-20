@@ -15,6 +15,7 @@ import BackScreen from '@components/BackScreen'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import AccountIcon from '@components/AccountIcon'
 import { parseTransactionError } from '@utils/solanaUtils'
+import { useBalance } from '@utils/Balance'
 import { RootState } from '../../store/rootReducer'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
@@ -23,6 +24,7 @@ const ClaimingRewardsScreen = () => {
   const { currentAccount } = useAccountStorage()
   const navigation = useNavigation<TabBarNavigationProp>()
   const backEdges = useMemo(() => ['top'] as Edge[], [])
+  const { solBalance } = useBalance()
 
   const { t } = useTranslation()
   const solanaPayment = useSelector(
@@ -112,7 +114,10 @@ const ClaimingRewardsScreen = () => {
                   numberOfLines={2}
                   textAlign="center"
                 >
-                  {parseTransactionError(solanaPayment?.error?.message)}
+                  {parseTransactionError(
+                    solBalance,
+                    solanaPayment?.error?.message,
+                  )}
                 </Text>
               </Animated.View>
             )}

@@ -119,7 +119,10 @@ const SwappingScreen = () => {
                 marginTop="xl"
                 textAlign="center"
               >
-                {parseTransactionError(solanaPayment?.error?.message)}
+                {parseTransactionError(
+                  solBalance,
+                  solanaPayment?.error?.message,
+                )}
               </Text>
             </Animated.View>
           )}
