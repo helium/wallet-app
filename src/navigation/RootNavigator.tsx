@@ -1,11 +1,4 @@
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
 import {
   createStackNavigator,
@@ -36,6 +29,11 @@ import PaymentScreen from '../features/payment/PaymentScreen'
 import SignHotspot from '../features/txnDelegation/SignHotspot'
 import DappLoginScreen from '../features/dappLogin/DappLoginScreen'
 import ImportPrivateKey from '../features/onboarding/import/ImportPrivateKey'
+import ClaimRewardsScreen from '../features/collectables/ClaimRewardsScreen'
+import ClaimAllRewardsScreen from '../features/collectables/ClaimAllRewardsScreen'
+import ClaimingRewardsScreen from '../features/collectables/ClaimingRewardsScreen'
+
+const screenOptions = { headerShown: false } as StackNavigationOptions
 
 const RootNavigator = () => {
   const navigation = useNavigation<
@@ -48,14 +46,6 @@ const RootNavigator = () => {
   const connectedWalletsRef = useRef<ConnectedWalletsRef>(null)
   const dispatch = useAppDispatch()
   const [prevL1, setPrevL1] = useState(l1Network)
-
-  const screenOptions = useMemo(
-    () =>
-      ({
-        headerShown: false,
-      } as StackNavigationOptions),
-    [],
-  )
 
   useEffect(() => {
     changeNavigationBarColor(colors.primaryBackground, true, false)
@@ -109,7 +99,7 @@ const RootNavigator = () => {
       ref={connectedWalletsRef}
       onClose={onClose}
     >
-      <RootStack.Navigator>
+      <RootStack.Navigator screenOptions={screenOptions}>
         <RootStack.Screen
           name="TabBarNavigator"
           component={TabBarNavigator}
@@ -146,6 +136,18 @@ const RootNavigator = () => {
           name="ImportPrivateKey"
           component={ImportPrivateKey}
           options={screenOptions}
+        />
+        <RootStack.Screen
+          name="ClaimAllRewardsScreen"
+          component={ClaimAllRewardsScreen}
+        />
+        <RootStack.Screen
+          name="ClaimRewardsScreen"
+          component={ClaimRewardsScreen}
+        />
+        <RootStack.Screen
+          name="ClaimingRewardsScreen"
+          component={ClaimingRewardsScreen}
         />
       </RootStack.Navigator>
     </ConnectedWallets>

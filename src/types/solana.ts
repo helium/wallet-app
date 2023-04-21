@@ -15,6 +15,11 @@ import { init as initLazy } from '@helium/lazy-distributor-sdk'
 import { TokenAmount } from '@solana/web3.js'
 import { Creator } from '@metaplex-foundation/mpl-bubblegum'
 
+export type HotspotWithPendingRewards = CompressedNFT & {
+  // mint id to pending rewards
+  pendingRewards: Record<string, string> | undefined
+}
+
 export type HemProgram = Awaited<ReturnType<typeof initHem>>
 export type DcProgram = Awaited<ReturnType<typeof initDc>>
 export type LazyProgram = Awaited<ReturnType<typeof initLazy>>

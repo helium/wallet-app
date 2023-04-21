@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import { Edge } from 'react-native-safe-area-context'
 import BN from 'bn.js'
 import { Transaction } from '@solana/web3.js'
 import { ReAnimatedBox } from '@components/AnimatedBox'
@@ -14,12 +13,12 @@ import { DelayedFadeIn } from '@components/FadeInOut'
 import CircleLoader from '@components/CircleLoader'
 import RewardItem from '@components/RewardItem'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
-import { CollectableNavigationProp } from './collectablesTypes'
+import { RootNavigationProp } from '../../navigation/rootTypes'
 
 const ClaimAllRewardsScreen = () => {
   const { submitClaimAllRewards } = useSubmitTxn()
   const { t } = useTranslation()
-  const navigation = useNavigation<CollectableNavigationProp>()
+  const rootNav = useNavigation<RootNavigationProp>()
   const [redeeming, setRedeeming] = useState(false)
   const [claimError, setClaimError] = useState<string | undefined>()
 
@@ -66,7 +65,7 @@ const ClaimAllRewardsScreen = () => {
 
       if (txs.length > 0) {
         submitClaimAllRewards(txs)
-        navigation.push('ClaimingRewardsScreen')
+        rootNav.replace('ClaimingRewardsScreen')
       } else {
         setClaimError(t('collectablesScreen.claimError'))
       }
@@ -80,7 +79,7 @@ const ClaimAllRewardsScreen = () => {
   }, [
     createClaimAllIotTxs,
     createClaimAllMobileTxs,
-    navigation,
+    rootNav,
     submitClaimAllRewards,
     t,
     pendingIotRewards,
@@ -96,17 +95,13 @@ const ClaimAllRewardsScreen = () => {
     )
   }, [pendingIotRewards, pendingMobileRewards])
 
-  const safeEdges = useMemo(() => ['top'] as Edge[], [])
-
   return (
-    <ReAnimatedBox flex={1} entering={DelayedFadeIn}>
-      <BackScreen
-        headerTopMargin="l"
-        title={title}
-        paddingVertical="none"
-        paddingHorizontal="m"
-        edges={safeEdges}
-      >
+    <ReAnimatedBox
+      flex={1}
+      entering={DelayedFadeIn}
+      backgroundColor="primaryBackground"
+    >
+      <BackScreen title={title} paddingVertical="none" paddingHorizontal="m">
         <Box flexGrow={1}>
           <Box flexGrow={2} alignItems="center">
             <Box flexGrow={1}>

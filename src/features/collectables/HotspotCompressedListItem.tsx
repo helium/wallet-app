@@ -15,8 +15,8 @@ import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
 import BigNumber from 'bignumber.js'
 import { useMint } from '@helium/helium-react-hooks'
 import { Mints } from '../../utils/constants'
-import type { HotspotWithPendingRewards } from '../../utils/solanaUtils'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
+import { HotspotWithPendingRewards } from '../../types/solana'
 
 export type HotspotListItemProps = {
   hotspot: HotspotWithPendingRewards

@@ -13,8 +13,7 @@ import {
   hotspotsSlice,
 } from '../store/slices/hotspotsSlice'
 import { useAppDispatch } from '../store/store'
-import { HotspotWithPendingRewards } from '../utils/solanaUtils'
-import { CompressedNFT } from '../types/solana'
+import { CompressedNFT, HotspotWithPendingRewards } from '../types/solana'
 import { MOBILE_LAZY_KEY, IOT_LAZY_KEY, Mints } from '../utils/constants'
 import { useSolana } from '../solana/SolanaProvider'
 

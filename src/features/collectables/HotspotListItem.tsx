@@ -16,8 +16,8 @@ import BigNumber from 'bignumber.js'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import { ww } from '../../utils/layout'
 import { formatLargeNumber } from '../../utils/accountUtils'
-import type { HotspotWithPendingRewards } from '../../utils/solanaUtils'
 import { Mints } from '../../utils/constants'
+import { HotspotWithPendingRewards } from '../../types/solana'
 
 export type HotspotListItemProps = {
   hotspot: HotspotWithPendingRewards
