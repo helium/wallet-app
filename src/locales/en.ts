@@ -209,7 +209,10 @@ export default {
         'Since your last claim, \nyour Hotspots have earned...',
       addToAccount: 'Add to Account',
       addAllToAccount: 'Add all to account',
-      hotspotCount: '{{ count }} Hotspot(s)',
+      hotspotCount: '{{count}} Hotspot',
+      hotspotCount_one: '{{count}} Hotspot',
+      hotspotCount_other: '{{count}} Hotspots',
+      hotspotCount_plural: '{{count}} Hotspots',
       chooseAmountOfHotspots: 'Choose amount of hotspots to show per page',
       filter: 'Filter',
       currentDisplayedRewards:

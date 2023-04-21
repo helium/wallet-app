@@ -62,7 +62,11 @@ const useSolanaHook = () => {
       (await getSessionKey()) || Config.RPC_SESSION_KEY_FALLBACK
     const nextConn = getConnection(cluster, sessionKey)
 
-    if (nextConn.baseURL === connection?.baseURL) return
+    if (
+      nextConn.baseURL === connection?.baseURL &&
+      prevAddress === currentAccount.address
+    )
+      return
 
     setConnection(nextConn)
 
