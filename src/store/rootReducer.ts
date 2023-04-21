@@ -29,7 +29,7 @@ const solanaConfig = {
 const walletRestConfig = {
   key: walletRestApi.reducerPath,
   storage: AsyncStorage,
-  blacklist: ['queries', 'mutations'],
+  whitelist: ['queries'],
 }
 
 const reducer = combineReducers({

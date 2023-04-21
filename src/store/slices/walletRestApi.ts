@@ -48,7 +48,7 @@ export type SessionKey = {
 }
 
 export const walletRestApi = createApi({
-  reducerPath: 'walletRestApi',
+  reducerPath: 'walletRestApiPath',
   tagTypes: ['Notifications'],
   baseQuery: fetchBaseQuery({
     baseUrl: Config.WALLET_REST_URI,
@@ -66,12 +66,6 @@ export const walletRestApi = createApi({
     },
   }),
   endpoints: (builder) => ({
-    getBetaPubkeys: builder.query<BetaAccess, void>({
-      query: () => '/betaAccess',
-    }),
-    getMints: builder.query<Mints, string>({
-      query: (cluster) => `/mints?cluster=${cluster}`,
-    }),
     getBalanceHistory: builder.query<
       AccountBalance[],
       { currency: string; address: string; cluster: Cluster }
@@ -124,14 +118,6 @@ export const walletRestApi = createApi({
           endpointName,
         }
       },
-      merge: (_, newItems) => {
-        return newItems
-      },
-      // Refetch when the page arg changes
-      forceRefetch({ currentArg, previousArg }) {
-        return currentArg !== previousArg
-      },
-      keepUnusedDataFor: 60,
     }),
     getRecommendedDapps: builder.query<RecommendedDapps, void>({
       query: () => '/recommendedDapps',
@@ -143,20 +129,17 @@ export const walletRestApi = createApi({
 })
 
 export const {
-  useGetNotificationsQuery,
-  usePostPaymentMutation,
-  usePostNotificationReadMutation,
-  useLazyGetMintsQuery,
-  useGetMintsQuery,
-  useGetBetaPubkeysQuery,
-  useGetBalanceHistoryQuery,
-  useGetTokenPricesQuery,
-  useLazyGetTokenPricesQuery,
-  useGetRecommendedDappsQuery,
-  useLazyGetRecommendedDappsQuery,
-  useGetSessionKeyQuery,
-  useLazyGetSessionKeyQuery,
   reducer,
+  useGetBalanceHistoryQuery,
+  useGetNotificationsQuery,
+  useGetRecommendedDappsQuery,
+  useGetSessionKeyQuery,
+  useGetTokenPricesQuery,
+  useLazyGetRecommendedDappsQuery,
+  useLazyGetSessionKeyQuery,
+  useLazyGetTokenPricesQuery,
+  usePostNotificationReadMutation,
+  usePostPaymentMutation,
 } = walletRestApi
 
 export default walletRestApi

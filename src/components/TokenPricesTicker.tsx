@@ -38,13 +38,13 @@ const TokenPricesTicker = ({ ...boxProps }: Props) => {
 
   const text = useMemo(() => {
     if (!tokenPrices) return t('generic.noData')
-    if (isFetching && !tokenPrices?.helium[currency.toLowerCase()])
+    if (isFetching && !tokenPrices?.helium?.[currency.toLowerCase()])
       return t('generic.loading')
 
-    const heliumPrice = tokenPrices?.helium[currency.toLowerCase()]
-    const solanaPrice = tokenPrices?.solana[currency.toLowerCase()]
-    const mobilePrice = tokenPrices['helium-mobile'][currency.toLowerCase()]
-    const iotPrice = tokenPrices['helium-iot'][currency.toLowerCase()]
+    const heliumPrice = tokenPrices?.helium?.[currency.toLowerCase()]
+    const solanaPrice = tokenPrices?.solana?.[currency.toLowerCase()]
+    const mobilePrice = tokenPrices['helium-mobile']?.[currency.toLowerCase()]
+    const iotPrice = tokenPrices['helium-iot']?.[currency.toLowerCase()]
 
     // Construct the text to display
     let priceText = ''

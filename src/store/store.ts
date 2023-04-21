@@ -3,11 +3,18 @@ import { useDispatch, useStore } from 'react-redux'
 import { persistReducer } from 'redux-persist'
 import { setupListeners } from '@reduxjs/toolkit/query'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import logger from 'redux-logger'
+import Config from 'react-native-config'
 import reducer from './rootReducer'
 import { walletRestApi } from './slices/walletRestApi'
 import { solanaStatusApi } from './slices/solanaStatusApi'
 import { name as solanaSliceName } from './slices/solanaSlice'
 import Reactotron from '../../ReactotronConfig'
+
+const middlewares = [solanaStatusApi.middleware, walletRestApi.middleware]
+if (__DEV__ && Config.LOG_REDUX) {
+  middlewares.push(logger)
+}
 
 const enhancers = []
 if (Reactotron.createEnhancer && __DEV__) {
@@ -17,7 +24,11 @@ if (Reactotron.createEnhancer && __DEV__) {
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  blacklist: [solanaStatusApi.reducerPath, solanaSliceName],
+  blacklist: [
+    solanaStatusApi.reducerPath,
+    solanaSliceName,
+    walletRestApi.reducerPath,
+  ],
 }
 
 const persistedReducer = persistReducer(persistConfig, reducer)
@@ -27,7 +38,7 @@ const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }).concat([solanaStatusApi.middleware, walletRestApi.middleware]),
+    }).concat(middlewares),
   enhancers,
 })
 
