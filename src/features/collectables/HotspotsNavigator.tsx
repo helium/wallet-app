@@ -13,9 +13,6 @@ import NftMetadataScreen from './NftMetadataScreen'
 import TransferCollectableScreen from './TransferCollectableScreen'
 import AddressBookNavigator from '../addressBook/AddressBookNavigator'
 import TransferCompleteScreen from './TransferCompleteScreen'
-import ClaimRewardsScreen from './ClaimRewardsScreen'
-import ClaimAllRewardsScreen from './ClaimAllRewardsScreen'
-import ClaimingRewardsScreen from './ClaimingRewardsScreen'
 
 const CollectablesStack = createNativeStackNavigator()
 
@@ -91,23 +88,6 @@ const HotspotsNavigator = () => {
       <CollectablesStack.Screen
         name="TransferCompleteScreen"
         component={TransferCompleteScreen}
-        options={cardPresentation}
-      />
-
-      <CollectablesStack.Screen
-        name="ClaimRewardsScreen"
-        component={ClaimRewardsScreen}
-        options={cardPresentation}
-      />
-
-      <CollectablesStack.Screen
-        name="ClaimAllRewardsScreen"
-        component={ClaimAllRewardsScreen}
-        options={cardPresentation}
-      />
-      <CollectablesStack.Screen
-        name="ClaimingRewardsScreen"
-        component={ClaimingRewardsScreen}
         options={cardPresentation}
       />
     </CollectablesStack.Navigator>

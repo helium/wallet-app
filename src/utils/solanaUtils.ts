@@ -75,6 +75,7 @@ import {
   Collectable,
   CompressedNFT,
   EnrichedTransaction,
+  HotspotWithPendingRewards,
   mintToTicker,
 } from '../types/solana'
 import * as Logger from './logger'
@@ -1157,11 +1158,6 @@ export const getCompressedNFTMetadata = async (
   )
 
   return collectablesWithMetadata.filter((c) => c !== null) as CompressedNFT[]
-}
-
-export type HotspotWithPendingRewards = CompressedNFT & {
-  // mint id to pending rewards
-  pendingRewards: Record<string, string> | undefined
 }
 
 export async function annotateWithPendingRewards(

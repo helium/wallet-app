@@ -16,15 +16,15 @@ import RewardItem from '@components/RewardItem'
 import { Mints } from '../../utils/constants'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
 import {
-  CollectableNavigationProp,
-  CollectableStackParamList,
-} from './collectablesTypes'
+  RootNavigationProp,
+  RootStackParamList,
+} from '../../navigation/rootTypes'
 
-type Route = RouteProp<CollectableStackParamList, 'ClaimRewardsScreen'>
+type Route = RouteProp<RootStackParamList, 'ClaimRewardsScreen'>
 
 const ClaimRewardsScreen = () => {
   const { t } = useTranslation()
-  const navigation = useNavigation<CollectableNavigationProp>()
+  const rootNav = useNavigation<RootNavigationProp>()
   const route = useRoute<Route>()
   const [redeeming, setRedeeming] = useState(false)
   const [claimError, setClaimError] = useState<string | undefined>()
@@ -83,7 +83,7 @@ const ClaimRewardsScreen = () => {
 
       if (transactions.length > 0) {
         submitClaimAllRewards(transactions)
-        navigation.push('ClaimingRewardsScreen')
+        rootNav.push('ClaimingRewardsScreen')
       } else {
         setClaimError(t('collectablesScreen.claimError'))
       }
@@ -110,7 +110,6 @@ const ClaimRewardsScreen = () => {
   return (
     <ReAnimatedBox flex={1} entering={DelayedFadeIn}>
       <BackScreen
-        headerTopMargin="l"
         title={title}
         paddingVertical="none"
         paddingHorizontal="m"
