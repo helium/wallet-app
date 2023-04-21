@@ -59,9 +59,10 @@ const TokenPricesTicker = ({ ...boxProps }: Props) => {
     <Box {...boxProps}>
       <TextTicker
         style={textStyle}
-        scrollSpeed={100}
-        loop
+        scrollSpeed={200}
         repeatSpacer={0}
+        animationType="auto"
+        loop
         easing={Easing.linear}
         maxFontSizeMultiplier={1.2}
       >
