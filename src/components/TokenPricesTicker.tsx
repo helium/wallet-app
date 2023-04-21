@@ -14,7 +14,9 @@ type Props = BoxProps<Theme>
 const TokenPricesTicker = ({ ...boxProps }: Props) => {
   const { body2 } = useTextVariants()
   const colors = useColors()
-  const { currency } = useAppStorage()
+  const { currency: rawCurrency } = useAppStorage()
+  const currency = useMemo(() => rawCurrency?.toLowerCase(), [rawCurrency])
+
   const { t } = useTranslation()
 
   const textStyle = useMemo(
@@ -31,20 +33,23 @@ const TokenPricesTicker = ({ ...boxProps }: Props) => {
 
   useAsync(async () => {
     await triggerGetTokenPrices(
-      { tokens: 'helium,solana,helium-mobile,helium-iot', currency },
+      {
+        tokens: 'helium,solana,helium-mobile,helium-iot',
+        currency,
+      },
       false,
     )
   }, [currency, triggerGetTokenPrices])
 
   const text = useMemo(() => {
     if (!tokenPrices) return t('generic.noData')
-    if (isFetching && !tokenPrices?.helium?.[currency.toLowerCase()])
+    if (isFetching && !tokenPrices?.helium?.[currency])
       return t('generic.loading')
 
-    const heliumPrice = tokenPrices?.helium?.[currency.toLowerCase()]
-    const solanaPrice = tokenPrices?.solana?.[currency.toLowerCase()]
-    const mobilePrice = tokenPrices['helium-mobile']?.[currency.toLowerCase()]
-    const iotPrice = tokenPrices['helium-iot']?.[currency.toLowerCase()]
+    const heliumPrice = tokenPrices?.helium?.[currency]
+    const solanaPrice = tokenPrices?.solana?.[currency]
+    const mobilePrice = tokenPrices['helium-mobile']?.[currency]
+    const iotPrice = tokenPrices['helium-iot']?.[currency]
 
     // Construct the text to display
     let priceText = ''

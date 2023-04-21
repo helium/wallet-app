@@ -2,6 +2,7 @@ import { Ticker } from '@helium/currency'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { Cluster } from '@solana/web3.js'
 import Config from 'react-native-config'
+import { REHYDRATE } from 'redux-persist'
 import { AccountBalance } from '../../types/accountBalance'
 import { lang } from '../../utils/i18n'
 import { AuthState } from './authSlice'
@@ -49,7 +50,12 @@ export type SessionKey = {
 
 export const walletRestApi = createApi({
   reducerPath: 'walletRestApiPath',
-  tagTypes: ['Notifications'],
+  tagTypes: ['Notifications', 'TokenPrices'],
+  extractRehydrationInfo(action, { reducerPath }) {
+    if (action.type === REHYDRATE) {
+      return action.payload[reducerPath]
+    }
+  },
   baseQuery: fetchBaseQuery({
     baseUrl: Config.WALLET_REST_URI,
     prepareHeaders: (headers, { getState }) => {
@@ -105,6 +111,7 @@ export const walletRestApi = createApi({
     >({
       query: ({ tokens, currency }) =>
         `/prices/fetchTokenPrices?tokens=${tokens}&currency=${currency}`,
+      providesTags: ['TokenPrices'],
       transformResponse: (response) => {
         return response as TokenPrices
       },

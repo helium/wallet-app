@@ -64,7 +64,12 @@ const useBalanceHook = () => {
   const { currentAccount } = useAccountStorage()
   const prevAccount = usePrevious(currentAccount)
   const accountSubscriptionId = useRef<number>()
-  const { convertToCurrency, currency, l1Network } = useAppStorage()
+  const {
+    convertToCurrency,
+    currency: rawCurrency,
+    l1Network,
+  } = useAppStorage()
+  const currency = useMemo(() => rawCurrency?.toLowerCase(), [rawCurrency])
   const { cluster, anchorProvider } = useSolana()
   const prevCluster = usePrevious(cluster)
   const [updating, setUpdating] = useState(false)
@@ -225,14 +230,14 @@ const useBalanceHook = () => {
   const oraclePrice = useMemo(() => {
     if (!tokenPrices?.helium) return
 
-    const heliumPrice = tokenPrices.helium[currency.toLowerCase()]
+    const heliumPrice = tokenPrices.helium[currency]
     return Balance.fromFloat(heliumPrice, CurrencyType.usd)
   }, [currency, tokenPrices])
 
   const solanaPrice = useMemo(() => {
     if (!tokenPrices?.solana) return
 
-    const price = tokenPrices.solana[currency.toLowerCase()]
+    const price = tokenPrices.solana[currency]
 
     return new Balance(price, CurrencyType.usd)
   }, [currency, tokenPrices])
@@ -527,7 +532,7 @@ const useBalanceHook = () => {
       if (!balance) {
         return new Promise<string>((resolve) => resolve(''))
       }
-      const multiplier = tokenPrices?.helium[currency.toLowerCase()] || 0
+      const multiplier = tokenPrices?.helium[currency] || 0
 
       const showAsHnt =
         !convertToCurrency ||
@@ -551,24 +556,20 @@ const useBalanceHook = () => {
 
     if (networkBalance?.floatBalance !== undefined) {
       bal +=
-        networkBalance.floatBalance *
-        (tokenPrices?.helium?.[currency.toLowerCase()] || 0)
+        networkBalance.floatBalance * (tokenPrices?.helium?.[currency] || 0)
     }
 
     if (solBalance?.floatBalance !== undefined) {
-      bal +=
-        solBalance.floatBalance *
-        (tokenPrices?.solana?.[currency.toLowerCase()] || 0)
+      bal += solBalance.floatBalance * (tokenPrices?.solana?.[currency] || 0)
     }
 
     if (iotBalance?.floatBalance !== undefined) {
-      const iotPrice = tokenPrices?.['helium-iot']?.[currency.toLowerCase()]
+      const iotPrice = tokenPrices?.['helium-iot']?.[currency]
       bal += iotBalance.floatBalance * (iotPrice || 0)
     }
 
     if (mobileBalance?.floatBalance !== undefined) {
-      const mobilePrice =
-        tokenPrices?.['helium-mobile']?.[currency.toLowerCase()]
+      const mobilePrice = tokenPrices?.['helium-mobile']?.[currency]
       bal += mobileBalance.floatBalance * (mobilePrice || 0)
     }
 
@@ -611,7 +612,7 @@ const useBalanceHook = () => {
         bal = mobileBalance
       }
 
-      const multiplier = tickerPrice?.[currency.toLowerCase()] || 0
+      const multiplier = tickerPrice?.[currency] || 0
       if (!multiplier) return defaultResponse
 
       const convertedValue = multiplier * bal.floatBalance

@@ -30,16 +30,27 @@ export const breadcrumb = (message: string, data?: any) => {
 export const logAsyncStorage = () => {
   AsyncStorage.getAllKeys().then((keyArray) => {
     AsyncStorage.multiGet(keyArray).then((keyValArray) => {
-      const myStorage: unknown = {}
+      const storage: unknown = {}
       // eslint-disable-next-line no-restricted-syntax
       for (const keyVal of keyValArray) {
         // eslint-disable-next-line prefer-destructuring, @typescript-eslint/ban-ts-comment
         // @ts-ignore
         // eslint-disable-next-line prefer-destructuring
-        myStorage[keyVal[0]] = keyVal[1]
+        storage[keyVal[0]] = keyVal[1]
       }
 
-      console.log('CURRENT STORAGE: ', myStorage)
+      console.log('CURRENT STORAGE: ', storage)
     })
+  })
+}
+
+export const logAsyncStorageKeys = () => {
+  AsyncStorage.getAllKeys().then(console.log)
+}
+
+export const logReducerAsyncStorage = (reducerPath: string) => {
+  AsyncStorage.getItem(`persist:${reducerPath}`).then((data) => {
+    console.log(reducerPath, 'data')
+    console.log(data)
   })
 }
