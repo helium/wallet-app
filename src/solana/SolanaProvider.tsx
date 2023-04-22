@@ -46,7 +46,16 @@ const useSolanaHook = () => {
   const prevCluster = usePrevious(cluster)
 
   const handleConnectionChanged = useCallback(async () => {
-    if (!cluster || !currentAccount?.address) return
+    if (!cluster) return
+
+    const sessionKey =
+      (await getSessionKey()) || Config.RPC_SESSION_KEY_FALLBACK
+    const nextConn = getConnection(cluster, sessionKey)
+
+    if (!currentAccount?.address) {
+      setConnection(nextConn)
+      return
+    }
 
     if (
       initialized.current &&
@@ -57,10 +66,6 @@ const useSolanaHook = () => {
     }
 
     initialized.current = true
-
-    const sessionKey =
-      (await getSessionKey()) || Config.RPC_SESSION_KEY_FALLBACK
-    const nextConn = getConnection(cluster, sessionKey)
 
     if (
       nextConn.baseURL === connection?.baseURL &&
@@ -124,7 +129,7 @@ const useSolanaHook = () => {
 
   useEffect(() => {
     handleConnectionChanged()
-  }, [cluster, currentAccount?.address, handleConnectionChanged])
+  }, [cluster, currentAccount, handleConnectionChanged])
 
   const updateCluster = useCallback(
     (nextCluster: Cluster) => {
