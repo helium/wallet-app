@@ -106,41 +106,39 @@ const App = () => {
             <PortalProvider>
               <PortalHost name="browser-portal" />
               <OnboardingProvider baseUrl={Config.ONBOARDING_API_URL}>
-                {client && (
+                {client && connection && (
                   <ApolloProvider client={client}>
                     <LockScreen>
-                      {connection && (
-                        <AccountProvider
-                          extendConnection={false}
-                          commitment="confirmed"
-                          connection={connection}
-                        >
-                          <WalletConnectProvider>
-                            {accountsRestored && (
-                              <>
-                                <NavigationContainer
-                                  theme={navTheme}
-                                  linking={linking}
-                                  ref={navigationRef}
-                                >
-                                  <BalanceProvider>
-                                    <TransactionProvider>
-                                      <NetworkAwareStatusBar />
-                                      <RootNavigator />
-                                    </TransactionProvider>
-                                  </BalanceProvider>
-                                </NavigationContainer>
-                                <SecurityScreen
-                                  visible={
-                                    appState !== 'active' &&
-                                    appState !== 'unknown'
-                                  }
-                                />
-                              </>
-                            )}
-                          </WalletConnectProvider>
-                        </AccountProvider>
-                      )}
+                      <AccountProvider
+                        extendConnection={false}
+                        commitment="confirmed"
+                        connection={connection}
+                      >
+                        <WalletConnectProvider>
+                          {accountsRestored && (
+                            <>
+                              <NavigationContainer
+                                theme={navTheme}
+                                linking={linking}
+                                ref={navigationRef}
+                              >
+                                <BalanceProvider>
+                                  <TransactionProvider>
+                                    <NetworkAwareStatusBar />
+                                    <RootNavigator />
+                                  </TransactionProvider>
+                                </BalanceProvider>
+                              </NavigationContainer>
+                              <SecurityScreen
+                                visible={
+                                  appState !== 'active' &&
+                                  appState !== 'unknown'
+                                }
+                              />
+                            </>
+                          )}
+                        </WalletConnectProvider>
+                      </AccountProvider>
                     </LockScreen>
                   </ApolloProvider>
                 )}
