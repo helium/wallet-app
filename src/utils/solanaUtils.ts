@@ -75,6 +75,7 @@ import { getKeypair, getSessionKey } from '../storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
 import sleep from './sleep'
 import {
+  Balances,
   Collectable,
   CompressedNFT,
   EnrichedTransaction,
@@ -184,6 +185,60 @@ export const getBalanceFromTokenAccount = async (
   const accountData = AccountLayout.decode(accountInfo.data)
 
   return accountData.amount
+}
+
+export const readAccountBalances = async (
+  anchorProvider: AnchorProvider,
+  address: string,
+): Promise<Balances> => {
+  const account = new PublicKey(address)
+
+  const tokenAccounts = await anchorProvider.connection.getTokenAccountsByOwner(
+    account,
+    {
+      programId: TOKEN_PROGRAM_ID,
+    },
+  )
+
+  const balances = {
+    sol: { balance: 0, tokenAccount: '' },
+    mobile: { balance: 0, tokenAccount: '' },
+    dc: { balance: 0, tokenAccount: '' },
+    iot: { balance: 0, tokenAccount: '' },
+    hnt: { balance: 0, tokenAccount: '' },
+  } as Balances
+
+  tokenAccounts.value.forEach((tokenAccount) => {
+    const accountData = AccountLayout.decode(tokenAccount.account.data)
+
+    const info = {
+      balance: Number(accountData.amount),
+      tokenAccount: tokenAccount.pubkey.toBase58(),
+    }
+
+    switch (accountData.mint.toBase58()) {
+      case HNT_MINT.toBase58():
+        balances.hnt = info
+        break
+      case DC_MINT.toBase58():
+        balances.dc = info
+        break
+      case IOT_MINT.toBase58():
+        balances.iot = info
+        break
+      case MOBILE_MINT.toBase58():
+        balances.mobile = info
+        break
+    }
+  })
+
+  const sol = await anchorProvider.connection.getBalance(account)
+  balances.sol = {
+    balance: sol,
+    tokenAccount: address,
+  }
+
+  return balances
 }
 
 export const readHeliumBalances = async (
@@ -1718,14 +1773,14 @@ export const submitSolana = async ({
 }
 
 export const parseTransactionError = (
-  balance: Balance<AnyCurrencyType>,
+  balance?: Balance<AnyCurrencyType>,
   message?: string,
 ) => {
   if (!message) return 'UNKNOWN ERROR'
 
   // Check if error has instructionError from {"InstructionError":[1,{"Custom":1}]}
   const instructionError = message.includes('InstructionError')
-  if (instructionError && balance.floatBalance > 0.02) {
+  if (instructionError && (balance?.floatBalance || 0) > 0.02) {
     return 'The SOL balance on this account is too low to complete this transaction'
   }
 

@@ -23,7 +23,6 @@ import { useAppStorage } from '../../storage/AppStorageProvider'
 import * as Logger from '../../utils/logger'
 import { useAppDispatch } from '../../store/store'
 import { fetchHotspots } from '../../store/slices/hotspotsSlice'
-import { readBalances } from '../../store/slices/solanaSlice'
 import { useSolana } from '../../solana/SolanaProvider'
 
 async function migrateWallet(
@@ -113,8 +112,6 @@ const SolanaMigration = ({
           cluster,
         }),
       )
-
-      dispatch(readBalances({ anchorProvider, acct: currentAccount }))
     } catch (e) {
       Logger.error(e)
       setMigrationError((e as Error).message)

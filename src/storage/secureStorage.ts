@@ -10,6 +10,7 @@ import { navToImportAccount } from '../navigation/NavigationHelper'
 import { ellipsizeAddress } from '../utils/accountUtils'
 
 export enum SecureStorageKeys {
+  WALLET_API_TOKEN = 'walletApiToken',
   PIN = 'pin',
   PIN_FOR_PAYMENT = 'pinForPayment',
   AUTH_INTERVAL = 'authInterval',
