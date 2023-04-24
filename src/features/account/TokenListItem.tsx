@@ -1,4 +1,4 @@
-import Balance, { SolTokens, Ticker } from '@helium/currency'
+import Balance, { AnyCurrencyType } from '@helium/currency'
 import React, { useCallback, useMemo } from 'react'
 import Arrow from '@assets/images/listItemRight.svg'
 import { useNavigation } from '@react-navigation/native'
@@ -8,58 +8,33 @@ import Text from '@components/Text'
 import TouchableContainer from '@components/TouchableContainer'
 import TokenIcon from '@components/TokenIcon'
 import useHaptic from '@hooks/useHaptic'
-import { useMint, useTokenAccount } from '@helium/helium-react-hooks'
-import { PublicKey } from '@solana/web3.js'
-import { AccountLayout } from '@solana/spl-token'
-import { BN } from 'bn.js'
-import { toNumber } from '@helium/spl-utils'
 import { balanceToString } from '@utils/Balance'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import { HomeNavigationProp } from '../home/homeTypes'
 
 export const ITEM_HEIGHT = 72
 type Props = {
-  ticker: Ticker
-  balance?: Balance<SolTokens>
-  staked?: boolean
-  tokenAccount?: string
+  balance: Balance<AnyCurrencyType>
 }
-const TokenListItem = ({ ticker, balance, staked, tokenAccount }: Props) => {
+const TokenListItem = ({ balance }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { triggerImpact } = useHaptic()
-  const tokenAccountCache = useTokenAccount(
-    tokenAccount ? new PublicKey(tokenAccount) : undefined,
-  )
-  const tokenAcountData = useMemo(() => {
-    if (!tokenAccountCache.account) return
-    return AccountLayout.decode(tokenAccountCache.account?.data)
-  }, [tokenAccountCache])
-
-  const { info: mint } = useMint(tokenAcountData?.mint)
 
   const handleNavigation = useCallback(() => {
     triggerImpact('light')
-    navigation.navigate('AccountTokenScreen', { tokenType: ticker })
-  }, [navigation, ticker, triggerImpact])
+    navigation.navigate('AccountTokenScreen', {
+      tokenType: balance.type.ticker,
+    })
+  }, [navigation, balance, triggerImpact])
 
   const balanceToDisplay = useMemo(() => {
-    if (tokenAcountData) {
-      if (ticker === 'DC') {
-        return tokenAcountData.amount.toLocaleString()
-      }
-
-      return toNumber(
-        new BN(tokenAcountData.amount.toString() || 0),
-        mint?.info.decimals || 6,
-      )
-    }
     return (
       balanceToString(balance, {
         maxDecimalPlaces: 9,
         showTicker: false,
       }) || 0
     )
-  }, [balance, mint, tokenAcountData, ticker])
+  }, [balance])
 
   return (
     <FadeInOut>
@@ -73,7 +48,7 @@ const TokenListItem = ({ ticker, balance, staked, tokenAccount }: Props) => {
         borderBottomColor="primaryBackground"
         borderBottomWidth={1}
       >
-        <TokenIcon ticker={ticker} />
+        <TokenIcon ticker={balance.type.ticker} />
         <Box flex={1} paddingHorizontal="m">
           <Box flexDirection="row" alignItems="center">
             <Text
@@ -88,14 +63,13 @@ const TokenListItem = ({ ticker, balance, staked, tokenAccount }: Props) => {
               color="secondaryText"
               maxFontSizeMultiplier={1.3}
             >
-              {` ${ticker}${staked ? ' Staked' : ''}`}
+              {balance.type.ticker}
             </Text>
           </Box>
           <AccountTokenCurrencyBalance
             variant="subtitle4"
             color="secondaryText"
-            ticker={ticker}
-            staked={staked}
+            ticker={balance.type.ticker}
           />
         </Box>
         <Arrow />

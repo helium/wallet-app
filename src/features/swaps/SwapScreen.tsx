@@ -83,7 +83,11 @@ const SwapScreen = () => {
   >()
   const [networkError, setNetworkError] = useState<undefined | string>()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const { networkTokensToDc, networkBalance, solBalance } = useBalance()
+  const {
+    networkTokensToDc,
+    hntBalance: networkBalance,
+    solBalance,
+  } = useBalance()
   const { showOKCancelAlert } = useAlert()
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const {

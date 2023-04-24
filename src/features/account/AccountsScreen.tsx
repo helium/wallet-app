@@ -428,7 +428,6 @@ const AccountsScreen = () => {
               flexGrow={1}
               justifyContent="center"
               onTouchStart={onTouchStart}
-              accountData={accountData?.account}
               selectedBalance={selectedBalance}
               onCurrencySelectorPress={toggleCurrenciesOpen(true)}
             />

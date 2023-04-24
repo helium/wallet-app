@@ -110,7 +110,7 @@ const HNTKeyboardSelector = forwardRef(
     const {
       oracleDateTime,
       floatToBalance,
-      networkBalance,
+      hntBalance: networkBalance,
       mobileBalance,
       iotBalance,
       dcBalance,

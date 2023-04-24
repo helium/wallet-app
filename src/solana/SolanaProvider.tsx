@@ -23,7 +23,6 @@ import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
 import usePrevious from '../hooks/usePrevious'
-import { readBalances } from '../store/slices/solanaSlice'
 import { WrappedConnection } from '../utils/WrappedConnection'
 import { DcProgram, HemProgram, HsdProgram, LazyProgram } from '../types/solana'
 
@@ -113,16 +112,11 @@ const useSolanaHook = () => {
         extendConnection: true,
       }),
     )
-
-    dispatch(
-      readBalances({ anchorProvider: nextProvider, acct: currentAccount }),
-    )
   }, [
     cache,
     cluster,
     connection?.baseURL,
     currentAccount,
-    dispatch,
     prevAddress,
     prevCluster,
   ])

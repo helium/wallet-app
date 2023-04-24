@@ -8,7 +8,6 @@ import {
   removeAccountChangeListener,
 } from '../utils/solanaUtils'
 import { useAppDispatch } from '../store/store'
-import { readBalances } from '../store/slices/solanaSlice'
 import { useSolana } from '../solana/SolanaProvider'
 
 const useEnrichedTransactions = (): {
@@ -104,7 +103,6 @@ const useEnrichedTransactions = (): {
 
     const subId = onLogs(anchorProvider, currentAccount?.solanaAddress, () => {
       refresh()
-      dispatch(readBalances({ anchorProvider, acct: currentAccount }))
       setHasNewTransactions(true)
     })
 

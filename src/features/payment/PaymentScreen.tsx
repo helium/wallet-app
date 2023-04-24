@@ -107,15 +107,8 @@ const PaymentScreen = () => {
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const {
-    oraclePrice,
-    networkBalance,
-    solBalance,
-    iotBalance,
-    mobileBalance,
-    mobileSolBalance,
-    iotSolBalance,
-  } = useBalance()
+  const { oraclePrice, hntBalance, solBalance, iotBalance, mobileBalance } =
+    useBalance()
 
   const { showOKAlert } = useAlert()
   const { l1Network } = useAppStorage()
@@ -192,7 +185,7 @@ const PaymentScreen = () => {
     oraclePrice,
     accountMobileBalance: mobileBalance,
     accountIotBalance: iotBalance,
-    accountNetworkBalance: networkBalance,
+    accountNetworkBalance: hntBalance,
     netType: networkType,
     l1Network,
   })
@@ -347,7 +340,7 @@ const PaymentScreen = () => {
     value: boolean,
     errorTicker: string,
   ] => {
-    if (!networkBalance || !paymentState.totalAmount) {
+    if (!hntBalance || !paymentState.totalAmount) {
       return [true, '']
     }
     if (paymentState.networkFee?.integerBalance === undefined)
@@ -359,15 +352,13 @@ const PaymentScreen = () => {
         let hasEnoughToken = false
         if (ticker === 'MOBILE') {
           hasEnoughToken =
-            mobileSolBalance -
-              paymentState.totalAmount.floatBalance.valueOf() >=
-            0
+            mobileBalance.minus(paymentState.totalAmount).integerBalance >= 0
         } else if (ticker === 'IOT') {
           hasEnoughToken =
-            iotSolBalance - paymentState.totalAmount.floatBalance.valueOf() >= 0
+            iotBalance.minus(paymentState.totalAmount).integerBalance >= 0
         } else if (ticker === 'HNT') {
           hasEnoughToken =
-            networkBalance.minus(paymentState.totalAmount).integerBalance >= 0
+            hntBalance.minus(paymentState.totalAmount).integerBalance >= 0
         } else if (ticker === 'SOL') {
           hasEnoughToken =
             solBalance.minus(paymentState.totalAmount).integerBalance >= 0
@@ -382,21 +373,18 @@ const PaymentScreen = () => {
           // If paying with mobile, they need to have enough mobile to cover the payment
           // and enough hnt to cover the fee
           const hasEnoughNetwork =
-            networkBalance.minus(paymentState.networkFee).integerBalance >= 0
+            hntBalance.minus(paymentState.networkFee).integerBalance >= 0
           const hasEnoughMobile =
             mobileBalance.minus(paymentState.totalAmount).integerBalance >= 0
-          if (!hasEnoughNetwork) return [true, networkBalance.type.ticker]
+          if (!hasEnoughNetwork) return [true, hntBalance.type.ticker]
           if (!hasEnoughMobile) return [true, mobileBalance.type.ticker]
         }
       }
 
       const hasEnoughNetwork =
-        networkBalance.integerBalance <
+        hntBalance.integerBalance <
         paymentState.totalAmount.plus(paymentState.networkFee).integerBalance
-      return [
-        hasEnoughNetwork,
-        hasEnoughNetwork ? '' : networkBalance.type.ticker,
-      ]
+      return [hasEnoughNetwork, hasEnoughNetwork ? '' : hntBalance.type.ticker]
     } catch (e) {
       // if the screen was already open, then a deep link of a different net type
       // is selected there will be a brief arithmetic error that can be ignored.
@@ -406,14 +394,14 @@ const PaymentScreen = () => {
       return [false, '']
     }
   }, [
+    hntBalance,
+    paymentState.totalAmount,
+    paymentState.networkFee,
     l1Network,
-    mobileSolBalance,
-    networkBalance,
     solBalance,
-    iotSolBalance,
     ticker,
     mobileBalance,
-    paymentState,
+    iotBalance,
   ])
 
   const selfPay = useMemo(
@@ -682,16 +670,17 @@ const PaymentScreen = () => {
   }, [l1Network, networkType, sortedAccountsForNetType])
 
   const tokenButtonBalance = useMemo(() => {
-    if (ticker === 'HNT') {
-      return balanceToString(networkBalance)
+    switch (ticker) {
+      case 'HNT':
+        return balanceToString(hntBalance)
+      case 'SOL':
+        return balanceToString(solBalance)
+      case 'MOBILE':
+        return balanceToString(mobileBalance)
+      case 'IOT':
+        return balanceToString(iotBalance)
     }
-
-    if (ticker === 'SOL') {
-      return `${solBalance}`
-    }
-
-    return ticker === 'MOBILE' ? `${mobileSolBalance}` : `${iotSolBalance}`
-  }, [iotSolBalance, mobileSolBalance, networkBalance, ticker, solBalance])
+  }, [ticker, hntBalance, solBalance, mobileBalance, iotBalance])
 
   const data = useMemo((): TokenListItem[] => {
     const tokens = [

@@ -25,13 +25,6 @@ import { walletRestApi } from './walletRestApi'
 import * as Logger from '../../utils/logger'
 import { fetchHotspots } from './hotspotsSlice'
 
-type Balances = {
-  dcReceived?: bigint
-  secBalance?: bigint
-  stakedBalance?: bigint
-  loading?: boolean
-}
-
 type TokenActivity = Record<Ticker, Activity[]>
 
 type SolActivity = {
@@ -42,8 +35,6 @@ type SolActivity = {
 }
 
 export type SolanaState = {
-  tokenAccounts: Record<string, Record<string, string>>
-  balances: Record<string, Balances>
   payment?: { loading?: boolean; error?: SerializedError; success?: boolean }
   activity: {
     loading?: boolean
@@ -54,30 +45,8 @@ export type SolanaState = {
 }
 
 const initialState: SolanaState = {
-  tokenAccounts: {},
-  balances: {},
   activity: { data: {} },
 }
-
-export const readBalances = createAsyncThunk(
-  'solana/readBalance',
-  async ({
-    acct,
-    anchorProvider,
-  }: {
-    acct: CSAccount
-    anchorProvider: AnchorProvider
-  }) => {
-    if (!acct?.solanaAddress) throw new Error('No solana account found')
-
-    const tokenAccounts = await solUtils.readHeliumBalances(
-      anchorProvider,
-      acct.solanaAddress,
-    )
-
-    return tokenAccounts
-  },
-)
 
 type Payment = {
   payee: string
@@ -123,7 +92,6 @@ type ClaimAllRewardsInput = {
 }
 
 type TreasurySwapTxn = {
-  account: CSAccount
   cluster: Cluster
   anchorProvider: AnchorProvider
   amount: number
@@ -133,7 +101,6 @@ type TreasurySwapTxn = {
 }
 
 type MintDataCreditsInput = {
-  account: CSAccount
   anchorProvider: AnchorProvider
   cluster: Cluster
   dcAmount: number
@@ -141,7 +108,6 @@ type MintDataCreditsInput = {
 }
 
 type DelegateDataCreditsInput = {
-  account: CSAccount
   anchorProvider: AnchorProvider
   cluster: Cluster
   delegateAddress: string
@@ -169,8 +135,6 @@ export const makePayment = createAsyncThunk(
       payments,
       mintAddress,
     )
-
-    dispatch(readBalances({ anchorProvider, acct: account }))
 
     return dispatch(
       walletRestApi.endpoints.postPayment.initiate({
@@ -242,14 +206,7 @@ export const makeCollectablePayment = createAsyncThunk(
 export const sendTreasurySwap = createAsyncThunk(
   'solana/sendTreasurySwap',
   async (
-    {
-      account,
-      cluster,
-      anchorProvider,
-      amount,
-      fromMint,
-      recipient,
-    }: TreasurySwapTxn,
+    { cluster, anchorProvider, amount, fromMint, recipient }: TreasurySwapTxn,
     { dispatch },
   ) => {
     try {
@@ -259,8 +216,6 @@ export const sendTreasurySwap = createAsyncThunk(
         anchorProvider,
         recipient,
       )
-
-      dispatch(readBalances({ anchorProvider, acct: account }))
 
       return await dispatch(
         walletRestApi.endpoints.postPayment.initiate({
@@ -278,13 +233,7 @@ export const sendTreasurySwap = createAsyncThunk(
 export const sendMintDataCredits = createAsyncThunk(
   'solana/sendMintDataCredits',
   async (
-    {
-      cluster,
-      anchorProvider,
-      dcAmount,
-      account,
-      recipient,
-    }: MintDataCreditsInput,
+    { cluster, anchorProvider, dcAmount, recipient }: MintDataCreditsInput,
     { dispatch },
   ) => {
     try {
@@ -293,8 +242,6 @@ export const sendMintDataCredits = createAsyncThunk(
         dcAmount,
         recipient,
       })
-
-      dispatch(readBalances({ anchorProvider, acct: account }))
 
       return await dispatch(
         walletRestApi.endpoints.postPayment.initiate({
@@ -316,7 +263,6 @@ export const sendDelegateDataCredits = createAsyncThunk(
       cluster,
       anchorProvider,
       amount,
-      account,
       delegateAddress,
       mint,
     }: DelegateDataCreditsInput,
@@ -329,8 +275,6 @@ export const sendDelegateDataCredits = createAsyncThunk(
         amount,
         mint,
       )
-
-      dispatch(readBalances({ anchorProvider, acct: account }))
 
       return await dispatch(
         walletRestApi.endpoints.postPayment.initiate({
@@ -423,7 +367,6 @@ export const claimAllRewards = createAsyncThunk(
 
       // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
       dispatch(fetchHotspots({ account, anchorProvider, cluster }))
-      dispatch(readBalances({ anchorProvider, acct: account }))
     } catch (error) {
       Logger.error(error)
       throw error
@@ -490,48 +433,11 @@ const solanaSlice = createSlice({
   name: 'solana',
   initialState,
   reducers: {
-    resetBalancesLoading: (state, action) => {
-      const { solanaAddress } = action.payload
-      const prev = state.balances[solanaAddress] || {}
-
-      state.balances[solanaAddress] = {
-        ...prev,
-        loading: true,
-      }
-    },
     resetPayment: (state) => {
       state.payment = { success: false, loading: false, error: undefined }
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(readBalances.pending, (state, action) => {
-      if (!action.meta.arg?.acct.solanaAddress) return state
-      const prev = state.balances[action.meta.arg?.acct.solanaAddress] || {}
-
-      state.balances[action.meta.arg?.acct.solanaAddress] = {
-        ...prev,
-        loading: true,
-      }
-    })
-    builder.addCase(readBalances.fulfilled, (state, action) => {
-      if (!action.meta.arg?.acct.solanaAddress) return state
-
-      state.tokenAccounts[action.meta.arg?.acct.solanaAddress] = {
-        ...action.payload,
-      }
-
-      state.balances[action.meta.arg?.acct.solanaAddress] = {
-        loading: false,
-      }
-    })
-    builder.addCase(readBalances.rejected, (state, action) => {
-      if (!action.meta.arg?.acct.solanaAddress) return state
-      const prev = state.balances[action.meta.arg?.acct.solanaAddress] || {}
-      state.balances[action.meta.arg?.acct.solanaAddress] = {
-        ...prev,
-        loading: false,
-      }
-    })
     builder.addCase(makeCollectablePayment.pending, (state, _action) => {
       state.payment = { success: false, loading: true, error: undefined }
     })

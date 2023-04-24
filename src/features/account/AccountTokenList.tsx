@@ -1,11 +1,10 @@
 import React, { useCallback, useMemo } from 'react'
-import Balance, { AnyCurrencyType, SolTokens, Ticker } from '@helium/currency'
+import Balance, { AnyCurrencyType, Ticker } from '@helium/currency'
 import { times } from 'lodash'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
 import { useBalance } from '@utils/Balance'
-import { Mints } from '@utils/constants'
 import TokenListItem, { TokenSkeleton } from './TokenListItem'
 
 type Token = {
@@ -22,79 +21,28 @@ type Props = {
 const AccountTokenList = ({ loading = false, onLayout }: Props) => {
   const {
     solBalance,
+    hntBalance,
+    mobileBalance,
+    dcBalance,
+    iotBalance,
     updating: updatingTokens,
-    solBalancesLoading,
-    tokenAccounts,
   } = useBalance()
   const { bottom } = useSafeAreaInsets()
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
 
   const tokens = useMemo(() => {
-    if (loading) {
-      return []
-    }
-
-    if (solBalancesLoading) {
-      return []
-    }
-
-    const allTokens = [
-      {
-        type: 'HNT',
-        staked: false,
-        tokenAccount: tokenAccounts ? tokenAccounts[Mints.HNT] : undefined,
-      },
-      {
-        type: 'MOBILE',
-        staked: false,
-        tokenAccount: tokenAccounts ? tokenAccounts[Mints.MOBILE] : undefined,
-      },
-      {
-        type: 'IOT',
-        staked: false,
-        tokenAccount: tokenAccounts ? tokenAccounts[Mints.IOT] : undefined,
-      },
-      {
-        type: 'DC',
-        staked: false,
-        tokenAccount: tokenAccounts ? tokenAccounts[Mints.DC] : undefined,
-      },
-      {
-        type: 'SOL',
-        balance: solBalance as Balance<SolTokens>,
-        staked: false,
-      },
-    ] as {
-      type: Ticker
-      balance?: Balance<AnyCurrencyType> | number
-      staked: boolean
-      tokenAccount?: string
-    }[]
-
-    return allTokens
-  }, [loading, solBalance, tokenAccounts, solBalancesLoading])
+    return [hntBalance, mobileBalance, iotBalance, dcBalance, solBalance]
+  }, [dcBalance, hntBalance, iotBalance, mobileBalance, solBalance])
 
   const renderItem = useCallback(
     ({
       item: token,
     }: {
       // eslint-disable-next-line react/no-unused-prop-types
-      item: {
-        type: Ticker
-        balance: Balance<AnyCurrencyType>
-        staked: boolean
-        tokenAccount?: string
-      }
+      item: Balance<AnyCurrencyType>
     }) => {
-      return (
-        <TokenListItem
-          ticker={token.type}
-          balance={token.balance}
-          staked={token.staked}
-          tokenAccount={token.tokenAccount}
-        />
-      )
+      return <TokenListItem balance={token} />
     },
     [],
   )
@@ -111,16 +59,8 @@ const AccountTokenList = ({ loading = false, onLayout }: Props) => {
     )
   }, [loading, updatingTokens])
 
-  const keyExtractor = useCallback((item: Token | string) => {
-    if (typeof item === 'string') {
-      return item
-    }
-    const currencyToken = item as Token
-
-    if (currencyToken.staked) {
-      return [currencyToken.type, 'staked'].join('-')
-    }
-    return currencyToken.type
+  const keyExtractor = useCallback((item: Balance<AnyCurrencyType>) => {
+    return item.type.ticker
   }, [])
 
   const contentContainerStyle = useMemo(
@@ -132,8 +72,7 @@ const AccountTokenList = ({ loading = false, onLayout }: Props) => {
 
   return (
     <BottomSheetFlatList
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      data={tokens as any}
+      data={tokens}
       numColumns={2}
       columnWrapperStyle={{
         flexDirection: 'column',

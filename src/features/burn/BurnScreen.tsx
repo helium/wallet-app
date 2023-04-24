@@ -95,7 +95,7 @@ const BurnScreen = () => {
     floatToBalance,
     dcToNetworkTokens,
     networkTokensToDc,
-    networkBalance,
+    hntBalance: networkBalance,
     solBalance,
     dcBalance,
   } = useBalance()
