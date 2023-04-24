@@ -5,7 +5,6 @@ import Text from '@components/Text'
 import TextTransform from '@components/TextTransform'
 import Box from '@components/Box'
 import { Theme } from '@theme/theme'
-import { useAppStorage } from '@storage/AppStorageProvider'
 import { useTranslation } from 'react-i18next'
 import { useBalance } from '../../utils/Balance'
 
@@ -24,53 +23,29 @@ const AccountTokenBalance = ({
   const {
     dcBalance,
     mobileBalance,
-    mobileSolBalance,
     iotBalance,
-    iotSolBalance,
     solBalance,
-    networkBalance,
-    networkStakedBalance,
-    secBalance,
-    dcReceivedBalance,
+    hntBalance,
+    dcEscrowBalance,
   } = useBalance()
   const { t } = useTranslation()
-
-  const { l1Network } = useAppStorage()
 
   const balance = useMemo(() => {
     switch (ticker) {
       default:
       case 'HNT': {
-        if (networkBalance && networkStakedBalance)
-          return networkBalance.plus(networkStakedBalance)
-
-        if (networkBalance) return networkBalance
-        return networkStakedBalance
+        return hntBalance
       }
       case 'MOBILE':
-        return l1Network === 'solana' ? mobileSolBalance : mobileBalance
+        return mobileBalance
       case 'IOT':
-        return l1Network === 'solana' ? iotSolBalance : iotBalance
+        return iotBalance
       case 'SOL':
         return solBalance
       case 'DC':
         return dcBalance
-      case 'HST':
-        return secBalance
     }
-  }, [
-    l1Network,
-    dcBalance,
-    mobileBalance,
-    mobileSolBalance,
-    networkBalance,
-    networkStakedBalance,
-    secBalance,
-    solBalance,
-    iotBalance,
-    iotSolBalance,
-    ticker,
-  ])
+  }, [dcBalance, mobileBalance, hntBalance, solBalance, iotBalance, ticker])
 
   const tokenDetails = useMemo(() => {
     if (ticker !== 'DC' || !showTicker) return
@@ -79,12 +54,12 @@ const AccountTokenBalance = ({
       <Box>
         <Text variant="body1" color="secondaryText" textAlign="center">
           {t('accountsScreen.receivedBalance', {
-            amount: dcReceivedBalance?.toString(2, { showTicker: false }),
+            amount: dcEscrowBalance?.toString(2, { showTicker: false }),
           })}
         </Text>
       </Box>
     )
-  }, [ticker, showTicker, t, dcReceivedBalance])
+  }, [ticker, showTicker, t, dcEscrowBalance])
 
   return (
     <Box flexDirection="row" justifyContent="center" {...boxProps}>

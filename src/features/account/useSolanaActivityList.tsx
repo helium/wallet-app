@@ -2,7 +2,6 @@ import { Ticker } from '@helium/currency'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Mints } from '@utils/constants'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
 import { RootState } from '../../store/rootReducer'
 import { getTxns } from '../../store/slices/solanaSlice'
@@ -21,13 +20,10 @@ export default ({
 }) => {
   const [now, setNow] = useState(new Date())
   const dispatch = useAppDispatch()
-  const { l1Network } = useAppStorage()
   const { anchorProvider } = useSolana()
   const solanaActivity = useSelector(
     (state: RootState) => state.solana.activity,
   )
-
-  const isSolana = useMemo(() => l1Network === 'solana', [l1Network])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -38,7 +34,7 @@ export default ({
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!account?.address || !isSolana || !anchorProvider) return
+      if (!account?.address || !anchorProvider) return
       dispatch(
         getTxns({
           account,
@@ -50,10 +46,10 @@ export default ({
       )
     }, 5000) // Every 5 seconds update the head of the list
     return () => clearInterval(interval)
-  }, [account, dispatch, isSolana, ticker, anchorProvider])
+  }, [account, dispatch, ticker, anchorProvider])
 
   useEffect(() => {
-    if (!account?.address || !isSolana || !anchorProvider) return
+    if (!account?.address || !anchorProvider) return
 
     dispatch(
       getTxns({
@@ -64,10 +60,10 @@ export default ({
         anchorProvider,
       }),
     )
-  }, [account, dispatch, filter, isSolana, ticker, anchorProvider])
+  }, [account, dispatch, filter, ticker, anchorProvider])
 
   const requestMore = useCallback(() => {
-    if (!account?.address || !isSolana || !anchorProvider) return
+    if (!account?.address || !anchorProvider) return
 
     dispatch(
       getTxns({
@@ -78,7 +74,7 @@ export default ({
         anchorProvider,
       }),
     )
-  }, [account, dispatch, isSolana, ticker, anchorProvider])
+  }, [account, dispatch, ticker, anchorProvider])
 
   const data = useMemo(() => {
     if (!account?.solanaAddress || !solanaActivity.data[account.solanaAddress])

@@ -7,6 +7,7 @@ import reducer from './rootReducer'
 import { walletRestApi } from './slices/walletRestApi'
 import { solanaStatusApi } from './slices/solanaStatusApi'
 import { name as solanaSliceName } from './slices/solanaSlice'
+import { name as balancesSliceName } from './slices/balancesSlice'
 import Reactotron from '../../ReactotronConfig'
 
 const enhancers = []
@@ -17,7 +18,7 @@ if (Reactotron.createEnhancer && __DEV__) {
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  blacklist: [solanaStatusApi.reducerPath, solanaSliceName],
+  blacklist: [solanaStatusApi.reducerPath, solanaSliceName, balancesSliceName],
 }
 
 const persistedReducer = persistReducer(persistConfig, reducer)

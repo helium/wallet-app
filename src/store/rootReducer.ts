@@ -10,6 +10,9 @@ import {
   walletRestApi,
 } from './slices/walletRestApi'
 import solanaReducer, { name as solanaSliceName } from './slices/solanaSlice'
+import balancesReducer, {
+  name as balancesSliceName,
+} from './slices/balancesSlice'
 import collectablesReducer, {
   name as collectablesSliceName,
 } from './slices/collectablesSlice'
@@ -26,6 +29,12 @@ const solanaConfig = {
   blacklist: ['payment'],
 }
 
+const balancesConfig = {
+  key: balancesSliceName,
+  storage: AsyncStorage,
+  blacklist: ['balancesLoading'],
+}
+
 const walletRestConfig = {
   key: walletRestApi.reducerPath,
   storage: AsyncStorage,
@@ -36,6 +45,7 @@ const reducer = combineReducers({
   [solanaStatusApi.reducerPath]: solanaStatusReducer,
   [collectablesSliceName]: collectablesReducer,
   [solanaSliceName]: persistReducer(solanaConfig, solanaReducer),
+  [balancesSliceName]: persistReducer(balancesConfig, balancesReducer),
   [authSliceName]: authReducer,
   [walletRestApi.reducerPath]: persistReducer(
     walletRestConfig,

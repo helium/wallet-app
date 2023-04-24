@@ -83,7 +83,7 @@ const SwapScreen = () => {
   >()
   const [networkError, setNetworkError] = useState<undefined | string>()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const { networkTokensToDc, networkBalance, solBalance } = useBalance()
+  const { networkTokensToDc, hntBalance, solBalance } = useBalance()
   const { showOKCancelAlert } = useAlert()
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const {
@@ -127,7 +127,7 @@ const SwapScreen = () => {
   const insufficientTokensToSwap = useMemo(() => {
     if (
       youPayTokenType === Tokens.HNT &&
-      networkBalance.floatBalance < 0.00000001
+      (hntBalance?.floatBalance || 0) < 0.00000001
     ) {
       return true
     }
@@ -137,7 +137,7 @@ const SwapScreen = () => {
       !(price && price > 0) &&
       youPayTokenAmount > 0
     )
-  }, [networkBalance, price, youPayTokenAmount, youPayTokenType])
+  }, [hntBalance, price, youPayTokenAmount, youPayTokenType])
 
   const showError = useMemo(() => {
     if (hasRecipientError) return t('generic.notValidSolanaAddress')
@@ -168,7 +168,13 @@ const SwapScreen = () => {
   }, [])
 
   useAsync(async () => {
-    if (!currentAccount?.solanaAddress || !anchorProvider || !connection) return
+    if (
+      !currentAccount?.solanaAddress ||
+      !anchorProvider ||
+      !connection ||
+      !solBalance
+    )
+      return
 
     const toMint = new PublicKey(Mints[youReceiveTokenType])
     let fee = TXN_FEE_IN_SOL

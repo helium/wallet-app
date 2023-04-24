@@ -1,96 +1,47 @@
-import React, { useMemo, useState } from 'react'
-import { useAsync } from 'react-async-hook'
-import { useTranslation } from 'react-i18next'
-import { NetTypes } from '@helium/address'
+import React, { useMemo } from 'react'
 import { Ticker } from '@helium/currency'
 import Text, { TextProps } from '@components/Text'
-import * as AccountUtils from '../../utils/accountUtils'
 import { useBalance } from '../../utils/Balance'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { locale } from '../../utils/i18n'
 
 type Props = {
   ticker: Ticker | 'ALL'
-  staked?: boolean
 } & TextProps
 
-const AccountTokenCurrencyBalance = ({
-  ticker,
-  staked = false,
-  ...textProps
-}: Props) => {
-  const { t } = useTranslation()
-  const [balanceString, setBalanceString] = useState('')
-  const { currentAccount } = useAccountStorage()
-
-  const accountNetType = useMemo(
-    () => AccountUtils.accountNetType(currentAccount?.address),
-    [currentAccount],
-  )
-
+const AccountTokenCurrencyBalance = ({ ticker, ...textProps }: Props) => {
   const {
-    toCurrencyString,
-    oraclePrice,
-    dcBalance,
-    networkBalance,
-    solBalance,
-    networkStakedBalance,
-    mobileBalance,
-    iotBalance,
-    totalBalance,
+    formattedIotValue,
+    formattedMobileValue,
+    formattedSolValue,
+    formattedDcValue,
+    formattedHntValue,
+    totalValue,
   } = useBalance()
 
-  useAsync(async () => {
-    if (accountNetType !== NetTypes.MAINNET) {
-      setBalanceString(t('accountView.testnetTokens'))
-      return
-    }
-
+  const balanceString = useMemo(() => {
     switch (ticker) {
       case 'ALL':
-        totalBalance().then(setBalanceString)
-        break
+        return totalValue
       case 'HNT':
-        toCurrencyString(
-          networkStakedBalance
-            ? networkBalance?.plus(networkStakedBalance)
-            : networkBalance,
-        ).then(setBalanceString)
-        break
+        return formattedHntValue
       case 'SOL':
-        toCurrencyString(solBalance, 'SOL').then(setBalanceString)
-        break
-      case 'DC': {
-        const balance = dcBalance
-          ?.toUsd(oraclePrice)
-          .floatBalance.toLocaleString(locale, { maximumFractionDigits: 2 })
-        setBalanceString(
-          `$${balance || '0.00'} • ${t('accountView.nonTransferable')}`,
-        )
-        break
-      }
+        return formattedSolValue
+      case 'DC':
+        return formattedDcValue
       case 'MOBILE':
-        toCurrencyString(mobileBalance, 'MOBILE').then(setBalanceString)
-        break
+        return formattedMobileValue
       case 'IOT':
-        toCurrencyString(iotBalance, 'IOT').then(setBalanceString)
-        break
-      case 'HST':
-        setBalanceString(t('accountView.securityTokens'))
-        break
+        return formattedIotValue
       default:
-        setBalanceString('-')
+        return '-'
     }
   }, [
-    accountNetType,
-    dcBalance,
-    networkBalance,
-    networkStakedBalance,
-    oraclePrice,
-    staked,
-    t,
-    toCurrencyString,
+    formattedDcValue,
+    formattedHntValue,
+    formattedIotValue,
+    formattedMobileValue,
+    formattedSolValue,
     ticker,
+    totalValue,
   ])
 
   return (
