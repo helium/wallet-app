@@ -110,7 +110,7 @@ const HNTKeyboardSelector = forwardRef(
     const {
       oracleDateTime,
       floatToBalance,
-      hntBalance: networkBalance,
+      hntBalance,
       mobileBalance,
       iotBalance,
       dcBalance,
@@ -130,24 +130,17 @@ const HNTKeyboardSelector = forwardRef(
         case 'DC':
           return dcBalance
         default:
-          return networkBalance
+          return hntBalance
       }
-    }, [
-      dcBalance,
-      iotBalance,
-      mobileBalance,
-      networkBalance,
-      ticker,
-      solBalance,
-    ])
+    }, [dcBalance, iotBalance, mobileBalance, hntBalance, ticker, solBalance])
 
     const isDntToken = useMemo(() => {
       return l1Network === 'solana' && (ticker === 'IOT' || ticker === 'MOBILE')
     }, [l1Network, ticker])
 
     const balanceForTicker = useMemo(
-      () => (ticker === 'HNT' ? networkBalance : getHeliumBalance),
-      [getHeliumBalance, networkBalance, ticker],
+      () => (ticker === 'HNT' ? hntBalance : getHeliumBalance),
+      [getHeliumBalance, hntBalance, ticker],
     )
 
     const snapPoints = useMemo(() => {
@@ -251,7 +244,7 @@ const HNTKeyboardSelector = forwardRef(
     const [maxEnabled, setMaxEnabled] = useState(false)
 
     const handleSetMax = useCallback(() => {
-      if (!networkBalance || !getHeliumBalance || !networkFee) return
+      if (!hntBalance || !getHeliumBalance || !networkFee) return
 
       const currentAmount = getNextPayments()
         .filter((_v, index) => index !== paymentIndex || 0) // Remove the payment being updated
@@ -269,7 +262,7 @@ const HNTKeyboardSelector = forwardRef(
 
       let maxBalance: Balance<NetworkTokens | TestNetworkTokens> | undefined
       if (ticker === 'HNT') {
-        maxBalance = networkBalance.minus(currentAmount)
+        maxBalance = hntBalance.minus(currentAmount)
         if (l1Network === 'helium') {
           maxBalance = maxBalance.minus(networkFee)
         }
@@ -295,7 +288,7 @@ const HNTKeyboardSelector = forwardRef(
       setMaxEnabled((m) => !m)
     }, [
       isDntToken,
-      networkBalance,
+      hntBalance,
       getHeliumBalance,
       networkFee,
       getNextPayments,
@@ -441,12 +434,7 @@ const HNTKeyboardSelector = forwardRef(
     const hasSufficientBalance = useMemo(() => {
       if (!payer) return true
 
-      if (
-        !networkFee ||
-        !valueAsBalance ||
-        !networkBalance ||
-        !getHeliumBalance
-      ) {
+      if (!networkFee || !valueAsBalance || !hntBalance || !getHeliumBalance) {
         return false
       }
 
@@ -454,26 +442,24 @@ const HNTKeyboardSelector = forwardRef(
         if (ticker !== 'HNT') {
           return getHeliumBalance.minus(valueAsBalance).integerBalance >= 0
         }
-        return networkBalance.minus(valueAsBalance).integerBalance >= 0
+        return hntBalance.minus(valueAsBalance).integerBalance >= 0
       }
 
       if (ticker === 'MOBILE') {
         // If paying with mobile on helium L1, they need to have enough mobile to cover the payment
         // and enough hnt to cover the fee
-        const hasEnoughHnt =
-          networkBalance.minus(networkFee).integerBalance >= 0
+        const hasEnoughHnt = hntBalance.minus(networkFee).integerBalance >= 0
         const hasEnoughMobile =
           getHeliumBalance.minus(valueAsBalance).integerBalance >= 0
         return hasEnoughHnt && hasEnoughMobile
       }
       return (
-        networkBalance.minus(networkFee).minus(valueAsBalance).integerBalance >=
-        0
+        hntBalance.minus(networkFee).minus(valueAsBalance).integerBalance >= 0
       )
     }, [
       getHeliumBalance,
       l1Network,
-      networkBalance,
+      hntBalance,
       networkFee,
       payer,
       ticker,

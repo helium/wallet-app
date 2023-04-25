@@ -25,7 +25,7 @@ const AccountTokenBalance = ({
     mobileBalance,
     iotBalance,
     solBalance,
-    hntBalance: networkBalance,
+    hntBalance,
     dcEscrowBalance,
   } = useBalance()
   const { t } = useTranslation()
@@ -34,7 +34,7 @@ const AccountTokenBalance = ({
     switch (ticker) {
       default:
       case 'HNT': {
-        return networkBalance
+        return hntBalance
       }
       case 'MOBILE':
         return mobileBalance
@@ -45,7 +45,7 @@ const AccountTokenBalance = ({
       case 'DC':
         return dcBalance
     }
-  }, [dcBalance, mobileBalance, networkBalance, solBalance, iotBalance, ticker])
+  }, [dcBalance, mobileBalance, hntBalance, solBalance, iotBalance, ticker])
 
   const tokenDetails = useMemo(() => {
     if (ticker !== 'DC' || !showTicker) return

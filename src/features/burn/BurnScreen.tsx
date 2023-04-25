@@ -95,7 +95,7 @@ const BurnScreen = () => {
     floatToBalance,
     dcToNetworkTokens,
     networkTokensToDc,
-    hntBalance: networkBalance,
+    hntBalance,
     solBalance,
     dcBalance,
   } = useBalance()
@@ -319,10 +319,8 @@ const BurnScreen = () => {
       return true
     }
 
-    return (
-      networkBalance && networkBalance.floatBalance < feeAsTokens.floatBalance
-    )
-  }, [amountBalance, dcBalance, feeAsTokens, networkBalance, solBalance])
+    return hntBalance && hntBalance.floatBalance < feeAsTokens.floatBalance
+  }, [amountBalance, dcBalance, feeAsTokens, hntBalance, solBalance])
 
   const errors = useMemo(() => {
     const errStrings: string[] = []

@@ -83,11 +83,7 @@ const SwapScreen = () => {
   >()
   const [networkError, setNetworkError] = useState<undefined | string>()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const {
-    networkTokensToDc,
-    hntBalance: networkBalance,
-    solBalance,
-  } = useBalance()
+  const { networkTokensToDc, hntBalance, solBalance } = useBalance()
   const { showOKCancelAlert } = useAlert()
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const {
@@ -131,7 +127,7 @@ const SwapScreen = () => {
   const insufficientTokensToSwap = useMemo(() => {
     if (
       youPayTokenType === Tokens.HNT &&
-      (networkBalance?.floatBalance || 0) < 0.00000001
+      (hntBalance?.floatBalance || 0) < 0.00000001
     ) {
       return true
     }
@@ -141,7 +137,7 @@ const SwapScreen = () => {
       !(price && price > 0) &&
       youPayTokenAmount > 0
     )
-  }, [networkBalance, price, youPayTokenAmount, youPayTokenType])
+  }, [hntBalance, price, youPayTokenAmount, youPayTokenType])
 
   const showError = useMemo(() => {
     if (hasRecipientError) return t('generic.notValidSolanaAddress')
