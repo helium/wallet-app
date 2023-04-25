@@ -56,7 +56,7 @@ const TokenListItem = ({ balance }: Props) => {
               color="primaryText"
               maxFontSizeMultiplier={1.3}
             >
-              {balanceToDisplay}
+              {`${balanceToDisplay} `}
             </Text>
             <Text
               variant="body2Medium"
