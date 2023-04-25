@@ -84,7 +84,7 @@ const useBalanceHook = () => {
   )
 
   const dcEscrowTokenAccount = useTokenAccount(
-    tokens?.[solanaAddress]?.dcEscrow.tokenAccount
+    tokens?.[solanaAddress]?.dcEscrow?.tokenAccount
       ? new PublicKey(tokens[solanaAddress].dcEscrow.tokenAccount)
       : undefined,
   )
