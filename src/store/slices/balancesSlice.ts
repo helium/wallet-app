@@ -4,16 +4,22 @@ import { Cluster } from '@solana/web3.js'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Balances } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
-import { getTokenPrices } from '../../utils/walletApi'
+import { getBalanceHistory, getTokenPrices } from '../../utils/walletApiV2'
 import { Prices } from '../../types/balance'
+import { AccountBalance } from '../../generated/graphql'
 
 type BalancesByWallet = Record<string, Balances>
 type BalancesByCluster = Record<Cluster, BalancesByWallet>
+
+type BalanceHistoryByCurrency = Record<string, AccountBalance[]>
+type BalanceHistoryByWallet = Record<string, BalanceHistoryByCurrency>
+type BalanceHistoryByCluster = Record<Cluster, BalanceHistoryByWallet>
 
 export type BalancesState = {
   tokens: BalancesByCluster
   balancesLoading?: boolean
   tokenPrices?: Prices
+  balanceHistory: BalanceHistoryByCluster
 }
 
 const initialBalances = {
@@ -26,6 +32,11 @@ const initialBalances = {
 
 const initialState: BalancesState = {
   tokens: {
+    'mainnet-beta': {},
+    devnet: {},
+    testnet: {},
+  },
+  balanceHistory: {
     'mainnet-beta': {},
     devnet: {},
     testnet: {},
@@ -53,6 +64,25 @@ export const readTokenPrices = createAsyncThunk(
   'balances/readTokenPrices',
   async ({ currency }: { currency: string }) => {
     return getTokenPrices(currency)
+  },
+)
+
+export const readBalanceHistory = createAsyncThunk(
+  'balances/readBalanceHistory ',
+  async ({
+    currency,
+    cluster,
+    solanaAddress,
+  }: {
+    currency: string
+    cluster: Cluster
+    solanaAddress: string
+  }) => {
+    return getBalanceHistory({
+      currency,
+      solanaAddress,
+      cluster,
+    })
   },
 )
 
@@ -127,6 +157,16 @@ const balancesSlice = createSlice({
       state.tokenPrices['helium-iot'][currency] =
         action.payload['helium-iot'][currency]
       state.tokenPrices.solana[currency] = action.payload.solana[currency]
+    })
+    builder.addCase(readBalanceHistory.fulfilled, (state, action) => {
+      const { cluster, solanaAddress: address, currency } = action.meta.arg
+      const { payload } = action
+
+      if (!state.balanceHistory[cluster][address]) {
+        state.balanceHistory[cluster][address] = {}
+      }
+
+      state.balanceHistory[cluster][address][currency] = payload
     })
   },
 })

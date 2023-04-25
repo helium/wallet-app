@@ -10,6 +10,9 @@ export const usePollTokenPrices = () => {
   const apiToken = useSelector((state: RootState) => state.auth.apiToken)
   const initialFetch = useRef(false)
   const dispatch = useAppDispatch()
+  const tokenPrices = useSelector(
+    (state: RootState) => state.balances.tokenPrices,
+  )
 
   const getTokenPrices = useCallback(() => {
     if (!currency || !apiToken) return
@@ -33,4 +36,6 @@ export const usePollTokenPrices = () => {
     }, 5 * 60000) // Every 5 mins
     return () => clearInterval(interval)
   }, [getTokenPrices])
+
+  return { tokenPrices }
 }

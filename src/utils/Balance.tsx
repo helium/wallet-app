@@ -40,16 +40,15 @@ import { useSolana } from '../solana/SolanaProvider'
 import { balancesSlice, readTokenBalances } from '../store/slices/balancesSlice'
 import { getEscrowTokenAccount } from './solanaUtils'
 import { usePollTokenPrices } from './usePollTokenPrices'
+import { useBalanceHistory } from './useBalanceHistory'
+import { AccountBalance } from '../types/balance'
 
 export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
 const useBalanceHook = () => {
   const { currentAccount } = useAccountStorage()
   const { cluster, anchorProvider } = useSolana()
-  const tokenPrices = useSelector(
-    (state: RootState) => state.balances.tokenPrices,
-  )
-
-  usePollTokenPrices()
+  const { tokenPrices } = usePollTokenPrices()
+  const { balanceHistory } = useBalanceHistory()
 
   const solanaAddress = useMemo(
     () => currentAccount?.solanaAddress || '',
@@ -473,6 +472,7 @@ const useBalanceHook = () => {
   )
 
   return {
+    balanceHistory,
     bonesToBalance,
     dcBalance: balances.dc,
     dcReceivedBalance,
@@ -502,6 +502,7 @@ const useBalanceHook = () => {
 }
 
 const initialState = {
+  balanceHistory: { loading: false, balances: [] as AccountBalance[] },
   bonesToBalance: () => new Balance(0, CurrencyType.networkToken),
   dcToNetworkTokens: () => undefined,
   formattedHntValue: '',

@@ -11,7 +11,6 @@ import { useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import SharedGroupPreferences from 'react-native-shared-group-preferences'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { toUpper } from 'lodash'
 import BottomSheet from '@gorhom/bottom-sheet'
 import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
 import { useTranslation } from 'react-i18next'
@@ -34,8 +33,6 @@ import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 import {
   AccountBalance as AccountBalanceType,
-  CurrencyType,
-  useAccountBalanceHistoryQuery,
   useAccountLazyQuery,
   useAccountQuery,
 } from '../../generated/graphql'
@@ -49,7 +46,6 @@ import AccountView from './AccountView'
 import { OnboardingOpt } from '../onboarding/onboardingTypes'
 import AccountBalanceChart from './AccountBalanceChart'
 import { RootNavigationProp } from '../../navigation/rootTypes'
-import { useGetBalanceHistoryQuery } from '../../store/slices/walletRestApi'
 import { ITEM_HEIGHT } from './TokenListItem'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import AccountActionBar from './AccountActionBar'
@@ -59,6 +55,7 @@ import { appSlice } from '../../store/slices/appSlice'
 import { RootState } from '../../store/rootReducer'
 import { withTransactionDetail } from './TransactionDetail'
 import { useSolana } from '../../solana/SolanaProvider'
+import { useBalance } from '../../utils/Balance'
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
@@ -71,6 +68,7 @@ const AccountsScreen = () => {
   const [pageHeight, setPageHeight] = useLayoutHeight(0)
   const { openedNotification } = useNotificationStorage()
   const { locked, l1Network, currency, updateCurrency } = useAppStorage()
+  const { balanceHistory } = useBalance()
   const { cluster } = useSolana()
   const { reset } = useOnboarding()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
@@ -155,50 +153,18 @@ const AccountsScreen = () => {
     fetchPolicy: 'cache-and-network',
   })
 
-  const { data } = useAccountBalanceHistoryQuery({
-    variables: {
-      address: currentAccount?.address || '',
-      type: toUpper(currency) as CurrencyType,
-    },
-    skip: !currentAccount?.address,
-    pollInterval: 30000,
-  })
-
-  const { currentData: solChainBalanceHistory } = useGetBalanceHistoryQuery(
-    {
-      address: currentAccount?.solanaAddress || '',
-      cluster,
-      currency,
-    },
-    {
-      skip: !currentAccount?.address,
-      refetchOnFocus: true,
-      refetchOnMountOrArgChange: true,
-      refetchOnReconnect: true,
-    },
-  )
-
   const showChart = useMemo(() => {
-    if (l1Network === 'helium') {
-      return (data?.accountBalanceHistory?.length || 0) >= 2
-    }
-    return (solChainBalanceHistory?.length || 0) >= 2
-  }, [data, l1Network, solChainBalanceHistory])
+    return balanceHistory?.length >= 2
+  }, [balanceHistory])
 
   const chartValues = useMemo(() => {
     // Need to have at least a two days of data to display
     if (!showChart) return
 
-    if (l1Network === 'helium' && data) {
-      return data.accountBalanceHistory?.map((bh) => {
-        return { y: bh.balance, info: bh }
-      })
-    }
-
-    return solChainBalanceHistory?.map((bh) => {
+    return balanceHistory?.map((bh) => {
       return { y: bh.balance, info: bh }
     })
-  }, [data, l1Network, showChart, solChainBalanceHistory])
+  }, [balanceHistory, showChart])
 
   useAppear(() => {
     if (!currentAccount?.address) return
