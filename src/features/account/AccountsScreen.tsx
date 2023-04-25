@@ -419,7 +419,7 @@ const AccountsScreen = () => {
         animatedPosition={listAnimatedPos}
         handleIndicatorStyle={handleIndicatorStyle}
       >
-        <AccountTokenList loading={accountLoading} />
+        <AccountTokenList />
       </BottomSheet>
       <BlurActionSheet
         title={t('accountsScreen.chooseCurrency')}
