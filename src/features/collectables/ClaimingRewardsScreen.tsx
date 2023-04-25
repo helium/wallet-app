@@ -17,11 +17,11 @@ import { useBalance } from '@utils/Balance'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { RootState } from '../../store/rootReducer'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { RootNavigationProp } from '../../navigation/rootTypes'
+import { TabBarNavigationProp } from '../../navigation/rootTypes'
 
 const ClaimingRewardsScreen = () => {
   const { currentAccount } = useAccountStorage()
-  const rootNav = useNavigation<RootNavigationProp>()
+  const navigation = useNavigation<TabBarNavigationProp>()
   const { solBalance } = useBalance()
   const { bottom } = useSafeAreaInsets()
 
@@ -31,8 +31,12 @@ const ClaimingRewardsScreen = () => {
   )
 
   const onReturn = useCallback(() => {
-    rootNav.navigate('TabBarNavigator')
-  }, [rootNav])
+    // Reset Collectables stack to first screen
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Collectables' }],
+    })
+  }, [navigation])
 
   if (!currentAccount) {
     return null

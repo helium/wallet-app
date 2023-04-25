@@ -3,7 +3,11 @@ import {
   createMaterialTopTabNavigator,
   MaterialTopTabNavigationOptions,
 } from '@react-navigation/material-top-tabs'
-import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
+import {
+  Edge,
+  useSafeAreaInsets,
+  initialWindowMetrics,
+} from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import { RouteProp } from '@react-navigation/native'
 import { SvgProps } from 'react-native-svg'
@@ -46,13 +50,21 @@ function CollectablesTabNavigator() {
     (state: RootState) => state.app.showCollectablesTabBar,
   )
 
+  const realTop = useMemo(
+    () =>
+      top === 0 && initialWindowMetrics?.insets
+        ? initialWindowMetrics?.insets.top
+        : top,
+    [top],
+  )
+
   const animatedStyles = useAnimatedStyle(() => {
     return {
       flex: 1,
       marginTop: withSpring(
         showCollectablesTabBar
           ? 0
-          : -(headerHeight + MATERIAL_TAB_HEIGHT + top * 2),
+          : -(headerHeight + MATERIAL_TAB_HEIGHT + realTop * 2),
         {
           damping: 100,
           mass: 0.5,
