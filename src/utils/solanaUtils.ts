@@ -59,6 +59,7 @@ import {
   sendAndConfirmWithRetry,
   IOT_MINT,
   DC_MINT,
+  MOBILE_MINT,
 } from '@helium/spl-utils'
 import { AnchorProvider, BN } from '@coral-xyz/anchor'
 import * as tm from '@helium/treasury-management-sdk'
@@ -68,6 +69,8 @@ import {
 } from '@helium/data-credits-sdk'
 import { getPendingRewards } from '@helium/distributor-oracle'
 import { init } from '@helium/lazy-distributor-sdk'
+import { PROGRAM_ID as FanoutProgramId } from '@helium/fanout-sdk'
+import { PROGRAM_ID as VoterStakeRegistryProgramId } from '@helium/voter-stake-registry-sdk'
 import { getKeypair, getSessionKey } from '../storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
 import sleep from './sleep'
@@ -81,6 +84,49 @@ import {
 import * as Logger from './logger'
 import { WrappedConnection } from './WrappedConnection'
 import { IOT_LAZY_KEY, Mints, MOBILE_LAZY_KEY } from './constants'
+
+const govProgramId = new PublicKey(
+  'hgovkRU6Ghe1Qoyb54HdSLdqN7VtxaifBzRmh9jtd3S',
+)
+
+export const registrarKey = (realm: PublicKey, realmGoverningMint: PublicKey) =>
+  PublicKey.findProgramAddressSync(
+    [
+      realm.toBuffer(),
+      Buffer.from('registrar', 'utf-8'),
+      realmGoverningMint.toBuffer(),
+    ],
+    VoterStakeRegistryProgramId,
+  )
+
+export const registrarCollectionKey = (registrar: PublicKey) =>
+  PublicKey.findProgramAddressSync(
+    [Buffer.from('collection', 'utf-8'), registrar.toBuffer()],
+    VoterStakeRegistryProgramId,
+  )
+
+export function fanoutKey(name: string): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from('fanout', 'utf-8'), Buffer.from(name, 'utf-8')],
+    FanoutProgramId,
+  )
+}
+
+export function membershipVoucherKey(mint: PublicKey): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from('fanout_voucher', 'utf-8'), mint.toBuffer()],
+    FanoutProgramId,
+  )
+}
+
+export function membershipCollectionKey(
+  fanout: PublicKey,
+): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from('collection', 'utf-8'), fanout.toBuffer()],
+    FanoutProgramId,
+  )
+}
 
 export const SolanaConnection = (sessionKey: string) =>
   ({
@@ -1004,6 +1050,50 @@ export const transferCompressedCollectable = async (
   }
 }
 
+export const heliumNFTs = (): string[] => {
+  // HST collection ID
+  const fanoutMint = membershipCollectionKey(fanoutKey('HST')[0])
+
+  const realmHNT = PublicKey.findProgramAddressSync(
+    [Buffer.from('governance', 'utf-8'), Buffer.from('Helium', 'utf-8')],
+    govProgramId,
+  )[0]
+
+  const realmIOT = PublicKey.findProgramAddressSync(
+    [Buffer.from('governance', 'utf-8'), Buffer.from('Helium IOT', 'utf-8')],
+    govProgramId,
+  )[0]
+
+  const realmMobile = PublicKey.findProgramAddressSync(
+    [Buffer.from('governance', 'utf-8'), Buffer.from('Helium Mobile', 'utf-8')],
+    govProgramId,
+  )[0]
+
+  const hntRegistrarKey = registrarKey(realmHNT, HNT_MINT)
+
+  const iotRegistrarKey = registrarKey(realmIOT, IOT_MINT)
+
+  const mobileRegistrarKey = registrarKey(realmMobile, MOBILE_MINT)
+
+  // veHNT Collecion ID
+  const hntRegistrarCollectionKey = registrarCollectionKey(hntRegistrarKey[0])
+
+  // veIOT Collecion ID
+  const iotRegistrarCollectionKey = registrarCollectionKey(iotRegistrarKey[0])
+
+  // veMobile Collecion ID
+  const mobileRegistrarCollectionKey = registrarCollectionKey(
+    mobileRegistrarKey[0],
+  )
+
+  return [
+    fanoutMint[0].toBase58(),
+    hntRegistrarCollectionKey[0].toBase58(),
+    iotRegistrarCollectionKey[0].toBase58(),
+    mobileRegistrarCollectionKey[0].toBase58(),
+  ]
+}
+
 /**
  * Returns the account's NFTs
  * @param pubKey public key of the account
@@ -1011,11 +1101,15 @@ export const transferCompressedCollectable = async (
  * @returns NFTs
  */
 export const getNFTs = async (pubKey: PublicKey, metaplex: Metaplex) => {
+  const approvedNFTs = heliumNFTs()
+
   const collectables = (await metaplex
     .nfts()
     .findAllByOwner({ owner: pubKey })) as Metadata<JsonMetadata<string>>[]
 
-  return collectables
+  return collectables.filter((c) =>
+    approvedNFTs.includes(c.collection?.address.toBase58() || ''),
+  )
 }
 
 /**

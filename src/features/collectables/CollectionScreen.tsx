@@ -81,7 +81,7 @@ const CollectionScreen = () => {
     <BackScreen
       padding="none"
       headerBackgroundColor="primaryBackground"
-      title={`${collectables[0].json?.symbol} ${collectables.length}`}
+      title={`${collectables[0]?.symbol} ${collectables.length}`}
       headerTopMargin="l"
     >
       <ReAnimatedBox
