@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 import Balance, { AnyCurrencyType, Ticker } from '@helium/currency'
-import { times } from 'lodash'
+import { times, without } from 'lodash'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
@@ -32,7 +32,14 @@ const AccountTokenList = ({ loading = false, onLayout }: Props) => {
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
 
   const tokens = useMemo(() => {
-    return [hntBalance, mobileBalance, iotBalance, dcBalance, solBalance]
+    const allTokens = [
+      hntBalance,
+      mobileBalance,
+      iotBalance,
+      dcBalance,
+      solBalance,
+    ]
+    return without(allTokens, undefined) as Balance<AnyCurrencyType>[]
   }, [dcBalance, hntBalance, iotBalance, mobileBalance, solBalance])
 
   const renderItem = useCallback(

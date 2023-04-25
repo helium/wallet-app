@@ -112,38 +112,6 @@ const useBalanceHook = () => {
 
   const [fetchAccountData] = useAccountLazyQuery()
 
-  const balances = useMemo((): {
-    sol: Balance<SolTokens>
-    dc: Balance<DataCredits>
-    hnt: Balance<NetworkTokens>
-    mobile: Balance<MobileTokens>
-    iot: Balance<IotTokens>
-  } => {
-    const bals = tokens || {}
-    return {
-      sol: new Balance(
-        bals?.[solanaAddress]?.sol?.balance || 0,
-        CurrencyType.solTokens,
-      ),
-      dc: new Balance(
-        bals?.[solanaAddress]?.dc?.balance || 0,
-        CurrencyType.dataCredit,
-      ),
-      hnt: new Balance(
-        bals?.[solanaAddress]?.hnt?.balance || 0,
-        CurrencyType.networkToken,
-      ),
-      mobile: new Balance(
-        bals?.[solanaAddress]?.mobile?.balance || 0,
-        CurrencyType.mobile,
-      ),
-      iot: new Balance(
-        bals?.[solanaAddress]?.iot?.balance || 0,
-        CurrencyType.iot,
-      ),
-    }
-  }, [solanaAddress, tokens])
-
   const updateTokenBalance = useCallback(
     ({
       type,
@@ -376,56 +344,77 @@ const useBalanceHook = () => {
     },
     [convertToCurrency, currency, tokenPrices],
   )
-  const solValue = useMemo(() => {
+
+  const { result: tokenInfo } = useAsync(async () => {
+    const bals = tokens || {}
+    const balances = {
+      sol: new Balance(
+        bals?.[solanaAddress]?.sol?.balance || 0,
+        CurrencyType.solTokens,
+      ),
+      dc: new Balance(
+        bals?.[solanaAddress]?.dc?.balance || 0,
+        CurrencyType.dataCredit,
+      ),
+      hnt: new Balance(
+        bals?.[solanaAddress]?.hnt?.balance || 0,
+        CurrencyType.networkToken,
+      ),
+      mobile: new Balance(
+        bals?.[solanaAddress]?.mobile?.balance || 0,
+        CurrencyType.mobile,
+      ),
+      iot: new Balance(
+        bals?.[solanaAddress]?.iot?.balance || 0,
+        CurrencyType.iot,
+      ),
+    }
+
     const solPrice = tokenPrices?.solana?.[currency] || 0
     const solAmount = balances.sol.floatBalance
-    return solPrice * solAmount
-  }, [balances.sol.floatBalance, currency, tokenPrices?.solana])
+    const solValue = solPrice * solAmount
+    const formattedSolValue = await CurrencyFormatter.format(solValue, currency)
 
-  const hntValue = useMemo(() => {
     const hntPrice = tokenPrices?.helium?.[currency] || 0
     const hntAmount = balances.hnt.floatBalance
-    return hntPrice * hntAmount
-  }, [balances.hnt.floatBalance, currency, tokenPrices?.helium])
+    const hntValue = hntPrice * hntAmount
+    const formattedHntValue = await CurrencyFormatter.format(hntValue, currency)
 
-  const iotValue = useMemo(() => {
     const iotPrice = tokenPrices?.['helium-iot']?.[currency] || 0
     const iotAmount = balances.iot.floatBalance
-    return iotPrice * iotAmount
-  }, [balances.iot.floatBalance, currency, tokenPrices])
+    const iotValue = iotPrice * iotAmount
+    const formattedIotValue = await CurrencyFormatter.format(iotValue, currency)
 
-  const mobileValue = useMemo(() => {
     const mobilePrice = tokenPrices?.['helium-mobile']?.[currency] || 0
     const mobileAmount = balances.mobile.floatBalance
-    return mobilePrice * mobileAmount
-  }, [balances.mobile.floatBalance, currency, tokenPrices])
+    const mobileValue = mobilePrice * mobileAmount
+    const formattedMobileValue = await CurrencyFormatter.format(
+      mobileValue,
+      currency,
+    )
 
-  const { result: formattedMobileValue } = useAsync((): Promise<string> => {
-    return CurrencyFormatter.format(mobileValue, currency)
-  }, [mobileValue, currency])
-
-  const { result: formattedIotValue } = useAsync((): Promise<string> => {
-    return CurrencyFormatter.format(iotValue, currency)
-  }, [iotValue, currency])
-
-  const { result: formattedDcValue } = useAsync(() => {
     const usdValue = balances.dc?.toUsd(oraclePrice).floatBalance
-    return CurrencyFormatter.format(usdValue, 'usd')
-  }, [balances.dc, oraclePrice])
+    const formattedDcValue = await CurrencyFormatter.format(usdValue, 'usd')
 
-  const { result: formattedSolValue } = useAsync((): Promise<string> => {
-    return CurrencyFormatter.format(solValue, currency)
-  }, [solValue, currency])
+    const totalValue = await CurrencyFormatter.format(
+      solValue + hntValue + mobileValue + iotValue,
+      currency,
+    )
 
-  const { result: formattedHntValue } = useAsync((): Promise<string> => {
-    return CurrencyFormatter.format(hntValue, currency)
-  }, [hntValue, currency])
-
-  const { result: totalValue } = useAsync((): Promise<string> => {
-    const bal = solValue + hntValue + mobileValue + iotValue
-
-    return CurrencyFormatter.format(bal, currency)
-  }, [solValue, hntValue, mobileValue, iotValue, currency])
+    return {
+      balances,
+      formattedDcValue,
+      formattedHntValue,
+      formattedIotValue,
+      formattedMobileValue,
+      formattedSolValue,
+      hntValue,
+      iotValue,
+      mobileValue,
+      solValue,
+      totalValue,
+    }
+  }, [currency, currentAccount?.address, tokenPrices])
 
   const toCurrencyString = useCallback(
     (
@@ -474,27 +463,22 @@ const useBalanceHook = () => {
   return {
     balanceHistory,
     bonesToBalance,
-    dcBalance: balances.dc,
+    dcBalance: tokenInfo?.balances.dc,
     dcReceivedBalance,
     dcToNetworkTokens,
     floatToBalance,
-    formattedDcValue: formattedDcValue || '',
-    formattedHntValue: formattedHntValue || '',
-    formattedSolValue: formattedSolValue || '',
-    formattedIotValue: formattedIotValue || '',
-    formattedMobileValue: formattedMobileValue || '',
-    hntBalance: balances.hnt,
+    hntBalance: tokenInfo?.balances.hnt,
+    ...tokenInfo,
     intToBalance,
-    iotBalance: balances.iot,
-    mobileBalance: balances.mobile,
+    iotBalance: tokenInfo?.balances.iot,
+    mobileBalance: tokenInfo?.balances.mobile,
     networkTokensToDc,
     oracleDateTime,
     oraclePrice,
     solanaPrice,
-    solBalance: balances.sol,
+    solBalance: tokenInfo?.balances.sol,
     toCurrencyString,
     toPreferredCurrencyString,
-    totalValue,
     toUsd,
     updateVars,
     updating,
@@ -502,7 +486,7 @@ const useBalanceHook = () => {
 }
 
 const initialState = {
-  balanceHistory: { loading: false, balances: [] as AccountBalance[] },
+  balanceHistory: [] as AccountBalance[],
   bonesToBalance: () => new Balance(0, CurrencyType.networkToken),
   dcToNetworkTokens: () => undefined,
   formattedHntValue: '',
@@ -545,7 +529,12 @@ export const useBalance = () => useContext(BalanceContext)
 
 export const balanceToString = (
   balance?: Balance<
-    DataCredits | NetworkTokens | TestNetworkTokens | MobileTokens | IotTokens
+    | DataCredits
+    | NetworkTokens
+    | TestNetworkTokens
+    | MobileTokens
+    | IotTokens
+    | SolTokens
   >,
   opts?: { maxDecimalPlaces?: number; showTicker?: boolean },
 ) => {

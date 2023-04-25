@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
 import { useAppDispatch } from '../store/store'
 import { readTokenPrices } from '../store/slices/balancesSlice'
+import usePrevious from '../hooks/usePrevious'
 
 export const usePollTokenPrices = () => {
   const { currency } = useAppStorage()
+  const prevCurrency = usePrevious(currency)
   const apiToken = useSelector((state: RootState) => state.auth.apiToken)
-  const initialFetch = useRef(false)
   const dispatch = useAppDispatch()
   const tokenPrices = useSelector(
     (state: RootState) => state.balances.tokenPrices,
@@ -24,11 +25,10 @@ export const usePollTokenPrices = () => {
   }, [apiToken, currency, dispatch])
 
   useEffect(() => {
-    if (initialFetch.current) return
+    if (currency === prevCurrency) return
 
-    initialFetch.current = true
     getTokenPrices()
-  }, [apiToken, getTokenPrices])
+  }, [apiToken, currency, getTokenPrices, prevCurrency])
 
   useEffect(() => {
     const interval = setInterval(() => {

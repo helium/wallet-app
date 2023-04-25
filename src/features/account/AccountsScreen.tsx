@@ -56,6 +56,7 @@ import { RootState } from '../../store/rootReducer'
 import { withTransactionDetail } from './TransactionDetail'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useBalance } from '../../utils/Balance'
+import { currencyType as systemCurrencyType } from '../../utils/i18n'
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
@@ -318,7 +319,7 @@ const AccountsScreen = () => {
   const currencies = useCallback(() => {
     // Sort by selected currency first
     const sortedCurrencies = Object.keys(SUPPORTED_CURRENCIES).sort((a, b) => {
-      if (a === currency) return -1
+      if (a === currency || a === systemCurrencyType) return -1
       if (b === currency) return 1
       return 0
     })
