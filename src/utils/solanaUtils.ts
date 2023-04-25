@@ -184,9 +184,6 @@ export const readAccountBalances = async (
       case MOBILE_MINT.toBase58():
         balances.mobile = info
         break
-      default:
-        balances[accountData.mint.toBase58()] = info
-        break
     }
   })
 

@@ -23,13 +23,9 @@ import CurrencyFormatter from 'react-native-currency-format'
 import { useSelector } from 'react-redux'
 import { useAccount, useTokenAccount } from '@helium/helium-react-hooks'
 import { PublicKey } from '@solana/web3.js'
-import { AccountLayout } from '@solana/spl-token'
+import { Account, AccountLayout } from '@solana/spl-token'
 import { useAsync } from 'react-async-hook'
-import {
-  useAccountLazyQuery,
-  useAccountQuery,
-  useOracleDataLazyQuery,
-} from '../generated/graphql'
+import { useOracleDataLazyQuery } from '../generated/graphql'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
@@ -38,7 +34,6 @@ import { accountCurrencyType } from './accountUtils'
 import { decimalSeparator, groupSeparator } from './i18n'
 import { useSolana } from '../solana/SolanaProvider'
 import { balancesSlice, readTokenBalances } from '../store/slices/balancesSlice'
-import { getEscrowTokenAccount } from './solanaUtils'
 import { usePollTokenPrices } from './usePollTokenPrices'
 import { useBalanceHistory } from './useBalanceHistory'
 import { AccountBalance } from '../types/balance'
@@ -89,6 +84,12 @@ const useBalanceHook = () => {
       : undefined,
   )
 
+  const dcEscrowTokenAccount = useTokenAccount(
+    tokens?.[solanaAddress]?.dcEscrow
+      ? new PublicKey(tokens[solanaAddress].dcEscrow.tokenAccount)
+      : undefined,
+  )
+
   const {
     convertToCurrency,
     currency: currencyRaw,
@@ -101,33 +102,32 @@ const useBalanceHook = () => {
 
   const [fetchOracle] = useOracleDataLazyQuery()
 
-  const { data: accountData } = useAccountQuery({
-    variables: {
-      address: currentAccount?.address || '',
-    },
-    fetchPolicy: 'cache-and-network',
-    skip: !currentAccount?.address,
-    pollInterval: 30000,
-  })
-
-  const [fetchAccountData] = useAccountLazyQuery()
-
   const updateTokenBalance = useCallback(
     ({
       type,
       data,
+      account,
     }: {
-      type: 'sol' | 'mobile' | 'dc' | 'iot' | 'hnt'
+      type: 'sol' | 'mobile' | 'dc' | 'iot' | 'hnt' | 'dcEscrow'
       data?: Buffer
+      account?: Account
     }) => {
-      if (!data?.length || !currentAccount?.solanaAddress) return
+      if ((!data?.length && !account) || !currentAccount?.solanaAddress) return
 
-      const decoded = AccountLayout.decode(data)
+      let amount = 0
+
+      if (account) {
+        amount = Number(account.amount)
+      } else if (data?.length) {
+        const decoded = AccountLayout.decode(data)
+        amount = Number(decoded.amount)
+      }
+
       dispatch(
         balancesSlice.actions.updateTokenBalance({
           cluster,
           solanaAddress: currentAccount?.solanaAddress,
-          balance: Number(decoded.amount),
+          balance: amount,
           type,
         }),
       )
@@ -198,6 +198,20 @@ const useBalanceHook = () => {
   ])
 
   useEffect(() => {
+    if (!dcEscrowTokenAccount.info || !currentAccount?.solanaAddress) return
+
+    updateTokenBalance({
+      type: 'dcEscrow',
+      account: dcEscrowTokenAccount.info,
+    })
+  }, [
+    cluster,
+    currentAccount?.solanaAddress,
+    dcEscrowTokenAccount,
+    updateTokenBalance,
+  ])
+
+  useEffect(() => {
     if (!currentAccount?.solanaAddress || !anchorProvider) return
 
     dispatch(
@@ -218,13 +232,8 @@ const useBalanceHook = () => {
       },
     })
 
-    await fetchAccountData({
-      variables: {
-        address: currentAccount.address,
-      },
-    })
     setUpdating(false)
-  }, [currentAccount, fetchAccountData, fetchOracle])
+  }, [currentAccount, fetchOracle])
 
   const oraclePrice = useMemo(() => {
     if (!tokenPrices?.helium) return
@@ -304,20 +313,6 @@ const useBalanceHook = () => {
     [currentAccount, l1Network],
   )
 
-  const dcReceivedBalance = useMemo(() => {
-    if (!accountData?.account?.address) {
-      return new Balance(0, CurrencyType.dataCredit)
-    }
-
-    const escrowAccount = getEscrowTokenAccount(
-      accountData?.account?.address,
-    ).toBase58()
-
-    const amount = tokens[solanaAddress]?.[escrowAccount]?.balance || 0
-
-    return new Balance(amount, CurrencyType.dataCredit)
-  }, [accountData?.account?.address, solanaAddress, tokens])
-
   const toPreferredCurrencyString = useCallback(
     (
       balance?: Balance<DataCredits | NetworkTokens | TestNetworkTokens>,
@@ -351,6 +346,10 @@ const useBalanceHook = () => {
       sol: new Balance(
         bals?.[solanaAddress]?.sol?.balance || 0,
         CurrencyType.solTokens,
+      ),
+      dcEscrow: new Balance(
+        bals?.[solanaAddress]?.dcEscrow?.balance || 0,
+        CurrencyType.dataCredit,
       ),
       dc: new Balance(
         bals?.[solanaAddress]?.dc?.balance || 0,
@@ -463,20 +462,25 @@ const useBalanceHook = () => {
   return {
     balanceHistory,
     bonesToBalance,
-    dcBalance: tokenInfo?.balances.dc,
-    dcReceivedBalance,
+    dcBalance:
+      tokenInfo?.balances.dc || new Balance(0, CurrencyType.dataCredit),
+    dcEscrowBalance:
+      tokenInfo?.balances.dcEscrow || new Balance(0, CurrencyType.dataCredit),
     dcToNetworkTokens,
     floatToBalance,
-    hntBalance: tokenInfo?.balances.hnt,
+    hntBalance:
+      tokenInfo?.balances.hnt || new Balance(0, CurrencyType.networkToken),
     ...tokenInfo,
     intToBalance,
-    iotBalance: tokenInfo?.balances.iot,
-    mobileBalance: tokenInfo?.balances.mobile,
+    iotBalance: tokenInfo?.balances.iot || new Balance(0, CurrencyType.iot),
+    mobileBalance:
+      tokenInfo?.balances.mobile || new Balance(0, CurrencyType.mobile),
     networkTokensToDc,
     oracleDateTime,
     oraclePrice,
     solanaPrice,
-    solBalance: tokenInfo?.balances.sol,
+    solBalance:
+      tokenInfo?.balances.sol || new Balance(0, CurrencyType.solTokens),
     toCurrencyString,
     toPreferredCurrencyString,
     toUsd,
@@ -488,34 +492,34 @@ const useBalanceHook = () => {
 const initialState = {
   balanceHistory: [] as AccountBalance[],
   bonesToBalance: () => new Balance(0, CurrencyType.networkToken),
+  dcBalance: new Balance(0, CurrencyType.dataCredit),
+  dcDelegatedBalance: new Balance(0, CurrencyType.dataCredit),
+  dcEscrowBalance: new Balance(0, CurrencyType.dataCredit),
   dcToNetworkTokens: () => undefined,
-  formattedHntValue: '',
-  formattedSolValue: '',
+  floatToBalance: () => undefined,
   formattedDcValue: '',
+  formattedHntValue: '',
   formattedIotValue: '',
   formattedMobileValue: '',
-  floatToBalance: () => undefined,
+  formattedSolValue: '',
+  hntBalance: new Balance(0, CurrencyType.networkToken),
   intToBalance: () => undefined,
-  networkTokensToDc: () => undefined,
-  totalValue: undefined,
   iotBalance: new Balance(0, CurrencyType.iot),
   mobileBalance: new Balance(0, CurrencyType.mobile),
-  hntBalance: new Balance(0, CurrencyType.networkToken),
+  networkTokensToDc: () => undefined,
   oracleDateTime: undefined,
   oraclePrice: undefined,
   solanaPrice: undefined,
   solBalance: new Balance(0, CurrencyType.solTokens),
-  dcBalance: new Balance(0, CurrencyType.dataCredit),
-  dcReceivedBalance: new Balance(0, CurrencyType.dataCredit),
-  dcDelegatedBalance: new Balance(0, CurrencyType.dataCredit),
+  solBalancesLoading: false,
   toCurrencyString: () => new Promise<string>((resolve) => resolve('')),
+  tokenAccounts: {},
   toPreferredCurrencyString: () =>
     new Promise<string>((resolve) => resolve('')),
+  totalValue: undefined,
   toUsd: () => 0,
   updateVars: () => new Promise<void>((resolve) => resolve()),
   updating: false,
-  tokenAccounts: {},
-  solBalancesLoading: false,
 }
 const BalanceContext =
   createContext<ReturnType<typeof useBalanceHook>>(initialState)

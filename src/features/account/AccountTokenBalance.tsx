@@ -26,7 +26,7 @@ const AccountTokenBalance = ({
     iotBalance,
     solBalance,
     hntBalance: networkBalance,
-    dcReceivedBalance,
+    dcEscrowBalance,
   } = useBalance()
   const { t } = useTranslation()
 
@@ -54,12 +54,12 @@ const AccountTokenBalance = ({
       <Box>
         <Text variant="body1" color="secondaryText" textAlign="center">
           {t('accountsScreen.receivedBalance', {
-            amount: dcReceivedBalance?.toString(2, { showTicker: false }),
+            amount: dcEscrowBalance?.toString(2, { showTicker: false }),
           })}
         </Text>
       </Box>
     )
-  }, [ticker, showTicker, t, dcReceivedBalance])
+  }, [ticker, showTicker, t, dcEscrowBalance])
 
   return (
     <Box flexDirection="row" justifyContent="center" {...boxProps}>

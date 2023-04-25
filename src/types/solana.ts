@@ -22,7 +22,7 @@ export type Balances = {
   dc: BalanceWithAcct
   iot: BalanceWithAcct
   hnt: BalanceWithAcct
-  [key: string]: BalanceWithAcct
+  dcEscrow: BalanceWithAcct
 }
 
 export type HotspotWithPendingRewards = CompressedNFT & {

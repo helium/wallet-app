@@ -7,6 +7,7 @@ import * as solUtils from '../../utils/solanaUtils'
 import { getBalanceHistory, getTokenPrices } from '../../utils/walletApiV2'
 import { Prices } from '../../types/balance'
 import { AccountBalance } from '../../generated/graphql'
+import { getEscrowTokenAccount } from '../../utils/solanaUtils'
 
 type BalancesByWallet = Record<string, Balances>
 type BalancesByCluster = Record<Cluster, BalancesByWallet>
@@ -28,6 +29,7 @@ const initialBalances = {
   dc: { balance: 0, tokenAccount: '' },
   iot: { balance: 0, tokenAccount: '' },
   hnt: { balance: 0, tokenAccount: '' },
+  dcEscrow: { balance: 0, tokenAccount: '' },
 }
 
 const initialState: BalancesState = {
@@ -56,7 +58,17 @@ export const readTokenBalances = createAsyncThunk(
   }) => {
     if (!acct?.solanaAddress) throw new Error('No solana account found')
 
-    return solUtils.readAccountBalances(anchorProvider, acct.solanaAddress)
+    const escrowAccount = getEscrowTokenAccount(acct.solanaAddress)
+
+    const bals = await solUtils.readAccountBalances(
+      anchorProvider,
+      acct.solanaAddress,
+    )
+
+    return {
+      ...bals,
+      dcEscrow: { balance: 0, tokenAccount: escrowAccount.toBase58() },
+    }
   },
 )
 
@@ -96,7 +108,7 @@ const balancesSlice = createSlice({
         cluster: Cluster
         solanaAddress: string
         balance: number
-        type: 'sol' | 'mobile' | 'dc' | 'iot' | 'hnt'
+        type: 'sol' | 'mobile' | 'dc' | 'iot' | 'hnt' | 'dcEscrow'
       }>,
     ) => {
       const { cluster, solanaAddress, type, balance } = action.payload
