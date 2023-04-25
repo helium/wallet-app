@@ -338,33 +338,33 @@ export default {
   },
   defiTutorial: {
     title: 'Safety Tips',
-    enterDApps: 'Enter dApps',
+    enterDApps: 'Enter Browser',
     slides: [
       {
-        body: "Always double-check the URL of the dApp to ensure you're on the correct website before entering any sensitive information",
+        body: "Always double-check URLs to ensure you're on the correct website before entering any sensitive information.",
         title: 'Verify the URL',
       },
       {
-        body: 'Be cautious of phishing attacks and only enter your wallet information on trusted websites.',
+        body: 'Be cautious of phishing attacks and only use trusted websites.',
         title: 'Use Trusted Websites',
       },
       {
-        body: "Do your research before using a dApp to ensure it's trustworthy and has been audited for security.",
-        title: 'Research the dApp',
+        body: 'Ensure websites are trustworthy and have been audited for security.',
+        title: 'Do Your Research',
       },
       {
         body: 'Never share your private keys or seed phrases with anyone.',
-        title: 'Protect Your Private Keys',
+        title: 'Protect Your Information',
       },
     ],
   },
   browserScreen: {
-    topPicks: 'Top Picks',
+    topPicks: 'Verified Websites',
     myFavorites: 'My Favorites',
     myFavoritesEmpty:
-      'No favorites yet. Start browsing and add your favorite dApps!',
+      'No favorites yet. Start browsing and add your favorite URLs!',
     recentlyVisited: 'Recently Visited',
-    recentlyVisitedEmpty: 'No recently visited dApps yet. Start browsing!',
+    recentlyVisitedEmpty: 'No recently visited URLs yet. Start browsing!',
     connectBullet1: 'View your wallet balance & activity',
     connectBullet2: 'Request Approval for transactions',
     connectToWebsitesYouTrust: 'Only connect to websites you trust',
