@@ -13,12 +13,12 @@ import { DelayedFadeIn } from '@components/FadeInOut'
 import CircleLoader from '@components/CircleLoader'
 import RewardItem from '@components/RewardItem'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
-import { RootNavigationProp } from '../../navigation/rootTypes'
+import { CollectableNavigationProp } from './collectablesTypes'
 
 const ClaimAllRewardsScreen = () => {
   const { submitClaimAllRewards } = useSubmitTxn()
   const { t } = useTranslation()
-  const rootNav = useNavigation<RootNavigationProp>()
+  const navigation = useNavigation<CollectableNavigationProp>()
   const [redeeming, setRedeeming] = useState(false)
   const [claimError, setClaimError] = useState<string | undefined>()
 
@@ -65,7 +65,7 @@ const ClaimAllRewardsScreen = () => {
 
       if (txs.length > 0) {
         submitClaimAllRewards(txs)
-        rootNav.replace('ClaimingRewardsScreen')
+        navigation.replace('ClaimingRewardsScreen')
       } else {
         setClaimError(t('collectablesScreen.claimError'))
       }
@@ -79,7 +79,7 @@ const ClaimAllRewardsScreen = () => {
   }, [
     createClaimAllIotTxs,
     createClaimAllMobileTxs,
-    rootNav,
+    navigation,
     submitClaimAllRewards,
     t,
     pendingIotRewards,

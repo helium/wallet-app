@@ -112,6 +112,11 @@ const BackScreen = ({
 
       {/**
        * If backgroundImageUri is provided, we render a blurred version of the image
+       *
+       * On android the app will crash when using a BlurView inside of a tab bar.
+       * There is a patch in place to prevent this.
+       * Details can be found here https://github.com/Kureev/react-native-blur/issues/461
+       *
        */}
       {backgroundImageUri && (
         <>

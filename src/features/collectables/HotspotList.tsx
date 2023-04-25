@@ -28,12 +28,10 @@ import HotspotListItem from './HotspotListItem'
 import { CollectableNavigationProp } from './collectablesTypes'
 import { CompressedNFT, HotspotWithPendingRewards } from '../../types/solana'
 import { NFTSkeleton } from './NftListItem'
-import { RootNavigationProp } from '../../navigation/rootTypes'
 
 const DEFAULT_PAGE_AMOUNT = 20
 
 const HotspotList = () => {
-  const rootNav = useNavigation<RootNavigationProp>()
   const navigation = useNavigation<CollectableNavigationProp>()
   const { t } = useTranslation()
   const isFocused = useIsFocused()
@@ -96,8 +94,8 @@ const HotspotList = () => {
   }, [fetchingMore, isFocused, fetchMore, pageAmount, onEndReached])
 
   const handleNavigateToClaimRewards = useCallback(() => {
-    rootNav.navigate('ClaimAllRewardsScreen')
-  }, [rootNav])
+    navigation.navigate('ClaimAllRewardsScreen')
+  }, [navigation])
 
   const toggleFiltersOpen = useCallback(
     (open) => () => {
@@ -150,8 +148,11 @@ const HotspotList = () => {
     ({ ticker, amount, ...rest }) => {
       const decimals =
         ticker === 'IOT' ? iotMint?.info.decimals : mobileMint?.info.decimals
-      const num = toNumber(amount, decimals || 6)
-      const realAmount = formatLargeNumber(new BigNumber(num))
+      let realAmount = ''
+      if (amount) {
+        const num = toNumber(amount, decimals || 6)
+        realAmount = formatLargeNumber(new BigNumber(num))
+      }
 
       return (
         <Box

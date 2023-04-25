@@ -16,15 +16,15 @@ import RewardItem from '@components/RewardItem'
 import { Mints } from '../../utils/constants'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
 import {
-  RootNavigationProp,
-  RootStackParamList,
-} from '../../navigation/rootTypes'
+  CollectableNavigationProp,
+  CollectableStackParamList,
+} from './collectablesTypes'
 
-type Route = RouteProp<RootStackParamList, 'ClaimRewardsScreen'>
+type Route = RouteProp<CollectableStackParamList, 'ClaimRewardsScreen'>
 
 const ClaimRewardsScreen = () => {
   const { t } = useTranslation()
-  const rootNav = useNavigation<RootNavigationProp>()
+  const nav = useNavigation<CollectableNavigationProp>()
   const route = useRoute<Route>()
   const [redeeming, setRedeeming] = useState(false)
   const [claimError, setClaimError] = useState<string | undefined>()
@@ -83,7 +83,7 @@ const ClaimRewardsScreen = () => {
 
       if (transactions.length > 0) {
         submitClaimAllRewards(transactions)
-        rootNav.push('ClaimingRewardsScreen')
+        nav.push('ClaimingRewardsScreen')
       } else {
         setClaimError(t('collectablesScreen.claimError'))
       }

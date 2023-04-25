@@ -11,14 +11,25 @@ export type PaymentRouteParam = {
 }
 
 export type CollectableStackParamList = {
+  CollectablesTopTab: undefined
+
+  HotspotDetailsScreen: {
+    collectable: HotspotWithPendingRewards
+  }
+
+  PaymentScreen: undefined | PaymentRouteParam
+
+  ClaimRewardsScreen: {
+    hotspot: HotspotWithPendingRewards
+  }
+  ClaimAllRewardsScreen: undefined
+  ClaimingRewardsScreen: undefined
+
   CollectionScreen: {
     collection: Collectable[]
   }
   NftDetailsScreen: {
     collectable: Collectable
-  }
-  HotspotDetailsScreen: {
-    collectable: HotspotWithPendingRewards
   }
   NftMetadataScreen: {
     metadata: JsonMetadata<string>
@@ -33,6 +44,7 @@ export type CollectableStackParamList = {
   AddNewContact: undefined
   PaymentQrScanner: undefined
   AddressBookNavigator: undefined
+  ScanAddress: undefined
 }
 
 export type CollectableNavigationProp =

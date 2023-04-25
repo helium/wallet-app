@@ -30,13 +30,11 @@ import {
 } from './collectablesTypes'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import { Mints } from '../../utils/constants'
-import { RootNavigationProp } from '../../navigation/rootTypes'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotDetailsScreen'>
 
 const HotspotDetailsScreen = () => {
   const route = useRoute<Route>()
-  const rootNav = useNavigation<RootNavigationProp>()
   const navigation = useNavigation<CollectableNavigationProp>()
   const COLLECTABLE_HEIGHT = ww
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
@@ -74,10 +72,10 @@ const HotspotDetailsScreen = () => {
   }, [collectable, navigation])
 
   const handleClaimRewards = useCallback(() => {
-    rootNav.navigate('ClaimRewardsScreen', {
+    navigation.navigate('ClaimRewardsScreen', {
       hotspot: collectable,
     })
-  }, [collectable, rootNav])
+  }, [collectable, navigation])
 
   const handleInfoPress = useCallback(() => {
     if (collectable.content?.metadata) {
