@@ -4,6 +4,8 @@ import { Cluster } from '@solana/web3.js'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Balances } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
+import { getTokenPrices } from '../../utils/walletApi'
+import { Prices } from '../../types/balance'
 
 type BalancesByWallet = Record<string, Balances>
 type BalancesByCluster = Record<Cluster, BalancesByWallet>
@@ -11,6 +13,7 @@ type BalancesByCluster = Record<Cluster, BalancesByWallet>
 export type BalancesState = {
   tokens: BalancesByCluster
   balancesLoading?: boolean
+  tokenPrices?: Prices
 }
 
 const initialBalances = {
@@ -43,6 +46,13 @@ export const readTokenBalances = createAsyncThunk(
     if (!acct?.solanaAddress) throw new Error('No solana account found')
 
     return solUtils.readAccountBalances(anchorProvider, acct.solanaAddress)
+  },
+)
+
+export const readTokenPrices = createAsyncThunk(
+  'balances/readTokenPrices',
+  async ({ currency }: { currency: string }) => {
+    return getTokenPrices(currency)
   },
 )
 
@@ -105,6 +115,18 @@ const balancesSlice = createSlice({
         ...prev,
       }
       state.balancesLoading = false
+    })
+    builder.addCase(readTokenPrices.fulfilled, (state, action) => {
+      if (!state.tokenPrices) {
+        state.tokenPrices = {} as Prices
+      }
+      const { currency } = action.meta.arg
+      state.tokenPrices.helium[currency] = action.payload.helium[currency]
+      state.tokenPrices['helium-mobile'][currency] =
+        action.payload['helium-mobile'][currency]
+      state.tokenPrices['helium-iot'][currency] =
+        action.payload['helium-iot'][currency]
+      state.tokenPrices.solana[currency] = action.payload.solana[currency]
     })
   },
 })

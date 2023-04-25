@@ -33,18 +33,23 @@ import {
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
-import { useGetTokenPricesQuery } from '../store/slices/walletRestApi'
 import { useAppDispatch } from '../store/store'
 import { accountCurrencyType } from './accountUtils'
 import { decimalSeparator, groupSeparator } from './i18n'
 import { useSolana } from '../solana/SolanaProvider'
 import { balancesSlice, readTokenBalances } from '../store/slices/balancesSlice'
 import { getEscrowTokenAccount } from './solanaUtils'
+import { usePollTokenPrices } from './usePollTokenPrices'
 
 export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
 const useBalanceHook = () => {
   const { currentAccount } = useAccountStorage()
   const { cluster, anchorProvider } = useSolana()
+  const tokenPrices = useSelector(
+    (state: RootState) => state.balances.tokenPrices,
+  )
+
+  usePollTokenPrices()
 
   const solanaAddress = useMemo(
     () => currentAccount?.solanaAddress || '',
@@ -85,17 +90,15 @@ const useBalanceHook = () => {
       : undefined,
   )
 
-  const { convertToCurrency, currency, l1Network } = useAppStorage()
+  const {
+    convertToCurrency,
+    currency: currencyRaw,
+    l1Network,
+  } = useAppStorage()
+  const currency = useMemo(() => currencyRaw.toLowerCase(), [currencyRaw])
   const [updating, setUpdating] = useState(false)
 
   const dispatch = useAppDispatch()
-
-  const { currentData: tokenPrices } = useGetTokenPricesQuery(
-    { tokens: 'helium,solana,helium-mobile,helium-iot', currency },
-    {
-      pollingInterval: 60 * 1000,
-    },
-  )
 
   const [fetchOracle] = useOracleDataLazyQuery()
 
@@ -259,14 +262,14 @@ const useBalanceHook = () => {
   const oraclePrice = useMemo(() => {
     if (!tokenPrices?.helium) return
 
-    const heliumPrice = tokenPrices.helium[currency.toLowerCase()]
+    const heliumPrice = tokenPrices.helium[currency]
     return Balance.fromFloat(heliumPrice, CurrencyType.usd)
   }, [currency, tokenPrices])
 
   const solanaPrice = useMemo(() => {
     if (!tokenPrices?.solana) return
 
-    const price = tokenPrices.solana[currency.toLowerCase()]
+    const price = tokenPrices.solana[currency]
 
     return new Balance(price, CurrencyType.usd)
   }, [currency, tokenPrices])
@@ -356,7 +359,7 @@ const useBalanceHook = () => {
       if (!balance) {
         return new Promise<string>((resolve) => resolve(''))
       }
-      const multiplier = tokenPrices?.helium[currency.toLowerCase()] || 0
+      const multiplier = tokenPrices?.helium[currency] || 0
 
       const showAsHnt =
         !convertToCurrency ||
@@ -375,26 +378,25 @@ const useBalanceHook = () => {
     [convertToCurrency, currency, tokenPrices],
   )
   const solValue = useMemo(() => {
-    const solPrice = tokenPrices?.solana?.[currency.toLowerCase()] || 0
+    const solPrice = tokenPrices?.solana?.[currency] || 0
     const solAmount = balances.sol.floatBalance
     return solPrice * solAmount
   }, [balances.sol.floatBalance, currency, tokenPrices?.solana])
 
   const hntValue = useMemo(() => {
-    const hntPrice = tokenPrices?.helium?.[currency.toLowerCase()] || 0
+    const hntPrice = tokenPrices?.helium?.[currency] || 0
     const hntAmount = balances.hnt.floatBalance
     return hntPrice * hntAmount
   }, [balances.hnt.floatBalance, currency, tokenPrices?.helium])
 
   const iotValue = useMemo(() => {
-    const iotPrice = tokenPrices?.['helium-iot']?.[currency.toLowerCase()] || 0
+    const iotPrice = tokenPrices?.['helium-iot']?.[currency] || 0
     const iotAmount = balances.iot.floatBalance
     return iotPrice * iotAmount
   }, [balances.iot.floatBalance, currency, tokenPrices])
 
   const mobileValue = useMemo(() => {
-    const mobilePrice =
-      tokenPrices?.['helium-mobile']?.[currency.toLowerCase()] || 0
+    const mobilePrice = tokenPrices?.['helium-mobile']?.[currency] || 0
     const mobileAmount = balances.mobile.floatBalance
     return mobilePrice * mobileAmount
   }, [balances.mobile.floatBalance, currency, tokenPrices])

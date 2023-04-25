@@ -23,6 +23,7 @@ import {
   SecureAccount,
   signoutSecureStore,
   storeSecureAccount,
+  storeSecureItem,
 } from './secureStorage'
 import {
   CSAccount,
@@ -60,6 +61,7 @@ const useAccountStorageHook = () => {
 
   const updateApiToken = useCallback(async () => {
     const apiToken = await makeApiToken(currentAccount?.address)
+    storeSecureItem('walletApiToken', apiToken)
     dispatch(authSlice.actions.setApiToken(apiToken))
   }, [currentAccount, dispatch])
 
