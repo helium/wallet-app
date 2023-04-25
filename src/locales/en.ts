@@ -359,7 +359,7 @@ export default {
     ],
   },
   browserScreen: {
-    topPicks: 'Top Picks',
+    topPicks: 'Verified Websites',
     myFavorites: 'My Favorites',
     myFavoritesEmpty:
       'No favorites yet. Start browsing and add your favorite URLs!',
