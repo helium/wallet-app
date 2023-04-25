@@ -12,6 +12,7 @@ import { Theme } from '@theme/theme'
 import TokenPricesTicker from '@components/TokenPricesTicker'
 import { useSpacing } from '@theme/themeHooks'
 import CopyAddressPill from '@components/CopyAddressPill'
+import CurrencyFormatter from 'react-native-currency-format'
 import { AccountBalance } from '../../generated/graphql'
 import { useBalance } from '../../utils/Balance'
 import { useAppStorage } from '../../storage/AppStorageProvider'
@@ -32,7 +33,7 @@ const AccountView = ({
 }: Props) => {
   const [selectedDate, setSelectedDate] = useState('')
   const spacing = useSpacing()
-
+  const [balanceString, setBalanceString] = useState('')
   const { totalValue } = useBalance()
   const { currency, l1Network } = useAppStorage()
   const [actionBarHeight, setActionBarHeight] = useLayoutHeight()
@@ -58,6 +59,16 @@ const AccountView = ({
       setSelectedDate,
     )
   }, [selectedBalance])
+
+  useEffect(() => {
+    if (selectedBalance) {
+      CurrencyFormatter.format(selectedBalance.balance, currency).then(
+        setBalanceString,
+      )
+    } else {
+      setBalanceString(totalValue || '')
+    }
+  }, [currency, selectedBalance, totalValue])
 
   return (
     <Box flexDirection="column" alignItems="center" {...boxProps}>
@@ -87,7 +98,7 @@ const AccountView = ({
             <CarotDown />
           </Box>
         </ButtonPressAnimation>
-        {!totalValue && (
+        {!balanceString && (
           <Text
             maxFontSizeMultiplier={1.1}
             variant="h0"
@@ -99,7 +110,7 @@ const AccountView = ({
             {' '}
           </Text>
         )}
-        {!!totalValue && (
+        {!!balanceString && (
           <FadeInOut>
             <Text
               maxFontSizeMultiplier={1.1}
@@ -110,7 +121,7 @@ const AccountView = ({
               textAlign="center"
               marginBottom="m"
             >
-              {totalValue}
+              {balanceString}
             </Text>
           </FadeInOut>
         )}

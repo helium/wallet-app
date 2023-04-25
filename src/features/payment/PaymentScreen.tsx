@@ -346,45 +346,29 @@ const PaymentScreen = () => {
     if (paymentState.networkFee?.integerBalance === undefined)
       return [false, '']
     try {
-      if (l1Network === 'solana') {
-        const hasEnoughSol =
+      let hasEnoughSol = false
+      if (solBalance) {
+        hasEnoughSol =
           solBalance.minus(paymentState.networkFee).integerBalance >= 0
-        let hasEnoughToken = false
-        if (ticker === 'MOBILE') {
-          hasEnoughToken =
-            mobileBalance.minus(paymentState.totalAmount).integerBalance >= 0
-        } else if (ticker === 'IOT') {
-          hasEnoughToken =
-            iotBalance.minus(paymentState.totalAmount).integerBalance >= 0
-        } else if (ticker === 'HNT') {
-          hasEnoughToken =
-            hntBalance.minus(paymentState.totalAmount).integerBalance >= 0
-        } else if (ticker === 'SOL') {
-          hasEnoughToken =
-            solBalance.minus(paymentState.totalAmount).integerBalance >= 0
-        }
-        if (!hasEnoughSol) return [true, solBalance.type.ticker]
-        if (!hasEnoughToken) return [true, paymentState.totalAmount.type.ticker]
-        return [false, '']
+      }
+      let hasEnoughToken = false
+      if (ticker === 'MOBILE' && mobileBalance) {
+        hasEnoughToken =
+          mobileBalance.minus(paymentState.totalAmount).integerBalance >= 0
+      } else if (ticker === 'IOT' && iotBalance) {
+        hasEnoughToken =
+          iotBalance.minus(paymentState.totalAmount).integerBalance >= 0
+      } else if (ticker === 'HNT' && hntBalance) {
+        hasEnoughToken =
+          hntBalance.minus(paymentState.totalAmount).integerBalance >= 0
+      } else if (ticker === 'SOL' && solBalance) {
+        hasEnoughToken =
+          solBalance.minus(paymentState.totalAmount).integerBalance >= 0
       }
 
-      if (l1Network === 'helium') {
-        if (ticker === 'MOBILE') {
-          // If paying with mobile, they need to have enough mobile to cover the payment
-          // and enough hnt to cover the fee
-          const hasEnoughNetwork =
-            hntBalance.minus(paymentState.networkFee).integerBalance >= 0
-          const hasEnoughMobile =
-            mobileBalance.minus(paymentState.totalAmount).integerBalance >= 0
-          if (!hasEnoughNetwork) return [true, hntBalance.type.ticker]
-          if (!hasEnoughMobile) return [true, mobileBalance.type.ticker]
-        }
-      }
-
-      const hasEnoughNetwork =
-        hntBalance.integerBalance <
-        paymentState.totalAmount.plus(paymentState.networkFee).integerBalance
-      return [hasEnoughNetwork, hasEnoughNetwork ? '' : hntBalance.type.ticker]
+      if (!hasEnoughSol) return [true, 'SOL' as Ticker]
+      if (!hasEnoughToken) return [true, paymentState.totalAmount.type.ticker]
+      return [false, '']
     } catch (e) {
       // if the screen was already open, then a deep link of a different net type
       // is selected there will be a brief arithmetic error that can be ignored.
@@ -397,7 +381,6 @@ const PaymentScreen = () => {
     hntBalance,
     paymentState.totalAmount,
     paymentState.networkFee,
-    l1Network,
     solBalance,
     ticker,
     mobileBalance,

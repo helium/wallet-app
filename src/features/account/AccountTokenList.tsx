@@ -14,19 +14,12 @@ type Token = {
 }
 
 type Props = {
-  loading?: boolean
   onLayout?: BottomSheetFlatListProps<Token>['onLayout']
 }
 
-const AccountTokenList = ({ loading = false, onLayout }: Props) => {
-  const {
-    solBalance,
-    hntBalance,
-    mobileBalance,
-    dcBalance,
-    iotBalance,
-    updating: updatingTokens,
-  } = useBalance()
+const AccountTokenList = ({ onLayout }: Props) => {
+  const { solBalance, hntBalance, mobileBalance, dcBalance, iotBalance } =
+    useBalance()
   const { bottom } = useSafeAreaInsets()
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
@@ -54,9 +47,7 @@ const AccountTokenList = ({ loading = false, onLayout }: Props) => {
     [],
   )
 
-  const renderFooter = useCallback(() => {
-    if (!(updatingTokens || loading)) return null
-
+  const renderEmptyComponent = useCallback(() => {
     return (
       <>
         {times(4).map((i) => (
@@ -64,7 +55,7 @@ const AccountTokenList = ({ loading = false, onLayout }: Props) => {
         ))}
       </>
     )
-  }, [loading, updatingTokens])
+  }, [])
 
   const keyExtractor = useCallback((item: Balance<AnyCurrencyType>) => {
     return item.type.ticker
@@ -86,7 +77,7 @@ const AccountTokenList = ({ loading = false, onLayout }: Props) => {
       }}
       contentContainerStyle={contentContainerStyle}
       renderItem={renderItem}
-      ListEmptyComponent={renderFooter}
+      ListEmptyComponent={renderEmptyComponent}
       keyExtractor={keyExtractor}
       onLayout={onLayout}
     />

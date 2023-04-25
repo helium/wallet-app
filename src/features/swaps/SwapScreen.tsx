@@ -131,7 +131,7 @@ const SwapScreen = () => {
   const insufficientTokensToSwap = useMemo(() => {
     if (
       youPayTokenType === Tokens.HNT &&
-      networkBalance.floatBalance < 0.00000001
+      (networkBalance?.floatBalance || 0) < 0.00000001
     ) {
       return true
     }
@@ -172,7 +172,13 @@ const SwapScreen = () => {
   }, [])
 
   useAsync(async () => {
-    if (!currentAccount?.solanaAddress || !anchorProvider || !connection) return
+    if (
+      !currentAccount?.solanaAddress ||
+      !anchorProvider ||
+      !connection ||
+      !solBalance
+    )
+      return
 
     const toMint = new PublicKey(Mints[youReceiveTokenType])
     let fee = TXN_FEE_IN_SOL

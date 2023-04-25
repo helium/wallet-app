@@ -308,28 +308,21 @@ const BurnScreen = () => {
   )
 
   const insufficientFunds = useMemo(() => {
-    if (!amountBalance || !feeAsTokens) return false
+    if (!amountBalance || !feeAsTokens || !dcBalance || !solBalance)
+      return false
 
     if (amountBalance.floatBalance > dcBalance.floatBalance) {
       return true
     }
 
-    if (
-      l1Network === 'solana' &&
-      feeAsTokens.floatBalance > solBalance.floatBalance
-    ) {
+    if (feeAsTokens.floatBalance > solBalance.floatBalance) {
       return true
     }
 
-    return networkBalance.floatBalance < feeAsTokens.floatBalance
-  }, [
-    amountBalance,
-    dcBalance.floatBalance,
-    feeAsTokens,
-    l1Network,
-    networkBalance.floatBalance,
-    solBalance.floatBalance,
-  ])
+    return (
+      networkBalance && networkBalance.floatBalance < feeAsTokens.floatBalance
+    )
+  }, [amountBalance, dcBalance, feeAsTokens, networkBalance, solBalance])
 
   const errors = useMemo(() => {
     const errStrings: string[] = []
