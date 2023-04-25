@@ -40,5 +40,14 @@ module.exports = (api) => {
   return {
     ...baseConfig,
     plugins: [...baseConfig.plugins, 'react-native-reanimated/plugin'],
+    env: {
+      // Uncomment if you want to remove all logs in development
+      // development: {
+      //   plugins: ['transform-remove-console'],
+      // },
+      production: {
+        plugins: ['transform-remove-console'],
+      },
+    },
   }
 }
