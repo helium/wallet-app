@@ -395,7 +395,7 @@ const useBalanceHook = () => {
       solValue,
       totalValue,
     }
-  }, [currency, currentAccount?.address, tokenPrices])
+  }, [currency, currentAccount?.address, tokenPrices, cluster])
 
   const toCurrencyString = useCallback(
     (
