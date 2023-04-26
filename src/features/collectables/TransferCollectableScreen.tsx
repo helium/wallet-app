@@ -23,8 +23,6 @@ import Text from '@components/Text'
 import BackScreen from '@components/BackScreen'
 import { useColors, useSpacing } from '@theme/themeHooks'
 import TextInput from '@components/TextInput'
-import ListItem from '@components/ListItem'
-import BlurActionSheet from '@components/BlurActionSheet'
 import AddressBookSelector, {
   AddressBookRef,
 } from '@components/AddressBookSelector'
@@ -65,12 +63,12 @@ const TransferCollectableScreen = () => {
   const spacing = useSpacing()
 
   const [recipient, setRecipient] = useState('')
+  const [recipientName, setRecipientName] = useState('')
   const [hasError, setHasError] = useState(false)
   const [networkError, setNetworkError] = useState<undefined | string>()
   const [hasInsufficientBalance, setHasInsufficientBalance] = useState<
     undefined | boolean
   >()
-  const [optionsOpen, setOptionsOpen] = useState(false)
   const [solFee, setSolFee] = useState<number | undefined>(undefined)
   const { currentAccount } = useAccountStorage()
   const { anchorProvider } = useSolana()
@@ -132,7 +130,6 @@ const TransferCollectableScreen = () => {
   }, [metadata, navigation])
 
   const handleAddressBookSelected = useCallback(() => {
-    setOptionsOpen(false)
     addressBookRef?.current?.showAddressBook({})
   }, [])
 
@@ -140,6 +137,7 @@ const TransferCollectableScreen = () => {
     ({ contact }: { contact: CSAccount; prevAddress?: string }) => {
       if (!contact.solanaAddress) return
       setRecipient(contact.solanaAddress)
+      setRecipientName(contact.alias)
       setHasError(false)
     },
     [],
@@ -151,6 +149,7 @@ const TransferCollectableScreen = () => {
 
   const handleEditAddress = useCallback((text?: string) => {
     setRecipient(text || '')
+    setRecipientName('')
   }, [])
 
   const handleAddressBlur = useCallback(
@@ -185,32 +184,6 @@ const TransferCollectableScreen = () => {
     submitCollectable,
     t,
   ])
-
-  const toggleActionSheet = useCallback(
-    (open) => () => {
-      setOptionsOpen(open)
-    },
-    [],
-  )
-
-  const transferOptions = useCallback(
-    () => (
-      <>
-        <ListItem
-          key="selectContact"
-          title={t('payment.selectContact')}
-          onPress={handleAddressBookSelected}
-          selected={false}
-          hasPressedState={false}
-        />
-      </>
-    ),
-    [handleAddressBookSelected, t],
-  )
-
-  const onTrailingIconButtonPress = useCallback(() => {
-    setOptionsOpen(true)
-  }, [])
 
   const showError = useMemo(() => {
     if (hasError) return t('generic.notValidSolanaAddress')
@@ -279,7 +252,9 @@ const TransferCollectableScreen = () => {
                   t('collectablesScreen.collectables.noDescription')}
               </Text>
               <TextInput
-                floatingLabel={t('collectablesScreen.transferTo')}
+                floatingLabel={`${t(
+                  'collectablesScreen.transferTo',
+                )} ${recipientName}`}
                 variant="thickBlur"
                 marginBottom="s"
                 height={80}
@@ -287,7 +262,7 @@ const TransferCollectableScreen = () => {
                 textColor="white"
                 fontSize={15}
                 TrailingIcon={Menu}
-                onTrailingIconPress={onTrailingIconButtonPress}
+                onTrailingIconPress={handleAddressBookSelected}
                 textInputProps={{
                   placeholder: t('generic.solanaAddress'),
                   placeholderTextColor: 'white',
@@ -359,13 +334,6 @@ const TransferCollectableScreen = () => {
               </Box>
             </SafeAreaBox>
           </ScrollView>
-          <BlurActionSheet
-            title={t('collectablesScreen.transferActions')}
-            open={optionsOpen}
-            onClose={toggleActionSheet(false)}
-          >
-            {transferOptions()}
-          </BlurActionSheet>
         </AddressBookSelector>
       </BackScreen>
     </ReAnimatedBox>

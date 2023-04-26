@@ -148,8 +148,11 @@ const HotspotList = () => {
     ({ ticker, amount, ...rest }) => {
       const decimals =
         ticker === 'IOT' ? iotMint?.info.decimals : mobileMint?.info.decimals
-      const num = toNumber(amount, decimals || 6)
-      const realAmount = formatLargeNumber(new BigNumber(num))
+      let realAmount = ''
+      if (amount) {
+        const num = toNumber(amount, decimals || 6)
+        realAmount = formatLargeNumber(new BigNumber(num))
+      }
 
       return (
         <Box
