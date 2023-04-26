@@ -94,7 +94,6 @@ function CollectablesTabNavigator() {
         tabBarContentContainerStyle: {
           borderBottomColor: colors.secondaryText,
           borderBottomWidth: 1,
-          justifyContent: 'center',
         },
         tabBarIndicatorStyle: {
           backgroundColor: colors.primaryText,
@@ -102,14 +101,12 @@ function CollectablesTabNavigator() {
           position: undefined,
         },
         tabBarIndicatorContainerStyle: {
-          // TODO: Fix this hacky solution
-          left: '-13%',
           justifyContent: 'flex-end',
-          alignItems: 'center',
+          width: '100%',
         },
         tabBarItemStyle: {
           flexDirection: 'row',
-          width: 'auto',
+          flex: 1,
         },
         tabBarIcon: ({ focused }) => {
           const color = focused ? colors.primaryText : colors.secondaryText

@@ -4,7 +4,6 @@ import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
-import Trash from '@assets/images/trash.svg'
 import InfoIcon from '@assets/images/info.svg'
 import ArrowRight from '@assets/images/arrowRight.svg'
 import SafeAreaBox from '@components/SafeAreaBox'
@@ -16,7 +15,6 @@ import ButtonPressable from '@components/ButtonPressable'
 import Text from '@components/Text'
 import BackScreen from '@components/BackScreen'
 import { useSpacing } from '@theme/themeHooks'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import { ww } from '../../utils/layout'
 import {
@@ -104,7 +102,12 @@ const NftDetailsScreen = () => {
             >
               {json?.name}
             </Text>
-            <Text variant="body3Medium" color="grey600" marginBottom="xl">
+            <Text
+              variant="body3Medium"
+              color="grey600"
+              marginBottom="xl"
+              textAlign="center"
+            >
               {json?.description || t('collectables.noDescription')}
             </Text>
             <Box
@@ -113,34 +116,25 @@ const NftDetailsScreen = () => {
               marginTop="m"
               marginHorizontal="xl"
             >
-              <TouchableOpacityBox
-                height={65}
-                width={65}
-                backgroundColor="transparent10"
-                borderRadius="round"
-                justifyContent="center"
-                alignItems="center"
-                marginEnd="s"
-              >
-                <Trash />
-              </TouchableOpacityBox>
-              <ButtonPressable
-                height={65}
-                flexGrow={1}
-                borderRadius="round"
-                backgroundColor="white"
-                backgroundColorOpacity={1}
-                backgroundColorOpacityPressed={0.7}
-                titleColorDisabled="grey600"
-                backgroundColorDisabled="white"
-                backgroundColorDisabledOpacity={0.1}
-                title={t('collectablesScreen.transfer')}
-                titleColor="black"
-                onPress={handleSend}
-                TrailingComponent={
-                  <ArrowRight width={16} height={15} color="black" />
-                }
-              />
+              {collectable.model === 'nft' && (
+                <ButtonPressable
+                  height={65}
+                  flexGrow={1}
+                  borderRadius="round"
+                  backgroundColor="white"
+                  backgroundColorOpacity={1}
+                  backgroundColorOpacityPressed={0.7}
+                  titleColorDisabled="grey600"
+                  backgroundColorDisabled="white"
+                  backgroundColorDisabledOpacity={0.1}
+                  title={t('collectablesScreen.transfer')}
+                  titleColor="black"
+                  onPress={handleSend}
+                  TrailingComponent={
+                    <ArrowRight width={16} height={15} color="black" />
+                  }
+                />
+              )}
             </Box>
           </SafeAreaBox>
         </ScrollView>
