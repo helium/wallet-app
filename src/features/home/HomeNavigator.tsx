@@ -1,8 +1,8 @@
 import React, { memo } from 'react'
 import {
-  createNativeStackNavigator,
-  NativeStackNavigationOptions,
-} from '@react-navigation/native-stack'
+  createStackNavigator,
+  StackNavigationOptions,
+} from '@react-navigation/stack'
 import ConfirmPinScreen from '@components/ConfirmPinScreen'
 import AccountAssignScreen from '../onboarding/AccountAssignScreen'
 import AccountsScreen from '../account/AccountsScreen'
@@ -22,26 +22,15 @@ import BurnScreen from '../burn/BurnScreen'
 import SwapNavigator from '../swaps/SwapNavigator'
 import AirdropScreen from '../account/AirdropScreen'
 
-const HomeStack = createNativeStackNavigator()
+const HomeStack = createStackNavigator()
 
-const screenOptions = {
+const screenModalOptions = {
   presentation: 'modal',
-} as NativeStackNavigationOptions
-
-const screenOptionsTransparentModal = {
-  presentation: 'transparentModal',
-  animation: 'fade',
-} as NativeStackNavigationOptions
+} as StackNavigationOptions
 
 const navigatorScreenOptions = {
-  animationTypeForReplace: 'push',
-  presentation: 'modal',
   headerShown: false,
-} as NativeStackNavigationOptions
-
-const cardPresentation = {
-  presentation: 'card',
-} as NativeStackNavigationOptions
+} as StackNavigationOptions
 
 const HomeStackScreen = () => {
   return (
@@ -50,41 +39,48 @@ const HomeStackScreen = () => {
       <HomeStack.Screen
         name="AccountTokenScreen"
         component={AccountTokenScreen}
-        options={cardPresentation}
       />
       <HomeStack.Screen
         name="AccountAssignScreen"
         component={AccountAssignScreen}
       />
       <HomeStack.Screen name="ConfirmPin" component={ConfirmPinScreen} />
-      <HomeStack.Screen name="PaymentScreen" component={PaymentScreen} />
-      <HomeStack.Screen name="BurnScreen" component={BurnScreen} />
-      <HomeStack.Screen name="PaymentQrScanner" component={PaymentQrScanner} />
-      <HomeStack.Screen name="RequestScreen" component={RequestScreen} />
       <HomeStack.Screen
-        name="AirdropScreen"
-        component={AirdropScreen}
-        options={screenOptionsTransparentModal}
+        name="PaymentScreen"
+        component={PaymentScreen}
+        options={screenModalOptions}
       />
+      <HomeStack.Screen name="BurnScreen" component={BurnScreen} />
+      <HomeStack.Screen
+        name="PaymentQrScanner"
+        component={PaymentQrScanner}
+        options={screenModalOptions}
+      />
+      <HomeStack.Screen
+        name="RequestScreen"
+        component={RequestScreen}
+        options={screenModalOptions}
+      />
+      <HomeStack.Screen name="AirdropScreen" component={AirdropScreen} />
       <HomeStack.Screen
         name="AddressBookNavigator"
         component={AddressBookNavigator}
-        options={screenOptions}
+        options={screenModalOptions}
       />
       <HomeStack.Screen
         name="NotificationsNavigator"
         component={NotificationsNavigator}
-        options={screenOptions}
+        options={screenModalOptions}
       />
       <HomeStack.Screen
         name="SettingsNavigator"
         component={SettingsNavigator}
-        options={screenOptions}
+        options={screenModalOptions}
       />
       <HomeStack.Screen
         name="SwapNavigator"
         component={SwapNavigator}
-        options={screenOptions}
+        options={screenModalOptions}
       />
       <HomeStack.Screen name="AddNewContact" component={AddNewContact} />
       <HomeStack.Screen name="ScanAddress" component={AddressQrScanner} />
@@ -92,7 +88,7 @@ const HomeStackScreen = () => {
       <HomeStack.Screen
         name="AddNewAccountNavigator"
         component={AddNewAccountNavigator}
-        options={screenOptions}
+        options={screenModalOptions}
       />
 
       <HomeStack.Screen name="VoteNavigator" component={VoteNavigator} />
