@@ -13,9 +13,6 @@ import SharedGroupPreferences from 'react-native-shared-group-preferences'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import BottomSheet from '@gorhom/bottom-sheet'
 import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
-import { useTranslation } from 'react-i18next'
-import ListItem from '@components/ListItem'
-import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
 import useAppear from '@hooks/useAppear'
 import useLayoutHeight from '@hooks/useLayoutHeight'
@@ -45,14 +42,12 @@ import { RootNavigationProp } from '../../navigation/rootTypes'
 import { ITEM_HEIGHT } from './TokenListItem'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import AccountActionBar from './AccountActionBar'
-import SUPPORTED_CURRENCIES from '../../utils/supportedCurrencies'
 import { useAppDispatch } from '../../store/store'
 import { appSlice } from '../../store/slices/appSlice'
 import { RootState } from '../../store/rootReducer'
 import { withTransactionDetail } from './TransactionDetail'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useBalance } from '../../utils/Balance'
-import { currencyType as systemCurrencyType } from '../../utils/i18n'
 import { AccountBalance } from '../../types/balance'
 
 const AccountsScreen = () => {
@@ -65,8 +60,8 @@ const AccountsScreen = () => {
   const [navLayoutHeight, setNavLayoutHeight] = useLayoutHeight()
   const [pageHeight, setPageHeight] = useLayoutHeight(0)
   const { openedNotification } = useNotificationStorage()
-  const { locked, l1Network, currency, updateCurrency } = useAppStorage()
   const { balanceHistory } = useBalance()
+  const { locked, l1Network, currency } = useAppStorage()
   const { cluster } = useSolana()
   const { reset } = useOnboarding()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
@@ -76,15 +71,12 @@ const AccountsScreen = () => {
   const listAnimatedPos = useSharedValue<number>(0)
   const [topHeaderHeight, setTopHeaderHeight] = useState(0)
   const topHeaderRef = useRef<View>(null)
-  const [currenciesOpen, setCurrenciesOpen] = useState(false)
   const bottomSheetStyle = useBackgroundStyle('surfaceSecondary')
   const dispatch = useAppDispatch()
   const { triggerImpact } = useHaptic()
   const colors = useColors()
   const { showBanner } = useSelector((state: RootState) => state.app)
   const { isHealthy } = useSolanaHealth()
-
-  const { t } = useTranslation()
 
   const actualTop = useMemo(() => {
     if (showBanner && l1Network === 'solana') {
@@ -298,44 +290,6 @@ const AccountsScreen = () => {
     })
   }, [setTopHeaderHeight])
 
-  const toggleCurrenciesOpen = useCallback(
-    (open) => () => {
-      setCurrenciesOpen(open)
-    },
-    [],
-  )
-
-  const handleCurrencyTypeChange = useCallback(
-    (currencyType: string) => () => {
-      updateCurrency(currencyType)
-      setCurrenciesOpen(false)
-    },
-    [updateCurrency],
-  )
-
-  const currencies = useCallback(() => {
-    // Sort by selected currency first
-    const sortedCurrencies = Object.keys(SUPPORTED_CURRENCIES).sort((a, b) => {
-      if (a === currency || a === systemCurrencyType) return -1
-      if (b === currency) return 1
-      return 0
-    })
-
-    return (
-      <>
-        {sortedCurrencies.map((c) => (
-          <ListItem
-            key={c}
-            title={SUPPORTED_CURRENCIES[c]}
-            selected={c === currency}
-            onPress={handleCurrencyTypeChange(c)}
-            hasPressedState={false}
-          />
-        ))}
-      </>
-    )
-  }, [currency, handleCurrencyTypeChange])
-
   const RetractedView = useMemo(() => {
     return (
       <ReAnimatedBox
@@ -393,7 +347,6 @@ const AccountsScreen = () => {
               justifyContent="center"
               onTouchStart={onTouchStart}
               selectedBalance={selectedBalance}
-              onCurrencySelectorPress={toggleCurrenciesOpen(true)}
             />
             <Box>
               {chartValues && (
@@ -418,13 +371,6 @@ const AccountsScreen = () => {
       >
         <AccountTokenList />
       </BottomSheet>
-      <BlurActionSheet
-        title={t('accountsScreen.chooseCurrency')}
-        open={currenciesOpen}
-        onClose={toggleCurrenciesOpen(false)}
-      >
-        {currencies()}
-      </BlurActionSheet>
     </Box>
   )
 }
