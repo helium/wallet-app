@@ -21,9 +21,6 @@ import React, {
 } from 'react'
 import CurrencyFormatter from 'react-native-currency-format'
 import { useSelector } from 'react-redux'
-import { useAccount, useTokenAccount } from '@helium/helium-react-hooks'
-import { PublicKey } from '@solana/web3.js'
-import { Account, AccountLayout } from '@solana/spl-token'
 import { useAsync } from 'react-async-hook'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
@@ -32,10 +29,11 @@ import { useAppDispatch } from '../store/store'
 import { accountCurrencyType } from './accountUtils'
 import { decimalSeparator, groupSeparator } from './i18n'
 import { useSolana } from '../solana/SolanaProvider'
-import { balancesSlice, readTokenBalances } from '../store/slices/balancesSlice'
+import { readTokenBalances } from '../store/slices/balancesSlice'
 import { usePollTokenPrices } from './usePollTokenPrices'
 import { useBalanceHistory } from './useBalanceHistory'
 import { AccountBalance } from '../types/balance'
+import StoreTokenBalance from './StoreTokenBalance'
 
 export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
 const useBalanceHook = () => {
@@ -53,159 +51,15 @@ const useBalanceHook = () => {
     (state: RootState) => state.balances.tokens[cluster],
   )
 
-  const solTokenAccount = useAccount(
-    tokens?.[solanaAddress]?.sol?.tokenAccount
-      ? new PublicKey(tokens[solanaAddress].sol.tokenAccount)
-      : undefined,
-  )
-
-  const hntTokenAccount = useTokenAccount(
-    tokens?.[solanaAddress]?.hnt?.tokenAccount
-      ? new PublicKey(tokens[solanaAddress].hnt.tokenAccount)
-      : undefined,
-  )
-
-  const iotTokenAccount = useTokenAccount(
-    tokens?.[solanaAddress]?.iot?.tokenAccount
-      ? new PublicKey(tokens[solanaAddress].iot.tokenAccount)
-      : undefined,
-  )
-
-  const mobileTokenAccount = useTokenAccount(
-    tokens?.[solanaAddress]?.mobile?.tokenAccount
-      ? new PublicKey(tokens[solanaAddress].mobile.tokenAccount)
-      : undefined,
-  )
-
-  const dcTokenAccount = useTokenAccount(
-    tokens?.[solanaAddress]?.dc?.tokenAccount
-      ? new PublicKey(tokens[solanaAddress].dc.tokenAccount)
-      : undefined,
-  )
-
-  const dcEscrowTokenAccount = useTokenAccount(
-    tokens?.[solanaAddress]?.dcEscrow?.tokenAccount
-      ? new PublicKey(tokens[solanaAddress].dcEscrow.tokenAccount)
-      : undefined,
-  )
-
   const {
     convertToCurrency,
     currency: currencyRaw,
     l1Network,
   } = useAppStorage()
-  const currency = useMemo(() => currencyRaw.toLowerCase(), [currencyRaw])
+
+  const currency = useMemo(() => currencyRaw?.toLowerCase(), [currencyRaw])
 
   const dispatch = useAppDispatch()
-
-  const updateTokenBalance = useCallback(
-    ({
-      type,
-      data,
-      account,
-    }: {
-      type: 'sol' | 'mobile' | 'dc' | 'iot' | 'hnt' | 'dcEscrow'
-      data?: Buffer
-      account?: Account
-    }) => {
-      if ((!data?.length && !account) || !currentAccount?.solanaAddress) return
-
-      let amount = 0n
-
-      if (account) {
-        amount = account.amount
-      } else if (data?.length) {
-        const decoded = AccountLayout.decode(data)
-        amount = decoded.amount
-      }
-
-      dispatch(
-        balancesSlice.actions.updateTokenBalance({
-          cluster,
-          solanaAddress: currentAccount?.solanaAddress,
-          balance: amount,
-          type,
-        }),
-      )
-    },
-    [cluster, currentAccount?.solanaAddress, dispatch],
-  )
-
-  useEffect(() => {
-    if (!hntTokenAccount.account?.data || !currentAccount?.solanaAddress) return
-
-    updateTokenBalance({ type: 'hnt', data: hntTokenAccount.account.data })
-  }, [
-    cluster,
-    currentAccount?.solanaAddress,
-    hntTokenAccount,
-    updateTokenBalance,
-  ])
-
-  useEffect(() => {
-    if (!solTokenAccount.account?.data || !currentAccount?.solanaAddress) return
-
-    updateTokenBalance({ type: 'sol', data: solTokenAccount.account.data })
-  }, [
-    cluster,
-    currentAccount?.solanaAddress,
-    solTokenAccount,
-    updateTokenBalance,
-  ])
-
-  useEffect(() => {
-    if (!iotTokenAccount.account?.data || !currentAccount?.solanaAddress) return
-
-    updateTokenBalance({ type: 'iot', data: iotTokenAccount.account.data })
-  }, [
-    cluster,
-    currentAccount?.solanaAddress,
-    iotTokenAccount,
-    updateTokenBalance,
-  ])
-
-  useEffect(() => {
-    if (!mobileTokenAccount.account?.data || !currentAccount?.solanaAddress)
-      return
-
-    updateTokenBalance({
-      type: 'mobile',
-      data: mobileTokenAccount.account.data,
-    })
-  }, [
-    cluster,
-    currentAccount?.solanaAddress,
-    mobileTokenAccount,
-    updateTokenBalance,
-  ])
-
-  useEffect(() => {
-    if (!dcTokenAccount.account?.data || !currentAccount?.solanaAddress) return
-
-    updateTokenBalance({
-      type: 'dc',
-      data: dcTokenAccount.account.data,
-    })
-  }, [
-    cluster,
-    currentAccount?.solanaAddress,
-    dcTokenAccount,
-    updateTokenBalance,
-  ])
-
-  useEffect(() => {
-    if (!dcEscrowTokenAccount.info || !currentAccount?.solanaAddress) return
-
-    updateTokenBalance({
-      type: 'dcEscrow',
-      account: dcEscrowTokenAccount.info,
-    })
-  }, [
-    cluster,
-    currentAccount?.solanaAddress,
-    dcEscrowTokenAccount,
-    updateTokenBalance,
-  ])
 
   useEffect(() => {
     if (!currentAccount?.solanaAddress || !anchorProvider) return
@@ -449,6 +303,26 @@ const useBalanceHook = () => {
     [tokenPrices],
   )
 
+  const tokensAccounts = useMemo(() => {
+    return [
+      { token: tokens?.[solanaAddress]?.sol?.tokenAccount, type: 'sol' },
+      { token: tokens?.[solanaAddress]?.hnt?.tokenAccount, type: 'hnt' },
+      { token: tokens?.[solanaAddress]?.iot?.tokenAccount, type: 'iot' },
+      {
+        token: tokens?.[solanaAddress]?.mobile?.tokenAccount,
+        type: 'mobile',
+      },
+      { token: tokens?.[solanaAddress]?.dc?.tokenAccount, type: 'dc' },
+      {
+        token: tokens?.[solanaAddress]?.dcEscrow?.tokenAccount,
+        type: 'dcEscrow',
+      },
+    ].filter(({ token }) => !!token) as {
+      token: string
+      type: 'sol' | 'mobile' | 'dc' | 'iot' | 'hnt' | 'dcEscrow'
+    }[]
+  }, [solanaAddress, tokens])
+
   return {
     balanceHistory,
     bonesToBalance,
@@ -469,6 +343,7 @@ const useBalanceHook = () => {
     toCurrencyString,
     toPreferredCurrencyString,
     toUsd,
+    tokensAccounts,
   }
 }
 
@@ -501,6 +376,10 @@ const initialState = {
     new Promise<string>((resolve) => resolve('')),
   totalValue: undefined,
   toUsd: () => 0,
+  tokensAccounts: [] as {
+    token: string
+    type: 'sol' | 'mobile' | 'dc' | 'iot' | 'hnt' | 'dcEscrow'
+  }[],
   updating: false,
 }
 const BalanceContext =
@@ -508,7 +387,18 @@ const BalanceContext =
 const { Provider } = BalanceContext
 
 export const BalanceProvider = ({ children }: { children: ReactNode }) => {
-  return <Provider value={useBalanceHook()}>{children}</Provider>
+  const balanceHook = useBalanceHook()
+
+  const { tokensAccounts } = balanceHook
+
+  return (
+    <Provider value={balanceHook}>
+      {tokensAccounts.map((ta) => (
+        <StoreTokenBalance key={ta.token} {...ta} />
+      ))}
+      {children}
+    </Provider>
+  )
 }
 
 export const useBalance = () => useContext(BalanceContext)
