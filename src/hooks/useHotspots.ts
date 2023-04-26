@@ -72,25 +72,29 @@ const useHotspots = (): {
     )
   }, [cluster, currentAccount, dispatch])
 
-  const hotspotsForClusterAcct = useMemo(() => {
-    if (!currentAccount?.solanaAddress) return []
-
-    return hotspots[currentAccount?.solanaAddress]?.hotspots || []
-  }, [currentAccount?.solanaAddress, hotspots])
-
   const {
     execute: createClaimAllMobileTxs,
     loading: loadingClaimAllMobileTxs,
     error: errorClaimAllMobileTxs,
   } = useAsyncCallback(async () => {
-    if (!anchorProvider || !currentAccount?.solanaAddress || !lazyProgram) {
+    if (
+      !anchorProvider ||
+      !currentAccount?.solanaAddress ||
+      !lazyProgram ||
+      !hotspotsWithMeta
+    ) {
       return
     }
     const { connection } = anchorProvider
     const wallet = new PublicKey(currentAccount?.solanaAddress)
-
     const txns = await Promise.all(
-      hotspotsForClusterAcct.map(async (nft: CompressedNFT) => {
+      hotspotsWithMeta.map(async (nft) => {
+        if (
+          !nft.pendingRewards?.[Mints.MOBILE] ||
+          Number(nft.pendingRewards?.[Mints.MOBILE]) <= 0
+        ) {
+          return
+        }
         const rewards = await client.getCurrentRewards(
           lazyProgram,
           MOBILE_LAZY_KEY,
@@ -109,7 +113,9 @@ const useHotspots = (): {
       }),
     )
 
-    return txns
+    const validTxns = txns.filter((txn) => txn !== undefined) as Transaction[]
+
+    return validTxns
   })
 
   const {
@@ -117,35 +123,45 @@ const useHotspots = (): {
     loading: loadingClaimAllIotTxs,
     error: errorClaimAllIotTxs,
   } = useAsyncCallback(async () => {
-    if (!anchorProvider || !currentAccount?.solanaAddress || !lazyProgram) {
+    if (
+      !anchorProvider ||
+      !currentAccount?.solanaAddress ||
+      !lazyProgram ||
+      !hotspotsWithMeta
+    ) {
       return
     }
     const wallet = new PublicKey(currentAccount?.solanaAddress)
     const { connection } = anchorProvider
 
     const txns = await Promise.all(
-      hotspots[currentAccount.solanaAddress].hotspots.map(
-        async (nft: CompressedNFT) => {
-          const rewards = await client.getCurrentRewards(
-            lazyProgram,
-            IOT_LAZY_KEY,
-            new PublicKey(nft.id),
-          )
+      hotspotsWithMeta.map(async (nft) => {
+        if (
+          !nft.pendingRewards?.[Mints.IOT] ||
+          Number(nft.pendingRewards?.[Mints.IOT]) <= 0
+        )
+          return
+        const rewards = await client.getCurrentRewards(
+          lazyProgram,
+          IOT_LAZY_KEY,
+          new PublicKey(nft.id),
+        )
 
-          return client.formTransaction({
-            program: lazyProgram,
-            provider: anchorProvider,
-            rewards,
-            hotspot: new PublicKey(nft.id),
-            lazyDistributor: IOT_LAZY_KEY,
-            assetEndpoint: connection.rpcEndpoint,
-            wallet,
-          })
-        },
-      ),
+        return client.formTransaction({
+          program: lazyProgram,
+          provider: anchorProvider,
+          rewards,
+          hotspot: new PublicKey(nft.id),
+          lazyDistributor: IOT_LAZY_KEY,
+          assetEndpoint: connection.rpcEndpoint,
+          wallet,
+        })
+      }),
     )
 
-    return txns
+    const validTxns = txns.filter((txn) => txn !== undefined) as Transaction[]
+
+    return validTxns
   })
 
   const refresh = useCallback(
