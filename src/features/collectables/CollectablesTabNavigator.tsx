@@ -94,7 +94,6 @@ function CollectablesTabNavigator() {
         tabBarContentContainerStyle: {
           borderBottomColor: colors.secondaryText,
           borderBottomWidth: 1,
-          // justifyContent: 'center',
         },
         tabBarIndicatorStyle: {
           backgroundColor: colors.primaryText,
