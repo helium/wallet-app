@@ -48,7 +48,6 @@ const BrowserWebViewScreen = () => {
   const { currentAccount } = useAccountStorage()
   const { anchorProvider } = useSolana()
   const webview = useRef<WebView | null>(null)
-  const [jsInjected, setJsInjected] = useState(false)
   const walletSignBottomSheetRef = useRef<WalletSignBottomSheetRef | null>(null)
   const [currentUrl, setCurrentUrl] = useState(uri)
   const [accountAddress, setAccountAddress] = useState<string>('')
@@ -380,12 +379,7 @@ const BrowserWebViewScreen = () => {
     if (!webview?.current) return
 
     const script = injectedJavascript()
-
-    // Weird hack to make sure the script is injected after the webview is loaded
-    setTimeout(() => {
-      webview?.current?.injectJavaScript(script)
-    }, 1000)
-    setJsInjected(true)
+    webview?.current?.injectJavaScript(script)
   }, [injectedJavascript])
 
   const onNavigationChange = useCallback((event: WebViewNavigation) => {
@@ -442,7 +436,6 @@ const BrowserWebViewScreen = () => {
   }, [addFavorite, removeFavorite, isFavorite, currentUrl])
 
   const onRefresh = useCallback(() => {
-    setJsInjected(false)
     webview.current?.injectJavaScript('')
     webview.current?.reload()
     injectModule()
@@ -511,8 +504,6 @@ const BrowserWebViewScreen = () => {
               originWhitelist={['*']}
               javaScriptEnabled
               injectedJavaScript={injectedJavascript()}
-              injectedJavaScriptBeforeContentLoaded={injectedJavascript()}
-              onLoadEnd={!jsInjected ? injectModule : undefined}
               onNavigationStateChange={onNavigationChange}
               onMessage={onMessage}
               source={{
