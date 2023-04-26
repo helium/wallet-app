@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from 'react'
+import React, { FC, useCallback, useMemo } from 'react'
 import {
   createMaterialTopTabNavigator,
   MaterialTopTabNavigationOptions,
@@ -11,6 +11,7 @@ import NFT from '@assets/images/nft.svg'
 import Box from '@components/Box'
 import { Font } from '@theme/theme'
 import { useColors } from '@theme/themeHooks'
+import Text from '@components/Text'
 import HotspotList from './HotspotList'
 import NftList from './NftList'
 import SafeAreaBox from '../../components/SafeAreaBox'
@@ -25,6 +26,7 @@ export type CollectablesTabParamList = {
 const CollectablesTopTabs = () => {
   const { t } = useTranslation()
   const colors = useColors()
+  const edges = useMemo(() => ['top'] as const, [])
 
   const screenOpts = useCallback(
     ({ route }: { route: RouteProp<CollectablesTabParamList> }) =>
@@ -51,14 +53,11 @@ const CollectablesTopTabs = () => {
           position: undefined,
         },
         tabBarIndicatorContainerStyle: {
-          // TODO: Fix this hacky solution
-          left: '-13%',
           justifyContent: 'flex-end',
-          alignItems: 'center',
         },
         tabBarItemStyle: {
           flexDirection: 'row',
-          width: 'auto',
+          flex: 1,
         },
         tabBarIcon: ({ focused }) => {
           const color = focused ? colors.primaryText : colors.secondaryText
@@ -88,7 +87,10 @@ const CollectablesTopTabs = () => {
   )
 
   return (
-    <SafeAreaBox flex={1}>
+    <SafeAreaBox flex={1} edges={edges}>
+      <Text marginTop="m" marginBottom="l" alignSelf="center" variant="h4">
+        {t('collectablesScreen.title')}
+      </Text>
       {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
       {/* @ts-ignore This warning is a bug with @react-navigation */}
       <Tab.Navigator screenOptions={screenOpts}>
