@@ -5,8 +5,7 @@ import { CSAccount } from '../../storage/cloudStorage'
 import { Balances } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
 import { getBalanceHistory, getTokenPrices } from '../../utils/walletApiV2'
-import { Prices } from '../../types/balance'
-import { AccountBalance } from '../../generated/graphql'
+import { AccountBalance, Prices } from '../../types/balance'
 import { getEscrowTokenAccount } from '../../utils/solanaUtils'
 
 type BalancesByWallet = Record<string, Balances>
@@ -24,12 +23,12 @@ export type BalancesState = {
 }
 
 const initialBalances = {
-  sol: { balance: 0, tokenAccount: '' },
-  mobile: { balance: 0, tokenAccount: '' },
-  dc: { balance: 0, tokenAccount: '' },
-  iot: { balance: 0, tokenAccount: '' },
-  hnt: { balance: 0, tokenAccount: '' },
-  dcEscrow: { balance: 0, tokenAccount: '' },
+  sol: { balance: 0n, tokenAccount: '' },
+  mobile: { balance: 0n, tokenAccount: '' },
+  dc: { balance: 0n, tokenAccount: '' },
+  iot: { balance: 0n, tokenAccount: '' },
+  hnt: { balance: 0n, tokenAccount: '' },
+  dcEscrow: { balance: 0n, tokenAccount: '' },
 }
 
 const initialState: BalancesState = {
@@ -67,7 +66,7 @@ export const readTokenBalances = createAsyncThunk(
 
     return {
       ...bals,
-      dcEscrow: { balance: 0, tokenAccount: escrowAccount.toBase58() },
+      dcEscrow: { balance: 0n, tokenAccount: escrowAccount.toBase58() },
     }
   },
 )
@@ -107,7 +106,7 @@ const balancesSlice = createSlice({
       action: PayloadAction<{
         cluster: Cluster
         solanaAddress: string
-        balance: number
+        balance: bigint
         type: 'sol' | 'mobile' | 'dc' | 'iot' | 'hnt' | 'dcEscrow'
       }>,
     ) => {

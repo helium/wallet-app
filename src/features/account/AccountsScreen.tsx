@@ -31,11 +31,7 @@ import { CSAccount } from '@storage/cloudStorage'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
-import {
-  AccountBalance as AccountBalanceType,
-  useAccountLazyQuery,
-  useAccountQuery,
-} from '../../generated/graphql'
+import { useAccountLazyQuery, useAccountQuery } from '../../generated/graphql'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import StatusBanner from '../StatusPage/StatusBanner'
@@ -57,6 +53,7 @@ import { withTransactionDetail } from './TransactionDetail'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useBalance } from '../../utils/Balance'
 import { currencyType as systemCurrencyType } from '../../utils/i18n'
+import { AccountBalance } from '../../types/balance'
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
@@ -73,7 +70,7 @@ const AccountsScreen = () => {
   const { cluster } = useSolana()
   const { reset } = useOnboarding()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
-  const [selectedBalance, setSelectedBalance] = useState<AccountBalanceType>()
+  const [selectedBalance, setSelectedBalance] = useState<AccountBalance>()
   const { top } = useSafeAreaInsets()
   const bottomSheetRef = useRef<BottomSheet>(null)
   const listAnimatedPos = useSharedValue<number>(0)
@@ -227,7 +224,7 @@ const AccountsScreen = () => {
   }, [dispatch, triggerImpact])
 
   const handleBalanceHistorySelected = useCallback(
-    (accountBalance?: AccountBalanceType) => {
+    (accountBalance?: AccountBalance) => {
       setSelectedBalance(accountBalance)
     },
     [],

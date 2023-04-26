@@ -156,18 +156,18 @@ export const readAccountBalances = async (
   )
 
   const balances = {
-    sol: { balance: 0, tokenAccount: '' },
-    mobile: { balance: 0, tokenAccount: '' },
-    dc: { balance: 0, tokenAccount: '' },
-    iot: { balance: 0, tokenAccount: '' },
-    hnt: { balance: 0, tokenAccount: '' },
+    sol: { balance: 0n, tokenAccount: '' },
+    mobile: { balance: 0n, tokenAccount: '' },
+    dc: { balance: 0n, tokenAccount: '' },
+    iot: { balance: 0n, tokenAccount: '' },
+    hnt: { balance: 0n, tokenAccount: '' },
   } as Balances
 
   tokenAccounts.value.forEach((tokenAccount) => {
     const accountData = AccountLayout.decode(tokenAccount.account.data)
 
     const info = {
-      balance: Number(accountData.amount),
+      balance: accountData.amount,
       tokenAccount: tokenAccount.pubkey.toBase58(),
     }
 
@@ -189,7 +189,7 @@ export const readAccountBalances = async (
 
   const sol = await anchorProvider.connection.getBalance(account)
   balances.sol = {
-    balance: sol,
+    balance: BigInt(sol),
     tokenAccount: address,
   }
 

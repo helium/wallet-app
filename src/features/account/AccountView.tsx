@@ -13,12 +13,12 @@ import TokenPricesTicker from '@components/TokenPricesTicker'
 import { useSpacing } from '@theme/themeHooks'
 import CopyAddressPill from '@components/CopyAddressPill'
 import CurrencyFormatter from 'react-native-currency-format'
-import { AccountBalance } from '../../generated/graphql'
 import { useBalance } from '../../utils/Balance'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import supportedCurrencies from '../../utils/supportedCurrencies'
 import AccountActionBar from './AccountActionBar'
 import DateModule from '../../utils/DateModule'
+import { AccountBalance } from '../../types/balance'
 
 type Props = {
   selectedBalance?: AccountBalance

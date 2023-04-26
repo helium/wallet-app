@@ -110,13 +110,13 @@ const useBalanceHook = () => {
     }) => {
       if ((!data?.length && !account) || !currentAccount?.solanaAddress) return
 
-      let amount = 0
+      let amount = 0n
 
       if (account) {
-        amount = Number(account.amount)
+        amount = account.amount
       } else if (data?.length) {
         const decoded = AccountLayout.decode(data)
-        amount = Number(decoded.amount)
+        amount = decoded.amount
       }
 
       dispatch(
@@ -326,27 +326,27 @@ const useBalanceHook = () => {
     const bals = tokens || {}
     const balances = {
       sol: new Balance(
-        bals?.[solanaAddress]?.sol?.balance || 0,
+        Number(bals?.[solanaAddress]?.sol?.balance || 0),
         CurrencyType.solTokens,
       ),
       dcEscrow: new Balance(
-        bals?.[solanaAddress]?.dcEscrow?.balance || 0,
+        Number(bals?.[solanaAddress]?.dcEscrow?.balance || 0),
         CurrencyType.dataCredit,
       ),
       dc: new Balance(
-        bals?.[solanaAddress]?.dc?.balance || 0,
+        Number(bals?.[solanaAddress]?.dc?.balance || 0),
         CurrencyType.dataCredit,
       ),
       hnt: new Balance(
-        bals?.[solanaAddress]?.hnt?.balance || 0,
+        Number(bals?.[solanaAddress]?.hnt?.balance || 0),
         CurrencyType.networkToken,
       ),
       mobile: new Balance(
-        bals?.[solanaAddress]?.mobile?.balance || 0,
+        Number(bals?.[solanaAddress]?.mobile?.balance || 0),
         CurrencyType.mobile,
       ),
       iot: new Balance(
-        bals?.[solanaAddress]?.iot?.balance || 0,
+        Number(bals?.[solanaAddress]?.iot?.balance || 0),
         CurrencyType.iot,
       ),
     }

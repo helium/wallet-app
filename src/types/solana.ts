@@ -15,7 +15,7 @@ import { init as initLazy } from '@helium/lazy-distributor-sdk'
 import { TokenAmount } from '@solana/web3.js'
 import { Creator } from '@metaplex-foundation/mpl-bubblegum'
 
-export type BalanceWithAcct = { balance: number; tokenAccount: string }
+export type BalanceWithAcct = { balance: bigint; tokenAccount: string }
 export type Balances = {
   sol: BalanceWithAcct
   mobile: BalanceWithAcct
