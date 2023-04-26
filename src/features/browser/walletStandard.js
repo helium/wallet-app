@@ -413,9 +413,7 @@ try {
 }
 
 parent.addEventListener('wallet-standard:app-ready', function (event) {
-    window.ReactNativeWebView.postMessage(
-        JSON.stringify({ type: 'app-ready', event: event.data }),
-    )
+    event.detail.register(walletObj)
 })
 }`
 
