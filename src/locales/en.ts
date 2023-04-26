@@ -392,7 +392,6 @@ export default {
     send: 'Send',
     stake: 'Stake',
     testnetTokens: 'Testnet Tokens',
-    vote: 'Vote',
     delegate: 'Delegate',
     airdrop: 'Airdrop',
   },
@@ -963,65 +962,5 @@ export default {
     unstakeValidator: 'Unstake {{ticker}}',
     validator: 'Validator',
     delegated: 'Delegated',
-  },
-  vote: {
-    active: 'Active Votes',
-    against: 'Against',
-    backToVoting: 'Back to Voting',
-    blocksLeft: 'Blocks left',
-    blocksSinceVote: 'Blocks\nsince Vote',
-    body: 'To cast a vote, submit a burn transaction using the wallet of your choosing. Total cost of a burn transaction is {{dcValue}} or approximately {{usdValue}}.',
-    burnTitle: 'Burn {{ticker}}',
-    closed: 'Closed Votes',
-    deadline: 'Deadline',
-    estimatedTimeRemaining: 'Est. Time Remaining',
-    estimatedTimeRemainingNewline: 'Est. Time\nRemaining',
-    finalResults: 'Final Results',
-    for: 'For',
-    ledger: {
-      subtitle:
-        'Please verify the burn transaction on your Ledger device {{name}}',
-      title: 'Ledger Approval',
-    },
-    noHNT: 'You must hold HNT to vote.',
-    preliminaryResults: 'Preliminary Results',
-    subtitle:
-      '<primaryText>Welcome to Helium Vote</primaryText>\n\nVote <greenBright500>For</greenBright500> or <blueBright500>Against</blueBright500> proposed Helium Improvement Proposals by burning HNT.',
-    swipeToVote: 'Swipe to Vote',
-    title: 'Helium Vote',
-    totalVotes: 'Total\nVotes',
-    tutorial: {
-      goToVote: 'Go To Vote',
-      slides: [
-        {
-          body: 'Helium Vote is where the\nHelium Community comes\ntogether to make decisions\non the Network.',
-          title: 'Helium Vote',
-        },
-        {
-          body: 'Each Vote is driven by a\nHelium Improvement\nProposal (HIP).',
-          title: 'HIPs',
-        },
-        {
-          body: 'Each HIP will have two\nvoting choices. Vote <greenBright500>For</greenBright500> or\n<blueBright500>Against</blueBright500> by submitting a\nburn transaction.\n\nBurn transactions have a\nsmall fee.',
-          title: 'How to Vote',
-        },
-        {
-          body: 'Your <primaryText>Vote Power</primaryText>\nis determined by the amount of\nHNT in the account at the\nend of the vote.',
-          title: 'Vote Power',
-        },
-        {
-          body: '<caribbeanGreen>Get your voice heard.</caribbeanGreen>\n\nVote on Active Votes or\nbrowse Closed Votes.',
-          title: 'Ready to Vote?',
-        },
-      ],
-    },
-    vote: 'Vote',
-    voteClosed: 'Vote\nClosed',
-    voteCount: '{{totalVotes}} Votes',
-    voteOptions: 'Vote Options',
-    votes: 'Votes',
-    votingAs: 'Voting as {{alias}} with {{hnt}} Voting Power',
-    votingClosed: 'Voting Closed',
-    votingClosedNewline: 'Voting\nClosed',
   },
 }

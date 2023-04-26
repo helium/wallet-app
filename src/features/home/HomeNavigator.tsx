@@ -14,7 +14,6 @@ import NotificationsNavigator from '../notifications/NotificationsNavigator'
 import RequestScreen from '../request/RequestScreen'
 import PaymentQrScanner from '../payment/PaymentQrScanner'
 import AddressQrScanner from '../addressBook/AddressQrScanner'
-import VoteNavigator from '../vote/VoteNavigator'
 import AccountTokenScreen from '../account/AccountTokenScreen'
 import AddNewAccountNavigator from './addNewAccount/AddNewAccountNavigator'
 import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
@@ -94,8 +93,6 @@ const HomeStackScreen = () => {
         component={AddNewAccountNavigator}
         options={screenOptions}
       />
-
-      <HomeStack.Screen name="VoteNavigator" component={VoteNavigator} />
 
       <HomeStack.Screen
         name="ReImportAccountNavigator"
