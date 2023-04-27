@@ -29,9 +29,6 @@ import PaymentScreen from '../features/payment/PaymentScreen'
 import SignHotspot from '../features/txnDelegation/SignHotspot'
 import DappLoginScreen from '../features/dappLogin/DappLoginScreen'
 import ImportPrivateKey from '../features/onboarding/import/ImportPrivateKey'
-import ClaimRewardsScreen from '../features/collectables/ClaimRewardsScreen'
-import ClaimAllRewardsScreen from '../features/collectables/ClaimAllRewardsScreen'
-import ClaimingRewardsScreen from '../features/collectables/ClaimingRewardsScreen'
 
 const screenOptions = { headerShown: false } as StackNavigationOptions
 
@@ -136,18 +133,6 @@ const RootNavigator = () => {
           name="ImportPrivateKey"
           component={ImportPrivateKey}
           options={screenOptions}
-        />
-        <RootStack.Screen
-          name="ClaimAllRewardsScreen"
-          component={ClaimAllRewardsScreen}
-        />
-        <RootStack.Screen
-          name="ClaimRewardsScreen"
-          component={ClaimRewardsScreen}
-        />
-        <RootStack.Screen
-          name="ClaimingRewardsScreen"
-          component={ClaimingRewardsScreen}
         />
       </RootStack.Navigator>
     </ConnectedWallets>

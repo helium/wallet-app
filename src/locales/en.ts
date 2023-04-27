@@ -414,7 +414,7 @@ export default {
   addressBook: {
     addNext: 'Add New...',
     qrScanFail: {
-      message: 'This QR scanner supports wallet addresses only.',
+      message: 'This QR scanner supports Solana wallet addresses only.',
       title: 'Unsupported QR Code',
     },
     searchContacts: 'Search Contacts...',

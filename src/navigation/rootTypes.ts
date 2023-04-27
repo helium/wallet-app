@@ -1,7 +1,6 @@
 import { LinkWalletRequest, SignHotspotRequest } from '@helium/wallet-link'
 import { StackNavigationProp } from '@react-navigation/stack'
 import { PaymentRouteParam } from '../features/home/homeTypes'
-import { HotspotWithPendingRewards } from '../types/solana'
 
 export type RootStackParamList = {
   HomeNavigator: undefined
@@ -13,11 +12,6 @@ export type RootStackParamList = {
   RequestScreen: undefined
   DappLoginScreen: { uri: string; callback: string }
   ImportPrivateKey: { key?: string }
-  ClaimRewardsScreen: {
-    hotspot: HotspotWithPendingRewards
-  }
-  ClaimAllRewardsScreen: undefined
-  ClaimingRewardsScreen: undefined
 }
 
 export type TabBarStackParamList = {

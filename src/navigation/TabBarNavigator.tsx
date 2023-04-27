@@ -25,7 +25,7 @@ import { useAppStorage } from '../storage/AppStorageProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import SolanaMigration from '../features/migration/SolanaMigration'
 import HomeNavigator from '../features/home/HomeNavigator'
-import CollectablesTabNavigator from '../features/collectables/CollectablesTabNavigator'
+import CollectablesNavigator from '../features/collectables/CollectablesNavigator'
 import ActivityNavigator from '../features/activity/ActivityNavigator'
 import NotificationsNavigator from '../features/notifications/NotificationsNavigator'
 import BrowserNavigator from '../features/browser/BrowserNavigator'
@@ -235,7 +235,7 @@ const TabBarNavigator = () => {
         }}
       >
         <Tab.Screen name="Home" component={HomeNavigator} />
-        <Tab.Screen name="Collectables" component={CollectablesTabNavigator} />
+        <Tab.Screen name="Collectables" component={CollectablesNavigator} />
         <Tab.Screen name="Activity" component={ActivityNavigator} />
         <Tab.Screen
           name="NotificationsNavigator"

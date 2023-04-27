@@ -36,8 +36,8 @@ const ShareAddressScreen = () => {
     title: string
   }> => {
     return [
-      { title: 'Helium', value: 'helium' },
       { title: 'Solana', value: 'solana' },
+      { title: 'Helium', value: 'helium' },
     ]
   }, [])
 
