@@ -182,13 +182,7 @@ const PaymentScreen = () => {
     netType: networkType,
   })
 
-  const {
-    data: submitData,
-    loading: paymentSubmitLoading,
-    error: submitError,
-    submit,
-    submitLedger,
-  } = useSubmitTxn()
+  const { submit, submitLedger } = useSubmitTxn()
 
   const solanaPayment = useSelector(
     (reduxState: RootState) => reduxState.solana.payment,
@@ -315,16 +309,16 @@ const PaymentScreen = () => {
     (opts?: { txn: PaymentV2; txnJson: string }) => {
       try {
         if (!opts) {
-          submit(payments, ticker)
+          submit(payments)
         } else {
           // This is a ledger device
-          submitLedger(opts)
+          submitLedger()
         }
       } catch (e) {
         console.error(e)
       }
     },
-    [payments, submit, submitLedger, ticker],
+    [payments, submit, submitLedger],
   )
 
   const insufficientFunds = useMemo((): [
@@ -743,7 +737,6 @@ const PaymentScreen = () => {
                       sortedAccountsForNetType(networkType).length > 1
                     }
                     address={currentAccount?.address}
-                    netType={currentAccount?.netType}
                     onPress={handleShowAccounts}
                     showBubbleArrow
                     marginHorizontal="l"
@@ -771,11 +764,6 @@ const PaymentScreen = () => {
                         marginBottom="l"
                         hasError={
                           p.address === currentAccount?.address || p.hasError
-                        }
-                        fee={
-                          paymentState.payments.length === 1
-                            ? paymentState.dcFee
-                            : undefined
                         }
                         index={index}
                         onAddressBookSelected={handleAddressBookSelected}
@@ -831,11 +819,9 @@ const PaymentScreen = () => {
         </AccountSelector>
       </HNTKeyboard>
       <PaymentSubmit
-        submitLoading={paymentSubmitLoading || !!solanaPayment?.loading}
-        submitSucceeded={
-          !!submitData?.submitTxn?.hash || !!solanaPayment?.success
-        }
-        submitError={submitError || solanaPayment?.error}
+        submitLoading={!!solanaPayment?.loading}
+        submitSucceeded={!!solanaPayment?.success}
+        submitError={solanaPayment?.error}
         totalBalance={paymentState.totalAmount}
         payments={paymentState.payments}
         feeTokenBalance={paymentState.networkFee}

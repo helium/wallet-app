@@ -462,7 +462,6 @@ const BurnScreen = () => {
                       sortedAccountsForNetType(networkType).length > 1
                     }
                     address={currentAccount?.address}
-                    netType={currentAccount?.netType}
                     onPress={handleShowAccounts}
                     showBubbleArrow
                     marginHorizontal="l"
@@ -510,7 +509,6 @@ const BurnScreen = () => {
                         showBubbleArrow
                         showChevron={false}
                         address={route.params.address}
-                        netType={networkType}
                         marginHorizontal="l"
                       />
                       <Box

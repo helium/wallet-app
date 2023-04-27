@@ -21,9 +21,7 @@ import useBackHandler from '@hooks/useBackHandler'
 import useLedger from '@hooks/useLedger'
 import SafeAreaBox from './SafeAreaBox'
 import HandleBasic from './HandleBasic'
-import { signLedgerPayment } from '../utils/heliumLedger'
-import { SendDetails, useTransactions } from '../storage/TransactionProvider'
-import { useAccountLazyQuery } from '../generated/graphql'
+import { SendDetails } from '../storage/TransactionProvider'
 import Text from './Text'
 import Box from './Box'
 import { LedgerDevice } from '../storage/cloudStorage'
@@ -49,6 +47,7 @@ type Props = {
 }
 const LedgerPaymentSelector = forwardRef(
   (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     { children, onConfirm, onError, ticker }: Props,
     ref: Ref<LedgerPaymentRef>,
   ) => {
@@ -60,10 +59,6 @@ const LedgerPaymentSelector = forwardRef(
     const { primaryText } = useColors()
     const [options, setOptions] = useState<ShowOptions>()
     const { getTransport } = useLedger()
-    const { makePaymentTxn } = useTransactions()
-    const [fetchAccount] = useAccountLazyQuery({
-      fetchPolicy: 'network-only',
-    })
     const snapPoints = useMemo(() => {
       return [600]
     }, [])
@@ -75,9 +70,6 @@ const LedgerPaymentSelector = forwardRef(
         bottomSheetModalRef.current?.present()
         setIsShowing(true)
         try {
-          const { data: accountData } = await fetchAccount({
-            variables: { address: opts.address },
-          })
           const nextTransport = await getTransport(
             opts.ledgerDevice.id,
             opts.ledgerDevice.type,
@@ -89,18 +81,15 @@ const LedgerPaymentSelector = forwardRef(
             })
             return
           }
-          const { txnJson, unsignedTxn } = await makePaymentTxn({
-            paymentDetails: opts.payments,
-            speculativeNonce: accountData?.account?.speculativeNonce || 0,
-            isLedger: true,
-            ticker,
-          })
-          const payment = await signLedgerPayment(
-            nextTransport,
-            unsignedTxn,
-            opts.accountIndex,
-          )
-          onConfirm({ txn: payment, txnJson })
+
+          // TODO: Implement Solana Ledger Payment
+
+          // const payment = await signLedgerPayment(
+          //   nextTransport,
+          //   unsignedTxn,
+          //   opts.accountIndex,
+          // )
+          // onConfirm({ txn: payment, txnJson })
           bottomSheetModalRef.current?.dismiss()
         } catch (error) {
           // in this case, user is likely not on Helium app
@@ -109,17 +98,7 @@ const LedgerPaymentSelector = forwardRef(
           bottomSheetModalRef.current?.dismiss()
         }
       },
-      [
-        fetchAccount,
-        getTransport,
-        makePaymentTxn,
-        onConfirm,
-        onError,
-        setIsShowing,
-        showOKAlert,
-        t,
-        ticker,
-      ],
+      [getTransport, onError, setIsShowing, showOKAlert, t],
     )
 
     const hide = useCallback(() => {

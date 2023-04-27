@@ -388,16 +388,6 @@ const HNTKeyboardSelector = forwardRef(
                 {t('payment.max')}
               </Text>
             </TouchableOpacityBox>
-            <Text
-              variant="subtitle4"
-              color="secondaryText"
-              maxFontSizeMultiplier={1}
-              numberOfLines={1}
-              alignSelf="flex-end"
-              adjustsFontSizeToFit
-            >
-              {timeStr}
-            </Text>
           </Box>
         </Box>
       )
