@@ -1786,3 +1786,20 @@ export const parseTransactionError = (
 
   return message
 }
+
+/**
+ * Returns the current transactions per second (TPS) rate — including voting transactions.
+ *
+ * @returns {Promise<number>} A promise that resolves to the current TPS rate.
+ * @throws {Error} If there was an error calling the `getRecentPerformanceSamples` method.
+ */
+export const getCurrentTPS = async (
+  provider: AnchorProvider,
+): Promise<number> => {
+  try {
+    const samples = await provider.connection.getRecentPerformanceSamples(1)
+    return samples[0]?.numTransactions / samples[0]?.samplePeriodSecs
+  } catch (e) {
+    throw new Error(`error calling getCurrentTPS: ${e}`)
+  }
+}

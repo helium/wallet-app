@@ -331,7 +331,11 @@ const AccountsScreen = () => {
       <Box onLayout={setPageHeight} flex={1}>
         {bannerVisible && (
           <WarningBanner
-            type={isHealthy ? BannerType.DevnetTokens : BannerType.SolanaHealth}
+            type={
+              cluster === 'devnet'
+                ? BannerType.DevnetTokens
+                : BannerType.SolanaHealth
+            }
             onLayout={setBannerHeight}
           />
         )}
