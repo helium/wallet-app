@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent, Animated } from 'react-native'
-import { NetTypes } from '@helium/address'
 import { Ticker } from '@helium/currency'
 import Box from '@components/Box'
 import FabButton from '@components/FabButton'
@@ -17,7 +16,6 @@ export type Action =
   | 'request'
   | 'stake'
   | 'lock'
-  | 'vote'
   | '5G'
   | 'delegate'
   | 'swaps'
@@ -123,10 +121,6 @@ const AccountActionBar = ({
           navigation.navigate('AirdropScreen', { ticker: ticker || 'HNT' })
           break
         }
-        case 'vote': {
-          navigation.navigate('VoteNavigator')
-          break
-        }
         case '5G': {
           navigation.navigate('OnboardData')
           break
@@ -153,12 +147,6 @@ const AccountActionBar = ({
     if (maxCompact) return 's'
     return undefined
   }, [compact, maxCompact])
-
-  const isHeliumMainnet = useMemo(
-    () =>
-      l1Network === 'helium' && currentAccount?.netType === NetTypes.MAINNET,
-    [currentAccount, l1Network],
-  )
 
   if (currentAccount?.ledgerDevice && l1Network !== 'helium') {
     return null
@@ -263,51 +251,6 @@ const AccountActionBar = ({
                 textAlign="center"
               >
                 {t('airdropScreen.airdrop')}
-              </Text>
-            </Box>
-          )}
-        </Box>
-      )}
-      {isHeliumMainnet && !maxCompact && (
-        <Box
-          marginEnd={fabMargin}
-          flexDirection={hasBottomTitle ? 'column' : 'row'}
-        >
-          <Box>
-            <FabButton
-              zIndex={2}
-              icon="vote"
-              backgroundColor="purple500"
-              backgroundColorOpacity={0.3}
-              backgroundColorOpacityPressed={0.5}
-              onPress={handleAction('vote')}
-              width={maxCompact ? 47.5 : undefined}
-              height={maxCompact ? 47.5 : undefined}
-              justifyContent="center"
-            />
-            {voteData && unseenVotes?.length > 0 && (
-              <Box position="absolute" top={0} left={0} right={0} bottom={0}>
-                <Animated.View style={{ transform: [{ scale: anim.current }] }}>
-                  <Box
-                    opacity={0.3}
-                    borderRadius="round"
-                    width="100%"
-                    height="100%"
-                    backgroundColor="purple500"
-                  />
-                </Animated.View>
-              </Box>
-            )}
-          </Box>
-          {hasBottomTitle && (
-            <Box marginTop="s">
-              <Text
-                variant="body2Medium"
-                color="secondaryText"
-                marginTop="xs"
-                textAlign="center"
-              >
-                {t('accountView.vote')}
               </Text>
             </Box>
           )}

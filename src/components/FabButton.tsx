@@ -14,7 +14,6 @@ import Payment from '@assets/images/payment.svg'
 import Stake from '@assets/images/stake.svg'
 import Lock from '@assets/images/lock.svg'
 import Plus from '@assets/images/plus.svg'
-import Vote from '@assets/images/vote-thumbs.svg'
 import Close from '@assets/images/close.svg'
 import Dots from '@assets/images/dots.svg'
 import Filter from '@assets/images/filter.svg'
@@ -35,7 +34,6 @@ type IconName =
   | 'stake'
   | 'lock'
   | 'add'
-  | 'vote'
   | 'close'
   | 'dots'
   | 'filter'
@@ -260,8 +258,6 @@ const FabIcon = ({ icon, pressed, color, colorPressed }: IconProps) => {
       return <Lock color={getIconColor()} />
     case 'add':
       return <Plus color={getIconColor()} />
-    case 'vote':
-      return <Vote color={getIconColor()} />
     case 'close':
       return <Close color={getIconColor()} />
     case 'filter':
