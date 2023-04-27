@@ -26,7 +26,7 @@ const useSolanaHealth = () => {
   useAsync(async () => {
     if (!anchorProvider) return
     const currentTps = await getCurrentTPS(anchorProvider)
-    // If the highest mean_ms is greater than 10000ms, set unhealthy
+    // If the current tps is less than or equal to 2000, we consider it unhealthy
     if (currentTps <= 2000) {
       setIsHealthy(false)
       setSlowTps(currentTps)
