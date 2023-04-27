@@ -182,7 +182,11 @@ const PaymentScreen = () => {
     netType: networkType,
   })
 
+<<<<<<< HEAD
   const { submitPayment, submitLedger } = useSubmitTxn()
+=======
+  const { submit, submitLedger } = useSubmitTxn()
+>>>>>>> 9eb85ac (Fix payments)
 
   const solanaPayment = useSelector(
     (reduxState: RootState) => reduxState.solana.payment,
@@ -309,7 +313,11 @@ const PaymentScreen = () => {
     (opts?: { txn: PaymentV2; txnJson: string }) => {
       try {
         if (!opts) {
+<<<<<<< HEAD
           submitPayment(payments)
+=======
+          submit(payments)
+>>>>>>> 9eb85ac (Fix payments)
         } else {
           // This is a ledger device
           submitLedger()
@@ -318,7 +326,11 @@ const PaymentScreen = () => {
         console.error(e)
       }
     },
+<<<<<<< HEAD
     [payments, submitPayment, submitLedger],
+=======
+    [payments, submit, submitLedger],
+>>>>>>> 9eb85ac (Fix payments)
   )
 
   const insufficientFunds = useMemo((): [
