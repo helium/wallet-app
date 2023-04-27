@@ -17,10 +17,7 @@ import Box from '@components/Box'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import useHaptic from '@hooks/useHaptic'
 import Globe from '@assets/images/earth-globe.svg'
-import { isBefore, parseISO } from 'date-fns'
-import { useNotificationStorage } from '@storage/NotificationStorageProvider'
-import { useDispatch } from 'react-redux'
-import { useGetNotificationsQuery } from '../store/slices/walletRestApi'
+import { useDispatch, useSelector } from 'react-redux'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import SolanaMigration from '../features/migration/SolanaMigration'
@@ -29,52 +26,28 @@ import CollectablesNavigator from '../features/collectables/CollectablesNavigato
 import ActivityNavigator from '../features/activity/ActivityNavigator'
 import NotificationsNavigator from '../features/notifications/NotificationsNavigator'
 import BrowserNavigator from '../features/browser/BrowserNavigator'
-import { useNotificationsQuery } from '../generated/graphql'
 import { appSlice } from '../store/slices/appSlice'
 import { useSolana } from '../solana/SolanaProvider'
+import { RootState } from '../store/rootReducer'
 
 const Tab = createBottomTabNavigator()
 
 function MyTabBar({ state, navigation }: BottomTabBarProps) {
-  const { currentAccount } = useAccountStorage()
   const { hasNewTransactions, resetNewTransactions } = useEnrichedTransactions()
   const { triggerImpact } = useHaptic()
-  const { lastViewedTimestamp } = useNotificationStorage()
-  const { data: v1Notifications } = useNotificationsQuery({
-    variables: {
-      address: currentAccount?.address || '',
-      resource: currentAccount?.address || '',
-    },
-    skip: !currentAccount?.address,
-    fetchPolicy: 'cache-and-network',
-  })
 
-  const { currentData: v2Notifications } = useGetNotificationsQuery(
-    currentAccount?.solanaAddress,
-    {
-      refetchOnMountOrArgChange: true,
-    },
+  const notificationsByResource = useSelector(
+    (appState: RootState) => appState.notifications.notifications,
   )
 
-  const notifications = useMemo(() => {
-    const all = [
-      ...(v2Notifications || []),
-      ...(v1Notifications?.notifications || []),
-    ]
+  const hasUnreadNotifications = useMemo(() => {
+    const allNotifs = Object.keys(notificationsByResource).flatMap(
+      (k) => notificationsByResource[k],
+    )
 
-    return all
-      .sort(
-        ({ time: timeA }, { time: timeB }) =>
-          parseISO(timeB).getTime() - parseISO(timeA).getTime(),
-      )
-      .filter((item) => {
-        const viewed =
-          (lastViewedTimestamp &&
-            isBefore(new Date(item.time), new Date(lastViewedTimestamp))) ||
-          !!item.viewedAt
-        return !viewed
-      })
-  }, [v1Notifications, v2Notifications, lastViewedTimestamp])
+    const unread = allNotifs.find((n) => !n.viewedAt)
+    return !!unread
+  }, [notificationsByResource])
 
   const tabData = useMemo((): Array<{
     value: string
@@ -100,11 +73,11 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
         value: 'notifications',
         Icon: Notifications,
         iconColor: 'white',
-        hasBadge: notifications.length > 0 && state.index !== 4,
+        hasBadge: hasUnreadNotifications && state.index !== 3,
       },
       { value: 'browser', Icon: Globe, iconColor: 'white' },
     ]
-  }, [hasNewTransactions, state.index, notifications])
+  }, [hasNewTransactions, state.index, hasUnreadNotifications])
 
   const selectedValue = tabData[state.index].value
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])

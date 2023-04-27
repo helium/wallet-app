@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo } from 'react'
-import { useNavigation } from '@react-navigation/native'
+import { useIsFocused } from '@react-navigation/native'
 import { Linking } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Edge } from 'react-native-safe-area-context'
@@ -9,24 +9,23 @@ import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import { ReAnimatedBox } from '@components/AnimatedBox'
-import { HomeNavigationProp } from '../home/homeTypes'
 import AccountSlider from './AccountSlider'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import NotificationsList from './NotificationsList'
 
+// TODO: When this screen becomes focused, should we query notifications for all accounts?
 const NotificationsScreen = () => {
   const { t } = useTranslation()
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
-  const navigation = useNavigation<HomeNavigationProp>()
-  const {
-    selectedNotification,
-    setSelectedNotification,
-    onNotificationsClosed,
-  } = useNotificationStorage()
+  const { selectedNotification, updateAllNotifications } =
+    useNotificationStorage()
+  const isFocused = useIsFocused()
 
   useEffect(() => {
-    return navigation.addListener('beforeRemove', onNotificationsClosed)
-  }, [navigation, onNotificationsClosed, setSelectedNotification])
+    if (!isFocused) return
+    updateAllNotifications()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFocused])
 
   const onActionPress = useCallback(() => {
     if (!selectedNotification?.actionUrl) return

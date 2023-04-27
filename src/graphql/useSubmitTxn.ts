@@ -1,9 +1,5 @@
 import { useCallback } from 'react'
-import Balance, {
-  MobileTokens,
-  NetworkTokens,
-  TestNetworkTokens,
-} from '@helium/currency'
+import Balance, { AnyCurrencyType } from '@helium/currency'
 import { PublicKey, Transaction } from '@solana/web3.js'
 import i18n from '@utils/i18n'
 import { Mints } from '@utils/constants'
@@ -29,11 +25,11 @@ export default () => {
 
   const dispatch = useAppDispatch()
 
-  const submitSolDev = useCallback(
+  const submitPayment = useCallback(
     async (
       payments: {
         payee: string
-        balanceAmount: Balance<NetworkTokens | TestNetworkTokens | MobileTokens>
+        balanceAmount: Balance<AnyCurrencyType>
         memo: string
         max?: boolean
       }[],
@@ -53,20 +49,6 @@ export default () => {
       )
     },
     [currentAccount, dispatch, t, anchorProvider, cluster],
-  )
-
-  const submit = useCallback(
-    async (
-      payments: {
-        payee: string
-        balanceAmount: Balance<NetworkTokens | TestNetworkTokens | MobileTokens>
-        memo: string
-        max?: boolean
-      }[],
-    ) => {
-      submitSolDev(payments)
-    },
-    [submitSolDev],
   )
 
   const submitCollectable = useCallback(
@@ -219,7 +201,7 @@ export default () => {
   )
 
   return {
-    submit,
+    submitPayment,
     submitCollectable,
     submitTreasurySwap,
     submitAnchorTxn,

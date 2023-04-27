@@ -8,6 +8,7 @@ const NotificationsStack = createNativeStackNavigator()
 
 const NotificationsNavigator = () => {
   const { backgroundStyle } = useOpacity('primaryBackground', 0.98)
+
   return (
     <NotificationsStack.Navigator
       screenOptions={{
