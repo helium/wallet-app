@@ -1,6 +1,4 @@
 import React, { memo, useEffect, useMemo, useState } from 'react'
-import { NetTypes } from '@helium/address'
-import CurrencyFormatter from 'react-native-currency-format'
 import { addMinutes } from 'date-fns'
 import { BoxProps } from '@shopify/restyle'
 import { GestureResponderEvent, ViewStyle } from 'react-native'
@@ -14,39 +12,31 @@ import { Theme } from '@theme/theme'
 import TokenPricesTicker from '@components/TokenPricesTicker'
 import { useSpacing } from '@theme/themeHooks'
 import CopyAddressPill from '@components/CopyAddressPill'
-import * as AccountUtils from '../../utils/accountUtils'
-import { AccountBalance, AccountData } from '../../generated/graphql'
+import CurrencyFormatter from 'react-native-currency-format'
 import { useBalance } from '../../utils/Balance'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import supportedCurrencies from '../../utils/supportedCurrencies'
 import AccountActionBar from './AccountActionBar'
 import DateModule from '../../utils/DateModule'
+import { AccountBalance } from '../../types/balance'
 
 type Props = {
-  accountData?: AccountData | null
   selectedBalance?: AccountBalance
   onTouchStart?: (event: GestureResponderEvent) => void
   onCurrencySelectorPress?: () => void
 } & BoxProps<Theme>
 
 const AccountView = ({
-  accountData,
   selectedBalance,
   onCurrencySelectorPress,
   ...boxProps
 }: Props) => {
-  const [balanceString, setBalanceString] = useState('')
   const [selectedDate, setSelectedDate] = useState('')
   const spacing = useSpacing()
-
-  const { totalBalance, networkBalance, networkStakedBalance } = useBalance()
+  const [balanceString, setBalanceString] = useState('')
+  const { totalValue } = useBalance()
   const { currency, l1Network } = useAppStorage()
   const [actionBarHeight, setActionBarHeight] = useLayoutHeight()
-
-  const accountNetType = useMemo(
-    () => AccountUtils.accountNetType(accountData?.address),
-    [accountData],
-  )
 
   const currencySelectorStyles = useMemo(() => {
     return {
@@ -71,26 +61,14 @@ const AccountView = ({
   }, [selectedBalance])
 
   useEffect(() => {
-    if (accountNetType !== NetTypes.MAINNET) {
-      setBalanceString('Testnet')
-      return
-    }
-
     if (selectedBalance) {
       CurrencyFormatter.format(selectedBalance.balance, currency).then(
         setBalanceString,
       )
     } else {
-      totalBalance().then(setBalanceString)
+      setBalanceString(totalValue || '')
     }
-  }, [
-    accountNetType,
-    currency,
-    networkBalance,
-    networkStakedBalance,
-    selectedBalance,
-    totalBalance,
-  ])
+  }, [currency, selectedBalance, totalValue])
 
   return (
     <Box flexDirection="column" alignItems="center" {...boxProps}>

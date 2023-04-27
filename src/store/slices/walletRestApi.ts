@@ -2,7 +2,6 @@ import { Ticker } from '@helium/currency'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { Cluster } from '@solana/web3.js'
 import Config from 'react-native-config'
-import { AccountBalance } from '../../types/accountBalance'
 import { lang } from '../../utils/i18n'
 import { AuthState } from './authSlice'
 
@@ -47,6 +46,13 @@ export type SessionKey = {
   sessionKey: string
 }
 
+/// //////////////////////////////////////////////////////////////////////////////////////
+/// // DO NOT ADD TO THIS FILE.
+/// // We are working toward removing it entirely. The `createApi` function is buggy with
+/// // redux-persist, we need better control. Favor use of src/utils/walletApi.ts and
+/// // store data in a relevant redux slice.
+/// //////////////////////////////////////////////////////////////////////////////////////
+
 export const walletRestApi = createApi({
   reducerPath: 'walletRestApi',
   tagTypes: ['Notifications'],
@@ -71,13 +77,6 @@ export const walletRestApi = createApi({
     }),
     getMints: builder.query<Mints, string>({
       query: (cluster) => `/mints?cluster=${cluster}`,
-    }),
-    getBalanceHistory: builder.query<
-      AccountBalance[],
-      { currency: string; address: string; cluster: Cluster }
-    >({
-      query: ({ address, currency, cluster }) =>
-        `/balances/${address}?cluster=${cluster}&currency=${currency.toLowerCase()}`,
     }),
     getNotifications: builder.query<Notification[], string | undefined>({
       query: (resource) => `/notifications/${resource}`,
@@ -105,34 +104,6 @@ export const walletRestApi = createApi({
       }),
       invalidatesTags: ['Notifications'],
     }),
-    getTokenPrices: builder.query<
-      TokenPrices,
-      { tokens: string; currency: string }
-    >({
-      query: ({ tokens, currency }) =>
-        `/prices/fetchTokenPrices?tokens=${tokens}&currency=${currency}`,
-      transformResponse: (response) => {
-        return response as TokenPrices
-      },
-      serializeQueryArgs: ({
-        endpointName,
-        queryArgs: { currency, tokens },
-      }) => {
-        return {
-          currency,
-          tokens,
-          endpointName,
-        }
-      },
-      merge: (_, newItems) => {
-        return newItems
-      },
-      // Refetch when the page arg changes
-      forceRefetch({ currentArg, previousArg }) {
-        return currentArg !== previousArg
-      },
-      keepUnusedDataFor: 60,
-    }),
     getRecommendedDapps: builder.query<RecommendedDapps, void>({
       query: () => '/recommendedDapps',
     }),
@@ -149,9 +120,6 @@ export const {
   useLazyGetMintsQuery,
   useGetMintsQuery,
   useGetBetaPubkeysQuery,
-  useGetBalanceHistoryQuery,
-  useGetTokenPricesQuery,
-  useLazyGetTokenPricesQuery,
   useGetRecommendedDappsQuery,
   useLazyGetRecommendedDappsQuery,
   useGetSessionKeyQuery,

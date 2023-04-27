@@ -13,7 +13,7 @@ import FadeInOut from '@components/FadeInOut'
 import { useColors, useSpacing } from '@theme/themeHooks'
 import useHaptic from '@hooks/useHaptic'
 import usePrevious from '@hooks/usePrevious'
-import { AccountBalance } from '../../generated/graphql'
+import { AccountBalance } from '../../types/balance'
 
 const CHART_HEIGHT = 140
 type Props = {

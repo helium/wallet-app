@@ -29,7 +29,6 @@ import { useColors } from '@theme/themeHooks'
 import { NavBarHeight } from '@components/NavBar'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import AccountActionBar from './AccountActionBar'
-import useActivityList from './useActivityList'
 import { FilterType, useActivityFilter } from './AccountActivityFilter'
 import TxnListItem from './TxnListItem'
 import {
@@ -42,6 +41,7 @@ import AccountTokenBalance from './AccountTokenBalance'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { Activity } from '../../types/activity'
 import { useSolana } from '../../solana/SolanaProvider'
+import useSolanaActivityList from './useSolanaActivityList'
 
 const delayedAnimation = FadeIn.delay(300)
 
@@ -92,7 +92,7 @@ const AccountTokenScreen = () => {
     requestMore: fetchMoreActivity,
     loading: activityLoading,
     now,
-  } = useActivityList({
+  } = useSolanaActivityList({
     account: currentAccount,
     filter: filterState.filter,
     ticker: routeTicker,

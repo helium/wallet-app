@@ -22,7 +22,6 @@ import {
   sendTreasurySwap,
   sendMintDataCredits,
   sendDelegateDataCredits,
-  readBalances,
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import { Collectable, CompressedNFT } from '../types/solana'
@@ -176,7 +175,6 @@ export default () => {
 
       dispatch(
         sendTreasurySwap({
-          account: currentAccount,
           anchorProvider,
           cluster,
           fromMint,
@@ -293,15 +291,12 @@ export default () => {
 
       await dispatch(
         sendMintDataCredits({
-          account: currentAccount,
           anchorProvider,
           cluster,
           dcAmount,
           recipient,
         }),
       )
-
-      dispatch(readBalances({ anchorProvider, acct: currentAccount }))
     },
     [anchorProvider, cluster, currentAccount, dispatch, t],
   )
@@ -314,7 +309,6 @@ export default () => {
 
       await dispatch(
         sendDelegateDataCredits({
-          account: currentAccount,
           anchorProvider,
           cluster,
           delegateAddress,
@@ -322,8 +316,6 @@ export default () => {
           mint,
         }),
       )
-
-      dispatch(readBalances({ anchorProvider, acct: currentAccount }))
     },
     [anchorProvider, cluster, currentAccount, dispatch, t],
   )
