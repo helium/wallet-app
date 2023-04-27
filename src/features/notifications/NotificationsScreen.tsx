@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo } from 'react'
-import { useNavigation } from '@react-navigation/native'
+import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { Linking } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Edge } from 'react-native-safe-area-context'
@@ -10,22 +10,35 @@ import CloseButton from '@components/CloseButton'
 import ButtonPressable from '@components/ButtonPressable'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import { ReAnimatedBox } from '@components/AnimatedBox'
+import { useAsync } from 'react-async-hook'
 import { HomeNavigationProp } from '../home/homeTypes'
 import AccountSlider from './AccountSlider'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import NotificationsList from './NotificationsList'
+import sleep from '../../utils/sleep'
 
 const NotificationsScreen = () => {
   const { l1Network } = useAppStorage()
   const { t } = useTranslation()
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
+  const isFocused = useIsFocused()
   const navigation = useNavigation<HomeNavigationProp>()
   const {
     selectedNotification,
     setSelectedNotification,
     onNotificationsClosed,
+    updateNotifications,
   } = useNotificationStorage()
+
+  useAsync(async () => {
+    if (!isFocused) return
+
+    // let the ui transition complete before updating
+    await sleep(300)
+
+    updateNotifications()
+  }, [isFocused, updateNotifications])
 
   useEffect(() => {
     return navigation.addListener('beforeRemove', onNotificationsClosed)

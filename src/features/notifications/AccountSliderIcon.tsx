@@ -24,6 +24,8 @@ const AccountSliderIcon = ({
   const { lastViewedTimestamp, markListUnread, unreadLists } =
     useNotificationStorage()
 
+  // TODO: Remove this!!!!!!!!!!!!!!!!
+  // TODO: Use new!!!!!!!!!!!!!!!!!!!!!!
   const { data: notifications } = useNotificationsQuery({
     variables: {
       address: currentAccount?.address || '',

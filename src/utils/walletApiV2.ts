@@ -4,6 +4,24 @@ import { Cluster } from '@solana/web3.js'
 import { getSecureItem } from '../storage/secureStorage'
 import { AccountBalance, Prices } from '../types/balance'
 
+export type Notification = {
+  title: string
+  body: string
+  time: string
+  id: number
+  createdAt: string
+  updatedAt: string
+  viewedAt: string
+  identifier: string
+  icon: string
+  resource: string
+  type: string
+  deliveryTimeOfDay: string
+  actionTitle: string
+  actionUrl: string
+  uuid: string
+}
+
 const axiosInstance = axios.create({
   headers: { 'Content-Type': 'application/json' },
   baseURL: Config.WALLET_REST_URI,
@@ -35,4 +53,19 @@ export const getBalanceHistory = async ({
   const url = `/balances/${solanaAddress}?cluster=${cluster}&currency=${currency.toLowerCase()}`
   const { data } = await axiosInstance.get<AccountBalance[]>(url)
   return data
+}
+
+export const getNotifications = async ({ resource }: { resource: string }) => {
+  const url = `/notifications/${resource}`
+  const { data } = await axiosInstance.get<Notification[]>(url)
+  return data
+}
+
+export const postNotificationRead = async ({ id }: { id: number }) => {
+  const url = '/notifications/markRead'
+  const response = await axiosInstance.post(url, { id })
+  // eslint-disable-next-line no-console
+  console.log('post notification read', response.status)
+  // TODO: Verify this works
+  return response
 }
