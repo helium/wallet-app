@@ -9,7 +9,6 @@ import { useAsync } from 'react-async-hook'
 import LedgerBurnModal, {
   LedgerBurnModalRef,
 } from '@components/LedgerBurnModal'
-import { encodeMemoString } from '@components/MemoInput'
 import SafeAreaBox from '@components/SafeAreaBox'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useColors } from '@theme/themeHooks'
@@ -123,7 +122,7 @@ const DappLoginScreen = () => {
     const { signedTxn, unsignedTxn, txnJson } = await makeBurnTxn({
       payeeB58: EMPTY_B58_ADDRESS.b58,
       amount: 1,
-      memo: encodeMemoString('test') || '',
+      memo: '',
       nonce: 0,
       shouldSign: !isLedger,
     })

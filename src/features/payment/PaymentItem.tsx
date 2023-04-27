@@ -1,12 +1,9 @@
-import React, {
-  memo as reactMemo,
-  useCallback,
-  useEffect,
-  useMemo,
-} from 'react'
+import React, { memo, useCallback, useEffect, useMemo } from 'react'
 import {
   Balance,
   DataCredits,
+  IotTokens,
+  MobileTokens,
   NetworkTokens,
   TestNetworkTokens,
 } from '@helium/currency'
@@ -25,7 +22,6 @@ import Box from '@components/Box'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useColors, useOpacity } from '@theme/themeHooks'
 import Text from '@components/Text'
-import MemoInput from '@components/MemoInput'
 import TextInput from '@components/TextInput'
 import AccountIcon from '@components/AccountIcon'
 import BackgroundFill from '@components/BackgroundFill'
@@ -38,9 +34,11 @@ export type Payment = {
   address?: string
   account?: CSAccount
   amount?: Balance<NetworkTokens | TestNetworkTokens>
-  memo?: string
   hasError?: boolean
   max?: boolean
+  createTokenAccountFee?: Balance<
+    NetworkTokens | TestNetworkTokens | IotTokens | MobileTokens
+  >
 } & BoxProps<Theme>
 
 type Props = {
@@ -50,7 +48,6 @@ type Props = {
   onAddressBookSelected: (opts: { address?: string; index: number }) => void
   onEditAmount: (opts: { address?: string; index: number }) => void
   onToggleMax?: (opts: { address?: string; index: number }) => void
-  onEditMemo?: (opts: { address?: string; index: number; memo: string }) => void
   onEditAddress: (opts: { index: number; address: string }) => void
   handleAddressError: (opts: {
     index: number
@@ -74,15 +71,12 @@ const PaymentItem = ({
   fee,
   handleAddressError,
   hasError,
-  hideMemo,
   index,
   max,
-  memo,
   netType,
   onAddressBookSelected,
   onEditAddress,
   onEditAmount,
-  onEditMemo,
   onRemove,
   onToggleMax,
   onUpdateError,
@@ -128,15 +122,6 @@ const PaymentItem = ({
 
     onToggleMax({ address, index })
   }, [address, index, onToggleMax])
-
-  const handleEditMemo = useCallback(
-    (text?: string) => {
-      if (!onEditMemo) return
-
-      onEditMemo({ memo: text || '', address, index })
-    },
-    [address, index, onEditMemo],
-  )
 
   const handleEditAddress = useCallback(
     (text?: string) => {
@@ -317,17 +302,7 @@ const PaymentItem = ({
           </TouchableOpacityBox>
         </Box>
       )}
-
-      {!hideMemo && (
-        <>
-          <Box height={1} backgroundColor="primaryBackground" />
-
-          <Box justifyContent="center" minHeight={ITEM_HEIGHT}>
-            <MemoInput value={memo} onChangeText={handleEditMemo} />
-          </Box>
-        </>
-      )}
     </Box>
   )
 }
-export default reactMemo(PaymentItem)
+export default memo(PaymentItem)

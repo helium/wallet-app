@@ -13,7 +13,6 @@ export const EMPTY_B58_ADDRESS = Address.fromB58(
 export type SendDetails = {
   payee: string
   balanceAmount: Balance<NetworkTokens> | Balance<TestNetworkTokens>
-  memo: string
   max?: boolean
 }
 

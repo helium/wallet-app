@@ -30,7 +30,6 @@ export default () => {
       payments: {
         payee: string
         balanceAmount: Balance<AnyCurrencyType>
-        memo: string
         max?: boolean
       }[],
     ) => {

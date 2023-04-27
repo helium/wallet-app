@@ -567,21 +567,6 @@ const BurnScreen = () => {
                           backgroundColor="primaryBackground"
                           marginHorizontal="n_m"
                         />
-
-                        {route.params.memo && (
-                          <>
-                            <Text
-                              variant="body3"
-                              color="secondaryText"
-                              marginTop="m"
-                            >
-                              {t('burn.memo')}
-                            </Text>
-                            <Text variant="body3" marginBottom="m">
-                              {route.params.memo}
-                            </Text>
-                          </>
-                        )}
                       </Box>
                     </>
                   )}
