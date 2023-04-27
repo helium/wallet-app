@@ -9,10 +9,10 @@ import { useSolana } from '../solana/SolanaProvider'
 
 type TokenInput = {
   tokenAccount: string
-  type: 'dcEscrow' | 'sol'
+  mint: string
 }
 
-const StoreTokenBalance = ({ tokenAccount, type }: TokenInput) => {
+const StoreAtaBalance = ({ tokenAccount, mint }: TokenInput) => {
   const tokenAccountResponse = useTokenAccount(new PublicKey(tokenAccount))
   const { currentAccount } = useAccountStorage()
   const dispatch = useAppDispatch()
@@ -35,11 +35,11 @@ const StoreTokenBalance = ({ tokenAccount, type }: TokenInput) => {
     }
 
     dispatch(
-      balancesSlice.actions.updateBalance({
+      balancesSlice.actions.updateAtaBalance({
         cluster,
         solanaAddress: currentAccount?.solanaAddress,
         balance: amount,
-        type,
+        mint,
         tokenAccount,
       }),
     )
@@ -47,12 +47,12 @@ const StoreTokenBalance = ({ tokenAccount, type }: TokenInput) => {
     cluster,
     currentAccount?.solanaAddress,
     dispatch,
+    mint,
     tokenAccount,
     tokenAccountResponse,
-    type,
   ])
 
   return null
 }
 
-export default StoreTokenBalance
+export default StoreAtaBalance

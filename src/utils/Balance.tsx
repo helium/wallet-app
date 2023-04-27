@@ -22,6 +22,8 @@ import React, {
 import CurrencyFormatter from 'react-native-currency-format'
 import { useSelector } from 'react-redux'
 import { useAsync } from 'react-async-hook'
+import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
+import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
@@ -29,11 +31,13 @@ import { useAppDispatch } from '../store/store'
 import { accountCurrencyType } from './accountUtils'
 import { decimalSeparator, groupSeparator } from './i18n'
 import { useSolana } from '../solana/SolanaProvider'
-import { readTokenBalances } from '../store/slices/balancesSlice'
+import { TokenAccount, syncTokenAccounts } from '../store/slices/balancesSlice'
 import { usePollTokenPrices } from './usePollTokenPrices'
 import { useBalanceHistory } from './useBalanceHistory'
 import { AccountBalance } from '../types/balance'
+import StoreAtaBalance from './StoreAtaBalance'
 import StoreTokenBalance from './StoreTokenBalance'
+import StoreSolBalance from './StoreSolBalance'
 
 export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
 const useBalanceHook = () => {
@@ -47,8 +51,31 @@ const useBalanceHook = () => {
     [currentAccount],
   )
 
-  const tokens = useSelector(
-    (state: RootState) => state.balances.tokens[cluster],
+  const balancesForCluster = useSelector(
+    (state: RootState) => state.balances.balances[cluster],
+  )
+
+  const accountBalancesForCluster = useMemo(() => {
+    if (!solanaAddress || !balancesForCluster[solanaAddress]) return
+
+    return balancesForCluster[solanaAddress]
+  }, [balancesForCluster, solanaAddress])
+
+  const atas = useMemo(() => {
+    if (!accountBalancesForCluster?.atas) return []
+    return accountBalancesForCluster?.atas.filter(
+      (ata) => !!ata.tokenAccount,
+    ) as Required<TokenAccount>[]
+  }, [accountBalancesForCluster?.atas])
+
+  const solToken = useMemo(
+    () => accountBalancesForCluster?.sol,
+    [accountBalancesForCluster?.sol],
+  )
+
+  const dcEscrowToken = useMemo(
+    () => accountBalancesForCluster?.dcEscrow,
+    [accountBalancesForCluster?.dcEscrow],
   )
 
   const {
@@ -65,7 +92,7 @@ const useBalanceHook = () => {
     if (!currentAccount?.solanaAddress || !anchorProvider) return
 
     dispatch(
-      readTokenBalances({ cluster, acct: currentAccount, anchorProvider }),
+      syncTokenAccounts({ cluster, acct: currentAccount, anchorProvider }),
     )
   }, [anchorProvider, cluster, currentAccount, dispatch])
 
@@ -176,60 +203,63 @@ const useBalanceHook = () => {
     [convertToCurrency, currency, tokenPrices],
   )
 
-  const { result: tokenInfo } = useAsync(async () => {
-    const bals = tokens || {}
-    const balances = {
-      sol: new Balance(
-        Number(bals?.[solanaAddress]?.sol?.balance || 0),
-        CurrencyType.solTokens,
-      ),
-      dcEscrow: new Balance(
-        Number(bals?.[solanaAddress]?.dcEscrow?.balance || 0),
-        CurrencyType.dataCredit,
-      ),
-      dc: new Balance(
-        Number(bals?.[solanaAddress]?.dc?.balance || 0),
-        CurrencyType.dataCredit,
-      ),
-      hnt: new Balance(
-        Number(bals?.[solanaAddress]?.hnt?.balance || 0),
-        CurrencyType.networkToken,
-      ),
-      mobile: new Balance(
-        Number(bals?.[solanaAddress]?.mobile?.balance || 0),
-        CurrencyType.mobile,
-      ),
-      iot: new Balance(
-        Number(bals?.[solanaAddress]?.iot?.balance || 0),
-        CurrencyType.iot,
-      ),
-    }
+  const getBalance = useCallback(
+    (mint: PublicKey) => {
+      const mintStr = mint.toBase58()
+      const ata = atas.find((a) => a.mint === mintStr)
+      return Number(ata?.balance || 0)
+    },
+    [atas],
+  )
 
+  const { result: tokenInfo } = useAsync(async () => {
+    const dcEscrowBalance = new Balance(
+      Number(dcEscrowToken?.balance || 0),
+      CurrencyType.dataCredit,
+    )
+    const formattedEscrowDcValue = await CurrencyFormatter.format(
+      dcEscrowBalance.toUsd(oraclePrice).floatBalance,
+      'usd',
+    )
+
+    const solBalance = Balance.fromIntAndTicker(
+      Number(solToken?.balance || 0),
+      'SOL',
+    )
     const solPrice = tokenPrices?.solana?.[currency] || 0
-    const solAmount = balances.sol.floatBalance
+    const solAmount = solBalance?.floatBalance
     const solValue = solPrice * solAmount
     const formattedSolValue = await CurrencyFormatter.format(solValue, currency)
 
+    const hntBalance = Balance.fromIntAndTicker(getBalance(HNT_MINT), 'HNT')
     const hntPrice = tokenPrices?.helium?.[currency] || 0
-    const hntAmount = balances.hnt.floatBalance
+    const hntAmount = hntBalance?.floatBalance
     const hntValue = hntPrice * hntAmount
     const formattedHntValue = await CurrencyFormatter.format(hntValue, currency)
 
+    const iotBalance = Balance.fromIntAndTicker(getBalance(IOT_MINT), 'IOT')
     const iotPrice = tokenPrices?.['helium-iot']?.[currency] || 0
-    const iotAmount = balances.iot.floatBalance
+    const iotAmount = iotBalance?.floatBalance
     const iotValue = iotPrice * iotAmount
     const formattedIotValue = await CurrencyFormatter.format(iotValue, currency)
 
+    const mobileBalance = Balance.fromIntAndTicker(
+      getBalance(MOBILE_MINT),
+      'MOBILE',
+    )
     const mobilePrice = tokenPrices?.['helium-mobile']?.[currency] || 0
-    const mobileAmount = balances.mobile.floatBalance
+    const mobileAmount = mobileBalance?.floatBalance
     const mobileValue = mobilePrice * mobileAmount
     const formattedMobileValue = await CurrencyFormatter.format(
       mobileValue,
       currency,
     )
 
-    const usdValue = balances.dc?.toUsd(oraclePrice).floatBalance
-    const formattedDcValue = await CurrencyFormatter.format(usdValue, 'usd')
+    const dcBalance = new Balance(getBalance(DC_MINT), CurrencyType.dataCredit)
+    const formattedDcValue = await CurrencyFormatter.format(
+      dcBalance.toUsd(oraclePrice).floatBalance,
+      'usd',
+    )
 
     const totalValue = await CurrencyFormatter.format(
       solValue + hntValue + mobileValue + iotValue,
@@ -237,7 +267,13 @@ const useBalanceHook = () => {
     )
 
     return {
-      balances,
+      hntBalance,
+      iotBalance,
+      mobileBalance,
+      solBalance,
+      dcBalance,
+      dcEscrowBalance,
+      formattedEscrowDcValue,
       formattedDcValue,
       formattedHntValue,
       formattedIotValue,
@@ -251,12 +287,12 @@ const useBalanceHook = () => {
     }
   }, [
     currency,
-    currentAccount?.address,
     tokenPrices,
     cluster,
-    tokens,
-    solanaAddress,
     oraclePrice,
+    getBalance,
+    dcEscrowToken?.balance,
+    solToken?.balance,
   ])
 
   const toCurrencyString = useCallback(
@@ -303,47 +339,23 @@ const useBalanceHook = () => {
     [tokenPrices],
   )
 
-  const tokensAccounts = useMemo(() => {
-    return [
-      { token: tokens?.[solanaAddress]?.sol?.tokenAccount, type: 'sol' },
-      { token: tokens?.[solanaAddress]?.hnt?.tokenAccount, type: 'hnt' },
-      { token: tokens?.[solanaAddress]?.iot?.tokenAccount, type: 'iot' },
-      {
-        token: tokens?.[solanaAddress]?.mobile?.tokenAccount,
-        type: 'mobile',
-      },
-      { token: tokens?.[solanaAddress]?.dc?.tokenAccount, type: 'dc' },
-      {
-        token: tokens?.[solanaAddress]?.dcEscrow?.tokenAccount,
-        type: 'dcEscrow',
-      },
-    ].filter(({ token }) => !!token) as {
-      token: string
-      type: 'sol' | 'mobile' | 'dc' | 'iot' | 'hnt' | 'dcEscrow'
-    }[]
-  }, [solanaAddress, tokens])
-
   return {
     balanceHistory,
     bonesToBalance,
-    dcBalance: tokenInfo?.balances.dc,
-    dcEscrowBalance: tokenInfo?.balances.dcEscrow,
     dcToNetworkTokens,
     floatToBalance,
-    hntBalance: tokenInfo?.balances.hnt,
     ...tokenInfo,
     intToBalance,
-    iotBalance: tokenInfo?.balances.iot,
-    mobileBalance: tokenInfo?.balances.mobile,
     networkTokensToDc,
     oracleDateTime,
     oraclePrice,
     solanaPrice,
-    solBalance: tokenInfo?.balances.sol,
     toCurrencyString,
     toPreferredCurrencyString,
     toUsd,
-    tokensAccounts,
+    atas,
+    solToken,
+    dcEscrowToken,
   }
 }
 
@@ -371,16 +383,14 @@ const initialState = {
   solBalance: new Balance(0, CurrencyType.solTokens),
   solBalancesLoading: false,
   toCurrencyString: () => new Promise<string>((resolve) => resolve('')),
-  tokenAccounts: {},
   toPreferredCurrencyString: () =>
     new Promise<string>((resolve) => resolve('')),
   totalValue: undefined,
   toUsd: () => 0,
-  tokensAccounts: [] as {
-    token: string
-    type: 'sol' | 'mobile' | 'dc' | 'iot' | 'hnt' | 'dcEscrow'
-  }[],
+  atas: [],
   updating: false,
+  solToken: undefined,
+  dcEscrowToken: undefined,
 }
 const BalanceContext =
   createContext<ReturnType<typeof useBalanceHook>>(initialState)
@@ -389,13 +399,22 @@ const { Provider } = BalanceContext
 export const BalanceProvider = ({ children }: { children: ReactNode }) => {
   const balanceHook = useBalanceHook()
 
-  const { tokensAccounts } = balanceHook
+  const { atas, dcEscrowToken, solToken } = balanceHook
 
   return (
     <Provider value={balanceHook}>
-      {tokensAccounts.map((ta) => (
-        <StoreTokenBalance key={ta.token} {...ta} />
+      {atas.map((ta) => (
+        <StoreAtaBalance key={`${ta.mint}.${ta.tokenAccount}`} {...ta} />
       ))}
+      {dcEscrowToken?.tokenAccount && (
+        <StoreTokenBalance
+          tokenAccount={dcEscrowToken.tokenAccount}
+          type="dcEscrow"
+        />
+      )}
+      {solToken?.tokenAccount && (
+        <StoreSolBalance solanaAddress={solToken?.tokenAccount} />
+      )}
       {children}
     </Provider>
   )

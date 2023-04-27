@@ -1,38 +1,39 @@
 import { AnchorProvider } from '@coral-xyz/anchor'
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { Cluster } from '@solana/web3.js'
+import { Cluster, PublicKey } from '@solana/web3.js'
+import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
+import { AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { CSAccount } from '../../storage/cloudStorage'
-import { Balances } from '../../types/solana'
-import * as solUtils from '../../utils/solanaUtils'
 import { getBalanceHistory, getTokenPrices } from '../../utils/walletApiV2'
 import { AccountBalance, Prices } from '../../types/balance'
 import { getEscrowTokenAccount } from '../../utils/solanaUtils'
-
-type BalancesByWallet = Record<string, Balances>
-type BalancesByCluster = Record<Cluster, BalancesByWallet>
 
 type BalanceHistoryByCurrency = Record<string, AccountBalance[]>
 type BalanceHistoryByWallet = Record<string, BalanceHistoryByCurrency>
 type BalanceHistoryByCluster = Record<Cluster, BalanceHistoryByWallet>
 
+export type TokenAccount = {
+  tokenAccount?: string
+  mint: string
+  balance: bigint
+}
+export type Tokens = {
+  atas: TokenAccount[]
+  sol: { tokenAccount: string; balance: bigint }
+  dcEscrow: { tokenAccount: string; balance: bigint }
+}
+
+type AtaBalances = Record<Cluster, Record<string, Tokens>>
+
 export type BalancesState = {
-  tokens: BalancesByCluster
   balancesLoading?: boolean
   tokenPrices?: Prices
   balanceHistory: BalanceHistoryByCluster
-}
-
-const initialBalances = {
-  sol: { balance: 0n, tokenAccount: '' },
-  mobile: { balance: 0n, tokenAccount: '' },
-  dc: { balance: 0n, tokenAccount: '' },
-  iot: { balance: 0n, tokenAccount: '' },
-  hnt: { balance: 0n, tokenAccount: '' },
-  dcEscrow: { balance: 0n, tokenAccount: '' },
+  balances: AtaBalances
 }
 
 const initialState: BalancesState = {
-  tokens: {
+  balances: {
     'mainnet-beta': {},
     devnet: {},
     testnet: {},
@@ -44,8 +45,8 @@ const initialState: BalancesState = {
   },
 }
 
-export const readTokenBalances = createAsyncThunk(
-  'balances/readTokenBalances',
+export const syncTokenAccounts = createAsyncThunk(
+  'balances/syncTokenAccounts',
   async ({
     cluster: _cluster,
     acct,
@@ -54,19 +55,62 @@ export const readTokenBalances = createAsyncThunk(
     cluster: Cluster
     acct: CSAccount
     anchorProvider: AnchorProvider
-  }) => {
+  }): Promise<Tokens> => {
     if (!acct?.solanaAddress) throw new Error('No solana account found')
 
-    const escrowAccount = getEscrowTokenAccount(acct.solanaAddress)
+    const pubKey = new PublicKey(acct.solanaAddress)
+    const { connection } = anchorProvider
 
-    const bals = await solUtils.readAccountBalances(
-      anchorProvider,
-      acct.solanaAddress,
-    )
+    const supportedMints = [IOT_MINT, MOBILE_MINT, DC_MINT, HNT_MINT]
+    const tokenAccounts = await connection.getTokenAccountsByOwner(pubKey, {
+      programId: TOKEN_PROGRAM_ID,
+    })
+
+    const decoded = tokenAccounts.value.map((tokenAccount) => {
+      const accountData = AccountLayout.decode(tokenAccount.account.data)
+      const { mint } = accountData
+
+      return {
+        tokenAccount: tokenAccount.pubkey,
+        mint,
+        balance: accountData.amount,
+      }
+    })
+
+    const atas = supportedMints.map((mint) => {
+      const found = decoded.find((d) => d.mint.equals(mint))
+
+      return {
+        tokenAccount: found?.tokenAccount.toBase58(),
+        mint: mint.toBase58(),
+        balance: found?.balance || 0n,
+      }
+    })
+
+    const escrowAccount = getEscrowTokenAccount(acct.solanaAddress)
+    let escrowBalance = 0n
+    try {
+      const dcEscrowBalance = await connection.getTokenAccountBalance(
+        escrowAccount,
+      )
+      escrowBalance = BigInt(dcEscrowBalance.value.amount)
+    } catch {}
+
+    const dcEscrow = {
+      tokenAccount: escrowAccount.toBase58(),
+      balance: escrowBalance,
+    }
+
+    const solBalance = await connection.getBalance(pubKey)
+    const sol = {
+      tokenAccount: acct.solanaAddress,
+      balance: BigInt(solBalance),
+    }
 
     return {
-      ...bals,
-      dcEscrow: { balance: 0n, tokenAccount: escrowAccount.toBase58() },
+      atas,
+      dcEscrow,
+      sol,
     }
   },
 )
@@ -101,60 +145,69 @@ const balancesSlice = createSlice({
   name: 'balances',
   initialState,
   reducers: {
-    updateTokenBalance: (
+    updateBalance: (
       state,
       action: PayloadAction<{
         cluster: Cluster
         solanaAddress: string
         balance: bigint
-        type: 'sol' | 'mobile' | 'dc' | 'iot' | 'hnt' | 'dcEscrow'
+        type: 'dcEscrow' | 'sol'
+        tokenAccount: string
       }>,
     ) => {
-      const { cluster, solanaAddress, type, balance } = action.payload
-      if (!state.tokens[cluster][solanaAddress]) {
-        state.tokens[cluster][solanaAddress] = initialBalances
+      const { payload } = action
+      const { cluster, solanaAddress, balance, type, tokenAccount } = payload
+      const next = { tokenAccount, balance }
+      const prevTokens = state.balances[cluster][solanaAddress]
+      switch (type) {
+        case 'dcEscrow':
+          prevTokens.dcEscrow = next
+          break
+        case 'sol':
+          prevTokens.sol = next
+          break
       }
-
-      const prev = state.tokens[cluster][solanaAddress][type]
-
-      state.tokens[cluster][solanaAddress][type] = {
-        ...prev,
-        balance,
+      // TODO: verify this updates the state
+    },
+    updateAtaBalance: (
+      state,
+      action: PayloadAction<{
+        cluster: Cluster
+        solanaAddress: string
+        balance: bigint
+        mint: string
+        tokenAccount: string
+      }>,
+    ) => {
+      const { payload } = action
+      const { cluster, solanaAddress, balance } = payload
+      const prevAtas = state.balances[cluster]?.[solanaAddress].atas
+      const foundIndex = prevAtas.findIndex(
+        ({ tokenAccount, mint }) =>
+          tokenAccount === payload.tokenAccount && mint === payload.mint,
+      )
+      if (foundIndex !== -1) {
+        const prev = prevAtas[foundIndex]
+        prev.balance = balance
+        // TODO: Verify this updates the state
       }
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(readTokenBalances.pending, (state, action) => {
-      const args = action.meta.arg
-      if (!args?.acct.solanaAddress || !args.cluster) return state
-      const { solanaAddress } = args.acct
-      const { cluster } = args
-      const prev = state.tokens[cluster][solanaAddress] || {}
-      state.tokens[cluster][solanaAddress] = {
-        ...prev,
-      }
+    builder.addCase(syncTokenAccounts.pending, (state) => {
       state.balancesLoading = true
     })
-    builder.addCase(readTokenBalances.fulfilled, (state, action) => {
+    builder.addCase(syncTokenAccounts.fulfilled, (state, action) => {
       const args = action.meta.arg
-      if (!args?.acct.solanaAddress || !args.cluster) return state
-      const { solanaAddress } = args.acct
-      const { cluster } = args
       const { payload } = action
-      state.tokens[cluster][solanaAddress] = {
-        ...payload,
-      }
-      state.balancesLoading = false
-    })
-    builder.addCase(readTokenBalances.rejected, (state, action) => {
-      const args = action.meta.arg
       if (!args?.acct.solanaAddress || !args.cluster) return state
       const { solanaAddress } = args.acct
       const { cluster } = args
-      const prev = state.tokens[cluster][solanaAddress] || {}
-      state.tokens[cluster][solanaAddress] = {
-        ...prev,
-      }
+      state.balancesLoading = false
+
+      state.balances[cluster][solanaAddress] = payload
+    })
+    builder.addCase(syncTokenAccounts.rejected, (state) => {
       state.balancesLoading = false
     })
     builder.addCase(readTokenPrices.fulfilled, (state, action) => {
