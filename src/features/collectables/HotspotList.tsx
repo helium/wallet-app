@@ -16,18 +16,16 @@ import useHotspots from '@hooks/useHotspots'
 import CircleLoader from '@components/CircleLoader'
 import useHaptic from '@hooks/useHaptic'
 import Text from '@components/Text'
-import TokenIcon from '@components/TokenIcon'
 import TabBar from '@components/TabBar'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import { IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { useMint } from '@helium/helium-react-hooks'
-import BigNumber from 'bignumber.js'
-import { formatLargeNumber } from '../../utils/accountUtils'
 import HotspotCompressedListItem from './HotspotCompressedListItem'
 import HotspotListItem from './HotspotListItem'
 import { CollectableNavigationProp } from './collectablesTypes'
 import { CompressedNFT, HotspotWithPendingRewards } from '../../types/solana'
 import { NFTSkeleton } from './NftListItem'
+import RewardItem from './RewardItem'
 
 const DEFAULT_PAGE_AMOUNT = 20
 
@@ -144,49 +142,6 @@ const HotspotList = () => {
     [handleSetPageAmount, pageAmount, t],
   )
 
-  const RewardItem = useCallback(
-    ({ ticker, amount, ...rest }) => {
-      const decimals =
-        ticker === 'IOT' ? iotMint?.info.decimals : mobileMint?.info.decimals
-      let realAmount = ''
-      if (amount) {
-        const num = toNumber(amount, decimals || 6)
-        realAmount = formatLargeNumber(new BigNumber(num))
-      }
-
-      return (
-        <Box
-          padding="m"
-          alignItems="center"
-          justifyContent="center"
-          backgroundColor="secondaryBackground"
-          borderRadius="xl"
-          flex={1}
-          flexDirection="row"
-          {...rest}
-        >
-          <TokenIcon ticker={ticker} size={30} />
-
-          <Box marginStart="s">
-            <Text
-              marginTop="xs"
-              variant="subtitle3"
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              maxFontSizeMultiplier={1.1}
-            >
-              {realAmount}
-            </Text>
-            <Text variant="subtitle4" color="secondaryText">
-              {ticker}
-            </Text>
-          </Box>
-        </Box>
-      )
-    },
-    [iotMint, mobileMint],
-  )
-
   const onTabSelected = useCallback(
     (value) => {
       setTabSelected(value)
@@ -228,9 +183,15 @@ const HotspotList = () => {
           <RewardItem
             ticker="MOBILE"
             amount={pendingMobileRewards}
+            decimals={mobileMint?.info.decimals}
             marginEnd="s"
           />
-          <RewardItem ticker="IOT" amount={pendingIotRewards} marginStart="s" />
+          <RewardItem
+            ticker="IOT"
+            amount={pendingIotRewards}
+            decimals={iotMint?.info.decimals}
+            marginStart="s"
+          />
         </Box>
         {pageAmount && hotspotsWithMeta?.length >= pageAmount && (
           <Text
@@ -265,17 +226,18 @@ const HotspotList = () => {
       </Box>
     )
   }, [
-    handleNavigateToClaimRewards,
-    pendingIotRewards,
-    pendingMobileRewards,
-    RewardItem,
-    t,
+    tabBarOptions,
     onTabSelected,
     tabSelected,
-    tabBarOptions,
     toggleFiltersOpen,
-    hotspotsWithMeta,
+    t,
+    pendingMobileRewards,
+    mobileMint?.info.decimals,
+    pendingIotRewards,
+    iotMint?.info.decimals,
     pageAmount,
+    hotspotsWithMeta?.length,
+    handleNavigateToClaimRewards,
   ])
 
   const renderCollectable = useCallback(
