@@ -530,8 +530,7 @@ export default {
     devnetTokensWarning: 'Warning! These are devnet tokens for testing only.',
     solanaHealthy: 'Solana RPC is healthy.',
     solanaHealthDown: 'Solana RPC is down. Please try again later.',
-    solanaPingSlow:
-      'Solana RPC is slow. {{ mean_ms }} ms response time and {{ loss }} loss.',
+    solanaTpsSlow: 'Solana RPC is slow. {{ tps }} tps.',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',
