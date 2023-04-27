@@ -27,14 +27,12 @@ import {
   RootNavigationProp,
   RootStackParamList,
 } from '../../navigation/rootTypes'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Route = RouteProp<RootStackParamList, 'DappLoginScreen'>
 const DappLoginScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<HomeNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
-  const { l1Network } = useAppStorage()
   const { params } = route
   const {
     allowLogin,
@@ -78,18 +76,13 @@ const DappLoginScreen = () => {
 
     if (navigation.canGoBack()) {
       navigation.goBack()
-    } else if (l1Network === 'helium') {
-      rootNav.reset({
-        index: 0,
-        routes: [{ name: 'HomeNavigator' }],
-      })
     } else {
       rootNav.reset({
         index: 0,
         routes: [{ name: 'TabBarNavigator' }],
       })
     }
-  }, [disconnect, l1Network, navigation, rootNav])
+  }, [disconnect, navigation, rootNav])
 
   const handleDeny = useCallback(async () => {
     await denyPair()

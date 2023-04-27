@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
 import {
   fetchCollectables,
@@ -15,7 +14,6 @@ import { useSolana } from '../solana/SolanaProvider'
 const useCollectables = (): WalletCollectables & {
   refresh: () => void
 } => {
-  const { l1Network } = useAppStorage()
   const { cluster, anchorProvider } = useSolana()
   const dispatch = useAppDispatch()
   const accountSubscriptionId = useRef<number>()
@@ -31,11 +29,7 @@ const useCollectables = (): WalletCollectables & {
   }, [cluster, currentAccount, dispatch])
 
   const refresh = useCallback(() => {
-    if (
-      !currentAccount?.solanaAddress ||
-      l1Network !== 'solana' ||
-      !anchorProvider
-    ) {
+    if (!currentAccount?.solanaAddress || !anchorProvider) {
       return
     }
     const { connection } = anchorProvider
@@ -47,7 +41,7 @@ const useCollectables = (): WalletCollectables & {
         connection,
       }),
     )
-  }, [cluster, currentAccount, dispatch, l1Network, anchorProvider])
+  }, [cluster, currentAccount, dispatch, anchorProvider])
 
   useEffect(() => {
     if (!currentAccount?.solanaAddress || !anchorProvider) return
@@ -62,7 +56,7 @@ const useCollectables = (): WalletCollectables & {
       removeAccountChangeListener(anchorProvider, accountSubscriptionId.current)
     }
     accountSubscriptionId.current = subId
-  }, [anchorProvider, currentAccount, dispatch, l1Network, refresh])
+  }, [anchorProvider, currentAccount, dispatch, refresh])
 
   if (
     !currentAccount?.solanaAddress ||

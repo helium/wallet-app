@@ -18,7 +18,6 @@ import { SendDetails } from '../../storage/TransactionProvider'
 import animateTransition from '../../utils/animateTransition'
 import PaymentSummary from './PaymentSummary'
 import { checkSecureAccount } from '../../storage/secureStorage'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 import { useSolana } from '../../solana/SolanaProvider'
 
 type Props = {
@@ -48,7 +47,6 @@ const PaymentCard = ({
   const ledgerPaymentRef = useRef<LedgerPaymentRef>(null)
   const { showOKAlert, showOKCancelAlert } = useAlert()
   const { currentAccount } = useAccountStorage()
-  const { l1Network } = useAppStorage()
   const { cluster } = useSolana()
   const [options, setOptions] = useState<{
     txn: PaymentV2
@@ -56,16 +54,14 @@ const PaymentCard = ({
   }>()
 
   const handlePayPressed = useCallback(async () => {
-    if (l1Network === 'solana') {
-      const decision = await showOKCancelAlert({
-        title: t('payment.solana.warning.title', { cluster }),
-        message: t('payment.solana.warning.message', { cluster }),
-        ok: t('generic.understand'),
-      })
+    const decision = await showOKCancelAlert({
+      title: t('payment.solana.warning.title', { cluster }),
+      message: t('payment.solana.warning.message', { cluster }),
+      ok: t('generic.understand'),
+    })
 
-      if (!decision) {
-        return
-      }
+    if (!decision) {
+      return
     }
 
     if (!currentAccount?.ledgerDevice) {
@@ -86,7 +82,7 @@ const PaymentCard = ({
         speculativeNonce: 0,
       })
     }
-  }, [cluster, currentAccount, l1Network, payments, showOKCancelAlert, t])
+  }, [cluster, currentAccount, payments, showOKCancelAlert, t])
 
   const handleLayout = useCallback(
     (e: LayoutChangeEvent) => {

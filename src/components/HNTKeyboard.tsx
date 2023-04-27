@@ -4,7 +4,6 @@ import React, {
   ReactNode,
   Ref,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -28,7 +27,6 @@ import { LayoutChangeEvent } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { BoxProps } from '@shopify/restyle'
 import { floor } from 'lodash'
-import { differenceInMilliseconds } from 'date-fns'
 import { Portal } from '@gorhom/portal'
 import { useOpacity, useSafeTopPaddingStyle } from '@theme/themeHooks'
 import { Theme } from '@theme/theme'
@@ -36,11 +34,7 @@ import useBackHandler from '@hooks/useBackHandler'
 import Keypad from './Keypad'
 import Box from './Box'
 import Text from './Text'
-import {
-  balanceToString,
-  ORACLE_POLL_INTERVAL,
-  useBalance,
-} from '../utils/Balance'
+import { balanceToString, useBalance } from '../utils/Balance'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import SafeAreaBox from './SafeAreaBox'
 import AccountIcon from './AccountIcon'
@@ -50,7 +44,6 @@ import BackgroundFill from './BackgroundFill'
 import HandleBasic from './HandleBasic'
 import { CSAccount } from '../storage/cloudStorage'
 import { Payment } from '../features/payment/PaymentItem'
-import { useAppStorage } from '../storage/AppStorageProvider'
 
 type ShowOptions = {
   payer?: CSAccount | null
@@ -105,10 +98,8 @@ const HNTKeyboardSelector = forwardRef(
     const [headerHeight, setHeaderHeight] = useState(0)
     const containerStyle = useSafeTopPaddingStyle('android')
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
-    const { l1Network } = useAppStorage()
 
     const {
-      oracleDateTime,
       floatToBalance,
       hntBalance,
       mobileBalance,
@@ -117,7 +108,6 @@ const HNTKeyboardSelector = forwardRef(
       bonesToBalance,
       solBalance,
     } = useBalance()
-    const [timeStr, setTimeStr] = useState('')
 
     const getHeliumBalance = useMemo(() => {
       switch (ticker) {
@@ -135,8 +125,8 @@ const HNTKeyboardSelector = forwardRef(
     }, [dcBalance, iotBalance, mobileBalance, hntBalance, ticker, solBalance])
 
     const isDntToken = useMemo(() => {
-      return l1Network === 'solana' && (ticker === 'IOT' || ticker === 'MOBILE')
-    }, [l1Network, ticker])
+      return ticker === 'IOT' || ticker === 'MOBILE'
+    }, [ticker])
 
     const balanceForTicker = useMemo(
       () => (ticker === 'HNT' ? hntBalance : getHeliumBalance),
@@ -147,20 +137,6 @@ const HNTKeyboardSelector = forwardRef(
       const sheetHeight = containerHeight - headerHeight
       return [sheetHeight > 0 ? sheetHeight : 600]
     }, [containerHeight, headerHeight])
-
-    useEffect(() => {
-      if (l1Network === 'solana') return
-      const timer = setTimeout(() => {
-        if (!oracleDateTime) return '???'
-
-        const msDiff = differenceInMilliseconds(new Date(), oracleDateTime)
-        const timeRemaining = ORACLE_POLL_INTERVAL - msDiff
-        const time = new Date(timeRemaining).toISOString().substring(14, 19)
-        setTimeStr(t('hntKeyboard.validFor', { time }))
-      }, 1000)
-
-      return () => clearTimeout(timer)
-    })
 
     const payeeAddress = useMemo(() => {
       if (payee && typeof payee === 'string') {
@@ -263,9 +239,6 @@ const HNTKeyboardSelector = forwardRef(
       let maxBalance: Balance<NetworkTokens | TestNetworkTokens> | undefined
       if (ticker === 'HNT') {
         maxBalance = hntBalance.minus(currentAmount)
-        if (l1Network === 'helium') {
-          maxBalance = maxBalance.minus(networkFee)
-        }
       } else {
         maxBalance = getHeliumBalance.minus(currentAmount)
       }
@@ -296,7 +269,6 @@ const HNTKeyboardSelector = forwardRef(
       ticker,
       maxEnabled,
       paymentIndex,
-      l1Network,
     ])
 
     const BackdropWrapper = useCallback(
@@ -429,7 +401,7 @@ const HNTKeyboardSelector = forwardRef(
           </Box>
         </Box>
       )
-    }, [handleSetMax, maxEnabled, payer, t, timeStr])
+    }, [handleSetMax, maxEnabled, payer, t])
 
     const hasSufficientBalance = useMemo(() => {
       if (!payer) return true
@@ -438,27 +410,12 @@ const HNTKeyboardSelector = forwardRef(
         return false
       }
 
-      if (l1Network === 'solana') {
-        if (ticker !== 'HNT') {
-          return getHeliumBalance.minus(valueAsBalance).integerBalance >= 0
-        }
-        return hntBalance.minus(valueAsBalance).integerBalance >= 0
+      if (ticker !== 'HNT') {
+        return getHeliumBalance.minus(valueAsBalance).integerBalance >= 0
       }
-
-      if (ticker === 'MOBILE') {
-        // If paying with mobile on helium L1, they need to have enough mobile to cover the payment
-        // and enough hnt to cover the fee
-        const hasEnoughHnt = hntBalance.minus(networkFee).integerBalance >= 0
-        const hasEnoughMobile =
-          getHeliumBalance.minus(valueAsBalance).integerBalance >= 0
-        return hasEnoughHnt && hasEnoughMobile
-      }
-      return (
-        hntBalance.minus(networkFee).minus(valueAsBalance).integerBalance >= 0
-      )
+      return hntBalance.minus(valueAsBalance).integerBalance >= 0
     }, [
       getHeliumBalance,
-      l1Network,
       hntBalance,
       networkFee,
       payer,

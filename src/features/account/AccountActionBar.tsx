@@ -48,7 +48,7 @@ const AccountActionBar = ({
 }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
-  const { requirePinForPayment, l1Network, pin } = useAppStorage()
+  const { requirePinForPayment, pin } = useAppStorage()
   const anim = useRef(new Animated.Value(1))
   const { currentAccount } = useAccountStorage()
 
@@ -148,7 +148,7 @@ const AccountActionBar = ({
     return undefined
   }, [compact, maxCompact])
 
-  if (currentAccount?.ledgerDevice && l1Network !== 'helium') {
+  if (currentAccount?.ledgerDevice) {
     return null
   }
 

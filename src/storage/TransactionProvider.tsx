@@ -1,15 +1,9 @@
 import Address from '@helium/address'
-import Balance, {
-  NetworkTokens,
-  TestNetworkTokens,
-  Ticker,
-} from '@helium/currency'
+import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
 import { PaymentV2, TokenBurnV1, Transaction } from '@helium/transactions'
 import React, { createContext, ReactNode, useContext, useEffect } from 'react'
-import { encodeMemoString } from '@components/MemoInput'
 import { useTxnConfigVarsQuery } from '../generated/graphql'
 import { useAccountStorage } from './AccountStorageProvider'
-import { useAppStorage } from './AppStorageProvider'
 import { getKeypair } from './secureStorage'
 
 export const EMPTY_B58_ADDRESS = Address.fromB58(
@@ -25,7 +19,6 @@ export type SendDetails = {
 
 const useTransactionHook = () => {
   const { currentAccount } = useAccountStorage()
-  const { l1Network } = useAppStorage()
   const { data: txnVarsData, error } = useTxnConfigVarsQuery({
     fetchPolicy: 'cache-and-network',
     variables: { address: currentAccount?.address || '' },
@@ -96,73 +89,8 @@ const useTransactionHook = () => {
     return { signedTxn, txnJson: JSON.stringify(txnJson), unsignedTxn: txn }
   }
 
-  const makePaymentTxn = async (opts: {
-    paymentDetails: Array<SendDetails>
-    speculativeNonce: number
-    isLedger?: boolean
-    ticker: Ticker
-  }): Promise<{
-    txnJson: string
-    signedTxn?: PaymentV2
-    unsignedTxn: PaymentV2
-  }> => {
-    if (l1Network !== 'helium') {
-      throw new Error(`makePaymentTxn not supported for ${l1Network}`)
-    }
-
-    if (!currentAccount?.address) {
-      throw new Error('No account selected for payment')
-    }
-
-    if (opts.isLedger && opts.paymentDetails.length > 1) {
-      throw new Error(
-        'Only one payee is allowed when paying with ledger account',
-      )
-    }
-
-    const tokenType = opts.ticker.toLowerCase()
-
-    const txn = new PaymentV2({
-      payer: Address.fromB58(currentAccount.address),
-      payments: opts.paymentDetails.map(
-        ({ payee: address, balanceAmount, memo, max }) => ({
-          payee: Address.fromB58(address),
-          max,
-          amount: balanceAmount.integerBalance,
-          memo: encodeMemoString(memo),
-          tokenType,
-        }),
-      ),
-      nonce: opts.speculativeNonce + 1,
-    })
-
-    const txnJson = {
-      type: txn.type,
-      payments: txn.payments.map((p) => ({
-        payee: p.payee.b58,
-        memo: p.memo,
-        amount: p.amount,
-        token_type: tokenType,
-        max: p.max,
-      })),
-      payer: txn.payer?.b58,
-      nonce: txn.nonce,
-      fee: txn.fee,
-    }
-    let signedTxn: PaymentV2 | undefined
-
-    if (!opts.isLedger) {
-      const keypair = await getKeypair(currentAccount?.address)
-      if (keypair) {
-        signedTxn = await txn.sign({ payer: keypair })
-      }
-    }
-    return { signedTxn, txnJson: JSON.stringify(txnJson), unsignedTxn: txn }
-  }
-
   return {
     makeBurnTxn,
-    makePaymentTxn,
   }
 }
 

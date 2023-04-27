@@ -6,8 +6,6 @@ import bs58 from 'bs58'
 import { round } from 'lodash'
 import BigNumber from 'bignumber.js'
 
-export type L1Network = 'helium' | 'solana'
-
 export type AccountNetTypeOpt = 'all' | NetType.NetType
 
 export const heliumAddressToSolAddress = (heliumAddress: string) => {
@@ -38,14 +36,10 @@ export const heliumAddressIsValid = (address: string) => {
   }
 }
 
-export const accountCurrencyType = (
-  address?: string,
-  tokenType?: Ticker,
-  l1Network?: L1Network,
-) => {
+export const accountCurrencyType = (address?: string, tokenType?: Ticker) => {
   if (!address) return CurrencyType.default
   if (!tokenType) {
-    return accountNetType(address) === NetType.MAINNET || l1Network === 'solana'
+    return accountNetType(address) === NetType.MAINNET
       ? CurrencyType.default
       : CurrencyType.testNetworkToken
   }
@@ -53,8 +47,7 @@ export const accountCurrencyType = (
   switch (tokenType) {
     default:
     case 'HNT':
-      return accountNetType(address) === NetType.MAINNET ||
-        l1Network === 'solana'
+      return accountNetType(address) === NetType.MAINNET
         ? CurrencyType.default
         : CurrencyType.testNetworkToken
     case 'HST':

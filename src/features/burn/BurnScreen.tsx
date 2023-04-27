@@ -13,7 +13,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Platform } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Balance, { CurrencyType, DataCredits, Ticker } from '@helium/currency'
+import Balance, { CurrencyType, Ticker } from '@helium/currency'
 import Address, { NetTypes } from '@helium/address'
 import { TokenBurnV1 } from '@helium/transactions'
 import { useSelector } from 'react-redux'
@@ -57,7 +57,6 @@ import PaymentSubmit from '../payment/PaymentSubmit'
 import { checkSecureAccount } from '../../storage/secureStorage'
 import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
 import IconPressedContainer from '../../components/IconPressedContainer'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 import PaymentItem from '../payment/PaymentItem'
 import AddressBookSelector, {
   AddressBookRef,
@@ -93,17 +92,14 @@ const BurnScreen = () => {
   const addressBookRef = useRef<AddressBookRef>(null)
   const {
     floatToBalance,
-    dcToNetworkTokens,
     networkTokensToDc,
     hntBalance,
     solBalance,
     dcBalance,
   } = useBalance()
-  const [fee, setFee] = useState<Balance<DataCredits>>()
   const { makeBurnTxn } = useTransactions()
   const { showOKAlert } = useAlert()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const { l1Network } = useAppStorage()
   const [
     submitTxnMutation,
     { data: submitData, loading: submitLoading, error: submitError },
@@ -147,38 +143,13 @@ const BurnScreen = () => {
   }, [floatToBalance, dcAmount, route.params.amount])
 
   const feeAsTokens = useMemo(() => {
-    if (l1Network === 'solana')
-      return Balance.fromFloat(TXN_FEE_IN_SOL, CurrencyType.solTokens)
-
-    if (!fee) return
-
-    return dcToNetworkTokens(fee)
-  }, [dcToNetworkTokens, fee, l1Network])
+    return Balance.fromFloat(TXN_FEE_IN_SOL, CurrencyType.solTokens)
+  }, [])
 
   const amountInDc = useMemo(() => {
     if (!amountBalance) return
     return networkTokensToDc(amountBalance)
   }, [amountBalance, networkTokensToDc])
-
-  useEffect(() => {
-    if (isDelegate) return
-
-    makeBurnTxn({
-      payeeB58: route.params.address,
-      amount: amountBalance?.integerBalance || 0,
-      memo: route.params.memo || '',
-      nonce: 1,
-      shouldSign: false,
-    }).then((b) =>
-      setFee(new Balance(b.unsignedTxn.fee, CurrencyType.dataCredit)),
-    )
-  }, [
-    amountBalance,
-    isDelegate,
-    makeBurnTxn,
-    route.params.address,
-    route.params.memo,
-  ])
 
   const onTokenItemPressed = useCallback(() => {
     hntKeyboardRef.current?.show({
@@ -222,7 +193,7 @@ const BurnScreen = () => {
   ])
 
   const handleSubmit = useCallback(async () => {
-    if (l1Network === 'solana' && isDelegate && amountBalance) {
+    if (isDelegate && amountBalance) {
       submitDelegateDataCredits(
         delegateAddress,
         amountBalance.integerBalance,
@@ -270,7 +241,6 @@ const BurnScreen = () => {
     currentAccount,
     delegateAddress,
     isDelegate,
-    l1Network,
     makeBurnTxn,
     route.params.address,
     route.params.memo,
@@ -355,14 +325,13 @@ const BurnScreen = () => {
     }) => {
       if (index === undefined) return
 
-      const payee =
-        l1Network === 'helium' ? contact.address : contact.solanaAddress
+      const payee = contact.solanaAddress
 
       if (!payee) return
 
       setDelegateAddress(payee)
     },
-    [l1Network],
+    [],
   )
 
   const handleAddressError = useCallback(
@@ -511,7 +480,7 @@ const BurnScreen = () => {
                     ticker={ticker}
                   />
 
-                  {isDelegate && l1Network === 'solana' ? (
+                  {isDelegate ? (
                     <PaymentItem
                       index={0}
                       onAddressBookSelected={handleAddressBookSelected}
@@ -637,9 +606,7 @@ const BurnScreen = () => {
                       disabled={
                         amountBalance.floatBalance === 0 ||
                         hasError ||
-                        (!delegateAddress &&
-                          l1Network === 'solana' &&
-                          isDelegate)
+                        (!delegateAddress && isDelegate)
                       }
                       marginTop="l"
                       title={t(

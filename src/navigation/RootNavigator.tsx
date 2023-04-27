@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
+import React, { memo, useCallback, useEffect, useRef } from 'react'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
 import {
   createStackNavigator,
@@ -12,10 +12,8 @@ import {
   RootNavigationProp,
   TabBarNavigationProp,
 } from './rootTypes'
-import { useAccountStorage } from '../storage/AccountStorageProvider'
 import OnboardingNavigator from '../features/onboarding/OnboardingNavigator'
 import TabBarNavigator from './TabBarNavigator'
-import { useAppStorage } from '../storage/AppStorageProvider'
 import { HomeNavigationProp } from '../features/home/homeTypes'
 import ConnectedWallets, {
   ConnectedWalletsRef,
@@ -40,36 +38,13 @@ const RootNavigator = () => {
     RootNavigationProp & HomeNavigationProp & TabBarNavigationProp
   >()
   const colors = useColors()
-  const { hasAccounts } = useAccountStorage()
-  const { l1Network } = useAppStorage()
   const RootStack = createStackNavigator<RootStackParamList>()
   const connectedWalletsRef = useRef<ConnectedWalletsRef>(null)
   const dispatch = useAppDispatch()
-  const [prevL1, setPrevL1] = useState(l1Network)
 
   useEffect(() => {
     changeNavigationBarColor(colors.primaryBackground, true, false)
   }, [colors.primaryBackground])
-
-  useEffect(() => {
-    setPrevL1(l1Network)
-  }, [l1Network])
-
-  // Reset navigation when l1Network changes
-  useEffect(() => {
-    if (!navigation || l1Network === prevL1) return
-    if (hasAccounts) {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'HomeNavigator' }],
-      })
-    } else {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'OnboardingNavigator' }],
-      })
-    }
-  }, [l1Network, navigation, hasAccounts, prevL1])
 
   const handleAddNew = useCallback(() => {
     navigation.navigate('AddNewAccountNavigator')

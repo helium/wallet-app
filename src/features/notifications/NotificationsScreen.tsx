@@ -6,18 +6,15 @@ import { Edge } from 'react-native-safe-area-context'
 import Text from '@components/Text'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Box from '@components/Box'
-import CloseButton from '@components/CloseButton'
 import ButtonPressable from '@components/ButtonPressable'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import { HomeNavigationProp } from '../home/homeTypes'
 import AccountSlider from './AccountSlider'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 import NotificationsList from './NotificationsList'
 
 const NotificationsScreen = () => {
-  const { l1Network } = useAppStorage()
   const { t } = useTranslation()
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
   const navigation = useNavigation<HomeNavigationProp>()
@@ -36,26 +33,16 @@ const NotificationsScreen = () => {
     Linking.openURL(selectedNotification?.actionUrl)
   }, [selectedNotification])
 
-  const onClose = useCallback(() => {
-    navigation.goBack()
-    setSelectedNotification(undefined)
-  }, [navigation, setSelectedNotification])
-
   const HeaderComponent = useMemo(() => {
     return (
       <>
-        {l1Network === 'helium' && (
-          <Box width="100%" alignItems="flex-end" paddingHorizontal="s">
-            <CloseButton onPress={onClose} />
-          </Box>
-        )}
         <Text textAlign="center" variant="h4" marginTop="m" marginBottom="l">
           {t('notifications.title')}
         </Text>
         <AccountSlider />
       </>
     )
-  }, [l1Network, onClose, t])
+  }, [t])
 
   const FooterComponent = useMemo(() => {
     return selectedNotification?.actionTitle &&

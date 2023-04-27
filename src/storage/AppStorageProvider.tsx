@@ -14,7 +14,6 @@ import {
   SecureStorageKeys,
   storeSecureItem,
 } from './secureStorage'
-import { L1Network } from '../utils/accountUtils'
 
 const VOTE_TUTORIAL_SHOWN = 'voteTutorialShown'
 const DAPP_TUTORIAL_SHOWN = 'dAppTutorialShown'
@@ -33,7 +32,6 @@ const useAppStorageHook = () => {
   const [locked, setLocked] = useState<boolean>()
   const [convertToCurrency, setConvertToCurrency] = useState(false)
   const [enableTestnet, setEnableTestnet] = useState(false)
-  const [l1Network, setL1Network] = useState<L1Network>('solana')
   const [scannedAddress, setScannedAddress] = useState<string>()
   const [dAppTutorialShown, setDAppTutorialShown] = useState<
     Record<Cluster, boolean>
@@ -97,7 +95,6 @@ const useAppStorageHook = () => {
       setCurrency(nextCurrency || 'USD')
       setConvertToCurrency(nextConvertToCurrency === 'true')
       setEnableTestnet(nextEnableTestnet === 'true')
-      setL1Network('solana')
       setDAppTutorialShown(
         JSON.parse(nextDAppShown || '{}') as Record<string, boolean>,
       )
@@ -166,11 +163,6 @@ const useAppStorageHook = () => {
     },
     [],
   )
-
-  const updateL1Network = useCallback(async (nextL1Network: L1Network) => {
-    setL1Network(nextL1Network)
-    return storeSecureItem('l1Network', nextL1Network)
-  }, [])
 
   const toggleConvertToCurrency = useCallback(async () => {
     setConvertToCurrency((prev) => {
@@ -244,7 +236,6 @@ const useAppStorageHook = () => {
     convertToCurrency,
     currency,
     enableTestnet,
-    l1Network,
     locked,
     pin,
     requirePinForPayment,
@@ -264,7 +255,6 @@ const useAppStorageHook = () => {
     updateConvertToCurrency,
     updateCurrency,
     updateEnableTestnet,
-    updateL1Network,
     updateLocked,
     updatePin,
     updateRequirePinForPayment,
@@ -279,7 +269,6 @@ const initialState = {
   convertToCurrency: false,
   currency: 'USD',
   enableTestnet: false,
-  l1Network: 'solana' as L1Network,
   locked: false,
   pin: undefined,
   requirePinForPayment: false,
@@ -292,7 +281,6 @@ const initialState = {
   updateConvertToCurrency: async () => undefined,
   updateCurrency: async () => undefined,
   updateEnableTestnet: async () => undefined,
-  updateL1Network: async () => undefined,
   updateLocked: async () => undefined,
   updatePin: async () => undefined,
   updateRequirePinForPayment: async () => undefined,

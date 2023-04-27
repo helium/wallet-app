@@ -25,7 +25,6 @@ import { accountCurrencyType, ellipsizeAddress } from '../../utils/accountUtils'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 import { TXN_FEE_IN_LAMPORTS } from '../../utils/solanaUtils'
 import { Activity } from '../../types/activity'
 
@@ -54,7 +53,6 @@ const useTxn = (
   dateOpts?: { dateFormat?: string; now?: Date },
 ) => {
   const { currentNetworkAddress: address } = useAccountStorage()
-  const { l1Network } = useAppStorage()
   const colors = useColors()
   const { bonesToBalance } = useBalance()
   const { t } = useTranslation()
@@ -65,12 +63,11 @@ const useTxn = (
     if (item?.payments?.length) {
       const firstPaymentTokenType = item.payments[0].tokenType
       if (firstPaymentTokenType) {
-        return accountCurrencyType(address, firstPaymentTokenType, l1Network)
-          .ticker
+        return accountCurrencyType(address, firstPaymentTokenType).ticker
       }
     }
-    return accountCurrencyType(address, undefined, l1Network).ticker
-  }, [address, item, l1Network])
+    return accountCurrencyType(address, undefined).ticker
+  }, [address, item])
 
   const dcBalance = (v: number | undefined | null) =>
     new Balance(v || 0, CurrencyType.dataCredit)
@@ -276,42 +273,11 @@ const useTxn = (
   )
 
   const getFee = useCallback(async () => {
-    if (l1Network === 'solana') {
-      return formatAmount(
-        '-',
-        new Balance(TXN_FEE_IN_LAMPORTS, CurrencyType.solTokens),
-      )
-    }
-    const type = item?.type as TxnType
-    if (type === 'rewards_v1' || type === 'rewards_v2') {
-      return ''
-    }
-
-    if (type === 'transfer_hotspot_v1' || type === 'transfer_hotspot_v2') {
-      if (!isSelling) return ''
-
-      return formatAmount('-', dcBalance(item?.fee))
-    }
-
-    if (
-      type === 'add_gateway_v1' ||
-      type === 'assert_location_v1' ||
-      type === 'assert_location_v2' ||
-      type === 'token_burn_v1' ||
-      type === 'stake_validator_v1' ||
-      type === 'unstake_validator_v1' ||
-      type === 'transfer_validator_stake_v1'
-    ) {
-      return formatAmount('-', dcBalance(item?.fee))
-    }
-
-    if (type === 'payment_v1' || type === 'payment_v2') {
-      if (address !== item?.payer) return ''
-      return formatAmount('-', dcBalance(item?.fee))
-    }
-
-    return ''
-  }, [address, formatAmount, isSelling, item, l1Network])
+    return formatAmount(
+      '-',
+      new Balance(TXN_FEE_IN_LAMPORTS, CurrencyType.solTokens),
+    )
+  }, [formatAmount])
 
   const getFeePayer = useCallback(() => {
     const type = item?.type

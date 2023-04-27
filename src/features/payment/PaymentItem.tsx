@@ -33,7 +33,6 @@ import { Theme } from '@theme/theme'
 import { CSAccount } from '../../storage/cloudStorage'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import { accountNetType, ellipsizeAddress } from '../../utils/accountUtils'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 
 export type Payment = {
   address?: string
@@ -95,7 +94,6 @@ const PaymentItem = ({
   const { dcToNetworkTokens, oraclePrice } = useBalance()
   const { t } = useTranslation()
   const { secondaryText } = useColors()
-  const { l1Network } = useAppStorage()
 
   const addressIsWrongNetType = useMemo(
     () =>
@@ -164,8 +162,8 @@ const PaymentItem = ({
   }, [index, onRemove])
 
   const isDeepLink = useMemo(
-    () => address && l1Network === 'helium' && !account?.address,
-    [account, address, l1Network],
+    () => address && !account?.address,
+    [account, address],
   )
 
   const AddressIcon = useCallback(() => {

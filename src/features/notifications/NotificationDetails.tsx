@@ -15,7 +15,6 @@ import { useNotificationStorage } from '../../storage/NotificationStorageProvide
 import NotificationDetailBanner from './NotificationDetailBanner'
 import parseMarkup from '../../utils/parseMarkup'
 import { usePostNotificationReadMutation } from '../../store/slices/walletRestApi'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Route = RouteProp<NotificationsListStackParamList, 'NotificationDetails'>
 
@@ -25,12 +24,9 @@ const NotificationDetails = () => {
   const { notification } = route.params
   const { setSelectedNotification, selectedList } = useNotificationStorage()
   const [markAsRead] = usePostNotificationReadMutation()
-  const { l1Network } = useAppStorage()
   const prevSelectedList = usePrevious(selectedList)
 
   useMount(() => {
-    if (l1Network === 'helium') return
-
     markAsRead({ id: notification.id })
   })
 

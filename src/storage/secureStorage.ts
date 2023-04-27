@@ -20,7 +20,6 @@ export enum SecureStorageKeys {
   LAST_IDLE = 'lastIdle',
   SELECTED_LIST = 'selected_list',
   ENABLE_TESTNET = 'enableTestnet',
-  L1_NETWORK = 'l1Network',
   HIDE_PRIVATE_KEY_ALERT = 'hidePrivateKeyAlert',
   SHOW_NUMERIC_CHANGE = 'showNumericChange',
   DONE_SOLANA_MIGRATION = 'doneSolanaMigration',

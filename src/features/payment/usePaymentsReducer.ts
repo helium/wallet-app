@@ -1,7 +1,6 @@
-import Address, { NetTypes } from '@helium/address'
+import { NetTypes } from '@helium/address'
 import Balance, {
   CurrencyType,
-  DataCredits,
   IotTokens,
   MobileTokens,
   NetworkTokens,
@@ -9,13 +8,9 @@ import Balance, {
   TestNetworkTokens,
   USDollars,
 } from '@helium/currency'
-import { PaymentV2 } from '@helium/transactions'
-import BigNumber from 'bignumber.js'
 import { useReducer } from 'react'
 import { decodeMemoString } from '../../components/MemoInput'
 import { CSAccount } from '../../storage/cloudStorage'
-import { EMPTY_B58_ADDRESS } from '../../storage/TransactionProvider'
-import { L1Network } from '../../utils/accountUtils'
 import { TXN_FEE_IN_LAMPORTS } from '../../utils/solanaUtils'
 import { Payment } from './PaymentItem'
 
@@ -91,9 +86,7 @@ type PaymentState = {
   currencyType: PaymentCurrencyType
   oraclePrice?: Balance<USDollars>
   netType: NetTypes.NetType
-  l1Network: L1Network
   networkFee?: Balance<TestNetworkTokens | NetworkTokens | SolTokens>
-  dcFee?: Balance<DataCredits>
   accountMobileBalance?: Balance<MobileTokens>
   accountIotBalance?: Balance<IotTokens>
   accountNetworkBalance?: Balance<TestNetworkTokens | NetworkTokens>
@@ -103,7 +96,6 @@ const initialState = (opts: {
   currencyType: PaymentCurrencyType
   payments?: Payment[]
   netType: NetTypes.NetType
-  l1Network: L1Network
   oraclePrice?: Balance<USDollars>
   accountMobileBalance?: Balance<MobileTokens>
   accountIotBalance?: Balance<IotTokens>
@@ -112,12 +104,7 @@ const initialState = (opts: {
   error: undefined,
   payments: [{}] as Array<Payment>,
   totalAmount: new Balance(0, opts.currencyType),
-  ...calculateFee([{}], {
-    currencyType: opts.currencyType,
-    oraclePrice: opts.oraclePrice,
-    netType: opts.netType,
-    l1Network: opts.l1Network,
-  }),
+  ...calculateFee(),
   ...opts,
 })
 
@@ -130,85 +117,26 @@ const paymentsSum = (payments: Payment[], type: PaymentCurrencyType) => {
   }, new Balance(0, type))
 }
 
-const calculateFee = (
-  payments: Payment[],
-  opts: {
-    currencyType: PaymentCurrencyType
-    oraclePrice?: Balance<USDollars>
-    netType: NetTypes.NetType
-    l1Network: L1Network
-  },
-) => {
-  const { currencyType, oraclePrice, netType, l1Network } = opts
-  if (l1Network === 'solana') {
-    return {
-      networkFee: new Balance(TXN_FEE_IN_LAMPORTS, CurrencyType.solTokens),
-    }
-  }
-
-  const mapped = payments.map(({ amount: balanceAmount, address }) => ({
-    payee:
-      address && Address.isValid(address)
-        ? Address.fromB58(address)
-        : EMPTY_B58_ADDRESS,
-    amount: balanceAmount?.integerBalance || 0,
-    memo: '',
-    tokenType: currencyType.ticker,
-  }))
-  const paymentTxn = new PaymentV2({
-    payer: EMPTY_B58_ADDRESS,
-    payments: mapped,
-    nonce: 1,
-  })
-
-  const dcFee = new Balance(paymentTxn.fee || 0, CurrencyType.dataCredit)
-
-  if (!oraclePrice) {
-    return { dcFee, networkFee: undefined }
-  }
-
-  let networkFee =
-    netType === NetTypes.TESTNET
-      ? dcFee.toTestNetworkTokens(oraclePrice)
-      : dcFee.toNetworkTokens(oraclePrice)
-
-  networkFee = new Balance(
-    networkFee.bigInteger
-      .precision(
-        networkFee.type.decimalPlaces.toNumber() - 1,
-        BigNumber.ROUND_UP,
-      )
-      .toNumber(),
-    networkFee.type,
-  )
+const calculateFee = () => {
   return {
-    dcFee,
-    networkFee,
+    networkFee: new Balance(TXN_FEE_IN_LAMPORTS, CurrencyType.solTokens),
   }
 }
 
 const recalculate = (payments: Payment[], state: PaymentState) => {
   const accountBalance = getAccountBalance(state)
-  const { networkFee, dcFee } = calculateFee(payments, state)
+  const { networkFee } = calculateFee()
 
   const maxPayment = payments.find((p) => p.max)
   const totalAmount = paymentsSum(payments, state.currencyType)
   if (!maxPayment) {
-    return { networkFee, dcFee, payments, totalAmount }
+    return { networkFee, payments, totalAmount }
   }
   const prevPaymentAmount =
     maxPayment?.amount ?? new Balance(0, state.currencyType)
 
   const totalMinusPrevPayment = totalAmount.minus(prevPaymentAmount)
   let maxBalance = accountBalance?.minus(totalMinusPrevPayment)
-
-  if (
-    state.l1Network !== 'solana' &&
-    state.currencyType.ticker !== CurrencyType.mobile.ticker &&
-    networkFee
-  ) {
-    maxBalance = maxBalance?.minus(networkFee)
-  }
 
   if ((maxBalance?.integerBalance ?? 0) < 0) {
     maxBalance = new Balance(0, state.currencyType)
@@ -218,7 +146,6 @@ const recalculate = (payments: Payment[], state: PaymentState) => {
 
   return {
     networkFee,
-    dcFee,
     payments,
     totalAmount: paymentsSum(payments, state.currencyType),
   }
@@ -257,10 +184,7 @@ function reducer(
   switch (action.type) {
     case 'updatePayee': {
       // 1. If the contact exists, addresses should be equal
-      const contactAddress =
-        state.l1Network === 'helium'
-          ? action.contact?.address
-          : action.contact?.solanaAddress
+      const contactAddress = action.contact?.solanaAddress
 
       const addressNotEqual =
         contactAddress && action.address !== contactAddress
@@ -358,7 +282,6 @@ function reducer(
         accountIotBalance: state.accountIotBalance,
         accountNetworkBalance: state.accountNetworkBalance,
         netType: state.netType,
-        l1Network: state.l1Network,
       })
     }
 
@@ -371,7 +294,6 @@ function reducer(
           accountIotBalance: state.accountIotBalance,
           accountNetworkBalance: state.accountNetworkBalance,
           netType: state.netType,
-          l1Network: state.l1Network,
         })
       }
 
@@ -385,7 +307,7 @@ function reducer(
       }))
       const totalAmount = paymentsSum(nextPayments, state.currencyType)
 
-      const fees = calculateFee(nextPayments, state)
+      const fees = calculateFee()
 
       return {
         ...state,
@@ -424,7 +346,6 @@ function reducer(
 
 export default (opts: {
   netType: NetTypes.NetType
-  l1Network: L1Network
   currencyType: PaymentCurrencyType
   oraclePrice?: Balance<USDollars>
   accountMobileBalance?: Balance<MobileTokens>

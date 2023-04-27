@@ -15,7 +15,6 @@ import {
   TextInput as RNTextInput,
   Platform,
 } from 'react-native'
-import Address from '@helium/address'
 import Checkmark from '@assets/images/checkmark.svg'
 import { useKeyboard } from '@react-native-community/hooks'
 import Box from '@components/Box'
@@ -37,7 +36,6 @@ import { solAddressIsValid, accountNetType } from '../../utils/accountUtils'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import AddressExtra from './AddressExtra'
 import { CSAccount } from '../../storage/cloudStorage'
-import { useIsHotspotOrValidatorQuery } from '../../generated/graphql'
 
 const BUTTON_HEIGHT = 55
 
@@ -60,28 +58,17 @@ const ContactDetails = ({ action, contact }: Props) => {
   const [address, setAddress] = useState('')
   const nicknameInput = useRef<RNTextInput | null>(null)
   const { blueBright500 } = useColors()
-  const { scannedAddress, setScannedAddress, l1Network } = useAppStorage()
+  const { scannedAddress, setScannedAddress } = useAppStorage()
   const spacing = useSpacing()
   const { showOKCancelAlert } = useAlert()
-
-  const isSolana = useMemo(() => l1Network === 'solana', [l1Network])
 
   useEffect(() => {
     if (route.params?.address) {
       setAddress(route.params.address)
-    } else if (isSolana && contact?.solanaAddress) {
+    } else if (contact?.solanaAddress) {
       setAddress(contact.solanaAddress)
-    } else if (!isSolana && contact?.address) {
-      setAddress(contact.address)
     }
-  }, [contact, isSolana, route])
-
-  const { error, loading, data } = useIsHotspotOrValidatorQuery({
-    variables: {
-      address,
-    },
-    skip: !address || isSolana || !Address.isValid(address),
-  })
+  }, [contact, route])
 
   const onRequestClose = useCallback(() => {
     homeNav.goBack()
@@ -91,14 +78,10 @@ const ContactDetails = ({ action, contact }: Props) => {
   const isEditingContact = useMemo(() => action === 'edit', [action])
 
   const handleCreateNewContact = useCallback(() => {
-    let heliumAddress = ''
+    const heliumAddress = ''
     let solanaAddress = ''
 
-    if (isSolana) {
-      solanaAddress = address
-    } else {
-      heliumAddress = address
-    }
+    solanaAddress = address
 
     addContact({
       address: heliumAddress,
@@ -107,7 +90,7 @@ const ContactDetails = ({ action, contact }: Props) => {
       netType: accountNetType(address),
     })
     addressBookNav.goBack()
-  }, [addContact, address, addressBookNav, isSolana, nickname])
+  }, [addContact, address, addressBookNav, nickname])
 
   const handleDeleteContact = useCallback(async () => {
     const decision = await showOKCancelAlert({
@@ -150,22 +133,15 @@ const ContactDetails = ({ action, contact }: Props) => {
   useEffect(() => {
     if (!scannedAddress) return
 
-    if (
-      (!isSolana && Address.isValid(scannedAddress)) ||
-      (isSolana && solAddressIsValid(scannedAddress))
-    ) {
+    if (solAddressIsValid(scannedAddress)) {
       setAddress(scannedAddress)
       setScannedAddress(undefined)
     }
-  }, [isSolana, scannedAddress, setScannedAddress])
+  }, [scannedAddress, setScannedAddress])
 
   const addressIsValid = useMemo(() => {
-    if (isSolana) {
-      return solAddressIsValid(address)
-    }
-
-    return data?.isHotspotOrValidator === false
-  }, [data, isSolana, address])
+    return solAddressIsValid(address)
+  }, [address])
 
   return (
     <Box flex={1} backgroundColor="surfaceSecondary">
@@ -215,13 +191,13 @@ const ContactDetails = ({ action, contact }: Props) => {
           >
             <Text variant="body1">
               {t('addNewContact.address.title', {
-                network: isSolana ? 'Solana' : 'Helium',
+                network: 'Solana',
               })}
             </Text>
             <AddressExtra
               onScanPress={handleScanAddress}
               isValidAddress={addressIsValid}
-              addressLoading={loading}
+              addressLoading={false}
             />
           </Box>
           <TextInput
@@ -239,15 +215,6 @@ const ContactDetails = ({ action, contact }: Props) => {
             }}
             paddingVertical="xl"
           />
-          <Text
-            opacity={error || data?.isHotspotOrValidator ? 100 : 0}
-            variant="body2"
-            marginHorizontal="xl"
-            marginVertical="xs"
-            color="red500"
-          >
-            {error ? t('generic.loadFailed') : t('generic.notValidAddress')}
-          </Text>
           <Box
             flexDirection="row"
             justifyContent="space-between"

@@ -58,7 +58,6 @@ const Settings = () => {
     updateConvertToCurrency,
     updateCurrency,
     updateRequirePinForPayment,
-    l1Network,
   } = useAppStorage()
   const copyText = useCopyText()
   const { showOKAlert, showOKCancelAlert } = useAlert()
@@ -305,17 +304,6 @@ const Settings = () => {
     }
   }, [appPin, currentAccount, isPinRequired, settingsNav])
 
-  const handleCopyAddress = useCallback(() => {
-    if (!currentAccount?.address) return
-    if (l1Network !== 'solana') {
-      copyText({
-        message: ellipsizeAddress(currentAccount?.address),
-        copyText: currentAccount?.address,
-      })
-    } else {
-    }
-  }, [copyText, currentAccount, l1Network])
-
   const handleShareAddress = useCallback(() => {
     settingsNav.navigate('ShareAddress')
   }, [settingsNav])
@@ -361,28 +349,26 @@ const Settings = () => {
 
     let devData: SettingsListItemType[] = []
 
-    if (l1Network === 'solana') {
-      const items = [
-        { label: 'Devnet', value: 'devnet' },
-        { label: 'Testnet', value: 'testnet', disabled: true },
-        {
-          label: 'Mainnet-Beta',
-          value: 'mainnet-beta',
-        },
-      ]
+    const items = [
+      { label: 'Devnet', value: 'devnet' },
+      { label: 'Testnet', value: 'testnet', disabled: true },
+      {
+        label: 'Mainnet-Beta',
+        value: 'mainnet-beta',
+      },
+    ]
 
-      devData = [
-        ...devData,
-        {
-          title: t('settings.sections.dev.solanaCluster.title'),
-          value: cluster,
-          select: {
-            items,
-            onValueSelect: handleSolanaClusterChange,
-          },
+    devData = [
+      ...devData,
+      {
+        title: t('settings.sections.dev.solanaCluster.title'),
+        value: cluster,
+        select: {
+          items,
+          onValueSelect: handleSolanaClusterChange,
         },
-      ]
-    }
+      },
+    ]
 
     const accountSettings = [
       {
@@ -397,30 +383,27 @@ const Settings = () => {
       },
       {
         title: t('settings.sections.account.copyAddress'),
-        onPress: l1Network === 'solana' ? undefined : handleCopyAddress,
-        select:
-          l1Network === 'solana'
-            ? {
-                items: [
-                  { label: 'Helium', value: 'helium' },
-                  { label: 'Solana', value: 'solana' },
-                ],
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                onValueSelect: (val: any) => {
-                  const address =
-                    val === 'helium'
-                      ? currentAccount?.address
-                      : currentAccount?.solanaAddress
+        onPress: undefined,
+        select: {
+          items: [
+            { label: 'Helium', value: 'helium' },
+            { label: 'Solana', value: 'solana' },
+          ],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          onValueSelect: (val: any) => {
+            const address =
+              val === 'helium'
+                ? currentAccount?.address
+                : currentAccount?.solanaAddress
 
-                  if (!address) return
+            if (!address) return
 
-                  copyText({
-                    message: ellipsizeAddress(address),
-                    copyText: address,
-                  })
-                },
-              }
-            : undefined,
+            copyText({
+              message: ellipsizeAddress(address),
+              copyText: address,
+            })
+          },
+        },
       },
       {
         title: t('settings.sections.account.shareAddress'),
@@ -432,12 +415,10 @@ const Settings = () => {
       destructive?: boolean
     }[]
 
-    if (l1Network === 'solana') {
-      accountSettings.push({
-        title: t('settings.sections.account.migrateWallet'),
-        onPress: handleMigrateWallet,
-      })
-    }
+    accountSettings.push({
+      title: t('settings.sections.account.migrateWallet'),
+      onPress: handleMigrateWallet,
+    })
 
     accountSettings.push({
       title: t('settings.sections.account.signOut'),
@@ -535,7 +516,6 @@ const Settings = () => {
     copyText,
     currency,
     currentAccount,
-    handleCopyAddress,
     handleCurrencyTypeChange,
     handleIntervalSelected,
     handleLanguageChange,
@@ -551,7 +531,6 @@ const Settings = () => {
     handleUpdateAlias,
     isDefaultAccount,
     isPinRequired,
-    l1Network,
     language,
     requirePinForPayment,
     t,

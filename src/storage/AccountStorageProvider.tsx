@@ -10,7 +10,7 @@ import React, {
 } from 'react'
 import { useAsync } from 'react-async-hook'
 import * as SecureStore from 'expo-secure-store'
-import { NetTypes as NetType, NetTypes } from '@helium/address'
+import { NetTypes as NetType } from '@helium/address'
 import { useAppState } from '@react-native-community/hooks'
 import {
   accountNetType,
@@ -54,7 +54,7 @@ const useAccountStorageHook = () => {
 
   const solanaAccountsUpdateComplete = useRef(false)
   const solanaContactsUpdateComplete = useRef(false)
-  const { updateL1Network, l1Network, updateSessionKey } = useAppStorage()
+  const { updateSessionKey } = useAppStorage()
   const dispatch = useAppDispatch()
   const currentAppState = useAppState()
   const [fetchAPISessionKey] = useLazyGetSessionKeyQuery()
@@ -72,9 +72,8 @@ const useAccountStorageHook = () => {
   }, [currentAccount, currentAppState, updateApiToken])
 
   const currentNetworkAddress = useMemo(() => {
-    if (l1Network === 'helium') return currentAccount?.address
-    if (l1Network === 'solana') return currentAccount?.solanaAddress
-  }, [currentAccount, l1Network])
+    return currentAccount?.solanaAddress
+  }, [currentAccount])
 
   const { result: restoredAccounts } = useAsync(restoreAccounts, [])
 
@@ -163,12 +162,6 @@ const useAccountStorageHook = () => {
   }, [contacts])
 
   useEffect(() => {
-    // if a testnet address is selected, set l1 back to helium
-    if (currentAccount?.netType !== NetTypes.TESTNET) return
-    updateL1Network('helium')
-  }, [currentAccount, updateL1Network])
-
-  useEffect(() => {
     if (!restoredAccounts) return
 
     setAccounts(restoredAccounts.csAccounts)
@@ -205,29 +198,14 @@ const useAccountStorageHook = () => {
     [sortedAccounts, sortedMainnetAccounts, sortedTestnetAccounts],
   )
 
-  const testnetContacts = useMemo(
-    () => contacts.filter(({ netType }) => netType === NetType.TESTNET),
-    [contacts],
-  )
-
   const mainnetContacts = useMemo(
     () => contacts.filter(({ netType }) => netType === NetType.MAINNET),
     [contacts],
   )
 
-  const contactsForNetType = useCallback(
-    (netType: AccountNetTypeOpt) => {
-      if (l1Network === 'solana') {
-        return mainnetContacts.filter((c) => !!c.solanaAddress)
-      }
-      if (netType === NetType.MAINNET)
-        return mainnetContacts.filter((c) => !!c.address)
-      if (netType === NetType.TESTNET)
-        return testnetContacts.filter((c) => !!c.address)
-      return contacts.filter((c) => !!c.address)
-    },
-    [contacts, l1Network, mainnetContacts, testnetContacts],
-  )
+  const contactsForNetType = useCallback(() => {
+    return mainnetContacts.filter((c) => !!c.solanaAddress)
+  }, [mainnetContacts])
 
   const upsertAccount = useCallback(
     async ({

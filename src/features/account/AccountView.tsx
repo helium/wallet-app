@@ -25,7 +25,7 @@ const AccountView = ({ selectedBalance, ...boxProps }: Props) => {
   const [selectedDate, setSelectedDate] = useState('')
   const [balanceString, setBalanceString] = useState('')
   const { totalValue } = useBalance()
-  const { currency, l1Network } = useAppStorage()
+  const { currency } = useAppStorage()
   const [actionBarHeight, setActionBarHeight] = useLayoutHeight()
 
   useEffect(() => {
@@ -89,7 +89,7 @@ const AccountView = ({ selectedBalance, ...boxProps }: Props) => {
           <FadeInOut>
             <AccountActionBar
               compact
-              hasSwaps={l1Network === 'solana'}
+              hasSwaps
               hasBottomTitle
               onLayout={setActionBarHeight}
             />

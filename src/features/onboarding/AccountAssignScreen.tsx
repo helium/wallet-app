@@ -17,7 +17,6 @@ import { accountNetType } from '../../utils/accountUtils'
 import { ImportAccountNavigationProp } from './import/importAccountNavTypes'
 import { CreateAccountNavigationProp } from './create/createAccountNavTypes'
 import { HomeStackParamList } from '../home/homeTypes'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 
 type Route = RouteProp<HomeStackParamList, 'AccountAssignScreen'>
@@ -35,7 +34,6 @@ const AccountAssignScreen = () => {
     reset,
     onboardingData: { secureAccount },
   } = useOnboarding()
-  const { l1Network } = useAppStorage()
   const insets = useSafeAreaInsets()
   const spacing = useSpacing()
   const colors = useColors()
@@ -60,17 +58,11 @@ const AccountAssignScreen = () => {
         if (setAsDefault) {
           await updateDefaultAccountAddress(account.address)
         }
-        if (l1Network === 'helium') {
-          rootNav.reset({
-            index: 0,
-            routes: [{ name: 'HomeNavigator' }],
-          })
-        } else {
-          rootNav.reset({
-            index: 0,
-            routes: [{ name: 'TabBarNavigator' }],
-          })
-        }
+
+        rootNav.reset({
+          index: 0,
+          routes: [{ name: 'TabBarNavigator' }],
+        })
         reset()
         return
       } catch (e) {
@@ -94,7 +86,6 @@ const AccountAssignScreen = () => {
     alias,
     upsertAccount,
     setAsDefault,
-    l1Network,
     reset,
     updateDefaultAccountAddress,
     rootNav,

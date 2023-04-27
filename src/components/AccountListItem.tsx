@@ -6,7 +6,6 @@ import Box from './Box'
 import AccountIcon from './AccountIcon'
 import { ellipsizeAddress, formatAccountAlias } from '../utils/accountUtils'
 import { CSAccount } from '../storage/cloudStorage'
-import { useAppStorage } from '../storage/AppStorageProvider'
 import TouchableContainer from './TouchableContainer'
 
 type Props = {
@@ -17,16 +16,12 @@ type Props = {
 }
 const AccountListItem = ({ selected, account, onPress, disabled }: Props) => {
   const { primary } = useColors()
-  const { l1Network } = useAppStorage()
 
   const handlePress = useCallback(() => onPress?.(account), [account, onPress])
 
   const address = useMemo(() => {
-    if (l1Network === 'solana' && account.solanaAddress) {
-      return account.solanaAddress
-    }
-    return account.address
-  }, [account.address, account.solanaAddress, l1Network])
+    return account.solanaAddress
+  }, [account])
 
   return (
     <TouchableContainer
@@ -46,7 +41,7 @@ const AccountListItem = ({ selected, account, onPress, disabled }: Props) => {
           {formatAccountAlias(account)}
         </Text>
         <Text variant="body3" marginLeft="ms" color="secondaryText">
-          {ellipsizeAddress(address)}
+          {ellipsizeAddress(address || '')}
         </Text>
       </Box>
       {selected && (
