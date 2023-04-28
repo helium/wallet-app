@@ -43,7 +43,6 @@ import AddressBookSelector, {
   AddressBookRef,
 } from '@components/AddressBookSelector'
 import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
-import { getMemoStrValid } from '@components/MemoInput'
 import useAlert from '@hooks/useAlert'
 import useDisappear from '@hooks/useDisappear'
 import IconPressedContainer from '@components/IconPressedContainer'
@@ -51,6 +50,10 @@ import TokenSOL from '@assets/images/tokenSOL.svg'
 import TokenIOT from '@assets/images/tokenIOT.svg'
 import TokenHNT from '@assets/images/tokenHNT.svg'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
+import { calcCreateAssociatedTokenAccountAccountFee } from '@utils/solanaUtils'
+import { Mints } from '@utils/constants'
+import { PublicKey } from '@solana/web3.js'
+import { useSolana } from '../../solana/SolanaProvider'
 import {
   HomeNavigationProp,
   HomeStackParamList,
@@ -69,7 +72,6 @@ import usePaymentsReducer, { MAX_PAYMENTS } from './usePaymentsReducer'
 import PaymentCard from './PaymentCard'
 import PaymentSubmit from './PaymentSubmit'
 import { CSAccount } from '../../storage/cloudStorage'
-import useSubmitTxn from '../../graphql/useSubmitTxn'
 import { RootState } from '../../store/rootReducer'
 import { useAppDispatch } from '../../store/store'
 import { solanaSlice } from '../../store/slices/solanaSlice'
@@ -77,7 +79,6 @@ import { RootNavigationProp } from '../../navigation/rootTypes'
 
 type LinkedPayment = {
   amount?: string
-  memo: string
   payee: string
   defaultTokenType?: Ticker
 }
@@ -91,7 +92,6 @@ const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
       {
         payee: opts.payee,
         amount: opts.amount,
-        memo: opts.memo || '',
         defaultTokenType: opts.defaultTokenType?.toUpperCase() as Ticker,
       },
     ]
@@ -108,6 +108,7 @@ const PaymentScreen = () => {
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
   const { oraclePrice, hntBalance, solBalance, iotBalance, mobileBalance } =
     useBalance()
+  const { anchorProvider } = useSolana()
 
   const { showOKAlert } = useAlert()
   const appDispatch = useAppDispatch()
@@ -126,6 +127,11 @@ const PaymentScreen = () => {
   } = useAccountStorage()
   const [ticker, setTicker] = useState<Ticker>(
     (route.params?.defaultTokenType?.toUpperCase() as Ticker) || 'HNT',
+  )
+  const [mint, setMint] = useState<string>(
+    (route.params?.defaultTokenType?.toUpperCase() as Ticker)
+      ? Mints[route.params?.defaultTokenType?.toUpperCase() as Ticker]
+      : Mints.HNT,
   )
 
   useDisappear(() => {
@@ -182,11 +188,7 @@ const PaymentScreen = () => {
     netType: networkType,
   })
 
-<<<<<<< HEAD
   const { submitPayment, submitLedger } = useSubmitTxn()
-=======
-  const { submit, submitLedger } = useSubmitTxn()
->>>>>>> 9eb85ac (Fix payments)
 
   const solanaPayment = useSelector(
     (reduxState: RootState) => reduxState.solana.payment,
@@ -248,7 +250,6 @@ const PaymentScreen = () => {
           address: p.payee,
           account: contact,
           amount: p.amount,
-          memo: p.memo,
         }
       }),
     })
@@ -301,7 +302,6 @@ const PaymentScreen = () => {
           {
             payee: p.address,
             balanceAmount: p.amount,
-            memo: p.memo || '',
             max: p.max,
           },
         ]
@@ -313,11 +313,7 @@ const PaymentScreen = () => {
     (opts?: { txn: PaymentV2; txnJson: string }) => {
       try {
         if (!opts) {
-<<<<<<< HEAD
           submitPayment(payments)
-=======
-          submit(payments)
->>>>>>> 9eb85ac (Fix payments)
         } else {
           // This is a ledger device
           submitLedger()
@@ -326,11 +322,7 @@ const PaymentScreen = () => {
         console.error(e)
       }
     },
-<<<<<<< HEAD
     [payments, submitPayment, submitLedger],
-=======
-    [payments, submit, submitLedger],
->>>>>>> 9eb85ac (Fix payments)
   )
 
   const insufficientFunds = useMemo((): [
@@ -444,8 +436,7 @@ const PaymentScreen = () => {
         const addressValid = !!(p.address && solAddressIsValid(p.address))
 
         const paymentValid = p.amount && p.amount.integerBalance > 0
-        const memoValid = getMemoStrValid(p.memo)
-        return addressValid && paymentValid && memoValid && !p.hasError
+        return addressValid && paymentValid && !p.hasError
       })
 
     return paymentsValid && !insufficientFunds[0]
@@ -458,6 +449,7 @@ const PaymentScreen = () => {
   const onTickerSelected = useCallback(
     (tick: Ticker) => {
       setTicker(tick)
+      setMint(Mints[tick])
 
       dispatch({
         type: 'changeToken',
@@ -491,20 +483,6 @@ const PaymentScreen = () => {
   const handleToggleMax = useCallback(
     ({ index }: { index: number }) => {
       dispatch({ type: 'toggleMax', index })
-    },
-    [dispatch],
-  )
-
-  const handleEditMemo = useCallback(
-    ({
-      index,
-      memo,
-    }: {
-      address?: string | undefined
-      index: number
-      memo: string
-    }) => {
-      dispatch({ type: 'updateMemo', index, memo })
     },
     [dispatch],
   )
@@ -557,8 +535,8 @@ const PaymentScreen = () => {
   )
 
   const handleEditAddress = useCallback(
-    ({ index, address }: { index: number; address: string }) => {
-      if (index === undefined || !currentAccount) return
+    async ({ index, address }: { index: number; address: string }) => {
+      if (index === undefined || !currentAccount || !anchorProvider) return
 
       const allAccounts = unionBy(
         contacts,
@@ -567,19 +545,35 @@ const PaymentScreen = () => {
       )
       let contact = allAccounts.find((c) => c.address === address)
       if (!contact) contact = { address, netType: networkType, alias: '' }
+
+      const createTokenAccountFee =
+        await calcCreateAssociatedTokenAccountAccountFee(
+          anchorProvider,
+          address,
+          new PublicKey(mint),
+        )
       dispatch({
         type: 'updatePayee',
         index,
         address,
         contact,
         payer: currentAccount?.address,
+        createTokenAccountFee,
       })
     },
-    [accounts, contacts, currentAccount, dispatch, networkType],
+    [
+      accounts,
+      contacts,
+      currentAccount,
+      dispatch,
+      networkType,
+      anchorProvider,
+      mint,
+    ],
   )
 
   const handleContactSelected = useCallback(
-    ({
+    async ({
       contact,
       index,
     }: {
@@ -592,7 +586,14 @@ const PaymentScreen = () => {
       const payee = contact.solanaAddress
       const payer = currentNetworkAddress
 
-      if (!payee || !payer) return
+      if (!payee || !payer || !anchorProvider) return
+
+      const createTokenAccountFee =
+        await calcCreateAssociatedTokenAccountAccountFee(
+          anchorProvider,
+          payee,
+          new PublicKey(mint),
+        )
 
       dispatch({
         type: 'updatePayee',
@@ -600,9 +601,10 @@ const PaymentScreen = () => {
         index,
         address: payee,
         payer,
+        createTokenAccountFee,
       })
     },
-    [currentNetworkAddress, dispatch],
+    [currentNetworkAddress, dispatch, anchorProvider, mint],
   )
 
   const handleAddPayee = useCallback(() => {
@@ -781,7 +783,6 @@ const PaymentScreen = () => {
                         onAddressBookSelected={handleAddressBookSelected}
                         onEditAmount={handleEditAmount}
                         onToggleMax={handleToggleMax}
-                        onEditMemo={handleEditMemo}
                         onEditAddress={handleEditAddress}
                         handleAddressError={handleAddressError}
                         onUpdateError={handleSetPaymentError}

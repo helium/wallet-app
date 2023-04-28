@@ -51,7 +51,6 @@ const initialState: SolanaState = {
 type Payment = {
   payee: string
   balanceAmount: Balance<AnyCurrencyType>
-  memo: string
   max?: boolean
 }
 

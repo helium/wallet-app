@@ -19,7 +19,6 @@ import { useAsync } from 'react-async-hook'
 import animalName from 'angry-purple-tiger'
 import { Color } from '@theme/theme'
 import { useColors } from '@theme/themeHooks'
-import { decodeMemoString, DEFAULT_MEMO } from '@components/MemoInput'
 import shortLocale from '../../utils/formatDistance'
 import { accountCurrencyType, ellipsizeAddress } from '../../utils/accountUtils'
 import { balanceToString, useBalance } from '../../utils/Balance'
@@ -454,21 +453,6 @@ const useTxn = (
     )} UTC`
   }, [dateOpts, item, t])
 
-  const memo = useMemo(() => {
-    let memoRaw = item?.memo
-    const receivedPayment = item?.payments?.find((p) => p.payee === address)
-    if (receivedPayment) {
-      memoRaw = receivedPayment.memo
-    } else if (item?.payments?.length) {
-      memoRaw = item.payments.find((p) => !!p.memo)?.memo || ''
-    }
-    if (memoRaw === DEFAULT_MEMO) {
-      return ''
-    }
-
-    return decodeMemoString(memoRaw)
-  }, [address, item])
-
   const getPaymentsReceived = useCallback(async () => {
     const payments = item?.payments?.filter(({ payee }) => payee === address)
     if (!payments) return []
@@ -500,7 +484,6 @@ const useTxn = (
   }, [address, formatAmount, item, bonesToBalance])
 
   return {
-    memo,
     time,
     getAmount,
     getFee,
