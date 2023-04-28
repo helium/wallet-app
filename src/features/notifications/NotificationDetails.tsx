@@ -23,13 +23,15 @@ const NotificationDetails = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation()
   const { notification } = route.params
-  const { setSelectedNotification, selectedList, resource } =
+  const { setSelectedNotification, selectedList, apiResource } =
     useNotificationStorage()
   const dispatch = useAppDispatch()
   const prevSelectedList = usePrevious(selectedList)
 
   useMount(() => {
-    dispatch(markNotificationRead({ resource, id: notification.id }))
+    dispatch(
+      markNotificationRead({ resource: apiResource, id: notification.id }),
+    )
   })
 
   useEffect(() => {

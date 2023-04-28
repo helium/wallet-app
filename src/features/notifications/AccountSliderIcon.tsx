@@ -1,9 +1,7 @@
-import React, { memo, useCallback, useEffect, useMemo } from 'react'
-import { isAfter } from 'date-fns'
+import React, { memo, useCallback, useMemo } from 'react'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Box from '@components/Box'
-import { useNotificationsQuery } from '../../generated/graphql'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { heliumAddressToSolAddress } from '@helium/spl-utils'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 
 type Props = {
@@ -20,54 +18,18 @@ const AccountSliderIcon = ({
   onPress,
   selected,
 }: Props) => {
-  const { currentAccount } = useAccountStorage()
-  const { lastViewedTimestamp, markListUnread, unreadLists } =
-    useNotificationStorage()
-
-  // TODO: Remove this!!!!!!!!!!!!!!!!
-  // TODO: Use new!!!!!!!!!!!!!!!!!!!!!!
-  const { data: notifications } = useNotificationsQuery({
-    variables: {
-      address: currentAccount?.address || '',
-      resource,
-      limit: 1,
-    },
-    skip: !currentAccount?.address,
-    fetchPolicy: 'cache-and-network',
-  })
+  const { notificationsByResource } = useNotificationStorage()
 
   const hasUnread = useMemo(() => {
-    if (
-      !lastViewedTimestamp &&
-      notifications?.notifications &&
-      notifications.notifications.length > 0
-    ) {
-      return true
-    }
+    let key = resource
+    try {
+      key = heliumAddressToSolAddress(resource || '')
+    } catch {}
 
-    if (
-      lastViewedTimestamp &&
-      notifications?.notifications &&
-      notifications.notifications[0]
-    ) {
-      return isAfter(
-        new Date(notifications.notifications[0].time),
-        new Date(lastViewedTimestamp),
-      )
-    }
-  }, [lastViewedTimestamp, notifications])
+    const notifications = notificationsByResource[key] || []
 
-  useEffect(() => {
-    const notificationResource =
-      notifications?.notifications && notifications.notifications[0]?.resource
-    if (
-      hasUnread &&
-      notificationResource &&
-      !unreadLists.includes(notificationResource)
-    ) {
-      markListUnread(notificationResource)
-    }
-  }, [hasUnread, markListUnread, notifications, resource, unreadLists])
+    return notifications.find((n) => !n.viewedAt)
+  }, [notificationsByResource, resource])
 
   const selectIcon = useCallback(() => onPress(index), [index, onPress])
 

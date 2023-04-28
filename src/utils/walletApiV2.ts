@@ -1,9 +1,10 @@
-/* eslint-disable no-console */
 import axios from 'axios'
 import Config from 'react-native-config'
 import { Cluster } from '@solana/web3.js'
+import { heliumAddressFromSolAddress } from '@helium/spl-utils'
 import { getSecureItem } from '../storage/secureStorage'
 import { AccountBalance, Prices } from '../types/balance'
+import makeApiToken from './makeApiToken'
 
 export type Notification = {
   title: string
@@ -29,6 +30,8 @@ const axiosInstance = axios.create({
 })
 
 axiosInstance.interceptors.request.use(async (config) => {
+  if (config.headers.Authorization) return config
+
   const token = await getSecureItem('walletApiToken')
   // eslint-disable-next-line no-param-reassign
   config.headers.Authorization = token ? `Bearer ${token}` : ''
@@ -57,17 +60,46 @@ export const getBalanceHistory = async ({
 }
 
 export const getNotifications = async ({ resource }: { resource: string }) => {
+  // We need to override the stored api token because we may be requesting notifications for
+  // a wallet that is not currently the "currentAccount"
+  let config = {}
+  try {
+    const heliumAddress = heliumAddressFromSolAddress(resource)
+    const token = await makeApiToken(heliumAddress)
+    config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  } catch {}
+
   const url = `/notifications/${resource}`
-  const { data } = await axiosInstance.get<Notification[]>(url)
+  const { data } = await axiosInstance.get<Notification[]>(url, config)
   return data
 }
 
-export const postNotificationRead = async ({ id }: { id: number }) => {
+export const postNotificationRead = async ({
+  id,
+  resource,
+}: {
+  id: number
+  resource: string
+}) => {
+  // We need to override the stored api token because we may be requesting notifications for
+  // a wallet that is not currently the "currentAccount"
+  let config = {}
+  try {
+    const heliumAddress = heliumAddressFromSolAddress(resource)
+    const token = await makeApiToken(heliumAddress)
+    config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  } catch {}
+
   const url = '/notifications/markRead'
-  const response = await axiosInstance.post(url, { id })
-  console.log('post notification read - response status: ', response.status)
-  // TODO: Verify this works
-  return response
+  return axiosInstance.put(url, { id }, config)
 }
 
 export const postPayment = async ({
@@ -78,8 +110,5 @@ export const postPayment = async ({
   cluster: Cluster
 }) => {
   const url = `/payments?cluster=${cluster}`
-  const response = await axiosInstance.post(url, { signature })
-  console.log('post payment - response status: ', response.status)
-  // TODO: Verify this works
-  return response
+  return axiosInstance.post(url, { signature })
 }

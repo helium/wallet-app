@@ -20,8 +20,8 @@ export const getNotifications = createAsyncThunk(
 
 export const markNotificationRead = createAsyncThunk(
   'notifications/markNotificationRead',
-  async ({ id }: { resource: string; id: number }) =>
-    WalletApi.postNotificationRead({ id }),
+  async ({ id, resource }: { resource: string; id: number }) =>
+    WalletApi.postNotificationRead({ id, resource }),
 )
 
 const notificationsSlice = createSlice({

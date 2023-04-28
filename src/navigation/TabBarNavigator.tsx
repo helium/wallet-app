@@ -40,10 +40,7 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
     (appState: RootState) => appState.notifications.notifications,
   )
 
-  // TODO: This should poll for all notifications??
-
   const hasUnreadNotifications = useMemo(() => {
-    // TODO: currently just looking for any unread notifications. Is this right?
     const allNotifs = Object.keys(notificationsByResource).flatMap(
       (k) => notificationsByResource[k],
     )

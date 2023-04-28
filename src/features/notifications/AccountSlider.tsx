@@ -14,25 +14,26 @@ import { HELIUM_UPDATES_ITEM, WALLET_UPDATES_ITEM } from './notificationTypes'
 import { isValidAccountHash } from '../../utils/accountUtils'
 
 const AccountSlider = () => {
-  const { accounts } = useAccountStorage()
   const carouselRef = useRef<Carousel<string | null>>(null)
   const {
     selectedList,
     updateSelectedList,
-    unreadLists,
     openedNotification,
     setOpenedNotification,
   } = useNotificationStorage()
 
-  const { sortedAccounts } = useAccountStorage()
+  const { sortedAccounts, currentAccount } = useAccountStorage()
 
   const data = useMemo(() => {
-    const accountsData = accounts ? Object.keys(accounts) : []
+    const allAccounts = sortedAccounts.map((a) => a.address)
     const networkData = [WALLET_UPDATES_ITEM, HELIUM_UPDATES_ITEM]
-    const fullList = [...networkData, ...accountsData]
-    const filteredList = fullList.filter((i) => !unreadLists.includes(i))
-    return [...unreadLists, ...filteredList]
-  }, [accounts, unreadLists])
+    const index = allAccounts.findIndex((a) => a === currentAccount?.address)
+    if (index !== -1) {
+      // put the currently selected account first
+      allAccounts.unshift(allAccounts.splice(index, 1)[0])
+    }
+    return [...networkData, ...allAccounts]
+  }, [currentAccount?.address, sortedAccounts])
 
   useAsync(async () => {
     if (openedNotification) {
@@ -47,7 +48,7 @@ const AccountSlider = () => {
         resource === HELIUM_UPDATES_ITEM
       ) {
         // helium or wallet update
-        await updateSelectedList(resource)
+        updateSelectedList(resource)
       } else if (resource !== undefined) {
         // account update, check hash against accounts
         const index = (
@@ -57,14 +58,11 @@ const AccountSlider = () => {
         ).findIndex((result) => !!result)
         const notifiedAccount = index > -1 ? sortedAccounts[index] : undefined
         if (notifiedAccount && notifiedAccount.address) {
-          await updateSelectedList(notifiedAccount.address)
+          updateSelectedList(notifiedAccount.address)
         }
       }
       // clear the opened push notification
       setOpenedNotification(undefined)
-    } else {
-      // set the selected list as the first account by default, after sorting of data by unread
-      await updateSelectedList(data[0])
     }
   }, [
     data,

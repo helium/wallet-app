@@ -7,12 +7,9 @@ import Text from '@components/Text'
 import { useSpacing } from '@theme/themeHooks'
 import FadeInOut from '@components/FadeInOut'
 import useHaptic from '@hooks/useHaptic'
-import { useSelector } from 'react-redux'
-import { orderBy } from 'lodash'
 import { NotificationsListNavigationProp } from './notificationTypes'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import NotificationListItem from './NotificationListItem'
-import { RootState } from '../../store/rootReducer'
 import { Notification } from '../../utils/walletApiV2'
 
 export type NotificationsListProps = {
@@ -26,7 +23,7 @@ const NotificationsList = ({
 }: NotificationsListProps) => {
   const { t } = useTranslation()
   const navigator = useNavigation<NotificationsListNavigationProp>()
-  const { setSelectedNotification, resource } = useNotificationStorage()
+  const { setSelectedNotification, notifications } = useNotificationStorage()
   const spacing = useSpacing()
   const { triggerImpact } = useHaptic()
 
@@ -36,15 +33,6 @@ const NotificationsList = ({
     }),
     [spacing.xxxl],
   )
-
-  const notificationsByResource = useSelector(
-    (appState: RootState) => appState.notifications.notifications,
-  )
-
-  const notifications = useMemo(() => {
-    const unsorted = notificationsByResource[resource] || []
-    return orderBy(unsorted, [(n) => new Date(n.createdAt)], ['desc'])
-  }, [notificationsByResource, resource])
 
   const SectionData = useMemo((): {
     title: string
