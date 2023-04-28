@@ -5,10 +5,6 @@ import {
   reducer as solanaStatusReducer,
   solanaStatusApi,
 } from './slices/solanaStatusApi'
-import {
-  reducer as walletRestApiReducer,
-  walletRestApi,
-} from './slices/walletRestApi'
 import solanaReducer, { name as solanaSliceName } from './slices/solanaSlice'
 import notificationsReducer, {
   name as notificationsSliceName,
@@ -44,12 +40,6 @@ const balancesConfig = {
   blacklist: ['balancesLoading'],
 }
 
-const walletRestConfig = {
-  key: walletRestApi.reducerPath,
-  storage: AsyncStorage,
-  blacklist: ['queries', 'mutations'],
-}
-
 const reducer = combineReducers({
   [solanaStatusApi.reducerPath]: solanaStatusReducer,
   [collectablesSliceName]: collectablesReducer,
@@ -60,10 +50,6 @@ const reducer = combineReducers({
     notificationsReducer,
   ),
   [authSliceName]: authReducer,
-  [walletRestApi.reducerPath]: persistReducer(
-    walletRestConfig,
-    walletRestApiReducer,
-  ),
   [appSliceName]: appReducer,
   [hotspotSliceName]: hotspotReducer,
   [browserSliceName]: browserReducer,

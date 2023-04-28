@@ -4,7 +4,6 @@ import { persistReducer } from 'redux-persist'
 import { setupListeners } from '@reduxjs/toolkit/query'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import reducer from './rootReducer'
-import { walletRestApi } from './slices/walletRestApi'
 import { solanaStatusApi } from './slices/solanaStatusApi'
 import { name as solanaSliceName } from './slices/solanaSlice'
 import { name as balancesSliceName } from './slices/balancesSlice'
@@ -34,7 +33,7 @@ const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }).concat([solanaStatusApi.middleware, walletRestApi.middleware]),
+    }).concat([solanaStatusApi.middleware]),
   enhancers,
 })
 

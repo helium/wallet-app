@@ -123,3 +123,17 @@ export const postPayment = async ({
   const url = `/payments?cluster=${cluster}`
   return axiosInstance.post(url, { signature })
 }
+
+export const getRecommendedDapps = async () => {
+  const { data } = await axiosInstance.get<Record<Cluster, string[]>>(
+    '/recommendedDapps',
+  )
+  return data
+}
+
+export const getSessionKey = async () => {
+  const { data } = await axiosInstance.get<{ sessionKey: string }>(
+    '/sessionKey',
+  )
+  return data?.sessionKey
+}
