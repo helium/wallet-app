@@ -38,7 +38,7 @@ const StoreTokenBalance = ({ tokenAccount, type }: TokenInput) => {
       balancesSlice.actions.updateBalance({
         cluster,
         solanaAddress: currentAccount?.solanaAddress,
-        balance: amount,
+        balance: Number(amount),
         type,
         tokenAccount,
       }),
