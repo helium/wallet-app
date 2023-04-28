@@ -1,6 +1,4 @@
-import { Ticker } from '@helium/currency'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { Cluster } from '@solana/web3.js'
 import Config from 'react-native-config'
 import { lang } from '../../utils/i18n'
 import { AuthState } from './authSlice'
@@ -8,8 +6,6 @@ import { AuthState } from './authSlice'
 export type BetaAccess = {
   publicKeys: string[]
 }
-
-export type Mints = Record<Ticker, string>
 
 export type TokenPrices = {
   solana: { [key: string]: number }
@@ -53,16 +49,6 @@ export const walletRestApi = createApi({
     },
   }),
   endpoints: (builder) => ({
-    postPayment: builder.mutation<
-      void,
-      { txnSignature: string; cluster: Cluster }
-    >({
-      query: ({ txnSignature, cluster }) => ({
-        url: `/payments?cluster=${cluster}`,
-        method: 'POST',
-        body: { signature: txnSignature },
-      }),
-    }),
     getRecommendedDapps: builder.query<RecommendedDapps, void>({
       query: () => '/recommendedDapps',
     }),
@@ -73,7 +59,6 @@ export const walletRestApi = createApi({
 })
 
 export const {
-  usePostPaymentMutation,
   useGetRecommendedDappsQuery,
   useLazyGetRecommendedDappsQuery,
   useGetSessionKeyQuery,

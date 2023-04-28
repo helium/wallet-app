@@ -398,26 +398,14 @@ export const transferToken = async (
     : await createTransferTxn(anchorProvider, signer, payments, mintAddress)
   transaction.sign([signer])
 
-  const signature = await anchorProvider.connection.sendTransaction(
-    transaction,
-    {
-      maxRetries: 5,
-    },
+  const { txid } = await sendAndConfirmWithRetry(
+    anchorProvider.connection,
+    Buffer.from(transaction.serialize()),
+    { skipPreflight: true },
+    'confirmed',
   )
 
-  // The sendAndConfirmTransaction socket connection occassionally blows up with the error
-  // signatureSubscribe error for argument ["your_signature", {"commitment": "finalized"}] INVALID_STATE_ERR
-  // Just going to poll for the txn for now 👇
-  const txn = await getTxn(anchorProvider, signature, {
-    maxTries: 20,
-    waitMS: 1000,
-  })
-
-  if (txn?.meta?.err) {
-    throw new Error(txn?.meta?.err?.toString())
-  }
-
-  return { signature, txn }
+  return { signature: txid }
 }
 
 export const getTxn = async (

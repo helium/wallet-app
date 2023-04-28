@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import axios from 'axios'
 import Config from 'react-native-config'
 import { Cluster } from '@solana/web3.js'
@@ -64,8 +65,21 @@ export const getNotifications = async ({ resource }: { resource: string }) => {
 export const postNotificationRead = async ({ id }: { id: number }) => {
   const url = '/notifications/markRead'
   const response = await axiosInstance.post(url, { id })
-  // eslint-disable-next-line no-console
-  console.log('post notification read', response.status)
+  console.log('post notification read - response status: ', response.status)
+  // TODO: Verify this works
+  return response
+}
+
+export const postPayment = async ({
+  signature,
+  cluster,
+}: {
+  signature: string
+  cluster: Cluster
+}) => {
+  const url = `/payments?cluster=${cluster}`
+  const response = await axiosInstance.post(url, { signature })
+  console.log('post payment - response status: ', response.status)
   // TODO: Verify this works
   return response
 }

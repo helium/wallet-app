@@ -21,9 +21,9 @@ import { Activity } from '../../types/activity'
 import { Collectable, CompressedNFT, toMintAddress } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
 import { fetchCollectables } from './collectablesSlice'
-import { walletRestApi } from './walletRestApi'
 import * as Logger from '../../utils/logger'
 import { fetchHotspots } from './hotspotsSlice'
+import { postPayment } from '../../utils/walletApiV2'
 
 type TokenActivity = Record<Ticker, Activity[]>
 
@@ -117,10 +117,13 @@ type DelegateDataCreditsInput = {
 
 export const makePayment = createAsyncThunk(
   'solana/makePayment',
-  async (
-    { account, payments, cluster, mints, anchorProvider }: PaymentInput,
-    { dispatch },
-  ) => {
+  async ({
+    account,
+    payments,
+    cluster,
+    mints,
+    anchorProvider,
+  }: PaymentInput) => {
     if (!account?.solanaAddress) throw new Error('No solana account found')
 
     const [firstPayment] = payments
@@ -128,7 +131,7 @@ export const makePayment = createAsyncThunk(
       firstPayment.balanceAmount.type.ticker !== 'SOL'
         ? toMintAddress(firstPayment.balanceAmount.type.ticker, mints)
         : undefined
-    const transfer = await solUtils.transferToken(
+    const { signature } = await solUtils.transferToken(
       anchorProvider,
       account.solanaAddress,
       account.address,
@@ -136,12 +139,12 @@ export const makePayment = createAsyncThunk(
       mintAddress,
     )
 
-    return dispatch(
-      walletRestApi.endpoints.postPayment.initiate({
-        txnSignature: transfer.signature,
-        cluster,
-      }),
-    )
+    postPayment({
+      signature,
+      cluster,
+    })
+
+    return signature
   },
 )
 
@@ -190,25 +193,25 @@ export const makeCollectablePayment = createAsyncThunk(
         )
       }
 
-      return await dispatch(
-        walletRestApi.endpoints.postPayment.initiate({
-          txnSignature: transfer.signature,
-          cluster,
-        }),
-      )
+      postPayment({ signature: transfer.signature, cluster })
     } catch (error) {
       Logger.error(error)
       throw error
     }
+
+    return true
   },
 )
 
 export const sendTreasurySwap = createAsyncThunk(
   'solana/sendTreasurySwap',
-  async (
-    { cluster, anchorProvider, amount, fromMint, recipient }: TreasurySwapTxn,
-    { dispatch },
-  ) => {
+  async ({
+    cluster,
+    anchorProvider,
+    amount,
+    fromMint,
+    recipient,
+  }: TreasurySwapTxn) => {
     try {
       const swap = await solUtils.createTreasurySwapTxn(
         amount,
@@ -216,26 +219,23 @@ export const sendTreasurySwap = createAsyncThunk(
         anchorProvider,
         recipient,
       )
-
-      return await dispatch(
-        walletRestApi.endpoints.postPayment.initiate({
-          txnSignature: swap.signature,
-          cluster,
-        }),
-      )
+      postPayment({ signature: swap.signature, cluster })
     } catch (error) {
       Logger.error(error)
       throw error
     }
+    return true
   },
 )
 
 export const sendMintDataCredits = createAsyncThunk(
   'solana/sendMintDataCredits',
-  async (
-    { cluster, anchorProvider, dcAmount, recipient }: MintDataCreditsInput,
-    { dispatch },
-  ) => {
+  async ({
+    cluster,
+    anchorProvider,
+    dcAmount,
+    recipient,
+  }: MintDataCreditsInput) => {
     try {
       const swap = await solUtils.mintDataCredits({
         anchorProvider,
@@ -243,31 +243,24 @@ export const sendMintDataCredits = createAsyncThunk(
         recipient,
       })
 
-      return await dispatch(
-        walletRestApi.endpoints.postPayment.initiate({
-          txnSignature: swap.signature,
-          cluster,
-        }),
-      )
+      postPayment({ signature: swap.signature, cluster })
     } catch (error) {
       Logger.error(error)
       throw error
     }
+    return true
   },
 )
 
 export const sendDelegateDataCredits = createAsyncThunk(
   'solana/sendDelegateDataCredits',
-  async (
-    {
-      cluster,
-      anchorProvider,
-      amount,
-      delegateAddress,
-      mint,
-    }: DelegateDataCreditsInput,
-    { dispatch },
-  ) => {
+  async ({
+    cluster,
+    anchorProvider,
+    amount,
+    delegateAddress,
+    mint,
+  }: DelegateDataCreditsInput) => {
     try {
       const swap = await solUtils.delegateDataCredits(
         anchorProvider,
@@ -276,22 +269,18 @@ export const sendDelegateDataCredits = createAsyncThunk(
         mint,
       )
 
-      return await dispatch(
-        walletRestApi.endpoints.postPayment.initiate({
-          txnSignature: swap.signature,
-          cluster,
-        }),
-      )
+      postPayment({ signature: swap.signature, cluster })
     } catch (error) {
       Logger.error(error)
       throw error
     }
+    return true
   },
 )
 
 export const sendAnchorTxn = createAsyncThunk(
   'solana/sendAnchorTxn',
-  async ({ txn, anchorProvider, cluster }: AnchorTxnInput, { dispatch }) => {
+  async ({ txn, anchorProvider, cluster }: AnchorTxnInput) => {
     try {
       const { blockhash } = await anchorProvider.connection.getLatestBlockhash(
         'recent',
@@ -306,16 +295,12 @@ export const sendAnchorTxn = createAsyncThunk(
         'confirmed',
       )
 
-      return await dispatch(
-        walletRestApi.endpoints.postPayment.initiate({
-          txnSignature: txid,
-          cluster,
-        }),
-      )
+      postPayment({ signature: txid, cluster })
     } catch (error) {
       Logger.error(error)
       throw error
     }
+    return true
   },
 )
 
@@ -335,12 +320,7 @@ export const claimRewards = createAsyncThunk(
         'confirmed',
       )
 
-      await dispatch(
-        walletRestApi.endpoints.postPayment.initiate({
-          txnSignature: txid,
-          cluster,
-        }),
-      )
+      postPayment({ signature: txid, cluster })
 
       // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
       dispatch(fetchHotspots({ account, anchorProvider, cluster }))
@@ -348,6 +328,8 @@ export const claimRewards = createAsyncThunk(
       Logger.error(error)
       throw error
     }
+
+    return true
   },
 )
 

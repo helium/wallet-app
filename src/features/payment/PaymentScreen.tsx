@@ -190,13 +190,7 @@ const PaymentScreen = () => {
     l1Network,
   })
 
-  const {
-    data: submitData,
-    loading: paymentSubmitLoading,
-    error: submitError,
-    submit,
-    submitLedger,
-  } = useSubmitTxn()
+  const { submitPayment, submitLedger } = useSubmitTxn()
 
   const solanaPayment = useSelector(
     (reduxState: RootState) => reduxState.solana.payment,
@@ -324,7 +318,7 @@ const PaymentScreen = () => {
     (opts?: { txn: PaymentV2; txnJson: string }) => {
       try {
         if (!opts) {
-          submit(payments, ticker)
+          submitPayment(payments)
         } else {
           // This is a ledger device
           submitLedger(opts)
@@ -333,7 +327,7 @@ const PaymentScreen = () => {
         console.error(e)
       }
     },
-    [payments, submit, submitLedger, ticker],
+    [payments, submitPayment, submitLedger],
   )
 
   const insufficientFunds = useMemo((): [
@@ -860,11 +854,9 @@ const PaymentScreen = () => {
         </AccountSelector>
       </HNTKeyboard>
       <PaymentSubmit
-        submitLoading={paymentSubmitLoading || !!solanaPayment?.loading}
-        submitSucceeded={
-          !!submitData?.submitTxn?.hash || !!solanaPayment?.success
-        }
-        submitError={submitError || solanaPayment?.error}
+        submitLoading={!!solanaPayment?.loading}
+        submitSucceeded={!!solanaPayment?.success}
+        submitError={solanaPayment?.error}
         totalBalance={paymentState.totalAmount}
         payments={paymentState.payments}
         feeTokenBalance={paymentState.networkFee}
