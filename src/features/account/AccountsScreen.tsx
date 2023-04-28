@@ -61,7 +61,7 @@ const AccountsScreen = () => {
   const [pageHeight, setPageHeight] = useLayoutHeight(0)
   const { openedNotification } = useNotificationStorage()
   const { balanceHistory } = useBalance()
-  const { locked, l1Network, currency } = useAppStorage()
+  const { locked, currency } = useAppStorage()
   const { cluster } = useSolana()
   const { reset } = useOnboarding()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
@@ -79,18 +79,18 @@ const AccountsScreen = () => {
   const { isHealthy } = useSolanaHealth()
 
   const actualTop = useMemo(() => {
-    if (showBanner && l1Network === 'solana') {
+    if (showBanner) {
       return 0
     }
     return top
-  }, [top, showBanner, l1Network])
+  }, [top, showBanner])
 
   const actualBannerHeight = useMemo(() => {
-    if (showBanner && l1Network === 'solana') {
+    if (showBanner) {
       return bannerHeight
     }
     return 0
-  }, [bannerHeight, showBanner, l1Network])
+  }, [bannerHeight, showBanner])
 
   const snapPoints = useMemo(() => {
     if (!pageHeight) return undefined
@@ -318,13 +318,11 @@ const AccountsScreen = () => {
   }, [colors.secondaryText])
 
   const bannerVisible = useMemo(() => {
-    if (l1Network === 'solana') {
-      if (cluster === 'devnet') {
-        return true
-      }
-      return !isHealthy
+    if (cluster === 'devnet') {
+      return true
     }
-  }, [cluster, isHealthy, l1Network])
+    return !isHealthy
+  }, [cluster, isHealthy])
 
   return (
     <Box flex={1}>

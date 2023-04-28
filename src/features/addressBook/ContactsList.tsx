@@ -93,9 +93,7 @@ const ContactsList = ({
   }, [])
 
   const allContacts = useMemo(() => {
-    const contacts = contactsForNetType(
-      currentAccount?.netType || NetTypes.MAINNET,
-    )
+    const contacts = contactsForNetType()
 
     if (!showMyAccounts) return contacts
 

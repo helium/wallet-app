@@ -176,7 +176,7 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
 const TabBarNavigator = () => {
   const dispatch = useDispatch()
 
-  const { doneSolanaMigration, manualMigration, l1Network } = useAppStorage()
+  const { doneSolanaMigration, manualMigration } = useAppStorage()
   const { cluster, updateCluster } = useSolana()
   const { bottom } = useSafeAreaInsets()
   const { currentAccount } = useAccountStorage()
@@ -230,8 +230,7 @@ const TabBarNavigator = () => {
           headerShown: false,
         }}
         sceneContainerStyle={{
-          paddingBottom:
-            l1Network === 'solana' ? NavBarHeight + bottom : undefined,
+          paddingBottom: NavBarHeight + bottom,
         }}
       >
         <Tab.Screen name="Home" component={HomeNavigator} />

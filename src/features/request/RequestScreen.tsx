@@ -36,7 +36,7 @@ import Text from '@components/Text'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import Box from '@components/Box'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import MemoInput, { useMemoValid } from '@components/MemoInput'
+import { useMemoValid } from '@components/MemoInput'
 import {
   useBorderRadii,
   useColors,
@@ -62,17 +62,15 @@ import FadeInOut from '@components/FadeInOut'
 import TokenIOT from '@assets/images/tokenIOT.svg'
 import TokenHNT from '@assets/images/tokenHNT.svg'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 
 const QR_CONTAINER_SIZE = 220
 
 type RequestType = 'qr' | 'link'
 const RequestScreen = () => {
-  const [txnMemo, setTxnMemo] = useState('')
+  const [txnMemo] = useState('')
   const { valid: memoValid } = useMemoValid(txnMemo)
   const { currentAccount, currentNetworkAddress: networkAddress } =
     useAccountStorage()
-  const { l1Network } = useAppStorage()
   const { t } = useTranslation()
   const [requestType, setRequestType] = useState<RequestType>('qr')
   const [containerHeight, setContainerHeight] = useState(0)
@@ -247,19 +245,16 @@ const RequestScreen = () => {
         value: 'MOBILE' as Ticker,
         selected: ticker === 'MOBILE',
       },
-    ]
-
-    if (l1Network === 'solana') {
-      tokens.push({
+      {
         label: 'IOT',
         icon: <TokenIOT width={30} height={30} />,
         value: 'IOT' as Ticker,
         selected: ticker === 'IOT',
-      })
-    }
+      },
+    ]
 
     return tokens
-  }, [blueBright500, white, l1Network, ticker])
+  }, [blueBright500, white, ticker])
 
   return (
     <HNTKeyboard
@@ -338,7 +333,6 @@ const RequestScreen = () => {
                   marginTop="l"
                   title={currentAccount?.alias}
                   address={currentAccount?.address}
-                  netType={currentAccount?.netType}
                   onPress={handleAccountButtonPress}
                 />
                 <TokenButton
@@ -382,25 +376,6 @@ const RequestScreen = () => {
                       </Text>
                     )}
                   </TouchableOpacityBox>
-
-                  {l1Network === 'helium' && (
-                    <>
-                      <Box
-                        height={1}
-                        backgroundColor="primaryBackground"
-                        marginHorizontal="n_l"
-                        marginVertical="ms"
-                      />
-                      <Text variant="body3" color="primaryText">
-                        {t('request.memo')}
-                      </Text>
-                      <MemoInput
-                        value={txnMemo}
-                        onChangeText={setTxnMemo}
-                        margin="n_m"
-                      />
-                    </>
-                  )}
                 </Box>
                 <Box flexDirection="row" marginTop="l" paddingBottom="xxl">
                   <TouchableOpacityBox

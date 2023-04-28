@@ -62,14 +62,11 @@ const ConnectedWallets = forwardRef(
       useAccountStorage()
     const { top } = useSafeAreaInsets()
     const navigation = useNavigation<TabBarNavigationProp>()
-    const { enableTestnet, l1Network } = useAppStorage()
+    const { enableTestnet } = useAppStorage()
 
     const filteredAccounts = useMemo(() => {
-      if (l1Network === 'solana') {
-        return sortedAccounts.filter((a) => a.netType !== NetTypes.TESTNET)
-      }
-      return sortedAccounts
-    }, [sortedAccounts, l1Network])
+      return sortedAccounts.filter((a) => a.netType !== NetTypes.TESTNET)
+    }, [sortedAccounts])
 
     const snapPoints = useMemo(
       () => [
@@ -124,23 +121,20 @@ const ConnectedWallets = forwardRef(
       (item: CSAccount) => () => {
         hide()
         setCurrentAccount(item)
-        if (l1Network === 'solana') {
-          // Reset Home & Collectables stack to first screen
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'Home' }],
-          })
-        }
+        // Reset Home & Collectables stack to first screen
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Home' }],
+        })
       },
-      [hide, l1Network, setCurrentAccount, navigation],
+      [hide, setCurrentAccount, navigation],
     )
 
     const renderItem = useCallback(
       // eslint-disable-next-line react/no-unused-prop-types
       ({ item }: { index: number; item: CSAccount }) => {
         const isSelected = item.address === currentAccount?.address
-        const accountAddress =
-          l1Network === 'solana' ? item?.solanaAddress : item?.address
+        const accountAddress = item?.solanaAddress
         return (
           <TouchableContainer
             onPress={handleAccountChange(item)}
@@ -169,13 +163,7 @@ const ConnectedWallets = forwardRef(
           </TouchableContainer>
         )
       },
-      [
-        currentAccount,
-        handleAccountChange,
-        primaryText,
-        setListItemHeight,
-        l1Network,
-      ],
+      [currentAccount, handleAccountChange, primaryText, setListItemHeight],
     )
 
     const footer = useCallback(

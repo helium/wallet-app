@@ -22,7 +22,7 @@ const AccountConfirmPinScreen = () => {
   const { params } = route
   const { t } = useTranslation()
   const { upsertAccount } = useAccountStorage()
-  const { updatePin, l1Network } = useAppStorage()
+  const { updatePin } = useAppStorage()
   const { reset } = useOnboarding()
 
   const pinSuccess = useCallback(
@@ -43,8 +43,7 @@ const AccountConfirmPinScreen = () => {
             index: 0,
             routes: [
               {
-                name:
-                  l1Network === 'solana' ? 'TabBarNavigator' : 'HomeNavigator',
+                name: 'TabBarNavigator',
               },
             ],
           })
@@ -55,7 +54,7 @@ const AccountConfirmPinScreen = () => {
 
       await updatePin(pin)
     },
-    [params.account, reset, rootNav, updatePin, upsertAccount, l1Network],
+    [params.account, reset, rootNav, updatePin, upsertAccount],
   )
 
   return (

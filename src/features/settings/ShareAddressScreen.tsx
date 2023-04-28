@@ -15,7 +15,6 @@ import BackScreen from '@components/BackScreen'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import CopyAddress from '@components/CopyAddress'
 import TabBar from '@components/TabBar'
-import { useAppStorage } from '@storage/AppStorageProvider'
 import useCopyText from '@hooks/useCopyText'
 
 const QR_CONTAINER_SIZE = 225
@@ -40,8 +39,6 @@ const ShareAddressScreen = () => {
       { title: 'Helium', value: 'helium' },
     ]
   }, [])
-
-  const { l1Network } = useAppStorage()
 
   const [selectedOption, setSelectedOption] = useState(tabData[0].value)
 
@@ -106,14 +103,12 @@ const ShareAddressScreen = () => {
           alignItems="center"
           marginBottom="xxxl"
         >
-          {l1Network === 'solana' && (
-            <TabBar
-              tabBarOptions={tabData}
-              selectedValue={selectedOption}
-              onItemSelected={handleItemSelected}
-              marginBottom="xxl"
-            />
-          )}
+          <TabBar
+            tabBarOptions={tabData}
+            selectedValue={selectedOption}
+            onItemSelected={handleItemSelected}
+            marginBottom="xxl"
+          />
 
           <Text
             variant="h2"

@@ -70,7 +70,6 @@ import PaymentCard from './PaymentCard'
 import PaymentSubmit from './PaymentSubmit'
 import { CSAccount } from '../../storage/cloudStorage'
 import useSubmitTxn from '../../graphql/useSubmitTxn'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 import { RootState } from '../../store/rootReducer'
 import { useAppDispatch } from '../../store/store'
 import { solanaSlice } from '../../store/slices/solanaSlice'
@@ -111,7 +110,6 @@ const PaymentScreen = () => {
     useBalance()
 
   const { showOKAlert } = useAlert()
-  const { l1Network } = useAppStorage()
   const appDispatch = useAppDispatch()
   const navigation = useNavigation<HomeNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
@@ -138,7 +136,7 @@ const PaymentScreen = () => {
     if (ticker !== 'MOBILE') return
 
     const mobilePromptShown = await AsyncStorage.getItem('mobilePaymentPrompt')
-    if (mobilePromptShown === 'true' || l1Network === 'solana') return
+    if (mobilePromptShown === 'true') return
 
     await showOKAlert({
       title: t('payment.mobilePrompt.title'),
@@ -152,18 +150,13 @@ const PaymentScreen = () => {
       navigation.goBack()
     } else if (rootNav.canGoBack()) {
       rootNav.goBack()
-    } else if (l1Network === 'helium') {
-      rootNav.reset({
-        index: 0,
-        routes: [{ name: 'HomeNavigator' }],
-      })
     } else {
       rootNav.reset({
         index: 0,
         routes: [{ name: 'TabBarNavigator' }],
       })
     }
-  }, [l1Network, navigation, rootNav])
+  }, [navigation, rootNav])
 
   const networkType = useMemo(() => {
     if (!route.params || !route.params.payer) {
@@ -187,16 +180,9 @@ const PaymentScreen = () => {
     accountIotBalance: iotBalance,
     accountNetworkBalance: hntBalance,
     netType: networkType,
-    l1Network,
   })
 
-  const {
-    data: submitData,
-    loading: paymentSubmitLoading,
-    error: submitError,
-    submit,
-    submitLedger,
-  } = useSubmitTxn()
+  const { submit, submitLedger } = useSubmitTxn()
 
   const solanaPayment = useSelector(
     (reduxState: RootState) => reduxState.solana.payment,
@@ -240,7 +226,6 @@ const PaymentScreen = () => {
 
     if (
       paymentsArr.find((p) => {
-        if (l1Network === 'helium') return !Address.isValid(p.payee)
         return !solAddressIsValid(p.payee)
       })
     ) {
@@ -324,16 +309,16 @@ const PaymentScreen = () => {
     (opts?: { txn: PaymentV2; txnJson: string }) => {
       try {
         if (!opts) {
-          submit(payments, ticker)
+          submit(payments)
         } else {
           // This is a ledger device
-          submitLedger(opts)
+          submitLedger()
         }
       } catch (e) {
         console.error(e)
       }
     },
-    [payments, submit, submitLedger, ticker],
+    [payments, submit, submitLedger],
   )
 
   const insufficientFunds = useMemo((): [
@@ -444,15 +429,7 @@ const PaymentScreen = () => {
     const paymentsValid =
       paymentState.payments.length &&
       paymentState.payments.every((p) => {
-        let addressValid = false
-        switch (l1Network) {
-          case 'helium':
-            addressValid = !!(p.address && Address.isValid(p.address))
-            break
-          case 'solana':
-            addressValid = !!(p.address && solAddressIsValid(p.address))
-            break
-        }
+        const addressValid = !!(p.address && solAddressIsValid(p.address))
 
         const paymentValid = p.amount && p.amount.integerBalance > 0
         const memoValid = getMemoStrValid(p.memo)
@@ -460,7 +437,7 @@ const PaymentScreen = () => {
       })
 
     return paymentsValid && !insufficientFunds[0]
-  }, [selfPay, paymentState, currentAccount, insufficientFunds, l1Network])
+  }, [selfPay, paymentState, currentAccount, insufficientFunds])
 
   const handleTokenTypeSelected = useCallback(() => {
     tokenSelectorRef?.current?.showTokens()
@@ -556,14 +533,7 @@ const PaymentScreen = () => {
       }
       let invalidAddress = false
 
-      switch (l1Network) {
-        case 'helium':
-          invalidAddress = !!address && !Address.isValid(address)
-          break
-        case 'solana':
-          invalidAddress = !!address && !solAddressIsValid(address)
-          break
-      }
+      invalidAddress = !!address && !solAddressIsValid(address)
 
       const wrongNetType =
         address !== undefined &&
@@ -571,7 +541,7 @@ const PaymentScreen = () => {
         accountNetType(address) !== networkType
       handleSetPaymentError(index, invalidAddress || wrongNetType)
     },
-    [handleSetPaymentError, l1Network, networkType],
+    [handleSetPaymentError, networkType],
   )
 
   const handleEditAddress = useCallback(
@@ -607,8 +577,7 @@ const PaymentScreen = () => {
     }) => {
       if (index === undefined || !currentNetworkAddress) return
 
-      const payee =
-        l1Network === 'helium' ? contact.address : contact.solanaAddress
+      const payee = contact.solanaAddress
       const payer = currentNetworkAddress
 
       if (!payee || !payer) return
@@ -621,7 +590,7 @@ const PaymentScreen = () => {
         payer,
       })
     },
-    [currentNetworkAddress, dispatch, l1Network],
+    [currentNetworkAddress, dispatch],
   )
 
   const handleAddPayee = useCallback(() => {
@@ -640,17 +609,13 @@ const PaymentScreen = () => {
     if (!accountSelectorRef?.current) return
 
     let accts = [] as CSAccount[]
-    if (l1Network === 'solana') {
-      accts = sortedAccountsForNetType(NetTypes.MAINNET)
-    } else {
-      accts = sortedAccountsForNetType(networkType)
-    }
+    accts = sortedAccountsForNetType(NetTypes.MAINNET)
     if (accts.length < 2) return
 
-    const netType = l1Network === 'solana' ? NetTypes.MAINNET : networkType
+    const netType = NetTypes.MAINNET
 
     accountSelectorRef?.current.showAccountTypes(netType)()
-  }, [l1Network, networkType, sortedAccountsForNetType])
+  }, [sortedAccountsForNetType])
 
   const tokenButtonBalance = useMemo(() => {
     switch (ticker) {
@@ -772,7 +737,6 @@ const PaymentScreen = () => {
                       sortedAccountsForNetType(networkType).length > 1
                     }
                     address={currentAccount?.address}
-                    netType={currentAccount?.netType}
                     onPress={handleShowAccounts}
                     showBubbleArrow
                     marginHorizontal="l"
@@ -795,16 +759,11 @@ const PaymentScreen = () => {
                     <React.Fragment key={index}>
                       <PaymentItem
                         {...p}
-                        hideMemo={l1Network === 'solana'}
+                        hideMemo
                         marginTop={index === 0 ? 'xs' : 'none'}
                         marginBottom="l"
                         hasError={
                           p.address === currentAccount?.address || p.hasError
-                        }
-                        fee={
-                          paymentState.payments.length === 1
-                            ? paymentState.dcFee
-                            : undefined
                         }
                         index={index}
                         onAddressBookSelected={handleAddressBookSelected}
@@ -860,11 +819,9 @@ const PaymentScreen = () => {
         </AccountSelector>
       </HNTKeyboard>
       <PaymentSubmit
-        submitLoading={paymentSubmitLoading || !!solanaPayment?.loading}
-        submitSucceeded={
-          !!submitData?.submitTxn?.hash || !!solanaPayment?.success
-        }
-        submitError={submitError || solanaPayment?.error}
+        submitLoading={!!solanaPayment?.loading}
+        submitSucceeded={!!solanaPayment?.success}
+        submitError={solanaPayment?.error}
         totalBalance={paymentState.totalAmount}
         payments={paymentState.payments}
         feeTokenBalance={paymentState.networkFee}

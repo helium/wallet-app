@@ -5,7 +5,6 @@ import AccountIco from '@assets/images/account.svg'
 import { LayoutChangeEvent } from 'react-native'
 import CarotDown from '@assets/images/carot-down.svg'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import NotificationBell from '@assets/images/notificationBell.svg'
 import Box from '@components/Box'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Text from '@components/Text'
@@ -17,7 +16,6 @@ import { useSelector } from 'react-redux'
 import useSolanaHealth from '@hooks/useSolanaHealth'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 import { RootState } from '../../store/rootReducer'
 import { useSolana } from '../../solana/SolanaProvider'
 
@@ -29,7 +27,6 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
   const { primaryText } = useColors()
   const navigation = useNavigation<HomeNavigationProp>()
   const { currentAccount, currentNetworkAddress } = useAccountStorage()
-  const { l1Network } = useAppStorage()
   const { cluster } = useSolana()
   const { triggerImpact } = useHaptic()
   const { showBanner } = useSelector((state: RootState) => state.app)
@@ -45,21 +42,14 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
     navigation.push('AddressBookNavigator')
   }, [navigation, triggerImpact])
 
-  const handleNotificationsSelected = useCallback(() => {
-    triggerImpact('light')
-    navigation.push('NotificationsNavigator')
-  }, [navigation, triggerImpact])
-
   const { top } = useSafeAreaInsets()
 
   const bannerVisible = useMemo(() => {
-    if (l1Network === 'solana') {
-      if (cluster === 'devnet') {
-        return true
-      }
-      return !isHealthy
+    if (cluster === 'devnet') {
+      return true
     }
-  }, [cluster, isHealthy, l1Network])
+    return !isHealthy
+  }, [cluster, isHealthy])
 
   const containerStyle = useMemo(
     () => ({ marginTop: bannerVisible && showBanner ? 0 : top }),
@@ -80,7 +70,6 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
           <CogIco color="white" />
         </IconPressedContainer>
       </Box>
-      {l1Network === 'helium' && <IconPressedContainer />}
       <TouchableOpacityBox
         flexDirection="row"
         flex={1}
@@ -104,12 +93,6 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
         <CarotDown color={primaryText} />
       </TouchableOpacityBox>
       <Box flexDirection="row" marginEnd="s">
-        {l1Network === 'helium' && (
-          <IconPressedContainer onPress={handleNotificationsSelected}>
-            <NotificationBell color="white" />
-          </IconPressedContainer>
-        )}
-
         <IconPressedContainer onPress={handleAddressBook}>
           <AccountIco color="white" />
         </IconPressedContainer>

@@ -5,7 +5,6 @@ import { PublicKey, Transaction } from '@solana/web3.js'
 import { useAsyncCallback } from 'react-async-hook'
 import BN from 'bn.js'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
 import {
   fetchHotspots,
@@ -38,7 +37,6 @@ const useHotspots = (): {
   fetchingMore: boolean
   onEndReached: boolean
 } => {
-  const { l1Network } = useAppStorage()
   const dispatch = useAppDispatch()
   const { currentAccount } = useAccountStorage()
   const { anchorProvider, lazyProgram, cluster } = useSolana()
@@ -196,7 +194,6 @@ const useHotspots = (): {
     (limit?) => {
       if (
         !currentAccount?.solanaAddress ||
-        l1Network !== 'solana' ||
         !anchorProvider ||
         hotspots[currentAccount?.solanaAddress].loading
       ) {
@@ -213,15 +210,7 @@ const useHotspots = (): {
         }),
       )
     },
-    [
-      currentAccount,
-      l1Network,
-      anchorProvider,
-      hotspots,
-      cluster,
-      dispatch,
-      page,
-    ],
+    [currentAccount, anchorProvider, hotspots, cluster, dispatch, page],
   )
 
   const hotspotsWithMeta = currentAccount?.solanaAddress

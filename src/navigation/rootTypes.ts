@@ -3,7 +3,6 @@ import { StackNavigationProp } from '@react-navigation/stack'
 import { PaymentRouteParam } from '../features/home/homeTypes'
 
 export type RootStackParamList = {
-  HomeNavigator: undefined
   OnboardingNavigator: undefined
   TabBarNavigator: undefined
   LinkWallet: LinkWalletRequest

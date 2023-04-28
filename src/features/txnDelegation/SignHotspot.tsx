@@ -30,7 +30,6 @@ import {
   RootNavigationProp,
   RootStackParamList,
 } from '../../navigation/rootTypes'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Route = RouteProp<RootStackParamList, 'SignHotspot'>
 
@@ -48,7 +47,6 @@ const SignHotspot = () => {
 
   const navigation = useNavigation<HomeNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
-  const { l1Network } = useAppStorage()
   const { t } = useTranslation()
   const [validated, setValidated] = useState<boolean>()
   const { accounts } = useAccountStorage()
@@ -79,11 +77,6 @@ const SignHotspot = () => {
 
       if (navigation.canGoBack()) {
         navigation.goBack()
-      } else if (l1Network === 'helium') {
-        rootNav.reset({
-          index: 0,
-          routes: [{ name: 'HomeNavigator' }],
-        })
       } else {
         rootNav.reset({
           index: 0,
@@ -91,7 +84,7 @@ const SignHotspot = () => {
         })
       }
     },
-    [l1Network, navigation, parsedToken, rootNav],
+    [navigation, parsedToken, rootNav],
   )
 
   useEffect(() => {

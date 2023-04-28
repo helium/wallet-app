@@ -26,7 +26,6 @@ import {
   RootNavigationProp,
   RootStackParamList,
 } from '../../navigation/rootTypes'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Route = RouteProp<RootStackParamList, 'LinkWallet'>
 const LinkWallet = () => {
@@ -35,7 +34,6 @@ const LinkWallet = () => {
   } = useRoute<Route>()
   const navigation = useNavigation<HomeNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
-  const { l1Network } = useAppStorage()
   const { t } = useTranslation()
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
   const {
@@ -58,11 +56,6 @@ const LinkWallet = () => {
 
       if (navigation.canGoBack()) {
         navigation.goBack()
-      } else if (l1Network === 'helium') {
-        rootNav.reset({
-          index: 0,
-          routes: [{ name: 'HomeNavigator' }],
-        })
       } else {
         rootNav.reset({
           index: 0,
@@ -70,7 +63,7 @@ const LinkWallet = () => {
         })
       }
     },
-    [callbackUrl, currentAccount?.address, l1Network, navigation, rootNav],
+    [callbackUrl, currentAccount?.address, navigation, rootNav],
   )
 
   const handleLink = useCallback(async () => {
@@ -158,7 +151,6 @@ const LinkWallet = () => {
           paddingVertical="l"
           title={formatAccountAlias(currentAccount)}
           address={currentAccount?.address}
-          netType={currentAccount?.netType}
           onPress={handleAccountButtonPress}
         />
 

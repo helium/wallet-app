@@ -38,7 +38,6 @@ import {
 import { HomeStackParamList } from '../home/homeTypes'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import AccountTokenBalance from './AccountTokenBalance'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 import { Activity } from '../../types/activity'
 import { useSolana } from '../../solana/SolanaProvider'
 import useSolanaActivityList from './useSolanaActivityList'
@@ -62,7 +61,6 @@ const AccountTokenScreen = () => {
   const [topHeaderYPos, setTopHeaderYPos] = useState(0)
   const [headerContainerYPos, setHeaderContainerYPos] = useState(0)
   const listAnimatedPos = useSharedValue<number>(0)
-  const { l1Network } = useAppStorage()
   const { cluster } = useSolana()
   const insets = useSafeAreaInsets()
   const colors = useColors()
@@ -99,9 +97,8 @@ const AccountTokenScreen = () => {
   })
 
   const actualHeight = useMemo(() => {
-    if (l1Network === 'helium') return WINDOW_HEIGHT
     return WINDOW_HEIGHT - insets.bottom - NavBarHeight
-  }, [insets.bottom, l1Network])
+  }, [insets.bottom])
 
   const snapPoints = useMemo(() => {
     if (!topHeaderYPos || !headerContainerYPos) return
@@ -165,7 +162,7 @@ const AccountTokenScreen = () => {
   )
 
   const hasAirdrop = useMemo(() => {
-    if (l1Network === 'solana' && cluster === 'devnet') {
+    if (cluster === 'devnet') {
       return (
         routeTicker === 'SOL' ||
         routeTicker === 'HNT' ||
@@ -174,11 +171,10 @@ const AccountTokenScreen = () => {
       )
     }
     return false
-  }, [l1Network, routeTicker, cluster])
+  }, [routeTicker, cluster])
 
   const renderHeader = useCallback(() => {
     const filterName = t(`accountsScreen.filterTypes.${filterState.filter}`)
-    const postFix = l1Network === 'helium' ? ' (24h)' : ''
 
     return (
       <Box
@@ -204,7 +200,7 @@ const AccountTokenScreen = () => {
           numberOfLines={1}
           adjustsFontSizeToFit
         >
-          {filterName + postFix}
+          {filterName}
         </Text>
         <TouchableOpacityBox onPress={toggleFiltersOpen(true)}>
           <Text variant="body1" padding="ms" color="secondaryText">
@@ -213,13 +209,7 @@ const AccountTokenScreen = () => {
         </TouchableOpacityBox>
       </Box>
     )
-  }, [
-    filterState.filter,
-    l1Network,
-    setBottomScreenHeaderHeight,
-    t,
-    toggleFiltersOpen,
-  ])
+  }, [filterState.filter, setBottomScreenHeaderHeight, t, toggleFiltersOpen])
 
   const keyExtractor = useCallback((item: Activity) => {
     return item.hash
@@ -252,7 +242,7 @@ const AccountTokenScreen = () => {
   )
 
   const renderFooter = useCallback(() => {
-    if (l1Network === 'helium' && !activityLoading) {
+    if (!activityLoading) {
       return (
         <Box
           backgroundColor="primaryBackground"
@@ -288,7 +278,7 @@ const AccountTokenScreen = () => {
         <ActivityIndicator animating={activityLoading} />
       </Box>
     )
-  }, [activityData, activityLoading, bottomScreenHeaderHeight, l1Network, t])
+  }, [activityData, activityLoading, bottomScreenHeaderHeight, t])
 
   const setFilter = useCallback(
     (filterType: FilterType) => () => {
@@ -305,9 +295,7 @@ const AccountTokenScreen = () => {
           <>
             <ListItem
               key="all"
-              title={`${t('accountsScreen.filterTypes.all')}${
-                l1Network === 'helium' ? ' (24h)' : ''
-              }`}
+              title={`${t('accountsScreen.filterTypes.all')}`}
               selected={filterState.filter === 'all'}
               onPress={setFilter('all')}
               hasPressedState={false}
@@ -373,7 +361,7 @@ const AccountTokenScreen = () => {
         )}
       </>
     ),
-    [filterState.filter, l1Network, routeTicker, setFilter, t],
+    [filterState.filter, routeTicker, setFilter, t],
   )
 
   const backgroundComponent = useCallback(

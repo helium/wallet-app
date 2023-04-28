@@ -88,7 +88,6 @@ const DappLogin = ({ onLogin, onCancel, appName, loading }: Props) => {
         <AccountButton
           title={currentAccount?.alias}
           address={currentNetworkAddress}
-          netType={NetType.MAINNET}
           onPress={handleAccountButtonPress}
         />
         <Box flex={1.5} />

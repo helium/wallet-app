@@ -22,7 +22,6 @@ import {
   SecureAccount,
 } from '../../../storage/secureStorage'
 import * as Logger from '../../../utils/logger'
-import { useAppStorage } from '../../../storage/AppStorageProvider'
 
 type Route = RouteProp<OnboardingStackParamList, 'ImportPrivateKey'>
 
@@ -38,7 +37,6 @@ const ImportPrivateKey = () => {
   const [password, setPassword] = useState<string>()
   const [error, setError] = useState<string>()
   const { accounts } = useAccountStorage()
-  const { l1Network } = useAppStorage()
 
   const createAccount = useCallback(
     async (mnemonic: Mnemonic) => {
@@ -131,38 +129,25 @@ const ImportPrivateKey = () => {
     if (navigation.canGoBack()) {
       navigation.goBack()
     } else if (hasAccounts) {
-      navigation.replace(
-        l1Network === 'helium' ? 'HomeNavigator' : 'TabBarNavigator',
-      )
+      navigation.replace('TabBarNavigator')
     } else {
       navigation.replace('OnboardingNavigator')
     }
-  }, [hasAccounts, navigation, l1Network])
+  }, [hasAccounts, navigation])
 
   const onImportAccount = useCallback(() => {
     if (hasAccounts) {
-      if (l1Network === 'helium') {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        navigation.replace('HomeNavigator', {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      navigation.replace('TabBarNavigator', {
+        screen: 'Home',
+        params: {
           screen: 'AccountAssignScreen',
           params: {
             secureAccount,
           },
-        })
-      } else {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        navigation.replace('TabBarNavigator', {
-          screen: 'Home',
-          params: {
-            screen: 'AccountAssignScreen',
-            params: {
-              secureAccount,
-            },
-          },
-        })
-      }
+        },
+      })
     } else {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -176,7 +161,7 @@ const ImportPrivateKey = () => {
         },
       })
     }
-  }, [hasAccounts, l1Network, navigation, secureAccount])
+  }, [hasAccounts, navigation, secureAccount])
 
   const onChangePassword = useCallback((text: string) => {
     setPassword(text)

@@ -3,7 +3,6 @@ import React, { memo, useCallback, useMemo } from 'react'
 import ChevronDown from '@assets/images/chevronDown.svg'
 import { Keyboard, StyleSheet } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
-import { NetTypes as NetType } from '@helium/address'
 import { useColors, useHitSlop } from '@theme/themeHooks'
 import { Color, Theme } from '@theme/theme'
 import useHaptic from '@hooks/useHaptic'
@@ -18,7 +17,6 @@ type Props = {
   title?: string
   subtitle?: string
   showBubbleArrow?: boolean
-  netType?: NetType.NetType
   innerBoxProps?: BoxProps<Theme>
   showChevron?: boolean
   accountIconSize?: number

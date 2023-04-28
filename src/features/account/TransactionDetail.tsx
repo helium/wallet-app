@@ -28,7 +28,7 @@ import BlurBox from '@components/BlurBox'
 import TransactionLineItem from './TransactionLineItem'
 import { useTxnDetails } from './useTxn'
 import { useBalance } from '../../utils/Balance'
-import { useCreateExplorerUrl, usePublicApi } from '../../constants/urls'
+import { useCreateExplorerUrl } from '../../constants/urls'
 import { ellipsizeAddress } from '../../utils/accountUtils'
 import { Activity } from '../../types/activity'
 
@@ -69,7 +69,6 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
     validatorName,
   } = useTxnDetails(txn)
   const createExplorerUrl = useCreateExplorerUrl()
-  const apiUrl = usePublicApi()
 
   const snapPoints = useMemo(() => {
     let maxHeight: number | string = '90%'
@@ -356,11 +355,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
               <TransactionLineItem
                 title={t('transactions.hash')}
                 bodyText={txn?.hash || ''}
-                navTo={
-                  txn?.pending
-                    ? `${apiUrl}/pending_transactions/${txn?.hash}`
-                    : createExplorerUrl('txn', txn?.hash)
-                }
+                navTo={createExplorerUrl('txn', txn?.hash)}
               />
             </SafeAreaBox>
           </BottomSheetScrollView>

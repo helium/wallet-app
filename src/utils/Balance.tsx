@@ -78,11 +78,7 @@ const useBalanceHook = () => {
     [accountBalancesForCluster?.dcEscrow],
   )
 
-  const {
-    convertToCurrency,
-    currency: currencyRaw,
-    l1Network,
-  } = useAppStorage()
+  const { convertToCurrency, currency: currencyRaw } = useAppStorage()
 
   const currency = useMemo(() => currencyRaw?.toLowerCase(), [currencyRaw])
 
@@ -170,10 +166,10 @@ const useBalanceHook = () => {
       }
       return new Balance(
         opts.intValue,
-        accountCurrencyType(currentAccount.address, undefined, l1Network),
+        accountCurrencyType(currentAccount.address, undefined),
       )
     },
-    [currentAccount, l1Network],
+    [currentAccount],
   )
 
   const toPreferredCurrencyString = useCallback(
