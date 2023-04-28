@@ -3,6 +3,7 @@ import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { Cluster, PublicKey } from '@solana/web3.js'
 import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token'
+import { BN } from 'bn.js'
 import { CSAccount } from '../../storage/cloudStorage'
 import { getBalanceHistory, getTokenPrices } from '../../utils/walletApiV2'
 import { AccountBalance, Prices } from '../../types/balance'
@@ -15,12 +16,12 @@ type BalanceHistoryByCluster = Record<Cluster, BalanceHistoryByWallet>
 export type TokenAccount = {
   tokenAccount?: string
   mint: string
-  balance: bigint
+  balance: number
 }
 export type Tokens = {
   atas: TokenAccount[]
-  sol: { tokenAccount: string; balance: bigint }
-  dcEscrow: { tokenAccount: string; balance: bigint }
+  sol: { tokenAccount: string; balance: number }
+  dcEscrow: { tokenAccount: string; balance: number }
 }
 
 type AtaBalances = Record<Cluster, Record<string, Tokens>>
@@ -83,17 +84,17 @@ export const syncTokenAccounts = createAsyncThunk(
       return {
         tokenAccount: found?.tokenAccount.toBase58(),
         mint: mint.toBase58(),
-        balance: found?.balance || 0n,
+        balance: Number(found?.balance || 0),
       }
     })
 
     const escrowAccount = getEscrowTokenAccount(acct.solanaAddress)
-    let escrowBalance = 0n
+    let escrowBalance = 0
     try {
       const dcEscrowBalance = await connection.getTokenAccountBalance(
         escrowAccount,
       )
-      escrowBalance = BigInt(dcEscrowBalance.value.amount)
+      escrowBalance = new BN(dcEscrowBalance.value.amount).toNumber()
     } catch {}
 
     const dcEscrow = {
@@ -104,7 +105,7 @@ export const syncTokenAccounts = createAsyncThunk(
     const solBalance = await connection.getBalance(pubKey)
     const sol = {
       tokenAccount: acct.solanaAddress,
-      balance: BigInt(solBalance),
+      balance: solBalance,
     }
 
     return {
@@ -150,7 +151,7 @@ const balancesSlice = createSlice({
       action: PayloadAction<{
         cluster: Cluster
         solanaAddress: string
-        balance: bigint
+        balance: number
         type: 'dcEscrow' | 'sol'
         tokenAccount: string
       }>,
@@ -174,7 +175,7 @@ const balancesSlice = createSlice({
       action: PayloadAction<{
         cluster: Cluster
         solanaAddress: string
-        balance: bigint
+        balance: number
         mint: string
         tokenAccount: string
       }>,

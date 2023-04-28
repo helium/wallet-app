@@ -207,14 +207,14 @@ const useBalanceHook = () => {
     (mint: PublicKey) => {
       const mintStr = mint.toBase58()
       const ata = atas.find((a) => a.mint === mintStr)
-      return Number(ata?.balance || 0)
+      return ata?.balance || 0
     },
     [atas],
   )
 
   const { result: tokenInfo } = useAsync(async () => {
     const dcEscrowBalance = new Balance(
-      Number(dcEscrowToken?.balance || 0),
+      dcEscrowToken?.balance || 0,
       CurrencyType.dataCredit,
     )
     const formattedEscrowDcValue = await CurrencyFormatter.format(
@@ -222,10 +222,7 @@ const useBalanceHook = () => {
       'usd',
     )
 
-    const solBalance = Balance.fromIntAndTicker(
-      Number(solToken?.balance || 0),
-      'SOL',
-    )
+    const solBalance = Balance.fromIntAndTicker(solToken?.balance || 0, 'SOL')
     const solPrice = tokenPrices?.solana?.[currency] || 0
     const solAmount = solBalance?.floatBalance
     const solValue = solPrice * solAmount

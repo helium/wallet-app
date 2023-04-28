@@ -25,13 +25,13 @@ const StoreAtaBalance = ({ tokenAccount, mint }: TokenInput) => {
     if ((!accountData?.length && !account) || !currentAccount?.solanaAddress)
       return
 
-    let amount = 0n
+    let amount = 0
 
     if (account?.amount !== undefined) {
-      amount = account.amount
+      amount = Number(account.amount)
     } else if (accountData?.length) {
       const decoded = AccountLayout.decode(accountData)
-      amount = decoded.amount
+      amount = Number(decoded.amount)
     }
 
     dispatch(

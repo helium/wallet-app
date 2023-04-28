@@ -15,16 +15,6 @@ import { init as initLazy } from '@helium/lazy-distributor-sdk'
 import { TokenAmount } from '@solana/web3.js'
 import { Creator } from '@metaplex-foundation/mpl-bubblegum'
 
-export type BalanceWithAcct = { balance: bigint; tokenAccount: string }
-export type Balances = {
-  sol: BalanceWithAcct
-  mobile: BalanceWithAcct
-  dc: BalanceWithAcct
-  iot: BalanceWithAcct
-  hnt: BalanceWithAcct
-  dcEscrow: BalanceWithAcct
-}
-
 export type HotspotWithPendingRewards = CompressedNFT & {
   // mint id to pending rewards
   pendingRewards: Record<string, string> | undefined

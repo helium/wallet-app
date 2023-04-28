@@ -1,7 +1,7 @@
 export type AccountBalance = {
-  hntBalance: bigint
-  iotBalance: bigint
-  mobileBalance: bigint
+  hntBalance: number
+  iotBalance: number
+  mobileBalance: number
   date: string
   hntPrice: number
   balance: number

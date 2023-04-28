@@ -15,7 +15,7 @@ const StoreSolBalance = ({ solanaAddress }: Props) => {
   const { cluster } = useSolana()
 
   useEffect(() => {
-    const amount = BigInt(account.account?.lamports || 0)
+    const amount = account.account?.lamports || 0
 
     dispatch(
       balancesSlice.actions.updateBalance({
