@@ -4,7 +4,6 @@ import { PaymentRouteParam } from '../features/home/homeTypes'
 import { HotspotWithPendingRewards } from '../types/solana'
 
 export type RootStackParamList = {
-  HomeNavigator: undefined
   OnboardingNavigator: undefined
   TabBarNavigator: undefined
   LinkWallet: LinkWalletRequest

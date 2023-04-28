@@ -175,7 +175,6 @@ const AccountTokenScreen = () => {
 
   const renderHeader = useCallback(() => {
     const filterName = t(`accountsScreen.filterTypes.${filterState.filter}`)
-    const postFix = ''
 
     return (
       <Box
@@ -201,7 +200,7 @@ const AccountTokenScreen = () => {
           numberOfLines={1}
           adjustsFontSizeToFit
         >
-          {filterName + postFix}
+          {filterName}
         </Text>
         <TouchableOpacityBox onPress={toggleFiltersOpen(true)}>
           <Text variant="body1" padding="ms" color="secondaryText">

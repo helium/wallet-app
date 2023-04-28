@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { useSolana } from '../solana/SolanaProvider'
 
 export const EXPLORER_MAINNET_BASE_URL = 'https://explorer.helium.com'
@@ -39,10 +39,4 @@ const useCreateExplorerUrl = () => {
   )
 }
 
-const usePublicApi = () => {
-  return useMemo(() => {
-    return ''
-  }, [])
-}
-
-export { useCreateExplorerUrl, usePublicApi }
+export { useCreateExplorerUrl }
