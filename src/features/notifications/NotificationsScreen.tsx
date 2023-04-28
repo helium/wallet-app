@@ -1,5 +1,5 @@
-import React, { memo, useCallback, useMemo } from 'react'
-import { useNavigation } from '@react-navigation/native'
+import React, { memo, useCallback, useEffect, useMemo } from 'react'
+import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { Linking } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Edge } from 'react-native-safe-area-context'
@@ -22,8 +22,18 @@ const NotificationsScreen = () => {
   const { t } = useTranslation()
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
   const navigation = useNavigation<HomeNavigationProp>()
-  const { selectedNotification, setSelectedNotification } =
-    useNotificationStorage()
+  const {
+    selectedNotification,
+    setSelectedNotification,
+    updateAllNotifications,
+  } = useNotificationStorage()
+  const isFocused = useIsFocused()
+
+  useEffect(() => {
+    if (!isFocused) return
+    updateAllNotifications()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFocused])
 
   const onActionPress = useCallback(() => {
     if (!selectedNotification?.actionUrl) return

@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import * as WalletApi from '../../utils/walletApiV2'
+import { CSAccount } from '../../storage/cloudStorage'
 
 type NotificationsByResource = Record<string, WalletApi.Notification[]>
 
@@ -20,8 +21,15 @@ export const getNotifications = createAsyncThunk(
 
 export const markNotificationRead = createAsyncThunk(
   'notifications/markNotificationRead',
-  async ({ id, resource }: { resource: string; id: number }) =>
-    WalletApi.postNotificationRead({ id, resource }),
+  async ({
+    id,
+    resource,
+    accounts,
+  }: {
+    resource: string
+    id: number
+    accounts: CSAccount[]
+  }) => WalletApi.postNotificationRead({ id, resource, accounts }),
 )
 
 const notificationsSlice = createSlice({

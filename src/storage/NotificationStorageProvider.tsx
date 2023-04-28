@@ -10,7 +10,7 @@ import React, {
 import { OSNotification } from 'react-native-onesignal'
 import { heliumAddressToSolAddress } from '@helium/spl-utils'
 import { useSelector } from 'react-redux'
-import { orderBy } from 'lodash'
+import { orderBy, without } from 'lodash'
 import {
   HELIUM_UPDATES_ITEM,
   WALLET_UPDATES_ITEM,
@@ -33,7 +33,7 @@ const useNotificationStorageHook = () => {
   const notificationsByResource = useSelector(
     (appState: RootState) => appState.notifications.notifications,
   )
-  const { currentAccount } = useAccountStorage()
+  const { currentAccount, sortedAccounts } = useAccountStorage()
 
   useEffect(() => {
     if (!currentAccount?.address) return
@@ -44,7 +44,7 @@ const useNotificationStorageHook = () => {
     try {
       return heliumAddressToSolAddress(selectedList || '')
     } catch {
-      return selectedList
+      return selectedList || ''
     }
   }, [selectedList])
 
@@ -64,8 +64,41 @@ const useNotificationStorageHook = () => {
 
   const updateNotifications = useCallback(() => {
     if (prevSelectedList === selectedList) return
-    currentResources.map((r) => dispatch(getNotifications({ resource: r })))
-  }, [currentResources, dispatch, prevSelectedList, selectedList])
+    currentResources.map((r) =>
+      dispatch(
+        getNotifications({
+          resource: r,
+          wallet: currentAccount?.solanaAddress,
+        }),
+      ),
+    )
+  }, [
+    currentAccount?.solanaAddress,
+    currentResources,
+    dispatch,
+    prevSelectedList,
+    selectedList,
+  ])
+
+  const updateAllNotifications = useCallback(() => {
+    const all = without(
+      [
+        ...sortedAccounts.map(({ solanaAddress }) => solanaAddress),
+        HELIUM_UPDATES_ITEM,
+        WALLET_UPDATES_ITEM,
+      ],
+      undefined,
+    ) as string[]
+
+    all.map((r) =>
+      dispatch(
+        getNotifications({
+          resource: r,
+          wallet: currentAccount?.solanaAddress,
+        }),
+      ),
+    )
+  }, [currentAccount?.solanaAddress, dispatch, sortedAccounts])
 
   useEffect(() => {
     updateNotifications()
@@ -106,6 +139,7 @@ const useNotificationStorageHook = () => {
     setOpenedNotification,
     setSelectedNotification,
     unreadLists,
+    updateAllNotifications,
     updateSelectedList,
   }
 }
@@ -123,6 +157,7 @@ const initialState = {
   setOpenedNotification: () => undefined,
   setSelectedNotification: () => undefined,
   unreadLists: [],
+  updateAllNotifications: () => undefined,
   updateSelectedList: async () => undefined,
 }
 const NotificationStorageContext =
