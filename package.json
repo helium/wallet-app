@@ -32,7 +32,7 @@
       "prettier --write ."
     ],
     "*.{js,ts,tsx}": [
-      "eslint --quiget --fix"
+      "eslint --quiet --fix"
     ]
   },
   "dependencies": {
