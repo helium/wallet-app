@@ -53,7 +53,6 @@ import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import { calcCreateAssociatedTokenAccountAccountFee } from '@utils/solanaUtils'
 import { Mints } from '@utils/constants'
 import { PublicKey } from '@solana/web3.js'
-import useSubmitTxn from 'src/graphql/useSubmitTxn'
 import { useSolana } from '../../solana/SolanaProvider'
 import {
   HomeNavigationProp,
@@ -77,6 +76,7 @@ import { RootState } from '../../store/rootReducer'
 import { useAppDispatch } from '../../store/store'
 import { solanaSlice } from '../../store/slices/solanaSlice'
 import { RootNavigationProp } from '../../navigation/rootTypes'
+import useSubmitTxn from '../../graphql/useSubmitTxn'
 
 type LinkedPayment = {
   amount?: string
