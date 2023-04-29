@@ -14,13 +14,13 @@ const AccountTokenCurrencyBalance = ({ ticker, ...textProps }: Props) => {
     formattedSolValue,
     formattedDcValue,
     formattedHntValue,
-    totalValue,
+    formattedTotal,
   } = useBalance()
 
   const balanceString = useMemo(() => {
     switch (ticker) {
       case 'ALL':
-        return totalValue
+        return formattedTotal
       case 'HNT':
         return formattedHntValue
       case 'SOL':
@@ -41,7 +41,7 @@ const AccountTokenCurrencyBalance = ({ ticker, ...textProps }: Props) => {
     formattedMobileValue,
     formattedSolValue,
     ticker,
-    totalValue,
+    formattedTotal,
   ])
 
   return (

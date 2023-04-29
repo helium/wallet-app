@@ -6,18 +6,13 @@ import { AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { BN } from 'bn.js'
 import { CSAccount } from '../../storage/cloudStorage'
 import { getBalanceHistory, getTokenPrices } from '../../utils/walletApiV2'
-import { AccountBalance, Prices } from '../../types/balance'
+import { AccountBalance, Prices, TokenAccount } from '../../types/balance'
 import { getEscrowTokenAccount } from '../../utils/solanaUtils'
 
 type BalanceHistoryByCurrency = Record<string, AccountBalance[]>
 type BalanceHistoryByWallet = Record<string, BalanceHistoryByCurrency>
 type BalanceHistoryByCluster = Record<Cluster, BalanceHistoryByWallet>
 
-export type TokenAccount = {
-  tokenAccount?: string
-  mint: string
-  balance: number
-}
 export type Tokens = {
   atas: TokenAccount[]
   sol: { tokenAccount: string; balance: number }

@@ -15,7 +15,9 @@ const StoreSolBalance = ({ solanaAddress }: Props) => {
   const { cluster } = useSolana()
 
   useEffect(() => {
-    const amount = account.account?.lamports || 0
+    if (account.account?.lamports === undefined) return
+
+    const amount = account.account?.lamports
 
     dispatch(
       balancesSlice.actions.updateBalance({
