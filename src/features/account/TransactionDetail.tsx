@@ -22,7 +22,6 @@ import animalName from 'angry-purple-tiger'
 import { LayoutChangeEvent } from 'react-native'
 import SafeAreaBox from '@components/SafeAreaBox'
 import HandleBasic from '@components/HandleBasic'
-import { decodeMemoString, DEFAULT_MEMO } from '@components/MemoInput'
 import useBackHandler from '@hooks/useBackHandler'
 import BlurBox from '@components/BlurBox'
 import TransactionLineItem from './TransactionLineItem'
@@ -216,7 +215,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                 />
               )}
 
-              {paymentsSent.map(({ amount: amt, payee, memo }, index) => (
+              {paymentsSent.map(({ amount: amt, payee }, index) => (
                 <React.Fragment key={`${index}.amountToPayee`}>
                   <TransactionLineItem
                     title={t('transactions.amountToPayee', {
@@ -233,16 +232,10 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                     isAddress
                     navTo={createExplorerUrl('account', payee)}
                   />
-                  {!!memo && memo !== DEFAULT_MEMO && (
-                    <TransactionLineItem
-                      title={t('transactions.memo')}
-                      bodyText={decodeMemoString(memo)}
-                    />
-                  )}
                 </React.Fragment>
               ))}
 
-              {paymentsReceived.map(({ amount: amt, memo }, index) => (
+              {paymentsReceived.map(({ amount: amt }, index) => (
                 <React.Fragment key={`${index}.amountToPayee`}>
                   <TransactionLineItem
                     title={t('transactions.amount')}
@@ -259,12 +252,6 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                         : undefined
                     }
                   />
-                  {!!memo && memo !== DEFAULT_MEMO && (
-                    <TransactionLineItem
-                      title={t('transactions.memo')}
-                      bodyText={decodeMemoString(memo)}
-                    />
-                  )}
                 </React.Fragment>
               ))}
 

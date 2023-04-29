@@ -111,6 +111,8 @@ const HNTKeyboardSelector = forwardRef(
 
     const getHeliumBalance = useMemo(() => {
       switch (ticker) {
+        case 'HNT':
+          return hntBalance
         case 'SOL':
           return solBalance
         case 'MOBILE':
@@ -220,7 +222,7 @@ const HNTKeyboardSelector = forwardRef(
     const [maxEnabled, setMaxEnabled] = useState(false)
 
     const handleSetMax = useCallback(() => {
-      if (!hntBalance || !getHeliumBalance || !networkFee) return
+      if (!solBalance || !getHeliumBalance || !networkFee) return
 
       const currentAmount = getNextPayments()
         .filter((_v, index) => index !== paymentIndex || 0) // Remove the payment being updated
@@ -237,8 +239,8 @@ const HNTKeyboardSelector = forwardRef(
         )
 
       let maxBalance: Balance<NetworkTokens | TestNetworkTokens> | undefined
-      if (ticker === 'HNT') {
-        maxBalance = hntBalance.minus(currentAmount)
+      if (ticker === 'SOL') {
+        maxBalance = solBalance.minus(currentAmount).minus(networkFee)
       } else {
         maxBalance = getHeliumBalance.minus(currentAmount)
       }
@@ -261,7 +263,6 @@ const HNTKeyboardSelector = forwardRef(
       setMaxEnabled((m) => !m)
     }, [
       isDntToken,
-      hntBalance,
       getHeliumBalance,
       networkFee,
       getNextPayments,
@@ -269,6 +270,7 @@ const HNTKeyboardSelector = forwardRef(
       ticker,
       maxEnabled,
       paymentIndex,
+      solBalance,
     ])
 
     const BackdropWrapper = useCallback(
