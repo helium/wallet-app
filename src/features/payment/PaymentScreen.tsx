@@ -53,7 +53,7 @@ import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import { calcCreateAssociatedTokenAccountAccountFee } from '@utils/solanaUtils'
 import { Mints } from '@utils/constants'
 import { PublicKey } from '@solana/web3.js'
-import useSubmitTxn from 'src/graphql/useSubmitTxn'
+import useSubmitTxn from '../../graphql/useSubmitTxn'
 import { useSolana } from '../../solana/SolanaProvider'
 import {
   HomeNavigationProp,
