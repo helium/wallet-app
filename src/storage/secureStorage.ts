@@ -18,7 +18,6 @@ export enum SecureStorageKeys {
   CURRENCY = 'currency',
   CONVERT_TO_CURRENCY = 'convertToCurrency',
   LAST_IDLE = 'lastIdle',
-  SELECTED_LIST = 'selected_list',
   ENABLE_TESTNET = 'enableTestnet',
   HIDE_PRIVATE_KEY_ALERT = 'hidePrivateKeyAlert',
   SHOW_NUMERIC_CHANGE = 'showNumericChange',

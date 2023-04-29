@@ -182,7 +182,7 @@ const PaymentScreen = () => {
     netType: networkType,
   })
 
-  const { submit, submitLedger } = useSubmitTxn()
+  const { submitPayment, submitLedger } = useSubmitTxn()
 
   const solanaPayment = useSelector(
     (reduxState: RootState) => reduxState.solana.payment,
@@ -309,7 +309,7 @@ const PaymentScreen = () => {
     (opts?: { txn: PaymentV2; txnJson: string }) => {
       try {
         if (!opts) {
-          submit(payments)
+          submitPayment(payments)
         } else {
           // This is a ledger device
           submitLedger()
@@ -318,7 +318,7 @@ const PaymentScreen = () => {
         console.error(e)
       }
     },
-    [payments, submit, submitLedger],
+    [payments, submitPayment, submitLedger],
   )
 
   const insufficientFunds = useMemo((): [

@@ -42,7 +42,7 @@ import { useAppStorage } from './AppStorageProvider'
 import { useAppDispatch } from '../store/store'
 import makeApiToken from '../utils/makeApiToken'
 import { authSlice } from '../store/slices/authSlice'
-import { useLazyGetSessionKeyQuery } from '../store/slices/walletRestApi'
+import { getSessionKey } from '../utils/walletApiV2'
 
 const useAccountStorageHook = () => {
   const [currentAccount, setCurrentAccount] = useState<
@@ -57,7 +57,6 @@ const useAccountStorageHook = () => {
   const { updateSessionKey } = useAppStorage()
   const dispatch = useAppDispatch()
   const currentAppState = useAppState()
-  const [fetchAPISessionKey] = useLazyGetSessionKeyQuery()
 
   const updateApiToken = useCallback(async () => {
     const apiToken = await makeApiToken(currentAccount?.address)
@@ -111,10 +110,10 @@ const useAccountStorageHook = () => {
 
   useAsync(async () => {
     // We can cache this for a certain amount of time but for now we fetch the session key every time we load the app
-    const { data } = await fetchAPISessionKey()
-    if (data?.sessionKey) {
-      updateSessionKey({ sessionKey: data?.sessionKey })
-    }
+    const sessionKey = await getSessionKey()
+    if (!sessionKey) return
+
+    updateSessionKey({ sessionKey })
   }, [])
 
   useEffect(() => {

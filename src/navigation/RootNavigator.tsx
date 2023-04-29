@@ -21,7 +21,6 @@ import ConnectedWallets, {
 import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
-import { walletRestApi } from '../store/slices/walletRestApi'
 import LinkWallet from '../features/txnDelegation/LinkWallet'
 import PaymentScreen from '../features/payment/PaymentScreen'
 import SignHotspot from '../features/txnDelegation/SignHotspot'
@@ -53,10 +52,6 @@ const RootNavigator = () => {
 
   const onClose = useCallback(() => {
     dispatch(appSlice.actions.toggleConnectedWallets())
-  }, [dispatch])
-
-  useEffect(() => {
-    dispatch(walletRestApi.util.resetApiState())
   }, [dispatch])
 
   useEffect(() => {

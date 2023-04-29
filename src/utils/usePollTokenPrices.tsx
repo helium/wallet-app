@@ -33,9 +33,10 @@ export const usePollTokenPrices = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       getTokenPrices()
-    }, 5 * 60000) // Every 5 mins
+    }, 60000) // Every 1 min
     return () => clearInterval(interval)
-  }, [getTokenPrices])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return { tokenPrices }
 }

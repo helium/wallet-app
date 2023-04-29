@@ -168,7 +168,6 @@ const balancesSlice = createSlice({
           prevTokens.sol = next
           break
       }
-      // TODO: verify this updates the state
     },
     updateAtaBalance: (
       state,
@@ -190,7 +189,6 @@ const balancesSlice = createSlice({
       if (foundIndex !== -1) {
         const prev = prevAtas[foundIndex]
         prev.balance = balance
-        // TODO: Verify this updates the state
       }
     },
   },

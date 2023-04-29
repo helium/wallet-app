@@ -20,10 +20,11 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Text from '@components/Text'
 import useBrowser from '@hooks/useBrowser'
 import { prependHttp } from '@utils/url'
-import { useGetRecommendedDappsQuery } from '../../store/slices/walletRestApi'
+import { useAsync } from 'react-async-hook'
 import { BrowserNavigationProp } from './browserTypes'
 import BrowserListItem from './BrowserListItem'
 import { useSolana } from '../../solana/SolanaProvider'
+import { getRecommendedDapps } from '../../utils/walletApiV2'
 
 const BrowserScreen = () => {
   const DEFAULT_URL = ''
@@ -37,7 +38,11 @@ const BrowserScreen = () => {
   const navigation = useNavigation<BrowserNavigationProp>()
   const { favorites, recents, addRecent } = useBrowser()
   const { t } = useTranslation()
-  const { data: recommendedDappsData } = useGetRecommendedDappsQuery()
+
+  const { result: recommendedDappsData } = useAsync(
+    () => getRecommendedDapps(),
+    [],
+  )
 
   const SectionData = useMemo((): {
     title: string
