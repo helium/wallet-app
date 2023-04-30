@@ -1,18 +1,28 @@
 import Address from '@helium/address'
-import Balance, { CurrencyType, Ticker } from '@helium/currency'
+import Balance, {
+  CurrencyType,
+  NetworkTokens,
+  TestNetworkTokens,
+  Ticker,
+} from '@helium/currency'
 import * as Linking from 'expo-linking'
 import qs from 'qs'
 import queryString from 'query-string'
 import BigNumber from 'bignumber.js'
 import { LinkingOptions } from '@react-navigation/native'
 import { BurnRouteParam, PaymentRouteParam } from '../features/home/homeTypes'
-import { SendDetails } from '../storage/TransactionProvider'
 import { RootStackParamList } from '../navigation/rootTypes'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 
 export const APP_LINK_SCHEME = Linking.createURL('')
 export const PAYMENT_PATH = 'payment'
 export const HELIUM_WALLET_LINK_SCHEME = 'https://wallet.helium.com/'
+
+export type SendDetails = {
+  payee: string
+  balanceAmount: Balance<NetworkTokens> | Balance<TestNetworkTokens>
+  max?: boolean
+}
 
 export const authenticatedLinking: LinkingOptions<RootStackParamList> = {
   prefixes: [APP_LINK_SCHEME, HELIUM_WALLET_LINK_SCHEME],

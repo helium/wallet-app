@@ -65,7 +65,6 @@ import {
   solAddressIsValid,
 } from '../../utils/accountUtils'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { SendDetails } from '../../storage/TransactionProvider'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import PaymentItem from './PaymentItem'
 import usePaymentsReducer, { MAX_PAYMENTS } from './usePaymentsReducer'
@@ -76,7 +75,8 @@ import { RootState } from '../../store/rootReducer'
 import { useAppDispatch } from '../../store/store'
 import { solanaSlice } from '../../store/slices/solanaSlice'
 import { RootNavigationProp } from '../../navigation/rootTypes'
-import useSubmitTxn from '../../graphql/useSubmitTxn'
+import useSubmitTxn from '../../hooks/useSubmitTxn'
+import { SendDetails } from '../../utils/linking'
 
 type LinkedPayment = {
   amount?: string

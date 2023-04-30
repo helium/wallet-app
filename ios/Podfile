@@ -64,10 +64,5 @@ target 'OneSignalNotificationServiceExtension' do
 end
 
 target 'HeliumWalletWidgetExtension' do
-  pod "Apollo", '0.53.0'
   pod 'react-native-config/Extension', :path => '../node_modules/react-native-config'
 end
-
-# target 'HeliuWalletWatch WatchKit Extension' do
-#  pod "Apollo"
-# end

@@ -1,7 +1,4 @@
 PODS:
-  - Apollo (0.53.0):
-    - Apollo/Core (= 0.53.0)
-  - Apollo/Core (0.53.0)
   - BCrypt (1.0.0)
   - bcrypt-react-native (1.1.1):
     - BCrypt
@@ -464,7 +461,6 @@ PODS:
     - ZXingObjC/Core
 
 DEPENDENCIES:
-  - Apollo (= 0.53.0)
   - bcrypt-react-native (from `../node_modules/bcrypt-react-native`)
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
@@ -553,7 +549,6 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
-    - Apollo
     - BCrypt
     - Charts
     - fmt
@@ -731,7 +726,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  Apollo: 204819ea82022fbc59ad05056820df867f19bd02
   BCrypt: 712b656110e5020d319c547e4d8f3053ded82b2a
   bcrypt-react-native: 399775585257ae6c8717370a1119c7da0113e3bf
   boost: a7c83b31436843459a1961bfd74b96033dc77234

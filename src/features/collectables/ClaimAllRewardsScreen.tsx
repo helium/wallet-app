@@ -12,7 +12,7 @@ import ButtonPressable from '@components/ButtonPressable'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import CircleLoader from '@components/CircleLoader'
 import RewardItem from '@components/RewardItem'
-import useSubmitTxn from '../../graphql/useSubmitTxn'
+import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { CollectableNavigationProp } from './collectablesTypes'
 
 const ClaimAllRewardsScreen = () => {

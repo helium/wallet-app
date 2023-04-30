@@ -40,7 +40,7 @@ import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import useSubmitTxn from '../../graphql/useSubmitTxn'
+import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { useSolana } from '../../solana/SolanaProvider'
 
 LogBox.ignoreLogs([

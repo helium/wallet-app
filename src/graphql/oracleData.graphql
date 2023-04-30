@@ -1,5 +1,0 @@
-query OracleData($address: String!) {
-  currentOraclePrice(address: $address) {
-    price
-  }
-}

@@ -8,7 +8,6 @@ import FabButton from '@components/FabButton'
 import Text from '@components/Text'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
-import { useVotesQuery } from '../../generated/graphql'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
 export type Action =
@@ -52,18 +51,14 @@ const AccountActionBar = ({
   const anim = useRef(new Animated.Value(1))
   const { currentAccount } = useAccountStorage()
 
-  const { data: voteData } = useVotesQuery({
-    variables: { address: currentAccount?.address || '' },
-    skip: !currentAccount?.address,
-    fetchPolicy: 'cache-and-network',
-  })
+  const voteData = useMemo(() => {
+    // TODO: Are votes still a thing?
+    return []
+  }, [])
 
   const unseenVotes = useMemo(() => {
-    const seenVoteIds = currentAccount?.voteIdsSeen || []
-    return (
-      voteData?.votes.active.filter((v) => !seenVoteIds.includes(v.id)) || []
-    )
-  }, [currentAccount, voteData])
+    return []
+  }, [])
 
   useEffect(() => {
     // makes the sequence loop

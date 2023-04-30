@@ -15,12 +15,12 @@ import {
   HELIUM_UPDATES_ITEM,
   WALLET_UPDATES_ITEM,
 } from '../features/notifications/notificationTypes'
-import { Notification } from '../generated/graphql'
 import { useAppDispatch } from '../store/store'
 import { getNotifications } from '../store/slices/notificationsSlice'
 import usePrevious from '../hooks/usePrevious'
 import { RootState } from '../store/rootReducer'
 import { useAccountStorage } from './AccountStorageProvider'
+import { Notification } from '../utils/walletApiV2'
 
 const useNotificationStorageHook = () => {
   const [selectedList, setSelectedList] = useState<string>()

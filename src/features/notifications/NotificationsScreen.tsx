@@ -13,7 +13,6 @@ import AccountSlider from './AccountSlider'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import NotificationsList from './NotificationsList'
 
-// TODO: When this screen becomes focused, should we query notifications for all accounts?
 const NotificationsScreen = () => {
   const { t } = useTranslation()
   const safeEdges = useMemo(() => ['top'] as Edge[], [])

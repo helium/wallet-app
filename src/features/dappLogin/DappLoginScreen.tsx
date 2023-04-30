@@ -13,11 +13,8 @@ import SafeAreaBox from '@components/SafeAreaBox'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useColors } from '@theme/themeHooks'
 import useAlert from '@hooks/useAlert'
+import Address from '@helium/address'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import {
-  EMPTY_B58_ADDRESS,
-  useTransactions,
-} from '../../storage/TransactionProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useWalletConnect } from './WalletConnectProvider'
 import DappConnect from './DappConnect'
@@ -26,6 +23,39 @@ import {
   RootNavigationProp,
   RootStackParamList,
 } from '../../navigation/rootTypes'
+import { getKeypair } from '../../storage/secureStorage'
+
+// TODO: Verify crowdspot still works
+export const EMPTY_B58_ADDRESS = Address.fromB58(
+  '13PuqyWXzPYeXcF1B9ZRx7RLkEygeL374ZABiQdwRSNzASdA1sn',
+)
+const makeBurnTxn = async (opts: { payerB58: string }) => {
+  const { payerB58 } = opts
+
+  const txn = new TokenBurnV1({
+    amount: 1,
+    payer: Address.fromB58(payerB58),
+    payee: EMPTY_B58_ADDRESS,
+    nonce: 0,
+    memo: '',
+  })
+
+  const txnJson = {
+    type: txn.type,
+    payee: txn.payee?.b58 || '',
+    amount: 1,
+    payer: txn.payer?.b58,
+    nonce: txn.nonce,
+    fee: txn.fee,
+    memo: txn.memo,
+  }
+
+  const keypair = await getKeypair(payerB58)
+
+  if (!keypair) throw new Error('Keypair not found')
+  const signedTxn = await txn.sign({ payer: keypair })
+  return { signedTxn, txnJson: JSON.stringify(txnJson), unsignedTxn: txn }
+}
 
 type Route = RouteProp<RootStackParamList, 'DappLoginScreen'>
 const DappLoginScreen = () => {
@@ -47,7 +77,6 @@ const DappLoginScreen = () => {
   const { t } = useTranslation()
   const colors = useColors()
   const { currentAccount } = useAccountStorage()
-  const { makeBurnTxn } = useTransactions()
   const { primaryText } = useColors()
   const { showOKAlert } = useAlert()
   const ledgerRef = useRef<LedgerBurnModalRef>(null)
@@ -120,11 +149,7 @@ const DappLoginScreen = () => {
     const isLedger = !!currentAccount.ledgerDevice
 
     const { signedTxn, unsignedTxn, txnJson } = await makeBurnTxn({
-      payeeB58: EMPTY_B58_ADDRESS.b58,
-      amount: 1,
-      memo: '',
-      nonce: 0,
-      shouldSign: !isLedger,
+      payerB58: currentAccount.address,
     })
 
     if (isLedger && currentAccount.ledgerDevice) {
