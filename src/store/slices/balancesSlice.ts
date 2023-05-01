@@ -176,7 +176,7 @@ const balancesSlice = createSlice({
     ) => {
       const { payload } = action
       const { cluster, solanaAddress, balance } = payload
-      const prevAtas = state.balances[cluster]?.[solanaAddress].atas
+      const prevAtas = state.balances?.[cluster]?.[solanaAddress]?.atas || []
       const foundIndex = prevAtas.findIndex(
         ({ tokenAccount, mint }) =>
           tokenAccount === payload.tokenAccount && mint === payload.mint,
