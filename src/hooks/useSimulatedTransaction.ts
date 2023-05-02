@@ -5,6 +5,7 @@ import {
   ParsedAccountData,
   PublicKey,
   RpcResponseAndContext,
+  SimulatedTransactionAccountInfo,
   VersionedTransaction,
 } from '@solana/web3.js'
 import BN from 'bn.js'
@@ -16,18 +17,20 @@ import { getCollectableByMint } from '@utils/solanaUtils'
 import { Metaplex } from '@metaplex-foundation/js'
 import { useSolana } from '../solana/SolanaProvider'
 
+type BalanceChanges = {
+  nativeChange?: number
+  mint?: PublicKey
+  symbol?: string
+  type?: 'send' | 'recieve'
+} | null
+
 export type SimulatedTransactionResult = {
   loading: boolean
   solFee?: number
   estimateFeeErr?: Error | undefined
   simulationError: boolean
   insufficientFunds: boolean
-  balanceChanges?: {
-    nativeChange: BN
-    mint?: PublicKey
-    symbol?: string
-    type?: 'send' | 'recieve'
-  }
+  balanceChanges?: BalanceChanges
 }
 export function useSimualtedTransaction(
   serializedTx: Buffer | undefined,
@@ -103,7 +106,8 @@ export function useSimualtedTransaction(
   }, [transaction, connection])
   const { loading: loadingBal, result: estimatedBalanceChanges } =
     useAsync(async () => {
-      if (!connection || !transaction || !anchorProvider || !metaplex) return []
+      if (!connection || !transaction || !anchorProvider || !metaplex)
+        return undefined
 
       setSimulationError(false)
       setInsufficientFunds(false)
@@ -129,14 +133,29 @@ export function useSimualtedTransaction(
             setInsufficientFunds(true)
           }
           setSimulationError(true)
-          return []
+          return undefined
         }
 
-        const balanceChanges = result?.value.accounts?.reduce(
-          async (res: any, account: any, index: number) => {
+        const balanceChangeInitialValueAsPromise: Promise<BalanceChanges> =
+          new Promise((resolve) => {
+            resolve(null)
+          })
+
+        const accounts = result?.value.accounts
+
+        if (!accounts) return undefined
+
+        const balanceChanges = accounts.reduce(
+          async (
+            prev: Promise<BalanceChanges>,
+            curr: SimulatedTransactionAccountInfo | null,
+            index: number,
+          ) => {
+            const account = curr
+            if (!account) return prev
             // Token changes
             const isToken = account.owner === TOKEN_PROGRAM_ID.toString()
-            const isNativeSol = account.owner === NATIVE_MINT
+            const isNativeSol = account.owner === NATIVE_MINT.toBase58()
 
             if (isToken || isNativeSol) {
               try {
@@ -147,15 +166,21 @@ export function useSimualtedTransaction(
                 if (isToken) {
                   try {
                     const tokenAccount = AccountLayout.decode(
-                      Buffer.from(account.data[0], account.data[1]),
+                      Buffer.from(
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        account.data[0] as any,
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        account.data[1] as any,
+                      ),
                     )
+
                     if (
                       !new PublicKey(tokenAccount.owner).equals(
                         new PublicKey(wallet),
                       )
                     ) {
                       // Return the reducer state umodified if token account is not owned
-                      return res
+                      return await prev
                     }
                     accountNativeBalance = new BN(
                       tokenAccount.amount.toString(),
@@ -164,7 +189,7 @@ export function useSimualtedTransaction(
                     tokenMint = new PublicKey(tokenAccount.mint)
                   } catch (error) {
                     // Decoding of token account failed, not a token account
-                    return res
+                    return prev
                   }
                   // Parse changes in native SOL balances
                 } else {
@@ -174,7 +199,7 @@ export function useSimualtedTransaction(
                     simulationAccounts &&
                     simulationAccounts[index].equals(wallet)
                   ) {
-                    return res
+                    return await prev
                   }
                   accountNativeBalance = new BN(account.lamports.toString())
                   // Faux mint for native SOL
@@ -183,7 +208,7 @@ export function useSimualtedTransaction(
 
                 // Find the existing token account
                 const existingTokenAccount = tokenAccounts.find((t) =>
-                  new PublicKey(t.mint!).equals(tokenMint),
+                  new PublicKey(t.mint).equals(tokenMint),
                 )
 
                 const existingNativeBalance = existingTokenAccount
@@ -217,21 +242,21 @@ export function useSimualtedTransaction(
                     mint: tokenMint,
                     symbol: tokenMetadata?.symbol,
                     type,
-                  }
+                  } as BalanceChanges
                 }
               } catch (err) {
                 // ignore, probably not a token account or some other
                 // failure, we don't want to fail displaying the popup
                 console.warn('failed to get balance changes', err)
-                return res
+                return prev
               }
             }
-            return res
+            return prev
           },
-          {},
+          balanceChangeInitialValueAsPromise,
         )
 
-        return balanceChanges
+        return await balanceChanges
       } catch (err) {
         return undefined
       }

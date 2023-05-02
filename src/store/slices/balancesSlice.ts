@@ -68,7 +68,6 @@ export const syncTokenAccounts = createAsyncThunk(
         tokenAccount: tokenAccount.pubkey.toBase58(),
         mint: mint.toBase58(),
         balance: Number(accountData.amount || 0),
-        nativeBalance: new BN(Number(accountData.amount)),
       }
     })
 

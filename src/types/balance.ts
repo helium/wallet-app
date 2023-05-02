@@ -5,13 +5,11 @@ import Balance, {
   NetworkTokens,
   SolTokens,
 } from '@helium/currency'
-import BN from 'bn.js'
 
 export type TokenAccount = {
   tokenAccount?: string
   mint: string
   balance: number
-  nativeBalance: BN
 }
 
 export type AccountBalance = {
