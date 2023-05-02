@@ -2,8 +2,6 @@
 
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTLinkingManager.h>
-#import "ExpoModulesCore-Swift.h"
-#import <HeliumWallet-Swift.h>
 
 @implementation AppDelegate
 
@@ -50,12 +48,6 @@
  return [RCTLinkingManager application:application
                   continueUserActivity:userActivity
                     restorationHandler:restorationHandler];
-}
-
-- (void)applicationDidEnterBackground:(UIApplication *)application {
-    if (@available(iOS 14.0, *)) {
-        [WidgetKitHelper reloadAllWidgets];
-    }
 }
 
 @end
