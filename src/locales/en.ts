@@ -331,7 +331,7 @@ export default {
     swapAlertTitle: 'Are you sure you will like to swap your tokens?',
     swapAlertBody: 'This action is irreversible.',
     understood: 'Understood',
-    treasurySwapWarningTitle: 'Treasury Redeem Warning',
+    treasurySwapWarningTitle: 'Redemption',
     treasurySwapWarningBody:
       'Please be advised that the subDAO treasury has only been active for a few days since the Solana migration. Redeeming subtokens to HNT may be affected by a limited HNT supply in the subDAO treasury and may not reflect up-to-date prices. Please proceed with caution.',
     addRecipient: 'Add Recipient',
