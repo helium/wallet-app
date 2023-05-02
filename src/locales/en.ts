@@ -369,6 +369,9 @@ export default {
     connectBullet2: 'Request Approval for transactions',
     connectToWebsitesYouTrust: 'Only connect to websites you trust',
     estimatedChanges: 'Estimated Changes',
+    sendToken: 'Send {{amount}} {{ticker}}',
+    recieveToken: 'Receive {{amount}} {{ticker}}',
+    insufficientFunds: 'Insufficient funds',
     unableToSimulate:
       'Unable to simulate. Make sure you trust this website since approving can lead to loss of funds.',
     networkFee: 'Network Fee',
