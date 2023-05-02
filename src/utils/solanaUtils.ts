@@ -1091,11 +1091,11 @@ export const getNFTsMetadata = async (
  */
 export const groupNFTs = (collectables: Metadata<JsonMetadata<string>>[]) => {
   const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const { symbol } = cur
-    if (!acc[symbol]) {
-      acc[symbol] = [cur]
+    const { collection, symbol } = cur
+    if (!acc[collection?.address?.toBase58() || symbol]) {
+      acc[collection?.address?.toBase58() || symbol] = [cur]
     } else {
-      acc[symbol].push(cur)
+      acc[collection?.address?.toBase58() || symbol].push(cur)
     }
     return acc
   }, {} as Record<string, Metadata<JsonMetadata<string>>[]>)
@@ -1110,11 +1110,11 @@ export const groupNFTs = (collectables: Metadata<JsonMetadata<string>>[]) => {
  */
 export const groupNFTsWithMetaData = (collectables: Collectable[]) => {
   const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const { symbol } = cur
-    if (!acc[symbol]) {
-      acc[symbol] = [cur]
+    const { collection, symbol } = cur
+    if (!acc[collection?.address?.toBase58() || symbol]) {
+      acc[collection?.address?.toBase58() || symbol] = [cur]
     } else {
-      acc[symbol].push(cur)
+      acc[collection?.address?.toBase58() || symbol].push(cur)
     }
     return acc
   }, {} as Record<string, Collectable[]>)
