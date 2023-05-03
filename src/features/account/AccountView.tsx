@@ -24,7 +24,7 @@ type Props = {
 const AccountView = ({ selectedBalance, ...boxProps }: Props) => {
   const [selectedDate, setSelectedDate] = useState('')
   const [balanceString, setBalanceString] = useState('')
-  const { totalValue } = useBalance()
+  const { formattedTotal } = useBalance()
   const { currency } = useAppStorage()
   const [actionBarHeight, setActionBarHeight] = useLayoutHeight()
 
@@ -46,9 +46,9 @@ const AccountView = ({ selectedBalance, ...boxProps }: Props) => {
         setBalanceString,
       )
     } else {
-      setBalanceString(totalValue || '')
+      setBalanceString(formattedTotal || '')
     }
-  }, [currency, selectedBalance, totalValue])
+  }, [currency, selectedBalance, formattedTotal])
 
   return (
     <Box flexDirection="column" alignItems="center" {...boxProps}>

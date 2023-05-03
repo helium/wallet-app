@@ -13,14 +13,7 @@ type Props = {
   onPress: (item: Activity) => void
 }
 const TxnListItem = ({ item, now, isLast, onPress }: Props) => {
-  const {
-    listIcon,
-    title,
-    color,
-    time,
-    memo: txnMemo,
-    getAmount,
-  } = useTxn(item, { now })
+  const { listIcon, title, color, time, getAmount } = useTxn(item, { now })
   const amt = useMemo(() => getAmount(), [getAmount])
 
   const handlePress = useCallback(() => {
@@ -58,9 +51,6 @@ const TxnListItem = ({ item, now, isLast, onPress }: Props) => {
         <Box paddingVertical="m" maxWidth="55%">
           <Text variant="body2" color={color} textAlign="right">
             {amt}
-          </Text>
-          <Text variant="body2" color="grey500" textAlign="right">
-            {txnMemo}
           </Text>
         </Box>
       </Box>

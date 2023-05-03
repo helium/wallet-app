@@ -9,7 +9,6 @@ import Balance, {
   USDollars,
 } from '@helium/currency'
 import { useReducer } from 'react'
-import { decodeMemoString } from '../../components/MemoInput'
 import { CSAccount } from '../../storage/cloudStorage'
 import { TXN_FEE_IN_LAMPORTS } from '../../utils/solanaUtils'
 import { Payment } from './PaymentItem'
@@ -26,12 +25,7 @@ type UpdatePayeeAction = {
   address: string
   index: number
   payer: string
-}
-
-type UpdateMemoAction = {
-  type: 'updateMemo'
-  memo?: string
-  index: number
+  createTokenAccountFee: Balance<PaymentCurrencyType>
 }
 
 type UpdateBalanceAction = {
@@ -73,7 +67,6 @@ type AddLinkedPayments = {
     address: string
     account: CSAccount | undefined
     amount: string | undefined
-    memo: string | undefined
   }>
 }
 
@@ -104,7 +97,7 @@ const initialState = (opts: {
   error: undefined,
   payments: [{}] as Array<Payment>,
   totalAmount: new Balance(0, opts.currencyType),
-  ...calculateFee(),
+  ...calculateFee([{}]),
   ...opts,
 })
 
@@ -117,15 +110,28 @@ const paymentsSum = (payments: Payment[], type: PaymentCurrencyType) => {
   }, new Balance(0, type))
 }
 
-const calculateFee = () => {
+const calculateFee = (payments: Payment[]) => {
+  const totalFee = payments.reduce((prev, current) => {
+    if (!current.createTokenAccountFee) {
+      return prev
+    }
+    return prev.plus(current.createTokenAccountFee)
+  }, new Balance(0, CurrencyType.solTokens))
+
+  const txnFeeInLammportsFee = new Balance(
+    TXN_FEE_IN_LAMPORTS,
+    CurrencyType.solTokens,
+  )
+  const networkFee = totalFee.plus(txnFeeInLammportsFee)
+
   return {
-    networkFee: new Balance(TXN_FEE_IN_LAMPORTS, CurrencyType.solTokens),
+    networkFee,
   }
 }
 
 const recalculate = (payments: Payment[], state: PaymentState) => {
   const accountBalance = getAccountBalance(state)
-  const { networkFee } = calculateFee()
+  const { networkFee } = calculateFee(payments)
 
   const maxPayment = payments.find((p) => p.max)
   const totalAmount = paymentsSum(payments, state.currencyType)
@@ -172,7 +178,6 @@ function reducer(
   state: PaymentState,
   action:
     | UpdatePayeeAction
-    | UpdateMemoAction
     | UpdateBalanceAction
     | UpdateErrorAction
     | AddPayee
@@ -207,23 +212,10 @@ function reducer(
           ...p,
           address: action.address,
           account: action.contact,
+          createTokenAccountFee: action.createTokenAccountFee,
         }
       })
       return { ...state, ...recalculate(nextPayments, state) }
-    }
-    case 'updateMemo': {
-      const { payments } = state
-
-      const nextPayments = payments.map((p, index) => {
-        if (index !== action.index) {
-          return p
-        }
-        return {
-          ...p,
-          memo: action.memo,
-        }
-      })
-      return { ...state, payments: nextPayments }
     }
     case 'updateError': {
       const { payments } = state
@@ -269,7 +261,6 @@ function reducer(
           ...payment,
           max: false,
           amount: undefined,
-          memo: undefined,
           hasError: undefined,
         }
       })
@@ -300,14 +291,14 @@ function reducer(
       const nextPayments: Payment[] = action.payments.map((p) => ({
         address: p.address,
         account: p.account,
-        memo: decodeMemoString(p.memo),
         amount: p.amount
           ? new Balance(parseInt(p.amount, 10), state.currencyType)
           : undefined,
+        createTokenAccountFee: new Balance(0, CurrencyType.solTokens),
       }))
       const totalAmount = paymentsSum(nextPayments, state.currencyType)
 
-      const fees = calculateFee()
+      const fees = calculateFee(nextPayments)
 
       return {
         ...state,

@@ -31,13 +31,14 @@ import { useAppDispatch } from '../store/store'
 import { accountCurrencyType } from './accountUtils'
 import { decimalSeparator, groupSeparator } from './i18n'
 import { useSolana } from '../solana/SolanaProvider'
-import { TokenAccount, syncTokenAccounts } from '../store/slices/balancesSlice'
+import { syncTokenAccounts } from '../store/slices/balancesSlice'
 import { usePollTokenPrices } from './usePollTokenPrices'
 import { useBalanceHistory } from './useBalanceHistory'
-import { AccountBalance } from '../types/balance'
+import { AccountBalance, BalanceInfo, TokenAccount } from '../types/balance'
 import StoreAtaBalance from './StoreAtaBalance'
 import StoreTokenBalance from './StoreTokenBalance'
 import StoreSolBalance from './StoreSolBalance'
+import usePrevious from '../hooks/usePrevious'
 
 export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
 const useBalanceHook = () => {
@@ -45,38 +46,15 @@ const useBalanceHook = () => {
   const { cluster, anchorProvider } = useSolana()
   const { tokenPrices } = usePollTokenPrices()
   const { balanceHistory } = useBalanceHistory()
+  const [balanceInfo, setBalanceInfo] = useState<BalanceInfo>()
+  const prevCluster = usePrevious(cluster)
+  const prevSolAddress = usePrevious(currentAccount?.solanaAddress)
 
   const solanaAddress = useMemo(
     () => currentAccount?.solanaAddress || '',
     [currentAccount],
   )
-
-  const balancesForCluster = useSelector(
-    (state: RootState) => state.balances.balances[cluster],
-  )
-
-  const accountBalancesForCluster = useMemo(() => {
-    if (!solanaAddress || !balancesForCluster[solanaAddress]) return
-
-    return balancesForCluster[solanaAddress]
-  }, [balancesForCluster, solanaAddress])
-
-  const atas = useMemo(() => {
-    if (!accountBalancesForCluster?.atas) return []
-    return accountBalancesForCluster?.atas.filter(
-      (ata) => !!ata.tokenAccount,
-    ) as Required<TokenAccount>[]
-  }, [accountBalancesForCluster?.atas])
-
-  const solToken = useMemo(
-    () => accountBalancesForCluster?.sol,
-    [accountBalancesForCluster?.sol],
-  )
-
-  const dcEscrowToken = useMemo(
-    () => accountBalancesForCluster?.dcEscrow,
-    [accountBalancesForCluster?.dcEscrow],
-  )
+  const allBalances = useSelector((state: RootState) => state.balances.balances)
 
   const { convertToCurrency, currency: currencyRaw } = useAppStorage()
 
@@ -200,15 +178,26 @@ const useBalanceHook = () => {
   )
 
   const getBalance = useCallback(
-    (mint: PublicKey) => {
+    (mint: PublicKey, atas: Required<TokenAccount>[]) => {
       const mintStr = mint.toBase58()
       const ata = atas.find((a) => a.mint === mintStr)
       return ata?.balance || 0
     },
-    [atas],
+    [],
   )
 
   const { result: tokenInfo } = useAsync(async () => {
+    const balancesForCluster = allBalances[cluster]
+    const accountBalancesForCluster = balancesForCluster[solanaAddress]
+
+    const atas = accountBalancesForCluster?.atas.filter(
+      (ata) => !!ata.tokenAccount,
+    ) as Required<TokenAccount>[]
+
+    const solToken = accountBalancesForCluster?.sol
+
+    const dcEscrowToken = accountBalancesForCluster?.dcEscrow
+
     const dcEscrowBalance = new Balance(
       dcEscrowToken?.balance || 0,
       CurrencyType.dataCredit,
@@ -224,20 +213,26 @@ const useBalanceHook = () => {
     const solValue = solPrice * solAmount
     const formattedSolValue = await CurrencyFormatter.format(solValue, currency)
 
-    const hntBalance = Balance.fromIntAndTicker(getBalance(HNT_MINT), 'HNT')
+    const hntBalance = Balance.fromIntAndTicker(
+      getBalance(HNT_MINT, atas),
+      'HNT',
+    )
     const hntPrice = tokenPrices?.helium?.[currency] || 0
     const hntAmount = hntBalance?.floatBalance
     const hntValue = hntPrice * hntAmount
     const formattedHntValue = await CurrencyFormatter.format(hntValue, currency)
 
-    const iotBalance = Balance.fromIntAndTicker(getBalance(IOT_MINT), 'IOT')
+    const iotBalance = Balance.fromIntAndTicker(
+      getBalance(IOT_MINT, atas),
+      'IOT',
+    )
     const iotPrice = tokenPrices?.['helium-iot']?.[currency] || 0
     const iotAmount = iotBalance?.floatBalance
     const iotValue = iotPrice * iotAmount
     const formattedIotValue = await CurrencyFormatter.format(iotValue, currency)
 
     const mobileBalance = Balance.fromIntAndTicker(
-      getBalance(MOBILE_MINT),
+      getBalance(MOBILE_MINT, atas),
       'MOBILE',
     )
     const mobilePrice = tokenPrices?.['helium-mobile']?.[currency] || 0
@@ -248,45 +243,72 @@ const useBalanceHook = () => {
       currency,
     )
 
-    const dcBalance = new Balance(getBalance(DC_MINT), CurrencyType.dataCredit)
+    const dcBalance = new Balance(
+      getBalance(DC_MINT, atas),
+      CurrencyType.dataCredit,
+    )
     const formattedDcValue = await CurrencyFormatter.format(
       dcBalance.toUsd(oraclePrice).floatBalance,
       'usd',
     )
 
-    const totalValue = await CurrencyFormatter.format(
+    const formattedTotal = await CurrencyFormatter.format(
       solValue + hntValue + mobileValue + iotValue,
       currency,
     )
 
     return {
-      hntBalance,
-      iotBalance,
-      mobileBalance,
-      solBalance,
+      atas,
       dcBalance,
       dcEscrowBalance,
-      formattedEscrowDcValue,
+      dcEscrowToken,
       formattedDcValue,
+      formattedEscrowDcValue,
       formattedHntValue,
       formattedIotValue,
       formattedMobileValue,
       formattedSolValue,
+      formattedTotal,
+      hntBalance,
       hntValue,
+      iotBalance,
       iotValue,
+      mobileBalance,
       mobileValue,
+      solBalance,
+      solToken,
       solValue,
-      totalValue,
     }
   }, [
-    currency,
-    tokenPrices,
+    allBalances,
     cluster,
-    oraclePrice,
+    currency,
     getBalance,
-    dcEscrowToken?.balance,
-    solToken?.balance,
+    oraclePrice,
+    solanaAddress,
+    tokenPrices,
   ])
+
+  // The useAsync does not support stale-while-revalidate, so when
+  // it re-renders, the previous result value clears. We're storing
+  // the value in `balanceInfo`. We keep the previous value when
+  // cluster and solanaAddress stay the same until a new value
+  // is available. If cluster or solanaAddress change, we clear
+  // `balanceInfo`
+  useEffect(() => {
+    const shouldClear =
+      prevSolAddress !== solanaAddress || prevCluster !== cluster
+    if (shouldClear) {
+      setBalanceInfo(undefined)
+      return
+    }
+
+    if (!tokenInfo) {
+      return
+    }
+
+    setBalanceInfo(tokenInfo)
+  }, [cluster, prevCluster, prevSolAddress, solanaAddress, tokenInfo])
 
   const toCurrencyString = useCallback(
     (
@@ -337,7 +359,7 @@ const useBalanceHook = () => {
     bonesToBalance,
     dcToNetworkTokens,
     floatToBalance,
-    ...tokenInfo,
+    ...balanceInfo,
     intToBalance,
     networkTokensToDc,
     oracleDateTime,
@@ -346,9 +368,6 @@ const useBalanceHook = () => {
     toCurrencyString,
     toPreferredCurrencyString,
     toUsd,
-    atas,
-    solToken,
-    dcEscrowToken,
   }
 }
 
@@ -365,6 +384,7 @@ const initialState = {
   formattedIotValue: '',
   formattedMobileValue: '',
   formattedSolValue: '',
+  formattedTotal: undefined,
   hntBalance: new Balance(0, CurrencyType.networkToken),
   intToBalance: () => undefined,
   iotBalance: new Balance(0, CurrencyType.iot),
@@ -378,7 +398,6 @@ const initialState = {
   toCurrencyString: () => new Promise<string>((resolve) => resolve('')),
   toPreferredCurrencyString: () =>
     new Promise<string>((resolve) => resolve('')),
-  totalValue: undefined,
   toUsd: () => 0,
   atas: [],
   updating: false,
@@ -393,10 +412,22 @@ export const BalanceProvider = ({ children }: { children: ReactNode }) => {
   const balanceHook = useBalanceHook()
 
   const { atas, dcEscrowToken, solToken } = balanceHook
+  const { cluster } = useSolana()
+  const prevSolAddress = usePrevious(solToken?.tokenAccount)
+  const prevCluster = usePrevious(cluster)
+  const clusterChanged = prevCluster && cluster && prevCluster !== cluster
+  const addressChanged =
+    solToken?.tokenAccount &&
+    prevSolAddress &&
+    solToken.tokenAccount !== prevSolAddress
+
+  if (clusterChanged || addressChanged) {
+    return <>{children}</>
+  }
 
   return (
     <Provider value={balanceHook}>
-      {atas.map((ta) => (
+      {atas?.map((ta) => (
         <StoreAtaBalance key={`${ta.mint}.${ta.tokenAccount}`} {...ta} />
       ))}
       {dcEscrowToken?.tokenAccount && (
@@ -408,6 +439,7 @@ export const BalanceProvider = ({ children }: { children: ReactNode }) => {
       {solToken?.tokenAccount && (
         <StoreSolBalance solanaAddress={solToken?.tokenAccount} />
       )}
+
       {children}
     </Provider>
   )

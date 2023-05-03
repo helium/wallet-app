@@ -36,7 +36,6 @@ import Text from '@components/Text'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import Box from '@components/Box'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useMemoValid } from '@components/MemoInput'
 import {
   useBorderRadii,
   useColors,
@@ -67,8 +66,6 @@ const QR_CONTAINER_SIZE = 220
 
 type RequestType = 'qr' | 'link'
 const RequestScreen = () => {
-  const [txnMemo] = useState('')
-  const { valid: memoValid } = useMemoValid(txnMemo)
   const { currentAccount, currentNetworkAddress: networkAddress } =
     useAccountStorage()
   const { t } = useTranslation()
@@ -125,15 +122,14 @@ const RequestScreen = () => {
   )
 
   const link = useMemo(() => {
-    if (!networkAddress || !memoValid) return ''
+    if (!networkAddress) return ''
 
     return makePayRequestLink({
       payee: networkAddress,
-      memo: txnMemo,
       balanceAmount: paymentAmount,
       defaultTokenType: ticker,
     })
-  }, [memoValid, networkAddress, paymentAmount, ticker, txnMemo])
+  }, [networkAddress, paymentAmount, ticker])
 
   const [qrLink] = useDebounce(link, 500)
 

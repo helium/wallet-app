@@ -5,7 +5,6 @@ import qs from 'qs'
 import queryString from 'query-string'
 import BigNumber from 'bignumber.js'
 import { LinkingOptions } from '@react-navigation/native'
-import { encodeMemoString } from '../components/MemoInput'
 import { BurnRouteParam, PaymentRouteParam } from '../features/home/homeTypes'
 import { SendDetails } from '../storage/TransactionProvider'
 import { RootStackParamList } from '../navigation/rootTypes'
@@ -14,11 +13,6 @@ import { useAccountStorage } from '../storage/AccountStorageProvider'
 export const APP_LINK_SCHEME = Linking.createURL('')
 export const PAYMENT_PATH = 'payment'
 export const HELIUM_WALLET_LINK_SCHEME = 'https://wallet.helium.com/'
-
-const formatMemo = (memo: string | undefined, isUtf8: boolean) => {
-  if (!memo) return undefined
-  return isUtf8 ? encodeMemoString(memo) : memo
-}
 
 export const authenticatedLinking: LinkingOptions<RootStackParamList> = {
   prefixes: [APP_LINK_SCHEME, HELIUM_WALLET_LINK_SCHEME],
@@ -63,7 +57,6 @@ export const useDeepLinking = () => {
 export const makePayRequestLink = ({
   payee,
   balanceAmount,
-  memo,
   defaultTokenType,
 }: Partial<SendDetails> & { defaultTokenType?: Ticker }) => {
   return [
@@ -72,7 +65,7 @@ export const makePayRequestLink = ({
       {
         payee,
         amount: balanceAmount?.integerBalance || null,
-        memo: encodeMemoString(memo),
+        memo: '',
         defaultTokenType,
       },
       { skipNulls: true },
@@ -88,10 +81,10 @@ export const makeMultiPayRequestLink = ({
   payments: Array<Partial<SendDetails> & { defaultTokenType?: Ticker }>
 }) => {
   const ironed = payments.map(
-    ({ payee: address, balanceAmount, memo, defaultTokenType }) => ({
+    ({ payee: address, balanceAmount, defaultTokenType }) => ({
       payee: address || null,
       amount: balanceAmount?.integerBalance || null,
-      memo: encodeMemoString(memo),
+      memo: '',
       defaultTokenType,
     }),
   )
@@ -169,7 +162,7 @@ export const parsePaymentLink = (
         payee: parsedJson.address || parsedJson.payee,
         payer: parsedJson.payer,
         amount: new BigNumber(amount).dividedBy(coefficient).toString(),
-        memo: formatMemo(parsedJson.memo, parsedJson.utf8Memo),
+        memo: '',
       }
     }
     if (parsedJson.payees) {
@@ -182,10 +175,7 @@ export const parsePaymentLink = (
         return {
           amount: new BigNumber(amountFloat).dividedBy(coefficient).toString(),
           payee: address,
-          memo:
-            typeof payeeData === 'object'
-              ? formatMemo(payeeData.memo, parsedJson.utf8Memo)
-              : undefined,
+          memo: '',
         }
       })
       return { payments: JSON.stringify(payments) }

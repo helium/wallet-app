@@ -49,6 +49,8 @@ const App = () => {
     'ws error: received bad response code from server 403',
     'ImmutableStateInvariantMiddleware',
     'ws error: received bad response code from server 429',
+    'Ignored unsubscribe request because an active subscription with id',
+    'accountFetchCache Batching account fetch of',
   ])
 
   const { appState } = useAppState()
