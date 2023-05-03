@@ -142,7 +142,9 @@ const balancesSlice = createSlice({
       const { payload } = action
       const { cluster, solanaAddress, balance, type, tokenAccount } = payload
       const next = { tokenAccount, balance }
-      const prevTokens = state.balances[cluster][solanaAddress]
+      const prevTokens = state.balances?.[cluster]?.[solanaAddress]
+      if (!prevTokens) return
+
       switch (type) {
         case 'dcEscrow':
           prevTokens.dcEscrow = next

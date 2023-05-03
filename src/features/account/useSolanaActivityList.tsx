@@ -1,7 +1,8 @@
 import { Ticker } from '@helium/currency'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Mints } from '@utils/constants'
+import { onLogs, removeAccountChangeListener } from '@utils/solanaUtils'
 import { CSAccount } from '../../storage/cloudStorage'
 import { RootState } from '../../store/rootReducer'
 import { getTxns } from '../../store/slices/solanaSlice'
@@ -24,6 +25,7 @@ export default ({
   const solanaActivity = useSelector(
     (state: RootState) => state.solana.activity,
   )
+  const accountSubscriptionId = useRef<number>()
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -31,22 +33,6 @@ export default ({
     }, 60000) // Every 1 mins
     return () => clearInterval(interval)
   }, [])
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!account?.address || !anchorProvider) return
-      dispatch(
-        getTxns({
-          account,
-          ticker,
-          mints: Mints,
-          requestType: 'update_head',
-          anchorProvider,
-        }),
-      )
-    }, 5000) // Every 5 seconds update the head of the list
-    return () => clearInterval(interval)
-  }, [account, dispatch, ticker, anchorProvider])
 
   useEffect(() => {
     if (!account?.address || !anchorProvider) return
@@ -60,6 +46,27 @@ export default ({
         anchorProvider,
       }),
     )
+
+    const subId = onLogs(
+      anchorProvider,
+      anchorProvider.publicKey.toBase58(),
+      () => {
+        dispatch(
+          getTxns({
+            account,
+            ticker,
+            mints: Mints,
+            requestType: 'update_head',
+            anchorProvider,
+          }),
+        )
+      },
+    )
+
+    if (accountSubscriptionId.current !== undefined) {
+      removeAccountChangeListener(anchorProvider, accountSubscriptionId.current)
+    }
+    accountSubscriptionId.current = subId
   }, [account, dispatch, filter, ticker, anchorProvider])
 
   const requestMore = useCallback(() => {
