@@ -64,6 +64,10 @@ const AccountTokenScreen = () => {
   const { cluster } = useSolana()
   const insets = useSafeAreaInsets()
   const colors = useColors()
+  const [
+    onEndReachedCalledDuringMomentum,
+    setOnEndReachedCalledDuringMomentum,
+  ] = useState(true)
 
   const routeTicker = useMemo(
     () => route.params.tokenType?.toUpperCase() as Ticker,
@@ -95,6 +99,17 @@ const AccountTokenScreen = () => {
     filter: filterState.filter,
     ticker: routeTicker,
   })
+
+  const handleOnFetchMoreActivity = useCallback(() => {
+    if (activityLoading || onEndReachedCalledDuringMomentum) return
+
+    fetchMoreActivity()
+    setOnEndReachedCalledDuringMomentum(true)
+  }, [activityLoading, fetchMoreActivity, onEndReachedCalledDuringMomentum])
+
+  const handleOnMomentumScrollBegin = useCallback(() => {
+    setOnEndReachedCalledDuringMomentum(false)
+  }, [])
 
   const actualHeight = useMemo(() => {
     return WINDOW_HEIGHT - insets.bottom - NavBarHeight
@@ -507,9 +522,11 @@ const AccountTokenScreen = () => {
               ListHeaderComponent={renderHeader}
               stickyHeaderIndices={stickyHeaderIndices}
               ListFooterComponent={renderFooter}
-              onEndReached={fetchMoreActivity}
-              data={activityData}
+              initialNumToRender={10}
               onEndReachedThreshold={0.01}
+              onMomentumScrollBegin={handleOnMomentumScrollBegin}
+              onEndReached={handleOnFetchMoreActivity}
+              data={activityData}
             />
           </Animated.View>
         </BottomSheet>
