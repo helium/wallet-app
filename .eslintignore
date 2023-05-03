@@ -2,5 +2,3 @@ metro.config.js
 babel.config.js
 jest.config.js
 .eslintrc.js
-src/graphql/schema.json
-src/graphql/__generated__/*.ts

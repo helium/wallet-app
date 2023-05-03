@@ -1,14 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import { LayoutChangeEvent, Animated } from 'react-native'
+import { LayoutChangeEvent } from 'react-native'
 import { Ticker } from '@helium/currency'
 import Box from '@components/Box'
 import FabButton from '@components/FabButton'
 import Text from '@components/Text'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
-import { useVotesQuery } from '../../generated/graphql'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
 export type Action =
@@ -49,52 +48,7 @@ const AccountActionBar = ({
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const { requirePinForPayment, pin } = useAppStorage()
-  const anim = useRef(new Animated.Value(1))
   const { currentAccount } = useAccountStorage()
-
-  const { data: voteData } = useVotesQuery({
-    variables: { address: currentAccount?.address || '' },
-    skip: !currentAccount?.address,
-    fetchPolicy: 'cache-and-network',
-  })
-
-  const unseenVotes = useMemo(() => {
-    const seenVoteIds = currentAccount?.voteIdsSeen || []
-    return (
-      voteData?.votes.active.filter((v) => !seenVoteIds.includes(v.id)) || []
-    )
-  }, [currentAccount, voteData])
-
-  useEffect(() => {
-    // makes the sequence loop
-    if (voteData && unseenVotes?.length > 0) {
-      const res = Animated.loop(
-        // runs given animations in a sequence
-        Animated.sequence([
-          // increase size
-          Animated.timing(anim.current, {
-            toValue: 1.2,
-            duration: 2000,
-            useNativeDriver: true,
-          }),
-          // decrease size
-          Animated.timing(anim.current, {
-            toValue: 1,
-            duration: 2000,
-            useNativeDriver: true,
-          }),
-        ]),
-      )
-
-      // start the animation
-      res.start()
-
-      return () => {
-        // stop animation
-        res.reset()
-      }
-    }
-  }, [currentAccount, unseenVotes.length, voteData])
 
   const handleAction = useCallback(
     (type: Action) => () => {

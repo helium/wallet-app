@@ -72,6 +72,14 @@ const useBalanceHook = () => {
 
   const [oracleDateTime, setOracleDateTime] = useState<Date>()
 
+  const tokenAccounts = useMemo(() => {
+    if (!cluster || !anchorProvider) return []
+    return (
+      allBalances?.[cluster]?.[anchorProvider.publicKey.toBase58() as string]
+        ?.atas || []
+    )
+  }, [cluster, anchorProvider, allBalances])
+
   const oraclePrice = useMemo(() => {
     if (!tokenPrices?.helium) return
 
@@ -368,6 +376,7 @@ const useBalanceHook = () => {
     toCurrencyString,
     toPreferredCurrencyString,
     toUsd,
+    tokenAccounts,
   }
 }
 
@@ -403,6 +412,7 @@ const initialState = {
   updating: false,
   solToken: undefined,
   dcEscrowToken: undefined,
+  tokenAccounts: [],
 }
 const BalanceContext =
   createContext<ReturnType<typeof useBalanceHook>>(initialState)

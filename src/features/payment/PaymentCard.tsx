@@ -14,11 +14,11 @@ import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import useAlert from '@hooks/useAlert'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { SendDetails } from '../../storage/TransactionProvider'
 import animateTransition from '../../utils/animateTransition'
 import PaymentSummary from './PaymentSummary'
 import { checkSecureAccount } from '../../storage/secureStorage'
 import { useSolana } from '../../solana/SolanaProvider'
+import { SendDetails } from '../../utils/linking'
 
 type Props = {
   handleCancel: () => void

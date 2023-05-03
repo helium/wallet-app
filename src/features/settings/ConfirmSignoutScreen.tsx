@@ -8,7 +8,6 @@ import { useColors } from '@theme/themeHooks'
 import Box from '@components/Box'
 import ConfirmWordsScreen from '../onboarding/create/ConfirmWordsScreen'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useApolloClient } from '../../graphql/useApolloClient'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { SettingsNavigationProp } from './settingsTypes'
@@ -24,7 +23,6 @@ const ConfirmSignoutScreen = () => {
   const { showOKCancelAlert } = useAlert()
   const { currentAccount, signOut, accounts } = useAccountStorage()
   const { pin } = useAppStorage()
-  const { client } = useApolloClient()
   const colors = useColors()
 
   const [mnemonic, setMnemonic] = useState<string[]>()
@@ -78,7 +76,6 @@ const ConfirmSignoutScreen = () => {
             if (isLastAccount) {
               // last account is signing out, clear all storage then nav to onboarding
               await signOut()
-              client?.resetStore()
               rootNav.replace('OnboardingNavigator')
             } else {
               // sign out the specific account, then nav to home
@@ -89,7 +86,7 @@ const ConfirmSignoutScreen = () => {
         },
       ],
     )
-  }, [accounts, client, currentAccount, navigation, rootNav, signOut, t])
+  }, [accounts, currentAccount, navigation, rootNav, signOut, t])
 
   const onForgotWords = useCallback(async () => {
     navigation.goBack()

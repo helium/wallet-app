@@ -14,7 +14,7 @@ import { DelayedFadeIn } from '@components/FadeInOut'
 import { useHotspot } from '@hooks/useHotspot'
 import RewardItem from '@components/RewardItem'
 import { Mints } from '../../utils/constants'
-import useSubmitTxn from '../../graphql/useSubmitTxn'
+import useSubmitTxn from '../../hooks/useSubmitTxn'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,

@@ -1,8 +1,0 @@
-query txnConfigVars($address: String!) {
-  txnConfigVars(address: $address) {
-    txnFeeMultiplier
-    stakingFeeTxnAddGatewayV1
-    stakingFeeTxnAssertLocationV1
-    dcPayloadSize
-  }
-}

@@ -11,6 +11,7 @@ import { useAppVersion } from '@hooks/useDevice'
 import useCopyText from '@hooks/useCopyText'
 import useAlert from '@hooks/useAlert'
 import CloseButton from '@components/CloseButton'
+import deviceInfo from 'react-native-device-info'
 import { HomeNavigationProp } from '../home/homeTypes'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
 import { SUPPORTED_LANGUAGUES } from '../../utils/i18n'
@@ -24,7 +25,6 @@ import {
   checkSecureAccount,
   getSecureAccount,
 } from '../../storage/secureStorage'
-import { useApolloClient } from '../../graphql/useApolloClient'
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
 import { ellipsizeAddress } from '../../utils/accountUtils'
 import { RootNavigationProp } from '../../navigation/rootTypes'
@@ -34,10 +34,10 @@ const Settings = () => {
   const { t } = useTranslation()
   const homeNav = useNavigation<HomeNavigationProp>()
   const settingsNav = useNavigation<SettingsNavigationProp>()
-  const { client } = useApolloClient()
   const rootNav = useNavigation<RootNavigationProp>()
   const spacing = useSpacing()
   const version = useAppVersion()
+  const buildNumber = deviceInfo.getBuildNumber()
   const hitSlop = useHitSlop('xxl')
   const authIntervals = useAuthIntervals()
   const {
@@ -220,7 +220,6 @@ const Settings = () => {
               if (isLastAccount) {
                 // last account is signing out, clear all storage then nav to onboarding
                 await signOut()
-                client?.resetStore()
                 rootNav.replace('OnboardingNavigator')
               } else {
                 // sign out the specific account, then nav to home
@@ -234,16 +233,7 @@ const Settings = () => {
     } else {
       settingsNav.push('ConfirmSignout')
     }
-  }, [
-    accounts,
-    client,
-    currentAccount,
-    homeNav,
-    rootNav,
-    settingsNav,
-    signOut,
-    t,
-  ])
+  }, [accounts, currentAccount, homeNav, rootNav, settingsNav, signOut, t])
 
   const handleLanguageChange = useCallback(
     async (lng: string) => {
@@ -261,7 +251,6 @@ const Settings = () => {
 
   const handleSolanaClusterChange = useCallback(
     async (network: ReactText, _index: number) => {
-      // TODO: Should we reset the solana and collectable slices when cluster changes?
       updateCluster(network as Cluster)
     },
     [updateCluster],
@@ -485,7 +474,7 @@ const Settings = () => {
           {
             title: t('settings.sections.app.version'),
             staticText: true,
-            value: version.toString(),
+            value: `v${version} (${buildNumber})`,
           },
         ] as SettingsListItemType[],
       },
@@ -536,6 +525,7 @@ const Settings = () => {
     t,
     updateConvertToCurrency,
     version,
+    buildNumber,
     handleMigrateWallet,
   ])
 

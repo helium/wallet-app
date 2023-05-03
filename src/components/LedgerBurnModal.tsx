@@ -46,6 +46,7 @@ type Props = {
 }
 const LedgerBurnModal = forwardRef(
   (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     { children, onConfirm, onError, title, subtitle }: Props,
     ref: Ref<LedgerBurnModalRef>,
   ) => {
@@ -77,12 +78,13 @@ const LedgerBurnModal = forwardRef(
             })
             return
           }
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const payment = await signLedgerBurn(
             nextTransport,
             opts.unsignedTxn,
             opts.accountIndex,
           )
-          onConfirm({ txn: payment.txn, txnJson: opts.txnJson })
+          // onConfirm({ txn: payment.txn, txnJson: opts.txnJson })
           bottomSheetModalRef.current?.dismiss()
         } catch (error) {
           // in this case, user is likely not on Helium app
@@ -91,7 +93,14 @@ const LedgerBurnModal = forwardRef(
           bottomSheetModalRef.current?.dismiss()
         }
       },
-      [getTransport, onConfirm, onError, setIsShowing, showOKAlert, t],
+      [
+        getTransport,
+        // onConfirm,
+        onError,
+        setIsShowing,
+        showOKAlert,
+        t,
+      ],
     )
 
     const hide = useCallback(() => {

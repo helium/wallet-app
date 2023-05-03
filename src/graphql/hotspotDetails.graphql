@@ -1,5 +1,0 @@
-query hotspot($address: String!, $hotspotAddress: String!) {
-  hotspot(address: $address, hotspotAddress: $hotspotAddress) {
-    address
-  }
-}

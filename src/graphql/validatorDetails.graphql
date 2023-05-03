@@ -1,5 +1,0 @@
-query validator($address: String!, $validatorAddress: String!) {
-  validator(address: $address, validatorAddress: $validatorAddress) {
-    address
-  }
-}

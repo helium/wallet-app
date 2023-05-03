@@ -1,9 +1,8 @@
 import { AnchorProvider } from '@coral-xyz/anchor'
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { Cluster, PublicKey } from '@solana/web3.js'
-import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token'
-import { BN } from 'bn.js'
+import BN from 'bn.js'
 import { CSAccount } from '../../storage/cloudStorage'
 import { getBalanceHistory, getTokenPrices } from '../../utils/walletApiV2'
 import { AccountBalance, Prices, TokenAccount } from '../../types/balance'
@@ -57,29 +56,18 @@ export const syncTokenAccounts = createAsyncThunk(
     const pubKey = new PublicKey(acct.solanaAddress)
     const { connection } = anchorProvider
 
-    const supportedMints = [IOT_MINT, MOBILE_MINT, DC_MINT, HNT_MINT]
     const tokenAccounts = await connection.getTokenAccountsByOwner(pubKey, {
       programId: TOKEN_PROGRAM_ID,
     })
 
-    const decoded = tokenAccounts.value.map((tokenAccount) => {
+    const atas = tokenAccounts.value.map((tokenAccount) => {
       const accountData = AccountLayout.decode(tokenAccount.account.data)
       const { mint } = accountData
 
       return {
-        tokenAccount: tokenAccount.pubkey,
-        mint,
-        balance: accountData.amount,
-      }
-    })
-
-    const atas = supportedMints.map((mint) => {
-      const found = decoded.find((d) => d.mint.equals(mint))
-
-      return {
-        tokenAccount: found?.tokenAccount.toBase58(),
+        tokenAccount: tokenAccount.pubkey.toBase58(),
         mint: mint.toBase58(),
-        balance: Number(found?.balance || 0),
+        balance: Number(accountData.amount || 0),
       }
     })
 

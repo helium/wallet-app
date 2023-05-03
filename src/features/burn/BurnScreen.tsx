@@ -49,12 +49,9 @@ import {
   solAddressIsValid,
 } from '../../utils/accountUtils'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useAccountQuery, useSubmitTxnMutation } from '../../generated/graphql'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import PaymentSummary from '../payment/PaymentSummary'
-import { useTransactions } from '../../storage/TransactionProvider'
 import PaymentSubmit from '../payment/PaymentSubmit'
-import { checkSecureAccount } from '../../storage/secureStorage'
 import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
 import IconPressedContainer from '../../components/IconPressedContainer'
 import PaymentItem from '../payment/PaymentItem'
@@ -62,7 +59,7 @@ import AddressBookSelector, {
   AddressBookRef,
 } from '../../components/AddressBookSelector'
 import { CSAccount } from '../../storage/cloudStorage'
-import useSubmitTxn from '../../graphql/useSubmitTxn'
+import useSubmitTxn from '../../hooks/useSubmitTxn'
 
 type Route = RouteProp<HomeStackParamList, 'BurnScreen'>
 const BurnScreen = () => {
@@ -74,13 +71,6 @@ const BurnScreen = () => {
     setCurrentAccount,
     defaultAccountAddress,
   } = useAccountStorage()
-  const { data: accountData } = useAccountQuery({
-    variables: {
-      address: currentAccount?.address || '',
-    },
-    fetchPolicy: 'cache-only',
-    skip: !currentAccount?.address,
-  })
   const { top } = useSafeAreaInsets()
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
@@ -97,13 +87,8 @@ const BurnScreen = () => {
     solBalance,
     dcBalance,
   } = useBalance()
-  const { makeBurnTxn } = useTransactions()
   const { showOKAlert } = useAlert()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const [
-    submitTxnMutation,
-    { data: submitData, loading: submitLoading, error: submitError },
-  ] = useSubmitTxnMutation()
   const [dcAmount, setDcAmount] = useState(
     new Balance(Number(route.params.amount), CurrencyType.dataCredit),
   )
@@ -199,54 +184,14 @@ const BurnScreen = () => {
         amountBalance.integerBalance,
         mint,
       )
-
-      return
     }
-
-    if (!amountBalance?.integerBalance || !currentAccount?.address) return
-
-    const { signedTxn, txnJson, unsignedTxn } = await makeBurnTxn({
-      payeeB58: route.params.address,
-      amount: amountBalance.integerBalance,
-      memo: route.params.memo || '',
-      nonce: (accountData?.account?.speculativeNonce || 0) + 1,
-      shouldSign: !currentAccount?.ledgerDevice,
-    })
-
-    if (!currentAccount?.ledgerDevice) {
-      const hasSecureAccount = await checkSecureAccount(
-        currentAccount.address,
-        true,
-      )
-      if (!signedTxn || !hasSecureAccount) return
-      const variables = {
-        address: currentAccount?.address,
-        txnJson,
-        txn: signedTxn.toString(),
-      }
-
-      submitTxnMutation({ variables })
-    } else {
-      // Show ledger modal
-      ledgerPaymentRef.current?.show({
-        unsignedTxn,
-        ledgerDevice: currentAccount.ledgerDevice,
-        accountIndex: currentAccount.accountIndex || 0,
-        txnJson,
-      })
-    }
+    // TODO: What needs to happen here?
   }, [
-    accountData?.account?.speculativeNonce,
     amountBalance,
-    currentAccount,
     delegateAddress,
     isDelegate,
-    makeBurnTxn,
-    route.params.address,
-    route.params.memo,
-    submitDelegateDataCredits,
-    submitTxnMutation,
     mint,
+    submitDelegateDataCredits,
   ])
 
   const handleQrScan = useCallback(() => {
@@ -254,16 +199,10 @@ const BurnScreen = () => {
   }, [navigation])
 
   const ledgerPaymentConfirmed = useCallback(
-    ({ txn: signedTxn, txnJson }: { txn: TokenBurnV1; txnJson: string }) => {
-      const variables = {
-        address: route.params.address,
-        txnJson,
-        txn: signedTxn.toString(),
-      }
-
-      submitTxnMutation({ variables })
+    (_opts: { txn: TokenBurnV1; txnJson: string }) => {
+      console.error('Ledger payment not supported')
     },
-    [route.params.address, submitTxnMutation],
+    [],
   )
 
   const handleLedgerError = useCallback(
@@ -601,11 +540,9 @@ const BurnScreen = () => {
                 </Box>
               </Box>
               <PaymentSubmit
-                submitLoading={submitLoading || !!delegatePayment?.loading}
-                submitSucceeded={
-                  !!submitData?.submitTxn?.hash || delegatePayment?.success
-                }
-                submitError={submitError || delegatePayment?.error}
+                submitLoading={!!delegatePayment?.loading}
+                submitSucceeded={delegatePayment?.success}
+                submitError={delegatePayment?.error}
                 totalBalance={amountBalance}
                 feeTokenBalance={feeAsTokens}
                 onRetry={handleSubmit}

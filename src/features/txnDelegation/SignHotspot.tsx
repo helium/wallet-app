@@ -25,7 +25,6 @@ import { formatAccountAlias } from '../../utils/accountUtils'
 import { getKeypair } from '../../storage/secureStorage'
 import * as Logger from '../../utils/logger'
 import useSolTxns from './useSolTxns'
-import useHeliumTxns from './useHeliumTxns'
 import {
   RootNavigationProp,
   RootStackParamList,
@@ -43,7 +42,6 @@ const SignHotspot = () => {
     parseWalletLinkToken(token).address,
     params.solanaTransactions,
   )
-  const helium = useHeliumTxns(parseWalletLinkToken(token).address, params)
 
   const navigation = useNavigation<HomeNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
@@ -94,8 +92,8 @@ const SignHotspot = () => {
   }, [callback, validated])
 
   const gatewayAddress = useMemo(
-    () => solana.gatewayAddress || helium.gatewayAddress,
-    [helium.gatewayAddress, solana.gatewayAddress],
+    () => solana.gatewayAddress,
+    [solana.gatewayAddress],
   )
 
   useEffect(() => {
@@ -111,9 +109,7 @@ const SignHotspot = () => {
 
     // submitting signed transaction from hotspot app
     try {
-      if (helium.hasTransactions) {
-        await helium.submit()
-      } else if (solana.hasTransactions) {
+      if (solana.hasTransactions) {
         await solana.submit()
       } else {
         throw new Error('')
@@ -126,7 +122,7 @@ const SignHotspot = () => {
     }
 
     navigation.goBack()
-  }, [helium, navigation, parsedToken, solana, t])
+  }, [navigation, parsedToken, solana, t])
 
   const handleLink = useCallback(async () => {
     if (!parsedToken) return
@@ -135,12 +131,10 @@ const SignHotspot = () => {
       return submitNow()
     }
 
-    if (helium.hasTransactions) {
-      helium.sign(callback)
-    } else if (solana.hasTransactions) {
+    if (solana.hasTransactions) {
       solana.sign(callback)
     }
-  }, [callback, helium, parsedToken, solana, submit, submitNow])
+  }, [callback, parsedToken, solana, submit, submitNow])
 
   const handleCancel = useCallback(async () => {
     callback({ status: 'user_cancelled' })
@@ -162,38 +156,23 @@ const SignHotspot = () => {
         gain?: number
       }
     | undefined => {
-    if (helium.assertLocationTxn) {
-      return helium.assertLocationTxn
-    }
     return solana.assertData
-  }, [helium.assertLocationTxn, solana.assertData])
+  }, [solana.assertData])
 
   const transferData = useMemo((): { newOwner: string } | undefined => {
-    if (helium.transferHotspotTxn?.newOwner?.b58) {
-      return {
-        newOwner: helium.transferHotspotTxn.newOwner?.b58,
-      }
-    }
     if (solana.transferData?.newOwner) {
       return solana.transferData
     }
-  }, [helium.transferHotspotTxn, solana.transferData])
+  }, [solana.transferData])
 
   const title = useMemo(() => {
     if (
-      helium.addGatewayTxn ||
       solana.transactions.onboardIotHotspotV0?.gatewayAddress ||
       solana.transactions.onboardMobileHotspotV0?.gatewayAddress
     ) {
       return t('signHotspot.title')
     }
-    if (helium.assertLocationTxn) {
-      return t('signHotspot.titleLocationOnly')
-    }
-    if (helium.transferHotspotTxn) {
-      return t('signHotspot.titleTransfer')
-    }
-  }, [helium, solana, t])
+  }, [solana, t])
 
   useAsync(async () => {
     if (!parsedToken) return
@@ -208,8 +187,8 @@ const SignHotspot = () => {
   }, [getKeypair, parsedToken, token])
 
   const submitLoading = useMemo(
-    () => helium.submitLoading || solana.submitLoading,
-    [helium.submitLoading, solana.submitLoading],
+    () => solana.submitLoading,
+    [solana.submitLoading],
   )
 
   if (linkInvalid) {
@@ -405,11 +384,7 @@ const SignHotspot = () => {
           justifyContent="center"
           borderRadius="round"
           onPress={handleLink}
-          disabled={
-            !validated ||
-            submitLoading ||
-            (!solana.hasTransactions && !helium.hasTransactions)
-          }
+          disabled={!validated || submitLoading || !solana.hasTransactions}
           flexDirection="row"
           alignItems="center"
         >
