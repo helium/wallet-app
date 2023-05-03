@@ -406,6 +406,7 @@ const SwapScreen = () => {
             solFee || TXN_FEE_IN_SOL,
             Tokens.SOL,
           )}
+          usePortal
         >
           <TokenSelector
             ref={tokenSelectorRef}
