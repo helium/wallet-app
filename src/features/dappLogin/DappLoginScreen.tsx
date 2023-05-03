@@ -25,7 +25,6 @@ import {
 } from '../../navigation/rootTypes'
 import { getKeypair } from '../../storage/secureStorage'
 
-// TODO: Verify crowdspot still works
 export const EMPTY_B58_ADDRESS = Address.fromB58(
   '13PuqyWXzPYeXcF1B9ZRx7RLkEygeL374ZABiQdwRSNzASdA1sn',
 )

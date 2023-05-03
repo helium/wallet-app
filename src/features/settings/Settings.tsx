@@ -249,7 +249,6 @@ const Settings = () => {
 
   const handleSolanaClusterChange = useCallback(
     async (network: ReactText, _index: number) => {
-      // TODO: Should we reset the solana and collectable slices when cluster changes?
       updateCluster(network as Cluster)
     },
     [updateCluster],
