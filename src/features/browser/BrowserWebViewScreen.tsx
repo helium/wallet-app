@@ -12,7 +12,6 @@ import {
   SolanaSignMessageInput,
   SolanaSignAndSendTransactionInput,
 } from '@solana/wallet-standard-features'
-import { Balance } from '@helium/currency'
 import { Platform, StyleSheet } from 'react-native'
 import BackArrow from '@assets/images/backArrow.svg'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
@@ -26,7 +25,6 @@ import SafeAreaBox from '../../components/SafeAreaBox'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import injectWalletStandard from './walletStandard'
 import { getKeypair } from '../../storage/secureStorage'
-import { TXN_FEE_IN_SOL } from '../../utils/solanaUtils'
 import * as Logger from '../../utils/logger'
 import WalletSignBottomSheet, {
   WalletSignBottomSheetRef,
@@ -56,6 +54,9 @@ const BrowserWebViewScreen = () => {
   const { favorites, addFavorite, removeFavorite } = useBrowser()
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
   const spacing = useSpacing()
+  const [simulatedTransactions, setSimulatedTransactions] = useState<
+    Buffer[] | undefined
+  >(undefined)
 
   useEffect(() => {
     if (currentAccount?.solanaAddress) {
@@ -120,7 +121,6 @@ const BrowserWebViewScreen = () => {
         const decision = await walletSignBottomSheetRef.current?.show({
           type,
           url: currentUrl,
-          fee: Balance.fromFloatAndTicker(TXN_FEE_IN_SOL, 'SOL'),
         })
 
         if (!decision) {
@@ -218,20 +218,6 @@ const BrowserWebViewScreen = () => {
         )
       } else if (type === WalletStandardMessageTypes.signTransaction) {
         Logger.breadcrumb('signTransaction')
-        const decision = await walletSignBottomSheetRef.current?.show({
-          type,
-          url: currentUrl,
-        })
-        if (!decision) {
-          // Signature declined
-          webview.current?.postMessage(
-            JSON.stringify({
-              type: 'signatureDeclined',
-            }),
-          )
-          return
-        }
-
         const outputs: { signedTransaction: Uint8Array }[] = []
 
         let isVersionedTransaction = false
@@ -265,6 +251,30 @@ const BrowserWebViewScreen = () => {
             },
           ),
         )
+
+        const txBuffers: Buffer[] = inputs.map(
+          ({ transaction }: SolanaSignAndSendTransactionInput) =>
+            new Uint8Array(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              Object.keys(transaction).map((k) => (transaction as any)[k]),
+            ),
+        )
+
+        setSimulatedTransactions(txBuffers)
+
+        const decision = await walletSignBottomSheetRef.current?.show({
+          type,
+          url: currentUrl,
+        })
+        if (!decision) {
+          // Signature declined
+          webview.current?.postMessage(
+            JSON.stringify({
+              type: 'signatureDeclined',
+            }),
+          )
+          return
+        }
 
         const signedTransactions = await Promise.all(
           transactions.map(
@@ -486,6 +496,7 @@ const BrowserWebViewScreen = () => {
     <BrowserWrapper>
       <Box position="absolute" top={0} left={0} right={0} bottom={0}>
         <WalletSignBottomSheet
+          serializedTx={simulatedTransactions?.[0]}
           ref={walletSignBottomSheetRef}
           onClose={() => {}}
         >

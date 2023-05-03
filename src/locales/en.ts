@@ -313,8 +313,8 @@ export default {
     },
   },
   swapsScreen: {
-    title: 'Redeem my Tokens',
-    swapTokens: 'Redeem Tokens',
+    title: 'Swap my Tokens',
+    swapTokens: 'Swap Tokens',
     youPay: 'You Pay',
     youReceive: 'You Receive',
     chooseTokenToSwap: 'Choose a token to swap',
@@ -331,9 +331,9 @@ export default {
     swapAlertTitle: 'Are you sure you will like to swap your tokens?',
     swapAlertBody: 'This action is irreversible.',
     understood: 'Understood',
-    treasurySwapWarningTitle: 'Redemption',
+    treasurySwapWarningTitle: 'Treasury Swap Warning',
     treasurySwapWarningBody:
-      'Please be advised that the subDAO treasury has only been active for a few days since the Solana migration. Redeeming subtokens to HNT may be affected by a limited HNT supply in the subDAO treasury and may not reflect up-to-date prices. Please proceed with caution.',
+      'Please be advised that the subDAO treasury has only been active for a few days since the Solana migration. Swapping subtokens to HNT may be affected by a limited HNT supply in the subDAO treasury and may not reflect up-to-date prices. Please proceed with caution.',
     addRecipient: 'Add Recipient',
   },
   defiTutorial: {
@@ -369,6 +369,9 @@ export default {
     connectBullet2: 'Request Approval for transactions',
     connectToWebsitesYouTrust: 'Only connect to websites you trust',
     estimatedChanges: 'Estimated Changes',
+    sendToken: 'Send {{amount}} {{ticker}}',
+    recieveToken: 'Receive {{amount}} {{ticker}}',
+    insufficientFunds: 'Insufficient funds',
     unableToSimulate:
       'Unable to simulate. Make sure you trust this website since approving can lead to loss of funds.',
     networkFee: 'Network Fee',
@@ -387,8 +390,8 @@ export default {
     nonTransferable: 'Non-Transferable',
     payment: 'Payment',
     deposit: 'Deposit',
-    swaps: 'Redeem',
-    securityTokens: 'Security Tokens',
+    swaps: 'Swap',
+    Redeem: 'Security Tokens',
     send: 'Send',
     stake: 'Stake',
     testnetTokens: 'Testnet Tokens',

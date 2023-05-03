@@ -19,12 +19,15 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
 import { Edge } from 'react-native-safe-area-context'
-import { Balance, SolTokens } from '@helium/currency'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import { useColors, useOpacity } from '@theme/themeHooks'
 import ButtonPressable from '@components/ButtonPressable'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { useSimualtedTransaction } from '@hooks/useSimulatedTransaction'
+import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
+import CircleLoader from '@components/CircleLoader'
 
 export enum WalletStandardMessageTypes {
   connect = 'connect',
@@ -36,15 +39,15 @@ export enum WalletStandardMessageTypes {
 type WalletSignOpts = {
   type: WalletStandardMessageTypes
   url: string
-  fee?: Balance<SolTokens>
 }
 
 export type WalletSignBottomSheetRef = {
-  show: ({ type, url, fee }: WalletSignOpts) => Promise<boolean>
+  show: ({ type, url }: WalletSignOpts) => Promise<boolean>
   hide: () => void
 }
 
 type Props = {
+  serializedTx: Buffer | undefined
   onClose: () => void
   children: ReactNode
 }
@@ -52,19 +55,25 @@ type Props = {
 let promiseResolve: (value: boolean | PromiseLike<boolean>) => void
 
 const WalletSignBottomSheet = forwardRef(
-  ({ onClose, children }: Props, ref: Ref<WalletSignBottomSheetRef>) => {
+  (
+    { serializedTx, onClose, children }: Props,
+    ref: Ref<WalletSignBottomSheetRef>,
+  ) => {
     useImperativeHandle(ref, () => ({ show, hide }))
+    const { currentAccount } = useAccountStorage()
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { secondaryText } = useColors()
     const { t } = useTranslation()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-    const [walletSignOpts, setWalletSignOpts] = useState<
-      WalletSignOpts & { fee: Balance<SolTokens> }
-    >({
+    const [walletSignOpts, setWalletSignOpts] = useState<WalletSignOpts>({
       type: WalletStandardMessageTypes.connect,
       url: '',
-      fee: Balance.fromIntAndTicker(0, 'SOL'),
     })
+    const { loading, balanceChanges, solFee, insufficientFunds } =
+      useSimualtedTransaction(
+        serializedTx,
+        new PublicKey(currentAccount?.solanaAddress || ''),
+      )
 
     const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
     const snapPoints = useMemo(() => ['25%', 'CONTENT_HEIGHT'], [])
@@ -80,12 +89,48 @@ const WalletSignBottomSheet = forwardRef(
       bottomSheetModalRef.current?.dismiss()
     }, [])
 
-    const show = useCallback(({ type, url, fee }: WalletSignOpts) => {
+    const simulationMessageColor = useMemo(() => {
+      if (insufficientFunds) {
+        return 'red500'
+      }
+
+      if (balanceChanges?.nativeChange) {
+        if (balanceChanges.type === 'send') {
+          return 'red500'
+        }
+        if (balanceChanges.type === 'recieve') {
+          return 'greenBright500'
+        }
+      }
+      return 'orange500'
+    }, [balanceChanges, insufficientFunds])
+
+    const simulationMessage = useMemo(() => {
+      if (insufficientFunds) {
+        return t('browserScreen.insufficientFunds')
+      }
+
+      if (balanceChanges?.nativeChange) {
+        if (balanceChanges.type === 'send') {
+          return t('browserScreen.sendToken', {
+            ticker: balanceChanges?.symbol,
+            amount: balanceChanges?.nativeChange,
+          })
+        }
+        return t('browserScreen.recieveToken', {
+          ticker: balanceChanges?.symbol,
+          amount: balanceChanges?.nativeChange,
+        })
+      }
+
+      return t('browserScreen.unableToSimulate')
+    }, [balanceChanges, t, insufficientFunds])
+
+    const show = useCallback(({ type, url }: WalletSignOpts) => {
       bottomSheetModalRef.current?.expand()
       setWalletSignOpts({
         type,
         url,
-        fee: fee || Balance.fromIntAndTicker(0, 'SOL'),
       })
       const p = new Promise<boolean>((resolve) => {
         promiseResolve = resolve
@@ -135,7 +180,7 @@ const WalletSignBottomSheet = forwardRef(
     }, [hide])
 
     const renderSheetBody = useCallback(() => {
-      const { type, fee } = walletSignOpts
+      const { type } = walletSignOpts
 
       if (type === WalletStandardMessageTypes.connect) {
         return (
@@ -201,34 +246,35 @@ const WalletSignBottomSheet = forwardRef(
                 backgroundColor="secondaryBackground"
                 padding="m"
               >
-                <Text variant="body1Medium" color="orange500">
-                  {t('browserScreen.unableToSimulate')}
+                <Text variant="body1Medium" color={simulationMessageColor}>
+                  {simulationMessage}
                 </Text>
               </Box>
 
-              {type === WalletStandardMessageTypes.signAndSendTransaction && (
-                <Box
-                  marginTop="m"
-                  borderRadius="l"
-                  backgroundColor="secondaryBackground"
-                  padding="m"
-                  flexDirection="row"
-                >
-                  <Box flexGrow={1}>
-                    <Text variant="body1Medium">
-                      {t('browserScreen.networkFee')}
+              {type === WalletStandardMessageTypes.signAndSendTransaction ||
+                (type === WalletStandardMessageTypes.signTransaction && (
+                  <Box
+                    marginTop="m"
+                    borderRadius="l"
+                    backgroundColor="secondaryBackground"
+                    padding="m"
+                    flexDirection="row"
+                  >
+                    <Box flexGrow={1}>
+                      <Text variant="body1Medium">
+                        {t('browserScreen.networkFee')}
+                      </Text>
+                    </Box>
+                    <Text variant="body1Medium" color="secondaryText">
+                      {`~${(solFee || 5000) / LAMPORTS_PER_SOL} SOL`}
                     </Text>
                   </Box>
-                  <Text variant="body1Medium" color="secondaryText">
-                    {`~${fee.floatBalance} ${fee.type.ticker}`}
-                  </Text>
-                </Box>
-              )}
+                ))}
             </Box>
           </>
         )
       }
-    }, [walletSignOpts, t])
+    }, [walletSignOpts, t, solFee, simulationMessage, simulationMessageColor])
 
     const renderSheetFooter = useCallback(() => {
       if (!walletSignOpts) return null
@@ -320,7 +366,13 @@ const WalletSignBottomSheet = forwardRef(
                   {walletSignOpts?.url || ''}
                 </Text>
               </Box>
-              {renderSheetBody()}
+              {!loading ? (
+                renderSheetBody()
+              ) : (
+                <Box marginVertical="m">
+                  <CircleLoader loaderSize={60} />
+                </Box>
+              )}
               {renderSheetFooter()}
             </SafeAreaBox>
           </BottomSheetModal>
