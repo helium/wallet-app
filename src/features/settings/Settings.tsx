@@ -11,6 +11,7 @@ import { useAppVersion } from '@hooks/useDevice'
 import useCopyText from '@hooks/useCopyText'
 import useAlert from '@hooks/useAlert'
 import CloseButton from '@components/CloseButton'
+import deviceInfo from 'react-native-device-info'
 import { HomeNavigationProp } from '../home/homeTypes'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
 import { SUPPORTED_LANGUAGUES } from '../../utils/i18n'
@@ -38,6 +39,7 @@ const Settings = () => {
   const rootNav = useNavigation<RootNavigationProp>()
   const spacing = useSpacing()
   const version = useAppVersion()
+  const buildNumber = deviceInfo.getBuildNumber()
   const hitSlop = useHitSlop('xxl')
   const authIntervals = useAuthIntervals()
   const {
@@ -485,7 +487,7 @@ const Settings = () => {
           {
             title: t('settings.sections.app.version'),
             staticText: true,
-            value: version.toString(),
+            value: `v${version} (${buildNumber})`,
           },
         ] as SettingsListItemType[],
       },
@@ -536,6 +538,7 @@ const Settings = () => {
     t,
     updateConvertToCurrency,
     version,
+    buildNumber,
     handleMigrateWallet,
   ])
 
