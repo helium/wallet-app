@@ -3,6 +3,7 @@ PODS:
   - bcrypt-react-native (1.1.1):
     - BCrypt
     - React
+  - BEMCheckBox (1.4.1)
   - boost (1.76.0)
   - BVLinearGradient (2.6.2):
     - React-Core
@@ -461,7 +462,8 @@ PODS:
     - React-perflogger (= 0.71.5)
   - RNCAsyncStorage (1.18.1):
     - React-Core
-  - RNCCheckbox (0.5.12):
+  - RNCCheckbox (0.5.15):
+    - BEMCheckBox (~> 1.4)
     - React-Core
   - RNCClipboard (1.5.1):
     - React-Core
@@ -615,6 +617,7 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - BCrypt
+    - BEMCheckBox
     - Charts
     - fmt
     - libevent
@@ -796,6 +799,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   BCrypt: 712b656110e5020d319c547e4d8f3053ded82b2a
   bcrypt-react-native: 399775585257ae6c8717370a1119c7da0113e3bf
+  BEMCheckBox: 5ba6e37ade3d3657b36caecc35c8b75c6c2b1a4e
   boost: a7c83b31436843459a1961bfd74b96033dc77234
   BVLinearGradient: 34a999fda29036898a09c6a6b728b0b4189e1a44
   Charts: 354f86803d11d9c35de280587fef50d1af063978
@@ -869,7 +873,7 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: 511f4301d85daf85abface9afb8d2df2d49f87d3
   ReactCommon: 4f43b72066f27bfe1f63838c61763f59e7112536
   RNCAsyncStorage: b90b71f45b8b97be43bc4284e71a6af48ac9f547
-  RNCCheckbox: ed1b4ca295475b41e7251ebae046360a703b6eb5
+  RNCCheckbox: 43bcc6493611468af0e19f19f029dab3da8561c4
   RNCClipboard: 41d8d918092ae8e676f18adada19104fa3e68495
   RNDeviceInfo: aad3c663b25752a52bf8fce93f2354001dd185aa
   RNGestureHandler: 071d7a9ad81e8b83fe7663b303d132406a7d8f39
