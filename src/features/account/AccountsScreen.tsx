@@ -28,7 +28,6 @@ import { CSAccount } from '@storage/cloudStorage'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
-import { useAccountLazyQuery, useAccountQuery } from '../../generated/graphql'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import StatusBanner from '../StatusPage/StatusBanner'
@@ -126,23 +125,6 @@ const AccountsScreen = () => {
     }
   }, [rootNav, sortedAccounts.length])
 
-  const { data: accountData } = useAccountQuery({
-    variables: {
-      address: currentAccount?.address || '',
-    },
-    fetchPolicy: 'cache-and-network',
-    skip: !currentAccount?.address,
-    pollInterval: 30000,
-    // TODO: adjust this interval if needed
-  })
-
-  const [fetchAccount] = useAccountLazyQuery({
-    variables: {
-      address: currentAccount?.address || '',
-    },
-    fetchPolicy: 'cache-and-network',
-  })
-
   const showChart = useMemo(() => {
     return balanceHistory?.length >= 2
   }, [balanceHistory])
@@ -155,20 +137,6 @@ const AccountsScreen = () => {
       return { y: bh.balance, info: bh }
     })
   }, [balanceHistory, showChart])
-
-  useAppear(() => {
-    if (!currentAccount?.address) return
-
-    fetchAccount({
-      variables: {
-        address: currentAccount?.address || '',
-      },
-    })
-  })
-
-  const accountLoading = useMemo(() => {
-    return accountData === undefined
-  }, [accountData])
 
   useEffect(() => {
     if (!currentAccount || !!currentAccount.ledgerDevice) return
@@ -342,7 +310,7 @@ const AccountsScreen = () => {
           onLayout={setNavLayoutHeight}
         />
         {RetractedView}
-        {currentAccount?.address && (accountData?.account || accountLoading) && (
+        {currentAccount?.address && (
           <ReAnimatedBox flex={1} style={animatedStyle}>
             <AccountView
               flexGrow={1}

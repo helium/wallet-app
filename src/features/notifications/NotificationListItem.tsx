@@ -4,8 +4,8 @@ import Text from '@components/Text'
 import Box from '@components/Box'
 import { TouchableOpacityBoxProps } from '@components/TouchableOpacityBox'
 import TouchableContainer from '@components/TouchableContainer'
-import { Notification } from '../../generated/graphql'
 import parseMarkup from '../../utils/parseMarkup'
+import { Notification } from '../../utils/walletApiV2'
 
 export type NotificationListItemProps = {
   notification: Notification

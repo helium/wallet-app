@@ -1,9 +1,0 @@
-overwrite: true
-schema: 'https://wallet-api.helium.com/api/graphiql'
-documents: 'src/**/*.graphql'
-generates:
-  src/generated/graphql.tsx:
-    plugins:
-      - 'typescript'
-      - 'typescript-operations'
-      - 'typescript-react-apollo'

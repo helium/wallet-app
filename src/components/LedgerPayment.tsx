@@ -21,10 +21,10 @@ import useBackHandler from '@hooks/useBackHandler'
 import useLedger from '@hooks/useLedger'
 import SafeAreaBox from './SafeAreaBox'
 import HandleBasic from './HandleBasic'
-import { SendDetails } from '../storage/TransactionProvider'
 import Text from './Text'
 import Box from './Box'
 import { LedgerDevice } from '../storage/cloudStorage'
+import { SendDetails } from '../utils/linking'
 
 type ShowOptions = {
   payments: SendDetails[]

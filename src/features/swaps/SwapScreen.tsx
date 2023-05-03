@@ -39,7 +39,7 @@ import {
 } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useColors, useHitSlop } from '@theme/themeHooks'
-import useSubmitTxn from '../../graphql/useSubmitTxn'
+import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import { useBalance } from '../../utils/Balance'
 import SwapItem from './SwapItem'

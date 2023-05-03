@@ -5,9 +5,7 @@ import { useCallback, useState } from 'react'
 import { NetType } from '@helium/address/build/NetTypes'
 import { last } from 'lodash'
 import { useTranslation } from 'react-i18next'
-import { ApolloError } from '@apollo/client'
 import { LedgerDevice } from '../storage/cloudStorage'
-import { useAccountLazyQuery } from '../generated/graphql'
 import useDisappear from './useDisappear'
 import { runDerivationScheme } from '../utils/heliumLedger'
 
@@ -25,7 +23,6 @@ const useLedger = () => {
   }>()
   const [ledgerAccounts, setLedgerAccounts] = useState<LedgerAccount[]>([])
   const [ledgerAccountsLoading, setLedgerAccountsLoading] = useState(false)
-  const [getAccount] = useAccountLazyQuery()
   const { t } = useTranslation()
 
   const getTransport = useCallback(
@@ -78,17 +75,8 @@ const useLedger = () => {
         display,
         accountIndex,
       )
-      let balance: number | undefined
-      try {
-        const { data: accountData } = await getAccount({
-          variables: { address },
-        })
-        balance = accountData?.account?.balance
-      } catch (e) {
-        const error = e as ApolloError
-        throw new Error(`Api failure - ${error.message}`)
-      }
-
+      const balance = 0
+      console.error('LEDGER NOT CURRENTLY SUPPORTED')
       return {
         address,
         balance,
@@ -96,7 +84,7 @@ const useLedger = () => {
         accountIndex,
       } as LedgerAccount
     },
-    [getAccount, t],
+    [t],
   )
 
   const getLedgerAccounts = useCallback(

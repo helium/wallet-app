@@ -1,6 +1,5 @@
 import './polyfill'
 import React, { useMemo } from 'react'
-import { ApolloProvider } from '@apollo/client'
 import { LogBox, Platform } from 'react-native'
 import { ThemeProvider } from '@shopify/restyle'
 import { DarkTheme, NavigationContainer } from '@react-navigation/native'
@@ -16,13 +15,11 @@ import { theme, darkThemeColors, lightThemeColors } from '@theme/theme'
 import { useColorScheme } from '@theme/themeHooks'
 import globalStyles from '@theme/globalStyles'
 import useMount from './hooks/useMount'
-import { useApolloClient } from './graphql/useApolloClient'
 import RootNavigator from './navigation/RootNavigator'
 import { useAccountStorage } from './storage/AccountStorageProvider'
 import LockScreen from './features/lock/LockScreen'
 import SecurityScreen from './features/security/SecurityScreen'
 import OnboardingProvider from './features/onboarding/OnboardingProvider'
-import TransactionProvider from './storage/TransactionProvider'
 import { BalanceProvider } from './utils/Balance'
 import { useDeepLinking } from './utils/linking'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
@@ -59,8 +56,6 @@ const App = () => {
   const { setOpenedNotification } = useNotificationStorage()
 
   const linking = useDeepLinking()
-
-  const { client } = useApolloClient()
 
   const colorScheme = useColorScheme()
   const colorAdaptedTheme = useMemo(
@@ -108,41 +103,36 @@ const App = () => {
             <PortalProvider>
               <PortalHost name="browser-portal" />
               <OnboardingProvider baseUrl={Config.ONBOARDING_API_URL}>
-                {client && connection && (
-                  <ApolloProvider client={client}>
-                    <LockScreen>
-                      <AccountProvider
-                        extendConnection={false}
-                        commitment="confirmed"
-                        connection={connection}
-                      >
-                        <WalletConnectProvider>
-                          {accountsRestored && (
-                            <>
-                              <NavigationContainer
-                                theme={navTheme}
-                                linking={linking}
-                                ref={navigationRef}
-                              >
-                                <BalanceProvider>
-                                  <TransactionProvider>
-                                    <NetworkAwareStatusBar />
-                                    <RootNavigator />
-                                  </TransactionProvider>
-                                </BalanceProvider>
-                              </NavigationContainer>
-                              <SecurityScreen
-                                visible={
-                                  appState !== 'active' &&
-                                  appState !== 'unknown'
-                                }
-                              />
-                            </>
-                          )}
-                        </WalletConnectProvider>
-                      </AccountProvider>
-                    </LockScreen>
-                  </ApolloProvider>
+                {connection && (
+                  <LockScreen>
+                    <AccountProvider
+                      extendConnection={false}
+                      commitment="confirmed"
+                      connection={connection}
+                    >
+                      <WalletConnectProvider>
+                        {accountsRestored && (
+                          <>
+                            <NavigationContainer
+                              theme={navTheme}
+                              linking={linking}
+                              ref={navigationRef}
+                            >
+                              <BalanceProvider>
+                                <NetworkAwareStatusBar />
+                                <RootNavigator />
+                              </BalanceProvider>
+                            </NavigationContainer>
+                            <SecurityScreen
+                              visible={
+                                appState !== 'active' && appState !== 'unknown'
+                              }
+                            />
+                          </>
+                        )}
+                      </WalletConnectProvider>
+                    </AccountProvider>
+                  </LockScreen>
                 )}
               </OnboardingProvider>
             </PortalProvider>
