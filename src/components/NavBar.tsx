@@ -117,6 +117,7 @@ type Props = {
   selectedValue: string
   onItemSelected: (value: string) => void
   onItemLongPress: (value: string) => void
+  hitSlop?: Insets
 } & TouchableOpacityBoxProps
 
 const NavBar = ({

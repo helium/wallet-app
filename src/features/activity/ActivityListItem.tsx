@@ -9,11 +9,13 @@ import { TouchableOpacityBoxProps } from '@components/TouchableOpacityBox'
 import { useColors } from '@theme/themeHooks'
 import TouchableContainer from '@components/TouchableContainer'
 import { ellipsizeAddress, solAddressIsValid } from '@utils/accountUtils'
+import { Insets } from 'react-native'
 import { EnrichedTransaction } from '../../types/solana'
 
 export type ActivityListItemProps = {
   transaction: EnrichedTransaction | ConfirmedSignatureInfo
   hasDivider?: boolean
+  hitSlop?: Insets
 } & TouchableOpacityBoxProps
 
 const ActivityListItem = ({
