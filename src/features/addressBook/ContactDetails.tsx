@@ -26,11 +26,8 @@ import ButtonPressable from '@components/ButtonPressable'
 import AccountIcon from '@components/AccountIcon'
 import useAlert from '@hooks/useAlert'
 import CloseButton from '@components/CloseButton'
-import {
-  solAddressIsValid,
-  accountNetType,
-  solAddressToHelium,
-} from '@utils/accountUtils'
+import { solAddressIsValid, accountNetType } from '@utils/accountUtils'
+import { heliumAddressFromSolAddress } from '@helium/spl-utils'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import {
@@ -87,7 +84,7 @@ const ContactDetails = ({ action, contact }: Props) => {
     solanaAddress = address
 
     addContact({
-      address: solAddressToHelium(solanaAddress),
+      address: heliumAddressFromSolAddress(solanaAddress),
       solanaAddress,
       alias: nickname,
       netType: accountNetType(address),
