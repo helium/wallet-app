@@ -12,8 +12,11 @@ import { useAsync } from 'react-async-hook'
 import * as SecureStore from 'expo-secure-store'
 import { NetTypes as NetType } from '@helium/address'
 import { useAppState } from '@react-native-community/hooks'
-import { heliumAddressToSolAddress } from '@helium/spl-utils'
-import { accountNetType, AccountNetTypeOpt } from '../utils/accountUtils'
+import {
+  accountNetType,
+  AccountNetTypeOpt,
+  heliumAddressToSolAddress,
+} from '../utils/accountUtils'
 import {
   createSecureAccount,
   deleteSecureAccount,
