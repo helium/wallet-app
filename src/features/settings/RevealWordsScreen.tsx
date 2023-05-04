@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react'
+import React, { memo, useCallback, useState } from 'react'
 import { upperCase } from 'lodash'
 import { useTranslation } from 'react-i18next'
 import Carousel from 'react-native-snap-carousel'
@@ -26,31 +26,35 @@ const RevealWordsScreen = () => {
     setMnemonic(secureAccount?.mnemonic)
   }, [currentAccount])
 
-  const renderItem = ({ item, index }: { item: string; index: number }) => {
-    const isFirst = index === 0
-    const isLast = index + 1 === mnemonic?.length
-    return (
-      <Card
-        marginHorizontal="s"
-        marginLeft={isFirst ? 'l' : undefined}
-        marginRight={isLast ? 'l' : undefined}
-        variant="elevated"
-        flex={1}
-        overflow="hidden"
-        backgroundColor="surfaceSecondary"
-        alignItems="center"
-        justifyContent="center"
-        flexDirection="row"
-      >
-        <Text fontSize={39} color="primaryText" maxFontSizeMultiplier={1}>{`${
-          index + 1
-        }. `}</Text>
-        <Text fontSize={39} color="primaryText" maxFontSizeMultiplier={1}>
-          {upperCase(item)}
-        </Text>
-      </Card>
-    )
-  }
+  const renderItem = useCallback(
+    // eslint-disable-next-line react/no-unused-prop-types
+    ({ item, index }: { item: string; index: number }) => {
+      const isFirst = index === 0
+      const isLast = index + 1 === mnemonic?.length
+      return (
+        <Card
+          marginHorizontal="s"
+          marginLeft={isFirst ? 'l' : undefined}
+          marginRight={isLast ? 'l' : undefined}
+          variant="elevated"
+          flex={1}
+          overflow="hidden"
+          backgroundColor="surfaceSecondary"
+          alignItems="center"
+          justifyContent="center"
+          flexDirection="row"
+        >
+          <Text fontSize={39} color="primaryText" maxFontSizeMultiplier={1}>{`${
+            index + 1
+          }. `}</Text>
+          <Text fontSize={39} color="primaryText" maxFontSizeMultiplier={1}>
+            {upperCase(item)}
+          </Text>
+        </Card>
+      )
+    },
+    [mnemonic],
+  )
 
   return (
     <BackScreen backgroundColor="primaryBackground" flex={1}>
@@ -80,6 +84,7 @@ const RevealWordsScreen = () => {
           itemWidth={wp(90)}
           inactiveSlideScale={1}
           useExperimentalSnap
+          useScrollView
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore this is a new beta prop and enforces only scrolling one item at a time
           disableIntervalMomentum
