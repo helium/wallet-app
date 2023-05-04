@@ -8,17 +8,6 @@ import BigNumber from 'bignumber.js'
 
 export type AccountNetTypeOpt = 'all' | NetType.NetType
 
-export const heliumAddressToSolAddress = (heliumAddress: string) => {
-  try {
-    if (typeof heliumAddress !== 'string') return ''
-    const heliumPK = Address.fromB58(heliumAddress).publicKey
-    const pk = new PublicKey(heliumPK)
-    return pk.toBase58()
-  } catch {
-    return ''
-  }
-}
-
 export const solAddressIsValid = (address: string) => {
   try {
     const pubKey = new PublicKey(address)

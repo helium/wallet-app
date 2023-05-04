@@ -12,11 +12,8 @@ import { useAsync } from 'react-async-hook'
 import * as SecureStore from 'expo-secure-store'
 import { NetTypes as NetType } from '@helium/address'
 import { useAppState } from '@react-native-community/hooks'
-import {
-  accountNetType,
-  AccountNetTypeOpt,
-  heliumAddressToSolAddress,
-} from '../utils/accountUtils'
+import { heliumAddressToSolAddress } from '@helium/spl-utils'
+import { accountNetType, AccountNetTypeOpt } from '../utils/accountUtils'
 import {
   createSecureAccount,
   deleteSecureAccount,
@@ -310,7 +307,9 @@ const useAccountStorageHook = () => {
         )
       }
       const filtered = contacts.filter(
-        (c) => c.address !== oldAddress && c.solanaAddress !== oldAddress,
+        (c) =>
+          c.address !== oldAddress &&
+          c.solanaAddress !== heliumAddressToSolAddress(oldAddress),
       )
       const nextContacts = [...filtered, nextAccount]
       setContacts(nextContacts)
