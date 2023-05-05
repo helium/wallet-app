@@ -50,12 +50,10 @@ const Settings = () => {
   const { changeLanguage, language } = useLanguageStorage()
   const {
     authInterval,
-    convertToCurrency,
     currency,
     pin: appPin,
     requirePinForPayment,
     updateAuthInterval,
-    updateConvertToCurrency,
     updateCurrency,
     updateRequirePinForPayment,
   } = useAppStorage()
@@ -467,11 +465,6 @@ const Settings = () => {
             },
           },
           {
-            title: t('settings.sections.app.convertHntToCurrency'),
-            value: convertToCurrency,
-            onToggle: updateConvertToCurrency,
-          },
-          {
             title: t('settings.sections.app.version'),
             staticText: true,
             value: `v${version} (${buildNumber})`,
@@ -501,7 +494,6 @@ const Settings = () => {
     authInterval,
     authIntervals,
     cluster,
-    convertToCurrency,
     copyText,
     currency,
     currentAccount,
@@ -523,7 +515,6 @@ const Settings = () => {
     language,
     requirePinForPayment,
     t,
-    updateConvertToCurrency,
     version,
     buildNumber,
     handleMigrateWallet,
