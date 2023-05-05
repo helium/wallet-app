@@ -895,7 +895,7 @@ export default {
     name: 'Hotspot Name:',
     newOwner: 'New Owner:',
     owner: 'Owner:',
-    title: 'Add Hotspot to\nBlockchain?',
+    title: 'Onboard {{networks}}\nHotspot?',
     titleLocationOnly: 'Update Location?',
     titleTransfer: 'Transfer Hotspot?',
   },

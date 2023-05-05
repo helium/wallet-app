@@ -166,13 +166,30 @@ const SignHotspot = () => {
   }, [solana.transferData])
 
   const title = useMemo(() => {
-    if (
-      solana.transactions.onboardIotHotspotV0?.gatewayAddress ||
-      solana.transactions.onboardMobileHotspotV0?.gatewayAddress
-    ) {
-      return t('signHotspot.title')
+    const hasIotOnboard =
+      !!solana.transactions.onboardIotHotspotV0?.gatewayAddress
+    const hasMobileOnboard =
+      !!solana.transactions.onboardMobileHotspotV0?.gatewayAddress
+    if (hasIotOnboard || hasMobileOnboard) {
+      let networks = ''
+      if (hasIotOnboard && hasMobileOnboard) {
+        networks = 'IOT + MOBILE'
+      } else if (hasIotOnboard) {
+        networks = 'IOT'
+      } else if (hasMobileOnboard) {
+        networks = 'MOBILE'
+      }
+      return t('signHotspot.title', { networks })
     }
-  }, [solana, t])
+
+    if (transferData) {
+      return t('signHotspot.titleTransfer')
+    }
+
+    if (locationData) {
+      return t('signHotspot.titleLocationOnly')
+    }
+  }, [locationData, solana.transactions, t, transferData])
 
   useAsync(async () => {
     if (!parsedToken) return
@@ -231,9 +248,13 @@ const SignHotspot = () => {
       padding="xl"
       justifyContent="center"
     >
-      <Text variant="h1" color="primaryText">
-        {title}
-      </Text>
+      {title ? (
+        <Text variant="h1" color="primaryText">
+          {title}
+        </Text>
+      ) : (
+        <ActivityIndicator />
+      )}
 
       <Box
         backgroundColor="surfaceContrast"
