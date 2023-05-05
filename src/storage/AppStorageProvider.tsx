@@ -142,17 +142,6 @@ const useAppStorageHook = () => {
     return storeSecureItem('currency', nextCurrency)
   }, [])
 
-  const updateConvertToCurrency = useCallback(
-    async (nextConvertToCurrency: boolean) => {
-      setConvertToCurrency(nextConvertToCurrency)
-      return storeSecureItem(
-        'convertToCurrency',
-        nextConvertToCurrency ? 'true' : 'false',
-      )
-    },
-    [],
-  )
-
   const updateEnableTestnet = useCallback(
     async (nextEnableTestnet: boolean) => {
       setEnableTestnet(nextEnableTestnet)
@@ -163,13 +152,6 @@ const useAppStorageHook = () => {
     },
     [],
   )
-
-  const toggleConvertToCurrency = useCallback(async () => {
-    setConvertToCurrency((prev) => {
-      storeSecureItem('convertToCurrency', !prev ? 'true' : 'false')
-      return !prev
-    })
-  }, [])
 
   const setDAppTutorialCompleted = useCallback(
     (cluster: Cluster) => {
@@ -244,7 +226,6 @@ const useAppStorageHook = () => {
     setVoteTutorialCompleted,
     setDAppTutorialCompleted,
     showNumericChange,
-    toggleConvertToCurrency,
     sessionKey,
     doneSolanaMigration,
     updateDoneSolanaMigration,
@@ -252,7 +233,6 @@ const useAppStorageHook = () => {
     updateManualMigration,
     updateSessionKey,
     updateAuthInterval,
-    updateConvertToCurrency,
     updateCurrency,
     updateEnableTestnet,
     updateLocked,
@@ -276,9 +256,7 @@ const initialState = {
   setScannedAddress: () => undefined,
   setDAppTutorialCompleted: async () => undefined,
   setVoteTutorialCompleted: () => new Promise<void>((resolve) => resolve()),
-  toggleConvertToCurrency: async () => undefined,
   updateAuthInterval: async () => undefined,
-  updateConvertToCurrency: async () => undefined,
   updateCurrency: async () => undefined,
   updateEnableTestnet: async () => undefined,
   updateLocked: async () => undefined,
