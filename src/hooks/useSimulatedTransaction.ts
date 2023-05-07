@@ -4,18 +4,21 @@ import {
   Connection,
   ParsedAccountData,
   PublicKey,
-  RpcResponseAndContext,
   SimulatedTransactionAccountInfo,
   VersionedTransaction,
 } from '@solana/web3.js'
 import BN from 'bn.js'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { toNumber } from '@helium/spl-utils'
 import { useBalance } from '@utils/Balance'
 import { getCollectableByMint } from '@utils/solanaUtils'
 import { Metaplex } from '@metaplex-foundation/js'
+import useAlert from '@hooks/useAlert'
+import { useTranslation } from 'react-i18next'
 import { useSolana } from '../solana/SolanaProvider'
+import { useHntSolConvert } from './useHntSolConvert'
+import * as logger from '../utils/logger'
 
 type BalanceChanges = {
   nativeChange?: number
@@ -32,12 +35,16 @@ export type SimulatedTransactionResult = {
   insufficientFunds: boolean
   balanceChanges?: BalanceChanges
 }
-export function useSimualtedTransaction(
+export function useSimulatedTransaction(
   serializedTx: Buffer | undefined,
-  wallet: PublicKey,
+  wallet: PublicKey | undefined,
 ): SimulatedTransactionResult {
+  const { showOKCancelAlert } = useAlert()
   const { tokenAccounts } = useBalance()
   const { connection, anchorProvider, cluster } = useSolana()
+  const { t: tr } = useTranslation()
+  const { hntSolConvertTransaction, hntEstimate, hasEnoughSol } =
+    useHntSolConvert()
 
   const [simulationError, setSimulationError] = useState(false)
   const [insufficientFunds, setInsufficientFunds] = useState(false)
@@ -51,8 +58,35 @@ export function useSimualtedTransaction(
 
   const transaction = useMemo(() => {
     if (!serializedTx) return undefined
-    return VersionedTransaction.deserialize(serializedTx)
+    try {
+      const tx = VersionedTransaction.deserialize(serializedTx)
+      return tx
+    } catch (err) {
+      logger.error(err)
+    }
   }, [serializedTx])
+
+  const showHNTConversionAlert = useCallback(async () => {
+    if (!anchorProvider || !hntSolConvertTransaction) return
+
+    const decision = await showOKCancelAlert({
+      title: tr('browserScreen.insufficientSolToPayForFees'),
+      message: tr('browserScreen.wouldYouLikeToConvert', {
+        amount: hntEstimate,
+        ticker: 'HNT',
+      }),
+    })
+
+    if (!decision) return
+    await anchorProvider.sendAndConfirm(hntSolConvertTransaction)
+  }, [
+    anchorProvider,
+    showOKCancelAlert,
+    tr,
+    hntSolConvertTransaction,
+    hntEstimate,
+  ])
+
   const {
     result: solFee,
     loading: loadingFee,
@@ -61,11 +95,18 @@ export function useSimualtedTransaction(
     async (
       c: Connection | undefined,
       t: VersionedTransaction | undefined,
-    ): Promise<RpcResponseAndContext<number | null>> => {
+    ): Promise<number> => {
       if (!c || !t) {
-        return Promise.resolve({ context: { slot: 0, err: null }, value: null })
+        return Promise.resolve(5000)
       }
-      return c?.getFeeForMessage(t.message, 'confirmed')
+
+      let fee = 5000
+      try {
+        fee = (await c?.getFeeForMessage(t.message, 'confirmed')).value || 5000
+      } catch (err) {
+        logger.error(err)
+      }
+      return fee
     },
     [connection, transaction],
   )
@@ -76,6 +117,7 @@ export function useSimualtedTransaction(
     // error: getAccountsErr,
   } = useAsync(async () => {
     if (!connection || !transaction) return []
+
     const addressLookupTableAccounts: Array<AddressLookupTableAccount> = []
     const { addressTableLookups } = transaction.message
     if (addressTableLookups.length > 0) {
@@ -104,9 +146,16 @@ export function useSimualtedTransaction(
       ),
     ]
   }, [transaction, connection])
+
   const { loading: loadingBal, result: estimatedBalanceChanges } =
     useAsync(async () => {
-      if (!connection || !transaction || !anchorProvider || !metaplex)
+      if (
+        !connection ||
+        !transaction ||
+        !anchorProvider ||
+        !metaplex ||
+        !wallet
+      )
         return undefined
 
       setSimulationError(false)
@@ -130,6 +179,9 @@ export function useSimualtedTransaction(
               'InstructionError":[0,{"Custom":1}]',
             )
           ) {
+            if (!hasEnoughSol) {
+              showHNTConversionAlert()
+            }
             setInsufficientFunds(true)
           }
           setSimulationError(true)
@@ -260,14 +312,20 @@ export function useSimualtedTransaction(
       } catch (err) {
         return undefined
       }
-    }, [simulationAccounts, connection, transaction, tokenAccounts])
+    }, [
+      simulationAccounts,
+      connection,
+      transaction,
+      tokenAccounts,
+      hasEnoughSol,
+    ])
 
   return {
     loading: loadingBal || loadingAccounts || loadingFee,
     simulationError,
     insufficientFunds,
     balanceChanges: estimatedBalanceChanges,
-    solFee: solFee?.value ? solFee.value : 5000,
+    solFee: solFee || 5000,
     estimateFeeErr,
   }
 }

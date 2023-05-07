@@ -24,10 +24,10 @@ import Box from '@components/Box'
 import Text from '@components/Text'
 import { useColors, useOpacity } from '@theme/themeHooks'
 import ButtonPressable from '@components/ButtonPressable'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { useSimualtedTransaction } from '@hooks/useSimulatedTransaction'
-import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
+import { useSimulatedTransaction } from '@hooks/useSimulatedTransaction'
+import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 import CircleLoader from '@components/CircleLoader'
+import { useSolana } from './SolanaProvider'
 
 export enum WalletStandardMessageTypes {
   connect = 'connect',
@@ -39,14 +39,15 @@ export enum WalletStandardMessageTypes {
 type WalletSignOpts = {
   type: WalletStandardMessageTypes
   url: string
+  additionalMessage?: string
 }
 
 export type WalletSignBottomSheetRef = {
-  show: ({ type, url }: WalletSignOpts) => Promise<boolean>
+  show: ({ type, url, additionalMessage }: WalletSignOpts) => Promise<boolean>
   hide: () => void
 }
 
-type Props = {
+export type WalletSignBottomSheetProps = {
   serializedTx: Buffer | undefined
   onClose: () => void
   children: ReactNode
@@ -56,11 +57,11 @@ let promiseResolve: (value: boolean | PromiseLike<boolean>) => void
 
 const WalletSignBottomSheet = forwardRef(
   (
-    { serializedTx, onClose, children }: Props,
+    { serializedTx, onClose, children }: WalletSignBottomSheetProps,
     ref: Ref<WalletSignBottomSheetRef>,
   ) => {
     useImperativeHandle(ref, () => ({ show, hide }))
-    const { currentAccount } = useAccountStorage()
+    const { anchorProvider } = useSolana()
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { secondaryText } = useColors()
     const { t } = useTranslation()
@@ -68,12 +69,10 @@ const WalletSignBottomSheet = forwardRef(
     const [walletSignOpts, setWalletSignOpts] = useState<WalletSignOpts>({
       type: WalletStandardMessageTypes.connect,
       url: '',
+      additionalMessage: '',
     })
     const { loading, balanceChanges, solFee, insufficientFunds } =
-      useSimualtedTransaction(
-        serializedTx,
-        new PublicKey(currentAccount?.solanaAddress || ''),
-      )
+      useSimulatedTransaction(serializedTx, anchorProvider?.publicKey)
 
     const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
     const snapPoints = useMemo(() => ['25%', 'CONTENT_HEIGHT'], [])
@@ -126,17 +125,21 @@ const WalletSignBottomSheet = forwardRef(
       return t('browserScreen.unableToSimulate')
     }, [balanceChanges, t, insufficientFunds])
 
-    const show = useCallback(({ type, url }: WalletSignOpts) => {
-      bottomSheetModalRef.current?.expand()
-      setWalletSignOpts({
-        type,
-        url,
-      })
-      const p = new Promise<boolean>((resolve) => {
-        promiseResolve = resolve
-      })
-      return p
-    }, [])
+    const show = useCallback(
+      ({ type, url, additionalMessage }: WalletSignOpts) => {
+        bottomSheetModalRef.current?.expand()
+        setWalletSignOpts({
+          type,
+          url,
+          additionalMessage,
+        })
+        const p = new Promise<boolean>((resolve) => {
+          promiseResolve = resolve
+        })
+        return p
+      },
+      [],
+    )
 
     const renderBackdrop = useCallback(
       (props) => (
@@ -156,7 +159,9 @@ const WalletSignBottomSheet = forwardRef(
       }
       // We need to re present the bottom sheet after it is dismissed so that it can be expanded again
       bottomSheetModalRef.current?.present()
-      onClose()
+      if (onClose) {
+        onClose()
+      }
     }, [onClose])
 
     const handleIndicatorStyle = useMemo(() => {
@@ -180,7 +185,7 @@ const WalletSignBottomSheet = forwardRef(
     }, [hide])
 
     const renderSheetBody = useCallback(() => {
-      const { type } = walletSignOpts
+      const { type, additionalMessage } = walletSignOpts
 
       if (type === WalletStandardMessageTypes.connect) {
         return (
@@ -239,6 +244,19 @@ const WalletSignBottomSheet = forwardRef(
                   {t('browserScreen.estimatedChanges')}
                 </Text>
               </Box>
+
+              {additionalMessage && (
+                <Box
+                  backgroundColor="secondaryBackground"
+                  borderBottomColor="black"
+                  borderBottomWidth={1}
+                  padding="m"
+                >
+                  <Text variant="body1Medium" color="secondaryText">
+                    {additionalMessage}
+                  </Text>
+                </Box>
+              )}
 
               <Box
                 borderBottomStartRadius="l"

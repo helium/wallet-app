@@ -73,7 +73,7 @@ const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
       <BottomSheetModalProvider>
         <BottomSheetModal
           ref={bottomSheetModalRef}
-          index={0}
+          index={-1}
           snapPoints={snapPoints}
           backdropComponent={renderBackdrop}
           backgroundStyle={backgroundStyle}

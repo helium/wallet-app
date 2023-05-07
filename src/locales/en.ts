@@ -378,6 +378,9 @@ export default {
     connect: 'Connect',
     approve: 'Approve',
     cancel: 'Cancel',
+    insufficientSolToPayForFees: 'Insufficient SOL to pay for fees',
+    wouldYouLikeToConvert:
+      'Would you like to convert ~{{amount}} {{ticker}} to ~0.02 SOL for tx fees?',
   },
   accountTokenList: {
     tokens: 'Tokens',
