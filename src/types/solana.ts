@@ -167,6 +167,7 @@ export type EnrichedTransaction = {
   signature: string
   slot: number
   timestamp: number
+  transactionError: any
   nativeTransfers: NativeTransfer[]
   tokenTransfers: TokenTransfer[]
   accountData: {

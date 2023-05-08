@@ -1297,10 +1297,6 @@ export const getAllTransactions = async (
       transactions: sigList,
     })
 
-    /*
-     * TODO: Remove this once helius nft indexer is live
-     * Getting metadata for collectables.
-     */
     const allTxnsWithMetadata: EnrichedTransaction[] = await Promise.all(
       data.map(async (tx: EnrichedTransaction) => {
         try {
@@ -1374,14 +1370,8 @@ export const getAllTransactions = async (
       }),
     )
 
-    const failedTxns = txList.filter((tx) => tx.err)
-    const allTxs: (EnrichedTransaction | ConfirmedSignatureInfo)[] = [
-      ...allTxnsWithMetadata,
-      ...failedTxns,
-    ]
-
     // Combine and sort all txns by date in descending order
-    allTxs.sort(
+    allTxnsWithMetadata.sort(
       (
         a: EnrichedTransaction | ConfirmedSignatureInfo,
         b: EnrichedTransaction | ConfirmedSignatureInfo,
@@ -1409,7 +1399,7 @@ export const getAllTransactions = async (
       },
     )
 
-    return allTxs
+    return allTxnsWithMetadata
   } catch (e) {
     return []
   }
