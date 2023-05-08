@@ -55,7 +55,7 @@ const AccountView = ({ selectedBalance, ...boxProps }: Props) => {
       <Box>
         <TokenPricesTicker marginVertical="m" />
       </Box>
-      <Box alignItems="center" flex={1} justifyContent="center">
+      <Box alignItems="center" flex={1} justifyContent="center" width="100%">
         <CopyAddressPill />
 
         {!balanceString && (
@@ -86,7 +86,14 @@ const AccountView = ({ selectedBalance, ...boxProps }: Props) => {
           </FadeInOut>
         )}
         {!selectedBalance && (
-          <FadeInOut>
+          <FadeInOut
+            style={{
+              display: 'flex',
+              width: '100%',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
             <AccountActionBar
               compact
               hasSwaps

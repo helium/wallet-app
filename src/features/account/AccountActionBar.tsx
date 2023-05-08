@@ -112,7 +112,7 @@ const AccountActionBar = ({
       alignItems="center"
       flexDirection="row"
       onLayout={onLayout}
-      width={compact || maxCompact ? undefined : '100%'}
+      width={maxCompact ? undefined : '100%'}
     >
       {hasRequest && (
         <Box
