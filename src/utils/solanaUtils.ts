@@ -71,8 +71,16 @@ import {
 } from '@helium/data-credits-sdk'
 import { getPendingRewards } from '@helium/distributor-oracle'
 import { init } from '@helium/lazy-distributor-sdk'
-import { PROGRAM_ID as FanoutProgramId } from '@helium/fanout-sdk'
-import { PROGRAM_ID as VoterStakeRegistryProgramId } from '@helium/voter-stake-registry-sdk'
+import {
+  PROGRAM_ID as FanoutProgramId,
+  fanoutKey,
+  membershipCollectionKey,
+} from '@helium/fanout-sdk'
+import {
+  PROGRAM_ID as VoterStakeRegistryProgramId,
+  registrarKey,
+  registrarCollectionKey,
+} from '@helium/voter-stake-registry-sdk'
 import { BaseCurrencyType } from '@helium/currency/build/currency_types'
 import { getKeypair, getSessionKey } from '../storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
@@ -93,44 +101,44 @@ const govProgramId = new PublicKey(
   'hgovkRU6Ghe1Qoyb54HdSLdqN7VtxaifBzRmh9jtd3S',
 )
 
-export const registrarKey = (realm: PublicKey, realmGoverningMint: PublicKey) =>
-  PublicKey.findProgramAddressSync(
-    [
-      realm.toBuffer(),
-      Buffer.from('registrar', 'utf-8'),
-      realmGoverningMint.toBuffer(),
-    ],
-    VoterStakeRegistryProgramId,
-  )
+// export const registrarKey = (realm: PublicKey, realmGoverningMint: PublicKey) =>
+//   PublicKey.findProgramAddressSync(
+//     [
+//       realm.toBuffer(),
+//       Buffer.from('registrar', 'utf-8'),
+//       realmGoverningMint.toBuffer(),
+//     ],
+//     VoterStakeRegistryProgramId,
+//   )
 
-export const registrarCollectionKey = (registrar: PublicKey) =>
-  PublicKey.findProgramAddressSync(
-    [Buffer.from('collection', 'utf-8'), registrar.toBuffer()],
-    VoterStakeRegistryProgramId,
-  )
+// export const registrarCollectionKey = (registrar: PublicKey) =>
+//   PublicKey.findProgramAddressSync(
+//     [Buffer.from('collection', 'utf-8'), registrar.toBuffer()],
+//     VoterStakeRegistryProgramId,
+//   )
 
-export function fanoutKey(name: string): [PublicKey, number] {
-  return PublicKey.findProgramAddressSync(
-    [Buffer.from('fanout', 'utf-8'), Buffer.from(name, 'utf-8')],
-    FanoutProgramId,
-  )
-}
+// export function fanoutKey(name: string): [PublicKey, number] {
+//   return PublicKey.findProgramAddressSync(
+//     [Buffer.from('fanout', 'utf-8'), Buffer.from(name, 'utf-8')],
+//     FanoutProgramId,
+//   )
+// }
 
-export function membershipVoucherKey(mint: PublicKey): [PublicKey, number] {
-  return PublicKey.findProgramAddressSync(
-    [Buffer.from('fanout_voucher', 'utf-8'), mint.toBuffer()],
-    FanoutProgramId,
-  )
-}
+// export function membershipVoucherKey(mint: PublicKey): [PublicKey, number] {
+//   return PublicKey.findProgramAddressSync(
+//     [Buffer.from('fanout_voucher', 'utf-8'), mint.toBuffer()],
+//     FanoutProgramId,
+//   )
+// }
 
-export function membershipCollectionKey(
-  fanout: PublicKey,
-): [PublicKey, number] {
-  return PublicKey.findProgramAddressSync(
-    [Buffer.from('collection', 'utf-8'), fanout.toBuffer()],
-    FanoutProgramId,
-  )
-}
+// export function membershipCollectionKey(
+//   fanout: PublicKey,
+// ): [PublicKey, number] {
+//   return PublicKey.findProgramAddressSync(
+//     [Buffer.from('collection', 'utf-8'), fanout.toBuffer()],
+//     FanoutProgramId,
+//   )
+// }
 
 export const SolanaConnection = (sessionKey: string) =>
   ({
@@ -952,7 +960,10 @@ export const transferCompressedCollectable = async (
 
 export const heliumNFTs = (): string[] => {
   // HST collection ID
-  const fanoutMint = membershipCollectionKey(fanoutKey('HST')[0])
+  const fanoutMint = membershipCollectionKey(
+    fanoutKey('HST')[0],
+    FanoutProgramId,
+  )
 
   const realmHNT = PublicKey.findProgramAddressSync(
     [Buffer.from('governance', 'utf-8'), Buffer.from('Helium', 'utf-8')],
@@ -965,25 +976,44 @@ export const heliumNFTs = (): string[] => {
   )[0]
 
   const realmMobile = PublicKey.findProgramAddressSync(
-    [Buffer.from('governance', 'utf-8'), Buffer.from('Helium Mobile', 'utf-8')],
+    [Buffer.from('governance', 'utf-8'), Buffer.from('Helium MOBILE', 'utf-8')],
     govProgramId,
   )[0]
 
-  const hntRegistrarKey = registrarKey(realmHNT, HNT_MINT)
+  const hntRegistrarKey = registrarKey(
+    realmHNT,
+    HNT_MINT,
+    VoterStakeRegistryProgramId,
+  )
 
-  const iotRegistrarKey = registrarKey(realmIOT, IOT_MINT)
+  const iotRegistrarKey = registrarKey(
+    realmIOT,
+    IOT_MINT,
+    VoterStakeRegistryProgramId,
+  )
 
-  const mobileRegistrarKey = registrarKey(realmMobile, MOBILE_MINT)
+  const mobileRegistrarKey = registrarKey(
+    realmMobile,
+    MOBILE_MINT,
+    VoterStakeRegistryProgramId,
+  )
 
   // veHNT Collecion ID
-  const hntRegistrarCollectionKey = registrarCollectionKey(hntRegistrarKey[0])
+  const hntRegistrarCollectionKey = registrarCollectionKey(
+    hntRegistrarKey[0],
+    VoterStakeRegistryProgramId,
+  )
 
   // veIOT Collecion ID
-  const iotRegistrarCollectionKey = registrarCollectionKey(iotRegistrarKey[0])
+  const iotRegistrarCollectionKey = registrarCollectionKey(
+    iotRegistrarKey[0],
+    VoterStakeRegistryProgramId,
+  )
 
   // veMobile Collecion ID
   const mobileRegistrarCollectionKey = registrarCollectionKey(
     mobileRegistrarKey[0],
+    VoterStakeRegistryProgramId,
   )
 
   return [
