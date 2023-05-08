@@ -101,45 +101,6 @@ const govProgramId = new PublicKey(
   'hgovkRU6Ghe1Qoyb54HdSLdqN7VtxaifBzRmh9jtd3S',
 )
 
-// export const registrarKey = (realm: PublicKey, realmGoverningMint: PublicKey) =>
-//   PublicKey.findProgramAddressSync(
-//     [
-//       realm.toBuffer(),
-//       Buffer.from('registrar', 'utf-8'),
-//       realmGoverningMint.toBuffer(),
-//     ],
-//     VoterStakeRegistryProgramId,
-//   )
-
-// export const registrarCollectionKey = (registrar: PublicKey) =>
-//   PublicKey.findProgramAddressSync(
-//     [Buffer.from('collection', 'utf-8'), registrar.toBuffer()],
-//     VoterStakeRegistryProgramId,
-//   )
-
-// export function fanoutKey(name: string): [PublicKey, number] {
-//   return PublicKey.findProgramAddressSync(
-//     [Buffer.from('fanout', 'utf-8'), Buffer.from(name, 'utf-8')],
-//     FanoutProgramId,
-//   )
-// }
-
-// export function membershipVoucherKey(mint: PublicKey): [PublicKey, number] {
-//   return PublicKey.findProgramAddressSync(
-//     [Buffer.from('fanout_voucher', 'utf-8'), mint.toBuffer()],
-//     FanoutProgramId,
-//   )
-// }
-
-// export function membershipCollectionKey(
-//   fanout: PublicKey,
-// ): [PublicKey, number] {
-//   return PublicKey.findProgramAddressSync(
-//     [Buffer.from('collection', 'utf-8'), fanout.toBuffer()],
-//     FanoutProgramId,
-//   )
-// }
-
 export const SolanaConnection = (sessionKey: string) =>
   ({
     devnet: new WrappedConnection(
