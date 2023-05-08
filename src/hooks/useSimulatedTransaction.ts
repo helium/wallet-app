@@ -135,6 +135,7 @@ export function useSimulatedTransaction(
     const accountKeys = transaction.message.getAccountKeys({
       addressLookupTableAccounts,
     })
+
     return [
       ...new Set(
         accountKeys.staticAccountKeys.concat(
@@ -154,7 +155,9 @@ export function useSimulatedTransaction(
         !transaction ||
         !anchorProvider ||
         !metaplex ||
-        !wallet
+        !wallet ||
+        !simulationAccounts ||
+        !tokenAccounts
       )
         return undefined
 
@@ -203,8 +206,10 @@ export function useSimulatedTransaction(
             curr: SimulatedTransactionAccountInfo | null,
             index: number,
           ) => {
+            const realPrev = await prev
             const account = curr
-            if (!account) return prev
+
+            if (!account) return realPrev
             // Token changes
             const isToken = account.owner === TOKEN_PROGRAM_ID.toString()
             const isNativeSol = account.owner === NATIVE_MINT.toBase58()
@@ -226,13 +231,9 @@ export function useSimulatedTransaction(
                       ),
                     )
 
-                    if (
-                      !new PublicKey(tokenAccount.owner).equals(
-                        new PublicKey(wallet),
-                      )
-                    ) {
+                    if (!new PublicKey(tokenAccount.owner).equals(wallet)) {
                       // Return the reducer state umodified if token account is not owned
-                      return await prev
+                      return realPrev
                     }
                     accountNativeBalance = new BN(
                       tokenAccount.amount.toString(),
@@ -241,7 +242,7 @@ export function useSimulatedTransaction(
                     tokenMint = new PublicKey(tokenAccount.mint)
                   } catch (error) {
                     // Decoding of token account failed, not a token account
-                    return prev
+                    return realPrev
                   }
                   // Parse changes in native SOL balances
                 } else {
@@ -251,7 +252,7 @@ export function useSimulatedTransaction(
                     simulationAccounts &&
                     simulationAccounts[index].equals(wallet)
                   ) {
-                    return await prev
+                    return realPrev
                   }
                   accountNativeBalance = new BN(account.lamports.toString())
                   // Faux mint for native SOL
@@ -300,16 +301,17 @@ export function useSimulatedTransaction(
                 // ignore, probably not a token account or some other
                 // failure, we don't want to fail displaying the popup
                 console.warn('failed to get balance changes', err)
-                return prev
+                return realPrev
               }
             }
-            return prev
+            return realPrev
           },
           balanceChangeInitialValueAsPromise,
         )
 
         return await balanceChanges
       } catch (err) {
+        console.warn('err', err)
         return undefined
       }
     }, [
@@ -318,6 +320,9 @@ export function useSimulatedTransaction(
       transaction,
       tokenAccounts,
       hasEnoughSol,
+      metaplex,
+      anchorProvider,
+      wallet,
     ])
 
   return {

@@ -113,30 +113,30 @@ const App = () => {
                         commitment="confirmed"
                         connection={connection}
                       >
-                        <WalletSignProvider>
-                          <WalletConnectProvider>
-                            {accountsRestored && (
-                              <>
-                                <NavigationContainer
-                                  theme={navTheme}
-                                  linking={linking}
-                                  ref={navigationRef}
-                                >
-                                  <BalanceProvider>
+                        <WalletConnectProvider>
+                          {accountsRestored && (
+                            <>
+                              <NavigationContainer
+                                theme={navTheme}
+                                linking={linking}
+                                ref={navigationRef}
+                              >
+                                <BalanceProvider>
+                                  <WalletSignProvider>
                                     <NetworkAwareStatusBar />
                                     <RootNavigator />
-                                  </BalanceProvider>
-                                </NavigationContainer>
-                                <SecurityScreen
-                                  visible={
-                                    appState !== 'active' &&
-                                    appState !== 'unknown'
-                                  }
-                                />
-                              </>
-                            )}
-                          </WalletConnectProvider>
-                        </WalletSignProvider>
+                                  </WalletSignProvider>
+                                </BalanceProvider>
+                              </NavigationContainer>
+                              <SecurityScreen
+                                visible={
+                                  appState !== 'active' &&
+                                  appState !== 'unknown'
+                                }
+                              />
+                            </>
+                          )}
+                        </WalletConnectProvider>
                       </AccountProvider>
                     </LockScreen>
                   )}

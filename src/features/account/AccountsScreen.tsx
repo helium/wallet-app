@@ -83,14 +83,26 @@ const AccountsScreen = () => {
   const { isHealthy } = useSolanaHealth()
   const { hntSolConvertTransaction, hntEstimate, hasEnoughSol } =
     useHntSolConvert()
-  const { walletSignBottomSheetRef, setSerializedTx } = useWalletSign()
+  const { walletSignBottomSheetRef, setSerializedTx, serializedTx } =
+    useWalletSign()
   const { t } = useTranslation()
 
   useAsync(async () => {
-    if (!hntSolConvertTransaction || !anchorProvider || !t || hasEnoughSol)
-      return
+    if (!hntSolConvertTransaction || !anchorProvider) return
 
+    await anchorProvider?.wallet.signTransaction(hntSolConvertTransaction)
     setSerializedTx(hntSolConvertTransaction.serialize())
+  }, [hntSolConvertTransaction, setSerializedTx, anchorProvider])
+
+  useAsync(async () => {
+    if (
+      !anchorProvider ||
+      !t ||
+      !serializedTx ||
+      !hntSolConvertTransaction ||
+      hasEnoughSol
+    )
+      return
 
     try {
       const decision = await walletSignBottomSheetRef?.show({
@@ -108,7 +120,7 @@ const AccountsScreen = () => {
     } catch (e) {
       logger.error(e)
     }
-  }, [hntSolConvertTransaction, hntEstimate, setSerializedTx, t, hasEnoughSol])
+  }, [hntEstimate, serializedTx, t, hasEnoughSol, hntSolConvertTransaction])
 
   const actualTop = useMemo(() => {
     if (showBanner) {
