@@ -91,7 +91,17 @@ export default ({
       return solanaActivity.data[account.solanaAddress][filter][ticker]
     }
 
-    if (filter !== 'payment' && filter !== 'all') return []
+    if (filter !== 'in' && filter !== 'out' && filter !== 'all') return []
+    if (filter === 'in' || filter === 'out') {
+      const payments = solanaActivity.data[account.solanaAddress]?.payment[
+        ticker
+      ]?.filter((txn) => txn.tokenType === ticker)
+      return payments.filter((txn) =>
+        filter === 'out'
+          ? txn.payee === account.solanaAddress
+          : txn.payee !== account.solanaAddress,
+      )
+    }
 
     return solanaActivity.data[account.solanaAddress][filter][ticker]?.filter(
       (txn) => txn.tokenType === ticker,
