@@ -53,7 +53,6 @@ export function useHntSolConvert() {
     }
   }, [baseUrl])
 
-  // TODO: Ask foundation if we should show hnt sol swap even if the user has 0 SOL?
   const hasEnoughSol = useMemo(() => {
     if (!hntBalance || !solBalance || !hntEstimate) return true
     return (
