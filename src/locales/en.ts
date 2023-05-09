@@ -131,11 +131,8 @@ export default {
     filterTransactions: 'Filter Transactions',
     filterTypes: {
       all: 'All Activity',
-      burn: 'Burn Transactions',
-      hotspotAndValidators: 'Hotspots & Validators',
-      mining: 'Mining Rewards',
-      payment: 'Payments',
-      pending: 'Pending Transactions',
+      in: 'Transactions in',
+      out: 'Transactions out',
       delegate: 'Delegated',
       mint: 'Received',
     },

@@ -316,17 +316,17 @@ const AccountTokenScreen = () => {
               hasPressedState={false}
             />
             <ListItem
-              key="payment"
-              title={t('accountsScreen.filterTypes.payment')}
-              onPress={setFilter('payment')}
-              selected={filterState.filter === 'payment'}
+              key="in"
+              title={t('accountsScreen.filterTypes.in')}
+              onPress={setFilter('in')}
+              selected={filterState.filter === 'in'}
               hasPressedState={false}
             />
             <ListItem
-              key="mining"
-              title={t('accountsScreen.filterTypes.mining')}
-              onPress={setFilter('mining')}
-              selected={filterState.filter === 'mining'}
+              key="out"
+              title={t('accountsScreen.filterTypes.out')}
+              onPress={setFilter('out')}
+              selected={filterState.filter === 'out'}
               hasPressedState={false}
             />
           </>
@@ -345,31 +345,6 @@ const AccountTokenScreen = () => {
               title={t('accountsScreen.filterTypes.delegate')}
               onPress={setFilter('delegate')}
               selected={filterState.filter === 'delegate'}
-              hasPressedState={false}
-            />
-          </>
-        )}
-        {routeTicker === 'HNT' && (
-          <>
-            <ListItem
-              key="burn"
-              title={t('accountsScreen.filterTypes.burn')}
-              onPress={setFilter('burn')}
-              selected={filterState.filter === 'burn'}
-              hasPressedState={false}
-            />
-            <ListItem
-              key="hotspotAndValidators"
-              title={t('accountsScreen.filterTypes.hotspotAndValidators')}
-              onPress={setFilter('hotspotAndValidators')}
-              selected={filterState.filter === 'hotspotAndValidators'}
-              hasPressedState={false}
-            />
-            <ListItem
-              key="pending"
-              title={t('accountsScreen.filterTypes.pending')}
-              onPress={setFilter('pending')}
-              selected={filterState.filter === 'pending'}
               hasPressedState={false}
             />
           </>

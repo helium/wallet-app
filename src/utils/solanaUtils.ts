@@ -1511,6 +1511,7 @@ export async function createTreasurySwapMessage(
   }
 }
 
+// TODO: Use enriched txns instead of manually parsing txns
 export const solInstructionsToActivity = (
   parsedTxn: ParsedTransactionWithMeta | null,
   signature: string,
