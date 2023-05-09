@@ -37,7 +37,7 @@
   "dependencies": {
     "@babel/preset-typescript": "7.21.0",
     "@coral-xyz/anchor": "0.26.0",
-    "@gorhom/bottom-sheet": "4.4.3",
+    "@gorhom/bottom-sheet": "4.4.6",
     "@gorhom/portal": "1.0.14",
     "@helium/address": "4.6.2",
     "@helium/crypto-react-native": "4.8.0",

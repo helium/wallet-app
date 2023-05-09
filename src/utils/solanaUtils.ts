@@ -1475,6 +1475,7 @@ export async function createTreasurySwapMessage(
   amount: number,
   fromMint: PublicKey,
   anchorProvider: AnchorProvider,
+  recipient: PublicKey,
 ) {
   const conn = anchorProvider.connection
 
@@ -1493,6 +1494,7 @@ export async function createTreasurySwapMessage(
       ])
       .accounts({
         treasuryManagement,
+        to: getAssociatedTokenAddressSync(HNT_MINT, recipient),
       })
       .transaction()
 
@@ -1504,7 +1506,11 @@ export async function createTreasurySwapMessage(
       instructions: [...tx.instructions],
     }).compileToLegacyMessage()
 
-    return { message }
+    const transaction = new VersionedTransaction(
+      VersionedMessage.deserialize(message.serialize()),
+    )
+
+    return transaction.serialize()
   } catch (e) {
     Logger.error(e)
     throw e as Error
