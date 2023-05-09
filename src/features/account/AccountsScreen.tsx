@@ -127,7 +127,6 @@ const AccountsScreen = () => {
     hasEnoughSol,
     hntSolConvertTransaction,
     anchorProvider,
-    walletSignBottomSheetRef,
   ])
 
   const actualTop = useMemo(() => {

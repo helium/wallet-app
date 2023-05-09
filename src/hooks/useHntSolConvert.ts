@@ -36,9 +36,10 @@ export function useHntSolConvert() {
 
   const hasEnoughSol = useMemo(() => {
     if (!hntBalance || !solBalance || !hntEstimate) return true
-    return (
-      hntBalance.floatBalance >= hntEstimate && solBalance.floatBalance < 0.02
-    )
+
+    if (hntBalance.floatBalance < hntEstimate) return true
+
+    return solBalance.floatBalance > 0.02
   }, [hntBalance, solBalance, hntEstimate])
 
   const {
@@ -47,6 +48,7 @@ export function useHntSolConvert() {
     error: hntSolConvertTransactionError,
   } = useAsync(async () => {
     if (!anchorProvider || hasEnoughSol) return
+
     try {
       const txRaw = (
         await axios.post(`${baseUrl}/hnt-to-fees`, {

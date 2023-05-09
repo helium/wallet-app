@@ -14,6 +14,7 @@ import { AccountProvider } from '@helium/helium-react-hooks'
 import { theme, darkThemeColors, lightThemeColors } from '@theme/theme'
 import { useColorScheme } from '@theme/themeHooks'
 import globalStyles from '@theme/globalStyles'
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import useMount from './hooks/useMount'
 import RootNavigator from './navigation/RootNavigator'
 import { useAccountStorage } from './storage/AccountStorageProvider'
@@ -102,42 +103,45 @@ const App = () => {
         <ThemeProvider theme={colorAdaptedTheme}>
           <SplashScreen>
             <PortalProvider>
-              <PortalHost name="browser-portal" />
-              <OnboardingProvider baseUrl={Config.ONBOARDING_API_URL}>
-                {connection && (
-                  <LockScreen>
-                    <AccountProvider
-                      extendConnection={false}
-                      commitment="confirmed"
-                      connection={connection}
-                    >
-                      <WalletConnectProvider>
-                        {accountsRestored && (
-                          <>
-                            <NavigationContainer
-                              theme={navTheme}
-                              linking={linking}
-                              ref={navigationRef}
-                            >
-                              <BalanceProvider>
-                                <WalletSignProvider>
-                                  <NetworkAwareStatusBar />
-                                  <RootNavigator />
-                                </WalletSignProvider>
-                              </BalanceProvider>
-                            </NavigationContainer>
-                            <SecurityScreen
-                              visible={
-                                appState !== 'active' && appState !== 'unknown'
-                              }
-                            />
-                          </>
-                        )}
-                      </WalletConnectProvider>
-                    </AccountProvider>
-                  </LockScreen>
-                )}
-              </OnboardingProvider>
+              <BottomSheetModalProvider>
+                <PortalHost name="browser-portal" />
+                <OnboardingProvider baseUrl={Config.ONBOARDING_API_URL}>
+                  {connection && (
+                    <LockScreen>
+                      <AccountProvider
+                        extendConnection={false}
+                        commitment="confirmed"
+                        connection={connection}
+                      >
+                        <WalletConnectProvider>
+                          {accountsRestored && (
+                            <>
+                              <NavigationContainer
+                                theme={navTheme}
+                                linking={linking}
+                                ref={navigationRef}
+                              >
+                                <BalanceProvider>
+                                  <WalletSignProvider>
+                                    <NetworkAwareStatusBar />
+                                    <RootNavigator />
+                                  </WalletSignProvider>
+                                </BalanceProvider>
+                              </NavigationContainer>
+                              <SecurityScreen
+                                visible={
+                                  appState !== 'active' &&
+                                  appState !== 'unknown'
+                                }
+                              />
+                            </>
+                          )}
+                        </WalletConnectProvider>
+                      </AccountProvider>
+                    </LockScreen>
+                  )}
+                </OnboardingProvider>
+              </BottomSheetModalProvider>
             </PortalProvider>
           </SplashScreen>
         </ThemeProvider>
