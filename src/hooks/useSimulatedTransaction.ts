@@ -183,7 +183,7 @@ export function useSimulatedTransaction(
             )
           ) {
             if (!hasEnoughSol) {
-              showHNTConversionAlert()
+              await showHNTConversionAlert()
             }
             setInsufficientFunds(true)
           }

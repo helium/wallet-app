@@ -34,12 +34,19 @@ export function useHntSolConvert() {
     }
   }, [baseUrl])
 
+  const hasEnoughSol = useMemo(() => {
+    if (!hntBalance || !solBalance || !hntEstimate) return true
+    return (
+      hntBalance.floatBalance >= hntEstimate && solBalance.floatBalance < 0.02
+    )
+  }, [hntBalance, solBalance, hntEstimate])
+
   const {
     result: hntSolConvertTransaction,
     loading: hntSolConvertTransactionLoading,
     error: hntSolConvertTransactionError,
   } = useAsync(async () => {
-    if (!anchorProvider) return
+    if (!anchorProvider || hasEnoughSol) return
     try {
       const txRaw = (
         await axios.post(`${baseUrl}/hnt-to-fees`, {
@@ -51,14 +58,7 @@ export function useHntSolConvert() {
     } catch (e) {
       logger.error(e)
     }
-  }, [baseUrl])
-
-  const hasEnoughSol = useMemo(() => {
-    if (!hntBalance || !solBalance || !hntEstimate) return true
-    return (
-      hntBalance.floatBalance >= hntEstimate && solBalance.floatBalance < 0.02
-    )
-  }, [hntBalance, solBalance, hntEstimate])
+  }, [baseUrl, hasEnoughSol, anchorProvider])
 
   return {
     hntSolConvertTransaction,

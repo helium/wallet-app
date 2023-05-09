@@ -120,7 +120,15 @@ const AccountsScreen = () => {
     } catch (e) {
       logger.error(e)
     }
-  }, [hntEstimate, serializedTx, t, hasEnoughSol, hntSolConvertTransaction])
+  }, [
+    hntEstimate,
+    serializedTx,
+    t,
+    hasEnoughSol,
+    hntSolConvertTransaction,
+    anchorProvider,
+    walletSignBottomSheetRef,
+  ])
 
   const actualTop = useMemo(() => {
     if (showBanner) {
