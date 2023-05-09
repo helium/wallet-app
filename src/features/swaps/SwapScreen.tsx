@@ -191,7 +191,13 @@ const SwapScreen = () => {
     setHasInsufficientBalance(
       fee > solBalance.integerBalance || solBalance.floatBalance < 0.000005,
     )
-  }, [anchorProvider, currentAccount?.solanaAddress, solBalance])
+  }, [
+    anchorProvider,
+    currentAccount?.solanaAddress,
+    solBalance,
+    youReceiveTokenType,
+    youPayTokenType,
+  ])
 
   const handleClose = useCallback(() => {
     navigation.goBack()
@@ -280,7 +286,7 @@ const SwapScreen = () => {
       [SelectorMode.youReceive]: [
         {
           label: Tokens.HNT,
-          icon: <TokenHNT width={30} height={30} />,
+          icon: <TokenHNT color="white" width={30} height={30} />,
           value: Tokens.HNT,
           selected: youReceiveTokenType === Tokens.HNT,
         },
