@@ -15,7 +15,11 @@ import {
   sendDelegateDataCredits,
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
-import { Collectable, CompressedNFT } from '../types/solana'
+import {
+  Collectable,
+  CompressedNFT,
+  HotspotWithPendingRewards,
+} from '../types/solana'
 import { useSolana } from '../solana/SolanaProvider'
 
 export default () => {
@@ -131,7 +135,10 @@ export default () => {
   )
 
   const submitClaimAllRewards = useCallback(
-    async (txns: Transaction[]) => {
+    async (
+      lazyDistributors: PublicKey[],
+      hotspots: HotspotWithPendingRewards[],
+    ) => {
       if (!anchorProvider) {
         throw new Error(t('errors.account'))
       }
@@ -143,7 +150,8 @@ export default () => {
       dispatch(
         claimAllRewards({
           account: currentAccount,
-          txns,
+          lazyDistributors,
+          hotspots,
           anchorProvider,
           cluster,
         }),
