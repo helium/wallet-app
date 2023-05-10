@@ -310,7 +310,9 @@ const useAccountStorageHook = () => {
         )
       }
       const filtered = contacts.filter(
-        (c) => c.address !== oldAddress && c.solanaAddress !== oldAddress,
+        (c) =>
+          c.address !== oldAddress &&
+          c.solanaAddress !== heliumAddressToSolAddress(oldAddress),
       )
       const nextContacts = [...filtered, nextAccount]
       setContacts(nextContacts)

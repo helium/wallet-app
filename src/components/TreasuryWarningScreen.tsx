@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react'
-import { View } from 'react-native'
+import { ScrollView, View } from 'react-native'
 import InfoWarning from '@assets/images/warning.svg'
 import { useTranslation } from 'react-i18next'
 import Animated, {
@@ -16,6 +16,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import globalStyles from '@theme/globalStyles'
+import { useColors } from '@theme/themeHooks'
 import Text from './Text'
 import Box from './Box'
 import ButtonPressable from './ButtonPressable'
@@ -29,6 +30,7 @@ const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
   const animValue = useSharedValue(1)
   const [animationComplete, setAnimationComplete] = useState(false)
   const { data: status } = useGetSolanaStatusQuery(undefined)
+  const { primaryBackground } = useColors()
 
   const realStatus = useMemo(() => parseSolanaStatus(status), [status])
 
@@ -73,44 +75,66 @@ const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
       {children}
       {!animationComplete && (
         <Animated.View style={style}>
-          <Box
-            backgroundColor="primaryBackground"
-            flex={1}
-            justifyContent="center"
-            paddingHorizontal="xl"
+          <ScrollView
+            style={{
+              backgroundColor: primaryBackground,
+              flexGrow: 1,
+            }}
+            contentContainerStyle={{
+              flexGrow: 1,
+              justifyContent: 'center',
+            }}
           >
-            <Box justifyContent="center" alignItems="center" marginBottom="xl">
-              <InfoWarning height={80} width={80} />
-            </Box>
-            <Text variant="h1" textAlign="center" fontSize={40} lineHeight={42}>
-              {t('swapsScreen.treasurySwapWarningTitle')}
-            </Text>
-
-            <Text
-              variant="subtitle1"
-              color="secondaryText"
-              textAlign="center"
-              marginTop="m"
-              marginHorizontal="l"
-              adjustsFontSizeToFit
+            <Box
+              backgroundColor="primaryBackground"
+              flex={1}
+              justifyContent="center"
+              paddingHorizontal="xl"
+              height="100%"
             >
-              {t('swapsScreen.treasurySwapWarningBody')}
-            </Text>
+              <Box
+                justifyContent="center"
+                alignItems="center"
+                marginBottom="xl"
+              >
+                <InfoWarning height={80} width={80} />
+              </Box>
+              <Text
+                variant="h1"
+                textAlign="center"
+                fontSize={40}
+                adjustsFontSizeToFit
+                lineHeight={42}
+              >
+                {t('swapsScreen.treasurySwapWarningTitle')}
+              </Text>
 
-            <ButtonPressable
-              borderRadius="round"
-              onPress={handleClose}
-              backgroundColor="primaryText"
-              backgroundColorOpacityPressed={0.7}
-              backgroundColorDisabled="surfaceSecondary"
-              backgroundColorDisabledOpacity={0.5}
-              titleColorDisabled="black500"
-              titleColor="primary"
-              fontWeight="500"
-              title={t('swapsScreen.understood')}
-              marginTop="l"
-            />
-          </Box>
+              <Text
+                variant="subtitle1"
+                color="secondaryText"
+                textAlign="center"
+                marginTop="m"
+                marginHorizontal="l"
+                adjustsFontSizeToFit
+              >
+                {t('swapsScreen.treasurySwapWarningBody')}
+              </Text>
+
+              <ButtonPressable
+                borderRadius="round"
+                onPress={handleClose}
+                backgroundColor="primaryText"
+                backgroundColorOpacityPressed={0.7}
+                backgroundColorDisabled="surfaceSecondary"
+                backgroundColorDisabledOpacity={0.5}
+                titleColorDisabled="black500"
+                titleColor="primary"
+                fontWeight="500"
+                title={t('swapsScreen.understood')}
+                marginTop="l"
+              />
+            </Box>
+          </ScrollView>
         </Animated.View>
       )}
     </View>

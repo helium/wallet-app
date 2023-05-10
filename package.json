@@ -1,6 +1,6 @@
 {
   "name": "helium-wallet",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "private": true,
   "scripts": {
     "postinstall": "patch-package && ./node_modules/.bin/rn-nodeify --hack --install && npx jetify",
@@ -37,7 +37,7 @@
   "dependencies": {
     "@babel/preset-typescript": "7.21.0",
     "@coral-xyz/anchor": "0.26.0",
-    "@gorhom/bottom-sheet": "4.4.3",
+    "@gorhom/bottom-sheet": "4.4.6",
     "@gorhom/portal": "1.0.14",
     "@helium/address": "4.6.2",
     "@helium/crypto-react-native": "4.8.0",

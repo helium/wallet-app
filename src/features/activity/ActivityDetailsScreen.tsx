@@ -72,7 +72,7 @@ const ActivityDetailsScreen = () => {
     const enrichedTx = transaction as EnrichedTransaction
     const confirmedSig = transaction as ConfirmedSignatureInfo
 
-    if (confirmedSig.err) {
+    if (enrichedTx.transactionError || confirmedSig.err) {
       return <Error color={colors.error} width={150} height={150} />
     }
 
@@ -192,7 +192,7 @@ const ActivityDetailsScreen = () => {
     const enrichedTx = transaction as EnrichedTransaction
     const confirmedSig = transaction as ConfirmedSignatureInfo
 
-    if (confirmedSig.err) {
+    if (enrichedTx.transactionError || confirmedSig.err) {
       return t('activityScreen.transactionFailed')
     }
 

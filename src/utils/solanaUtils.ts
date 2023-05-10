@@ -71,8 +71,16 @@ import {
 } from '@helium/data-credits-sdk'
 import { getPendingRewards } from '@helium/distributor-oracle'
 import { init } from '@helium/lazy-distributor-sdk'
-import { PROGRAM_ID as FanoutProgramId } from '@helium/fanout-sdk'
-import { PROGRAM_ID as VoterStakeRegistryProgramId } from '@helium/voter-stake-registry-sdk'
+import {
+  PROGRAM_ID as FanoutProgramId,
+  fanoutKey,
+  membershipCollectionKey,
+} from '@helium/fanout-sdk'
+import {
+  PROGRAM_ID as VoterStakeRegistryProgramId,
+  registrarKey,
+  registrarCollectionKey,
+} from '@helium/voter-stake-registry-sdk'
 import { BaseCurrencyType } from '@helium/currency/build/currency_types'
 import { getKeypair, getSessionKey } from '../storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
@@ -92,45 +100,6 @@ import { solAddressIsValid } from './accountUtils'
 const govProgramId = new PublicKey(
   'hgovkRU6Ghe1Qoyb54HdSLdqN7VtxaifBzRmh9jtd3S',
 )
-
-export const registrarKey = (realm: PublicKey, realmGoverningMint: PublicKey) =>
-  PublicKey.findProgramAddressSync(
-    [
-      realm.toBuffer(),
-      Buffer.from('registrar', 'utf-8'),
-      realmGoverningMint.toBuffer(),
-    ],
-    VoterStakeRegistryProgramId,
-  )
-
-export const registrarCollectionKey = (registrar: PublicKey) =>
-  PublicKey.findProgramAddressSync(
-    [Buffer.from('collection', 'utf-8'), registrar.toBuffer()],
-    VoterStakeRegistryProgramId,
-  )
-
-export function fanoutKey(name: string): [PublicKey, number] {
-  return PublicKey.findProgramAddressSync(
-    [Buffer.from('fanout', 'utf-8'), Buffer.from(name, 'utf-8')],
-    FanoutProgramId,
-  )
-}
-
-export function membershipVoucherKey(mint: PublicKey): [PublicKey, number] {
-  return PublicKey.findProgramAddressSync(
-    [Buffer.from('fanout_voucher', 'utf-8'), mint.toBuffer()],
-    FanoutProgramId,
-  )
-}
-
-export function membershipCollectionKey(
-  fanout: PublicKey,
-): [PublicKey, number] {
-  return PublicKey.findProgramAddressSync(
-    [Buffer.from('collection', 'utf-8'), fanout.toBuffer()],
-    FanoutProgramId,
-  )
-}
 
 export const SolanaConnection = (sessionKey: string) =>
   ({
@@ -952,7 +921,10 @@ export const transferCompressedCollectable = async (
 
 export const heliumNFTs = (): string[] => {
   // HST collection ID
-  const fanoutMint = membershipCollectionKey(fanoutKey('HST')[0])
+  const fanoutMint = membershipCollectionKey(
+    fanoutKey('HST')[0],
+    FanoutProgramId,
+  )
 
   const realmHNT = PublicKey.findProgramAddressSync(
     [Buffer.from('governance', 'utf-8'), Buffer.from('Helium', 'utf-8')],
@@ -965,25 +937,44 @@ export const heliumNFTs = (): string[] => {
   )[0]
 
   const realmMobile = PublicKey.findProgramAddressSync(
-    [Buffer.from('governance', 'utf-8'), Buffer.from('Helium Mobile', 'utf-8')],
+    [Buffer.from('governance', 'utf-8'), Buffer.from('Helium MOBILE', 'utf-8')],
     govProgramId,
   )[0]
 
-  const hntRegistrarKey = registrarKey(realmHNT, HNT_MINT)
+  const hntRegistrarKey = registrarKey(
+    realmHNT,
+    HNT_MINT,
+    VoterStakeRegistryProgramId,
+  )
 
-  const iotRegistrarKey = registrarKey(realmIOT, IOT_MINT)
+  const iotRegistrarKey = registrarKey(
+    realmIOT,
+    IOT_MINT,
+    VoterStakeRegistryProgramId,
+  )
 
-  const mobileRegistrarKey = registrarKey(realmMobile, MOBILE_MINT)
+  const mobileRegistrarKey = registrarKey(
+    realmMobile,
+    MOBILE_MINT,
+    VoterStakeRegistryProgramId,
+  )
 
   // veHNT Collecion ID
-  const hntRegistrarCollectionKey = registrarCollectionKey(hntRegistrarKey[0])
+  const hntRegistrarCollectionKey = registrarCollectionKey(
+    hntRegistrarKey[0],
+    VoterStakeRegistryProgramId,
+  )
 
   // veIOT Collecion ID
-  const iotRegistrarCollectionKey = registrarCollectionKey(iotRegistrarKey[0])
+  const iotRegistrarCollectionKey = registrarCollectionKey(
+    iotRegistrarKey[0],
+    VoterStakeRegistryProgramId,
+  )
 
   // veMobile Collecion ID
   const mobileRegistrarCollectionKey = registrarCollectionKey(
     mobileRegistrarKey[0],
+    VoterStakeRegistryProgramId,
   )
 
   return [
@@ -1297,10 +1288,6 @@ export const getAllTransactions = async (
       transactions: sigList,
     })
 
-    /*
-     * TODO: Remove this once helius nft indexer is live
-     * Getting metadata for collectables.
-     */
     const allTxnsWithMetadata: EnrichedTransaction[] = await Promise.all(
       data.map(async (tx: EnrichedTransaction) => {
         try {
@@ -1374,14 +1361,8 @@ export const getAllTransactions = async (
       }),
     )
 
-    const failedTxns = txList.filter((tx) => tx.err)
-    const allTxs: (EnrichedTransaction | ConfirmedSignatureInfo)[] = [
-      ...allTxnsWithMetadata,
-      ...failedTxns,
-    ]
-
     // Combine and sort all txns by date in descending order
-    allTxs.sort(
+    allTxnsWithMetadata.sort(
       (
         a: EnrichedTransaction | ConfirmedSignatureInfo,
         b: EnrichedTransaction | ConfirmedSignatureInfo,
@@ -1409,7 +1390,7 @@ export const getAllTransactions = async (
       },
     )
 
-    return allTxs
+    return allTxnsWithMetadata
   } catch (e) {
     return []
   }
@@ -1494,6 +1475,7 @@ export async function createTreasurySwapMessage(
   amount: number,
   fromMint: PublicKey,
   anchorProvider: AnchorProvider,
+  recipient: PublicKey,
 ) {
   const conn = anchorProvider.connection
 
@@ -1512,6 +1494,7 @@ export async function createTreasurySwapMessage(
       ])
       .accounts({
         treasuryManagement,
+        to: getAssociatedTokenAddressSync(HNT_MINT, recipient),
       })
       .transaction()
 
@@ -1523,13 +1506,18 @@ export async function createTreasurySwapMessage(
       instructions: [...tx.instructions],
     }).compileToLegacyMessage()
 
-    return { message }
+    const transaction = new VersionedTransaction(
+      VersionedMessage.deserialize(message.serialize()),
+    )
+
+    return transaction.serialize()
   } catch (e) {
     Logger.error(e)
     throw e as Error
   }
 }
 
+// TODO: Use enriched txns instead of manually parsing txns
 export const solInstructionsToActivity = (
   parsedTxn: ParsedTransactionWithMeta | null,
   signature: string,
@@ -1635,10 +1623,10 @@ export const parseTransactionError = (
  * @throws {Error} If there was an error calling the `getRecentPerformanceSamples` method.
  */
 export const getCurrentTPS = async (
-  provider: AnchorProvider,
+  connection: WrappedConnection,
 ): Promise<number> => {
   try {
-    const samples = await provider.connection.getRecentPerformanceSamples(1)
+    const samples = await connection.getRecentPerformanceSamples(1)
     return samples[0]?.numTransactions / samples[0]?.samplePeriodSecs
   } catch (e) {
     throw new Error(`error calling getCurrentTPS: ${e}`)

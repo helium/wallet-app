@@ -29,7 +29,7 @@ import * as Logger from '../../utils/logger'
 import WalletSignBottomSheet, {
   WalletSignBottomSheetRef,
   WalletStandardMessageTypes,
-} from './WalletSignBottomSheet'
+} from '../../solana/WalletSignBottomSheet'
 import Box from '../../components/Box'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import Text from '../../components/Text'
@@ -47,6 +47,7 @@ const BrowserWebViewScreen = () => {
   const { anchorProvider } = useSolana()
   const webview = useRef<WebView | null>(null)
   const walletSignBottomSheetRef = useRef<WalletSignBottomSheetRef | null>(null)
+
   const [currentUrl, setCurrentUrl] = useState(uri)
   const [accountAddress, setAccountAddress] = useState<string>('')
   const { top, bottom } = useSafeAreaInsets()
@@ -57,7 +58,6 @@ const BrowserWebViewScreen = () => {
   const [simulatedTransactions, setSimulatedTransactions] = useState<
     Buffer[] | undefined
   >(undefined)
-
   useEffect(() => {
     if (currentAccount?.solanaAddress) {
       setAccountAddress(currentAccount?.solanaAddress || '')
@@ -73,7 +73,8 @@ const BrowserWebViewScreen = () => {
       if (
         !currentAccount?.address ||
         !currentAccount?.solanaAddress ||
-        !anchorProvider
+        !anchorProvider ||
+        !walletSignBottomSheetRef
       ) {
         return
       }
@@ -118,7 +119,7 @@ const BrowserWebViewScreen = () => {
         )
       } else if (type === WalletStandardMessageTypes.signAndSendTransaction) {
         Logger.breadcrumb('signAndSendTransaction')
-        const decision = await walletSignBottomSheetRef.current?.show({
+        const decision = await walletSignBottomSheetRef?.current?.show({
           type,
           url: currentUrl,
         })

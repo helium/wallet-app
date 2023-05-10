@@ -18,10 +18,10 @@ import {
   DataCredits,
   NetworkTokens,
 } from '@helium/currency'
+import { heliumAddressToSolAddress } from '@helium/spl-utils'
 import { submitSolana } from '../../utils/solanaUtils'
 import { getSolanaKeypair } from '../../storage/secureStorage'
 import { Asset, WrappedConnection } from '../../utils/WrappedConnection'
-import { heliumAddressToSolAddress } from '../../utils/accountUtils'
 import { useSolana } from '../../solana/SolanaProvider'
 
 const ValidTxnKeys = [

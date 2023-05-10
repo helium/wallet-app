@@ -132,7 +132,7 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
 
   return (
     <Box position="absolute" bottom={0} left={0} right={0}>
-      <Box backgroundColor="black900_9A">
+      <Box backgroundColor="black">
         <SafeAreaBox edges={safeEdges}>
           <NavBar
             navBarOptions={tabData}

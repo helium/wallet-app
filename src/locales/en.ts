@@ -131,11 +131,8 @@ export default {
     filterTransactions: 'Filter Transactions',
     filterTypes: {
       all: 'All Activity',
-      burn: 'Burn Transactions',
-      hotspotAndValidators: 'Hotspots & Validators',
-      mining: 'Mining Rewards',
-      payment: 'Payments',
-      pending: 'Pending Transactions',
+      in: 'Transactions in',
+      out: 'Transactions out',
       delegate: 'Delegated',
       mint: 'Received',
     },
@@ -378,6 +375,9 @@ export default {
     connect: 'Connect',
     approve: 'Approve',
     cancel: 'Cancel',
+    insufficientSolToPayForFees: 'Insufficient SOL to pay for fees',
+    wouldYouLikeToConvert:
+      'Would you like to convert ~{{amount}} {{ticker}} to ~0.02 SOL for tx fees?',
   },
   accountTokenList: {
     tokens: 'Tokens',
@@ -895,7 +895,7 @@ export default {
     name: 'Hotspot Name:',
     newOwner: 'New Owner:',
     owner: 'Owner:',
-    title: 'Add Hotspot to\nBlockchain?',
+    title: 'Onboard {{networks}}\nHotspot?',
     titleLocationOnly: 'Update Location?',
     titleTransfer: 'Transfer Hotspot?',
   },

@@ -26,13 +26,14 @@ import ButtonPressable from '@components/ButtonPressable'
 import AccountIcon from '@components/AccountIcon'
 import useAlert from '@hooks/useAlert'
 import CloseButton from '@components/CloseButton'
+import { solAddressIsValid, accountNetType } from '@utils/accountUtils'
+import { heliumAddressFromSolAddress } from '@helium/spl-utils'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import {
   AddressBookNavigationProp,
   AddressBookStackParamList,
 } from './addressBookTypes'
-import { solAddressIsValid, accountNetType } from '../../utils/accountUtils'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import AddressExtra from './AddressExtra'
 import { CSAccount } from '../../storage/cloudStorage'
@@ -78,13 +79,12 @@ const ContactDetails = ({ action, contact }: Props) => {
   const isEditingContact = useMemo(() => action === 'edit', [action])
 
   const handleCreateNewContact = useCallback(() => {
-    const heliumAddress = ''
     let solanaAddress = ''
 
     solanaAddress = address
 
     addContact({
-      address: heliumAddress,
+      address: heliumAddressFromSolAddress(solanaAddress),
       solanaAddress,
       alias: nickname,
       netType: accountNetType(address),

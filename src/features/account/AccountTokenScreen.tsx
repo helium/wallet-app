@@ -64,6 +64,10 @@ const AccountTokenScreen = () => {
   const { cluster } = useSolana()
   const insets = useSafeAreaInsets()
   const colors = useColors()
+  const [
+    onEndReachedCalledDuringMomentum,
+    setOnEndReachedCalledDuringMomentum,
+  ] = useState(true)
 
   const routeTicker = useMemo(
     () => route.params.tokenType?.toUpperCase() as Ticker,
@@ -95,6 +99,17 @@ const AccountTokenScreen = () => {
     filter: filterState.filter,
     ticker: routeTicker,
   })
+
+  const handleOnFetchMoreActivity = useCallback(() => {
+    if (activityLoading || onEndReachedCalledDuringMomentum) return
+
+    fetchMoreActivity()
+    setOnEndReachedCalledDuringMomentum(true)
+  }, [activityLoading, fetchMoreActivity, onEndReachedCalledDuringMomentum])
+
+  const handleOnMomentumScrollBegin = useCallback(() => {
+    setOnEndReachedCalledDuringMomentum(false)
+  }, [])
 
   const actualHeight = useMemo(() => {
     return WINDOW_HEIGHT - insets.bottom - NavBarHeight
@@ -301,17 +316,17 @@ const AccountTokenScreen = () => {
               hasPressedState={false}
             />
             <ListItem
-              key="payment"
-              title={t('accountsScreen.filterTypes.payment')}
-              onPress={setFilter('payment')}
-              selected={filterState.filter === 'payment'}
+              key="in"
+              title={t('accountsScreen.filterTypes.in')}
+              onPress={setFilter('in')}
+              selected={filterState.filter === 'in'}
               hasPressedState={false}
             />
             <ListItem
-              key="mining"
-              title={t('accountsScreen.filterTypes.mining')}
-              onPress={setFilter('mining')}
-              selected={filterState.filter === 'mining'}
+              key="out"
+              title={t('accountsScreen.filterTypes.out')}
+              onPress={setFilter('out')}
+              selected={filterState.filter === 'out'}
               hasPressedState={false}
             />
           </>
@@ -330,31 +345,6 @@ const AccountTokenScreen = () => {
               title={t('accountsScreen.filterTypes.delegate')}
               onPress={setFilter('delegate')}
               selected={filterState.filter === 'delegate'}
-              hasPressedState={false}
-            />
-          </>
-        )}
-        {routeTicker === 'HNT' && (
-          <>
-            <ListItem
-              key="burn"
-              title={t('accountsScreen.filterTypes.burn')}
-              onPress={setFilter('burn')}
-              selected={filterState.filter === 'burn'}
-              hasPressedState={false}
-            />
-            <ListItem
-              key="hotspotAndValidators"
-              title={t('accountsScreen.filterTypes.hotspotAndValidators')}
-              onPress={setFilter('hotspotAndValidators')}
-              selected={filterState.filter === 'hotspotAndValidators'}
-              hasPressedState={false}
-            />
-            <ListItem
-              key="pending"
-              title={t('accountsScreen.filterTypes.pending')}
-              onPress={setFilter('pending')}
-              selected={filterState.filter === 'pending'}
               hasPressedState={false}
             />
           </>
@@ -507,9 +497,11 @@ const AccountTokenScreen = () => {
               ListHeaderComponent={renderHeader}
               stickyHeaderIndices={stickyHeaderIndices}
               ListFooterComponent={renderFooter}
-              onEndReached={fetchMoreActivity}
-              data={activityData}
+              initialNumToRender={10}
               onEndReachedThreshold={0.01}
+              onMomentumScrollBegin={handleOnMomentumScrollBegin}
+              onEndReached={handleOnFetchMoreActivity}
+              data={activityData}
             />
           </Animated.View>
         </BottomSheet>

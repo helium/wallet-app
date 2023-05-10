@@ -1,15 +1,6 @@
 import { useCallback, useReducer } from 'react'
 
-const FilterTypeKeys = [
-  'all',
-  'mining',
-  'payment',
-  'hotspotAndValidators',
-  'burn',
-  'pending',
-  'delegate',
-  'mint',
-] as const
+const FilterTypeKeys = ['all', 'in', 'out', 'delegate', 'mint'] as const
 export type FilterType = typeof FilterTypeKeys[number]
 
 type ActivityFilter = {

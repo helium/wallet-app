@@ -31,8 +31,11 @@ const ActivityListItem = ({
     const confirmedSig = transaction as ConfirmedSignatureInfo
 
     // Check if transaction is a confirmed signature
-    if (confirmedSig.err || !enrichedTx.type) {
-      return ellipsizeAddress(confirmedSig.signature.toString())
+    if (enrichedTx.transactionError || confirmedSig.err || !enrichedTx.type) {
+      return ellipsizeAddress(
+        enrichedTx?.signature?.toString() ||
+          confirmedSig?.signature?.toString(),
+      )
     }
 
     const txKey = `activityScreen.enrichedTransactionTypes.${enrichedTx.type}`
@@ -64,7 +67,7 @@ const ActivityListItem = ({
       return customDescription
     }
 
-    if (confirmedSig.err) {
+    if (enrichedTx.transactionError || confirmedSig.err) {
       return t('generic.error')
     }
 
@@ -72,8 +75,9 @@ const ActivityListItem = ({
   }, [t, transaction])
 
   const transactionFailed = useMemo(() => {
+    const enrichedTx = transaction as EnrichedTransaction
     const confirmedSig = transaction as ConfirmedSignatureInfo
-    return !!confirmedSig.err
+    return !!confirmedSig?.err || !!enrichedTx.transactionError
   }, [transaction])
 
   return (
