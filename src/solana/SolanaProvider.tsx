@@ -107,8 +107,9 @@ const useSolanaHook = () => {
     setCache(
       new AccountFetchCache({
         connection: nextConn,
-        delay: 50,
+        delay: 100,
         commitment: 'confirmed',
+        missingRefetchDelay: 60 * 1000,
         extendConnection: true,
       }),
     )

@@ -73,11 +73,16 @@ export const syncTokenAccounts = createAsyncThunk(
 
     const escrowAccount = getEscrowTokenAccount(acct.solanaAddress)
     let escrowBalance = 0
+    const [dcEscrowAcc, solAcc] = await Promise.all([
+      connection.getAccountInfo(escrowAccount),
+      connection.getAccountInfo(pubKey),
+    ])
     try {
-      const dcEscrowBalance = await connection.getTokenAccountBalance(
-        escrowAccount,
-      )
-      escrowBalance = new BN(dcEscrowBalance.value.amount).toNumber()
+      const dcEscrowBalance =
+        dcEscrowAcc && AccountLayout.decode(dcEscrowAcc.data).amount
+      escrowBalance = dcEscrowBalance
+        ? new BN(dcEscrowBalance.toString()).toNumber()
+        : 0
     } catch {}
 
     const dcEscrow = {
@@ -85,7 +90,7 @@ export const syncTokenAccounts = createAsyncThunk(
       balance: escrowBalance,
     }
 
-    const solBalance = await connection.getBalance(pubKey)
+    const solBalance = solAcc?.lamports || 0
     const sol = {
       tokenAccount: acct.solanaAddress,
       balance: solBalance,

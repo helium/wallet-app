@@ -5,6 +5,36 @@ import { useTranslation } from 'react-i18next'
 import { useSolana } from '../solana/SolanaProvider'
 import { getCurrentTPS } from '../utils/solanaUtils'
 
+let lastUpdated = 0
+function doTimeout() {
+  // Re-do every 5 minutes
+  if (new Date().valueOf() - lastUpdated > 60 * 1000 * 5) {
+    cachedHealthByEndpoint = {}
+    cachedTps = {}
+    lastUpdated = new Date().valueOf()
+  }
+}
+let cachedHealthByEndpoint: Record<string, any> = {}
+async function getCachedHealth(connection: WrappedConnection): Promise<any> {
+  doTimeout()
+  if (!cachedHealthByEndpoint[connection.rpcEndpoint]) {
+    const { result: health } = await connection.getHealth()
+    cachedHealthByEndpoint[connection.rpcEndpoint] = health
+  }
+
+  return cachedHealthByEndpoint[connection.rpcEndpoint]
+}
+
+let cachedTps: Record<string, any> = {}
+async function getCachedTPS(connection: WrappedConnection): Promise<any> {
+  doTimeout()
+  if (!cachedTps[connection.rpcEndpoint]) {
+    cachedTps[connection.rpcEndpoint] = getCurrentTPS(connection)
+  }
+
+  return cachedTps[connection.rpcEndpoint]
+}
+
 const useSolanaHealth = () => {
   const { anchorProvider } = useSolana()
   const [isHealthy, setIsHealthy] = useState(true)
@@ -19,19 +49,19 @@ const useSolanaHealth = () => {
 
   useAsync(async () => {
     if (!connection) return
-    const { result: health } = await connection.getHealth()
+    const { result: health } = await getCachedHealth(connection)
     setIsHealthy(health === 'ok')
   }, [connection])
 
   useAsync(async () => {
-    if (!anchorProvider) return
-    const currentTps = await getCurrentTPS(anchorProvider)
+    if (!connection) return
+    const currentTps = await getCachedTPS(connection)
     // If the current tps is less than or equal to 2000, we consider it unhealthy
     if (currentTps <= 2000) {
       setIsHealthy(false)
       setSlowTps(currentTps)
     }
-  }, [])
+  }, [connection])
 
   const healthMessage = useMemo(() => {
     if (isHealthy) return t('generic.solanaHealthy')
