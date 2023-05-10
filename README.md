@@ -39,11 +39,15 @@ Follow the instructions for "React Native CLI Quickstart" found [here](https://r
   ```
 - Install NVM
   ```bash
-  Nvm install 16
+  brew install nvm
+  ```
+- Install Node Version 16
+  ```bash
+  nvm install 16
   ```
 - Set Node version to 16
   ```bash
-  Nvm use 16
+  nvm use 16
   ```
 - Install Yarn
   ```bash
