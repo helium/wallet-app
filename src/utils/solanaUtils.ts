@@ -1617,10 +1617,10 @@ export const parseTransactionError = (
  * @throws {Error} If there was an error calling the `getRecentPerformanceSamples` method.
  */
 export const getCurrentTPS = async (
-  provider: AnchorProvider,
+  connection: WrappedConnection,
 ): Promise<number> => {
   try {
-    const samples = await provider.connection.getRecentPerformanceSamples(1)
+    const samples = await connection.getRecentPerformanceSamples(1)
     return samples[0]?.numTransactions / samples[0]?.samplePeriodSecs
   } catch (e) {
     throw new Error(`error calling getCurrentTPS: ${e}`)
