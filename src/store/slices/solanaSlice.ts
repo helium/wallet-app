@@ -4,6 +4,7 @@ import * as client from '@helium/distributor-oracle'
 import { init } from '@helium/lazy-distributor-sdk'
 import {
   bulkSendRawTransactions,
+  bulkSendTransactions,
   sendAndConfirmWithRetry,
 } from '@helium/spl-utils'
 import {
@@ -85,7 +86,7 @@ type AnchorTxnInput = {
 
 type ClaimRewardInput = {
   account: CSAccount
-  txn: Transaction
+  txns: Transaction[]
   anchorProvider: AnchorProvider
   cluster: Cluster
 }
@@ -314,20 +315,17 @@ export const sendAnchorTxn = createAsyncThunk(
 export const claimRewards = createAsyncThunk(
   'solana/claimRewards',
   async (
-    { account, txn, anchorProvider, cluster }: ClaimRewardInput,
+    { account, txns, anchorProvider, cluster }: ClaimRewardInput,
     { dispatch },
   ) => {
     try {
-      const signed = await anchorProvider.wallet.signTransaction(txn)
-
-      const { txid } = await sendAndConfirmWithRetry(
+      const signed = await anchorProvider.wallet.signAllTransactions(txns)
+      const sigs = await bulkSendRawTransactions(
         anchorProvider.connection,
-        signed.serialize(),
-        { skipPreflight: true },
-        'confirmed',
+        signed.map((s) => s.serialize()),
       )
 
-      postPayment({ signature: txid, cluster })
+      postPayment({ signature: sigs[0], cluster })
 
       // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
       dispatch(fetchHotspots({ account, anchorProvider, cluster }))
