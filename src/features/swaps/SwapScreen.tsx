@@ -335,9 +335,10 @@ const SwapScreen = () => {
         Number(youPayTokenAmount),
         CurrencyType.networkToken,
       )
-      const amount = networkTokensToDc(networkTokens)?.floatBalance
-
-      return amount || 0
+      const rawBalance = networkTokensToDc(networkTokens)?.floatBalance
+      if (typeof rawBalance !== 'undefined') {
+        return Math.floor(rawBalance)
+      }
     }
 
     return 0
