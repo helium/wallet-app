@@ -30,6 +30,9 @@ build/
 local.properties
 *.iml
 /android/app/release/
+.cxx/
+*.keystore
+!debug.keystore
 
 # Visual Studio Code
 #
@@ -42,12 +45,6 @@ npm-debug.log
 yarn-error.log
 .yalc/
 yalc.lock
-
-# BUCK
-buck-out/
-\.buckd/
-*.keystore
-!debug.keystore
 
 # fastlane
 #
@@ -72,7 +69,9 @@ buck-out/
 .env
 
 *.hprof
-.cxx/
 .expo
 
 *.jks
+
+# Temporary files created by Metro to check the health of the file watcher
+.metro-health-check*

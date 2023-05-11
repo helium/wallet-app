@@ -20,10 +20,10 @@ In order to interact with any package contained in this repository you will need
 
 - [**NVM**](https://github.com/nvm-sh/nvm/blob/master/README.md)
 - [**Homebrew**](https://brew.sh/)
-- [**Node.js@16.x.x**](https://nodejs.org/)
+- [**Node.js@18.x.x**](https://nodejs.org/)
 - [**Yarn**](https://www.npmjs.com/package/yarn)
 - [**Cocoapods**](https://cocoapods.org/)
-- [**Xcode**](https://developer.apple.com/xcode/)
+- [**Xcode@14.2**](https://xcodereleases.com/)
 - [**Android Studio**](https://developer.android.com/studio)
 
 ### Set up your development environment
@@ -41,13 +41,13 @@ Follow the instructions for "React Native CLI Quickstart" found [here](https://r
   ```bash
   brew install nvm
   ```
-- Install Node Version 16
+- Install Node Version 18
   ```bash
-  nvm install 16
+  nvm install 18
   ```
-- Set Node version to 16
+- Set Node version to 18
   ```bash
-  nvm use 16
+  nvm use 18
   ```
 - Install Yarn
   ```bash
