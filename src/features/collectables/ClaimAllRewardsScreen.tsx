@@ -1,31 +1,30 @@
-import React, { memo, useCallback, useMemo, useState } from 'react'
-import { useNavigation } from '@react-navigation/native'
-import { useTranslation } from 'react-i18next'
-import BN from 'bn.js'
-import { Transaction } from '@solana/web3.js'
 import { ReAnimatedBox } from '@components/AnimatedBox'
-import useHotspots from '@hooks/useHotspots'
 import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
-import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import CircleLoader from '@components/CircleLoader'
+import { DelayedFadeIn } from '@components/FadeInOut'
 import RewardItem from '@components/RewardItem'
-import useSubmitTxn from '../../hooks/useSubmitTxn'
+import Text from '@components/Text'
+import useHotspots from '@hooks/useHotspots'
+import useSubmitTxn from '@hooks/useSubmitTxn'
+import { useNavigation } from '@react-navigation/native'
+import { IOT_LAZY_KEY, MOBILE_LAZY_KEY } from '@utils/constants'
+import BN from 'bn.js'
+import React, { memo, useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CollectableNavigationProp } from './collectablesTypes'
 
 const ClaimAllRewardsScreen = () => {
-  const { submitClaimAllRewards } = useSubmitTxn()
   const { t } = useTranslation()
   const navigation = useNavigation<CollectableNavigationProp>()
   const [redeeming, setRedeeming] = useState(false)
   const [claimError, setClaimError] = useState<string | undefined>()
+  const { submitClaimAllRewards } = useSubmitTxn()
 
   const {
     hotspots,
-    createClaimAllIotTxs: { execute: createClaimAllIotTxs },
-    createClaimAllMobileTxs: { execute: createClaimAllMobileTxs },
+    hotspotsWithMeta,
     pendingIotRewards,
     pendingMobileRewards,
   } = useHotspots()
@@ -45,30 +44,8 @@ const ClaimAllRewardsScreen = () => {
       setClaimError(undefined)
       setRedeeming(true)
 
-      const iotTxs =
-        pendingIotRewards && !pendingIotRewards.eq(new BN(0))
-          ? await createClaimAllIotTxs()
-          : undefined
-      const mobileTxns =
-        pendingMobileRewards && !pendingMobileRewards.eq(new BN(0))
-          ? await createClaimAllMobileTxs()
-          : undefined
-      const txs: Transaction[] = []
-
-      if (iotTxs?.length) {
-        txs.push(...iotTxs)
-      }
-
-      if (mobileTxns?.length) {
-        txs.push(...mobileTxns)
-      }
-
-      if (txs.length > 0) {
-        submitClaimAllRewards(txs)
-        navigation.replace('ClaimingRewardsScreen')
-      } else {
-        setClaimError(t('collectablesScreen.claimError'))
-      }
+      navigation.replace('ClaimingRewardsScreen')
+      submitClaimAllRewards([IOT_LAZY_KEY, MOBILE_LAZY_KEY], hotspotsWithMeta)
 
       setRedeeming(false)
     } catch (e) {
@@ -76,15 +53,7 @@ const ClaimAllRewardsScreen = () => {
       setClaimError((e as any)?.response?.data?.error || (e as Error)?.message)
       setRedeeming(false)
     }
-  }, [
-    createClaimAllIotTxs,
-    createClaimAllMobileTxs,
-    navigation,
-    submitClaimAllRewards,
-    t,
-    pendingIotRewards,
-    pendingMobileRewards,
-  ])
+  }, [navigation, submitClaimAllRewards, hotspotsWithMeta])
 
   const addAllToAccountDisabled = useMemo(() => {
     return (
