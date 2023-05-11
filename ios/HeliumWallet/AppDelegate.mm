@@ -11,8 +11,12 @@
   // You can add your custom initial props in the dictionary below.
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
-
-  return [super application:application didFinishLaunchingWithOptions:launchOptions];
+  
+  // temporary workaround to set native background color, need to update once RN 0.72 lands
+  // https://github.com/facebook/react-native/issues/35937#issuecomment-1484894618
+  BOOL result = [super application:application didFinishLaunchingWithOptions:launchOptions];
+  self.window.rootViewController.view.backgroundColor = [UIColor blackColor];
+  return result;
 }
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
