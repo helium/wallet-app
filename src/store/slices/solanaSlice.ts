@@ -4,7 +4,6 @@ import * as client from '@helium/distributor-oracle'
 import { init } from '@helium/lazy-distributor-sdk'
 import {
   bulkSendRawTransactions,
-  bulkSendTransactions,
   sendAndConfirmWithRetry,
 } from '@helium/spl-utils'
 import {
