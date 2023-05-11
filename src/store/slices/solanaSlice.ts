@@ -1,9 +1,15 @@
-import Balance, { AnyCurrencyType, Ticker } from '@helium/currency'
 import { AnchorProvider } from '@coral-xyz/anchor'
+import Balance, { AnyCurrencyType, Ticker } from '@helium/currency'
+import * as client from '@helium/distributor-oracle'
+import { init } from '@helium/lazy-distributor-sdk'
 import {
+  bulkSendRawTransactions,
+  sendAndConfirmWithRetry,
+} from '@helium/spl-utils'
+import {
+  SerializedError,
   createAsyncThunk,
   createSlice,
-  SerializedError,
 } from '@reduxjs/toolkit'
 import {
   Cluster,
@@ -12,18 +18,19 @@ import {
   Transaction,
 } from '@solana/web3.js'
 import { first, last } from 'lodash'
-import {
-  bulkSendRawTransactions,
-  sendAndConfirmWithRetry,
-} from '@helium/spl-utils'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
-import { Collectable, CompressedNFT, toMintAddress } from '../../types/solana'
-import * as solUtils from '../../utils/solanaUtils'
-import { fetchCollectables } from './collectablesSlice'
+import {
+  Collectable,
+  CompressedNFT,
+  HotspotWithPendingRewards,
+  toMintAddress,
+} from '../../types/solana'
 import * as Logger from '../../utils/logger'
-import { fetchHotspots } from './hotspotsSlice'
+import * as solUtils from '../../utils/solanaUtils'
 import { postPayment } from '../../utils/walletApiV2'
+import { fetchCollectables } from './collectablesSlice'
+import { fetchHotspots } from './hotspotsSlice'
 
 type TokenActivity = Record<Ticker, Activity[]>
 
@@ -78,14 +85,15 @@ type AnchorTxnInput = {
 
 type ClaimRewardInput = {
   account: CSAccount
-  txn: Transaction
+  txns: Transaction[]
   anchorProvider: AnchorProvider
   cluster: Cluster
 }
 
 type ClaimAllRewardsInput = {
   account: CSAccount
-  txns: Transaction[]
+  lazyDistributors: PublicKey[]
+  hotspots: HotspotWithPendingRewards[]
   anchorProvider: AnchorProvider
   cluster: Cluster
 }
@@ -306,20 +314,17 @@ export const sendAnchorTxn = createAsyncThunk(
 export const claimRewards = createAsyncThunk(
   'solana/claimRewards',
   async (
-    { account, txn, anchorProvider, cluster }: ClaimRewardInput,
+    { account, txns, anchorProvider, cluster }: ClaimRewardInput,
     { dispatch },
   ) => {
     try {
-      const signed = await anchorProvider.wallet.signTransaction(txn)
-
-      const { txid } = await sendAndConfirmWithRetry(
+      const signed = await anchorProvider.wallet.signAllTransactions(txns)
+      const sigs = await bulkSendRawTransactions(
         anchorProvider.connection,
-        signed.serialize(),
-        { skipPreflight: true },
-        'confirmed',
+        signed.map((s) => s.serialize()),
       )
 
-      postPayment({ signature: txid, cluster })
+      postPayment({ signature: sigs[0], cluster })
 
       // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
       dispatch(fetchHotspots({ account, anchorProvider, cluster }))
@@ -332,21 +337,77 @@ export const claimRewards = createAsyncThunk(
   },
 )
 
+const chunks = <T>(array: T[], size: number): T[][] =>
+  Array.apply(0, new Array(Math.ceil(array.length / size))).map((_, index) =>
+    array.slice(index * size, (index + 1) * size),
+  )
+
 export const claimAllRewards = createAsyncThunk(
   'solana/claimAllRewards',
   async (
-    { account, txns, anchorProvider, cluster }: ClaimAllRewardsInput,
+    {
+      account,
+      lazyDistributors,
+      hotspots,
+      anchorProvider,
+      cluster,
+    }: ClaimAllRewardsInput,
     { dispatch },
   ) => {
     try {
-      const signed = await anchorProvider.wallet.signAllTransactions(txns)
+      const lazyProgram = await init(anchorProvider)
+      // Use for loops to linearly order promises
+      // eslint-disable-next-line no-restricted-syntax
+      for (const lazyDistributor of lazyDistributors) {
+        const { rewardsMint: mint } =
+          // eslint-disable-next-line no-await-in-loop
+          await lazyProgram.account.lazyDistributorV0.fetch(lazyDistributor)
 
-      await bulkSendRawTransactions(
-        anchorProvider.connection,
-        signed.map((s) => s.serialize()),
-      )
+        // eslint-disable-next-line no-restricted-syntax
+        for (const chunk of chunks(hotspots, 50)) {
+          // eslint-disable-next-line no-await-in-loop
+          const txns = await Promise.all(
+            chunk.map(async (nft) => {
+              if (
+                !nft.pendingRewards?.[mint.toBase58()] ||
+                Number(nft.pendingRewards?.[mint.toBase58()]) <= 0
+              ) {
+                return
+              }
+              const rewards = await client.getCurrentRewards(
+                lazyProgram,
+                lazyDistributor,
+                new PublicKey(nft.id),
+              )
 
-      // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
+              return client.formTransaction({
+                program: lazyProgram,
+                provider: anchorProvider,
+                rewards,
+                hotspot: new PublicKey(nft.id),
+                lazyDistributor,
+                assetEndpoint: anchorProvider.connection.rpcEndpoint,
+                wallet: account.solanaAddress
+                  ? new PublicKey(account.solanaAddress)
+                  : undefined,
+              })
+            }),
+          )
+          const validTxns = txns.filter(
+            (txn) => txn !== undefined,
+          ) as Transaction[]
+          // eslint-disable-next-line no-await-in-loop
+          const signed = await anchorProvider.wallet.signAllTransactions(
+            validTxns,
+          )
+          // eslint-disable-next-line no-await-in-loop
+          await bulkSendRawTransactions(
+            anchorProvider.connection,
+            signed.map((s) => s.serialize()),
+          )
+        }
+      }
+      // If the claim is successful, we need to update the hotspots so pending rewards are updated.
       dispatch(fetchHotspots({ account, anchorProvider, cluster }))
     } catch (error) {
       Logger.error(error)

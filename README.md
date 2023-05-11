@@ -20,18 +20,11 @@ In order to interact with any package contained in this repository you will need
 
 - [**NVM**](https://github.com/nvm-sh/nvm/blob/master/README.md)
 - [**Homebrew**](https://brew.sh/)
-- [**Node.js@16.x.x**](https://nodejs.org/) `16.x.x`
+- [**Node.js@18.x.x**](https://nodejs.org/)
 - [**Yarn**](https://www.npmjs.com/package/yarn)
 - [**Cocoapods**](https://cocoapods.org/)
-- [**Xcode**](https://developer.apple.com/xcode/) `14.2`
-  - [Download older versions of Xcode here](https://developer.apple.com/download/all/?q=xcode%2014.2)
-- [**Android Studio**](https://developer.android.com/studio) `Chipmunk`
-  - [Download older versions of Android Studio here](https://developer.android.com/studio/archive)
-  - [Install a Virtual Device](https://developer.android.com/studio/run/emulator#avd) (`Nexus 5` with `UpsideDownCake` good default)
-  - When [installing the Android SDK](https://reactnative.dev/docs/environment-setup#android-sdk) use these:
-  - `Android 12.0`
-    - `Android SDK Platform 31`
-  - `Android SDK Build-Tools 34-rc4` -> `33.0.0`
+- [**Xcode@14.2**](https://xcodereleases.com/)
+- [**Android Studio**](https://developer.android.com/studio)
 
 ### Set up your development environment
 
@@ -48,17 +41,13 @@ Follow the instructions for "React Native CLI Quickstart" found [here](https://r
   ```bash
   brew install nvm
   ```
-- Add the following to `~/.bash_profile` or `~/.zshrc` and open a new shell
+- Install Node Version 18
   ```bash
-  source $(brew --prefix nvm)/nvm.sh
+  nvm install 18
   ```
-- Install Node Version 16
+- Set Node version to 18
   ```bash
-  nvm install 16
-  ```
-- Set Node version to 16
-  ```bash
-  nvm use 16
+  nvm use 18
   ```
 - Install Yarn
   ```bash
@@ -68,7 +57,7 @@ Follow the instructions for "React Native CLI Quickstart" found [here](https://r
   ```bash
   softwareupdate --install-rosetta
   ```
-- Install Cocoapods (if cocoapods is not already installed, the `uninstall` commands will fail, thats ok)
+- Install Cocoapods
   ```bash
   gem cleanup
   brew uninstall cocoapods
@@ -92,8 +81,6 @@ Follow the instructions for "React Native CLI Quickstart" found [here](https://r
   ```bash
   yarn ios
   ```
-  - If you get this pop-up, click `OK` and let the build continue.
-    ![Unable To Boot Pop up](/readme/ios-yarn-build-unable-to-boot.png)
 - Start the android app
   ```bash
   yarn android
@@ -108,7 +95,7 @@ yarn
 yarn pod-install
 ```
 
-For iOS:
+For IOS:
 
 ```bash
 yarn ios
@@ -145,5 +132,3 @@ In the meantime here are some important highlights:
 ## License
 
 Please check each project `LICENSE` file, most of them are under the `MIT` license.
-
-## Notes

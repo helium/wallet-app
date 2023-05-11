@@ -110,6 +110,7 @@ type Props = {
   stretchItems?: boolean
   hasDivider?: boolean
   hasIndicator?: boolean
+  hitSlop?: Insets
 } & TouchableOpacityBoxProps
 
 const TabBar = ({

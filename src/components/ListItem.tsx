@@ -2,6 +2,7 @@ import React from 'react'
 import CheckMarkFill from '@assets/images/checkmarkFill.svg'
 import { useColors } from '@theme/themeHooks'
 import { Color } from '@theme/theme'
+import { Insets } from 'react-native'
 import Box from './Box'
 import Text from './Text'
 import { TouchableOpacityBoxProps } from './TouchableOpacityBox'
@@ -19,6 +20,7 @@ export type ListItemProps = {
   disabled?: boolean
   hasDivider?: boolean
   hasPressedState?: boolean
+  hitSlop?: Insets
 } & TouchableOpacityBoxProps
 
 const ListItem = ({

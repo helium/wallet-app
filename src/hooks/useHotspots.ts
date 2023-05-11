@@ -1,9 +1,7 @@
+import BN from 'bn.js'
 import { useCallback, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import * as client from '@helium/distributor-oracle'
-import { PublicKey, Transaction } from '@solana/web3.js'
-import { useAsyncCallback } from 'react-async-hook'
-import BN from 'bn.js'
+import { useSolana } from '../solana/SolanaProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { RootState } from '../store/rootReducer'
 import {
@@ -13,8 +11,7 @@ import {
 } from '../store/slices/hotspotsSlice'
 import { useAppDispatch } from '../store/store'
 import { CompressedNFT, HotspotWithPendingRewards } from '../types/solana'
-import { MOBILE_LAZY_KEY, IOT_LAZY_KEY, Mints } from '../utils/constants'
-import { useSolana } from '../solana/SolanaProvider'
+import { Mints } from '../utils/constants'
 
 const useHotspots = (): {
   pendingIotRewards: BN | undefined
@@ -23,23 +20,13 @@ const useHotspots = (): {
   hotspotsWithMeta: HotspotWithPendingRewards[]
   loading: boolean
   refresh: (limit?: number) => void
-  createClaimAllMobileTxs: {
-    loading: boolean
-    error: Error | undefined
-    execute: () => Promise<Transaction[] | undefined>
-  }
-  createClaimAllIotTxs: {
-    loading: boolean
-    error: Error | undefined
-    execute: () => Promise<Transaction[] | undefined>
-  }
   fetchMore: (limit?: number) => void
   fetchingMore: boolean
   onEndReached: boolean
 } => {
   const dispatch = useAppDispatch()
   const { currentAccount } = useAccountStorage()
-  const { anchorProvider, lazyProgram, cluster } = useSolana()
+  const { anchorProvider, cluster } = useSolana()
   const hotspots = useSelector(
     (state: RootState) => state.hotspots[cluster] || {},
   )
@@ -69,98 +56,6 @@ const useHotspots = (): {
       hotspotsSlice.actions.resetLoading({ acct: currentAccount, cluster }),
     )
   }, [cluster, currentAccount, dispatch])
-
-  const {
-    execute: createClaimAllMobileTxs,
-    loading: loadingClaimAllMobileTxs,
-    error: errorClaimAllMobileTxs,
-  } = useAsyncCallback(async () => {
-    if (
-      !anchorProvider ||
-      !currentAccount?.solanaAddress ||
-      !lazyProgram ||
-      !hotspotsWithMeta
-    ) {
-      return
-    }
-    const { connection } = anchorProvider
-    const wallet = new PublicKey(currentAccount?.solanaAddress)
-    const txns = await Promise.all(
-      hotspotsWithMeta.map(async (nft) => {
-        if (
-          !nft.pendingRewards?.[Mints.MOBILE] ||
-          Number(nft.pendingRewards?.[Mints.MOBILE]) <= 0
-        ) {
-          return
-        }
-        const rewards = await client.getCurrentRewards(
-          lazyProgram,
-          MOBILE_LAZY_KEY,
-          new PublicKey(nft.id),
-        )
-
-        return client.formTransaction({
-          program: lazyProgram,
-          provider: anchorProvider,
-          rewards,
-          hotspot: new PublicKey(nft.id),
-          lazyDistributor: MOBILE_LAZY_KEY,
-          assetEndpoint: connection.rpcEndpoint,
-          wallet,
-        })
-      }),
-    )
-
-    const validTxns = txns.filter((txn) => txn !== undefined) as Transaction[]
-
-    return validTxns
-  })
-
-  const {
-    execute: createClaimAllIotTxs,
-    loading: loadingClaimAllIotTxs,
-    error: errorClaimAllIotTxs,
-  } = useAsyncCallback(async () => {
-    if (
-      !anchorProvider ||
-      !currentAccount?.solanaAddress ||
-      !lazyProgram ||
-      !hotspotsWithMeta
-    ) {
-      return
-    }
-    const wallet = new PublicKey(currentAccount?.solanaAddress)
-    const { connection } = anchorProvider
-
-    const txns = await Promise.all(
-      hotspotsWithMeta.map(async (nft) => {
-        if (
-          !nft.pendingRewards?.[Mints.IOT] ||
-          Number(nft.pendingRewards?.[Mints.IOT]) <= 0
-        )
-          return
-        const rewards = await client.getCurrentRewards(
-          lazyProgram,
-          IOT_LAZY_KEY,
-          new PublicKey(nft.id),
-        )
-
-        return client.formTransaction({
-          program: lazyProgram,
-          provider: anchorProvider,
-          rewards,
-          hotspot: new PublicKey(nft.id),
-          lazyDistributor: IOT_LAZY_KEY,
-          assetEndpoint: connection.rpcEndpoint,
-          wallet,
-        })
-      }),
-    )
-
-    const validTxns = txns.filter((txn) => txn !== undefined) as Transaction[]
-
-    return validTxns
-  })
 
   const refresh = useCallback(
     (limit?) => {
@@ -251,16 +146,6 @@ const useHotspots = (): {
       hotspots: [],
       hotspotsWithMeta: [],
       refresh,
-      createClaimAllMobileTxs: {
-        execute: createClaimAllMobileTxs,
-        loading: loadingClaimAllMobileTxs,
-        error: errorClaimAllMobileTxs,
-      },
-      createClaimAllIotTxs: {
-        execute: createClaimAllIotTxs,
-        loading: loadingClaimAllIotTxs,
-        error: errorClaimAllIotTxs,
-      },
       fetchMore,
       fetchingMore,
       onEndReached,
@@ -274,16 +159,6 @@ const useHotspots = (): {
     hotspotsWithMeta: hotspots[currentAccount?.solanaAddress]?.hotspotsWithMeta,
     loading: hotspots[currentAccount?.solanaAddress].loading,
     refresh,
-    createClaimAllMobileTxs: {
-      execute: createClaimAllMobileTxs,
-      loading: loadingClaimAllMobileTxs,
-      error: errorClaimAllMobileTxs,
-    },
-    createClaimAllIotTxs: {
-      execute: createClaimAllIotTxs,
-      loading: loadingClaimAllIotTxs,
-      error: errorClaimAllIotTxs,
-    },
     fetchMore,
     fetchingMore,
     onEndReached,

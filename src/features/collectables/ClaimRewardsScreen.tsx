@@ -30,7 +30,7 @@ const ClaimRewardsScreen = () => {
   const [claimError, setClaimError] = useState<string | undefined>()
   const { hotspot } = route.params
   const mint = useMemo(() => new PublicKey(hotspot.id), [hotspot.id])
-  const { submitClaimAllRewards } = useSubmitTxn()
+  const { submitClaimRewards } = useSubmitTxn()
 
   const { createClaimMobileTx, createClaimIotTx } = useHotspot(mint)
 
@@ -82,7 +82,7 @@ const ClaimRewardsScreen = () => {
       }
 
       if (transactions.length > 0) {
-        submitClaimAllRewards(transactions)
+        submitClaimRewards(transactions)
         nav.push('ClaimingRewardsScreen')
       } else {
         setClaimError(t('collectablesScreen.claimError'))

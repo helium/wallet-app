@@ -1,0 +1,16 @@
+diff --git a/node_modules/react-native-icloudstore/index.js b/node_modules/react-native-icloudstore/index.js
+index 8f15e52..5b70a4f 100644
+--- a/node_modules/react-native-icloudstore/index.js
++++ b/node_modules/react-native-icloudstore/index.js
+@@ -2,9 +2,9 @@
+  * @providesModule react-native-icloudstore
+  */
+ 
+-import { AsyncStorage, NativeModules, Platform } from 'react-native';
++import { NativeModules } from 'react-native';
+ 
+-const iCloudStorage = Platform.OS === 'ios' ? NativeModules.RNICloudStorage : AsyncStorage;
++const iCloudStorage = NativeModules.RNICloudStorage;
+ 
+ export default iCloudStorage;
+ 

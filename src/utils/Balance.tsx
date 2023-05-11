@@ -9,36 +9,37 @@ import Balance, {
   TestNetworkTokens,
   Ticker,
 } from '@helium/currency'
+import { getOraclePrice } from '@helium/currency-utils'
+import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
+import { PublicKey } from '@solana/web3.js'
 import { round } from 'lodash'
 import React, {
-  createContext,
   ReactNode,
+  createContext,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
 } from 'react'
+import { useAsync } from 'react-async-hook'
 import CurrencyFormatter from 'react-native-currency-format'
 import { useSelector } from 'react-redux'
-import { useAsync } from 'react-async-hook'
-import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
-import { PublicKey } from '@solana/web3.js'
+import usePrevious from '../hooks/usePrevious'
+import { useSolana } from '../solana/SolanaProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
-import { useAppDispatch } from '../store/store'
-import { accountCurrencyType } from './accountUtils'
-import { decimalSeparator, groupSeparator } from './i18n'
-import { useSolana } from '../solana/SolanaProvider'
 import { syncTokenAccounts } from '../store/slices/balancesSlice'
-import { usePollTokenPrices } from './usePollTokenPrices'
-import { useBalanceHistory } from './useBalanceHistory'
+import { useAppDispatch } from '../store/store'
 import { AccountBalance, BalanceInfo, TokenAccount } from '../types/balance'
 import StoreAtaBalance from './StoreAtaBalance'
-import StoreTokenBalance from './StoreTokenBalance'
 import StoreSolBalance from './StoreSolBalance'
-import usePrevious from '../hooks/usePrevious'
+import StoreTokenBalance from './StoreTokenBalance'
+import { accountCurrencyType } from './accountUtils'
+import { decimalSeparator, groupSeparator } from './i18n'
+import { useBalanceHistory } from './useBalanceHistory'
+import { usePollTokenPrices } from './usePollTokenPrices'
 
 export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
 const useBalanceHook = () => {
@@ -81,12 +82,25 @@ const useBalanceHook = () => {
     )
   }, [cluster, anchorProvider, allBalances])
 
-  const oraclePrice = useMemo(() => {
-    if (!tokenPrices?.helium) return
-
-    const heliumPrice = tokenPrices.helium[currency]
-    return Balance.fromFloat(heliumPrice, CurrencyType.usd)
-  }, [currency, tokenPrices])
+  const { result: oraclePrice } = useAsync(async () => {
+    if (!anchorProvider) {
+      return
+    }
+    const oraclePriceRaw = await getOraclePrice({
+      tokenType: 'HNT',
+      cluster,
+      connection: anchorProvider.connection,
+    })
+    return Balance.fromFloat(
+      Number(
+        (
+          oraclePriceRaw.emaPrice.value -
+          oraclePriceRaw.emaConfidence.value * 2
+        ).toFixed(5),
+      ),
+      CurrencyType.usd,
+    )
+  }, [cluster, anchorProvider?.connection])
 
   const solanaPrice = useMemo(() => {
     if (!tokenPrices?.solana) return
