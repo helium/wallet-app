@@ -20,11 +20,18 @@ In order to interact with any package contained in this repository you will need
 
 - [**NVM**](https://github.com/nvm-sh/nvm/blob/master/README.md)
 - [**Homebrew**](https://brew.sh/)
-- [**Node.js@16.x.x**](https://nodejs.org/)
+- [**Node.js@16.x.x**](https://nodejs.org/) `16.x.x`
 - [**Yarn**](https://www.npmjs.com/package/yarn)
 - [**Cocoapods**](https://cocoapods.org/)
-- [**Xcode**](https://developer.apple.com/xcode/)
-- [**Android Studio**](https://developer.android.com/studio)
+- [**Xcode**](https://developer.apple.com/xcode/) `14.2`
+  - [Download older versions of Xcode here](https://developer.apple.com/download/all/?q=xcode%2014.2)
+- [**Android Studio**](https://developer.android.com/studio) `Chipmunk`
+  - [Download older versions of Android Studio here](https://developer.android.com/studio/archive)
+  - [Install a Virtual Device](https://developer.android.com/studio/run/emulator#avd) (`Nexus 5` with `UpsideDownCake` good default)
+  - When [installing the Android SDK](https://reactnative.dev/docs/environment-setup#android-sdk) use these:
+  - `Android 12.0`
+    - `Android SDK Platform 31`
+  - `Android SDK Build-Tools 34-rc4` -> `33.0.0`
 
 ### Set up your development environment
 
@@ -138,3 +145,5 @@ In the meantime here are some important highlights:
 ## License
 
 Please check each project `LICENSE` file, most of them are under the `MIT` license.
+
+## Notes
