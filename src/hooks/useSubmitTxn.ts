@@ -113,7 +113,7 @@ export default () => {
   )
 
   const submitClaimRewards = useCallback(
-    async (txn: Transaction) => {
+    async (txns: Transaction[]) => {
       if (!anchorProvider) {
         throw new Error(t('errors.account'))
       }
@@ -125,7 +125,7 @@ export default () => {
       dispatch(
         claimRewards({
           account: currentAccount,
-          txn,
+          txns,
           anchorProvider,
           cluster,
         }),
