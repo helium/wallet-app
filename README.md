@@ -23,7 +23,7 @@ In order to interact with any package contained in this repository you will need
 - [**Node.js@18.x.x**](https://nodejs.org/)
 - [**Yarn**](https://www.npmjs.com/package/yarn)
 - [**Cocoapods**](https://cocoapods.org/)
-- [**Xcode**](https://developer.apple.com/xcode/)
+- [**Xcode@14.2**](https://xcodereleases.com/)
 - [**Android Studio**](https://developer.android.com/studio)
 
 ### Set up your development environment
