@@ -20,7 +20,7 @@ In order to interact with any package contained in this repository you will need
 
 - [**NVM**](https://github.com/nvm-sh/nvm/blob/master/README.md)
 - [**Homebrew**](https://brew.sh/)
-- [**Node.js@16.x.x**](https://nodejs.org/) `16.x.x`
+- [**Node.js@18.x.x**](https://nodejs.org/) `18.x.x`
 - [**Yarn**](https://www.npmjs.com/package/yarn)
 - [**Cocoapods**](https://cocoapods.org/)
 - [**Xcode**](https://developer.apple.com/xcode/) `14.2`
@@ -29,7 +29,7 @@ In order to interact with any package contained in this repository you will need
   - [Download older versions of Android Studio here](https://developer.android.com/studio/archive)
   - [Install a Virtual Device](https://developer.android.com/studio/run/emulator#avd) (`Nexus 5` with `UpsideDownCake` good default)
   - When [installing the Android SDK](https://reactnative.dev/docs/environment-setup#android-sdk) use these:
-  - `Android 12.0`
+  - `Android 13.0`
     - `Android SDK Platform 31`
   - `Android SDK Build-Tools 34-rc4` -> `33.0.0`
 
