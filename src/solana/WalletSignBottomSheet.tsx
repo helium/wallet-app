@@ -1,7 +1,6 @@
 import React, {
   forwardRef,
   memo,
-  ReactNode,
   Ref,
   useCallback,
   useEffect,
@@ -28,30 +27,12 @@ import { useSimulatedTransaction } from '@hooks/useSimulatedTransaction'
 import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 import CircleLoader from '@components/CircleLoader'
 import { useSolana } from './SolanaProvider'
-
-export enum WalletStandardMessageTypes {
-  connect = 'connect',
-  signTransaction = 'signTransaction',
-  signAndSendTransaction = 'signAndSendTransaction',
-  signMessage = 'signMessage',
-}
-
-type WalletSignOpts = {
-  type: WalletStandardMessageTypes
-  url: string
-  additionalMessage?: string
-}
-
-export type WalletSignBottomSheetRef = {
-  show: ({ type, url, additionalMessage }: WalletSignOpts) => Promise<boolean>
-  hide: () => void
-}
-
-export type WalletSignBottomSheetProps = {
-  serializedTx: Buffer | undefined
-  onClose: () => void
-  children: ReactNode
-}
+import {
+  WalletSignBottomSheetRef,
+  WalletSignBottomSheetProps,
+  WalletSignOpts,
+  WalletStandardMessageTypes,
+} from './walletSignBottomSheetTypes'
 
 let promiseResolve: (value: boolean | PromiseLike<boolean>) => void
 
@@ -70,6 +51,8 @@ const WalletSignBottomSheet = forwardRef(
       type: WalletStandardMessageTypes.connect,
       url: '',
       additionalMessage: '',
+      manualBalanceChanges: undefined,
+      manualEstimatedFee: undefined,
     })
     const { loading, balanceChanges, solFee, insufficientFunds } =
       useSimulatedTransaction(serializedTx, anchorProvider?.publicKey)
@@ -113,12 +96,12 @@ const WalletSignBottomSheet = forwardRef(
         if (balanceChanges.type === 'send') {
           return t('browserScreen.sendToken', {
             ticker: balanceChanges?.symbol,
-            amount: balanceChanges?.nativeChange,
+            amount: balanceChanges?.nativeChange?.toLocaleString(),
           })
         }
         return t('browserScreen.recieveToken', {
           ticker: balanceChanges?.symbol,
-          amount: balanceChanges?.nativeChange,
+          amount: balanceChanges?.nativeChange?.toLocaleString(),
         })
       }
 
@@ -126,12 +109,20 @@ const WalletSignBottomSheet = forwardRef(
     }, [balanceChanges, t, insufficientFunds])
 
     const show = useCallback(
-      ({ type, url, additionalMessage }: WalletSignOpts) => {
+      ({
+        type,
+        url,
+        additionalMessage,
+        manualBalanceChanges,
+        manualEstimatedFee,
+      }: WalletSignOpts) => {
         bottomSheetModalRef.current?.expand()
         setWalletSignOpts({
           type,
           url,
           additionalMessage,
+          manualBalanceChanges,
+          manualEstimatedFee,
         })
         const p = new Promise<boolean>((resolve) => {
           promiseResolve = resolve
@@ -185,7 +176,12 @@ const WalletSignBottomSheet = forwardRef(
     }, [hide])
 
     const renderSheetBody = useCallback(() => {
-      const { type, additionalMessage } = walletSignOpts
+      const {
+        type,
+        additionalMessage,
+        manualBalanceChanges,
+        manualEstimatedFee,
+      } = walletSignOpts
 
       if (type === WalletStandardMessageTypes.connect) {
         return (
@@ -258,16 +254,51 @@ const WalletSignBottomSheet = forwardRef(
                 </Box>
               )}
 
-              <Box
-                borderBottomStartRadius="l"
-                borderBottomEndRadius="l"
-                backgroundColor="secondaryBackground"
-                padding="m"
-              >
-                <Text variant="body1Medium" color={simulationMessageColor}>
-                  {simulationMessage}
-                </Text>
-              </Box>
+              {!manualBalanceChanges?.length && (
+                <Box
+                  borderBottomStartRadius="l"
+                  borderBottomEndRadius="l"
+                  backgroundColor="secondaryBackground"
+                  padding="m"
+                >
+                  <Text variant="body1Medium" color={simulationMessageColor}>
+                    {simulationMessage}
+                  </Text>
+                </Box>
+              )}
+
+              {manualBalanceChanges?.length &&
+                manualBalanceChanges.map((change, index) => {
+                  const isLast = index === manualBalanceChanges.length - 1
+                  const isSend = change.type === 'send'
+                  const balanceChange = t(
+                    isSend
+                      ? 'browserScreen.sendToken'
+                      : 'browserScreen.recieveToken',
+                    {
+                      ticker: change.ticker,
+                      amount: change.amount.toLocaleString(),
+                    },
+                  )
+                  return (
+                    <Box
+                      key={change.ticker + change.amount}
+                      borderBottomStartRadius={isLast ? 'l' : 'none'}
+                      borderBottomEndRadius={isLast ? 'l' : 'none'}
+                      backgroundColor="secondaryBackground"
+                      padding="m"
+                      borderBottomColor="black"
+                      borderBottomWidth={isLast ? 0 : 1}
+                    >
+                      <Text
+                        variant="body1Medium"
+                        color={isSend ? 'red500' : 'greenBright500'}
+                      >
+                        {balanceChange}
+                      </Text>
+                    </Box>
+                  )
+                })}
 
               {type === WalletStandardMessageTypes.signAndSendTransaction ||
                 (type === WalletStandardMessageTypes.signTransaction && (
@@ -284,7 +315,10 @@ const WalletSignBottomSheet = forwardRef(
                       </Text>
                     </Box>
                     <Text variant="body1Medium" color="secondaryText">
-                      {`~${(solFee || 5000) / LAMPORTS_PER_SOL} SOL`}
+                      {`~${
+                        (manualEstimatedFee || solFee || 5000) /
+                        LAMPORTS_PER_SOL
+                      } SOL`}
                     </Text>
                   </Box>
                 ))}

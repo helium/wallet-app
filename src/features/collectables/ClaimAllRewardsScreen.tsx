@@ -13,7 +13,9 @@ import { IOT_LAZY_KEY, MOBILE_LAZY_KEY } from '@utils/constants'
 import BN from 'bn.js'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toNumber } from '@helium/spl-utils'
 import { CollectableNavigationProp } from './collectablesTypes'
+import { BalanceChange } from '../../solana/walletSignBottomSheetTypes'
 
 const ClaimAllRewardsScreen = () => {
   const { t } = useTranslation()
@@ -44,8 +46,31 @@ const ClaimAllRewardsScreen = () => {
       setClaimError(undefined)
       setRedeeming(true)
 
+      const balanceChanges: BalanceChange[] = []
+
+      if (pendingIotRewards) {
+        balanceChanges.push({
+          ticker: 'IOT',
+          amount: toNumber(pendingIotRewards, 6),
+          type: 'receive',
+        })
+      }
+
+      if (pendingMobileRewards) {
+        balanceChanges.push({
+          ticker: 'MOBILE',
+          amount: toNumber(pendingMobileRewards, 6),
+          type: 'receive',
+        })
+      }
+
+      await submitClaimAllRewards(
+        [IOT_LAZY_KEY, MOBILE_LAZY_KEY],
+        hotspotsWithMeta,
+        balanceChanges,
+      )
+
       navigation.replace('ClaimingRewardsScreen')
-      submitClaimAllRewards([IOT_LAZY_KEY, MOBILE_LAZY_KEY], hotspotsWithMeta)
 
       setRedeeming(false)
     } catch (e) {
@@ -53,7 +78,13 @@ const ClaimAllRewardsScreen = () => {
       setClaimError((e as any)?.response?.data?.error || (e as Error)?.message)
       setRedeeming(false)
     }
-  }, [navigation, submitClaimAllRewards, hotspotsWithMeta])
+  }, [
+    navigation,
+    submitClaimAllRewards,
+    hotspotsWithMeta,
+    pendingMobileRewards,
+    pendingIotRewards,
+  ])
 
   const addAllToAccountDisabled = useMemo(() => {
     return (

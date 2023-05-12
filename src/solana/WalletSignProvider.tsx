@@ -6,9 +6,8 @@ import React, {
   useRef,
   useEffect,
 } from 'react'
-import WalletSignBottomSheet, {
-  WalletSignBottomSheetRef,
-} from './WalletSignBottomSheet'
+import { WalletSignBottomSheetRef } from './walletSignBottomSheetTypes'
+import WalletSignBottomSheet from './WalletSignBottomSheet'
 
 const useWalletSignHook = () => {
   const [walletSignBottomSheetRef, setWalletSignBottomSheetRef] =

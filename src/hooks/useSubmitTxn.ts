@@ -3,7 +3,12 @@ import Balance, { AnyCurrencyType } from '@helium/currency'
 import { PublicKey, Transaction } from '@solana/web3.js'
 import i18n from '@utils/i18n'
 import { Mints } from '@utils/constants'
-import { useAccountStorage } from '../storage/AccountStorageProvider'
+import * as solUtils from '@utils/solanaUtils'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
+import {
+  BalanceChange,
+  WalletStandardMessageTypes,
+} from '../solana/walletSignBottomSheetTypes'
 import {
   makeCollectablePayment,
   makePayment,
@@ -19,13 +24,16 @@ import {
   Collectable,
   CompressedNFT,
   HotspotWithPendingRewards,
+  toMintAddress,
 } from '../types/solana'
 import { useSolana } from '../solana/SolanaProvider'
+import { useWalletSign } from '../solana/WalletSignProvider'
 
 export default () => {
   const { currentAccount } = useAccountStorage()
   const { cluster, anchorProvider } = useSolana()
   const { t } = i18n
+  const { walletSignBottomSheetRef, setSerializedTx } = useWalletSign()
 
   const dispatch = useAppDispatch()
 
@@ -37,70 +45,204 @@ export default () => {
         max?: boolean
       }[],
     ) => {
-      if (!currentAccount || !anchorProvider) {
+      if (
+        !currentAccount?.solanaAddress ||
+        !anchorProvider ||
+        !walletSignBottomSheetRef
+      ) {
         throw new Error(t('errors.account'))
+      }
+
+      const [firstPayment] = payments
+      const mintAddress =
+        firstPayment.balanceAmount.type.ticker !== 'SOL'
+          ? toMintAddress(firstPayment.balanceAmount.type.ticker, Mints)
+          : undefined
+      const paymentTxn = await solUtils.transferToken(
+        anchorProvider,
+        currentAccount.solanaAddress,
+        currentAccount.address,
+        payments,
+        mintAddress,
+      )
+
+      const serializedTx = paymentTxn.serialize()
+      setSerializedTx(Buffer.from(serializedTx))
+
+      // wait 0.5 second to allow the bottom sheet to load txn
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        additionalMessage: t('transactions.signPaymentTxn'),
+      })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
       }
 
       dispatch(
         makePayment({
+          paymentTxn,
           account: currentAccount,
-          payments,
           cluster,
           anchorProvider,
-          mints: Mints,
         }),
       )
     },
-    [currentAccount, dispatch, t, anchorProvider, cluster],
+    [
+      currentAccount,
+      dispatch,
+      t,
+      anchorProvider,
+      cluster,
+      walletSignBottomSheetRef,
+      setSerializedTx,
+    ],
   )
 
   const submitCollectable = useCallback(
     async (collectable: CompressedNFT | Collectable, payee: string) => {
-      if (!currentAccount || !anchorProvider) {
+      if (
+        !currentAccount?.solanaAddress ||
+        !anchorProvider ||
+        !walletSignBottomSheetRef
+      ) {
         throw new Error(t('errors.account'))
       }
+
+      const compressedNFT = collectable as CompressedNFT
+      const nft = collectable as Collectable
+
+      const transferTxn = compressedNFT?.compression?.compressed
+        ? await solUtils.transferCompressedCollectable(
+            anchorProvider,
+            currentAccount.solanaAddress,
+            currentAccount.address,
+            compressedNFT,
+            payee,
+          )
+        : await solUtils.transferCollectable(
+            anchorProvider,
+            currentAccount.solanaAddress,
+            currentAccount.address,
+            nft,
+            payee,
+          )
+
+      const serializedTx = transferTxn.serialize({
+        requireAllSignatures: false,
+      })
+      setSerializedTx(Buffer.from(serializedTx))
+
+      // wait 0.5 second to allow the bottom sheet to load txn
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        additionalMessage: t('transactions.signTransferCollectableTxn'),
+      })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
+      }
+
       dispatch(
         makeCollectablePayment({
           account: currentAccount,
-          collectable,
-          payee,
+          transferTxn,
           cluster,
           anchorProvider,
         }),
       )
     },
-    [cluster, currentAccount, dispatch, t, anchorProvider],
+    [
+      cluster,
+      currentAccount,
+      dispatch,
+      t,
+      anchorProvider,
+      walletSignBottomSheetRef,
+      setSerializedTx,
+    ],
   )
 
   const submitTreasurySwap = useCallback(
     async (fromMint: PublicKey, amount: number, recipient: PublicKey) => {
-      if (!currentAccount) {
+      if (!currentAccount || !anchorProvider || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
       }
 
-      if (!anchorProvider) {
-        throw new Error(t('errors.account'))
+      const swapTxn = await solUtils.createTreasurySwapTxn(
+        amount,
+        fromMint,
+        anchorProvider,
+        recipient,
+      )
+
+      const serializedTx = swapTxn.serialize({
+        requireAllSignatures: false,
+      })
+      setSerializedTx(Buffer.from(serializedTx))
+
+      // wait 0.5 second to allow the bottom sheet to load txn
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        additionalMessage: t('transactions.signSwapTxn'),
+      })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
       }
 
       dispatch(
         sendTreasurySwap({
           anchorProvider,
           cluster,
-          fromMint,
-          amount,
-          mints: Mints,
-          recipient,
+          swapTxn,
         }),
       )
     },
-    [anchorProvider, cluster, currentAccount, dispatch, t],
+    [
+      anchorProvider,
+      cluster,
+      currentAccount,
+      dispatch,
+      t,
+      walletSignBottomSheetRef,
+      setSerializedTx,
+    ],
   )
 
   const submitAnchorTxn = useCallback(
     async (txn: Transaction) => {
-      if (!anchorProvider) {
+      if (!anchorProvider || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
       }
+
+      const serializedTx = txn.serialize({
+        requireAllSignatures: false,
+      })
+      setSerializedTx(Buffer.from(serializedTx))
+
+      // wait 0.5 second to allow the bottom sheet to load txn
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        additionalMessage: t('transactions.signGenericTxn'),
+      })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
+      }
+
       dispatch(
         sendAnchorTxn({
           txn,
@@ -109,17 +251,47 @@ export default () => {
         }),
       )
     },
-    [anchorProvider, cluster, dispatch, t],
+    [
+      anchorProvider,
+      cluster,
+      dispatch,
+      t,
+      walletSignBottomSheetRef,
+      setSerializedTx,
+    ],
   )
 
   const submitClaimRewards = useCallback(
-    async (txns: Transaction[]) => {
+    async (txns: Transaction[], balanceChanges: BalanceChange[]) => {
       if (!anchorProvider) {
         throw new Error(t('errors.account'))
       }
 
       if (!currentAccount) {
         throw new Error(t('errors.account'))
+      }
+
+      if (!walletSignBottomSheetRef) {
+        throw new Error('No wallet sign bottom sheet ref')
+      }
+
+      const serializedTx = txns[0].serialize({
+        requireAllSignatures: false,
+      })
+      setSerializedTx(serializedTx)
+
+      // wait 0.5 second to allow the bottom sheet to load txn
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        additionalMessage: t('transactions.signClaimRewardsTxn'),
+        manualBalanceChanges: balanceChanges,
+      })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
       }
 
       dispatch(
@@ -131,20 +303,48 @@ export default () => {
         }),
       )
     },
-    [anchorProvider, cluster, currentAccount, dispatch, t],
+    [
+      anchorProvider,
+      cluster,
+      currentAccount,
+      dispatch,
+      t,
+      walletSignBottomSheetRef,
+      setSerializedTx,
+    ],
   )
 
   const submitClaimAllRewards = useCallback(
     async (
       lazyDistributors: PublicKey[],
       hotspots: HotspotWithPendingRewards[],
+      balanceChanges: BalanceChange[],
     ) => {
-      if (!anchorProvider) {
+      if (!anchorProvider || !currentAccount || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
       }
 
       if (!currentAccount) {
         throw new Error(t('errors.account'))
+      }
+
+      // Estimating fee in lamports. Not the best but works for now (:
+      const claimAllEstimatedFee =
+        hotspots.length !== 0 ? (hotspots.length / 2) * 5000 : 5000
+
+      // wait 0.5 second to allow the bottom sheet to load txn
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        additionalMessage: t('transactions.signClaimAllRewardsTxn'),
+        manualBalanceChanges: balanceChanges,
+        manualEstimatedFee: claimAllEstimatedFee,
+      })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
       }
 
       dispatch(
@@ -157,7 +357,14 @@ export default () => {
         }),
       )
     },
-    [anchorProvider, cluster, currentAccount, dispatch, t],
+    [
+      anchorProvider,
+      cluster,
+      currentAccount,
+      dispatch,
+      t,
+      walletSignBottomSheetRef,
+    ],
   )
 
   const submitLedger = useCallback(async () => {
@@ -172,39 +379,101 @@ export default () => {
       dcAmount: number
       recipient: PublicKey
     }) => {
-      if (!currentAccount || !anchorProvider) {
+      if (!currentAccount || !anchorProvider || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
+      }
+
+      const swapTxn = await solUtils.mintDataCredits({
+        anchorProvider,
+        dcAmount,
+        recipient,
+      })
+
+      const serializedTx = swapTxn.serialize({
+        requireAllSignatures: false,
+      })
+      setSerializedTx(serializedTx)
+
+      // wait 0.5 second to allow the bottom sheet to load txn
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        additionalMessage: t('transactions.signMintDataCreditsTxn'),
+      })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
       }
 
       await dispatch(
         sendMintDataCredits({
           anchorProvider,
           cluster,
-          dcAmount,
-          recipient,
+          swapTxn,
         }),
       )
     },
-    [anchorProvider, cluster, currentAccount, dispatch, t],
+    [
+      anchorProvider,
+      cluster,
+      currentAccount,
+      dispatch,
+      t,
+      setSerializedTx,
+      walletSignBottomSheetRef,
+    ],
   )
 
   const submitDelegateDataCredits = useCallback(
     async (delegateAddress: string, amount: number, mint: PublicKey) => {
-      if (!currentAccount || !anchorProvider) {
+      if (!currentAccount || !anchorProvider || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
+      }
+
+      const delegateDCTxn = await solUtils.delegateDataCredits(
+        anchorProvider,
+        delegateAddress,
+        amount,
+        mint,
+      )
+
+      const serializedTx = delegateDCTxn.serialize({
+        requireAllSignatures: false,
+      })
+      setSerializedTx(serializedTx)
+
+      // wait 0.5 second to allow the bottom sheet to load txn
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        additionalMessage: t('transactions.signDelegateDCTxn'),
+      })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
       }
 
       await dispatch(
         sendDelegateDataCredits({
           anchorProvider,
           cluster,
-          delegateAddress,
-          amount,
-          mint,
+          delegateDCTxn,
         }),
       )
     },
-    [anchorProvider, cluster, currentAccount, dispatch, t],
+    [
+      anchorProvider,
+      cluster,
+      currentAccount,
+      dispatch,
+      t,
+      walletSignBottomSheetRef,
+      setSerializedTx,
+    ],
   )
 
   return {
