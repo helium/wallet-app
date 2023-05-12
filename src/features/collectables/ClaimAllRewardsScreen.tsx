@@ -45,7 +45,10 @@ const ClaimAllRewardsScreen = () => {
       setRedeeming(true)
 
       navigation.replace('ClaimingRewardsScreen')
-      submitClaimAllRewards([IOT_LAZY_KEY, MOBILE_LAZY_KEY], hotspotsWithMeta)
+      await submitClaimAllRewards(
+        [IOT_LAZY_KEY, MOBILE_LAZY_KEY],
+        hotspotsWithMeta,
+      )
 
       setRedeeming(false)
     } catch (e) {

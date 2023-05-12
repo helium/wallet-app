@@ -1,7 +1,6 @@
 import React, {
   forwardRef,
   memo,
-  ReactNode,
   Ref,
   useCallback,
   useEffect,
@@ -28,30 +27,12 @@ import { useSimulatedTransaction } from '@hooks/useSimulatedTransaction'
 import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 import CircleLoader from '@components/CircleLoader'
 import { useSolana } from './SolanaProvider'
-
-export enum WalletStandardMessageTypes {
-  connect = 'connect',
-  signTransaction = 'signTransaction',
-  signAndSendTransaction = 'signAndSendTransaction',
-  signMessage = 'signMessage',
-}
-
-type WalletSignOpts = {
-  type: WalletStandardMessageTypes
-  url: string
-  additionalMessage?: string
-}
-
-export type WalletSignBottomSheetRef = {
-  show: ({ type, url, additionalMessage }: WalletSignOpts) => Promise<boolean>
-  hide: () => void
-}
-
-export type WalletSignBottomSheetProps = {
-  serializedTx: Buffer | undefined
-  onClose: () => void
-  children: ReactNode
-}
+import {
+  WalletSignBottomSheetRef,
+  WalletSignBottomSheetProps,
+  WalletSignOpts,
+  WalletStandardMessageTypes,
+} from './walletSignBottomSheetTypes'
 
 let promiseResolve: (value: boolean | PromiseLike<boolean>) => void
 

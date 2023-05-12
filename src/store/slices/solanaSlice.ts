@@ -1,5 +1,5 @@
 import { AnchorProvider } from '@coral-xyz/anchor'
-import Balance, { AnyCurrencyType, Ticker } from '@helium/currency'
+import { Ticker } from '@helium/currency'
 import * as client from '@helium/distributor-oracle'
 import { init } from '@helium/lazy-distributor-sdk'
 import {
@@ -20,12 +20,7 @@ import {
 import { first, last } from 'lodash'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
-import {
-  Collectable,
-  CompressedNFT,
-  HotspotWithPendingRewards,
-  toMintAddress,
-} from '../../types/solana'
+import { HotspotWithPendingRewards, toMintAddress } from '../../types/solana'
 import * as Logger from '../../utils/logger'
 import * as solUtils from '../../utils/solanaUtils'
 import { postPayment } from '../../utils/walletApiV2'
@@ -55,26 +50,18 @@ const initialState: SolanaState = {
   activity: { data: {} },
 }
 
-type Payment = {
-  payee: string
-  balanceAmount: Balance<AnyCurrencyType>
-  max?: boolean
-}
-
 type PaymentInput = {
   account: CSAccount
-  payments: Payment[]
   cluster: Cluster
-  mints: Record<string, string>
   anchorProvider: AnchorProvider
+  paymentTxn: Transaction
 }
 
 type CollectablePaymentInput = {
   account: CSAccount
-  collectable: CompressedNFT | Collectable
-  payee: string
   cluster: Cluster
   anchorProvider: AnchorProvider
+  transferTxn: Transaction
 }
 
 type AnchorTxnInput = {
@@ -101,50 +88,31 @@ type ClaimAllRewardsInput = {
 type TreasurySwapTxn = {
   cluster: Cluster
   anchorProvider: AnchorProvider
-  amount: number
-  fromMint: PublicKey
-  mints: Record<string, string>
-  recipient: PublicKey
+  swapTxn: Transaction
 }
 
 type MintDataCreditsInput = {
   anchorProvider: AnchorProvider
   cluster: Cluster
-  dcAmount: number
-  recipient: PublicKey
+  swapTxn: Transaction
 }
 
 type DelegateDataCreditsInput = {
   anchorProvider: AnchorProvider
   cluster: Cluster
-  delegateAddress: string
-  amount: number
-  mint: PublicKey
+  delegateDCTxn: Transaction
 }
 
 export const makePayment = createAsyncThunk(
   'solana/makePayment',
-  async ({
-    account,
-    payments,
-    cluster,
-    mints,
-    anchorProvider,
-  }: PaymentInput) => {
+  async ({ account, cluster, anchorProvider, paymentTxn }: PaymentInput) => {
     if (!account?.solanaAddress) throw new Error('No solana account found')
 
-    const [firstPayment] = payments
-    const mintAddress =
-      firstPayment.balanceAmount.type.ticker !== 'SOL'
-        ? toMintAddress(firstPayment.balanceAmount.type.ticker, mints)
-        : undefined
-    const { signature } = await solUtils.transferToken(
-      anchorProvider,
-      account.solanaAddress,
-      account.address,
-      payments,
-      mintAddress,
-    )
+    const signed = await anchorProvider.wallet.signTransaction(paymentTxn)
+
+    const signature = await anchorProvider.sendAndConfirm(signed)
+
+    postPayment({ signature, cluster })
 
     postPayment({
       signature,
@@ -158,49 +126,25 @@ export const makePayment = createAsyncThunk(
 export const makeCollectablePayment = createAsyncThunk(
   'solana/makeCollectablePayment',
   async (
-    {
-      account,
-      collectable,
-      payee,
-      cluster,
-      anchorProvider,
-    }: CollectablePaymentInput,
+    { account, transferTxn, cluster, anchorProvider }: CollectablePaymentInput,
     { dispatch },
   ) => {
     if (!account?.solanaAddress) throw new Error('No solana account found')
 
-    const compressedNFT = collectable as CompressedNFT
-    const nft = collectable as Collectable
-
     try {
-      const transfer = compressedNFT?.compression?.compressed
-        ? await solUtils.transferCompressedCollectable(
-            anchorProvider,
-            account.solanaAddress,
-            account.address,
-            compressedNFT,
-            payee,
-          )
-        : await solUtils.transferCollectable(
-            anchorProvider,
-            account.solanaAddress,
-            account.address,
-            nft,
-            payee,
-          )
+      const signed = await anchorProvider.wallet.signTransaction(transferTxn)
 
-      // If the transfer is successful, we need to update the collectables
-      if (!transfer.txn?.meta?.err) {
-        dispatch(
-          fetchCollectables({
-            account,
-            cluster,
-            connection: anchorProvider.connection,
-          }),
-        )
-      }
+      const sig = await anchorProvider.sendAndConfirm(signed)
 
-      postPayment({ signature: transfer.signature, cluster })
+      postPayment({ signature: sig, cluster })
+
+      dispatch(
+        fetchCollectables({
+          account,
+          cluster,
+          connection: anchorProvider.connection,
+        }),
+      )
     } catch (error) {
       Logger.error(error)
       throw error
@@ -212,21 +156,13 @@ export const makeCollectablePayment = createAsyncThunk(
 
 export const sendTreasurySwap = createAsyncThunk(
   'solana/sendTreasurySwap',
-  async ({
-    cluster,
-    anchorProvider,
-    amount,
-    fromMint,
-    recipient,
-  }: TreasurySwapTxn) => {
+  async ({ cluster, anchorProvider, swapTxn }: TreasurySwapTxn) => {
     try {
-      const swap = await solUtils.createTreasurySwapTxn(
-        amount,
-        fromMint,
-        anchorProvider,
-        recipient,
-      )
-      postPayment({ signature: swap.signature, cluster })
+      const signed = await anchorProvider.wallet.signTransaction(swapTxn)
+
+      const sig = await anchorProvider.sendAndConfirm(signed)
+
+      postPayment({ signature: sig, cluster })
     } catch (error) {
       Logger.error(error)
       throw error
@@ -237,20 +173,13 @@ export const sendTreasurySwap = createAsyncThunk(
 
 export const sendMintDataCredits = createAsyncThunk(
   'solana/sendMintDataCredits',
-  async ({
-    cluster,
-    anchorProvider,
-    dcAmount,
-    recipient,
-  }: MintDataCreditsInput) => {
+  async ({ cluster, anchorProvider, swapTxn }: MintDataCreditsInput) => {
     try {
-      const swap = await solUtils.mintDataCredits({
-        anchorProvider,
-        dcAmount,
-        recipient,
-      })
+      const signed = await anchorProvider.wallet.signTransaction(swapTxn)
 
-      postPayment({ signature: swap.signature, cluster })
+      const sig = await anchorProvider.sendAndConfirm(signed)
+
+      postPayment({ signature: sig, cluster })
     } catch (error) {
       Logger.error(error)
       throw error
@@ -264,19 +193,14 @@ export const sendDelegateDataCredits = createAsyncThunk(
   async ({
     cluster,
     anchorProvider,
-    amount,
-    delegateAddress,
-    mint,
+    delegateDCTxn,
   }: DelegateDataCreditsInput) => {
     try {
-      const swap = await solUtils.delegateDataCredits(
-        anchorProvider,
-        delegateAddress,
-        amount,
-        mint,
-      )
+      const signed = await anchorProvider.wallet.signTransaction(delegateDCTxn)
 
-      postPayment({ signature: swap.signature, cluster })
+      const sig = await anchorProvider.sendAndConfirm(signed)
+
+      postPayment({ signature: sig, cluster })
     } catch (error) {
       Logger.error(error)
       throw error
@@ -314,11 +238,12 @@ export const sendAnchorTxn = createAsyncThunk(
 export const claimRewards = createAsyncThunk(
   'solana/claimRewards',
   async (
-    { account, txns, anchorProvider, cluster }: ClaimRewardInput,
+    { account, anchorProvider, cluster, txns }: ClaimRewardInput,
     { dispatch },
   ) => {
     try {
       const signed = await anchorProvider.wallet.signAllTransactions(txns)
+
       const sigs = await bulkSendRawTransactions(
         anchorProvider.connection,
         signed.map((s) => s.serialize()),

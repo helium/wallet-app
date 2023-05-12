@@ -26,10 +26,11 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import injectWalletStandard from './walletStandard'
 import { getKeypair } from '../../storage/secureStorage'
 import * as Logger from '../../utils/logger'
-import WalletSignBottomSheet, {
+import WalletSignBottomSheet from '../../solana/WalletSignBottomSheet'
+import {
   WalletSignBottomSheetRef,
   WalletStandardMessageTypes,
-} from '../../solana/WalletSignBottomSheet'
+} from '../../solana/walletSignBottomSheetTypes'
 import Box from '../../components/Box'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import Text from '../../components/Text'

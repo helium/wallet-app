@@ -179,7 +179,7 @@ const BurnScreen = () => {
 
   const handleSubmit = useCallback(async () => {
     if (isDelegate && amountBalance) {
-      submitDelegateDataCredits(
+      await submitDelegateDataCredits(
         delegateAddress,
         amountBalance.integerBalance,
         mint,

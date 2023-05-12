@@ -311,10 +311,10 @@ const PaymentScreen = () => {
   )
 
   const handleSubmit = useCallback(
-    (opts?: { txn: PaymentV2; txnJson: string }) => {
+    async (opts?: { txn: PaymentV2; txnJson: string }) => {
       try {
         if (!opts) {
-          submitPayment(payments)
+          await submitPayment(payments)
         } else {
           // This is a ledger device
           submitLedger()

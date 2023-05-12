@@ -52,7 +52,7 @@ import { useSolana } from '../../solana/SolanaProvider'
 import { useBalance } from '../../utils/Balance'
 import { AccountBalance } from '../../types/balance'
 import { useWalletSign } from '../../solana/WalletSignProvider'
-import { WalletStandardMessageTypes } from '../../solana/WalletSignBottomSheet'
+import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'

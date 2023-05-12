@@ -28,7 +28,7 @@ import AddressBookSelector, {
 } from '@components/AddressBookSelector'
 import TextTransform from '@components/TextTransform'
 import { ReAnimatedBox } from '@components/AnimatedBox'
-import useAlert from '@hooks/useAlert'
+import CircleLoader from '@components/CircleLoader'
 import { Collectable, CompressedNFT } from '../../types/solana'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import { createTransferCollectableMessage } from '../../utils/solanaUtils'
@@ -74,7 +74,7 @@ const TransferCollectableScreen = () => {
   const { anchorProvider } = useSolana()
   const addressBookRef = useRef<AddressBookRef>(null)
   const colors = useColors()
-  const { showOKCancelAlert } = useAlert()
+  const [transfering, setTransfering] = useState(false)
 
   const compressedNFT = useMemo(
     () => collectable as CompressedNFT,
@@ -161,29 +161,19 @@ const TransferCollectableScreen = () => {
   )
 
   const handleTransfer = useCallback(async () => {
-    const decision = await showOKCancelAlert({
-      title: t('collectablesScreen.transferCollectableAlertTitle'),
-      message: t('collectablesScreen.transferCollectableAlertBody'),
-    })
-    if (!decision) return
-
+    setTransfering(true)
     try {
-      submitCollectable(collectable, recipient)
+      await submitCollectable(collectable, recipient)
+      setTransfering(false)
       navigation.navigate('TransferCompleteScreen', {
         collectable,
       })
     } catch (error) {
+      setTransfering(false)
       Logger.error(error)
       setNetworkError((error as Error).message)
     }
-  }, [
-    collectable,
-    navigation,
-    recipient,
-    showOKCancelAlert,
-    submitCollectable,
-    t,
-  ])
+  }, [collectable, navigation, recipient, submitCollectable])
 
   const showError = useMemo(() => {
     if (hasError) return t('generic.notValidSolanaAddress')
@@ -309,26 +299,28 @@ const TransferCollectableScreen = () => {
                   flexGrow={1}
                   borderRadius="round"
                   backgroundColor="white"
-                  backgroundColorOpacity={1}
-                  backgroundColorOpacityPressed={0.05}
-                  titleColorDisabled="grey600"
-                  backgroundColorDisabled="white"
-                  backgroundColorDisabledOpacity={0.1}
-                  disabled={!solAddressIsValid(recipient)}
-                  titleColorPressedOpacity={0.3}
-                  title={t('collectablesScreen.transfer')}
+                  backgroundColorOpacityPressed={0.7}
+                  backgroundColorDisabled="surfaceSecondary"
+                  backgroundColorDisabledOpacity={0.5}
+                  titleColorDisabled="secondaryText"
+                  title={transfering ? '' : t('collectablesScreen.transfer')}
+                  disabled={!solAddressIsValid(recipient) || transfering}
                   titleColor="black"
                   onPress={handleTransfer}
                   TrailingComponent={
-                    <ArrowRight
-                      width={16}
-                      height={15}
-                      color={
-                        !solAddressIsValid(recipient)
-                          ? colors.grey600
-                          : colors.black
-                      }
-                    />
+                    transfering ? (
+                      <CircleLoader loaderSize={20} color="white" />
+                    ) : (
+                      <ArrowRight
+                        width={16}
+                        height={15}
+                        color={
+                          !solAddressIsValid(recipient)
+                            ? colors.grey600
+                            : colors.black
+                        }
+                      />
+                    )
                   }
                 />
               </Box>

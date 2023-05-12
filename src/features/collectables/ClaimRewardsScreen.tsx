@@ -82,7 +82,7 @@ const ClaimRewardsScreen = () => {
       }
 
       if (transactions.length > 0) {
-        submitClaimRewards(transactions)
+        await submitClaimRewards(transactions)
         nav.push('ClaimingRewardsScreen')
       } else {
         setClaimError(t('collectablesScreen.claimError'))

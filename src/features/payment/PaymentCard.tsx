@@ -17,7 +17,6 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import animateTransition from '../../utils/animateTransition'
 import PaymentSummary from './PaymentSummary'
 import { checkSecureAccount } from '../../storage/secureStorage'
-import { useSolana } from '../../solana/SolanaProvider'
 import { SendDetails } from '../../utils/linking'
 
 type Props = {
@@ -45,25 +44,14 @@ const PaymentCard = ({
   const [payEnabled, setPayEnabled] = useState(false)
   const [height, setHeight] = useState(0)
   const ledgerPaymentRef = useRef<LedgerPaymentRef>(null)
-  const { showOKAlert, showOKCancelAlert } = useAlert()
+  const { showOKAlert } = useAlert()
   const { currentAccount } = useAccountStorage()
-  const { cluster } = useSolana()
   const [options, setOptions] = useState<{
     txn: PaymentV2
     txnJson: string
   }>()
 
   const handlePayPressed = useCallback(async () => {
-    const decision = await showOKCancelAlert({
-      title: t('payment.solana.warning.title', { cluster }),
-      message: t('payment.solana.warning.message', { cluster }),
-      ok: t('generic.understand'),
-    })
-
-    if (!decision) {
-      return
-    }
-
     if (!currentAccount?.ledgerDevice) {
       const hasSecureAccount = await checkSecureAccount(
         currentAccount?.address,
@@ -82,7 +70,7 @@ const PaymentCard = ({
         speculativeNonce: 0,
       })
     }
-  }, [cluster, currentAccount, payments, showOKCancelAlert, t])
+  }, [currentAccount, payments])
 
   const handleLayout = useCallback(
     (e: LayoutChangeEvent) => {
