@@ -23,8 +23,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { PaymentV2 } from '@helium/transactions'
 import { unionBy } from 'lodash'
 import Toast from 'react-native-simple-toast'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { useAsync } from 'react-async-hook'
 import { useSelector } from 'react-redux'
 import TokenButton from '@components/TokenButton'
 import Box from '@components/Box'
@@ -43,7 +41,6 @@ import AddressBookSelector, {
   AddressBookRef,
 } from '@components/AddressBookSelector'
 import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
-import useAlert from '@hooks/useAlert'
 import useDisappear from '@hooks/useDisappear'
 import IconPressedContainer from '@components/IconPressedContainer'
 import TokenSOL from '@assets/images/tokenSOL.svg'
@@ -111,7 +108,6 @@ const PaymentScreen = () => {
     useBalance()
   const { anchorProvider } = useSolana()
 
-  const { showOKAlert } = useAlert()
   const appDispatch = useAppDispatch()
   const navigation = useNavigation<HomeNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
@@ -138,19 +134,6 @@ const PaymentScreen = () => {
   useDisappear(() => {
     appDispatch(solanaSlice.actions.resetPayment())
   })
-
-  useAsync(async () => {
-    if (ticker !== 'MOBILE') return
-
-    const mobilePromptShown = await AsyncStorage.getItem('mobilePaymentPrompt')
-    if (mobilePromptShown === 'true') return
-
-    await showOKAlert({
-      title: t('payment.mobilePrompt.title'),
-      message: t('payment.mobilePrompt.message'),
-    })
-    AsyncStorage.setItem('mobilePaymentPrompt', 'true')
-  }, [ticker])
 
   const navBack = useCallback(() => {
     if (navigation.canGoBack()) {

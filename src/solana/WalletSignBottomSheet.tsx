@@ -95,12 +95,12 @@ const WalletSignBottomSheet = forwardRef(
         if (balanceChanges.type === 'send') {
           return t('browserScreen.sendToken', {
             ticker: balanceChanges?.symbol,
-            amount: balanceChanges?.nativeChange,
+            amount: balanceChanges?.nativeChange?.toLocaleString(),
           })
         }
         return t('browserScreen.recieveToken', {
           ticker: balanceChanges?.symbol,
-          amount: balanceChanges?.nativeChange,
+          amount: balanceChanges?.nativeChange?.toLocaleString(),
         })
       }
 
@@ -269,7 +269,7 @@ const WalletSignBottomSheet = forwardRef(
                       : 'browserScreen.recieveToken',
                     {
                       ticker: change.ticker,
-                      amount: change.amount,
+                      amount: change.amount.toLocaleString(),
                     },
                   )
                   return (
