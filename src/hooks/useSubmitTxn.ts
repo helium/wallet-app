@@ -328,7 +328,9 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      // TODO: Add some manual fee calculation here
+      // Estimating fee in lamports. Not the best but works for now (:
+      const claimAllEstimatedFee =
+        hotspots.length !== 0 ? (hotspots.length / 2) * 5000 : 5000
 
       // wait 0.5 second to allow the bottom sheet to load txn
       await new Promise((resolve) => setTimeout(resolve, 500))
@@ -338,6 +340,7 @@ export default () => {
         url: '',
         additionalMessage: t('transactions.signClaimAllRewardsTxn'),
         manualBalanceChanges: balanceChanges,
+        manualEstimatedFee: claimAllEstimatedFee,
       })
 
       if (!decision) {

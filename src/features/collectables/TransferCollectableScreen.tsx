@@ -74,7 +74,7 @@ const TransferCollectableScreen = () => {
   const { anchorProvider } = useSolana()
   const addressBookRef = useRef<AddressBookRef>(null)
   const colors = useColors()
-  const [transfering, setTransfering] = useState(false)
+  const [transferring, setTransferring] = useState(false)
 
   const compressedNFT = useMemo(
     () => collectable as CompressedNFT,
@@ -161,15 +161,15 @@ const TransferCollectableScreen = () => {
   )
 
   const handleTransfer = useCallback(async () => {
-    setTransfering(true)
+    setTransferring(true)
     try {
       await submitCollectable(collectable, recipient)
-      setTransfering(false)
+      setTransferring(false)
       navigation.navigate('TransferCompleteScreen', {
         collectable,
       })
     } catch (error) {
-      setTransfering(false)
+      setTransferring(false)
       Logger.error(error)
       setNetworkError((error as Error).message)
     }
@@ -303,12 +303,12 @@ const TransferCollectableScreen = () => {
                   backgroundColorDisabled="surfaceSecondary"
                   backgroundColorDisabledOpacity={0.5}
                   titleColorDisabled="secondaryText"
-                  title={transfering ? '' : t('collectablesScreen.transfer')}
-                  disabled={!solAddressIsValid(recipient) || transfering}
+                  title={transferring ? '' : t('collectablesScreen.transfer')}
+                  disabled={!solAddressIsValid(recipient) || transferring}
                   titleColor="black"
                   onPress={handleTransfer}
                   TrailingComponent={
-                    transfering ? (
+                    transferring ? (
                       <CircleLoader loaderSize={20} color="white" />
                     ) : (
                       <ArrowRight

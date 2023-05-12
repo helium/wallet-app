@@ -18,6 +18,7 @@ export type WalletSignOpts = {
   url: string
   additionalMessage?: string
   manualBalanceChanges?: BalanceChange[]
+  manualEstimatedFee?: number
 }
 
 export type WalletSignBottomSheetRef = {
@@ -26,6 +27,7 @@ export type WalletSignBottomSheetRef = {
     url,
     additionalMessage,
     manualBalanceChanges,
+    manualEstimatedFee,
   }: WalletSignOpts) => Promise<boolean>
   hide: () => void
 }

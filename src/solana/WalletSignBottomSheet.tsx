@@ -51,7 +51,8 @@ const WalletSignBottomSheet = forwardRef(
       type: WalletStandardMessageTypes.connect,
       url: '',
       additionalMessage: '',
-      manualBalanceChanges: [],
+      manualBalanceChanges: undefined,
+      manualEstimatedFee: undefined,
     })
     const { loading, balanceChanges, solFee, insufficientFunds } =
       useSimulatedTransaction(serializedTx, anchorProvider?.publicKey)
@@ -113,6 +114,7 @@ const WalletSignBottomSheet = forwardRef(
         url,
         additionalMessage,
         manualBalanceChanges,
+        manualEstimatedFee,
       }: WalletSignOpts) => {
         bottomSheetModalRef.current?.expand()
         setWalletSignOpts({
@@ -120,6 +122,7 @@ const WalletSignBottomSheet = forwardRef(
           url,
           additionalMessage,
           manualBalanceChanges,
+          manualEstimatedFee,
         })
         const p = new Promise<boolean>((resolve) => {
           promiseResolve = resolve
@@ -173,7 +176,12 @@ const WalletSignBottomSheet = forwardRef(
     }, [hide])
 
     const renderSheetBody = useCallback(() => {
-      const { type, additionalMessage, manualBalanceChanges } = walletSignOpts
+      const {
+        type,
+        additionalMessage,
+        manualBalanceChanges,
+        manualEstimatedFee,
+      } = walletSignOpts
 
       if (type === WalletStandardMessageTypes.connect) {
         return (
@@ -307,7 +315,10 @@ const WalletSignBottomSheet = forwardRef(
                       </Text>
                     </Box>
                     <Text variant="body1Medium" color="secondaryText">
-                      {`~${(solFee || 5000) / LAMPORTS_PER_SOL} SOL`}
+                      {`~${
+                        (manualEstimatedFee || solFee || 5000) /
+                        LAMPORTS_PER_SOL
+                      } SOL`}
                     </Text>
                   </Box>
                 ))}
