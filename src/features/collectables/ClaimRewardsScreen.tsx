@@ -13,12 +13,14 @@ import ButtonPressable from '@components/ButtonPressable'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import { useHotspot } from '@hooks/useHotspot'
 import RewardItem from '@components/RewardItem'
+import { toNumber } from '@helium/spl-utils'
 import { Mints } from '../../utils/constants'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
+import { BalanceChange } from '../../solana/walletSignBottomSheetTypes'
 
 type Route = RouteProp<CollectableStackParamList, 'ClaimRewardsScreen'>
 
@@ -72,17 +74,28 @@ const ClaimRewardsScreen = () => {
           ? await createClaimMobileTx()
           : undefined
       const transactions: Transaction[] = []
+      const balanceChanges: BalanceChange[] = []
 
-      if (claimIotTx) {
+      if (claimIotTx && pendingIotRewards) {
         transactions.push(claimIotTx)
+        balanceChanges.push({
+          ticker: 'IOT',
+          amount: toNumber(pendingIotRewards, 6),
+          type: 'receive',
+        })
       }
 
-      if (claimMobileTx) {
+      if (claimMobileTx && pendingMobileRewards) {
         transactions.push(claimMobileTx)
+        balanceChanges.push({
+          ticker: 'MOBILE',
+          amount: toNumber(pendingMobileRewards, 6),
+          type: 'receive',
+        })
       }
 
       if (transactions.length > 0) {
-        await submitClaimRewards(transactions)
+        await submitClaimRewards(transactions, balanceChanges)
         nav.push('ClaimingRewardsScreen')
       } else {
         setClaimError(t('collectablesScreen.claimError'))

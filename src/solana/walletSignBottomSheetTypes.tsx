@@ -7,14 +7,26 @@ export enum WalletStandardMessageTypes {
   signMessage = 'signMessage',
 }
 
+export type BalanceChange = {
+  ticker: string
+  amount: number
+  type: 'send' | 'receive'
+}
+
 export type WalletSignOpts = {
   type: WalletStandardMessageTypes
   url: string
   additionalMessage?: string
+  manualBalanceChanges?: BalanceChange[]
 }
 
 export type WalletSignBottomSheetRef = {
-  show: ({ type, url, additionalMessage }: WalletSignOpts) => Promise<boolean>
+  show: ({
+    type,
+    url,
+    additionalMessage,
+    manualBalanceChanges,
+  }: WalletSignOpts) => Promise<boolean>
   hide: () => void
 }
 
