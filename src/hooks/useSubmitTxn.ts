@@ -5,7 +5,10 @@ import i18n from '@utils/i18n'
 import { Mints } from '@utils/constants'
 import * as solUtils from '@utils/solanaUtils'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
+import {
+  BalanceChange,
+  WalletStandardMessageTypes,
+} from '../solana/walletSignBottomSheetTypes'
 import {
   makeCollectablePayment,
   makePayment,
@@ -316,6 +319,7 @@ export default () => {
     async (
       lazyDistributors: PublicKey[],
       hotspots: HotspotWithPendingRewards[],
+      balanceChanges: BalanceChange[],
     ) => {
       if (!anchorProvider || !currentAccount || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
@@ -337,6 +341,7 @@ export default () => {
         url: '',
         additionalMessage: t('transactions.signClaimAllRewardsTxn'),
         manualEstimatedFee: claimAllEstimatedFee,
+        manualBalanceChanges: balanceChanges,
       })
 
       if (!decision) {
