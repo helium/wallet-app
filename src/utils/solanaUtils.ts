@@ -35,6 +35,7 @@ import {
   getAssociatedTokenAddressSync,
   getAccount,
   ASSOCIATED_TOKEN_PROGRAM_ID,
+  createAssociatedTokenAccountInstruction,
   createAssociatedTokenAccountIdempotentInstruction,
 } from '@solana/spl-token'
 import { entityCreatorKey } from '@helium/helium-entity-manager-sdk'
