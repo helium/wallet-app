@@ -242,7 +242,7 @@ const WalletSignBottomSheet = forwardRef(
                 </Box>
               )}
 
-              {balanceChanges?.length &&
+              {balanceChanges &&
                 balanceChanges.map((change, index) => {
                   const isLast = index === balanceChanges.length - 1
                   const isSend = change.type === 'send'
@@ -250,16 +250,17 @@ const WalletSignBottomSheet = forwardRef(
                   if (change.nativeChange) {
                     if (change.type === 'send') {
                       balanceChange = t('browserScreen.sendToken', {
-                        ticker: change?.symbol,
-                        amount: change?.nativeChange,
+                        ticker: change.symbol,
+                        amount: change.nativeChange,
                       })
                     } else {
                       balanceChange = t('browserScreen.recieveToken', {
-                        ticker: change?.symbol,
-                        amount: change?.nativeChange,
+                        ticker: change.symbol,
+                        amount: change.nativeChange,
                       })
                     }
                   }
+
                   return (
                     <Box
                       key={(change.symbol || '') + (change.nativeChange || '')}
@@ -280,7 +281,7 @@ const WalletSignBottomSheet = forwardRef(
                   )
                 })}
 
-              {manualBalanceChanges?.length &&
+              {manualBalanceChanges &&
                 manualBalanceChanges.map((change, index) => {
                   const isLast = index === manualBalanceChanges.length - 1
                   const isSend = change.type === 'send'

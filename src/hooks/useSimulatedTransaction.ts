@@ -1,3 +1,6 @@
+import { toNumber, truthy } from '@helium/spl-utils'
+import useAlert from '@hooks/useAlert'
+import { Metaplex } from '@metaplex-foundation/js'
 import { AccountLayout, NATIVE_MINT, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
   AddressLookupTableAccount,
@@ -5,20 +8,18 @@ import {
   ParsedAccountData,
   PublicKey,
   SimulatedTransactionAccountInfo,
+  SystemProgram,
   VersionedTransaction,
 } from '@solana/web3.js'
+import { useBalance } from '@utils/Balance'
+import { getCollectableByMint } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { useCallback, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
-import { toNumber, truthy } from '@helium/spl-utils'
-import { useBalance } from '@utils/Balance'
-import { getCollectableByMint } from '@utils/solanaUtils'
-import { Metaplex } from '@metaplex-foundation/js'
-import useAlert from '@hooks/useAlert'
 import { useTranslation } from 'react-i18next'
 import { useSolana } from '../solana/SolanaProvider'
-import { useHntSolConvert } from './useHntSolConvert'
 import * as logger from '../utils/logger'
+import { useHntSolConvert } from './useHntSolConvert'
 
 type BalanceChange = {
   nativeChange?: number
@@ -206,7 +207,8 @@ export function useSimulatedTransaction(
 
               // Token changes
               const isToken = account.owner === TOKEN_PROGRAM_ID.toString()
-              const isNativeSol = account.owner === NATIVE_MINT.toBase58()
+              const isNativeSol =
+                account.owner === SystemProgram.programId.toBase58()
 
               if (isToken || isNativeSol) {
                 try {
@@ -252,7 +254,7 @@ export function useSimulatedTransaction(
                     // are not the current address
                     if (
                       simulationAccounts &&
-                      simulationAccounts[index].equals(wallet)
+                      !simulationAccounts[index].equals(wallet)
                     ) {
                       return null
                     }
@@ -260,8 +262,19 @@ export function useSimulatedTransaction(
                     // Faux mint for native SOL
                     tokenMint = new PublicKey(NATIVE_MINT)
                     existingNativeBalance = new BN(
-                      (await connection.getAccountInfo(wallet))?.lamports || 0,
+                      (
+                        await connection.getAccountInfo(
+                          simulationAccounts[index],
+                        )
+                      )?.lamports || 0,
                     )
+                    // Don't include fees here
+                    // First account is feePayer, if we made it here feePayer is wallet
+                    if (index === 0) {
+                      accountNativeBalance = accountNativeBalance.add(
+                        new BN(solFee || 5000),
+                      )
+                    }
                   }
 
                   const token = await connection.getParsedAccountInfo(tokenMint)
