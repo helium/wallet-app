@@ -1,4 +1,4 @@
-import { toNumber, truthy } from '@helium/spl-utils'
+import { toNumber, truthy, sendAndConfirmWithRetry } from '@helium/spl-utils'
 import useAlert from '@hooks/useAlert'
 import { Metaplex } from '@metaplex-foundation/js'
 import { AccountLayout, NATIVE_MINT, TOKEN_PROGRAM_ID } from '@solana/spl-token'
@@ -80,7 +80,17 @@ export function useSimulatedTransaction(
     })
 
     if (!decision) return
-    await anchorProvider.sendAndConfirm(hntSolConvertTransaction)
+    const signed = await anchorProvider.wallet.signTransaction(
+      hntSolConvertTransaction,
+    )
+    await sendAndConfirmWithRetry(
+      anchorProvider.connection,
+      signed.serialize(),
+      {
+        skipPreflight: true,
+      },
+      'confirmed',
+    )
   }, [
     anchorProvider,
     showOKCancelAlert,

@@ -25,9 +25,6 @@ import WarningBanner, { BannerType } from '@components/WarningBanner'
 import { useSelector } from 'react-redux'
 import useSolanaHealth from '@hooks/useSolanaHealth'
 import { CSAccount } from '@storage/cloudStorage'
-import { useHntSolConvert } from '@hooks/useHntSolConvert'
-import * as logger from '@utils/logger'
-import { useTranslation } from 'react-i18next'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
@@ -51,8 +48,6 @@ import { withTransactionDetail } from './TransactionDetail'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useBalance } from '../../utils/Balance'
 import { AccountBalance } from '../../types/balance'
-import { useWalletSign } from '../../solana/WalletSignProvider'
-import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
@@ -66,7 +61,7 @@ const AccountsScreen = () => {
   const { openedNotification } = useNotificationStorage()
   const { balanceHistory } = useBalance()
   const { locked, currency } = useAppStorage()
-  const { cluster, anchorProvider } = useSolana()
+  const { cluster } = useSolana()
   const { reset } = useOnboarding()
   const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const [selectedBalance, setSelectedBalance] = useState<AccountBalance>()
@@ -81,53 +76,6 @@ const AccountsScreen = () => {
   const colors = useColors()
   const { showBanner } = useSelector((state: RootState) => state.app)
   const { isHealthy } = useSolanaHealth()
-  const { hntSolConvertTransaction, hntEstimate, hasEnoughSol } =
-    useHntSolConvert()
-  const { walletSignBottomSheetRef, setSerializedTx, serializedTx } =
-    useWalletSign()
-  const { t } = useTranslation()
-
-  useAsync(async () => {
-    if (!hntSolConvertTransaction || !anchorProvider) return
-
-    await anchorProvider?.wallet.signTransaction(hntSolConvertTransaction)
-    setSerializedTx(hntSolConvertTransaction.serialize())
-  }, [hntSolConvertTransaction, setSerializedTx, anchorProvider])
-
-  useAsync(async () => {
-    if (
-      !anchorProvider ||
-      !t ||
-      !serializedTx ||
-      !hntSolConvertTransaction ||
-      hasEnoughSol
-    )
-      return
-
-    try {
-      const decision = await walletSignBottomSheetRef?.show({
-        type: WalletStandardMessageTypes.signAndSendTransaction,
-        url: 'https://jup.ag',
-        additionalMessage: t('browserScreen.wouldYouLikeToConvert', {
-          amount: hntEstimate,
-          ticker: 'HNT',
-        }),
-      })
-
-      if (!decision) return
-
-      await anchorProvider.sendAndConfirm(hntSolConvertTransaction)
-    } catch (e) {
-      logger.error(e)
-    }
-  }, [
-    hntEstimate,
-    serializedTx,
-    t,
-    hasEnoughSol,
-    hntSolConvertTransaction,
-    anchorProvider,
-  ])
 
   const actualTop = useMemo(() => {
     if (showBanner) {

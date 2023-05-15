@@ -824,7 +824,7 @@ SPEC CHECKSUMS:
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 791fe035093b84822da7f0870421a25839ca7870
   helium-react-native-sdk: 32c0a7e3abc733a7f3d291013b2db31475fc6980
-  hermes-engine: 0784cadad14b011580615c496f77e0ae112eed75
+  hermes-engine: 7a53ccac09146018a08239c5425625fdb79a6162
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   MultiplatformBleAdapter: 5a6a897b006764392f9cef785e4360f54fb9477d
   OneSignalXCFramework: 81ceac017a290f23793443323090cfbe888f74ea
