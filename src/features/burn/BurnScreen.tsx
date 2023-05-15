@@ -12,7 +12,7 @@ import QR from '@assets/images/qr.svg'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Platform } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Balance, { CurrencyType, Ticker } from '@helium/currency'
 import Address, { NetTypes } from '@helium/address'
 import { TokenBurnV1 } from '@helium/transactions'
@@ -39,6 +39,7 @@ import TokenIOT from '@assets/images/tokenIOT.svg'
 import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import { Mints } from '@utils/constants'
 import { PublicKey } from '@solana/web3.js'
+import SafeAreaBox from '@components/SafeAreaBox'
 import { TXN_FEE_IN_SOL } from '../../utils/solanaUtils'
 import { RootState } from '../../store/rootReducer'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
@@ -92,6 +93,7 @@ const BurnScreen = () => {
   const [dcAmount, setDcAmount] = useState(
     new Balance(Number(route.params.amount), CurrencyType.dataCredit),
   )
+  const [submitError, setSubmitError] = useState<string | undefined>(undefined)
   const [delegateAddress, setDelegateAddress] = useState(route.params.address)
   const [hasError, setHasError] = useState(false)
   const delegatePayment = useSelector(
@@ -178,20 +180,24 @@ const BurnScreen = () => {
   ])
 
   const handleSubmit = useCallback(async () => {
-    if (isDelegate && amountBalance) {
-      await submitDelegateDataCredits(
-        delegateAddress,
-        amountBalance.integerBalance,
-        mint,
-      )
+    try {
+      if (isDelegate && amountBalance) {
+        await submitDelegateDataCredits(
+          delegateAddress,
+          amountBalance.integerBalance,
+          mint,
+        )
+      }
+    } catch (e) {
+      setSubmitError((e as Error)?.message)
     }
-    // TODO: What needs to happen here?
   }, [
     amountBalance,
     delegateAddress,
     isDelegate,
     mint,
     submitDelegateDataCredits,
+    setSubmitError,
   ])
 
   const handleQrScan = useCallback(() => {
@@ -327,6 +333,7 @@ const BurnScreen = () => {
       onConfirmBalance={onConfirmBalance}
       ticker={amountBalance?.type.ticker}
       networkFee={Balance.fromFloatAndTicker(TXN_FEE_IN_SOL, 'SOL')}
+      usePortal
     >
       <TokenSelector
         ref={tokenSelectorRef}
@@ -348,10 +355,11 @@ const BurnScreen = () => {
                 name: currentAccount?.ledgerDevice?.name,
               })}
             >
-              <Box
+              <SafeAreaBox
                 backgroundColor="secondaryBackground"
                 flex={1}
                 style={containerStyle}
+                edges={['top'] as Edge[]}
               >
                 <Box
                   flexDirection="row"
@@ -510,6 +518,19 @@ const BurnScreen = () => {
                     </>
                   )}
                 </KeyboardAwareScrollView>
+                {submitError && (
+                  <Box marginBottom="s">
+                    <Text
+                      marginTop="s"
+                      marginHorizontal="m"
+                      variant="body3Medium"
+                      color="red500"
+                      textAlign="center"
+                    >
+                      {submitError}
+                    </Text>
+                  </Box>
+                )}
                 <Box
                   borderTopLeftRadius="xl"
                   borderTopRightRadius="xl"
@@ -538,7 +559,7 @@ const BurnScreen = () => {
                     />
                   </Box>
                 </Box>
-              </Box>
+              </SafeAreaBox>
               <PaymentSubmit
                 submitLoading={!!delegatePayment?.loading}
                 submitSucceeded={delegatePayment?.success}

@@ -39,6 +39,7 @@ const SubmitButton = ({ onSubmit, title, disabled, ...boxProps }: Props) => {
     // eslint-disable-next-line react/jsx-props-no-spreading
     <Box backgroundColor="secondaryIcon" borderRadius="round" {...boxProps}>
       <SwipeButton
+        shouldResetAfterSuccess
         railBackgroundColor={secondaryIcon}
         railStyles={styles.railStyles}
         railBorderColor={secondaryIcon}
