@@ -5,10 +5,7 @@ import i18n from '@utils/i18n'
 import { Mints } from '@utils/constants'
 import * as solUtils from '@utils/solanaUtils'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import {
-  BalanceChange,
-  WalletStandardMessageTypes,
-} from '../solana/walletSignBottomSheetTypes'
+import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
 import {
   makeCollectablePayment,
   makePayment,
@@ -264,7 +261,7 @@ export default () => {
   )
 
   const submitClaimRewards = useCallback(
-    async (txns: Transaction[], balanceChanges: BalanceChange[]) => {
+    async (txns: Transaction[]) => {
       if (!anchorProvider) {
         throw new Error(t('errors.account'))
       }
@@ -289,7 +286,6 @@ export default () => {
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signClaimRewardsTxn'),
-        manualBalanceChanges: balanceChanges,
       })
 
       if (!decision) {
@@ -320,7 +316,6 @@ export default () => {
     async (
       lazyDistributors: PublicKey[],
       hotspots: HotspotWithPendingRewards[],
-      balanceChanges: BalanceChange[],
     ) => {
       if (!anchorProvider || !currentAccount || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
@@ -341,7 +336,6 @@ export default () => {
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signClaimAllRewardsTxn'),
-        manualBalanceChanges: balanceChanges,
         manualEstimatedFee: claimAllEstimatedFee,
       })
 
