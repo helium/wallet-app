@@ -66,7 +66,9 @@ export default () => {
         mintAddress,
       )
 
-      const serializedTx = paymentTxn.serialize()
+      const serializedTx = paymentTxn.serialize({
+        requireAllSignatures: false,
+      })
       setSerializedTx(Buffer.from(serializedTx))
 
       // wait 0.5 second to allow the bottom sheet to load txn
