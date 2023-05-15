@@ -1,3 +1,6 @@
+import { toNumber, truthy, sendAndConfirmWithRetry } from '@helium/spl-utils'
+import useAlert from '@hooks/useAlert'
+import { Metaplex } from '@metaplex-foundation/js'
 import { AccountLayout, NATIVE_MINT, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
   AddressLookupTableAccount,
@@ -5,27 +8,26 @@ import {
   ParsedAccountData,
   PublicKey,
   SimulatedTransactionAccountInfo,
+  SystemProgram,
   VersionedTransaction,
 } from '@solana/web3.js'
+import { useBalance } from '@utils/Balance'
+import { getCollectableByMint } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { useCallback, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
-import { toNumber } from '@helium/spl-utils'
-import { useBalance } from '@utils/Balance'
-import { getCollectableByMint } from '@utils/solanaUtils'
-import { Metaplex } from '@metaplex-foundation/js'
-import useAlert from '@hooks/useAlert'
 import { useTranslation } from 'react-i18next'
 import { useSolana } from '../solana/SolanaProvider'
-import { useHntSolConvert } from './useHntSolConvert'
 import * as logger from '../utils/logger'
+import { useHntSolConvert } from './useHntSolConvert'
 
-type BalanceChanges = {
+type BalanceChange = {
   nativeChange?: number
   mint?: PublicKey
   symbol?: string
   type?: 'send' | 'recieve'
-} | null
+}
+type BalanceChanges = BalanceChange[] | null
 
 export type SimulatedTransactionResult = {
   loading: boolean
@@ -78,7 +80,17 @@ export function useSimulatedTransaction(
     })
 
     if (!decision) return
-    await anchorProvider.sendAndConfirm(hntSolConvertTransaction)
+    const signed = await anchorProvider.wallet.signTransaction(
+      hntSolConvertTransaction,
+    )
+    await sendAndConfirmWithRetry(
+      anchorProvider.connection,
+      signed.serialize(),
+      {
+        skipPreflight: true,
+      },
+      'confirmed',
+    )
   }, [
     anchorProvider,
     showOKCancelAlert,
@@ -191,125 +203,136 @@ export function useSimulatedTransaction(
           return undefined
         }
 
-        const balanceChangeInitialValueAsPromise: Promise<BalanceChanges> =
-          new Promise((resolve) => {
-            resolve(null)
-          })
-
         const accounts = result?.value.accounts
 
         if (!accounts) return undefined
 
-        const balanceChanges = accounts.reduce(
-          async (
-            prev: Promise<BalanceChanges>,
-            curr: SimulatedTransactionAccountInfo | null,
-            index: number,
-          ) => {
-            const realPrev = await prev
-            const account = curr
+        const balanceChanges = await Promise.all(
+          accounts.map(
+            async (
+              account: SimulatedTransactionAccountInfo | null,
+              index: number,
+            ) => {
+              if (!account) return null
 
-            if (!account) return realPrev
-            // Token changes
-            const isToken = account.owner === TOKEN_PROGRAM_ID.toString()
-            const isNativeSol = account.owner === NATIVE_MINT.toBase58()
+              // Token changes
+              const isToken = account.owner === TOKEN_PROGRAM_ID.toString()
+              const isNativeSol =
+                account.owner === SystemProgram.programId.toBase58()
 
-            if (isToken || isNativeSol) {
-              try {
-                let accountNativeBalance: BN
-                let tokenMint: PublicKey
+              if (isToken || isNativeSol) {
+                try {
+                  let accountNativeBalance: BN
+                  let tokenMint: PublicKey
+                  let existingNativeBalance: BN
 
-                // Parse token accounts for change in balances
-                if (isToken) {
-                  try {
-                    const tokenAccount = AccountLayout.decode(
-                      Buffer.from(
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        account.data[0] as any,
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        account.data[1] as any,
-                      ),
-                    )
+                  // Parse token accounts for change in balances
+                  if (isToken) {
+                    try {
+                      const tokenAccount = AccountLayout.decode(
+                        Buffer.from(
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          account.data[0] as any,
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          account.data[1] as any,
+                        ),
+                      )
 
-                    if (!new PublicKey(tokenAccount.owner).equals(wallet)) {
-                      // Return the reducer state umodified if token account is not owned
-                      return realPrev
+                      if (!new PublicKey(tokenAccount.owner).equals(wallet)) {
+                        return null
+                      }
+                      accountNativeBalance = new BN(
+                        tokenAccount.amount.toString(),
+                      )
+                      // Standard token mint
+                      tokenMint = new PublicKey(tokenAccount.mint)
+                    } catch (error) {
+                      // Decoding of token account failed, not a token account
+                      return null
                     }
-                    accountNativeBalance = new BN(
-                      tokenAccount.amount.toString(),
+
+                    // Find the existing token account
+                    const existingTokenAccount = tokenAccounts.find((t) =>
+                      new PublicKey(t.mint).equals(tokenMint),
                     )
-                    // Standard token mint
-                    tokenMint = new PublicKey(tokenAccount.mint)
-                  } catch (error) {
-                    // Decoding of token account failed, not a token account
-                    return realPrev
+
+                    existingNativeBalance = existingTokenAccount
+                      ? new BN(existingTokenAccount.balance)
+                      : new BN(0)
+                  } else {
+                    // Not interested in SOL balance changes for accounts that
+                    // are not the current address
+                    if (
+                      simulationAccounts &&
+                      !simulationAccounts[index].equals(wallet)
+                    ) {
+                      return null
+                    }
+                    accountNativeBalance = new BN(account.lamports.toString())
+                    // Faux mint for native SOL
+                    tokenMint = new PublicKey(NATIVE_MINT)
+                    existingNativeBalance = new BN(
+                      (
+                        await connection.getAccountInfo(
+                          simulationAccounts[index],
+                        )
+                      )?.lamports || 0,
+                    )
+                    // Don't include fees here
+                    // First account is feePayer, if we made it here feePayer is wallet
+                    if (index === 0) {
+                      accountNativeBalance = accountNativeBalance.add(
+                        new BN(solFee || 5000),
+                      )
+                    }
                   }
-                  // Parse changes in native SOL balances
-                } else {
-                  // Not interested in SOL balance changes for accounts that
-                  // are not the current address
-                  if (
-                    simulationAccounts &&
-                    simulationAccounts[index].equals(wallet)
-                  ) {
-                    return realPrev
+
+                  const token = await connection.getParsedAccountInfo(tokenMint)
+
+                  const { decimals } = (token.value?.data as ParsedAccountData)
+                    .parsed.info
+
+                  const tokenMetadata = await getCollectableByMint(
+                    tokenMint,
+                    metaplex,
+                  )
+
+                  const type = accountNativeBalance.lt(existingNativeBalance)
+                    ? 'send'
+                    : 'recieve'
+
+                  // Filter out zero change
+                  if (!accountNativeBalance.eq(existingNativeBalance)) {
+                    let nativeChange: BN
+                    if (type === 'send') {
+                      nativeChange =
+                        existingNativeBalance.sub(accountNativeBalance)
+                    } else {
+                      nativeChange = accountNativeBalance.sub(
+                        existingNativeBalance,
+                      )
+                    }
+                    return {
+                      nativeChange: Math.abs(toNumber(nativeChange, decimals)),
+                      decimals,
+                      mint: tokenMint,
+                      symbol: tokenMetadata?.symbol,
+                      type,
+                    } as BalanceChange
                   }
-                  accountNativeBalance = new BN(account.lamports.toString())
-                  // Faux mint for native SOL
-                  tokenMint = new PublicKey(NATIVE_MINT)
+                } catch (err) {
+                  // ignore, probably not a token account or some other
+                  // failure, we don't want to fail displaying the popup
+                  console.warn('failed to get balance changes', err)
+                  return null
                 }
-
-                // Find the existing token account
-                const existingTokenAccount = tokenAccounts.find((t) =>
-                  new PublicKey(t.mint).equals(tokenMint),
-                )
-
-                const existingNativeBalance = existingTokenAccount
-                  ? new BN(existingTokenAccount.balance)
-                  : new BN(0)
-
-                const token = await connection.getParsedAccountInfo(tokenMint)
-
-                const { decimals } = (token.value?.data as ParsedAccountData)
-                  .parsed.info
-
-                const tokenMetadata = await getCollectableByMint(
-                  tokenMint,
-                  metaplex,
-                )
-
-                // Calculate the native balance change
-                const nativeChange = accountNativeBalance.sub(
-                  existingNativeBalance,
-                )
-
-                const type = nativeChange.lt(existingNativeBalance)
-                  ? 'send'
-                  : 'recieve'
-
-                // Filter out zero change
-                if (!nativeChange.eq(new BN(0))) {
-                  return {
-                    nativeChange: Math.abs(toNumber(nativeChange, decimals)),
-                    decimals,
-                    mint: tokenMint,
-                    symbol: tokenMetadata?.symbol,
-                    type,
-                  } as BalanceChanges
-                }
-              } catch (err) {
-                // ignore, probably not a token account or some other
-                // failure, we don't want to fail displaying the popup
-                console.warn('failed to get balance changes', err)
-                return realPrev
               }
-            }
-            return realPrev
-          },
-          balanceChangeInitialValueAsPromise,
+              return null
+            },
+          ),
         )
 
-        return await balanceChanges
+        return balanceChanges.filter(truthy)
       } catch (err) {
         console.warn('err', err)
         return undefined

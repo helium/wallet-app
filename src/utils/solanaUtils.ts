@@ -36,6 +36,7 @@ import {
   getAccount,
   ASSOCIATED_TOKEN_PROGRAM_ID,
   createAssociatedTokenAccountInstruction,
+  createAssociatedTokenAccountIdempotentInstruction,
 } from '@solana/spl-token'
 import { entityCreatorKey } from '@helium/helium-entity-manager-sdk'
 import Balance, { AnyCurrencyType, CurrencyType } from '@helium/currency'
@@ -232,32 +233,29 @@ export const createTransferTxn = async (
     payer,
   )
 
-  const payeeATAs = await Promise.all(
-    payments.map((p) =>
-      getOrCreateAssociatedTokenAccount(
-        conn,
-        signer,
-        mint,
-        new PublicKey(p.payee),
-      ),
-    ),
-  )
-
   let instructions: TransactionInstruction[] = []
-  payments.forEach((p, idx) => {
+  payments.forEach((p) => {
     const amount = p.balanceAmount.integerBalance
+    const ata = getAssociatedTokenAddressSync(mint, new PublicKey(p.payee))
 
-    const instruction = createTransferCheckedInstruction(
-      payerATA.address,
-      mint,
-      payeeATAs[idx].address,
-      payer,
-      amount,
-      firstPayment.balanceAmount.type.decimalPlaces.toNumber(),
-      [signer],
-    )
-
-    instructions = [...instructions, instruction]
+    instructions = [
+      ...instructions,
+      createAssociatedTokenAccountIdempotentInstruction(
+        anchorProvider.publicKey,
+        ata,
+        new PublicKey(p.payee),
+        mint,
+      ),
+      createTransferCheckedInstruction(
+        payerATA.address,
+        mint,
+        ata,
+        payer,
+        amount,
+        firstPayment.balanceAmount.type.decimalPlaces.toNumber(),
+        [signer],
+      ),
+    ]
   })
 
   const { blockhash } = await anchorProvider.connection.getLatestBlockhash()
@@ -431,18 +429,14 @@ export const createTransferCollectableMessage = async (
     recipientPubKey,
   )
 
-  if (!(await conn.getAccountInfo(recipientATA))) {
-    instructions.push(
-      createAssociatedTokenAccountInstruction(
-        anchorProvider.publicKey,
-        signer.publicKey,
-        recipientPubKey,
-        mintPubkey,
-        TOKEN_PROGRAM_ID,
-        ASSOCIATED_TOKEN_PROGRAM_ID,
-      ),
-    )
-  }
+  instructions.push(
+    createAssociatedTokenAccountIdempotentInstruction(
+      anchorProvider.publicKey,
+      recipientATA,
+      recipientPubKey,
+      mintPubkey,
+    ),
+  )
 
   instructions.push(
     createTransferCheckedInstruction(
@@ -503,18 +497,14 @@ export const transferCollectable = async (
       recipientPubKey,
     )
 
-    if (!(await conn.getAccountInfo(recipientATA))) {
-      instructions.push(
-        createAssociatedTokenAccountInstruction(
-          anchorProvider.publicKey,
-          signer.publicKey,
-          recipientPubKey,
-          mintPubkey,
-          TOKEN_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID,
-        ),
-      )
-    }
+    instructions.push(
+      createAssociatedTokenAccountIdempotentInstruction(
+        anchorProvider.publicKey,
+        recipientATA,
+        recipientPubKey,
+        mintPubkey,
+      ),
+    )
 
     instructions.push(
       createTransferCheckedInstruction(

@@ -800,7 +800,7 @@ SPEC CHECKSUMS:
   BCrypt: 712b656110e5020d319c547e4d8f3053ded82b2a
   bcrypt-react-native: 399775585257ae6c8717370a1119c7da0113e3bf
   BEMCheckBox: 5ba6e37ade3d3657b36caecc35c8b75c6c2b1a4e
-  boost: 57d2868c099736d80fcd648bf211b4431e51a558
+  boost: a7c83b31436843459a1961bfd74b96033dc77234
   BVLinearGradient: 34a999fda29036898a09c6a6b728b0b4189e1a44
   Charts: 354f86803d11d9c35de280587fef50d1af063978
   DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
@@ -822,13 +822,13 @@ SPEC CHECKSUMS:
   FBLazyVector: f1897022b53abf1469d6ad692ee2c69f57d967f3
   FBReactNativeSpec: 627fd07f1b9d498c9fa572e76d7f1a6b1ee9a444
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
+  glog: 791fe035093b84822da7f0870421a25839ca7870
   helium-react-native-sdk: 32c0a7e3abc733a7f3d291013b2db31475fc6980
-  hermes-engine: 0784cadad14b011580615c496f77e0ae112eed75
+  hermes-engine: 7a53ccac09146018a08239c5425625fdb79a6162
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   MultiplatformBleAdapter: 5a6a897b006764392f9cef785e4360f54fb9477d
   OneSignalXCFramework: 81ceac017a290f23793443323090cfbe888f74ea
-  RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
+  RCT-Folly: 766adb69dc1d6294bcc94a950a818a87adb3a766
   RCTRequired: bd6045fbd511da5efe6db89eecb21e4e36bd7cbf
   RCTTypeSafety: c06d9f906faa69dd1c88223204c3a24767725fd8
   React: b9ea33557ef1372af247f95d110fbdea114ed3b2

@@ -4,6 +4,8 @@ import axios from 'axios'
 import { Transaction } from '@solana/web3.js'
 import { useMemo } from 'react'
 import { useBalance } from '@utils/Balance'
+import { toNumber } from '@helium/spl-utils'
+import BN from 'bn.js'
 import { useSolana } from '../solana/SolanaProvider'
 import * as logger from '../utils/logger'
 
@@ -27,7 +29,7 @@ export function useHntSolConvert() {
   } = useAsync(async () => {
     try {
       const { estimate } = (await axios.get(`${baseUrl}/estimate`)).data
-      return estimate
+      return toNumber(new BN(estimate), 8)
     } catch (e) {
       logger.error(e)
       return 0
