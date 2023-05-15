@@ -92,12 +92,7 @@ const useBalanceHook = () => {
       connection: anchorProvider.connection,
     })
     return Balance.fromFloat(
-      Number(
-        (
-          oraclePriceRaw.emaPrice.value -
-          oraclePriceRaw.emaConfidence.value * 2
-        ).toFixed(5),
-      ),
+      oraclePriceRaw.emaPrice.value - oraclePriceRaw.emaConfidence.value * 2,
       CurrencyType.usd,
     )
   }, [cluster, anchorProvider?.connection])
