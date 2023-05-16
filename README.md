@@ -95,6 +95,8 @@ yarn
 yarn pod-install
 ```
 
+> If `yarn pod-install` fails with error `xcrun: error: SDK "iphoneos" cannot be located`, run `sudo xcode-select --switch /Applications/Xcode.app` [[Stack Overflow]](https://stackoverflow.com/questions/68565356/xcrun-error-sdk-iphoneos-cannot-be-located)
+
 For IOS:
 
 ```bash
