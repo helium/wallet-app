@@ -264,7 +264,7 @@ export default () => {
   )
 
   const submitClaimRewards = useCallback(
-    async (txns: Transaction[], balanceChanges: BalanceChange[]) => {
+    async (txns: Transaction[]) => {
       if (!anchorProvider) {
         throw new Error(t('errors.account'))
       }
@@ -289,7 +289,6 @@ export default () => {
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signClaimRewardsTxn'),
-        manualBalanceChanges: balanceChanges,
       })
 
       if (!decision) {
@@ -341,8 +340,8 @@ export default () => {
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signClaimAllRewardsTxn'),
-        manualBalanceChanges: balanceChanges,
         manualEstimatedFee: claimAllEstimatedFee,
+        manualBalanceChanges: balanceChanges,
       })
 
       if (!decision) {
