@@ -16,6 +16,7 @@ export type BalanceChange = {
 export type WalletSignOpts = {
   type: WalletStandardMessageTypes
   url: string
+  serializedTx: Buffer | undefined
   additionalMessage?: string
   manualBalanceChanges?: BalanceChange[]
   manualEstimatedFee?: number
@@ -28,12 +29,12 @@ export type WalletSignBottomSheetRef = {
     additionalMessage,
     manualBalanceChanges,
     manualEstimatedFee,
+    serializedTx,
   }: WalletSignOpts) => Promise<boolean>
   hide: () => void
 }
 
 export type WalletSignBottomSheetProps = {
-  serializedTx: Buffer | undefined
   onClose: () => void
   children: ReactNode
 }

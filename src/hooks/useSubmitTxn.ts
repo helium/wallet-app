@@ -33,7 +33,7 @@ export default () => {
   const { currentAccount } = useAccountStorage()
   const { cluster, anchorProvider } = useSolana()
   const { t } = i18n
-  const { walletSignBottomSheetRef, setSerializedTx } = useWalletSign()
+  const { walletSignBottomSheetRef } = useWalletSign()
 
   const dispatch = useAppDispatch()
 
@@ -69,15 +69,12 @@ export default () => {
       const serializedTx = paymentTxn.serialize({
         requireAllSignatures: false,
       })
-      setSerializedTx(Buffer.from(serializedTx))
-
-      // wait 0.5 second to allow the bottom sheet to load txn
-      await new Promise((resolve) => setTimeout(resolve, 500))
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signPaymentTxn'),
+        serializedTx: Buffer.from(serializedTx),
       })
 
       if (!decision) {
@@ -100,7 +97,6 @@ export default () => {
       anchorProvider,
       cluster,
       walletSignBottomSheetRef,
-      setSerializedTx,
     ],
   )
 
@@ -136,15 +132,12 @@ export default () => {
       const serializedTx = transferTxn.serialize({
         requireAllSignatures: false,
       })
-      setSerializedTx(Buffer.from(serializedTx))
-
-      // wait 0.5 second to allow the bottom sheet to load txn
-      await new Promise((resolve) => setTimeout(resolve, 500))
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signTransferCollectableTxn'),
+        serializedTx: Buffer.from(serializedTx),
       })
 
       if (!decision) {
@@ -167,7 +160,6 @@ export default () => {
       t,
       anchorProvider,
       walletSignBottomSheetRef,
-      setSerializedTx,
     ],
   )
 
@@ -187,15 +179,12 @@ export default () => {
       const serializedTx = swapTxn.serialize({
         requireAllSignatures: false,
       })
-      setSerializedTx(Buffer.from(serializedTx))
-
-      // wait 0.5 second to allow the bottom sheet to load txn
-      await new Promise((resolve) => setTimeout(resolve, 500))
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signSwapTxn'),
+        serializedTx: Buffer.from(serializedTx),
       })
 
       if (!decision) {
@@ -217,7 +206,6 @@ export default () => {
       dispatch,
       t,
       walletSignBottomSheetRef,
-      setSerializedTx,
     ],
   )
 
@@ -230,15 +218,12 @@ export default () => {
       const serializedTx = txn.serialize({
         requireAllSignatures: false,
       })
-      setSerializedTx(Buffer.from(serializedTx))
-
-      // wait 0.5 second to allow the bottom sheet to load txn
-      await new Promise((resolve) => setTimeout(resolve, 500))
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signGenericTxn'),
+        serializedTx: Buffer.from(serializedTx),
       })
 
       if (!decision) {
@@ -253,14 +238,7 @@ export default () => {
         }),
       )
     },
-    [
-      anchorProvider,
-      cluster,
-      dispatch,
-      t,
-      walletSignBottomSheetRef,
-      setSerializedTx,
-    ],
+    [anchorProvider, cluster, dispatch, t, walletSignBottomSheetRef],
   )
 
   const submitClaimRewards = useCallback(
@@ -280,15 +258,12 @@ export default () => {
       const serializedTx = txns[0].serialize({
         requireAllSignatures: false,
       })
-      setSerializedTx(serializedTx)
-
-      // wait 0.5 second to allow the bottom sheet to load txn
-      await new Promise((resolve) => setTimeout(resolve, 500))
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signClaimRewardsTxn'),
+        serializedTx: Buffer.from(serializedTx),
       })
 
       if (!decision) {
@@ -311,7 +286,6 @@ export default () => {
       dispatch,
       t,
       walletSignBottomSheetRef,
-      setSerializedTx,
     ],
   )
 
@@ -333,15 +307,13 @@ export default () => {
       const claimAllEstimatedFee =
         hotspots.length !== 0 ? (hotspots.length / 2) * 5000 : 5000
 
-      // wait 0.5 second to allow the bottom sheet to load txn
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signClaimAllRewardsTxn'),
         manualEstimatedFee: claimAllEstimatedFee,
         manualBalanceChanges: balanceChanges,
+        serializedTx: undefined,
       })
 
       if (!decision) {
@@ -393,15 +365,12 @@ export default () => {
       const serializedTx = swapTxn.serialize({
         requireAllSignatures: false,
       })
-      setSerializedTx(serializedTx)
-
-      // wait 0.5 second to allow the bottom sheet to load txn
-      await new Promise((resolve) => setTimeout(resolve, 500))
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signMintDataCreditsTxn'),
+        serializedTx: Buffer.from(serializedTx),
       })
 
       if (!decision) {
@@ -422,7 +391,6 @@ export default () => {
       currentAccount,
       dispatch,
       t,
-      setSerializedTx,
       walletSignBottomSheetRef,
     ],
   )
@@ -443,15 +411,12 @@ export default () => {
       const serializedTx = delegateDCTxn.serialize({
         requireAllSignatures: false,
       })
-      setSerializedTx(serializedTx)
-
-      // wait 0.5 second to allow the bottom sheet to load txn
-      await new Promise((resolve) => setTimeout(resolve, 500))
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signDelegateDCTxn'),
+        serializedTx: Buffer.from(serializedTx),
       })
 
       if (!decision) {
@@ -473,7 +438,6 @@ export default () => {
       dispatch,
       t,
       walletSignBottomSheetRef,
-      setSerializedTx,
     ],
   )
 

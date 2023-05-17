@@ -38,7 +38,7 @@ let promiseResolve: (value: boolean | PromiseLike<boolean>) => void
 
 const WalletSignBottomSheet = forwardRef(
   (
-    { serializedTx, onClose, children }: WalletSignBottomSheetProps,
+    { onClose, children }: WalletSignBottomSheetProps,
     ref: Ref<WalletSignBottomSheetRef>,
   ) => {
     useImperativeHandle(ref, () => ({ show, hide }))
@@ -53,9 +53,13 @@ const WalletSignBottomSheet = forwardRef(
       additionalMessage: '',
       manualBalanceChanges: undefined,
       manualEstimatedFee: undefined,
+      serializedTx: undefined,
     })
     const { loading, balanceChanges, solFee, insufficientFunds } =
-      useSimulatedTransaction(serializedTx, anchorProvider?.publicKey)
+      useSimulatedTransaction(
+        walletSignOpts.serializedTx,
+        anchorProvider?.publicKey,
+      )
 
     const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
     const snapPoints = useMemo(() => ['25%', 'CONTENT_HEIGHT'], [])
@@ -78,6 +82,7 @@ const WalletSignBottomSheet = forwardRef(
         additionalMessage,
         manualBalanceChanges,
         manualEstimatedFee,
+        serializedTx,
       }: WalletSignOpts) => {
         bottomSheetModalRef.current?.expand()
         setWalletSignOpts({
@@ -86,6 +91,7 @@ const WalletSignBottomSheet = forwardRef(
           additionalMessage,
           manualBalanceChanges,
           manualEstimatedFee,
+          serializedTx,
         })
         const p = new Promise<boolean>((resolve) => {
           promiseResolve = resolve
