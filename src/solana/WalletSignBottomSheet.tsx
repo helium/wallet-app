@@ -72,7 +72,7 @@ const WalletSignBottomSheet = forwardRef(
     } = useBottomSheetDynamicSnapPoints(snapPoints)
 
     const hide = useCallback(() => {
-      bottomSheetModalRef.current?.dismiss()
+      bottomSheetModalRef.current?.close()
     }, [])
 
     const show = useCallback(
@@ -235,7 +235,7 @@ const WalletSignBottomSheet = forwardRef(
                   </Text>
                 </Box>
               )}
-              {!balanceChanges && !manualBalanceChanges && (
+              {!balanceChanges?.length && !manualBalanceChanges?.length && (
                 <Box
                   borderBottomStartRadius="l"
                   borderBottomEndRadius="l"
