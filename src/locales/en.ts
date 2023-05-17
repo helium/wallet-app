@@ -370,7 +370,7 @@ export default {
     recieveToken: 'Receive {{amount}} {{ticker}}',
     insufficientFunds: 'Insufficient funds',
     unableToSimulate:
-      'Unable to simulate. Make sure you trust this website since approving can lead to loss of funds.',
+      'Unable to simulate. Make sure you trust this app since approving can lead to loss of funds.',
     networkFee: 'Network Fee',
     connect: 'Connect',
     approve: 'Approve',
