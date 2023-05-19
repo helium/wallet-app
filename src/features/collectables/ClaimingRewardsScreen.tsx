@@ -20,12 +20,14 @@ import RNTestFlight from 'react-native-test-flight'
 import { RootState } from '../../store/rootReducer'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
+import { useSolana } from '../../solana/SolanaProvider'
 
 const ClaimingRewardsScreen = () => {
   const { currentAccount } = useAccountStorage()
   const navigation = useNavigation<TabBarNavigationProp>()
   const { solBalance } = useBalance()
   const { bottom } = useSafeAreaInsets()
+  const { cluster, anchorProvider } = useSolana()
 
   const { t } = useTranslation()
   const solanaPayment = useSelector(
@@ -43,9 +45,14 @@ const ClaimingRewardsScreen = () => {
   const handleSend = useCallback(() => {
     if (!solanaPayment?.error?.message) return
 
-    const body = solanaPayment?.error?.message
+    const body =
+      `${solanaPayment?.error?.message}\n\n` +
+      `solanaAddress: ${currentAccount?.solanaAddress}\n\n` +
+      `cluster: ${cluster}` +
+      '\n\n' +
+      `anchorProvider Connection: ${anchorProvider?.connection}`
     sendMail({ subject: 'Claim error', body, isHTML: false })
-  }, [solanaPayment])
+  }, [solanaPayment, anchorProvider, cluster, currentAccount])
 
   if (!currentAccount) {
     return null
