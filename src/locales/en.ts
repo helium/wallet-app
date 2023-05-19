@@ -533,6 +533,7 @@ export default {
     solanaHealthy: 'Solana RPC is healthy.',
     solanaHealthDown: 'Solana RPC is down. Please try again later.',
     solanaTpsSlow: 'Solana RPC is slow. {{ tps }} tps.',
+    sendLogs: 'Send Logs',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',
