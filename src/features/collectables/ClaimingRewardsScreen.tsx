@@ -50,7 +50,11 @@ const ClaimingRewardsScreen = () => {
       `solanaAddress: ${currentAccount?.solanaAddress}\n\n` +
       `cluster: ${cluster}` +
       '\n\n' +
-      `anchorProvider Connection: ${anchorProvider?.connection}`
+      `anchorProvider Connection: ${anchorProvider?.connection}` +
+      '\n\n' +
+      `anchorProvider public key: ${anchorProvider?.wallet?.publicKey}` +
+      '\n\n' +
+      `signature: ${solanaPayment.signature}`
     sendMail({ subject: 'Claim error', body, isHTML: false })
   }, [solanaPayment, anchorProvider, cluster, currentAccount])
 
@@ -130,22 +134,6 @@ const ClaimingRewardsScreen = () => {
                   solanaPayment?.error?.message,
                 )}
               </Text>
-
-              {(RNTestFlight.isTestFlight || __DEV__) && (
-                <ButtonPressable
-                  marginHorizontal="m"
-                  marginTop="m"
-                  height={65}
-                  borderRadius="round"
-                  backgroundColor="secondaryBackground"
-                  backgroundColorOpacity={0.8}
-                  backgroundColorOpacityPressed={0.9}
-                  titleColorPressedOpacity={0.9}
-                  title={t('generic.sendLogs')}
-                  titleColor="blueBright500"
-                  onPress={handleSend}
-                />
-              )}
             </Animated.View>
           )}
 
@@ -193,6 +181,22 @@ const ClaimingRewardsScreen = () => {
                 <IndeterminateProgressBar paddingHorizontal="l" />
               </Box>
             </Animated.View>
+          )}
+
+          {(RNTestFlight.isTestFlight || __DEV__) && (
+            <ButtonPressable
+              marginHorizontal="m"
+              marginTop="m"
+              height={65}
+              borderRadius="round"
+              backgroundColor="secondaryBackground"
+              backgroundColorOpacity={0.8}
+              backgroundColorOpacityPressed={0.9}
+              titleColorPressedOpacity={0.9}
+              title={t('generic.sendLogs')}
+              titleColor="blueBright500"
+              onPress={handleSend}
+            />
           )}
         </Box>
         <Box
