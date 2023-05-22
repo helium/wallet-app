@@ -549,7 +549,6 @@ const solanaSlice = createSlice({
         success: false,
         loading: false,
         error: action.error,
-        signature: undefined,
       }
     })
     builder.addCase(sendDelegateDataCredits.pending, (state, _action) => {
@@ -557,7 +556,6 @@ const solanaSlice = createSlice({
         success: false,
         loading: true,
         error: undefined,
-        signature: undefined,
       }
     })
     builder.addCase(sendDelegateDataCredits.fulfilled, (state, _action) => {
