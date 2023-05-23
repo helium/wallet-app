@@ -43,8 +43,6 @@ const ClaimingRewardsScreen = () => {
   }, [navigation])
 
   const handleSend = useCallback(() => {
-    if (!solanaPayment?.error?.message) return
-
     const body =
       `${solanaPayment?.error?.message}\n\n` +
       `solanaAddress: ${currentAccount?.solanaAddress}\n\n` +
@@ -54,7 +52,7 @@ const ClaimingRewardsScreen = () => {
       '\n\n' +
       `anchorProvider public key: ${anchorProvider?.wallet?.publicKey}` +
       '\n\n' +
-      `signature: ${solanaPayment.signature}`
+      `signature: ${solanaPayment?.signature}`
     sendMail({ subject: 'Claim error', body, isHTML: false })
   }, [solanaPayment, anchorProvider, cluster, currentAccount])
 
