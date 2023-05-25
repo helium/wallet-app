@@ -17,6 +17,7 @@ import { useBalance } from '@utils/Balance'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import sendMail from '@utils/sendMail'
 import RNTestFlight from 'react-native-test-flight'
+import { Transaction } from '@solana/web3.js'
 import { RootState } from '../../store/rootReducer'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
@@ -42,17 +43,28 @@ const ClaimingRewardsScreen = () => {
     })
   }, [navigation])
 
-  const handleSend = useCallback(() => {
+  const handleSend = useCallback(async () => {
+    if (!anchorProvider) return
+    const transaction = new Transaction()
+    const { blockhash } = await anchorProvider.connection.getLatestBlockhash(
+      'recent',
+    )
+
+    transaction.recentBlockhash = blockhash
+    transaction.feePayer = anchorProvider.wallet.publicKey
+    const signedTxn = await anchorProvider.wallet.signTransaction(transaction)
     const body =
       `${solanaPayment?.error?.message}\n\n` +
       `solanaAddress: ${currentAccount?.solanaAddress}\n\n` +
       `cluster: ${cluster}` +
       '\n\n' +
-      `anchorProvider Connection: ${anchorProvider?.connection}` +
+      `anchorProvider Connection: ${anchorProvider?.connection.rpcEndpoint}` +
       '\n\n' +
       `anchorProvider public key: ${anchorProvider?.wallet?.publicKey}` +
       '\n\n' +
-      `signature: ${solanaPayment?.signature}`
+      `signature: ${solanaPayment?.signature}` +
+      '\n\n' +
+      `signedTxn-sig: ${signedTxn?.signature}`
     sendMail({ subject: 'Claim error', body, isHTML: false })
   }, [solanaPayment, anchorProvider, cluster, currentAccount])
 
