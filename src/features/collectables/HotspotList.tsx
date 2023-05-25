@@ -255,10 +255,11 @@ const HotspotList = () => {
           titleColor="black"
           marginBottom="m"
           disabled={
-            pendingIotRewards &&
-            pendingIotRewards.eq(new BN('0')) &&
-            pendingMobileRewards &&
-            pendingMobileRewards.eq(new BN('0'))
+            (pendingIotRewards &&
+              pendingIotRewards.eq(new BN('0')) &&
+              pendingMobileRewards &&
+              pendingMobileRewards.eq(new BN('0'))) ||
+            hotspotsWithMeta?.length === 0
           }
           onPress={handleNavigateToClaimRewards}
         />
