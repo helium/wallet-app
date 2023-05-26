@@ -161,7 +161,7 @@ export default {
     title: 'Collectables',
     metadata: 'Metadata',
     transfer: 'Transfer Hotspot',
-    transferComplete: 'NFT Transferred!',
+    transferComplete: 'Hotspot Transferred!',
     returnToCollectables: 'Return to Collectables',
     transferFee: '<b>Fee</b> <secondaryText> {{ amount }} SOL </secondaryText>',
     transferingNftTitle: 'Transferring NFT...',
