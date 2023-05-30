@@ -124,7 +124,9 @@ export const makePayment = createAsyncThunk(
       cluster,
     })
 
-    return signature
+    return {
+      signature,
+    }
   },
 )
 
@@ -150,12 +152,13 @@ export const makeCollectablePayment = createAsyncThunk(
           connection: anchorProvider.connection,
         }),
       )
+      return {
+        signature: sig,
+      }
     } catch (error) {
       Logger.error(error)
       throw error
     }
-
-    return true
   },
 )
 
@@ -168,11 +171,13 @@ export const sendTreasurySwap = createAsyncThunk(
       const sig = await anchorProvider.sendAndConfirm(signed)
 
       postPayment({ signature: sig, cluster })
+      return {
+        signature: sig,
+      }
     } catch (error) {
       Logger.error(error)
       throw error
     }
-    return true
   },
 )
 
@@ -185,11 +190,13 @@ export const sendMintDataCredits = createAsyncThunk(
       const sig = await anchorProvider.sendAndConfirm(signed)
 
       postPayment({ signature: sig, cluster })
+      return {
+        signature: sig,
+      }
     } catch (error) {
       Logger.error(error)
       throw error
     }
-    return true
   },
 )
 
@@ -206,11 +213,13 @@ export const sendDelegateDataCredits = createAsyncThunk(
       const sig = await anchorProvider.sendAndConfirm(signed)
 
       postPayment({ signature: sig, cluster })
+      return {
+        signature: sig,
+      }
     } catch (error) {
       Logger.error(error)
       throw error
     }
-    return true
   },
 )
 
@@ -232,11 +241,14 @@ export const sendAnchorTxn = createAsyncThunk(
       )
 
       postPayment({ signature: txid, cluster })
+
+      return {
+        signature: txid,
+      }
     } catch (error) {
       Logger.error(error)
       throw error
     }
-    return true
   },
 )
 
@@ -444,10 +456,13 @@ const solanaSlice = createSlice({
       }
     })
     builder.addCase(makePayment.fulfilled, (state, _action) => {
+      const { signature } = _action.payload
+
       state.payment = {
         success: true,
         loading: false,
         error: undefined,
+        signature,
       }
     })
     builder.addCase(claimRewards.rejected, (state, action) => {
@@ -492,10 +507,13 @@ const solanaSlice = createSlice({
       }
     })
     builder.addCase(sendAnchorTxn.fulfilled, (state, _action) => {
+      const { signature } = _action.payload
+
       state.payment = {
         success: true,
         loading: false,
         error: undefined,
+        signature,
       }
     })
     builder.addCase(sendTreasurySwap.rejected, (state, action) => {
@@ -515,10 +533,13 @@ const solanaSlice = createSlice({
       }
     })
     builder.addCase(sendTreasurySwap.fulfilled, (state, _action) => {
+      const { signature } = _action.payload
+
       state.payment = {
         success: true,
         loading: false,
         error: undefined,
+        signature,
       }
     })
     builder.addCase(sendMintDataCredits.rejected, (state, action) => {
@@ -538,10 +559,13 @@ const solanaSlice = createSlice({
       }
     })
     builder.addCase(sendMintDataCredits.fulfilled, (state, _action) => {
+      const { signature } = _action.payload
+
       state.payment = {
         success: true,
         loading: false,
         error: undefined,
+        signature,
       }
     })
     builder.addCase(sendDelegateDataCredits.rejected, (state, action) => {

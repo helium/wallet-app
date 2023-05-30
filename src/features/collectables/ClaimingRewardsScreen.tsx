@@ -95,26 +95,29 @@ const ClaimingRewardsScreen = () => {
           >
             <AccountIcon address={currentAccount?.solanaAddress} size={76} />
           </Box>
-          {solanaPayment && !solanaPayment.error && !solanaPayment.loading && (
-            <Animated.View
-              style={{ alignItems: 'center' }}
-              entering={FadeIn}
-              exiting={FadeOut}
-            >
-              <Text variant="h1Medium" color="white" marginTop="xl">
-                {t('collectablesScreen.claimComplete')}
-              </Text>
-              <Text
-                variant="body2"
-                color="secondaryText"
-                marginTop="xl"
-                numberOfLines={2}
-                textAlign="center"
+          {solanaPayment &&
+            !solanaPayment.error &&
+            !solanaPayment.loading &&
+            solanaPayment.signature && (
+              <Animated.View
+                style={{ alignItems: 'center' }}
+                entering={FadeIn}
+                exiting={FadeOut}
               >
-                {t('collectablesScreen.claimCompleteBody')}
-              </Text>
-            </Animated.View>
-          )}
+                <Text variant="h1Medium" color="white" marginTop="xl">
+                  {t('collectablesScreen.claimComplete')}
+                </Text>
+                <Text
+                  variant="body2"
+                  color="secondaryText"
+                  marginTop="xl"
+                  numberOfLines={2}
+                  textAlign="center"
+                >
+                  {t('collectablesScreen.claimCompleteBody')}
+                </Text>
+              </Animated.View>
+            )}
 
           {solanaPayment?.error && (
             <Animated.View

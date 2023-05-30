@@ -84,25 +84,28 @@ const SwappingScreen = () => {
       >
         <Box flexGrow={1} justifyContent="center" alignItems="center">
           {TokensSwappedContainer}
-          {solanaPayment && !solanaPayment.error && !solanaPayment.loading && (
-            <Animated.View
-              style={{ alignItems: 'center' }}
-              entering={FadeIn}
-              exiting={FadeOut}
-            >
-              <Text variant="h2" color="white" marginTop="xl">
-                {t('swapsScreen.swapComplete')}
-              </Text>
-              <Text
-                variant="body1"
-                color="secondaryText"
-                marginTop="xl"
-                textAlign="center"
+          {solanaPayment &&
+            !solanaPayment.error &&
+            !solanaPayment.loading &&
+            solanaPayment.signature && (
+              <Animated.View
+                style={{ alignItems: 'center' }}
+                entering={FadeIn}
+                exiting={FadeOut}
               >
-                {t('swapsScreen.swapCompleteBody')}
-              </Text>
-            </Animated.View>
-          )}
+                <Text variant="h2" color="white" marginTop="xl">
+                  {t('swapsScreen.swapComplete')}
+                </Text>
+                <Text
+                  variant="body1"
+                  color="secondaryText"
+                  marginTop="xl"
+                  textAlign="center"
+                >
+                  {t('swapsScreen.swapCompleteBody')}
+                </Text>
+              </Animated.View>
+            )}
 
           {solanaPayment?.error && (
             <Animated.View
