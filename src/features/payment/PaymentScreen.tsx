@@ -666,6 +666,7 @@ const PaymentScreen = () => {
         onConfirmBalance={handleBalance}
         ticker={ticker}
         networkFee={paymentState.networkFee}
+        usePortal
       >
         <AccountSelector ref={accountSelectorRef}>
           <AddressBookSelector
