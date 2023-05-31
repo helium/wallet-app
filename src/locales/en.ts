@@ -370,7 +370,7 @@ export default {
     recieveToken: 'Receive {{amount}} {{ticker}}',
     insufficientFunds: 'Insufficient funds',
     unableToSimulate:
-      'Unable to simulate. Make sure you trust this website since approving can lead to loss of funds.',
+      'Unable to simulate. Make sure you trust this app since approving can lead to loss of funds.',
     networkFee: 'Network Fee',
     connect: 'Connect',
     approve: 'Approve',
@@ -533,6 +533,7 @@ export default {
     solanaHealthy: 'Solana RPC is healthy.',
     solanaHealthDown: 'Solana RPC is down. Please try again later.',
     solanaTpsSlow: 'Solana RPC is slow. {{ tps }} tps.',
+    sendLogs: 'Send Logs',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',
@@ -964,5 +965,14 @@ export default {
     unstakeValidator: 'Unstake {{ticker}}',
     validator: 'Validator',
     delegated: 'Delegated',
+    signPaymentTxn: 'Sign this transaction to send your payment.',
+    signTransferCollectableTxn:
+      'Sign this transaction to transfer your collectable.',
+    signSwapTxn: 'Sign this transaction to swap your tokens.',
+    signGenericTxn: 'Sign this transaction to send your txn.',
+    signClaimRewardsTxn: 'Sign this transaction to claim your rewards.',
+    signClaimAllRewardsTxn: 'Sign this transaction to claim all your rewards.',
+    signMintDataCreditsTxn: 'Sign this transaction to mint your data credits.',
+    signDelegateDCTxn: 'Sign this transaction to delegate your data credits.',
   },
 }

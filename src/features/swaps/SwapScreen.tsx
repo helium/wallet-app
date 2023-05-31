@@ -21,7 +21,6 @@ import TokenSelector, { TokenSelectorRef } from '@components/TokenSelector'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import TreasuryWarningScreen from '@components/TreasuryWarningScreen'
 import Balance, { CurrencyType, SolTokens, Ticker } from '@helium/currency'
-import useAlert from '@hooks/useAlert'
 import { useTreasuryPrice } from '@hooks/useTreasuryPrice'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
@@ -39,6 +38,7 @@ import {
 } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useColors, useHitSlop } from '@theme/themeHooks'
+import CircleLoader from '@components/CircleLoader'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import { useBalance } from '../../utils/Balance'
@@ -70,9 +70,6 @@ const SwapScreen = () => {
   const [selectorMode, setSelectorMode] = useState(SelectorMode.youPay)
   const [youPayTokenType, setYouPayTokenType] = useState<Ticker>(Tokens.MOBILE)
   const colors = useColors()
-  /* TODO: Add new solana variation for IOT and MOBILE in @helium/currency that supports
-     6 decimals and pulls from mint instead of ticker.
-  */
   const [youPayTokenAmount, setYouPayTokenAmount] = useState<number>(0)
   const [youReceiveTokenType, setYouReceiveTokenType] = useState<Ticker>(
     Tokens.HNT,
@@ -84,14 +81,14 @@ const SwapScreen = () => {
   const [networkError, setNetworkError] = useState<undefined | string>()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
   const { networkTokensToDc, hntBalance, solBalance } = useBalance()
-  const { showOKCancelAlert } = useAlert()
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const {
     price,
     loading: loadingPrice,
     freezeDate,
   } = useTreasuryPrice(new PublicKey(Mints[youPayTokenType]), youPayTokenAmount)
-
+  const [swapping, setSwapping] = useState(false)
+  const [transactionError, setTransactionError] = useState<undefined | string>()
   const [hasRecipientError, setHasRecipientError] = useState(false)
   const [recipient, setRecipient] = useState('')
   const [isRecipientOpen, setRecipientOpen] = useState(false)
@@ -145,12 +142,14 @@ const SwapScreen = () => {
       return t('swapsScreen.insufficientTokensToSwap')
     if (hasInsufficientBalance) return t('generic.insufficientBalance')
     if (networkError) return networkError
+    if (transactionError) return transactionError
   }, [
     hasRecipientError,
     hasInsufficientBalance,
     insufficientTokensToSwap,
     networkError,
     t,
+    transactionError,
   ])
 
   const treasuryFrozen = useMemo(() => {
@@ -335,9 +334,10 @@ const SwapScreen = () => {
         Number(youPayTokenAmount),
         CurrencyType.networkToken,
       )
-      const amount = networkTokensToDc(networkTokens)?.floatBalance
-
-      return amount || 0
+      const rawBalance = networkTokensToDc(networkTokens)?.floatBalance
+      if (typeof rawBalance !== 'undefined') {
+        return Math.floor(rawBalance)
+      }
     }
 
     return 0
@@ -350,41 +350,43 @@ const SwapScreen = () => {
   ])
 
   const handleSwapTokens = useCallback(async () => {
-    const decision = await showOKCancelAlert({
-      title: t('swapsScreen.swapAlertTitle'),
-      message: t('swapsScreen.swapAlertBody'),
-    })
-    if (!currentAccount || !currentAccount.solanaAddress)
-      throw new Error('No account found')
+    try {
+      setSwapping(true)
 
-    const recipientAddr =
-      recipient && !hasRecipientError
-        ? new PublicKey(recipient)
-        : new PublicKey(currentAccount.solanaAddress)
-    if (!decision) return
+      if (!currentAccount || !currentAccount.solanaAddress)
+        throw new Error('No account found')
 
-    if (youPayTokenType === Tokens.HNT) {
-      submitMintDataCredits({
-        dcAmount: youReceiveTokenAmount,
-        recipient: recipientAddr,
+      const recipientAddr =
+        recipient && !hasRecipientError
+          ? new PublicKey(recipient)
+          : new PublicKey(currentAccount.solanaAddress)
+
+      if (youPayTokenType === Tokens.HNT) {
+        await submitMintDataCredits({
+          dcAmount: youReceiveTokenAmount,
+          recipient: recipientAddr,
+        })
+      }
+
+      if (youPayTokenType !== Tokens.HNT) {
+        await submitTreasurySwap(
+          new PublicKey(Mints[youPayTokenType]),
+          youPayTokenAmount,
+          recipientAddr,
+        )
+      }
+
+      setSwapping(false)
+
+      navigation.push('SwappingScreen', {
+        tokenA: youPayTokenType,
+        tokenB: youReceiveTokenType,
       })
+    } catch (error) {
+      setSwapping(false)
+      setTransactionError((error as Error).message)
     }
-
-    if (youPayTokenType !== Tokens.HNT) {
-      submitTreasurySwap(
-        new PublicKey(Mints[youPayTokenType]),
-        youPayTokenAmount,
-        recipientAddr,
-      )
-    }
-
-    navigation.push('SwappingScreen', {
-      tokenA: youPayTokenType,
-      tokenB: youReceiveTokenType,
-    })
   }, [
-    showOKCancelAlert,
-    t,
     currentAccount,
     recipient,
     hasRecipientError,
@@ -520,21 +522,26 @@ const SwapScreen = () => {
                     flexGrow={1}
                     borderRadius="round"
                     backgroundColor="white"
-                    backgroundColorOpacity={1}
-                    backgroundColorOpacityPressed={0.05}
-                    titleColorDisabled="grey600"
-                    backgroundColorDisabled="white"
-                    backgroundColorDisabledOpacity={0.1}
+                    backgroundColorOpacityPressed={0.7}
+                    backgroundColorDisabled="surfaceSecondary"
+                    backgroundColorDisabledOpacity={0.5}
+                    titleColorDisabled="secondaryText"
+                    titleColor="black"
                     disabled={
                       hasInsufficientBalance ||
                       insufficientTokensToSwap ||
                       youPayTokenAmount === 0 ||
-                      treasuryFrozen
+                      treasuryFrozen ||
+                      swapping
                     }
                     titleColorPressedOpacity={0.3}
-                    title={t('swapsScreen.swapTokens')}
-                    titleColor="black"
+                    title={swapping ? '' : t('swapsScreen.swapTokens')}
                     onPress={handleSwapTokens}
+                    TrailingComponent={
+                      swapping ? (
+                        <CircleLoader loaderSize={20} color="white" />
+                      ) : undefined
+                    }
                   />
 
                   {solFee ? (

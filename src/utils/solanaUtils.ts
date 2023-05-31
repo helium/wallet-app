@@ -36,6 +36,7 @@ import {
   getAccount,
   ASSOCIATED_TOKEN_PROGRAM_ID,
   createAssociatedTokenAccountInstruction,
+  createAssociatedTokenAccountIdempotentInstruction,
 } from '@solana/spl-token'
 import { entityCreatorKey } from '@helium/helium-entity-manager-sdk'
 import Balance, { AnyCurrencyType, CurrencyType } from '@helium/currency'
@@ -193,13 +194,16 @@ export const createTransferSolTxn = async (
 
   const { blockhash } = await anchorProvider.connection.getLatestBlockhash()
 
-  const messageV0 = new TransactionMessage({
-    payerKey: payer,
-    recentBlockhash: blockhash,
-    instructions,
-  }).compileToV0Message()
+  const transaction = new Transaction()
 
-  return new VersionedTransaction(messageV0)
+  instructions.forEach((instruction) => {
+    transaction.add(instruction)
+  })
+
+  transaction.feePayer = payer
+  transaction.recentBlockhash = blockhash
+
+  return transaction
 }
 
 export const createTransferTxn = async (
@@ -229,43 +233,43 @@ export const createTransferTxn = async (
     payer,
   )
 
-  const payeeATAs = await Promise.all(
-    payments.map((p) =>
-      getOrCreateAssociatedTokenAccount(
-        conn,
-        signer,
-        mint,
-        new PublicKey(p.payee),
-      ),
-    ),
-  )
-
   let instructions: TransactionInstruction[] = []
-  payments.forEach((p, idx) => {
+  payments.forEach((p) => {
     const amount = p.balanceAmount.integerBalance
+    const ata = getAssociatedTokenAddressSync(mint, new PublicKey(p.payee))
 
-    const instruction = createTransferCheckedInstruction(
-      payerATA.address,
-      mint,
-      payeeATAs[idx].address,
-      payer,
-      amount,
-      firstPayment.balanceAmount.type.decimalPlaces.toNumber(),
-      [signer],
-    )
-
-    instructions = [...instructions, instruction]
+    instructions = [
+      ...instructions,
+      createAssociatedTokenAccountIdempotentInstruction(
+        anchorProvider.publicKey,
+        ata,
+        new PublicKey(p.payee),
+        mint,
+      ),
+      createTransferCheckedInstruction(
+        payerATA.address,
+        mint,
+        ata,
+        payer,
+        amount,
+        firstPayment.balanceAmount.type.decimalPlaces.toNumber(),
+        [signer],
+      ),
+    ]
   })
 
   const { blockhash } = await anchorProvider.connection.getLatestBlockhash()
 
-  const messageV0 = new TransactionMessage({
-    payerKey: payer,
-    recentBlockhash: blockhash,
-    instructions,
-  }).compileToV0Message()
+  const transaction = new Transaction()
 
-  return new VersionedTransaction(messageV0)
+  instructions.forEach((instruction) => {
+    transaction.add(instruction)
+  })
+
+  transaction.feePayer = payer
+  transaction.recentBlockhash = blockhash
+
+  return transaction
 }
 
 export const transferToken = async (
@@ -294,16 +298,8 @@ export const transferToken = async (
   const transaction = !mintAddress
     ? await createTransferSolTxn(anchorProvider, signer, payments)
     : await createTransferTxn(anchorProvider, signer, payments, mintAddress)
-  transaction.sign([signer])
 
-  const { txid } = await sendAndConfirmWithRetry(
-    anchorProvider.connection,
-    Buffer.from(transaction.serialize()),
-    { skipPreflight: true },
-    'confirmed',
-  )
-
-  return { signature: txid }
+  return transaction
 }
 
 export const getTxn = async (
@@ -433,18 +429,14 @@ export const createTransferCollectableMessage = async (
     recipientPubKey,
   )
 
-  if (!(await conn.getAccountInfo(recipientATA))) {
-    instructions.push(
-      createAssociatedTokenAccountInstruction(
-        anchorProvider.publicKey,
-        signer.publicKey,
-        recipientPubKey,
-        mintPubkey,
-        TOKEN_PROGRAM_ID,
-        ASSOCIATED_TOKEN_PROGRAM_ID,
-      ),
-    )
-  }
+  instructions.push(
+    createAssociatedTokenAccountIdempotentInstruction(
+      anchorProvider.publicKey,
+      recipientATA,
+      recipientPubKey,
+      mintPubkey,
+    ),
+  )
 
   instructions.push(
     createTransferCheckedInstruction(
@@ -475,7 +467,7 @@ export const transferCollectable = async (
   heliumAddress: string,
   collectable: Collectable,
   payee: string,
-) => {
+): Promise<Transaction> => {
   const payer = new PublicKey(solanaAddress)
   try {
     const secureAcct = await getKeypair(heliumAddress)
@@ -505,18 +497,14 @@ export const transferCollectable = async (
       recipientPubKey,
     )
 
-    if (!(await conn.getAccountInfo(recipientATA))) {
-      instructions.push(
-        createAssociatedTokenAccountInstruction(
-          anchorProvider.publicKey,
-          signer.publicKey,
-          recipientPubKey,
-          mintPubkey,
-          TOKEN_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID,
-        ),
-      )
-    }
+    instructions.push(
+      createAssociatedTokenAccountIdempotentInstruction(
+        anchorProvider.publicKey,
+        recipientATA,
+        recipientPubKey,
+        mintPubkey,
+      ),
+    )
 
     instructions.push(
       createTransferCheckedInstruction(
@@ -530,43 +518,18 @@ export const transferCollectable = async (
       ),
     )
 
-    const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash()
+    const { blockhash } = await conn.getLatestBlockhash()
 
-    const messageV0 = new TransactionMessage({
-      payerKey: payer,
-      recentBlockhash: blockhash,
-      instructions,
-    }).compileToLegacyMessage()
+    const transaction = new Transaction()
 
-    const transaction = new VersionedTransaction(
-      VersionedMessage.deserialize(messageV0.serialize()),
-    )
-
-    transaction.sign([signer])
-
-    const signature = await conn.sendRawTransaction(transaction.serialize(), {
-      skipPreflight: true,
-      maxRetries: 5,
+    instructions.forEach((instruction) => {
+      transaction.add(instruction)
     })
 
-    await confirmTransaction(
-      anchorProvider,
-      signature,
-      blockhash,
-      lastValidBlockHeight,
-    )
+    transaction.recentBlockhash = blockhash
+    transaction.feePayer = payer
 
-    const txn = await getTxn(anchorProvider, signature)
-
-    if (txn?.meta?.err) {
-      throw new Error(
-        typeof txn.meta.err === 'string'
-          ? txn.meta.err
-          : JSON.stringify(txn.meta.err),
-      )
-    }
-
-    return { signature, txn }
+    return transaction
   } catch (e) {
     Logger.error(e)
     throw new Error((e as Error).message)
@@ -622,38 +585,12 @@ export const mintDataCredits = async ({
       })
       .transaction()
 
-    const { blockhash, lastValidBlockHeight } =
-      await connection.getLatestBlockhash()
+    const { blockhash } = await connection.getLatestBlockhash()
 
     tx.recentBlockhash = blockhash
     tx.feePayer = payer
 
-    const signedTx = await anchorProvider.wallet.signTransaction(tx)
-
-    const signature = await connection.sendRawTransaction(
-      signedTx.serialize(),
-      {
-        skipPreflight: true,
-      },
-    )
-
-    await confirmTransaction(
-      anchorProvider,
-      signature,
-      blockhash,
-      lastValidBlockHeight,
-    )
-    const txn = await getTxn(anchorProvider, signature)
-
-    if (txn?.meta?.err) {
-      throw new Error(
-        typeof txn.meta.err === 'string'
-          ? txn.meta.err
-          : JSON.stringify(txn.meta.err),
-      )
-    }
-
-    return { signature, txn }
+    return tx
   } catch (e) {
     Logger.error(e)
     throw e as Error
@@ -683,38 +620,12 @@ export const delegateDataCredits = async (
       })
       .transaction()
 
-    const { blockhash, lastValidBlockHeight } =
-      await connection.getLatestBlockhash()
+    const { blockhash } = await connection.getLatestBlockhash()
 
     tx.recentBlockhash = blockhash
     tx.feePayer = payer
 
-    const signedTx = await anchorProvider.wallet.signTransaction(tx)
-
-    const signature = await connection.sendRawTransaction(
-      signedTx.serialize(),
-      {
-        skipPreflight: true,
-      },
-    )
-
-    await confirmTransaction(
-      anchorProvider,
-      signature,
-      blockhash,
-      lastValidBlockHeight,
-    )
-    const txn = await getTxn(anchorProvider, signature)
-
-    if (txn?.meta?.err) {
-      throw new Error(
-        typeof txn.meta.err === 'string'
-          ? txn.meta.err
-          : JSON.stringify(txn.meta.err),
-      )
-    }
-
-    return { signature, txn }
+    return tx
   } catch (e) {
     Logger.error(e)
     throw e as Error
@@ -803,7 +714,7 @@ export const transferCompressedCollectable = async (
   heliumAddress: string,
   collectable: CompressedNFT,
   payee: string,
-) => {
+): Promise<Transaction> => {
   const payer = new PublicKey(solanaAddress)
   try {
     const secureAcct = await getKeypair(heliumAddress)
@@ -811,11 +722,6 @@ export const transferCompressedCollectable = async (
 
     if (!secureAcct) {
       throw new Error('Secure account not found')
-    }
-
-    const signer = {
-      publicKey: payer,
-      secretKey: secureAcct.privateKey,
     }
 
     const recipientPubKey = new PublicKey(payee)
@@ -876,43 +782,18 @@ export const transferCompressedCollectable = async (
       ),
     )
 
-    const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash()
+    const { blockhash } = await conn.getLatestBlockhash()
 
-    const messageV0 = new TransactionMessage({
-      payerKey: payer,
-      recentBlockhash: blockhash,
-      instructions,
-    }).compileToLegacyMessage()
+    const transaction = new Transaction()
 
-    const transaction = new VersionedTransaction(
-      VersionedMessage.deserialize(messageV0.serialize()),
-    )
-
-    transaction.sign([signer])
-
-    const signature = await conn.sendRawTransaction(transaction.serialize(), {
-      skipPreflight: true,
-      maxRetries: 5,
+    instructions.forEach((instruction) => {
+      transaction.add(instruction)
     })
 
-    await confirmTransaction(
-      anchorProvider,
-      signature,
-      blockhash,
-      lastValidBlockHeight,
-    )
+    transaction.recentBlockhash = blockhash
+    transaction.feePayer = payer
 
-    const txn = await getTxn(anchorProvider, signature)
-
-    if (txn?.meta?.err) {
-      throw new Error(
-        typeof txn.meta.err === 'string'
-          ? txn.meta.err
-          : JSON.stringify(txn.meta.err),
-      )
-    }
-
-    return { signature, txn }
+    return transaction
   } catch (e) {
     Logger.error(e)
     throw new Error((e as Error).message)
@@ -1429,36 +1310,11 @@ export async function createTreasurySwapTxn(
       })
       .transaction()
 
-    const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash(
-      'recent',
-    )
+    const { blockhash } = await conn.getLatestBlockhash('recent')
     tx.recentBlockhash = blockhash
     tx.feePayer = anchorProvider.wallet.publicKey
 
-    const signedTx = await anchorProvider.wallet.signTransaction(tx)
-
-    const signature = await conn.sendRawTransaction(signedTx.serialize(), {
-      skipPreflight: true,
-    })
-
-    await confirmTransaction(
-      anchorProvider,
-      signature,
-      blockhash,
-      lastValidBlockHeight,
-    )
-
-    const txn = await getTxn(anchorProvider, signature)
-
-    if (txn?.meta?.err) {
-      throw new Error(
-        typeof txn.meta.err === 'string'
-          ? txn.meta.err
-          : JSON.stringify(txn.meta.err),
-      )
-    }
-
-    return { signature, txn }
+    return tx
   } catch (e) {
     throw e as Error
   }

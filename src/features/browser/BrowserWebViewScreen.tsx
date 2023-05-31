@@ -26,10 +26,11 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import injectWalletStandard from './walletStandard'
 import { getKeypair } from '../../storage/secureStorage'
 import * as Logger from '../../utils/logger'
-import WalletSignBottomSheet, {
+import WalletSignBottomSheet from '../../solana/WalletSignBottomSheet'
+import {
   WalletSignBottomSheetRef,
   WalletStandardMessageTypes,
-} from '../../solana/WalletSignBottomSheet'
+} from '../../solana/walletSignBottomSheetTypes'
 import Box from '../../components/Box'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import Text from '../../components/Text'
@@ -55,9 +56,7 @@ const BrowserWebViewScreen = () => {
   const { favorites, addFavorite, removeFavorite } = useBrowser()
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
   const spacing = useSpacing()
-  const [simulatedTransactions, setSimulatedTransactions] = useState<
-    Buffer[] | undefined
-  >(undefined)
+
   useEffect(() => {
     if (currentAccount?.solanaAddress) {
       setAccountAddress(currentAccount?.solanaAddress || '')
@@ -100,6 +99,7 @@ const BrowserWebViewScreen = () => {
         const decision = await walletSignBottomSheetRef.current?.show({
           type,
           url: currentUrl,
+          serializedTx: undefined,
         })
 
         if (!decision) {
@@ -122,6 +122,7 @@ const BrowserWebViewScreen = () => {
         const decision = await walletSignBottomSheetRef?.current?.show({
           type,
           url: currentUrl,
+          serializedTx: undefined,
         })
 
         if (!decision) {
@@ -261,11 +262,10 @@ const BrowserWebViewScreen = () => {
             ),
         )
 
-        setSimulatedTransactions(txBuffers)
-
         const decision = await walletSignBottomSheetRef.current?.show({
           type,
           url: currentUrl,
+          serializedTx: txBuffers[0],
         })
         if (!decision) {
           // Signature declined
@@ -329,6 +329,7 @@ const BrowserWebViewScreen = () => {
         const decision = await walletSignBottomSheetRef.current?.show({
           type,
           url: currentUrl,
+          serializedTx: undefined,
         })
 
         if (!decision) {
@@ -497,7 +498,6 @@ const BrowserWebViewScreen = () => {
     <BrowserWrapper>
       <Box position="absolute" top={0} left={0} right={0} bottom={0}>
         <WalletSignBottomSheet
-          serializedTx={simulatedTransactions?.[0]}
           ref={walletSignBottomSheetRef}
           onClose={() => {}}
         >

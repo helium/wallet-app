@@ -2308,7 +2308,7 @@
     "@solana/spl-token" "^0.3.7"
     "@solana/web3.js" "^1.73.0"
 
-"@helium/currency@4.11.1", "@helium/currency@^4.7.3":
+"@helium/currency@4.11.1":
   version "4.11.1"
   resolved "https://registry.yarnpkg.com/@helium/currency/-/currency-4.11.1.tgz#4658037197638406f0e60b246db70acd3323e46b"
   integrity sha512-WxsMm3TvIXV8itR36yYxjXjtWAgJlId/OOrHivNTXUIdnxi6/j3JO/hY7EUHYygcw57O90Zqg4EBnypXzI4EKw==
@@ -3715,10 +3715,10 @@
     js-sha3 "^0.8.0"
     typescript-collections "^1.3.3"
 
-"@solana/spl-token@0.3.5":
-  version "0.3.5"
-  resolved "https://registry.yarnpkg.com/@solana/spl-token/-/spl-token-0.3.5.tgz#cabf9f92d755589420b46e457b9b10a879e755aa"
-  integrity sha512-0bGC6n415lGjKu02gkLOIpP1wzndSP0SHwN9PefJ+wKAhmfU1rl3AV1Pa41uap2kzSCD6F9642ngNO8KXPvh/g==
+"@solana/spl-token@0.3.6":
+  version "0.3.6"
+  resolved "https://registry.yarnpkg.com/@solana/spl-token/-/spl-token-0.3.6.tgz#35473ad2ed71fe91e5754a2ac72901e1b8b26a42"
+  integrity sha512-P9pTXjDIRvVbjr3J0mCnSamYqLnICeds7IoH1/Ro2R9OBuOHdp5pqKZoscfZ3UYrgnCWUc1bc9M2m/YPHjw+1g==
   dependencies:
     "@solana/buffer-layout" "^4.0.0"
     "@solana/buffer-layout-utils" "^0.2.0"
@@ -13032,6 +13032,11 @@ react-native-localize@2.2.3:
   resolved "https://registry.yarnpkg.com/react-native-localize/-/react-native-localize-2.2.3.tgz#9666becaea5d6b8d968f037d82b2220ba52c463b"
   integrity sha512-DoEEk7s4p0BnCU2zS2yzC+bEUWSFhcuXoLidgHag1EQkaXJLiNos661h8nGZvWWrVK6zE+Cl2319bqG3FidkJQ==
 
+react-native-mail@^6.1.1:
+  version "6.1.1"
+  resolved "https://registry.yarnpkg.com/react-native-mail/-/react-native-mail-6.1.1.tgz#f1b1f8034c84d2510a93e4a2a795f0db5a13595e"
+  integrity sha512-pTs180wwyh7hN/iyTC9SfOX579U4YhDlHOLxi47IGvhPJENqO/QFdBq+wWKxyhNqdQuVSy+LoeIxLreWnIeYmg==
+
 react-native-navigation-bar-color@2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/react-native-navigation-bar-color/-/react-native-navigation-bar-color-2.0.1.tgz#ee2be25cc37105f7da355717b0a9a32c9c059ae6"
@@ -13165,6 +13170,11 @@ react-native-tcp@3.3.2:
     ip-regex "^1.0.3"
     process "^0.11.9"
     util "^0.10.3"
+
+react-native-test-flight@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/react-native-test-flight/-/react-native-test-flight-1.1.0.tgz#85e3b71daee00976b3e3cd65f6ffb27fbe896d86"
+  integrity sha512-9mAjbtnklqhpDLz5whRWjPVPO2yGpKztFvp/JKWuN236jgHN/Zdv/e+PqmnD43pg+snl+O45UjYQTLzN0+KT3g==
 
 react-native-text-ticker@1.14.0:
   version "1.14.0"

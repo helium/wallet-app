@@ -6,23 +6,18 @@ import React, {
   useRef,
   useEffect,
 } from 'react'
-import WalletSignBottomSheet, {
-  WalletSignBottomSheetRef,
-} from './WalletSignBottomSheet'
+import { WalletSignBottomSheetRef } from './walletSignBottomSheetTypes'
+import WalletSignBottomSheet from './WalletSignBottomSheet'
 
 const useWalletSignHook = () => {
   const [walletSignBottomSheetRef, setWalletSignBottomSheetRef] =
     useState<WalletSignBottomSheetRef | null>(null)
-  const [serializedTx, setSerializedTx] = useState<Buffer | undefined>(
-    undefined,
-  )
+
   const [onClose, setOnClose] = useState<() => void>(() => {})
 
   return {
     walletSignBottomSheetRef,
     setWalletSignBottomSheetRef,
-    serializedTx,
-    setSerializedTx,
     onClose,
     setOnClose,
   }
@@ -31,8 +26,6 @@ const useWalletSignHook = () => {
 const initialState = {
   walletSignBottomSheetRef: null,
   setWalletSignBottomSheetRef: () => {},
-  serializedTx: undefined,
-  setSerializedTx: () => {},
   onClose: () => {},
   setOnClose: () => {},
 }
@@ -53,11 +46,7 @@ const WalletSignProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <Provider value={values}>
-      <WalletSignBottomSheet
-        serializedTx={values.serializedTx}
-        ref={ref}
-        onClose={values.onClose}
-      >
+      <WalletSignBottomSheet ref={ref} onClose={values.onClose}>
         {children}
       </WalletSignBottomSheet>
     </Provider>

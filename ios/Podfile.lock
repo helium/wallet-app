@@ -345,6 +345,8 @@ PODS:
     - React
   - react-native-get-random-values (1.8.0):
     - React-Core
+  - react-native-mail (6.1.1):
+    - React-Core
   - react-native-netinfo (9.3.7):
     - React-Core
   - react-native-network-info (5.2.1):
@@ -513,6 +515,8 @@ PODS:
     - React-Core
   - RNSVG (13.4.0):
     - React-Core
+  - RNTestFlight (1.1.0):
+    - React-Core
   - SwiftAlgorithms (1.0.0)
   - SwiftyJSON (5.0.0)
   - TcpSockets (3.3.2):
@@ -574,6 +578,7 @@ DEPENDENCIES:
   - react-native-config/Extension (from `../node_modules/react-native-config`)
   - react-native-currency-format (from `../node_modules/react-native-currency-format`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
+  - react-native-mail (from `../node_modules/react-native-mail`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-network-info (from `../node_modules/react-native-network-info`)
   - react-native-onesignal (from `../node_modules/react-native-onesignal`)
@@ -611,6 +616,7 @@ DEPENDENCIES:
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNShare (from `../node_modules/react-native-share`)
   - RNSVG (from `../node_modules/react-native-svg`)
+  - RNTestFlight (from `../node_modules/react-native-test-flight`)
   - TcpSockets (from `../node_modules/react-native-tcp`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -717,6 +723,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-currency-format"
   react-native-get-random-values:
     :path: "../node_modules/react-native-get-random-values"
+  react-native-mail:
+    :path: "../node_modules/react-native-mail"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-network-info:
@@ -791,6 +799,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-share"
   RNSVG:
     :path: "../node_modules/react-native-svg"
+  RNTestFlight:
+    :path: "../node_modules/react-native-test-flight"
   TcpSockets:
     :path: "../node_modules/react-native-tcp"
   Yoga:
@@ -848,6 +858,7 @@ SPEC CHECKSUMS:
   react-native-config: 7cd105e71d903104e8919261480858940a6b9c0e
   react-native-currency-format: cd0a30868fddb004c3b5b5e9b7fe7717876927f5
   react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
+  react-native-mail: 8fdcd3aef007c33a6877a18eb4cf7447a1d4ce4a
   react-native-netinfo: 2517ad504b3d303e90d7a431b0fcaef76d207983
   react-native-network-info: d1290ffc0bd0709e11436f5b8d7f605dcc5c4530
   react-native-onesignal: e1f82b98767a9014d2c46f395b083330cfa29cea
@@ -885,6 +896,7 @@ SPEC CHECKSUMS:
   RNScreens: 218801c16a2782546d30bd2026bb625c0302d70f
   RNShare: be91a5c149585affb02c25b351bd07ba927c7006
   RNSVG: 07dbd870b0dcdecc99b3a202fa37c8ca163caec2
+  RNTestFlight: 3419178faa8527ecfe803607fd338a3803f1fb0d
   SwiftAlgorithms: 38dda4731d19027fdeee1125f973111bf3386b53
   SwiftyJSON: 36413e04c44ee145039d332b4f4e2d3e8d6c4db7
   TcpSockets: 14306fb79f9750ea7d2ddd02d8bed182abb01797

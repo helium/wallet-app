@@ -15,15 +15,20 @@ import AccountIcon from '@components/AccountIcon'
 import { parseTransactionError } from '@utils/solanaUtils'
 import { useBalance } from '@utils/Balance'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import sendMail from '@utils/sendMail'
+import RNTestFlight from 'react-native-test-flight'
+import { Transaction } from '@solana/web3.js'
 import { RootState } from '../../store/rootReducer'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
+import { useSolana } from '../../solana/SolanaProvider'
 
 const ClaimingRewardsScreen = () => {
   const { currentAccount } = useAccountStorage()
   const navigation = useNavigation<TabBarNavigationProp>()
   const { solBalance } = useBalance()
   const { bottom } = useSafeAreaInsets()
+  const { cluster, anchorProvider } = useSolana()
 
   const { t } = useTranslation()
   const solanaPayment = useSelector(
@@ -37,6 +42,31 @@ const ClaimingRewardsScreen = () => {
       routes: [{ name: 'Collectables' }],
     })
   }, [navigation])
+
+  const handleSend = useCallback(async () => {
+    if (!anchorProvider) return
+    const transaction = new Transaction()
+    const { blockhash } = await anchorProvider.connection.getLatestBlockhash(
+      'recent',
+    )
+
+    transaction.recentBlockhash = blockhash
+    transaction.feePayer = anchorProvider.wallet.publicKey
+    const signedTxn = await anchorProvider.wallet.signTransaction(transaction)
+    const body =
+      `${solanaPayment?.error?.message}\n\n` +
+      `solanaAddress: ${currentAccount?.solanaAddress}\n\n` +
+      `cluster: ${cluster}` +
+      '\n\n' +
+      `anchorProvider Connection: ${anchorProvider?.connection.rpcEndpoint}` +
+      '\n\n' +
+      `anchorProvider public key: ${anchorProvider?.wallet?.publicKey}` +
+      '\n\n' +
+      `signature: ${solanaPayment?.signature}` +
+      '\n\n' +
+      `signedTxn-sig: ${signedTxn?.signature}`
+    sendMail({ subject: 'Claim error', body, isHTML: false })
+  }, [solanaPayment, anchorProvider, cluster, currentAccount])
 
   if (!currentAccount) {
     return null
@@ -88,7 +118,9 @@ const ClaimingRewardsScreen = () => {
 
           {solanaPayment?.error && (
             <Animated.View
-              style={{ alignItems: 'center' }}
+              style={{
+                alignItems: 'center',
+              }}
               entering={FadeIn}
               exiting={FadeOut}
             >
@@ -159,6 +191,22 @@ const ClaimingRewardsScreen = () => {
                 <IndeterminateProgressBar paddingHorizontal="l" />
               </Box>
             </Animated.View>
+          )}
+
+          {(RNTestFlight.isTestFlight || __DEV__) && (
+            <ButtonPressable
+              marginHorizontal="m"
+              marginTop="m"
+              height={65}
+              borderRadius="round"
+              backgroundColor="secondaryBackground"
+              backgroundColorOpacity={0.8}
+              backgroundColorOpacityPressed={0.9}
+              titleColorPressedOpacity={0.9}
+              title={t('generic.sendLogs')}
+              titleColor="blueBright500"
+              onPress={handleSend}
+            />
           )}
         </Box>
         <Box

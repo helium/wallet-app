@@ -73,16 +73,16 @@ const ClaimRewardsScreen = () => {
           : undefined
       const transactions: Transaction[] = []
 
-      if (claimIotTx) {
+      if (claimIotTx && pendingIotRewards) {
         transactions.push(claimIotTx)
       }
 
-      if (claimMobileTx) {
+      if (claimMobileTx && pendingMobileRewards) {
         transactions.push(claimMobileTx)
       }
 
       if (transactions.length > 0) {
-        submitClaimRewards(transactions)
+        await submitClaimRewards(transactions)
         nav.push('ClaimingRewardsScreen')
       } else {
         setClaimError(t('collectablesScreen.claimError'))

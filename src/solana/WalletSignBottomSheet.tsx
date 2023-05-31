@@ -1,7 +1,6 @@
 import React, {
   forwardRef,
   memo,
-  ReactNode,
   Ref,
   useCallback,
   useEffect,
@@ -28,36 +27,18 @@ import { useSimulatedTransaction } from '@hooks/useSimulatedTransaction'
 import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 import CircleLoader from '@components/CircleLoader'
 import { useSolana } from './SolanaProvider'
-
-export enum WalletStandardMessageTypes {
-  connect = 'connect',
-  signTransaction = 'signTransaction',
-  signAndSendTransaction = 'signAndSendTransaction',
-  signMessage = 'signMessage',
-}
-
-type WalletSignOpts = {
-  type: WalletStandardMessageTypes
-  url: string
-  additionalMessage?: string
-}
-
-export type WalletSignBottomSheetRef = {
-  show: ({ type, url, additionalMessage }: WalletSignOpts) => Promise<boolean>
-  hide: () => void
-}
-
-export type WalletSignBottomSheetProps = {
-  serializedTx: Buffer | undefined
-  onClose: () => void
-  children: ReactNode
-}
+import {
+  WalletSignBottomSheetRef,
+  WalletSignBottomSheetProps,
+  WalletSignOpts,
+  WalletStandardMessageTypes,
+} from './walletSignBottomSheetTypes'
 
 let promiseResolve: (value: boolean | PromiseLike<boolean>) => void
 
 const WalletSignBottomSheet = forwardRef(
   (
-    { serializedTx, onClose, children }: WalletSignBottomSheetProps,
+    { onClose, children }: WalletSignBottomSheetProps,
     ref: Ref<WalletSignBottomSheetRef>,
   ) => {
     useImperativeHandle(ref, () => ({ show, hide }))
@@ -70,9 +51,15 @@ const WalletSignBottomSheet = forwardRef(
       type: WalletStandardMessageTypes.connect,
       url: '',
       additionalMessage: '',
+      manualBalanceChanges: undefined,
+      manualEstimatedFee: undefined,
+      serializedTx: undefined,
     })
     const { loading, balanceChanges, solFee, insufficientFunds } =
-      useSimulatedTransaction(serializedTx, anchorProvider?.publicKey)
+      useSimulatedTransaction(
+        walletSignOpts.serializedTx,
+        anchorProvider?.publicKey,
+      )
 
     const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
     const snapPoints = useMemo(() => ['25%', 'CONTENT_HEIGHT'], [])
@@ -85,53 +72,26 @@ const WalletSignBottomSheet = forwardRef(
     } = useBottomSheetDynamicSnapPoints(snapPoints)
 
     const hide = useCallback(() => {
-      bottomSheetModalRef.current?.dismiss()
+      bottomSheetModalRef.current?.close()
     }, [])
 
-    const simulationMessageColor = useMemo(() => {
-      if (insufficientFunds) {
-        return 'red500'
-      }
-
-      if (balanceChanges?.nativeChange) {
-        if (balanceChanges.type === 'send') {
-          return 'red500'
-        }
-        if (balanceChanges.type === 'recieve') {
-          return 'greenBright500'
-        }
-      }
-      return 'orange500'
-    }, [balanceChanges, insufficientFunds])
-
-    const simulationMessage = useMemo(() => {
-      if (insufficientFunds) {
-        return t('browserScreen.insufficientFunds')
-      }
-
-      if (balanceChanges?.nativeChange) {
-        if (balanceChanges.type === 'send') {
-          return t('browserScreen.sendToken', {
-            ticker: balanceChanges?.symbol,
-            amount: balanceChanges?.nativeChange,
-          })
-        }
-        return t('browserScreen.recieveToken', {
-          ticker: balanceChanges?.symbol,
-          amount: balanceChanges?.nativeChange,
-        })
-      }
-
-      return t('browserScreen.unableToSimulate')
-    }, [balanceChanges, t, insufficientFunds])
-
     const show = useCallback(
-      ({ type, url, additionalMessage }: WalletSignOpts) => {
+      ({
+        type,
+        url,
+        additionalMessage,
+        manualBalanceChanges,
+        manualEstimatedFee,
+        serializedTx,
+      }: WalletSignOpts) => {
         bottomSheetModalRef.current?.expand()
         setWalletSignOpts({
           type,
           url,
           additionalMessage,
+          manualBalanceChanges,
+          manualEstimatedFee,
+          serializedTx,
         })
         const p = new Promise<boolean>((resolve) => {
           promiseResolve = resolve
@@ -185,7 +145,12 @@ const WalletSignBottomSheet = forwardRef(
     }, [hide])
 
     const renderSheetBody = useCallback(() => {
-      const { type, additionalMessage } = walletSignOpts
+      const {
+        type,
+        additionalMessage,
+        manualBalanceChanges,
+        manualEstimatedFee,
+      } = walletSignOpts
 
       if (type === WalletStandardMessageTypes.connect) {
         return (
@@ -258,16 +223,102 @@ const WalletSignBottomSheet = forwardRef(
                 </Box>
               )}
 
-              <Box
-                borderBottomStartRadius="l"
-                borderBottomEndRadius="l"
-                backgroundColor="secondaryBackground"
-                padding="m"
-              >
-                <Text variant="body1Medium" color={simulationMessageColor}>
-                  {simulationMessage}
-                </Text>
-              </Box>
+              {insufficientFunds && (
+                <Box
+                  borderBottomStartRadius="l"
+                  borderBottomEndRadius="l"
+                  backgroundColor="secondaryBackground"
+                  padding="m"
+                >
+                  <Text variant="body1Medium" color="red500">
+                    {t('browserScreen.insufficientFunds')}
+                  </Text>
+                </Box>
+              )}
+              {!balanceChanges?.length && !manualBalanceChanges?.length && (
+                <Box
+                  borderBottomStartRadius="l"
+                  borderBottomEndRadius="l"
+                  backgroundColor="secondaryBackground"
+                  padding="m"
+                >
+                  <Text variant="body1Medium" color="orange500">
+                    {t('browserScreen.unableToSimulate')}
+                  </Text>
+                </Box>
+              )}
+
+              {balanceChanges &&
+                balanceChanges.map((change, index) => {
+                  const isLast = index === balanceChanges.length - 1
+                  const isSend = change.type === 'send'
+                  let balanceChange
+                  if (change.nativeChange) {
+                    if (change.type === 'send') {
+                      balanceChange = t('browserScreen.sendToken', {
+                        ticker: change.symbol,
+                        amount: change.nativeChange,
+                      })
+                    } else {
+                      balanceChange = t('browserScreen.recieveToken', {
+                        ticker: change.symbol,
+                        amount: change.nativeChange,
+                      })
+                    }
+                  }
+
+                  return (
+                    <Box
+                      key={(change.symbol || '') + (change.nativeChange || '')}
+                      borderBottomStartRadius={isLast ? 'l' : 'none'}
+                      borderBottomEndRadius={isLast ? 'l' : 'none'}
+                      backgroundColor="secondaryBackground"
+                      padding="m"
+                      borderBottomColor="black"
+                      borderBottomWidth={isLast ? 0 : 1}
+                    >
+                      <Text
+                        variant="body1Medium"
+                        color={isSend ? 'red500' : 'greenBright500'}
+                      >
+                        {balanceChange}
+                      </Text>
+                    </Box>
+                  )
+                })}
+
+              {manualBalanceChanges &&
+                manualBalanceChanges.map((change, index) => {
+                  const isLast = index === manualBalanceChanges.length - 1
+                  const isSend = change.type === 'send'
+                  const balanceChange = t(
+                    isSend
+                      ? 'browserScreen.sendToken'
+                      : 'browserScreen.recieveToken',
+                    {
+                      ticker: change.ticker,
+                      amount: change.amount,
+                    },
+                  )
+                  return (
+                    <Box
+                      key={change.ticker + change.amount}
+                      borderBottomStartRadius={isLast ? 'l' : 'none'}
+                      borderBottomEndRadius={isLast ? 'l' : 'none'}
+                      backgroundColor="secondaryBackground"
+                      padding="m"
+                      borderBottomColor="black"
+                      borderBottomWidth={isLast ? 0 : 1}
+                    >
+                      <Text
+                        variant="body1Medium"
+                        color={isSend ? 'red500' : 'greenBright500'}
+                      >
+                        {balanceChange}
+                      </Text>
+                    </Box>
+                  )
+                })}
 
               {type === WalletStandardMessageTypes.signAndSendTransaction ||
                 (type === WalletStandardMessageTypes.signTransaction && (
@@ -284,7 +335,10 @@ const WalletSignBottomSheet = forwardRef(
                       </Text>
                     </Box>
                     <Text variant="body1Medium" color="secondaryText">
-                      {`~${(solFee || 5000) / LAMPORTS_PER_SOL} SOL`}
+                      {`~${
+                        (manualEstimatedFee || solFee || 5000) /
+                        LAMPORTS_PER_SOL
+                      } SOL`}
                     </Text>
                   </Box>
                 ))}
@@ -292,7 +346,7 @@ const WalletSignBottomSheet = forwardRef(
           </>
         )
       }
-    }, [walletSignOpts, t, solFee, simulationMessage, simulationMessageColor])
+    }, [walletSignOpts, t, insufficientFunds, balanceChanges, solFee])
 
     const renderSheetFooter = useCallback(() => {
       if (!walletSignOpts) return null
