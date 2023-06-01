@@ -32,7 +32,6 @@ import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import { Mints } from '../../utils/constants'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotDetailsScreen'>
-
 const HotspotDetailsScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<CollectableNavigationProp>()
@@ -67,6 +66,13 @@ const HotspotDetailsScreen = () => {
   const handleSend = useCallback(() => {
     setOptionsOpen(false)
     navigation.navigate('TransferCollectableScreen', {
+      collectable,
+    })
+  }, [collectable, navigation])
+
+  const handleAssertLocation = useCallback(() => {
+    setOptionsOpen(false)
+    navigation.navigate('HotspotAssertLocationScreen', {
       collectable,
     })
   }, [collectable, navigation])
@@ -113,6 +119,13 @@ const HotspotDetailsScreen = () => {
           hasPressedState={false}
         />
         <ListItem
+          key="assertLocation"
+          title={t('collectablesScreen.hotspots.assertLocation')}
+          onPress={handleAssertLocation}
+          selected={false}
+          hasPressedState={false}
+        />
+        <ListItem
           key="copyAddress"
           title={t('collectablesScreen.hotspots.copyEccCompact')}
           onPress={handleCopyAddress}
@@ -121,7 +134,7 @@ const HotspotDetailsScreen = () => {
         />
       </>
     ),
-    [handleSend, handleCopyAddress, t],
+    [handleSend, handleAssertLocation, handleCopyAddress, t],
   )
 
   return (

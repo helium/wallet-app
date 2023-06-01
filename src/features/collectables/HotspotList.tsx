@@ -26,7 +26,7 @@ import { formatLargeNumber } from '../../utils/accountUtils'
 import HotspotCompressedListItem from './HotspotCompressedListItem'
 import HotspotListItem from './HotspotListItem'
 import { CollectableNavigationProp } from './collectablesTypes'
-import { CompressedNFT, HotspotWithPendingRewards } from '../../types/solana'
+import { CompressedNFT, HotspotWithMeta } from '../../types/solana'
 import { NFTSkeleton } from './NftListItem'
 
 const DEFAULT_PAGE_AMOUNT = 20
@@ -78,7 +78,7 @@ const HotspotList = () => {
   } = useHotspots()
 
   const handleNavigateToCollectable = useCallback(
-    (collectable: HotspotWithPendingRewards) => {
+    (collectable: HotspotWithMeta) => {
       if (collectable.content.metadata) {
         triggerImpact('light')
         navigation.navigate('HotspotDetailsScreen', { collectable })
@@ -280,7 +280,7 @@ const HotspotList = () => {
 
   const renderCollectable = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
-    ({ item }: { item: HotspotWithPendingRewards }) => {
+    ({ item }: { item: HotspotWithMeta }) => {
       if (tabSelected === 'list') {
         return (
           <HotspotCompressedListItem

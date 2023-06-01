@@ -220,6 +220,7 @@ export default {
       fifty: '50',
       all: 'All',
       copyEccCompact: 'Copy hotspot key',
+      assertLocation: 'Assert Location',
     },
   },
   activityScreen: {

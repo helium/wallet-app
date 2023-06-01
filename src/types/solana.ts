@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Ticker } from '@helium/currency'
+import { IdlAccounts } from '@coral-xyz/anchor'
 import {
   JsonMetadata,
   Nft,
@@ -14,10 +15,15 @@ import { init as initHem } from '@helium/helium-entity-manager-sdk'
 import { init as initLazy } from '@helium/lazy-distributor-sdk'
 import { TokenAmount } from '@solana/web3.js'
 import { Creator } from '@metaplex-foundation/mpl-bubblegum'
+import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'
 
-export type HotspotWithPendingRewards = CompressedNFT & {
+export type HotspotWithMeta = CompressedNFT & {
   // mint id to pending rewards
   pendingRewards: Record<string, string> | undefined
+  iotInfo: IdlAccounts<HeliumEntityManager>['iotHotspotInfoV0'] | undefined
+  mobileInfo:
+    | IdlAccounts<HeliumEntityManager>['mobileHotspotInfoV0']
+    | undefined
 }
 
 export type HemProgram = Awaited<ReturnType<typeof initHem>>

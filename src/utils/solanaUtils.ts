@@ -38,7 +38,13 @@ import {
   createAssociatedTokenAccountInstruction,
   createAssociatedTokenAccountIdempotentInstruction,
 } from '@solana/spl-token'
-import { entityCreatorKey } from '@helium/helium-entity-manager-sdk'
+import {
+  init as initHem,
+  entityCreatorKey,
+  iotInfoKey,
+  mobileInfoKey,
+  rewardableEntityConfigKey,
+} from '@helium/helium-entity-manager-sdk'
 import Balance, { AnyCurrencyType, CurrencyType } from '@helium/currency'
 import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
 import axios from 'axios'
@@ -90,7 +96,7 @@ import {
   Collectable,
   CompressedNFT,
   EnrichedTransaction,
-  HotspotWithPendingRewards,
+  HotspotWithMeta,
   mintToTicker,
 } from '../types/solana'
 import * as Logger from './logger'
@@ -1026,21 +1032,42 @@ export const getCompressedNFTMetadata = async (
   return collectablesWithMetadata.filter((c) => c !== null) as CompressedNFT[]
 }
 
-export async function annotateWithPendingRewards(
+export async function exists(
+  connection: Connection,
+  account: PublicKey,
+): Promise<boolean> {
+  return Boolean(await connection.getAccountInfo(account))
+}
+
+export async function annotateWithMeta(
   provider: AnchorProvider,
   hotspots: CompressedNFT[],
-): Promise<HotspotWithPendingRewards[]> {
+): Promise<HotspotWithMeta[]> {
   const program = await init(provider)
+  const hemProgram = await initHem(provider)
   const dao = daoKey(new PublicKey(Mints.HNT))[0]
+
   const entityKeys = hotspots.map((h) => {
     return h.content.json_uri.split('/').slice(-1)[0]
   })
+
+  const [iotConfigKey] = rewardableEntityConfigKey(
+    subDaoKey(new PublicKey(Mints.IOT))[0],
+    'IOT',
+  )
+
+  const [mobileConfigKey] = rewardableEntityConfigKey(
+    subDaoKey(new PublicKey(Mints.MOBILE))[0],
+    'MOBILE',
+  )
+
   const mobileRewards = await getPendingRewards(
     program,
     MOBILE_LAZY_KEY,
     dao,
     entityKeys,
   )
+
   const iotRewards = await getPendingRewards(
     program,
     IOT_LAZY_KEY,
@@ -1048,15 +1075,29 @@ export async function annotateWithPendingRewards(
     entityKeys,
   )
 
-  return hotspots.map((hotspot, index) => {
-    const hotspotWithMeta: HotspotWithPendingRewards =
-      hotspot as HotspotWithPendingRewards
-    hotspotWithMeta.pendingRewards = {
-      [Mints.MOBILE]: mobileRewards[entityKeys[index]],
-      [Mints.IOT]: iotRewards[entityKeys[index]],
-    }
-    return hotspotWithMeta
-  })
+  return Promise.all(
+    hotspots.map(async (hotspot, index) => {
+      const entityKey = entityKeys[index]
+      const [iotInfo] = await iotInfoKey(iotConfigKey, entityKey)
+      const [mobileInfo] = await mobileInfoKey(mobileConfigKey, entityKey)
+
+      const iotInfoAcc =
+        await hemProgram.account.iotHotspotInfoV0.fetchNullable(iotInfo)
+
+      const mobileInfoAcc =
+        await hemProgram.account.mobileHotspotInfoV0.fetchNullable(mobileInfo)
+
+      return {
+        ...hotspot,
+        iotInfo: iotInfoAcc || undefined,
+        mobileInfo: mobileInfoAcc || undefined,
+        pendingRewards: {
+          [Mints.MOBILE]: mobileRewards[entityKey],
+          [Mints.IOT]: iotRewards[entityKey],
+        },
+      } as HotspotWithMeta
+    }),
+  )
 }
 
 /**

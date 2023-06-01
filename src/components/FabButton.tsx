@@ -21,6 +21,8 @@ import { Color, FontWeight, Theme } from '@theme/theme'
 import { useColors, useCreateOpacity } from '@theme/themeHooks'
 import Swaps from '@assets/images/swaps.svg'
 import Airdrop from '@assets/images/airdrop.svg'
+import MapUserLocation from '@assets/images/mapUserLocation.svg'
+import Search from '@assets/images/search.svg'
 import Box from './Box'
 import Text from './Text'
 import ButtonPressAnimation from './ButtonPressAnimation'
@@ -39,6 +41,8 @@ type IconName =
   | 'filter'
   | 'swaps'
   | 'airdrop'
+  | 'mapUserLocation'
+  | 'search'
 
 type Props = BoxProps<Theme> & {
   backgroundColor?: Color
@@ -266,6 +270,10 @@ const FabIcon = ({ icon, pressed, color, colorPressed }: IconProps) => {
       return <Swaps color={getIconColor()} />
     case 'airdrop':
       return <Airdrop width={17} height={17} color={getIconColor()} />
+    case 'mapUserLocation':
+      return <MapUserLocation color={getIconColor()} />
+    case 'search':
+      return <Search color={getIconColor()} />
     default:
     case 'dots':
       return <Dots color={getIconColor()} />

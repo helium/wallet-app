@@ -1,10 +1,6 @@
 import { JsonMetadata } from '@metaplex-foundation/js'
 import { StackNavigationProp } from '@react-navigation/stack'
-import {
-  Collectable,
-  CompressedNFT,
-  HotspotWithPendingRewards,
-} from '../../types/solana'
+import { Collectable, CompressedNFT, HotspotWithMeta } from '../../types/solana'
 
 export type PaymentRouteParam = {
   collectable?: CompressedNFT
@@ -12,15 +8,16 @@ export type PaymentRouteParam = {
 
 export type CollectableStackParamList = {
   CollectablesTopTab: undefined
-
   HotspotDetailsScreen: {
-    collectable: HotspotWithPendingRewards
+    collectable: HotspotWithMeta
   }
-
+  HotspotAssertLocationScreen: {
+    collectable: HotspotWithMeta
+  }
   PaymentScreen: undefined | PaymentRouteParam
 
   ClaimRewardsScreen: {
-    hotspot: HotspotWithPendingRewards
+    hotspot: HotspotWithMeta
   }
   ClaimAllRewardsScreen: undefined
   ClaimingRewardsScreen: undefined

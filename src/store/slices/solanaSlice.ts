@@ -20,7 +20,7 @@ import {
 import { first, last } from 'lodash'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
-import { HotspotWithPendingRewards, toMintAddress } from '../../types/solana'
+import { HotspotWithMeta, toMintAddress } from '../../types/solana'
 import * as Logger from '../../utils/logger'
 import * as solUtils from '../../utils/solanaUtils'
 import { postPayment } from '../../utils/walletApiV2'
@@ -80,7 +80,7 @@ type ClaimRewardInput = {
 type ClaimAllRewardsInput = {
   account: CSAccount
   lazyDistributors: PublicKey[]
-  hotspots: HotspotWithPendingRewards[]
+  hotspots: HotspotWithMeta[]
   anchorProvider: AnchorProvider
   cluster: Cluster
 }

@@ -11,13 +11,17 @@ type Props = BoxProps<Theme> & {
   placeholder: string
   value?: string
   onChangeText?: (text: string) => void
+  onEnter?: (text: string) => void
   variant?: 'plain' | 'regular' | 'underline'
+  autoFocus?: boolean
 }
 const SearchInput = ({
   placeholder,
   value,
   onChangeText,
+  onEnter,
   variant,
+  autoFocus = false,
   ...boxProps
 }: Props) => {
   const {
@@ -26,21 +30,27 @@ const SearchInput = ({
   const colors = useColors()
   return (
     <Box
-      {...boxProps}
       backgroundColor="secondary"
       borderRadius={borderRadius as BorderRadii}
       paddingStart={padding as Spacing}
       flexDirection="row"
       alignItems="center"
+      {...boxProps}
     >
       <Search color={colors[color as Color]} />
       <TextInput
         textInputProps={{
           onChangeText,
+          onSubmitEditing: () => {
+            if (value && onEnter) {
+              onEnter(value)
+            }
+          },
           value,
           placeholder,
           autoCorrect: false,
           autoComplete: 'off',
+          autoFocus,
         }}
         variant={variant || 'transparent'}
         backgroundColor="red500"

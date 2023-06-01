@@ -10,14 +10,14 @@ import {
   hotspotsSlice,
 } from '../store/slices/hotspotsSlice'
 import { useAppDispatch } from '../store/store'
-import { CompressedNFT, HotspotWithPendingRewards } from '../types/solana'
+import { CompressedNFT, HotspotWithMeta } from '../types/solana'
 import { Mints } from '../utils/constants'
 
 const useHotspots = (): {
   pendingIotRewards: BN | undefined
   pendingMobileRewards: BN | undefined
   hotspots: CompressedNFT[]
-  hotspotsWithMeta: HotspotWithPendingRewards[]
+  hotspotsWithMeta: HotspotWithMeta[]
   loading: boolean
   refresh: (limit?: number) => void
   fetchMore: (limit?: number) => void

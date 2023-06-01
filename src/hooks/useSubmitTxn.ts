@@ -23,7 +23,7 @@ import { useAppDispatch } from '../store/store'
 import {
   Collectable,
   CompressedNFT,
-  HotspotWithPendingRewards,
+  HotspotWithMeta,
   toMintAddress,
 } from '../types/solana'
 import { useSolana } from '../solana/SolanaProvider'
@@ -292,7 +292,7 @@ export default () => {
   const submitClaimAllRewards = useCallback(
     async (
       lazyDistributors: PublicKey[],
-      hotspots: HotspotWithPendingRewards[],
+      hotspots: HotspotWithMeta[],
       balanceChanges: BalanceChange[],
     ) => {
       if (!anchorProvider || !currentAccount || !walletSignBottomSheetRef) {
