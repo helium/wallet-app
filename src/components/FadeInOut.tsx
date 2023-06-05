@@ -5,6 +5,7 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 export const FadeInSlow = FadeIn.duration(1200)
 export const FadeOutSlow = FadeOut.duration(1200)
 export const DelayedFadeIn = FadeIn.delay(100).duration(700)
+export const FadeInFast = FadeIn.duration(200)
 
 const FadeInOut = ({
   children,

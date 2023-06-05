@@ -18,6 +18,7 @@ import { Creator } from '@metaplex-foundation/mpl-bubblegum'
 import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'
 
 export type HotspotWithMeta = CompressedNFT & {
+  entityKey: string
   // mint id to pending rewards
   pendingRewards: Record<string, string> | undefined
   iotInfo: IdlAccounts<HeliumEntityManager>['iotHotspotInfoV0'] | undefined

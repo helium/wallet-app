@@ -5,6 +5,7 @@ import i18n from '@utils/i18n'
 import { Mints } from '@utils/constants'
 import * as solUtils from '@utils/solanaUtils'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { HotspotType } from '@helium/onboarding'
 import {
   BalanceChange,
   WalletStandardMessageTypes,
@@ -18,6 +19,8 @@ import {
   sendTreasurySwap,
   sendMintDataCredits,
   sendDelegateDataCredits,
+  sendUpdateIotInfo,
+  sendUpdateMobileInfo,
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import {
@@ -441,6 +444,84 @@ export default () => {
     ],
   )
 
+  const submitUpdateHotspotInfo = useCallback(
+    async ({
+      type,
+      hotspot,
+      location,
+      elevation,
+      gain,
+    }: {
+      type: HotspotType
+      hotspot: HotspotWithMeta
+      location: string
+      elevation?: number
+      gain?: number
+    }) => {
+      if (!anchorProvider || !currentAccount || !walletSignBottomSheetRef) {
+        throw new Error(t('errors.account'))
+      }
+
+      if (!currentAccount) {
+        throw new Error(t('errors.account'))
+      }
+
+      const updateInfoTxn = await solUtils.updateHotspotInfoTxn({
+        anchorProvider,
+        type,
+        hotspot,
+        location,
+        elevation,
+        gain,
+      })
+
+      const serializedTx = updateInfoTxn.serialize({
+        requireAllSignatures: false,
+      })
+
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        additionalMessage: t('transactions.signDelegateDCTxn'),
+        serializedTx: Buffer.from(serializedTx),
+      })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
+      }
+
+      if (type === 'iot') {
+        await dispatch(
+          sendUpdateIotInfo({
+            account: currentAccount,
+            anchorProvider,
+            cluster,
+            updateTxn: updateInfoTxn,
+          }),
+        )
+      }
+
+      if (type === 'mobile') {
+        await dispatch(
+          sendUpdateMobileInfo({
+            account: currentAccount,
+            anchorProvider,
+            cluster,
+            updateTxn: updateInfoTxn,
+          }),
+        )
+      }
+    },
+    [
+      anchorProvider,
+      cluster,
+      currentAccount,
+      dispatch,
+      t,
+      walletSignBottomSheetRef,
+    ],
+  )
+
   return {
     submitPayment,
     submitCollectable,
@@ -451,5 +532,6 @@ export default () => {
     submitLedger,
     submitMintDataCredits,
     submitDelegateDataCredits,
+    submitUpdateHotspotInfo,
   }
 }

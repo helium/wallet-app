@@ -103,6 +103,20 @@ type DelegateDataCreditsInput = {
   delegateDCTxn: Transaction
 }
 
+type UpdateIotInfoInput = {
+  account: CSAccount
+  anchorProvider: AnchorProvider
+  cluster: Cluster
+  updateTxn: Transaction
+}
+
+type UpdateMobileInfoInput = {
+  account: CSAccount
+  anchorProvider: AnchorProvider
+  cluster: Cluster
+  updateTxn: Transaction
+}
+
 export const makePayment = createAsyncThunk(
   'solana/makePayment',
   async ({ account, cluster, anchorProvider, paymentTxn }: PaymentInput) => {
@@ -393,6 +407,52 @@ export const getTxns = createAsyncThunk(
       mints,
       options,
     )
+  },
+)
+
+export const sendUpdateIotInfo = createAsyncThunk(
+  'solana/sendUpdateIotInfo',
+  async (
+    { account, cluster, anchorProvider, updateTxn }: UpdateIotInfoInput,
+    { dispatch },
+  ) => {
+    try {
+      const signed = await anchorProvider.wallet.signTransaction(updateTxn)
+
+      const sig = await anchorProvider.sendAndConfirm(signed)
+
+      postPayment({ signature: sig, cluster })
+
+      // If the update is successful, we need to update the hotspots so infos are updated.
+      dispatch(fetchHotspots({ account, anchorProvider, cluster }))
+    } catch (error) {
+      Logger.error(error)
+      throw error
+    }
+    return true
+  },
+)
+
+export const sendUpdateMobileInfo = createAsyncThunk(
+  'solana/sendUpdateMobileInfo',
+  async (
+    { account, cluster, anchorProvider, updateTxn }: UpdateMobileInfoInput,
+    { dispatch },
+  ) => {
+    try {
+      const signed = await anchorProvider.wallet.signTransaction(updateTxn)
+
+      const sig = await anchorProvider.sendAndConfirm(signed)
+
+      postPayment({ signature: sig, cluster })
+
+      // If the update is successful, we need to update the hotspots so infos are updated.
+      dispatch(fetchHotspots({ account, anchorProvider, cluster }))
+    } catch (error) {
+      Logger.error(error)
+      throw error
+    }
+    return true
   },
 )
 

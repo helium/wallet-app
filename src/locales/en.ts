@@ -221,6 +221,7 @@ export default {
       all: 'All',
       copyEccCompact: 'Copy hotspot key',
       assertLocation: 'Assert Location',
+      antennaSetup: 'Antenna Setup',
     },
   },
   activityScreen: {
@@ -309,6 +310,17 @@ export default {
       TOKEN_MINT: 'Token Minted!',
       COMPRESSED_NFT_MINT: 'Compressed NFT Minted!',
     },
+  },
+  assertLocationScreen: {
+    title: 'Assert Location',
+    whichLocation: 'Which location do you want to assert?',
+    searchLocation: 'Search for a location...',
+    antennaSetup: 'Antenna Setup (Optional)',
+    antennaSetupDescription:
+      'Submit gain and elevation details for your Hotspot',
+    gainPlaceholder: 'TX / RX Gain (dBi)',
+    elevationPlaceholder: 'Elevation (meters)',
+    locationNotFound: 'Location not found, Please try again.',
   },
   swapsScreen: {
     title: 'Swap my Tokens',

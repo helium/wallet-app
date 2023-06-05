@@ -11,6 +11,8 @@ export function useHotspot(mint: PublicKey): {
   mobileRewardsError: Error | undefined
   createClaimIotTx: () => Promise<Transaction | undefined>
   createClaimMobileTx: () => Promise<Transaction | undefined>
+  createUpdateIotTx: () => Promise<Transaction | undefined>
+  createUpdateMobileTx: () => Promise<Transaction | undefined>
   iotRewardsLoading: boolean
   mobileRewardsLoading: boolean
 } {

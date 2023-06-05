@@ -24,7 +24,7 @@ import {
   Transaction,
 } from '@solana/web3.js'
 import * as dc from '@helium/data-credits-sdk'
-import { subDaoKey, daoKey } from '@helium/helium-sub-daos-sdk'
+import { subDaoKey } from '@helium/helium-sub-daos-sdk'
 import {
   TOKEN_PROGRAM_ID,
   AccountLayout,
@@ -44,6 +44,9 @@ import {
   iotInfoKey,
   mobileInfoKey,
   rewardableEntityConfigKey,
+  updateMobileMetadata,
+  updateIotMetadata,
+  keyToAssetKey,
 } from '@helium/helium-entity-manager-sdk'
 import Balance, { AnyCurrencyType, CurrencyType } from '@helium/currency'
 import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
@@ -89,6 +92,7 @@ import {
   registrarCollectionKey,
 } from '@helium/voter-stake-registry-sdk'
 import { BaseCurrencyType } from '@helium/currency/build/currency_types'
+import { HotspotType } from '@helium/onboarding'
 import { getKeypair, getSessionKey } from '../storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
 import sleep from './sleep'
@@ -101,7 +105,14 @@ import {
 } from '../types/solana'
 import * as Logger from './logger'
 import { WrappedConnection } from './WrappedConnection'
-import { IOT_LAZY_KEY, Mints, MOBILE_LAZY_KEY } from './constants'
+import {
+  DAO_KEY,
+  IOT_LAZY_KEY,
+  IOT_SUB_DAO_KEY,
+  Mints,
+  MOBILE_LAZY_KEY,
+  MOBILE_SUB_DAO_KEY,
+} from './constants'
 import { solAddressIsValid } from './accountUtils'
 
 const govProgramId = new PublicKey(
@@ -640,8 +651,7 @@ export const delegateDataCredits = async (
 
 export const getEscrowTokenAccount = (address: string) => {
   try {
-    const subDao = subDaoKey(IOT_MINT)[0]
-
+    const subDao = IOT_SUB_DAO_KEY
     const delegatedDataCredits = delegatedDataCreditsKey(subDao, address)[0]
     const escrowTokenAccount = escrowAccountKey(delegatedDataCredits)[0]
 
@@ -925,7 +935,7 @@ export const getCompressedCollectablesByCreator = async (
   const items = await searchAssets(conn.rpcEndpoint, {
     ownerAddress: pubKey.toBase58(),
     creatorVerified: true,
-    creatorAddress: entityCreatorKey(daoKey(HNT_MINT)[0])[0].toBase58(),
+    creatorAddress: entityCreatorKey(DAO_KEY)[0].toBase58(),
     page,
     limit,
   })
@@ -1045,19 +1055,15 @@ export async function annotateWithMeta(
 ): Promise<HotspotWithMeta[]> {
   const program = await init(provider)
   const hemProgram = await initHem(provider)
-  const dao = daoKey(new PublicKey(Mints.HNT))[0]
+  const dao = DAO_KEY
 
   const entityKeys = hotspots.map((h) => {
     return h.content.json_uri.split('/').slice(-1)[0]
   })
 
-  const [iotConfigKey] = rewardableEntityConfigKey(
-    subDaoKey(new PublicKey(Mints.IOT))[0],
-    'IOT',
-  )
-
+  const [iotConfigKey] = rewardableEntityConfigKey(IOT_SUB_DAO_KEY, 'IOT')
   const [mobileConfigKey] = rewardableEntityConfigKey(
-    subDaoKey(new PublicKey(Mints.MOBILE))[0],
+    MOBILE_SUB_DAO_KEY,
     'MOBILE',
   )
 
@@ -1089,6 +1095,7 @@ export async function annotateWithMeta(
 
       return {
         ...hotspot,
+        entityKey,
         iotInfo: iotInfoAcc || undefined,
         mobileInfo: mobileInfoAcc || undefined,
         pendingRewards: {
@@ -1574,5 +1581,90 @@ export const calcCreateAssociatedTokenAccountAccountFee = async (
     return new Balance(fee, CurrencyType.solTokens)
   } catch (e) {
     return new Balance(0, CurrencyType.solTokens)
+  }
+}
+
+export const updateHotspotInfoTxn = async ({
+  anchorProvider,
+  type,
+  hotspot,
+  location,
+  elevation,
+  gain,
+}: {
+  anchorProvider: AnchorProvider
+  type: HotspotType
+  hotspot: HotspotWithMeta
+  location: string
+  elevation?: number
+  gain?: number
+}) => {
+  try {
+    const { connection } = anchorProvider
+    const { publicKey: payer } = anchorProvider.wallet
+
+    const program = await initHem(anchorProvider)
+    let tx: Transaction | undefined
+
+    const keyToAsset = await program.account.keyToAssetV0.fetchNullable(
+      keyToAssetKey(DAO_KEY, hotspot.entityKey)[0],
+    )
+
+    if (!keyToAsset) {
+      throw new Error('Key to asset not found')
+    }
+
+    const assetId = keyToAsset.asset
+
+    if (type === 'iot') {
+      if (!hotspot.iotInfo) {
+        throw new Error('Hotspot info does not exist, has it been onboarded?')
+      }
+
+      tx = await (
+        await updateIotMetadata({
+          program,
+          assetId,
+          location: location ? new BN(location) : null,
+          elevation: elevation ?? null,
+          gain: gain ?? null,
+          rewardableEntityConfig: rewardableEntityConfigKey(
+            IOT_SUB_DAO_KEY,
+            'IOT',
+          )[0],
+        })
+      ).transaction()
+    }
+
+    if (type === 'mobile') {
+      if (!hotspot.mobileInfo) {
+        throw new Error('Hotspot info does not exist, has it been onboarded?')
+      }
+
+      tx = await (
+        await updateMobileMetadata({
+          program,
+          assetId,
+          location: location ? new BN(location) : null,
+          rewardableEntityConfig: rewardableEntityConfigKey(
+            MOBILE_SUB_DAO_KEY,
+            'MOBILE',
+          )[0],
+        })
+      ).transaction()
+    }
+
+    if (!tx) {
+      throw new Error('Unable to determine hotspot type')
+    }
+
+    const { blockhash } = await connection.getLatestBlockhash()
+    tx.recentBlockhash = blockhash
+    tx.feePayer = payer
+
+    return tx
+  } catch (e) {
+    Logger.error(e)
+    throw e as Error
   }
 }
