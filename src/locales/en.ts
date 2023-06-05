@@ -504,7 +504,9 @@ export default {
     clear: 'Clear',
     confirm: 'Confirm',
     copied: 'Copied {{target}}',
+    copiedSeedPhrase: 'Copied Seed Phrase',
     copy: 'Copy',
+    copyToClipboard: 'Copy to clipboard',
     error: 'Error',
     fee: 'Fee',
     loadFailed: 'Cannot validate address. Please try again.',
@@ -790,7 +792,7 @@ export default {
       next: 'I have written these down',
       subtitle:
         '<secondaryText>It is crucial you write all of these\n{{numWords}} words down, in order.</secondaryText><red500>\n\nHelium cannot recover these words.</red500>',
-      title: 'Your {{numWords}} Word\nPassword',
+      title: 'Your {{numWords}} Word Password',
       warning: 'Helium cannot recover these words',
     },
     sections: {

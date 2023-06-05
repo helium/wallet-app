@@ -37,10 +37,15 @@ const SettingsNavigator = () => {
         component={SettingsCreatePinScreen}
         options={{ presentation: 'modal' }}
       />
-      <SettingsStack.Screen name="RevealWords" component={RevealWordsScreen} />
+      <SettingsStack.Screen
+        name="RevealWords"
+        component={RevealWordsScreen}
+        options={{ presentation: 'fullScreenModal' }}
+      />
       <SettingsStack.Screen
         name="RevealPrivateKey"
         component={RevealPrivateKeyScreen}
+        options={{ presentation: 'fullScreenModal' }}
       />
       <SettingsStack.Screen name="UpdateAlias" component={UpdateAliasScreen} />
       <SettingsStack.Screen

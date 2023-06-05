@@ -157,9 +157,11 @@ const palette = {
   purpleHeart: '#3E42E5',
 
   red200: '#F59CA2',
+
   red300: '#F97570',
   red400: '#FF6666',
   red500: '#E43B70',
+  red500Transparent10: '#E43B701A',
 
   solanaGreen: '#14F195',
   solanaPurple: '#9945FF',
