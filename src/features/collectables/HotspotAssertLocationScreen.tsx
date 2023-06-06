@@ -104,8 +104,13 @@ const HotspotAssertLocationScreen = () => {
     return parseH3BNLocation(mobileInfo.location)
   }, [mobileInfo])
 
-  const sameLocation =
-    JSON.stringify(iotLocation) === JSON.stringify(mobileLocation)
+  const sameLocation = useMemo(() => {
+    if (!iotLocation || !mobileLocation) {
+      return false
+    }
+
+    return JSON.stringify(iotLocation) === JSON.stringify(mobileLocation)
+  }, [iotLocation, mobileLocation])
 
   useEffect(() => {
     if (iotInfo?.gain) {
