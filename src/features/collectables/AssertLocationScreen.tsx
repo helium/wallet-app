@@ -1,87 +1,77 @@
-import React, {
-  useEffect,
-  useCallback,
-  useMemo,
-  useState,
-  useRef,
-  memo,
-} from 'react'
+import MapPin from '@assets/images/mapPin.svg'
+import { ReAnimatedBlurBox, ReAnimatedBox } from '@components/AnimatedBox'
+import BackScreen from '@components/BackScreen'
+import Box from '@components/Box'
+import ButtonPressable from '@components/ButtonPressable'
+import CircleLoader from '@components/CircleLoader'
+import FabButton from '@components/FabButton'
+import { DelayedFadeIn, FadeInFast } from '@components/FadeInOut'
+import ImageBox from '@components/ImageBox'
+import SafeAreaBox from '@components/SafeAreaBox'
+import SearchInput from '@components/SearchInput'
+import Text from '@components/Text'
+import TextInput from '@components/TextInput'
 import { BN } from '@coral-xyz/anchor'
+import { HotspotType } from '@helium/onboarding'
+import useAlert from '@hooks/useAlert'
+import { useForwardGeo } from '@hooks/useForwardGeo'
+import { useReverseGeo } from '@hooks/useReverseGeo'
+import useSubmitTxn from '@hooks/useSubmitTxn'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import MapboxGL from '@rnmapbox/maps'
+import turfBbox from '@turf/bbox'
+import { points } from '@turf/helpers'
+import debounce from 'lodash/debounce'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { useTranslation } from 'react-i18next'
+import { Alert, KeyboardAvoidingView } from 'react-native'
 import { Config } from 'react-native-config'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
-import { useTranslation } from 'react-i18next'
-import InfoIcon from '@assets/images/info.svg'
-import SafeAreaBox from '@components/SafeAreaBox'
-import { DelayedFadeIn, FadeInFast } from '@components/FadeInOut'
-import Box from '@components/Box'
-import ImageBox from '@components/ImageBox'
-import ButtonPressable from '@components/ButtonPressable'
-import Text from '@components/Text'
-import BackScreen from '@components/BackScreen'
-import { ReAnimatedBox, ReAnimatedBlurBox } from '@components/AnimatedBox'
-import MapboxGL from '@rnmapbox/maps'
-import { points } from '@turf/helpers'
-import turfBbox from '@turf/bbox'
-import MapPin from '@assets/images/mapPin.svg'
-import FabButton from '@components/FabButton'
-import debounce from 'lodash/debounce'
-import CircleLoader from '@components/CircleLoader'
-import { useReverseGeo } from '@hooks/useReverseGeo'
-import { useForwardGeo } from '@hooks/useForwardGeo'
-import SearchInput from '@components/SearchInput'
-import {
-  Alert,
-  KeyboardAvoidingView,
-  NativeSyntheticEvent,
-  TextInputKeyPressEventData,
-  TextInput as RNTextInput,
-} from 'react-native'
-import useAlert from '@hooks/useAlert'
-import TextInput from '@components/TextInput'
-import useSubmitTxn from '@hooks/useSubmitTxn'
-import { HotspotType } from '@helium/onboarding'
+import { getH3Location, parseH3BNLocation } from '../../utils/h3'
+import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
+import * as Logger from '../../utils/logger'
+import { MAX_MAP_ZOOM, MIN_MAP_ZOOM } from '../../utils/mapbox'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
-import { parseH3BNLocation, getH3Location } from '../../utils/h3'
-import { MAX_MAP_ZOOM, MIN_MAP_ZOOM } from '../../utils/mapbox'
-import * as Logger from '../../utils/logger'
-
-MapboxGL.setAccessToken(Config.MAPBOX_ACCESS_TOKEN)
 
 const BUTTON_HEIGHT = 65
-type Route = RouteProp<CollectableStackParamList, 'HotspotAssertLocationScreen'>
-const HotspotAssertLocationScreen = () => {
+type Route = RouteProp<CollectableStackParamList, 'AssertLocationScreen'>
+const AssertLocationScreen = () => {
   const { t } = useTranslation()
+  const nav = useNavigation<CollectableNavigationProp>()
   const route = useRoute<Route>()
-  const navigation = useNavigation<CollectableNavigationProp>()
+  const { collectable } = route.params
   const map = useRef<MapboxGL.MapView>(null)
   const camera = useRef<MapboxGL.Camera>(null)
-  const elevationInput = useRef<RNTextInput>(null)
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])
-  const [initialZoomHappend, setInitialZoomHappend] = useState(false)
-  const [currentCenter, setCurrentCenter] = useState<number[] | undefined>()
-  const reverseGeo = useReverseGeo(currentCenter)
-  const forwardGeo = useForwardGeo()
   const { showOKAlert } = useAlert()
+  const [initialZoomHappend, setInitialZoomHappend] = useState(false)
+  const [mapCenter, setMapCenter] = useState<number[]>()
   const [searchVisible, setSearchVisible] = useState(false)
-  const [searchValue, setSearchValue] = useState<string | undefined>()
+  const [searchValue, setSearchValue] = useState<string>()
   const [elevGainVisible, setElevGainVisible] = useState(false)
-  const [gain, setGain] = useState<number | undefined>()
-  const [elevation, setElevation] = useState<number | undefined>()
+  const [gain, setGain] = useState<string>()
+  const [elevation, setElevation] = useState<string>()
   const [asserting, setAsserting] = useState(false)
-  const [transactionError, setTransactionError] = useState<undefined | string>()
+  const [transactionError, setTransactionError] = useState<string>()
   const [userLocation, setUserLocation] = useState<
     MapboxGL.Location | undefined
   >()
+  const reverseGeo = useReverseGeo(mapCenter)
+  const forwardGeo = useForwardGeo()
   const { submitUpdateHotspotInfo } = useSubmitTxn()
 
-  const { collectable } = route.params
   const {
     content: { metadata },
     iotInfo,
@@ -90,18 +80,18 @@ const HotspotAssertLocationScreen = () => {
 
   const iotLocation = useMemo(() => {
     if (!iotInfo?.location) {
-      return []
+      return undefined
     }
 
-    return parseH3BNLocation(iotInfo.location)
+    return parseH3BNLocation(iotInfo.location).reverse()
   }, [iotInfo])
 
   const mobileLocation = useMemo(() => {
     if (!mobileInfo?.location) {
-      return []
+      return undefined
     }
 
-    return parseH3BNLocation(mobileInfo.location)
+    return parseH3BNLocation(mobileInfo.location).reverse()
   }, [mobileInfo])
 
   const sameLocation = useMemo(() => {
@@ -112,32 +102,24 @@ const HotspotAssertLocationScreen = () => {
     return JSON.stringify(iotLocation) === JSON.stringify(mobileLocation)
   }, [iotLocation, mobileLocation])
 
-  useEffect(() => {
-    if (iotInfo?.gain) {
-      setGain(iotInfo.gain)
-    }
-
-    if (iotInfo?.elevation) {
-      setElevation(iotInfo.elevation)
-    }
-  }, [iotInfo, setElevation, setGain])
+  const initialCenter = useMemo(() => {
+    return userLocation?.coords
+      ? [userLocation.coords.longitude, userLocation.coords.latitude]
+      : iotLocation || mobileLocation || [-122.431297, 37.773972]
+  }, [userLocation?.coords, iotLocation, mobileLocation])
 
   useEffect(() => {
     if (camera.current && !initialZoomHappend) {
-      const coords = [
-        userLocation?.coords
-          ? [userLocation?.coords.latitude, userLocation?.coords.longitude]
-          : [37.773972, -122.431297],
-        iotLocation,
-        mobileLocation,
-      ].filter(Boolean) as number[][]
+      const coords = [initialCenter, iotLocation, mobileLocation].filter(
+        Boolean,
+      ) as number[][]
 
       try {
         const bbox = turfBbox(points(coords))
         camera.current.setCamera({
           bounds: {
-            ne: [bbox[3], bbox[2]],
-            sw: [bbox[1], bbox[0]],
+            ne: [bbox[2], bbox[3]],
+            sw: [bbox[0], bbox[1]],
             paddingLeft: 20,
             paddingRight: 20,
             paddingTop: 20,
@@ -155,16 +137,28 @@ const HotspotAssertLocationScreen = () => {
     setInitialZoomHappend,
     iotLocation,
     mobileLocation,
-    userLocation?.coords,
+    initialCenter,
   ])
 
-  const handleInfoPress = useCallback(() => {
-    if (collectable.content?.metadata) {
-      navigation.push('NftMetadataScreen', {
-        metadata: collectable.content.metadata,
-      })
+  useEffect(() => {
+    if (iotInfo?.gain) {
+      setGain(`${iotInfo.gain / 10}`)
     }
-  }, [collectable.content.metadata, navigation])
+
+    if (iotInfo?.elevation) {
+      setElevation(`${iotInfo.elevation}`)
+    }
+  }, [iotInfo, setGain, setElevation])
+
+  const resetGain = useCallback(
+    () => setGain(iotInfo?.gain ? `${iotInfo.gain / 10}` : undefined),
+    [iotInfo, setGain],
+  )
+
+  const resetElevation = useCallback(
+    () => setElevation(iotInfo?.elevation ? `${iotInfo.elevation}` : undefined),
+    [iotInfo, setElevation],
+  )
 
   const handleSearchPress = useCallback(() => {
     setSearchVisible(!searchVisible)
@@ -177,11 +171,11 @@ const HotspotAssertLocationScreen = () => {
 
   const hideElevGain = useCallback(() => {
     setElevGainVisible(false)
-    setGain(undefined)
-    setElevation(undefined)
-  }, [setGain, setElevation, setElevGainVisible])
+    resetGain()
+    resetElevation()
+  }, [setElevGainVisible, resetGain, resetElevation])
 
-  const handleSearchEnter = useCallback(async () => {
+  const handleOnSearch = useCallback(async () => {
     if (searchValue) {
       try {
         const coords = await forwardGeo.execute(searchValue)
@@ -203,14 +197,14 @@ const HotspotAssertLocationScreen = () => {
     hideSearch()
   }, [camera, t, hideSearch, searchValue, forwardGeo, showOKAlert])
 
-  const handleCameraChanged = debounce(async (state: MapboxGL.MapState) => {
+  const onCameraChanged = debounce(async (state: MapboxGL.MapState) => {
     const { center } = state.properties
-    if (JSON.stringify(center) !== JSON.stringify(currentCenter)) {
-      setCurrentCenter(center)
+    if (JSON.stringify(center) !== JSON.stringify(mapCenter)) {
+      setMapCenter(center)
       setTransactionError(undefined)
       hideSearch()
     }
-  }, 700)
+  }, 600)
 
   const handleUserLocationPress = useCallback(() => {
     if (camera.current && userLocation?.coords) {
@@ -221,18 +215,10 @@ const HotspotAssertLocationScreen = () => {
     }
   }, [userLocation, camera])
 
-  const handleFocusElevation = useCallback(
-    (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
-      if (e.nativeEvent.key === 'Enter') {
-        elevationInput.current?.focus()
-      }
-    },
-    [],
-  )
-
-  const handleAssertLocation = useCallback(
+  const assertLocation = useCallback(
     async (type: HotspotType) => {
-      if (currentCenter) {
+      if (mapCenter) {
+        setTransactionError(undefined)
         setAsserting(true)
         try {
           hideElevGain()
@@ -240,13 +226,14 @@ const HotspotAssertLocationScreen = () => {
             type,
             hotspot: collectable,
             location: new BN(
-              getH3Location(currentCenter[1], currentCenter[0]),
+              getH3Location(mapCenter[1], mapCenter[0]),
               'hex',
             ).toString(),
             elevation,
-            gain,
+            decimalGain: gain,
           })
           setAsserting(false)
+          nav.push('AssertingLocationScreen')
         } catch (error) {
           setAsserting(false)
           Logger.error(error)
@@ -256,44 +243,43 @@ const HotspotAssertLocationScreen = () => {
     },
     [
       collectable,
-      currentCenter,
+      mapCenter,
       elevation,
       gain,
       hideElevGain,
       setAsserting,
       setTransactionError,
       submitUpdateHotspotInfo,
+      nav,
     ],
   )
 
   const handleAssertLocationPress = useCallback(async () => {
-    if (map.current) {
-      if (!elevGainVisible) {
-        Alert.alert(
-          t('assertLocationScreen.title'),
-          t('assertLocationScreen.whichLocation'),
-          [
-            {
-              text: 'Iot',
-              onPress: () => setElevGainVisible(true),
-            },
-            {
-              text: 'Mobile',
-              onPress: async () => handleAssertLocation('mobile'),
-            },
-            {
-              text: t('generic.cancel'),
-              style: 'destructive',
-            },
-          ],
-        )
-      } else {
-        // elevGainVisible
-        // we can assume user is asserting location from elevGain UI
-        await handleAssertLocation('iot')
-      }
+    if (!elevGainVisible) {
+      Alert.alert(
+        t('assertLocationScreen.title'),
+        t('assertLocationScreen.whichLocation'),
+        [
+          {
+            text: 'Iot',
+            onPress: () => setElevGainVisible(true),
+          },
+          {
+            text: 'Mobile',
+            onPress: async () => assertLocation('mobile'),
+          },
+          {
+            text: t('generic.cancel'),
+            style: 'destructive',
+          },
+        ],
+      )
+    } else {
+      // elevGainVisible
+      // we can assume user is asserting location from elevGain UI
+      await assertLocation('iot')
     }
-  }, [map, t, elevGainVisible, handleAssertLocation])
+  }, [t, elevGainVisible, assertLocation])
 
   const showError = useMemo(() => {
     if (transactionError) return transactionError
@@ -307,8 +293,6 @@ const HotspotAssertLocationScreen = () => {
         title={t('assertLocationScreen.title')}
         backgroundImageUri={collectable.content?.metadata?.image || ''}
         edges={backEdges}
-        TrailingIcon={InfoIcon}
-        onTrailingIconPress={handleInfoPress}
       >
         <SafeAreaBox
           edges={safeEdges}
@@ -389,12 +373,16 @@ const HotspotAssertLocationScreen = () => {
           >
             <MapboxGL.MapView
               ref={map}
-              styleURL={MapboxGL.StyleURL.Dark}
+              styleURL={Config.MAPBOX_STYLE_URL || MapboxGL.StyleURL.Dark}
               style={{ flex: 1, width: '100%' }}
               logoEnabled={false}
               scaleBarEnabled={false}
               attributionEnabled={false}
-              onCameraChanged={handleCameraChanged}
+              zoomEnabled={!asserting}
+              scrollEnabled={!asserting}
+              pitchEnabled={false}
+              rotateEnabled={false}
+              onCameraChanged={onCameraChanged}
               onPress={() => hideSearch()}
             >
               <MapboxGL.Camera
@@ -403,29 +391,20 @@ const HotspotAssertLocationScreen = () => {
                 maxZoomLevel={MAX_MAP_ZOOM}
                 defaultSettings={{
                   zoomLevel: MAX_MAP_ZOOM,
-                  centerCoordinate: [
-                    userLocation?.coords?.longitude ||
-                      iotLocation[1] ||
-                      mobileLocation[1] ||
-                      37.773972,
-                    userLocation?.coords?.latitude ||
-                      iotLocation[0] ||
-                      mobileLocation[0] ||
-                      -122.431297,
-                  ],
+                  centerCoordinate: initialCenter,
                 }}
               />
               <MapboxGL.UserLocation visible onUpdate={setUserLocation} />
               {(sameLocation ? [iotLocation] : [iotLocation, mobileLocation])
                 .map((location, i) => {
-                  if (location.length < 2) return null
+                  if (!location || location.length < 2) return null
 
                   return (
                     <MapboxGL.MarkerView
                       key={`MarkerView-${i + 1}`}
                       coordinate={[
-                        i === 0 ? location[1] + 0.001 : location[1],
-                        location[0],
+                        i === 0 ? location[0] + 0.001 : location[0],
+                        location[1],
                       ]}
                       allowOverlap
                     >
@@ -491,7 +470,7 @@ const HotspotAssertLocationScreen = () => {
                 <SearchInput
                   placeholder={t('assertLocationScreen.searchLocation')}
                   onChangeText={setSearchValue}
-                  onEnter={handleSearchEnter}
+                  onEnter={handleOnSearch}
                   value={searchValue}
                   width="100%"
                   borderRadius="none"
@@ -551,11 +530,11 @@ const HotspotAssertLocationScreen = () => {
               backgroundColor="white"
               backgroundColorOpacityPressed={0.7}
               backgroundColorDisabled="white"
-              backgroundColorDisabledOpacity={0.1}
+              backgroundColorDisabledOpacity={0.0}
               titleColorDisabled="grey600"
-              title={t('assertLocationScreen.title')}
+              title={asserting ? '' : t('assertLocationScreen.title')}
               titleColor="black"
-              disabled={!currentCenter || reverseGeo.loading || asserting}
+              disabled={!mapCenter || reverseGeo.loading || asserting}
               onPress={
                 reverseGeo.loading || forwardGeo.loading
                   ? undefined
@@ -620,14 +599,11 @@ const HotspotAssertLocationScreen = () => {
                       variant="transparent"
                       textInputProps={{
                         placeholder: t('assertLocationScreen.gainPlaceholder'),
-                        onChangeText: (val) =>
-                          setGain(+val.replace(/[^0-9]/g, '')),
+                        onChangeText: (val) => setGain(val),
                         multiline: true,
-                        value: gain ? `${gain}` : '',
+                        value: gain,
                         returnKeyType: 'next',
-                        autoComplete: 'off',
-                        autoCorrect: false,
-                        onKeyPress: handleFocusElevation,
+                        keyboardType: 'decimal-pad',
                       }}
                     />
                     <Box height={1} width="100%" backgroundColor="black200" />
@@ -637,14 +613,10 @@ const HotspotAssertLocationScreen = () => {
                         placeholder: t(
                           'assertLocationScreen.elevationPlaceholder',
                         ),
-                        onChangeText: (val) =>
-                          setElevation(+val.replace(/[^0-9]/g, '')),
-                        value: elevation ? `${elevation}` : '',
-                        returnKeyType: 'done',
-                        autoComplete: 'off',
-                        autoCorrect: false,
+                        onChangeText: (val) => setElevation(val),
+                        value: elevation,
+                        keyboardType: 'decimal-pad',
                       }}
-                      ref={elevationInput}
                     />
                   </Box>
                 </Box>
@@ -656,9 +628,9 @@ const HotspotAssertLocationScreen = () => {
                     backgroundColor="white"
                     backgroundColorOpacityPressed={0.7}
                     backgroundColorDisabled="white"
-                    backgroundColorDisabledOpacity={0.1}
+                    backgroundColorDisabledOpacity={0.0}
                     titleColorDisabled="grey600"
-                    title={t('assertLocationScreen.title')}
+                    title={asserting ? '' : t('assertLocationScreen.title')}
                     titleColor="black"
                     onPress={handleAssertLocationPress}
                   />
@@ -672,4 +644,4 @@ const HotspotAssertLocationScreen = () => {
   )
 }
 
-export default memo(HotspotAssertLocationScreen)
+export default memo(AssertLocationScreen)

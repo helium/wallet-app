@@ -450,13 +450,13 @@ export default () => {
       hotspot,
       location,
       elevation,
-      gain,
+      decimalGain,
     }: {
       type: HotspotType
       hotspot: HotspotWithMeta
       location: string
-      elevation?: number
-      gain?: number
+      elevation?: string
+      decimalGain?: string
     }) => {
       if (!anchorProvider || !currentAccount || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
@@ -471,8 +471,10 @@ export default () => {
         type,
         hotspot,
         location,
-        elevation,
-        gain,
+        elevation: elevation ? parseFloat(elevation) : undefined,
+        gain: decimalGain
+          ? Math.round(parseFloat(decimalGain) * 10.0)
+          : undefined,
       })
 
       const serializedTx = updateInfoTxn.serialize({
@@ -482,7 +484,7 @@ export default () => {
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
-        additionalMessage: t('transactions.signDelegateDCTxn'),
+        additionalMessage: t('transactions.signAssertLocationTxn'),
         serializedTx: Buffer.from(serializedTx),
       })
 

@@ -321,6 +321,12 @@ export default {
     gainPlaceholder: 'TX / RX Gain (dBi)',
     elevationPlaceholder: 'Elevation (meters)',
     locationNotFound: 'Location not found, Please try again.',
+    assertingComplete: 'Assertion Complete!',
+    assertingCompleteBody: "You're hospots location/data has been asserted.",
+    assertingError: 'Asserting failed. Please try again later.',
+    asserting: 'Asserting Location...',
+    assertingBody:
+      'You can exit this screen while you wait. We’ll update your Wallet momentarily.',
   },
   swapsScreen: {
     title: 'Swap my Tokens',
@@ -986,5 +992,6 @@ export default {
     signClaimAllRewardsTxn: 'Sign this transaction to claim all your rewards.',
     signMintDataCreditsTxn: 'Sign this transaction to mint your data credits.',
     signDelegateDCTxn: 'Sign this transaction to delegate your data credits.',
+    signAssertLocationTxn: 'Sign this transaction to assert the location.',
   },
 }

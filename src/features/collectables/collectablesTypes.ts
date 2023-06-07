@@ -11,9 +11,10 @@ export type CollectableStackParamList = {
   HotspotDetailsScreen: {
     collectable: HotspotWithMeta
   }
-  HotspotAssertLocationScreen: {
+  AssertLocationScreen: {
     collectable: HotspotWithMeta
   }
+  AssertingLocationScreen: undefined
   PaymentScreen: undefined | PaymentRouteParam
 
   ClaimRewardsScreen: {

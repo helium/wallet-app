@@ -72,7 +72,7 @@ const HotspotDetailsScreen = () => {
 
   const handleAssertLocation = useCallback(() => {
     setOptionsOpen(false)
-    navigation.navigate('HotspotAssertLocationScreen', {
+    navigation.navigate('AssertLocationScreen', {
       collectable,
     })
   }, [collectable, navigation])

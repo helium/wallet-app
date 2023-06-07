@@ -5,7 +5,7 @@ import {
 } from '@react-navigation/stack'
 import CollectablesTopTabs from './CollectablesTopTabs'
 import HotspotDetailsScreen from './HotspotDetailsScreen'
-import HotspotAssertLocationScreen from './HotspotAssertLocationScreen'
+import AssertLocationScreen from './AssertLocationScreen'
 import PaymentScreen from '../payment/PaymentScreen'
 import AddNewContact from '../addressBook/AddNewContact'
 import PaymentQrScanner from '../payment/PaymentQrScanner'
@@ -19,6 +19,7 @@ import ClaimAllRewardsScreen from './ClaimAllRewardsScreen'
 import ClaimingRewardsScreen from './ClaimingRewardsScreen'
 import CollectionScreen from './CollectionScreen'
 import NftDetailsScreen from './NftDetailsScreen'
+import AssertingLocationScreen from './AssertingLocationScreen'
 
 const CollectablesStack = createStackNavigator()
 
@@ -38,8 +39,12 @@ const CollectablesStackScreen = () => {
         component={HotspotDetailsScreen}
       />
       <CollectablesStack.Screen
-        name="HotspotAssertLocationScreen"
-        component={HotspotAssertLocationScreen}
+        name="AssertLocationScreen"
+        component={AssertLocationScreen}
+      />
+      <CollectablesStack.Screen
+        name="AssertingLocationScreen"
+        component={AssertingLocationScreen}
       />
       <CollectablesStack.Screen
         name="PaymentScreen"

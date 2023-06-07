@@ -15,6 +15,7 @@ import { theme, darkThemeColors, lightThemeColors } from '@theme/theme'
 import { useColorScheme } from '@theme/themeHooks'
 import globalStyles from '@theme/globalStyles'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
+import MapboxGL from '@rnmapbox/maps'
 import useMount from './hooks/useMount'
 import RootNavigator from './navigation/RootNavigator'
 import { useAccountStorage } from './storage/AccountStorageProvider'
@@ -94,6 +95,11 @@ const App = () => {
       if (Platform.OS === 'ios') {
         OneSignal.promptForPushNotificationsWithUserResponse(() => {})
       }
+    }
+
+    // init Mapbox
+    if (Config.MAPBOX_ACCESS_TOKEN) {
+      MapboxGL.setAccessToken(Config.MAPBOX_ACCESS_TOKEN)
     }
   })
 
