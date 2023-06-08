@@ -95,6 +95,7 @@ const useSolanaHook = () => {
 
     const nextProvider = new AnchorProvider(nextConn, anchorWallet, {
       preflightCommitment: 'confirmed',
+      commitment: 'confirmed',
     })
 
     setAnchorProvider(nextProvider)

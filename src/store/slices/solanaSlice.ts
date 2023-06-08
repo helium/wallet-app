@@ -37,7 +37,12 @@ type SolActivity = {
 }
 
 export type SolanaState = {
-  payment?: { loading?: boolean; error?: SerializedError; success?: boolean }
+  payment?: {
+    loading?: boolean
+    error?: SerializedError
+    success?: boolean
+    signature?: string
+  }
   activity: {
     loading?: boolean
     data: Record<string, SolActivity>
@@ -267,12 +272,14 @@ export const claimRewards = createAsyncThunk(
 
       // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
       dispatch(fetchHotspots({ account, anchorProvider, cluster }))
+
+      return {
+        signature: sigs[0],
+      }
     } catch (error) {
       Logger.error(error)
       throw error
     }
-
-    return true
   },
 )
 
@@ -459,7 +466,12 @@ const solanaSlice = createSlice({
   initialState,
   reducers: {
     resetPayment: (state) => {
-      state.payment = { success: false, loading: false, error: undefined }
+      state.payment = {
+        success: false,
+        loading: false,
+        error: undefined,
+        signature: undefined,
+      }
     },
   },
   extraReducers: (builder) => {
@@ -474,10 +486,20 @@ const solanaSlice = createSlice({
       }
     })
     builder.addCase(makeCollectablePayment.rejected, (state, action) => {
-      state.payment = { success: false, loading: false, error: action.error }
+      state.payment = {
+        success: false,
+        loading: false,
+        error: action.error,
+        signature: undefined,
+      }
     })
     builder.addCase(makePayment.pending, (state, _action) => {
-      state.payment = { success: false, loading: true, error: undefined }
+      state.payment = {
+        success: false,
+        loading: true,
+        error: undefined,
+        signature: undefined,
+      }
     })
     builder.addCase(makePayment.fulfilled, (state, _action) => {
       state.payment = {
@@ -487,23 +509,45 @@ const solanaSlice = createSlice({
       }
     })
     builder.addCase(claimRewards.rejected, (state, action) => {
-      state.payment = { success: false, loading: false, error: action.error }
+      state.payment = {
+        success: false,
+        loading: false,
+        error: action.error,
+        signature: undefined,
+      }
     })
     builder.addCase(claimRewards.pending, (state, _action) => {
-      state.payment = { success: false, loading: true, error: undefined }
+      state.payment = {
+        success: false,
+        loading: true,
+        error: undefined,
+        signature: undefined,
+      }
     })
     builder.addCase(claimRewards.fulfilled, (state, _action) => {
+      const { signature } = _action.payload
       state.payment = {
         success: true,
         loading: false,
         error: undefined,
+        signature,
       }
     })
     builder.addCase(sendAnchorTxn.rejected, (state, action) => {
-      state.payment = { success: false, loading: false, error: action.error }
+      state.payment = {
+        success: false,
+        loading: false,
+        error: action.error,
+        signature: undefined,
+      }
     })
     builder.addCase(sendAnchorTxn.pending, (state, _action) => {
-      state.payment = { success: false, loading: true, error: undefined }
+      state.payment = {
+        success: false,
+        loading: true,
+        error: undefined,
+        signature: undefined,
+      }
     })
     builder.addCase(sendAnchorTxn.fulfilled, (state, _action) => {
       state.payment = {
@@ -513,10 +557,20 @@ const solanaSlice = createSlice({
       }
     })
     builder.addCase(sendTreasurySwap.rejected, (state, action) => {
-      state.payment = { success: false, loading: false, error: action.error }
+      state.payment = {
+        success: false,
+        loading: false,
+        error: action.error,
+        signature: undefined,
+      }
     })
     builder.addCase(sendTreasurySwap.pending, (state, _action) => {
-      state.payment = { success: false, loading: true, error: undefined }
+      state.payment = {
+        success: false,
+        loading: true,
+        error: undefined,
+        signature: undefined,
+      }
     })
     builder.addCase(sendTreasurySwap.fulfilled, (state, _action) => {
       state.payment = {
@@ -526,10 +580,20 @@ const solanaSlice = createSlice({
       }
     })
     builder.addCase(sendMintDataCredits.rejected, (state, action) => {
-      state.payment = { success: false, loading: false, error: action.error }
+      state.payment = {
+        success: false,
+        loading: false,
+        error: action.error,
+        signature: undefined,
+      }
     })
     builder.addCase(sendMintDataCredits.pending, (state, _action) => {
-      state.payment = { success: false, loading: true, error: undefined }
+      state.payment = {
+        success: false,
+        loading: true,
+        error: undefined,
+        signature: undefined,
+      }
     })
     builder.addCase(sendMintDataCredits.fulfilled, (state, _action) => {
       state.payment = {
@@ -539,10 +603,18 @@ const solanaSlice = createSlice({
       }
     })
     builder.addCase(sendDelegateDataCredits.rejected, (state, action) => {
-      state.delegate = { success: false, loading: false, error: action.error }
+      state.delegate = {
+        success: false,
+        loading: false,
+        error: action.error,
+      }
     })
     builder.addCase(sendDelegateDataCredits.pending, (state, _action) => {
-      state.delegate = { success: false, loading: true, error: undefined }
+      state.delegate = {
+        success: false,
+        loading: true,
+        error: undefined,
+      }
     })
     builder.addCase(sendDelegateDataCredits.fulfilled, (state, _action) => {
       state.delegate = {
@@ -552,10 +624,20 @@ const solanaSlice = createSlice({
       }
     })
     builder.addCase(claimAllRewards.rejected, (state, action) => {
-      state.payment = { success: false, loading: false, error: action.error }
+      state.payment = {
+        success: false,
+        loading: false,
+        error: action.error,
+        signature: undefined,
+      }
     })
     builder.addCase(claimAllRewards.pending, (state, _action) => {
-      state.payment = { success: false, loading: true, error: undefined }
+      state.payment = {
+        success: false,
+        loading: true,
+        error: undefined,
+        signature: undefined,
+      }
     })
     builder.addCase(claimAllRewards.fulfilled, (state, _action) => {
       state.payment = {
@@ -565,7 +647,12 @@ const solanaSlice = createSlice({
       }
     })
     builder.addCase(makePayment.rejected, (state, action) => {
-      state.payment = { success: false, loading: false, error: action.error }
+      state.payment = {
+        success: false,
+        loading: false,
+        error: action.error,
+        signature: undefined,
+      }
     })
     builder.addCase(getTxns.pending, (state, _action) => {
       state.activity.loading = true

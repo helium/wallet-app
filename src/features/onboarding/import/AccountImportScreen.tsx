@@ -239,6 +239,10 @@ const AccountImportScreen = () => {
     [getAccent, handleWordSelectedAtIndex, t, wordIndex],
   )
 
+  const handleOnPaste = useCallback((copiedContent: string) => {
+    setWords(copiedContent.split(' '))
+  }, [])
+
   return (
     <Box flex={1} backgroundColor="secondaryBackground">
       <TouchableOpacityBox padding="l" onPress={navToTop} alignItems="flex-end">
@@ -281,6 +285,7 @@ const AccountImportScreen = () => {
           onSubmit={handleNext}
           accentKey={getAccent(wordIndex).key}
           accentValue={getAccent(wordIndex).value}
+          onPaste={handleOnPaste}
         />
         <TouchableOpacityBox
           onPress={onWordAmountClicked}

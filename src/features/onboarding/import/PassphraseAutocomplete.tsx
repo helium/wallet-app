@@ -8,6 +8,7 @@ import Box from '@components/Box'
 import FabButton from '@components/FabButton'
 import usePrevious from '@hooks/usePrevious'
 import { Color } from '@theme/theme'
+import Clipboard from '@react-native-community/clipboard'
 import MatchingWord from './MatchingWord'
 
 type Props = {
@@ -19,6 +20,7 @@ type Props = {
   word: string | null
   accentKey: Color
   accentValue: string
+  onPaste: (copiedContent: string) => void
 }
 
 const PassphraseAutocomplete = ({
@@ -30,6 +32,7 @@ const PassphraseAutocomplete = ({
   word: propsWord,
   accentKey,
   accentValue,
+  onPaste,
 }: Props) => {
   const [word, setWord] = useState('')
   const [matchingWords, setMatchingWords] = useState<Array<string>>([])
@@ -56,13 +59,25 @@ const PassphraseAutocomplete = ({
     [onSelectWord, wordIdx],
   )
 
-  const onChangeText = useCallback((text) => {
-    matchingListRef?.current?.scrollTo({
-      y: 0,
-      animated: true,
-    })
-    setWord(text)
-  }, [])
+  const onChangeText = useCallback(
+    async (text) => {
+      const copiedContent = await Clipboard.getString()
+
+      const isPasted = text.includes(copiedContent)
+      // Check of copited content is an array of words greater than or equal to 12
+      const isPastedWords = copiedContent.split(' ').length >= 12
+      if (copiedContent !== '' && isPasted && isPastedWords) {
+        onPaste(copiedContent)
+      }
+
+      matchingListRef?.current?.scrollTo({
+        y: 0,
+        animated: true,
+      })
+      setWord(text)
+    },
+    [onPaste],
+  )
 
   const handleSubmit = useCallback(() => {
     if (matchingWords.length === 0 || !word || word?.length === 1) return

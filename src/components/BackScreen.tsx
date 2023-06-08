@@ -31,6 +31,7 @@ type Props = BoxProps<Theme> & {
   TrailingIcon?: React.FC<SvgProps>
   onTrailingIconPress?: () => void
   headerTopMargin?: Spacing
+  rootBackgroundColor?: Color
 }
 
 const BackScreen = ({
@@ -49,6 +50,7 @@ const BackScreen = ({
   TrailingIcon,
   onTrailingIconPress,
   headerTopMargin,
+  rootBackgroundColor,
   ...rest
 }: Props) => {
   const navigation = useNavigation()
@@ -56,7 +58,7 @@ const BackScreen = ({
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
 
   return (
-    <Box flex={1}>
+    <Box flex={1} backgroundColor={rootBackgroundColor}>
       <SafeAreaBox edges={edges || undefined} onLayout={onLayout} flex={1}>
         <Box
           flexDirection="row"

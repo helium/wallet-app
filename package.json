@@ -1,6 +1,6 @@
 {
   "name": "helium-wallet",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "private": true,
   "scripts": {
     "postinstall": "patch-package && ./node_modules/.bin/rn-nodeify --hack --install && npx jetify",
@@ -154,6 +154,7 @@
     "react-native-level-fs": "3.0.1",
     "react-native-linear-gradient": "2.6.2",
     "react-native-localize": "2.2.3",
+    "react-native-mail": "^6.1.1",
     "react-native-navigation-bar-color": "2.0.1",
     "react-native-network-info": "5.2.1",
     "react-native-onesignal": "4.4.1",
@@ -172,6 +173,7 @@
     "react-native-svg": "13.4.0",
     "react-native-tab-view": "3.3.4",
     "react-native-tcp": "3.3.2",
+    "react-native-test-flight": "^1.1.0",
     "react-native-text-ticker": "1.14.0",
     "react-native-udp": "2.7.0",
     "react-native-video": "5.2.1",
