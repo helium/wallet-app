@@ -11,7 +11,6 @@ import SafeAreaBox from '@components/SafeAreaBox'
 import SearchInput from '@components/SearchInput'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
-import { BN } from '@coral-xyz/anchor'
 import { HotspotType } from '@helium/onboarding'
 import useAlert from '@hooks/useAlert'
 import { useForwardGeo } from '@hooks/useForwardGeo'
@@ -35,7 +34,7 @@ import { Alert, KeyboardAvoidingView } from 'react-native'
 import { Config } from 'react-native-config'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
-import { getH3Location, parseH3BNLocation } from '../../utils/h3'
+import { parseH3BNLocation } from '../../utils/h3'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import * as Logger from '../../utils/logger'
 import { MAX_MAP_ZOOM, MIN_MAP_ZOOM } from '../../utils/mapbox'
@@ -117,6 +116,7 @@ const AssertLocationScreen = () => {
       try {
         const bbox = turfBbox(points(coords))
         camera.current.setCamera({
+          animationDuration: 500,
           bounds: {
             ne: [bbox[2], bbox[3]],
             sw: [bbox[0], bbox[1]],
@@ -181,7 +181,11 @@ const AssertLocationScreen = () => {
         const coords = await forwardGeo.execute(searchValue)
 
         if (camera.current && coords) {
-          camera.current.moveTo(coords)
+          camera.current.setCamera({
+            animationDuration: 500,
+            centerCoordinate: coords,
+            zoomLevel: MAX_MAP_ZOOM / 1.2,
+          })
         }
       } catch (error) {
         const { message = '' } = error as Error
@@ -208,10 +212,14 @@ const AssertLocationScreen = () => {
 
   const handleUserLocationPress = useCallback(() => {
     if (camera.current && userLocation?.coords) {
-      camera.current.moveTo([
-        userLocation.coords.longitude,
-        userLocation.coords.latitude,
-      ])
+      camera.current.setCamera({
+        animationDuration: 500,
+        zoomLevel: MAX_MAP_ZOOM,
+        centerCoordinate: [
+          userLocation.coords.longitude,
+          userLocation.coords.latitude,
+        ],
+      })
     }
   }, [userLocation, camera])
 
@@ -225,10 +233,8 @@ const AssertLocationScreen = () => {
           await submitUpdateHotspotInfo({
             type,
             hotspot: collectable,
-            location: new BN(
-              getH3Location(mapCenter[1], mapCenter[0]),
-              'hex',
-            ).toString(),
+            lng: mapCenter[0],
+            lat: mapCenter[1],
             elevation,
             decimalGain: gain,
           })

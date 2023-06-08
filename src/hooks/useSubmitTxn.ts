@@ -448,13 +448,15 @@ export default () => {
     async ({
       type,
       hotspot,
-      location,
+      lat,
+      lng,
       elevation,
       decimalGain,
     }: {
       type: HotspotType
       hotspot: HotspotWithMeta
-      location: string
+      lat: number
+      lng: number
       elevation?: string
       decimalGain?: string
     }) => {
@@ -470,11 +472,10 @@ export default () => {
         anchorProvider,
         type,
         hotspot,
-        location,
+        lat,
+        lng,
         elevation: elevation ? parseFloat(elevation) : undefined,
-        gain: decimalGain
-          ? Math.round(parseFloat(decimalGain) * 10.0)
-          : undefined,
+        decimalGain: decimalGain ? parseFloat(decimalGain) : undefined,
       })
 
       const serializedTx = updateInfoTxn.serialize({

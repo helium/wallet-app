@@ -418,15 +418,9 @@ export const sendUpdateIotInfo = createAsyncThunk(
   ) => {
     try {
       const signed = await anchorProvider.wallet.signTransaction(updateTxn)
+      const sig = await anchorProvider.sendAndConfirm(signed)
 
-      const { txid } = await sendAndConfirmWithRetry(
-        anchorProvider.connection,
-        signed.serialize(),
-        { skipPreflight: true },
-        'confirmed',
-      )
-
-      postPayment({ signature: txid, cluster })
+      postPayment({ signature: sig, cluster })
 
       // If the update is successful, we need to update the hotspots so infos are updated.
       dispatch(fetchHotspots({ account, anchorProvider, cluster }))
@@ -446,15 +440,9 @@ export const sendUpdateMobileInfo = createAsyncThunk(
   ) => {
     try {
       const signed = await anchorProvider.wallet.signTransaction(updateTxn)
+      const sig = await anchorProvider.sendAndConfirm(signed)
 
-      const { txid } = await sendAndConfirmWithRetry(
-        anchorProvider.connection,
-        signed.serialize(),
-        { skipPreflight: true },
-        'confirmed',
-      )
-
-      postPayment({ signature: txid, cluster })
+      postPayment({ signature: sig, cluster })
 
       // If the update is successful, we need to update the hotspots so infos are updated.
       dispatch(fetchHotspots({ account, anchorProvider, cluster }))

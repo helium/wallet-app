@@ -114,6 +114,7 @@ import {
   MOBILE_SUB_DAO_KEY,
 } from './constants'
 import { solAddressIsValid } from './accountUtils'
+import { getH3Location } from './h3'
 
 const govProgramId = new PublicKey(
   'hgovkRU6Ghe1Qoyb54HdSLdqN7VtxaifBzRmh9jtd3S',
@@ -1084,8 +1085,8 @@ export async function annotateWithMeta(
   return Promise.all(
     hotspots.map(async (hotspot, index) => {
       const entityKey = entityKeys[index]
-      const [iotInfo] = await iotInfoKey(iotConfigKey, entityKey)
-      const [mobileInfo] = await mobileInfoKey(mobileConfigKey, entityKey)
+      const [iotInfo] = iotInfoKey(iotConfigKey, entityKey)
+      const [mobileInfo] = mobileInfoKey(mobileConfigKey, entityKey)
 
       const iotInfoAcc =
         await hemProgram.account.iotHotspotInfoV0.fetchNullable(iotInfo)
@@ -1588,22 +1589,26 @@ export const updateHotspotInfoTxn = async ({
   anchorProvider,
   type,
   hotspot,
-  location,
-  elevation,
-  gain,
+  lat,
+  lng,
+  elevation = 0,
+  decimalGain = 1.2,
 }: {
   anchorProvider: AnchorProvider
   type: HotspotType
   hotspot: HotspotWithMeta
-  location: string
+  lat: number
+  lng: number
   elevation?: number
-  gain?: number
+  decimalGain?: number
 }) => {
   try {
     const { connection } = anchorProvider
     const { publicKey: payer } = anchorProvider.wallet
 
     const program = await initHem(anchorProvider)
+    const location = new BN(getH3Location(lat, lng), 'hex')
+    const gain = Math.round(decimalGain * 10.0)
     let tx: Transaction | undefined
 
     const keyToAsset = await program.account.keyToAssetV0.fetchNullable(
@@ -1625,9 +1630,9 @@ export const updateHotspotInfoTxn = async ({
         await updateIotMetadata({
           program,
           assetId,
-          location: location ? new BN(location) : null,
-          elevation: elevation ?? null,
-          gain: gain ?? null,
+          location,
+          elevation,
+          gain,
           rewardableEntityConfig: rewardableEntityConfigKey(
             IOT_SUB_DAO_KEY,
             'IOT',
@@ -1645,7 +1650,7 @@ export const updateHotspotInfoTxn = async ({
         await updateMobileMetadata({
           program,
           assetId,
-          location: location ? new BN(location) : null,
+          location,
           rewardableEntityConfig: rewardableEntityConfigKey(
             MOBILE_SUB_DAO_KEY,
             'MOBILE',
