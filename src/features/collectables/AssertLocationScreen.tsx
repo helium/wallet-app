@@ -26,8 +26,8 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
+  useRef,
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, KeyboardAvoidingView } from 'react-native'
@@ -50,13 +50,13 @@ const AssertLocationScreen = () => {
   const nav = useNavigation<CollectableNavigationProp>()
   const route = useRoute<Route>()
   const { collectable } = route.params
-  const map = useRef<MapboxGL.MapView>(null)
-  const camera = useRef<MapboxGL.Camera>(null)
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])
+  const camera = useRef<MapboxGL.Camera>(null)
+  const userLocation = useRef<MapboxGL.UserLocation>(null)
   const { showOKAlert } = useAlert()
-  const [initialZoomHappend, setInitialZoomHappend] = useState(false)
   const [mapCenter, setMapCenter] = useState<number[]>()
+  const [initialZoomHappend, setInitialZoomHappend] = useState(false)
   const [searchVisible, setSearchVisible] = useState(false)
   const [searchValue, setSearchValue] = useState<string>()
   const [elevGainVisible, setElevGainVisible] = useState(false)
@@ -64,9 +64,6 @@ const AssertLocationScreen = () => {
   const [elevation, setElevation] = useState<string>()
   const [asserting, setAsserting] = useState(false)
   const [transactionError, setTransactionError] = useState<string>()
-  const [userLocation, setUserLocation] = useState<
-    MapboxGL.Location | undefined
-  >()
   const reverseGeo = useReverseGeo(mapCenter)
   const forwardGeo = useForwardGeo()
   const { submitUpdateHotspotInfo } = useSubmitTxn()
@@ -102,13 +99,17 @@ const AssertLocationScreen = () => {
   }, [iotLocation, mobileLocation])
 
   const initialCenter = useMemo(() => {
-    return userLocation?.coords
-      ? [userLocation.coords.longitude, userLocation.coords.latitude]
-      : iotLocation || mobileLocation || [-122.431297, 37.773972]
-  }, [userLocation?.coords, iotLocation, mobileLocation])
+    return (
+      userLocation?.current?.state.coordinates ||
+      iotLocation ||
+      mobileLocation || [-122.419418, 37.774929]
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userLocation?.current, iotLocation, mobileLocation])
 
   useEffect(() => {
-    if (camera.current && !initialZoomHappend) {
+    if (camera?.current && !initialZoomHappend) {
+      setInitialZoomHappend(true)
       const coords = [initialCenter, iotLocation, mobileLocation].filter(
         Boolean,
       ) as number[][]
@@ -118,26 +119,25 @@ const AssertLocationScreen = () => {
         camera.current.setCamera({
           animationDuration: 500,
           bounds: {
-            ne: [bbox[2], bbox[3]],
-            sw: [bbox[0], bbox[1]],
+            ne: [bbox[0], bbox[1]],
+            sw: [bbox[2], bbox[3]],
             paddingLeft: 20,
             paddingRight: 20,
             paddingTop: 20,
             paddingBottom: 20,
           },
         })
-        setInitialZoomHappend(true)
       } catch (error) {
         console.error(error)
       }
     }
   }, [
     camera,
+    iotLocation,
+    initialCenter,
+    mobileLocation,
     initialZoomHappend,
     setInitialZoomHappend,
-    iotLocation,
-    mobileLocation,
-    initialCenter,
   ])
 
   useEffect(() => {
@@ -180,7 +180,7 @@ const AssertLocationScreen = () => {
       try {
         const coords = await forwardGeo.execute(searchValue)
 
-        if (camera.current && coords) {
+        if (camera?.current && coords) {
           camera.current.setCamera({
             animationDuration: 500,
             centerCoordinate: coords,
@@ -211,14 +211,11 @@ const AssertLocationScreen = () => {
   }, 600)
 
   const handleUserLocationPress = useCallback(() => {
-    if (camera.current && userLocation?.coords) {
+    if (camera?.current && userLocation?.current?.state.coordinates) {
       camera.current.setCamera({
         animationDuration: 500,
         zoomLevel: MAX_MAP_ZOOM,
-        centerCoordinate: [
-          userLocation.coords.longitude,
-          userLocation.coords.latitude,
-        ],
+        centerCoordinate: userLocation.current.state.coordinates,
       })
     }
   }, [userLocation, camera])
@@ -378,7 +375,6 @@ const AssertLocationScreen = () => {
             position="relative"
           >
             <MapboxGL.MapView
-              ref={map}
               styleURL={Config.MAPBOX_STYLE_URL || MapboxGL.StyleURL.Dark}
               style={{ flex: 1, width: '100%' }}
               logoEnabled={false}
@@ -400,7 +396,7 @@ const AssertLocationScreen = () => {
                   centerCoordinate: initialCenter,
                 }}
               />
-              <MapboxGL.UserLocation visible onUpdate={setUserLocation} />
+              <MapboxGL.UserLocation visible ref={userLocation} />
               {(sameLocation ? [iotLocation] : [iotLocation, mobileLocation])
                 .map((location, i) => {
                   if (!location || location.length < 2) return null
@@ -485,7 +481,7 @@ const AssertLocationScreen = () => {
               )}
             </Box>
 
-            {userLocation?.coords && (
+            {userLocation?.current && (
               <Box
                 flexDirection="row"
                 justifyContent="center"
