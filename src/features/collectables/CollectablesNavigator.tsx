@@ -19,7 +19,6 @@ import ClaimAllRewardsScreen from './ClaimAllRewardsScreen'
 import ClaimingRewardsScreen from './ClaimingRewardsScreen'
 import CollectionScreen from './CollectionScreen'
 import NftDetailsScreen from './NftDetailsScreen'
-import AssertingLocationScreen from './AssertingLocationScreen'
 
 const CollectablesStack = createStackNavigator()
 
@@ -41,10 +40,6 @@ const CollectablesStackScreen = () => {
       <CollectablesStack.Screen
         name="AssertLocationScreen"
         component={AssertLocationScreen}
-      />
-      <CollectablesStack.Screen
-        name="AssertingLocationScreen"
-        component={AssertingLocationScreen}
       />
       <CollectablesStack.Screen
         name="PaymentScreen"

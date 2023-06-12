@@ -321,12 +321,6 @@ export default {
     gainPlaceholder: 'TX / RX Gain (dBi)',
     elevationPlaceholder: 'Elevation (meters)',
     locationNotFound: 'Location not found, Please try again.',
-    assertingComplete: 'Assertion Complete!',
-    assertingCompleteBody: "You're hospots location/data has been asserted.",
-    assertingError: 'Asserting failed. Please try again later.',
-    asserting: 'Asserting Location...',
-    assertingBody:
-      'You can exit this screen while you wait. We’ll update your Wallet momentarily.',
   },
   swapsScreen: {
     title: 'Swap my Tokens',

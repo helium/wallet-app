@@ -16,7 +16,7 @@ import useAlert from '@hooks/useAlert'
 import { useForwardGeo } from '@hooks/useForwardGeo'
 import { useReverseGeo } from '@hooks/useReverseGeo'
 import useSubmitTxn from '@hooks/useSubmitTxn'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { RouteProp, useRoute } from '@react-navigation/native'
 import MapboxGL from '@rnmapbox/maps'
 import turfBbox from '@turf/bbox'
 import { points } from '@turf/helpers'
@@ -34,22 +34,24 @@ import { Alert, KeyboardAvoidingView } from 'react-native'
 import { Config } from 'react-native-config'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
+import { useEntityKey } from '@hooks/useEntityKey'
+import { useIotInfo } from '@hooks/useIotInfo'
+import { useMobileInfo } from '@hooks/useMobileInfo'
 import { parseH3BNLocation } from '../../utils/h3'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import * as Logger from '../../utils/logger'
 import { MAX_MAP_ZOOM, MIN_MAP_ZOOM } from '../../utils/mapbox'
-import {
-  CollectableNavigationProp,
-  CollectableStackParamList,
-} from './collectablesTypes'
+import { CollectableStackParamList } from './collectablesTypes'
 
 const BUTTON_HEIGHT = 65
 type Route = RouteProp<CollectableStackParamList, 'AssertLocationScreen'>
 const AssertLocationScreen = () => {
   const { t } = useTranslation()
-  const nav = useNavigation<CollectableNavigationProp>()
   const route = useRoute<Route>()
   const { collectable } = route.params
+  const entityKey = useEntityKey(collectable)
+  const iotInfoAcc = useIotInfo(entityKey)
+  const mobileInfoAcc = useMobileInfo(entityKey)
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])
   const camera = useRef<MapboxGL.Camera>(null)
@@ -66,29 +68,27 @@ const AssertLocationScreen = () => {
   const [transactionError, setTransactionError] = useState<string>()
   const reverseGeo = useReverseGeo(mapCenter)
   const forwardGeo = useForwardGeo()
-  const { submitUpdateHotspotInfo } = useSubmitTxn()
+  const { submitUpdateEntityInfo } = useSubmitTxn()
 
   const {
     content: { metadata },
-    iotInfo,
-    mobileInfo,
   } = collectable
 
   const iotLocation = useMemo(() => {
-    if (!iotInfo?.location) {
+    if (!iotInfoAcc?.info?.location) {
       return undefined
     }
 
-    return parseH3BNLocation(iotInfo.location).reverse()
-  }, [iotInfo])
+    return parseH3BNLocation(iotInfoAcc.info.location).reverse()
+  }, [iotInfoAcc])
 
   const mobileLocation = useMemo(() => {
-    if (!mobileInfo?.location) {
+    if (!mobileInfoAcc?.info?.location) {
       return undefined
     }
 
-    return parseH3BNLocation(mobileInfo.location).reverse()
-  }, [mobileInfo])
+    return parseH3BNLocation(mobileInfoAcc.info.location).reverse()
+  }, [mobileInfoAcc])
 
   const sameLocation = useMemo(() => {
     if (!iotLocation || !mobileLocation) {
@@ -141,23 +141,31 @@ const AssertLocationScreen = () => {
   ])
 
   useEffect(() => {
-    if (iotInfo?.gain) {
-      setGain(`${iotInfo.gain / 10}`)
+    if (iotInfoAcc?.info?.gain) {
+      setGain(`${iotInfoAcc?.info?.gain / 10}`)
     }
 
-    if (iotInfo?.elevation) {
-      setElevation(`${iotInfo.elevation}`)
+    if (iotInfoAcc?.info?.elevation) {
+      setElevation(`${iotInfoAcc?.info?.elevation}`)
     }
-  }, [iotInfo, setGain, setElevation])
+  }, [iotInfoAcc, setGain, setElevation])
 
   const resetGain = useCallback(
-    () => setGain(iotInfo?.gain ? `${iotInfo.gain / 10}` : undefined),
-    [iotInfo, setGain],
+    () =>
+      setGain(
+        iotInfoAcc?.info?.gain ? `${iotInfoAcc.info.gain / 10}` : undefined,
+      ),
+    [iotInfoAcc, setGain],
   )
 
   const resetElevation = useCallback(
-    () => setElevation(iotInfo?.elevation ? `${iotInfo.elevation}` : undefined),
-    [iotInfo, setElevation],
+    () =>
+      setElevation(
+        iotInfoAcc?.info?.elevation
+          ? `${iotInfoAcc.info.elevation}`
+          : undefined,
+      ),
+    [iotInfoAcc, setElevation],
   )
 
   const handleSearchPress = useCallback(() => {
@@ -222,21 +230,20 @@ const AssertLocationScreen = () => {
 
   const assertLocation = useCallback(
     async (type: HotspotType) => {
-      if (mapCenter) {
+      if (mapCenter && entityKey) {
         setTransactionError(undefined)
         setAsserting(true)
         try {
           hideElevGain()
-          await submitUpdateHotspotInfo({
+          await submitUpdateEntityInfo({
             type,
-            hotspot: collectable,
+            entityKey,
             lng: mapCenter[0],
             lat: mapCenter[1],
             elevation,
             decimalGain: gain,
           })
           setAsserting(false)
-          nav.push('AssertingLocationScreen')
         } catch (error) {
           setAsserting(false)
           Logger.error(error)
@@ -245,15 +252,15 @@ const AssertLocationScreen = () => {
       }
     },
     [
-      collectable,
+      entityKey,
       mapCenter,
       elevation,
       gain,
       hideElevGain,
       setAsserting,
       setTransactionError,
-      submitUpdateHotspotInfo,
-      nav,
+      submitUpdateEntityInfo,
+      // nav,
     ],
   )
 

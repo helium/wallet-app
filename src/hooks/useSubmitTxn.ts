@@ -26,7 +26,7 @@ import { useAppDispatch } from '../store/store'
 import {
   Collectable,
   CompressedNFT,
-  HotspotWithMeta,
+  HotspotWithPendingRewards,
   toMintAddress,
 } from '../types/solana'
 import { useSolana } from '../solana/SolanaProvider'
@@ -295,7 +295,7 @@ export default () => {
   const submitClaimAllRewards = useCallback(
     async (
       lazyDistributors: PublicKey[],
-      hotspots: HotspotWithMeta[],
+      hotspots: HotspotWithPendingRewards[],
       balanceChanges: BalanceChange[],
     ) => {
       if (!anchorProvider || !currentAccount || !walletSignBottomSheetRef) {
@@ -444,17 +444,17 @@ export default () => {
     ],
   )
 
-  const submitUpdateHotspotInfo = useCallback(
+  const submitUpdateEntityInfo = useCallback(
     async ({
       type,
-      hotspot,
+      entityKey,
       lat,
       lng,
       elevation,
       decimalGain,
     }: {
       type: HotspotType
-      hotspot: HotspotWithMeta
+      entityKey: string
       lat: number
       lng: number
       elevation?: string
@@ -468,10 +468,10 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      const updateInfoTxn = await solUtils.updateHotspotInfoTxn({
+      const updateInfoTxn = await solUtils.updateEntityInfoTxn({
         anchorProvider,
         type,
-        hotspot,
+        entityKey,
         lat,
         lng,
         elevation: elevation ? parseFloat(elevation) : undefined,
@@ -535,6 +535,6 @@ export default () => {
     submitLedger,
     submitMintDataCredits,
     submitDelegateDataCredits,
-    submitUpdateHotspotInfo,
+    submitUpdateEntityInfo,
   }
 }

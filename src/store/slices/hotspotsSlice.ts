@@ -1,13 +1,13 @@
 import { AnchorProvider } from '@coral-xyz/anchor'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Cluster, PublicKey } from '@solana/web3.js'
-import { CompressedNFT, HotspotWithMeta } from 'src/types/solana'
+import { CompressedNFT, HotspotWithPendingRewards } from 'src/types/solana'
 import { CSAccount } from '../../storage/cloudStorage'
 import * as solUtils from '../../utils/solanaUtils'
 
 export type WalletHotspots = {
   hotspots: CompressedNFT[]
-  hotspotsWithMeta: HotspotWithMeta[]
+  hotspotsWithMeta: HotspotWithPendingRewards[]
   loading: boolean
   fetchingMore: boolean
   onEndReached: boolean
@@ -50,12 +50,15 @@ export const fetchHotspots = createAsyncThunk(
       fetchedHotspots,
     )
 
-    return {
-      fetchedHotspots,
-      hotspotsWithMetadata: await solUtils.annotateWithMeta(
+    const hotspotsWithPendingRewards =
+      await solUtils.annotateWithPendingRewards(
         anchorProvider,
         hotspotsWithMetadata,
-      ),
+      )
+
+    return {
+      fetchedHotspots,
+      hotspotsWithMetadata: hotspotsWithPendingRewards,
       page: 1,
       limit,
     }
@@ -93,12 +96,12 @@ export const fetchMoreHotspots = createAsyncThunk(
       fetchedHotspots,
     )
 
+    const hotspotsWithPendingRewards =
+      await solUtils.annotateWithPendingRewards(provider, hotspotsWithMetadata)
+
     return {
       fetchedHotspots,
-      hotspotsWithMetadata: await solUtils.annotateWithMeta(
-        provider,
-        hotspotsWithMetadata,
-      ),
+      hotspotsWithMetadata: hotspotsWithPendingRewards,
       page: page + 1,
       limit,
     }

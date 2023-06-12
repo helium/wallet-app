@@ -41,12 +41,12 @@ import {
 import {
   init as initHem,
   entityCreatorKey,
-  iotInfoKey,
-  mobileInfoKey,
   rewardableEntityConfigKey,
   updateMobileMetadata,
   updateIotMetadata,
   keyToAssetKey,
+  iotInfoKey,
+  mobileInfoKey,
 } from '@helium/helium-entity-manager-sdk'
 import Balance, { AnyCurrencyType, CurrencyType } from '@helium/currency'
 import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
@@ -100,7 +100,7 @@ import {
   Collectable,
   CompressedNFT,
   EnrichedTransaction,
-  HotspotWithMeta,
+  HotspotWithPendingRewards,
   mintToTicker,
 } from '../types/solana'
 import * as Logger from './logger'
@@ -1050,23 +1050,16 @@ export async function exists(
   return Boolean(await connection.getAccountInfo(account))
 }
 
-export async function annotateWithMeta(
+export async function annotateWithPendingRewards(
   provider: AnchorProvider,
   hotspots: CompressedNFT[],
-): Promise<HotspotWithMeta[]> {
+): Promise<HotspotWithPendingRewards[]> {
   const program = await init(provider)
-  const hemProgram = await initHem(provider)
   const dao = DAO_KEY
 
   const entityKeys = hotspots.map((h) => {
     return h.content.json_uri.split('/').slice(-1)[0]
   })
-
-  const [iotConfigKey] = rewardableEntityConfigKey(IOT_SUB_DAO_KEY, 'IOT')
-  const [mobileConfigKey] = rewardableEntityConfigKey(
-    MOBILE_SUB_DAO_KEY,
-    'MOBILE',
-  )
 
   const mobileRewards = await getPendingRewards(
     program,
@@ -1085,25 +1078,14 @@ export async function annotateWithMeta(
   return Promise.all(
     hotspots.map(async (hotspot, index) => {
       const entityKey = entityKeys[index]
-      const [iotInfo] = iotInfoKey(iotConfigKey, entityKey)
-      const [mobileInfo] = mobileInfoKey(mobileConfigKey, entityKey)
-
-      const iotInfoAcc =
-        await hemProgram.account.iotHotspotInfoV0.fetchNullable(iotInfo)
-
-      const mobileInfoAcc =
-        await hemProgram.account.mobileHotspotInfoV0.fetchNullable(mobileInfo)
 
       return {
         ...hotspot,
-        entityKey,
-        iotInfo: iotInfoAcc || undefined,
-        mobileInfo: mobileInfoAcc || undefined,
         pendingRewards: {
           [Mints.MOBILE]: mobileRewards[entityKey],
           [Mints.IOT]: iotRewards[entityKey],
         },
-      } as HotspotWithMeta
+      } as HotspotWithPendingRewards
     }),
   )
 }
@@ -1585,18 +1567,18 @@ export const calcCreateAssociatedTokenAccountAccountFee = async (
   }
 }
 
-export const updateHotspotInfoTxn = async ({
+export const updateEntityInfoTxn = async ({
   anchorProvider,
   type,
-  hotspot,
+  entityKey,
   lat,
   lng,
-  elevation = 0,
-  decimalGain = 1.2,
+  elevation,
+  decimalGain,
 }: {
   anchorProvider: AnchorProvider
   type: HotspotType
-  hotspot: HotspotWithMeta
+  entityKey: string
   lat: number
   lng: number
   elevation?: number
@@ -1608,11 +1590,11 @@ export const updateHotspotInfoTxn = async ({
 
     const program = await initHem(anchorProvider)
     const location = new BN(getH3Location(lat, lng), 'hex')
-    const gain = Math.round(decimalGain * 10.0)
+    const gain = decimalGain ? Math.round(decimalGain * 10.0) : null
     let tx: Transaction | undefined
 
     const keyToAsset = await program.account.keyToAssetV0.fetchNullable(
-      keyToAssetKey(DAO_KEY, hotspot.entityKey)[0],
+      keyToAssetKey(DAO_KEY, entityKey)[0],
     )
 
     if (!keyToAsset) {
@@ -1622,7 +1604,12 @@ export const updateHotspotInfoTxn = async ({
     const assetId = keyToAsset.asset
 
     if (type === 'iot') {
-      if (!hotspot.iotInfo) {
+      const [iotConfigKey] = rewardableEntityConfigKey(IOT_SUB_DAO_KEY, 'IOT')
+      const iotInfo = await program.account.iotHotspotInfoV0.fetchNullable(
+        iotInfoKey(iotConfigKey, entityKey)[0],
+      )
+
+      if (!iotInfo) {
         throw new Error('Hotspot info does not exist, has it been onboarded?')
       }
 
@@ -1631,7 +1618,7 @@ export const updateHotspotInfoTxn = async ({
           program,
           assetId,
           location,
-          elevation,
+          elevation: elevation || null,
           gain,
           rewardableEntityConfig: rewardableEntityConfigKey(
             IOT_SUB_DAO_KEY,
@@ -1642,7 +1629,16 @@ export const updateHotspotInfoTxn = async ({
     }
 
     if (type === 'mobile') {
-      if (!hotspot.mobileInfo) {
+      const [mobileConfigKey] = rewardableEntityConfigKey(
+        MOBILE_SUB_DAO_KEY,
+        'MOBILE',
+      )
+      const mobileInfo =
+        await program.account.mobileHotspotInfoV0.fetchNullable(
+          mobileInfoKey(mobileConfigKey, entityKey)[0],
+        )
+
+      if (!mobileInfo) {
         throw new Error('Hotspot info does not exist, has it been onboarded?')
       }
 
