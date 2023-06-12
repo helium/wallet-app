@@ -17,11 +17,11 @@ import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import { ww } from '../../utils/layout'
 import { formatLargeNumber } from '../../utils/accountUtils'
 import { Mints } from '../../utils/constants'
-import { HotspotWithMeta } from '../../types/solana'
+import { HotspotWithPendingRewards } from '../../types/solana'
 
 export type HotspotListItemProps = {
-  hotspot: HotspotWithMeta
-  onPress: (hotspot: HotspotWithMeta) => void
+  hotspot: HotspotWithPendingRewards
+  onPress: (hotspot: HotspotWithPendingRewards) => void
 } & BoxProps<Theme>
 
 const HotspotListItem = ({

@@ -16,11 +16,11 @@ import BigNumber from 'bignumber.js'
 import { useMint } from '@helium/helium-react-hooks'
 import { Mints } from '../../utils/constants'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
-import { HotspotWithMeta } from '../../types/solana'
+import { HotspotWithPendingRewards } from '../../types/solana'
 
 export type HotspotListItemProps = {
-  hotspot: HotspotWithMeta
-  onPress: (hotspot: HotspotWithMeta) => void
+  hotspot: HotspotWithPendingRewards
+  onPress: (hotspot: HotspotWithPendingRewards) => void
 } & BoxProps<Theme>
 
 const HotspotListItem = ({
