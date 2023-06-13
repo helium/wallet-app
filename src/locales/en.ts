@@ -321,6 +321,7 @@ export default {
     gainPlaceholder: 'TX / RX Gain (dBi)',
     elevationPlaceholder: 'Elevation (meters)',
     locationNotFound: 'Location not found, Please try again.',
+    mobileTitle: 'MOBILE',
   },
   swapsScreen: {
     title: 'Swap my Tokens',

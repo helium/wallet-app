@@ -358,7 +358,7 @@ const AssertLocationScreen = () => {
                     color="secondaryText"
                     marginRight="s"
                   >
-                    MOBILE:
+                    {t('assertLocationScreen.mobileTitle')}:
                   </Text>
                   <Box
                     backgroundColor={

@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { BoxProps } from '@shopify/restyle'
-import React from 'react'
+import React, { useCallback } from 'react'
 import Search from '@assets/images/search.svg'
 import { BorderRadii, Color, Spacing, Theme } from '@theme/theme'
 import { useColors, useInputVariants } from '@theme/themeHooks'
@@ -28,6 +28,13 @@ const SearchInput = ({
     regular: { borderRadius, padding, color },
   } = useInputVariants()
   const colors = useColors()
+
+  const handleSubmitEditing = useCallback(() => {
+    if (value && onEnter) {
+      onEnter(value)
+    }
+  }, [value, onEnter])
+
   return (
     <Box
       backgroundColor="secondary"
@@ -41,11 +48,7 @@ const SearchInput = ({
       <TextInput
         textInputProps={{
           onChangeText,
-          onSubmitEditing: () => {
-            if (value && onEnter) {
-              onEnter(value)
-            }
-          },
+          onSubmitEditing: handleSubmitEditing,
           value,
           placeholder,
           autoCorrect: false,
