@@ -115,7 +115,14 @@ function toAsset(hotspot: HotspotWithPendingRewards): Asset {
   return {
     ...hotspot,
     id: new PublicKey(hotspot.id),
-    grouping: hotspot.grouping && new PublicKey(hotspot.grouping),
+    grouping:
+      hotspot.grouping &&
+      hotspot.grouping.map(
+        (g): { group_key: string; group_value: PublicKey } => ({
+          ...g,
+          group_key: new PublicKey(g.group_key),
+        }),
+      ),
     compression: {
       ...hotspot.compression,
       leafId: hotspot.compression.leaf_id,
@@ -335,7 +342,6 @@ export const claimAllRewards = createAsyncThunk(
           // eslint-disable-next-line no-await-in-loop
           const txns = await client.formBulkTransactions({
             program: lazyProgram,
-            provider: anchorProvider,
             rewards,
             assets: chunk.map((h) => new PublicKey(h.id)),
             compressionAssetAccs: chunk.map(toAsset),
