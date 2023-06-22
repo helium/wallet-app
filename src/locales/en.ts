@@ -372,6 +372,7 @@ export default {
     unableToSimulate:
       'Unable to simulate. Make sure you trust this app since approving can lead to loss of funds.',
     networkFee: 'Network Fee',
+    totalNetworkFees: 'Total Network Fees',
     connect: 'Connect',
     approve: 'Approve',
     cancel: 'Cancel',
@@ -510,6 +511,7 @@ export default {
     error: 'Error',
     fee: 'Fee',
     loadFailed: 'Cannot validate address. Please try again.',
+    loadMore: 'Load More',
     loading: 'Loading',
     calculatingTransactionFee: 'Calculating Transaction Fee...',
     mainnet: 'Mainnet',

@@ -23,16 +23,16 @@ import Box from '@components/Box'
 import Text from '@components/Text'
 import { useColors, useOpacity } from '@theme/themeHooks'
 import ButtonPressable from '@components/ButtonPressable'
-import { useSimulatedTransaction } from '@hooks/useSimulatedTransaction'
 import { LAMPORTS_PER_SOL } from '@solana/web3.js'
-import CircleLoader from '@components/CircleLoader'
-import { useSolana } from './SolanaProvider'
+import { useBalance } from '@utils/Balance'
+import { ScrollView } from 'react-native-gesture-handler'
 import {
   WalletSignBottomSheetRef,
   WalletSignBottomSheetProps,
   WalletSignOpts,
   WalletStandardMessageTypes,
 } from './walletSignBottomSheetTypes'
+import WalletSignBottomSheetTransaction from './WalletSignBottomSheetTransaction'
 
 let promiseResolve: (value: boolean | PromiseLike<boolean>) => void
 
@@ -42,24 +42,59 @@ const WalletSignBottomSheet = forwardRef(
     ref: Ref<WalletSignBottomSheetRef>,
   ) => {
     useImperativeHandle(ref, () => ({ show, hide }))
-    const { anchorProvider } = useSolana()
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { secondaryText } = useColors()
     const { t } = useTranslation()
+    const { solBalance } = useBalance()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+    const [totalSolFee, setTotalSolFee] = useState(0)
     const [walletSignOpts, setWalletSignOpts] = useState<WalletSignOpts>({
       type: WalletStandardMessageTypes.connect,
       url: '',
       additionalMessage: '',
-      manualBalanceChanges: undefined,
-      manualEstimatedFee: undefined,
-      serializedTx: undefined,
+      serializedTxs: undefined,
     })
-    const { loading, balanceChanges, solFee, insufficientFunds } =
-      useSimulatedTransaction(
-        walletSignOpts.serializedTx,
-        anchorProvider?.publicKey,
+
+    const itemsPerPage = 5
+    const [currentPage, setCurrentPage] = useState(1)
+    const [currentTxs, hasMore] = useMemo(() => {
+      const totalPages = Math.ceil(
+        (walletSignOpts?.serializedTxs?.length || 0) / itemsPerPage,
       )
+      const more = currentPage < totalPages
+      let scopedTxs
+
+      if (walletSignOpts.serializedTxs) {
+        const endIndex = currentPage * itemsPerPage
+        scopedTxs = walletSignOpts.serializedTxs.slice(0, endIndex)
+      }
+
+      return [scopedTxs, more]
+    }, [walletSignOpts, currentPage])
+
+    const handleLoadMore = useCallback(() => {
+      setCurrentPage((page) => page + 1)
+    }, [setCurrentPage])
+
+    const estimatedTotalSolByLamports = useMemo(() => {
+      const { serializedTxs } = walletSignOpts
+
+      if (
+        serializedTxs &&
+        currentTxs &&
+        currentTxs.length < serializedTxs.length
+      ) {
+        // we have unsimulated transactions, do rough estimate
+        const diff = serializedTxs.length - currentTxs.length
+        return (totalSolFee + diff * 5000) / LAMPORTS_PER_SOL
+      }
+
+      return totalSolFee / LAMPORTS_PER_SOL
+    }, [walletSignOpts, totalSolFee, currentTxs])
+
+    const insufficientFunds = useMemo(() => {
+      return estimatedTotalSolByLamports > (solBalance?.floatBalance || 0)
+    }, [solBalance?.floatBalance, estimatedTotalSolByLamports])
 
     const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
     const snapPoints = useMemo(() => ['25%', 'CONTENT_HEIGHT'], [])
@@ -82,16 +117,17 @@ const WalletSignBottomSheet = forwardRef(
         additionalMessage,
         manualBalanceChanges,
         manualEstimatedFee,
-        serializedTx,
+        serializedTxs,
       }: WalletSignOpts) => {
         bottomSheetModalRef.current?.expand()
+        setTotalSolFee(0)
         setWalletSignOpts({
           type,
           url,
           additionalMessage,
           manualBalanceChanges,
           manualEstimatedFee,
-          serializedTx,
+          serializedTxs,
         })
         const p = new Promise<boolean>((resolve) => {
           promiseResolve = resolve
@@ -144,259 +180,18 @@ const WalletSignBottomSheet = forwardRef(
       }
     }, [hide])
 
-    const renderSheetBody = useCallback(() => {
-      const {
-        type,
-        additionalMessage,
-        manualBalanceChanges,
-        manualEstimatedFee,
-      } = walletSignOpts
-
-      if (type === WalletStandardMessageTypes.connect) {
-        return (
-          <>
-            <Box flexGrow={1} justifyContent="center">
-              <Box
-                borderRadius="l"
-                backgroundColor="secondaryBackground"
-                flexDirection="column"
-                padding="m"
-              >
-                <Box flexDirection="row" marginBottom="m">
-                  <Checkmark color="white" />
-                  <Text variant="body1" marginStart="s">
-                    {t('browserScreen.connectBullet1')}
-                  </Text>
-                </Box>
-                <Box flexDirection="row">
-                  <Checkmark color="white" />
-                  <Text marginStart="s" variant="body1">
-                    {t('browserScreen.connectBullet2')}
-                  </Text>
-                </Box>
-              </Box>
-              <Box>
-                <Text
-                  variant="body1"
-                  color="secondaryText"
-                  textAlign="center"
-                  marginTop="m"
-                >
-                  {t('browserScreen.connectToWebsitesYouTrust')}
-                </Text>
-              </Box>
-            </Box>
-          </>
-        )
-      }
-      if (
-        type === WalletStandardMessageTypes.signMessage ||
-        type === WalletStandardMessageTypes.signAndSendTransaction ||
-        type === WalletStandardMessageTypes.signTransaction
-      ) {
-        return (
-          <>
-            <Box flexGrow={1} justifyContent="center">
-              <Box
-                borderTopStartRadius="l"
-                borderTopEndRadius="l"
-                backgroundColor="secondaryBackground"
-                padding="m"
-                borderBottomColor="black"
-                borderBottomWidth={1}
-              >
-                <Text variant="body1Medium">
-                  {t('browserScreen.estimatedChanges')}
-                </Text>
-              </Box>
-
-              {additionalMessage && (
-                <Box
-                  backgroundColor="secondaryBackground"
-                  borderBottomColor="black"
-                  borderBottomWidth={1}
-                  padding="m"
-                >
-                  <Text variant="body1Medium" color="secondaryText">
-                    {additionalMessage}
-                  </Text>
-                </Box>
-              )}
-
-              {insufficientFunds && (
-                <Box
-                  borderBottomStartRadius="l"
-                  borderBottomEndRadius="l"
-                  backgroundColor="secondaryBackground"
-                  padding="m"
-                >
-                  <Text variant="body1Medium" color="red500">
-                    {t('browserScreen.insufficientFunds')}
-                  </Text>
-                </Box>
-              )}
-              {!balanceChanges?.length && !manualBalanceChanges?.length && (
-                <Box
-                  borderBottomStartRadius="l"
-                  borderBottomEndRadius="l"
-                  backgroundColor="secondaryBackground"
-                  padding="m"
-                >
-                  <Text variant="body1Medium" color="orange500">
-                    {t('browserScreen.unableToSimulate')}
-                  </Text>
-                </Box>
-              )}
-
-              {balanceChanges &&
-                balanceChanges.map((change, index) => {
-                  const isLast = index === balanceChanges.length - 1
-                  const isSend = change.type === 'send'
-                  let balanceChange
-                  if (change.nativeChange) {
-                    if (change.type === 'send') {
-                      balanceChange = t('browserScreen.sendToken', {
-                        ticker: change.symbol,
-                        amount: change.nativeChange,
-                      })
-                    } else {
-                      balanceChange = t('browserScreen.recieveToken', {
-                        ticker: change.symbol,
-                        amount: change.nativeChange,
-                      })
-                    }
-                  }
-
-                  return (
-                    <Box
-                      key={(change.symbol || '') + (change.nativeChange || '')}
-                      borderBottomStartRadius={isLast ? 'l' : 'none'}
-                      borderBottomEndRadius={isLast ? 'l' : 'none'}
-                      backgroundColor="secondaryBackground"
-                      padding="m"
-                      borderBottomColor="black"
-                      borderBottomWidth={isLast ? 0 : 1}
-                    >
-                      <Text
-                        variant="body1Medium"
-                        color={isSend ? 'red500' : 'greenBright500'}
-                      >
-                        {balanceChange}
-                      </Text>
-                    </Box>
-                  )
-                })}
-
-              {manualBalanceChanges &&
-                manualBalanceChanges.map((change, index) => {
-                  const isLast = index === manualBalanceChanges.length - 1
-                  const isSend = change.type === 'send'
-                  const balanceChange = t(
-                    isSend
-                      ? 'browserScreen.sendToken'
-                      : 'browserScreen.recieveToken',
-                    {
-                      ticker: change.ticker,
-                      amount: change.amount,
-                    },
-                  )
-                  return (
-                    <Box
-                      key={change.ticker + change.amount}
-                      borderBottomStartRadius={isLast ? 'l' : 'none'}
-                      borderBottomEndRadius={isLast ? 'l' : 'none'}
-                      backgroundColor="secondaryBackground"
-                      padding="m"
-                      borderBottomColor="black"
-                      borderBottomWidth={isLast ? 0 : 1}
-                    >
-                      <Text
-                        variant="body1Medium"
-                        color={isSend ? 'red500' : 'greenBright500'}
-                      >
-                        {balanceChange}
-                      </Text>
-                    </Box>
-                  )
-                })}
-
-              {type === WalletStandardMessageTypes.signAndSendTransaction ||
-                (type === WalletStandardMessageTypes.signTransaction && (
-                  <Box
-                    marginTop="m"
-                    borderRadius="l"
-                    backgroundColor="secondaryBackground"
-                    padding="m"
-                    flexDirection="row"
-                  >
-                    <Box flexGrow={1}>
-                      <Text variant="body1Medium">
-                        {t('browserScreen.networkFee')}
-                      </Text>
-                    </Box>
-                    <Text variant="body1Medium" color="secondaryText">
-                      {`~${
-                        (manualEstimatedFee || solFee || 5000) /
-                        LAMPORTS_PER_SOL
-                      } SOL`}
-                    </Text>
-                  </Box>
-                ))}
-            </Box>
-          </>
-        )
-      }
-    }, [walletSignOpts, t, insufficientFunds, balanceChanges, solFee])
-
-    const renderSheetFooter = useCallback(() => {
-      if (!walletSignOpts) return null
-
-      const { type } = walletSignOpts
-      return (
-        <>
-          <Box
-            flexDirection="row"
-            justifyContent="space-between"
-            marginBottom="m"
-            marginTop="l"
-          >
-            <ButtonPressable
-              width="48%"
-              borderRadius="round"
-              backgroundColor="white"
-              backgroundColorOpacity={0.1}
-              backgroundColorOpacityPressed={0.05}
-              titleColorPressedOpacity={0.3}
-              titleColor="white"
-              title={t('browserScreen.cancel')}
-              onPress={onCancelHandler}
-            />
-
-            <ButtonPressable
-              width="48%"
-              borderRadius="round"
-              backgroundColor="white"
-              backgroundColorOpacityPressed={0.7}
-              backgroundColorDisabled="surfaceSecondary"
-              backgroundColorDisabledOpacity={0.5}
-              titleColorDisabled="secondaryText"
-              title={
-                type === WalletStandardMessageTypes.connect
-                  ? t('browserScreen.connect')
-                  : t('browserScreen.approve')
-              }
-              titleColor="black"
-              onPress={onAcceptHandler}
-            />
-          </Box>
-        </>
-      )
-    }, [onAcceptHandler, onCancelHandler, walletSignOpts, t])
+    const incrementTotalSolFee = useCallback(
+      (fee: number) => {
+        setTotalSolFee((currentFee) => currentFee + fee)
+      },
+      [setTotalSolFee],
+    )
 
     useEffect(() => {
       bottomSheetModalRef.current?.present()
     }, [bottomSheetModalRef])
 
+    const { type, additionalMessage } = walletSignOpts
     return (
       <Box flex={1}>
         <BottomSheetModalProvider>
@@ -438,14 +233,181 @@ const WalletSignBottomSheet = forwardRef(
                   {walletSignOpts?.url || ''}
                 </Text>
               </Box>
-              {!loading ? (
-                renderSheetBody()
-              ) : (
-                <Box marginVertical="m">
-                  <CircleLoader loaderSize={60} />
+
+              {type === WalletStandardMessageTypes.connect && (
+                <Box flexGrow={1} justifyContent="center">
+                  <Box
+                    borderRadius="l"
+                    backgroundColor="secondaryBackground"
+                    flexDirection="column"
+                    padding="m"
+                  >
+                    <Box flexDirection="row" marginBottom="m">
+                      <Checkmark color="white" />
+                      <Text variant="body1" marginStart="s">
+                        {t('browserScreen.connectBullet1')}
+                      </Text>
+                    </Box>
+                    <Box flexDirection="row">
+                      <Checkmark color="white" />
+                      <Text marginStart="s" variant="body1">
+                        {t('browserScreen.connectBullet2')}
+                      </Text>
+                    </Box>
+                  </Box>
+                  <Box>
+                    <Text
+                      variant="body1"
+                      color="secondaryText"
+                      textAlign="center"
+                      marginTop="m"
+                    >
+                      {t('browserScreen.connectToWebsitesYouTrust')}
+                    </Text>
+                  </Box>
                 </Box>
               )}
-              {renderSheetFooter()}
+
+              {(type === WalletStandardMessageTypes.signMessage ||
+                type === WalletStandardMessageTypes.signAndSendTransaction ||
+                type === WalletStandardMessageTypes.signTransaction) && (
+                <Box flexGrow={1} justifyContent="center">
+                  <Box
+                    borderTopStartRadius="l"
+                    borderTopEndRadius="l"
+                    borderBottomStartRadius={additionalMessage ? 'none' : 'l'}
+                    borderBottomEndRadius={additionalMessage ? 'none' : 'l'}
+                    backgroundColor="secondaryBackground"
+                    padding="m"
+                  >
+                    <Text variant="body1Medium">
+                      {t('browserScreen.estimatedChanges')}
+                    </Text>
+                  </Box>
+
+                  {additionalMessage && (
+                    <Box
+                      backgroundColor="secondaryBackground"
+                      borderBottomStartRadius="l"
+                      borderBottomEndRadius="l"
+                      padding="m"
+                    >
+                      <Text variant="body1Medium" color="secondaryText">
+                        {additionalMessage}
+                      </Text>
+                    </Box>
+                  )}
+
+                  {insufficientFunds && (
+                    <Box
+                      borderBottomStartRadius="l"
+                      borderBottomEndRadius="l"
+                      backgroundColor="secondaryBackground"
+                      padding="m"
+                    >
+                      <Text variant="body1Medium" color="red500">
+                        {t('browserScreen.insufficientFunds')}
+                      </Text>
+                    </Box>
+                  )}
+
+                  <Box
+                    flex={1}
+                    maxHeight={
+                      (walletSignOpts?.serializedTxs?.length || 0) > 1
+                        ? 214
+                        : 160
+                    }
+                    paddingTop="m"
+                  >
+                    <ScrollView>
+                      {(currentTxs || []).map((tx, idx) => (
+                        <WalletSignBottomSheetTransaction
+                          // eslint-disable-next-line react/no-array-index-key
+                          key={`transaction-${idx}`}
+                          transaction={tx}
+                          transactionIdx={idx}
+                          totalTransactions={
+                            walletSignOpts?.serializedTxs?.length || 0
+                          }
+                          incrementTotalSolFee={incrementTotalSolFee}
+                        />
+                      ))}
+                      {hasMore && (
+                        <ButtonPressable
+                          width="100%"
+                          borderRadius="round"
+                          backgroundColor="white"
+                          backgroundColorOpacity={0.1}
+                          backgroundColorOpacityPressed={0.05}
+                          titleColorPressedOpacity={0.3}
+                          titleColor="white"
+                          title={t('generic.loadMore')}
+                          onPress={handleLoadMore}
+                        />
+                      )}
+                    </ScrollView>
+                  </Box>
+
+                  {(type ===
+                    WalletStandardMessageTypes.signAndSendTransaction ||
+                    type === WalletStandardMessageTypes.signTransaction) && (
+                    <Box
+                      marginTop="m"
+                      borderRadius="l"
+                      backgroundColor="secondaryBackground"
+                      padding="m"
+                      flexDirection="row"
+                    >
+                      <Box flexGrow={1}>
+                        <Text variant="body1Medium">
+                          {t('browserScreen.totalNetworkFees')}
+                        </Text>
+                      </Box>
+                      <Text variant="body1Medium" color="secondaryText">
+                        {`~${estimatedTotalSolByLamports} SOL`}
+                      </Text>
+                    </Box>
+                  )}
+                </Box>
+              )}
+              <Box
+                flexDirection="row"
+                justifyContent="space-between"
+                marginBottom="m"
+                marginTop="l"
+              >
+                <ButtonPressable
+                  width={!insufficientFunds ? '48%' : '100%'}
+                  borderRadius="round"
+                  backgroundColor="white"
+                  backgroundColorOpacity={0.1}
+                  backgroundColorOpacityPressed={0.05}
+                  titleColorPressedOpacity={0.3}
+                  titleColor="white"
+                  title={t('browserScreen.cancel')}
+                  onPress={onCancelHandler}
+                />
+
+                {!insufficientFunds && (
+                  <ButtonPressable
+                    width="48%"
+                    borderRadius="round"
+                    backgroundColor="white"
+                    backgroundColorOpacityPressed={0.7}
+                    backgroundColorDisabled="surfaceSecondary"
+                    backgroundColorDisabledOpacity={0.5}
+                    titleColorDisabled="secondaryText"
+                    title={
+                      type === WalletStandardMessageTypes.connect
+                        ? t('browserScreen.connect')
+                        : t('browserScreen.approve')
+                    }
+                    titleColor="black"
+                    onPress={onAcceptHandler}
+                  />
+                )}
+              </Box>
             </SafeAreaBox>
           </BottomSheetModal>
           {children}
