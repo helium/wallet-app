@@ -5,10 +5,7 @@ import i18n from '@utils/i18n'
 import { Mints } from '@utils/constants'
 import * as solUtils from '@utils/solanaUtils'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import {
-  BalanceChange,
-  WalletStandardMessageTypes,
-} from '../solana/walletSignBottomSheetTypes'
+import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
 import {
   makeCollectablePayment,
   makePayment,
@@ -295,7 +292,6 @@ export default () => {
     async (
       lazyDistributors: PublicKey[],
       hotspots: HotspotWithPendingRewards[],
-      balanceChanges: BalanceChange[],
     ) => {
       if (!anchorProvider || !currentAccount || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
@@ -305,17 +301,23 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      // Estimating fee in lamports. Not the best but works for now (:
-      const claimAllEstimatedFee =
-        hotspots.length !== 0 ? (hotspots.length / 2) * 5000 : 5000
+      const txns = await solUtils.claimAllRewardsTxns(
+        anchorProvider,
+        lazyDistributors,
+        hotspots,
+      )
+
+      const serializedTxs = txns.map((txn) =>
+        txn.serialize({
+          requireAllSignatures: false,
+        }),
+      )
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signClaimAllRewardsTxn'),
-        manualEstimatedFee: claimAllEstimatedFee,
-        manualBalanceChanges: balanceChanges,
-        serializedTxs: undefined,
+        serializedTxs: serializedTxs.map(Buffer.from),
       })
 
       if (!decision) {
@@ -325,8 +327,7 @@ export default () => {
       dispatch(
         claimAllRewards({
           account: currentAccount,
-          lazyDistributors,
-          hotspots,
+          txns,
           anchorProvider,
           cluster,
         }),

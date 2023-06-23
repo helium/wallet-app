@@ -79,17 +79,17 @@ const WalletSignBottomSheet = forwardRef(
     const estimatedTotalSolByLamports = useMemo(() => {
       const { serializedTxs } = walletSignOpts
 
-      if (
-        serializedTxs &&
-        currentTxs &&
-        currentTxs.length < serializedTxs.length
-      ) {
-        // we have unsimulated transactions, do rough estimate
-        const diff = serializedTxs.length - currentTxs.length
-        return (totalSolFee + diff * 5000) / LAMPORTS_PER_SOL
+      if (serializedTxs) {
+        if (currentTxs && currentTxs.length < serializedTxs.length) {
+          // we have unsimulated transactions, do rough estimate
+          const diff = serializedTxs.length - currentTxs.length
+          return (totalSolFee + diff * 5000) / LAMPORTS_PER_SOL
+        }
+
+        return totalSolFee / LAMPORTS_PER_SOL
       }
 
-      return totalSolFee / LAMPORTS_PER_SOL
+      return 5000 / LAMPORTS_PER_SOL
     }, [walletSignOpts, totalSolFee, currentTxs])
 
     const insufficientFunds = useMemo(() => {
@@ -111,22 +111,13 @@ const WalletSignBottomSheet = forwardRef(
     }, [])
 
     const show = useCallback(
-      ({
-        type,
-        url,
-        additionalMessage,
-        manualBalanceChanges,
-        manualEstimatedFee,
-        serializedTxs,
-      }: WalletSignOpts) => {
+      ({ type, url, additionalMessage, serializedTxs }: WalletSignOpts) => {
         bottomSheetModalRef.current?.expand()
         setTotalSolFee(0)
         setWalletSignOpts({
           type,
           url,
           additionalMessage,
-          manualBalanceChanges,
-          manualEstimatedFee,
           serializedTxs,
         })
         const p = new Promise<boolean>((resolve) => {
@@ -320,33 +311,51 @@ const WalletSignBottomSheet = forwardRef(
                     }
                     paddingTop="m"
                   >
-                    <ScrollView>
-                      {(currentTxs || []).map((tx, idx) => (
-                        <WalletSignBottomSheetTransaction
-                          // eslint-disable-next-line react/no-array-index-key
-                          key={`transaction-${idx}`}
-                          transaction={tx}
-                          transactionIdx={idx}
-                          totalTransactions={
-                            walletSignOpts?.serializedTxs?.length || 0
-                          }
-                          incrementTotalSolFee={incrementTotalSolFee}
-                        />
-                      ))}
-                      {hasMore && (
-                        <ButtonPressable
-                          width="100%"
-                          borderRadius="round"
-                          backgroundColor="white"
-                          backgroundColorOpacity={0.1}
-                          backgroundColorOpacityPressed={0.05}
-                          titleColorPressedOpacity={0.3}
-                          titleColor="white"
-                          title={t('generic.loadMore')}
-                          onPress={handleLoadMore}
-                        />
-                      )}
-                    </ScrollView>
+                    {!currentTxs && (
+                      <Box marginBottom="m">
+                        <Box>
+                          <Box
+                            borderBottomStartRadius="l"
+                            borderBottomEndRadius="l"
+                            backgroundColor="secondaryBackground"
+                            padding="m"
+                          >
+                            <Text variant="body1Medium" color="orange500">
+                              {t('browserScreen.unableToSimulate')}
+                            </Text>
+                          </Box>
+                        </Box>
+                      </Box>
+                    )}
+                    {currentTxs && (
+                      <ScrollView>
+                        {currentTxs.map((tx, idx) => (
+                          <WalletSignBottomSheetTransaction
+                            // eslint-disable-next-line react/no-array-index-key
+                            key={`transaction-${idx}`}
+                            transaction={tx}
+                            transactionIdx={idx}
+                            totalTransactions={
+                              walletSignOpts?.serializedTxs?.length || 0
+                            }
+                            incrementTotalSolFee={incrementTotalSolFee}
+                          />
+                        ))}
+                        {hasMore && (
+                          <ButtonPressable
+                            width="100%"
+                            borderRadius="round"
+                            backgroundColor="white"
+                            backgroundColorOpacity={0.1}
+                            backgroundColorOpacityPressed={0.05}
+                            titleColorPressedOpacity={0.3}
+                            titleColor="white"
+                            title={t('generic.loadMore')}
+                            onPress={handleLoadMore}
+                          />
+                        )}
+                      </ScrollView>
+                    )}
                   </Box>
 
                   {(type ===

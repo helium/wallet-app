@@ -18,8 +18,6 @@ export type WalletSignOpts = {
   url: string
   serializedTxs: Buffer[] | undefined
   additionalMessage?: string
-  manualBalanceChanges?: BalanceChange[]
-  manualEstimatedFee?: number
 }
 
 export type WalletSignBottomSheetRef = {
@@ -27,8 +25,6 @@ export type WalletSignBottomSheetRef = {
     type,
     url,
     additionalMessage,
-    manualBalanceChanges,
-    manualEstimatedFee,
     serializedTxs,
   }: WalletSignOpts) => Promise<boolean>
   hide: () => void
