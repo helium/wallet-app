@@ -160,8 +160,8 @@ export default {
   collectablesScreen: {
     title: 'Collectables',
     metadata: 'Metadata',
-    transfer: 'Transfer',
-    transferComplete: 'NFT Transferred!',
+    transfer: 'Transfer Hotspot',
+    transferComplete: 'Hotspot Transferred!',
     returnToCollectables: 'Return to Collectables',
     transferFee: '<b>Fee</b> <secondaryText> {{ amount }} SOL </secondaryText>',
     transferingNftTitle: 'Transferring NFT...',
