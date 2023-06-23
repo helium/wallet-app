@@ -220,7 +220,7 @@ export default {
       twenty: '20',
       fifty: '50',
       all: 'All',
-      copyEccCompact: 'Copy hotspot key',
+      copyEccCompact: 'Copy Hotspot Key',
     },
   },
   activityScreen: {
