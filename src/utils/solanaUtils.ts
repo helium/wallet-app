@@ -1562,9 +1562,9 @@ function toAsset(hotspot: HotspotWithPendingRewards): Asset {
     compression: {
       ...hotspot.compression,
       leafId: hotspot.compression.leaf_id,
-      dataHash: Buffer.from(base58.decode(hotspot.compression.data_hash)),
-      creatorHash: Buffer.from(base58.decode(hotspot.compression.creator_hash)),
-      assetHash: Buffer.from(base58.decode(hotspot.compression.asset_hash)),
+      dataHash: Buffer.from(bs58.decode(hotspot.compression.data_hash)),
+      creatorHash: Buffer.from(bs58.decode(hotspot.compression.creator_hash)),
+      assetHash: Buffer.from(bs58.decode(hotspot.compression.asset_hash)),
       tree: new PublicKey(hotspot.compression.tree),
     },
     ownership: {
