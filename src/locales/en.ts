@@ -197,6 +197,7 @@ export default {
       hotspotDetailTitle: 'Hotspot Detail',
       pendingRewardsTitle: 'Pending Rewards',
       claimRewards: 'Claim Rewards',
+      manage: 'Manage',
       hotspotActions: 'Hotspot Actions',
       pendingRewards: '{{ amount }} {{ ticker }}',
       claimAllRewards: 'Claim all Rewards',

@@ -4,7 +4,6 @@ import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
-import Menu from '@assets/images/menu.svg'
 import InfoIcon from '@assets/images/info.svg'
 import BN from 'bn.js'
 import SafeAreaBox from '@components/SafeAreaBox'
@@ -14,7 +13,6 @@ import ImageBox from '@components/ImageBox'
 import ButtonPressable from '@components/ButtonPressable'
 import Text from '@components/Text'
 import BackScreen from '@components/BackScreen'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import BlurActionSheet from '@components/BlurActionSheet'
 import ListItem from '@components/ListItem'
 import { ReAnimatedBox } from '@components/AnimatedBox'
@@ -141,73 +139,95 @@ const HotspotDetailsScreen = () => {
             backgroundColor="transparent"
             flex={1}
             padding="m"
-            alignItems="center"
           >
+            <Text marginBottom="s" variant="h2Medium">
+              {removeDashAndCapitalize(
+                collectable.content?.metadata?.name || '',
+              )}
+            </Text>
+            <Text variant="body3Medium" color="grey600">
+              {collectable.content?.metadata?.description ||
+                t('collectablesScreen.collectables.noDescription')}
+            </Text>
             <Box
               shadowColor="black"
               shadowOpacity={0.4}
               shadowOffset={{ width: 0, height: 10 }}
               shadowRadius={10}
               elevation={12}
+              alignItems="center"
+              marginTop="m"
+              padding="s"
+              borderRadius="xxl"
+              backgroundColor="surfaceSecondary"
             >
               <ImageBox
-                marginTop="l"
-                backgroundColor={
-                  !collectable?.content.metadata?.image
-                    ? 'surfaceSecondary'
-                    : 'black'
-                }
-                height={COLLECTABLE_HEIGHT - spacing.xl * 2}
-                width={COLLECTABLE_HEIGHT - spacing.xl * 2}
+                height={COLLECTABLE_HEIGHT - spacing.xl * 6}
+                width={COLLECTABLE_HEIGHT - spacing.xl * 6}
                 source={{
                   uri: collectable?.content.metadata?.image,
                   cache: 'force-cache',
                 }}
-                borderRadius="xxl"
               />
             </Box>
-            <Text
-              marginTop="l"
-              marginBottom="s"
-              marginHorizontal="l"
-              textAlign="center"
-              variant="h1Medium"
-            >
-              {removeDashAndCapitalize(
-                collectable.content?.metadata?.name || '',
-              )}
-            </Text>
-            <Text variant="body3Medium" color="grey600" marginBottom="xl">
-              {collectable.content?.metadata?.description ||
-                t('collectablesScreen.collectables.noDescription')}
-            </Text>
-            <Box
-              flexDirection="row"
-              marginBottom="xl"
-              marginTop="m"
-              marginHorizontal="xl"
-            >
-              <TouchableOpacityBox
-                height={65}
-                width={65}
-                backgroundColor="transparent10"
-                borderRadius="round"
-                justifyContent="center"
-                alignItems="center"
-                marginEnd="s"
-                onPress={toggleFiltersOpen(true)}
-              >
-                <Menu />
-              </TouchableOpacityBox>
+            <Box marginTop="l" marginBottom="m">
+              <Text variant="body1" marginBottom="ms">
+                {t('collectablesScreen.hotspots.pendingRewardsTitle')}
+              </Text>
+              <Box flexDirection="row" marginBottom="m">
+                <Box flex={1} justifyContent="center">
+                  <Box>
+                    <Text variant="body3" color="grey600">
+                      MOBILE
+                    </Text>
+                    <Text variant="body2Medium">
+                      {pendingMobileRewards
+                        ? toNumber(pendingMobileRewards, 6)
+                        : 0}
+                    </Text>
+                  </Box>
+                </Box>
+                <Box flex={1} justifyContent="center">
+                  <Box>
+                    <Text variant="body3" color="grey600">
+                      IOT
+                    </Text>
+                    <Text variant="body2Medium">
+                      {pendingIotRewards ? toNumber(pendingIotRewards, 6) : 0}
+                    </Text>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+            <Box>
               <ButtonPressable
                 height={65}
                 flexGrow={1}
+                flex={1}
+                flexShrink={0}
                 borderRadius="round"
                 backgroundColor="white"
+                backgroundColorOpacity={0.2}
                 backgroundColorOpacityPressed={0.7}
                 backgroundColorDisabled="white"
                 backgroundColorDisabledOpacity={0.1}
-                titleColorDisabled="grey600"
+                titleColorDisabled="secondaryText"
+                title={t('collectablesScreen.hotspots.manage')}
+                titleColor="black"
+                onPress={toggleFiltersOpen(true)}
+              />
+              <Box paddingVertical="s" />
+              <ButtonPressable
+                height={65}
+                flexGrow={1}
+                flex={1}
+                flexShrink={0}
+                borderRadius="round"
+                backgroundColor="white"
+                backgroundColorOpacityPressed={0.7}
+                backgroundColorDisabled="surfaceSecondary"
+                backgroundColorDisabledOpacity={0.1}
+                titleColorDisabled="secondaryText"
                 title={t('collectablesScreen.hotspots.claimRewards')}
                 titleColor="black"
                 disabled={
@@ -219,23 +239,6 @@ const HotspotDetailsScreen = () => {
                 onPress={handleClaimRewards}
               />
             </Box>
-            <Text marginBottom="s" variant="body2" color="grey600">
-              {t('collectablesScreen.hotspots.pendingRewardsTitle')}
-            </Text>
-            <Text variant="body2" marginBottom="m">
-              {t('collectablesScreen.hotspots.pendingRewards', {
-                amount: pendingMobileRewards
-                  ? toNumber(pendingMobileRewards, 6)
-                  : 0,
-                ticker: 'MOBILE',
-              })}
-            </Text>
-            <Text variant="body2" marginBottom="m">
-              {t('collectablesScreen.hotspots.pendingRewards', {
-                amount: pendingIotRewards ? toNumber(pendingIotRewards, 6) : 0,
-                ticker: 'IOT',
-              })}
-            </Text>
             <BlurActionSheet
               title={t('collectablesScreen.hotspots.hotspotActions')}
               open={optionsOpen}
