@@ -3,8 +3,10 @@ import { Ticker } from '@helium/currency'
 import * as client from '@helium/distributor-oracle'
 import { init } from '@helium/lazy-distributor-sdk'
 import {
+  Asset,
   bulkSendRawTransactions,
   sendAndConfirmWithRetry,
+  truthy,
 } from '@helium/spl-utils'
 import {
   SerializedError,
@@ -18,6 +20,7 @@ import {
   Transaction,
 } from '@solana/web3.js'
 import { first, last } from 'lodash'
+import base58 from 'bs58'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
 import { HotspotWithPendingRewards, toMintAddress } from '../../types/solana'
@@ -106,6 +109,35 @@ type DelegateDataCreditsInput = {
   anchorProvider: AnchorProvider
   cluster: Cluster
   delegateDCTxn: Transaction
+}
+
+function toAsset(hotspot: HotspotWithPendingRewards): Asset {
+  return {
+    ...hotspot,
+    id: new PublicKey(hotspot.id),
+    grouping:
+      hotspot.grouping &&
+      hotspot.grouping.map(
+        (g): { group_key: string; group_value: PublicKey } => ({
+          ...g,
+          group_key: new PublicKey(g.group_key),
+        }),
+      ),
+    compression: {
+      ...hotspot.compression,
+      leafId: hotspot.compression.leaf_id,
+      dataHash: Buffer.from(base58.decode(hotspot.compression.data_hash)),
+      creatorHash: Buffer.from(base58.decode(hotspot.compression.creator_hash)),
+      assetHash: Buffer.from(base58.decode(hotspot.compression.asset_hash)),
+      tree: new PublicKey(hotspot.compression.tree),
+    },
+    ownership: {
+      ...hotspot.ownership,
+      delegate:
+        hotspot.ownership.delegate && new PublicKey(hotspot.ownership.delegate),
+      owner: new PublicKey(hotspot.ownership.owner),
+    },
+  }
 }
 
 export const makePayment = createAsyncThunk(
@@ -291,43 +323,37 @@ export const claimAllRewards = createAsyncThunk(
       // Use for loops to linearly order promises
       // eslint-disable-next-line no-restricted-syntax
       for (const lazyDistributor of lazyDistributors) {
-        const { rewardsMint: mint } =
+        const lazyDistributorAcc =
           // eslint-disable-next-line no-await-in-loop
           await lazyProgram.account.lazyDistributorV0.fetch(lazyDistributor)
-
         // eslint-disable-next-line no-restricted-syntax
-        for (const chunk of chunks(hotspots, 50)) {
-          // eslint-disable-next-line no-await-in-loop
-          const txns = await Promise.all(
-            chunk.map(async (nft) => {
-              if (
-                !nft.pendingRewards?.[mint.toBase58()] ||
-                Number(nft.pendingRewards?.[mint.toBase58()]) <= 0
-              ) {
-                return
-              }
-              const rewards = await client.getCurrentRewards(
-                lazyProgram,
-                lazyDistributor,
-                new PublicKey(nft.id),
-              )
-
-              return client.formTransaction({
-                program: lazyProgram,
-                provider: anchorProvider,
-                rewards,
-                hotspot: new PublicKey(nft.id),
-                lazyDistributor,
-                assetEndpoint: anchorProvider.connection.rpcEndpoint,
-                wallet: account.solanaAddress
-                  ? new PublicKey(account.solanaAddress)
-                  : undefined,
-              })
-            }),
+        for (const chunk of chunks(hotspots, 25)) {
+          const entityKeys = chunk.map(
+            (h) => h.content.json_uri.split('/').slice(-1)[0],
           )
-          const validTxns = txns.filter(
-            (txn) => txn !== undefined,
-          ) as Transaction[]
+
+          // eslint-disable-next-line no-await-in-loop
+          const rewards = await client.getBulkRewards(
+            lazyProgram,
+            lazyDistributor,
+            entityKeys,
+          )
+
+          // eslint-disable-next-line no-await-in-loop
+          const txns = await client.formBulkTransactions({
+            program: lazyProgram,
+            rewards,
+            assets: chunk.map((h) => new PublicKey(h.id)),
+            compressionAssetAccs: chunk.map(toAsset),
+            lazyDistributor,
+            lazyDistributorAcc,
+            assetEndpoint: anchorProvider.connection.rpcEndpoint,
+            wallet: account.solanaAddress
+              ? new PublicKey(account.solanaAddress)
+              : undefined,
+          })
+
+          const validTxns = txns.filter(truthy) as Transaction[]
           // eslint-disable-next-line no-await-in-loop
           const signed = await anchorProvider.wallet.signAllTransactions(
             validTxns,
