@@ -1553,12 +1553,10 @@ function toAsset(hotspot: HotspotWithPendingRewards): Asset {
     id: new PublicKey(hotspot.id),
     grouping:
       hotspot.grouping &&
-      hotspot.grouping.map(
-        (g): { group_key: string; group_value: PublicKey } => ({
-          ...g,
-          group_key: new PublicKey(g.group_key),
-        }),
-      ),
+      hotspot.grouping.map((g) => ({
+        ...g,
+        group_value: new PublicKey(g.group_value),
+      })),
     compression: {
       ...hotspot.compression,
       leafId: hotspot.compression.leaf_id,
