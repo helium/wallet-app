@@ -166,7 +166,7 @@ export default {
     transferFee: '<b>Fee</b> <secondaryText> {{ amount }} SOL </secondaryText>',
     transferingNftTitle: 'Transferring NFT...',
     transferActions: 'Transfer Actions',
-    transferTo: 'Transfer to:',
+    transferTo: 'Transfer to',
     transferError: 'Transfer failed. Please try again later.',
     transferCollectable: 'Transfer Collectable',
     transferingNftBody:
