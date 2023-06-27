@@ -26,6 +26,7 @@ import ButtonPressable from '@components/ButtonPressable'
 import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 import { useBalance } from '@utils/Balance'
 import { ScrollView } from 'react-native-gesture-handler'
+import { useRentExempt } from '@hooks/useRentExempt'
 import {
   WalletSignBottomSheetRef,
   WalletSignBottomSheetProps,
@@ -42,6 +43,7 @@ const WalletSignBottomSheet = forwardRef(
     ref: Ref<WalletSignBottomSheetRef>,
   ) => {
     useImperativeHandle(ref, () => ({ show, hide }))
+    const { rentExempt } = useRentExempt()
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { secondaryText } = useColors()
     const { t } = useTranslation()
@@ -92,9 +94,17 @@ const WalletSignBottomSheet = forwardRef(
       return 5000 / LAMPORTS_PER_SOL
     }, [walletSignOpts, totalSolFee, currentTxs])
 
-    const insufficientFunds = useMemo(() => {
-      return estimatedTotalSolByLamports > (solBalance?.floatBalance || 0)
-    }, [solBalance?.floatBalance, estimatedTotalSolByLamports])
+    const insufficientRentExempt = useMemo(
+      () =>
+        (solBalance?.floatBalance || 0) - estimatedTotalSolByLamports <
+        (rentExempt || 0),
+      [solBalance?.floatBalance, estimatedTotalSolByLamports, rentExempt],
+    )
+
+    const insufficientFunds = useMemo(
+      () => estimatedTotalSolByLamports > (solBalance?.floatBalance || 0),
+      [solBalance?.floatBalance, estimatedTotalSolByLamports],
+    )
 
     const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
     const snapPoints = useMemo(() => ['25%', 'CONTENT_HEIGHT'], [])
@@ -263,45 +273,51 @@ const WalletSignBottomSheet = forwardRef(
                 type === WalletStandardMessageTypes.signAndSendTransaction ||
                 type === WalletStandardMessageTypes.signTransaction) && (
                 <Box flexGrow={1} justifyContent="center">
-                  <Box
-                    borderTopStartRadius="l"
-                    borderTopEndRadius="l"
-                    borderBottomStartRadius={additionalMessage ? 'none' : 'l'}
-                    borderBottomEndRadius={additionalMessage ? 'none' : 'l'}
-                    backgroundColor="secondaryBackground"
-                    padding="m"
-                  >
-                    <Text variant="body1Medium">
-                      {t('browserScreen.estimatedChanges')}
-                    </Text>
-                  </Box>
-
-                  {additionalMessage && (
+                  {!(insufficientFunds || insufficientRentExempt) && (
                     <Box
+                      borderTopStartRadius="l"
+                      borderTopEndRadius="l"
+                      borderBottomStartRadius={additionalMessage ? 'none' : 'l'}
+                      borderBottomEndRadius={additionalMessage ? 'none' : 'l'}
                       backgroundColor="secondaryBackground"
-                      borderBottomStartRadius="l"
-                      borderBottomEndRadius="l"
                       padding="m"
                     >
-                      <Text variant="body1Medium" color="secondaryText">
-                        {additionalMessage}
+                      <Text variant="body1Medium">
+                        {t('browserScreen.estimatedChanges')}
                       </Text>
                     </Box>
                   )}
 
-                  {insufficientFunds && (
+                  {!(insufficientFunds || insufficientRentExempt) &&
+                    additionalMessage && (
+                      <Box
+                        backgroundColor="secondaryBackground"
+                        borderBottomStartRadius="l"
+                        borderBottomEndRadius="l"
+                        padding="m"
+                      >
+                        <Text variant="body1Medium" color="secondaryText">
+                          {additionalMessage}
+                        </Text>
+                      </Box>
+                    )}
+                  {(insufficientFunds || insufficientRentExempt) && (
                     <Box
                       borderBottomStartRadius="l"
                       borderBottomEndRadius="l"
                       backgroundColor="secondaryBackground"
                       padding="m"
+                      marginTop="m"
                     >
                       <Text variant="body1Medium" color="red500">
-                        {t('browserScreen.insufficientFunds')}
+                        {insufficientFunds
+                          ? t('browserScreen.insufficientFunds')
+                          : t('browserScreen.insufficientRentExempt', {
+                              amount: rentExempt,
+                            })}
                       </Text>
                     </Box>
                   )}
-
                   <Box
                     flex={1}
                     maxHeight={
@@ -357,7 +373,6 @@ const WalletSignBottomSheet = forwardRef(
                       </ScrollView>
                     )}
                   </Box>
-
                   {(type ===
                     WalletStandardMessageTypes.signAndSendTransaction ||
                     type === WalletStandardMessageTypes.signTransaction) && (
@@ -387,7 +402,11 @@ const WalletSignBottomSheet = forwardRef(
                 marginTop="l"
               >
                 <ButtonPressable
-                  width={!insufficientFunds ? '48%' : '100%'}
+                  width={
+                    !(insufficientFunds || insufficientRentExempt)
+                      ? '48%'
+                      : '100%'
+                  }
                   borderRadius="round"
                   backgroundColor="white"
                   backgroundColorOpacity={0.1}
@@ -398,7 +417,7 @@ const WalletSignBottomSheet = forwardRef(
                   onPress={onCancelHandler}
                 />
 
-                {!insufficientFunds && (
+                {!(insufficientFunds || insufficientRentExempt) && (
                   <ButtonPressable
                     width="48%"
                     borderRadius="round"
