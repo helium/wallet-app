@@ -48,10 +48,29 @@ const WalletSignBottomSheetTransaction = ({
       )}
       {!loading && (
         <Box>
+          {totalTransactions > 1 && (
+            <Box flexDirection="row">
+              <Box
+                borderTopStartRadius="l"
+                borderTopEndRadius="l"
+                borderBottomStartRadius="none"
+                borderBottomEndRadius="none"
+                backgroundColor="secondaryBackground"
+                paddingHorizontal="m"
+                paddingVertical="s"
+              >
+                <Text variant="subtitle4" color="secondaryText">
+                  {`${transactionIdx + 1} of ${totalTransactions}`}
+                </Text>
+              </Box>
+            </Box>
+          )}
           {!balanceChanges && (
             <Box
-              borderBottomStartRadius="l"
-              borderBottomEndRadius="l"
+              borderTopStartRadius={!(totalTransactions > 1) ? 'l' : 'none'}
+              borderTopEndRadius="l"
+              borderBottomColor="black"
+              borderBottomWidth={1}
               backgroundColor="secondaryBackground"
               padding="m"
             >
@@ -62,23 +81,6 @@ const WalletSignBottomSheetTransaction = ({
           )}
           {balanceChanges && (
             <Box>
-              {totalTransactions > 1 && (
-                <Box flexDirection="row">
-                  <Box
-                    borderTopStartRadius="l"
-                    borderTopEndRadius="l"
-                    borderBottomStartRadius="none"
-                    borderBottomEndRadius="none"
-                    backgroundColor="secondaryBackground"
-                    paddingHorizontal="m"
-                    paddingVertical="s"
-                  >
-                    <Text variant="subtitle4" color="secondaryText">
-                      {`${transactionIdx + 1} of ${totalTransactions}`}
-                    </Text>
-                  </Box>
-                </Box>
-              )}
               {balanceChanges.map((change, index) => {
                 const isFirst = index === 0
                 const hasBorderStartRadius = !(totalTransactions > 1) && isFirst
