@@ -2402,7 +2402,7 @@
     bn.js "^5.2.0"
     bs58 "^4.0.1"
 
-"@helium/helium-entity-manager-sdk@0.2.6", "@helium/helium-entity-manager-sdk@^0.2.6":
+"@helium/helium-entity-manager-sdk@^0.2.6":
   version "0.2.6"
   resolved "https://registry.yarnpkg.com/@helium/helium-entity-manager-sdk/-/helium-entity-manager-sdk-0.2.6.tgz#6175ff12c2ba58923ab3a69f18158120de13c1af"
   integrity sha512-Z5LvS/MtELlVH/fGf0n6k5UEdjUAQn6MEMU1oO91lj3ft3mqi7BVVMttESohTnsWi3tVgceTs/Rye8e07TfD9A==
