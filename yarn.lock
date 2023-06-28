@@ -2363,21 +2363,21 @@
     bs58 "^4.0.1"
     crypto-js "^4.1.1"
 
-"@helium/distributor-oracle@^0.2.5":
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/@helium/distributor-oracle/-/distributor-oracle-0.2.5.tgz#01d021cf0376c69932a8daef88d84eae56d289d5"
-  integrity sha512-PqJjNBR9mIJdu8tLPhYy+bzC3ARIV0aSBIHg0rdnHXoG8LdwtddREdzkte4NSqRmNopuZXEPW909Uhzp9QJdFA==
+"@helium/distributor-oracle@^0.2.6":
+  version "0.2.6"
+  resolved "https://registry.yarnpkg.com/@helium/distributor-oracle/-/distributor-oracle-0.2.6.tgz#db9bbbe485fec8192a8d85f6e5681a14d4c985c3"
+  integrity sha512-s8aeRBOR4W8KG6ORg0I+VsJveKTCnLTscP/puY20Rv41Gtb1vsUH/QwSYGVFlWueuWaS42vAIE5/STkg95c2xw==
   dependencies:
     "@coral-xyz/anchor" "^0.26.0"
     "@fastify/cors" "^8.1.1"
     "@helium/account-fetch-cache" "^0.2.5"
     "@helium/address" "^4.6.2"
-    "@helium/helium-entity-manager-sdk" "^0.2.5"
+    "@helium/helium-entity-manager-sdk" "^0.2.6"
     "@helium/helium-sub-daos-sdk" "^0.2.5"
     "@helium/idls" "^0.2.5"
     "@helium/lazy-distributor-sdk" "^0.2.5"
     "@helium/rewards-oracle-sdk" "^0.2.5"
-    "@helium/spl-utils" "^0.2.5"
+    "@helium/spl-utils" "^0.2.6"
     "@types/sequelize" "^4.28.14"
     aws-sdk "^2.1313.0"
     axios "^0.27.2"
@@ -2402,36 +2402,17 @@
     bn.js "^5.2.0"
     bs58 "^4.0.1"
 
-"@helium/helium-entity-manager-sdk@0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@helium/helium-entity-manager-sdk/-/helium-entity-manager-sdk-0.1.2.tgz#d99b9244a93d4e929fcd0fd2d8d504753574c1da"
-  integrity sha512-bjFwMJ+AH01aDOlQSTLXeprodmlljZ8DL3VabQiuRQarxNhsLNA1RxlblkdevXn2kGo0/7sphCuTsf5jbW39Gw==
-  dependencies:
-    "@coral-xyz/anchor" "0.26.0"
-    "@helium/address" "^4.6.2"
-    "@helium/helium-sub-daos-sdk" "^0.1.2"
-    "@helium/idls" "^0.1.1"
-    "@helium/spl-utils" "^0.1.2"
-    "@metaplex-foundation/mpl-bubblegum" "^0.6.2"
-    "@metaplex-foundation/mpl-token-metadata" "^2.2.3"
-    "@solana/spl-account-compression" "^0.1.5"
-    "@solana/spl-token" "^0.3.6"
-    bn.js "^5.2.0"
-    bs58 "^4.0.1"
-    crypto-js "^4.1.1"
-    js-sha256 "^0.9.0"
-
-"@helium/helium-entity-manager-sdk@^0.2.5":
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/@helium/helium-entity-manager-sdk/-/helium-entity-manager-sdk-0.2.5.tgz#7f6b86457171a471d6204f6972947a37b89ef29d"
-  integrity sha512-Gi7h+sjKRJLf/hi88/j0GyroDvJc21FswNqwj0Sf32X/yIeeuXa9z0m8OJclP6Ul3jPTLZ7ExCmzHeOTI3SRpg==
+"@helium/helium-entity-manager-sdk@^0.2.6":
+  version "0.2.6"
+  resolved "https://registry.yarnpkg.com/@helium/helium-entity-manager-sdk/-/helium-entity-manager-sdk-0.2.6.tgz#6175ff12c2ba58923ab3a69f18158120de13c1af"
+  integrity sha512-Z5LvS/MtELlVH/fGf0n6k5UEdjUAQn6MEMU1oO91lj3ft3mqi7BVVMttESohTnsWi3tVgceTs/Rye8e07TfD9A==
   dependencies:
     "@coral-xyz/anchor" "^0.26.0"
     "@helium/address" "^4.6.2"
     "@helium/anchor-resolvers" "^0.2.5"
     "@helium/helium-sub-daos-sdk" "^0.2.5"
     "@helium/idls" "^0.2.5"
-    "@helium/spl-utils" "^0.2.5"
+    "@helium/spl-utils" "^0.2.6"
     bn.js "^5.2.0"
     bs58 "^4.0.1"
     crypto-js "^4.1.1"
@@ -2598,10 +2579,10 @@
     borsh "^0.7.0"
     bs58 "^5.0.0"
 
-"@helium/spl-utils@^0.2.5":
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/@helium/spl-utils/-/spl-utils-0.2.5.tgz#2b4032256e4707bdb4fa160aaadb8b7ca11e3223"
-  integrity sha512-42FIJb8SdLwjvQMXuyrSXYr/TM6ORN2oyPbYziLS3DioRyD6SqgnZ5YjCqZNMHcVI/ExyINvwaWGuyEM7ky2SA==
+"@helium/spl-utils@^0.2.6":
+  version "0.2.6"
+  resolved "https://registry.yarnpkg.com/@helium/spl-utils/-/spl-utils-0.2.6.tgz#20b136f13d9e1d58e7032b4c55b5cc0c1ad9f6dc"
+  integrity sha512-Ut1bdWRMyru4YOYFB4NS31fbSGYTtW3gMxEg3/c+SKMwAfoZcRIOE8FgOV1nugSrFJ570zsx8R7lHIQYfAOmog==
   dependencies:
     "@coral-xyz/anchor" "^0.26.0"
     "@helium/account-fetch-cache" "^0.2.5"
@@ -3233,21 +3214,6 @@
     bn.js "^5.2.0"
     js-sha3 "^0.8.0"
 
-"@metaplex-foundation/mpl-bubblegum@^0.6.2":
-  version "0.6.2"
-  resolved "https://registry.yarnpkg.com/@metaplex-foundation/mpl-bubblegum/-/mpl-bubblegum-0.6.2.tgz#e1b098ccef10899b0d759a03e3d4b1ae7bdc9f0c"
-  integrity sha512-4tF7/FFSNtpozuIGD7gMKcqK2D49eVXZ144xiowC5H1iBeu009/oj2m8Tj6n4DpYFKWJ2JQhhhk0a2q7x0Begw==
-  dependencies:
-    "@metaplex-foundation/beet" "0.7.1"
-    "@metaplex-foundation/beet-solana" "0.4.0"
-    "@metaplex-foundation/cusper" "^0.0.2"
-    "@metaplex-foundation/mpl-token-metadata" "^2.5.2"
-    "@solana/spl-account-compression" "^0.1.4"
-    "@solana/spl-token" "^0.1.8"
-    "@solana/web3.js" "^1.50.1"
-    bn.js "^5.2.0"
-    js-sha3 "^0.8.0"
-
 "@metaplex-foundation/mpl-candy-guard@^0.3.0":
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/@metaplex-foundation/mpl-candy-guard/-/mpl-candy-guard-0.3.2.tgz#426e89793676b42e9bbb5e523303fba36ccd5281"
@@ -3798,7 +3764,7 @@
     bn.js "^5.2.1"
     borsh "^0.7.0"
 
-"@solana/spl-account-compression@^0.1.4", "@solana/spl-account-compression@^0.1.5", "@solana/spl-account-compression@^0.1.7":
+"@solana/spl-account-compression@^0.1.4", "@solana/spl-account-compression@^0.1.7":
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/@solana/spl-account-compression/-/spl-account-compression-0.1.7.tgz#d1ac7e6ecb73da7fd66d998334ce1fca47931726"
   integrity sha512-7BKXDpm2rRxmkIWAxq7jm/haRvLp4ZOaM9NMz3+zZtE+z+cWPY9lRKEWdH+RCAWNm1b0J0J+seqwb3hgf79nkA==
