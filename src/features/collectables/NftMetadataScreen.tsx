@@ -5,6 +5,7 @@ import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import SafeAreaBox from '@components/SafeAreaBox'
+import { ScrollView } from 'react-native-gesture-handler'
 import { CollectableStackParamList } from './collectablesTypes'
 
 type Route = RouteProp<CollectableStackParamList, 'NftMetadataScreen'>
@@ -42,21 +43,23 @@ const NftMetadataScreen = () => {
       padding="none"
       headerTopMargin="l"
     >
-      <SafeAreaBox alignItems="center" flex={1}>
-        <Text variant="subtitle1" color="grey600" marginBottom="l">
-          {t('collectablesScreen.collectables.properties')}
-        </Text>
-        <Box
-          flexDirection="row"
-          paddingHorizontal="m"
-          flexWrap="wrap"
-          justifyContent="center"
-        >
-          {metadata.attributes?.map(({ trait_type, value }) =>
-            renderProperty(trait_type, value),
-          )}
-        </Box>
-      </SafeAreaBox>
+      <ScrollView>
+        <SafeAreaBox alignItems="center" flex={1}>
+          <Text variant="subtitle1" color="grey600" marginBottom="l">
+            {t('collectablesScreen.collectables.properties')}
+          </Text>
+          <Box
+            flexDirection="row"
+            paddingHorizontal="m"
+            flexWrap="wrap"
+            justifyContent="center"
+          >
+            {metadata.attributes?.map(({ trait_type, value }) =>
+              renderProperty(trait_type, value),
+            )}
+          </Box>
+        </SafeAreaBox>
+      </ScrollView>
     </BackScreen>
   )
 }
