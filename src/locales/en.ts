@@ -976,5 +976,7 @@ export default {
     signClaimAllRewardsTxn: 'Sign this transaction to claim all your rewards.',
     signMintDataCreditsTxn: 'Sign this transaction to mint your data credits.',
     signDelegateDCTxn: 'Sign this transaction to delegate your data credits.',
+    recipientNonExistent:
+      'Recipient Account is empty, Double check the address before signing.',
   },
 }

@@ -169,6 +169,11 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
+      const { connection } = anchorProvider
+      const recipientExists = Boolean(
+        await connection.getAccountInfo(recipient),
+      )
+
       const swapTxn = await solUtils.createTreasurySwapTxn(
         amount,
         fromMint,
@@ -183,6 +188,7 @@ export default () => {
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
+        warning: recipientExists ? '' : t('transactions.recipientNonExistent'),
         additionalMessage: t('transactions.signSwapTxn'),
         serializedTx: Buffer.from(serializedTx),
       })
@@ -356,6 +362,11 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
+      const { connection } = anchorProvider
+      const recipientExists = Boolean(
+        await connection.getAccountInfo(recipient),
+      )
+
       const swapTxn = await solUtils.mintDataCredits({
         anchorProvider,
         dcAmount,
@@ -369,6 +380,7 @@ export default () => {
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
+        warning: recipientExists ? '' : t('transactions.recipientNonExistent'),
         additionalMessage: t('transactions.signMintDataCreditsTxn'),
         serializedTx: Buffer.from(serializedTx),
       })

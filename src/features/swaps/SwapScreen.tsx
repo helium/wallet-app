@@ -348,16 +348,10 @@ const SwapScreen = () => {
         if (!currentAccount || !currentAccount.solanaAddress)
           throw new Error('No account found')
 
-        if (recipient) {
-          const isValid =
-            solAddressIsValid(recipient) &&
-            Boolean(await connection.getAccountInfo(new PublicKey(recipient)))
-
-          if (!isValid) {
-            setSwapping(false)
-            setHasRecipientError(true)
-            return
-          }
+        if (recipient && !solAddressIsValid(recipient)) {
+          setSwapping(false)
+          setHasRecipientError(true)
+          return
         }
 
         const recipientAddr = recipient
