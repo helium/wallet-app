@@ -50,6 +50,7 @@ const WalletSignBottomSheet = forwardRef(
     const { solBalance } = useBalance()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const [totalSolFee, setTotalSolFee] = useState(0)
+    const [isVisible, setIsVisible] = useState(false)
     const [walletSignOpts, setWalletSignOpts] = useState<WalletSignOpts>({
       type: WalletStandardMessageTypes.connect,
       url: '',
@@ -117,6 +118,7 @@ const WalletSignBottomSheet = forwardRef(
     } = useBottomSheetDynamicSnapPoints(snapPoints)
 
     const hide = useCallback(() => {
+      setIsVisible(false)
       bottomSheetModalRef.current?.close()
     }, [])
 
@@ -124,6 +126,7 @@ const WalletSignBottomSheet = forwardRef(
       ({ type, url, additionalMessage, serializedTxs }: WalletSignOpts) => {
         bottomSheetModalRef.current?.expand()
         setTotalSolFee(0)
+        setIsVisible(true)
         setWalletSignOpts({
           type,
           url,
@@ -156,6 +159,7 @@ const WalletSignBottomSheet = forwardRef(
       }
       // We need to re present the bottom sheet after it is dismissed so that it can be expanded again
       bottomSheetModalRef.current?.present()
+      setIsVisible(false)
       if (onClose) {
         onClose()
       }
@@ -343,7 +347,7 @@ const WalletSignBottomSheet = forwardRef(
                         </Box>
                       </Box>
                     )}
-                    {currentTxs && (
+                    {isVisible && currentTxs && (
                       <ScrollView>
                         {currentTxs.map((tx, idx) => (
                           <WalletSignBottomSheetTransaction
