@@ -123,7 +123,13 @@ const WalletSignBottomSheet = forwardRef(
     }, [])
 
     const show = useCallback(
-      ({ type, url, warning, additionalMessage, serializedTxs }: WalletSignOpts) => {
+      ({
+        type,
+        url,
+        warning,
+        additionalMessage,
+        serializedTxs,
+      }: WalletSignOpts) => {
         bottomSheetModalRef.current?.expand()
         setTotalSolFee(0)
         setIsVisible(true)
@@ -197,7 +203,7 @@ const WalletSignBottomSheet = forwardRef(
       bottomSheetModalRef.current?.present()
     }, [bottomSheetModalRef])
 
-    const { type, additionalMessage } = walletSignOpts
+    const { type, warning, additionalMessage } = walletSignOpts
     return (
       <Box flex={1}>
         <BottomSheetModalProvider>
@@ -319,6 +325,7 @@ const WalletSignBottomSheet = forwardRef(
                         </Text>
                       </Box>
                     )}
+
                   {(insufficientFunds || insufficientRentExempt) && (
                     <Box
                       borderBottomStartRadius="l"
@@ -336,6 +343,7 @@ const WalletSignBottomSheet = forwardRef(
                       </Text>
                     </Box>
                   )}
+
                   <Box
                     flex={1}
                     maxHeight={
