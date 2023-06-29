@@ -1075,19 +1075,17 @@ export async function annotateWithPendingRewards(
     entityKeys,
   )
 
-  return Promise.all(
-    hotspots.map(async (hotspot, index) => {
-      const entityKey = entityKeys[index]
+  return hotspots.map((hotspot, index) => {
+    const entityKey = entityKeys[index]
 
-      return {
-        ...hotspot,
-        pendingRewards: {
-          [Mints.MOBILE]: mobileRewards[entityKey],
-          [Mints.IOT]: iotRewards[entityKey],
-        },
-      } as HotspotWithPendingRewards
-    }),
-  )
+    return {
+      ...hotspot,
+      pendingRewards: {
+        [Mints.MOBILE]: mobileRewards[entityKey],
+        [Mints.IOT]: iotRewards[entityKey],
+      },
+    } as HotspotWithPendingRewards
+  })
 }
 
 /**
