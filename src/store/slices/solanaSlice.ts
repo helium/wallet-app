@@ -1,12 +1,8 @@
 import { AnchorProvider } from '@coral-xyz/anchor'
 import { Ticker } from '@helium/currency'
-import * as client from '@helium/distributor-oracle'
-import { init } from '@helium/lazy-distributor-sdk'
 import {
-  Asset,
   bulkSendRawTransactions,
   sendAndConfirmWithRetry,
-  truthy,
 } from '@helium/spl-utils'
 import {
   SerializedError,
@@ -15,15 +11,13 @@ import {
 } from '@reduxjs/toolkit'
 import {
   Cluster,
-  PublicKey,
   SignaturesForAddressOptions,
   Transaction,
 } from '@solana/web3.js'
 import { first, last } from 'lodash'
-import base58 from 'bs58'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
-import { HotspotWithPendingRewards, toMintAddress } from '../../types/solana'
+import { toMintAddress } from '../../types/solana'
 import * as Logger from '../../utils/logger'
 import * as solUtils from '../../utils/solanaUtils'
 import { postPayment } from '../../utils/walletApiV2'
@@ -87,8 +81,7 @@ type ClaimRewardInput = {
 
 type ClaimAllRewardsInput = {
   account: CSAccount
-  lazyDistributors: PublicKey[]
-  hotspots: HotspotWithPendingRewards[]
+  txns: Transaction[]
   anchorProvider: AnchorProvider
   cluster: Cluster
 }
@@ -109,33 +102,6 @@ type DelegateDataCreditsInput = {
   anchorProvider: AnchorProvider
   cluster: Cluster
   delegateDCTxn: Transaction
-}
-
-function toAsset(hotspot: HotspotWithPendingRewards): Asset {
-  return {
-    ...hotspot,
-    id: new PublicKey(hotspot.id),
-    grouping:
-      hotspot.grouping &&
-      hotspot.grouping.map((g) => ({
-        ...g,
-        group_value: new PublicKey(g.group_value),
-      })),
-    compression: {
-      ...hotspot.compression,
-      leafId: hotspot.compression.leaf_id,
-      dataHash: Buffer.from(base58.decode(hotspot.compression.data_hash)),
-      creatorHash: Buffer.from(base58.decode(hotspot.compression.creator_hash)),
-      assetHash: Buffer.from(base58.decode(hotspot.compression.asset_hash)),
-      tree: new PublicKey(hotspot.compression.tree),
-    },
-    ownership: {
-      ...hotspot.ownership,
-      delegate:
-        hotspot.ownership.delegate && new PublicKey(hotspot.ownership.delegate),
-      owner: new PublicKey(hotspot.ownership.owner),
-    },
-  }
 }
 
 export const makePayment = createAsyncThunk(
@@ -299,70 +265,21 @@ export const claimRewards = createAsyncThunk(
   },
 )
 
-const chunks = <T>(array: T[], size: number): T[][] =>
-  Array.apply(0, new Array(Math.ceil(array.length / size))).map((_, index) =>
-    array.slice(index * size, (index + 1) * size),
-  )
-
 export const claimAllRewards = createAsyncThunk(
   'solana/claimAllRewards',
   async (
-    {
-      account,
-      lazyDistributors,
-      hotspots,
-      anchorProvider,
-      cluster,
-    }: ClaimAllRewardsInput,
+    { account, anchorProvider, cluster, txns }: ClaimAllRewardsInput,
     { dispatch },
   ) => {
     try {
-      const lazyProgram = await init(anchorProvider)
-      // Use for loops to linearly order promises
-      // eslint-disable-next-line no-restricted-syntax
-      for (const lazyDistributor of lazyDistributors) {
-        const lazyDistributorAcc =
-          // eslint-disable-next-line no-await-in-loop
-          await lazyProgram.account.lazyDistributorV0.fetch(lazyDistributor)
-        // eslint-disable-next-line no-restricted-syntax
-        for (const chunk of chunks(hotspots, 25)) {
-          const entityKeys = chunk.map(
-            (h) => h.content.json_uri.split('/').slice(-1)[0],
-          )
+      const signed = await anchorProvider.wallet.signAllTransactions(txns)
 
-          // eslint-disable-next-line no-await-in-loop
-          const rewards = await client.getBulkRewards(
-            lazyProgram,
-            lazyDistributor,
-            entityKeys,
-          )
+      // eslint-disable-next-line no-await-in-loop
+      await bulkSendRawTransactions(
+        anchorProvider.connection,
+        signed.map((s) => s.serialize()),
+      )
 
-          // eslint-disable-next-line no-await-in-loop
-          const txns = await client.formBulkTransactions({
-            program: lazyProgram,
-            rewards,
-            assets: chunk.map((h) => new PublicKey(h.id)),
-            compressionAssetAccs: chunk.map(toAsset),
-            lazyDistributor,
-            lazyDistributorAcc,
-            assetEndpoint: anchorProvider.connection.rpcEndpoint,
-            wallet: account.solanaAddress
-              ? new PublicKey(account.solanaAddress)
-              : undefined,
-          })
-
-          const validTxns = txns.filter(truthy) as Transaction[]
-          // eslint-disable-next-line no-await-in-loop
-          const signed = await anchorProvider.wallet.signAllTransactions(
-            validTxns,
-          )
-          // eslint-disable-next-line no-await-in-loop
-          await bulkSendRawTransactions(
-            anchorProvider.connection,
-            signed.map((s) => s.serialize()),
-          )
-        }
-      }
       // If the claim is successful, we need to update the hotspots so pending rewards are updated.
       dispatch(fetchHotspots({ account, anchorProvider, cluster }))
     } catch (error) {

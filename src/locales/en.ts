@@ -370,9 +370,12 @@ export default {
     sendToken: 'Send {{amount}} {{ticker}}',
     recieveToken: 'Receive {{amount}} {{ticker}}',
     insufficientFunds: 'Insufficient funds',
+    insufficientRentExempt:
+      'Solana wallets must have a minimum of ~{{amount}} SOL to cover rent. The result of this transaction would leave your wallet with less than the rent-exempt minimum.',
     unableToSimulate:
       'Unable to simulate. Make sure you trust this app since approving can lead to loss of funds.',
     networkFee: 'Network Fee',
+    totalNetworkFees: 'Total Network Fees',
     connect: 'Connect',
     approve: 'Approve',
     cancel: 'Cancel',
@@ -511,6 +514,7 @@ export default {
     error: 'Error',
     fee: 'Fee',
     loadFailed: 'Cannot validate address. Please try again.',
+    loadMore: 'Load More',
     loading: 'Loading',
     calculatingTransactionFee: 'Calculating Transaction Fee...',
     mainnet: 'Mainnet',

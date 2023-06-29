@@ -67,7 +67,6 @@ const ClaimAllRewardsScreen = () => {
       await submitClaimAllRewards(
         [IOT_LAZY_KEY, MOBILE_LAZY_KEY],
         hotspotsWithMeta,
-        balanceChanges,
       )
 
       navigation.replace('ClaimingRewardsScreen')
