@@ -160,8 +160,8 @@ export default {
   collectablesScreen: {
     title: 'Collectables',
     metadata: 'Metadata',
-    transfer: 'Transfer',
-    transferComplete: 'NFT Transferred!',
+    transfer: 'Transfer Hotspot',
+    transferComplete: 'Hotspot Transferred!',
     returnToCollectables: 'Return to Collectables',
     transferFee: '<b>Fee</b> <secondaryText> {{ amount }} SOL </secondaryText>',
     transferingNftTitle: 'Transferring NFT...',
@@ -197,6 +197,7 @@ export default {
       hotspotDetailTitle: 'Hotspot Detail',
       pendingRewardsTitle: 'Pending Rewards',
       claimRewards: 'Claim Rewards',
+      manage: 'Manage',
       hotspotActions: 'Hotspot Actions',
       pendingRewards: '{{ amount }} {{ ticker }}',
       claimAllRewards: 'Claim all Rewards',
@@ -219,7 +220,7 @@ export default {
       twenty: '20',
       fifty: '50',
       all: 'All',
-      copyEccCompact: 'Copy hotspot key',
+      copyEccCompact: 'Copy Hotspot Key',
     },
   },
   activityScreen: {
