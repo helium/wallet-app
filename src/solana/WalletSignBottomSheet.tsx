@@ -79,6 +79,7 @@ const WalletSignBottomSheet = forwardRef(
       ({
         type,
         url,
+        warning,
         additionalMessage,
         manualBalanceChanges,
         manualEstimatedFee,
@@ -88,6 +89,7 @@ const WalletSignBottomSheet = forwardRef(
         setWalletSignOpts({
           type,
           url,
+          warning,
           additionalMessage,
           manualBalanceChanges,
           manualEstimatedFee,
@@ -147,6 +149,7 @@ const WalletSignBottomSheet = forwardRef(
     const renderSheetBody = useCallback(() => {
       const {
         type,
+        warning,
         additionalMessage,
         manualBalanceChanges,
         manualEstimatedFee,
@@ -197,6 +200,19 @@ const WalletSignBottomSheet = forwardRef(
         return (
           <>
             <Box flexGrow={1} justifyContent="center">
+              {warning && (
+                <Box
+                  borderRadius="l"
+                  backgroundColor="secondaryBackground"
+                  padding="m"
+                  marginBottom="m"
+                >
+                  <Text variant="body1Medium" color="orange500">
+                    {warning}
+                  </Text>
+                </Box>
+              )}
+
               <Box
                 borderTopStartRadius="l"
                 borderTopEndRadius="l"

@@ -166,7 +166,7 @@ export default {
     transferFee: '<b>Fee</b> <secondaryText> {{ amount }} SOL </secondaryText>',
     transferingNftTitle: 'Transferring NFT...',
     transferActions: 'Transfer Actions',
-    transferTo: 'Transfer to:',
+    transferTo: 'Transfer to',
     transferError: 'Transfer failed. Please try again later.',
     transferCollectable: 'Transfer Collectable',
     transferingNftBody:
@@ -976,5 +976,7 @@ export default {
     signClaimAllRewardsTxn: 'Sign this transaction to claim all your rewards.',
     signMintDataCreditsTxn: 'Sign this transaction to mint your data credits.',
     signDelegateDCTxn: 'Sign this transaction to delegate your data credits.',
+    recipientNonExistent:
+      'Recipient Account is empty, Double check the address before signing.',
   },
 }
