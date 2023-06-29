@@ -31,11 +31,7 @@ import { getAtaAccountCreationFee, TXN_FEE_IN_SOL } from '@utils/solanaUtils'
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import {
-  LayoutAnimation,
-  NativeSyntheticEvent,
-  TextInputEndEditingEventData,
-} from 'react-native'
+import { LayoutAnimation } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useColors, useHitSlop } from '@theme/themeHooks'
 import CircleLoader from '@components/CircleLoader'
@@ -100,6 +96,7 @@ const SwapScreen = () => {
   const handleAddressBookSelected = useCallback(() => {
     addressBookRef?.current?.showAddressBook({})
   }, [])
+
   const handleContactSelected = useCallback(
     ({ contact }: { contact: CSAccount; prevAddress?: string }) => {
       if (!contact.solanaAddress) return
@@ -108,17 +105,11 @@ const SwapScreen = () => {
     },
     [],
   )
+
   const handleEditAddress = useCallback((text?: string) => {
     setRecipient(text || '')
+    setHasRecipientError(false)
   }, [])
-
-  const handleAddressBlur = useCallback(
-    (event?: NativeSyntheticEvent<TextInputEndEditingEventData>) => {
-      const text = event?.nativeEvent.text
-      setHasRecipientError(!solAddressIsValid(text || ''))
-    },
-    [],
-  )
 
   // If user does not have enough tokens to swap for greater than 0.00000001 tokens
   const insufficientTokensToSwap = useMemo(() => {
@@ -350,46 +341,53 @@ const SwapScreen = () => {
   ])
 
   const handleSwapTokens = useCallback(async () => {
-    try {
-      setSwapping(true)
+    if (connection) {
+      try {
+        setSwapping(true)
 
-      if (!currentAccount || !currentAccount.solanaAddress)
-        throw new Error('No account found')
+        if (!currentAccount || !currentAccount.solanaAddress)
+          throw new Error('No account found')
 
-      const recipientAddr =
-        recipient && !hasRecipientError
+        if (recipient && !solAddressIsValid(recipient)) {
+          setSwapping(false)
+          setHasRecipientError(true)
+          return
+        }
+
+        const recipientAddr = recipient
           ? new PublicKey(recipient)
           : new PublicKey(currentAccount.solanaAddress)
 
-      if (youPayTokenType === Tokens.HNT) {
-        await submitMintDataCredits({
-          dcAmount: youReceiveTokenAmount,
-          recipient: recipientAddr,
+        if (youPayTokenType === Tokens.HNT) {
+          await submitMintDataCredits({
+            dcAmount: youReceiveTokenAmount,
+            recipient: recipientAddr,
+          })
+        }
+
+        if (youPayTokenType !== Tokens.HNT) {
+          await submitTreasurySwap(
+            new PublicKey(Mints[youPayTokenType]),
+            youPayTokenAmount,
+            recipientAddr,
+          )
+        }
+
+        setSwapping(false)
+
+        navigation.push('SwappingScreen', {
+          tokenA: youPayTokenType,
+          tokenB: youReceiveTokenType,
         })
+      } catch (error) {
+        setSwapping(false)
+        setTransactionError((error as Error).message)
       }
-
-      if (youPayTokenType !== Tokens.HNT) {
-        await submitTreasurySwap(
-          new PublicKey(Mints[youPayTokenType]),
-          youPayTokenAmount,
-          recipientAddr,
-        )
-      }
-
-      setSwapping(false)
-
-      navigation.push('SwappingScreen', {
-        tokenA: youPayTokenType,
-        tokenB: youReceiveTokenType,
-      })
-    } catch (error) {
-      setSwapping(false)
-      setTransactionError((error as Error).message)
     }
   }, [
+    connection,
     currentAccount,
     recipient,
-    hasRecipientError,
     youPayTokenType,
     navigation,
     youReceiveTokenType,
@@ -397,6 +395,7 @@ const SwapScreen = () => {
     youReceiveTokenAmount,
     submitTreasurySwap,
     youPayTokenAmount,
+    setHasRecipientError,
   ])
 
   return (
@@ -474,6 +473,7 @@ const SwapScreen = () => {
                       <TextInput
                         marginTop="l"
                         floatingLabel={t('collectablesScreen.transferTo')}
+                        optional
                         variant="thickDark"
                         backgroundColor="red500"
                         marginHorizontal="m"
@@ -489,7 +489,6 @@ const SwapScreen = () => {
                           autoCorrect: false,
                           autoComplete: 'off',
                           onChangeText: handleEditAddress,
-                          onEndEditing: handleAddressBlur,
                           value: recipient,
                         }}
                       />

@@ -123,13 +123,14 @@ const WalletSignBottomSheet = forwardRef(
     }, [])
 
     const show = useCallback(
-      ({ type, url, additionalMessage, serializedTxs }: WalletSignOpts) => {
+      ({ type, url, warning, additionalMessage, serializedTxs }: WalletSignOpts) => {
         bottomSheetModalRef.current?.expand()
         setTotalSolFee(0)
         setIsVisible(true)
         setWalletSignOpts({
           type,
           url,
+          warning,
           additionalMessage,
           serializedTxs,
         })
@@ -277,6 +278,19 @@ const WalletSignBottomSheet = forwardRef(
                 type === WalletStandardMessageTypes.signAndSendTransaction ||
                 type === WalletStandardMessageTypes.signTransaction) && (
                 <Box flexGrow={1} justifyContent="center">
+                  {warning && (
+                    <Box
+                      borderRadius="l"
+                      backgroundColor="secondaryBackground"
+                      padding="m"
+                      marginBottom="m"
+                    >
+                      <Text variant="body1Medium" color="orange500">
+                        {warning}
+                      </Text>
+                    </Box>
+                  )}
+
                   {!(insufficientFunds || insufficientRentExempt) && (
                     <Box
                       borderTopStartRadius="l"

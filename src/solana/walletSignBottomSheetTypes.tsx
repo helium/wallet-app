@@ -17,6 +17,7 @@ export type WalletSignOpts = {
   type: WalletStandardMessageTypes
   url: string
   serializedTxs: Buffer[] | undefined
+  warning?: string
   additionalMessage?: string
 }
 

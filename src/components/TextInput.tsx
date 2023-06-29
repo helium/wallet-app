@@ -26,6 +26,7 @@ type Props = React.ComponentProps<typeof BoxWrapper> & {
   textColor?: Color
   fontSize?: number
   floatingLabel?: string
+  optional?: boolean
   onTrailingIconPress?: () => void
   TrailingIcon?: React.FC<SvgProps>
   TrailingIconOptions?: TouchableOpacityBoxProps
@@ -40,6 +41,7 @@ const TI = forwardRef(
       fontSize,
       textInputProps,
       floatingLabel,
+      optional,
       TrailingIcon,
       onTrailingIconPress,
       TrailingIconOptions = {
@@ -80,11 +82,23 @@ const TI = forwardRef(
         {...rest}
       >
         <Box flexGrow={1} width="80%">
-          {floatingLabel && (
-            <Text variant="body3" color="grey600">
-              {floatingLabel}
-            </Text>
-          )}
+          <Box flexDirection="row" alignItems="center">
+            {floatingLabel && (
+              <Text variant="body2" color="grey600">
+                {floatingLabel}
+              </Text>
+            )}
+            {optional && (
+              <Text
+                variant="body3"
+                color="secondaryText"
+                justifyContent="center"
+                marginLeft="xs"
+              >
+                - optional
+              </Text>
+            )}
+          </Box>
           <TextInput
             style={{
               color: getTextColor,

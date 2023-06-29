@@ -160,13 +160,13 @@ export default {
   collectablesScreen: {
     title: 'Collectables',
     metadata: 'Metadata',
-    transfer: 'Transfer',
-    transferComplete: 'NFT Transferred!',
+    transfer: 'Transfer Hotspot',
+    transferComplete: 'Hotspot Transferred!',
     returnToCollectables: 'Return to Collectables',
     transferFee: '<b>Fee</b> <secondaryText> {{ amount }} SOL </secondaryText>',
     transferingNftTitle: 'Transferring NFT...',
     transferActions: 'Transfer Actions',
-    transferTo: 'Transfer to:',
+    transferTo: 'Transfer to',
     transferError: 'Transfer failed. Please try again later.',
     transferCollectable: 'Transfer Collectable',
     transferingNftBody:
@@ -197,6 +197,7 @@ export default {
       hotspotDetailTitle: 'Hotspot Detail',
       pendingRewardsTitle: 'Pending Rewards',
       claimRewards: 'Claim Rewards',
+      manage: 'Manage',
       hotspotActions: 'Hotspot Actions',
       pendingRewards: '{{ amount }} {{ ticker }}',
       claimAllRewards: 'Claim all Rewards',
@@ -219,7 +220,7 @@ export default {
       twenty: '20',
       fifty: '50',
       all: 'All',
-      copyEccCompact: 'Copy hotspot key',
+      copyEccCompact: 'Copy Hotspot Key',
     },
   },
   activityScreen: {
@@ -980,5 +981,7 @@ export default {
     signClaimAllRewardsTxn: 'Sign this transaction to claim all your rewards.',
     signMintDataCreditsTxn: 'Sign this transaction to mint your data credits.',
     signDelegateDCTxn: 'Sign this transaction to delegate your data credits.',
+    recipientNonExistent:
+      'Recipient Account is empty, Double check the address before signing.',
   },
 }
