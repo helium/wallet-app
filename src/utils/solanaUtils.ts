@@ -341,19 +341,23 @@ export const getTransactions = async (
   mints: typeof Mints,
   options?: SignaturesForAddressOptions,
 ) => {
-  const ata = await getAssocTokenAddress(walletAddress, mintAddress)
-  const transactionList =
-    await anchorProvider.connection.getSignaturesForAddress(ata, options)
-  const sigs = transactionList.map(({ signature }) => signature)
+  try {
+    const ata = await getAssocTokenAddress(walletAddress, mintAddress)
+    const transactionList =
+      await anchorProvider.connection.getSignaturesForAddress(ata, options)
+    const sigs = transactionList.map(({ signature }) => signature)
+    const transactionDetails =
+      await anchorProvider.connection.getParsedTransactions(sigs, {
+        maxSupportedTransactionVersion: 0,
+      })
 
-  const transactionDetails =
-    await anchorProvider.connection.getParsedTransactions(sigs, {
-      maxSupportedTransactionVersion: 0,
-    })
-
-  return transactionDetails
-    .map((td, idx) => solInstructionsToActivity(td, sigs[idx], mints))
-    .filter((a) => !!a) as Activity[]
+    return transactionDetails
+      .map((td, idx) => solInstructionsToActivity(td, sigs[idx], mints))
+      .filter((a) => !!a) as Activity[]
+  } catch (e) {
+    Logger.error(e)
+    throw e as Error
+  }
 }
 
 export const onAccountChange = (
