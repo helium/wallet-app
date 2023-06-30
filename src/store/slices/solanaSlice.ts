@@ -360,18 +360,12 @@ export const getTxns = createAsyncThunk(
 
 export const sendUpdateIotInfo = createAsyncThunk(
   'solana/sendUpdateIotInfo',
-  async (
-    { account, cluster, anchorProvider, updateTxn }: UpdateIotInfoInput,
-    { dispatch },
-  ) => {
+  async ({ cluster, anchorProvider, updateTxn }: UpdateIotInfoInput) => {
     try {
       const signed = await anchorProvider.wallet.signTransaction(updateTxn)
       const sig = await anchorProvider.sendAndConfirm(signed)
 
       postPayment({ signature: sig, cluster })
-
-      // If the update is successful, we need to update the hotspots so infos are updated.
-      dispatch(fetchHotspots({ account, anchorProvider, cluster }))
     } catch (error) {
       Logger.error(error)
       throw error
@@ -382,18 +376,12 @@ export const sendUpdateIotInfo = createAsyncThunk(
 
 export const sendUpdateMobileInfo = createAsyncThunk(
   'solana/sendUpdateMobileInfo',
-  async (
-    { account, cluster, anchorProvider, updateTxn }: UpdateMobileInfoInput,
-    { dispatch },
-  ) => {
+  async ({ cluster, anchorProvider, updateTxn }: UpdateMobileInfoInput) => {
     try {
       const signed = await anchorProvider.wallet.signTransaction(updateTxn)
       const sig = await anchorProvider.sendAndConfirm(signed)
 
       postPayment({ signature: sig, cluster })
-
-      // If the update is successful, we need to update the hotspots so infos are updated.
-      dispatch(fetchHotspots({ account, anchorProvider, cluster }))
     } catch (error) {
       Logger.error(error)
       throw error
