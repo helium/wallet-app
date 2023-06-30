@@ -220,7 +220,7 @@ const HotspotDetailsScreen = () => {
                 flexShrink={0}
                 borderRadius="round"
                 backgroundColor="white"
-                backgroundColorOpacity={0.2}
+                backgroundColorOpacity={0.4}
                 backgroundColorOpacityPressed={0.7}
                 backgroundColorDisabled="white"
                 backgroundColorDisabledOpacity={0.1}
