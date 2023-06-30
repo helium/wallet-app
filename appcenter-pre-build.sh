@@ -25,3 +25,4 @@ echo MAPBOX_STYLE_URL=$MAPBOX_STYLE_URL >> .env
 echo machine api.mapbox.com > ~/.netrc
 echo login mapbox >> ~/.netrc
 echo password $MAPBOX_DOWNLOAD_TOKEN >> ~/.netrc
+chmod 0600 ~/.netrc
