@@ -20,7 +20,8 @@ echo HNT_TO_RENT_SERVICE_DEVNET_URL=$HNT_TO_RENT_SERVICE_DEVNET_URL >> .env
 echo MAPBOX_ACCESS_TOKEN=$MAPBOX_ACCESS_TOKEN >> .env
 echo MAPBOX_DOWNLOAD_TOKEN=$MAPBOX_DOWNLOAD_TOKEN >> .env
 echo MAPBOX_STYLE_URL=$MAPBOX_STYLE_URL >> .env
-echo Generate credential for mapbox
-echo machine api.mapbox.com > ~/.netrc
-echo login mapbox >> ~/.netrc
-echo password $MAPBOX_DOWNLOAD_TOKEN >> ~/.netrc
+
+# generate credential for mapbox
+echo machine api.mapbox.com > $APPCENTER_SOURCE_DIRECTORY/.netrc
+echo login mapbox >> $APPCENTER_SOURCE_DIRECTORY/.netrc
+echo password $MAPBOX_DOWNLOAD_TOKEN >> $APPCENTER_SOURCE_DIRECTORY/.netrc
