@@ -221,6 +221,8 @@ export default {
       fifty: '50',
       all: 'All',
       copyEccCompact: 'Copy Hotspot Key',
+      assertLocation: 'Assert Location',
+      antennaSetup: 'Antenna Setup',
     },
   },
   activityScreen: {
@@ -309,6 +311,18 @@ export default {
       TOKEN_MINT: 'Token Minted!',
       COMPRESSED_NFT_MINT: 'Compressed NFT Minted!',
     },
+  },
+  assertLocationScreen: {
+    title: 'Assert Location',
+    whichLocation: 'Which location do you want to assert?',
+    searchLocation: 'Search for a location...',
+    antennaSetup: 'Antenna Setup (Optional)',
+    antennaSetupDescription:
+      'Submit gain and elevation details for your Hotspot',
+    gainPlaceholder: 'TX / RX Gain (dBi)',
+    elevationPlaceholder: 'Elevation (meters)',
+    locationNotFound: 'Location not found, Please try again.',
+    mobileTitle: 'MOBILE',
   },
   swapsScreen: {
     title: 'Swap my Tokens',
@@ -981,6 +995,7 @@ export default {
     signClaimAllRewardsTxn: 'Sign this transaction to claim all your rewards.',
     signMintDataCreditsTxn: 'Sign this transaction to mint your data credits.',
     signDelegateDCTxn: 'Sign this transaction to delegate your data credits.',
+    signAssertLocationTxn: 'Sign this transaction to assert the location.',
     recipientNonExistent:
       'Recipient Account is empty, Double check the address before signing.',
   },

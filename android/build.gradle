@@ -9,6 +9,7 @@ buildscript {
         // We use NDK 23 which has both M1 support and is the side-by-side NDK version from AGP.
         ndkVersion = "23.1.7779620"
         kotlinVersion = "1.5.31"
+        RNMapboxMapsImpl = "mapbox" // required for v10
     }
     repositories {
         google()
@@ -38,5 +39,18 @@ allprojects {
         }
         google()
         maven { url 'https://www.jitpack.io' }
+        maven {
+            url 'https://api.mapbox.com/downloads/v2/releases/maven'
+            authentication {
+                basic(BasicAuthentication)
+            }
+            credentials {
+                // Do not change the username below.
+                // This should always be `mapbox` (not your username).
+                username = 'mapbox'
+                // Use the secret token you stored in gradle.properties as the password
+                password = System.getenv("MAPBOX_DOWNLOAD_TOKEN")
+            }
+        }
     }
 }

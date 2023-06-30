@@ -51,6 +51,7 @@ const WalletSignBottomSheet = forwardRef(
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const [totalSolFee, setTotalSolFee] = useState(0)
     const [isVisible, setIsVisible] = useState(false)
+    const [nestedInsufficentFunds, setNestedInsufficentFunds] = useState(false)
     const [walletSignOpts, setWalletSignOpts] = useState<WalletSignOpts>({
       type: WalletStandardMessageTypes.connect,
       url: '',
@@ -103,8 +104,14 @@ const WalletSignBottomSheet = forwardRef(
     )
 
     const insufficientFunds = useMemo(
-      () => estimatedTotalSolByLamports > (solBalance?.floatBalance || 0),
-      [solBalance?.floatBalance, estimatedTotalSolByLamports],
+      () =>
+        nestedInsufficentFunds ||
+        estimatedTotalSolByLamports > (solBalance?.floatBalance || 0),
+      [
+        solBalance?.floatBalance,
+        estimatedTotalSolByLamports,
+        nestedInsufficentFunds,
+      ],
     )
 
     const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
@@ -119,6 +126,7 @@ const WalletSignBottomSheet = forwardRef(
 
     const hide = useCallback(() => {
       setIsVisible(false)
+      setNestedInsufficentFunds(false)
       bottomSheetModalRef.current?.close()
     }, [])
 
@@ -167,6 +175,7 @@ const WalletSignBottomSheet = forwardRef(
       // We need to re present the bottom sheet after it is dismissed so that it can be expanded again
       bottomSheetModalRef.current?.present()
       setIsVisible(false)
+      setNestedInsufficentFunds(false)
       if (onClose) {
         onClose()
       }
@@ -328,8 +337,7 @@ const WalletSignBottomSheet = forwardRef(
 
                   {(insufficientFunds || insufficientRentExempt) && (
                     <Box
-                      borderBottomStartRadius="l"
-                      borderBottomEndRadius="l"
+                      borderRadius="l"
                       backgroundColor="secondaryBackground"
                       padding="m"
                       marginTop="m"
@@ -349,7 +357,7 @@ const WalletSignBottomSheet = forwardRef(
                     maxHeight={
                       (walletSignOpts?.serializedTxs?.length || 0) > 1
                         ? 214
-                        : 160
+                        : 180
                     }
                     paddingTop="m"
                   >
@@ -370,7 +378,11 @@ const WalletSignBottomSheet = forwardRef(
                       </Box>
                     )}
                     {isVisible && currentTxs && (
-                      <ScrollView>
+                      <ScrollView
+                        scrollEnabled={
+                          (walletSignOpts?.serializedTxs?.length || 0) > 1
+                        }
+                      >
                         {currentTxs.map((tx, idx) => (
                           <WalletSignBottomSheetTransaction
                             // eslint-disable-next-line react/no-array-index-key
@@ -381,6 +393,9 @@ const WalletSignBottomSheet = forwardRef(
                               walletSignOpts?.serializedTxs?.length || 0
                             }
                             incrementTotalSolFee={incrementTotalSolFee}
+                            setNestedInsufficentFunds={
+                              setNestedInsufficentFunds
+                            }
                           />
                         ))}
                         {hasMore && (

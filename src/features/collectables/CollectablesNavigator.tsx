@@ -5,6 +5,7 @@ import {
 } from '@react-navigation/stack'
 import CollectablesTopTabs from './CollectablesTopTabs'
 import HotspotDetailsScreen from './HotspotDetailsScreen'
+import AssertLocationScreen from './AssertLocationScreen'
 import PaymentScreen from '../payment/PaymentScreen'
 import AddNewContact from '../addressBook/AddNewContact'
 import PaymentQrScanner from '../payment/PaymentQrScanner'
@@ -36,7 +37,10 @@ const CollectablesStackScreen = () => {
         name="HotspotDetailsScreen"
         component={HotspotDetailsScreen}
       />
-
+      <CollectablesStack.Screen
+        name="AssertLocationScreen"
+        component={AssertLocationScreen}
+      />
       <CollectablesStack.Screen
         name="PaymentScreen"
         component={PaymentScreen}

@@ -104,6 +104,20 @@ type DelegateDataCreditsInput = {
   delegateDCTxn: Transaction
 }
 
+type UpdateIotInfoInput = {
+  account: CSAccount
+  anchorProvider: AnchorProvider
+  cluster: Cluster
+  updateTxn: Transaction
+}
+
+type UpdateMobileInfoInput = {
+  account: CSAccount
+  anchorProvider: AnchorProvider
+  cluster: Cluster
+  updateTxn: Transaction
+}
+
 export const makePayment = createAsyncThunk(
   'solana/makePayment',
   async ({ account, cluster, anchorProvider, paymentTxn }: PaymentInput) => {
@@ -341,6 +355,50 @@ export const getTxns = createAsyncThunk(
       mints,
       options,
     )
+  },
+)
+
+export const sendUpdateIotInfo = createAsyncThunk(
+  'solana/sendUpdateIotInfo',
+  async (
+    { account, cluster, anchorProvider, updateTxn }: UpdateIotInfoInput,
+    { dispatch },
+  ) => {
+    try {
+      const signed = await anchorProvider.wallet.signTransaction(updateTxn)
+      const sig = await anchorProvider.sendAndConfirm(signed)
+
+      postPayment({ signature: sig, cluster })
+
+      // If the update is successful, we need to update the hotspots so infos are updated.
+      dispatch(fetchHotspots({ account, anchorProvider, cluster }))
+    } catch (error) {
+      Logger.error(error)
+      throw error
+    }
+    return true
+  },
+)
+
+export const sendUpdateMobileInfo = createAsyncThunk(
+  'solana/sendUpdateMobileInfo',
+  async (
+    { account, cluster, anchorProvider, updateTxn }: UpdateMobileInfoInput,
+    { dispatch },
+  ) => {
+    try {
+      const signed = await anchorProvider.wallet.signTransaction(updateTxn)
+      const sig = await anchorProvider.sendAndConfirm(signed)
+
+      postPayment({ signature: sig, cluster })
+
+      // If the update is successful, we need to update the hotspots so infos are updated.
+      dispatch(fetchHotspots({ account, anchorProvider, cluster }))
+    } catch (error) {
+      Logger.error(error)
+      throw error
+    }
+    return true
   },
 )
 
@@ -620,6 +678,32 @@ const solanaSlice = createSlice({
       // Only store the error if it was a fresh load
       if (meta.arg.requestType === 'start_fresh') {
         state.activity.error = error
+      }
+    })
+    builder.addCase(sendUpdateIotInfo.rejected, (state, action) => {
+      state.payment = { success: false, loading: false, error: action.error }
+    })
+    builder.addCase(sendUpdateIotInfo.pending, (state, _action) => {
+      state.payment = { success: false, loading: true, error: undefined }
+    })
+    builder.addCase(sendUpdateIotInfo.fulfilled, (state, _action) => {
+      state.payment = {
+        success: true,
+        loading: false,
+        error: undefined,
+      }
+    })
+    builder.addCase(sendUpdateMobileInfo.rejected, (state, action) => {
+      state.payment = { success: false, loading: false, error: action.error }
+    })
+    builder.addCase(sendUpdateMobileInfo.pending, (state, _action) => {
+      state.payment = { success: false, loading: true, error: undefined }
+    })
+    builder.addCase(sendUpdateMobileInfo.fulfilled, (state, _action) => {
+      state.payment = {
+        success: true,
+        loading: false,
+        error: undefined,
       }
     })
   },

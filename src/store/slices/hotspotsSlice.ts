@@ -49,6 +49,7 @@ export const fetchHotspots = createAsyncThunk(
     const hotspotsWithMetadata = await solUtils.getCompressedNFTMetadata(
       fetchedHotspots,
     )
+
     const hotspotsWithPendingRewards =
       await solUtils.annotateWithPendingRewards(
         anchorProvider,
@@ -94,6 +95,7 @@ export const fetchMoreHotspots = createAsyncThunk(
     const hotspotsWithMetadata = await solUtils.getCompressedNFTMetadata(
       fetchedHotspots,
     )
+
     const hotspotsWithPendingRewards =
       await solUtils.annotateWithPendingRewards(provider, hotspotsWithMetadata)
 

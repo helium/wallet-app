@@ -5,6 +5,7 @@ import i18n from '@utils/i18n'
 import { Mints } from '@utils/constants'
 import * as solUtils from '@utils/solanaUtils'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { HotspotType } from '@helium/onboarding'
 import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
 import {
   makeCollectablePayment,
@@ -15,6 +16,8 @@ import {
   sendTreasurySwap,
   sendMintDataCredits,
   sendDelegateDataCredits,
+  sendUpdateIotInfo,
+  sendUpdateMobileInfo,
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import {
@@ -456,6 +459,87 @@ export default () => {
     ],
   )
 
+  const submitUpdateEntityInfo = useCallback(
+    async ({
+      type,
+      entityKey,
+      lat,
+      lng,
+      elevation,
+      decimalGain,
+    }: {
+      type: HotspotType
+      entityKey: string
+      lat: number
+      lng: number
+      elevation?: string
+      decimalGain?: string
+    }) => {
+      if (!anchorProvider || !currentAccount || !walletSignBottomSheetRef) {
+        throw new Error(t('errors.account'))
+      }
+
+      if (!currentAccount) {
+        throw new Error(t('errors.account'))
+      }
+
+      const updateInfoTxn = await solUtils.updateEntityInfoTxn({
+        anchorProvider,
+        type,
+        entityKey,
+        lat,
+        lng,
+        elevation: elevation ? parseFloat(elevation) : undefined,
+        decimalGain: decimalGain ? parseFloat(decimalGain) : undefined,
+      })
+
+      const serializedTx = updateInfoTxn.serialize({
+        requireAllSignatures: false,
+      })
+
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        additionalMessage: t('transactions.signAssertLocationTxn'),
+        serializedTxs: [Buffer.from(serializedTx)],
+      })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
+      }
+
+      if (type === 'iot') {
+        await dispatch(
+          sendUpdateIotInfo({
+            account: currentAccount,
+            anchorProvider,
+            cluster,
+            updateTxn: updateInfoTxn,
+          }),
+        )
+      }
+
+      if (type === 'mobile') {
+        await dispatch(
+          sendUpdateMobileInfo({
+            account: currentAccount,
+            anchorProvider,
+            cluster,
+            updateTxn: updateInfoTxn,
+          }),
+        )
+      }
+    },
+    [
+      anchorProvider,
+      cluster,
+      currentAccount,
+      dispatch,
+      t,
+      walletSignBottomSheetRef,
+    ],
+  )
+
   return {
     submitPayment,
     submitCollectable,
@@ -466,5 +550,6 @@ export default () => {
     submitLedger,
     submitMintDataCredits,
     submitDelegateDataCredits,
+    submitUpdateEntityInfo,
   }
 }

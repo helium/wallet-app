@@ -12,24 +12,30 @@ const WalletSignBottomSheetTransaction = ({
   transactionIdx,
   totalTransactions,
   incrementTotalSolFee,
+  setNestedInsufficentFunds,
 }: {
   transaction: Buffer
   transactionIdx: number
   totalTransactions: number
   incrementTotalSolFee: (fee: number) => void
+  setNestedInsufficentFunds: React.Dispatch<React.SetStateAction<boolean>>
 }) => {
   const { anchorProvider } = useSolana()
   const { t } = useTranslation()
-  const { loading, balanceChanges, solFee } = useSimulatedTransaction(
-    transaction,
-    anchorProvider?.publicKey,
-  )
+  const { loading, balanceChanges, solFee, insufficientFunds } =
+    useSimulatedTransaction(transaction, anchorProvider?.publicKey)
 
   useEffect(() => {
     if (solFee) {
       incrementTotalSolFee(solFee)
     }
   }, [solFee, incrementTotalSolFee])
+
+  useEffect(() => {
+    if (insufficientFunds) {
+      setNestedInsufficentFunds(true)
+    }
+  }, [insufficientFunds, setNestedInsufficentFunds])
 
   return (
     <Box marginBottom="m">

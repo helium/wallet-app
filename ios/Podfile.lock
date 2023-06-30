@@ -65,6 +65,15 @@ PODS:
     - hermes-engine/Pre-built (= 0.71.5)
   - hermes-engine/Pre-built (0.71.5)
   - libevent (2.1.12)
+  - MapboxCommon (23.5.0)
+  - MapboxCoreMaps (10.13.1):
+    - MapboxCommon (~> 23.5)
+  - MapboxMaps (10.13.1):
+    - MapboxCommon (= 23.5.0)
+    - MapboxCoreMaps (= 10.13.1)
+    - MapboxMobileEvents (= 1.0.10)
+    - Turf (~> 2.0)
+  - MapboxMobileEvents (1.0.10)
   - MultiplatformBleAdapter (0.1.9)
   - OneSignalXCFramework (3.11.2):
     - OneSignalXCFramework/OneSignalCore (= 3.11.2)
@@ -477,6 +486,17 @@ PODS:
     - React
   - RNLocalize (2.2.3):
     - React-Core
+  - rnmapbox-maps (10.0.7-rc.0):
+    - MapboxMaps (~> 10.13.1)
+    - React
+    - React-Core
+    - rnmapbox-maps/DynamicLibrary (= 10.0.7-rc.0)
+    - Turf
+  - rnmapbox-maps/DynamicLibrary (10.0.7-rc.0):
+    - MapboxMaps (~> 10.13.1)
+    - React
+    - React-Core
+    - Turf
   - RNOS (1.2.6):
     - React
   - RNReactNativeSharedGroupPreferences (1.1.23):
@@ -522,6 +542,7 @@ PODS:
   - TcpSockets (3.3.2):
     - React
   - Toast (4.0.0)
+  - Turf (2.6.1)
   - Yoga (1.14.0)
   - ZXingObjC/Core (3.6.5)
   - ZXingObjC/OneD (3.6.5):
@@ -610,6 +631,7 @@ DEPENDENCIES:
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNICloudStore (from `../node_modules/react-native-icloudstore`)
   - RNLocalize (from `../node_modules/react-native-localize`)
+  - "rnmapbox-maps (from `../node_modules/@rnmapbox/maps`)"
   - RNOS (from `../node_modules/react-native-os`)
   - RNReactNativeSharedGroupPreferences (from `../node_modules/react-native-shared-group-preferences`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
@@ -627,11 +649,16 @@ SPEC REPOS:
     - Charts
     - fmt
     - libevent
+    - MapboxCommon
+    - MapboxCoreMaps
+    - MapboxMaps
+    - MapboxMobileEvents
     - MultiplatformBleAdapter
     - OneSignalXCFramework
     - SwiftAlgorithms
     - SwiftyJSON
     - Toast
+    - Turf
     - ZXingObjC
 
 EXTERNAL SOURCES:
@@ -787,6 +814,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-icloudstore"
   RNLocalize:
     :path: "../node_modules/react-native-localize"
+  rnmapbox-maps:
+    :path: "../node_modules/@rnmapbox/maps"
   RNOS:
     :path: "../node_modules/react-native-os"
   RNReactNativeSharedGroupPreferences:
@@ -836,6 +865,10 @@ SPEC CHECKSUMS:
   helium-react-native-sdk: 32c0a7e3abc733a7f3d291013b2db31475fc6980
   hermes-engine: 7a53ccac09146018a08239c5425625fdb79a6162
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
+  MapboxCommon: fdf7fd31c90b7b607cd9c63e37797f023c01d860
+  MapboxCoreMaps: 24270c7c6b8cb71819fc2f3c549db9620ee4d019
+  MapboxMaps: cb76511b98d3b95c74b0771ed105bc69f30ace6b
+  MapboxMobileEvents: de50b3a4de180dd129c326e09cd12c8adaaa46d6
   MultiplatformBleAdapter: 5a6a897b006764392f9cef785e4360f54fb9477d
   OneSignalXCFramework: 81ceac017a290f23793443323090cfbe888f74ea
   RCT-Folly: 766adb69dc1d6294bcc94a950a818a87adb3a766
@@ -890,6 +923,7 @@ SPEC CHECKSUMS:
   RNGestureHandler: 071d7a9ad81e8b83fe7663b303d132406a7d8f39
   RNICloudStore: bc6e225811637c09bd1eb055d6cd7448e61cd451
   RNLocalize: a64514b46a01375fdfae9349036b4dc7130333b5
+  rnmapbox-maps: 3553325eec9e1501942bbb28702b3a44457961d2
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNReactNativeSharedGroupPreferences: de0121a4224c267bc7e9fb16c398f3f087c8da81
   RNReanimated: cc5e3aa479cb9170bcccf8204291a6950a3be128
@@ -901,9 +935,10 @@ SPEC CHECKSUMS:
   SwiftyJSON: 36413e04c44ee145039d332b4f4e2d3e8d6c4db7
   TcpSockets: 14306fb79f9750ea7d2ddd02d8bed182abb01797
   Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
+  Turf: 469ce2c3d22e5e8e4818d5a3b254699a5c89efa4
   Yoga: cd7d7f509dbfac14ee7f31a6c750acb957cd5022
   ZXingObjC: fdbb269f25dd2032da343e06f10224d62f537bdb
 
-PODFILE CHECKSUM: 937d8a7c4c89c7ca2d628ef6102ea60af8290d94
+PODFILE CHECKSUM: 315053ef8dad0ea72bc8b3d40f59c1020ede650c
 
 COCOAPODS: 1.11.3
