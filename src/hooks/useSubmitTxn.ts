@@ -501,7 +501,7 @@ export default () => {
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signAssertLocationTxn'),
-        serializedTx: Buffer.from(serializedTx),
+        serializedTxs: [Buffer.from(serializedTx)],
       })
 
       if (!decision) {
