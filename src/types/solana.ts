@@ -52,9 +52,8 @@ export const toMintAddress = (
 
 export const mintToTicker = (mint: string, mints: Record<string, string>) => {
   const found = Object.keys(mints).find((key) => mints[key as Ticker] === mint)
-  if (!found) throw new Error('Token type for mint not found')
 
-  return found as Ticker
+  return found as Ticker | undefined
 }
 
 export type CompressedNFT = {

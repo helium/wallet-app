@@ -96,7 +96,7 @@ export default ({
       const payments = solanaActivity.data[account.solanaAddress]?.payment[
         ticker
       ]?.filter((txn) => txn.tokenType === ticker)
-      return payments.filter((txn) =>
+      return payments?.filter((txn) =>
         filter === 'out'
           ? txn.payee === account.solanaAddress
           : txn.payee !== account.solanaAddress,
