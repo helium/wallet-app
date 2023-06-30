@@ -108,16 +108,18 @@ export function useSimulatedTransaction(
       c: Connection | undefined,
       t: VersionedTransaction | undefined,
     ): Promise<number> => {
+      let fee = 5000
+
       if (!c || !t) {
-        return Promise.resolve(5000)
+        return Promise.resolve(fee)
       }
 
-      let fee = 5000
       try {
-        fee = (await c?.getFeeForMessage(t.message, 'confirmed')).value || 5000
+        fee = (await c?.getFeeForMessage(t.message, 'confirmed')).value || fee
       } catch (err) {
         logger.error(err)
       }
+
       return fee
     },
     [connection, transaction],

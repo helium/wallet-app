@@ -6,10 +6,7 @@ import { Mints } from '@utils/constants'
 import * as solUtils from '@utils/solanaUtils'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { HotspotType } from '@helium/onboarding'
-import {
-  BalanceChange,
-  WalletStandardMessageTypes,
-} from '../solana/walletSignBottomSheetTypes'
+import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
 import {
   makeCollectablePayment,
   makePayment,
@@ -77,7 +74,7 @@ export default () => {
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signPaymentTxn'),
-        serializedTx: Buffer.from(serializedTx),
+        serializedTxs: [Buffer.from(serializedTx)],
       })
 
       if (!decision) {
@@ -140,7 +137,7 @@ export default () => {
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signTransferCollectableTxn'),
-        serializedTx: Buffer.from(serializedTx),
+        serializedTxs: [Buffer.from(serializedTx)],
       })
 
       if (!decision) {
@@ -172,6 +169,11 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
+      const { connection } = anchorProvider
+      const recipientExists = Boolean(
+        await connection.getAccountInfo(recipient),
+      )
+
       const swapTxn = await solUtils.createTreasurySwapTxn(
         amount,
         fromMint,
@@ -186,8 +188,9 @@ export default () => {
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
+        warning: recipientExists ? '' : t('transactions.recipientNonExistent'),
         additionalMessage: t('transactions.signSwapTxn'),
-        serializedTx: Buffer.from(serializedTx),
+        serializedTxs: [Buffer.from(serializedTx)],
       })
 
       if (!decision) {
@@ -226,7 +229,7 @@ export default () => {
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signGenericTxn'),
-        serializedTx: Buffer.from(serializedTx),
+        serializedTxs: [Buffer.from(serializedTx)],
       })
 
       if (!decision) {
@@ -258,15 +261,17 @@ export default () => {
         throw new Error('No wallet sign bottom sheet ref')
       }
 
-      const serializedTx = txns[0].serialize({
-        requireAllSignatures: false,
-      })
+      const serializedTxs = txns.map((txn) =>
+        txn.serialize({
+          requireAllSignatures: false,
+        }),
+      )
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signClaimRewardsTxn'),
-        serializedTx: Buffer.from(serializedTx),
+        serializedTxs: serializedTxs.map(Buffer.from),
       })
 
       if (!decision) {
@@ -296,7 +301,6 @@ export default () => {
     async (
       lazyDistributors: PublicKey[],
       hotspots: HotspotWithPendingRewards[],
-      balanceChanges: BalanceChange[],
     ) => {
       if (!anchorProvider || !currentAccount || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
@@ -306,17 +310,23 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      // Estimating fee in lamports. Not the best but works for now (:
-      const claimAllEstimatedFee =
-        hotspots.length !== 0 ? (hotspots.length / 2) * 5000 : 5000
+      const txns = await solUtils.claimAllRewardsTxns(
+        anchorProvider,
+        lazyDistributors,
+        hotspots,
+      )
+
+      const serializedTxs = txns.map((txn) =>
+        txn.serialize({
+          requireAllSignatures: false,
+        }),
+      )
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signClaimAllRewardsTxn'),
-        manualEstimatedFee: claimAllEstimatedFee,
-        manualBalanceChanges: balanceChanges,
-        serializedTx: undefined,
+        serializedTxs: serializedTxs.map(Buffer.from),
       })
 
       if (!decision) {
@@ -326,8 +336,7 @@ export default () => {
       dispatch(
         claimAllRewards({
           account: currentAccount,
-          lazyDistributors,
-          hotspots,
+          txns,
           anchorProvider,
           cluster,
         }),
@@ -359,6 +368,11 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
+      const { connection } = anchorProvider
+      const recipientExists = Boolean(
+        await connection.getAccountInfo(recipient),
+      )
+
       const swapTxn = await solUtils.mintDataCredits({
         anchorProvider,
         dcAmount,
@@ -372,8 +386,9 @@ export default () => {
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
+        warning: recipientExists ? '' : t('transactions.recipientNonExistent'),
         additionalMessage: t('transactions.signMintDataCreditsTxn'),
-        serializedTx: Buffer.from(serializedTx),
+        serializedTxs: [Buffer.from(serializedTx)],
       })
 
       if (!decision) {
@@ -419,7 +434,7 @@ export default () => {
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signDelegateDCTxn'),
-        serializedTx: Buffer.from(serializedTx),
+        serializedTxs: [Buffer.from(serializedTx)],
       })
 
       if (!decision) {

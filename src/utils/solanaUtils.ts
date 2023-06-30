@@ -64,6 +64,7 @@ import {
 } from '@solana/spl-account-compression'
 import bs58 from 'bs58'
 import {
+  Asset,
   HNT_MINT,
   getAsset,
   searchAssets,
@@ -72,6 +73,7 @@ import {
   IOT_MINT,
   DC_MINT,
   MOBILE_MINT,
+  truthy,
 } from '@helium/spl-utils'
 import { AnchorProvider, BN } from '@coral-xyz/anchor'
 import * as tm from '@helium/treasury-management-sdk'
@@ -79,8 +81,12 @@ import {
   delegatedDataCreditsKey,
   escrowAccountKey,
 } from '@helium/data-credits-sdk'
-import { getPendingRewards } from '@helium/distributor-oracle'
-import { init } from '@helium/lazy-distributor-sdk'
+import {
+  getPendingRewards,
+  getBulkRewards,
+  formBulkTransactions,
+} from '@helium/distributor-oracle'
+import * as lz from '@helium/lazy-distributor-sdk'
 import {
   PROGRAM_ID as FanoutProgramId,
   fanoutKey,
@@ -1054,9 +1060,8 @@ export async function annotateWithPendingRewards(
   provider: AnchorProvider,
   hotspots: CompressedNFT[],
 ): Promise<HotspotWithPendingRewards[]> {
-  const program = await init(provider)
+  const program = await lz.init(provider)
   const dao = DAO_KEY
-
   const entityKeys = hotspots.map((h) => {
     return h.content.json_uri.split('/').slice(-1)[0]
   })
@@ -1662,6 +1667,96 @@ export const updateEntityInfoTxn = async ({
     tx.feePayer = payer
 
     return tx
+  } catch (e) {
+    Logger.error(e)
+    throw e as Error
+  }
+}
+
+const chunks = <T>(array: T[], size: number): T[][] =>
+  Array.apply(0, new Array(Math.ceil(array.length / size))).map((_, index) =>
+    array.slice(index * size, (index + 1) * size),
+  )
+
+function toAsset(hotspot: HotspotWithPendingRewards): Asset {
+  return {
+    ...hotspot,
+    id: new PublicKey(hotspot.id),
+    grouping:
+      hotspot.grouping &&
+      hotspot.grouping.map((g) => ({
+        ...g,
+        group_value: new PublicKey(g.group_value),
+      })),
+    compression: {
+      ...hotspot.compression,
+      leafId: hotspot.compression.leaf_id,
+      dataHash: Buffer.from(bs58.decode(hotspot.compression.data_hash)),
+      creatorHash: Buffer.from(bs58.decode(hotspot.compression.creator_hash)),
+      assetHash: Buffer.from(bs58.decode(hotspot.compression.asset_hash)),
+      tree: new PublicKey(hotspot.compression.tree),
+    },
+    ownership: {
+      ...hotspot.ownership,
+      delegate:
+        hotspot.ownership.delegate && new PublicKey(hotspot.ownership.delegate),
+      owner: new PublicKey(hotspot.ownership.owner),
+    },
+  }
+}
+
+export async function claimAllRewardsTxns(
+  anchorProvider: AnchorProvider,
+  lazyDistributors: PublicKey[],
+  hotspots: HotspotWithPendingRewards[],
+) {
+  try {
+    const { connection } = anchorProvider
+    const { publicKey: payer } = anchorProvider.wallet
+    const lazyProgram = await lz.init(anchorProvider)
+    let txns: Transaction[] | undefined
+
+    // Use for loops to linearly order promises
+    // eslint-disable-next-line no-restricted-syntax
+    for (const lazyDistributor of lazyDistributors) {
+      const lazyDistributorAcc =
+        // eslint-disable-next-line no-await-in-loop
+        await lazyProgram.account.lazyDistributorV0.fetch(lazyDistributor)
+      // eslint-disable-next-line no-restricted-syntax
+      for (const chunk of chunks(hotspots, 25)) {
+        const entityKeys = chunk.map(
+          (h) => h.content.json_uri.split('/').slice(-1)[0],
+        )
+
+        // eslint-disable-next-line no-await-in-loop
+        const rewards = await getBulkRewards(
+          lazyProgram,
+          lazyDistributor,
+          entityKeys,
+        )
+
+        // eslint-disable-next-line no-await-in-loop
+        const txs = await formBulkTransactions({
+          program: lazyProgram,
+          rewards,
+          assets: chunk.map((h) => new PublicKey(h.id)),
+          compressionAssetAccs: chunk.map(toAsset),
+          lazyDistributor,
+          lazyDistributorAcc,
+          assetEndpoint: connection.rpcEndpoint,
+          wallet: payer,
+        })
+
+        const validTxns = txs.filter(truthy)
+        txns = [...(txns || []), ...validTxns]
+      }
+    }
+
+    if (!txns) {
+      throw new Error('Unable to form transactions')
+    }
+
+    return txns
   } catch (e) {
     Logger.error(e)
     throw e as Error

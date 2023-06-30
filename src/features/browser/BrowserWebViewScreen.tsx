@@ -99,7 +99,7 @@ const BrowserWebViewScreen = () => {
         const decision = await walletSignBottomSheetRef.current?.show({
           type,
           url: currentUrl,
-          serializedTx: undefined,
+          serializedTxs: undefined,
         })
 
         if (!decision) {
@@ -122,7 +122,7 @@ const BrowserWebViewScreen = () => {
         const decision = await walletSignBottomSheetRef?.current?.show({
           type,
           url: currentUrl,
-          serializedTx: undefined,
+          serializedTxs: undefined,
         })
 
         if (!decision) {
@@ -265,7 +265,7 @@ const BrowserWebViewScreen = () => {
         const decision = await walletSignBottomSheetRef.current?.show({
           type,
           url: currentUrl,
-          serializedTx: txBuffers[0],
+          serializedTxs: txBuffers,
         })
         if (!decision) {
           // Signature declined
@@ -329,7 +329,7 @@ const BrowserWebViewScreen = () => {
         const decision = await walletSignBottomSheetRef.current?.show({
           type,
           url: currentUrl,
-          serializedTx: undefined,
+          serializedTxs: undefined,
         })
 
         if (!decision) {
