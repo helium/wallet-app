@@ -1183,7 +1183,9 @@ export const getAllTransactions = async (
   const sessionKey = await getSessionKey()
 
   const parseTransactionsUrl = `${
-    cluster === 'devnet' ? Config.DEVNET_RPC_URL : Config.MAINNET_RPC_URL
+    cluster === 'devnet'
+      ? Config.DEVNET_HELIUS_RPC_URL || Config.DEVNET_RPC_URL
+      : Config.MAINNET_HELIUS_RPC_URL || Config.MAINNET_RPC_URL
   }/v0/transactions/?session-key=${
     sessionKey || Config.RPC_SESSION_KEY_FALLBACK
   }`
