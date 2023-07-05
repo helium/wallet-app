@@ -68,7 +68,7 @@
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Allow Location</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Allow Helium to use your location for asserting the location of your hotspot</string>
+	<string>Allow this app to use your location to add your Hotspots to the network</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Allow Location</string>
 	<key>NSUserActivityTypes</key>
