@@ -67,6 +67,8 @@
 	<string>Allow Helium to authenticate with Face ID</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Allow Location</string>
+  <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+  <string>Allow Helium to use your location for asserting the location of your hotspot</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Allow Location</string>
 	<key>NSUserActivityTypes</key>
