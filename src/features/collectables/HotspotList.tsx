@@ -29,7 +29,7 @@ import { CollectableNavigationProp } from './collectablesTypes'
 import { CompressedNFT, HotspotWithPendingRewards } from '../../types/solana'
 import { NFTSkeleton } from './NftListItem'
 
-const DEFAULT_PAGE_AMOUNT = 20
+export const DEFAULT_PAGE_AMOUNT = 20
 
 const HotspotList = () => {
   const navigation = useNavigation<CollectableNavigationProp>()
