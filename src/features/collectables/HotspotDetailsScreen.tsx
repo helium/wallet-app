@@ -219,14 +219,12 @@ const HotspotDetailsScreen = () => {
                 flex={1}
                 flexShrink={0}
                 borderRadius="round"
-                backgroundColor="white"
-                backgroundColorOpacity={0.4}
+                borderWidth={2}
+                borderColor="white"
                 backgroundColorOpacityPressed={0.7}
-                backgroundColorDisabled="white"
-                backgroundColorDisabledOpacity={0.1}
-                titleColorDisabled="secondaryText"
                 title={t('collectablesScreen.hotspots.manage')}
-                titleColor="black"
+                titleColor="white"
+                titleColorPressed="black"
                 onPress={toggleFiltersOpen(true)}
               />
               <Box paddingVertical="s" />
