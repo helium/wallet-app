@@ -20,7 +20,6 @@ import {
   AccountMeta,
   SignatureResult,
   ParsedTransactionWithMeta,
-  ParsedInstruction,
   Transaction,
 } from '@solana/web3.js'
 import * as dc from '@helium/data-credits-sdk'
@@ -1421,7 +1420,7 @@ export const solInstructionsToActivity = (
 
   const activity: Activity = { hash: signature, type: 'unknown' }
 
-  const { transaction, slot, blockTime, meta } = parsedTxn
+  const { slot, blockTime, meta } = parsedTxn
 
   activity.fee = meta?.fee
   activity.height = slot
@@ -1459,10 +1458,7 @@ export const solInstructionsToActivity = (
     activity.payments = payments
   }
 
-  const transfer = transaction.message.instructions.find((i) => {
-    const instruction = i as ParsedInstruction
-    return instruction?.parsed?.type === 'transferChecked'
-  }) as ParsedInstruction
+  const transfer = (activity.payments?.length || 0) > 0
 
   if (transfer) {
     // We have a payment
