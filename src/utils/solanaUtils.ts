@@ -1459,10 +1459,7 @@ export const solInstructionsToActivity = (
     activity.payments = payments
   }
 
-  const transfer = transaction.message.instructions.find((i) => {
-    const instruction = i as ParsedInstruction
-    return instruction?.parsed?.type === 'transferChecked'
-  }) as ParsedInstruction
+  const transfer = activity.payments?.length > 0
 
   if (transfer) {
     // We have a payment
