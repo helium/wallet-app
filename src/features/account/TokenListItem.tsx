@@ -1,40 +1,45 @@
-import Balance, { AnyCurrencyType } from '@helium/currency'
-import React, { useCallback, useMemo } from 'react'
 import Arrow from '@assets/images/listItemRight.svg'
-import { useNavigation } from '@react-navigation/native'
 import Box from '@components/Box'
 import FadeInOut from '@components/FadeInOut'
 import Text from '@components/Text'
-import TouchableContainer from '@components/TouchableContainer'
 import TokenIcon from '@components/TokenIcon'
+import TouchableContainer from '@components/TouchableContainer'
+import { Ticker } from '@helium/currency'
+import { useOwnedAmount } from '@helium/helium-react-hooks'
+import { humanReadable } from '@helium/spl-utils'
 import useHaptic from '@hooks/useHaptic'
-import { balanceToString } from '@utils/Balance'
-import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { usePublicKey } from '@hooks/usePublicKey'
+import { useNavigation } from '@react-navigation/native'
+import { PublicKey } from '@solana/web3.js'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
+import BN from 'bn.js'
+import React, { useCallback, useMemo } from 'react'
 import { HomeNavigationProp } from '../home/homeTypes'
+import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 
 export const ITEM_HEIGHT = 72
 type Props = {
-  balance: Balance<AnyCurrencyType>
+  mint: PublicKey
 }
-const TokenListItem = ({ balance }: Props) => {
+const TokenListItem = ({ mint }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
+  const { currentAccount } = useAccountStorage()
+  const wallet = usePublicKey(currentAccount?.solanaAddress)
+  const { amount, decimals } = useOwnedAmount(wallet, mint)
   const { triggerImpact } = useHaptic()
+  const { json, symbol } = useMetaplexMetadata(mint)
 
   const handleNavigation = useCallback(() => {
     triggerImpact('light')
     navigation.navigate('AccountTokenScreen', {
-      tokenType: balance.type.ticker,
+      mint: mint.toBase58(),
     })
-  }, [navigation, balance, triggerImpact])
+  }, [navigation, mint, triggerImpact])
 
   const balanceToDisplay = useMemo(() => {
-    return (
-      balanceToString(balance, {
-        maxDecimalPlaces: 9,
-        showTicker: false,
-      }) || 0
-    )
-  }, [balance])
+    return amount ? humanReadable(new BN(amount.toString()), decimals) : ''
+  }, [amount, decimals])
 
   return (
     <FadeInOut>
@@ -48,7 +53,7 @@ const TokenListItem = ({ balance }: Props) => {
         borderBottomColor="primaryBackground"
         borderBottomWidth={1}
       >
-        <TokenIcon ticker={balance.type.ticker} />
+        <TokenIcon img={json?.image} />
         <Box flex={1} paddingHorizontal="m">
           <Box flexDirection="row" alignItems="center">
             <Text
@@ -63,20 +68,24 @@ const TokenListItem = ({ balance }: Props) => {
               color="secondaryText"
               maxFontSizeMultiplier={1.3}
             >
-              {balance.type.ticker}
+              {symbol}
             </Text>
           </Box>
-          <AccountTokenCurrencyBalance
-            variant="subtitle4"
-            color="secondaryText"
-            ticker={balance.type.ticker}
-          />
+          {symbol && (
+            <AccountTokenCurrencyBalance
+              variant="subtitle4"
+              color="secondaryText"
+              ticker={symbol.toUpperCase() as Ticker}
+            />
+          )}
         </Box>
         <Arrow />
       </TouchableContainer>
     </FadeInOut>
   )
 }
+
+export default TokenListItem
 
 export const TokenSkeleton = () => {
   return (
@@ -104,5 +113,3 @@ export const TokenSkeleton = () => {
     </FadeInOut>
   )
 }
-
-export default TokenListItem

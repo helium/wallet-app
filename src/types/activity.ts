@@ -1,5 +1,3 @@
-import { Ticker } from '@helium/currency'
-
 export type Activity = {
   account?: null | string
   address?: null | string
@@ -34,7 +32,7 @@ export type Activity = {
   stakingFee?: null | number
   startEpoch?: null | number
   time?: null | number
-  tokenType?: null | Ticker
+  mint?: null | string
   type: string
 }
 
@@ -42,7 +40,7 @@ export type Payment = {
   amount: number
   memo?: null | string
   payee: string
-  tokenType?: null | Ticker
+  mint?: null | string
 }
 
 export type Reward = {

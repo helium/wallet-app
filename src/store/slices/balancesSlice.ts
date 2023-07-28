@@ -1,7 +1,7 @@
 import { AnchorProvider } from '@coral-xyz/anchor'
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { Cluster, PublicKey } from '@solana/web3.js'
-import { AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token'
+import { AccountLayout, TOKEN_PROGRAM_ID, getMint } from '@solana/spl-token'
 import BN from 'bn.js'
 import { CSAccount } from '../../storage/cloudStorage'
 import { getBalanceHistory, getTokenPrices } from '../../utils/walletApiV2'
@@ -60,16 +60,20 @@ export const syncTokenAccounts = createAsyncThunk(
       programId: TOKEN_PROGRAM_ID,
     })
 
-    const atas = tokenAccounts.value.map((tokenAccount) => {
-      const accountData = AccountLayout.decode(tokenAccount.account.data)
-      const { mint } = accountData
+    const atas = await Promise.all(
+      tokenAccounts.value.map(async (tokenAccount) => {
+        const accountData = AccountLayout.decode(tokenAccount.account.data)
+        const { mint } = accountData
+        const mintAcc = await getMint(connection, mint)
 
-      return {
-        tokenAccount: tokenAccount.pubkey.toBase58(),
-        mint: mint.toBase58(),
-        balance: Number(accountData.amount || 0),
-      }
-    })
+        return {
+          tokenAccount: tokenAccount.pubkey.toBase58(),
+          mint: mint.toBase58(),
+          balance: Number(accountData.amount || 0),
+          decimals: mintAcc.decimals,
+        }
+      }),
+    )
 
     const escrowAccount = getEscrowTokenAccount(acct.solanaAddress)
     let escrowBalance = 0

@@ -1,23 +1,11 @@
 import { NetTypes } from '@helium/address'
-import Balance, {
-  CurrencyType,
-  IotTokens,
-  MobileTokens,
-  NetworkTokens,
-  SolTokens,
-  TestNetworkTokens,
-  USDollars,
-} from '@helium/currency'
+import Balance, { USDollars } from '@helium/currency'
+import { PublicKey } from '@solana/web3.js'
+import BN from 'bn.js'
 import { useReducer } from 'react'
 import { CSAccount } from '../../storage/cloudStorage'
 import { TXN_FEE_IN_LAMPORTS } from '../../utils/solanaUtils'
 import { Payment } from './PaymentItem'
-
-type PaymentCurrencyType =
-  | NetworkTokens
-  | TestNetworkTokens
-  | IotTokens
-  | MobileTokens
 
 type UpdatePayeeAction = {
   type: 'updatePayee'
@@ -25,14 +13,14 @@ type UpdatePayeeAction = {
   address: string
   index: number
   payer: string
-  createTokenAccountFee: Balance<PaymentCurrencyType>
+  createTokenAccountFee: BN
 }
 
 type UpdateBalanceAction = {
   type: 'updateBalance'
   address?: string
   index: number
-  value?: Balance<PaymentCurrencyType>
+  value?: BN
   payer: string
 }
 
@@ -58,7 +46,7 @@ type AddPayee = {
 
 type ChangeToken = {
   type: 'changeToken'
-  currencyType: PaymentCurrencyType
+  mint: PublicKey
 }
 
 type AddLinkedPayments = {
@@ -74,40 +62,37 @@ export const MAX_PAYMENTS = 10
 
 type PaymentState = {
   payments: Payment[]
-  totalAmount: Balance<PaymentCurrencyType>
+  totalAmount: BN
   error?: string
-  currencyType: PaymentCurrencyType
+  mint: PublicKey
   oraclePrice?: Balance<USDollars>
   netType: NetTypes.NetType
-  networkFee?: Balance<TestNetworkTokens | NetworkTokens | SolTokens>
-  accountMobileBalance?: Balance<MobileTokens>
-  accountIotBalance?: Balance<IotTokens>
-  accountNetworkBalance?: Balance<TestNetworkTokens | NetworkTokens>
+  networkFee?: BN
+  balance: BN
 }
 
 const initialState = (opts: {
-  currencyType: PaymentCurrencyType
+  mint: PublicKey
   payments?: Payment[]
   netType: NetTypes.NetType
   oraclePrice?: Balance<USDollars>
-  accountMobileBalance?: Balance<MobileTokens>
-  accountIotBalance?: Balance<IotTokens>
-  accountNetworkBalance?: Balance<TestNetworkTokens | NetworkTokens>
+  balance?: BN
 }): PaymentState => ({
   error: undefined,
   payments: [{}] as Array<Payment>,
-  totalAmount: new Balance(0, opts.currencyType),
+  totalAmount: new BN(0),
+  balance: opts.balance || new BN(0),
   ...calculateFee([{}]),
   ...opts,
 })
 
-const paymentsSum = (payments: Payment[], type: PaymentCurrencyType) => {
+const paymentsSum = (payments: Payment[]) => {
   return payments.reduce((prev, current) => {
     if (!current.amount) {
       return prev
     }
-    return prev.plus(current.amount)
-  }, new Balance(0, type))
+    return prev.add(current.amount)
+  }, new BN(0))
 }
 
 const calculateFee = (payments: Payment[]) => {
@@ -115,14 +100,11 @@ const calculateFee = (payments: Payment[]) => {
     if (!current.createTokenAccountFee) {
       return prev
     }
-    return prev.plus(current.createTokenAccountFee)
-  }, new Balance(0, CurrencyType.solTokens))
+    return prev.add(current.createTokenAccountFee)
+  }, new BN(0))
 
-  const txnFeeInLammportsFee = new Balance(
-    TXN_FEE_IN_LAMPORTS,
-    CurrencyType.solTokens,
-  )
-  const networkFee = totalFee.plus(txnFeeInLammportsFee)
+  const txnFeeInLammportsFee = new BN(TXN_FEE_IN_LAMPORTS)
+  const networkFee = totalFee.add(txnFeeInLammportsFee)
 
   return {
     networkFee,
@@ -130,22 +112,21 @@ const calculateFee = (payments: Payment[]) => {
 }
 
 const recalculate = (payments: Payment[], state: PaymentState) => {
-  const accountBalance = getAccountBalance(state)
+  const accountBalance = state.balance
   const { networkFee } = calculateFee(payments)
 
   const maxPayment = payments.find((p) => p.max)
-  const totalAmount = paymentsSum(payments, state.currencyType)
+  const totalAmount = paymentsSum(payments)
   if (!maxPayment) {
     return { networkFee, payments, totalAmount }
   }
-  const prevPaymentAmount =
-    maxPayment?.amount ?? new Balance(0, state.currencyType)
+  const prevPaymentAmount = maxPayment?.amount ?? new BN(0)
 
-  const totalMinusPrevPayment = totalAmount.minus(prevPaymentAmount)
-  let maxBalance = accountBalance?.minus(totalMinusPrevPayment)
+  const totalMinusPrevPayment = totalAmount.sub(prevPaymentAmount)
+  let maxBalance = accountBalance?.sub(totalMinusPrevPayment)
 
-  if ((maxBalance?.integerBalance ?? 0) < 0) {
-    maxBalance = new Balance(0, state.currencyType)
+  if (maxBalance.lt(new BN(0))) {
+    maxBalance = new BN(0)
   }
 
   maxPayment.amount = maxBalance
@@ -153,25 +134,8 @@ const recalculate = (payments: Payment[], state: PaymentState) => {
   return {
     networkFee,
     payments,
-    totalAmount: paymentsSum(payments, state.currencyType),
+    totalAmount: paymentsSum(payments),
   }
-}
-
-const getAccountBalance = ({
-  accountIotBalance,
-  accountMobileBalance,
-  accountNetworkBalance,
-  currencyType,
-}: PaymentState) => {
-  if (currencyType.ticker === CurrencyType.iot.ticker) {
-    return accountIotBalance
-  }
-
-  if (currencyType.ticker === CurrencyType.mobile.ticker) {
-    return accountMobileBalance
-  }
-
-  return accountNetworkBalance
 }
 
 function reducer(
@@ -266,12 +230,10 @@ function reducer(
       })
 
       return initialState({
-        currencyType: action.currencyType,
+        mint: action.mint,
         payments: newPayments,
         oraclePrice: state.oraclePrice,
-        accountMobileBalance: state.accountMobileBalance,
-        accountIotBalance: state.accountIotBalance,
-        accountNetworkBalance: state.accountNetworkBalance,
+        balance: state.balance,
         netType: state.netType,
       })
     }
@@ -279,11 +241,9 @@ function reducer(
     case 'addLinkedPayments': {
       if (!action.payments.length) {
         return initialState({
-          currencyType: state.currencyType,
+          mint: state.mint,
           oraclePrice: state.oraclePrice,
-          accountMobileBalance: state.accountMobileBalance,
-          accountIotBalance: state.accountIotBalance,
-          accountNetworkBalance: state.accountNetworkBalance,
+          balance: state.balance,
           netType: state.netType,
         })
       }
@@ -291,12 +251,10 @@ function reducer(
       const nextPayments: Payment[] = action.payments.map((p) => ({
         address: p.address,
         account: p.account,
-        amount: p.amount
-          ? new Balance(parseInt(p.amount, 10), state.currencyType)
-          : undefined,
-        createTokenAccountFee: new Balance(0, CurrencyType.solTokens),
+        amount: p.amount ? new BN(parseInt(p.amount, 10)) : undefined,
+        createTokenAccountFee: new BN(0),
       }))
-      const totalAmount = paymentsSum(nextPayments, state.currencyType)
+      const totalAmount = paymentsSum(nextPayments)
 
       const fees = calculateFee(nextPayments)
 
@@ -337,9 +295,7 @@ function reducer(
 
 export default (opts: {
   netType: NetTypes.NetType
-  currencyType: PaymentCurrencyType
+  mint: PublicKey
   oraclePrice?: Balance<USDollars>
-  accountMobileBalance?: Balance<MobileTokens>
-  accountIotBalance?: Balance<MobileTokens>
-  accountNetworkBalance?: Balance<TestNetworkTokens | NetworkTokens>
+  balance?: BN
 }) => useReducer(reducer, initialState(opts))

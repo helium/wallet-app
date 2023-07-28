@@ -1,7 +1,7 @@
 import { AnchorProvider } from '@coral-xyz/anchor'
-import { Ticker } from '@helium/currency'
 import {
   bulkSendRawTransactions,
+  bulkSendTransactions,
   sendAndConfirmWithRetry,
 } from '@helium/spl-utils'
 import {
@@ -17,14 +17,13 @@ import {
 import { first, last } from 'lodash'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
-import { toMintAddress } from '../../types/solana'
 import * as Logger from '../../utils/logger'
 import * as solUtils from '../../utils/solanaUtils'
 import { postPayment } from '../../utils/walletApiV2'
 import { fetchCollectables } from './collectablesSlice'
 import { fetchHotspots } from './hotspotsSlice'
 
-type TokenActivity = Record<Ticker, Activity[]>
+type TokenActivity = Record<string, Activity[]>
 
 type SolActivity = {
   all: TokenActivity
@@ -56,7 +55,7 @@ type PaymentInput = {
   account: CSAccount
   cluster: Cluster
   anchorProvider: AnchorProvider
-  paymentTxn: Transaction
+  paymentTxns: Transaction[]
 }
 
 type CollectablePaymentInput = {
@@ -120,21 +119,19 @@ type UpdateMobileInfoInput = {
 
 export const makePayment = createAsyncThunk(
   'solana/makePayment',
-  async ({ account, cluster, anchorProvider, paymentTxn }: PaymentInput) => {
+  async ({ account, cluster, anchorProvider, paymentTxns }: PaymentInput) => {
     if (!account?.solanaAddress) throw new Error('No solana account found')
 
-    const signed = await anchorProvider.wallet.signTransaction(paymentTxn)
+    const signatures = await bulkSendTransactions(anchorProvider, paymentTxns)
 
-    const signature = await anchorProvider.sendAndConfirm(signed)
-
-    postPayment({ signature, cluster })
+    postPayment({ signatures, cluster })
 
     postPayment({
-      signature,
+      signatures,
       cluster,
     })
 
-    return signature
+    return signatures
   },
 )
 
@@ -151,7 +148,7 @@ export const makeCollectablePayment = createAsyncThunk(
 
       const sig = await anchorProvider.sendAndConfirm(signed)
 
-      postPayment({ signature: sig, cluster })
+      postPayment({ signatures: [sig], cluster })
 
       dispatch(
         fetchCollectables({
@@ -177,7 +174,7 @@ export const sendTreasurySwap = createAsyncThunk(
 
       const sig = await anchorProvider.sendAndConfirm(signed)
 
-      postPayment({ signature: sig, cluster })
+      postPayment({ signatures: [sig], cluster })
     } catch (error) {
       Logger.error(error)
       throw error
@@ -194,7 +191,7 @@ export const sendMintDataCredits = createAsyncThunk(
 
       const sig = await anchorProvider.sendAndConfirm(signed)
 
-      postPayment({ signature: sig, cluster })
+      postPayment({ signatures: [sig], cluster })
     } catch (error) {
       Logger.error(error)
       throw error
@@ -215,7 +212,7 @@ export const sendDelegateDataCredits = createAsyncThunk(
 
       const sig = await anchorProvider.sendAndConfirm(signed)
 
-      postPayment({ signature: sig, cluster })
+      postPayment({ signatures: [sig], cluster })
     } catch (error) {
       Logger.error(error)
       throw error
@@ -241,7 +238,7 @@ export const sendAnchorTxn = createAsyncThunk(
         'confirmed',
       )
 
-      postPayment({ signature: txid, cluster })
+      postPayment({ signatures: [txid], cluster })
     } catch (error) {
       Logger.error(error)
       throw error
@@ -259,18 +256,18 @@ export const claimRewards = createAsyncThunk(
     try {
       const signed = await anchorProvider.wallet.signAllTransactions(txns)
 
-      const sigs = await bulkSendRawTransactions(
+      const signatures = await bulkSendRawTransactions(
         anchorProvider.connection,
         signed.map((s) => s.serialize()),
       )
 
-      postPayment({ signature: sigs[0], cluster })
+      postPayment({ signatures, cluster })
 
       // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
       dispatch(fetchHotspots({ account, anchorProvider, cluster }))
 
       return {
-        signature: sigs[0],
+        signatures,
       }
     } catch (error) {
       Logger.error(error)
@@ -309,14 +306,12 @@ export const getTxns = createAsyncThunk(
     {
       account,
       anchorProvider,
-      ticker,
+      mint,
       requestType,
-      mints,
     }: {
       account: CSAccount
       anchorProvider: AnchorProvider
-      ticker: Ticker
-      mints: Record<string, string>
+      mint: string
       requestType: 'update_head' | 'start_fresh' | 'fetch_more'
     },
     { getState },
@@ -331,7 +326,7 @@ export const getTxns = createAsyncThunk(
       solana: SolanaState
     }
 
-    const existing = solana.activity.data[account.solanaAddress]?.all?.[ticker]
+    const existing = solana.activity.data[account.solanaAddress]?.all?.[mint]
 
     if (requestType === 'fetch_more') {
       const lastActivity = last(existing)
@@ -351,8 +346,7 @@ export const getTxns = createAsyncThunk(
     return solUtils.getTransactions(
       anchorProvider,
       account.solanaAddress,
-      toMintAddress(ticker, mints),
-      mints,
+      mint,
       options,
     )
   },
@@ -365,7 +359,7 @@ export const sendUpdateIotInfo = createAsyncThunk(
       const signed = await anchorProvider.wallet.signTransaction(updateTxn)
       const sig = await anchorProvider.sendAndConfirm(signed)
 
-      postPayment({ signature: sig, cluster })
+      postPayment({ signatures: [sig], cluster })
     } catch (error) {
       Logger.error(error)
       throw error
@@ -381,7 +375,7 @@ export const sendUpdateMobileInfo = createAsyncThunk(
       const signed = await anchorProvider.wallet.signTransaction(updateTxn)
       const sig = await anchorProvider.sendAndConfirm(signed)
 
-      postPayment({ signature: sig, cluster })
+      postPayment({ signatures: [sig], cluster })
     } catch (error) {
       Logger.error(error)
       throw error
@@ -454,12 +448,12 @@ const solanaSlice = createSlice({
       }
     })
     builder.addCase(claimRewards.fulfilled, (state, _action) => {
-      const { signature } = _action.payload
+      const { signatures } = _action.payload
       state.payment = {
         success: true,
         loading: false,
         error: undefined,
-        signature,
+        signature: signatures[0],
       }
     })
     builder.addCase(sendAnchorTxn.rejected, (state, action) => {
@@ -591,7 +585,7 @@ const solanaSlice = createSlice({
       if (!meta.arg.account.solanaAddress) return
 
       const {
-        ticker,
+        mint,
         account: { solanaAddress: address },
         requestType,
       } = meta.arg
@@ -615,47 +609,46 @@ const solanaSlice = createSlice({
       if (!state.activity.data[address].mint) {
         state.activity.data[address].mint = state.activity.data[address].all
       }
-
-      const prevAll = state.activity.data[address].all[ticker]
-      const prevPayment = state.activity.data[address].payment[ticker]
-      const prevDelegate = state.activity.data[address].delegate[ticker]
-      const prevMint = state.activity.data[address].mint[ticker]
+      const prevAll = state.activity.data[address].all[mint]
+      const prevPayment = state.activity.data[address].payment[mint]
+      const prevDelegate = state.activity.data[address].delegate[mint]
+      const prevMint = state.activity.data[address].mint[mint]
 
       switch (requestType) {
         case 'start_fresh': {
-          state.activity.data[address].all[ticker] = payload
-          state.activity.data[address].payment[ticker] = payload
-          state.activity.data[address].delegate[ticker] = payload
-          state.activity.data[address].mint[ticker] = payload
+          state.activity.data[address].all[mint] = payload
+          state.activity.data[address].payment[mint] = payload
+          state.activity.data[address].delegate[mint] = payload
+          state.activity.data[address].mint[mint] = payload
           break
         }
         case 'fetch_more': {
-          state.activity.data[address].all[ticker] = [...prevAll, ...payload]
-          state.activity.data[address].payment[ticker] = [
+          state.activity.data[address].all[mint] = [...prevAll, ...payload]
+          state.activity.data[address].payment[mint] = [
             ...prevPayment,
             ...payload,
           ]
-          state.activity.data[address].delegate[ticker] = [
+          state.activity.data[address].delegate[mint] = [
             ...prevDelegate,
             ...payload,
           ]
-          state.activity.data[address].mint[ticker] = [
+          state.activity.data[address].mint[mint] = [
             ...prevDelegate,
             ...payload,
           ]
           break
         }
         case 'update_head': {
-          state.activity.data[address].all[ticker] = [...payload, ...prevAll]
-          state.activity.data[address].payment[ticker] = [
+          state.activity.data[address].all[mint] = [...payload, ...prevAll]
+          state.activity.data[address].payment[mint] = [
             ...payload,
             ...prevPayment,
           ]
-          state.activity.data[address].delegate[ticker] = [
+          state.activity.data[address].delegate[mint] = [
             ...payload,
             ...prevDelegate,
           ]
-          state.activity.data[address].mint[ticker] = [...payload, ...prevMint]
+          state.activity.data[address].mint[mint] = [...payload, ...prevMint]
           break
         }
       }

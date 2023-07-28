@@ -1,19 +1,20 @@
+import Box from '@components/Box'
+import Text from '@components/Text'
+import TokenIcon from '@components/TokenIcon'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { BoxProps } from '@shopify/restyle'
+import { PublicKey } from '@solana/web3.js'
+import { Theme } from '@theme/theme'
+import { useCreateOpacity } from '@theme/themeHooks'
 import React, { memo, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Ticker } from '@helium/currency'
 import { GestureResponderEvent, Pressable, StyleSheet } from 'react-native'
-import { BoxProps } from '@shopify/restyle'
-import { useCreateOpacity } from '@theme/themeHooks'
-import Text from '@components/Text'
-import Box from '@components/Box'
-import TokenIcon from '@components/TokenIcon'
-import { Theme } from '@theme/theme'
 import CarotDown from '../../assets/images/carotDownFull.svg'
 
 export type SwapItemProps = {
   isPaying: boolean
   onCurrencySelect: () => void
-  currencySelected: Ticker
+  mintSelected: PublicKey
   amount: number
   loading?: boolean
   onPress?: ((event: GestureResponderEvent) => void) | null | undefined
@@ -23,7 +24,7 @@ export type SwapItemProps = {
 const SwapItem = ({
   isPaying,
   onCurrencySelect,
-  currencySelected,
+  mintSelected: currencySelected,
   amount,
   loading = false,
   onPress,
@@ -31,6 +32,7 @@ const SwapItem = ({
   ...rest
 }: SwapItemProps) => {
   const { t } = useTranslation()
+  const { symbol, json } = useMetaplexMetadata(currencySelected)
 
   const { backgroundStyle: generateBackgroundStyle } = useCreateOpacity()
 
@@ -80,7 +82,7 @@ const SwapItem = ({
                 alignItems="center"
                 borderRadius="round"
               >
-                <TokenIcon ticker={currencySelected} size={24} />
+                <TokenIcon img={json?.img} size={24} />
               </Box>
               <Text
                 variant="subtitle4"
@@ -88,7 +90,7 @@ const SwapItem = ({
                 flexGrow={1}
                 textAlign="center"
               >
-                {currencySelected}
+                {symbol}
               </Text>
               <Box marginStart="xs" marginEnd="s" justifyContent="center">
                 <CarotDown color="white" width={9} />
@@ -98,7 +100,7 @@ const SwapItem = ({
         </Pressable>
       </Box>
     )
-  }, [currencySelected, getBackgroundColorStylePill, onCurrencySelect])
+  }, [symbol, json, getBackgroundColorStylePill, onCurrencySelect])
 
   return (
     <Pressable onPress={onPress} disabled={disabled}>

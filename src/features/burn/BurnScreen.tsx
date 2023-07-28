@@ -1,66 +1,64 @@
-import React, {
-  useCallback,
-  memo as reactMemo,
-  useMemo,
-  useEffect,
-  useState,
-  useRef,
-} from 'react'
-import { useTranslation } from 'react-i18next'
 import Close from '@assets/images/close.svg'
 import QR from '@assets/images/qr.svg'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { Platform } from 'react-native'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
-import Balance, { CurrencyType, Ticker } from '@helium/currency'
-import Address, { NetTypes } from '@helium/address'
-import { TokenBurnV1 } from '@helium/transactions'
-import { useSelector } from 'react-redux'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useColors, useHitSlop } from '@theme/themeHooks'
+import AccountButton from '@components/AccountButton'
 import AccountSelector, {
   AccountSelectorRef,
 } from '@components/AccountSelector'
-import AccountButton from '@components/AccountButton'
-import SubmitButton from '@components/SubmitButton'
+import Box from '@components/Box'
 import LedgerBurnModal, {
   LedgerBurnModalRef,
 } from '@components/LedgerBurnModal'
-import useAlert from '@hooks/useAlert'
+import SafeAreaBox from '@components/SafeAreaBox'
+import SubmitButton from '@components/SubmitButton'
+import Text from '@components/Text'
+import TokenButton from '@components/TokenButton'
 import TokenSelector, {
   TokenListItem,
   TokenSelectorRef,
 } from '@components/TokenSelector'
-import TokenButton from '@components/TokenButton'
-import TokenIOT from '@assets/images/tokenIOT.svg'
-import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
-import { Mints } from '@utils/constants'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import Address, { NetTypes } from '@helium/address'
+import Balance, { CurrencyType, mint } from '@helium/currency'
+import { IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
+import { TokenBurnV1 } from '@helium/transactions'
+import useAlert from '@hooks/useAlert'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
-import SafeAreaBox from '@components/SafeAreaBox'
-import { TXN_FEE_IN_SOL } from '../../utils/solanaUtils'
+import { useColors, useHitSlop } from '@theme/themeHooks'
+import React, {
+  memo as reactMemo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { useTranslation } from 'react-i18next'
+import { Platform } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSelector } from 'react-redux'
+import AddressBookSelector, {
+  AddressBookRef,
+} from '../../components/AddressBookSelector'
+import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
+import IconPressedContainer from '../../components/IconPressedContainer'
+import useSubmitTxn from '../../hooks/useSubmitTxn'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { CSAccount } from '../../storage/cloudStorage'
 import { RootState } from '../../store/rootReducer'
-import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
+import { balanceToString, useBalance } from '../../utils/Balance'
 import {
   accountNetType,
   ellipsizeAddress,
   formatAccountAlias,
   solAddressIsValid,
 } from '../../utils/accountUtils'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { balanceToString, useBalance } from '../../utils/Balance'
-import PaymentSummary from '../payment/PaymentSummary'
-import PaymentSubmit from '../payment/PaymentSubmit'
-import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
-import IconPressedContainer from '../../components/IconPressedContainer'
+import { TXN_FEE_IN_SOL } from '../../utils/solanaUtils'
+import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import PaymentItem from '../payment/PaymentItem'
-import AddressBookSelector, {
-  AddressBookRef,
-} from '../../components/AddressBookSelector'
-import { CSAccount } from '../../storage/cloudStorage'
-import useSubmitTxn from '../../hooks/useSubmitTxn'
+import PaymentSubmit from '../payment/PaymentSubmit'
+import PaymentSummary from '../payment/PaymentSummary'
 
 type Route = RouteProp<HomeStackParamList, 'BurnScreen'>
 const BurnScreen = () => {
@@ -75,7 +73,7 @@ const BurnScreen = () => {
   const { top } = useSafeAreaInsets()
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
-  const { primaryText, blueBright500 } = useColors()
+  const { primaryText } = useColors()
   const ledgerPaymentRef = useRef<LedgerBurnModalRef>(null)
   const hitSlop = useHitSlop('l')
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
@@ -99,10 +97,8 @@ const BurnScreen = () => {
   const delegatePayment = useSelector(
     (reduxState: RootState) => reduxState.solana.delegate,
   )
-  const [ticker, setTicker] = useState<Ticker>('MOBILE')
+  const [mint, setMint] = useState<PublicKey>(MOBILE_MINT)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
-
-  const mint = useMemo(() => new PublicKey(Mints[ticker]), [ticker])
 
   const { isDelegate } = useMemo(() => route.params, [route.params])
 
@@ -241,7 +237,7 @@ const BurnScreen = () => {
     const errStrings: string[] = []
     if (insufficientFunds) {
       errStrings.push(
-        t('payment.insufficientFunds', { token: amountBalance?.type.ticker }),
+        t('payment.insufficientFunds', { token: amountBalance?.type.mint }),
       )
     }
 
@@ -299,8 +295,8 @@ const BurnScreen = () => {
     [networkType, isDelegate],
   )
 
-  const onTickerSelected = useCallback((tick: Ticker) => {
-    setTicker(tick)
+  const onMintSelected = useCallback((tick: mint) => {
+    setMint(tick)
   }, [])
 
   const handleTokenTypeSelected = useCallback(() => {
@@ -310,19 +306,15 @@ const BurnScreen = () => {
   const data = useMemo(
     (): TokenListItem[] => [
       {
-        label: 'MOBILE',
-        icon: <TokenMOBILE width={30} height={30} color={blueBright500} />,
-        value: 'MOBILE' as Ticker,
-        selected: ticker === 'MOBILE',
+        mint: MOBILE_MINT,
+        selected: mint.equals(MOBILE_MINT),
       },
       {
-        label: 'IOT',
-        icon: <TokenIOT width={30} height={30} />,
-        value: 'IOT' as Ticker,
-        selected: ticker === 'IOT',
+        mint: IOT_MINT,
+        selected: mint.equals(IOT_MINT),
       },
     ],
-    [blueBright500, ticker],
+    [mint],
   )
 
   if (!amountBalance) return null
@@ -331,13 +323,13 @@ const BurnScreen = () => {
     <HNTKeyboard
       ref={hntKeyboardRef}
       onConfirmBalance={onConfirmBalance}
-      ticker={amountBalance?.type.ticker}
-      networkFee={Balance.fromFloatAndTicker(TXN_FEE_IN_SOL, 'SOL')}
+      mint={mint}
+      networkFee={Balance.fromFloatAndmint(TXN_FEE_IN_SOL, 'SOL')}
       usePortal
     >
       <TokenSelector
         ref={tokenSelectorRef}
-        onTokenSelected={onTickerSelected}
+        onTokenSelected={onMintSelected}
         tokenData={data}
       >
         <AccountSelector ref={accountSelectorRef}>
@@ -417,13 +409,13 @@ const BurnScreen = () => {
 
                   <TokenButton
                     backgroundColor="secondary"
-                    title={t('burn.subdao', { subdao: ticker })}
+                    title={t('burn.subdao', { subdao: mint })}
                     subtitle={t('burn.choooseSubDAO')}
                     address={currentAccount?.address}
                     onPress={handleTokenTypeSelected}
                     showBubbleArrow
                     marginHorizontal="l"
-                    ticker={ticker}
+                    mint={mint}
                   />
 
                   {isDelegate ? (
@@ -438,7 +430,7 @@ const BurnScreen = () => {
                         })
                       }}
                       handleAddressError={handleAddressError}
-                      ticker={amountBalance?.type.ticker}
+                      mint={mint}
                       address={delegateAddress}
                       amount={amountBalance}
                       hasError={hasError}

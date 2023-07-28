@@ -31,6 +31,8 @@ const SwappingScreen = () => {
 
   const { t } = useTranslation()
   const { tokenA, tokenB } = route.params
+  const { jsonA } = useMetaplexMetadata(usePublicKey(tokenA))
+  const { jsonB } = useMetaplexMetadata(usePublicKey(tokenB))
 
   const solanaPayment = useSelector(
     (reduxState: RootState) => reduxState.solana.payment,
@@ -53,7 +55,7 @@ const SwappingScreen = () => {
           padding="s"
           marginEnd="m"
         >
-          <TokenIcon ticker={tokenA} size={50} />
+          <TokenIcon img={jsonA?.img} size={50} />
         </Box>
         <ArrowRight color="white" height={24} width={26.5} />
         <Box
@@ -62,11 +64,11 @@ const SwappingScreen = () => {
           borderRadius="round"
           padding="s"
         >
-          <TokenIcon ticker={tokenB} size={50} />
+          <TokenIcon img={jsonB?.img} size={50} />
         </Box>
       </Box>
     )
-  }, [tokenA, tokenB])
+  }, [jsonA?.img, jsonB?.img])
 
   return (
     <ReAnimatedBox

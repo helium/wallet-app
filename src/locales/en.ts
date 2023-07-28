@@ -399,6 +399,7 @@ export default {
   },
   accountTokenList: {
     tokens: 'Tokens',
+    manage: 'Manage Visible Tokens',
   },
   accountView: {
     balance: 'Balance',

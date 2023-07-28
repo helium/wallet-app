@@ -1,36 +1,37 @@
-import './polyfill'
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
+import { PortalHost, PortalProvider } from '@gorhom/portal'
+import { AccountProvider } from '@helium/helium-react-hooks'
+import { DarkTheme, NavigationContainer } from '@react-navigation/native'
+import MapboxGL from '@rnmapbox/maps'
+import { ThemeProvider } from '@shopify/restyle'
+import TokensProvider from '@storage/TokensProvider'
+import globalStyles from '@theme/globalStyles'
+import { darkThemeColors, lightThemeColors, theme } from '@theme/theme'
+import { useColorScheme } from '@theme/themeHooks'
+import * as SplashLib from 'expo-splash-screen'
 import React, { useMemo } from 'react'
 import { LogBox, Platform } from 'react-native'
-import { ThemeProvider } from '@shopify/restyle'
-import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import useAppState from 'react-native-appstate-hook'
-import OneSignal, { OpenedEvent } from 'react-native-onesignal'
 import Config from 'react-native-config'
-import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import { PortalHost, PortalProvider } from '@gorhom/portal'
-import * as SplashLib from 'expo-splash-screen'
-import { AccountProvider } from '@helium/helium-react-hooks'
-import { theme, darkThemeColors, lightThemeColors } from '@theme/theme'
-import { useColorScheme } from '@theme/themeHooks'
-import globalStyles from '@theme/globalStyles'
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
-import MapboxGL from '@rnmapbox/maps'
-import useMount from './hooks/useMount'
-import RootNavigator from './navigation/RootNavigator'
-import { useAccountStorage } from './storage/AccountStorageProvider'
-import LockScreen from './features/lock/LockScreen'
-import SecurityScreen from './features/security/SecurityScreen'
-import OnboardingProvider from './features/onboarding/OnboardingProvider'
-import { BalanceProvider } from './utils/Balance'
-import { useDeepLinking } from './utils/linking'
-import { useNotificationStorage } from './storage/NotificationStorageProvider'
+import OneSignal, { OpenedEvent } from 'react-native-onesignal'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import NetworkAwareStatusBar from './components/NetworkAwareStatusBar'
-import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
-import { navigationRef } from './navigation/NavigationHelper'
 import SplashScreen from './components/SplashScreen'
+import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
+import LockScreen from './features/lock/LockScreen'
+import OnboardingProvider from './features/onboarding/OnboardingProvider'
+import SecurityScreen from './features/security/SecurityScreen'
+import useMount from './hooks/useMount'
+import { navigationRef } from './navigation/NavigationHelper'
+import RootNavigator from './navigation/RootNavigator'
+import './polyfill'
 import { useSolana } from './solana/SolanaProvider'
 import WalletSignProvider from './solana/WalletSignProvider'
+import { useAccountStorage } from './storage/AccountStorageProvider'
+import { useNotificationStorage } from './storage/NotificationStorageProvider'
+import { BalanceProvider } from './utils/Balance'
+import { useDeepLinking } from './utils/linking'
 
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -128,10 +129,12 @@ const App = () => {
                                 ref={navigationRef}
                               >
                                 <BalanceProvider>
-                                  <WalletSignProvider>
-                                    <NetworkAwareStatusBar />
-                                    <RootNavigator />
-                                  </WalletSignProvider>
+                                  <TokensProvider>
+                                    <WalletSignProvider>
+                                      <NetworkAwareStatusBar />
+                                      <RootNavigator />
+                                    </WalletSignProvider>
+                                  </TokensProvider>
                                 </BalanceProvider>
                               </NavigationContainer>
                               <SecurityScreen

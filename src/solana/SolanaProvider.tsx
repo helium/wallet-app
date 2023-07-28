@@ -1,30 +1,31 @@
-import React, {
-  createContext,
-  ReactNode,
-  useContext,
-  useCallback,
-  useState,
-  useRef,
-  useEffect,
-} from 'react'
-import { init as initHsd } from '@helium/helium-sub-daos-sdk'
+import { AnchorProvider, Wallet } from '@coral-xyz/anchor'
+import { AccountFetchCache } from '@helium/account-fetch-cache'
 import { init as initDc } from '@helium/data-credits-sdk'
 import { init as initHem } from '@helium/helium-entity-manager-sdk'
+import { init as initHsd } from '@helium/helium-sub-daos-sdk'
 import { init as initLazy } from '@helium/lazy-distributor-sdk'
-import { AnchorProvider, Wallet } from '@coral-xyz/anchor'
+import { DC_MINT, HNT_MINT } from '@helium/spl-utils'
+import { Cluster, Transaction } from '@solana/web3.js'
+import React, {
+  ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
-import { Cluster, Transaction } from '@solana/web3.js'
-import { AccountFetchCache } from '@helium/account-fetch-cache'
+import usePrevious from '../hooks/usePrevious'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { getSessionKey, getSolanaKeypair } from '../storage/secureStorage'
-import { getConnection } from '../utils/solanaUtils'
 import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
-import usePrevious from '../hooks/usePrevious'
-import { WrappedConnection } from '../utils/WrappedConnection'
 import { DcProgram, HemProgram, HsdProgram, LazyProgram } from '../types/solana'
+import { WrappedConnection } from '../utils/WrappedConnection'
+import { getConnection } from '../utils/solanaUtils'
 
 const useSolanaHook = () => {
   const { currentAccount } = useAccountStorage()
@@ -114,6 +115,13 @@ const useSolanaHook = () => {
         extendConnection: true,
       }),
     )
+    // Don't sub to hnt or dc they change a bunch
+    cache?.statics.add(HNT_MINT.toBase58())
+    cache?.statics.add(DC_MINT.toBase58())
+
+    return () => {
+      cache?.close()
+    }
   }, [
     cache,
     cluster,

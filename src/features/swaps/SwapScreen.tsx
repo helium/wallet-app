@@ -1,16 +1,13 @@
 import Menu from '@assets/images/menu.svg'
-import Refresh from '@assets/images/refresh.svg'
-import TokenDC from '@assets/images/tokenDC.svg'
-import TokenHNT from '@assets/images/tokenHNT.svg'
-import TokenIOT from '@assets/images/tokenIOT.svg'
-import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import Plus from '@assets/images/plus.svg'
+import Refresh from '@assets/images/refresh.svg'
 import AddressBookSelector, {
   AddressBookRef,
 } from '@components/AddressBookSelector'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
+import CircleLoader from '@components/CircleLoader'
 import CloseButton from '@components/CloseButton'
 import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
 import SafeAreaBox from '@components/SafeAreaBox'
@@ -20,40 +17,41 @@ import TextTransform from '@components/TextTransform'
 import TokenSelector, { TokenSelectorRef } from '@components/TokenSelector'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import TreasuryWarningScreen from '@components/TreasuryWarningScreen'
-import Balance, { CurrencyType, SolTokens, Ticker } from '@helium/currency'
+import Balance, { CurrencyType } from '@helium/currency'
+import { useMint } from '@helium/helium-react-hooks'
+import {
+  DC_MINT,
+  HNT_MINT,
+  IOT_MINT,
+  MOBILE_MINT,
+  toNumber,
+} from '@helium/spl-utils'
 import { useTreasuryPrice } from '@hooks/useTreasuryPrice'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { CSAccount } from '@storage/cloudStorage'
-import { Mints } from '@utils/constants'
-import { getAtaAccountCreationFee, TXN_FEE_IN_SOL } from '@utils/solanaUtils'
+import { useColors, useHitSlop } from '@theme/themeHooks'
+import { TXN_FEE_IN_SOL, getAtaAccountCreationFee } from '@utils/solanaUtils'
+import BN from 'bn.js'
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { LayoutAnimation } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { useColors, useHitSlop } from '@theme/themeHooks'
-import CircleLoader from '@components/CircleLoader'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
-import { solAddressIsValid } from '../../utils/accountUtils'
+import { useSolana } from '../../solana/SolanaProvider'
 import { useBalance } from '../../utils/Balance'
+import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
 import { SwapNavigationProp } from './swapTypes'
-import { useSolana } from '../../solana/SolanaProvider'
+
+const SOL_TXN_FEE = new BN(TXN_FEE_IN_SOL)
 
 // Selector Mode enum
 enum SelectorMode {
   youPay = 'youPay',
   youReceive = 'youReceive',
-}
-
-enum Tokens {
-  HNT = 'HNT',
-  MOBILE = 'MOBILE',
-  IOT = 'IOT',
-  SOL = 'SOL',
-  DC = 'DC',
 }
 
 const SwapScreen = () => {
@@ -64,12 +62,10 @@ const SwapScreen = () => {
   const { submitTreasurySwap, submitMintDataCredits } = useSubmitTxn()
   const edges = useMemo(() => ['bottom'] as Edge[], [])
   const [selectorMode, setSelectorMode] = useState(SelectorMode.youPay)
-  const [youPayTokenType, setYouPayTokenType] = useState<Ticker>(Tokens.MOBILE)
+  const [youPayMint, setYouPayMint] = useState<PublicKey>(MOBILE_MINT)
   const colors = useColors()
   const [youPayTokenAmount, setYouPayTokenAmount] = useState<number>(0)
-  const [youReceiveTokenType, setYouReceiveTokenType] = useState<Ticker>(
-    Tokens.HNT,
-  )
+  const [youReceiveMint, setYouReceiveMint] = useState<PublicKey>(HNT_MINT)
   const [solFee, setSolFee] = useState<number | undefined>(undefined)
   const [hasInsufficientBalance, setHasInsufficientBalance] = useState<
     undefined | boolean
@@ -82,7 +78,7 @@ const SwapScreen = () => {
     price,
     loading: loadingPrice,
     freezeDate,
-  } = useTreasuryPrice(new PublicKey(Mints[youPayTokenType]), youPayTokenAmount)
+  } = useTreasuryPrice(youPayMint, youPayTokenAmount)
   const [swapping, setSwapping] = useState(false)
   const [transactionError, setTransactionError] = useState<undefined | string>()
   const [hasRecipientError, setHasRecipientError] = useState(false)
@@ -114,18 +110,18 @@ const SwapScreen = () => {
   // If user does not have enough tokens to swap for greater than 0.00000001 tokens
   const insufficientTokensToSwap = useMemo(() => {
     if (
-      youPayTokenType === Tokens.HNT &&
+      youPayMint.equals(HNT_MINT) &&
       (hntBalance?.floatBalance || 0) < 0.00000001
     ) {
       return true
     }
 
     return (
-      youPayTokenType !== Tokens.HNT &&
+      !youPayMint.equals(HNT_MINT) &&
       !(price && price > 0) &&
       youPayTokenAmount > 0
     )
-  }, [hntBalance, price, youPayTokenAmount, youPayTokenType])
+  }, [hntBalance, price, youPayTokenAmount, youPayMint])
 
   const showError = useMemo(() => {
     if (hasRecipientError) return t('generic.notValidSolanaAddress')
@@ -150,8 +146,8 @@ const SwapScreen = () => {
 
   const refresh = useCallback(async () => {
     setYouPayTokenAmount(0)
-    setYouReceiveTokenType(Tokens.HNT)
-    setYouPayTokenType(Tokens.MOBILE)
+    setYouReceiveMint(HNT_MINT)
+    setYouPayMint(MOBILE_MINT)
     setSelectorMode(SelectorMode.youPay)
     setSolFee(undefined)
     setNetworkError(undefined)
@@ -166,15 +162,14 @@ const SwapScreen = () => {
     )
       return
 
-    const toMint = new PublicKey(Mints[youReceiveTokenType])
     let fee = TXN_FEE_IN_SOL
 
     const ataFee = await getAtaAccountCreationFee({
       solanaAddress: currentAccount.solanaAddress,
       connection,
-      mint: toMint,
+      mint: youReceiveMint,
     })
-    fee += ataFee.floatBalance
+    fee += ataFee.toNumber()
 
     setSolFee(fee)
 
@@ -185,8 +180,8 @@ const SwapScreen = () => {
     anchorProvider,
     currentAccount?.solanaAddress,
     solBalance,
-    youReceiveTokenType,
-    youPayTokenType,
+    youReceiveMint,
+    youPayMint,
   ])
 
   const handleClose = useCallback(() => {
@@ -217,80 +212,56 @@ const SwapScreen = () => {
   }, [refresh, t, handleClose])
 
   const setTokenTypeHandler = useCallback(
-    (ticker: Ticker) => {
+    (mint: PublicKey) => {
       if (selectorMode === SelectorMode.youPay) {
         refresh()
-        setYouPayTokenType(ticker)
+        setYouPayMint(mint)
       }
 
       if (selectorMode === SelectorMode.youReceive) {
-        setYouReceiveTokenType(ticker)
+        setYouReceiveMint(mint)
       }
 
       if (
         selectorMode === SelectorMode.youPay &&
-        ticker !== Tokens.HNT &&
-        youReceiveTokenType === Tokens.DC
+        !mint.equals(HNT_MINT) &&
+        !youReceiveMint.equals(DC_MINT)
       ) {
-        setYouReceiveTokenType(Tokens.HNT)
+        setYouReceiveMint(HNT_MINT)
         setYouPayTokenAmount(0)
       }
 
-      if (selectorMode === SelectorMode.youPay && ticker === Tokens.HNT) {
-        setYouReceiveTokenType(Tokens.DC)
+      if (selectorMode === SelectorMode.youPay && mint.equals(HNT_MINT)) {
+        setYouReceiveMint(DC_MINT)
       }
 
-      if (selectorMode === SelectorMode.youReceive && ticker === Tokens.HNT) {
-        setYouPayTokenType(Tokens.MOBILE)
+      if (selectorMode === SelectorMode.youReceive && mint.equals(HNT_MINT)) {
+        setYouPayMint(MOBILE_MINT)
       }
 
-      if (selectorMode === SelectorMode.youReceive && ticker === Tokens.DC) {
-        setYouPayTokenType(Tokens.HNT)
+      if (selectorMode === SelectorMode.youReceive && mint.equals(DC_MINT)) {
+        setYouPayMint(HNT_MINT)
       }
     },
-    [refresh, selectorMode, youReceiveTokenType],
+    [refresh, selectorMode, youReceiveMint],
   )
 
   const tokenData = useMemo(() => {
     const tokens = {
-      [SelectorMode.youPay]: [
-        {
-          label: Tokens.MOBILE,
-          icon: <TokenMOBILE width={30} height={30} />,
-          value: Tokens.MOBILE,
-          selected: youPayTokenType === Tokens.MOBILE,
-        },
-        {
-          label: Tokens.HNT,
-          icon: <TokenHNT color="white" width={30} height={30} />,
-          value: Tokens.HNT,
-          selected: youPayTokenType === Tokens.HNT,
-        },
-        {
-          label: Tokens.IOT,
-          icon: <TokenIOT width={30} height={30} />,
-          value: Tokens.IOT,
-          selected: youPayTokenType === Tokens.IOT,
-        },
-      ],
-      [SelectorMode.youReceive]: [
-        {
-          label: Tokens.HNT,
-          icon: <TokenHNT color="white" width={30} height={30} />,
-          value: Tokens.HNT,
-          selected: youReceiveTokenType === Tokens.HNT,
-        },
-        {
-          label: Tokens.DC,
-          icon: <TokenDC width={30} height={30} />,
-          value: Tokens.DC,
-          selected: youReceiveTokenType === Tokens.DC,
-        },
-      ],
+      [SelectorMode.youPay]: [MOBILE_MINT, HNT_MINT, IOT_MINT].map((mint) => ({
+        mint,
+        selected: youPayMint.equals(mint),
+      })),
+      [SelectorMode.youReceive]: [MOBILE_MINT, HNT_MINT, IOT_MINT].map(
+        (mint) => ({
+          mint,
+          selected: youReceiveMint.equals(mint),
+        }),
+      ),
     }
 
     return tokens[selectorMode]
-  }, [selectorMode, youPayTokenType, youReceiveTokenType])
+  }, [selectorMode, youPayMint, youReceiveMint])
 
   const onCurrencySelect = useCallback(
     (youPay: boolean) => () => {
@@ -300,27 +271,33 @@ const SwapScreen = () => {
     [],
   )
 
+  const decimals = useMint(youPayMint)?.info?.decimals
+
   const onTokenItemPressed = useCallback(() => {
-    hntKeyboardRef.current?.show({
-      payer: currentAccount,
-    })
-  }, [currentAccount])
+    if (typeof decimals !== undefined) {
+      hntKeyboardRef.current?.show({
+        payer: currentAccount,
+      })
+    }
+  }, [currentAccount, decimals])
 
   const onConfirmBalance = useCallback(
-    ({ balance }: { balance: Balance<SolTokens> }) => {
-      const amount = balance.floatBalance.valueOf()
+    ({ balance }: { balance: BN }) => {
+      if (typeof decimals === 'undefined') return
+
+      const amount = toNumber(balance, decimals)
       setYouPayTokenAmount(amount)
     },
-    [],
+    [decimals],
   )
   const hitSlop = useHitSlop('l')
 
   const youReceiveTokenAmount = useMemo(() => {
-    if (price && youPayTokenType !== Tokens.HNT) {
+    if (price && !youPayMint.equals(HNT_MINT)) {
       return price
     }
 
-    if (youPayTokenType === Tokens.HNT && currentAccount) {
+    if (youPayMint.equals(HNT_MINT) && currentAccount) {
       const networkTokens = Balance.fromFloat(
         Number(youPayTokenAmount),
         CurrencyType.networkToken,
@@ -332,13 +309,7 @@ const SwapScreen = () => {
     }
 
     return 0
-  }, [
-    currentAccount,
-    networkTokensToDc,
-    price,
-    youPayTokenAmount,
-    youPayTokenType,
-  ])
+  }, [currentAccount, networkTokensToDc, price, youPayTokenAmount, youPayMint])
 
   const handleSwapTokens = useCallback(async () => {
     if (connection) {
@@ -358,26 +329,22 @@ const SwapScreen = () => {
           ? new PublicKey(recipient)
           : new PublicKey(currentAccount.solanaAddress)
 
-        if (youPayTokenType === Tokens.HNT) {
+        if (youPayMint.equals(HNT_MINT)) {
           await submitMintDataCredits({
             dcAmount: youReceiveTokenAmount,
             recipient: recipientAddr,
           })
         }
 
-        if (youPayTokenType !== Tokens.HNT) {
-          await submitTreasurySwap(
-            new PublicKey(Mints[youPayTokenType]),
-            youPayTokenAmount,
-            recipientAddr,
-          )
+        if (!youPayMint.equals(HNT_MINT)) {
+          await submitTreasurySwap(youPayMint, youPayTokenAmount, recipientAddr)
         }
 
         setSwapping(false)
 
         navigation.push('SwappingScreen', {
-          tokenA: youPayTokenType,
-          tokenB: youReceiveTokenType,
+          tokenA: youPayMint.toBase58(),
+          tokenB: youReceiveMint.toBase58(),
         })
       } catch (error) {
         setSwapping(false)
@@ -388,9 +355,9 @@ const SwapScreen = () => {
     connection,
     currentAccount,
     recipient,
-    youPayTokenType,
+    youPayMint,
     navigation,
-    youReceiveTokenType,
+    youReceiveMint,
     submitMintDataCredits,
     youReceiveTokenAmount,
     submitTreasurySwap,
@@ -408,11 +375,8 @@ const SwapScreen = () => {
         <HNTKeyboard
           ref={hntKeyboardRef}
           onConfirmBalance={onConfirmBalance}
-          ticker={youPayTokenType}
-          networkFee={Balance.fromFloatAndTicker(
-            solFee || TXN_FEE_IN_SOL,
-            Tokens.SOL,
-          )}
+          mint={youPayMint}
+          networkFee={SOL_TXN_FEE}
           usePortal
         >
           <TokenSelector
@@ -429,7 +393,7 @@ const SwapScreen = () => {
                     marginHorizontal="m"
                     isPaying
                     onCurrencySelect={onCurrencySelect(true)}
-                    currencySelected={youPayTokenType}
+                    mintSelected={youPayMint}
                     amount={youPayTokenAmount}
                   />
                   <Box>
@@ -439,7 +403,7 @@ const SwapScreen = () => {
                       marginHorizontal="m"
                       isPaying={false}
                       onCurrencySelect={onCurrencySelect(false)}
-                      currencySelected={youReceiveTokenType}
+                      mintSelected={youReceiveMint}
                       amount={youReceiveTokenAmount}
                       loading={loadingPrice}
                     />

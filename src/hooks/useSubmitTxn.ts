@@ -28,6 +28,8 @@ import {
 } from '../types/solana'
 import { useSolana } from '../solana/SolanaProvider'
 import { useWalletSign } from '../solana/WalletSignProvider'
+import BN from 'bn.js'
+import { chunks } from '@helium/spl-utils'
 
 export default () => {
   const { currentAccount } = useAccountStorage()
@@ -41,9 +43,10 @@ export default () => {
     async (
       payments: {
         payee: string
-        balanceAmount: Balance<AnyCurrencyType>
+        balanceAmount: BN
         max?: boolean
       }[],
+      mint: PublicKey,
     ) => {
       if (
         !currentAccount?.solanaAddress ||
@@ -53,28 +56,28 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      const [firstPayment] = payments
-      const mintAddress =
-        firstPayment.balanceAmount.type.ticker !== 'SOL'
-          ? toMintAddress(firstPayment.balanceAmount.type.ticker, Mints)
-          : undefined
-      const paymentTxn = await solUtils.transferToken(
-        anchorProvider,
-        currentAccount.solanaAddress,
-        currentAccount.address,
-        payments,
-        mintAddress,
+      const txns = await Promise.all(
+        chunks(payments, 5).map((p) => {
+          return solUtils.transferToken(
+            anchorProvider,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            currentAccount.solanaAddress!,
+            currentAccount.address,
+            p,
+            mint,
+          )
+        }),
       )
-
-      const serializedTx = paymentTxn.serialize({
-        requireAllSignatures: false,
-      })
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signPaymentTxn'),
-        serializedTxs: [Buffer.from(serializedTx)],
+        serializedTxs: txns.map((tx) =>
+          tx.serialize({
+            requireAllSignatures: false,
+          }),
+        ),
       })
 
       if (!decision) {
@@ -83,7 +86,7 @@ export default () => {
 
       dispatch(
         makePayment({
-          paymentTxn,
+          paymentTxns: txns,
           account: currentAccount,
           cluster,
           anchorProvider,

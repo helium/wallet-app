@@ -1,126 +1,123 @@
 /* eslint-disable no-underscore-dangle */
-import {
-  Cluster,
-  clusterApiUrl,
-  ConfirmedSignatureInfo,
-  Connection,
-  Keypair,
-  LAMPORTS_PER_SOL,
-  Logs,
-  PublicKey,
-  SignaturesForAddressOptions,
-  Signer,
-  SystemProgram,
-  TransactionInstruction,
-  TransactionMessage,
-  VersionedMessage,
-  VersionedTransaction,
-  VersionedTransactionResponse,
-  ComputeBudgetProgram,
-  AccountMeta,
-  SignatureResult,
-  ParsedTransactionWithMeta,
-  ParsedInstruction,
-  Transaction,
-} from '@solana/web3.js'
-import * as dc from '@helium/data-credits-sdk'
-import { subDaoKey } from '@helium/helium-sub-daos-sdk'
-import {
-  TOKEN_PROGRAM_ID,
-  AccountLayout,
-  createTransferCheckedInstruction,
-  getOrCreateAssociatedTokenAccount,
-  getAssociatedTokenAddress,
-  getMint,
-  getAssociatedTokenAddressSync,
-  getAccount,
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  createAssociatedTokenAccountInstruction,
-  createAssociatedTokenAccountIdempotentInstruction,
-} from '@solana/spl-token'
-import {
-  init as initHem,
-  entityCreatorKey,
-  rewardableEntityConfigKey,
-  updateMobileMetadata,
-  updateIotMetadata,
-  keyToAssetKey,
-  iotInfoKey,
-  mobileInfoKey,
-} from '@helium/helium-entity-manager-sdk'
-import Balance, { AnyCurrencyType, CurrencyType } from '@helium/currency'
-import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
-import axios from 'axios'
-import Config from 'react-native-config'
-import {
-  TreeConfig,
-  createTransferInstruction,
-  PROGRAM_ID as BUBBLEGUM_PROGRAM_ID,
-} from '@metaplex-foundation/mpl-bubblegum'
-import {
-  ConcurrentMerkleTreeAccount,
-  SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-  SPL_NOOP_PROGRAM_ID,
-} from '@solana/spl-account-compression'
-import bs58 from 'bs58'
-import {
-  Asset,
-  HNT_MINT,
-  getAsset,
-  searchAssets,
-  toBN,
-  sendAndConfirmWithRetry,
-  IOT_MINT,
-  DC_MINT,
-  MOBILE_MINT,
-  truthy,
-} from '@helium/spl-utils'
 import { AnchorProvider, BN } from '@coral-xyz/anchor'
-import * as tm from '@helium/treasury-management-sdk'
+import * as dc from '@helium/data-credits-sdk'
 import {
   delegatedDataCreditsKey,
   escrowAccountKey,
 } from '@helium/data-credits-sdk'
 import {
-  getPendingRewards,
-  getBulkRewards,
   formBulkTransactions,
+  getBulkRewards,
+  getPendingRewards,
 } from '@helium/distributor-oracle'
-import * as lz from '@helium/lazy-distributor-sdk'
 import {
   PROGRAM_ID as FanoutProgramId,
   fanoutKey,
   membershipCollectionKey,
 } from '@helium/fanout-sdk'
 import {
-  PROGRAM_ID as VoterStakeRegistryProgramId,
-  registrarKey,
-  registrarCollectionKey,
-} from '@helium/voter-stake-registry-sdk'
-import { BaseCurrencyType } from '@helium/currency/build/currency_types'
+  entityCreatorKey,
+  init as initHem,
+  iotInfoKey,
+  keyToAssetKey,
+  mobileInfoKey,
+  rewardableEntityConfigKey,
+  updateIotMetadata,
+  updateMobileMetadata,
+} from '@helium/helium-entity-manager-sdk'
+import { subDaoKey } from '@helium/helium-sub-daos-sdk'
+import * as lz from '@helium/lazy-distributor-sdk'
 import { HotspotType } from '@helium/onboarding'
+import {
+  Asset,
+  DC_MINT,
+  HNT_MINT,
+  IOT_MINT,
+  MOBILE_MINT,
+  getAsset,
+  searchAssets,
+  sendAndConfirmWithRetry,
+  toBN,
+  truthy,
+} from '@helium/spl-utils'
+import * as tm from '@helium/treasury-management-sdk'
+import {
+  PROGRAM_ID as VoterStakeRegistryProgramId,
+  registrarCollectionKey,
+  registrarKey,
+} from '@helium/voter-stake-registry-sdk'
+import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
+import {
+  PROGRAM_ID as BUBBLEGUM_PROGRAM_ID,
+  TreeConfig,
+  createTransferInstruction,
+} from '@metaplex-foundation/mpl-bubblegum'
+import {
+  ConcurrentMerkleTreeAccount,
+  SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+  SPL_NOOP_PROGRAM_ID,
+} from '@solana/spl-account-compression'
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  AccountLayout,
+  TOKEN_PROGRAM_ID,
+  createAssociatedTokenAccountIdempotentInstruction,
+  createAssociatedTokenAccountInstruction,
+  createTransferCheckedInstruction,
+  getAccount,
+  getAssociatedTokenAddress,
+  getAssociatedTokenAddressSync,
+  getMint,
+  getOrCreateAssociatedTokenAccount,
+} from '@solana/spl-token'
+import {
+  AccountMeta,
+  Cluster,
+  ComputeBudgetProgram,
+  ConfirmedSignatureInfo,
+  Connection,
+  Keypair,
+  LAMPORTS_PER_SOL,
+  Logs,
+  ParsedInstruction,
+  ParsedTransactionWithMeta,
+  PublicKey,
+  SignatureResult,
+  SignaturesForAddressOptions,
+  Signer,
+  SystemProgram,
+  Transaction,
+  TransactionInstruction,
+  TransactionMessage,
+  VersionedMessage,
+  VersionedTransaction,
+  VersionedTransactionResponse,
+  clusterApiUrl,
+} from '@solana/web3.js'
+import axios from 'axios'
+import bs58 from 'bs58'
+import Config from 'react-native-config'
 import { getKeypair, getSessionKey } from '../storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
-import sleep from './sleep'
 import {
   Collectable,
   CompressedNFT,
   EnrichedTransaction,
   HotspotWithPendingRewards,
-  mintToTicker,
 } from '../types/solana'
-import * as Logger from './logger'
 import { WrappedConnection } from './WrappedConnection'
+import { solAddressIsValid } from './accountUtils'
 import {
   DAO_KEY,
   IOT_LAZY_KEY,
   IOT_SUB_DAO_KEY,
-  Mints,
   MOBILE_LAZY_KEY,
   MOBILE_SUB_DAO_KEY,
+  Mints,
 } from './constants'
-import { solAddressIsValid } from './accountUtils'
 import { getH3Location } from './h3'
+import * as Logger from './logger'
+import sleep from './sleep'
 
 const govProgramId = new PublicKey(
   'hgovkRU6Ghe1Qoyb54HdSLdqN7VtxaifBzRmh9jtd3S',
@@ -195,7 +192,7 @@ export const createTransferSolTxn = async (
   signer: Signer,
   payments: {
     payee: string
-    balanceAmount: Balance<AnyCurrencyType>
+    balanceAmount: BN
     max?: boolean
   }[],
 ) => {
@@ -205,12 +202,12 @@ export const createTransferSolTxn = async (
 
   let instructions: TransactionInstruction[] = []
   payments.forEach((p) => {
-    const amount = p.balanceAmount.integerBalance
+    const amount = p.balanceAmount
 
     const instruction = SystemProgram.transfer({
       fromPubkey: payer,
       toPubkey: new PublicKey(p.payee),
-      lamports: amount,
+      lamports: BigInt(amount.toString()),
     })
 
     instructions = [...instructions, instruction]
@@ -235,7 +232,7 @@ export const createTransferTxn = async (
   signer: Signer,
   payments: {
     payee: string
-    balanceAmount: Balance<AnyCurrencyType>
+    balanceAmount: BN
     max?: boolean
   }[],
   mintAddress: string,
@@ -244,11 +241,10 @@ export const createTransferTxn = async (
 
   const conn = anchorProvider.connection
 
-  const [firstPayment] = payments
-
   const payer = signer.publicKey
 
   const mint = new PublicKey(mintAddress)
+  const mintAcc = await getMint(conn, mint)
 
   const payerATA = await getOrCreateAssociatedTokenAccount(
     conn,
@@ -259,7 +255,7 @@ export const createTransferTxn = async (
 
   let instructions: TransactionInstruction[] = []
   payments.forEach((p) => {
-    const amount = p.balanceAmount.integerBalance
+    const amount = p.balanceAmount
     const ata = getAssociatedTokenAddressSync(mint, new PublicKey(p.payee))
 
     instructions = [
@@ -275,8 +271,8 @@ export const createTransferTxn = async (
         mint,
         ata,
         payer,
-        amount,
-        firstPayment.balanceAmount.type.decimalPlaces.toNumber(),
+        BigInt(amount.toString()),
+        mintAcc.decimals,
         [signer],
       ),
     ]
@@ -302,7 +298,7 @@ export const transferToken = async (
   heliumAddress: string,
   payments: {
     payee: string
-    balanceAmount: Balance<AnyCurrencyType>
+    balanceAmount: BN
     max?: boolean
   }[],
   mintAddress?: string,
@@ -362,7 +358,6 @@ export const getTransactions = async (
   anchorProvider: AnchorProvider,
   walletAddress: string,
   mintAddress: string,
-  mints: typeof Mints,
   options?: SignaturesForAddressOptions,
 ) => {
   try {
@@ -376,7 +371,7 @@ export const getTransactions = async (
       })
 
     return transactionDetails
-      .map((td, idx) => solInstructionsToActivity(td, sigs[idx], mints))
+      .map((td, idx) => solInstructionsToActivity(td, sigs[idx]))
       .filter((a) => !!a) as Activity[]
   } catch (e) {
     Logger.error(e)
@@ -581,9 +576,9 @@ export const getAtaAccountCreationFee = async ({
 
   try {
     await getAccount(connection, ataAddress)
-    return new Balance(0, CurrencyType.solTokens)
+    return new BN(0)
   } catch {
-    return Balance.fromFloat(0.00203928, CurrencyType.solTokens)
+    return new BN(0.00203928 * LAMPORTS_PER_SOL)
   }
 }
 
@@ -1415,7 +1410,6 @@ export async function createTreasurySwapMessage(
 export const solInstructionsToActivity = (
   parsedTxn: ParsedTransactionWithMeta | null,
   signature: string,
-  mints: typeof Mints,
 ) => {
   if (!parsedTxn) return
 
@@ -1444,14 +1438,14 @@ export const solInstructionsToActivity = (
       if (amount < 0) {
         // is payer
         activity.payer = post.owner
-        activity.tokenType = mintToTicker(post.mint, mints)
+        activity.mint = post.mint
         activity.amount = -1 * amount
       } else {
         // is payee
         const p: Payment = {
           amount,
           payee: post.owner || '',
-          tokenType: mintToTicker(post.mint, mints),
+          mint: post.mint,
         }
         payments = [...payments, p]
       }
@@ -1472,10 +1466,10 @@ export const solInstructionsToActivity = (
   if (activity.type === 'unknown') return
 
   const payment = activity.payments?.[0]
-  if (payment && payment.tokenType === 'DC') {
+  if (payment && payment.mint === DC_MINT.toBase58()) {
     activity.type = payment.payee !== activity.payer ? 'dc_delegate' : 'dc_mint'
     activity.amount = payment.amount
-    activity.tokenType = 'DC'
+    activity.mint = payment.mint
   }
 
   return activity
@@ -1499,11 +1493,8 @@ export const submitSolana = async ({
   return txid
 }
 
-export const parseTransactionError = (
-  balance?: Balance<AnyCurrencyType>,
-  message?: string,
-) => {
-  if ((balance?.floatBalance || 0) > 0.02) {
+export const parseTransactionError = (balance?: BN, message?: string) => {
+  if (balance?.gt(new BN(0.02))) {
     return 'The SOL balance on this account is too low to complete this transaction'
   }
 
@@ -1531,19 +1522,19 @@ export const calcCreateAssociatedTokenAccountAccountFee = async (
   provider: AnchorProvider,
   payee: string,
   mint: PublicKey,
-): Promise<Balance<BaseCurrencyType>> => {
+): Promise<BN> => {
   if (!payee) {
-    return new Balance(0, CurrencyType.solTokens)
+    return new BN(0)
   }
 
   if (!solAddressIsValid(payee)) {
-    return new Balance(0, CurrencyType.solTokens)
+    return new BN(0)
   }
 
   const payeePubKey = new PublicKey(payee)
   const ata = await getAssociatedTokenAddress(mint, payeePubKey)
   if (ata) {
-    return new Balance(0, CurrencyType.solTokens)
+    return new BN(0)
   }
 
   const transaction = new Transaction().add(
@@ -1566,11 +1557,11 @@ export const calcCreateAssociatedTokenAccountAccountFee = async (
     const fee = await transaction.getEstimatedFee(provider.connection)
 
     if (!fee) {
-      return new Balance(0, CurrencyType.solTokens)
+      return new BN(0)
     }
-    return new Balance(fee, CurrencyType.solTokens)
+    return new BN(fee)
   } catch (e) {
-    return new Balance(0, CurrencyType.solTokens)
+    return new BN(0)
   }
 }
 

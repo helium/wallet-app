@@ -1,45 +1,47 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { RouteProp, useRoute } from '@react-navigation/native'
-import { useTranslation } from 'react-i18next'
+import ActivityIndicator from '@components/ActivityIndicator'
+import { ReAnimatedBox } from '@components/AnimatedBox'
+import BackScreen from '@components/BackScreen'
+import BlurActionSheet from '@components/BlurActionSheet'
+import Box from '@components/Box'
+import FadeInOut, { DelayedFadeIn } from '@components/FadeInOut'
+import ListItem from '@components/ListItem'
+import { NavBarHeight } from '@components/NavBar'
+import Text from '@components/Text'
+import TokenIcon from '@components/TokenIcon'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import BottomSheet, {
   BottomSheetFlatList,
   WINDOW_HEIGHT,
 } from '@gorhom/bottom-sheet'
+import { Ticker } from '@helium/currency'
+import useLayoutHeight from '@hooks/useLayoutHeight'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { usePublicKey } from '@hooks/usePublicKey'
+import { RouteProp, useRoute } from '@react-navigation/native'
+import globalStyles from '@theme/globalStyles'
+import { useColors } from '@theme/themeHooks'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Platform, View } from 'react-native'
 import Animated, {
   FadeIn,
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated'
-import { Platform, View } from 'react-native'
-import { Ticker } from '@helium/currency'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import ListItem from '@components/ListItem'
-import TokenIcon from '@components/TokenIcon'
-import BlurActionSheet from '@components/BlurActionSheet'
-import useLayoutHeight from '@hooks/useLayoutHeight'
-import FadeInOut, { DelayedFadeIn } from '@components/FadeInOut'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import ActivityIndicator from '@components/ActivityIndicator'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import globalStyles from '@theme/globalStyles'
-import { useColors } from '@theme/themeHooks'
-import { NavBarHeight } from '@components/NavBar'
+import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { Activity } from '../../types/activity'
+import { HomeStackParamList } from '../home/homeTypes'
 import AccountActionBar from './AccountActionBar'
 import { FilterType, useActivityFilter } from './AccountActivityFilter'
-import TxnListItem from './TxnListItem'
+import AccountTokenBalance from './AccountTokenBalance'
+import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import {
   useTransactionDetail,
   withTransactionDetail,
 } from './TransactionDetail'
-import { HomeStackParamList } from '../home/homeTypes'
-import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
-import AccountTokenBalance from './AccountTokenBalance'
-import { Activity } from '../../types/activity'
-import { useSolana } from '../../solana/SolanaProvider'
+import TxnListItem from './TxnListItem'
 import useSolanaActivityList from './useSolanaActivityList'
 
 const delayedAnimation = FadeIn.delay(300)
@@ -69,10 +71,12 @@ const AccountTokenScreen = () => {
     setOnEndReachedCalledDuringMomentum,
   ] = useState(true)
 
-  const routeTicker = useMemo(
-    () => route.params.tokenType?.toUpperCase() as Ticker,
-    [route.params.tokenType],
-  )
+  const mintStr = useMemo(() => route.params.mint, [route.params.mint])
+  const mint = usePublicKey(mintStr)
+
+  const { symbol } = useMetaplexMetadata(mint)
+
+  const routeTicker = useMemo(() => symbol?.toUpperCase() as Ticker, [symbol])
 
   const toggleFiltersOpen = useCallback(
     (open) => () => {
@@ -97,7 +101,8 @@ const AccountTokenScreen = () => {
   } = useSolanaActivityList({
     account: currentAccount,
     filter: filterState.filter,
-    ticker: routeTicker,
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    mint: mint!,
   })
 
   const handleOnFetchMoreActivity = useCallback(() => {

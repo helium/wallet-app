@@ -325,6 +325,8 @@ const useBalanceHook = () => {
       return
     }
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     setBalanceInfo(tokenInfo)
   }, [cluster, prevCluster, prevSolAddress, solanaAddress, tokenInfo])
 

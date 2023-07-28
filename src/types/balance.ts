@@ -10,6 +10,7 @@ export type TokenAccount = {
   tokenAccount?: string
   mint: string
   balance: number
+  decimals: number
 }
 
 export type AccountBalance = {

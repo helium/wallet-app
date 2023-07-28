@@ -1,55 +1,54 @@
+import PaymentArrow from '@assets/images/paymentArrow.svg'
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetModalProvider,
+} from '@gorhom/bottom-sheet'
+import { Portal } from '@gorhom/portal'
+import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
+import { humanReadable } from '@helium/spl-utils'
+import useBackHandler from '@hooks/useBackHandler'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { usePublicKey } from '@hooks/usePublicKey'
+import { BoxProps } from '@shopify/restyle'
+import { NATIVE_MINT } from '@solana/spl-token'
+import { PublicKey } from '@solana/web3.js'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { Theme } from '@theme/theme'
+import { useOpacity, useSafeTopPaddingStyle } from '@theme/themeHooks'
+import BN from 'bn.js'
 import React, {
-  forwardRef,
-  memo,
   ReactNode,
   Ref,
+  forwardRef,
+  memo,
   useCallback,
   useImperativeHandle,
   useMemo,
   useRef,
   useState,
 } from 'react'
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetModalProvider,
-} from '@gorhom/bottom-sheet'
-import Balance, {
-  CurrencyType,
-  NetworkTokens,
-  SolTokens,
-  TestNetworkTokens,
-  Ticker,
-} from '@helium/currency'
 import { useTranslation } from 'react-i18next'
-import PaymentArrow from '@assets/images/paymentArrow.svg'
 import { LayoutChangeEvent } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { BoxProps } from '@shopify/restyle'
-import { floor } from 'lodash'
-import { Portal } from '@gorhom/portal'
-import { useOpacity, useSafeTopPaddingStyle } from '@theme/themeHooks'
-import { Theme } from '@theme/theme'
-import useBackHandler from '@hooks/useBackHandler'
-import Keypad from './Keypad'
-import Box from './Box'
-import Text from './Text'
-import { balanceToString, useBalance } from '../utils/Balance'
-import TouchableOpacityBox from './TouchableOpacityBox'
-import SafeAreaBox from './SafeAreaBox'
-import AccountIcon from './AccountIcon'
-import { KeypadInput } from './KeypadButton'
-import { decimalSeparator, groupSeparator, locale } from '../utils/i18n'
-import BackgroundFill from './BackgroundFill'
-import HandleBasic from './HandleBasic'
-import { CSAccount } from '../storage/cloudStorage'
 import { Payment } from '../features/payment/PaymentItem'
+import { CSAccount } from '../storage/cloudStorage'
+import { decimalSeparator, groupSeparator } from '../utils/i18n'
+import AccountIcon from './AccountIcon'
+import BackgroundFill from './BackgroundFill'
+import Box from './Box'
+import HandleBasic from './HandleBasic'
+import Keypad from './Keypad'
+import { KeypadInput } from './KeypadButton'
+import SafeAreaBox from './SafeAreaBox'
+import Text from './Text'
+import TouchableOpacityBox from './TouchableOpacityBox'
 
 type ShowOptions = {
   payer?: CSAccount | null
   payee?: CSAccount | string | null
   containerHeight?: number
-  balance?: Balance<TestNetworkTokens | NetworkTokens>
+  balance?: BN
   index?: number
   payments?: Payment[]
 }
@@ -60,12 +59,12 @@ export type HNTKeyboardRef = {
 }
 
 type Props = {
-  ticker: Ticker
-  networkFee?: Balance<NetworkTokens | TestNetworkTokens | SolTokens>
+  mint?: PublicKey
+  networkFee?: BN
   children: ReactNode
   handleVisible?: (visible: boolean) => void
   onConfirmBalance: (opts: {
-    balance: Balance<TestNetworkTokens | NetworkTokens>
+    balance: BN
     payee?: string
     index?: number
   }) => void
@@ -77,7 +76,7 @@ const HNTKeyboardSelector = forwardRef(
       children,
       onConfirmBalance,
       handleVisible,
-      ticker,
+      mint,
       networkFee,
       usePortal = false,
       ...boxProps
@@ -85,8 +84,10 @@ const HNTKeyboardSelector = forwardRef(
     ref: Ref<HNTKeyboardRef>,
   ) => {
     useImperativeHandle(ref, () => ({ show, hide }))
+    const decimals = useMint(mint)?.info?.decimals
     const { t } = useTranslation()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+    const { symbol } = useMetaplexMetadata(mint)
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const [value, setValue] = useState('0')
     const [originalValue, setOriginalValue] = useState('')
@@ -98,42 +99,10 @@ const HNTKeyboardSelector = forwardRef(
     const [headerHeight, setHeaderHeight] = useState(0)
     const containerStyle = useSafeTopPaddingStyle('android')
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
+    const { currentAccount } = useAccountStorage()
+    const wallet = usePublicKey(currentAccount?.solanaAddress)
 
-    const {
-      floatToBalance,
-      hntBalance,
-      mobileBalance,
-      iotBalance,
-      dcBalance,
-      bonesToBalance,
-      solBalance,
-    } = useBalance()
-
-    const getHeliumBalance = useMemo(() => {
-      switch (ticker) {
-        case 'HNT':
-          return hntBalance
-        case 'SOL':
-          return solBalance
-        case 'MOBILE':
-          return mobileBalance
-        case 'IOT':
-          return iotBalance
-        case 'DC':
-          return dcBalance
-        default:
-          return hntBalance
-      }
-    }, [dcBalance, iotBalance, mobileBalance, hntBalance, ticker, solBalance])
-
-    const isDntToken = useMemo(() => {
-      return ticker === 'IOT' || ticker === 'MOBILE'
-    }, [ticker])
-
-    const balanceForTicker = useMemo(
-      () => (ticker === 'HNT' ? hntBalance : getHeliumBalance),
-      [getHeliumBalance, hntBalance, ticker],
-    )
+    const { amount: balanceForMint } = useOwnedAmount(wallet, mint)
 
     const snapPoints = useMemo(() => {
       const sheetHeight = containerHeight - headerHeight
@@ -153,28 +122,20 @@ const HNTKeyboardSelector = forwardRef(
       const stripped = value
         .replaceAll(groupSeparator, '')
         .replaceAll(decimalSeparator, '.')
-      const numberVal = parseFloat(stripped)
 
-      if (ticker === 'DC') {
-        return new Balance(numberVal, CurrencyType.dataCredit)
-      }
-
-      return floatToBalance(numberVal, ticker)
-    }, [floatToBalance, ticker, value])
+      return new BN(stripped)
+    }, [value])
 
     const hasMaxDecimals = useMemo(() => {
-      if (!valueAsBalance) return false
+      if (!valueAsBalance || typeof decimals === 'undefined') return false
       const valueString = value
         .replaceAll(groupSeparator, '')
         .replaceAll(decimalSeparator, '.')
       if (!valueString.includes('.')) return false
 
-      const [, decimals] = valueString.split('.')
-      return (
-        decimals.length >=
-        (isDntToken ? 6 : valueAsBalance?.type.decimalPlaces.toNumber())
-      )
-    }, [value, valueAsBalance, isDntToken])
+      const [, dec] = valueString.split('.')
+      return dec.length >= decimals
+    }, [value, valueAsBalance, decimals])
 
     const getNextPayments = useCallback(() => {
       if (payments && paymentIndex !== undefined) {
@@ -198,15 +159,16 @@ const HNTKeyboardSelector = forwardRef(
         setPayments(opts.payments)
         setContainerHeight(opts.containerHeight || 0)
 
-        const val = opts.balance?.floatBalance
-          .toLocaleString(locale, { maximumFractionDigits: 10 })
-          .replaceAll(groupSeparator, '')
+        const val =
+          opts.balance && typeof decimals !== 'undefined'
+            ? humanReadable(opts.balance, decimals)
+            : undefined
         setValue(val || '0')
 
         bottomSheetModalRef.current?.present()
         setIsShowing(true)
       },
-      [handleVisible, setIsShowing],
+      [handleVisible, setIsShowing, decimals],
     )
 
     const hide = useCallback(() => {
@@ -222,55 +184,38 @@ const HNTKeyboardSelector = forwardRef(
     const [maxEnabled, setMaxEnabled] = useState(false)
 
     const handleSetMax = useCallback(() => {
-      if (!solBalance || !getHeliumBalance || !networkFee) return
+      if (!valueAsBalance || !networkFee) return
 
       const currentAmount = getNextPayments()
         .filter((_v, index) => index !== paymentIndex || 0) // Remove the payment being updated
-        .reduce(
-          (prev, current) => {
-            if (!current.amount) {
-              return prev
-            }
-            return prev.plus(current.amount)
-          },
-          ticker === 'DC'
-            ? new Balance(0, CurrencyType.dataCredit)
-            : bonesToBalance(0, ticker),
-        )
+        .reduce((prev, current) => {
+          if (!current.amount) {
+            return prev
+          }
+          return prev.add(current.amount)
+        }, new BN(0))
 
-      let maxBalance: Balance<NetworkTokens | TestNetworkTokens> | undefined
-      if (ticker === 'SOL') {
-        maxBalance = solBalance.minus(currentAmount).minus(networkFee)
-      } else {
-        maxBalance = getHeliumBalance.minus(currentAmount)
+      let maxBalance: BN | undefined = balanceForMint
+        ? new BN(balanceForMint.toString()).sub(currentAmount)
+        : undefined
+      if (mint?.equals(NATIVE_MINT)) {
+        maxBalance = networkFee ? maxBalance?.sub(networkFee) : maxBalance
       }
 
-      if (maxBalance.integerBalance < 0 && ticker !== 'DC') {
-        maxBalance = bonesToBalance(0, ticker)
-      }
-
-      const decimalPlaces = isDntToken
-        ? 6
-        : maxBalance.type.decimalPlaces.toNumber()
-
-      const val = floor(maxBalance.floatBalance, decimalPlaces)
-        .toLocaleString(locale, {
-          maximumFractionDigits: decimalPlaces,
-        })
-        .replaceAll(groupSeparator, '')
+      const val =
+        maxBalance && decimals ? humanReadable(maxBalance, decimals) : '0'
 
       setValue(maxEnabled ? '0' : val)
       setMaxEnabled((m) => !m)
     }, [
-      isDntToken,
-      getHeliumBalance,
+      valueAsBalance,
       networkFee,
       getNextPayments,
-      bonesToBalance,
-      ticker,
+      balanceForMint,
+      mint,
+      decimals,
       maxEnabled,
       paymentIndex,
-      solBalance,
     ])
 
     const BackdropWrapper = useCallback(
@@ -305,7 +250,7 @@ const HNTKeyboardSelector = forwardRef(
             <Box padding="l" alignItems="center" onLayout={handleHeaderLayout}>
               <Text variant="subtitle2">
                 {t('hntKeyboard.enterAmount', {
-                  ticker: valueAsBalance?.type.ticker,
+                  ticker: symbol,
                 })}
               </Text>
               <Box
@@ -334,11 +279,14 @@ const HNTKeyboardSelector = forwardRef(
                 marginTop="lm"
                 marginBottom={{ smallPhone: 'none', phone: 'lm' }}
               >
-                {payer
+                {payer && balanceForMint && typeof decimals !== 'undefined'
                   ? t('hntKeyboard.hntAvailable', {
-                      amount: balanceToString(balanceForTicker, {
-                        maxDecimalPlaces: 4,
-                      }),
+                      amount:
+                        decimals &&
+                        humanReadable(
+                          new BN(balanceForMint.toString()),
+                          decimals,
+                        ),
                     })
                   : ''}
               </Text>
@@ -347,13 +295,14 @@ const HNTKeyboardSelector = forwardRef(
         </BottomSheetBackdrop>
       ),
       [
-        balanceForTicker,
-        handleHeaderLayout,
-        payeeAddress,
-        payer,
-        t,
-        valueAsBalance,
         BackdropWrapper,
+        handleHeaderLayout,
+        t,
+        symbol,
+        payer,
+        payeeAddress,
+        balanceForMint,
+        decimals,
       ],
     )
 
@@ -398,27 +347,17 @@ const HNTKeyboardSelector = forwardRef(
     const hasSufficientBalance = useMemo(() => {
       if (!payer) return true
 
-      if (!networkFee || !valueAsBalance || !hntBalance || !getHeliumBalance) {
+      if (!networkFee || !valueAsBalance || !balanceForMint) {
         return false
       }
 
-      if (ticker !== 'HNT') {
-        return getHeliumBalance.minus(valueAsBalance).integerBalance >= 0
-      }
-      return hntBalance.minus(valueAsBalance).integerBalance >= 0
-    }, [
-      getHeliumBalance,
-      hntBalance,
-      networkFee,
-      payer,
-      ticker,
-      valueAsBalance,
-    ])
+      new BN(balanceForMint.toString()).sub(valueAsBalance)
+    }, [networkFee, payer, valueAsBalance, balanceForMint])
 
     const handleConfirm = useCallback(() => {
       bottomSheetModalRef.current?.dismiss()
 
-      if (!valueAsBalance) return
+      if (!valueAsBalance || typeof decimals === 'undefined') return
 
       onConfirmBalance({
         balance: valueAsBalance,
@@ -426,7 +365,7 @@ const HNTKeyboardSelector = forwardRef(
         index: paymentIndex,
       })
       bottomSheetModalRef.current?.dismiss()
-    }, [payeeAddress, valueAsBalance, onConfirmBalance, paymentIndex])
+    }, [valueAsBalance, decimals, onConfirmBalance, payeeAddress, paymentIndex])
 
     const handleCancel = useCallback(() => {
       setValue(originalValue)
@@ -523,7 +462,7 @@ const HNTKeyboardSelector = forwardRef(
                   numberOfLines={1}
                   adjustsFontSizeToFit
                 >
-                  {`${value || '0'} ${valueAsBalance?.type.ticker}`}
+                  {`${value || '0'} ${symbol}`}
                 </Text>
                 {payer && networkFee && (
                   <Text
@@ -535,9 +474,7 @@ const HNTKeyboardSelector = forwardRef(
                     marginBottom="l"
                   >
                     {t('hntKeyboard.fee', {
-                      value: balanceToString(networkFee, {
-                        maxDecimalPlaces: 4,
-                      }),
+                      value: networkFee && humanReadable(networkFee, 9),
                     })}
                   </Text>
                 )}

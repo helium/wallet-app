@@ -1,23 +1,37 @@
-import React from 'react'
-import TokenHNT from '@assets/images/tokenHNT.svg'
-import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenDC from '@assets/images/tokenDC.svg'
-import TokenSOL from '@assets/images/tokenSolana.svg'
+import TokenHNT from '@assets/images/tokenHNT.svg'
 import TokenIOT from '@assets/images/tokenIOT.svg'
+import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
 import TokenSolWhite from '@assets/images/tokenSOL.svg'
+import TokenSOL from '@assets/images/tokenSolana.svg'
 import { Ticker } from '@helium/currency'
 import { useColors } from '@theme/themeHooks'
-import Box from './Box'
+import React from 'react'
+import { Image } from 'react-native'
 import BackgroundFill from './BackgroundFill'
+import Box from './Box'
 
 type Props = {
-  ticker: Ticker
+  ticker?: Ticker
   size?: number
   white?: boolean
+  img?: string
 }
 
-const TokenIcon = ({ ticker, size = 40, white }: Props) => {
+const TokenIcon = ({ ticker, size = 40, white, img }: Props) => {
   const colors = useColors()
+
+  if (img) {
+    return (
+      <Image
+        style={{ height: size, width: size }}
+        source={{
+          uri: img || '',
+          cache: 'force-cache',
+        }}
+      />
+    )
+  }
 
   switch (ticker) {
     default:

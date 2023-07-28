@@ -21,6 +21,8 @@ export type CSAccount = {
 }
 export type CSAccounts = Record<string, CSAccount>
 
+export type CSToken = Record<string, string[]>
+
 // for android we use AsyncStorage and auto backup to Google Drive using
 // https://developer.android.com/guide/topics/data/autobackup
 const CloudStorage = Platform.OS === 'ios' ? iCloudStorage : AsyncStorage
@@ -29,8 +31,20 @@ enum CloudStorageKeys {
   ACCOUNTS = 'accounts',
   CONTACTS = 'contacts',
   LAST_VIEWED_NOTIFICATIONS = 'lastViewedNotifications',
+  VISIBLE_TOKENS = 'visibleTokens',
   DEFAULT_ACCOUNT_ADDRESS = 'defaultAccountAddress',
 }
+
+export const restoreVisibleTokens = async () => {
+  const tokens = await getFromCloudStorage<CSToken>(
+    CloudStorageKeys.VISIBLE_TOKENS,
+  )
+
+  return tokens
+}
+
+export const updateVisibleTokens = (tokens: CSToken) =>
+  CloudStorage.setItem(CloudStorageKeys.VISIBLE_TOKENS, JSON.stringify(tokens))
 
 export const sortAccounts = (
   accts: CSAccounts,
