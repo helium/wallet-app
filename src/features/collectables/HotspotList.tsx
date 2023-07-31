@@ -134,8 +134,9 @@ const HotspotList = () => {
           key="show-all"
           title={t('collectablesScreen.hotspots.all')}
           subtitle={t('collectablesScreen.hotspots.showAllHotspotsWarning')}
-          onPress={handleSetPageAmount(undefined)}
-          selected={pageAmount === undefined}
+          // Set an unrealistically high amount
+          onPress={handleSetPageAmount(10000)}
+          selected={pageAmount === 10000}
           hasPressedState={false}
           subtitleColor="orange500"
         />
