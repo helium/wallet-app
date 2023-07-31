@@ -1,15 +1,18 @@
-import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
-import React, { memo, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 import AccountIcon from '@components/AccountIcon'
 import Box from '@components/Box'
 import Text from '@components/Text'
-import { balanceToString } from '../../utils/Balance'
+import { useMint } from '@helium/helium-react-hooks'
+import { humanReadable } from '@helium/spl-utils'
+import { PublicKey } from '@solana/web3.js'
+import BN from 'bn.js'
+import React, { memo, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Payment } from './PaymentItem'
 
 type Props = {
-  totalBalance: Balance<TestNetworkTokens | NetworkTokens>
-  feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
+  mint: PublicKey
+  totalBalance: BN
+  feeTokenBalance?: BN
   disabled?: boolean
   errors?: string[]
   payments?: Payment[]
@@ -25,17 +28,22 @@ const PaymentSummary = ({
   payments = [],
   errors,
   alwaysShowRecipients,
+  mint,
 }: Props) => {
   const { t } = useTranslation()
+  const decimals = useMint(mint)?.info?.decimals
 
-  const total = useMemo(() => balanceToString(totalBalance), [totalBalance])
+  const total = useMemo(() => {
+    if (typeof totalBalance === 'undefined' || typeof decimals === 'undefined')
+      return ''
+
+    return humanReadable(totalBalance, decimals)
+  }, [totalBalance, decimals])
   const fee = useMemo(
     () =>
       feeTokenBalance
         ? t('payment.fee', {
-            value: balanceToString(feeTokenBalance, {
-              maxDecimalPlaces: 4,
-            }),
+            value: humanReadable(feeTokenBalance, 9),
           })
         : '',
     [feeTokenBalance, t],

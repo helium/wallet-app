@@ -8,6 +8,7 @@ import TextInput from '@components/TextInput'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address from '@helium/address'
 import { Balance, DataCredits } from '@helium/currency'
+import { useMint } from '@helium/helium-react-hooks'
 import { humanReadable } from '@helium/spl-utils'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
@@ -63,7 +64,6 @@ const PaymentItem = ({
   account,
   address,
   amount,
-  decimals,
   fee,
   handleAddressError,
   hasError,
@@ -80,6 +80,7 @@ const PaymentItem = ({
   showAmount = true,
   ...boxProps
 }: Props) => {
+  const decimals = useMint(mint)?.info?.decimals
   const { colorStyle } = useOpacity('primaryText', 0.3)
   const { dcToNetworkTokens, oraclePrice } = useBalance()
   const { t } = useTranslation()
@@ -263,7 +264,9 @@ const PaymentItem = ({
                 variant="subtitle2"
                 color="primaryText"
               >
-                {humanReadable(amount, decimals)}
+                {typeof amount !== 'undefined' &&
+                  typeof decimals !== 'undefined' &&
+                  humanReadable(amount, decimals)}
               </Text>
               {fee && (
                 <Text paddingHorizontal="m" variant="body3" style={colorStyle}>

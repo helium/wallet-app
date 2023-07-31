@@ -1,6 +1,6 @@
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { PortalHost, PortalProvider } from '@gorhom/portal'
-import { AccountProvider } from '@helium/helium-react-hooks'
+import { AccountProvider } from '@helium/account-fetch-cache-hooks'
 import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import MapboxGL from '@rnmapbox/maps'
 import { ThemeProvider } from '@shopify/restyle'

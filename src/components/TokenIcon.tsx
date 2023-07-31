@@ -35,6 +35,7 @@ const TokenIcon = ({ ticker, size = 40, white, img }: Props) => {
 
   switch (ticker) {
     default:
+      return null
     case 'HNT':
       return <TokenHNT color={colors.white} width={size} height={size} />
     case 'MOBILE':

@@ -1,9 +1,10 @@
 import { TypedAccountParser } from '@helium/account-fetch-cache'
-import { useAccount } from '@helium/helium-react-hooks'
+import { useAccount } from '@helium/account-fetch-cache-hooks'
 import {
   Metadata,
+  parseMetadataAccount,
+  sol,
   toMetadata,
-  toMetadataAccount,
 } from '@metaplex-foundation/js'
 import { PublicKey } from '@solana/web3.js'
 import { useMemo } from 'react'
@@ -40,10 +41,15 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mint?.toBase58()])
   const parser: TypedAccountParser<Metadata> = useMemo(() => {
-    return (_, account) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      return toMetadata(toMetadataAccount(account))
+    return (publicKey, account) => {
+      return toMetadata(
+        parseMetadataAccount({
+          ...account,
+          lamports: sol(account.lamports),
+          data: account.data,
+          publicKey,
+        }),
+      )
     }
   }, [])
   const { info: metadataAcc, loading } = useAccount(metadataAddr, parser)

@@ -1,21 +1,23 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import { StyleSheet } from 'react-native'
-import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
-import { SerializedError } from '@reduxjs/toolkit'
 import Box from '@components/Box'
 import FadeInOut from '@components/FadeInOut'
+import { SerializedError } from '@reduxjs/toolkit'
+import { PublicKey } from '@solana/web3.js'
 import globalStyles from '@theme/globalStyles'
+import BN from 'bn.js'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { StyleSheet } from 'react-native'
+import PaymentError from './PaymentError'
+import { Payment } from './PaymentItem'
 import PaymentSubmitLoading from './PaymentSubmitLoading'
 import PaymentSuccess from './PaymentSuccess'
-import { Payment } from './PaymentItem'
-import PaymentError from './PaymentError'
 
 type Props = {
+  mint: PublicKey
   submitLoading: boolean
   submitError?: Error | SerializedError
   submitSucceeded?: boolean
-  totalBalance: Balance<TestNetworkTokens | NetworkTokens>
-  feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
+  totalBalance: BN
+  feeTokenBalance?: BN
   payments?: Payment[]
   onRetry: () => void
   onSuccess: () => void
@@ -23,6 +25,7 @@ type Props = {
 }
 
 const PaymentSubmit = ({
+  mint,
   submitLoading,
   submitError,
   submitSucceeded,
@@ -87,6 +90,7 @@ const PaymentSubmit = ({
       return (
         <FadeInOut style={globalStyles.container}>
           <PaymentSuccess
+            mint={mint}
             totalBalance={totalBalance}
             feeTokenBalance={feeTokenBalance}
             payments={payments}
@@ -101,6 +105,7 @@ const PaymentSubmit = ({
       return (
         <FadeInOut style={globalStyles.container}>
           <PaymentError
+            mint={mint}
             totalBalance={totalBalance}
             feeTokenBalance={feeTokenBalance}
             payments={payments}
@@ -116,6 +121,7 @@ const PaymentSubmit = ({
     handleRetry,
     handleVideoEnded,
     loading,
+    mint,
     onSuccess,
     payments,
     submitError,

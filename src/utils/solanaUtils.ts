@@ -1494,7 +1494,7 @@ export const submitSolana = async ({
 }
 
 export const parseTransactionError = (balance?: BN, message?: string) => {
-  if (balance?.gt(new BN(0.02))) {
+  if (balance?.lt(new BN(0.02))) {
     return 'The SOL balance on this account is too low to complete this transaction'
   }
 

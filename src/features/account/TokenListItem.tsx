@@ -27,18 +27,23 @@ const TokenListItem = ({ mint }: Props) => {
   const { currentAccount } = useAccountStorage()
   const wallet = usePublicKey(currentAccount?.solanaAddress)
   const { amount, decimals } = useOwnedAmount(wallet, mint)
+  // const amount = BigInt(0)
+  // const decimals = 0
   const { triggerImpact } = useHaptic()
   const { json, symbol } = useMetaplexMetadata(mint)
+  const mintStr = mint.toBase58()
 
   const handleNavigation = useCallback(() => {
     triggerImpact('light')
     navigation.navigate('AccountTokenScreen', {
-      mint: mint.toBase58(),
+      mint: mintStr,
     })
-  }, [navigation, mint, triggerImpact])
+  }, [navigation, mintStr, triggerImpact])
 
   const balanceToDisplay = useMemo(() => {
-    return amount ? humanReadable(new BN(amount.toString()), decimals) : ''
+    return amount && typeof decimals !== 'undefined'
+      ? humanReadable(new BN(amount.toString()), decimals)
+      : ''
   }, [amount, decimals])
 
   return (

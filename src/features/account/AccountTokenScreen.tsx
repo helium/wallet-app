@@ -13,11 +13,12 @@ import BottomSheet, {
   BottomSheetFlatList,
   WINDOW_HEIGHT,
 } from '@gorhom/bottom-sheet'
-import { Ticker } from '@helium/currency'
+import { HNT_MINT, DC_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import useLayoutHeight from '@hooks/useLayoutHeight'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { RouteProp, useRoute } from '@react-navigation/native'
+import { NATIVE_MINT } from '@solana/spl-token'
 import globalStyles from '@theme/globalStyles'
 import { useColors } from '@theme/themeHooks'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -74,9 +75,7 @@ const AccountTokenScreen = () => {
   const mintStr = useMemo(() => route.params.mint, [route.params.mint])
   const mint = usePublicKey(mintStr)
 
-  const { symbol } = useMetaplexMetadata(mint)
-
-  const routeTicker = useMemo(() => symbol?.toUpperCase() as Ticker, [symbol])
+  const { json, symbol } = useMetaplexMetadata(mint)
 
   const toggleFiltersOpen = useCallback(
     (open) => () => {
@@ -184,14 +183,14 @@ const AccountTokenScreen = () => {
   const hasAirdrop = useMemo(() => {
     if (cluster === 'devnet') {
       return (
-        routeTicker === 'SOL' ||
-        routeTicker === 'HNT' ||
-        routeTicker === 'IOT' ||
-        routeTicker === 'MOBILE'
+        mint?.equals(NATIVE_MINT) ||
+        mint?.equals(HNT_MINT) ||
+        mint?.equals(IOT_MINT) ||
+        mint?.equals(MOBILE_MINT)
       )
     }
     return false
-  }, [routeTicker, cluster])
+  }, [mint, cluster])
 
   const renderHeader = useCallback(() => {
     const filterName = t(`accountsScreen.filterTypes.${filterState.filter}`)
@@ -311,7 +310,7 @@ const AccountTokenScreen = () => {
   const filters = useCallback(
     () => (
       <>
-        {routeTicker !== 'DC' && (
+        {!mint?.equals(DC_MINT) && (
           <>
             <ListItem
               key="all"
@@ -336,7 +335,7 @@ const AccountTokenScreen = () => {
             />
           </>
         )}
-        {routeTicker === 'DC' && (
+        {mint?.equals(DC_MINT) && (
           <>
             <ListItem
               key="mint"
@@ -356,7 +355,7 @@ const AccountTokenScreen = () => {
         )}
       </>
     ),
-    [filterState.filter, routeTicker, setFilter, t],
+    [filterState.filter, mint, setFilter, t],
   )
 
   const backgroundComponent = useCallback(
@@ -393,7 +392,7 @@ const AccountTokenScreen = () => {
       hasBottomTitle: true,
     }
 
-    if (routeTicker === 'DC') {
+    if (mint?.equals(DC_MINT)) {
       options = {
         hasSend: false,
         hasRequest: false,
@@ -404,14 +403,14 @@ const AccountTokenScreen = () => {
     }
 
     return options
-  }, [routeTicker])
+  }, [mint])
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <BackScreen
         padding="none"
         title={t('accountsScreen.title', {
-          ticker: routeTicker,
+          ticker: symbol,
         })}
         onHeaderLayout={setBackHeaderHeight}
       >
@@ -457,7 +456,7 @@ const AccountTokenScreen = () => {
           <Animated.View style={bottomHeaderAnimatedStyle}>
             <Box marginVertical="xl">
               <Box alignItems="center" marginBottom="m">
-                <TokenIcon ticker={routeTicker} size={50} />
+                <TokenIcon img={json?.image} size={50} />
               </Box>
               <AccountTokenBalance marginTop="s" ticker={routeTicker} />
               <AccountTokenCurrencyBalance
@@ -472,8 +471,8 @@ const AccountTokenScreen = () => {
                 hasRequest={actionBarProps.hasRequest}
                 hasDelegate={actionBarProps.hasDelegate}
                 ticker={routeTicker}
-                compact={routeTicker !== 'DC'}
-                hasBottomTitle={routeTicker !== 'DC'}
+                compact={!mint.equals(DC_MINT)}
+                hasBottomTitle={!mint.equals(DC_MINT)}
                 hasAirdrop={hasAirdrop}
               />
             </Box>

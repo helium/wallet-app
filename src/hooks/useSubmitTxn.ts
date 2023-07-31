@@ -1,21 +1,23 @@
-import { useCallback } from 'react'
-import Balance, { AnyCurrencyType } from '@helium/currency'
-import { PublicKey, Transaction } from '@solana/web3.js'
-import i18n from '@utils/i18n'
-import { Mints } from '@utils/constants'
-import * as solUtils from '@utils/solanaUtils'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { HotspotType } from '@helium/onboarding'
+import { chunks } from '@helium/spl-utils'
+import { PublicKey, Transaction } from '@solana/web3.js'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
+import i18n from '@utils/i18n'
+import * as solUtils from '@utils/solanaUtils'
+import BN from 'bn.js'
+import { useCallback } from 'react'
+import { useSolana } from '../solana/SolanaProvider'
+import { useWalletSign } from '../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
 import {
+  claimAllRewards,
+  claimRewards,
   makeCollectablePayment,
   makePayment,
-  claimRewards,
-  claimAllRewards,
   sendAnchorTxn,
-  sendTreasurySwap,
-  sendMintDataCredits,
   sendDelegateDataCredits,
+  sendMintDataCredits,
+  sendTreasurySwap,
   sendUpdateIotInfo,
   sendUpdateMobileInfo,
 } from '../store/slices/solanaSlice'
@@ -24,12 +26,7 @@ import {
   Collectable,
   CompressedNFT,
   HotspotWithPendingRewards,
-  toMintAddress,
 } from '../types/solana'
-import { useSolana } from '../solana/SolanaProvider'
-import { useWalletSign } from '../solana/WalletSignProvider'
-import BN from 'bn.js'
-import { chunks } from '@helium/spl-utils'
 
 export default () => {
   const { currentAccount } = useAccountStorage()
@@ -64,7 +61,7 @@ export default () => {
             currentAccount.solanaAddress!,
             currentAccount.address,
             p,
-            mint,
+            mint.toBase58(),
           )
         }),
       )
