@@ -1499,7 +1499,7 @@ export const parseTransactionError = (
   balance?: Balance<AnyCurrencyType>,
   message?: string,
 ) => {
-  if ((balance?.floatBalance || 0) > 0.02) {
+  if ((balance?.floatBalance || 0) < 0.02) {
     return 'The SOL balance on this account is too low to complete this transaction'
   }
 
