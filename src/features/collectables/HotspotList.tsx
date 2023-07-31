@@ -147,7 +147,7 @@ const HotspotList = () => {
   const RewardItem = useCallback(
     ({ ticker, amount, ...rest }) => {
       const decimals =
-        ticker === 'IOT' ? iotMint?.info.decimals : mobileMint?.info.decimals
+        ticker === 'IOT' ? iotMint?.decimals : mobileMint?.decimals
       let realAmount = ''
       if (amount) {
         const num = toNumber(amount, decimals || 6)

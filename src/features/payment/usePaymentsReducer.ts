@@ -24,6 +24,11 @@ type UpdateBalanceAction = {
   payer: string
 }
 
+type UpdateTokenBalanceAction = {
+  type: 'updateTokenBalance'
+  balance?: BN
+}
+
 type RemovePayment = {
   type: 'removePayment'
   index: number
@@ -81,9 +86,9 @@ const initialState = (opts: {
   error: undefined,
   payments: [{}] as Array<Payment>,
   totalAmount: new BN(0),
-  balance: opts.balance || new BN(0),
   ...calculateFee([{}]),
   ...opts,
+  balance: opts.balance || new BN(0),
 })
 
 const paymentsSum = (payments: Payment[]) => {
@@ -143,6 +148,7 @@ function reducer(
   action:
     | UpdatePayeeAction
     | UpdateBalanceAction
+    | UpdateTokenBalanceAction
     | UpdateErrorAction
     | AddPayee
     | AddLinkedPayments
@@ -209,6 +215,13 @@ function reducer(
         }
       })
       return { ...state, ...recalculate(nextPayments, state) }
+    }
+
+    case 'updateTokenBalance': {
+      return {
+        ...state,
+        balance: action.balance || new BN(0),
+      }
     }
     case 'addPayee': {
       if (state.payments.length >= MAX_PAYMENTS) return state

@@ -1,16 +1,22 @@
+import DripLogo from '@assets/images/dripLogo.svg'
+import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import * as solUtils from '@utils/solanaUtils'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { useTranslation } from 'react-i18next'
+import CircleLoader from '@components/CircleLoader'
 import SafeAreaBox from '@components/SafeAreaBox'
+import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
-import { Edge } from 'react-native-safe-area-context'
-import DripLogo from '@assets/images/dripLogo.svg'
-import { ReAnimatedBox } from '@components/AnimatedBox'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { usePublicKey } from '@hooks/usePublicKey'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { NATIVE_MINT } from '@solana/spl-token'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
+import * as logger from '@utils/logger'
+import * as solUtils from '@utils/solanaUtils'
+import axios from 'axios'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   interpolate,
   runOnJS,
@@ -20,12 +26,9 @@ import {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated'
-import Text from '@components/Text'
-import axios from 'axios'
-import * as logger from '@utils/logger'
-import CircleLoader from '@components/CircleLoader'
-import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
+import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
+import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 
 const DROP_HEIGHT = 79
 
@@ -42,20 +45,22 @@ const AirdropScreen = () => {
   const [loading, setLoading] = useState(false)
 
   const route = useRoute<Route>()
-  const { ticker } = route.params
+  const { mint: mintStr } = route.params
+  const mint = usePublicKey(mintStr)
+  const { symbol, json } = useMetaplexMetadata(mint)
 
   const onAirdrop = useCallback(async () => {
     if (!currentAccount?.solanaAddress || !anchorProvider) return
 
     setLoading(true)
-    if (ticker === 'SOL') {
+    if (mint?.equals(NATIVE_MINT)) {
       solUtils.airdrop(anchorProvider, currentAccount?.solanaAddress)
       setLoading(false)
       navigation.goBack()
     } else {
       try {
         await axios.get(
-          `https://faucet.web.test-helium.com/${ticker.toLowerCase()}/${
+          `https://faucet.web.test-helium.com/${symbol?.toLowerCase()}/${
             currentAccount?.solanaAddress
           }?amount=2)`,
         )
@@ -68,7 +73,7 @@ const AirdropScreen = () => {
         setErrorMessage((error as Error).message)
       }
     }
-  }, [anchorProvider, currentAccount, navigation, ticker])
+  }, [anchorProvider, currentAccount?.solanaAddress, mint, navigation, symbol])
 
   const edges = useMemo(() => ['bottom'] as Edge[], [])
 
@@ -163,7 +168,7 @@ const AirdropScreen = () => {
           marginBottom="l"
         >
           <Box justifyContent="center" alignItems="center">
-            <TokenIcon size={160} ticker={ticker} white />
+            <TokenIcon size={160} img={json?.image} white />
             <Box position="absolute" top={120}>
               <ReAnimatedBox style={[ringStyle, dropStyle]}>
                 <DripLogo />
@@ -184,7 +189,11 @@ const AirdropScreen = () => {
           titleColorDisabled="black500"
           titleColor="primary"
           fontWeight="500"
-          title={!loading ? t('airdropScreen.airdropTicker', { ticker }) : ''}
+          title={
+            !loading
+              ? t('airdropScreen.airdropTicker', { ticker: symbol || '' })
+              : ''
+          }
           disabled={loading}
           marginVertical="l"
           marginHorizontal="l"

@@ -118,6 +118,30 @@ import {
 import { getH3Location } from './h3'
 import * as Logger from './logger'
 import sleep from './sleep'
+import { decimalSeparator, groupSeparator } from './i18n'
+
+export function humanReadable(
+  amount?: BN,
+  decimals?: number,
+): string | undefined {
+  if (typeof decimals === 'undefined' || typeof amount === 'undefined') return
+
+  const input = amount.toString()
+  const integerPart =
+    input.length > decimals ? input.slice(0, input.length - decimals) : ''
+  const formattedIntegerPart = integerPart.replace(
+    /\B(?=(\d{3})+(?!\d))/g,
+    groupSeparator,
+  )
+  const decimalPart = input
+    .slice(-decimals)
+    .padStart(decimals, '0') // Add prefix zeros
+    .replace(/0+$/, '') // Remove trailing zeros
+
+  return `${formattedIntegerPart.length > 0 ? formattedIntegerPart : '0'}${
+    Number(decimalPart) !== 0 ? `${decimalSeparator}${decimalPart}` : ''
+  }`
+}
 
 const govProgramId = new PublicKey(
   'hgovkRU6Ghe1Qoyb54HdSLdqN7VtxaifBzRmh9jtd3S',
@@ -655,16 +679,20 @@ export const delegateDataCredits = async (
   }
 }
 
-export const getEscrowTokenAccount = (address: string) => {
-  try {
-    const subDao = IOT_SUB_DAO_KEY
-    const delegatedDataCredits = delegatedDataCreditsKey(subDao, address)[0]
-    const escrowTokenAccount = escrowAccountKey(delegatedDataCredits)[0]
+export const getEscrowTokenAccount = (
+  address: string | undefined,
+  subDao: PublicKey,
+) => {
+  if (address) {
+    try {
+      const delegatedDataCredits = delegatedDataCreditsKey(subDao, address)[0]
+      const escrowTokenAccount = escrowAccountKey(delegatedDataCredits)[0]
 
-    return escrowTokenAccount
-  } catch (e) {
-    Logger.error(e)
-    throw e as Error
+      return escrowTokenAccount
+    } catch (e) {
+      Logger.error(e)
+      throw e as Error
+    }
   }
 }
 
@@ -1633,7 +1661,9 @@ export const updateEntityInfoTxn = async ({
       )
       const mobileInfo =
         await program.account.mobileHotspotInfoV0.fetchNullable(
-          mobileInfoKey(mobileConfigKey, entityKey)[0],
+          (
+            await mobileInfoKey(mobileConfigKey, entityKey)
+          )[0],
         )
 
       if (!mobileInfo) {

@@ -9,6 +9,7 @@ export type PaymentRouteParam = {
   memo?: string
   netType?: string
   defaultTokenType?: Ticker
+  mint?: string
 }
 
 export type BurnRouteParam = {
@@ -35,7 +36,7 @@ export type HomeStackParamList = {
     action: 'payment'
   }
   PaymentScreen: undefined | PaymentRouteParam
-  AirdropScreen: { ticker: Ticker }
+  AirdropScreen: { mint: string }
   BurnScreen: BurnRouteParam
   PaymentQrScanner: undefined
   RequestScreen: undefined

@@ -23,7 +23,6 @@ const StoreSolBalance = ({ solanaAddress }: Props) => {
         cluster,
         solanaAddress,
         balance: Number(amount),
-        type: 'sol',
         tokenAccount: solanaAddress,
       }),
     )

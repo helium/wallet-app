@@ -9,12 +9,12 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address from '@helium/address'
 import { Balance, DataCredits } from '@helium/currency'
 import { useMint } from '@helium/helium-react-hooks'
-import { humanReadable } from '@helium/spl-utils'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { Theme } from '@theme/theme'
 import { useColors, useOpacity } from '@theme/themeHooks'
+import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { toUpper } from 'lodash'
 import React, { memo, useCallback, useEffect, useMemo } from 'react'
@@ -85,7 +85,7 @@ const PaymentItem = ({
   const { dcToNetworkTokens, oraclePrice } = useBalance()
   const { t } = useTranslation()
   const { secondaryText } = useColors()
-  const { symbol } = useMetaplexMetadata(mint)
+  const { symbol, loading: loadingMeta } = useMetaplexMetadata(mint)
 
   const addressIsWrongNetType = useMemo(
     () =>
@@ -240,17 +240,19 @@ const PaymentItem = ({
                 flex={1}
                 justifyContent="center"
               >
-                <Text
-                  color="secondaryText"
-                  padding="m"
-                  variant="subtitle2"
-                  fontWeight="100"
-                  style={colorStyle}
-                >
-                  {t('payment.enterAmount', {
-                    symbol,
-                  })}
-                </Text>
+                {!loadingMeta && (
+                  <Text
+                    color="secondaryText"
+                    padding="m"
+                    variant="subtitle2"
+                    fontWeight="100"
+                    style={colorStyle}
+                  >
+                    {t('payment.enterAmount', {
+                      ticker: symbol,
+                    })}
+                  </Text>
+                )}
               </TouchableOpacityBox>
             </>
           ) : (
@@ -264,9 +266,7 @@ const PaymentItem = ({
                 variant="subtitle2"
                 color="primaryText"
               >
-                {typeof amount !== 'undefined' &&
-                  typeof decimals !== 'undefined' &&
-                  humanReadable(amount, decimals)}
+                {humanReadable(amount, decimals)}
               </Text>
               {fee && (
                 <Text paddingHorizontal="m" variant="body3" style={colorStyle}>

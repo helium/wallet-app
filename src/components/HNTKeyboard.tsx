@@ -6,7 +6,6 @@ import {
 } from '@gorhom/bottom-sheet'
 import { Portal } from '@gorhom/portal'
 import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
-import { humanReadable } from '@helium/spl-utils'
 import useBackHandler from '@hooks/useBackHandler'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
@@ -34,6 +33,7 @@ import { Edge } from 'react-native-safe-area-context'
 import { Payment } from '../features/payment/PaymentItem'
 import { CSAccount } from '../storage/cloudStorage'
 import { decimalSeparator, groupSeparator } from '../utils/i18n'
+import { humanReadable } from '../utils/solanaUtils'
 import AccountIcon from './AccountIcon'
 import BackgroundFill from './BackgroundFill'
 import Box from './Box'
@@ -87,7 +87,7 @@ const HNTKeyboardSelector = forwardRef(
     const decimals = useMint(mint)?.info?.decimals
     const { t } = useTranslation()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-    const { symbol } = useMetaplexMetadata(mint)
+    const { symbol, loading: loadingMeta } = useMetaplexMetadata(mint)
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const [value, setValue] = useState('0')
     const [originalValue, setOriginalValue] = useState('')
@@ -119,12 +119,13 @@ const HNTKeyboardSelector = forwardRef(
     }, [payee])
 
     const valueAsBalance = useMemo(() => {
-      const stripped = value
-        .replaceAll(groupSeparator, '')
-        .replaceAll(decimalSeparator, '.')
+      if (!value || typeof decimals === 'undefined') return undefined
+      const [whole, dec] = value.split(decimalSeparator)
+      const decPart = (dec || '').padEnd(decimals, '0').slice(0, decimals)
+      const fullStr = `${whole.replaceAll(groupSeparator, '')}${decPart}`
 
-      return new BN(stripped)
-    }, [value])
+      return new BN(fullStr)
+    }, [value, decimals])
 
     const hasMaxDecimals = useMemo(() => {
       if (!valueAsBalance || typeof decimals === 'undefined') return false
@@ -202,8 +203,7 @@ const HNTKeyboardSelector = forwardRef(
         maxBalance = networkFee ? maxBalance?.sub(networkFee) : maxBalance
       }
 
-      const val =
-        maxBalance && decimals ? humanReadable(maxBalance, decimals) : '0'
+      const val = humanReadable(maxBalance, decimals) || '0'
 
       setValue(maxEnabled ? '0' : val)
       setMaxEnabled((m) => !m)
@@ -248,11 +248,13 @@ const HNTKeyboardSelector = forwardRef(
         >
           <BackdropWrapper>
             <Box padding="l" alignItems="center" onLayout={handleHeaderLayout}>
-              <Text variant="subtitle2">
-                {t('hntKeyboard.enterAmount', {
-                  ticker: symbol,
-                })}
-              </Text>
+              {!loadingMeta && (
+                <Text variant="subtitle2">
+                  {t('hntKeyboard.enterAmount', {
+                    ticker: symbol,
+                  })}
+                </Text>
+              )}
               <Box
                 flexDirection="row"
                 alignItems="center"
@@ -297,6 +299,7 @@ const HNTKeyboardSelector = forwardRef(
       [
         BackdropWrapper,
         handleHeaderLayout,
+        loadingMeta,
         t,
         symbol,
         payer,
@@ -351,7 +354,9 @@ const HNTKeyboardSelector = forwardRef(
         return false
       }
 
-      new BN(balanceForMint.toString()).sub(valueAsBalance)
+      return new BN(balanceForMint.toString())
+        .sub(valueAsBalance)
+        .gte(new BN(0))
     }, [networkFee, payer, valueAsBalance, balanceForMint])
 
     const handleConfirm = useCallback(() => {

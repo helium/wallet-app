@@ -35,7 +35,6 @@ import { useAppDispatch } from '../store/store'
 import { AccountBalance, BalanceInfo, TokenAccount } from '../types/balance'
 import StoreAtaBalance from './StoreAtaBalance'
 import StoreSolBalance from './StoreSolBalance'
-import StoreTokenBalance from './StoreTokenBalance'
 import { accountCurrencyType } from './accountUtils'
 import { decimalSeparator, groupSeparator } from './i18n'
 import { useBalanceHistory } from './useBalanceHistory'
@@ -214,17 +213,6 @@ const useBalanceHook = () => {
 
     const solToken = accountBalancesForCluster?.sol
 
-    const dcEscrowToken = accountBalancesForCluster?.dcEscrow
-
-    const dcEscrowBalance = new Balance(
-      dcEscrowToken?.balance || 0,
-      CurrencyType.dataCredit,
-    )
-    const formattedEscrowDcValue = await CurrencyFormatter.format(
-      dcEscrowBalance.toUsd(oraclePrice).floatBalance,
-      'usd',
-    )
-
     const solBalance = Balance.fromIntAndTicker(solToken?.balance || 0, 'SOL')
     const solPrice = tokenPrices?.solana?.[currency] || 0
     const solAmount = solBalance?.floatBalance
@@ -277,11 +265,7 @@ const useBalanceHook = () => {
 
     return {
       atas,
-      dcBalance,
-      dcEscrowBalance,
-      dcEscrowToken,
       formattedDcValue,
-      formattedEscrowDcValue,
       formattedHntValue,
       formattedIotValue,
       formattedMobileValue,
@@ -395,9 +379,6 @@ const useBalanceHook = () => {
 const initialState = {
   balanceHistory: [] as AccountBalance[],
   bonesToBalance: () => new Balance(0, CurrencyType.networkToken),
-  dcBalance: new Balance(0, CurrencyType.dataCredit),
-  dcDelegatedBalance: new Balance(0, CurrencyType.dataCredit),
-  dcEscrowBalance: new Balance(0, CurrencyType.dataCredit),
   dcToNetworkTokens: () => undefined,
   floatToBalance: () => undefined,
   formattedDcValue: '',
@@ -423,7 +404,6 @@ const initialState = {
   atas: [],
   updating: false,
   solToken: undefined,
-  dcEscrowToken: undefined,
   tokenAccounts: undefined,
 }
 const BalanceContext =
@@ -433,7 +413,7 @@ const { Provider } = BalanceContext
 export const BalanceProvider = ({ children }: { children: ReactNode }) => {
   const balanceHook = useBalanceHook()
 
-  const { atas, dcEscrowToken, solToken } = balanceHook
+  const { atas, solToken } = balanceHook
   const { cluster } = useSolana()
   const prevSolAddress = usePrevious(solToken?.tokenAccount)
   const prevCluster = usePrevious(cluster)
@@ -452,12 +432,6 @@ export const BalanceProvider = ({ children }: { children: ReactNode }) => {
       {atas?.map((ta) => (
         <StoreAtaBalance key={`${ta.mint}.${ta.tokenAccount}`} {...ta} />
       ))}
-      {dcEscrowToken?.tokenAccount && (
-        <StoreTokenBalance
-          tokenAccount={dcEscrowToken.tokenAccount}
-          type="dcEscrow"
-        />
-      )}
       {solToken?.tokenAccount && (
         <StoreSolBalance solanaAddress={solToken?.tokenAccount} />
       )}

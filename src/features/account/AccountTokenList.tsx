@@ -6,7 +6,7 @@ import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/co
 import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
-import { useVisibleTokens } from '@storage/TokensProvider'
+import { useVisibleTokens, DEFAULT_TOKENS } from '@storage/TokensProvider'
 import { useBalance } from '@utils/Balance'
 import { times } from 'lodash'
 import React, { useCallback, useMemo } from 'react'
@@ -40,17 +40,22 @@ const AccountTokenList = ({ onLayout }: Props) => {
   const { tokenAccounts } = useBalance()
   const { bottom } = useSafeAreaInsets()
   const mints = useMemo(() => {
-    return tokenAccounts
+    const taMints = tokenAccounts
       ?.filter(
         (ta) =>
           visibleTokens.has(ta.mint) &&
           ta.balance > 0 &&
           (ta.decimals > 0 || ta.mint === DC_MINT.toBase58()),
       )
-      .map((ta) => new PublicKey(ta.mint))
+      .map((ta) => ta.mint)
+
+    const all = [...new Set([...DEFAULT_TOKENS, ...(taMints || [])])]
       .sort((a, b) => {
-        return getSortValue(b.toBase58()) - getSortValue(a.toBase58())
+        return getSortValue(b) - getSortValue(a)
       })
+      .map((mint) => new PublicKey(mint))
+
+    return all
   }, [tokenAccounts, visibleTokens])
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])

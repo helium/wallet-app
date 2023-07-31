@@ -6,13 +6,13 @@ import TokenIcon from '@components/TokenIcon'
 import TouchableContainer from '@components/TouchableContainer'
 import { Ticker } from '@helium/currency'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
-import { humanReadable } from '@helium/spl-utils'
 import useHaptic from '@hooks/useHaptic'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { useCallback, useMemo } from 'react'
 import { HomeNavigationProp } from '../home/homeTypes'
@@ -26,11 +26,15 @@ const TokenListItem = ({ mint }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { currentAccount } = useAccountStorage()
   const wallet = usePublicKey(currentAccount?.solanaAddress)
-  const { amount, decimals } = useOwnedAmount(wallet, mint)
+  const {
+    amount,
+    decimals,
+    loading: loadingOwned,
+  } = useOwnedAmount(wallet, mint)
   // const amount = BigInt(0)
   // const decimals = 0
   const { triggerImpact } = useHaptic()
-  const { json, symbol } = useMetaplexMetadata(mint)
+  const { json, symbol, loading } = useMetaplexMetadata(mint)
   const mintStr = mint.toBase58()
 
   const handleNavigation = useCallback(() => {
@@ -43,7 +47,7 @@ const TokenListItem = ({ mint }: Props) => {
   const balanceToDisplay = useMemo(() => {
     return amount && typeof decimals !== 'undefined'
       ? humanReadable(new BN(amount.toString()), decimals)
-      : ''
+      : '0'
   }, [amount, decimals])
 
   return (
@@ -58,24 +62,46 @@ const TokenListItem = ({ mint }: Props) => {
         borderBottomColor="primaryBackground"
         borderBottomWidth={1}
       >
-        <TokenIcon img={json?.image} />
+        {loading ? (
+          <Box
+            width={40}
+            height={40}
+            borderRadius="round"
+            backgroundColor="surface"
+          />
+        ) : (
+          <TokenIcon img={json?.image} />
+        )}
+
         <Box flex={1} paddingHorizontal="m">
-          <Box flexDirection="row" alignItems="center">
-            <Text
-              variant="body1"
-              color="primaryText"
-              maxFontSizeMultiplier={1.3}
-            >
-              {`${balanceToDisplay} `}
-            </Text>
-            <Text
-              variant="body2Medium"
-              color="secondaryText"
-              maxFontSizeMultiplier={1.3}
-            >
-              {symbol}
-            </Text>
-          </Box>
+          {loadingOwned ? (
+            <Box flex={1} paddingHorizontal="m">
+              <Box width={120} height={16} backgroundColor="surface" />
+              <Box
+                width={70}
+                height={16}
+                marginTop="s"
+                backgroundColor="surface"
+              />
+            </Box>
+          ) : (
+            <Box flexDirection="row" alignItems="center">
+              <Text
+                variant="body1"
+                color="primaryText"
+                maxFontSizeMultiplier={1.3}
+              >
+                {`${balanceToDisplay} `}
+              </Text>
+              <Text
+                variant="body2Medium"
+                color="secondaryText"
+                maxFontSizeMultiplier={1.3}
+              >
+                {symbol}
+              </Text>
+            </Box>
+          )}
           {symbol && (
             <AccountTokenCurrencyBalance
               variant="subtitle4"

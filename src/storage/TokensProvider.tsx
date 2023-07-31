@@ -16,7 +16,7 @@ import {
   updateVisibleTokens,
 } from './cloudStorage'
 
-const DEFAULT_TOKENS = new Set([
+export const DEFAULT_TOKENS = new Set([
   HNT_MINT.toBase58(),
   MOBILE_MINT.toBase58(),
   IOT_MINT.toBase58(),
@@ -38,7 +38,7 @@ const useVisibleTokensHook = () => {
       if (response) {
         setVisibleTokens(
           Object.entries(response).reduce((acc, [key, s]) => {
-            acc[key] = new Set(s)
+            acc[key] = new Set([...s, ...DEFAULT_TOKENS])
             return acc
           }, {} as Record<string, Set<string>>),
         )

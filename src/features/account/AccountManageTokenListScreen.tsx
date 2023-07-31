@@ -7,7 +7,7 @@ import TokenIcon from '@components/TokenIcon'
 import TouchableContainer from '@components/TouchableContainer'
 import { Ticker } from '@helium/currency'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
-import { DC_MINT, humanReadable } from '@helium/spl-utils'
+import { DC_MINT } from '@helium/spl-utils'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
 import CheckBox from '@react-native-community/checkbox'
@@ -17,6 +17,7 @@ import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { useColors, useHitSlop } from '@theme/themeHooks'
 import { useBalance } from '@utils/Balance'
+import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { memo, useCallback, useMemo } from 'react'
 import { FlatList } from 'react-native-gesture-handler'
@@ -42,7 +43,9 @@ const CheckableTokenListItem = ({
   const { amount, decimals } = useOwnedAmount(wallet, mint)
   const { json, symbol } = useMetaplexMetadata(mint)
   const balanceToDisplay = useMemo(() => {
-    return amount ? humanReadable(new BN(amount.toString()), decimals) : ''
+    return amount && typeof decimals !== 'undefined'
+      ? humanReadable(new BN(amount.toString()), decimals)
+      : ''
   }, [amount, decimals])
   const colors = useColors()
 

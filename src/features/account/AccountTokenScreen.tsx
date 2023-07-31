@@ -13,7 +13,8 @@ import BottomSheet, {
   BottomSheetFlatList,
   WINDOW_HEIGHT,
 } from '@gorhom/bottom-sheet'
-import { HNT_MINT, DC_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
+import { Ticker } from '@helium/currency'
+import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import useLayoutHeight from '@hooks/useLayoutHeight'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
@@ -73,7 +74,8 @@ const AccountTokenScreen = () => {
   ] = useState(true)
 
   const mintStr = useMemo(() => route.params.mint, [route.params.mint])
-  const mint = usePublicKey(mintStr)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const mint = usePublicKey(mintStr)!
 
   const { json, symbol } = useMetaplexMetadata(mint)
 
@@ -183,10 +185,10 @@ const AccountTokenScreen = () => {
   const hasAirdrop = useMemo(() => {
     if (cluster === 'devnet') {
       return (
-        mint?.equals(NATIVE_MINT) ||
-        mint?.equals(HNT_MINT) ||
-        mint?.equals(IOT_MINT) ||
-        mint?.equals(MOBILE_MINT)
+        mint.equals(NATIVE_MINT) ||
+        mint.equals(HNT_MINT) ||
+        mint.equals(IOT_MINT) ||
+        mint.equals(MOBILE_MINT)
       )
     }
     return false
@@ -310,7 +312,7 @@ const AccountTokenScreen = () => {
   const filters = useCallback(
     () => (
       <>
-        {!mint?.equals(DC_MINT) && (
+        {!mint.equals(DC_MINT) && (
           <>
             <ListItem
               key="all"
@@ -335,7 +337,7 @@ const AccountTokenScreen = () => {
             />
           </>
         )}
-        {mint?.equals(DC_MINT) && (
+        {mint.equals(DC_MINT) && (
           <>
             <ListItem
               key="mint"
@@ -392,7 +394,7 @@ const AccountTokenScreen = () => {
       hasBottomTitle: true,
     }
 
-    if (mint?.equals(DC_MINT)) {
+    if (mint.equals(DC_MINT)) {
       options = {
         hasSend: false,
         hasRequest: false,
@@ -435,20 +437,22 @@ const AccountTokenScreen = () => {
                   showTicker={false}
                   textVariant="h2Medium"
                   justifyContent="flex-start"
-                  ticker={routeTicker}
+                  mint={mint}
                   flex={1}
                 />
-                <AccountTokenCurrencyBalance
-                  ticker={routeTicker}
-                  variant="body1"
-                  color="secondaryText"
-                />
+                {!!symbol && (
+                  <AccountTokenCurrencyBalance
+                    ticker={symbol.toUpperCase() as Ticker}
+                    variant="body1"
+                    color="secondaryText"
+                  />
+                )}
               </Box>
               <AccountActionBar
                 hasSend={actionBarProps.hasSend}
                 hasRequest={actionBarProps.hasRequest}
                 hasDelegate={actionBarProps.hasDelegate}
-                ticker={routeTicker}
+                mint={mint}
                 maxCompact
               />
             </Box>
@@ -458,19 +462,21 @@ const AccountTokenScreen = () => {
               <Box alignItems="center" marginBottom="m">
                 <TokenIcon img={json?.image} size={50} />
               </Box>
-              <AccountTokenBalance marginTop="s" ticker={routeTicker} />
-              <AccountTokenCurrencyBalance
-                ticker={routeTicker}
-                variant="h4"
-                color="secondaryText"
-                textAlign="center"
-                marginBottom="xl"
-              />
+              <AccountTokenBalance marginTop="s" mint={mint} />
+              {!!symbol && (
+                <AccountTokenCurrencyBalance
+                  ticker={symbol.toUpperCase() as Ticker}
+                  variant="h4"
+                  color="secondaryText"
+                  textAlign="center"
+                  marginBottom="xl"
+                />
+              )}
               <AccountActionBar
                 hasSend={actionBarProps.hasSend}
                 hasRequest={actionBarProps.hasRequest}
                 hasDelegate={actionBarProps.hasDelegate}
-                ticker={routeTicker}
+                mint={mint}
                 compact={!mint.equals(DC_MINT)}
                 hasBottomTitle={!mint.equals(DC_MINT)}
                 hasAirdrop={hasAirdrop}

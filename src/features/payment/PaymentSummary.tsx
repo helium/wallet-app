@@ -2,8 +2,8 @@ import AccountIcon from '@components/AccountIcon'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import { useMint } from '@helium/helium-react-hooks'
-import { humanReadable } from '@helium/spl-utils'
 import { PublicKey } from '@solana/web3.js'
+import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -34,10 +34,7 @@ const PaymentSummary = ({
   const decimals = useMint(mint)?.info?.decimals
 
   const total = useMemo(() => {
-    if (typeof totalBalance === 'undefined' || typeof decimals === 'undefined')
-      return ''
-
-    return humanReadable(totalBalance, decimals)
+    return humanReadable(totalBalance, decimals) || ''
   }, [totalBalance, decimals])
   const fee = useMemo(
     () =>

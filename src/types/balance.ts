@@ -34,8 +34,6 @@ export type Prices = Record<Token, Record<string, number>>
 export type BalanceInfo = {
   atas: Required<TokenAccount>[]
   dcBalance: Balance<DataCredits>
-  dcEscrowBalance: Balance<DataCredits>
-  dcEscrowToken: Omit<TokenAccount, 'mint'>
   formattedDcValue: string
   formattedEscrowDcValue: string
   formattedHntValue: string

@@ -17,7 +17,6 @@ import TokenSelector, {
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { NetTypes as NetType } from '@helium/address'
 import { useMint } from '@helium/helium-react-hooks'
-import { humanReadable } from '@helium/spl-utils'
 import useHaptic from '@hooks/useHaptic'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import Clipboard from '@react-native-community/clipboard'
@@ -34,6 +33,7 @@ import {
 } from '@theme/themeHooks'
 import animateTransition from '@utils/animateTransition'
 import { makePayRequestLink } from '@utils/linking'
+import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, {
   memo,
@@ -339,8 +339,7 @@ const RequestScreen = () => {
                       </Text>
                     ) : (
                       <Text variant="subtitle2" color="primaryText">
-                        {typeof decimals !== 'undefined' &&
-                          humanReadable(paymentAmount, decimals)}
+                        {humanReadable(paymentAmount, decimals)}
                       </Text>
                     )}
                   </TouchableOpacityBox>

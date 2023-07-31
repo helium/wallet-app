@@ -20,7 +20,7 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address, { NetTypes } from '@helium/address'
 import { Ticker } from '@helium/currency'
 import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
-import { HNT_MINT, humanReadable } from '@helium/spl-utils'
+import { HNT_MINT } from '@helium/spl-utils'
 import useDisappear from '@hooks/useDisappear'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
@@ -30,7 +30,10 @@ import { PublicKey } from '@solana/web3.js'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { useColors, useHitSlop } from '@theme/themeHooks'
 import { Mints } from '@utils/constants'
-import { calcCreateAssociatedTokenAccountAccountFee } from '@utils/solanaUtils'
+import {
+  calcCreateAssociatedTokenAccountAccountFee,
+  humanReadable,
+} from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { unionBy } from 'lodash'
 import React, {
@@ -88,7 +91,8 @@ const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
       {
         payee: opts.payee,
         amount: opts.amount,
-        mint: Mints[opts.defaultTokenType?.toUpperCase() as Ticker],
+        mint:
+          opts.mint || Mints[opts.defaultTokenType?.toUpperCase() as Ticker],
       },
     ]
   }
@@ -167,11 +171,19 @@ const PaymentScreen = () => {
     netType: networkType,
   })
 
+  useEffect(() => {
+    dispatch({
+      type: 'updateTokenBalance',
+      balance,
+    })
+  }, [dispatch, balance])
+
   const { submitPayment } = useSubmitTxn()
 
   const solanaPayment = useSelector(
     (reduxState: RootState) => reduxState.solana.payment,
   )
+  const { symbol } = useMetaplexMetadata(mint)
 
   const { top } = useSafeAreaInsets()
 
@@ -366,7 +378,9 @@ const PaymentScreen = () => {
     }
     if (insufficientFunds[0]) {
       errStrings.push(
-        t('payment.insufficientFunds', { token: insufficientFunds[1] }),
+        t('payment.insufficientFunds', {
+          token: insufficientFunds[1]?.equals(NATIVE_MINT) ? 'SOL' : symbol,
+        }),
       )
     }
 
@@ -379,12 +393,13 @@ const PaymentScreen = () => {
     }
     return errStrings
   }, [
-    currentAccount,
+    currentAccount?.ledgerDevice,
+    paymentState.payments.length,
     insufficientFunds,
     selfPay,
-    paymentState.payments.length,
-    t,
     wrongNetTypePay,
+    t,
+    symbol,
   ])
 
   const isFormValid = useMemo(() => {
@@ -593,11 +608,8 @@ const PaymentScreen = () => {
   }, [sortedAccountsForNetType])
 
   const decimals = useMint(mint)?.info?.decimals
-  const { symbol } = useMetaplexMetadata(mint)
   const tokenButtonBalance = useMemo(() => {
-    if (typeof balance !== 'undefined' && typeof decimals !== 'undefined') {
-      return humanReadable(balance, decimals)
-    }
+    return humanReadable(balance, decimals)
   }, [balance, decimals])
 
   const data = useMemo((): TokenListItem[] => {

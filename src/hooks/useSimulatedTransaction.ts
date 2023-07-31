@@ -25,7 +25,7 @@ type BalanceChange = {
   nativeChange?: number
   mint?: PublicKey
   symbol?: string
-  type?: 'send' | 'recieve'
+  type?: 'send' | 'receive'
 }
 type BalanceChanges = BalanceChange[] | null
 
@@ -301,7 +301,7 @@ export function useSimulatedTransaction(
 
                   const type = accountNativeBalance.lt(existingNativeBalance)
                     ? 'send'
-                    : 'recieve'
+                    : 'receive'
 
                   // Filter out zero change
                   if (!accountNativeBalance.eq(existingNativeBalance)) {

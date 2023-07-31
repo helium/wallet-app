@@ -18,13 +18,14 @@ import TokenSelector, {
 } from '@components/TokenSelector'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address, { NetTypes } from '@helium/address'
-import Balance, { CurrencyType, mint } from '@helium/currency'
+import Balance, { CurrencyType } from '@helium/currency'
 import { IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { TokenBurnV1 } from '@helium/transactions'
 import useAlert from '@hooks/useAlert'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useColors, useHitSlop } from '@theme/themeHooks'
+import { BN } from 'bn.js'
 import React, {
   memo as reactMemo,
   useCallback,
@@ -80,7 +81,6 @@ const BurnScreen = () => {
   const { submitDelegateDataCredits } = useSubmitTxn()
   const addressBookRef = useRef<AddressBookRef>(null)
   const {
-    floatToBalance,
     networkTokensToDc,
     hntBalance,
     solBalance,
@@ -88,9 +88,7 @@ const BurnScreen = () => {
   } = useBalance()
   const { showOKAlert } = useAlert()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const [dcAmount, setDcAmount] = useState(
-    new Balance(Number(route.params.amount), CurrencyType.dataCredit),
-  )
+  const [dcAmount, setDcAmount] = useState(new BN(route.params.amount))
   const [submitError, setSubmitError] = useState<string | undefined>(undefined)
   const [delegateAddress, setDelegateAddress] = useState(route.params.address)
   const [hasError, setHasError] = useState(false)
@@ -118,12 +116,12 @@ const BurnScreen = () => {
   }, [networkType])
 
   const amountBalance = useMemo(() => {
-    const amount = parseFloat(route.params.amount)
+    const amount = new BN(route.params.amount)
 
     if (dcAmount) return dcAmount
 
-    return floatToBalance(amount, 'HNT')
-  }, [floatToBalance, dcAmount, route.params.amount])
+    return amount
+  }, [dcAmount, route.params.amount])
 
   const feeAsTokens = useMemo(() => {
     return Balance.fromFloat(TXN_FEE_IN_SOL, CurrencyType.solTokens)
@@ -245,7 +243,7 @@ const BurnScreen = () => {
   }, [amountBalance, insufficientFunds, t])
 
   const onConfirmBalance = useCallback((opts) => {
-    setDcAmount(new Balance(opts.balance.floatBalance, CurrencyType.dataCredit))
+    setDcAmount(new BN(opts.balance))
   }, [])
 
   const handleAddressBookSelected = useCallback(

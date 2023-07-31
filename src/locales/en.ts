@@ -382,7 +382,7 @@ export default {
     connectToWebsitesYouTrust: 'Only connect to websites you trust',
     estimatedChanges: 'Estimated Changes',
     sendToken: 'Send {{amount}} {{ticker}}',
-    recieveToken: 'Receive {{amount}} {{ticker}}',
+    receiveToken: 'Receive {{amount}} {{ticker}}',
     insufficientFunds: 'Insufficient funds',
     insufficientRentExempt:
       'Solana wallets must have a minimum of ~{{amount}} SOL to cover rent. The result of this transaction would leave your wallet with less than the rent-exempt minimum.',
