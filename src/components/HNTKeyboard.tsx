@@ -7,12 +7,11 @@ import {
 import { Portal } from '@gorhom/portal'
 import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
 import useBackHandler from '@hooks/useBackHandler'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
-import { usePublicKey } from '@hooks/usePublicKey'
 import { BoxProps } from '@shopify/restyle'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { Theme } from '@theme/theme'
 import { useOpacity, useSafeTopPaddingStyle } from '@theme/themeHooks'
 import BN from 'bn.js'
@@ -99,8 +98,7 @@ const HNTKeyboardSelector = forwardRef(
     const [headerHeight, setHeaderHeight] = useState(0)
     const containerStyle = useSafeTopPaddingStyle('android')
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
-    const { currentAccount } = useAccountStorage()
-    const wallet = usePublicKey(currentAccount?.solanaAddress)
+    const wallet = useCurrentWallet()
 
     const { amount: balanceForMint } = useOwnedAmount(wallet, mint)
 

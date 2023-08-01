@@ -6,13 +6,16 @@ import {
   sol,
   toMetadata,
 } from '@metaplex-foundation/js'
+import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 
 const MPL_PID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s')
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const cache: Record<string, any> = {}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function getMetadata(uri: string | undefined): Promise<any | undefined> {
   if (uri) {
     if (!cache[uri]) {
@@ -27,6 +30,7 @@ async function getMetadata(uri: string | undefined): Promise<any | undefined> {
 export function useMetaplexMetadata(mint: PublicKey | undefined): {
   loading: boolean
   metadata: Metadata | undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   json: any | undefined
   symbol: string | undefined
   name: string | undefined
@@ -56,6 +60,21 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
   const { result: json, loading: jsonLoading } = useAsync(getMetadata, [
     metadataAcc?.uri,
   ])
+
+  if (mint?.equals(NATIVE_MINT)) {
+    return {
+      metadata: undefined,
+      loading: false,
+      json: {
+        name: 'SOL',
+        symbol: 'SOL',
+        image:
+          'https://github.com/solana-labs/token-list/blob/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png?raw=true',
+      },
+      symbol: 'SOL',
+      name: 'SOL',
+    }
+  }
 
   return {
     loading: jsonLoading || loading,

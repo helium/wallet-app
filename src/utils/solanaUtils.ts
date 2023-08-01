@@ -133,10 +133,13 @@ export function humanReadable(
     /\B(?=(\d{3})+(?!\d))/g,
     groupSeparator,
   )
-  const decimalPart = input
-    .slice(-decimals)
-    .padStart(decimals, '0') // Add prefix zeros
-    .replace(/0+$/, '') // Remove trailing zeros
+  const decimalPart =
+    decimals !== 0
+      ? input
+          .slice(-decimals)
+          .padStart(decimals, '0') // Add prefix zeros
+          .replace(/0+$/, '') // Remove trailing zeros
+      : ''
 
   return `${formattedIntegerPart.length > 0 ? formattedIntegerPart : '0'}${
     Number(decimalPart) !== 0 ? `${decimalSeparator}${decimalPart}` : ''
@@ -612,7 +615,7 @@ export const mintDataCredits = async ({
   recipient,
 }: {
   anchorProvider: AnchorProvider
-  dcAmount: number
+  dcAmount: BN
   recipient: PublicKey
 }) => {
   try {
@@ -624,7 +627,7 @@ export const mintDataCredits = async ({
     const tx = await program.methods
       .mintDataCreditsV0({
         hntAmount: null,
-        dcAmount: toBN(dcAmount, 0),
+        dcAmount,
       })
       .accounts({
         dcMint: DC_MINT,

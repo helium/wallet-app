@@ -18,10 +18,18 @@ import TokenSelector, {
 } from '@components/TokenSelector'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address, { NetTypes } from '@helium/address'
-import Balance, { CurrencyType } from '@helium/currency'
-import { IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
+import { useOwnedAmount, useSolOwnedAmount } from '@helium/helium-react-hooks'
+import {
+  DC_MINT,
+  IOT_MINT,
+  MOBILE_MINT,
+  humanReadable,
+} from '@helium/spl-utils'
 import { TokenBurnV1 } from '@helium/transactions'
 import useAlert from '@hooks/useAlert'
+import { useBN } from '@hooks/useBN'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useColors, useHitSlop } from '@theme/themeHooks'
@@ -48,7 +56,7 @@ import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
 import { RootState } from '../../store/rootReducer'
-import { balanceToString, useBalance } from '../../utils/Balance'
+import { useBalance } from '../../utils/Balance'
 import {
   accountNetType,
   ellipsizeAddress,
@@ -60,6 +68,8 @@ import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import PaymentItem from '../payment/PaymentItem'
 import PaymentSubmit from '../payment/PaymentSubmit'
 import PaymentSummary from '../payment/PaymentSummary'
+
+const FEE = new BN(TXN_FEE_IN_SOL)
 
 type Route = RouteProp<HomeStackParamList, 'BurnScreen'>
 const BurnScreen = () => {
@@ -80,12 +90,10 @@ const BurnScreen = () => {
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
   const { submitDelegateDataCredits } = useSubmitTxn()
   const addressBookRef = useRef<AddressBookRef>(null)
-  const {
-    networkTokensToDc,
-    hntBalance,
-    solBalance,
-    dcBalance,
-  } = useBalance()
+  const { networkTokensToDc } = useBalance()
+  const wallet = useCurrentWallet()
+  const solBalance = useBN(useSolOwnedAmount(wallet).amount)
+  const dcBalance = useBN(useOwnedAmount(wallet, DC_MINT).amount)
   const { showOKAlert } = useAlert()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
   const [dcAmount, setDcAmount] = useState(new BN(route.params.amount))
@@ -96,6 +104,7 @@ const BurnScreen = () => {
     (reduxState: RootState) => reduxState.solana.delegate,
   )
   const [mint, setMint] = useState<PublicKey>(MOBILE_MINT)
+  const { symbol } = useMetaplexMetadata(mint)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
 
   const { isDelegate } = useMemo(() => route.params, [route.params])
@@ -122,10 +131,6 @@ const BurnScreen = () => {
 
     return amount
   }, [dcAmount, route.params.amount])
-
-  const feeAsTokens = useMemo(() => {
-    return Balance.fromFloat(TXN_FEE_IN_SOL, CurrencyType.solTokens)
-  }, [])
 
   const amountInDc = useMemo(() => {
     if (!amountBalance) return
@@ -178,7 +183,7 @@ const BurnScreen = () => {
       if (isDelegate && amountBalance) {
         await submitDelegateDataCredits(
           delegateAddress,
-          amountBalance.integerBalance,
+          amountBalance.toNumber(),
           mint,
         )
       }
@@ -217,30 +222,23 @@ const BurnScreen = () => {
   )
 
   const insufficientFunds = useMemo(() => {
-    if (!amountBalance || !feeAsTokens || !dcBalance || !solBalance)
-      return false
+    if (!amountBalance || !dcBalance || !solBalance) return false
 
-    if (amountBalance.floatBalance > dcBalance.floatBalance) {
-      return true
-    }
-
-    if (feeAsTokens.floatBalance > solBalance.floatBalance) {
-      return true
-    }
-
-    return hntBalance && hntBalance.floatBalance < feeAsTokens.floatBalance
-  }, [amountBalance, dcBalance, feeAsTokens, hntBalance, solBalance])
+    return amountBalance.gt(dcBalance) || FEE.gt(solBalance)
+  }, [amountBalance, dcBalance, solBalance])
 
   const errors = useMemo(() => {
     const errStrings: string[] = []
     if (insufficientFunds) {
       errStrings.push(
-        t('payment.insufficientFunds', { token: amountBalance?.type.mint }),
+        t('payment.insufficientFunds', {
+          token: dcBalance && amountBalance.gt(dcBalance) ? 'DC' : 'SOL',
+        }),
       )
     }
 
     return errStrings
-  }, [amountBalance, insufficientFunds, t])
+  }, [amountBalance, dcBalance, insufficientFunds, t])
 
   const onConfirmBalance = useCallback((opts) => {
     setDcAmount(new BN(opts.balance))
@@ -293,7 +291,7 @@ const BurnScreen = () => {
     [networkType, isDelegate],
   )
 
-  const onMintSelected = useCallback((tick: mint) => {
+  const onMintSelected = useCallback((tick: PublicKey) => {
     setMint(tick)
   }, [])
 
@@ -321,8 +319,8 @@ const BurnScreen = () => {
     <HNTKeyboard
       ref={hntKeyboardRef}
       onConfirmBalance={onConfirmBalance}
-      mint={mint}
-      networkFee={Balance.fromFloatAndmint(TXN_FEE_IN_SOL, 'SOL')}
+      mint={DC_MINT}
+      networkFee={FEE}
       usePortal
     >
       <TokenSelector
@@ -407,7 +405,7 @@ const BurnScreen = () => {
 
                   <TokenButton
                     backgroundColor="secondary"
-                    title={t('burn.subdao', { subdao: mint })}
+                    title={t('burn.subdao', { subdao: symbol })}
                     subtitle={t('burn.choooseSubDAO')}
                     address={currentAccount?.address}
                     onPress={handleTokenTypeSelected}
@@ -428,7 +426,7 @@ const BurnScreen = () => {
                         })
                       }}
                       handleAddressError={handleAddressError}
-                      mint={mint}
+                      mint={DC_MINT}
                       address={delegateAddress}
                       amount={amountBalance}
                       hasError={hasError}
@@ -472,9 +470,7 @@ const BurnScreen = () => {
                           color="secondaryText"
                         >
                           {t('payment.fee', {
-                            value: balanceToString(feeAsTokens, {
-                              maxDecimalPlaces: 4,
-                            }),
+                            value: humanReadable(FEE, 9),
                           })}
                         </Text>
 
@@ -530,14 +526,15 @@ const BurnScreen = () => {
                   backgroundColor="secondary"
                 >
                   <PaymentSummary
+                    mint={DC_MINT}
                     totalBalance={amountBalance}
-                    feeTokenBalance={feeAsTokens}
+                    feeTokenBalance={FEE}
                     errors={errors}
                   />
                   <Box flex={1} justifyContent="flex-end">
                     <SubmitButton
                       disabled={
-                        amountBalance.floatBalance === 0 ||
+                        amountBalance.isZero() ||
                         hasError ||
                         (!delegateAddress && isDelegate)
                       }
@@ -551,11 +548,12 @@ const BurnScreen = () => {
                 </Box>
               </SafeAreaBox>
               <PaymentSubmit
+                mint={DC_MINT}
                 submitLoading={!!delegatePayment?.loading}
                 submitSucceeded={delegatePayment?.success}
                 submitError={delegatePayment?.error}
                 totalBalance={amountBalance}
-                feeTokenBalance={feeAsTokens}
+                feeTokenBalance={FEE}
                 onRetry={handleSubmit}
                 onSuccess={navigation.popToTop}
                 actionTitle={t('generic.ok')}

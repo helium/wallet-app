@@ -17,7 +17,6 @@ import TextTransform from '@components/TextTransform'
 import TokenSelector, { TokenSelectorRef } from '@components/TokenSelector'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import TreasuryWarningScreen from '@components/TreasuryWarningScreen'
-import Balance, { CurrencyType } from '@helium/currency'
 import { useMint } from '@helium/helium-react-hooks'
 import {
   DC_MINT,
@@ -298,14 +297,7 @@ const SwapScreen = () => {
     }
 
     if (youPayMint.equals(HNT_MINT) && currentAccount) {
-      const networkTokens = Balance.fromFloat(
-        Number(youPayTokenAmount),
-        CurrencyType.networkToken,
-      )
-      const rawBalance = networkTokensToDc(networkTokens)?.floatBalance
-      if (typeof rawBalance !== 'undefined') {
-        return Math.floor(rawBalance)
-      }
+      return networkTokensToDc(new BN(youPayTokenAmount))?.toNumber() || 0
     }
 
     return 0
@@ -329,9 +321,9 @@ const SwapScreen = () => {
           ? new PublicKey(recipient)
           : new PublicKey(currentAccount.solanaAddress)
 
-        if (youPayMint.equals(HNT_MINT)) {
+        if (youPayMint.equals(HNT_MINT) && youReceiveTokenAmount) {
           await submitMintDataCredits({
-            dcAmount: youReceiveTokenAmount,
+            dcAmount: new BN(youReceiveTokenAmount),
             recipient: recipientAddr,
           })
         }

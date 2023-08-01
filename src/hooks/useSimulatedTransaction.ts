@@ -191,11 +191,8 @@ export function useSimulatedTransaction(
 
         if (result?.value.err) {
           console.warn('failed to simulate', result?.value.err)
-          if (
-            JSON.stringify(result?.value.err).includes(
-              'InstructionError":[0,{"Custom":1}]',
-            )
-          ) {
+          console.warn(result?.value.logs?.join('\n'))
+          if (JSON.stringify(result?.value.err).includes('{"Custom":1}')) {
             if (!hasEnoughSol) {
               await showHNTConversionAlert()
             }

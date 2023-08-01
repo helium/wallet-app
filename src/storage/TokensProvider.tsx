@@ -1,4 +1,5 @@
 import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
+import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import React, {
   ReactNode,
@@ -21,6 +22,7 @@ export const DEFAULT_TOKENS = new Set([
   MOBILE_MINT.toBase58(),
   IOT_MINT.toBase58(),
   DC_MINT.toBase58(),
+  NATIVE_MINT.toBase58(),
 ])
 
 const useVisibleTokensHook = () => {

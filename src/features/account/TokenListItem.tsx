@@ -6,12 +6,11 @@ import TokenIcon from '@components/TokenIcon'
 import TouchableContainer from '@components/TouchableContainer'
 import { Ticker } from '@helium/currency'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import useHaptic from '@hooks/useHaptic'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
-import { usePublicKey } from '@hooks/usePublicKey'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { useCallback, useMemo } from 'react'
@@ -24,15 +23,12 @@ type Props = {
 }
 const TokenListItem = ({ mint }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
-  const { currentAccount } = useAccountStorage()
-  const wallet = usePublicKey(currentAccount?.solanaAddress)
+  const wallet = useCurrentWallet()
   const {
     amount,
     decimals,
     loading: loadingOwned,
   } = useOwnedAmount(wallet, mint)
-  // const amount = BigInt(0)
-  // const decimals = 0
   const { triggerImpact } = useHaptic()
   const { json, symbol, loading } = useMetaplexMetadata(mint)
   const mintStr = mint.toBase58()

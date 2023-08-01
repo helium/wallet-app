@@ -24,7 +24,7 @@ const TokenIcon = ({ ticker, size = 40, white, img }: Props) => {
   if (img) {
     return (
       <Image
-        style={{ height: size, width: size }}
+        style={{ height: size, width: size, borderRadius: 400 }}
         source={{
           uri: img || '',
           cache: 'force-cache',

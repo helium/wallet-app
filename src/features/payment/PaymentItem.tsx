@@ -7,7 +7,6 @@ import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address from '@helium/address'
-import { Balance, DataCredits } from '@helium/currency'
 import { useMint } from '@helium/helium-react-hooks'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
@@ -25,7 +24,7 @@ import {
   TextInputEndEditingEventData,
 } from 'react-native'
 import { CSAccount } from '../../storage/cloudStorage'
-import { balanceToString, useBalance } from '../../utils/Balance'
+import { useBalance } from '../../utils/Balance'
 import { accountNetType, ellipsizeAddress } from '../../utils/accountUtils'
 
 export type Payment = {
@@ -40,7 +39,7 @@ export type Payment = {
 type Props = {
   index: number
   hasError?: boolean
-  fee?: Balance<DataCredits>
+  fee?: BN
   onAddressBookSelected: (opts: { address?: string; index: number }) => void
   onEditAmount: (opts: { address?: string; index: number }) => void
   onToggleMax?: (opts: { address?: string; index: number }) => void
@@ -271,9 +270,7 @@ const PaymentItem = ({
               {fee && (
                 <Text paddingHorizontal="m" variant="body3" style={colorStyle}>
                   {t('payment.fee', {
-                    value: balanceToString(feeAsTokens, {
-                      maxDecimalPlaces: 4,
-                    }),
+                    value: humanReadable(feeAsTokens, 8),
                   })}
                 </Text>
               )}

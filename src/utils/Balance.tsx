@@ -1,4 +1,3 @@
-import { NetTypes } from '@helium/address'
 import Balance, {
   CurrencyType,
   DataCredits,
@@ -12,6 +11,7 @@ import Balance, {
 import { getOraclePrice } from '@helium/currency-utils'
 import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { PublicKey } from '@solana/web3.js'
+import BN from 'bn.js'
 import { round } from 'lodash'
 import React, {
   ReactNode,
@@ -37,6 +37,7 @@ import StoreAtaBalance from './StoreAtaBalance'
 import StoreSolBalance from './StoreSolBalance'
 import { accountCurrencyType } from './accountUtils'
 import { decimalSeparator, groupSeparator } from './i18n'
+import { humanReadable } from './solanaUtils'
 import { useBalanceHistory } from './useBalanceHistory'
 import { usePollTokenPrices } from './usePollTokenPrices'
 
@@ -81,7 +82,7 @@ const useBalanceHook = () => {
     )
   }, [cluster, anchorProvider, allBalances])
 
-  const { result: oraclePrice } = useAsync(async () => {
+  const { result: hntToDcPrice } = useAsync(async () => {
     if (!anchorProvider) {
       return
     }
@@ -90,9 +91,9 @@ const useBalanceHook = () => {
       cluster,
       connection: anchorProvider.connection,
     })
-    return Balance.fromFloat(
-      oraclePriceRaw.emaPrice.value - oraclePriceRaw.emaConfidence.value * 2,
-      CurrencyType.usd,
+    return new BN(
+      oraclePriceRaw.emaPrice.value -
+        oraclePriceRaw.emaConfidence.value * 2 * 100000,
     )
   }, [cluster, anchorProvider?.connection])
 
@@ -111,28 +112,19 @@ const useBalanceHook = () => {
   }, [tokenPrices])
 
   const dcToNetworkTokens = useCallback(
-    (
-      dcBalance: Balance<DataCredits>,
-    ): Balance<TestNetworkTokens | NetworkTokens> | undefined => {
-      if (!oraclePrice) return
+    (dcBalance: BN): BN | undefined => {
+      if (!hntToDcPrice) return
 
-      if (currentAccount?.netType === NetTypes.TESTNET) {
-        return dcBalance.toTestNetworkTokens(oraclePrice)
-      }
-      return dcBalance.toNetworkTokens(oraclePrice)
+      return dcBalance.div(hntToDcPrice)
     },
-    [currentAccount, oraclePrice],
+    [hntToDcPrice],
   )
-
   const networkTokensToDc = useCallback(
-    (
-      balance: Balance<NetworkTokens | TestNetworkTokens>,
-    ): Balance<DataCredits> | undefined => {
-      if (!oraclePrice) return
-
-      return balance.toDataCredits(oraclePrice)
+    (balance: BN): BN | undefined => {
+      if (!hntToDcPrice) return
+      balance.mul(hntToDcPrice)
     },
-    [oraclePrice],
+    [hntToDcPrice],
   )
 
   const floatToBalance = useCallback(
@@ -249,14 +241,8 @@ const useBalanceHook = () => {
       currency,
     )
 
-    const dcBalance = new Balance(
-      getBalance(DC_MINT, atas),
-      CurrencyType.dataCredit,
-    )
-    const formattedDcValue = await CurrencyFormatter.format(
-      dcBalance.toUsd(oraclePrice).floatBalance,
-      'usd',
-    )
+    const dcBalance = new BN(getBalance(DC_MINT, atas))
+    const formattedDcValue = humanReadable(dcBalance, 5)
 
     const formattedTotal = await CurrencyFormatter.format(
       solValue + hntValue + mobileValue + iotValue,
@@ -286,7 +272,7 @@ const useBalanceHook = () => {
     cluster,
     currency,
     getBalance,
-    oraclePrice,
+    hntToDcPrice,
     solanaAddress,
     tokenPrices,
   ])
@@ -367,7 +353,7 @@ const useBalanceHook = () => {
     intToBalance,
     networkTokensToDc,
     oracleDateTime,
-    oraclePrice,
+    oraclePrice: hntToDcPrice,
     solanaPrice,
     toCurrencyString,
     toPreferredCurrencyString,

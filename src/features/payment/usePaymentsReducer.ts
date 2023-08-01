@@ -1,5 +1,4 @@
 import { NetTypes } from '@helium/address'
-import Balance, { USDollars } from '@helium/currency'
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import { useReducer } from 'react'
@@ -70,7 +69,7 @@ type PaymentState = {
   totalAmount: BN
   error?: string
   mint: PublicKey
-  oraclePrice?: Balance<USDollars>
+  oraclePrice?: BN
   netType: NetTypes.NetType
   networkFee?: BN
   balance: BN
@@ -80,7 +79,7 @@ const initialState = (opts: {
   mint: PublicKey
   payments?: Payment[]
   netType: NetTypes.NetType
-  oraclePrice?: Balance<USDollars>
+  oraclePrice?: BN
   balance?: BN
 }): PaymentState => ({
   error: undefined,
@@ -309,6 +308,6 @@ function reducer(
 export default (opts: {
   netType: NetTypes.NetType
   mint: PublicKey
-  oraclePrice?: Balance<USDollars>
+  oraclePrice?: BN
   balance?: BN
 }) => useReducer(reducer, initialState(opts))

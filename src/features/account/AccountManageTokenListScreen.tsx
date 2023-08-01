@@ -8,12 +8,12 @@ import TouchableContainer from '@components/TouchableContainer'
 import { Ticker } from '@helium/currency'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
 import { DC_MINT } from '@helium/spl-utils'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
 import CheckBox from '@react-native-community/checkbox'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { useColors, useHitSlop } from '@theme/themeHooks'
 import { useBalance } from '@utils/Balance'
@@ -38,8 +38,7 @@ const CheckableTokenListItem = ({
   onUpdateTokens: (_token: PublicKey, _value: boolean) => void
 }) => {
   const mint = usePublicKey(token)
-  const { currentAccount } = useAccountStorage()
-  const wallet = usePublicKey(currentAccount?.solanaAddress)
+  const wallet = useCurrentWallet()
   const { amount, decimals } = useOwnedAmount(wallet, mint)
   const { json, symbol } = useMetaplexMetadata(mint)
   const balanceToDisplay = useMemo(() => {

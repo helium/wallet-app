@@ -3,8 +3,8 @@ import Text from '@components/Text'
 import TextTransform from '@components/TextTransform'
 import { useOwnedAmount, useTokenAccount } from '@helium/helium-react-hooks'
 import { DC_MINT } from '@helium/spl-utils'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
-import { usePublicKey } from '@hooks/usePublicKey'
 import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
@@ -58,8 +58,7 @@ const AccountTokenBalance = ({
   showTicker = true,
   ...boxProps
 }: Props) => {
-  const { currentAccount } = useAccountStorage()
-  const wallet = usePublicKey(currentAccount?.solanaAddress)
+  const wallet = useCurrentWallet()
   const {
     amount: balance,
     decimals,

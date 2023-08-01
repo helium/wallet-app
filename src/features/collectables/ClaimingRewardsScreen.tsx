@@ -1,32 +1,35 @@
-import React, { memo, useCallback } from 'react'
-import { useNavigation } from '@react-navigation/native'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
-import 'text-encoding-polyfill'
-import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import BackArrow from '@assets/images/backArrow.svg'
-import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
-import { DelayedFadeIn } from '@components/FadeInOut'
+import AccountIcon from '@components/AccountIcon'
+import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
+import { DelayedFadeIn } from '@components/FadeInOut'
+import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import Text from '@components/Text'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import AccountIcon from '@components/AccountIcon'
-import { parseTransactionError } from '@utils/solanaUtils'
-import { useBalance } from '@utils/Balance'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import sendMail from '@utils/sendMail'
-import RNTestFlight from 'react-native-test-flight'
+import { useSolOwnedAmount } from '@helium/helium-react-hooks'
+import { useBN } from '@hooks/useBN'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { useNavigation } from '@react-navigation/native'
 import { Transaction } from '@solana/web3.js'
-import { RootState } from '../../store/rootReducer'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import sendMail from '@utils/sendMail'
+import { parseTransactionError } from '@utils/solanaUtils'
+import React, { memo, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import RNTestFlight from 'react-native-test-flight'
+import { useSelector } from 'react-redux'
+import 'text-encoding-polyfill'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { RootState } from '../../store/rootReducer'
 
 const ClaimingRewardsScreen = () => {
   const { currentAccount } = useAccountStorage()
   const navigation = useNavigation<TabBarNavigationProp>()
-  const { solBalance } = useBalance()
+  const wallet = useCurrentWallet()
+  const solBalance = useBN(useSolOwnedAmount(wallet).amount)
   const { bottom } = useSafeAreaInsets()
   const { cluster, anchorProvider } = useSolana()
 

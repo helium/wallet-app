@@ -4,12 +4,11 @@ import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
-import { usePublicKey } from '@hooks/usePublicKey'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useNavigation } from '@react-navigation/native'
 import { SerializedError } from '@reduxjs/toolkit'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { parseTransactionError } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { memo, useMemo } from 'react'
@@ -36,8 +35,7 @@ const PaymentError = ({
 }: Props) => {
   const navigation = useNavigation()
   const { t } = useTranslation()
-  const { currentAccount } = useAccountStorage()
-  const wallet = usePublicKey(currentAccount?.solanaAddress)
+  const wallet = useCurrentWallet()
   const { amount: solBalance } = useOwnedAmount(wallet, NATIVE_MINT)
 
   const errorMessage = useMemo(() => {

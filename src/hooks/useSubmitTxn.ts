@@ -357,13 +357,7 @@ export default () => {
   }, [])
 
   const submitMintDataCredits = useCallback(
-    async ({
-      dcAmount,
-      recipient,
-    }: {
-      dcAmount: number
-      recipient: PublicKey
-    }) => {
+    async ({ dcAmount, recipient }: { dcAmount: BN; recipient: PublicKey }) => {
       if (!currentAccount || !anchorProvider || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
       }

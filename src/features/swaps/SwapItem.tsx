@@ -24,7 +24,7 @@ export type SwapItemProps = {
 const SwapItem = ({
   isPaying,
   onCurrencySelect,
-  mintSelected: currencySelected,
+  mintSelected,
   amount,
   loading = false,
   onPress,
@@ -32,7 +32,7 @@ const SwapItem = ({
   ...rest
 }: SwapItemProps) => {
   const { t } = useTranslation()
-  const { symbol, json } = useMetaplexMetadata(currencySelected)
+  const { symbol, json } = useMetaplexMetadata(mintSelected)
 
   const { backgroundStyle: generateBackgroundStyle } = useCreateOpacity()
 
@@ -121,10 +121,7 @@ const SwapItem = ({
                 {/** If last decimals are zeroes do not show */}
                 {!loading ? amount.toString() : t('generic.loading')}
               </Text>
-              <Text
-                variant="h4"
-                color="secondaryText"
-              >{`${currencySelected}`}</Text>
+              <Text variant="h4" color="secondaryText">{`${symbol}`}</Text>
             </Box>
           </Box>
           {isPaying && (
