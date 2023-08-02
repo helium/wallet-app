@@ -44,8 +44,7 @@ export function useTreasuryPrice(
       // only works for basic exponential curves
       // dR = (R / S^(1 + k)) ((S + dS)^(1 + k) - S^(1 + k))
       const S = Number(
-        (fromMintAcc as any).info.supply /
-          BigInt(Math.pow(10, (fromMintAcc as any).info.decimals)),
+        fromMintAcc.supply / BigInt(Math.pow(10, fromMintAcc.decimals)),
       )
 
       const R = amountAsNum(r, rDecimals)

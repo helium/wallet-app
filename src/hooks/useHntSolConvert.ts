@@ -1,17 +1,21 @@
-import { Config } from 'react-native-config'
-import { useAsync } from 'react-async-hook'
+import { useOwnedAmount, useSolOwnedAmount } from '@helium/helium-react-hooks'
+import { HNT_MINT } from '@helium/spl-utils'
+import { LAMPORTS_PER_SOL, Transaction } from '@solana/web3.js'
 import axios from 'axios'
-import { Transaction } from '@solana/web3.js'
-import { useMemo } from 'react'
-import { useBalance } from '@utils/Balance'
-import { toNumber } from '@helium/spl-utils'
 import BN from 'bn.js'
+import { useMemo } from 'react'
+import { useAsync } from 'react-async-hook'
+import { Config } from 'react-native-config'
 import { useSolana } from '../solana/SolanaProvider'
 import * as logger from '../utils/logger'
+import { useBN } from './useBN'
+import { useCurrentWallet } from './useCurrentWallet'
 
 export function useHntSolConvert() {
   const { cluster, anchorProvider } = useSolana()
-  const { hntBalance, solBalance } = useBalance()
+  const wallet = useCurrentWallet()
+  const solBalance = useBN(useSolOwnedAmount(wallet).amount)
+  const hntBalance = useBN(useOwnedAmount(wallet, HNT_MINT).amount)
 
   const baseUrl = useMemo(() => {
     let url = Config.HNT_TO_RENT_SERVICE_DEVNET_URL
@@ -29,7 +33,7 @@ export function useHntSolConvert() {
   } = useAsync(async () => {
     try {
       const { estimate } = (await axios.get(`${baseUrl}/estimate`)).data
-      return toNumber(new BN(estimate), 8)
+      return new BN(estimate)
     } catch (e) {
       logger.error(e)
       return 0
@@ -39,9 +43,9 @@ export function useHntSolConvert() {
   const hasEnoughSol = useMemo(() => {
     if (!hntBalance || !solBalance || !hntEstimate) return true
 
-    if (hntBalance.floatBalance < hntEstimate) return true
+    if (hntBalance.lt(hntEstimate)) return true
 
-    return solBalance.floatBalance > 0.02
+    return solBalance.gt(new BN(0.02 * LAMPORTS_PER_SOL))
   }, [hntBalance, solBalance, hntEstimate])
 
   const {

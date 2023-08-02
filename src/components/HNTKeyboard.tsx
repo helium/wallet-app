@@ -186,7 +186,7 @@ const HNTKeyboardSelector = forwardRef(
       if (!valueAsBalance || !networkFee) return
 
       const currentAmount = getNextPayments()
-        .filter((_v, index) => index !== paymentIndex || 0) // Remove the payment being updated
+        .filter((_v, index) => index !== (paymentIndex || 0)) // Remove the payment being updated
         .reduce((prev, current) => {
           if (!current.amount) {
             return prev

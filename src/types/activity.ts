@@ -21,8 +21,6 @@ export type Activity = {
   oldAddress?: null | string
   oldOwner?: null | string
   owner?: null | string
-  payee?: null | string
-  payer?: null | string
   payments?: null | Array<Payment>
   pending?: null | boolean
   rewards?: null | Array<Reward>

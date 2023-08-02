@@ -1,28 +1,30 @@
-import React, { useCallback, useMemo, memo } from 'react'
+import BackArrow from '@assets/images/backArrow.svg'
+import { ReAnimatedBox } from '@components/AnimatedBox'
+import BackScreen from '@components/BackScreen'
+import Box from '@components/Box'
+import ButtonPressable from '@components/ButtonPressable'
+import { DelayedFadeIn } from '@components/FadeInOut'
+import ImageBox from '@components/ImageBox'
+import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
+import Text from '@components/Text'
+import { useSolOwnedAmount } from '@helium/helium-react-hooks'
+import { useBN } from '@hooks/useBN'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useSpacing } from '@theme/themeHooks'
+import { parseTransactionError } from '@utils/solanaUtils'
+import React, { memo, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { LogBox } from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { Edge } from 'react-native-safe-area-context'
-import 'text-encoding-polyfill'
-import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
-import BackArrow from '@assets/images/backArrow.svg'
-import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
-import { DelayedFadeIn } from '@components/FadeInOut'
-import Box from '@components/Box'
-import ImageBox from '@components/ImageBox'
-import ButtonPressable from '@components/ButtonPressable'
-import Text from '@components/Text'
-import BackScreen from '@components/BackScreen'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import { useSpacing } from '@theme/themeHooks'
-import { parseTransactionError } from '@utils/solanaUtils'
-import { useBalance } from '@utils/Balance'
-import { ww } from '../../utils/layout'
-import { RootState } from '../../store/rootReducer'
-import { CollectableStackParamList } from './collectablesTypes'
+import 'text-encoding-polyfill'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
+import { RootState } from '../../store/rootReducer'
 import { Collectable, CompressedNFT } from '../../types/solana'
+import { ww } from '../../utils/layout'
+import { CollectableStackParamList } from './collectablesTypes'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -35,7 +37,7 @@ const TransferCollectableScreen = () => {
   const navigation = useNavigation<TabBarNavigationProp>()
   const COLLECTABLE_HEIGHT = ww
   const backEdges = useMemo(() => ['top'] as Edge[], [])
-  const { solBalance } = useBalance()
+  const solBalance = useBN(useSolOwnedAmount(useCurrentWallet()).amount)
 
   const { t } = useTranslation()
   const { collectable } = route.params

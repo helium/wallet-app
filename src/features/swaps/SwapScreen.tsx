@@ -17,21 +17,33 @@ import TextTransform from '@components/TextTransform'
 import TokenSelector, { TokenSelectorRef } from '@components/TokenSelector'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import TreasuryWarningScreen from '@components/TreasuryWarningScreen'
-import { useMint } from '@helium/helium-react-hooks'
+import {
+  useMint,
+  useOwnedAmount,
+  useSolOwnedAmount,
+} from '@helium/helium-react-hooks'
 import {
   DC_MINT,
   HNT_MINT,
   IOT_MINT,
   MOBILE_MINT,
+  toBN,
   toNumber,
 } from '@helium/spl-utils'
+import { useBN } from '@hooks/useBN'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useTreasuryPrice } from '@hooks/useTreasuryPrice'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { CSAccount } from '@storage/cloudStorage'
 import { useColors, useHitSlop } from '@theme/themeHooks'
-import { TXN_FEE_IN_SOL, getAtaAccountCreationFee } from '@utils/solanaUtils'
+import {
+  TXN_FEE_IN_LAMPORTS,
+  TXN_FEE_IN_SOL,
+  getAtaAccountCreationFee,
+  humanReadable,
+} from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
@@ -65,13 +77,16 @@ const SwapScreen = () => {
   const colors = useColors()
   const [youPayTokenAmount, setYouPayTokenAmount] = useState<number>(0)
   const [youReceiveMint, setYouReceiveMint] = useState<PublicKey>(HNT_MINT)
-  const [solFee, setSolFee] = useState<number | undefined>(undefined)
+  const [solFee, setSolFee] = useState<BN | undefined>(undefined)
   const [hasInsufficientBalance, setHasInsufficientBalance] = useState<
     undefined | boolean
   >()
   const [networkError, setNetworkError] = useState<undefined | string>()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const { networkTokensToDc, hntBalance, solBalance } = useBalance()
+  const wallet = useCurrentWallet()
+  const solBalance = useBN(useSolOwnedAmount(wallet).amount)
+  const hntBalance = useBN(useOwnedAmount(wallet, HNT_MINT).amount)
+  const { networkTokensToDc } = useBalance()
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const {
     price,
@@ -110,7 +125,7 @@ const SwapScreen = () => {
   const insufficientTokensToSwap = useMemo(() => {
     if (
       youPayMint.equals(HNT_MINT) &&
-      (hntBalance?.floatBalance || 0) < 0.00000001
+      (hntBalance || new BN(0)).lt(new BN(1))
     ) {
       return true
     }
@@ -161,19 +176,19 @@ const SwapScreen = () => {
     )
       return
 
-    let fee = TXN_FEE_IN_SOL
+    let fee = new BN(TXN_FEE_IN_LAMPORTS)
 
     const ataFee = await getAtaAccountCreationFee({
       solanaAddress: currentAccount.solanaAddress,
       connection,
       mint: youReceiveMint,
     })
-    fee += ataFee.toNumber()
+    fee = fee.add(ataFee)
 
     setSolFee(fee)
 
     setHasInsufficientBalance(
-      fee > solBalance.integerBalance || solBalance.floatBalance < 0.000005,
+      fee.gt(solBalance || new BN(0)) || solBalance?.lt(new BN(5000)),
     )
   }, [
     anchorProvider,
@@ -296,12 +311,27 @@ const SwapScreen = () => {
       return price
     }
 
-    if (youPayMint.equals(HNT_MINT) && currentAccount) {
-      return networkTokensToDc(new BN(youPayTokenAmount))?.toNumber() || 0
+    if (
+      youPayMint.equals(HNT_MINT) &&
+      currentAccount &&
+      typeof decimals !== 'undefined' &&
+      typeof youPayTokenAmount !== 'undefined'
+    ) {
+      return toNumber(
+        networkTokensToDc(toBN(youPayTokenAmount, decimals)) || new BN(0),
+        decimals,
+      )
     }
 
     return 0
-  }, [currentAccount, networkTokensToDc, price, youPayTokenAmount, youPayMint])
+  }, [
+    currentAccount,
+    networkTokensToDc,
+    price,
+    youPayTokenAmount,
+    youPayMint,
+    decimals,
+  ])
 
   const handleSwapTokens = useCallback(async () => {
     if (connection) {
@@ -507,7 +537,7 @@ const SwapScreen = () => {
                         variant="body3Medium"
                         color="white"
                         i18nKey="collectablesScreen.transferFee"
-                        values={{ amount: solFee }}
+                        values={{ amount: humanReadable(solFee, 9) }}
                       />
                     </Box>
                   ) : (

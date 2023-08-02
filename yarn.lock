@@ -2437,10 +2437,8 @@
     crypto-js "^4.1.1"
     js-sha256 "^0.9.0"
 
-"@helium/helium-react-hooks@^0.2.16":
+"@helium/helium-react-hooks@file:.yalc/@helium/helium-react-hooks":
   version "0.2.16"
-  resolved "https://registry.yarnpkg.com/@helium/helium-react-hooks/-/helium-react-hooks-0.2.16.tgz#2cda7af118207d7645c81f268956d73e62548db2"
-  integrity sha512-cQxExKqQdCFgWNj0s6Z/WAYibalVMQT+NN+8Hk3Mwb/HlwZsTSmD2pQbxnx2fUpQi/i2ZfVO1sycgzX97k0jIw==
   dependencies:
     "@coral-xyz/anchor" "^0.26.0"
     "@helium/account-fetch-cache" "^0.2.16"

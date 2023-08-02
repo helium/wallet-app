@@ -1,25 +1,29 @@
-import React, { memo, useCallback, useMemo } from 'react'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
-import { Edge } from 'react-native-safe-area-context'
-import 'text-encoding-polyfill'
-import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
-import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
-import { DelayedFadeIn } from '@components/FadeInOut'
+import { ReAnimatedBox } from '@components/AnimatedBox'
+import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
+import { DelayedFadeIn } from '@components/FadeInOut'
+import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import Text from '@components/Text'
-import BackScreen from '@components/BackScreen'
-import { ReAnimatedBox } from '@components/AnimatedBox'
 import TokenIcon from '@components/TokenIcon'
+import { useSolOwnedAmount } from '@helium/helium-react-hooks'
+import { useBN } from '@hooks/useBN'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { usePublicKey } from '@hooks/usePublicKey'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { parseTransactionError } from '@utils/solanaUtils'
-import { useBalance } from '@utils/Balance'
-import { RootState } from '../../store/rootReducer'
-import BackArrow from '../../assets/images/backArrow.svg'
-import { SwapStackParamList } from './swapTypes'
+import React, { memo, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
+import { Edge } from 'react-native-safe-area-context'
+import { useSelector } from 'react-redux'
+import 'text-encoding-polyfill'
 import ArrowRight from '../../assets/images/arrowRight.svg'
+import BackArrow from '../../assets/images/backArrow.svg'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
+import { RootState } from '../../store/rootReducer'
+import { SwapStackParamList } from './swapTypes'
 
 type Route = RouteProp<SwapStackParamList, 'SwappingScreen'>
 
@@ -27,12 +31,12 @@ const SwappingScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<TabBarNavigationProp>()
   const backEdges = useMemo(() => ['bottom'] as Edge[], [])
-  const { solBalance } = useBalance()
+  const solBalance = useBN(useSolOwnedAmount(useCurrentWallet()).amount)
 
   const { t } = useTranslation()
   const { tokenA, tokenB } = route.params
-  const { jsonA } = useMetaplexMetadata(usePublicKey(tokenA))
-  const { jsonB } = useMetaplexMetadata(usePublicKey(tokenB))
+  const { json: jsonA } = useMetaplexMetadata(usePublicKey(tokenA))
+  const { json: jsonB } = useMetaplexMetadata(usePublicKey(tokenB))
 
   const solanaPayment = useSelector(
     (reduxState: RootState) => reduxState.solana.payment,
@@ -55,7 +59,7 @@ const SwappingScreen = () => {
           padding="s"
           marginEnd="m"
         >
-          <TokenIcon img={jsonA?.img} size={50} />
+          <TokenIcon img={jsonA?.image} size={50} />
         </Box>
         <ArrowRight color="white" height={24} width={26.5} />
         <Box
@@ -64,11 +68,11 @@ const SwappingScreen = () => {
           borderRadius="round"
           padding="s"
         >
-          <TokenIcon img={jsonB?.img} size={50} />
+          <TokenIcon img={jsonB?.image} size={50} />
         </Box>
       </Box>
     )
-  }, [jsonA?.img, jsonB?.img])
+  }, [jsonA?.image, jsonB?.image])
 
   return (
     <ReAnimatedBox

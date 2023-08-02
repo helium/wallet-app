@@ -92,8 +92,8 @@ const useBalanceHook = () => {
       connection: anchorProvider.connection,
     })
     return new BN(
-      oraclePriceRaw.emaPrice.value -
-        oraclePriceRaw.emaConfidence.value * 2 * 100000,
+      (oraclePriceRaw.emaPrice.value - oraclePriceRaw.emaConfidence.value * 2) *
+        100000,
     )
   }, [cluster, anchorProvider?.connection])
 
@@ -122,7 +122,7 @@ const useBalanceHook = () => {
   const networkTokensToDc = useCallback(
     (balance: BN): BN | undefined => {
       if (!hntToDcPrice) return
-      balance.mul(hntToDcPrice)
+      return balance.mul(hntToDcPrice)
     },
     [hntToDcPrice],
   )

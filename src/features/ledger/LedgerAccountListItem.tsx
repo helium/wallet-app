@@ -1,12 +1,12 @@
-import React, { useCallback, memo, useMemo } from 'react'
-import CheckBox from '@react-native-community/checkbox'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import Surface from '@components/Surface'
 import AccountIcon from '@components/AccountIcon'
-import { useColors } from '@theme/themeHooks'
+import Box from '@components/Box'
+import Surface from '@components/Surface'
+import Text from '@components/Text'
 import { LedgerAccount } from '@hooks/useLedger'
-import { balanceToString, useBalance } from '../../utils/Balance'
+import CheckBox from '@react-native-community/checkbox'
+import { useColors } from '@theme/themeHooks'
+import { humanReadable } from '@utils/solanaUtils'
+import React, { memo, useCallback, useMemo } from 'react'
 import { ellipsizeAddress, isTestnet } from '../../utils/accountUtils'
 
 export enum Section {
@@ -32,11 +32,10 @@ const LedgerAccountListItem = ({
   onCheckboxToggled,
   section,
 }: LedgerAccountListItemProps) => {
-  const { bonesToBalance } = useBalance()
   const colors = useColors()
 
   // TODO: Add other token types once nano app supports them
-  const balance = bonesToBalance(account.balance, 'HNT')
+  const balance = toBN(account.balance, 8)
   const disabled = section.index === Section.ALREADY_LINKED
 
   const borderTopEndRadius = useMemo(
@@ -96,9 +95,7 @@ const LedgerAccountListItem = ({
           >
             {`${ellipsizeAddress(account.address, {
               numChars: 4,
-            })} | ${balanceToString(balance, {
-              maxDecimalPlaces: 2,
-            })}`}
+            })} | ${humanReadable(balance, 8)}`}
           </Text>
         </Box>
         <Box marginEnd="s">

@@ -1,4 +1,16 @@
 /* eslint-disable react/no-array-index-key */
+import BlurBox from '@components/BlurBox'
+import HandleBasic from '@components/HandleBasic'
+import SafeAreaBox from '@components/SafeAreaBox'
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetModalProvider,
+  BottomSheetScrollView,
+} from '@gorhom/bottom-sheet'
+import useBackHandler from '@hooks/useBackHandler'
+import animalName from 'angry-purple-tiger'
+import { groupBy } from 'lodash'
 import React, {
   createContext,
   FC,
@@ -9,27 +21,14 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetModalProvider,
-  BottomSheetScrollView,
-} from '@gorhom/bottom-sheet'
-import { Edge } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
-import { groupBy } from 'lodash'
-import animalName from 'angry-purple-tiger'
 import { LayoutChangeEvent } from 'react-native'
-import SafeAreaBox from '@components/SafeAreaBox'
-import HandleBasic from '@components/HandleBasic'
-import useBackHandler from '@hooks/useBackHandler'
-import BlurBox from '@components/BlurBox'
+import { Edge } from 'react-native-safe-area-context'
+import { useCreateExplorerUrl } from '../../constants/urls'
+import { Activity } from '../../types/activity'
+import { ellipsizeAddress } from '../../utils/accountUtils'
 import TransactionLineItem from './TransactionLineItem'
 import { useTxnDetails } from './useTxn'
-import { useBalance } from '../../utils/Balance'
-import { useCreateExplorerUrl } from '../../constants/urls'
-import { ellipsizeAddress } from '../../utils/accountUtils'
-import { Activity } from '../../types/activity'
 
 const initialState = {
   show: () => undefined,
@@ -50,7 +49,6 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
   const [contentHeight, setContentHeight] = useState(0)
   const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
 
-  const { intToBalance } = useBalance()
   const { item: txn } = detailData || {}
 
   const {
@@ -131,7 +129,6 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
     return Object.keys(grouped).map((key) => {
       const group = grouped[key]
       const totalAmount = group.reduce((sum, { amount: amt }) => sum + amt, 0)
-      const balance = intToBalance({ intValue: totalAmount })
       const typeName = t(`transactions.rewardTypes.${group[0].type}`)
       let name = ''
       if (group[0].gateway) {
@@ -141,11 +138,11 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
       }
       return {
         name,
-        amount: balance,
+        amount: totalAmount,
         type: typeName,
       }
     })
-  }, [intToBalance, t, txn])
+  }, [t, txn])
 
   const handleContentLayout = useCallback((e: LayoutChangeEvent) => {
     setContentHeight(e.nativeEvent.layout.height)

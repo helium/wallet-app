@@ -1446,7 +1446,7 @@ export const solInstructionsToActivity = (
 
   const activity: Activity = { hash: signature, type: 'unknown' }
 
-  const { transaction, slot, blockTime, meta } = parsedTxn
+  const { slot, blockTime, meta } = parsedTxn
 
   activity.fee = meta?.fee
   activity.height = slot
@@ -1454,42 +1454,29 @@ export const solInstructionsToActivity = (
   if (blockTime) {
     activity.time = blockTime
   }
-
   if (meta?.preTokenBalances && meta.postTokenBalances) {
     const { preTokenBalances, postTokenBalances } = meta
+
     let payments = [] as Payment[]
     postTokenBalances.forEach((post) => {
       const preBalance = preTokenBalances.find(
         ({ accountIndex }) => accountIndex === post.accountIndex,
       )
-      const pre = preBalance || { uiTokenAmount: { amount: '0' } }
-      const preAmount = parseInt(pre.uiTokenAmount.amount, 10)
-      const postAmount = parseInt(post.uiTokenAmount.amount, 10)
+      const pre = preBalance || { uiTokenAmount: { uiAmount: 0 } }
+      const preAmount = pre.uiTokenAmount.uiAmount || 0
+      const postAmount = post.uiTokenAmount.uiAmount || 0
       const amount = postAmount - preAmount
-      if (amount < 0) {
-        // is payer
-        activity.payer = post.owner
-        activity.mint = post.mint
-        activity.amount = -1 * amount
-      } else {
-        // is payee
-        const p: Payment = {
-          amount,
-          payee: post.owner || '',
-          mint: post.mint,
-        }
-        payments = [...payments, p]
+      const p: Payment = {
+        amount,
+        payee: '',
+        mint: post.mint,
       }
+      payments = [...payments, p]
     })
     activity.payments = payments
   }
 
-  const transfer = transaction.message.instructions.find((i) => {
-    const instruction = i as ParsedInstruction
-    return instruction?.parsed?.type === 'transferChecked'
-  }) as ParsedInstruction
-
-  if (transfer) {
+  if ((activity.payments?.length || 0) > 0) {
     // We have a payment
     activity.type = 'payment_v2'
   }

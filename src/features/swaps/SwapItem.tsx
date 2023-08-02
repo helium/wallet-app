@@ -82,7 +82,7 @@ const SwapItem = ({
                 alignItems="center"
                 borderRadius="round"
               >
-                <TokenIcon img={json?.img} size={24} />
+                <TokenIcon img={json?.image} size={24} />
               </Box>
               <Text
                 variant="subtitle4"

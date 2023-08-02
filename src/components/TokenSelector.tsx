@@ -5,7 +5,6 @@ import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
-import { Ticker } from '@helium/currency'
 import useBackHandler from '@hooks/useBackHandler'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
@@ -91,21 +90,22 @@ const TokenSelector = forwardRef(
     )
 
     const handleTokenPress = useCallback(
-      (token: string) => () => {
+      (token: PublicKey) => {
         bottomSheetModalRef.current?.dismiss()
-        onTokenSelected(token as Ticker)
+        onTokenSelected(token)
       },
       [onTokenSelected],
     )
 
     const keyExtractor = useCallback((item: TokenListItem) => {
-      return item.mint
+      return item.mint.toBase58()
     }, [])
 
     const renderFlatlistItem = useCallback(
       ({ item }: { item: TokenListItem; index: number }) => {
         return (
           <ProvidedListItem
+            key={item.mint.toBase58()}
             selected={item.selected}
             onPress={() => handleTokenPress(item.mint)}
             mint={item.mint}

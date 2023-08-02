@@ -20,7 +20,7 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address, { NetTypes } from '@helium/address'
 import { Ticker } from '@helium/currency'
 import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
-import { HNT_MINT } from '@helium/spl-utils'
+import { DC_MINT, HNT_MINT } from '@helium/spl-utils'
 import useDisappear from '@hooks/useDisappear'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
@@ -613,10 +613,12 @@ const PaymentScreen = () => {
   }, [balance, decimals])
 
   const data = useMemo((): TokenListItem[] => {
-    const tokens = [...visibleTokens].map((token) => ({
-      mint: new PublicKey(token),
-      selected: mint.toBase58() === token,
-    }))
+    const tokens = [...visibleTokens]
+      .filter((vt: string) => vt !== DC_MINT.toBase58())
+      .map((token) => ({
+        mint: new PublicKey(token),
+        selected: mint.toBase58() === token,
+      }))
     return tokens
   }, [mint, visibleTokens])
 

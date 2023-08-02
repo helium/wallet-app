@@ -1,10 +1,10 @@
-import React, { memo, useCallback, useMemo } from 'react'
 import Pending from '@assets/images/pending.svg'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import useTxn from './useTxn'
+import React, { memo, useCallback, useMemo } from 'react'
 import { Activity } from '../../types/activity'
+import useTxn from './useTxn'
 
 type Props = {
   item: Activity
