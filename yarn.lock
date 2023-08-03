@@ -2259,19 +2259,15 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
-"@helium/account-fetch-cache-hooks@^0.2.16":
+"@helium/account-fetch-cache-hooks@^0.2.16", "@helium/account-fetch-cache-hooks@file:.yalc/@helium/account-fetch-cache-hooks":
   version "0.2.16"
-  resolved "https://registry.yarnpkg.com/@helium/account-fetch-cache-hooks/-/account-fetch-cache-hooks-0.2.16.tgz#b085baa6c959207e3dcee306d2f9cedf9c3db178"
-  integrity sha512-5gO11VZuVrP22U2Gtdy46V2iSq+sLWWnLVj6mS1iYMxXFb/Fox0hmv3JkRVR3Ax4UXRrd0iWrI1KBy2DaNqU6Q==
   dependencies:
     "@helium/account-fetch-cache" "^0.2.16"
     "@solana/web3.js" "^1.66.2"
     react-async-hook "^4.0.0"
 
-"@helium/account-fetch-cache@^0.2.16":
+"@helium/account-fetch-cache@^0.2.16", "@helium/account-fetch-cache@file:.yalc/@helium/account-fetch-cache":
   version "0.2.16"
-  resolved "https://registry.yarnpkg.com/@helium/account-fetch-cache/-/account-fetch-cache-0.2.16.tgz#2283f1511279622354a3a6b53b5e573e8a820cfa"
-  integrity sha512-GEHD1xjYMWTLJOr4TEdrczu/J7LMusEcmh1qc+ZZ8QSHPm7xjNG8ELVTdUiL8f6Sg3EKxezErCUFz/7u2cc1Sg==
   dependencies:
     "@solana/web3.js" "^1.43.4"
 
@@ -2351,13 +2347,6 @@
     "@pythnetwork/client" "^2.12.0"
     "@solana/spl-token" "^0.3.7"
     "@solana/web3.js" "^1.73.0"
-
-"@helium/currency@4.11.1":
-  version "4.11.1"
-  resolved "https://registry.yarnpkg.com/@helium/currency/-/currency-4.11.1.tgz#4658037197638406f0e60b246db70acd3323e46b"
-  integrity sha512-WxsMm3TvIXV8itR36yYxjXjtWAgJlId/OOrHivNTXUIdnxi6/j3JO/hY7EUHYygcw57O90Zqg4EBnypXzI4EKw==
-  dependencies:
-    bignumber.js "^9.0.0"
 
 "@helium/currency@^4.7.3":
   version "4.10.0"

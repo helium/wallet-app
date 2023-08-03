@@ -44,7 +44,6 @@
     "@helium/address": "4.6.2",
     "@helium/circuit-breaker-sdk": "^0.2.16",
     "@helium/crypto-react-native": "4.8.0",
-    "@helium/currency": "4.11.1",
     "@helium/currency-utils": "0.1.1",
     "@helium/data-credits-sdk": "0.2.16",
     "@helium/distributor-oracle": "^0.2.16",

@@ -1,5 +1,4 @@
 import Box from '@components/Box'
-import { LedgerPaymentRef } from '@components/LedgerPayment'
 import SubmitButton from '@components/SubmitButton'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -7,7 +6,7 @@ import { PaymentV2 } from '@helium/transactions'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
-import React, { memo, useCallback, useRef, useState } from 'react'
+import React, { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent } from 'react-native'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
@@ -41,29 +40,17 @@ const PaymentCard = ({
   const { t } = useTranslation()
   const [payEnabled, setPayEnabled] = useState(false)
   const [height, setHeight] = useState(0)
-  const ledgerPaymentRef = useRef<LedgerPaymentRef>(null)
   const { currentAccount } = useAccountStorage()
 
   const handlePayPressed = useCallback(async () => {
-    if (!currentAccount?.ledgerDevice) {
-      const hasSecureAccount = await checkSecureAccount(
-        currentAccount?.address,
-        true,
-      )
-      if (!hasSecureAccount) return
-      animateTransition('PaymentCard.payEnabled')
-      setPayEnabled(true)
-    } else {
-      // is ledger device
-      ledgerPaymentRef.current?.show({
-        payments: payments || [],
-        ledgerDevice: currentAccount.ledgerDevice,
-        address: currentAccount.address,
-        accountIndex: currentAccount.accountIndex || 0,
-        speculativeNonce: 0,
-      })
-    }
-  }, [currentAccount, payments])
+    const hasSecureAccount = await checkSecureAccount(
+      currentAccount?.address,
+      true,
+    )
+    if (!hasSecureAccount) return
+    animateTransition('PaymentCard.payEnabled')
+    setPayEnabled(true)
+  }, [currentAccount])
 
   const handleLayout = useCallback(
     (e: LayoutChangeEvent) => {

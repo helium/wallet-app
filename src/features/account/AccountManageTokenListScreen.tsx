@@ -5,7 +5,6 @@ import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableContainer from '@components/TouchableContainer'
-import { Ticker } from '@helium/currency'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
 import { DC_MINT } from '@helium/spl-utils'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
@@ -78,7 +77,7 @@ const CheckableTokenListItem = ({
           <AccountTokenCurrencyBalance
             variant="subtitle4"
             color="secondaryText"
-            ticker={symbol.toUpperCase() as Ticker}
+            ticker={symbol.toUpperCase()}
           />
         )}
       </Box>

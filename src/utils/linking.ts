@@ -1,5 +1,4 @@
 import Address from '@helium/address'
-import Balance, { CurrencyType } from '@helium/currency'
 import { LinkingOptions } from '@react-navigation/native'
 import BigNumber from 'bignumber.js'
 import BN from 'bn.js'
@@ -27,7 +26,6 @@ export const authenticatedLinking: LinkingOptions<RootStackParamList> = {
       LinkWallet: 'link_wallet',
       SignHotspot: 'sign_hotspot',
       PaymentScreen: 'payment',
-      DappLoginScreen: 'dapp_login',
       ImportPrivateKey: 'import_key/:key',
     },
   },
@@ -133,8 +131,6 @@ export const parsePaymentLink = (
       return
     }
 
-    const { coefficient } = new Balance(0, CurrencyType.networkToken).type
-
     if (parsedJson.amount !== undefined) {
       const amount =
         typeof parsedJson.amount === 'string'
@@ -143,7 +139,7 @@ export const parsePaymentLink = (
       return {
         payee: parsedJson.address || parsedJson.payee,
         payer: parsedJson.payer,
-        amount: new BigNumber(amount).dividedBy(coefficient).toString(),
+        amount: new BigNumber(amount).dividedBy(10 ** 8).toString(),
         memo: '',
       }
     }
@@ -155,7 +151,7 @@ export const parsePaymentLink = (
         const amountFloat =
           typeof amount === 'string' ? parseFloat(amount) : amount
         return {
-          amount: new BigNumber(amountFloat).dividedBy(coefficient).toString(),
+          amount: new BigNumber(amountFloat).dividedBy(10 ** 8).toString(),
           payee: address,
           memo: '',
         }

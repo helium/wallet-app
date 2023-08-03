@@ -13,7 +13,6 @@ import BottomSheet, {
   BottomSheetFlatList,
   WINDOW_HEIGHT,
 } from '@gorhom/bottom-sheet'
-import { Ticker } from '@helium/currency'
 import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import useLayoutHeight from '@hooks/useLayoutHeight'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
@@ -450,7 +449,7 @@ const AccountTokenScreen = () => {
                 />
                 {!!symbol && (
                   <AccountTokenCurrencyBalance
-                    ticker={symbol.toUpperCase() as Ticker}
+                    ticker={symbol.toUpperCase()}
                     variant="body1"
                     color="secondaryText"
                   />
@@ -473,7 +472,7 @@ const AccountTokenScreen = () => {
               <AccountTokenBalance marginTop="s" mint={mint} />
               {!!symbol && (
                 <AccountTokenCurrencyBalance
-                  ticker={symbol.toUpperCase() as Ticker}
+                  ticker={symbol.toUpperCase()}
                   variant="h4"
                   color="secondaryText"
                   textAlign="center"

@@ -18,7 +18,6 @@ import TokenSelector, {
 } from '@components/TokenSelector'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address, { NetTypes } from '@helium/address'
-import { Ticker } from '@helium/currency'
 import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
 import { DC_MINT, HNT_MINT } from '@helium/spl-utils'
 import useDisappear from '@hooks/useDisappear'
@@ -87,7 +86,7 @@ const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
   if (opts.payments) {
     return JSON.parse(opts.payments).map((p: LinkedPayment) => ({
       ...p,
-      mint: p.mint || Mints[p.defaultTokenType?.toUpperCase() as Ticker],
+      mint: p.mint || Mints[p.defaultTokenType?.toUpperCase()],
     }))
   }
   if (opts.payee) {
@@ -95,8 +94,7 @@ const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
       {
         payee: opts.payee,
         amount: opts.amount,
-        mint:
-          opts.mint || Mints[opts.defaultTokenType?.toUpperCase() as Ticker],
+        mint: opts.mint || Mints[opts.defaultTokenType?.toUpperCase()],
       },
     ]
   }

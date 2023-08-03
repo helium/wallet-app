@@ -480,29 +480,6 @@ export default {
     add: 'Add New Wallet',
     addTestnet: 'Add New Testnet Wallet',
   },
-  dappLogin: {
-    account: {
-      subtitle: 'Which wallet do you want to authenticate with {{appName}}?',
-      title: 'Choose your\nWallet',
-    },
-    connect: {
-      continue: 'Continue',
-      subtitle: 'Authenticate {{appName}}\nwith your Helium Wallet?',
-      title: 'Connect to {{appName}}?',
-    },
-    error: 'Failed to verify {{appName}}',
-    ledger: {
-      subtitle:
-        'You must sign burn transaction to login to {{appName}}. Please verify the burn transaction on your Ledger device {{deviceName}}',
-      title: 'Ledger Approval',
-    },
-    login: 'Login',
-    timeoutAlert: {
-      title: 'Login Failed',
-      message:
-        'Please close and reopen the login screen in Crowdspot and scan a new QR code to try again.',
-    },
-  },
   editContact: {
     delete: 'Delete',
     deleteConfirmMessage:

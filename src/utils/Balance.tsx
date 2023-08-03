@@ -1,13 +1,11 @@
-import Balance, {
-  DataCredits,
-  IotTokens,
-  MobileTokens,
-  NetworkTokens,
-  SolTokens,
-  TestNetworkTokens,
-} from '@helium/currency'
 import { getOraclePrice } from '@helium/currency-utils'
-import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import {
+  DC_MINT,
+  HNT_MINT,
+  IOT_MINT,
+  MOBILE_MINT,
+  toNumber,
+} from '@helium/spl-utils'
 import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import React, {
@@ -31,8 +29,6 @@ import { syncTokenAccounts } from '../store/slices/balancesSlice'
 import { useAppDispatch } from '../store/store'
 import { AccountBalance, BalanceInfo, TokenAccount } from '../types/balance'
 import StoreAtaBalance from './StoreAtaBalance'
-import StoreSolBalance from './StoreSolBalance'
-import { decimalSeparator, groupSeparator } from './i18n'
 import { humanReadable } from './solanaUtils'
 import { useBalanceHistory } from './useBalanceHistory'
 import { usePollTokenPrices } from './usePollTokenPrices'
@@ -250,17 +246,12 @@ const { Provider } = BalanceContext
 export const BalanceProvider = ({ children }: { children: ReactNode }) => {
   const balanceHook = useBalanceHook()
 
-  const { atas, solToken } = balanceHook
+  const { atas } = balanceHook
   const { cluster } = useSolana()
-  const prevSolAddress = usePrevious(solToken?.tokenAccount)
   const prevCluster = usePrevious(cluster)
   const clusterChanged = prevCluster && cluster && prevCluster !== cluster
-  const addressChanged =
-    solToken?.tokenAccount &&
-    prevSolAddress &&
-    solToken.tokenAccount !== prevSolAddress
 
-  if (clusterChanged || addressChanged) {
+  if (clusterChanged) {
     return <>{children}</>
   }
 
@@ -269,9 +260,6 @@ export const BalanceProvider = ({ children }: { children: ReactNode }) => {
       {atas?.map((ta) => (
         <StoreAtaBalance key={`${ta.mint}.${ta.tokenAccount}`} {...ta} />
       ))}
-      {solToken?.tokenAccount && (
-        <StoreSolBalance solanaAddress={solToken?.tokenAccount} />
-      )}
 
       {children}
     </Provider>
@@ -279,22 +267,3 @@ export const BalanceProvider = ({ children }: { children: ReactNode }) => {
 }
 
 export const useBalance = () => useContext(BalanceContext)
-
-export const balanceToString = (
-  balance?: Balance<
-    | DataCredits
-    | NetworkTokens
-    | TestNetworkTokens
-    | MobileTokens
-    | IotTokens
-    | SolTokens
-  >,
-  opts?: { maxDecimalPlaces?: number; showTicker?: boolean },
-) => {
-  if (!balance) return ''
-  return balance.toString(opts?.maxDecimalPlaces, {
-    groupSeparator,
-    decimalSeparator,
-    showTicker: opts?.showTicker,
-  })
-}

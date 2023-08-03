@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Ticker } from '@helium/currency'
 import {
   JsonMetadata,
   Nft,
@@ -40,20 +38,6 @@ export type SolPaymentInfo = {
   systemProgram: string
   tokenProgram: string
   wallet: string
-}
-
-export const toMintAddress = (
-  symbol: string,
-  mints: Record<string, string>,
-) => {
-  const ticker = symbol.toUpperCase() as Ticker
-  return mints[ticker]
-}
-
-export const mintToTicker = (mint: string, mints: Record<string, string>) => {
-  const found = Object.keys(mints).find((key) => mints[key as Ticker] === mint)
-
-  return found as Ticker | undefined
 }
 
 export type CompressedNFT = {

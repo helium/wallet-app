@@ -13,7 +13,7 @@ import { IOT_LAZY_KEY, MOBILE_LAZY_KEY } from '@utils/constants'
 import BN from 'bn.js'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toNumber } from '@helium/spl-utils'
+import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
 import { CollectableNavigationProp } from './collectablesTypes'
 import { BalanceChange } from '../../solana/walletSignBottomSheetTypes'
 
@@ -120,14 +120,14 @@ const ClaimAllRewardsScreen = () => {
           >
             {pendingMobileRewards && pendingMobileRewards.gt(new BN(0)) && (
               <RewardItem
-                ticker="MOBILE"
+                mint={MOBILE_MINT}
                 amount={pendingMobileRewards}
                 marginEnd="s"
               />
             )}
             {pendingIotRewards && pendingIotRewards.gt(new BN(0)) && (
               <RewardItem
-                ticker="IOT"
+                mint={IOT_MINT}
                 amount={pendingIotRewards}
                 marginStart="s"
               />

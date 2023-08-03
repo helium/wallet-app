@@ -24,7 +24,6 @@ import { useAppDispatch } from '../store/store'
 import LinkWallet from '../features/txnDelegation/LinkWallet'
 import PaymentScreen from '../features/payment/PaymentScreen'
 import SignHotspot from '../features/txnDelegation/SignHotspot'
-import DappLoginScreen from '../features/dappLogin/DappLoginScreen'
 import ImportPrivateKey from '../features/onboarding/import/ImportPrivateKey'
 
 const screenOptions = { headerShown: false } as StackNavigationOptions
@@ -92,11 +91,6 @@ const RootNavigator = () => {
         <RootStack.Screen
           name="PaymentScreen"
           component={PaymentScreen}
-          options={screenOptions}
-        />
-        <RootStack.Screen
-          name="DappLoginScreen"
-          component={DappLoginScreen}
           options={screenOptions}
         />
         <RootStack.Screen

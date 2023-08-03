@@ -1,4 +1,3 @@
-import { Ticker } from '@helium/currency'
 import { StackNavigationProp } from '@react-navigation/stack'
 
 export type PaymentRouteParam = {
@@ -8,7 +7,7 @@ export type PaymentRouteParam = {
   amount?: string
   memo?: string
   netType?: string
-  defaultTokenType?: Ticker
+  defaultTokenType?: string
   mint?: string
 }
 

@@ -4,7 +4,6 @@ import FadeInOut from '@components/FadeInOut'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableContainer from '@components/TouchableContainer'
-import { Ticker } from '@helium/currency'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import useHaptic from '@hooks/useHaptic'
@@ -102,7 +101,7 @@ const TokenListItem = ({ mint }: Props) => {
             <AccountTokenCurrencyBalance
               variant="subtitle4"
               color="secondaryText"
-              ticker={symbol.toUpperCase() as Ticker}
+              ticker={symbol.toUpperCase()}
             />
           )}
         </Box>
