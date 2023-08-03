@@ -71,7 +71,7 @@ const useTxn = (
 
   const symbolsByMint = useMemo(() => {
     return metadataAccs?.reduce((acc, curr, index) => {
-      if (curr.info) {
+      if (curr.info && mintKeys[index]) {
         acc[mintKeys[index].toBase58()] = curr.info.symbol
       }
       return acc
