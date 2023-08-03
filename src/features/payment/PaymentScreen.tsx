@@ -80,11 +80,15 @@ type LinkedPayment = {
   amount?: string
   payee: string
   mint?: string
+  defaultTokenType?: string
 }
 
 const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
   if (opts.payments) {
-    return JSON.parse(opts.payments)
+    return JSON.parse(opts.payments).map((p: LinkedPayment) => ({
+      ...p,
+      mint: p.mint || Mints[p.defaultTokenType?.toUpperCase() as Ticker],
+    }))
   }
   if (opts.payee) {
     return [
