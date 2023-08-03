@@ -66,6 +66,7 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
   const { info: metadataAcc, loading } = useAccount(
     metadataAddr,
     METADATA_PARSER,
+    true,
   )
   const { result: json, loading: jsonLoading } = useAsync(getMetadata, [
     metadataAcc?.uri,

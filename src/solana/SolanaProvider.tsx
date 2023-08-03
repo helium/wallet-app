@@ -12,19 +12,18 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useRef,
+  useMemo,
   useState,
 } from 'react'
+import { useAsync } from 'react-async-hook'
 import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
-import usePrevious from '../hooks/usePrevious'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { getSessionKey, getSolanaKeypair } from '../storage/secureStorage'
 import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
 import { DcProgram, HemProgram, HsdProgram, LazyProgram } from '../types/solana'
-import { WrappedConnection } from '../utils/WrappedConnection'
 import { getConnection } from '../utils/solanaUtils'
 
 const useSolanaHook = () => {
@@ -33,50 +32,34 @@ const useSolanaHook = () => {
   const cluster = useSelector(
     (state: RootState) => state.app.cluster || 'mainnet-beta',
   )
-  const [connection, setConnection] = useState<WrappedConnection>()
   const [dcProgram, setDcProgram] = useState<DcProgram>()
   const [hemProgram, setHemProgram] = useState<HemProgram>()
   const [hsdProgram, setHsdProgram] = useState<HsdProgram>()
   const [lazyProgram, setLazyProgram] = useState<LazyProgram>()
-  const [anchorProvider, setAnchorProvider] = useState<AnchorProvider>()
-  const [cache, setCache] = useState<AccountFetchCache>()
+  const { loading, result: sessionKey } = useAsync(getSessionKey, [])
+  const connection = useMemo(() => {
+    const sessionKeyActual =
+      !loading && !sessionKey ? Config.RPC_SESSION_KEY_FALLBACK : sessionKey
 
-  const initialized = useRef(false)
-  const prevAddress = usePrevious(currentAccount?.address)
-  const prevCluster = usePrevious(cluster)
-
-  const handleConnectionChanged = useCallback(async () => {
-    if (!cluster) return
-
-    const sessionKey =
-      (await getSessionKey()) || Config.RPC_SESSION_KEY_FALLBACK
-    const nextConn = getConnection(cluster, sessionKey)
-
-    if (!currentAccount?.address) {
-      setConnection(nextConn)
-      return
+    if (sessionKeyActual) {
+      return getConnection(cluster, sessionKeyActual)
     }
+  }, [cluster, sessionKey, loading])
+  const address = useMemo(
+    () => currentAccount?.address,
+    [currentAccount?.address],
+  )
+  const { result: secureAcct } = useAsync(
+    async (addr: string | undefined) => {
+      if (addr) {
+        return getSolanaKeypair(addr)
+      }
+    },
+    [address],
+  )
 
-    if (
-      initialized.current &&
-      prevAddress === currentAccount.address &&
-      prevCluster === cluster
-    ) {
-      return
-    }
-
-    initialized.current = true
-
-    if (
-      nextConn.baseURL === connection?.baseURL &&
-      prevAddress === currentAccount.address
-    )
-      return
-
-    setConnection(nextConn)
-
-    const secureAcct = await getSolanaKeypair(currentAccount.address)
-    if (!secureAcct) return
+  const anchorProvider = useMemo(() => {
+    if (!secureAcct || !connection) return
 
     const anchorWallet = {
       signTransaction: async (transaction: Transaction) => {
@@ -93,47 +76,43 @@ const useSolanaHook = () => {
         return secureAcct?.publicKey
       },
     } as Wallet
-
-    const nextProvider = new AnchorProvider(nextConn, anchorWallet, {
+    return new AnchorProvider(connection, anchorWallet, {
       preflightCommitment: 'confirmed',
       commitment: 'confirmed',
     })
+  }, [connection, secureAcct])
 
-    setAnchorProvider(nextProvider)
-    initHem(nextProvider).then(setHemProgram)
-    initHsd(nextProvider).then(setHsdProgram)
-    initDc(nextProvider).then(setDcProgram)
-    initLazy(nextProvider).then(setLazyProgram)
+  const cache = useMemo(() => {
+    if (!connection) return
 
-    cache?.close()
-    setCache(
-      new AccountFetchCache({
-        connection: nextConn,
-        delay: 100,
-        commitment: 'confirmed',
-        missingRefetchDelay: 60 * 1000,
-        extendConnection: true,
-      }),
-    )
+    return new AccountFetchCache({
+      connection,
+      delay: 100,
+      commitment: 'confirmed',
+      missingRefetchDelay: 60 * 1000,
+      extendConnection: true,
+    })
+  }, [connection])
+  useEffect(() => {
     // Don't sub to hnt or dc they change a bunch
     cache?.statics.add(HNT_MINT.toBase58())
     cache?.statics.add(DC_MINT.toBase58())
 
-    return () => {
-      cache?.close()
-    }
-  }, [
-    cache,
-    cluster,
-    connection?.baseURL,
-    currentAccount,
-    prevAddress,
-    prevCluster,
-  ])
+    return () => cache?.close()
+  }, [cache])
+
+  const handleConnectionChanged = useCallback(async () => {
+    if (!anchorProvider) return
+
+    initHem(anchorProvider).then(setHemProgram)
+    initHsd(anchorProvider).then(setHsdProgram)
+    initDc(anchorProvider).then(setDcProgram)
+    initLazy(anchorProvider).then(setLazyProgram)
+  }, [anchorProvider])
 
   useEffect(() => {
     handleConnectionChanged()
-  }, [cluster, currentAccount, handleConnectionChanged])
+  }, [cluster, address, handleConnectionChanged])
 
   const updateCluster = useCallback(
     (nextCluster: Cluster) => {
@@ -151,6 +130,7 @@ const useSolanaHook = () => {
     hsdProgram,
     lazyProgram,
     updateCluster,
+    cache,
   }
 }
 
@@ -162,6 +142,7 @@ const initialState = {
   hemProgram: undefined,
   hsdProgram: undefined,
   lazyProgram: undefined,
+  cache: undefined,
   updateCluster: (_nextCluster: Cluster) => {},
 }
 const SolanaContext =

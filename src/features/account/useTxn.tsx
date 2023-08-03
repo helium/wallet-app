@@ -55,7 +55,11 @@ const useTxn = (
     [mintKeys],
   )
   const { accounts: mintAccs } = useAccounts(mintKeys, MintParser)
-  const { accounts: metadataAccs } = useAccounts(metadataKeys, METADATA_PARSER)
+  const { accounts: metadataAccs } = useAccounts(
+    metadataKeys,
+    METADATA_PARSER,
+    true,
+  )
   const decimalsByMint = useMemo(() => {
     return mintAccs?.reduce((acc, curr) => {
       if (curr.info) {

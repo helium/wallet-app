@@ -1,6 +1,5 @@
 import { toNumber, truthy, sendAndConfirmWithRetry } from '@helium/spl-utils'
 import useAlert from '@hooks/useAlert'
-import { Metaplex } from '@metaplex-foundation/js'
 import { AccountLayout, NATIVE_MINT, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
   AddressLookupTableAccount,
@@ -43,20 +42,13 @@ export function useSimulatedTransaction(
 ): SimulatedTransactionResult {
   const { showOKCancelAlert } = useAlert()
   const { tokenAccounts } = useBalance()
-  const { connection, anchorProvider, cluster } = useSolana()
+  const { connection, anchorProvider } = useSolana()
   const { t: tr } = useTranslation()
   const { hntSolConvertTransaction, hntEstimate, hasEnoughSol } =
     useHntSolConvert()
 
   const [simulationError, setSimulationError] = useState(false)
   const [insufficientFunds, setInsufficientFunds] = useState(false)
-
-  const metaplex = useMemo(() => {
-    if (!connection || !cluster) return
-    return new Metaplex(connection, {
-      cluster,
-    })
-  }, [connection, cluster])
 
   const transaction = useMemo(() => {
     if (!serializedTx) return undefined
@@ -168,7 +160,6 @@ export function useSimulatedTransaction(
         !connection ||
         !transaction ||
         !anchorProvider ||
-        !metaplex ||
         !wallet ||
         !simulationAccounts ||
         !tokenAccounts
@@ -293,7 +284,7 @@ export function useSimulatedTransaction(
 
                   const tokenMetadata = await getCollectableByMint(
                     tokenMint,
-                    metaplex,
+                    connection,
                   )
 
                   const type = accountNativeBalance.lt(existingNativeBalance)
@@ -342,7 +333,6 @@ export function useSimulatedTransaction(
       transaction,
       tokenAccounts,
       hasEnoughSol,
-      metaplex,
       anchorProvider,
       wallet,
     ])

@@ -1,6 +1,6 @@
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { PortalHost, PortalProvider } from '@gorhom/portal'
-import { AccountProvider } from '@helium/account-fetch-cache-hooks'
+import { AccountContext } from '@helium/account-fetch-cache-hooks'
 import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import MapboxGL from '@rnmapbox/maps'
 import { ThemeProvider } from '@shopify/restyle'
@@ -55,7 +55,7 @@ const App = () => {
 
   const { appState } = useAppState()
   const { restored: accountsRestored } = useAccountStorage()
-  const { connection } = useSolana()
+  const { cache } = useSolana()
   const { setOpenedNotification } = useNotificationStorage()
 
   const linking = useDeepLinking()
@@ -112,13 +112,9 @@ const App = () => {
               <BottomSheetModalProvider>
                 <PortalHost name="browser-portal" />
                 <OnboardingProvider baseUrl={Config.ONBOARDING_API_URL}>
-                  {connection && (
+                  {cache && (
                     <LockScreen>
-                      <AccountProvider
-                        extendConnection={false}
-                        commitment="confirmed"
-                        connection={connection}
-                      >
+                      <AccountContext.Provider value={cache}>
                         {accountsRestored && (
                           <>
                             <NavigationContainer
@@ -142,7 +138,7 @@ const App = () => {
                             />
                           </>
                         )}
-                      </AccountProvider>
+                      </AccountContext.Provider>
                     </LockScreen>
                   )}
                 </OnboardingProvider>

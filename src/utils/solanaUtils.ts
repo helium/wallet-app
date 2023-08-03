@@ -46,6 +46,7 @@ import {
   registrarCollectionKey,
   registrarKey,
 } from '@helium/voter-stake-registry-sdk'
+import { METADATA_PARSER, getMetadataId } from '@hooks/useMetaplexMetadata'
 import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
 import {
   PROGRAM_ID as BUBBLEGUM_PROGRAM_ID,
@@ -1179,15 +1180,22 @@ export const groupCollectablesWithMetaData = (
  */
 export const getCollectableByMint = async (
   mint: PublicKey,
-  metaplex: Metaplex,
+  connection: Connection,
 ): Promise<Collectable | null> => {
   try {
-    const collectable = await metaplex.nfts().findByMint({ mintAddress: mint })
-    if (!collectable.json && collectable.uri) {
-      const json = await (await fetch(collectable.uri)).json()
-      return { ...collectable, json }
+    const metadata = getMetadataId(mint)
+    const metadataAccount = await connection.getAccountInfo(metadata)
+    if (metadataAccount) {
+      const collectable = METADATA_PARSER(metadata, metadataAccount)
+      if (!collectable.json && collectable.uri) {
+        const json = await (await fetch(collectable.uri)).json()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        return { ...collectable, json }
+      }
     }
-    return collectable
+
+    return null
   } catch (e) {
     return null
   }
@@ -1208,7 +1216,6 @@ export const getAllTransactions = async (
 ): Promise<(EnrichedTransaction | ConfirmedSignatureInfo)[]> => {
   const pubKey = new PublicKey(address)
   const conn = anchorProvider.connection
-  const metaplex = new Metaplex(conn, { cluster })
   const sessionKey = await getSessionKey()
 
   const parseTransactionsUrl = `${
@@ -1239,7 +1246,7 @@ export const getAllTransactions = async (
           if (firstTokenTransfer && firstTokenTransfer.mint) {
             const tokenMetadata = await getCollectableByMint(
               new PublicKey(firstTokenTransfer.mint),
-              metaplex,
+              conn,
             )
 
             return {

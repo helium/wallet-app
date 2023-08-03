@@ -86,7 +86,9 @@ const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
   if (opts.payments) {
     return JSON.parse(opts.payments).map((p: LinkedPayment) => ({
       ...p,
-      mint: p.mint || Mints[p.defaultTokenType?.toUpperCase()],
+      mint:
+        p.mint ||
+        (p.defaultTokenType && Mints[p.defaultTokenType.toUpperCase()]),
     }))
   }
   if (opts.payee) {
@@ -94,7 +96,9 @@ const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
       {
         payee: opts.payee,
         amount: opts.amount,
-        mint: opts.mint || Mints[opts.defaultTokenType?.toUpperCase()],
+        mint:
+          opts.mint ||
+          (opts.defaultTokenType && Mints[opts.defaultTokenType.toUpperCase()]),
       },
     ]
   }
