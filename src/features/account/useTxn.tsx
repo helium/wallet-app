@@ -1,11 +1,19 @@
 import TxnReceive from '@assets/images/txnReceive.svg'
 import TxnSend from '@assets/images/txnSend.svg'
-import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { useAccounts } from '@helium/account-fetch-cache-hooks'
+import { MintParser } from '@helium/helium-react-hooks'
+import { truthy } from '@helium/spl-utils'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import {
+  METADATA_PARSER,
+  getMetadataId,
+  useMetaplexMetadata,
+} from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
-import { LAMPORTS_PER_SOL } from '@solana/web3.js'
+import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 import { Color } from '@theme/theme'
 import { useColors } from '@theme/themeHooks'
-import animalName from 'angry-purple-tiger'
+import BN from 'bn.js'
 import {
   addMinutes,
   format,
@@ -17,68 +25,68 @@ import { startCase } from 'lodash'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { Activity } from '../../types/activity'
-import { ellipsizeAddress } from '../../utils/accountUtils'
 import shortLocale from '../../utils/formatDistance'
-import { TXN_FEE_IN_LAMPORTS } from '../../utils/solanaUtils'
-import { useOnboarding } from '../onboarding/OnboardingProvider'
+import { TXN_FEE_IN_LAMPORTS, humanReadable } from '../../utils/solanaUtils'
 
-export const TxnTypeKeys = ['payment_v2', 'dc_delegate', 'dc_mint'] as const
+export const TxnTypeKeys = ['payment_v2'] as const
 type TxnType = typeof TxnTypeKeys[number]
 
 const useTxn = (
+  mint?: PublicKey,
   item?: Activity,
   dateOpts?: { dateFormat?: string; now?: Date },
 ) => {
-  const { currentNetworkAddress: address } = useAccountStorage()
   const colors = useColors()
   const { t } = useTranslation()
-  const { makers } = useOnboarding()
   const { symbol: ticker } = useMetaplexMetadata(
     usePublicKey(item?.payments?.[0]?.mint || undefined),
   )
+  const wallet = useCurrentWallet()
+  const mintKeys = useMemo(
+    () =>
+      [...new Set(item?.payments?.map((p) => p.mint))]
+        .filter(truthy)
+        .map((k) => new PublicKey(k)),
+    [item?.payments],
+  )
+  const metadataKeys = useMemo(
+    () => mintKeys.map((m) => getMetadataId(m)),
+    [mintKeys],
+  )
+  const { accounts: mintAccs } = useAccounts(mintKeys, MintParser)
+  const { accounts: metadataAccs } = useAccounts(metadataKeys, METADATA_PARSER)
+  const decimalsByMint = useMemo(() => {
+    return mintAccs?.reduce((acc, curr) => {
+      if (curr.info) {
+        acc[curr.publicKey.toBase58()] = curr.info.decimals
+      }
+      return acc
+    }, {} as { [key: string]: number })
+  }, [mintAccs])
+
+  const symbolsByMint = useMemo(() => {
+    return metadataAccs?.reduce((acc, curr, index) => {
+      if (curr.info) {
+        acc[mintKeys[index].toBase58()] = curr.info.symbol
+      }
+      return acc
+    }, {} as { [key: string]: string })
+  }, [metadataAccs, mintKeys])
 
   const isSending = useMemo(() => {
-    return item?.payer === address
-  }, [address, item])
-
-  const isHotspotTxn = useMemo(
-    () =>
-      item?.type === 'assert_location_v1' ||
-      item?.type === 'assert_location_v2' ||
-      item?.type === 'add_gateway_v1' ||
-      item?.type === 'transfer_hotspot_v1' ||
-      item?.type === 'transfer_hotspot_v2',
-    [item],
-  )
-
-  const isValidatorTxn = useMemo(
-    () =>
-      item?.type === 'stake_validator_v1' ||
-      item?.type === 'transfer_validator_stake_v1' ||
-      item?.type === 'unstake_validator_v1',
-    [item],
-  )
-
-  const getHotspotName = useCallback(() => {
-    if (!isHotspotTxn || !item?.gateway) return ''
-    return animalName(item.gateway)
-  }, [isHotspotTxn, item])
-
-  const getValidatorName = useCallback(() => {
-    if (!isValidatorTxn || !item?.address) return ''
-    return animalName(item.address)
-  }, [isValidatorTxn, item])
+    return item?.payments?.some(
+      (p) =>
+        p.owner === wallet?.toBase58() &&
+        p.amount < 0 &&
+        p.mint === mint?.toBase58(),
+    )
+  }, [item?.payments, mint, wallet])
 
   const color = useMemo((): Color => {
     switch (item?.type as TxnType) {
       case 'payment_v2':
         return isSending ? 'blueBright500' : 'greenBright500'
-      case 'dc_mint':
-        return 'greenBright500'
-      case 'dc_delegate':
-        return 'orange500'
       default:
         return 'primaryText'
     }
@@ -113,10 +121,6 @@ const useTxn = (
           ? t('transactions.sent', { ticker })
           : t('transactions.received', { ticker })
       }
-      case 'dc_delegate':
-        return t('transactions.delegated')
-      case 'dc_mint':
-        return t('transactions.received', { ticker: '' })
     }
   }, [item, t, isSending, ticker])
 
@@ -129,8 +133,6 @@ const useTxn = (
         ) : (
           <TxnReceive color={iconColor} />
         )
-      case 'dc_delegate':
-      case 'dc_mint':
       default:
         return <TxnReceive color={iconColor} />
     }
@@ -147,34 +149,30 @@ const useTxn = (
   }, [isSending, item])
 
   const formatAmount = useCallback(
-    (prefix: '-' | '+' | '', amount?: number) => {
-      if (!amount) return ''
+    (
+      prefix: '-' | '+' | '',
+      amount: number | undefined,
+      m: string | undefined | null,
+    ) => {
+      const decimals = m ? decimalsByMint?.[m] : undefined
+      if (!amount || typeof decimals === 'undefined') return ''
+      const symbolPart = m ? symbolsByMint?.[m] || '' : ''
 
-      return `${prefix}${amount.toFixed(4)}`
+      return `${prefix}${humanReadable(
+        new BN(
+          Math.abs(amount)
+            .toFixed(decimals || 0)
+            .replace('.', ''),
+        ),
+        decimals,
+      )} ${symbolPart}`
     },
-    [],
+    [decimalsByMint, symbolsByMint],
   )
 
   const getFee = useCallback(async () => {
-    return formatAmount('-', TXN_FEE_IN_LAMPORTS / LAMPORTS_PER_SOL)
-  }, [formatAmount])
-
-  const getFeePayer = useCallback(() => {
-    const type = item?.type
-    if (
-      !item?.type ||
-      !item.payer ||
-      (type !== 'add_gateway_v1' &&
-        type !== 'assert_location_v1' &&
-        type !== 'assert_location_v2')
-    ) {
-      return ''
-    }
-    return (
-      makers.find(({ address: makerAddress }) => makerAddress === item.payer)
-        ?.name || ellipsizeAddress(item.payer)
-    )
-  }, [item, makers])
+    return `-${TXN_FEE_IN_LAMPORTS / LAMPORTS_PER_SOL}`
+  }, [])
 
   const getAmountTitle = useCallback(async () => {
     if (!item) return ''
@@ -188,39 +186,22 @@ const useTxn = (
     if (!item) return ''
 
     switch (item.type as TxnType) {
-      case 'dc_delegate':
-        return formatAmount('-', Number(item.amount))
-      case 'dc_mint':
-        return formatAmount('+', Number(item.amount))
       case 'payment_v2': {
-          const paymentTotals = item.payments?.reduce((sums, current) => {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const mint = (current.mint || item.payments?.[0].mint)!
-            return {
-              ...sums,
-              [mint]: (sums[mint] || 0) + current.amount,
-            }
-          }, {} as Record<string, number>)
-          if (!paymentTotals) return ''
-          return Object.keys(paymentTotals)
-            .flatMap((m) => {
-              const total = paymentTotals[m]
-              if (total === 0) return []
-              const amt = formatAmount('', paymentTotals[m])
-              return [amt]
-            })
-            .join(', ')
+        const payment = item.payments?.find(
+          (p) => p.mint === mint?.toBase58() && p.owner === wallet?.toBase58(),
+        )
+        if (payment) {
+          return formatAmount(
+            payment.amount < 0 ? '-' : '+',
+            Math.abs(payment.amount),
+            payment.mint,
+          )
         }
-
-        return `+${item.payments
-          ?.filter((p) => p.payee === address)
-          .map((p) => formatAmount('', p.amount))
-          .join(', ')}`
       }
     }
 
     return ''
-  }, [item, formatAmount, address])
+  }, [item, formatAmount, mint, wallet])
 
   const time = useMemo(() => {
     if (!item) return ''
@@ -251,28 +232,30 @@ const useTxn = (
   }, [dateOpts, item, t])
 
   const getPaymentsReceived = useCallback(async () => {
-    const payments = item?.payments?.filter(({ payee }) => payee === address)
+    const payments = item?.payments?.filter(
+      ({ owner, amount }) => owner === wallet?.toBase58() && amount > 0,
+    )
     if (!payments) return []
     const all = payments.map(async (p) => {
-      const balance = await formatAmount('+', p.amount)
-      return { amount: balance, payee: p.payee, memo: p.memo || '' }
+      const balance = await formatAmount('+', p.amount, p.mint)
+      return { amount: balance, owner: p.owner, memo: p.memo || '' }
     })
     return Promise.all(all)
-  }, [address, formatAmount, item])
+  }, [formatAmount, item?.payments, wallet])
 
   const getPaymentsSent = useCallback(async () => {
-    if (item?.payer !== address || !item?.payments) {
+    if (!item?.payments) {
       return []
     }
-    const all = item.payments.map(
-      async ({ amount: amt, payee, memo: paymentMemo }) => {
-        const balance = await formatAmount('', amt)
-        return { amount: balance, payee, memo: paymentMemo || '' }
-      },
-    )
+    const all = item.payments
+      .filter((p) => p.amount < 0 && p.owner === wallet?.toBase58())
+      .map(async ({ amount: amt, owner, memo: paymentMemo, mint: m }) => {
+        const balance = await formatAmount('', amt, m)
+        return { amount: balance, owner, memo: paymentMemo || '' }
+      })
 
     return Promise.all(all)
-  }, [address, formatAmount, item])
+  }, [formatAmount, item, wallet])
 
   return {
     time,
@@ -282,20 +265,15 @@ const useTxn = (
     title,
     color,
     isFee,
-    getFeePayer,
     getPaymentsReceived,
     getPaymentsSent,
-    isHotspotTxn,
-    isValidatorTxn,
-    getHotspotName,
-    getValidatorName,
     getAmountTitle,
   }
 }
 
 type Payment = {
   amount: string
-  payee: string
+  owner: string
   memo: string
 }
 type TxnDetails = {
@@ -309,28 +287,19 @@ type TxnDetails = {
   paymentsSent: Payment[]
   amount: string
   amountTitle: string
-  hotspotName: string
-  validatorName: string
-  isValidatorTxn: boolean
-  isHotspotTxn: boolean
 }
-export const useTxnDetails = (item?: Activity) => {
+export const useTxnDetails = (mint?: PublicKey, item?: Activity) => {
   const {
     listIcon,
     title,
     time,
     color,
-    getFeePayer,
     getFee,
     getPaymentsReceived,
     getPaymentsSent,
     getAmount,
-    getHotspotName,
-    getValidatorName,
-    isHotspotTxn,
-    isValidatorTxn,
     getAmountTitle,
-  } = useTxn(item, {
+  } = useTxn(mint, item, {
     dateFormat: 'dd MMMM yyyy HH:MM',
   })
 
@@ -344,24 +313,18 @@ export const useTxnDetails = (item?: Activity) => {
     paymentsSent: [],
     amount: '',
     amountTitle: '',
-    validatorName: '',
-    hotspotName: '',
-    isHotspotTxn: false,
-    isValidatorTxn: false,
   })
 
   useAsync(async () => {
-    const feePayer = await getFeePayer()
     const fee = await getFee()
     const paymentsReceived = await getPaymentsReceived()
     const paymentsSent = await getPaymentsSent()
     const amount = await getAmount()
     const amountTitle = await getAmountTitle()
-    const validatorName = await getValidatorName()
-    const hotspotName = await getHotspotName()
 
     setDetails({
-      feePayer,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+      feePayer: item?.feePayer!,
       icon: listIcon,
       title,
       time,
@@ -371,16 +334,11 @@ export const useTxnDetails = (item?: Activity) => {
       paymentsSent,
       amount,
       amountTitle,
-      validatorName,
-      hotspotName,
-      isHotspotTxn,
-      isValidatorTxn,
     })
   }, [
     color,
     getAmount,
     getFee,
-    getFeePayer,
     getPaymentsReceived,
     getPaymentsSent,
     listIcon,

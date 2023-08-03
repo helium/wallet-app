@@ -94,20 +94,21 @@ export default ({
 
     if (filter !== 'in' && filter !== 'out' && filter !== 'all') return []
     if (filter === 'in' || filter === 'out') {
-      const payments = solanaActivity.data[account.solanaAddress]?.payment[
-        mintStr
-      ]?.filter((txn) => txn.mint === mintStr)
+      const payments =
+        solanaActivity.data[account.solanaAddress]?.payment[mintStr]
       return payments?.filter((txn) =>
-        filter === 'out'
-          ? txn.payee === account.solanaAddress
-          : txn.payee !== account.solanaAddress,
+        txn.payments?.some((payment) =>
+          payment.mint === mintStr &&
+          payment.owner === account?.solanaAddress &&
+          filter === 'out'
+            ? payment.amount < 0
+            : payment.amount > 0,
+        ),
       )
     }
 
-    return solanaActivity.data[account.solanaAddress][filter][mintStr]?.filter(
-      (txn) => txn.mint === mintStr,
-    )
-  }, [account, filter, solanaActivity.data, mintStr])
+    return solanaActivity.data[account.solanaAddress][filter][mintStr]
+  }, [account?.solanaAddress, solanaActivity.data, mintStr, filter])
 
   const loading = useMemo(() => {
     return solanaActivity.loading

@@ -952,8 +952,7 @@ export default {
     newOwner: 'New Owner',
     oldAddress: 'Old Address',
     oldOwner: 'Old Owner',
-    owner: 'Owner',
-    payee: 'Payee {{index}}',
+    owner: 'Owner {{index}}',
     pending: {
       inProcess: 'In Process',
       pending: 'Pending',

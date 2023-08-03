@@ -79,7 +79,6 @@ import {
   Keypair,
   LAMPORTS_PER_SOL,
   Logs,
-  ParsedInstruction,
   ParsedTransactionWithMeta,
   PublicKey,
   SignatureResult,
@@ -116,9 +115,9 @@ import {
   Mints,
 } from './constants'
 import { getH3Location } from './h3'
+import { decimalSeparator, groupSeparator } from './i18n'
 import * as Logger from './logger'
 import sleep from './sleep'
-import { decimalSeparator, groupSeparator } from './i18n'
 
 export function humanReadable(
   amount?: BN,
@@ -1450,6 +1449,8 @@ export const solInstructionsToActivity = (
 
   activity.fee = meta?.fee
   activity.height = slot
+  activity.feePayer =
+    parsedTxn.transaction.message.accountKeys[0].pubkey.toBase58()
 
   if (blockTime) {
     activity.time = blockTime
@@ -1462,16 +1463,22 @@ export const solInstructionsToActivity = (
       const preBalance = preTokenBalances.find(
         ({ accountIndex }) => accountIndex === post.accountIndex,
       )
-      const pre = preBalance || { uiTokenAmount: { uiAmount: 0 } }
+      const pre = preBalance || {
+        uiTokenAmount: { uiAmount: 0 },
+        owner: post.owner,
+      }
       const preAmount = pre.uiTokenAmount.uiAmount || 0
       const postAmount = post.uiTokenAmount.uiAmount || 0
       const amount = postAmount - preAmount
-      const p: Payment = {
-        amount,
-        payee: '',
-        mint: post.mint,
+      if (amount !== 0 && !Number.isNaN(amount)) {
+        const p: Payment = {
+          amount,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          owner: (post.owner || pre.owner)!,
+          mint: post.mint,
+        }
+        payments = [...payments, p]
       }
-      payments = [...payments, p]
     })
     activity.payments = payments
   }
@@ -1482,13 +1489,6 @@ export const solInstructionsToActivity = (
   }
 
   if (activity.type === 'unknown') return
-
-  const payment = activity.payments?.[0]
-  if (payment && payment.mint === DC_MINT.toBase58()) {
-    activity.type = payment.payee !== activity.payer ? 'dc_delegate' : 'dc_mint'
-    activity.amount = payment.amount
-    activity.mint = payment.mint
-  }
 
   return activity
 }

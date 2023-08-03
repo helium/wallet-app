@@ -7,7 +7,7 @@ import {
   toMetadata,
 } from '@metaplex-foundation/js'
 import { NATIVE_MINT } from '@solana/spl-token'
-import { PublicKey } from '@solana/web3.js'
+import { AccountInfo, PublicKey } from '@solana/web3.js'
 import { useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 
@@ -27,6 +27,27 @@ async function getMetadata(uri: string | undefined): Promise<any | undefined> {
   }
 }
 
+export const METADATA_PARSER: TypedAccountParser<Metadata> = (
+  publicKey: PublicKey,
+  account: AccountInfo<Buffer>,
+) => {
+  return toMetadata(
+    parseMetadataAccount({
+      ...account,
+      lamports: sol(account.lamports),
+      data: account.data,
+      publicKey,
+    }),
+  )
+}
+
+export function getMetadataId(mint: PublicKey): PublicKey {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from('metadata', 'utf-8'), MPL_PID.toBuffer(), mint.toBuffer()],
+    MPL_PID,
+  )[0]
+}
+
 export function useMetaplexMetadata(mint: PublicKey | undefined): {
   loading: boolean
   metadata: Metadata | undefined
@@ -37,26 +58,15 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
 } {
   const metadataAddr = useMemo(() => {
     if (mint) {
-      return PublicKey.findProgramAddressSync(
-        [Buffer.from('metadata', 'utf-8'), MPL_PID.toBuffer(), mint.toBuffer()],
-        MPL_PID,
-      )[0]
+      return getMetadataId(mint)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mint?.toBase58()])
-  const parser: TypedAccountParser<Metadata> = useMemo(() => {
-    return (publicKey, account) => {
-      return toMetadata(
-        parseMetadataAccount({
-          ...account,
-          lamports: sol(account.lamports),
-          data: account.data,
-          publicKey,
-        }),
-      )
-    }
-  }, [])
-  const { info: metadataAcc, loading } = useAccount(metadataAddr, parser)
+
+  const { info: metadataAcc, loading } = useAccount(
+    metadataAddr,
+    METADATA_PARSER,
+  )
   const { result: json, loading: jsonLoading } = useAsync(getMetadata, [
     metadataAcc?.uri,
   ])

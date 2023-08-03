@@ -177,9 +177,10 @@ const AccountTokenScreen = () => {
       showTxnDetail({
         item,
         accountAddress: currentAccount?.address || '',
+        mint,
       })
     },
-    [currentAccount, showTxnDetail],
+    [currentAccount, showTxnDetail, mint],
   )
 
   const hasAirdrop = useMemo(() => {
@@ -250,6 +251,7 @@ const AccountTokenScreen = () => {
             }}
           >
             <TxnListItem
+              mint={mint}
               onPress={showTransactionDetail}
               item={item}
               now={now}
@@ -259,7 +261,13 @@ const AccountTokenScreen = () => {
         </FadeInOut>
       )
     },
-    [activityData, bottomScreenHeaderHeight, now, showTransactionDetail],
+    [
+      activityData?.length,
+      bottomScreenHeaderHeight,
+      mint,
+      now,
+      showTransactionDetail,
+    ],
   )
 
   const renderFooter = useCallback(() => {

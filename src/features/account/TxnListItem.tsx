@@ -2,18 +2,22 @@ import Pending from '@assets/images/pending.svg'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { PublicKey } from '@solana/web3.js'
 import React, { memo, useCallback, useMemo } from 'react'
 import { Activity } from '../../types/activity'
 import useTxn from './useTxn'
 
 type Props = {
+  mint: PublicKey
   item: Activity
   now: Date
   isLast: boolean
   onPress: (item: Activity) => void
 }
-const TxnListItem = ({ item, now, isLast, onPress }: Props) => {
-  const { listIcon, title, color, time, getAmount } = useTxn(item, { now })
+const TxnListItem = ({ mint, item, now, isLast, onPress }: Props) => {
+  const { listIcon, title, color, time, getAmount } = useTxn(mint, item, {
+    now,
+  })
   const amt = useMemo(() => getAmount(), [getAmount])
 
   const handlePress = useCallback(() => {
