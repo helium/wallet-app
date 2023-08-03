@@ -249,7 +249,7 @@ const HNTKeyboardSelector = forwardRef(
               {!loadingMeta && (
                 <Text variant="subtitle2">
                   {t('hntKeyboard.enterAmount', {
-                    ticker: symbol,
+                    ticker: symbol || '',
                   })}
                 </Text>
               )}
@@ -465,7 +465,7 @@ const HNTKeyboardSelector = forwardRef(
                   numberOfLines={1}
                   adjustsFontSizeToFit
                 >
-                  {`${value || '0'} ${symbol}`}
+                  {`${value || '0'} ${symbol || ''}`}
                 </Text>
                 {payer && networkFee && (
                   <Text
