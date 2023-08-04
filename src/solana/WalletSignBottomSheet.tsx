@@ -458,24 +458,22 @@ const WalletSignBottomSheet = forwardRef(
                   onPress={onCancelHandler}
                 />
 
-                {!(insufficientFunds || insufficientRentExempt) && (
-                  <ButtonPressable
-                    width="48%"
-                    borderRadius="round"
-                    backgroundColor="white"
-                    backgroundColorOpacityPressed={0.7}
-                    backgroundColorDisabled="surfaceSecondary"
-                    backgroundColorDisabledOpacity={0.5}
-                    titleColorDisabled="secondaryText"
-                    title={
-                      type === WalletStandardMessageTypes.connect
-                        ? t('browserScreen.connect')
-                        : t('browserScreen.approve')
-                    }
-                    titleColor="black"
-                    onPress={onAcceptHandler}
-                  />
-                )}
+                <ButtonPressable
+                  width="48%"
+                  borderRadius="round"
+                  backgroundColor="white"
+                  backgroundColorOpacityPressed={0.7}
+                  backgroundColorDisabled="surfaceSecondary"
+                  backgroundColorDisabledOpacity={0.5}
+                  titleColorDisabled="secondaryText"
+                  title={
+                    type === WalletStandardMessageTypes.connect
+                      ? t('browserScreen.connect')
+                      : t('browserScreen.approve')
+                  }
+                  titleColor="black"
+                  onPress={onAcceptHandler}
+                />
               </Box>
             </SafeAreaBox>
           </BottomSheetModal>
