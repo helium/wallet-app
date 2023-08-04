@@ -60,6 +60,7 @@ export default {
       'To import your existing Helium wallet, enter its <havelockBlue>12</havelockBlue> or <jazzberryJam>24</jazzberryJam> word security key.',
     title: 'Import\nWallet',
     wordEntry: {
+      vanity: 'You\'re so vain you probably think this field is about you...',
       changeWordAmount: 'I have a {{totalWords}}-word recovery phrase',
       placeholder: '{{ordinal}} word',
       title: "Enter your\nwallet's 12 or 24\nsecurity words.",

@@ -20,6 +20,7 @@ import {
 } from './importAccountNavTypes'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import { createSecureAccount } from '../../../storage/secureStorage'
+import { TextInput } from 'react-native-gesture-handler'
 
 const accentColors = [
   'purple500',
@@ -59,6 +60,7 @@ const AccountImportScreen = () => {
   const [words, setWords] = useState<(string | null)[]>(
     new Array(wordCount).fill(null),
   )
+  const [vanity, setVanity] = useState<(string | null)>(null)
   const { showOKAlert } = useAlert()
 
   useEffect(() => {
@@ -154,6 +156,7 @@ const AccountImportScreen = () => {
         givenMnemonic: filteredWords,
         use24Words: words?.length === 24,
         netType,
+        vanity
       })
       if (restoringAccount) {
         if (!accounts || !accountAddress) {
@@ -275,6 +278,11 @@ const AccountImportScreen = () => {
           showsHorizontalScrollIndicator={false}
           initialScrollIndex={wordIndex}
           onContentSizeChange={handleContentSizeChanged}
+        />
+        <TextInput
+          onChangeText={setVanity}
+          placeholder={t('accountImport.wordEntry.vanity')}
+          placeholderTextColor={colors.secondaryText}
         />
         <PassphraseAutocomplete
           word={words[wordIndex]}

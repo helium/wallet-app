@@ -37,10 +37,12 @@ export const createSecureAccount = async ({
   givenMnemonic = null,
   netType,
   use24Words,
+  vanity = null 
 }: {
   givenMnemonic?: Mnemonic | Array<string> | null
   netType: NetType.NetType
-  use24Words?: boolean
+  use24Words?: boolean 
+  vanity?: string | null
 }): Promise<SecureAccount> => {
   let mnemonic: Mnemonic
   if (!givenMnemonic) {
@@ -50,13 +52,30 @@ export const createSecureAccount = async ({
   } else {
     mnemonic = new Mnemonic(givenMnemonic)
   }
+    
+  if (vanity) {
+    let done = false
+    while (!done){
+      let keypair, address 
+      const { keypair: kp, address: addr } = await Keypair.fromMnemonic(mnemonic, netType)
+      if (addr.b58.includes(vanity)){
+        keypair = kp
+        address = addr
+        done = true
+        const secureAccount = {
+          mnemonic: mnemonic.words,
+          keypair,
+        }
+        return { address: address.b58, ...secureAccount }
+      }
+    }
+  }
   const { keypair, address } = await Keypair.fromMnemonic(mnemonic, netType)
-
+   
   const secureAccount = {
     mnemonic: mnemonic.words,
     keypair,
   }
-
   return { address: address.b58, ...secureAccount }
 }
 
