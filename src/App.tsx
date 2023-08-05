@@ -18,6 +18,7 @@ import OneSignal, { OpenedEvent } from 'react-native-onesignal'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import NetworkAwareStatusBar from './components/NetworkAwareStatusBar'
 import SplashScreen from './components/SplashScreen'
+import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
 import LockScreen from './features/lock/LockScreen'
 import OnboardingProvider from './features/onboarding/OnboardingProvider'
 import SecurityScreen from './features/security/SecurityScreen'
@@ -112,35 +113,38 @@ const App = () => {
               <BottomSheetModalProvider>
                 <PortalHost name="browser-portal" />
                 <OnboardingProvider baseUrl={Config.ONBOARDING_API_URL}>
-                  {cache && (
-                    <LockScreen>
-                      <AccountContext.Provider value={cache}>
-                        {accountsRestored && (
-                          <>
-                            <NavigationContainer
-                              theme={navTheme}
-                              linking={linking}
-                              ref={navigationRef}
-                            >
-                              <BalanceProvider>
-                                <TokensProvider>
-                                  <WalletSignProvider>
-                                    <NetworkAwareStatusBar />
-                                    <RootNavigator />
-                                  </WalletSignProvider>
-                                </TokensProvider>
-                              </BalanceProvider>
-                            </NavigationContainer>
-                            <SecurityScreen
-                              visible={
-                                appState !== 'active' && appState !== 'unknown'
-                              }
-                            />
-                          </>
-                        )}
-                      </AccountContext.Provider>
-                    </LockScreen>
-                  )}
+                  <WalletConnectProvider>
+                    {cache && (
+                      <LockScreen>
+                        <AccountContext.Provider value={cache}>
+                          {accountsRestored && (
+                            <>
+                              <NavigationContainer
+                                theme={navTheme}
+                                linking={linking}
+                                ref={navigationRef}
+                              >
+                                <BalanceProvider>
+                                  <TokensProvider>
+                                    <WalletSignProvider>
+                                      <NetworkAwareStatusBar />
+                                      <RootNavigator />
+                                    </WalletSignProvider>
+                                  </TokensProvider>
+                                </BalanceProvider>
+                              </NavigationContainer>
+                              <SecurityScreen
+                                visible={
+                                  appState !== 'active' &&
+                                  appState !== 'unknown'
+                                }
+                              />
+                            </>
+                          )}
+                        </AccountContext.Provider>
+                      </LockScreen>
+                    )}
+                  </WalletConnectProvider>
                 </OnboardingProvider>
               </BottomSheetModalProvider>
             </PortalProvider>

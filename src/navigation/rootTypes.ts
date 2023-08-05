@@ -9,6 +9,7 @@ export type RootStackParamList = {
   SignHotspot: SignHotspotRequest & { submit?: boolean }
   PaymentScreen: undefined | PaymentRouteParam
   RequestScreen: undefined
+  DappLoginScreen: { uri: string; callback: string }
   ImportPrivateKey: { key?: string }
 }
 
