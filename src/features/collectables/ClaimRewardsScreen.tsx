@@ -1,20 +1,21 @@
-import React, { useMemo, memo, useState } from 'react'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { useTranslation } from 'react-i18next'
-import { Edge } from 'react-native-safe-area-context'
-import { PublicKey, Transaction } from '@solana/web3.js'
-import BN from 'bn.js'
-import CircleLoader from '@components/CircleLoader'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
-import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
+import CircleLoader from '@components/CircleLoader'
 import { DelayedFadeIn } from '@components/FadeInOut'
-import { useHotspot } from '@hooks/useHotspot'
 import RewardItem from '@components/RewardItem'
-import { Mints } from '../../utils/constants'
+import Text from '@components/Text'
+import { IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
+import { useHotspot } from '@hooks/useHotspot'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { PublicKey, Transaction } from '@solana/web3.js'
+import BN from 'bn.js'
+import React, { memo, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Edge } from 'react-native-safe-area-context'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
+import { Mints } from '../../utils/constants'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
@@ -134,14 +135,14 @@ const ClaimRewardsScreen = () => {
           >
             {!!pendingMobileRewards && pendingMobileRewards.gt(new BN(0)) && (
               <RewardItem
-                ticker="MOBILE"
+                mint={MOBILE_MINT}
                 amount={pendingMobileRewards}
                 marginEnd="s"
               />
             )}
             {!!pendingIotRewards && pendingIotRewards.gt(new BN(0)) && (
               <RewardItem
-                ticker="IOT"
+                mint={IOT_MINT}
                 amount={pendingIotRewards}
                 marginStart="s"
               />

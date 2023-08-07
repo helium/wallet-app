@@ -168,7 +168,7 @@ const AirdropScreen = () => {
           marginBottom="l"
         >
           <Box justifyContent="center" alignItems="center">
-            <TokenIcon size={160} img={json?.image} white />
+            <TokenIcon size={160} img={json?.image} />
             <Box position="absolute" top={120}>
               <ReAnimatedBox style={[ringStyle, dropStyle]}>
                 <DripLogo />

@@ -10,6 +10,7 @@ import {
   useMetaplexMetadata,
 } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
+import { Mint } from '@solana/spl-token'
 import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 import { Color } from '@theme/theme'
 import { useColors } from '@theme/themeHooks'
@@ -63,7 +64,7 @@ const useTxn = (
   const decimalsByMint = useMemo(() => {
     return mintAccs?.reduce((acc, curr) => {
       if (curr.info) {
-        acc[curr.publicKey.toBase58()] = curr.info.decimals
+        acc[curr.publicKey.toBase58()] = (curr.info as Mint).decimals
       }
       return acc
     }, {} as { [key: string]: number })
