@@ -1,7 +1,6 @@
 import TxnReceive from '@assets/images/txnReceive.svg'
 import TxnSend from '@assets/images/txnSend.svg'
 import { useAccounts } from '@helium/account-fetch-cache-hooks'
-import { MintParser } from '@helium/helium-react-hooks'
 import { truthy } from '@helium/spl-utils'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import {
@@ -10,8 +9,8 @@ import {
   useMetaplexMetadata,
 } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
-import { Mint } from '@solana/spl-token'
-import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
+import { Mint, unpackMint } from '@solana/spl-token'
+import { AccountInfo, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 import { Color } from '@theme/theme'
 import { useColors } from '@theme/themeHooks'
 import BN from 'bn.js'
@@ -29,6 +28,12 @@ import { useTranslation } from 'react-i18next'
 import { Activity } from '../../types/activity'
 import shortLocale from '../../utils/formatDistance'
 import { TXN_FEE_IN_LAMPORTS, humanReadable } from '../../utils/solanaUtils'
+
+export const MintParser = (pubKey: PublicKey, info: AccountInfo<Buffer>) => {
+  const data = unpackMint(pubKey, info)
+
+  return data
+}
 
 export const TxnTypeKeys = ['payment_v2'] as const
 type TxnType = typeof TxnTypeKeys[number]

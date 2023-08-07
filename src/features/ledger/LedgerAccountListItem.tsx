@@ -36,7 +36,7 @@ const LedgerAccountListItem = ({
   const colors = useColors()
 
   // TODO: Add other token types once nano app supports them
-  const balance = toBN(account.balance, 8)
+  const balance = toBN(account.balance || 0, 8)
   const disabled = section.index === Section.ALREADY_LINKED
 
   const borderTopEndRadius = useMemo(
