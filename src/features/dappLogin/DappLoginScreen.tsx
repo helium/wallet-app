@@ -28,7 +28,11 @@ const makeBurnTxn = async (opts: { payerB58: string }) => {
   const txn = new TokenBurnV1({
     amount: 1,
     payer: Address.fromB58(payerB58),
-    payee: Address.fromB58(payerB58),
+    // TODO: This must not be a global const or checksum fails for some reason??
+    // This whole login process should go away anyway.
+    payee: Address.fromB58(
+      '13PuqyWXzPYeXcF1B9ZRx7RLkEygeL374ZABiQdwRSNzASdA1sn',
+    ),
     nonce: 0,
     memo: '',
   })

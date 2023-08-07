@@ -26,6 +26,7 @@ export const authenticatedLinking: LinkingOptions<RootStackParamList> = {
       LinkWallet: 'link_wallet',
       SignHotspot: 'sign_hotspot',
       PaymentScreen: 'payment',
+      DappLoginScreen: 'dapp_login',
       ImportPrivateKey: 'import_key/:key',
     },
   },
