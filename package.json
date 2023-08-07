@@ -41,7 +41,7 @@
     "@gorhom/portal": "1.0.14",
     "@helium/account-fetch-cache": "^0.2.17",
     "@helium/account-fetch-cache-hooks": "^0.2.17",
-    "@helium/address": "4.6.2",
+    "@helium/address": "4.10.2",
     "@helium/circuit-breaker-sdk": "^0.2.17",
     "@helium/crypto-react-native": "4.8.0",
     "@helium/currency-utils": "0.1.1",

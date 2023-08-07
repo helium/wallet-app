@@ -22,16 +22,13 @@ import DappAccount from './DappAccount'
 import DappConnect from './DappConnect'
 import { useWalletConnect } from './WalletConnectProvider'
 
-export const EMPTY_B58_ADDRESS = Address.fromB58(
-  '13PuqyWXzPYeXcF1B9ZRx7RLkEygeL374ZABiQdwRSNzASdA1sn',
-)
 const makeBurnTxn = async (opts: { payerB58: string }) => {
   const { payerB58 } = opts
 
   const txn = new TokenBurnV1({
     amount: 1,
     payer: Address.fromB58(payerB58),
-    payee: EMPTY_B58_ADDRESS,
+    payee: Address.fromB58(payerB58),
     nonce: 0,
     memo: '',
   })
