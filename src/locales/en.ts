@@ -804,14 +804,14 @@ export default {
       alertTitle: 'Are you sure?',
       done: 'Done',
       subtitle:
-        '<secondaryText>Do not share your private key!</secondaryText><red500>\n\nIf someone has your private key they will have full control of your wallet!</red500>',
+        '<secondaryText>Do not share your private key!</secondaryText><red500>\n\nIf someone has your private key they will have full control of your wallet! Do not enter this into any websites. Any individual asking for this key is likely a scammer.</red500>',
       tap: 'Tap to reveal your private key',
       title: 'Your Private Key',
     },
     revealWords: {
       next: 'I have written these down',
       subtitle:
-        '<secondaryText>It is crucial you write all of these\n{{numWords}} words down, in order.</secondaryText><red500>\n\nHelium cannot recover these words.</red500>',
+        '<secondaryText>Never give these words to anyone, or enter them into any website. <red500>Any person or website asking for these words is likely a scammer</red500>. It is crucial you write all of these\n{{numWords}} words down, in order, and keep them safe.</secondaryText><red500>\n\nHelium cannot recover these words.</red500>',
       title: 'Your {{numWords}} Word Password',
       warning: 'Helium cannot recover these words',
     },
