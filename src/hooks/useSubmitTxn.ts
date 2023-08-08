@@ -336,7 +336,8 @@ export default () => {
       dispatch(
         claimAllRewards({
           account: currentAccount,
-          txns,
+          lazyDistributors,
+          hotspots,
           anchorProvider,
           cluster,
         }),
