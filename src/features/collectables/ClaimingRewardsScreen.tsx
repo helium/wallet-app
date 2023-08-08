@@ -5,6 +5,7 @@ import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
+import ProgressBar from '@components/ProgressBar'
 import Text from '@components/Text'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
 import { useBN } from '@hooks/useBN'
@@ -191,7 +192,14 @@ const ClaimingRewardsScreen = () => {
                 {t('collectablesScreen.claimingRewardsBody')}
               </Text>
               <Box flexDirection="row" marginHorizontal="xxl" marginTop="m">
-                <IndeterminateProgressBar paddingHorizontal="l" />
+                {typeof solanaPayment.progress !== 'undefined' ? (
+                  <ProgressBar
+                    progress={solanaPayment.progress}
+                    paddingHorizontal="l"
+                  />
+                ) : (
+                  <IndeterminateProgressBar paddingHorizontal="l" />
+                )}
               </Box>
             </Animated.View>
           )}
