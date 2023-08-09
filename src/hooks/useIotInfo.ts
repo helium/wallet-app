@@ -1,5 +1,4 @@
 import { IdlAccounts } from '@coral-xyz/anchor'
-import { UseAccountState } from '@helium/account-fetch-cache-hooks'
 import {
   iotInfoKey,
   rewardableEntityConfigKey,
@@ -15,9 +14,7 @@ export type IotHotspotInfoV0 =
     pubKey: PublicKey
   }
 
-export const useIotInfo = (
-  entityKey: string | undefined,
-): UseAccountState<IotHotspotInfoV0> | undefined => {
+export const useIotInfo = (entityKey: string | undefined) => {
   const [iotConfigKey] = rewardableEntityConfigKey(IOT_SUB_DAO_KEY, 'IOT')
   const [iotInfo] = iotInfoKey(iotConfigKey, entityKey || '')
 

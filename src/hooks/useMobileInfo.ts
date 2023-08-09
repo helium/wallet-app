@@ -1,5 +1,4 @@
 import { IdlAccounts } from '@coral-xyz/anchor'
-import { UseAccountState } from '@helium/account-fetch-cache-hooks'
 import {
   mobileInfoKey,
   rewardableEntityConfigKey,
@@ -15,9 +14,7 @@ export type MobileHotspotInfoV0 =
     pubKey: PublicKey
   }
 
-export const useMobileInfo = (
-  entityKey: string | undefined,
-): UseAccountState<MobileHotspotInfoV0> | undefined => {
+export const useMobileInfo = (entityKey: string | undefined) => {
   const [mobileConfigKey] = rewardableEntityConfigKey(
     MOBILE_SUB_DAO_KEY,
     'MOBILE',
