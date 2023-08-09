@@ -20,6 +20,7 @@ import ClaimingRewardsScreen from './ClaimingRewardsScreen'
 import CollectionScreen from './CollectionScreen'
 import NftDetailsScreen from './NftDetailsScreen'
 import AntennaSetupScreen from './AntennaSetupScreen'
+import SettingUpAntennaScreen from './SettingUpAntennaScreen'
 
 const CollectablesStack = createStackNavigator()
 
@@ -45,6 +46,10 @@ const CollectablesStackScreen = () => {
       <CollectablesStack.Screen
         name="AntennaSetupScreen"
         component={AntennaSetupScreen}
+      />
+      <CollectablesStack.Screen
+        name="SettingUpAntennaScreen"
+        component={SettingUpAntennaScreen}
       />
       <CollectablesStack.Screen
         name="PaymentScreen"

@@ -332,6 +332,12 @@ export default {
     gainPlaceholder: 'TX / RX Gain (dBi)',
     elevationPlaceholder: 'Elevation (meters)',
     submit: 'Update Antenna',
+    settingUp: 'Setting up your antenna...',
+    settingUpBody: 'Please wait while we update your Antenna!',
+    settingUpError: 'Antenna Setup failed. Please try again later.',
+    settingUpComplete: 'Antenna Setup!',
+    settingUpCompleteBody:
+      'We’ve updated the gain and elevation of your antenna.',
   },
   swapsScreen: {
     title: 'Swap my Tokens',

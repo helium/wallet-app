@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback, memo } from 'react'
 import BackScreen from '@components/BackScreen'
-import { ReAnimatedBlurBox } from '@components/AnimatedBox'
+import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
@@ -18,16 +18,19 @@ import {
 import { useEntityKey } from '@hooks/useEntityKey'
 import { useIotInfo } from '@hooks/useIotInfo'
 import { Edge } from 'react-native-safe-area-context'
-import { CollectableStackParamList } from './collectablesTypes'
+import { DelayedFadeIn } from '@components/FadeInOut'
+import {
+  CollectableNavigationProp,
+  CollectableStackParamList,
+} from './collectablesTypes'
 import { parseH3BNLocation } from '../../utils/h3'
 import * as Logger from '../../utils/logger'
-import { TabBarNavigationProp } from '../../navigation/rootTypes'
 
 const BUTTON_HEIGHT = 65
 type Route = RouteProp<CollectableStackParamList, 'AntennaSetupScreen'>
 const AntennaSetupScreen = () => {
   const { t } = useTranslation()
-  const navigation = useNavigation<TabBarNavigationProp>()
+  const nav = useNavigation<CollectableNavigationProp>()
   const route = useRoute<Route>()
   const { collectable } = route.params
   const entityKey = useEntityKey(collectable)
@@ -76,11 +79,7 @@ const AntennaSetupScreen = () => {
           elevation,
           decimalGain: gain,
         })
-        setUpdating(false)
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Collectables' }],
-        })
+        nav.push('SettingUpAntennaScreen')
       } catch (error) {
         setUpdating(false)
         Logger.error(error)
@@ -95,7 +94,7 @@ const AntennaSetupScreen = () => {
     setUpdating,
     setTransactionError,
     submitUpdateEntityInfo,
-    navigation,
+    nav,
   ])
 
   const showError = useMemo(() => {
@@ -103,12 +102,7 @@ const AntennaSetupScreen = () => {
   }, [transactionError])
 
   return (
-    <ReAnimatedBlurBox
-      flexDirection="row"
-      position="absolute"
-      height="100%"
-      width="100%"
-    >
+    <ReAnimatedBox flex={1} entering={DelayedFadeIn}>
       <BackScreen
         headerTopMargin="l"
         padding="none"
@@ -205,7 +199,7 @@ const AntennaSetupScreen = () => {
           </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
       </BackScreen>
-    </ReAnimatedBlurBox>
+    </ReAnimatedBox>
   )
 }
 
