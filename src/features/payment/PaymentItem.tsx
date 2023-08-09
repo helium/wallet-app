@@ -26,6 +26,7 @@ import TextInput from '@components/TextInput'
 import AccountIcon from '@components/AccountIcon'
 import BackgroundFill from '@components/BackgroundFill'
 import { Theme } from '@theme/theme'
+import { useDebouncedCallback } from 'use-debounce'
 import { CSAccount } from '../../storage/cloudStorage'
 import { balanceToString, useBalance } from '../../utils/Balance'
 import { accountNetType, ellipsizeAddress } from '../../utils/accountUtils'
@@ -123,14 +124,12 @@ const PaymentItem = ({
     onToggleMax({ address, index })
   }, [address, index, onToggleMax])
 
-  const handleEditAddress = useCallback(
-    (text?: string) => {
-      onEditAddress({ address: text || '', index })
-    },
-    [index, onEditAddress],
-  )
+  // debounce is needed to avoid unneccessary rpc calls
+  const handleEditAddress = useDebouncedCallback((text?: string) => {
+    onEditAddress({ address: text || '', index })
+  }, 800)
 
-  const handleAddressBlur = useCallback(
+  const handleAddressBlur = useDebouncedCallback(
     (event?: NativeSyntheticEvent<TextInputEndEditingEventData>) => {
       const text = event?.nativeEvent.text
       handleAddressError({
@@ -139,7 +138,7 @@ const PaymentItem = ({
         isHotspotOrValidator: false,
       })
     },
-    [handleAddressError, index],
+    800,
   )
 
   const handleRemove = useCallback(() => {
