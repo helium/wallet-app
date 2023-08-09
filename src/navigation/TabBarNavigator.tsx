@@ -201,6 +201,7 @@ const TabBarNavigator = () => {
         tabBar={(props: BottomTabBarProps) => <MyTabBar {...props} />}
         screenOptions={{
           headerShown: false,
+          lazy: true,
         }}
         sceneContainerStyle={{
           paddingBottom: NavBarHeight + bottom,

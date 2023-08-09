@@ -1,13 +1,12 @@
 import { BoxProps } from '@shopify/restyle'
+import { Theme } from '@theme/theme'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { LayoutRectangle, LayoutChangeEvent } from 'react-native'
+import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import {
-  Easing,
   useAnimatedStyle,
   useSharedValue,
-  withTiming,
+  withSpring,
 } from 'react-native-reanimated'
-import { Theme } from '@theme/theme'
 import { ReAnimatedBox } from './AnimatedBox'
 import Box from './Box'
 
@@ -16,7 +15,6 @@ const ProgressBar = ({
   ...rest
 }: BoxProps<Theme> & { progress: number }) => {
   const HEIGHT = 15
-  const DURATION = 1200
 
   const [progressRect, setProgressRect] = useState<LayoutRectangle>()
 
@@ -31,20 +29,16 @@ const ProgressBar = ({
     [progressRect],
   )
 
-  const translateX = useSharedValue(-PROGRESS_WIDTH * 1.25)
+  const width = useSharedValue(0)
 
   useEffect(() => {
     // withRepeat to repeat the animation
-    translateX.value = withTiming((progressIn / 100) * PROGRESS_WIDTH, {
-      // Set the bezier curve function as the timing animation easing
-      easing: Easing.inOut(Easing.ease),
-      duration: DURATION,
-    })
-  }, [PROGRESS_WIDTH, translateX, progressIn])
+    width.value = withSpring((progressIn / 100) * PROGRESS_WIDTH)
+  }, [PROGRESS_WIDTH, width, progressIn])
 
   const progress = useAnimatedStyle(() => {
     return {
-      transform: [{ translateX: translateX.value - PROGRESS_WIDTH * 0.5 }],
+      width: width.value,
     }
   })
 
@@ -57,10 +51,11 @@ const ProgressBar = ({
       height={HEIGHT}
       backgroundColor="transparent10"
       overflow="hidden"
+      flexDirection="row"
+      justifyContent="flex-start"
     >
       <ReAnimatedBox style={progress}>
         <Box
-          width={PROGRESS_WIDTH / 2}
           height={HEIGHT - 1}
           borderRadius="round"
           backgroundColor="lightGrey"

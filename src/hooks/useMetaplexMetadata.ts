@@ -16,7 +16,7 @@ const MPL_PID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s')
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const cache: Record<string, Promise<any>> = {}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getMetadata(uri: string | undefined): Promise<any | undefined> {
+export function getMetadata(uri: string | undefined): Promise<any | undefined> {
   if (uri) {
     if (!cache[uri]) {
       cache[uri] = fetch(uri).then((res) => res.json())

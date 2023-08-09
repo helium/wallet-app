@@ -193,10 +193,23 @@ const ClaimingRewardsScreen = () => {
               </Text>
               <Box flexDirection="row" marginHorizontal="xxl" marginTop="m">
                 {typeof solanaPayment.progress !== 'undefined' ? (
-                  <ProgressBar
-                    progress={solanaPayment.progress}
-                    paddingHorizontal="l"
-                  />
+                  <Box
+                    width="100%"
+                    flexDirection="column"
+                    alignContent="stretch"
+                    alignItems="stretch"
+                  >
+                    <ProgressBar progress={solanaPayment.progress.percent} />
+                    <Text
+                      textAlign="center"
+                      variant="body2"
+                      color="secondaryText"
+                      marginTop="s"
+                      numberOfLines={2}
+                    >
+                      {solanaPayment.progress.text}
+                    </Text>
+                  </Box>
                 ) : (
                   <IndeterminateProgressBar paddingHorizontal="l" />
                 )}

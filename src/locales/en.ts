@@ -176,7 +176,7 @@ export default {
     claimingRewardsBody:
       'You can exit this screen while you wait. We’ll update your Wallet momentarily.',
     claimComplete: 'Rewards Claimed!',
-    claimCompleteBody: 'We’ve added your tokens to your wallet.',
+    claimCompleteBody: 'Your tokens have been added to your wallet.',
     claimError: 'Claim failed. Please try again later.',
     transferCollectableAlertTitle:
       'Are you sure you will like to transfer your collectable?',
@@ -219,7 +219,7 @@ export default {
         'Warning: Load times may be affected when showing all hotspots per page.',
       twenty: '20',
       fifty: '50',
-      all: 'All',
+      thousand: '1000',
       copyEccCompact: 'Copy Hotspot Key',
       assertLocation: 'Assert Location',
       antennaSetup: 'Antenna Setup',
@@ -332,7 +332,7 @@ export default {
     chooseTokenToSwap: 'Choose a token to swap',
     chooseTokenToReceive: 'Choose a token to receive',
     swapComplete: 'Tokens swapped!',
-    swapCompleteBody: 'We’ve updated the tokens on your wallet.',
+    swapCompleteBody: 'The tokens in your wallet have been updated.',
     swappingTokens: 'Swapping your tokens...',
     swappingTokensBody:
       'You can exit this screen while you wait. We’ll update your Wallet momentarily.',

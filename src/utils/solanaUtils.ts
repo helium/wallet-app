@@ -5,20 +5,19 @@ import {
   delegatedDataCreditsKey,
   escrowAccountKey,
 } from '@helium/data-credits-sdk'
-import {
-  formBulkTransactions,
-  getBulkRewards,
-  getPendingRewards,
-} from '@helium/distributor-oracle'
+import { getPendingRewards } from '@helium/distributor-oracle'
 import {
   PROGRAM_ID as FanoutProgramId,
   fanoutKey,
   membershipCollectionKey,
 } from '@helium/fanout-sdk'
 import {
+  decodeEntityKey,
   entityCreatorKey,
+  init,
   init as initHem,
   iotInfoKey,
+  keyToAssetForAsset,
   keyToAssetKey,
   mobileInfoKey,
   rewardableEntityConfigKey,
@@ -38,7 +37,6 @@ import {
   searchAssets,
   sendAndConfirmWithRetry,
   toBN,
-  truthy,
 } from '@helium/spl-utils'
 import * as tm from '@helium/treasury-management-sdk'
 import {
@@ -46,7 +44,11 @@ import {
   registrarCollectionKey,
   registrarKey,
 } from '@helium/voter-stake-registry-sdk'
-import { METADATA_PARSER, getMetadataId } from '@hooks/useMetaplexMetadata'
+import {
+  METADATA_PARSER,
+  getMetadata,
+  getMetadataId,
+} from '@hooks/useMetaplexMetadata'
 import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
 import {
   PROGRAM_ID as BUBBLEGUM_PROGRAM_ID,
@@ -1059,9 +1061,7 @@ export const getCompressedNFTMetadata = async (
   const collectablesWithMetadata = await Promise.all(
     collectables.map(async (col) => {
       try {
-        const { data } = await axios.get(col.content.json_uri, {
-          timeout: 3000,
-        })
+        const { data } = await getMetadata(col.content.json_uri)
         return {
           ...col,
           content: {
@@ -1091,10 +1091,19 @@ export async function annotateWithPendingRewards(
   hotspots: CompressedNFT[],
 ): Promise<HotspotWithPendingRewards[]> {
   const program = await lz.init(provider)
+  const hemProgram = await init(provider)
   const dao = DAO_KEY
-  const entityKeys = hotspots.map((h) => {
-    return h.content.json_uri.split('/').slice(-1)[0]
-  })
+  const keyToAssets = hotspots.map((h) =>
+    keyToAssetForAsset(toAsset(h as CompressedNFT)),
+  )
+  const ktaAccs = await Promise.all(
+    keyToAssets.map((kta) => hemProgram.account.keyToAssetV0.fetch(kta)),
+  )
+  const entityKeys = ktaAccs.map(
+    (kta) =>
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      decodeEntityKey(kta.entityKey, kta.keySerialization)!,
+  )
 
   const mobileRewards = await getPendingRewards(
     program,
@@ -1695,12 +1704,7 @@ export const updateEntityInfoTxn = async ({
   }
 }
 
-const chunks = <T>(array: T[], size: number): T[][] =>
-  Array.apply(0, new Array(Math.ceil(array.length / size))).map((_, index) =>
-    array.slice(index * size, (index + 1) * size),
-  )
-
-function toAsset(hotspot: HotspotWithPendingRewards): Asset {
+export function toAsset(hotspot: CompressedNFT): Asset {
   return {
     ...hotspot,
     id: new PublicKey(hotspot.id),
@@ -1724,63 +1728,5 @@ function toAsset(hotspot: HotspotWithPendingRewards): Asset {
         hotspot.ownership.delegate && new PublicKey(hotspot.ownership.delegate),
       owner: new PublicKey(hotspot.ownership.owner),
     },
-  }
-}
-
-export async function claimAllRewardsTxns(
-  anchorProvider: AnchorProvider,
-  lazyDistributors: PublicKey[],
-  hotspots: HotspotWithPendingRewards[],
-) {
-  try {
-    const { connection } = anchorProvider
-    const { publicKey: payer } = anchorProvider.wallet
-    const lazyProgram = await lz.init(anchorProvider)
-    let txns: Transaction[] | undefined
-
-    // Use for loops to linearly order promises
-    // eslint-disable-next-line no-restricted-syntax
-    for (const lazyDistributor of lazyDistributors) {
-      const lazyDistributorAcc =
-        // eslint-disable-next-line no-await-in-loop
-        await lazyProgram.account.lazyDistributorV0.fetch(lazyDistributor)
-      // eslint-disable-next-line no-restricted-syntax
-      for (const chunk of chunks(hotspots, 25)) {
-        const entityKeys = chunk.map(
-          (h) => h.content.json_uri.split('/').slice(-1)[0],
-        )
-
-        // eslint-disable-next-line no-await-in-loop
-        const rewards = await getBulkRewards(
-          lazyProgram,
-          lazyDistributor,
-          entityKeys,
-        )
-
-        // eslint-disable-next-line no-await-in-loop
-        const txs = await formBulkTransactions({
-          program: lazyProgram,
-          rewards,
-          assets: chunk.map((h) => new PublicKey(h.id)),
-          compressionAssetAccs: chunk.map(toAsset),
-          lazyDistributor,
-          lazyDistributorAcc,
-          assetEndpoint: connection.rpcEndpoint,
-          wallet: payer,
-        })
-
-        const validTxns = txs.filter(truthy)
-        txns = [...(txns || []), ...validTxns]
-      }
-    }
-
-    if (!txns) {
-      throw new Error('Unable to form transactions')
-    }
-
-    return txns
-  } catch (e) {
-    Logger.error(e)
-    throw e as Error
   }
 }
