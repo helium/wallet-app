@@ -18,6 +18,9 @@ export type CollectableStackParamList = {
   AssertLocationScreen: {
     collectable: HotspotWithPendingRewards
   }
+  AntennaSetupScreen: {
+    collectable: HotspotWithPendingRewards
+  }
   PaymentScreen: undefined | PaymentRouteParam
 
   ClaimRewardsScreen: {

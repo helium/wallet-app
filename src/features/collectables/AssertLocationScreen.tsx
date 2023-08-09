@@ -558,7 +558,7 @@ const AssertLocationScreen = () => {
               }
               TrailingComponent={
                 asserting ? (
-                  <CircleLoader loaderSize={20} color="white" />
+                  <CircleLoader loaderSize={20} color="black" />
                 ) : undefined
               }
             />
