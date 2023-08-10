@@ -49,7 +49,6 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-simple-toast'
 import { useSelector } from 'react-redux'
-import { fetchDomainOwner } from '@utils/getDomainOwner'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -132,7 +131,7 @@ const PaymentScreen = () => {
       return new BN(balanceBigint.toString())
     }
   }, [balanceBigint])
-  const { anchorProvider, connection } = useSolana()
+  const { anchorProvider } = useSolana()
 
   const appDispatch = useAppDispatch()
   const navigation = useNavigation<HomeNavigationProp>()
@@ -490,14 +489,6 @@ const PaymentScreen = () => {
     [dispatch],
   )
 
-  const handleDomainAddress = useCallback(
-    async ({ domain }: { domain: string }) => {
-      if (!connection) return
-      return fetchDomainOwner(connection, domain)
-    },
-    [connection],
-  )
-
   const handleAddressError = useCallback(
     ({
       index,
@@ -514,12 +505,6 @@ const PaymentScreen = () => {
       }
       let invalidAddress = false
 
-      // only handle address which include dots.
-      if (address.split('.').length === 2) {
-        // retrieve the address which has been set previously by handleEditAddress.
-        /* eslint-disable-next-line no-param-reassign */
-        address = paymentState.payments[index].address || ''
-      }
       invalidAddress = !!address && !solAddressIsValid(address)
 
       const wrongNetType =
@@ -528,28 +513,20 @@ const PaymentScreen = () => {
         accountNetType(address) !== networkType
       handleSetPaymentError(index, invalidAddress || wrongNetType)
     },
-    [handleSetPaymentError, networkType, paymentState],
+    [handleSetPaymentError, networkType],
   )
 
   const handleEditAddress = useCallback(
     async ({ index, address }: { index: number; address: string }) => {
       if (index === undefined || !currentAccount || !anchorProvider) return
-      let domain = ''
-      if (address.split('.').length === 2) {
-        const resolvedAddress =
-          (await handleDomainAddress({ domain: address })) || ''
-        /* eslint-disable-next-line no-param-reassign */
-        address = resolvedAddress
-        // if the address is resolved then the domain could also be an alias/nickname of the address.
-        if (resolvedAddress) domain = address
-      }
+
       const allAccounts = unionBy(
         contacts,
         Object.values(accounts || {}),
         ({ address: addr }) => addr,
       )
       let contact = allAccounts.find((c) => c.address === address)
-      if (!contact) contact = { address, netType: networkType, alias: domain }
+      if (!contact) contact = { address, netType: networkType, alias: '' }
 
       const createTokenAccountFee =
         await calcCreateAssociatedTokenAccountAccountFee(
@@ -574,7 +551,6 @@ const PaymentScreen = () => {
       networkType,
       anchorProvider,
       mint,
-      handleDomainAddress,
     ],
   )
 
