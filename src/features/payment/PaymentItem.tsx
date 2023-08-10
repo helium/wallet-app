@@ -1,50 +1,45 @@
-import React, { memo, useCallback, useEffect, useMemo } from 'react'
-import {
-  Balance,
-  DataCredits,
-  IotTokens,
-  MobileTokens,
-  NetworkTokens,
-  TestNetworkTokens,
-} from '@helium/currency'
-import { useTranslation } from 'react-i18next'
-import Remove from '@assets/images/remove.svg'
 import ContactIcon from '@assets/images/account.svg'
+import Remove from '@assets/images/remove.svg'
+import AccountIcon from '@components/AccountIcon'
+import BackgroundFill from '@components/BackgroundFill'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import TextInput from '@components/TextInput'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import Address from '@helium/address'
+import { useMint } from '@helium/helium-react-hooks'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { BoxProps } from '@shopify/restyle'
+import { PublicKey } from '@solana/web3.js'
+import { Theme } from '@theme/theme'
+import { useColors, useOpacity } from '@theme/themeHooks'
+import { humanReadable } from '@utils/solanaUtils'
+import BN from 'bn.js'
+import { toUpper } from 'lodash'
+import React, { memo, useCallback, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Keyboard,
   NativeSyntheticEvent,
   TextInputEndEditingEventData,
 } from 'react-native'
-import Address from '@helium/address'
-import { toUpper } from 'lodash'
-import { BoxProps } from '@shopify/restyle'
-import Box from '@components/Box'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useColors, useOpacity } from '@theme/themeHooks'
-import Text from '@components/Text'
-import TextInput from '@components/TextInput'
-import AccountIcon from '@components/AccountIcon'
-import BackgroundFill from '@components/BackgroundFill'
-import { Theme } from '@theme/theme'
 import { CSAccount } from '../../storage/cloudStorage'
-import { balanceToString, useBalance } from '../../utils/Balance'
+import { useBalance } from '../../utils/Balance'
 import { accountNetType, ellipsizeAddress } from '../../utils/accountUtils'
 
 export type Payment = {
   address?: string
   account?: CSAccount
-  amount?: Balance<NetworkTokens | TestNetworkTokens>
+  amount?: BN
   hasError?: boolean
   max?: boolean
-  createTokenAccountFee?: Balance<
-    NetworkTokens | TestNetworkTokens | IotTokens | MobileTokens
-  >
+  createTokenAccountFee?: BN
 } & BoxProps<Theme>
 
 type Props = {
   index: number
   hasError?: boolean
-  fee?: Balance<DataCredits>
+  fee?: BN
   onAddressBookSelected: (opts: { address?: string; index: number }) => void
   onEditAmount: (opts: { address?: string; index: number }) => void
   onToggleMax?: (opts: { address?: string; index: number }) => void
@@ -57,7 +52,7 @@ type Props = {
   onRemove?: (index: number) => void
   onUpdateError?: (index: number, hasError: boolean) => void
   hideMemo?: boolean
-  ticker?: string
+  mint?: PublicKey
   netType?: number
   showAmount?: boolean
 } & Payment
@@ -80,14 +75,16 @@ const PaymentItem = ({
   onRemove,
   onToggleMax,
   onUpdateError,
-  ticker,
+  mint,
   showAmount = true,
   ...boxProps
 }: Props) => {
+  const decimals = useMint(mint)?.info?.decimals
   const { colorStyle } = useOpacity('primaryText', 0.3)
   const { dcToNetworkTokens, oraclePrice } = useBalance()
   const { t } = useTranslation()
   const { secondaryText } = useColors()
+  const { symbol, loading: loadingMeta } = useMetaplexMetadata(mint)
 
   const addressIsWrongNetType = useMemo(
     () =>
@@ -235,24 +232,26 @@ const PaymentItem = ({
 
       {showAmount && (
         <Box flexDirection="row" minHeight={ITEM_HEIGHT}>
-          {!amount || amount?.integerBalance === 0 ? (
+          {!amount || amount?.isZero() ? (
             <>
               <TouchableOpacityBox
                 onPress={handleEditAmount}
                 flex={1}
                 justifyContent="center"
               >
-                <Text
-                  color="secondaryText"
-                  padding="m"
-                  variant="subtitle2"
-                  fontWeight="100"
-                  style={colorStyle}
-                >
-                  {t('payment.enterAmount', {
-                    ticker,
-                  })}
-                </Text>
+                {!loadingMeta && (
+                  <Text
+                    color="secondaryText"
+                    padding="m"
+                    variant="subtitle2"
+                    fontWeight="100"
+                    style={colorStyle}
+                  >
+                    {t('payment.enterAmount', {
+                      ticker: symbol,
+                    })}
+                  </Text>
+                )}
               </TouchableOpacityBox>
             </>
           ) : (
@@ -266,16 +265,12 @@ const PaymentItem = ({
                 variant="subtitle2"
                 color="primaryText"
               >
-                {balanceToString(amount, {
-                  maxDecimalPlaces: amount.type.decimalPlaces.toNumber(),
-                })}
+                {humanReadable(amount, decimals)}
               </Text>
               {fee && (
                 <Text paddingHorizontal="m" variant="body3" style={colorStyle}>
                   {t('payment.fee', {
-                    value: balanceToString(feeAsTokens, {
-                      maxDecimalPlaces: 4,
-                    }),
+                    value: humanReadable(feeAsTokens, 8),
                   })}
                 </Text>
               )}

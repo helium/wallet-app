@@ -1,4 +1,3 @@
-import { Ticker } from '@helium/currency'
 import { StackNavigationProp } from '@react-navigation/stack'
 
 export type PaymentRouteParam = {
@@ -8,7 +7,8 @@ export type PaymentRouteParam = {
   amount?: string
   memo?: string
   netType?: string
-  defaultTokenType?: Ticker
+  defaultTokenType?: string
+  mint?: string
 }
 
 export type BurnRouteParam = {
@@ -20,7 +20,8 @@ export type BurnRouteParam = {
 
 export type HomeStackParamList = {
   AccountsScreen: undefined
-  AccountTokenScreen: { tokenType: Ticker }
+  AccountManageTokenListScreen: undefined
+  AccountTokenScreen: { mint: string }
   AccountAssignScreen:
     | undefined
     | {
@@ -34,7 +35,7 @@ export type HomeStackParamList = {
     action: 'payment'
   }
   PaymentScreen: undefined | PaymentRouteParam
-  AirdropScreen: { ticker: Ticker }
+  AirdropScreen: { mint: string }
   BurnScreen: BurnRouteParam
   PaymentQrScanner: undefined
   RequestScreen: undefined

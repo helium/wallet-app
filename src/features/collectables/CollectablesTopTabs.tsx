@@ -31,6 +31,7 @@ const CollectablesTopTabs = () => {
   const screenOpts = useCallback(
     ({ route }: { route: RouteProp<CollectablesTabParamList> }) =>
       ({
+        lazy: true,
         headerShown: false,
         tabBarLabelStyle: {
           fontFamily: Font.medium,

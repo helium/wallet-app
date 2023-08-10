@@ -1,15 +1,10 @@
 import Address from '@helium/address'
-import Balance, {
-  CurrencyType,
-  NetworkTokens,
-  TestNetworkTokens,
-  Ticker,
-} from '@helium/currency'
+import { LinkingOptions } from '@react-navigation/native'
+import BigNumber from 'bignumber.js'
+import BN from 'bn.js'
 import * as Linking from 'expo-linking'
 import qs from 'qs'
 import queryString from 'query-string'
-import BigNumber from 'bignumber.js'
-import { LinkingOptions } from '@react-navigation/native'
 import { BurnRouteParam, PaymentRouteParam } from '../features/home/homeTypes'
 import { RootStackParamList } from '../navigation/rootTypes'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
@@ -20,7 +15,7 @@ export const HELIUM_WALLET_LINK_SCHEME = 'https://wallet.helium.com/'
 
 export type SendDetails = {
   payee: string
-  balanceAmount: Balance<NetworkTokens> | Balance<TestNetworkTokens>
+  balanceAmount: BN
   max?: boolean
 }
 
@@ -67,41 +62,17 @@ export const useDeepLinking = () => {
 export const makePayRequestLink = ({
   payee,
   balanceAmount,
-  defaultTokenType,
-}: Partial<SendDetails> & { defaultTokenType?: Ticker }) => {
+  mint,
+}: Partial<SendDetails> & { mint?: string }) => {
   return [
     HELIUM_WALLET_LINK_SCHEME + PAYMENT_PATH,
     qs.stringify(
       {
         payee,
-        amount: balanceAmount?.integerBalance || null,
+        amount: balanceAmount?.toString(),
         memo: '',
-        defaultTokenType,
+        mint,
       },
-      { skipNulls: true },
-    ),
-  ].join('?')
-}
-
-export const makeMultiPayRequestLink = ({
-  payments,
-  payer,
-}: {
-  payer?: string
-  payments: Array<Partial<SendDetails> & { defaultTokenType?: Ticker }>
-}) => {
-  const ironed = payments.map(
-    ({ payee: address, balanceAmount, defaultTokenType }) => ({
-      payee: address || null,
-      amount: balanceAmount?.integerBalance || null,
-      memo: '',
-      defaultTokenType,
-    }),
-  )
-  return [
-    HELIUM_WALLET_LINK_SCHEME + PAYMENT_PATH,
-    qs.stringify(
-      { payer, payments: JSON.stringify(ironed) },
       { skipNulls: true },
     ),
   ].join('?')
@@ -161,8 +132,6 @@ export const parsePaymentLink = (
       return
     }
 
-    const { coefficient } = new Balance(0, CurrencyType.networkToken).type
-
     if (parsedJson.amount !== undefined) {
       const amount =
         typeof parsedJson.amount === 'string'
@@ -171,7 +140,7 @@ export const parsePaymentLink = (
       return {
         payee: parsedJson.address || parsedJson.payee,
         payer: parsedJson.payer,
-        amount: new BigNumber(amount).dividedBy(coefficient).toString(),
+        amount: new BigNumber(amount).dividedBy(10 ** 8).toString(),
         memo: '',
       }
     }
@@ -183,7 +152,7 @@ export const parsePaymentLink = (
         const amountFloat =
           typeof amount === 'string' ? parseFloat(amount) : amount
         return {
-          amount: new BigNumber(amountFloat).dividedBy(coefficient).toString(),
+          amount: new BigNumber(amountFloat).dividedBy(10 ** 8).toString(),
           payee: address,
           memo: '',
         }

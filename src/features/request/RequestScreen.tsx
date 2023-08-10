@@ -1,71 +1,67 @@
-import React, {
-  memo,
-  useCallback,
-  useMemo,
-  useState,
-  useEffect,
-  useRef,
-} from 'react'
-import { useTranslation } from 'react-i18next'
-import { useNavigation } from '@react-navigation/native'
-import {
-  Keyboard,
-  LayoutChangeEvent,
-  ActivityIndicator,
-  Platform,
-} from 'react-native'
-import Share, { ShareOptions } from 'react-native-share'
-import Clipboard from '@react-native-community/clipboard'
-import Toast from 'react-native-simple-toast'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import ShareIcon from '@assets/images/share.svg'
-import { useDebounce } from 'use-debounce'
-import { useKeyboard } from '@react-native-community/hooks'
-import Balance, {
-  CurrencyType,
-  MobileTokens,
-  NetworkTokens,
-  TestNetworkTokens,
-  Ticker,
-} from '@helium/currency'
-import { NetTypes as NetType } from '@helium/address'
-import QRCode from 'react-native-qrcode-svg'
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
+import AccountButton from '@components/AccountButton'
+import AccountSelector, {
+  AccountSelectorRef,
+} from '@components/AccountSelector'
+import BackgroundFill from '@components/BackgroundFill'
+import Box from '@components/Box'
+import FadeInOut from '@components/FadeInOut'
+import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
 import TabBar, { TabBarOption } from '@components/TabBar'
 import Text from '@components/Text'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
-import Box from '@components/Box'
+import TokenButton from '@components/TokenButton'
+import TokenSelector, {
+  TokenListItem,
+  TokenSelectorRef,
+} from '@components/TokenSelector'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { NetTypes as NetType } from '@helium/address'
+import { useMint } from '@helium/helium-react-hooks'
+import useHaptic from '@hooks/useHaptic'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import Clipboard from '@react-native-community/clipboard'
+import { useKeyboard } from '@react-native-community/hooks'
+import { useNavigation } from '@react-navigation/native'
+import { PublicKey } from '@solana/web3.js'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { useVisibleTokens } from '@storage/TokensProvider'
 import {
   useBorderRadii,
   useColors,
   useOpacity,
   useSpacing,
 } from '@theme/themeHooks'
-import { balanceToString } from '@utils/Balance'
-import AccountButton from '@components/AccountButton'
-import AccountSelector, {
-  AccountSelectorRef,
-} from '@components/AccountSelector'
-import { makePayRequestLink } from '@utils/linking'
-import useHaptic from '@hooks/useHaptic'
-import BackgroundFill from '@components/BackgroundFill'
 import animateTransition from '@utils/animateTransition'
-import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
-import TokenButton from '@components/TokenButton'
-import TokenSelector, {
-  TokenListItem,
-  TokenSelectorRef,
-} from '@components/TokenSelector'
-import FadeInOut from '@components/FadeInOut'
-import TokenIOT from '@assets/images/tokenIOT.svg'
-import TokenHNT from '@assets/images/tokenHNT.svg'
-import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
+import { makePayRequestLink } from '@utils/linking'
+import { humanReadable } from '@utils/solanaUtils'
+import BN from 'bn.js'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { useTranslation } from 'react-i18next'
+import {
+  ActivityIndicator,
+  Keyboard,
+  LayoutChangeEvent,
+  Platform,
+} from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import QRCode from 'react-native-qrcode-svg'
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
+import Share, { ShareOptions } from 'react-native-share'
+import Toast from 'react-native-simple-toast'
+import { useDebounce } from 'use-debounce'
 
 const QR_CONTAINER_SIZE = 220
 
 type RequestType = 'qr' | 'link'
 const RequestScreen = () => {
+  const { visibleTokens } = useVisibleTokens()
   const { currentAccount, currentNetworkAddress: networkAddress } =
     useAccountStorage()
   const { t } = useTranslation()
@@ -77,25 +73,22 @@ const RequestScreen = () => {
   const navigation = useNavigation()
   const { l } = useSpacing()
   const { l: borderRadius } = useBorderRadii()
-  const { secondaryText, primaryText, white, blueBright500 } = useColors()
+  const { secondaryText, primaryText } = useColors()
   const [isEditing, setIsEditing] = useState(false)
   const { keyboardShown } = useKeyboard()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
   const [hntKeyboardVisible, setHNTKeyboardVisible] = useState(false)
-  const [paymentAmount, setPaymentAmount] =
-    useState<Balance<NetworkTokens | TestNetworkTokens | MobileTokens>>()
-  const [ticker, setTicker] = useState<Ticker>('HNT')
+  const [paymentAmount, setPaymentAmount] = useState<BN>()
+  const [mint, setMint] = useState<PublicKey>()
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const qrRef = useRef<{
     toDataURL: (callback: (url: string) => void) => void
   }>(null)
+  const decimals = useMint(mint)?.info?.decimals
+  const { symbol } = useMetaplexMetadata(mint)
 
   const handleBalance = useCallback(
-    (opts: {
-      balance: Balance<NetworkTokens | TestNetworkTokens | MobileTokens>
-      payee?: string
-      index?: number
-    }) => {
+    (opts: { balance: BN; payee?: string; index?: number }) => {
       setPaymentAmount(opts.balance)
     },
     [setPaymentAmount],
@@ -127,9 +120,9 @@ const RequestScreen = () => {
     return makePayRequestLink({
       payee: networkAddress,
       balanceAmount: paymentAmount,
-      defaultTokenType: ticker,
+      mint: mint?.toBase58(),
     })
-  }, [networkAddress, paymentAmount, ticker])
+  }, [networkAddress, paymentAmount, mint])
 
   const [qrLink] = useDebounce(link, 500)
 
@@ -204,8 +197,6 @@ const RequestScreen = () => {
     triggerNavHaptic()
   }, [link, showToast, triggerNavHaptic])
 
-  const currencyType = useMemo(() => CurrencyType.fromTicker(ticker), [ticker])
-
   const requestTypeOptions = useMemo(
     (): Array<TabBarOption> => [
       { title: t('request.qr'), value: 'qr' },
@@ -218,43 +209,23 @@ const RequestScreen = () => {
     tokenSelectorRef?.current?.showTokens()
   }, [])
 
-  const onTickerSelected = useCallback((tick: Ticker) => {
-    setTicker(tick)
-  }, [])
-
   const handleAccountButtonPress = useCallback(() => {
     if (!accountSelectorRef?.current) return
     accountSelectorRef?.current?.show()
   }, [])
 
   const data = useMemo((): TokenListItem[] => {
-    const tokens = [
-      {
-        label: 'HNT',
-        icon: <TokenHNT width={30} height={30} color={white} />,
-        value: 'HNT' as Ticker,
-        selected: ticker === 'HNT',
-      },
-      {
-        label: 'MOBILE',
-        icon: <TokenMOBILE width={30} height={30} color={blueBright500} />,
-        value: 'MOBILE' as Ticker,
-        selected: ticker === 'MOBILE',
-      },
-      {
-        label: 'IOT',
-        icon: <TokenIOT width={30} height={30} />,
-        value: 'IOT' as Ticker,
-        selected: ticker === 'IOT',
-      },
-    ]
-
-    return tokens
-  }, [blueBright500, white, ticker])
+    return [...visibleTokens].map((m) => {
+      return {
+        selected: mint?.toBase58() === m,
+        mint: new PublicKey(m),
+      }
+    })
+  }, [visibleTokens, mint])
 
   return (
     <HNTKeyboard
-      ticker={ticker}
+      mint={mint}
       ref={hntKeyboardRef}
       onConfirmBalance={handleBalance}
       handleVisible={setHNTKeyboardVisible}
@@ -262,7 +233,7 @@ const RequestScreen = () => {
       <AccountSelector ref={accountSelectorRef}>
         <TokenSelector
           ref={tokenSelectorRef}
-          onTokenSelected={onTickerSelected}
+          onTokenSelected={setMint}
           tokenData={data}
         >
           <Box
@@ -333,13 +304,13 @@ const RequestScreen = () => {
                 />
                 <TokenButton
                   title={t('request.requestType', {
-                    ticker: currencyType.ticker,
+                    ticker: symbol || '',
                   })}
                   backgroundColor="secondary"
                   address={currentAccount?.address}
                   onPress={handleTickerSelected}
                   showBubbleArrow
-                  ticker={ticker}
+                  mint={mint}
                 />
                 <Box
                   backgroundColor={
@@ -360,15 +331,15 @@ const RequestScreen = () => {
                     <Text variant="body3" color="primaryText">
                       {t('request.amount')}
                     </Text>
-                    {!paymentAmount || paymentAmount.integerBalance === 0 ? (
+                    {!paymentAmount || paymentAmount.isZero() ? (
                       <Text variant="subtitle2" style={colorStyle}>
                         {t('request.enterAmount', {
-                          ticker: paymentAmount?.type.ticker,
+                          ticker: symbol,
                         })}
                       </Text>
                     ) : (
                       <Text variant="subtitle2" color="primaryText">
-                        {balanceToString(paymentAmount)}
+                        {humanReadable(paymentAmount, decimals)}
                       </Text>
                     )}
                   </TouchableOpacityBox>

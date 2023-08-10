@@ -1,4 +1,19 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import TxnReceive from '@assets/images/txnReceive.svg'
+import TxnSend from '@assets/images/txnSend.svg'
+import { useAccounts } from '@helium/account-fetch-cache-hooks'
+import { truthy } from '@helium/spl-utils'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import {
+  METADATA_PARSER,
+  getMetadataId,
+  useMetaplexMetadata,
+} from '@hooks/useMetaplexMetadata'
+import { usePublicKey } from '@hooks/usePublicKey'
+import { Mint, unpackMint } from '@solana/spl-token'
+import { AccountInfo, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
+import { Color } from '@theme/theme'
+import { useColors } from '@theme/themeHooks'
+import BN from 'bn.js'
 import {
   addMinutes,
   format,
@@ -6,133 +21,82 @@ import {
   formatDistanceToNow,
   fromUnixTime,
 } from 'date-fns'
-import { useTranslation } from 'react-i18next'
-import Balance, {
-  AnyCurrencyType,
-  CurrencyType,
-  Ticker,
-} from '@helium/currency'
 import { startCase } from 'lodash'
-import TxnReceive from '@assets/images/txnReceive.svg'
-import TxnSend from '@assets/images/txnSend.svg'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
-import animalName from 'angry-purple-tiger'
-import { Color } from '@theme/theme'
-import { useColors } from '@theme/themeHooks'
-import shortLocale from '../../utils/formatDistance'
-import { accountCurrencyType, ellipsizeAddress } from '../../utils/accountUtils'
-import { balanceToString, useBalance } from '../../utils/Balance'
-import { useOnboarding } from '../onboarding/OnboardingProvider'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { TXN_FEE_IN_LAMPORTS } from '../../utils/solanaUtils'
+import { useTranslation } from 'react-i18next'
 import { Activity } from '../../types/activity'
+import shortLocale from '../../utils/formatDistance'
+import { TXN_FEE_IN_LAMPORTS, humanReadable } from '../../utils/solanaUtils'
 
-export const TxnTypeKeys = [
-  'rewards_v1',
-  'rewards_v2',
-  'payment_v1',
-  'payment_v2',
-  'add_gateway_v1',
-  'assert_location_v1',
-  'assert_location_v2',
-  'transfer_hotspot_v1',
-  'transfer_hotspot_v2',
-  'token_burn_v1',
-  'unstake_validator_v1',
-  'stake_validator_v1',
-  'transfer_validator_stake_v1',
-  'subnetwork_rewards_v1',
-  'dc_delegate',
-  'dc_mint',
-] as const
+export const MintParser = (pubKey: PublicKey, info: AccountInfo<Buffer>) => {
+  const data = unpackMint(pubKey, info)
+
+  return data
+}
+
+export const TxnTypeKeys = ['payment_v2'] as const
 type TxnType = typeof TxnTypeKeys[number]
 
 const useTxn = (
+  mint?: PublicKey,
   item?: Activity,
   dateOpts?: { dateFormat?: string; now?: Date },
 ) => {
-  const { currentNetworkAddress: address } = useAccountStorage()
   const colors = useColors()
-  const { bonesToBalance } = useBalance()
   const { t } = useTranslation()
-  const { makers } = useOnboarding()
-
-  const ticker = useMemo(() => {
-    // Get the ticker from the item if it's available
-    if (item?.payments?.length) {
-      const firstPaymentTokenType = item.payments[0].tokenType
-      if (firstPaymentTokenType) {
-        return accountCurrencyType(address, firstPaymentTokenType).ticker
+  const { symbol: ticker } = useMetaplexMetadata(
+    usePublicKey(item?.payments?.[0]?.mint || undefined),
+  )
+  const wallet = useCurrentWallet()
+  const mintKeys = useMemo(
+    () =>
+      [...new Set(item?.payments?.map((p) => p.mint))]
+        .filter(truthy)
+        .map((k) => new PublicKey(k)),
+    [item?.payments],
+  )
+  const metadataKeys = useMemo(
+    () => mintKeys.map((m) => getMetadataId(m)),
+    [mintKeys],
+  )
+  const { accounts: mintAccs } = useAccounts(mintKeys, MintParser)
+  const { accounts: metadataAccs } = useAccounts(
+    metadataKeys,
+    METADATA_PARSER,
+    true,
+  )
+  const decimalsByMint = useMemo(() => {
+    return mintAccs?.reduce((acc, curr) => {
+      if (curr.info) {
+        acc[curr.publicKey.toBase58()] = (curr.info as Mint).decimals
       }
-    }
-    return accountCurrencyType(address, undefined).ticker
-  }, [address, item])
+      return acc
+    }, {} as { [key: string]: number })
+  }, [mintAccs])
 
-  const dcBalance = (v: number | undefined | null) =>
-    new Balance(v || 0, CurrencyType.dataCredit)
+  const symbolsByMint = useMemo(() => {
+    return metadataAccs?.reduce((acc, curr, index) => {
+      if (curr.info && mintKeys[index]) {
+        acc[mintKeys[index].toBase58()] = curr.info.symbol
+      }
+      return acc
+    }, {} as { [key: string]: string })
+  }, [metadataAccs, mintKeys])
 
   const isSending = useMemo(() => {
-    return item?.payer === address
-  }, [address, item])
-
-  const isSelling = useMemo(() => {
-    if (item?.seller) return item?.seller === address // for transfer_v1
-    if (item?.owner) return item?.owner === address // transfer_v2
-    return false
-  }, [address, item])
-
-  const isHotspotTxn = useMemo(
-    () =>
-      item?.type === 'assert_location_v1' ||
-      item?.type === 'assert_location_v2' ||
-      item?.type === 'add_gateway_v1' ||
-      item?.type === 'transfer_hotspot_v1' ||
-      item?.type === 'transfer_hotspot_v2',
-    [item],
-  )
-
-  const isValidatorTxn = useMemo(
-    () =>
-      item?.type === 'stake_validator_v1' ||
-      item?.type === 'transfer_validator_stake_v1' ||
-      item?.type === 'unstake_validator_v1',
-    [item],
-  )
-
-  const getHotspotName = useCallback(() => {
-    if (!isHotspotTxn || !item?.gateway) return ''
-    return animalName(item.gateway)
-  }, [isHotspotTxn, item])
-
-  const getValidatorName = useCallback(() => {
-    if (!isValidatorTxn || !item?.address) return ''
-    return animalName(item.address)
-  }, [isValidatorTxn, item])
+    return item?.payments?.some(
+      (p) =>
+        p.owner === wallet?.toBase58() &&
+        p.amount < 0 &&
+        p.mint === mint?.toBase58(),
+    )
+  }, [item?.payments, mint, wallet])
 
   const color = useMemo((): Color => {
     switch (item?.type as TxnType) {
-      case 'transfer_hotspot_v1':
-      case 'transfer_hotspot_v2':
-        return 'orange500'
-      case 'payment_v1':
       case 'payment_v2':
         return isSending ? 'blueBright500' : 'greenBright500'
-      case 'add_gateway_v1':
-      case 'assert_location_v1':
-      case 'assert_location_v2':
-        return 'greenBright500'
-      case 'subnetwork_rewards_v1':
-      case 'rewards_v1':
-      case 'rewards_v2':
-      case 'stake_validator_v1':
-      case 'transfer_validator_stake_v1':
-      case 'dc_mint':
-        return 'greenBright500'
-      case 'token_burn_v1':
-      case 'dc_delegate':
-        return 'orange500'
-      case 'unstake_validator_v1':
-        return 'greenBright500'
       default:
         return 'primaryText'
     }
@@ -145,21 +109,17 @@ const useTxn = (
 
     if (item?.pending) {
       switch (item.type as TxnType) {
-        case 'payment_v1':
         case 'payment_v2':
           if (!isSending) return ''
           return t('transactions.pending.sending')
       }
     }
     switch (item?.type as TxnType) {
-      case 'add_gateway_v1':
-        return t('transactions.added')
-      case 'payment_v1':
       case 'payment_v2': {
         if (item?.payments?.length) {
-          const firstPaymentTokenType = item.payments[0].tokenType
+          const firstPaymentTokenType = item.payments[0].mint
           const hasMixedTokenTypes = item.payments.find(
-            (p) => p.tokenType !== firstPaymentTokenType,
+            (p) => p.mint !== firstPaymentTokenType,
           )
           if (hasMixedTokenTypes) {
             return isSending
@@ -171,66 +131,18 @@ const useTxn = (
           ? t('transactions.sent', { ticker })
           : t('transactions.received', { ticker })
       }
-      case 'assert_location_v1':
-        return t('transactions.location')
-      case 'assert_location_v2':
-        return t('transactions.location_v2')
-      case 'transfer_hotspot_v1':
-      case 'transfer_hotspot_v2':
-        return isSelling
-          ? t('transactions.transferSell')
-          : t('transactions.transferBuy')
-      case 'rewards_v1':
-      case 'rewards_v2':
-        return t('transactions.mining')
-      case 'token_burn_v1':
-        return t('transactions.burnHNT', { ticker })
-      case 'stake_validator_v1':
-        return t('transactions.stakeValidator', { ticker })
-      case 'unstake_validator_v1':
-        return t('transactions.unstakeValidator', { ticker })
-      case 'transfer_validator_stake_v1':
-        return t('transactions.transferValidator')
-      case 'subnetwork_rewards_v1':
-        return item?.tokenType === 'IOT'
-          ? t('transactions.iotRewards')
-          : t('transactions.mobileRewards')
-      case 'dc_delegate':
-        return t('transactions.delegated')
-      case 'dc_mint':
-        return t('transactions.received', { ticker: '' })
     }
-  }, [item, t, isSending, ticker, isSelling])
+  }, [item, t, isSending, ticker])
 
   const listIcon = useMemo(() => {
     const iconColor = colors[color]
     switch (item?.type as TxnType) {
-      case 'stake_validator_v1':
-        return <TxnSend color={iconColor} />
-      case 'unstake_validator_v1':
-        return <TxnReceive color={iconColor} />
-      case 'transfer_validator_stake_v1':
-        return <TxnReceive color={iconColor} />
-      case 'payment_v1':
       case 'payment_v2':
         return isSending ? (
           <TxnSend color={iconColor} />
         ) : (
           <TxnReceive color={iconColor} />
         )
-      case 'assert_location_v1':
-      case 'assert_location_v2':
-        return <TxnReceive color={iconColor} />
-      case 'rewards_v1':
-      case 'rewards_v2':
-        return <TxnReceive color={iconColor} />
-      case 'token_burn_v1':
-      case 'dc_delegate':
-        return <TxnSend color={iconColor} />
-      case 'transfer_hotspot_v1':
-      case 'transfer_hotspot_v2':
-      case 'add_gateway_v1':
-      case 'dc_mint':
       default:
         return <TxnReceive color={iconColor} />
     }
@@ -239,191 +151,67 @@ const useTxn = (
   const isFee = useMemo(() => {
     // // TODO: Determine if TransferStakeV1 is a fee
     const type = item?.type as TxnType
-    if (type === 'payment_v1' || type === 'payment_v2') {
+    if (type === 'payment_v2') {
       return isSending
     }
 
-    if (
-      type === 'rewards_v1' ||
-      type === 'rewards_v2' ||
-      type === 'unstake_validator_v1'
-    ) {
-      return false
-    }
-
-    if (type === 'transfer_hotspot_v1' || type === 'transfer_hotspot_v2') {
-      return isSelling
-    }
-
     return true
-  }, [isSelling, isSending, item])
+  }, [isSending, item])
 
   const formatAmount = useCallback(
-    (prefix: '-' | '+' | '', amount?: Balance<AnyCurrencyType>) => {
-      if (!amount) return ''
+    (
+      prefix: '-' | '+' | '',
+      amount: number | undefined,
+      m: string | undefined | null,
+    ) => {
+      const decimals = m ? decimalsByMint?.[m] : undefined
+      if (!amount || typeof decimals === 'undefined') return ''
+      const symbolPart = m ? symbolsByMint?.[m] || '' : ''
 
-      if (amount?.floatBalance === 0) {
-        return balanceToString(amount)
-      }
-
-      return `${prefix}${balanceToString(amount, { maxDecimalPlaces: 4 })}`
+      return `${prefix}${humanReadable(
+        new BN(
+          Math.abs(amount)
+            .toFixed(decimals || 0)
+            .replace('.', ''),
+        ),
+        decimals,
+      )} ${symbolPart}`
     },
-    [],
+    [decimalsByMint, symbolsByMint],
   )
 
   const getFee = useCallback(async () => {
-    return formatAmount(
-      '-',
-      new Balance(TXN_FEE_IN_LAMPORTS, CurrencyType.solTokens),
-    )
-  }, [formatAmount])
-
-  const getFeePayer = useCallback(() => {
-    const type = item?.type
-    if (
-      !item?.type ||
-      !item.payer ||
-      (type !== 'add_gateway_v1' &&
-        type !== 'assert_location_v1' &&
-        type !== 'assert_location_v2')
-    ) {
-      return ''
-    }
-    return (
-      makers.find(({ address: makerAddress }) => makerAddress === item.payer)
-        ?.name || ellipsizeAddress(item.payer)
-    )
-  }, [item, makers])
+    return `-${TXN_FEE_IN_LAMPORTS / LAMPORTS_PER_SOL}`
+  }, [])
 
   const getAmountTitle = useCallback(async () => {
-    const feePayer = await getFeePayer()
     if (!item) return ''
     switch (item.type as TxnType) {
-      case 'transfer_hotspot_v1':
-        return t('transactions.amountToSeller')
-      case 'assert_location_v1':
-      case 'assert_location_v2':
-      case 'add_gateway_v1':
-        return t('transactions.feePaidBy', { feePayer })
-      case 'stake_validator_v1':
-        return t('transactions.stake')
-      case 'transfer_validator_stake_v1':
-      case 'unstake_validator_v1':
-        return t('transactions.stakeAmount')
-      case 'token_burn_v1':
-      case 'subnetwork_rewards_v1':
-        return t('transactions.amount')
-      case 'payment_v1':
-      case 'payment_v2':
-      case 'rewards_v1':
-      case 'rewards_v2': {
-        return t('transactions.totalAmount')
-      }
       default:
         return ''
     }
-  }, [getFeePayer, item, t])
+  }, [item])
 
   const getAmount = useCallback(() => {
     if (!item) return ''
 
     switch (item.type as TxnType) {
-      case 'rewards_v1':
-      case 'rewards_v2': {
-        const rewardsAmount =
-          item.rewards?.reduce(
-            (sum, current) => sum.plus(bonesToBalance(current.amount, 'HNT')),
-            bonesToBalance(0, 'HNT'),
-          ) || bonesToBalance(0, 'HNT')
-        return formatAmount('+', rewardsAmount)
-      }
-      case 'subnetwork_rewards_v1': {
-        const { tokenType } = item
-        const tick = (tokenType?.toUpperCase() || 'MOBILE') as Ticker
-        const rewardsAmount =
-          item.rewards?.reduce((sum, current) => {
-            if (current.account !== address) return sum
-            return sum.plus(bonesToBalance(current.amount, tick))
-          }, bonesToBalance(0, tick)) || bonesToBalance(0, tick)
-        return formatAmount('+', rewardsAmount)
-      }
-      case 'transfer_hotspot_v1':
-        return formatAmount(
-          isSelling ? '+' : '-',
-          bonesToBalance(item.amountToSeller, 'HNT'),
-        )
-      case 'assert_location_v1':
-      case 'assert_location_v2':
-      case 'add_gateway_v1':
-        return formatAmount('-', dcBalance(item.stakingFee))
-      case 'stake_validator_v1':
-        return formatAmount('-', bonesToBalance(item.stake, 'HNT'))
-      case 'unstake_validator_v1':
-        return formatAmount('-', bonesToBalance(item.stakeAmount, 'HNT'))
-      case 'transfer_validator_stake_v1':
-        return formatAmount(
-          item.payer === address ? '-' : '+',
-          bonesToBalance(item.stakeAmount, 'HNT'),
-        )
-      case 'token_burn_v1':
-        return formatAmount('-', bonesToBalance(item.amount, 'HNT'))
-      case 'payment_v1':
-        return formatAmount('', bonesToBalance(item.amount, 'HNT'))
-      case 'dc_delegate':
-        return formatAmount(
-          '-',
-          new Balance(Number(item.amount), CurrencyType.dataCredit),
-        )
-      case 'dc_mint':
-        return formatAmount(
-          '+',
-          new Balance(Number(item.amount), CurrencyType.dataCredit),
-        )
       case 'payment_v2': {
-        if (item.payer === address) {
-          const paymentTotals = item.payments?.reduce(
-            (sums, current) => {
-              const tokenType = (current.tokenType?.toUpperCase() ||
-                'HNT') as Ticker
-              return {
-                ...sums,
-                [tokenType]: sums[tokenType].plus(
-                  bonesToBalance(current.amount, tokenType),
-                ),
-              }
-            },
-            {
-              HNT: bonesToBalance(0, 'HNT'),
-              IOT: bonesToBalance(0, 'IOT'),
-              MOBILE: bonesToBalance(0, 'MOBILE'),
-            } as Record<Ticker, Balance<AnyCurrencyType>>,
+        const payment = item.payments?.find(
+          (p) => p.mint === mint?.toBase58() && p.owner === wallet?.toBase58(),
+        )
+        if (payment) {
+          return formatAmount(
+            payment.amount < 0 ? '-' : '+',
+            Math.abs(payment.amount),
+            payment.mint,
           )
-          if (!paymentTotals) return ''
-          return Object.keys(paymentTotals)
-            .flatMap((p) => {
-              const tick = p.toUpperCase() as Ticker
-              const total = paymentTotals[tick]
-              if (total.integerBalance === 0) return []
-              const amt = formatAmount('', paymentTotals[tick])
-              return [amt]
-            })
-            .join(', ')
         }
-
-        return `+${item.payments
-          ?.filter((p) => p.payee === address)
-          .map((p) =>
-            formatAmount(
-              '',
-              bonesToBalance(p.amount, p.tokenType?.toUpperCase() as Ticker),
-            ),
-          )
-          .join(', ')}`
       }
     }
 
     return ''
-  }, [item, formatAmount, isSelling, bonesToBalance, address])
+  }, [item, formatAmount, mint, wallet])
 
   const time = useMemo(() => {
     if (!item) return ''
@@ -454,34 +242,30 @@ const useTxn = (
   }, [dateOpts, item, t])
 
   const getPaymentsReceived = useCallback(async () => {
-    const payments = item?.payments?.filter(({ payee }) => payee === address)
+    const payments = item?.payments?.filter(
+      ({ owner, amount }) => owner === wallet?.toBase58() && amount > 0,
+    )
     if (!payments) return []
     const all = payments.map(async (p) => {
-      const balance = await formatAmount(
-        '+',
-        bonesToBalance(p.amount, p.tokenType?.toUpperCase() as Ticker),
-      )
-      return { amount: balance, payee: p.payee, memo: p.memo || '' }
+      const balance = await formatAmount('+', p.amount, p.mint)
+      return { amount: balance, owner: p.owner, memo: p.memo || '' }
     })
     return Promise.all(all)
-  }, [address, formatAmount, item, bonesToBalance])
+  }, [formatAmount, item?.payments, wallet])
 
   const getPaymentsSent = useCallback(async () => {
-    if (item?.payer !== address || !item?.payments) {
+    if (!item?.payments) {
       return []
     }
-    const all = item.payments.map(
-      async ({ amount: amt, payee, memo: paymentMemo, tokenType }) => {
-        const balance = await formatAmount(
-          '',
-          bonesToBalance(amt, tokenType?.toUpperCase() as Ticker),
-        )
-        return { amount: balance, payee, memo: paymentMemo || '' }
-      },
-    )
+    const all = item.payments
+      .filter((p) => p.amount < 0 && p.owner === wallet?.toBase58())
+      .map(async ({ amount: amt, owner, memo: paymentMemo, mint: m }) => {
+        const balance = await formatAmount('', amt, m)
+        return { amount: balance, owner, memo: paymentMemo || '' }
+      })
 
     return Promise.all(all)
-  }, [address, formatAmount, item, bonesToBalance])
+  }, [formatAmount, item, wallet])
 
   return {
     time,
@@ -491,20 +275,15 @@ const useTxn = (
     title,
     color,
     isFee,
-    getFeePayer,
     getPaymentsReceived,
     getPaymentsSent,
-    isHotspotTxn,
-    isValidatorTxn,
-    getHotspotName,
-    getValidatorName,
     getAmountTitle,
   }
 }
 
 type Payment = {
   amount: string
-  payee: string
+  owner: string
   memo: string
 }
 type TxnDetails = {
@@ -518,28 +297,19 @@ type TxnDetails = {
   paymentsSent: Payment[]
   amount: string
   amountTitle: string
-  hotspotName: string
-  validatorName: string
-  isValidatorTxn: boolean
-  isHotspotTxn: boolean
 }
-export const useTxnDetails = (item?: Activity) => {
+export const useTxnDetails = (mint?: PublicKey, item?: Activity) => {
   const {
     listIcon,
     title,
     time,
     color,
-    getFeePayer,
     getFee,
     getPaymentsReceived,
     getPaymentsSent,
     getAmount,
-    getHotspotName,
-    getValidatorName,
-    isHotspotTxn,
-    isValidatorTxn,
     getAmountTitle,
-  } = useTxn(item, {
+  } = useTxn(mint, item, {
     dateFormat: 'dd MMMM yyyy HH:MM',
   })
 
@@ -553,24 +323,18 @@ export const useTxnDetails = (item?: Activity) => {
     paymentsSent: [],
     amount: '',
     amountTitle: '',
-    validatorName: '',
-    hotspotName: '',
-    isHotspotTxn: false,
-    isValidatorTxn: false,
   })
 
   useAsync(async () => {
-    const feePayer = await getFeePayer()
     const fee = await getFee()
     const paymentsReceived = await getPaymentsReceived()
     const paymentsSent = await getPaymentsSent()
     const amount = await getAmount()
     const amountTitle = await getAmountTitle()
-    const validatorName = await getValidatorName()
-    const hotspotName = await getHotspotName()
 
     setDetails({
-      feePayer,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+      feePayer: item?.feePayer!,
       icon: listIcon,
       title,
       time,
@@ -580,16 +344,11 @@ export const useTxnDetails = (item?: Activity) => {
       paymentsSent,
       amount,
       amountTitle,
-      validatorName,
-      hotspotName,
-      isHotspotTxn,
-      isValidatorTxn,
     })
   }, [
     color,
     getAmount,
     getFee,
-    getFeePayer,
     getPaymentsReceived,
     getPaymentsSent,
     listIcon,

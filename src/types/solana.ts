@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Ticker } from '@helium/currency'
 import {
   JsonMetadata,
   Nft,
@@ -12,12 +10,15 @@ import { init as initHsd } from '@helium/helium-sub-daos-sdk'
 import { init as initDc } from '@helium/data-credits-sdk'
 import { init as initHem } from '@helium/helium-entity-manager-sdk'
 import { init as initLazy } from '@helium/lazy-distributor-sdk'
+import { BulkRewards } from '@helium/distributor-oracle'
 import { TokenAmount } from '@solana/web3.js'
 import { Creator } from '@metaplex-foundation/mpl-bubblegum'
 
 export type HotspotWithPendingRewards = CompressedNFT & {
   // mint id to pending rewards
   pendingRewards: Record<string, string> | undefined
+  // mint id to rewards
+  rewards: Record<string, BulkRewards[]> | undefined
 }
 
 export type HemProgram = Awaited<ReturnType<typeof initHem>>
@@ -40,20 +41,6 @@ export type SolPaymentInfo = {
   systemProgram: string
   tokenProgram: string
   wallet: string
-}
-
-export const toMintAddress = (
-  symbol: string,
-  mints: Record<string, string>,
-) => {
-  const ticker = symbol.toUpperCase() as Ticker
-  return mints[ticker]
-}
-
-export const mintToTicker = (mint: string, mints: Record<string, string>) => {
-  const found = Object.keys(mints).find((key) => mints[key as Ticker] === mint)
-
-  return found as Ticker | undefined
 }
 
 export type CompressedNFT = {

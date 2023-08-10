@@ -1,41 +1,38 @@
 /* eslint-disable react/no-array-index-key */
-import React, {
-  createContext,
-  FC,
-  ReactNode,
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import BlurBox from '@components/BlurBox'
+import HandleBasic from '@components/HandleBasic'
+import SafeAreaBox from '@components/SafeAreaBox'
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetModalProvider,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
-import { Edge } from 'react-native-safe-area-context'
-import { useTranslation } from 'react-i18next'
-import { groupBy } from 'lodash'
-import animalName from 'angry-purple-tiger'
-import { LayoutChangeEvent } from 'react-native'
-import SafeAreaBox from '@components/SafeAreaBox'
-import HandleBasic from '@components/HandleBasic'
 import useBackHandler from '@hooks/useBackHandler'
-import BlurBox from '@components/BlurBox'
+import { PublicKey } from '@solana/web3.js'
+import React, {
+  FC,
+  ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { useTranslation } from 'react-i18next'
+import { LayoutChangeEvent } from 'react-native'
+import { Edge } from 'react-native-safe-area-context'
+import { useCreateExplorerUrl } from '../../constants/urls'
+import { Activity } from '../../types/activity'
 import TransactionLineItem from './TransactionLineItem'
 import { useTxnDetails } from './useTxn'
-import { useBalance } from '../../utils/Balance'
-import { useCreateExplorerUrl } from '../../constants/urls'
-import { ellipsizeAddress } from '../../utils/accountUtils'
-import { Activity } from '../../types/activity'
 
 const initialState = {
   show: () => undefined,
 }
 
-type DetailData = { item: Activity; accountAddress: string }
+type DetailData = { item: Activity; accountAddress: string; mint: PublicKey }
 type TransactionDetailSelectorActions = {
   show: (data: DetailData) => void
 }
@@ -50,8 +47,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
   const [contentHeight, setContentHeight] = useState(0)
   const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
 
-  const { intToBalance } = useBalance()
-  const { item: txn } = detailData || {}
+  const { item: txn, mint } = detailData || {}
 
   const {
     amount,
@@ -59,14 +55,12 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
     color,
     fee,
     feePayer,
-    hotspotName,
     icon,
     paymentsReceived,
     paymentsSent,
     time,
     title,
-    validatorName,
-  } = useTxnDetails(txn)
+  } = useTxnDetails(mint, txn)
   const createExplorerUrl = useCreateExplorerUrl()
 
   const snapPoints = useMemo(() => {
@@ -117,36 +111,6 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
 
   const handleComponent = useCallback(() => <HandleBasic />, [])
 
-  const rewards = useMemo(() => {
-    if (!txn?.rewards?.length || txn.type === 'subnetwork_rewards_v1') {
-      return null
-    }
-
-    const grouped = groupBy(txn.rewards, (reward) => {
-      if (reward.type === 'securities') return reward.type
-
-      return `${reward.gateway}.${reward.type}`
-    })
-
-    return Object.keys(grouped).map((key) => {
-      const group = grouped[key]
-      const totalAmount = group.reduce((sum, { amount: amt }) => sum + amt, 0)
-      const balance = intToBalance({ intValue: totalAmount })
-      const typeName = t(`transactions.rewardTypes.${group[0].type}`)
-      let name = ''
-      if (group[0].gateway) {
-        name = animalName(group[0].gateway)
-      } else {
-        name = typeName
-      }
-      return {
-        name,
-        amount: balance,
-        type: typeName,
-      }
-    })
-  }, [intToBalance, t, txn])
-
   const handleContentLayout = useCallback((e: LayoutChangeEvent) => {
     setContentHeight(e.nativeEvent.layout.height)
   }, [])
@@ -175,62 +139,14 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                 icon={icon}
               />
 
-              {!!hotspotName && (
-                <TransactionLineItem
-                  title={t('transactions.hotspot')}
-                  bodyText={hotspotName}
-                  navTo={createExplorerUrl('hotspot', txn?.gateway)}
-                />
-              )}
-              {!!validatorName && (
-                <TransactionLineItem
-                  title={t('transactions.validator')}
-                  bodyText={validatorName}
-                  navTo={createExplorerUrl('validator', txn?.gateway)}
-                />
-              )}
-
-              {!!txn?.buyer && (
-                <TransactionLineItem
-                  title={t('transactions.buyer')}
-                  bodyText={ellipsizeAddress(txn.buyer)}
-                  navTo={createExplorerUrl('account', txn.buyer)}
-                />
-              )}
-
-              {!!txn?.seller && (
-                <TransactionLineItem
-                  title={t('transactions.seller')}
-                  bodyText={ellipsizeAddress(txn.seller)}
-                  navTo={createExplorerUrl('account', txn.seller)}
-                />
-              )}
-
-              {!!txn?.payee && (
-                <TransactionLineItem
-                  title={t('transactions.payee', { index: '' })}
-                  bodyText={txn.payee}
-                  isAddress
-                  navTo={createExplorerUrl('account', txn.payee)}
-                />
-              )}
-
-              {paymentsSent.map(({ amount: amt, payee }, index) => (
+              {paymentsSent.map(({ amount: amt }, index) => (
                 <React.Fragment key={`${index}.amountToPayee`}>
                   <TransactionLineItem
                     title={t('transactions.amountToPayee', {
                       index: index + 1,
                     })}
                     bodyText={amt}
-                    bodyColor={color}
-                  />
-                  <TransactionLineItem
-                    title={t('transactions.payee', {
-                      index: index + 1,
-                    })}
-                    bodyText={payee}
-                    isAddress
-                    navTo={createExplorerUrl('account', payee)}
+                    bodyColor="blueBright500"
                   />
                 </React.Fragment>
               ))}
@@ -240,32 +156,10 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                   <TransactionLineItem
                     title={t('transactions.amount')}
                     bodyText={amt}
-                    bodyColor={color}
-                  />
-                  <TransactionLineItem
-                    title={t('transactions.from')}
-                    bodyText={txn?.payer || ''}
-                    isAddress
-                    navTo={
-                      txn?.payer
-                        ? createExplorerUrl('account', txn.payer)
-                        : undefined
-                    }
+                    bodyColor="greenBright500"
                   />
                 </React.Fragment>
               ))}
-
-              {rewards?.map((reward, index) => {
-                return (
-                  <TransactionLineItem
-                    key={`rewards.${index}`}
-                    title={reward.name}
-                    bodyTextEnd={reward.amount?.toString() || ''}
-                    bodyEndColor={color}
-                    bodyText={reward.type}
-                  />
-                )
-              })}
 
               {!!amountTitle && (
                 <TransactionLineItem
@@ -283,46 +177,6 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                       : t('transactions.txnFee')
                   }
                   bodyText={fee}
-                />
-              )}
-
-              {!!txn?.owner && (
-                <TransactionLineItem
-                  title={t('transactions.owner')}
-                  bodyText={txn.owner}
-                  navTo={createExplorerUrl('account', txn.owner)}
-                />
-              )}
-
-              {!!txn?.oldOwner && (
-                <TransactionLineItem
-                  title={t('transactions.oldOwner')}
-                  bodyText={txn.oldOwner}
-                  navTo={createExplorerUrl('account', txn.oldOwner)}
-                />
-              )}
-
-              {!!txn?.oldAddress && (
-                <TransactionLineItem
-                  title={t('transactions.oldAddress')}
-                  bodyText={txn.oldAddress}
-                  navTo={createExplorerUrl('account', txn.oldAddress)}
-                />
-              )}
-
-              {!!txn?.newOwner && (
-                <TransactionLineItem
-                  title={t('transactions.newOwner')}
-                  bodyText={txn.newOwner}
-                  navTo={createExplorerUrl('account', txn.newOwner)}
-                />
-              )}
-
-              {!!txn?.newAddress && (
-                <TransactionLineItem
-                  title={t('transactions.newAddress')}
-                  bodyText={txn.newAddress}
-                  navTo={createExplorerUrl('account', txn.newAddress)}
                 />
               )}
 
@@ -356,9 +210,10 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
 export const useTransactionDetail = () =>
   useContext(TransactionDetailSelectorContext)
 
-export const withTransactionDetail = (Component: FC) => () =>
-  (
+export const withTransactionDetail = (Component: FC) => () => {
+  return (
     <TransactionDetailSelector>
       <Component />
     </TransactionDetailSelector>
   )
+}

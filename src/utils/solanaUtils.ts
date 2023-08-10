@@ -1,125 +1,152 @@
 /* eslint-disable no-underscore-dangle */
-import {
-  Cluster,
-  clusterApiUrl,
-  ConfirmedSignatureInfo,
-  Connection,
-  Keypair,
-  LAMPORTS_PER_SOL,
-  Logs,
-  PublicKey,
-  SignaturesForAddressOptions,
-  Signer,
-  SystemProgram,
-  TransactionInstruction,
-  TransactionMessage,
-  VersionedMessage,
-  VersionedTransaction,
-  VersionedTransactionResponse,
-  ComputeBudgetProgram,
-  AccountMeta,
-  SignatureResult,
-  ParsedTransactionWithMeta,
-  Transaction,
-} from '@solana/web3.js'
-import * as dc from '@helium/data-credits-sdk'
-import { subDaoKey } from '@helium/helium-sub-daos-sdk'
-import {
-  TOKEN_PROGRAM_ID,
-  AccountLayout,
-  createTransferCheckedInstruction,
-  getOrCreateAssociatedTokenAccount,
-  getAssociatedTokenAddress,
-  getMint,
-  getAssociatedTokenAddressSync,
-  getAccount,
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  createAssociatedTokenAccountInstruction,
-  createAssociatedTokenAccountIdempotentInstruction,
-} from '@solana/spl-token'
-import {
-  init as initHem,
-  entityCreatorKey,
-  rewardableEntityConfigKey,
-  updateMobileMetadata,
-  updateIotMetadata,
-  keyToAssetKey,
-  iotInfoKey,
-  mobileInfoKey,
-} from '@helium/helium-entity-manager-sdk'
-import Balance, { AnyCurrencyType, CurrencyType } from '@helium/currency'
-import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
-import axios from 'axios'
-import Config from 'react-native-config'
-import {
-  TreeConfig,
-  createTransferInstruction,
-  PROGRAM_ID as BUBBLEGUM_PROGRAM_ID,
-} from '@metaplex-foundation/mpl-bubblegum'
-import {
-  ConcurrentMerkleTreeAccount,
-  SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-  SPL_NOOP_PROGRAM_ID,
-} from '@solana/spl-account-compression'
-import bs58 from 'bs58'
-import {
-  Asset,
-  HNT_MINT,
-  getAsset,
-  searchAssets,
-  toBN,
-  sendAndConfirmWithRetry,
-  IOT_MINT,
-  DC_MINT,
-  MOBILE_MINT,
-  truthy,
-} from '@helium/spl-utils'
 import { AnchorProvider, BN } from '@coral-xyz/anchor'
-import * as tm from '@helium/treasury-management-sdk'
+import * as dc from '@helium/data-credits-sdk'
 import {
   delegatedDataCreditsKey,
   escrowAccountKey,
 } from '@helium/data-credits-sdk'
-import {
-  getPendingRewards,
-  getBulkRewards,
-  formBulkTransactions,
-} from '@helium/distributor-oracle'
-import * as lz from '@helium/lazy-distributor-sdk'
+import { getPendingRewards } from '@helium/distributor-oracle'
 import {
   PROGRAM_ID as FanoutProgramId,
   fanoutKey,
   membershipCollectionKey,
 } from '@helium/fanout-sdk'
 import {
-  PROGRAM_ID as VoterStakeRegistryProgramId,
-  registrarKey,
-  registrarCollectionKey,
-} from '@helium/voter-stake-registry-sdk'
-import { BaseCurrencyType } from '@helium/currency/build/currency_types'
+  decodeEntityKey,
+  entityCreatorKey,
+  init,
+  init as initHem,
+  iotInfoKey,
+  keyToAssetForAsset,
+  keyToAssetKey,
+  mobileInfoKey,
+  rewardableEntityConfigKey,
+  updateIotMetadata,
+  updateMobileMetadata,
+} from '@helium/helium-entity-manager-sdk'
+import { subDaoKey } from '@helium/helium-sub-daos-sdk'
+import * as lz from '@helium/lazy-distributor-sdk'
 import { HotspotType } from '@helium/onboarding'
+import {
+  Asset,
+  DC_MINT,
+  HNT_MINT,
+  IOT_MINT,
+  MOBILE_MINT,
+  getAsset,
+  searchAssets,
+  sendAndConfirmWithRetry,
+  toBN,
+} from '@helium/spl-utils'
+import * as tm from '@helium/treasury-management-sdk'
+import {
+  PROGRAM_ID as VoterStakeRegistryProgramId,
+  registrarCollectionKey,
+  registrarKey,
+} from '@helium/voter-stake-registry-sdk'
+import {
+  METADATA_PARSER,
+  getMetadata,
+  getMetadataId,
+} from '@hooks/useMetaplexMetadata'
+import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
+import {
+  PROGRAM_ID as BUBBLEGUM_PROGRAM_ID,
+  TreeConfig,
+  createTransferInstruction,
+} from '@metaplex-foundation/mpl-bubblegum'
+import {
+  ConcurrentMerkleTreeAccount,
+  SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+  SPL_NOOP_PROGRAM_ID,
+} from '@solana/spl-account-compression'
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  AccountLayout,
+  TOKEN_PROGRAM_ID,
+  createAssociatedTokenAccountIdempotentInstruction,
+  createAssociatedTokenAccountInstruction,
+  createTransferCheckedInstruction,
+  getAccount,
+  getAssociatedTokenAddress,
+  getAssociatedTokenAddressSync,
+  getMint,
+  getOrCreateAssociatedTokenAccount,
+} from '@solana/spl-token'
+import {
+  AccountMeta,
+  Cluster,
+  ComputeBudgetProgram,
+  ConfirmedSignatureInfo,
+  Connection,
+  Keypair,
+  LAMPORTS_PER_SOL,
+  Logs,
+  ParsedTransactionWithMeta,
+  PublicKey,
+  SignatureResult,
+  SignaturesForAddressOptions,
+  Signer,
+  SystemProgram,
+  Transaction,
+  TransactionInstruction,
+  TransactionMessage,
+  VersionedMessage,
+  VersionedTransaction,
+  VersionedTransactionResponse,
+  clusterApiUrl,
+} from '@solana/web3.js'
+import axios from 'axios'
+import bs58 from 'bs58'
+import Config from 'react-native-config'
 import { getKeypair, getSessionKey } from '../storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
-import sleep from './sleep'
 import {
   Collectable,
   CompressedNFT,
   EnrichedTransaction,
   HotspotWithPendingRewards,
-  mintToTicker,
 } from '../types/solana'
-import * as Logger from './logger'
 import { WrappedConnection } from './WrappedConnection'
+import { solAddressIsValid } from './accountUtils'
 import {
   DAO_KEY,
   IOT_LAZY_KEY,
   IOT_SUB_DAO_KEY,
-  Mints,
   MOBILE_LAZY_KEY,
   MOBILE_SUB_DAO_KEY,
+  Mints,
 } from './constants'
-import { solAddressIsValid } from './accountUtils'
 import { getH3Location } from './h3'
+import { decimalSeparator, groupSeparator } from './i18n'
+import * as Logger from './logger'
+import sleep from './sleep'
+
+export function humanReadable(
+  amount?: BN,
+  decimals?: number,
+): string | undefined {
+  if (typeof decimals === 'undefined' || typeof amount === 'undefined') return
+
+  const input = amount.toString()
+  const integerPart =
+    input.length > decimals ? input.slice(0, input.length - decimals) : ''
+  const formattedIntegerPart = integerPart.replace(
+    /\B(?=(\d{3})+(?!\d))/g,
+    groupSeparator,
+  )
+  const decimalPart =
+    decimals !== 0
+      ? input
+          .slice(-decimals)
+          .padStart(decimals, '0') // Add prefix zeros
+          .replace(/0+$/, '') // Remove trailing zeros
+      : ''
+
+  return `${formattedIntegerPart.length > 0 ? formattedIntegerPart : '0'}${
+    Number(decimalPart) !== 0 ? `${decimalSeparator}${decimalPart}` : ''
+  }`
+}
 
 const govProgramId = new PublicKey(
   'hgovkRU6Ghe1Qoyb54HdSLdqN7VtxaifBzRmh9jtd3S',
@@ -194,7 +221,7 @@ export const createTransferSolTxn = async (
   signer: Signer,
   payments: {
     payee: string
-    balanceAmount: Balance<AnyCurrencyType>
+    balanceAmount: BN
     max?: boolean
   }[],
 ) => {
@@ -204,12 +231,12 @@ export const createTransferSolTxn = async (
 
   let instructions: TransactionInstruction[] = []
   payments.forEach((p) => {
-    const amount = p.balanceAmount.integerBalance
+    const amount = p.balanceAmount
 
     const instruction = SystemProgram.transfer({
       fromPubkey: payer,
       toPubkey: new PublicKey(p.payee),
-      lamports: amount,
+      lamports: BigInt(amount.toString()),
     })
 
     instructions = [...instructions, instruction]
@@ -234,7 +261,7 @@ export const createTransferTxn = async (
   signer: Signer,
   payments: {
     payee: string
-    balanceAmount: Balance<AnyCurrencyType>
+    balanceAmount: BN
     max?: boolean
   }[],
   mintAddress: string,
@@ -243,11 +270,10 @@ export const createTransferTxn = async (
 
   const conn = anchorProvider.connection
 
-  const [firstPayment] = payments
-
   const payer = signer.publicKey
 
   const mint = new PublicKey(mintAddress)
+  const mintAcc = await getMint(conn, mint)
 
   const payerATA = await getOrCreateAssociatedTokenAccount(
     conn,
@@ -258,7 +284,7 @@ export const createTransferTxn = async (
 
   let instructions: TransactionInstruction[] = []
   payments.forEach((p) => {
-    const amount = p.balanceAmount.integerBalance
+    const amount = p.balanceAmount
     const ata = getAssociatedTokenAddressSync(mint, new PublicKey(p.payee))
 
     instructions = [
@@ -274,8 +300,8 @@ export const createTransferTxn = async (
         mint,
         ata,
         payer,
-        amount,
-        firstPayment.balanceAmount.type.decimalPlaces.toNumber(),
+        BigInt(amount.toString()),
+        mintAcc.decimals,
         [signer],
       ),
     ]
@@ -301,7 +327,7 @@ export const transferToken = async (
   heliumAddress: string,
   payments: {
     payee: string
-    balanceAmount: Balance<AnyCurrencyType>
+    balanceAmount: BN
     max?: boolean
   }[],
   mintAddress?: string,
@@ -361,7 +387,6 @@ export const getTransactions = async (
   anchorProvider: AnchorProvider,
   walletAddress: string,
   mintAddress: string,
-  mints: typeof Mints,
   options?: SignaturesForAddressOptions,
 ) => {
   try {
@@ -375,7 +400,7 @@ export const getTransactions = async (
       })
 
     return transactionDetails
-      .map((td, idx) => solInstructionsToActivity(td, sigs[idx], mints))
+      .map((td, idx) => solInstructionsToActivity(td, sigs[idx]))
       .filter((a) => !!a) as Activity[]
   } catch (e) {
     Logger.error(e)
@@ -580,9 +605,9 @@ export const getAtaAccountCreationFee = async ({
 
   try {
     await getAccount(connection, ataAddress)
-    return new Balance(0, CurrencyType.solTokens)
+    return new BN(0)
   } catch {
-    return Balance.fromFloat(0.00203928, CurrencyType.solTokens)
+    return new BN(0.00203928 * LAMPORTS_PER_SOL)
   }
 }
 
@@ -592,7 +617,7 @@ export const mintDataCredits = async ({
   recipient,
 }: {
   anchorProvider: AnchorProvider
-  dcAmount: number
+  dcAmount: BN
   recipient: PublicKey
 }) => {
   try {
@@ -604,7 +629,7 @@ export const mintDataCredits = async ({
     const tx = await program.methods
       .mintDataCreditsV0({
         hntAmount: null,
-        dcAmount: toBN(dcAmount, 0),
+        dcAmount,
       })
       .accounts({
         dcMint: DC_MINT,
@@ -659,16 +684,20 @@ export const delegateDataCredits = async (
   }
 }
 
-export const getEscrowTokenAccount = (address: string) => {
-  try {
-    const subDao = IOT_SUB_DAO_KEY
-    const delegatedDataCredits = delegatedDataCreditsKey(subDao, address)[0]
-    const escrowTokenAccount = escrowAccountKey(delegatedDataCredits)[0]
+export const getEscrowTokenAccount = (
+  address: string | undefined,
+  subDao: PublicKey,
+) => {
+  if (address) {
+    try {
+      const delegatedDataCredits = delegatedDataCreditsKey(subDao, address)[0]
+      const escrowTokenAccount = escrowAccountKey(delegatedDataCredits)[0]
 
-    return escrowTokenAccount
-  } catch (e) {
-    Logger.error(e)
-    throw e as Error
+      return escrowTokenAccount
+    } catch (e) {
+      Logger.error(e)
+      throw e as Error
+    }
   }
 }
 
@@ -1032,9 +1061,7 @@ export const getCompressedNFTMetadata = async (
   const collectablesWithMetadata = await Promise.all(
     collectables.map(async (col) => {
       try {
-        const { data } = await axios.get(col.content.json_uri, {
-          timeout: 3000,
-        })
+        const { data } = await getMetadata(col.content.json_uri)
         return {
           ...col,
           content: {
@@ -1064,10 +1091,19 @@ export async function annotateWithPendingRewards(
   hotspots: CompressedNFT[],
 ): Promise<HotspotWithPendingRewards[]> {
   const program = await lz.init(provider)
+  const hemProgram = await init(provider)
   const dao = DAO_KEY
-  const entityKeys = hotspots.map((h) => {
-    return h.content.json_uri.split('/').slice(-1)[0]
-  })
+  const keyToAssets = hotspots.map((h) =>
+    keyToAssetForAsset(toAsset(h as CompressedNFT)),
+  )
+  const ktaAccs = await Promise.all(
+    keyToAssets.map((kta) => hemProgram.account.keyToAssetV0.fetch(kta)),
+  )
+  const entityKeys = ktaAccs.map(
+    (kta) =>
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      decodeEntityKey(kta.entityKey, kta.keySerialization)!,
+  )
 
   const mobileRewards = await getPendingRewards(
     program,
@@ -1153,15 +1189,22 @@ export const groupCollectablesWithMetaData = (
  */
 export const getCollectableByMint = async (
   mint: PublicKey,
-  metaplex: Metaplex,
+  connection: Connection,
 ): Promise<Collectable | null> => {
   try {
-    const collectable = await metaplex.nfts().findByMint({ mintAddress: mint })
-    if (!collectable.json && collectable.uri) {
-      const json = await (await fetch(collectable.uri)).json()
-      return { ...collectable, json }
+    const metadata = getMetadataId(mint)
+    const metadataAccount = await connection.getAccountInfo(metadata)
+    if (metadataAccount) {
+      const collectable = METADATA_PARSER(metadata, metadataAccount)
+      if (!collectable.json && collectable.uri) {
+        const json = await (await fetch(collectable.uri)).json()
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        return { ...collectable, json }
+      }
     }
-    return collectable
+
+    return null
   } catch (e) {
     return null
   }
@@ -1182,7 +1225,6 @@ export const getAllTransactions = async (
 ): Promise<(EnrichedTransaction | ConfirmedSignatureInfo)[]> => {
   const pubKey = new PublicKey(address)
   const conn = anchorProvider.connection
-  const metaplex = new Metaplex(conn, { cluster })
   const sessionKey = await getSessionKey()
 
   const parseTransactionsUrl = `${
@@ -1213,7 +1255,7 @@ export const getAllTransactions = async (
           if (firstTokenTransfer && firstTokenTransfer.mint) {
             const tokenMetadata = await getCollectableByMint(
               new PublicKey(firstTokenTransfer.mint),
-              metaplex,
+              conn,
             )
 
             return {
@@ -1414,7 +1456,6 @@ export async function createTreasurySwapMessage(
 export const solInstructionsToActivity = (
   parsedTxn: ParsedTransactionWithMeta | null,
   signature: string,
-  mints: typeof Mints,
 ) => {
   if (!parsedTxn) return
 
@@ -1424,33 +1465,33 @@ export const solInstructionsToActivity = (
 
   activity.fee = meta?.fee
   activity.height = slot
+  activity.feePayer =
+    parsedTxn.transaction.message.accountKeys[0].pubkey.toBase58()
 
   if (blockTime) {
     activity.time = blockTime
   }
-
   if (meta?.preTokenBalances && meta.postTokenBalances) {
     const { preTokenBalances, postTokenBalances } = meta
+
     let payments = [] as Payment[]
     postTokenBalances.forEach((post) => {
       const preBalance = preTokenBalances.find(
         ({ accountIndex }) => accountIndex === post.accountIndex,
       )
-      const pre = preBalance || { uiTokenAmount: { amount: '0' } }
-      const preAmount = parseInt(pre.uiTokenAmount.amount, 10)
-      const postAmount = parseInt(post.uiTokenAmount.amount, 10)
+      const pre = preBalance || {
+        uiTokenAmount: { uiAmount: 0 },
+        owner: post.owner,
+      }
+      const preAmount = pre.uiTokenAmount.uiAmount || 0
+      const postAmount = post.uiTokenAmount.uiAmount || 0
       const amount = postAmount - preAmount
-      if (amount < 0) {
-        // is payer
-        activity.payer = post.owner
-        activity.tokenType = mintToTicker(post.mint, mints)
-        activity.amount = -1 * amount
-      } else {
-        // is payee
+      if (amount !== 0 && !Number.isNaN(amount)) {
         const p: Payment = {
           amount,
-          payee: post.owner || '',
-          tokenType: mintToTicker(post.mint, mints),
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          owner: (post.owner || pre.owner)!,
+          mint: post.mint,
         }
         payments = [...payments, p]
       }
@@ -1458,21 +1499,12 @@ export const solInstructionsToActivity = (
     activity.payments = payments
   }
 
-  const transfer = (activity.payments?.length || 0) > 0
-
-  if (transfer) {
+  if ((activity.payments?.length || 0) > 0) {
     // We have a payment
     activity.type = 'payment_v2'
   }
 
   if (activity.type === 'unknown') return
-
-  const payment = activity.payments?.[0]
-  if (payment && payment.tokenType === 'DC') {
-    activity.type = payment.payee !== activity.payer ? 'dc_delegate' : 'dc_mint'
-    activity.amount = payment.amount
-    activity.tokenType = 'DC'
-  }
 
   return activity
 }
@@ -1495,11 +1527,8 @@ export const submitSolana = async ({
   return txid
 }
 
-export const parseTransactionError = (
-  balance?: Balance<AnyCurrencyType>,
-  message?: string,
-) => {
-  if ((balance?.floatBalance || 0) < 0.02) {
+export const parseTransactionError = (balance?: BN, message?: string) => {
+  if (balance?.lt(new BN(0.02))) {
     return 'The SOL balance on this account is too low to complete this transaction'
   }
 
@@ -1527,19 +1556,19 @@ export const calcCreateAssociatedTokenAccountAccountFee = async (
   provider: AnchorProvider,
   payee: string,
   mint: PublicKey,
-): Promise<Balance<BaseCurrencyType>> => {
+): Promise<BN> => {
   if (!payee) {
-    return new Balance(0, CurrencyType.solTokens)
+    return new BN(0)
   }
 
   if (!solAddressIsValid(payee)) {
-    return new Balance(0, CurrencyType.solTokens)
+    return new BN(0)
   }
 
   const payeePubKey = new PublicKey(payee)
   const ata = await getAssociatedTokenAddress(mint, payeePubKey)
   if (ata) {
-    return new Balance(0, CurrencyType.solTokens)
+    return new BN(0)
   }
 
   const transaction = new Transaction().add(
@@ -1562,11 +1591,11 @@ export const calcCreateAssociatedTokenAccountAccountFee = async (
     const fee = await transaction.getEstimatedFee(provider.connection)
 
     if (!fee) {
-      return new Balance(0, CurrencyType.solTokens)
+      return new BN(0)
     }
-    return new Balance(fee, CurrencyType.solTokens)
+    return new BN(fee)
   } catch (e) {
-    return new Balance(0, CurrencyType.solTokens)
+    return new BN(0)
   }
 }
 
@@ -1638,7 +1667,9 @@ export const updateEntityInfoTxn = async ({
       )
       const mobileInfo =
         await program.account.mobileHotspotInfoV0.fetchNullable(
-          mobileInfoKey(mobileConfigKey, entityKey)[0],
+          (
+            await mobileInfoKey(mobileConfigKey, entityKey)
+          )[0],
         )
 
       if (!mobileInfo) {
@@ -1673,12 +1704,7 @@ export const updateEntityInfoTxn = async ({
   }
 }
 
-const chunks = <T>(array: T[], size: number): T[][] =>
-  Array.apply(0, new Array(Math.ceil(array.length / size))).map((_, index) =>
-    array.slice(index * size, (index + 1) * size),
-  )
-
-function toAsset(hotspot: HotspotWithPendingRewards): Asset {
+export function toAsset(hotspot: CompressedNFT): Asset {
   return {
     ...hotspot,
     id: new PublicKey(hotspot.id),
@@ -1702,63 +1728,5 @@ function toAsset(hotspot: HotspotWithPendingRewards): Asset {
         hotspot.ownership.delegate && new PublicKey(hotspot.ownership.delegate),
       owner: new PublicKey(hotspot.ownership.owner),
     },
-  }
-}
-
-export async function claimAllRewardsTxns(
-  anchorProvider: AnchorProvider,
-  lazyDistributors: PublicKey[],
-  hotspots: HotspotWithPendingRewards[],
-) {
-  try {
-    const { connection } = anchorProvider
-    const { publicKey: payer } = anchorProvider.wallet
-    const lazyProgram = await lz.init(anchorProvider)
-    let txns: Transaction[] | undefined
-
-    // Use for loops to linearly order promises
-    // eslint-disable-next-line no-restricted-syntax
-    for (const lazyDistributor of lazyDistributors) {
-      const lazyDistributorAcc =
-        // eslint-disable-next-line no-await-in-loop
-        await lazyProgram.account.lazyDistributorV0.fetch(lazyDistributor)
-      // eslint-disable-next-line no-restricted-syntax
-      for (const chunk of chunks(hotspots, 25)) {
-        const entityKeys = chunk.map(
-          (h) => h.content.json_uri.split('/').slice(-1)[0],
-        )
-
-        // eslint-disable-next-line no-await-in-loop
-        const rewards = await getBulkRewards(
-          lazyProgram,
-          lazyDistributor,
-          entityKeys,
-        )
-
-        // eslint-disable-next-line no-await-in-loop
-        const txs = await formBulkTransactions({
-          program: lazyProgram,
-          rewards,
-          assets: chunk.map((h) => new PublicKey(h.id)),
-          compressionAssetAccs: chunk.map(toAsset),
-          lazyDistributor,
-          lazyDistributorAcc,
-          assetEndpoint: connection.rpcEndpoint,
-          wallet: payer,
-        })
-
-        const validTxns = txs.filter(truthy)
-        txns = [...(txns || []), ...validTxns]
-      }
-    }
-
-    if (!txns) {
-      throw new Error('Unable to form transactions')
-    }
-
-    return txns
-  } catch (e) {
-    Logger.error(e)
-    throw e as Error
   }
 }

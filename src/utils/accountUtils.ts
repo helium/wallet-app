@@ -1,10 +1,9 @@
 import Address, { NetTypes as NetType, utils } from '@helium/address'
-import { CurrencyType, Ticker } from '@helium/currency'
-import Bcrypt from 'bcrypt-react-native'
 import { PublicKey } from '@solana/web3.js'
+import Bcrypt from 'bcrypt-react-native'
+import BigNumber from 'bignumber.js'
 import bs58 from 'bs58'
 import { round } from 'lodash'
-import BigNumber from 'bignumber.js'
 
 export type AccountNetTypeOpt = 'all' | NetType.NetType
 
@@ -45,37 +44,6 @@ export const heliumAddressIsValid = (address: string) => {
   } catch {
     return false
   }
-}
-
-export const accountCurrencyType = (address?: string, tokenType?: Ticker) => {
-  if (!address) return CurrencyType.default
-  if (!tokenType) {
-    return accountNetType(address) === NetType.MAINNET
-      ? CurrencyType.default
-      : CurrencyType.testNetworkToken
-  }
-  // If token type is passed in, we need to check if to return testnet token or default token
-  switch (tokenType) {
-    default:
-    case 'HNT':
-      return accountNetType(address) === NetType.MAINNET
-        ? CurrencyType.default
-        : CurrencyType.testNetworkToken
-    case 'HST':
-      return CurrencyType.security
-    case 'IOT':
-      return CurrencyType.iot
-    case 'MOBILE':
-      return CurrencyType.mobile
-    case 'DC':
-      return CurrencyType.dataCredit
-  }
-}
-
-export const networkCurrencyType = (netType?: NetType.NetType) => {
-  return netType === NetType.TESTNET
-    ? CurrencyType.testNetworkToken
-    : CurrencyType.default
 }
 
 export const accountNetType = (address?: string) => {

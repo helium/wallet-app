@@ -1,78 +1,48 @@
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import BackScreen from '@components/BackScreen'
+import React, { memo, useCallback } from 'react'
 import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { useNavigation } from '@react-navigation/native'
+import { TabBarNavigationProp } from 'src/navigation/rootTypes'
+import { ReAnimatedBox } from '@components/AnimatedBox'
 import { DelayedFadeIn } from '@components/FadeInOut'
-import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
+import BackArrow from '@assets/images/backArrow.svg'
+import AccountIcon from '@components/AccountIcon'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import Text from '@components/Text'
-import TokenIcon from '@components/TokenIcon'
-import { useSolOwnedAmount } from '@helium/helium-react-hooks'
+import ButtonPressable from '@components/ButtonPressable'
+import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
+import { parseTransactionError } from '@utils/solanaUtils'
 import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
-import { usePublicKey } from '@hooks/usePublicKey'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { parseTransactionError } from '@utils/solanaUtils'
-import React, { memo, useCallback, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
-import { Edge } from 'react-native-safe-area-context'
-import { useSelector } from 'react-redux'
-import 'text-encoding-polyfill'
-import ArrowRight from '../../assets/images/arrowRight.svg'
-import BackArrow from '../../assets/images/backArrow.svg'
-import { TabBarNavigationProp } from '../../navigation/rootTypes'
+import { useSolOwnedAmount } from '@helium/helium-react-hooks'
 import { RootState } from '../../store/rootReducer'
-import { SwapStackParamList } from './swapTypes'
 
-type Route = RouteProp<SwapStackParamList, 'SwappingScreen'>
-
-const SwappingScreen = () => {
-  const route = useRoute<Route>()
+const SettingUpAntennaScreen = () => {
+  const { currentAccount } = useAccountStorage()
   const navigation = useNavigation<TabBarNavigationProp>()
-  const backEdges = useMemo(() => ['bottom'] as Edge[], [])
-  const solBalance = useBN(useSolOwnedAmount(useCurrentWallet()).amount)
+  const wallet = useCurrentWallet()
+  const solBalance = useBN(useSolOwnedAmount(wallet).amount)
+  const { bottom } = useSafeAreaInsets()
 
   const { t } = useTranslation()
-  const { tokenA, tokenB } = route.params
-  const { json: jsonA } = useMetaplexMetadata(usePublicKey(tokenA))
-  const { json: jsonB } = useMetaplexMetadata(usePublicKey(tokenB))
-
   const solanaPayment = useSelector(
     (reduxState: RootState) => reduxState.solana.payment,
   )
 
   const onReturn = useCallback(() => {
-    // Reset Swap stack to first screen
+    // Reset Collectables stack to first screen
     navigation.reset({
       index: 0,
-      routes: [{ name: 'Home' }],
+      routes: [{ name: 'Collectables' }],
     })
   }, [navigation])
 
-  const TokensSwappedContainer = useMemo(() => {
-    return (
-      <Box flexDirection="row" alignItems="center">
-        <Box
-          backgroundColor="black"
-          borderRadius="round"
-          padding="s"
-          marginEnd="m"
-        >
-          <TokenIcon img={jsonA?.image} size={50} />
-        </Box>
-        <ArrowRight color="white" height={24} width={26.5} />
-        <Box
-          marginStart="m"
-          backgroundColor="black"
-          borderRadius="round"
-          padding="s"
-        >
-          <TokenIcon img={jsonB?.image} size={50} />
-        </Box>
-      </Box>
-    )
-  }, [jsonA?.image, jsonB?.image])
+  if (!currentAccount) {
+    return null
+  }
 
   return (
     <ReAnimatedBox
@@ -80,54 +50,65 @@ const SwappingScreen = () => {
       flex={1}
       backgroundColor="secondaryBackground"
     >
-      <BackScreen
-        padding="none"
-        edges={backEdges}
-        onClose={onReturn}
-        hideBack
-        headerTopMargin="l"
-        paddingHorizontal="l"
+      <Box
+        backgroundColor="transparent"
+        flex={1}
+        padding="m"
+        alignItems="center"
+        justifyContent="center"
       >
         <Box flexGrow={1} justifyContent="center" alignItems="center">
-          {TokensSwappedContainer}
+          <Box
+            shadowColor="black"
+            shadowOpacity={0.4}
+            shadowOffset={{ width: 0, height: 10 }}
+            shadowRadius={10}
+            elevation={12}
+          >
+            <AccountIcon address={currentAccount?.solanaAddress} size={76} />
+          </Box>
           {solanaPayment && !solanaPayment.error && !solanaPayment.loading && (
             <Animated.View
               style={{ alignItems: 'center' }}
               entering={FadeIn}
               exiting={FadeOut}
             >
-              <Text variant="h2" color="white" marginTop="xl">
-                {t('swapsScreen.swapComplete')}
+              <Text variant="h1Medium" color="white" marginTop="xl">
+                {t('antennaSetupScreen.settingUpComplete')}
               </Text>
               <Text
-                variant="body1"
+                variant="body2"
                 color="secondaryText"
                 marginTop="xl"
+                numberOfLines={2}
                 textAlign="center"
               >
-                {t('swapsScreen.swapCompleteBody')}
+                {t('antennaSetupScreen.settingUpCompleteBody')}
               </Text>
             </Animated.View>
           )}
 
           {solanaPayment?.error && (
             <Animated.View
-              style={{ alignItems: 'center' }}
+              style={{
+                alignItems: 'center',
+              }}
               entering={FadeIn}
               exiting={FadeOut}
             >
               <Text
-                variant="h2"
+                variant="h1Medium"
                 color="white"
                 marginTop="xl"
                 textAlign="center"
               >
-                {t('swapsScreen.swapError')}
+                {t('collectablesScreen.rewardsError')}
               </Text>
               <Text
                 variant="body2"
                 color="secondaryText"
                 marginTop="xl"
+                numberOfLines={2}
                 textAlign="center"
               >
                 {parseTransactionError(
@@ -145,12 +126,12 @@ const SwappingScreen = () => {
               exiting={FadeOut}
             >
               <Text
-                variant="h2"
+                textAlign="center"
+                variant="h1Medium"
                 color="white"
                 marginTop="xl"
-                textAlign="center"
               >
-                {t('swapsScreen.swapError')}
+                {t('antennaSetupScreen.settingUpError')}
               </Text>
             </Animated.View>
           )}
@@ -162,48 +143,54 @@ const SwappingScreen = () => {
               exiting={FadeOut}
             >
               <Text
-                variant="h2"
+                variant="h1Medium"
                 color="white"
                 marginTop="xl"
                 textAlign="center"
               >
-                {t('swapsScreen.swappingTokens')}
+                {t('antennaSetupScreen.settingUp')}
               </Text>
               <Text
-                marginTop="m"
                 variant="body0"
                 color="grey600"
                 textAlign="center"
+                marginBottom="m"
+                marginTop="s"
               >
-                {t('swapsScreen.swappingTokensBody')}
+                {t('antennaSetupScreen.settingUpBody')}
               </Text>
-              <Box marginTop="xl" flexDirection="row" marginHorizontal="l">
+              <Box flexDirection="row" marginHorizontal="xxl" marginTop="m">
                 <IndeterminateProgressBar paddingHorizontal="l" />
               </Box>
             </Animated.View>
           )}
         </Box>
-        <Box width="100%" justifyContent="flex-end" paddingTop="l">
+        <Box
+          width="100%"
+          justifyContent="flex-end"
+          style={{ marginBottom: bottom }}
+        >
           <ButtonPressable
             marginHorizontal="m"
-            marginBottom="xl"
+            marginBottom="m"
             height={65}
             borderRadius="round"
             backgroundColor="white"
             backgroundColorOpacity={0.1}
             backgroundColorOpacityPressed={0.05}
             titleColorPressedOpacity={0.3}
-            title={t('swapsScreen.returnToSwaps')}
+            title={t('collectablesScreen.returnToCollectables')}
             titleColor="white"
             onPress={onReturn}
+            disabled={solanaPayment && solanaPayment.loading}
             LeadingComponent={
               <BackArrow width={16} height={15} color="white" />
             }
           />
         </Box>
-      </BackScreen>
+      </Box>
     </ReAnimatedBox>
   )
 }
 
-export default memo(SwappingScreen)
+export default memo(SettingUpAntennaScreen)

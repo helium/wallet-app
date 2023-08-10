@@ -21,6 +21,8 @@ import useHaptic from '@hooks/useHaptic'
 import useCopyText from '@hooks/useCopyText'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import { toNumber } from '@helium/spl-utils'
+import { useEntityKey } from '@hooks/useEntityKey'
+import { useIotInfo } from '@hooks/useIotInfo'
 import { ww } from '../../utils/layout'
 import {
   CollectableNavigationProp,
@@ -43,6 +45,9 @@ const HotspotDetailsScreen = () => {
   const copyText = useCopyText()
 
   const { collectable } = route.params
+  const entityKey = useEntityKey(collectable)
+  const iotInfoAcc = useIotInfo(entityKey)
+
   const pendingIotRewards =
     collectable &&
     collectable.pendingRewards &&
@@ -71,6 +76,13 @@ const HotspotDetailsScreen = () => {
   const handleAssertLocation = useCallback(() => {
     setOptionsOpen(false)
     navigation.navigate('AssertLocationScreen', {
+      collectable,
+    })
+  }, [collectable, navigation])
+
+  const handleAntennaSetup = useCallback(() => {
+    setOptionsOpen(false)
+    navigation.navigate('AntennaSetupScreen', {
       collectable,
     })
   }, [collectable, navigation])
@@ -123,6 +135,15 @@ const HotspotDetailsScreen = () => {
           selected={false}
           hasPressedState={false}
         />
+        {iotInfoAcc?.info?.location && (
+          <ListItem
+            key="antennaSetup"
+            title={t('collectablesScreen.hotspots.antennaSetup')}
+            onPress={handleAntennaSetup}
+            selected={false}
+            hasPressedState={false}
+          />
+        )}
         <ListItem
           key="copyAddress"
           title={t('collectablesScreen.hotspots.copyEccCompact')}
@@ -132,7 +153,14 @@ const HotspotDetailsScreen = () => {
         />
       </>
     ),
-    [handleSend, handleAssertLocation, handleCopyAddress, t],
+    [
+      handleSend,
+      handleAssertLocation,
+      handleAntennaSetup,
+      handleCopyAddress,
+      iotInfoAcc,
+      t,
+    ],
   )
 
   return (

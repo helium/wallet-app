@@ -1,21 +1,23 @@
-import { useCallback } from 'react'
-import Balance, { AnyCurrencyType } from '@helium/currency'
-import { PublicKey, Transaction } from '@solana/web3.js'
-import i18n from '@utils/i18n'
-import { Mints } from '@utils/constants'
-import * as solUtils from '@utils/solanaUtils'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { HotspotType } from '@helium/onboarding'
+import { chunks } from '@helium/spl-utils'
+import { PublicKey, Transaction } from '@solana/web3.js'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
+import i18n from '@utils/i18n'
+import * as solUtils from '@utils/solanaUtils'
+import BN from 'bn.js'
+import { useCallback } from 'react'
+import { useSolana } from '../solana/SolanaProvider'
+import { useWalletSign } from '../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
 import {
+  claimAllRewards,
+  claimRewards,
   makeCollectablePayment,
   makePayment,
-  claimRewards,
-  claimAllRewards,
   sendAnchorTxn,
-  sendTreasurySwap,
-  sendMintDataCredits,
   sendDelegateDataCredits,
+  sendMintDataCredits,
+  sendTreasurySwap,
   sendUpdateIotInfo,
   sendUpdateMobileInfo,
 } from '../store/slices/solanaSlice'
@@ -24,10 +26,7 @@ import {
   Collectable,
   CompressedNFT,
   HotspotWithPendingRewards,
-  toMintAddress,
 } from '../types/solana'
-import { useSolana } from '../solana/SolanaProvider'
-import { useWalletSign } from '../solana/WalletSignProvider'
 
 export default () => {
   const { currentAccount } = useAccountStorage()
@@ -41,9 +40,10 @@ export default () => {
     async (
       payments: {
         payee: string
-        balanceAmount: Balance<AnyCurrencyType>
+        balanceAmount: BN
         max?: boolean
       }[],
+      mint: PublicKey,
     ) => {
       if (
         !currentAccount?.solanaAddress ||
@@ -53,28 +53,28 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      const [firstPayment] = payments
-      const mintAddress =
-        firstPayment.balanceAmount.type.ticker !== 'SOL'
-          ? toMintAddress(firstPayment.balanceAmount.type.ticker, Mints)
-          : undefined
-      const paymentTxn = await solUtils.transferToken(
-        anchorProvider,
-        currentAccount.solanaAddress,
-        currentAccount.address,
-        payments,
-        mintAddress,
+      const txns = await Promise.all(
+        chunks(payments, 5).map((p) => {
+          return solUtils.transferToken(
+            anchorProvider,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            currentAccount.solanaAddress!,
+            currentAccount.address,
+            p,
+            mint.toBase58(),
+          )
+        }),
       )
-
-      const serializedTx = paymentTxn.serialize({
-        requireAllSignatures: false,
-      })
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signPaymentTxn'),
-        serializedTxs: [Buffer.from(serializedTx)],
+        serializedTxs: txns.map((tx) =>
+          tx.serialize({
+            requireAllSignatures: false,
+          }),
+        ),
       })
 
       if (!decision) {
@@ -83,7 +83,7 @@ export default () => {
 
       dispatch(
         makePayment({
-          paymentTxn,
+          paymentTxns: txns,
           account: currentAccount,
           cluster,
           anchorProvider,
@@ -310,33 +310,11 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      const txns = await solUtils.claimAllRewardsTxns(
-        anchorProvider,
-        lazyDistributors,
-        hotspots,
-      )
-
-      const serializedTxs = txns.map((txn) =>
-        txn.serialize({
-          requireAllSignatures: false,
-        }),
-      )
-
-      const decision = await walletSignBottomSheetRef.show({
-        type: WalletStandardMessageTypes.signTransaction,
-        url: '',
-        additionalMessage: t('transactions.signClaimAllRewardsTxn'),
-        serializedTxs: serializedTxs.map(Buffer.from),
-      })
-
-      if (!decision) {
-        throw new Error('User rejected transaction')
-      }
-
       dispatch(
         claimAllRewards({
           account: currentAccount,
-          txns,
+          lazyDistributors,
+          hotspots,
           anchorProvider,
           cluster,
         }),
@@ -357,13 +335,7 @@ export default () => {
   }, [])
 
   const submitMintDataCredits = useCallback(
-    async ({
-      dcAmount,
-      recipient,
-    }: {
-      dcAmount: number
-      recipient: PublicKey
-    }) => {
+    async ({ dcAmount, recipient }: { dcAmount: BN; recipient: PublicKey }) => {
       if (!currentAccount || !anchorProvider || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
       }

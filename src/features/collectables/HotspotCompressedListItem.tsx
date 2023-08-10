@@ -45,7 +45,7 @@ const HotspotListItem = ({
     if (!hotspot.pendingRewards) return
     const num = toNumber(
       new BN(hotspot.pendingRewards[Mints.IOT]),
-      iotMint?.info.decimals || 6,
+      iotMint?.decimals || 6,
     )
     return formatLargeNumber(new BigNumber(num))
   }, [hotspot, iotMint])
@@ -60,7 +60,7 @@ const HotspotListItem = ({
     if (!hotspot.pendingRewards) return
     const num = toNumber(
       new BN(hotspot.pendingRewards[Mints.MOBILE]),
-      mobileMint?.info.decimals || 6,
+      mobileMint?.decimals || 6,
     )
     return formatLargeNumber(new BigNumber(num))
   }, [hotspot, mobileMint])

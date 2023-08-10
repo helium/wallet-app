@@ -1,24 +1,25 @@
-import { Ticker } from '@helium/currency'
+import { DC_MINT } from '@helium/spl-utils'
+import { PublicKey } from '@solana/web3.js'
+import { onLogs, removeAccountChangeListener } from '@utils/solanaUtils'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { Mints } from '@utils/constants'
-import { onLogs, removeAccountChangeListener } from '@utils/solanaUtils'
+import { useSolana } from '../../solana/SolanaProvider'
 import { CSAccount } from '../../storage/cloudStorage'
 import { RootState } from '../../store/rootReducer'
 import { getTxns } from '../../store/slices/solanaSlice'
 import { useAppDispatch } from '../../store/store'
 import { FilterType } from './AccountActivityFilter'
-import { useSolana } from '../../solana/SolanaProvider'
 
 export default ({
   account,
   filter,
-  ticker,
+  mint,
 }: {
   account?: CSAccount | null
   filter: FilterType
-  ticker: Ticker
+  mint: PublicKey
 }) => {
+  const mintStr = mint.toBase58()
   const [now, setNow] = useState(new Date())
   const dispatch = useAppDispatch()
   const { anchorProvider } = useSolana()
@@ -40,8 +41,7 @@ export default ({
     dispatch(
       getTxns({
         account,
-        ticker,
-        mints: Mints,
+        mint: mintStr,
         requestType: 'start_fresh',
         anchorProvider,
       }),
@@ -54,8 +54,7 @@ export default ({
         dispatch(
           getTxns({
             account,
-            ticker,
-            mints: Mints,
+            mint: mintStr,
             requestType: 'update_head',
             anchorProvider,
           }),
@@ -67,7 +66,7 @@ export default ({
       removeAccountChangeListener(anchorProvider, accountSubscriptionId.current)
     }
     accountSubscriptionId.current = subId
-  }, [account, dispatch, filter, ticker, anchorProvider])
+  }, [account, dispatch, filter, mintStr, anchorProvider])
 
   const requestMore = useCallback(() => {
     if (!account?.address || !anchorProvider) return
@@ -75,38 +74,41 @@ export default ({
     dispatch(
       getTxns({
         account,
-        mints: Mints,
-        ticker,
+        mint: mintStr,
         requestType: 'fetch_more',
         anchorProvider,
       }),
     )
-  }, [account, dispatch, ticker, anchorProvider])
+  }, [account, dispatch, anchorProvider, mintStr])
 
   const data = useMemo(() => {
     if (!account?.solanaAddress || !solanaActivity.data[account.solanaAddress])
       return []
 
-    if (ticker === 'DC' && (filter === 'delegate' || filter === 'mint')) {
-      return solanaActivity.data[account.solanaAddress][filter][ticker]
+    if (
+      mintStr === DC_MINT.toBase58() &&
+      (filter === 'delegate' || filter === 'mint')
+    ) {
+      return solanaActivity.data[account.solanaAddress][filter][mintStr]
     }
 
     if (filter !== 'in' && filter !== 'out' && filter !== 'all') return []
     if (filter === 'in' || filter === 'out') {
-      const payments = solanaActivity.data[account.solanaAddress]?.payment[
-        ticker
-      ]?.filter((txn) => txn.tokenType === ticker)
+      const payments =
+        solanaActivity.data[account.solanaAddress]?.payment[mintStr]
       return payments?.filter((txn) =>
-        filter === 'out'
-          ? txn.payee === account.solanaAddress
-          : txn.payee !== account.solanaAddress,
+        txn.payments?.some((payment) =>
+          payment.mint === mintStr &&
+          payment.owner === account?.solanaAddress &&
+          filter === 'out'
+            ? payment.amount < 0
+            : payment.amount > 0,
+        ),
       )
     }
 
-    return solanaActivity.data[account.solanaAddress][filter][ticker]?.filter(
-      (txn) => txn.tokenType === ticker,
-    )
-  }, [account, filter, solanaActivity.data, ticker])
+    return solanaActivity.data[account.solanaAddress][filter][mintStr]
+  }, [account?.solanaAddress, solanaActivity.data, mintStr, filter])
 
   const loading = useMemo(() => {
     return solanaActivity.loading

@@ -1,10 +1,9 @@
 import React, { useMemo } from 'react'
-import { Ticker } from '@helium/currency'
 import Text, { TextProps } from '@components/Text'
 import { useBalance } from '../../utils/Balance'
 
 type Props = {
-  ticker: Ticker | 'ALL'
+  ticker: string
 } & TextProps
 
 const AccountTokenCurrencyBalance = ({ ticker, ...textProps }: Props) => {

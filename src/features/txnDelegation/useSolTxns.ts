@@ -1,28 +1,22 @@
 import {
-  BorshInstructionCoder,
-  Program,
-  Instruction,
   BN,
+  BorshInstructionCoder,
+  Instruction,
+  Program,
 } from '@coral-xyz/anchor'
-import { PublicKey } from '@solana/web3.js'
-import { useCallback, useMemo, useRef, useState } from 'react'
-import * as web3 from '@solana/web3.js'
-import { useAsync } from 'react-async-hook'
-import bs58 from 'bs58'
-import { get, last } from 'lodash'
+import { heliumAddressToSolAddress } from '@helium/spl-utils'
 import { SignHotspotResponse } from '@helium/wallet-link'
 import { getLeafAssetId } from '@metaplex-foundation/mpl-bubblegum'
-import {
-  Balance,
-  CurrencyType,
-  DataCredits,
-  NetworkTokens,
-} from '@helium/currency'
-import { heliumAddressToSolAddress } from '@helium/spl-utils'
-import { submitSolana } from '../../utils/solanaUtils'
+import * as web3 from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
+import bs58 from 'bs58'
+import { get, last } from 'lodash'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import { useAsync } from 'react-async-hook'
+import { useSolana } from '../../solana/SolanaProvider'
 import { getSolanaKeypair } from '../../storage/secureStorage'
 import { Asset, WrappedConnection } from '../../utils/WrappedConnection'
-import { useSolana } from '../../solana/SolanaProvider'
+import { submitSolana } from '../../utils/solanaUtils'
 
 const ValidTxnKeys = [
   'onboardIotHotspotV0',
@@ -41,8 +35,8 @@ type Txn = {
   gain?: number
   newOwner?: string
   owner?: string
-  dcFee?: Balance<DataCredits> | null
-  hntFee?: Balance<NetworkTokens> | null
+  dcFee?: BN | null
+  hntFee?: BN | null
 }
 
 const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
@@ -268,17 +262,17 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
         args: { dcAmount: string | null; hntAmount: string | null }
       }
 
-      let dcFee = 0
-      let hntFee = 0
+      let dcFee = new BN(0)
+      let hntFee = new BN(0)
       if (data.args.dcAmount) {
-        dcFee = new BN(data.args.dcAmount).toNumber()
+        dcFee = new BN(data.args.dcAmount)
       }
       if (data.args.hntAmount) {
-        hntFee = new BN(data.args.hntAmount).toNumber()
+        hntFee = new BN(data.args.hntAmount)
       }
       return {
-        hntFee: new Balance(hntFee, CurrencyType.networkToken),
-        dcFee: new Balance(dcFee, CurrencyType.dataCredit),
+        hntFee,
+        dcFee,
         name: decodedInstruction.name,
       }
     },

@@ -1,39 +1,22 @@
-import React, { memo, useCallback, useMemo } from 'react'
 import ChevronDown from '@assets/images/chevronDown.svg'
-import { Keyboard, StyleSheet } from 'react-native'
-import { BoxProps } from '@shopify/restyle'
-import TokenSOL from '@assets/images/tokenSOL.svg'
-import TokenIOT from '@assets/images/tokenIOT.svg'
-import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
-import TokenHNT from '@assets/images/tokenHNT.svg'
-import { Ticker } from '@helium/currency'
-import { useColors, useHitSlop } from '@theme/themeHooks'
-import { Color, Theme } from '@theme/theme'
 import useHaptic from '@hooks/useHaptic'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { BoxProps } from '@shopify/restyle'
+import { PublicKey } from '@solana/web3.js'
+import { Color, Theme } from '@theme/theme'
+import { useColors, useHitSlop } from '@theme/themeHooks'
+import React, { memo, useCallback, useMemo } from 'react'
+import { Keyboard, StyleSheet } from 'react-native'
 import Box from './Box'
 import Text from './Text'
+import TokenIcon from './TokenIcon'
 import TouchableOpacityBox from './TouchableOpacityBox'
 
-const TokenItem = ({ ticker }: { ticker: Ticker }) => {
-  const colors = useColors()
-  const color = useMemo(() => {
-    return ticker === 'MOBILE' ? 'blueBright500' : 'white'
-  }, [ticker])
-
+const TokenItem = ({ mint }: { mint?: PublicKey }) => {
+  const { json } = useMetaplexMetadata(mint)
   return (
     <Box alignItems="center">
-      {ticker === 'SOL' && (
-        <TokenSOL color={colors[color]} height={41} width={41} />
-      )}
-      {ticker === 'HNT' && (
-        <TokenHNT color={colors[color]} height={41} width={41} />
-      )}
-
-      {ticker === 'MOBILE' && (
-        <TokenMOBILE color={colors[color]} height={41} width={41} />
-      )}
-
-      {ticker === 'IOT' && <TokenIOT height={41} width={41} />}
+      <TokenIcon img={json?.image} size={41} />
     </Box>
   )
 }
@@ -45,7 +28,7 @@ type Props = {
   subtitle?: string
   showBubbleArrow?: boolean
   innerBoxProps?: BoxProps<Theme>
-  ticker: Ticker
+  mint?: PublicKey
 } & BoxProps<Theme>
 
 const TokenButton = ({
@@ -55,7 +38,7 @@ const TokenButton = ({
   subtitle,
   showBubbleArrow,
   innerBoxProps,
-  ticker,
+  mint,
   backgroundColor: backgroundColorProps,
   ...boxProps
 }: Props) => {
@@ -90,7 +73,7 @@ const TokenButton = ({
         paddingVertical={innerBoxProps?.paddingVertical || 'm'}
         {...innerBoxProps}
       >
-        <TokenItem ticker={ticker} />
+        <TokenItem mint={mint} />
         <Box flex={1}>
           <Text marginLeft="ms" marginRight="xs" variant="subtitle2">
             {title}

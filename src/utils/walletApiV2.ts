@@ -114,14 +114,14 @@ export const postNotificationRead = async ({
 }
 
 export const postPayment = async ({
-  signature,
+  signatures,
   cluster,
 }: {
-  signature: string
+  signatures: string[]
   cluster: Cluster
 }) => {
   const url = `/payments?cluster=${cluster}`
-  return axiosInstance.post(url, { signature })
+  return axiosInstance.post(url, { signature: signatures[0], signatures })
 }
 
 export const getRecommendedDapps = async () => {

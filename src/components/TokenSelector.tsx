@@ -1,33 +1,55 @@
-import React, {
-  forwardRef,
-  memo,
-  ReactNode,
-  Ref,
-  useCallback,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-} from 'react'
+import TokenIcon from '@components/TokenIcon'
 import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
   BottomSheetModal,
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
-import { BoxProps } from '@shopify/restyle'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Ticker } from '@helium/currency'
-import { useColors, useOpacity } from '@theme/themeHooks'
-import { Theme } from '@theme/theme'
 import useBackHandler from '@hooks/useBackHandler'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { BoxProps } from '@shopify/restyle'
+import { PublicKey } from '@solana/web3.js'
+import { Theme } from '@theme/theme'
+import { useColors, useOpacity } from '@theme/themeHooks'
+import React, {
+  ReactNode,
+  Ref,
+  forwardRef,
+  memo,
+  useCallback,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+} from 'react'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from './Box'
 import ListItem, { LIST_ITEM_HEIGHT } from './ListItem'
 
 export type TokenListItem = {
-  label: string
-  icon: ReactNode
-  value: Ticker
+  mint: PublicKey
   selected: boolean
+}
+
+const ProvidedListItem = ({
+  mint,
+  onPress,
+  selected,
+}: {
+  mint: PublicKey
+  onPress: () => void
+  selected: boolean
+}) => {
+  const { symbol, json } = useMetaplexMetadata(mint)
+  return (
+    <ListItem
+      title={symbol || ''}
+      Icon={json?.image ? () => <TokenIcon img={json.image} /> : undefined}
+      onPress={onPress}
+      selected={selected}
+      paddingStart="l"
+      hasDivider
+    />
+  )
 }
 
 export type TokenSelectorRef = {
@@ -35,7 +57,7 @@ export type TokenSelectorRef = {
 }
 type Props = {
   children: ReactNode
-  onTokenSelected: (type: Ticker) => void
+  onTokenSelected: (mint: PublicKey) => void
   tokenData: TokenListItem[]
 } & BoxProps<Theme>
 const TokenSelector = forwardRef(
@@ -68,27 +90,25 @@ const TokenSelector = forwardRef(
     )
 
     const handleTokenPress = useCallback(
-      (token: string) => () => {
+      (token: PublicKey) => {
         bottomSheetModalRef.current?.dismiss()
-        onTokenSelected(token as Ticker)
+        onTokenSelected(token)
       },
       [onTokenSelected],
     )
 
     const keyExtractor = useCallback((item: TokenListItem) => {
-      return item.value
+      return item.mint.toBase58()
     }, [])
 
     const renderFlatlistItem = useCallback(
       ({ item }: { item: TokenListItem; index: number }) => {
         return (
-          <ListItem
-            title={item.label}
-            Icon={item.icon}
-            onPress={handleTokenPress(item.value)}
+          <ProvidedListItem
+            key={item.mint.toBase58()}
             selected={item.selected}
-            paddingStart="l"
-            hasDivider
+            onPress={() => handleTokenPress(item.mint)}
+            mint={item.mint}
           />
         )
       },

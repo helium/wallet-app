@@ -14,18 +14,17 @@ function doTimeout() {
     lastUpdated = new Date().valueOf()
   }
 }
-let cachedHealthByEndpoint: Record<string, any> = {}
+let cachedHealthByEndpoint: Record<string, Promise<any>> = {}
 async function getCachedHealth(connection: WrappedConnection): Promise<any> {
   doTimeout()
   if (!cachedHealthByEndpoint[connection.rpcEndpoint]) {
-    const { result: health } = await connection.getHealth()
-    cachedHealthByEndpoint[connection.rpcEndpoint] = health
+    cachedHealthByEndpoint[connection.rpcEndpoint] = connection.getHealth()
   }
 
-  return cachedHealthByEndpoint[connection.rpcEndpoint]
+  return (await cachedHealthByEndpoint[connection.rpcEndpoint]).result
 }
 
-let cachedTps: Record<string, any> = {}
+let cachedTps: Record<string, Promise<any>> = {}
 async function getCachedTPS(connection: WrappedConnection): Promise<any> {
   doTimeout()
   if (!cachedTps[connection.rpcEndpoint]) {

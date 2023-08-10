@@ -1,12 +1,10 @@
 import { AnchorProvider } from '@coral-xyz/anchor'
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { AccountLayout, TOKEN_PROGRAM_ID, getMint } from '@solana/spl-token'
 import { Cluster, PublicKey } from '@solana/web3.js'
-import { AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token'
-import BN from 'bn.js'
 import { CSAccount } from '../../storage/cloudStorage'
-import { getBalanceHistory, getTokenPrices } from '../../utils/walletApiV2'
 import { AccountBalance, Prices, TokenAccount } from '../../types/balance'
-import { getEscrowTokenAccount } from '../../utils/solanaUtils'
+import { getBalanceHistory, getTokenPrices } from '../../utils/walletApiV2'
 
 type BalanceHistoryByCurrency = Record<string, AccountBalance[]>
 type BalanceHistoryByWallet = Record<string, BalanceHistoryByCurrency>
@@ -15,7 +13,6 @@ type BalanceHistoryByCluster = Record<Cluster, BalanceHistoryByWallet>
 export type Tokens = {
   atas: TokenAccount[]
   sol: { tokenAccount: string; balance: number }
-  dcEscrow: { tokenAccount: string; balance: number }
 }
 
 type AtaBalances = Record<Cluster, Record<string, Tokens>>
@@ -59,38 +56,24 @@ export const syncTokenAccounts = createAsyncThunk(
     const tokenAccounts = await connection.getTokenAccountsByOwner(pubKey, {
       programId: TOKEN_PROGRAM_ID,
     })
+    const solAcct = await connection.getAccountInfo(pubKey)
 
-    const atas = tokenAccounts.value.map((tokenAccount) => {
-      const accountData = AccountLayout.decode(tokenAccount.account.data)
-      const { mint } = accountData
+    const atas = await Promise.all(
+      tokenAccounts.value.map(async (tokenAccount) => {
+        const accountData = AccountLayout.decode(tokenAccount.account.data)
+        const { mint } = accountData
+        const mintAcc = await getMint(connection, mint)
 
-      return {
-        tokenAccount: tokenAccount.pubkey.toBase58(),
-        mint: mint.toBase58(),
-        balance: Number(accountData.amount || 0),
-      }
-    })
+        return {
+          tokenAccount: tokenAccount.pubkey.toBase58(),
+          mint: mint.toBase58(),
+          balance: Number(accountData.amount || 0),
+          decimals: mintAcc.decimals,
+        }
+      }),
+    )
 
-    const escrowAccount = getEscrowTokenAccount(acct.solanaAddress)
-    let escrowBalance = 0
-    const [dcEscrowAcc, solAcc] = await Promise.all([
-      connection.getAccountInfo(escrowAccount),
-      connection.getAccountInfo(pubKey),
-    ])
-    try {
-      const dcEscrowBalance =
-        dcEscrowAcc && AccountLayout.decode(dcEscrowAcc.data).amount
-      escrowBalance = dcEscrowBalance
-        ? new BN(dcEscrowBalance.toString()).toNumber()
-        : 0
-    } catch {}
-
-    const dcEscrow = {
-      tokenAccount: escrowAccount.toBase58(),
-      balance: escrowBalance,
-    }
-
-    const solBalance = solAcc?.lamports || 0
+    const solBalance = solAcct?.lamports || 0
     const sol = {
       tokenAccount: acct.solanaAddress,
       balance: solBalance,
@@ -98,7 +81,6 @@ export const syncTokenAccounts = createAsyncThunk(
 
     return {
       atas,
-      dcEscrow,
       sol,
     }
   },
@@ -140,24 +122,16 @@ const balancesSlice = createSlice({
         cluster: Cluster
         solanaAddress: string
         balance: number
-        type: 'dcEscrow' | 'sol'
         tokenAccount: string
       }>,
     ) => {
       const { payload } = action
-      const { cluster, solanaAddress, balance, type, tokenAccount } = payload
+      const { cluster, solanaAddress, balance, tokenAccount } = payload
       const next = { tokenAccount, balance }
       const prevTokens = state.balances?.[cluster]?.[solanaAddress]
       if (!prevTokens) return
 
-      switch (type) {
-        case 'dcEscrow':
-          prevTokens.dcEscrow = next
-          break
-        case 'sol':
-          prevTokens.sol = next
-          break
-      }
+      prevTokens.sol = next
     },
     updateAtaBalance: (
       state,
@@ -230,5 +204,5 @@ const balancesSlice = createSlice({
 })
 
 const { reducer, name } = balancesSlice
-export { name, balancesSlice }
+export { balancesSlice, name }
 export default reducer

@@ -1,34 +1,35 @@
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, Linking } from 'react-native'
-import animalHash from 'angry-purple-tiger'
-import { useAsync } from 'react-async-hook'
-import {
-  verifyWalletLinkToken,
-  parseWalletLinkToken,
-  SignHotspotResponse,
-  createSignHotspotCallbackUrl,
-} from '@helium/wallet-link'
-import Toast from 'react-native-simple-toast'
+import AccountIcon from '@components/AccountIcon'
 import Box from '@components/Box'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import AccountIcon from '@components/AccountIcon'
-import { useColors } from '@theme/themeHooks'
-import Config from 'react-native-config'
 import OnboardingClient, { OnboardingRecord } from '@helium/onboarding'
-import { HomeNavigationProp } from '../home/homeTypes'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { formatAccountAlias } from '../../utils/accountUtils'
-import { getKeypair } from '../../storage/secureStorage'
-import * as Logger from '../../utils/logger'
-import useSolTxns from './useSolTxns'
+import {
+  SignHotspotResponse,
+  createSignHotspotCallbackUrl,
+  parseWalletLinkToken,
+  verifyWalletLinkToken,
+} from '@helium/wallet-link'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useColors } from '@theme/themeHooks'
+import animalHash from 'angry-purple-tiger'
+import BN from 'bn.js'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { useAsync } from 'react-async-hook'
+import { useTranslation } from 'react-i18next'
+import { ActivityIndicator, Linking } from 'react-native'
+import Config from 'react-native-config'
+import Toast from 'react-native-simple-toast'
 import {
   RootNavigationProp,
   RootStackParamList,
 } from '../../navigation/rootTypes'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { getKeypair } from '../../storage/secureStorage'
+import { formatAccountAlias } from '../../utils/accountUtils'
+import * as Logger from '../../utils/logger'
+import { HomeNavigationProp } from '../home/homeTypes'
+import useSolTxns from './useSolTxns'
 
 type Route = RouteProp<RootStackParamList, 'SignHotspot'>
 
@@ -312,14 +313,14 @@ const SignHotspot = () => {
             </Box>
           )}
         </Box>
-        {((solana.burnAmounts?.hntFee?.integerBalance || 0) > 0 ||
-          (solana.burnAmounts?.dcFee?.integerBalance || 0) > 0) && (
+        {(solana.burnAmounts?.hntFee?.gt(new BN(0)) ||
+          solana.burnAmounts?.dcFee?.gt(new BN(0))) && (
           <>
             <Text variant="body1" color="surfaceContrastText">
               {t('signHotspot.burnAmounts')}
             </Text>
 
-            {(solana.burnAmounts?.dcFee?.integerBalance || 0) > 0 && (
+            {solana.burnAmounts?.dcFee?.gt(new BN(0)) && (
               <Text
                 variant="subtitle1"
                 color="surfaceContrastText"
@@ -329,7 +330,7 @@ const SignHotspot = () => {
               </Text>
             )}
 
-            {(solana.burnAmounts?.hntFee?.integerBalance || 0) > 0 && (
+            {solana.burnAmounts?.hntFee?.gt(new BN(0)) && (
               <Text
                 variant="subtitle1"
                 color="surfaceContrastText"

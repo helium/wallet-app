@@ -1,31 +1,26 @@
-import { Ticker } from '@helium/currency'
+import RewardBG from '@assets/images/rewardBg.svg'
+import { useMint } from '@helium/helium-react-hooks'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
+import { PublicKey } from '@solana/web3.js'
+import { Theme } from '@theme/theme'
+import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { memo, useMemo } from 'react'
-import RewardBG from '@assets/images/rewardBg.svg'
-import { Theme } from '@theme/theme'
-import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
-import { useMint } from '@helium/helium-react-hooks'
-import { formatLargeNumber } from '@utils/accountUtils'
-import BigNumber from 'bignumber.js'
 import Box from './Box'
-import TokenIcon from './TokenIcon'
 import Text from './Text'
+import TokenIcon from './TokenIcon'
 
-type RewardItemProps = { ticker: Ticker; amount: BN } & BoxProps<Theme>
+type RewardItemProps = { mint: PublicKey; amount: BN } & BoxProps<Theme>
 
-const RewardItem = ({ ticker, amount, ...rest }: RewardItemProps) => {
-  const { info: iotMint } = useMint(IOT_MINT)
-  const { info: mobileMint } = useMint(MOBILE_MINT)
-
+const RewardItem = ({ mint, amount, ...rest }: RewardItemProps) => {
+  const decimals = useMint(mint)?.info?.decimals
+  const { json, symbol } = useMetaplexMetadata(mint)
   const pendingRewardsString = useMemo(() => {
     if (!amount) return
 
-    const decimals =
-      ticker === 'MOBILE' ? mobileMint?.info.decimals : iotMint?.info.decimals
-    const num = toNumber(amount, decimals || 6)
-    return formatLargeNumber(new BigNumber(num))
-  }, [mobileMint, iotMint, amount, ticker])
+    return humanReadable(amount, decimals || 6)
+  }, [amount, decimals])
 
   return (
     <Box
@@ -41,7 +36,7 @@ const RewardItem = ({ ticker, amount, ...rest }: RewardItemProps) => {
         <RewardBG />
       </Box>
 
-      <TokenIcon ticker={ticker} size={70} />
+      <TokenIcon img={json?.image} size={70} />
 
       <Text
         marginTop="m"
@@ -52,7 +47,7 @@ const RewardItem = ({ ticker, amount, ...rest }: RewardItemProps) => {
         {pendingRewardsString}
       </Text>
       <Text variant="subtitle3" color="secondaryText">
-        {ticker}
+        {symbol}
       </Text>
     </Box>
   )

@@ -1,40 +1,38 @@
+import Close from '@assets/images/close.svg'
+import SafeAreaBox from '@components/SafeAreaBox'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import Address from '@helium/address'
 import { TokenBurnV1 } from '@helium/transactions'
+import useAlert from '@hooks/useAlert'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useColors } from '@theme/themeHooks'
 import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react'
+import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, Linking } from 'react-native'
 import { useDebouncedCallback } from 'use-debounce/lib'
-import Close from '@assets/images/close.svg'
-import { useAsync } from 'react-async-hook'
-import LedgerBurnModal, {
-  LedgerBurnModalRef,
-} from '@components/LedgerBurnModal'
-import SafeAreaBox from '@components/SafeAreaBox'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useColors } from '@theme/themeHooks'
-import useAlert from '@hooks/useAlert'
-import Address from '@helium/address'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { HomeNavigationProp } from '../home/homeTypes'
-import { useWalletConnect } from './WalletConnectProvider'
-import DappConnect from './DappConnect'
-import DappAccount from './DappAccount'
 import {
   RootNavigationProp,
   RootStackParamList,
 } from '../../navigation/rootTypes'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { getKeypair } from '../../storage/secureStorage'
+import { HomeNavigationProp } from '../home/homeTypes'
+import DappAccount from './DappAccount'
+import DappConnect from './DappConnect'
+import { useWalletConnect } from './WalletConnectProvider'
 
-export const EMPTY_B58_ADDRESS = Address.fromB58(
-  '13PuqyWXzPYeXcF1B9ZRx7RLkEygeL374ZABiQdwRSNzASdA1sn',
-)
 const makeBurnTxn = async (opts: { payerB58: string }) => {
   const { payerB58 } = opts
 
   const txn = new TokenBurnV1({
     amount: 1,
     payer: Address.fromB58(payerB58),
-    payee: EMPTY_B58_ADDRESS,
+    // TODO: This must not be a global const or checksum fails for some reason??
+    // This whole login process should go away anyway.
+    payee: Address.fromB58(
+      '13PuqyWXzPYeXcF1B9ZRx7RLkEygeL374ZABiQdwRSNzASdA1sn',
+    ),
     nonce: 0,
     memo: '',
   })
@@ -78,9 +76,7 @@ const DappLoginScreen = () => {
   const { currentAccount } = useAccountStorage()
   const { primaryText } = useColors()
   const { showOKAlert } = useAlert()
-  const ledgerRef = useRef<LedgerBurnModalRef>(null)
   const hasRequestedPair = useRef(false)
-  const ledgerShown = useRef(false)
 
   useAsync(async () => {
     if (params.uri.includes('wc:') && !hasRequestedPair.current) {
@@ -145,25 +141,9 @@ const DappLoginScreen = () => {
   useAsync(async () => {
     if (!currentAccount?.address || !loginRequest) return
 
-    const isLedger = !!currentAccount.ledgerDevice
-
-    const { signedTxn, unsignedTxn, txnJson } = await makeBurnTxn({
+    const { signedTxn } = await makeBurnTxn({
       payerB58: currentAccount.address,
     })
-
-    if (isLedger && currentAccount.ledgerDevice) {
-      if (ledgerShown.current) return
-
-      ledgerShown.current = true
-
-      ledgerRef.current?.show({
-        unsignedTxn,
-        ledgerDevice: currentAccount.ledgerDevice,
-        accountIndex: currentAccount.accountIndex || 0,
-        txnJson,
-      })
-      return
-    }
 
     if (!signedTxn) return
 
@@ -187,31 +167,6 @@ const DappLoginScreen = () => {
       await Linking.openURL(params.callback)
     }
   }, [currentAccount, loginRequest])
-
-  const ledgerConfirmed = useCallback(
-    async ({ txn: signedTxn }: { txn: TokenBurnV1; txnJson: string }) => {
-      if (!currentAccount) return
-
-      await login({
-        txn: signedTxn.toString(),
-        address: currentAccount.address,
-      })
-
-      await goBack()
-    },
-    [currentAccount, goBack, login],
-  )
-
-  const handleLedgerError = useCallback(
-    async (error: Error) => {
-      await showOKAlert({
-        title: t('generic.error'),
-        message: error.toString(),
-      })
-      await goBack()
-    },
-    [goBack, showOKAlert, t],
-  )
 
   const checkTimeoutError = useCallback(async () => {
     if (connectionState !== 'undetermined') return
@@ -267,33 +222,22 @@ const DappLoginScreen = () => {
   ])
 
   return (
-    <LedgerBurnModal
-      ref={ledgerRef}
-      onConfirm={ledgerConfirmed}
-      onError={handleLedgerError}
-      title={t('dappLogin.ledger.title')}
-      subtitle={t('dappLogin.ledger.subtitle', {
-        deviceName: currentAccount?.ledgerDevice?.name,
-        appName: sessionProposal?.params.proposer.metadata.name,
-      })}
+    <SafeAreaBox
+      backgroundColor="primaryBackground"
+      paddingHorizontal="l"
+      flex={1}
     >
-      <SafeAreaBox
-        backgroundColor="primaryBackground"
-        paddingHorizontal="l"
-        flex={1}
+      <TouchableOpacityBox
+        onPress={goBack}
+        alignSelf="flex-end"
+        justifyContent="center"
+        paddingHorizontal="m"
+        marginEnd="n_m"
       >
-        <TouchableOpacityBox
-          onPress={goBack}
-          alignSelf="flex-end"
-          justifyContent="center"
-          paddingHorizontal="m"
-          marginEnd="n_m"
-        >
-          <Close color={colors.white} height={21} width={21} />
-        </TouchableOpacityBox>
-        {body}
-      </SafeAreaBox>
-    </LedgerBurnModal>
+        <Close color={colors.white} height={21} width={21} />
+      </TouchableOpacityBox>
+      {body}
+    </SafeAreaBox>
   )
 }
 

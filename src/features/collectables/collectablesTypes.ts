@@ -18,14 +18,16 @@ export type CollectableStackParamList = {
   AssertLocationScreen: {
     collectable: HotspotWithPendingRewards
   }
+  AntennaSetupScreen: {
+    collectable: HotspotWithPendingRewards
+  }
+  SettingUpAntennaScreen: undefined
   PaymentScreen: undefined | PaymentRouteParam
-
   ClaimRewardsScreen: {
     hotspot: HotspotWithPendingRewards
   }
   ClaimAllRewardsScreen: undefined
   ClaimingRewardsScreen: undefined
-
   CollectionScreen: {
     collection: Collectable[]
   }
@@ -41,7 +43,6 @@ export type CollectableStackParamList = {
   TransferCompleteScreen: {
     collectable: CompressedNFT | Collectable
   }
-
   AddNewContact: undefined
   PaymentQrScanner: undefined
   AddressBookNavigator: undefined

@@ -1,45 +1,48 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { RouteProp, useRoute } from '@react-navigation/native'
-import { useTranslation } from 'react-i18next'
+import ActivityIndicator from '@components/ActivityIndicator'
+import { ReAnimatedBox } from '@components/AnimatedBox'
+import BackScreen from '@components/BackScreen'
+import BlurActionSheet from '@components/BlurActionSheet'
+import Box from '@components/Box'
+import FadeInOut, { DelayedFadeIn } from '@components/FadeInOut'
+import ListItem from '@components/ListItem'
+import { NavBarHeight } from '@components/NavBar'
+import Text from '@components/Text'
+import TokenIcon from '@components/TokenIcon'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import BottomSheet, {
   BottomSheetFlatList,
   WINDOW_HEIGHT,
 } from '@gorhom/bottom-sheet'
+import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
+import useLayoutHeight from '@hooks/useLayoutHeight'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { usePublicKey } from '@hooks/usePublicKey'
+import { RouteProp, useRoute } from '@react-navigation/native'
+import { NATIVE_MINT } from '@solana/spl-token'
+import globalStyles from '@theme/globalStyles'
+import { useColors } from '@theme/themeHooks'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Platform, View } from 'react-native'
 import Animated, {
   FadeIn,
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated'
-import { Platform, View } from 'react-native'
-import { Ticker } from '@helium/currency'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import ListItem from '@components/ListItem'
-import TokenIcon from '@components/TokenIcon'
-import BlurActionSheet from '@components/BlurActionSheet'
-import useLayoutHeight from '@hooks/useLayoutHeight'
-import FadeInOut, { DelayedFadeIn } from '@components/FadeInOut'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import ActivityIndicator from '@components/ActivityIndicator'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import globalStyles from '@theme/globalStyles'
-import { useColors } from '@theme/themeHooks'
-import { NavBarHeight } from '@components/NavBar'
+import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { Activity } from '../../types/activity'
+import { HomeStackParamList } from '../home/homeTypes'
 import AccountActionBar from './AccountActionBar'
 import { FilterType, useActivityFilter } from './AccountActivityFilter'
-import TxnListItem from './TxnListItem'
+import AccountTokenBalance from './AccountTokenBalance'
+import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import {
   useTransactionDetail,
   withTransactionDetail,
 } from './TransactionDetail'
-import { HomeStackParamList } from '../home/homeTypes'
-import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
-import AccountTokenBalance from './AccountTokenBalance'
-import { Activity } from '../../types/activity'
-import { useSolana } from '../../solana/SolanaProvider'
+import TxnListItem from './TxnListItem'
 import useSolanaActivityList from './useSolanaActivityList'
 
 const delayedAnimation = FadeIn.delay(300)
@@ -69,10 +72,11 @@ const AccountTokenScreen = () => {
     setOnEndReachedCalledDuringMomentum,
   ] = useState(true)
 
-  const routeTicker = useMemo(
-    () => route.params.tokenType?.toUpperCase() as Ticker,
-    [route.params.tokenType],
-  )
+  const mintStr = useMemo(() => route.params.mint, [route.params.mint])
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const mint = usePublicKey(mintStr)!
+
+  const { json, symbol } = useMetaplexMetadata(mint)
 
   const toggleFiltersOpen = useCallback(
     (open) => () => {
@@ -97,7 +101,8 @@ const AccountTokenScreen = () => {
   } = useSolanaActivityList({
     account: currentAccount,
     filter: filterState.filter,
-    ticker: routeTicker,
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    mint: mint!,
   })
 
   const handleOnFetchMoreActivity = useCallback(() => {
@@ -171,22 +176,23 @@ const AccountTokenScreen = () => {
       showTxnDetail({
         item,
         accountAddress: currentAccount?.address || '',
+        mint,
       })
     },
-    [currentAccount, showTxnDetail],
+    [currentAccount, showTxnDetail, mint],
   )
 
   const hasAirdrop = useMemo(() => {
     if (cluster === 'devnet') {
       return (
-        routeTicker === 'SOL' ||
-        routeTicker === 'HNT' ||
-        routeTicker === 'IOT' ||
-        routeTicker === 'MOBILE'
+        mint.equals(NATIVE_MINT) ||
+        mint.equals(HNT_MINT) ||
+        mint.equals(IOT_MINT) ||
+        mint.equals(MOBILE_MINT)
       )
     }
     return false
-  }, [routeTicker, cluster])
+  }, [mint, cluster])
 
   const renderHeader = useCallback(() => {
     const filterName = t(`accountsScreen.filterTypes.${filterState.filter}`)
@@ -244,6 +250,7 @@ const AccountTokenScreen = () => {
             }}
           >
             <TxnListItem
+              mint={mint}
               onPress={showTransactionDetail}
               item={item}
               now={now}
@@ -253,7 +260,13 @@ const AccountTokenScreen = () => {
         </FadeInOut>
       )
     },
-    [activityData, bottomScreenHeaderHeight, now, showTransactionDetail],
+    [
+      activityData?.length,
+      bottomScreenHeaderHeight,
+      mint,
+      now,
+      showTransactionDetail,
+    ],
   )
 
   const renderFooter = useCallback(() => {
@@ -306,7 +319,7 @@ const AccountTokenScreen = () => {
   const filters = useCallback(
     () => (
       <>
-        {routeTicker !== 'DC' && (
+        {!mint.equals(DC_MINT) && (
           <>
             <ListItem
               key="all"
@@ -331,7 +344,7 @@ const AccountTokenScreen = () => {
             />
           </>
         )}
-        {routeTicker === 'DC' && (
+        {mint.equals(DC_MINT) && (
           <>
             <ListItem
               key="mint"
@@ -351,7 +364,7 @@ const AccountTokenScreen = () => {
         )}
       </>
     ),
-    [filterState.filter, routeTicker, setFilter, t],
+    [filterState.filter, mint, setFilter, t],
   )
 
   const backgroundComponent = useCallback(
@@ -388,7 +401,7 @@ const AccountTokenScreen = () => {
       hasBottomTitle: true,
     }
 
-    if (routeTicker === 'DC') {
+    if (mint.equals(DC_MINT)) {
       options = {
         hasSend: false,
         hasRequest: false,
@@ -399,14 +412,14 @@ const AccountTokenScreen = () => {
     }
 
     return options
-  }, [routeTicker])
+  }, [mint])
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <BackScreen
         padding="none"
         title={t('accountsScreen.title', {
-          ticker: routeTicker,
+          ticker: symbol,
         })}
         onHeaderLayout={setBackHeaderHeight}
       >
@@ -431,20 +444,22 @@ const AccountTokenScreen = () => {
                   showTicker={false}
                   textVariant="h2Medium"
                   justifyContent="flex-start"
-                  ticker={routeTicker}
+                  mint={mint}
                   flex={1}
                 />
-                <AccountTokenCurrencyBalance
-                  ticker={routeTicker}
-                  variant="body1"
-                  color="secondaryText"
-                />
+                {!!symbol && (
+                  <AccountTokenCurrencyBalance
+                    ticker={symbol.toUpperCase()}
+                    variant="body1"
+                    color="secondaryText"
+                  />
+                )}
               </Box>
               <AccountActionBar
                 hasSend={actionBarProps.hasSend}
                 hasRequest={actionBarProps.hasRequest}
                 hasDelegate={actionBarProps.hasDelegate}
-                ticker={routeTicker}
+                mint={mint}
                 maxCompact
               />
             </Box>
@@ -452,23 +467,25 @@ const AccountTokenScreen = () => {
           <Animated.View style={bottomHeaderAnimatedStyle}>
             <Box marginVertical="xl">
               <Box alignItems="center" marginBottom="m">
-                <TokenIcon ticker={routeTicker} size={50} />
+                <TokenIcon img={json?.image} size={50} />
               </Box>
-              <AccountTokenBalance marginTop="s" ticker={routeTicker} />
-              <AccountTokenCurrencyBalance
-                ticker={routeTicker}
-                variant="h4"
-                color="secondaryText"
-                textAlign="center"
-                marginBottom="xl"
-              />
+              <AccountTokenBalance marginTop="s" mint={mint} />
+              {!!symbol && (
+                <AccountTokenCurrencyBalance
+                  ticker={symbol.toUpperCase()}
+                  variant="h4"
+                  color="secondaryText"
+                  textAlign="center"
+                  marginBottom="xl"
+                />
+              )}
               <AccountActionBar
                 hasSend={actionBarProps.hasSend}
                 hasRequest={actionBarProps.hasRequest}
                 hasDelegate={actionBarProps.hasDelegate}
-                ticker={routeTicker}
-                compact={routeTicker !== 'DC'}
-                hasBottomTitle={routeTicker !== 'DC'}
+                mint={mint}
+                compact={!mint.equals(DC_MINT)}
+                hasBottomTitle={!mint.equals(DC_MINT)}
                 hasAirdrop={hasAirdrop}
               />
             </Box>

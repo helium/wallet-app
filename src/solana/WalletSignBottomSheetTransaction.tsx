@@ -100,7 +100,7 @@ const WalletSignBottomSheetTransaction = ({
                       amount: change.nativeChange,
                     })
                   } else {
-                    balanceChange = t('browserScreen.recieveToken', {
+                    balanceChange = t('browserScreen.receiveToken', {
                       ticker: change.symbol,
                       amount: change.nativeChange,
                     })
