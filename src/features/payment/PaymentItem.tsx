@@ -23,7 +23,6 @@ import {
   NativeSyntheticEvent,
   TextInputEndEditingEventData,
 } from 'react-native'
-import { useDebouncedCallback } from 'use-debounce'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useBalance } from '../../utils/Balance'
 import { accountNetType, ellipsizeAddress } from '../../utils/accountUtils'
@@ -121,12 +120,14 @@ const PaymentItem = ({
     onToggleMax({ address, index })
   }, [address, index, onToggleMax])
 
-  // debounce is needed to avoid unneccessary rpc calls
-  const handleEditAddress = useDebouncedCallback((text?: string) => {
-    onEditAddress({ address: text || '', index })
-  }, 800)
+  const handleEditAddress = useCallback(
+    (text?: string) => {
+      onEditAddress({ address: text || '', index })
+    },
+    [index, onEditAddress],
+  )
 
-  const handleAddressBlur = useDebouncedCallback(
+  const handleAddressBlur = useCallback(
     (event?: NativeSyntheticEvent<TextInputEndEditingEventData>) => {
       const text = event?.nativeEvent.text
       handleAddressError({
@@ -135,7 +136,7 @@ const PaymentItem = ({
         isHotspotOrValidator: false,
       })
     },
-    800,
+    [handleAddressError, index],
   )
 
   const handleRemove = useCallback(() => {
