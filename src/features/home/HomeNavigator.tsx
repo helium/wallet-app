@@ -1,25 +1,26 @@
-import React, { memo } from 'react'
+import ConfirmPinScreen from '@components/ConfirmPinScreen'
 import {
   createStackNavigator,
   StackNavigationOptions,
 } from '@react-navigation/stack'
-import ConfirmPinScreen from '@components/ConfirmPinScreen'
-import AccountAssignScreen from '../onboarding/AccountAssignScreen'
+import React, { memo } from 'react'
 import AccountsScreen from '../account/AccountsScreen'
-import PaymentScreen from '../payment/PaymentScreen'
-import AddressBookNavigator from '../addressBook/AddressBookNavigator'
-import SettingsNavigator from '../settings/SettingsNavigator'
-import AddNewContact from '../addressBook/AddNewContact'
-import NotificationsNavigator from '../notifications/NotificationsNavigator'
-import RequestScreen from '../request/RequestScreen'
-import PaymentQrScanner from '../payment/PaymentQrScanner'
-import AddressQrScanner from '../addressBook/AddressQrScanner'
 import AccountTokenScreen from '../account/AccountTokenScreen'
-import AddNewAccountNavigator from './addNewAccount/AddNewAccountNavigator'
-import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
-import BurnScreen from '../burn/BurnScreen'
-import SwapNavigator from '../swaps/SwapNavigator'
 import AirdropScreen from '../account/AirdropScreen'
+import AccountManageTokenListScreen from '../account/AccountManageTokenListScreen'
+import AddNewContact from '../addressBook/AddNewContact'
+import AddressBookNavigator from '../addressBook/AddressBookNavigator'
+import AddressQrScanner from '../addressBook/AddressQrScanner'
+import BurnScreen from '../burn/BurnScreen'
+import NotificationsNavigator from '../notifications/NotificationsNavigator'
+import AccountAssignScreen from '../onboarding/AccountAssignScreen'
+import ImportAccountNavigator from '../onboarding/import/ImportAccountNavigator'
+import PaymentQrScanner from '../payment/PaymentQrScanner'
+import PaymentScreen from '../payment/PaymentScreen'
+import RequestScreen from '../request/RequestScreen'
+import SettingsNavigator from '../settings/SettingsNavigator'
+import SwapNavigator from '../swaps/SwapNavigator'
+import AddNewAccountNavigator from './addNewAccount/AddNewAccountNavigator'
 
 const HomeStack = createStackNavigator()
 
@@ -38,6 +39,10 @@ const HomeStackScreen = () => {
       <HomeStack.Screen
         name="AccountTokenScreen"
         component={AccountTokenScreen}
+      />
+      <HomeStack.Screen
+        name="AccountManageTokenListScreen"
+        component={AccountManageTokenListScreen}
       />
       <HomeStack.Screen
         name="AccountAssignScreen"

@@ -1,17 +1,19 @@
-import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
-import React, { memo } from 'react'
-import { useTranslation } from 'react-i18next'
 import SuccessIcon from '@assets/images/paymentSuccess.svg'
 import BackgroundFill from '@components/BackgroundFill'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { PublicKey } from '@solana/web3.js'
+import BN from 'bn.js'
+import React, { memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Payment } from './PaymentItem'
 import PaymentSummary from './PaymentSummary'
 
 type Props = {
-  totalBalance: Balance<TestNetworkTokens | NetworkTokens>
-  feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
+  mint: PublicKey
+  totalBalance: BN
+  feeTokenBalance?: BN
   payments: Payment[]
   onSuccess: () => void
   actionTitle: string
@@ -23,6 +25,7 @@ const PaymentSuccess = ({
   payments,
   onSuccess,
   actionTitle,
+  mint,
 }: Props) => {
   const { t } = useTranslation()
   return (
@@ -41,6 +44,7 @@ const PaymentSuccess = ({
       >
         <BackgroundFill backgroundColor="secondary" opacity={0.4} />
         <PaymentSummary
+          mint={mint}
           totalBalance={totalBalance}
           feeTokenBalance={feeTokenBalance}
           payments={payments}

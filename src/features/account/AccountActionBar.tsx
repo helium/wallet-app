@@ -1,14 +1,14 @@
-import React, { useCallback, useMemo } from 'react'
-import { useNavigation } from '@react-navigation/native'
-import { useTranslation } from 'react-i18next'
-import { LayoutChangeEvent } from 'react-native'
-import { Ticker } from '@helium/currency'
 import Box from '@components/Box'
 import FabButton from '@components/FabButton'
 import Text from '@components/Text'
+import { useNavigation } from '@react-navigation/native'
+import { PublicKey } from '@solana/web3.js'
+import React, { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { LayoutChangeEvent } from 'react-native'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
 export type Action =
   | 'send'
@@ -21,7 +21,7 @@ export type Action =
   | 'airdrop'
 
 type Props = {
-  ticker?: Ticker
+  mint?: PublicKey
   onLayout?: (event: LayoutChangeEvent) => void
   compact?: boolean
   maxCompact?: boolean
@@ -43,7 +43,7 @@ const AccountActionBar = ({
   hasDelegate,
   hasSwaps,
   hasAirdrop,
-  ticker,
+  mint,
 }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
@@ -58,7 +58,7 @@ const AccountActionBar = ({
             navigation.navigate('ConfirmPin', { action: 'payment' })
           } else {
             navigation.navigate('PaymentScreen', {
-              defaultTokenType: ticker,
+              mint: mint?.toBase58(),
             })
           }
           break
@@ -72,7 +72,9 @@ const AccountActionBar = ({
           break
         }
         case 'airdrop': {
-          navigation.navigate('AirdropScreen', { ticker: ticker || 'HNT' })
+          if (mint) {
+            navigation.navigate('AirdropScreen', { mint: mint?.toBase58() })
+          }
           break
         }
         case '5G': {
@@ -93,7 +95,7 @@ const AccountActionBar = ({
         }
       }
     },
-    [navigation, pin, requirePinForPayment, ticker],
+    [pin?.status, requirePinForPayment, navigation, mint],
   )
 
   const fabMargin = useMemo(() => {

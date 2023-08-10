@@ -1,7 +1,25 @@
+import Checkmark from '@assets/images/checkmark.svg'
+import Box from '@components/Box'
+import ButtonPressable from '@components/ButtonPressable'
+import SafeAreaBox from '@components/SafeAreaBox'
+import Text from '@components/Text'
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetModalProvider,
+  useBottomSheetDynamicSnapPoints,
+} from '@gorhom/bottom-sheet'
+import { useSolOwnedAmount } from '@helium/helium-react-hooks'
+import { usePublicKey } from '@hooks/usePublicKey'
+import { useRentExempt } from '@hooks/useRentExempt'
+import { LAMPORTS_PER_SOL } from '@solana/web3.js'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { useColors, useOpacity } from '@theme/themeHooks'
+import BN from 'bn.js'
 import React, {
+  Ref,
   forwardRef,
   memo,
-  Ref,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -9,31 +27,16 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import Checkmark from '@assets/images/checkmark.svg'
 import { useTranslation } from 'react-i18next'
-import {
-  BottomSheetBackdrop,
-  useBottomSheetDynamicSnapPoints,
-  BottomSheetModal,
-  BottomSheetModalProvider,
-} from '@gorhom/bottom-sheet'
-import { Edge } from 'react-native-safe-area-context'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import { useColors, useOpacity } from '@theme/themeHooks'
-import ButtonPressable from '@components/ButtonPressable'
-import { LAMPORTS_PER_SOL } from '@solana/web3.js'
-import { useBalance } from '@utils/Balance'
 import { ScrollView } from 'react-native-gesture-handler'
-import { useRentExempt } from '@hooks/useRentExempt'
+import { Edge } from 'react-native-safe-area-context'
+import WalletSignBottomSheetTransaction from './WalletSignBottomSheetTransaction'
 import {
-  WalletSignBottomSheetRef,
   WalletSignBottomSheetProps,
+  WalletSignBottomSheetRef,
   WalletSignOpts,
   WalletStandardMessageTypes,
 } from './walletSignBottomSheetTypes'
-import WalletSignBottomSheetTransaction from './WalletSignBottomSheetTransaction'
 
 let promiseResolve: (value: boolean | PromiseLike<boolean>) => void
 
@@ -47,7 +50,9 @@ const WalletSignBottomSheet = forwardRef(
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { secondaryText } = useColors()
     const { t } = useTranslation()
-    const { solBalance } = useBalance()
+    const { currentAccount } = useAccountStorage()
+    const solanaAddress = usePublicKey(currentAccount?.solanaAddress)
+    const { amount: solBalance } = useSolOwnedAmount(solanaAddress)
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const [totalSolFee, setTotalSolFee] = useState(0)
     const [isVisible, setIsVisible] = useState(false)
@@ -96,22 +101,21 @@ const WalletSignBottomSheet = forwardRef(
       return 5000 / LAMPORTS_PER_SOL
     }, [walletSignOpts, totalSolFee, currentTxs])
 
-    const insufficientRentExempt = useMemo(
-      () =>
-        (solBalance?.floatBalance || 0) - estimatedTotalSolByLamports <
-        (rentExempt || 0),
-      [solBalance?.floatBalance, estimatedTotalSolByLamports, rentExempt],
-    )
+    const insufficientRentExempt = useMemo(() => {
+      if (solBalance) {
+        return new BN(solBalance.toString())
+          .sub(new BN(estimatedTotalSolByLamports))
+          .lt(new BN(rentExempt || 0))
+      }
+    }, [solBalance, estimatedTotalSolByLamports, rentExempt])
 
     const insufficientFunds = useMemo(
       () =>
         nestedInsufficentFunds ||
-        estimatedTotalSolByLamports > (solBalance?.floatBalance || 0),
-      [
-        solBalance?.floatBalance,
-        estimatedTotalSolByLamports,
-        nestedInsufficentFunds,
-      ],
+        new BN(estimatedTotalSolByLamports).gt(
+          new BN(solBalance?.toString() || '0'),
+        ),
+      [solBalance, estimatedTotalSolByLamports, nestedInsufficentFunds],
     )
 
     const safeEdges = useMemo(() => ['bottom'] as Edge[], [])

@@ -1,21 +1,25 @@
-import Balance, { NetworkTokens, TestNetworkTokens } from '@helium/currency'
-import { useNavigation } from '@react-navigation/native'
-import React, { memo, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 import FailureIcon from '@assets/images/paymentFailure.svg'
-import { SerializedError } from '@reduxjs/toolkit'
 import BackgroundFill from '@components/BackgroundFill'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useOwnedAmount } from '@helium/helium-react-hooks'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { useNavigation } from '@react-navigation/native'
+import { SerializedError } from '@reduxjs/toolkit'
+import { NATIVE_MINT } from '@solana/spl-token'
+import { PublicKey } from '@solana/web3.js'
 import { parseTransactionError } from '@utils/solanaUtils'
-import { useBalance } from '@utils/Balance'
+import BN from 'bn.js'
+import React, { memo, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Payment } from './PaymentItem'
 import PaymentSummary from './PaymentSummary'
 
 type Props = {
-  totalBalance: Balance<TestNetworkTokens | NetworkTokens>
-  feeTokenBalance?: Balance<TestNetworkTokens | NetworkTokens>
+  mint: PublicKey
+  totalBalance: BN
+  feeTokenBalance?: BN
   payments: Payment[]
   error?: Error | SerializedError
   onRetry: () => void
@@ -27,15 +31,20 @@ const PaymentError = ({
   payments,
   error,
   onRetry,
+  mint,
 }: Props) => {
   const navigation = useNavigation()
   const { t } = useTranslation()
-  const { solBalance } = useBalance()
+  const wallet = useCurrentWallet()
+  const { amount: solBalance } = useOwnedAmount(wallet, NATIVE_MINT)
 
   const errorMessage = useMemo(() => {
     if (!error) return ''
 
-    return parseTransactionError(solBalance, error.message)
+    return parseTransactionError(
+      new BN(solBalance?.toString() || '0'),
+      error.message,
+    )
   }, [error, solBalance])
 
   return (
@@ -65,6 +74,7 @@ const PaymentError = ({
       >
         <BackgroundFill backgroundColor="secondary" opacity={0.4} />
         <PaymentSummary
+          mint={mint}
           totalBalance={totalBalance}
           feeTokenBalance={feeTokenBalance}
           payments={payments}

@@ -1,98 +1,105 @@
-/* eslint-disable no-param-reassign */
-import React, {
-  useCallback,
-  useState,
-  memo as reactMemo,
-  useMemo,
-  useEffect,
-  useRef,
-} from 'react'
-import { useTranslation } from 'react-i18next'
 import Close from '@assets/images/close.svg'
 import QR from '@assets/images/qr.svg'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import Balance, {
-  CurrencyType,
-  NetworkTokens,
-  TestNetworkTokens,
-  Ticker,
-} from '@helium/currency'
-import { Keyboard, Platform } from 'react-native'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import Address, { NetTypes } from '@helium/address'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { PaymentV2 } from '@helium/transactions'
-import { unionBy } from 'lodash'
-import Toast from 'react-native-simple-toast'
-import { useSelector } from 'react-redux'
-import TokenButton from '@components/TokenButton'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useColors, useHitSlop } from '@theme/themeHooks'
+import AccountButton from '@components/AccountButton'
 import AccountSelector, {
   AccountSelectorRef,
 } from '@components/AccountSelector'
+import AddressBookSelector, {
+  AddressBookRef,
+} from '@components/AddressBookSelector'
+import Box from '@components/Box'
+import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
+import IconPressedContainer from '@components/IconPressedContainer'
+import Text from '@components/Text'
+import TokenButton from '@components/TokenButton'
 import TokenSelector, {
   TokenListItem,
   TokenSelectorRef,
 } from '@components/TokenSelector'
-import AccountButton from '@components/AccountButton'
-import AddressBookSelector, {
-  AddressBookRef,
-} from '@components/AddressBookSelector'
-import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import Address, { NetTypes } from '@helium/address'
+import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
+import { DC_MINT, HNT_MINT } from '@helium/spl-utils'
 import useDisappear from '@hooks/useDisappear'
-import IconPressedContainer from '@components/IconPressedContainer'
-import TokenSOL from '@assets/images/tokenSOL.svg'
-import TokenIOT from '@assets/images/tokenIOT.svg'
-import TokenHNT from '@assets/images/tokenHNT.svg'
-import TokenMOBILE from '@assets/images/tokenMOBILE.svg'
-import { calcCreateAssociatedTokenAccountAccountFee } from '@utils/solanaUtils'
-import { Mints } from '@utils/constants'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { usePublicKey } from '@hooks/usePublicKey'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
-import { fetchDomainOwner } from '@utils/getDomainOwner'
-import { useSolana } from '../../solana/SolanaProvider'
+import { useVisibleTokens } from '@storage/TokensProvider'
+import { useColors, useHitSlop } from '@theme/themeHooks'
+import { Mints } from '@utils/constants'
 import {
-  HomeNavigationProp,
-  HomeStackParamList,
-  PaymentRouteParam,
-} from '../home/homeTypes'
+  calcCreateAssociatedTokenAccountAccountFee,
+  humanReadable,
+} from '@utils/solanaUtils'
+import BN from 'bn.js'
+import { unionBy } from 'lodash'
+import React, {
+  memo as reactMemo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { useTranslation } from 'react-i18next'
+import { Keyboard, Platform } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Toast from 'react-native-simple-toast'
+import { useSelector } from 'react-redux'
+import { fetchDomainOwner } from '@utils/getDomainOwner'
+import useSubmitTxn from '../../hooks/useSubmitTxn'
+import { RootNavigationProp } from '../../navigation/rootTypes'
+import { useSolana } from '../../solana/SolanaProvider'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { CSAccount } from '../../storage/cloudStorage'
+import { RootState } from '../../store/rootReducer'
+import { solanaSlice } from '../../store/slices/solanaSlice'
+import { useAppDispatch } from '../../store/store'
+import { useBalance } from '../../utils/Balance'
 import {
   accountNetType,
   formatAccountAlias,
   solAddressIsValid,
 } from '../../utils/accountUtils'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { balanceToString, useBalance } from '../../utils/Balance'
-import PaymentItem from './PaymentItem'
-import usePaymentsReducer, { MAX_PAYMENTS } from './usePaymentsReducer'
-import PaymentCard from './PaymentCard'
-import PaymentSubmit from './PaymentSubmit'
-import { CSAccount } from '../../storage/cloudStorage'
-import { RootState } from '../../store/rootReducer'
-import { useAppDispatch } from '../../store/store'
-import { solanaSlice } from '../../store/slices/solanaSlice'
-import { RootNavigationProp } from '../../navigation/rootTypes'
-import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { SendDetails } from '../../utils/linking'
+import * as logger from '../../utils/logger'
+import {
+  HomeNavigationProp,
+  HomeStackParamList,
+  PaymentRouteParam,
+} from '../home/homeTypes'
+import PaymentCard from './PaymentCard'
+import PaymentItem from './PaymentItem'
+import PaymentSubmit from './PaymentSubmit'
+import usePaymentsReducer, { MAX_PAYMENTS } from './usePaymentsReducer'
 
 type LinkedPayment = {
   amount?: string
   payee: string
-  defaultTokenType?: Ticker
+  mint?: string
+  defaultTokenType?: string
 }
 
 const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
   if (opts.payments) {
-    return JSON.parse(opts.payments)
+    return JSON.parse(opts.payments).map((p: LinkedPayment) => ({
+      ...p,
+      mint:
+        p.mint ||
+        (p.defaultTokenType && Mints[p.defaultTokenType.toUpperCase()]),
+    }))
   }
   if (opts.payee) {
     return [
       {
         payee: opts.payee,
         amount: opts.amount,
-        defaultTokenType: opts.defaultTokenType?.toUpperCase() as Ticker,
+        mint:
+          opts.mint ||
+          (opts.defaultTokenType && Mints[opts.defaultTokenType.toUpperCase()]),
       },
     ]
   }
@@ -106,16 +113,9 @@ const PaymentScreen = () => {
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const { oraclePrice, hntBalance, solBalance, iotBalance, mobileBalance } =
-    useBalance()
-  const { anchorProvider, connection } = useSolana()
-
-  const appDispatch = useAppDispatch()
-  const navigation = useNavigation<HomeNavigationProp>()
-  const rootNav = useNavigation<RootNavigationProp>()
-  const { t } = useTranslation()
-  const { primaryText, blueBright500, white } = useColors()
-  const hitSlop = useHitSlop('l')
+  const { oraclePrice } = useBalance()
+  const { visibleTokens } = useVisibleTokens()
+  const [mint, setMint] = useState<PublicKey>(HNT_MINT)
   const {
     currentAccount,
     currentNetworkAddress,
@@ -124,14 +124,22 @@ const PaymentScreen = () => {
     setCurrentAccount,
     sortedAccountsForNetType,
   } = useAccountStorage()
-  const [ticker, setTicker] = useState<Ticker>(
-    (route.params?.defaultTokenType?.toUpperCase() as Ticker) || 'HNT',
-  )
-  const [mint, setMint] = useState<string>(
-    (route.params?.defaultTokenType?.toUpperCase() as Ticker)
-      ? Mints[route.params?.defaultTokenType?.toUpperCase() as Ticker]
-      : Mints.HNT,
-  )
+  const wallet = usePublicKey(currentAccount?.solanaAddress)
+  const { amount: solBalance } = useOwnedAmount(wallet, NATIVE_MINT)
+  const { amount: balanceBigint } = useOwnedAmount(wallet, mint)
+  const balance = useMemo(() => {
+    if (typeof balanceBigint !== 'undefined') {
+      return new BN(balanceBigint.toString())
+    }
+  }, [balanceBigint])
+  const { anchorProvider, connection } = useSolana()
+
+  const appDispatch = useAppDispatch()
+  const navigation = useNavigation<HomeNavigationProp>()
+  const rootNav = useNavigation<RootNavigationProp>()
+  const { t } = useTranslation()
+  const { primaryText } = useColors()
+  const hitSlop = useHitSlop('l')
 
   useDisappear(() => {
     appDispatch(solanaSlice.actions.resetPayment())
@@ -163,22 +171,26 @@ const PaymentScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route])
 
-  const currencyType = useMemo(() => CurrencyType.fromTicker(ticker), [ticker])
-
   const [paymentState, dispatch] = usePaymentsReducer({
-    currencyType,
+    mint,
     oraclePrice,
-    accountMobileBalance: mobileBalance,
-    accountIotBalance: iotBalance,
-    accountNetworkBalance: hntBalance,
+    balance,
     netType: networkType,
   })
 
-  const { submitPayment, submitLedger } = useSubmitTxn()
+  useEffect(() => {
+    dispatch({
+      type: 'updateTokenBalance',
+      balance,
+    })
+  }, [dispatch, balance])
+
+  const { submitPayment } = useSubmitTxn()
 
   const solanaPayment = useSelector(
     (reduxState: RootState) => reduxState.solana.payment,
   )
+  const { symbol } = useMetaplexMetadata(mint)
 
   const { top } = useSafeAreaInsets()
 
@@ -212,8 +224,8 @@ const PaymentScreen = () => {
 
     if (!paymentsArr?.length) return
 
-    if (paymentsArr[0].defaultTokenType) {
-      onTickerSelected(paymentsArr[0].defaultTokenType)
+    if (paymentsArr[0].mint) {
+      onTokenSelected(new PublicKey(paymentsArr[0].mint))
     }
 
     if (
@@ -243,11 +255,7 @@ const PaymentScreen = () => {
   }, [route])
 
   const handleBalance = useCallback(
-    (opts: {
-      balance: Balance<NetworkTokens | TestNetworkTokens>
-      payee?: string
-      index?: number
-    }) => {
+    (opts: { balance: BN; payee?: string; index?: number }) => {
       if (opts.index === undefined || !currentAccount) return
 
       dispatch({
@@ -276,7 +284,7 @@ const PaymentScreen = () => {
       paymentState.payments.length < MAX_PAYMENTS &&
       !!lastPayee.address &&
       !!lastPayee.amount &&
-      lastPayee.amount.integerBalance > 0
+      lastPayee.amount?.gt(new BN(0))
     )
   }, [currentAccount, paymentState.payments])
 
@@ -295,71 +303,62 @@ const PaymentScreen = () => {
     [paymentState.payments],
   )
 
-  const handleSubmit = useCallback(
-    async (opts?: { txn: PaymentV2; txnJson: string }) => {
-      try {
-        if (!opts) {
-          await submitPayment(payments)
-        } else {
-          // This is a ledger device
-          submitLedger()
-        }
-      } catch (e) {
-        console.error(e)
-      }
-    },
-    [payments, submitPayment, submitLedger],
-  )
+  const handleSubmit = useCallback(async () => {
+    try {
+      await submitPayment(
+        paymentState.payments
+          .filter((p) => p.address && p.amount)
+          .map((payment) => ({
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            payee: payment.address!,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            balanceAmount: payment.amount!,
+          })),
+        paymentState.mint,
+      )
+    } catch (e) {
+      logger.error(e)
+    }
+  }, [submitPayment, paymentState.mint, paymentState.payments])
 
   const insufficientFunds = useMemo((): [
     value: boolean,
-    errorTicker: string,
+    errorMint: PublicKey | undefined,
   ] => {
-    if (!hntBalance || !paymentState.totalAmount) {
-      return [true, '']
+    if (paymentState.balance.isZero()) {
+      return [true, undefined]
     }
-    if (paymentState.networkFee?.integerBalance === undefined)
-      return [false, '']
+    if (typeof paymentState.networkFee === 'undefined')
+      return [false, undefined]
     try {
       let hasEnoughSol = false
       if (solBalance) {
-        hasEnoughSol =
-          solBalance.minus(paymentState.networkFee).integerBalance >= 0
+        hasEnoughSol = new BN(solBalance.toString())
+          .sub(paymentState.networkFee)
+          .gte(new BN(0))
       }
-      let hasEnoughToken = false
-      if (ticker === 'MOBILE' && mobileBalance) {
-        hasEnoughToken =
-          mobileBalance.minus(paymentState.totalAmount).integerBalance >= 0
-      } else if (ticker === 'IOT' && iotBalance) {
-        hasEnoughToken =
-          iotBalance.minus(paymentState.totalAmount).integerBalance >= 0
-      } else if (ticker === 'HNT' && hntBalance) {
-        hasEnoughToken =
-          hntBalance.minus(paymentState.totalAmount).integerBalance >= 0
-      } else if (ticker === 'SOL' && solBalance) {
-        hasEnoughToken =
-          solBalance.minus(paymentState.totalAmount).integerBalance >= 0
-      }
+      const hasEnoughToken = balance
+        ?.sub(paymentState.totalAmount)
+        .gte(new BN(0))
 
-      if (!hasEnoughSol) return [true, 'SOL' as Ticker]
-      if (!hasEnoughToken) return [true, paymentState.totalAmount.type.ticker]
-      return [false, '']
+      if (!hasEnoughSol) return [true, NATIVE_MINT]
+      if (!hasEnoughToken) return [true, mint]
+      return [false, undefined]
     } catch (e) {
       // if the screen was already open, then a deep link of a different net type
       // is selected there will be a brief arithmetic error that can be ignored.
       if (__DEV__) {
         console.warn(e)
       }
-      return [false, '']
+      return [false, undefined]
     }
   }, [
-    hntBalance,
-    paymentState.totalAmount,
+    paymentState.balance,
     paymentState.networkFee,
+    paymentState.totalAmount,
     solBalance,
-    ticker,
-    mobileBalance,
-    iotBalance,
+    balance,
+    mint,
   ])
 
   const selfPay = useMemo(
@@ -386,7 +385,9 @@ const PaymentScreen = () => {
     }
     if (insufficientFunds[0]) {
       errStrings.push(
-        t('payment.insufficientFunds', { token: insufficientFunds[1] }),
+        t('payment.insufficientFunds', {
+          token: insufficientFunds[1]?.equals(NATIVE_MINT) ? 'SOL' : symbol,
+        }),
       )
     }
 
@@ -399,20 +400,17 @@ const PaymentScreen = () => {
     }
     return errStrings
   }, [
-    currentAccount,
+    currentAccount?.ledgerDevice,
+    paymentState.payments.length,
     insufficientFunds,
     selfPay,
-    paymentState.payments.length,
-    t,
     wrongNetTypePay,
+    t,
+    symbol,
   ])
 
   const isFormValid = useMemo(() => {
-    if (
-      selfPay ||
-      !paymentState.networkFee?.integerBalance ||
-      (!!currentAccount?.ledgerDevice && paymentState.payments.length > 1) // ledger payments are limited to one payee
-    ) {
+    if (selfPay || !paymentState.networkFee) {
       return false
     }
 
@@ -421,25 +419,24 @@ const PaymentScreen = () => {
       paymentState.payments.every((p) => {
         const addressValid = !!(p.address && solAddressIsValid(p.address))
 
-        const paymentValid = p.amount && p.amount.integerBalance > 0
+        const paymentValid = p.amount && p.amount?.gt(new BN(0))
         return addressValid && paymentValid && !p.hasError
       })
 
     return paymentsValid && !insufficientFunds[0]
-  }, [selfPay, paymentState, currentAccount, insufficientFunds])
+  }, [selfPay, paymentState, insufficientFunds])
 
   const handleTokenTypeSelected = useCallback(() => {
     tokenSelectorRef?.current?.showTokens()
   }, [])
 
-  const onTickerSelected = useCallback(
-    (tick: Ticker) => {
-      setTicker(tick)
-      setMint(Mints[tick])
+  const onTokenSelected = useCallback(
+    (m: PublicKey) => {
+      setMint(m)
 
       dispatch({
         type: 'changeToken',
-        currencyType: CurrencyType.fromTicker(tick),
+        mint: m,
       })
     },
     [dispatch],
@@ -520,6 +517,7 @@ const PaymentScreen = () => {
       // only handle address which include dots.
       if (address.split('.').length === 2) {
         // retrieve the address which has been set previously by handleEditAddress.
+        /* eslint-disable-next-line no-param-reassign */
         address = paymentState.payments[index].address || ''
       }
       invalidAddress = !!address && !solAddressIsValid(address)
@@ -540,6 +538,7 @@ const PaymentScreen = () => {
       if (address.split('.').length === 2) {
         const resolvedAddress =
           (await handleDomainAddress({ domain: address })) || ''
+        /* eslint-disable-next-line no-param-reassign */
         address = resolvedAddress
         // if the address is resolved then the domain could also be an alias/nickname of the address.
         if (resolvedAddress) domain = address
@@ -638,56 +637,27 @@ const PaymentScreen = () => {
     accountSelectorRef?.current.showAccountTypes(netType)()
   }, [sortedAccountsForNetType])
 
+  const decimals = useMint(mint)?.info?.decimals
   const tokenButtonBalance = useMemo(() => {
-    switch (ticker) {
-      case 'HNT':
-        return balanceToString(hntBalance)
-      case 'SOL':
-        return balanceToString(solBalance)
-      case 'MOBILE':
-        return balanceToString(mobileBalance)
-      case 'IOT':
-        return balanceToString(iotBalance)
-    }
-  }, [ticker, hntBalance, solBalance, mobileBalance, iotBalance])
+    return humanReadable(balance, decimals)
+  }, [balance, decimals])
 
   const data = useMemo((): TokenListItem[] => {
-    const tokens = [
-      {
-        label: 'HNT',
-        icon: <TokenHNT width={30} height={30} color={white} />,
-        value: 'HNT' as Ticker,
-        selected: ticker === 'HNT',
-      },
-      {
-        label: 'MOBILE',
-        icon: <TokenMOBILE width={30} height={30} color={blueBright500} />,
-        value: 'MOBILE' as Ticker,
-        selected: ticker === 'MOBILE',
-      },
-      {
-        label: 'IOT',
-        icon: <TokenIOT width={30} height={30} />,
-        value: 'IOT' as Ticker,
-        selected: ticker === 'IOT',
-      },
-      {
-        label: 'SOL',
-        icon: <TokenSOL width={30} height={30} />,
-        value: 'SOL' as Ticker,
-        selected: ticker === 'SOL',
-      },
-    ]
-
+    const tokens = [...visibleTokens]
+      .filter((vt: string) => vt !== DC_MINT.toBase58())
+      .map((token) => ({
+        mint: new PublicKey(token),
+        selected: mint.toBase58() === token,
+      }))
     return tokens
-  }, [blueBright500, white, ticker])
+  }, [mint, visibleTokens])
 
   return (
     <>
       <HNTKeyboard
         ref={hntKeyboardRef}
         onConfirmBalance={handleBalance}
-        ticker={ticker}
+        mint={mint}
         networkFee={paymentState.networkFee}
       >
         <AccountSelector ref={accountSelectorRef}>
@@ -698,7 +668,7 @@ const PaymentScreen = () => {
           >
             <TokenSelector
               ref={tokenSelectorRef}
-              onTokenSelected={onTickerSelected}
+              onTokenSelected={onTokenSelected}
               tokenData={data}
             >
               <Box
@@ -766,13 +736,13 @@ const PaymentScreen = () => {
 
                   <TokenButton
                     backgroundColor="secondary"
-                    title={t('payment.title', { ticker: currencyType.ticker })}
+                    title={t('payment.title', { ticker: symbol })}
                     subtitle={tokenButtonBalance}
                     address={currentAccount?.address}
                     onPress={handleTokenTypeSelected}
                     showBubbleArrow
                     marginHorizontal="l"
-                    ticker={ticker}
+                    mint={mint}
                   />
 
                   {paymentState.payments.map((p, index) => (
@@ -793,7 +763,7 @@ const PaymentScreen = () => {
                         onEditAddress={handleEditAddress}
                         handleAddressError={handleAddressError}
                         onUpdateError={handleSetPaymentError}
-                        ticker={currencyType.ticker}
+                        mint={mint}
                         onRemove={
                           paymentState.payments.length > 1
                             ? handleRemove
@@ -824,7 +794,7 @@ const PaymentScreen = () => {
                 </KeyboardAwareScrollView>
 
                 <PaymentCard
-                  ticker={ticker}
+                  mint={mint}
                   totalBalance={paymentState.totalAmount}
                   feeTokenBalance={paymentState.networkFee}
                   disabled={!isFormValid}
@@ -839,6 +809,7 @@ const PaymentScreen = () => {
         </AccountSelector>
       </HNTKeyboard>
       <PaymentSubmit
+        mint={mint}
         submitLoading={!!solanaPayment?.loading}
         submitSucceeded={!!solanaPayment?.success}
         submitError={solanaPayment?.error}

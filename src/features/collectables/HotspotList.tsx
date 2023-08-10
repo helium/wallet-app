@@ -1,35 +1,90 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { times } from 'lodash'
-import { FlatList } from 'react-native-gesture-handler'
-import { RefreshControl } from 'react-native'
-import { useIsFocused, useNavigation } from '@react-navigation/native'
-import { useTranslation } from 'react-i18next'
-import BN from 'bn.js'
-import listViewIcon from '@assets/images/listViewIcon.svg'
 import expandedViewIcon from '@assets/images/expandedViewIcon.svg'
-import ListItem from '@components/ListItem'
+import listViewIcon from '@assets/images/listViewIcon.svg'
 import BlurActionSheet from '@components/BlurActionSheet'
-import { useColors } from '@theme/themeHooks'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
-import useHotspots from '@hooks/useHotspots'
 import CircleLoader from '@components/CircleLoader'
-import useHaptic from '@hooks/useHaptic'
+import ListItem from '@components/ListItem'
+import TabBar from '@components/TabBar'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
-import TabBar from '@components/TabBar'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
 import { useMint } from '@helium/helium-react-hooks'
+import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import useHaptic from '@hooks/useHaptic'
+import useHotspots from '@hooks/useHotspots'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { useIsFocused, useNavigation } from '@react-navigation/native'
+import { PublicKey } from '@solana/web3.js'
+import { useColors } from '@theme/themeHooks'
 import BigNumber from 'bignumber.js'
+import BN from 'bn.js'
+import { times } from 'lodash'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { RefreshControl } from 'react-native'
+import { FlatList } from 'react-native-gesture-handler'
+import { CompressedNFT, HotspotWithPendingRewards } from '../../types/solana'
 import { formatLargeNumber } from '../../utils/accountUtils'
 import HotspotCompressedListItem from './HotspotCompressedListItem'
 import HotspotListItem from './HotspotListItem'
-import { CollectableNavigationProp } from './collectablesTypes'
-import { CompressedNFT, HotspotWithPendingRewards } from '../../types/solana'
 import { NFTSkeleton } from './NftListItem'
+import { CollectableNavigationProp } from './collectablesTypes'
 
 export const DEFAULT_PAGE_AMOUNT = 20
+
+function RewardItem({
+  mint,
+  amount,
+  marginStart,
+  marginEnd,
+}: {
+  mint: PublicKey
+  amount: BN | undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  marginStart?: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  marginEnd?: any
+}) {
+  const decimals = useMint(mint)?.info?.decimals
+  const { json, symbol } = useMetaplexMetadata(mint)
+  let realAmount = ''
+  if (amount) {
+    const num = toNumber(amount, decimals || 6)
+    realAmount = formatLargeNumber(new BigNumber(num))
+  }
+
+  return (
+    <Box
+      padding="m"
+      alignItems="center"
+      justifyContent="center"
+      backgroundColor="secondaryBackground"
+      borderRadius="xl"
+      flex={1}
+      flexDirection="row"
+      marginStart={marginStart}
+      marginEnd={marginEnd}
+    >
+      <TokenIcon img={json?.image} size={30} />
+
+      <Box marginStart="s">
+        <Text
+          marginTop="xs"
+          variant="subtitle3"
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          maxFontSizeMultiplier={1.1}
+        >
+          {realAmount}
+        </Text>
+        <Text variant="subtitle4" color="secondaryText">
+          {symbol}
+        </Text>
+      </Box>
+    </Box>
+  )
+}
 
 const HotspotList = () => {
   const navigation = useNavigation<CollectableNavigationProp>()
@@ -41,9 +96,6 @@ const HotspotList = () => {
   const [pageAmount, setPageAmount] = useState<number | undefined>(
     DEFAULT_PAGE_AMOUNT,
   )
-
-  const { info: iotMint } = useMint(IOT_MINT)
-  const { info: mobileMint } = useMint(MOBILE_MINT)
 
   const tabBarOptions = useMemo(
     () => [
@@ -131,61 +183,18 @@ const HotspotList = () => {
           hasPressedState={false}
         />
         <ListItem
-          key="show-all"
-          title={t('collectablesScreen.hotspots.all')}
+          key="show-1000"
+          title={t('collectablesScreen.hotspots.thousand')}
           subtitle={t('collectablesScreen.hotspots.showAllHotspotsWarning')}
           // Set an unrealistically high amount
-          onPress={handleSetPageAmount(10000)}
-          selected={pageAmount === 10000}
+          onPress={handleSetPageAmount(1000)}
+          selected={pageAmount === 1000}
           hasPressedState={false}
           subtitleColor="orange500"
         />
       </>
     ),
     [handleSetPageAmount, pageAmount, t],
-  )
-
-  const RewardItem = useCallback(
-    ({ ticker, amount, ...rest }) => {
-      const decimals =
-        ticker === 'IOT' ? iotMint?.info.decimals : mobileMint?.info.decimals
-      let realAmount = ''
-      if (amount) {
-        const num = toNumber(amount, decimals || 6)
-        realAmount = formatLargeNumber(new BigNumber(num))
-      }
-
-      return (
-        <Box
-          padding="m"
-          alignItems="center"
-          justifyContent="center"
-          backgroundColor="secondaryBackground"
-          borderRadius="xl"
-          flex={1}
-          flexDirection="row"
-          {...rest}
-        >
-          <TokenIcon ticker={ticker} size={30} />
-
-          <Box marginStart="s">
-            <Text
-              marginTop="xs"
-              variant="subtitle3"
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              maxFontSizeMultiplier={1.1}
-            >
-              {realAmount}
-            </Text>
-            <Text variant="subtitle4" color="secondaryText">
-              {ticker}
-            </Text>
-          </Box>
-        </Box>
-      )
-    },
-    [iotMint, mobileMint],
   )
 
   const onTabSelected = useCallback(
@@ -227,11 +236,15 @@ const HotspotList = () => {
         <Box />
         <Box flexDirection="row">
           <RewardItem
-            ticker="MOBILE"
+            mint={MOBILE_MINT}
             amount={pendingMobileRewards}
             marginEnd="s"
           />
-          <RewardItem ticker="IOT" amount={pendingIotRewards} marginStart="s" />
+          <RewardItem
+            mint={IOT_MINT}
+            amount={pendingIotRewards}
+            marginStart="s"
+          />
         </Box>
         {pageAmount && hotspotsWithMeta?.length >= pageAmount && (
           <Text
@@ -270,7 +283,6 @@ const HotspotList = () => {
     handleNavigateToClaimRewards,
     pendingIotRewards,
     pendingMobileRewards,
-    RewardItem,
     t,
     onTabSelected,
     tabSelected,

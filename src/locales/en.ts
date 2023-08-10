@@ -176,7 +176,7 @@ export default {
     claimingRewardsBody:
       'You can exit this screen while you wait. We’ll update your Wallet momentarily.',
     claimComplete: 'Rewards Claimed!',
-    claimCompleteBody: 'We’ve added your tokens to your wallet.',
+    claimCompleteBody: 'Your tokens have been added to your wallet.',
     claimError: 'Claim failed. Please try again later.',
     transferCollectableAlertTitle:
       'Are you sure you will like to transfer your collectable?',
@@ -219,7 +219,7 @@ export default {
         'Warning: Load times may be affected when showing all hotspots per page.',
       twenty: '20',
       fifty: '50',
-      all: 'All',
+      thousand: '1000',
       copyEccCompact: 'Copy Hotspot Key',
       assertLocation: 'Assert Location',
       antennaSetup: 'Antenna Setup',
@@ -324,6 +324,21 @@ export default {
     locationNotFound: 'Location not found, Please try again.',
     mobileTitle: 'MOBILE',
   },
+  antennaSetupScreen: {
+    title: 'Antenna Setup',
+    antennaSetup: 'Antenna Setup',
+    antennaSetupDescription:
+      'Submit gain and elevation details for your Hotspot',
+    gainPlaceholder: 'TX / RX Gain (dBi)',
+    elevationPlaceholder: 'Elevation (meters)',
+    submit: 'Update Antenna',
+    settingUp: 'Setting up your antenna...',
+    settingUpBody: 'Please wait while we update your Antenna!',
+    settingUpError: 'Antenna Setup failed. Please try again later.',
+    settingUpComplete: 'Antenna Setup!',
+    settingUpCompleteBody:
+      'We’ve updated the gain and elevation of your antenna.',
+  },
   swapsScreen: {
     title: 'Swap my Tokens',
     swapTokens: 'Swap Tokens',
@@ -332,7 +347,7 @@ export default {
     chooseTokenToSwap: 'Choose a token to swap',
     chooseTokenToReceive: 'Choose a token to receive',
     swapComplete: 'Tokens swapped!',
-    swapCompleteBody: 'We’ve updated the tokens on your wallet.',
+    swapCompleteBody: 'The tokens in your wallet have been updated.',
     swappingTokens: 'Swapping your tokens...',
     swappingTokensBody:
       'You can exit this screen while you wait. We’ll update your Wallet momentarily.',
@@ -382,7 +397,7 @@ export default {
     connectToWebsitesYouTrust: 'Only connect to websites you trust',
     estimatedChanges: 'Estimated Changes',
     sendToken: 'Send {{amount}} {{ticker}}',
-    recieveToken: 'Receive {{amount}} {{ticker}}',
+    receiveToken: 'Receive {{amount}} {{ticker}}',
     insufficientFunds: 'Insufficient funds',
     insufficientRentExempt:
       'Solana wallets must have a minimum of ~{{amount}} SOL to cover rent. The result of this transaction would leave your wallet with less than the rent-exempt minimum.',
@@ -399,6 +414,7 @@ export default {
   },
   accountTokenList: {
     tokens: 'Tokens',
+    manage: 'Manage Visible Tokens',
   },
   accountView: {
     balance: 'Balance',
@@ -803,14 +819,14 @@ export default {
       alertTitle: 'Are you sure?',
       done: 'Done',
       subtitle:
-        '<secondaryText>Do not share your private key!</secondaryText><red500>\n\nIf someone has your private key they will have full control of your wallet!</red500>',
+        '<secondaryText>Do not share your private key!</secondaryText><red500>\n\nIf someone has your private key they will have full control of your wallet! Do not enter this into any websites. Any individual asking for this key is likely a scammer.</red500>',
       tap: 'Tap to reveal your private key',
       title: 'Your Private Key',
     },
     revealWords: {
       next: 'I have written these down',
       subtitle:
-        '<secondaryText>It is crucial you write all of these\n{{numWords}} words down, in order.</secondaryText><red500>\n\nHelium cannot recover these words.</red500>',
+        '<secondaryText>Never give these words to anyone, or enter them into any website. <red500>Any person or website asking for these words is likely a scammer</red500>. It is crucial you write all of these\n{{numWords}} words down, in order, and keep them safe.</secondaryText><red500>\n\nHelium cannot recover these words.</red500>',
       title: 'Your {{numWords}} Word Password',
       warning: 'Helium cannot recover these words',
     },
@@ -951,8 +967,7 @@ export default {
     newOwner: 'New Owner',
     oldAddress: 'Old Address',
     oldOwner: 'Old Owner',
-    owner: 'Owner',
-    payee: 'Payee {{index}}',
+    owner: 'Owner {{index}}',
     pending: {
       inProcess: 'In Process',
       pending: 'Pending',
