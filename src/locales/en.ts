@@ -324,6 +324,21 @@ export default {
     locationNotFound: 'Location not found, Please try again.',
     mobileTitle: 'MOBILE',
   },
+  antennaSetupScreen: {
+    title: 'Antenna Setup',
+    antennaSetup: 'Antenna Setup',
+    antennaSetupDescription:
+      'Submit gain and elevation details for your Hotspot',
+    gainPlaceholder: 'TX / RX Gain (dBi)',
+    elevationPlaceholder: 'Elevation (meters)',
+    submit: 'Update Antenna',
+    settingUp: 'Setting up your antenna...',
+    settingUpBody: 'Please wait while we update your Antenna!',
+    settingUpError: 'Antenna Setup failed. Please try again later.',
+    settingUpComplete: 'Antenna Setup!',
+    settingUpCompleteBody:
+      'We’ve updated the gain and elevation of your antenna.',
+  },
   swapsScreen: {
     title: 'Swap my Tokens',
     swapTokens: 'Swap Tokens',
