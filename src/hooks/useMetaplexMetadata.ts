@@ -14,17 +14,16 @@ import { useAsync } from 'react-async-hook'
 const MPL_PID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s')
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const cache: Record<string, any> = {}
+const cache: Record<string, Promise<any>> = {}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function getMetadata(uri: string | undefined): Promise<any | undefined> {
+export function getMetadata(uri: string | undefined): Promise<any | undefined> {
   if (uri) {
     if (!cache[uri]) {
-      const res = await fetch(uri)
-      const json = await res.json()
-      cache[uri] = json
+      cache[uri] = fetch(uri).then((res) => res.json())
     }
     return cache[uri]
   }
+  return Promise.resolve(undefined)
 }
 
 export const METADATA_PARSER: TypedAccountParser<Metadata> = (

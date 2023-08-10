@@ -310,33 +310,11 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      const txns = await solUtils.claimAllRewardsTxns(
-        anchorProvider,
-        lazyDistributors,
-        hotspots,
-      )
-
-      const serializedTxs = txns.map((txn) =>
-        txn.serialize({
-          requireAllSignatures: false,
-        }),
-      )
-
-      const decision = await walletSignBottomSheetRef.show({
-        type: WalletStandardMessageTypes.signTransaction,
-        url: '',
-        additionalMessage: t('transactions.signClaimAllRewardsTxn'),
-        serializedTxs: serializedTxs.map(Buffer.from),
-      })
-
-      if (!decision) {
-        throw new Error('User rejected transaction')
-      }
-
       dispatch(
         claimAllRewards({
           account: currentAccount,
-          txns,
+          lazyDistributors,
+          hotspots,
           anchorProvider,
           cluster,
         }),

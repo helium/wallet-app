@@ -41,11 +41,11 @@ export function useHntSolConvert() {
   }, [baseUrl])
 
   const hasEnoughSol = useMemo(() => {
-    if (!hntBalance || !solBalance || !hntEstimate) return true
+    if (!hntBalance || !hntEstimate) return true
 
     if (hntBalance.lt(hntEstimate)) return true
 
-    return solBalance.gt(new BN(0.02 * LAMPORTS_PER_SOL))
+    return (solBalance || new BN(0)).gt(new BN(0.02 * LAMPORTS_PER_SOL))
   }, [hntBalance, solBalance, hntEstimate])
 
   const {

@@ -1,14 +1,9 @@
-import { useEffect, useState } from 'react'
+import { decodeEntityKey } from '@helium/helium-entity-manager-sdk'
 import { HotspotWithPendingRewards } from '../types/solana'
+import { useKeyToAsset } from './useKeyToAsset'
 
 export const useEntityKey = (hotspot: HotspotWithPendingRewards) => {
-  const [entityKey, setEntityKey] = useState<string>()
+  const { info: kta } = useKeyToAsset(hotspot?.id)
 
-  useEffect(() => {
-    if (hotspot) {
-      setEntityKey(hotspot.content.json_uri.split('/').slice(-1)[0])
-    }
-  }, [hotspot, setEntityKey])
-
-  return entityKey
+  return kta ? decodeEntityKey(kta.entityKey, kta.keySerialization) : undefined
 }
