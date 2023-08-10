@@ -1,5 +1,6 @@
 import React from 'react'
 import { Image } from 'react-native'
+import Box from './Box'
 
 type Props = {
   size?: number
@@ -19,7 +20,14 @@ const TokenIcon = ({ size = 40, img }: Props) => {
     )
   }
 
-  return null
+  return (
+    <Box
+      backgroundColor="surface"
+      height={size}
+      width={size}
+      borderRadius="round"
+    />
+  )
 }
 
 export default TokenIcon
