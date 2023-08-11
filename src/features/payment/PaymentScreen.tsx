@@ -516,9 +516,16 @@ const PaymentScreen = () => {
 
       // only handle address which include dots.
       if (address.split('.').length === 2) {
-        // retrieve the address which has been set previously by handleEditAddress.
-        /* eslint-disable-next-line no-param-reassign */
-        address = paymentState.payments[index].address || ''
+        // we have to revalidate.
+        handleDomainAddress({ domain: address }).then((resolvedAddress) => {
+          if (resolvedAddress) {
+            invalidAddress =
+              !!resolvedAddress && !solAddressIsValid(resolvedAddress)
+
+            const wrongNetType = accountNetType(resolvedAddress) !== networkType
+            handleSetPaymentError(index, invalidAddress || wrongNetType)
+          }
+        })
       }
       invalidAddress = !!address && !solAddressIsValid(address)
 
@@ -528,20 +535,22 @@ const PaymentScreen = () => {
         accountNetType(address) !== networkType
       handleSetPaymentError(index, invalidAddress || wrongNetType)
     },
-    [handleSetPaymentError, networkType, paymentState],
+    [handleSetPaymentError, networkType, handleDomainAddress],
   )
 
   const handleEditAddress = useCallback(
     async ({ index, address }: { index: number; address: string }) => {
       if (index === undefined || !currentAccount || !anchorProvider) return
-      let domain = ''
+      let domain
       if (address.split('.').length === 2) {
         const resolvedAddress =
           (await handleDomainAddress({ domain: address })) || ''
-        /* eslint-disable-next-line no-param-reassign */
-        address = resolvedAddress
-        // if the address is resolved then the domain could also be an alias/nickname of the address.
-        if (resolvedAddress) domain = address
+        if (resolvedAddress) {
+          // if the address is resolved then the domain could also be an alias/nickname of the address.
+          domain = address
+          /* eslint-disable-next-line no-param-reassign */
+          address = resolvedAddress
+        }
       }
       const allAccounts = unionBy(
         contacts,
@@ -549,7 +558,8 @@ const PaymentScreen = () => {
         ({ address: addr }) => addr,
       )
       let contact = allAccounts.find((c) => c.address === address)
-      if (!contact) contact = { address, netType: networkType, alias: domain }
+      if (!contact)
+        contact = { address, netType: networkType, alias: domain || '' }
 
       const createTokenAccountFee =
         await calcCreateAssociatedTokenAccountAccountFee(
