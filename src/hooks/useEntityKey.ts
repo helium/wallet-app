@@ -3,7 +3,7 @@ import { HotspotWithPendingRewards } from '../types/solana'
 import { useKeyToAsset } from './useKeyToAsset'
 
 export const useEntityKey = (hotspot: HotspotWithPendingRewards) => {
-  const { info: kta } = useKeyToAsset(hotspot?.id)
+  const { info: kta } = useKeyToAsset(hotspot)
 
   return kta ? decodeEntityKey(kta.entityKey, kta.keySerialization) : undefined
 }
