@@ -40,7 +40,7 @@ const ClaimAllRewardsScreen = () => {
   const { showOKCancelAlert } = useAlert()
   const { anchorProvider } = useSolana()
   const showHNTConversionAlert = useCallback(async () => {
-    if (!anchorProvider || !hntSolConvertTransaction) return
+    if (!anchorProvider || !hntSolConvertTransaction) return false
 
     const decision = await showOKCancelAlert({
       title: t('browserScreen.insufficientSolToPayForFees'),
@@ -50,7 +50,7 @@ const ClaimAllRewardsScreen = () => {
       }),
     })
 
-    if (!decision) return
+    if (!decision) return false
     const signed = await anchorProvider.wallet.signTransaction(
       hntSolConvertTransaction,
     )
@@ -62,6 +62,7 @@ const ClaimAllRewardsScreen = () => {
       },
       'confirmed',
     )
+    return true
   }, [
     anchorProvider,
     hntSolConvertTransaction,
@@ -92,7 +93,11 @@ const ClaimAllRewardsScreen = () => {
       setClaimError(undefined)
       setRedeeming(true)
       if (!hasEnoughSol) {
-        await showHNTConversionAlert()
+        const success = await showHNTConversionAlert()
+        if (!success) {
+          setRedeeming(false)
+          return
+        }
       }
 
       const balanceChanges: BalanceChange[] = []
