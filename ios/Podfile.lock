@@ -861,9 +861,9 @@ SPEC CHECKSUMS:
   FBLazyVector: f1897022b53abf1469d6ad692ee2c69f57d967f3
   FBReactNativeSpec: 627fd07f1b9d498c9fa572e76d7f1a6b1ee9a444
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  glog: 791fe035093b84822da7f0870421a25839ca7870
+  glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
   helium-react-native-sdk: 32c0a7e3abc733a7f3d291013b2db31475fc6980
-  hermes-engine: 7a53ccac09146018a08239c5425625fdb79a6162
+  hermes-engine: 0784cadad14b011580615c496f77e0ae112eed75
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   MapboxCommon: fdf7fd31c90b7b607cd9c63e37797f023c01d860
   MapboxCoreMaps: 24270c7c6b8cb71819fc2f3c549db9620ee4d019
@@ -871,7 +871,7 @@ SPEC CHECKSUMS:
   MapboxMobileEvents: de50b3a4de180dd129c326e09cd12c8adaaa46d6
   MultiplatformBleAdapter: 5a6a897b006764392f9cef785e4360f54fb9477d
   OneSignalXCFramework: 81ceac017a290f23793443323090cfbe888f74ea
-  RCT-Folly: 85766c3226c7ec638f05ad7cb3cf6a268d6c4241
+  RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
   RCTRequired: bd6045fbd511da5efe6db89eecb21e4e36bd7cbf
   RCTTypeSafety: c06d9f906faa69dd1c88223204c3a24767725fd8
   React: b9ea33557ef1372af247f95d110fbdea114ed3b2

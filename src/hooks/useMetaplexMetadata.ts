@@ -8,6 +8,7 @@ import {
 } from '@metaplex-foundation/js'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { AccountInfo, PublicKey } from '@solana/web3.js'
+import axios from 'axios'
 import { useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 
@@ -19,7 +20,11 @@ const cache: Record<string, Promise<any>> = {}
 export function getMetadata(uri: string | undefined): Promise<any | undefined> {
   if (uri) {
     if (!cache[uri]) {
-      cache[uri] = fetch(uri).then((res) => res.json())
+      cache[uri] = axios
+        .get(uri, {
+          timeout: 3000,
+        })
+        .then((res) => res)
     }
     return cache[uri]
   }
@@ -88,9 +93,9 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
 
   return {
     loading: jsonLoading || loading,
-    json,
+    json: json?.data,
     metadata: metadataAcc,
-    symbol: json?.symbol || metadataAcc?.symbol,
-    name: json?.name || metadataAcc?.name,
+    symbol: json?.data.symbol || metadataAcc?.symbol,
+    name: json?.data.name || metadataAcc?.name,
   }
 }
