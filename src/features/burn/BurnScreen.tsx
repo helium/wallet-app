@@ -355,7 +355,6 @@ const BurnScreen = () => {
 
               <KeyboardAwareScrollView
                 enableOnAndroid
-                enableResetScrollToCoords={false}
                 keyboardShouldPersistTaps="always"
               >
                 <AccountButton
