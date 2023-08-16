@@ -99,6 +99,7 @@ const BurnScreen = () => {
     (reduxState: RootState) => reduxState.solana.delegate,
   )
   const [mint, setMint] = useState<PublicKey>(MOBILE_MINT)
+  const [memo, setMemo] = useState<string>('')
   const { symbol } = useMetaplexMetadata(mint)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
 
@@ -180,6 +181,7 @@ const BurnScreen = () => {
           delegateAddress,
           amountBalance.toNumber(),
           mint,
+          memo,
         )
       }
     } catch (e) {
@@ -190,6 +192,7 @@ const BurnScreen = () => {
     delegateAddress,
     isDelegate,
     mint,
+    memo,
     submitDelegateDataCredits,
     setSubmitError,
   ])
@@ -381,23 +384,28 @@ const BurnScreen = () => {
                 />
 
                 {isDelegate ? (
-                  <PaymentItem
-                    index={0}
-                    onAddressBookSelected={handleAddressBookSelected}
-                    onEditAmount={onTokenItemPressed}
-                    onEditAddress={({ address }) => {
-                      setDelegateAddress(address)
-                      handleAddressError({
-                        address,
-                      })
-                    }}
-                    handleAddressError={handleAddressError}
-                    mint={DC_MINT}
-                    address={delegateAddress}
-                    amount={amountBalance}
-                    hasError={hasError}
-                    hideMemo
-                  />
+                  <Box>
+                    <PaymentItem
+                      index={0}
+                      onAddressBookSelected={handleAddressBookSelected}
+                      onEditAmount={onTokenItemPressed}
+                      onEditMemo={({ memo: m }) => {
+                        setMemo(m)
+                      }}
+                      onEditAddress={({ address }) => {
+                        setDelegateAddress(address)
+                        handleAddressError({
+                          address,
+                        })
+                      }}
+                      handleAddressError={handleAddressError}
+                      mint={DC_MINT}
+                      address={delegateAddress}
+                      amount={amountBalance}
+                      memo={memo}
+                      hasError={hasError}
+                    />
+                  </Box>
                 ) : (
                   <>
                     <AccountButton

@@ -386,7 +386,12 @@ export default () => {
   )
 
   const submitDelegateDataCredits = useCallback(
-    async (delegateAddress: string, amount: number, mint: PublicKey) => {
+    async (
+      delegateAddress: string,
+      amount: number,
+      mint: PublicKey,
+      memo: string,
+    ) => {
       if (!currentAccount || !anchorProvider || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
       }
@@ -396,6 +401,7 @@ export default () => {
         delegateAddress,
         amount,
         mint,
+        memo,
       )
 
       const serializedTx = delegateDCTxn.serialize({
