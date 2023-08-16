@@ -94,12 +94,12 @@ const BurnScreen = () => {
   const [dcAmount, setDcAmount] = useState(new BN(route.params.amount))
   const [submitError, setSubmitError] = useState<string | undefined>(undefined)
   const [delegateAddress, setDelegateAddress] = useState(route.params.address)
+  const [memo, setMemo] = useState(route.params.memo)
   const [hasError, setHasError] = useState(false)
   const delegatePayment = useSelector(
     (reduxState: RootState) => reduxState.solana.delegate,
   )
   const [mint, setMint] = useState<PublicKey>(MOBILE_MINT)
-  const [memo, setMemo] = useState<string>('')
   const { symbol } = useMetaplexMetadata(mint)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
 

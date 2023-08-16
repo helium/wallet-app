@@ -655,7 +655,7 @@ export const delegateDataCredits = async (
   delegateAddress: string,
   amount: number,
   mint: PublicKey,
-  memo: string,
+  memo?: string,
 ) => {
   try {
     const { connection } = anchorProvider
@@ -666,7 +666,9 @@ export const delegateDataCredits = async (
 
     const instructions: TransactionInstruction[] = []
 
-    instructions.push(createMemoInstruction(memo, [payer]))
+    if (memo) {
+      instructions.push(createMemoInstruction(memo, [payer]))
+    }
 
     instructions.push(
       await program.methods

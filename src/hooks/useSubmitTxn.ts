@@ -390,7 +390,7 @@ export default () => {
       delegateAddress: string,
       amount: number,
       mint: PublicKey,
-      memo: string,
+      memo?: string,
     ) => {
       if (!currentAccount || !anchorProvider || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
