@@ -13,6 +13,7 @@ import {
 import * as lz from '@helium/lazy-distributor-sdk'
 import {
   bulkSendRawTransactions,
+  bulkSendTransactions,
   chunks,
   sendAndConfirmWithRetry,
 } from '@helium/spl-utils'
@@ -141,11 +142,7 @@ export const makePayment = createAsyncThunk(
   async ({ account, cluster, anchorProvider, paymentTxns }: PaymentInput) => {
     if (!account?.solanaAddress) throw new Error('No solana account found')
 
-    const signed = await anchorProvider.wallet.signAllTransactions(paymentTxns)
-    const signatures = await bulkSendRawTransactions(
-      anchorProvider.connection,
-      signed.map((s) => s.serialize()),
-    )
+    const signatures = await bulkSendTransactions(anchorProvider, paymentTxns)
 
     postPayment({ signatures, cluster })
 
