@@ -94,6 +94,7 @@ const BurnScreen = () => {
   const [dcAmount, setDcAmount] = useState(new BN(route.params.amount))
   const [submitError, setSubmitError] = useState<string | undefined>(undefined)
   const [delegateAddress, setDelegateAddress] = useState(route.params.address)
+  const [memo, setMemo] = useState(route.params.memo)
   const [hasError, setHasError] = useState(false)
   const delegatePayment = useSelector(
     (reduxState: RootState) => reduxState.solana.delegate,
@@ -180,6 +181,7 @@ const BurnScreen = () => {
           delegateAddress,
           amountBalance.toNumber(),
           mint,
+          memo,
         )
       }
     } catch (e) {
@@ -190,6 +192,7 @@ const BurnScreen = () => {
     delegateAddress,
     isDelegate,
     mint,
+    memo,
     submitDelegateDataCredits,
     setSubmitError,
   ])
@@ -352,7 +355,6 @@ const BurnScreen = () => {
 
               <KeyboardAwareScrollView
                 enableOnAndroid
-                enableResetScrollToCoords={false}
                 keyboardShouldPersistTaps="always"
               >
                 <AccountButton
@@ -381,23 +383,28 @@ const BurnScreen = () => {
                 />
 
                 {isDelegate ? (
-                  <PaymentItem
-                    index={0}
-                    onAddressBookSelected={handleAddressBookSelected}
-                    onEditAmount={onTokenItemPressed}
-                    onEditAddress={({ address }) => {
-                      setDelegateAddress(address)
-                      handleAddressError({
-                        address,
-                      })
-                    }}
-                    handleAddressError={handleAddressError}
-                    mint={DC_MINT}
-                    address={delegateAddress}
-                    amount={amountBalance}
-                    hasError={hasError}
-                    hideMemo
-                  />
+                  <Box>
+                    <PaymentItem
+                      index={0}
+                      onAddressBookSelected={handleAddressBookSelected}
+                      onEditAmount={onTokenItemPressed}
+                      onEditMemo={({ memo: m }) => {
+                        setMemo(m)
+                      }}
+                      onEditAddress={({ address }) => {
+                        setDelegateAddress(address)
+                        handleAddressError({
+                          address,
+                        })
+                      }}
+                      handleAddressError={handleAddressError}
+                      mint={DC_MINT}
+                      address={delegateAddress}
+                      amount={amountBalance}
+                      memo={memo}
+                      hasError={hasError}
+                    />
+                  </Box>
                 ) : (
                   <>
                     <AccountButton

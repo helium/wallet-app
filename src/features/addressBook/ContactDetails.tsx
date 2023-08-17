@@ -144,158 +144,167 @@ const ContactDetails = ({ action, contact }: Props) => {
   }, [address])
 
   return (
-    <Box flex={1} backgroundColor="surfaceSecondary">
-      <Box
-        marginTop="s"
-        style={{ paddingTop: Platform.OS === 'android' ? 24 : 0 }}
-        flexDirection="row"
-        alignItems="center"
-      >
-        <Box flex={1} />
-        <Text variant="subtitle2">
-          {isAddingContact ? t('addNewContact.title') : t('editContact.title')}
-        </Text>
-        <Box flex={1} alignItems="flex-end">
-          <CloseButton
-            onPress={onRequestClose}
-            paddingVertical="s"
-            paddingHorizontal="m"
-          />
-        </Box>
-      </Box>
-      <Box flex={1} alignItems="center" justifyContent="center">
-        {addressIsValid && (
-          <AccountIcon address={address} size={nickname ? 85 : 122} />
-        )}
-        {!!nickname && (
-          <Text variant="h1" marginTop={addressIsValid ? 'm' : 'none'}>
-            {nickname}
-          </Text>
-        )}
-      </Box>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'android' ? undefined : 'position'}
-        keyboardVerticalOffset={-spacing.xxxl - BUTTON_HEIGHT}
-      >
-        <SafeAreaBox
-          style={backgroundStyle}
-          borderRadius="xl"
-          edges={['bottom']}
+    <SafeAreaBox
+      flex={1}
+      style={backgroundStyle}
+      borderRadius="xl"
+      edges={['top']}
+    >
+      <Box flex={1} backgroundColor="surfaceSecondary">
+        <Box
+          marginTop="s"
+          style={{ paddingTop: Platform.OS === 'android' ? 24 : 0 }}
+          flexDirection="row"
+          alignItems="center"
         >
-          <Box
-            flexDirection="row"
-            marginTop="xl"
-            marginBottom="s"
-            justifyContent="space-between"
-            marginHorizontal="xl"
-          >
-            <Text variant="body1">
-              {t('addNewContact.address.title', {
-                network: 'Solana',
-              })}
+          <Box flex={1} />
+          <Text variant="subtitle2">
+            {isAddingContact
+              ? t('addNewContact.title')
+              : t('editContact.title')}
+          </Text>
+          <Box flex={1} alignItems="flex-end">
+            <CloseButton
+              onPress={onRequestClose}
+              paddingVertical="s"
+              paddingHorizontal="m"
+            />
+          </Box>
+        </Box>
+        <Box flex={1} alignItems="center" justifyContent="center">
+          {addressIsValid && (
+            <AccountIcon address={address} size={nickname ? 85 : 122} />
+          )}
+          {!!nickname && (
+            <Text variant="h1" marginTop={addressIsValid ? 'm' : 'none'}>
+              {nickname}
             </Text>
-            <AddressExtra
-              onScanPress={handleScanAddress}
-              isValidAddress={addressIsValid}
-              addressLoading={false}
+          )}
+        </Box>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'android' ? undefined : 'position'}
+          keyboardVerticalOffset={-spacing.xxxl - BUTTON_HEIGHT}
+        >
+          <SafeAreaBox
+            style={backgroundStyle}
+            borderRadius="xl"
+            edges={['bottom']}
+          >
+            <Box
+              flexDirection="row"
+              marginTop="xl"
+              marginBottom="s"
+              justifyContent="space-between"
+              marginHorizontal="xl"
+            >
+              <Text variant="body1">
+                {t('addNewContact.address.title', {
+                  network: 'Solana',
+                })}
+              </Text>
+              <AddressExtra
+                onScanPress={handleScanAddress}
+                isValidAddress={addressIsValid}
+                addressLoading={false}
+              />
+            </Box>
+            <TextInput
+              variant="plain"
+              textInputProps={{
+                placeholder: t('addNewContact.address.placeholder'),
+                onChangeText: handleAddressChange,
+                value: address,
+                autoCapitalize: 'none',
+                multiline: true,
+                returnKeyType: 'next',
+                autoComplete: 'off',
+                autoCorrect: false,
+                onKeyPress: handleKeydown,
+              }}
+              paddingVertical="xl"
             />
-          </Box>
-          <TextInput
-            variant="plain"
-            textInputProps={{
-              placeholder: t('addNewContact.address.placeholder'),
-              onChangeText: handleAddressChange,
-              value: address,
-              autoCapitalize: 'none',
-              multiline: true,
-              returnKeyType: 'next',
-              autoComplete: 'off',
-              autoCorrect: false,
-              onKeyPress: handleKeydown,
-            }}
-            paddingVertical="xl"
-          />
-          <Box
-            flexDirection="row"
-            justifyContent="space-between"
-            marginTop="m"
-            marginBottom="s"
-            marginHorizontal="xl"
-          >
-            <Text variant="body1">{t('addNewContact.nickname.title')}</Text>
-            {!!nickname && <Checkmark color={blueBright500} />}
-          </Box>
-          <TextInput
-            variant="plain"
-            textInputProps={{
-              placeholder: t('addNewContact.nickname.placeholder'),
-              onChangeText: setNickname,
-              value: nickname,
-              autoCapitalize: 'words',
-              autoComplete: 'off',
-              returnKeyType: 'done',
-              autoCorrect: false,
-            }}
-            ref={nicknameInput}
-          />
-          <ButtonPressable
-            visible={isAddingContact}
-            backgroundColor="blueBright500"
-            backgroundColorDisabled="plainInputBackground"
-            titleColorDisabled="grey400"
-            fontSize={19}
-            backgroundColorOpacityPressed={0.7}
-            borderRadius="round"
-            marginTop="xxxl"
-            marginHorizontal="xl"
-            title={t('addNewContact.addContact')}
-            disabled={!addressIsValid || !nickname}
-            onPress={handleCreateNewContact}
-            marginBottom="l"
-          />
-          <Box
-            flexDirection="row"
-            justifyContent="center"
-            marginTop="xxxl"
-            marginHorizontal="xl"
-            visible={isEditingContact}
-          >
-            <ButtonPressable
-              flex={1}
-              backgroundColor="error"
-              height={BUTTON_HEIGHT}
-              backgroundColorDisabled="plainInputBackground"
-              titleColorDisabled="grey400"
-              fontSize={19}
-              backgroundColorOpacity={0.5}
-              backgroundColorOpacityPressed={0.3}
-              borderRadius="round"
-              marginRight="s"
-              title={t('editContact.delete')}
-              onPress={handleDeleteContact}
+            <Box
+              flexDirection="row"
+              justifyContent="space-between"
+              marginTop="m"
+              marginBottom="s"
+              marginHorizontal="xl"
+            >
+              <Text variant="body1">{t('addNewContact.nickname.title')}</Text>
+              {!!nickname && <Checkmark color={blueBright500} />}
+            </Box>
+            <TextInput
+              variant="plain"
+              textInputProps={{
+                placeholder: t('addNewContact.nickname.placeholder'),
+                onChangeText: setNickname,
+                value: nickname,
+                autoCapitalize: 'words',
+                autoComplete: 'off',
+                returnKeyType: 'done',
+                autoCorrect: false,
+              }}
+              ref={nicknameInput}
             />
             <ButtonPressable
-              flex={1}
+              visible={isAddingContact}
               backgroundColor="blueBright500"
-              height={BUTTON_HEIGHT}
               backgroundColorDisabled="plainInputBackground"
               titleColorDisabled="grey400"
               fontSize={19}
               backgroundColorOpacityPressed={0.7}
               borderRadius="round"
-              title={t('editContact.save')}
-              marginLeft="s"
-              disabled={
-                !addressIsValid ||
-                !nickname ||
-                (nickname === contact?.alias && address === contact?.address)
-              }
-              onPress={handleSaveNewContact}
+              marginTop="xxxl"
+              marginHorizontal="xl"
+              title={t('addNewContact.addContact')}
+              disabled={!addressIsValid || !nickname}
+              onPress={handleCreateNewContact}
+              marginBottom="l"
             />
-          </Box>
-        </SafeAreaBox>
-      </KeyboardAvoidingView>
-    </Box>
+            <Box
+              flexDirection="row"
+              justifyContent="center"
+              marginTop="xxxl"
+              marginHorizontal="xl"
+              visible={isEditingContact}
+            >
+              <ButtonPressable
+                flex={1}
+                backgroundColor="error"
+                height={BUTTON_HEIGHT}
+                backgroundColorDisabled="plainInputBackground"
+                titleColorDisabled="grey400"
+                fontSize={19}
+                backgroundColorOpacity={0.5}
+                backgroundColorOpacityPressed={0.3}
+                borderRadius="round"
+                marginRight="s"
+                title={t('editContact.delete')}
+                onPress={handleDeleteContact}
+              />
+              <ButtonPressable
+                flex={1}
+                backgroundColor="blueBright500"
+                height={BUTTON_HEIGHT}
+                backgroundColorDisabled="plainInputBackground"
+                titleColorDisabled="grey400"
+                fontSize={19}
+                backgroundColorOpacityPressed={0.7}
+                borderRadius="round"
+                title={t('editContact.save')}
+                marginLeft="s"
+                disabled={
+                  !addressIsValid ||
+                  !nickname ||
+                  (nickname === contact?.alias && address === contact?.address)
+                }
+                onPress={handleSaveNewContact}
+              />
+            </Box>
+          </SafeAreaBox>
+        </KeyboardAvoidingView>
+      </Box>
+    </SafeAreaBox>
   )
 }
 

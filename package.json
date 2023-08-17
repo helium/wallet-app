@@ -83,6 +83,7 @@
     "@rnmapbox/maps": "^10.0.7-rc.0",
     "@shopify/restyle": "1.8.0",
     "@solana/spl-account-compression": "0.1.4",
+    "@solana/spl-memo": "^0.2.3",
     "@solana/spl-token": "0.3.6",
     "@solana/spl-token-registry": "^0.2.4574",
     "@solana/wallet-adapter-react": "^0.15.33",

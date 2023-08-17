@@ -4,6 +4,7 @@ import AccountIcon from '@components/AccountIcon'
 import BackgroundFill from '@components/BackgroundFill'
 import Box from '@components/Box'
 import Text from '@components/Text'
+import MemoInput from '@components/MemoInput'
 import TextInput from '@components/TextInput'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address from '@helium/address'
@@ -16,7 +17,12 @@ import { useColors, useOpacity } from '@theme/themeHooks'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { toUpper } from 'lodash'
-import React, { memo, useCallback, useEffect, useMemo } from 'react'
+import React, {
+  memo as reactMemo,
+  useCallback,
+  useEffect,
+  useMemo,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Keyboard,
@@ -33,6 +39,7 @@ export type Payment = {
   amount?: BN
   hasError?: boolean
   max?: boolean
+  memo?: string
   createTokenAccountFee?: BN
 } & BoxProps<Theme>
 
@@ -44,6 +51,7 @@ type Props = {
   onEditAmount: (opts: { address?: string; index: number }) => void
   onToggleMax?: (opts: { address?: string; index: number }) => void
   onEditAddress: (opts: { index: number; address: string }) => void
+  onEditMemo?: (opts: { address?: string; index: number; memo: string }) => void
   handleAddressError: (opts: {
     index: number
     address: string
@@ -66,12 +74,15 @@ const PaymentItem = ({
   fee,
   handleAddressError,
   hasError,
+  hideMemo,
   index,
   max,
+  memo,
   netType,
   onAddressBookSelected,
   onEditAddress,
   onEditAmount,
+  onEditMemo,
   onRemove,
   onToggleMax,
   onUpdateError,
@@ -125,6 +136,15 @@ const PaymentItem = ({
       onEditAddress({ address: text || '', index })
     },
     [index, onEditAddress],
+  )
+
+  const handleEditMemo = useCallback(
+    (text?: string) => {
+      if (!onEditMemo) return
+
+      onEditMemo({ memo: text || '', address, index })
+    },
+    [address, index, onEditMemo],
   )
 
   const handleAddressBlur = useCallback(
@@ -297,7 +317,17 @@ const PaymentItem = ({
           </TouchableOpacityBox>
         </Box>
       )}
+
+      {!hideMemo && (
+        <>
+          <Box height={1} backgroundColor="primaryBackground" />
+
+          <Box justifyContent="center" minHeight={ITEM_HEIGHT}>
+            <MemoInput value={memo} onChangeText={handleEditMemo} />
+          </Box>
+        </>
+      )}
     </Box>
   )
 }
-export default memo(PaymentItem)
+export default reactMemo(PaymentItem)

@@ -60,6 +60,7 @@ import {
   SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
   SPL_NOOP_PROGRAM_ID,
 } from '@solana/spl-account-compression'
+import { createMemoInstruction } from '@solana/spl-memo'
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   AccountLayout,
@@ -654,6 +655,7 @@ export const delegateDataCredits = async (
   delegateAddress: string,
   amount: number,
   mint: PublicKey,
+  memo?: string,
 ) => {
   try {
     const { connection } = anchorProvider
@@ -662,22 +664,36 @@ export const delegateDataCredits = async (
     const program = await dc.init(anchorProvider)
     const subDao = subDaoKey(mint)[0]
 
-    const tx = await program.methods
-      .delegateDataCreditsV0({
-        amount: new BN(amount, 0),
-        routerKey: delegateAddress,
-      })
-      .accounts({
-        subDao,
-      })
-      .transaction()
+    const instructions: TransactionInstruction[] = []
+
+    if (memo) {
+      instructions.push(createMemoInstruction(memo, [payer]))
+    }
+
+    instructions.push(
+      await program.methods
+        .delegateDataCreditsV0({
+          amount: new BN(amount, 0),
+          routerKey: delegateAddress,
+        })
+        .accounts({
+          subDao,
+        })
+        .instruction(),
+    )
 
     const { blockhash } = await connection.getLatestBlockhash()
 
-    tx.recentBlockhash = blockhash
-    tx.feePayer = payer
+    const transaction = new Transaction()
 
-    return tx
+    instructions.forEach((instruction) => {
+      transaction.add(instruction)
+    })
+
+    transaction.recentBlockhash = blockhash
+    transaction.feePayer = payer
+
+    return transaction
   } catch (e) {
     Logger.error(e)
     throw e as Error
