@@ -64,6 +64,7 @@ import { createMemoInstruction } from '@solana/spl-memo'
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   AccountLayout,
+  NATIVE_MINT,
   TOKEN_PROGRAM_ID,
   createAssociatedTokenAccountIdempotentInstruction,
   createAssociatedTokenAccountInstruction,
@@ -345,9 +346,10 @@ export const transferToken = async (
     secretKey: secureAcct.privateKey,
   }
 
-  const transaction = !mintAddress
-    ? await createTransferSolTxn(anchorProvider, signer, payments)
-    : await createTransferTxn(anchorProvider, signer, payments, mintAddress)
+  const transaction =
+    !mintAddress || mintAddress === NATIVE_MINT.toBase58()
+      ? await createTransferSolTxn(anchorProvider, signer, payments)
+      : await createTransferTxn(anchorProvider, signer, payments, mintAddress)
 
   return transaction
 }

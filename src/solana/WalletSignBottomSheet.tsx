@@ -447,11 +447,7 @@ const WalletSignBottomSheet = forwardRef(
                 marginTop="l"
               >
                 <ButtonPressable
-                  width={
-                    !(insufficientFunds || insufficientRentExempt)
-                      ? '48%'
-                      : '100%'
-                  }
+                  width="48%"
                   borderRadius="round"
                   backgroundColor="white"
                   backgroundColorOpacity={0.1}
