@@ -100,7 +100,8 @@ export const useVisibleTokens = () => {
   const { visibleTokens, setVisibleTokens } = useContext(TokensContext)
 
   return {
-    visibleTokens: visibleTokens[currentAccount?.address || ''] || new Set(),
+    visibleTokens:
+      visibleTokens[currentAccount?.address || ''] || DEFAULT_TOKENS,
     setVisibleTokens,
   }
 }
