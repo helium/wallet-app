@@ -92,14 +92,16 @@ const BurnScreen = () => {
   const { showOKAlert } = useAlert()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
   const [dcAmount, setDcAmount] = useState(new BN(route.params.amount))
-  const [submitError, setSubmitError] = useState<string | undefined>(undefined)
   const [delegateAddress, setDelegateAddress] = useState(route.params.address)
   const [memo, setMemo] = useState(route.params.memo)
+  const [mint, setMint] = useState<PublicKey>(
+    (route.params.mint && new PublicKey(route.params.mint)) || MOBILE_MINT,
+  )
+  const [submitError, setSubmitError] = useState<string | undefined>(undefined)
   const [hasError, setHasError] = useState(false)
   const delegatePayment = useSelector(
     (reduxState: RootState) => reduxState.solana.delegate,
   )
-  const [mint, setMint] = useState<PublicKey>(MOBILE_MINT)
   const { symbol } = useMetaplexMetadata(mint)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
 
