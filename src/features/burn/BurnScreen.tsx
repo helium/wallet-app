@@ -91,13 +91,13 @@ const BurnScreen = () => {
   const dcBalance = useBN(useOwnedAmount(wallet, DC_MINT).amount)
   const { showOKAlert } = useAlert()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const [dcAmount, setDcAmount] = useState(new BN(route.params.amount))
+  const [submitError, setSubmitError] = useState<string | undefined>(undefined)
+  const [dcAmount, setDcAmount] = useState(new BN(route.params.amount || 0))
   const [delegateAddress, setDelegateAddress] = useState(route.params.address)
-  const [memo, setMemo] = useState(route.params.memo)
   const [mint, setMint] = useState<PublicKey>(
     (route.params.mint && new PublicKey(route.params.mint)) || MOBILE_MINT,
   )
-  const [submitError, setSubmitError] = useState<string | undefined>(undefined)
+  const [memo, setMemo] = useState(route.params.memo)
   const [hasError, setHasError] = useState(false)
   const delegatePayment = useSelector(
     (reduxState: RootState) => reduxState.solana.delegate,
@@ -123,7 +123,7 @@ const BurnScreen = () => {
   }, [networkType])
 
   const amountBalance = useMemo(() => {
-    const amount = new BN(route.params.amount)
+    const amount = new BN(route.params.amount || 0)
 
     if (dcAmount) return dcAmount
 
