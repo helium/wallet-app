@@ -13,7 +13,7 @@ export type PaymentRouteParam = {
 
 export type BurnRouteParam = {
   address: string
-  amount: string
+  amount?: string
   memo?: string
   isDelegate?: boolean
   mint?: string
