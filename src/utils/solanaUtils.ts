@@ -1726,6 +1726,10 @@ export function toAsset(hotspot: CompressedNFT): Asset {
   return {
     ...hotspot,
     id: new PublicKey(hotspot.id),
+    creators: hotspot.creators.map((c) => ({
+      ...c,
+      address: new PublicKey(c.address),
+    })),
     grouping:
       hotspot.grouping &&
       hotspot.grouping.map((g) => ({
