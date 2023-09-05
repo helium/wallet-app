@@ -3275,6 +3275,11 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
+"@jup-ag/api@^6.0.6":
+  version "6.0.6"
+  resolved "https://registry.yarnpkg.com/@jup-ag/api/-/api-6.0.6.tgz#f0f838aaf8ca5964d7cb9ff24535599bf4d03813"
+  integrity sha512-wGp3FjT+WNdd5TzsWaKr2a2rQ2FgIyaV6sq8L76R8KVYxH7TfCY/BZwhcij6YhxHGjxrF8j7qI6ZPpmUTICpnA==
+
 "@koale/useworker@^4.0.2":
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/@koale/useworker/-/useworker-4.0.2.tgz#cb540a2581cd6025307c3ca6685bc60748773e58"
