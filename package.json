@@ -62,6 +62,7 @@
     "@helium/treasury-management-sdk": "0.1.2",
     "@helium/voter-stake-registry-sdk": "0.1.2",
     "@helium/wallet-link": "4.10.0",
+    "@jup-ag/api": "^6.0.6",
     "@ledgerhq/hw-app-helium": "6.29.1",
     "@ledgerhq/react-native-hid": "6.28.4",
     "@ledgerhq/react-native-hw-transport-ble": "6.27.2",
