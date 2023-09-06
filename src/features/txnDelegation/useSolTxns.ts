@@ -13,9 +13,14 @@ import bs58 from 'bs58'
 import { get, last } from 'lodash'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
+import { decodeEntityKey } from '@helium/helium-entity-manager-sdk'
 import { useSolana } from '../../solana/SolanaProvider'
 import { getSolanaKeypair } from '../../storage/secureStorage'
-import { Asset, WrappedConnection } from '../../utils/WrappedConnection'
+import {
+  Asset,
+  AssetResult,
+  WrappedConnection,
+} from '../../utils/WrappedConnection'
 import { submitSolana } from '../../utils/solanaUtils'
 
 const ValidTxnKeys = [
@@ -40,7 +45,7 @@ type Txn = {
 }
 
 const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
-  const { anchorProvider } = useSolana()
+  const { anchorProvider, hemProgram } = useSolana()
   const [submitLoading, setSubmitLoading] = useState(false)
   const handledTxnStr = useRef('')
   const [transactions, setTransactions] = useState<
@@ -139,6 +144,22 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
     [],
   )
 
+  const assetToAddress = useCallback(
+    async (asset: AssetResult) => {
+      if (asset.creators.length > 1) {
+        // This is an RSA hotspot
+        if (!hemProgram) return ''
+        const keyToAsset = await hemProgram.account.keyToAssetV0.fetch(
+          asset.creators[1].address.toString(),
+        )
+        return decodeEntityKey(keyToAsset.entityKey)
+      }
+
+      return asset.content.json_uri.split('/').slice(-1)[0]
+    },
+    [hemProgram],
+  )
+
   const handleUpdateMeta = useCallback(
     async ({
       decodedInstruction,
@@ -176,9 +197,7 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
       )
       const response = await connection.getAsset<Asset>(pubKey.toString())
 
-      const gatewayAddress = response.result.content.json_uri
-        .split('/')
-        .slice(-1)[0]
+      const gatewayAddress = await assetToAddress(response.result)
 
       return {
         location: location?.toString('hex'),
@@ -188,7 +207,7 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
         gatewayAddress,
       }
     },
-    [],
+    [assetToAddress],
   )
 
   const handleTransfer = useCallback(
@@ -235,9 +254,7 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
       )
       const asset = await connection.getAsset<Asset>(pubKey.toString())
 
-      const gatewayAddress = asset.result.content.json_uri
-        .split('/')
-        .slice(-1)[0]
+      const gatewayAddress = await assetToAddress(asset.result)
 
       return {
         owner: ownerAcct.pubkey.toBase58(),
@@ -246,7 +263,7 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
         gatewayAddress,
       }
     },
-    [heliumAddress],
+    [assetToAddress, heliumAddress],
   )
 
   const handleBurn = useCallback(
