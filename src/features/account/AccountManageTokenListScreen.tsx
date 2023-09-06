@@ -13,14 +13,20 @@ import { usePublicKey } from '@hooks/usePublicKey'
 import CheckBox from '@react-native-community/checkbox'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { useColors, useHitSlop } from '@theme/themeHooks'
 import { useBalance } from '@utils/Balance'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { memo, useCallback, useMemo } from 'react'
+import { useAsyncCallback } from 'react-async-hook'
+import { RefreshControl } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
 import { Edge } from 'react-native-safe-area-context'
+import { useSolana } from '../../solana/SolanaProvider'
+import { syncTokenAccounts } from '../../store/slices/balancesSlice'
+import { useAppDispatch } from '../../store/store'
 import { HomeNavigationProp } from '../home/homeTypes'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import { getSortValue } from './AccountTokenList'
@@ -120,7 +126,18 @@ const AccountManageTokenListScreen: React.FC = () => {
         return getSortValue(b) - getSortValue(a)
       })
   }, [tokenAccounts])
+  const dispatch = useAppDispatch()
+  const { anchorProvider, cluster } = useSolana()
+  const { currentAccount } = useAccountStorage()
+  const colors = useColors()
 
+  const { loading: refetchingTokens, execute: refetchTokens } =
+    useAsyncCallback(async () => {
+      if (!anchorProvider || !currentAccount || !cluster) return
+      await dispatch(
+        syncTokenAccounts({ cluster, acct: currentAccount, anchorProvider }),
+      )
+    })
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ index, item: token }: { index: number; item: string }) => {
@@ -163,6 +180,15 @@ const AccountManageTokenListScreen: React.FC = () => {
       </Box>
 
       <FlatList
+        refreshControl={
+          <RefreshControl
+            enabled
+            refreshing={refetchingTokens}
+            onRefresh={refetchTokens}
+            title=""
+            tintColor={colors.primaryText}
+          />
+        }
         data={mints}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
