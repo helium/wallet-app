@@ -6,6 +6,7 @@ import i18n from '@utils/i18n'
 import * as solUtils from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { useCallback } from 'react'
+import { getH3Location } from '@utils/h3'
 import { useSolana } from '../solana/SolanaProvider'
 import { useWalletSign } from '../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
@@ -30,7 +31,7 @@ import {
 
 export default () => {
   const { currentAccount } = useAccountStorage()
-  const { cluster, anchorProvider } = useSolana()
+  const { cluster, anchorProvider, solanaOnboarding } = useSolana()
   const { t } = i18n
   const { walletSignBottomSheetRef } = useWalletSign()
 
@@ -457,30 +458,36 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      const updateInfoTxn = await solUtils.updateEntityInfoTxn({
-        anchorProvider,
-        type,
-        entityKey,
-        lat,
-        lng,
+      const location = getH3Location(lat, lng)
+
+      const assertData = await solanaOnboarding?.getAssertData({
+        gateway: entityKey,
         elevation: elevation ? parseFloat(elevation) : undefined,
         decimalGain: decimalGain ? parseFloat(decimalGain) : undefined,
+        location,
+        hotspotTypes: [type],
       })
 
-      const serializedTx = updateInfoTxn.serialize({
-        requireAllSignatures: false,
-      })
+      if (!assertData?.solanaTransactions.length) {
+        throw new Error('Failed to get assert data')
+      }
+
+      const serializedTxs = assertData.solanaTransactions.map((txn) =>
+        Buffer.from(txn, 'base64'),
+      )
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signAssertLocationTxn'),
-        serializedTxs: [Buffer.from(serializedTx)],
+        serializedTxs,
       })
 
       if (!decision) {
         throw new Error('User rejected transaction')
       }
+
+      const txns = serializedTxs.map((tx) => Transaction.from(tx))
 
       if (type === 'IOT') {
         await dispatch(
@@ -488,7 +495,7 @@ export default () => {
             account: currentAccount,
             anchorProvider,
             cluster,
-            updateTxn: updateInfoTxn,
+            txns,
           }),
         )
       }
@@ -499,7 +506,7 @@ export default () => {
             account: currentAccount,
             anchorProvider,
             cluster,
-            updateTxn: updateInfoTxn,
+            txns,
           }),
         )
       }
@@ -509,6 +516,7 @@ export default () => {
       cluster,
       currentAccount,
       dispatch,
+      solanaOnboarding,
       t,
       walletSignBottomSheetRef,
     ],

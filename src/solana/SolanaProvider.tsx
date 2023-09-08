@@ -34,7 +34,6 @@ import { useAppDispatch } from '../store/store'
 import { DcProgram, HemProgram, HsdProgram, LazyProgram } from '../types/solana'
 import { getConnection } from '../utils/solanaUtils'
 
-const onboardingClient = new OnboardingClient(Config.ONBOARDING_API_URL)
 const useSolanaHook = () => {
   const { currentAccount } = useAccountStorage()
   const dispatch = useAppDispatch()
@@ -61,15 +60,21 @@ const useSolanaHook = () => {
   )
 
   const solanaOnboarding = useMemo(() => {
-    console.log('ding.......................', address, !!connection)
     if (!address || !connection) return
+
+    const onboardingClient = new OnboardingClient(
+      cluster === 'devnet'
+        ? Config.ONBOARDING_API_TEST_URL
+        : Config.ONBOARDING_API_URL,
+    )
 
     return new SolanaOnboarding({
       onboardingClient,
       connection,
       heliumWalletAddress: address,
+      cluster,
     })
-  }, [address, connection])
+  }, [address, connection, cluster])
 
   const { result: secureAcct } = useAsync(
     async (addr: string | undefined) => {
@@ -180,30 +185,28 @@ const useSolanaHook = () => {
     lazyProgram,
     updateCluster,
     cache,
+    solanaOnboarding,
   }
 }
 
-const initialState = {
-  anchorProvider: undefined,
-  cluster: 'mainnet-beta' as Cluster,
-  connection: undefined,
-  dcProgram: undefined,
-  hemProgram: undefined,
-  hsdProgram: undefined,
-  lazyProgram: undefined,
-  cache: undefined,
-  updateCluster: (_nextCluster: Cluster) => {},
-}
-const SolanaContext =
-  createContext<ReturnType<typeof useSolanaHook>>(initialState)
+const SolanaContext = createContext<ReturnType<typeof useSolanaHook> | null>(
+  null,
+)
 const { Provider } = SolanaContext
 
 const SolanaProvider = ({ children }: { children: ReactNode }) => {
   return <Provider value={useSolanaHook()}>{children}</Provider>
 }
 
-export const useSolana = (): SolanaManager => useContext(SolanaContext)
-
+export const useSolana = (): SolanaManager => {
+  const context = useContext(SolanaContext)
+  if (!context) {
+    throw new Error(
+      'useSolanaOnboarding has to be used within <SolanaOnboardingProvider>',
+    )
+  }
+  return context
+}
 export default SolanaProvider
 
 export type SolanaManager = ReturnType<typeof useSolanaHook>

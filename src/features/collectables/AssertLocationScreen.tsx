@@ -57,6 +57,7 @@ import { CollectableStackParamList } from './collectablesTypes'
 
 const BUTTON_HEIGHT = 65
 type Route = RouteProp<CollectableStackParamList, 'AssertLocationScreen'>
+
 const AssertLocationScreen = () => {
   const { t } = useTranslation()
   const route = useRoute<Route>()
@@ -313,8 +314,8 @@ const AssertLocationScreen = () => {
     () => !mapCenter || reverseGeo.loading || asserting,
     [asserting, mapCenter, reverseGeo.loading],
   )
-  const [debouncedDisabled] = useDebounce(disabled, 500)
-  const [reverseGeoLoading] = useDebounce(reverseGeo.loading, 500)
+  const [debouncedDisabled] = useDebounce(disabled, 300)
+  const [reverseGeoLoading] = useDebounce(reverseGeo.loading, 300)
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
@@ -322,7 +323,7 @@ const AssertLocationScreen = () => {
         headerTopMargin="l"
         padding="none"
         title={t('assertLocationScreen.title')}
-        backgroundImageUri={collectable.content?.metadata?.image || ''}
+        backgroundImageUri={metadata?.image || ''}
         edges={backEdges}
       >
         <SafeAreaBox
@@ -562,9 +563,10 @@ const AssertLocationScreen = () => {
               disabled={disabled}
               height={65}
               alignItems="center"
+              justifyContent="center"
               onPress={handleAssertLocationPress}
             >
-              {debouncedDisabled ? (
+              {debouncedDisabled || asserting ? (
                 <CircleLoader loaderSize={19} color="black" />
               ) : (
                 <Text

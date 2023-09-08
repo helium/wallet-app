@@ -127,14 +127,14 @@ type UpdateIotInfoInput = {
   account: CSAccount
   anchorProvider: AnchorProvider
   cluster: Cluster
-  updateTxn: Transaction
+  txns: Transaction[]
 }
 
 type UpdateMobileInfoInput = {
   account: CSAccount
   anchorProvider: AnchorProvider
   cluster: Cluster
-  updateTxn: Transaction
+  txns: Transaction[]
 }
 
 export const makePayment = createAsyncThunk(
@@ -523,12 +523,16 @@ export const getTxns = createAsyncThunk(
 
 export const sendUpdateIotInfo = createAsyncThunk(
   'solana/sendUpdateIotInfo',
-  async ({ cluster, anchorProvider, updateTxn }: UpdateIotInfoInput) => {
+  async ({ cluster, anchorProvider, txns }: UpdateIotInfoInput) => {
     try {
-      const signed = await anchorProvider.wallet.signTransaction(updateTxn)
-      const sig = await anchorProvider.sendAndConfirm(signed)
+      const signatures = [] as string[]
+      for (const txn of txns) {
+        const signed = await anchorProvider.wallet.signTransaction(txn)
+        const sig = await anchorProvider.sendAndConfirm(signed)
+        signatures.push(sig)
+      }
 
-      postPayment({ signatures: [sig], cluster })
+      postPayment({ signatures, cluster })
     } catch (error) {
       Logger.error(error)
       throw error
@@ -539,12 +543,16 @@ export const sendUpdateIotInfo = createAsyncThunk(
 
 export const sendUpdateMobileInfo = createAsyncThunk(
   'solana/sendUpdateMobileInfo',
-  async ({ cluster, anchorProvider, updateTxn }: UpdateMobileInfoInput) => {
+  async ({ cluster, anchorProvider, txns }: UpdateMobileInfoInput) => {
     try {
-      const signed = await anchorProvider.wallet.signTransaction(updateTxn)
-      const sig = await anchorProvider.sendAndConfirm(signed)
+      const signatures = [] as string[]
+      for (const txn of txns) {
+        const signed = await anchorProvider.wallet.signTransaction(txn)
+        const sig = await anchorProvider.sendAndConfirm(signed)
+        signatures.push(sig)
+      }
 
-      postPayment({ signatures: [sig], cluster })
+      postPayment({ signatures, cluster })
     } catch (error) {
       Logger.error(error)
       throw error
