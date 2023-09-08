@@ -1653,7 +1653,7 @@ export const updateEntityInfoTxn = async ({
 
     const assetId = keyToAsset.asset
 
-    if (type === 'iot') {
+    if (type === 'IOT') {
       const [iotConfigKey] = rewardableEntityConfigKey(IOT_SUB_DAO_KEY, 'IOT')
       const iotInfo = await program.account.iotHotspotInfoV0.fetchNullable(
         iotInfoKey(iotConfigKey, entityKey)[0],
@@ -1678,7 +1678,7 @@ export const updateEntityInfoTxn = async ({
       ).transaction()
     }
 
-    if (type === 'mobile') {
+    if (type === 'MOBILE') {
       const [mobileConfigKey] = rewardableEntityConfigKey(
         MOBILE_SUB_DAO_KEY,
         'MOBILE',

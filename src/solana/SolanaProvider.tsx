@@ -25,6 +25,7 @@ import React, {
 import { useAsync } from 'react-async-hook'
 import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
+import OnboardingClient, { SolanaOnboarding } from '@helium/onboarding'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { getSessionKey, getSolanaKeypair } from '../storage/secureStorage'
 import { RootState } from '../store/rootReducer'
@@ -33,6 +34,7 @@ import { useAppDispatch } from '../store/store'
 import { DcProgram, HemProgram, HsdProgram, LazyProgram } from '../types/solana'
 import { getConnection } from '../utils/solanaUtils'
 
+const onboardingClient = new OnboardingClient(Config.ONBOARDING_API_URL)
 const useSolanaHook = () => {
   const { currentAccount } = useAccountStorage()
   const dispatch = useAppDispatch()
@@ -52,10 +54,23 @@ const useSolanaHook = () => {
       return getConnection(cluster, sessionKeyActual)
     }
   }, [cluster, sessionKey, loading])
+
   const address = useMemo(
     () => currentAccount?.address,
     [currentAccount?.address],
   )
+
+  const solanaOnboarding = useMemo(() => {
+    console.log('ding.......................', address, !!connection)
+    if (!address || !connection) return
+
+    return new SolanaOnboarding({
+      onboardingClient,
+      connection,
+      heliumWalletAddress: address,
+    })
+  }, [address, connection])
+
   const { result: secureAcct } = useAsync(
     async (addr: string | undefined) => {
       if (addr) {

@@ -457,10 +457,6 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      if (!currentAccount) {
-        throw new Error(t('errors.account'))
-      }
-
       const updateInfoTxn = await solUtils.updateEntityInfoTxn({
         anchorProvider,
         type,
@@ -486,7 +482,7 @@ export default () => {
         throw new Error('User rejected transaction')
       }
 
-      if (type === 'iot') {
+      if (type === 'IOT') {
         await dispatch(
           sendUpdateIotInfo({
             account: currentAccount,
@@ -497,7 +493,7 @@ export default () => {
         )
       }
 
-      if (type === 'mobile') {
+      if (type === 'MOBILE') {
         await dispatch(
           sendUpdateMobileInfo({
             account: currentAccount,

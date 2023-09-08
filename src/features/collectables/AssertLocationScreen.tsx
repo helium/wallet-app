@@ -1,16 +1,21 @@
 import MapPin from '@assets/images/mapPin.svg'
-import { ReAnimatedBlurBox, ReAnimatedBox } from '@components/AnimatedBox'
-import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
-import FabButton from '@components/FabButton'
-import { DelayedFadeIn, FadeInFast } from '@components/FadeInOut'
-import ImageBox from '@components/ImageBox'
-import SafeAreaBox from '@components/SafeAreaBox'
-import SearchInput from '@components/SearchInput'
-import Text from '@components/Text'
-import TextInput from '@components/TextInput'
+import {
+  ReAnimatedBlurBox,
+  ReAnimatedBox,
+  BackScreen,
+  Box,
+  ButtonPressable,
+  CircleLoader,
+  FabButton,
+  FadeInOut,
+  DelayedFadeIn,
+  FadeInFast,
+  ImageBox,
+  SafeAreaBox,
+  SearchInput,
+  Text,
+  TextInput,
+} from '@components'
 import { HotspotType } from '@helium/onboarding'
 import useAlert from '@hooks/useAlert'
 import { useForwardGeo } from '@hooks/useForwardGeo'
@@ -42,10 +47,12 @@ import 'text-encoding-polyfill'
 import { useEntityKey } from '@hooks/useEntityKey'
 import { useIotInfo } from '@hooks/useIotInfo'
 import { useMobileInfo } from '@hooks/useMobileInfo'
-import { parseH3BNLocation } from '../../utils/h3'
-import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
-import * as Logger from '../../utils/logger'
-import { MAX_MAP_ZOOM, MIN_MAP_ZOOM } from '../../utils/mapbox'
+import { useDebounce } from 'use-debounce'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { parseH3BNLocation } from '@utils/h3'
+import { removeDashAndCapitalize } from '@utils/hotspotNftsUtils'
+import * as Logger from '@utils/logger'
+import { MAX_MAP_ZOOM, MIN_MAP_ZOOM } from '@utils/mapbox'
 import { CollectableStackParamList } from './collectablesTypes'
 
 const BUTTON_HEIGHT = 65
@@ -237,25 +244,25 @@ const AssertLocationScreen = () => {
 
   const assertLocation = useCallback(
     async (type: HotspotType) => {
-      if (mapCenter && entityKey) {
-        setTransactionError(undefined)
-        setAsserting(true)
-        try {
-          hideElevGain()
-          await submitUpdateEntityInfo({
-            type,
-            entityKey,
-            lng: mapCenter[0],
-            lat: mapCenter[1],
-            elevation,
-            decimalGain: gain,
-          })
-          setAsserting(false)
-        } catch (error) {
-          setAsserting(false)
-          Logger.error(error)
-          setTransactionError((error as Error).message)
-        }
+      if (!mapCenter || !entityKey) return
+
+      setTransactionError(undefined)
+      setAsserting(true)
+      try {
+        hideElevGain()
+        await submitUpdateEntityInfo({
+          type,
+          entityKey,
+          lng: mapCenter[0],
+          lat: mapCenter[1],
+          elevation,
+          decimalGain: gain,
+        })
+        setAsserting(false)
+      } catch (error) {
+        setAsserting(false)
+        Logger.error(error)
+        setTransactionError((error as Error).message)
       }
     },
     [
@@ -283,7 +290,7 @@ const AssertLocationScreen = () => {
           },
           {
             text: 'Mobile',
-            onPress: async () => assertLocation('mobile'),
+            onPress: async () => assertLocation('MOBILE'),
           },
           {
             text: t('generic.cancel'),
@@ -294,13 +301,20 @@ const AssertLocationScreen = () => {
     } else {
       // elevGainVisible
       // we can assume user is asserting location from elevGain UI
-      await assertLocation('iot')
+      await assertLocation('IOT')
     }
   }, [t, elevGainVisible, assertLocation])
 
   const showError = useMemo(() => {
     if (transactionError) return transactionError
   }, [transactionError])
+
+  const disabled = useMemo(
+    () => !mapCenter || reverseGeo.loading || asserting,
+    [asserting, mapCenter, reverseGeo.loading],
+  )
+  const [debouncedDisabled] = useDebounce(disabled, 500)
+  const [reverseGeoLoading] = useDebounce(reverseGeo.loading, 500)
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
@@ -524,7 +538,7 @@ const AssertLocationScreen = () => {
             marginVertical="s"
             minHeight={40}
           >
-            {reverseGeo.loading && (
+            {reverseGeoLoading && (
               <CircleLoader loaderSize={20} color="white" />
             )}
             {showError && (
@@ -533,35 +547,35 @@ const AssertLocationScreen = () => {
               </Text>
             )}
             {!reverseGeo.loading && !showError && (
-              <Text variant="body3Medium" color="grey600">
-                {reverseGeo.result}
-              </Text>
+              <FadeInOut>
+                <Text variant="body3Medium" color="grey600">
+                  {reverseGeo.result}
+                </Text>
+              </FadeInOut>
             )}
           </Box>
           <Box>
-            <ButtonPressable
-              height={BUTTON_HEIGHT}
-              flexGrow={1}
+            <TouchableOpacityBox
+              backgroundColor="surfaceContrast"
               borderRadius="round"
-              backgroundColor="white"
-              backgroundColorOpacityPressed={0.7}
-              backgroundColorDisabled="white"
-              backgroundColorDisabledOpacity={0.0}
-              titleColorDisabled="grey600"
-              title={asserting ? '' : t('assertLocationScreen.title')}
-              titleColor="black"
-              disabled={!mapCenter || reverseGeo.loading || asserting}
-              onPress={
-                reverseGeo.loading || forwardGeo.loading
-                  ? undefined
-                  : handleAssertLocationPress
-              }
-              TrailingComponent={
-                asserting ? (
-                  <CircleLoader loaderSize={20} color="black" />
-                ) : undefined
-              }
-            />
+              paddingVertical="lm"
+              disabled={disabled}
+              height={65}
+              alignItems="center"
+              onPress={handleAssertLocationPress}
+            >
+              {debouncedDisabled ? (
+                <CircleLoader loaderSize={19} color="black" />
+              ) : (
+                <Text
+                  variant="subtitle2"
+                  marginHorizontal="xs"
+                  color="surfaceContrastText"
+                >
+                  {t('assertLocationScreen.title')}
+                </Text>
+              )}
+            </TouchableOpacityBox>
           </Box>
         </SafeAreaBox>
       </BackScreen>
