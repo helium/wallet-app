@@ -21,7 +21,7 @@ import useAlert from '@hooks/useAlert'
 import { useForwardGeo } from '@hooks/useForwardGeo'
 import { useReverseGeo } from '@hooks/useReverseGeo'
 import useSubmitTxn from '@hooks/useSubmitTxn'
-import { RouteProp, useRoute } from '@react-navigation/native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import MapboxGL from '@rnmapbox/maps'
 import turfBbox from '@turf/bbox'
 import { points } from '@turf/helpers'
@@ -82,6 +82,7 @@ const AssertLocationScreen = () => {
   const reverseGeo = useReverseGeo(mapCenter)
   const forwardGeo = useForwardGeo()
   const { submitUpdateEntityInfo } = useSubmitTxn()
+  const nav = useNavigation()
 
   const {
     content: { metadata },
@@ -260,6 +261,12 @@ const AssertLocationScreen = () => {
           decimalGain: gain,
         })
         setAsserting(false)
+
+        await showOKAlert({
+          title: t('assertLocationScreen.success.title'),
+          message: t('assertLocationScreen.success.message'),
+        })
+        nav.goBack()
       } catch (error) {
         setAsserting(false)
         Logger.error(error)
@@ -267,15 +274,15 @@ const AssertLocationScreen = () => {
       }
     },
     [
-      entityKey,
       mapCenter,
+      entityKey,
+      hideElevGain,
+      submitUpdateEntityInfo,
       elevation,
       gain,
-      hideElevGain,
-      setAsserting,
-      setTransactionError,
-      submitUpdateEntityInfo,
-      // nav,
+      showOKAlert,
+      t,
+      nav,
     ],
   )
 

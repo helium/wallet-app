@@ -18,7 +18,7 @@ const WalletSignBottomSheetTransaction = ({
   transactionIdx: number
   totalTransactions: number
   incrementTotalSolFee: (fee: number) => void
-  setNestedInsufficentFunds: React.Dispatch<React.SetStateAction<boolean>>
+  setNestedInsufficentFunds?: React.Dispatch<React.SetStateAction<boolean>>
 }) => {
   const { anchorProvider } = useSolana()
   const { t } = useTranslation()
@@ -33,7 +33,7 @@ const WalletSignBottomSheetTransaction = ({
 
   useEffect(() => {
     if (insufficientFunds) {
-      setNestedInsufficentFunds(true)
+      setNestedInsufficentFunds?.(true)
     }
   }, [insufficientFunds, setNestedInsufficentFunds])
 

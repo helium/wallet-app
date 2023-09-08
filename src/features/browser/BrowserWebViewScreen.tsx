@@ -99,7 +99,7 @@ const BrowserWebViewScreen = () => {
         const decision = await walletSignBottomSheetRef.current?.show({
           type,
           url: currentUrl,
-          serializedTxs: undefined,
+          serializedTxs: [],
         })
 
         if (!decision) {
@@ -122,7 +122,7 @@ const BrowserWebViewScreen = () => {
         const decision = await walletSignBottomSheetRef?.current?.show({
           type,
           url: currentUrl,
-          serializedTxs: undefined,
+          serializedTxs: [],
         })
 
         if (!decision) {
@@ -254,12 +254,13 @@ const BrowserWebViewScreen = () => {
           ),
         )
 
-        const txBuffers: Buffer[] = inputs.map(
-          ({ transaction }: SolanaSignAndSendTransactionInput) =>
-            new Uint8Array(
+        const txBuffers: { tx: Buffer }[] = inputs.map(
+          ({ transaction }: SolanaSignAndSendTransactionInput) => ({
+            tx: new Uint8Array(
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               Object.keys(transaction).map((k) => (transaction as any)[k]),
             ),
+          }),
         )
 
         const decision = await walletSignBottomSheetRef.current?.show({
@@ -329,7 +330,7 @@ const BrowserWebViewScreen = () => {
         const decision = await walletSignBottomSheetRef.current?.show({
           type,
           url: currentUrl,
-          serializedTxs: undefined,
+          serializedTxs: [],
         })
 
         if (!decision) {

@@ -71,11 +71,11 @@ export default () => {
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signPaymentTxn'),
-        serializedTxs: txns.map((tx) =>
-          tx.serialize({
+        serializedTxs: txns.map((tx) => ({
+          tx: tx.serialize({
             requireAllSignatures: false,
           }),
-        ),
+        })),
       })
 
       if (!decision) {
@@ -138,7 +138,7 @@ export default () => {
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signTransferCollectableTxn'),
-        serializedTxs: [Buffer.from(serializedTx)],
+        serializedTxs: [{ tx: Buffer.from(serializedTx) }],
       })
 
       if (!decision) {
@@ -191,7 +191,7 @@ export default () => {
         url: '',
         warning: recipientExists ? '' : t('transactions.recipientNonExistent'),
         additionalMessage: t('transactions.signSwapTxn'),
-        serializedTxs: [Buffer.from(serializedTx)],
+        serializedTxs: [{ tx: Buffer.from(serializedTx) }],
       })
 
       if (!decision) {
@@ -230,7 +230,7 @@ export default () => {
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signGenericTxn'),
-        serializedTxs: [Buffer.from(serializedTx)],
+        serializedTxs: [{ tx: Buffer.from(serializedTx) }],
       })
 
       if (!decision) {
@@ -272,7 +272,7 @@ export default () => {
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signClaimRewardsTxn'),
-        serializedTxs: serializedTxs.map(Buffer.from),
+        serializedTxs: serializedTxs.map((tx) => ({ tx: Buffer.from(tx) })),
       })
 
       if (!decision) {
@@ -361,7 +361,7 @@ export default () => {
         url: '',
         warning: recipientExists ? '' : t('transactions.recipientNonExistent'),
         additionalMessage: t('transactions.signMintDataCreditsTxn'),
-        serializedTxs: [Buffer.from(serializedTx)],
+        serializedTxs: [{ tx: Buffer.from(serializedTx) }],
       })
 
       if (!decision) {
@@ -413,7 +413,7 @@ export default () => {
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signDelegateDCTxn'),
-        serializedTxs: [Buffer.from(serializedTx)],
+        serializedTxs: [{ tx: Buffer.from(serializedTx) }],
       })
 
       if (!decision) {
@@ -472,9 +472,13 @@ export default () => {
         throw new Error('Failed to get assert data')
       }
 
-      const serializedTxs = assertData.solanaTransactions.map((txn) =>
-        Buffer.from(txn, 'base64'),
-      )
+      // If there's more than one txn, the first item is the burn txn. We only want to check for insufficient funds on it
+      const includesBurn = assertData.solanaTransactions.length > 1
+
+      const serializedTxs = assertData.solanaTransactions.map((txn, index) => ({
+        tx: Buffer.from(txn, 'base64'),
+        ignoreInsufficientFunds: includesBurn && index !== 0,
+      }))
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
@@ -487,7 +491,7 @@ export default () => {
         throw new Error('User rejected transaction')
       }
 
-      const txns = serializedTxs.map((tx) => Transaction.from(tx))
+      const txns = serializedTxs.map((tx) => Transaction.from(tx.tx))
 
       if (type === 'IOT') {
         await dispatch(

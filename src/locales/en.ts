@@ -323,6 +323,10 @@ export default {
     elevationPlaceholder: 'Elevation (meters)',
     locationNotFound: 'Location not found, Please try again.',
     mobileTitle: 'MOBILE',
+    success: {
+      title: 'Location Asserted!',
+      message: 'Location has successfully been asserted.',
+    },
   },
   antennaSetupScreen: {
     title: 'Antenna Setup',

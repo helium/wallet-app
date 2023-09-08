@@ -61,19 +61,19 @@ const WalletSignBottomSheet = forwardRef(
       type: WalletStandardMessageTypes.connect,
       url: '',
       additionalMessage: '',
-      serializedTxs: undefined,
+      serializedTxs: [],
     })
 
     const itemsPerPage = 5
     const [currentPage, setCurrentPage] = useState(1)
     const [currentTxs, hasMore] = useMemo(() => {
       const totalPages = Math.ceil(
-        (walletSignOpts?.serializedTxs?.length || 0) / itemsPerPage,
+        (walletSignOpts.serializedTxs.length || 0) / itemsPerPage,
       )
       const more = currentPage < totalPages
-      let scopedTxs
+      let scopedTxs: { tx: Buffer; ignoreInsufficientFunds?: boolean }[] = []
 
-      if (walletSignOpts.serializedTxs) {
+      if (walletSignOpts.serializedTxs.length) {
         const endIndex = currentPage * itemsPerPage
         scopedTxs = walletSignOpts.serializedTxs.slice(0, endIndex)
       }
@@ -88,7 +88,7 @@ const WalletSignBottomSheet = forwardRef(
     const estimatedTotalSolByLamports = useMemo(() => {
       const { serializedTxs } = walletSignOpts
 
-      if (serializedTxs) {
+      if (serializedTxs.length) {
         if (currentTxs && currentTxs.length < serializedTxs.length) {
           // we have unsimulated transactions, do rough estimate
           const diff = serializedTxs.length - currentTxs.length
@@ -255,7 +255,7 @@ const WalletSignBottomSheet = forwardRef(
                   color="secondaryText"
                   textAlign="center"
                 >
-                  {walletSignOpts?.url || ''}
+                  {walletSignOpts.url || ''}
                 </Text>
               </Box>
 
@@ -359,9 +359,7 @@ const WalletSignBottomSheet = forwardRef(
                   <Box
                     flex={1}
                     maxHeight={
-                      (walletSignOpts?.serializedTxs?.length || 0) > 1
-                        ? 214
-                        : 180
+                      (walletSignOpts.serializedTxs.length || 0) > 1 ? 214 : 180
                     }
                     paddingTop="m"
                   >
@@ -384,21 +382,23 @@ const WalletSignBottomSheet = forwardRef(
                     {isVisible && currentTxs && (
                       <ScrollView
                         scrollEnabled={
-                          (walletSignOpts?.serializedTxs?.length || 0) > 1
+                          (walletSignOpts.serializedTxs.length || 0) > 1
                         }
                       >
                         {currentTxs.map((tx, idx) => (
                           <WalletSignBottomSheetTransaction
                             // eslint-disable-next-line react/no-array-index-key
                             key={`transaction-${idx}`}
-                            transaction={tx}
+                            transaction={tx.tx}
                             transactionIdx={idx}
                             totalTransactions={
-                              walletSignOpts?.serializedTxs?.length || 0
+                              walletSignOpts.serializedTxs.length || 0
                             }
                             incrementTotalSolFee={incrementTotalSolFee}
                             setNestedInsufficentFunds={
-                              setNestedInsufficentFunds
+                              tx.ignoreInsufficientFunds
+                                ? undefined
+                                : setNestedInsufficentFunds
                             }
                           />
                         ))}

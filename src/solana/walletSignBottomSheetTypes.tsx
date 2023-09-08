@@ -16,7 +16,7 @@ export type BalanceChange = {
 export type WalletSignOpts = {
   type: WalletStandardMessageTypes
   url: string
-  serializedTxs: Buffer[] | undefined
+  serializedTxs: { tx: Buffer; ignoreInsufficientFunds?: boolean }[]
   warning?: string
   additionalMessage?: string
 }
