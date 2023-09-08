@@ -4,7 +4,7 @@ import Refresh from '@assets/images/refresh.svg'
 import AddressBookSelector, {
   AddressBookRef,
 } from '@components/AddressBookSelector'
-import { ReAnimatedBox } from '@components/AnimatedBox'
+import { ReAnimatedBlurBox, ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
@@ -57,6 +57,7 @@ import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { LayoutAnimation } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
+import { FadeInFast } from '@components/FadeInOut'
 import { useSolana } from '../../solana/SolanaProvider'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
@@ -84,6 +85,7 @@ const SwapScreen = () => {
   const [inputAmount, setInputAmount] = useState<number>(0)
   const [outputMint, setOutputMint] = useState<PublicKey>(HNT_MINT)
   const [slippageBps, setSlippageBps] = useState<number>(50)
+  const [slippageInfoVisible, setSlippageInfoVisible] = useState(false)
   const [solFee, setSolFee] = useState<BN | undefined>(SOL_TXN_FEE)
   const [hasInsufficientBalance, setHasInsufficientBalance] = useState<
     undefined | boolean
@@ -300,11 +302,21 @@ const SwapScreen = () => {
         backgroundColor="surfaceSecondary"
         opacity={disabled ? 0.3 : 1}
       >
-        <Box flex={1} padding="ms" borderEndWidth={2} alignItems="center">
+        <TouchableOpacityBox
+          flex={1}
+          borderEndWidth={2}
+          alignItems="center"
+          justifyContent="center"
+          alignContent="center"
+          flexDirection="row"
+          paddingHorizontal="ms"
+          onPress={() => setSlippageInfoVisible(true)}
+        >
           <Text variant="body3Medium" color="surfaceSecondaryText">
-            Slippage:
+            {t('swapsScreen.slippage')}
           </Text>
-        </Box>
+        </TouchableOpacityBox>
+
         {bpsOptions.map((bps, idx) => {
           const isLast = idx === bpsOptions.length - 1
           const isActive = slippageBps === bps
@@ -335,7 +347,7 @@ const SwapScreen = () => {
         })}
       </Box>
     )
-  }, [slippageBps, setSlippageBps, outputMint])
+  }, [slippageBps, setSlippageBps, outputMint, setSlippageInfoVisible, t])
 
   const setTokenTypeHandler = useCallback(
     (mint: PublicKey) => {
@@ -655,7 +667,7 @@ const SwapScreen = () => {
                       marginHorizontal="m"
                       variant="body3Medium"
                       color="white"
-                      i18nKey="swapsScreen.slippage"
+                      i18nKey="swapsScreen.slippageLabelValue"
                       values={{ amount: slippageBps / 100 }}
                     />
                   )}
@@ -682,6 +694,45 @@ const SwapScreen = () => {
             </SafeAreaBox>
           </ReAnimatedBox>
         </TokenSelector>
+        {slippageInfoVisible ? (
+          <ReAnimatedBlurBox
+            visible
+            entering={FadeInFast}
+            position="absolute"
+            height="100%"
+            width="100%"
+          >
+            <Box
+              flexDirection="row"
+              justifyContent="space-between"
+              alignItems="center"
+              marginTop="l"
+            >
+              <Box flex={1}>
+                <CloseButton
+                  marginStart="m"
+                  onPress={() => setSlippageInfoVisible(false)}
+                />
+              </Box>
+              <Box flex={1} alignItems="center" flexDirection="row">
+                <Text variant="h4" color="white" flex={1} textAlign="center">
+                  {t('swapsScreen.slippage')}
+                </Text>
+              </Box>
+              <Box flex={1} />
+            </Box>
+            <Box flex={1} paddingHorizontal="m" marginTop="l">
+              <Text
+                variant="body1Medium"
+                color="white"
+                flex={1}
+                textAlign="justify"
+              >
+                {t('swapsScreen.slippageInfo')}
+              </Text>
+            </Box>
+          </ReAnimatedBlurBox>
+        ) : undefined}
       </HNTKeyboard>
     </AddressBookSelector>
   )
