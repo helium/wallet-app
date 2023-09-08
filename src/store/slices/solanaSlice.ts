@@ -28,6 +28,7 @@ import {
   PublicKey,
   SignaturesForAddressOptions,
   Transaction,
+  VersionedTransaction,
 } from '@solana/web3.js'
 import BN from 'bn.js'
 import bs58 from 'bs58'
@@ -111,6 +112,12 @@ type TreasurySwapTxn = {
   swapTxn: Transaction
 }
 
+type JupiterSwapTxn = {
+  cluster: Cluster
+  anchorProvider: AnchorProvider
+  swapTxn: VersionedTransaction
+}
+
 type MintDataCreditsInput = {
   anchorProvider: AnchorProvider
   cluster: Cluster
@@ -189,6 +196,23 @@ export const sendTreasurySwap = createAsyncThunk(
   },
 )
 
+export const sendJupiterSwap = createAsyncThunk(
+  'solana/sendJupiterSwap',
+  async ({ cluster, anchorProvider, swapTxn }: JupiterSwapTxn) => {
+    try {
+      const signed = await anchorProvider.wallet.signTransaction(swapTxn)
+
+      const sig = await anchorProvider.sendAndConfirm(signed)
+
+      postPayment({ signatures: [sig], cluster })
+    } catch (error) {
+      Logger.error(error)
+      throw error
+    }
+    return true
+  },
+)
+
 export const sendMintDataCredits = createAsyncThunk(
   'solana/sendMintDataCredits',
   async ({ cluster, anchorProvider, swapTxn }: MintDataCreditsInput) => {
@@ -243,7 +267,6 @@ export const sendAnchorTxn = createAsyncThunk(
         { skipPreflight: true },
         'confirmed',
       )
-
       postPayment({ signatures: [txid], cluster })
     } catch (error) {
       Logger.error(error)
@@ -635,6 +658,29 @@ const solanaSlice = createSlice({
       }
     })
     builder.addCase(sendTreasurySwap.fulfilled, (state, _action) => {
+      state.payment = {
+        success: true,
+        loading: false,
+        error: undefined,
+      }
+    })
+    builder.addCase(sendJupiterSwap.rejected, (state, action) => {
+      state.payment = {
+        success: false,
+        loading: false,
+        error: action.error,
+        signature: undefined,
+      }
+    })
+    builder.addCase(sendJupiterSwap.pending, (state, _action) => {
+      state.payment = {
+        success: false,
+        loading: true,
+        error: undefined,
+        signature: undefined,
+      }
+    })
+    builder.addCase(sendJupiterSwap.fulfilled, (state, _action) => {
       state.payment = {
         success: true,
         loading: false,

@@ -108,7 +108,7 @@ const SwapItem = ({
         <Box
           height={120}
           style={getBackgroundColorStyle(pressed)}
-          borderRadius="xxl"
+          borderRadius="xl"
           {...rest}
         >
           <Box flex={1} justifyContent="center" alignItems="center">
@@ -118,7 +118,6 @@ const SwapItem = ({
             </Text>
             <Box flexDirection="row">
               <Text marginEnd="s" variant="h4">
-                {/** If last decimals are zeroes do not show */}
                 {!loading ? amount.toString() : t('generic.loading')}
               </Text>
               <Text variant="h4" color="secondaryText">{`${symbol}`}</Text>

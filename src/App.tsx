@@ -4,6 +4,7 @@ import { OnboardingProvider as HotspotOnboardingProvider } from '@helium/react-n
 import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import MapboxGL from '@rnmapbox/maps'
 import { ThemeProvider } from '@shopify/restyle'
+import { JupiterProvider } from '@storage/JupiterProvider'
 import { TokenListProvider } from '@storage/TokenListProvider'
 import TokensProvider from '@storage/TokensProvider'
 import globalStyles from '@theme/globalStyles'
@@ -131,8 +132,10 @@ const App = () => {
                                   <TokenListProvider>
                                     <TokensProvider>
                                       <WalletSignProvider>
-                                        <NetworkAwareStatusBar />
-                                        <RootNavigator />
+                                        <JupiterProvider>
+                                          <NetworkAwareStatusBar />
+                                          <RootNavigator />
+                                        </JupiterProvider>
                                       </WalletSignProvider>
                                     </TokensProvider>
                                   </TokenListProvider>
