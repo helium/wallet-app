@@ -7,10 +7,10 @@ import { useColors } from '@theme/themeHooks'
 import React, { memo, useCallback, useEffect, useRef } from 'react'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
 import { useSelector } from 'react-redux'
-import DappLoginScreen from '../features/dappLogin/DappLoginScreen'
 import ConnectedWallets, {
   ConnectedWalletsRef,
 } from '../features/account/ConnectedWallets'
+import DappLoginScreen from '../features/dappLogin/DappLoginScreen'
 import { HomeNavigationProp } from '../features/home/homeTypes'
 import OnboardingNavigator from '../features/onboarding/OnboardingNavigator'
 import ImportPrivateKey from '../features/onboarding/import/ImportPrivateKey'

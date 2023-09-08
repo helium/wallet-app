@@ -980,6 +980,18 @@ export const getCompressedCollectables = async (
   return items as CompressedNFT[]
 }
 
+export const getHotspotWithRewards = async (
+  assetId: PublicKey,
+  anchorProvider: AnchorProvider,
+): Promise<HotspotWithPendingRewards> => {
+  const conn = anchorProvider.connection as WrappedConnection
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const asset = ((await conn.getAsset(assetId.toBase58())) as any).result
+
+  const withMetadata = await getCompressedNFTMetadata([asset as CompressedNFT])
+  return (await annotateWithPendingRewards(anchorProvider, withMetadata))[0]
+}
+
 export const getCompressedCollectablesByCreator = async (
   pubKey: PublicKey,
   anchorProvider: AnchorProvider,

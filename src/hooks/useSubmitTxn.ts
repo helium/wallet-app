@@ -1,5 +1,6 @@
 import { HotspotType } from '@helium/onboarding'
-import { chunks } from '@helium/spl-utils'
+import { useOnboarding } from '@helium/react-native-sdk'
+import { chunks, sendAndConfirmWithRetry } from '@helium/spl-utils'
 import { PublicKey, Transaction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import i18n from '@utils/i18n'
@@ -18,8 +19,6 @@ import {
   sendDelegateDataCredits,
   sendMintDataCredits,
   sendTreasurySwap,
-  sendUpdateIotInfo,
-  sendUpdateMobileInfo,
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import {
@@ -33,6 +32,7 @@ export default () => {
   const { cluster, anchorProvider } = useSolana()
   const { t } = i18n
   const { walletSignBottomSheetRef } = useWalletSign()
+  const { getAssertData } = useOnboarding()
 
   const dispatch = useAppDispatch()
 
@@ -461,58 +461,76 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      const updateInfoTxn = await solUtils.updateEntityInfoTxn({
-        anchorProvider,
-        type,
-        entityKey,
+      const data = await getAssertData({
+        decimalGain: decimalGain ? parseFloat(decimalGain) : undefined,
+        elevation: elevation ? parseFloat(elevation) : undefined,
+        gateway: entityKey,
         lat,
         lng,
-        elevation: elevation ? parseFloat(elevation) : undefined,
-        decimalGain: decimalGain ? parseFloat(decimalGain) : undefined,
+        owner: currentAccount.address,
+        hotspotTypes: [type],
       })
 
-      const serializedTx = updateInfoTxn.serialize({
-        requireAllSignatures: false,
-      })
+      const serializedTxs = data.solanaTransactions?.map((txn) =>
+        Buffer.from(txn, 'base64'),
+      )
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         additionalMessage: t('transactions.signAssertLocationTxn'),
-        serializedTxs: [Buffer.from(serializedTx)],
+        serializedTxs,
       })
 
       if (!decision) {
         throw new Error('User rejected transaction')
       }
+      const signedTxns =
+        serializedTxs &&
+        (await anchorProvider.wallet.signAllTransactions(
+          serializedTxs.map((ser) => Transaction.from(ser)),
+        ))
 
-      if (type === 'iot') {
-        await dispatch(
-          sendUpdateIotInfo({
-            account: currentAccount,
-            anchorProvider,
-            cluster,
-            updateTxn: updateInfoTxn,
-          }),
-        )
-      }
-
-      if (type === 'mobile') {
-        await dispatch(
-          sendUpdateMobileInfo({
-            account: currentAccount,
-            anchorProvider,
-            cluster,
-            updateTxn: updateInfoTxn,
-          }),
-        )
+      try {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const txn of signedTxns || []) {
+          // eslint-disable-next-line no-await-in-loop
+          await sendAndConfirmWithRetry(
+            anchorProvider.connection,
+            txn.serialize(),
+            {
+              skipPreflight: true,
+            },
+            'confirmed',
+          )
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (e: any) {
+        if (
+          e.toString().includes('Insufficient Balance') ||
+          e.toString().includes('"Custom":1') ||
+          e.InstructionError[1].Custom === 1
+        ) {
+          if (data.isFree) {
+            throw new Error(
+              `Manufacturer ${data?.maker?.name} does not have enough SOL or Data Credits to assert location. Please contact the manufacturer of this hotspot to resolve this issue.`,
+            )
+          } else {
+            throw new Error(
+              'Insufficient balance of either HNT, Data Credits, or Sol to assert location',
+            )
+          }
+        }
+        if (e.InstructionError) {
+          throw new Error(`Program Error: ${JSON.stringify(e)}`)
+        }
+        throw e
       }
     },
     [
       anchorProvider,
-      cluster,
       currentAccount,
-      dispatch,
+      getAssertData,
       t,
       walletSignBottomSheetRef,
     ],

@@ -1,0 +1,90 @@
+import BackButton from '@components/BackButton'
+import Box from '@components/Box'
+import ButtonPressable from '@components/ButtonPressable'
+import SafeAreaBox from '@components/SafeAreaBox'
+import Text from '@components/Text'
+import TextInput from '@components/TextInput'
+import { BleError, useHotspotBle } from '@helium/react-native-sdk'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import React, { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { HotspotBLEStackParamList, HotspotBleNavProp } from './navTypes'
+
+type Route = RouteProp<HotspotBLEStackParamList, 'WifiSetup'>
+const WifiSetup = () => {
+  const {
+    params: { network },
+  } = useRoute<Route>()
+  const [secureTextEntry, setSecureTextEntry] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [status, setStatus] = useState('')
+  const [password, setPassword] = useState('')
+  const { setWifi } = useHotspotBle()
+  const { t } = useTranslation()
+  const navigation = useNavigation<HotspotBleNavProp>()
+  const onBack = useCallback(() => {
+    if (navigation.canGoBack()) {
+      navigation.goBack()
+    }
+  }, [navigation])
+
+  const toggleSecureEntry = useCallback(() => {
+    setSecureTextEntry(!secureTextEntry)
+  }, [secureTextEntry])
+
+  const handleSetWifi = useCallback(async () => {
+    setLoading(true)
+    try {
+      const nextStatus = await setWifi(network, password)
+      setStatus(nextStatus)
+    } catch (e) {
+      if (typeof e === 'string') {
+        setStatus(e)
+      } else {
+        setStatus((e as BleError).toString())
+      }
+    }
+    setLoading(false)
+  }, [network, password, setWifi])
+
+  return (
+    <SafeAreaBox paddingHorizontal="l" flex={1}>
+      <BackButton onPress={onBack} paddingHorizontal="none" />
+      <Text variant="h1">{network}</Text>
+      <Box flexDirection="row">
+        <TextInput
+          flexGrow={1}
+          textInputProps={{
+            placeholder: t('generic.password'),
+            autoCorrect: false,
+            secureTextEntry,
+            autoComplete: 'off',
+            onChangeText: setPassword,
+            value: password,
+            autoFocus: true,
+            keyboardAppearance: 'dark',
+          }}
+        />
+        <ButtonPressable
+          title={secureTextEntry ? 'Show' : 'Hide'}
+          onPress={toggleSecureEntry}
+        />
+      </Box>
+
+      <ButtonPressable
+        mt="l"
+        borderRadius="round"
+        titleColor="white"
+        borderColor="white"
+        borderWidth={1}
+        backgroundColor="transparent"
+        onPress={handleSetWifi}
+        disabled={loading}
+        title={t('hotspotOnboarding.wifiSettings.setup')}
+      />
+      <Text>{loading ? 'loading...' : status}</Text>
+    </SafeAreaBox>
+  )
+}
+
+export default WifiSetup

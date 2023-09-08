@@ -17,6 +17,33 @@ export default {
   errors: {
     accountNotSelected: 'There must be a wallet selected to submit a txn',
   },
+  hotspotOnboarding: {
+    scan: {
+      title: 'Scan for Hotspots',
+      subtitle:
+        "Please enable BLE on your hotspot. Depending on the manufacturer, there may be a button to enable BLE, or it may be enabled for the first 5 minutes after powering on. Please refer to your manufacturer instructions for more information. If your hotspot does not support BLE, you will need to onboard through your manufacturer's app.",
+      start: 'Start Scan',
+      stop: 'Stop Scan',
+      notEnabled: 'Bluetooth is not enabled',
+      scanning: 'Scanning for Hotspots',
+    },
+    wifiSettings: {
+      title: 'Wifi Settings',
+      remove: 'Would you like to remove {{network}}?',
+      available: 'Available Networks',
+      configured: 'Configured Networks',
+      setup: 'Setup Wifi',
+    },
+    diagnostics: {
+      title: 'Diagnostics',
+    },
+    onboarding: {
+      title: 'Onboarding',
+      subtitle:
+        'Onboard your hotspot to the IOT network. After onboarding this hotspot, you will be able to set the location and antenna details.',
+      onboard: 'Onboard Hotspot',
+    },
+  },
   accountImport: {
     accountLimit:
       'You have reached the wallet limit.\nTo add another wallet, remove a wallet account and try again.',
@@ -213,6 +240,7 @@ export default {
       hotspotCount_plural: '{{count}} Hotspots',
       chooseAmountOfHotspots: 'Choose amount of hotspots to show per page',
       filter: 'Filter',
+      new: 'Connect a Hotspot',
       currentDisplayedRewards:
         'The rewards that are currently displayed as pending are only for the hotspots shown. Scroll to load more or click the filter to show more hotspots per page.',
       showAllHotspotsWarning:
@@ -555,7 +583,9 @@ export default {
     insufficientBalance: 'Insufficient balance',
     ok: 'OK',
     period: '.',
+    password: 'Password',
     retry: 'Retry',
+    remove: 'Remove',
     share: 'Share',
     skip: 'Skip',
     success: 'Success',

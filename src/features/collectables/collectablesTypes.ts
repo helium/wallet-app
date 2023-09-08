@@ -47,6 +47,7 @@ export type CollectableStackParamList = {
   PaymentQrScanner: undefined
   AddressBookNavigator: undefined
   ScanAddress: undefined
+  HotspotBLENavigator: undefined
 }
 
 export type CollectableNavigationProp =

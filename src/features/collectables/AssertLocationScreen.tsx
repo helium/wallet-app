@@ -13,10 +13,13 @@ import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import { HotspotType } from '@helium/onboarding'
 import useAlert from '@hooks/useAlert'
+import { useEntityKey } from '@hooks/useEntityKey'
 import { useForwardGeo } from '@hooks/useForwardGeo'
+import { useIotInfo } from '@hooks/useIotInfo'
+import { useMobileInfo } from '@hooks/useMobileInfo'
 import { useReverseGeo } from '@hooks/useReverseGeo'
 import useSubmitTxn from '@hooks/useSubmitTxn'
-import { RouteProp, useRoute } from '@react-navigation/native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import MapboxGL from '@rnmapbox/maps'
 import turfBbox from '@turf/bbox'
 import { points } from '@turf/helpers'
@@ -26,27 +29,27 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
-  useState,
   useRef,
+  useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Alert,
-  KeyboardAvoidingView,
   Keyboard,
+  KeyboardAvoidingView,
   TouchableWithoutFeedback,
 } from 'react-native'
 import { Config } from 'react-native-config'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
-import { useEntityKey } from '@hooks/useEntityKey'
-import { useIotInfo } from '@hooks/useIotInfo'
-import { useMobileInfo } from '@hooks/useMobileInfo'
 import { parseH3BNLocation } from '../../utils/h3'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import * as Logger from '../../utils/logger'
 import { MAX_MAP_ZOOM, MIN_MAP_ZOOM } from '../../utils/mapbox'
-import { CollectableStackParamList } from './collectablesTypes'
+import {
+  CollectableNavigationProp,
+  CollectableStackParamList,
+} from './collectablesTypes'
 
 const BUTTON_HEIGHT = 65
 type Route = RouteProp<CollectableStackParamList, 'AssertLocationScreen'>
@@ -74,6 +77,7 @@ const AssertLocationScreen = () => {
   const reverseGeo = useReverseGeo(mapCenter)
   const forwardGeo = useForwardGeo()
   const { submitUpdateEntityInfo } = useSubmitTxn()
+  const collectNav = useNavigation<CollectableNavigationProp>()
 
   const {
     content: { metadata },
@@ -251,6 +255,7 @@ const AssertLocationScreen = () => {
             decimalGain: gain,
           })
           setAsserting(false)
+          collectNav.navigate('HotspotDetailsScreen', { collectable })
         } catch (error) {
           setAsserting(false)
           Logger.error(error)
@@ -259,15 +264,14 @@ const AssertLocationScreen = () => {
       }
     },
     [
-      entityKey,
       mapCenter,
+      entityKey,
+      hideElevGain,
+      submitUpdateEntityInfo,
       elevation,
       gain,
-      hideElevGain,
-      setAsserting,
-      setTransactionError,
-      submitUpdateEntityInfo,
-      // nav,
+      collectNav,
+      collectable,
     ],
   )
 
