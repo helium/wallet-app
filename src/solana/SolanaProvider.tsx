@@ -12,6 +12,7 @@ import {
   PublicKey,
   RpcResponseAndContext,
   Transaction,
+  VersionedTransaction,
 } from '@solana/web3.js'
 import React, {
   ReactNode,
@@ -31,7 +32,7 @@ import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
 import { DcProgram, HemProgram, HsdProgram, LazyProgram } from '../types/solana'
-import { getConnection } from '../utils/solanaUtils'
+import { getConnection, isVersionedTransaction } from '../utils/solanaUtils'
 
 const useSolanaHook = () => {
   const { currentAccount } = useAccountStorage()
@@ -69,13 +70,27 @@ const useSolanaHook = () => {
     if (!secureAcct || !connection) return
 
     const anchorWallet = {
-      signTransaction: async (transaction: Transaction) => {
-        transaction.partialSign(secureAcct)
+      signTransaction: async (
+        transaction: Transaction | VersionedTransaction,
+      ) => {
+        if (isVersionedTransaction(transaction)) {
+          transaction.sign([secureAcct])
+        } else {
+          transaction.partialSign(secureAcct)
+        }
+
         return transaction
       },
-      signAllTransactions: async (transactions: Transaction[]) => {
+      signAllTransactions: async (
+        transactions: (Transaction | VersionedTransaction)[],
+      ) => {
         return transactions.map((tx) => {
-          tx.partialSign(secureAcct)
+          if (isVersionedTransaction(tx)) {
+            tx.sign([secureAcct])
+          } else {
+            tx.partialSign(secureAcct)
+          }
+
           return tx
         })
       },

@@ -1,28 +1,46 @@
-import { Configuration, DefaultApi } from '@jup-ag/api'
-import { TokenInfo, TokenListProvider } from '@solana/spl-token-registry'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import {
+  Configuration,
+  DefaultApi,
+  QuoteGetRequest,
+  QuoteResponse,
+  SwapPostRequest,
+} from '@jup-ag/api'
+import { VersionedTransaction } from '@solana/web3.js'
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
 } from 'react'
-import { useSolana } from 'src/solana/SolanaProvider'
+import { useTranslation } from 'react-i18next'
+import Config from 'react-native-config'
 
 type RouteMap = Map<string, string[]>
 interface IJupiterContextState {
+  loading: boolean
+  error: unknown
   api: DefaultApi
-  loaded: boolean
-  tokenMap: Map<string, TokenInfo>
   routeMap: RouteMap
+  routes?: QuoteResponse
+
+  getRoute: (opts: QuoteGetRequest) => Promise<void>
+  getSwapTx: (
+    opts?: Pick<SwapPostRequest, 'swapRequest'>,
+  ) => Promise<VersionedTransaction | undefined>
 }
 
 const JupiterContext = createContext<IJupiterContextState | null>(null)
 export const JupiterProvider: React.FC = ({ children }) => {
-  const { cluster } = useSolana()
-  const [tokenMap, setTokenMap] = useState<Map<string, TokenInfo>>(new Map())
+  const { t } = useTranslation()
+  const wallet = useCurrentWallet()
   const [routeMap, setRouteMap] = useState<RouteMap>(new Map())
-  const [loaded, setLoaded] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<unknown>()
+  const [routes, setRoutes] = useState<QuoteResponse>()
+
   const api = useMemo(() => {
     const config = new Configuration({
       basePath: 'https://quote-api.jup.ag/v6',
@@ -32,20 +50,9 @@ export const JupiterProvider: React.FC = ({ children }) => {
 
   useEffect(() => {
     ;(async () => {
-      const [tokens, indexedRouteMapResult] = await Promise.all([
-        new TokenListProvider().resolve(),
-        api.indexedRouteMapGet(),
-      ])
-
-      const tokenList = tokens.filterByClusterSlug(cluster).getList()
+      setLoading(true)
+      const indexedRouteMapResult = await api.indexedRouteMapGet()
       const { indexedRouteMap = {}, mintKeys = [] } = indexedRouteMapResult
-
-      setTokenMap(
-        tokenList.reduce((map, item) => {
-          map.set(item.address, item)
-          return map
-        }, new Map()),
-      )
 
       setRouteMap(
         Object.keys(indexedRouteMap).reduce((map, key) => {
@@ -57,36 +64,65 @@ export const JupiterProvider: React.FC = ({ children }) => {
         }, new Map<string, string[]>()),
       )
 
-      setLoaded(true)
+      setLoading(false)
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  /*   const getQuote = useCallback(
-    () =>
-      api.quoteGet({
-        inputMint: '',
-        outputMint: '',
-        amount: 100000,
-        slippageBps: 20,
-        platformFeeBps: 20,
-      }),
+  const getRoute = useCallback(
+    async (opts: QuoteGetRequest) => {
+      try {
+        setLoading(true)
+        setRoutes(
+          await api.quoteGet({
+            ...opts,
+            platformFeeBps: Number(Config.JUPITER_FEE_BPS) || 0,
+          }),
+        )
+      } catch (err) {
+        setError(err)
+      } finally {
+        setLoading(false)
+      }
+    },
     [api],
-  ) */
+  )
 
-  /* const swap = useCallback(() => {
-    api.swapPost({
+  const getSwapTx = useCallback(
+    async (opts?: Pick<SwapPostRequest, 'swapRequest'>) => {
+      if (!routes) throw new Error(t('errors.swap.routes'))
+      if (!wallet) throw new Error(t('errors.account'))
 
-    })
-  }, [api]) */
+      try {
+        const { swapTransaction } = await api.swapPost({
+          swapRequest: {
+            quoteResponse: routes,
+            userPublicKey: wallet.toBase58(),
+            feeAccount: Config.JUPITER_FEE_ACCOUNT || undefined,
+            ...opts,
+          },
+        })
+
+        const swapTransactionBuf = Buffer.from(swapTransaction, 'base64')
+        return VersionedTransaction.deserialize(swapTransactionBuf)
+      } catch (err) {
+        setError(err)
+      }
+    },
+    [t, api, routes, wallet],
+  )
 
   return (
     <JupiterContext.Provider
       value={{
+        loading,
+        error,
         api,
         routeMap,
-        tokenMap,
-        loaded,
+        routes,
+
+        getRoute,
+        getSwapTx,
       }}
     >
       {children}

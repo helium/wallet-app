@@ -15,7 +15,12 @@ export default {
     title: 'Name this wallet',
   },
   errors: {
+    account: 'Account missing',
     accountNotSelected: 'There must be a wallet selected to submit a txn',
+    swap: {
+      routes: 'Swap routes missing',
+      tx: 'Swap tx not generated',
+    },
   },
   accountImport: {
     accountLimit:
@@ -346,6 +351,9 @@ export default {
     youReceive: 'You Receive',
     chooseTokenToSwap: 'Choose a token to swap',
     chooseTokenToReceive: 'Choose a token to receive',
+    slippage: '<b>Slippage</b> <secondaryText> {{ amount }}% </secondaryText>',
+    minReceived:
+      '<b>Minimum Received</b> <secondaryText> {{ amount }} </secondaryText>',
     swapComplete: 'Tokens swapped!',
     swapCompleteBody: 'The tokens in your wallet have been updated.',
     swappingTokens: 'Swapping your tokens...',
