@@ -6,6 +6,7 @@ import { getSecureItem } from '../storage/secureStorage'
 import { AccountBalance, Prices } from '../types/balance'
 import makeApiToken from './makeApiToken'
 import { CSAccount } from '../storage/cloudStorage'
+import { OnboardableDevice } from '../features/hotspot-onboarding/navTypes'
 
 export type Notification = {
   title: string
@@ -128,6 +129,15 @@ export const getRecommendedDapps = async () => {
   const { data } = await axiosInstance.get<Record<Cluster, string[]>>(
     '/recommendedDapps',
   )
+  return data
+}
+
+export const getOnboardingDevices = async () => {
+  const { data, ...rest } = await axiosInstance.get<OnboardableDevice[]>(
+    '/onboardingDevices',
+  )
+  console.log("rest", rest)
+
   return data
 }
 
