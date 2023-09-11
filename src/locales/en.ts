@@ -355,7 +355,7 @@ export default {
     slippageLabelValue:
       '<b>Slippage</b> <secondaryText> {{ amount }}% </secondaryText>',
     slippageInfo:
-      'Slippage is the difference between the expected price of an order and the price when the order actually executes. The slippage percentage shows how much the price for a specific asset has moved. Due to the volatility of cryptocurrency, the price of an asset can fluctuate often depending on trade volume and activity. ',
+      'Slippage is the difference between the expected price of an order and the price when the order actually executes. The slippage percentage shows how much the price for a specific asset has moved. Due to the volatility of cryptocurrency, the price of an asset can fluctuate often depending on trade volume and activity. Your trade will not execute if slippage moves by this much during execution.',
     minReceived:
       '<b>Minimum Received</b> <secondaryText> {{ amount }} </secondaryText>',
     swapComplete: 'Tokens swapped!',
