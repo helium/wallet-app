@@ -20,8 +20,6 @@ export default {
   hotspotOnboarding: {
     scan: {
       title: 'Scan for Hotspots',
-      subtitle:
-        "Please enable BLE on your hotspot. Depending on the manufacturer, there may be a button to enable BLE, or it may be enabled for the first 5 minutes after powering on. Please refer to your manufacturer instructions for more information. If your hotspot does not support BLE, you will need to onboard through your manufacturer's app.",
       start: 'Start Scan',
       stop: 'Stop Scan',
       notEnabled: 'Bluetooth is not enabled',
@@ -37,13 +35,12 @@ export default {
     onboarding: {
       title: 'Onboarding',
       subtitle:
-        'Onboard your hotspot to the IOT network. After onboarding this hotspot, you will be able to set the location and antenna details.',
+        'Onboard your Hotspot to the IOT network. After onboarding this Hotspot, you will be able to set the location and antenna details.',
       onboard: 'Onboard Hotspot',
     },
-    selectDevice: {
-      title: 'Select Device',
-      subtitle:
-        "Select your Hotspot to continue. Don't see your device? Your manufacturer may have their own app for onboarding the hotspot. Check the instructions. You can also try onboarding it as a Generic Bluetooth Enabled Hotspot",
+    selectOnboardingMethod: {
+      title: 'Select Onboarding Method',
+      subtitle: 'Select your onboarding method to continue.',
     },
   },
   accountImport: {

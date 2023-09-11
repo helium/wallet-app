@@ -132,15 +132,6 @@ export const getRecommendedDapps = async () => {
   return data
 }
 
-export const getOnboardingDevices = async () => {
-  const { data, ...rest } = await axiosInstance.get<OnboardableDevice[]>(
-    '/onboardingDevices',
-  )
-  console.log("rest", rest)
-
-  return data
-}
-
 export const getSessionKey = async () => {
   const { data } = await axiosInstance.get<{ sessionKey: string }>(
     '/sessionKey',

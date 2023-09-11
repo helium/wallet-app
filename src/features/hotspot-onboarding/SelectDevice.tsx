@@ -1,15 +1,25 @@
 import BackScreen from '@components/BackScreen'
-import CircleLoader from '@components/CircleLoader'
 import ImageBox from '@components/ImageBox'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useNavigation } from '@react-navigation/native'
-import { getOnboardingDevices } from '@utils/walletApiV2'
 import React from 'react'
-import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native'
 import { OnboardableDevice, OnboardingNavProp } from './navTypes'
+
+const data: OnboardableDevice[] = [
+  {
+    name: 'Bluetooth Enabled Hotspot',
+    type: 'IotBle',
+    image:
+      'https://shdw-drive.genesysgo.net/6tcnBSybPG7piEDShBcrVtYJDPSvGrDbVvXmXKpzBvWP/hotspot.png',
+    options: {
+      bleInstructions:
+        'Power on your Hotspot. Follow manufacturer instructions for enabling bluetooth discovery on the Hotspot.',
+    },
+  },
+]
 
 const SelectOnboardableDevice = () => {
   const { t } = useTranslation()
@@ -46,7 +56,6 @@ const SelectOnboardableDevice = () => {
     },
     [navigation],
   )
-  const { result: data, loading } = useAsync(() => getOnboardingDevices(), [])
 
   const keyExtractor = React.useCallback(
     ({ name }: OnboardableDevice) => name,
@@ -54,18 +63,17 @@ const SelectOnboardableDevice = () => {
   )
 
   return (
-    <BackScreen title={t('hotspotOnboarding.selectDevice.title')}>
+    <BackScreen title={t('hotspotOnboarding.selectOnboardingMethod.title')}>
       <Text
         variant="subtitle1"
         color="secondaryText"
         textAlign="left"
         adjustsFontSizeToFit
       >
-        {t('hotspotOnboarding.selectDevice.subtitle')}
+        {t('hotspotOnboarding.selectOnboardingMethod.subtitle')}
       </Text>
-      {loading && <CircleLoader />}
       <FlatList
-        data={data || []}
+        data={data}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
       />
