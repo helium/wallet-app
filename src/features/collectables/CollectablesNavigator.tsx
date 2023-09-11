@@ -21,7 +21,7 @@ import CollectionScreen from './CollectionScreen'
 import NftDetailsScreen from './NftDetailsScreen'
 import AntennaSetupScreen from './AntennaSetupScreen'
 import SettingUpAntennaScreen from './SettingUpAntennaScreen'
-import HotspotBLENav from '../hotspot-onboarding/HotspotBLENav'
+import OnboardingNav from '../hotspot-onboarding/OnboardingNav'
 
 const CollectablesStack = createStackNavigator()
 
@@ -115,9 +115,9 @@ const CollectablesStackScreen = () => {
         component={TransferCompleteScreen}
       />
       <CollectablesStack.Screen
-        key="HotspotBLENavigator"
-        name="HotspotBLENavigator"
-        component={HotspotBLENav}
+        key="OnboardingNavigator"
+        name="OnboardingNavigator"
+        component={OnboardingNav}
         options={screenOptions}
       />
     </CollectablesStack.Navigator>

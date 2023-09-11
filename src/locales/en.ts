@@ -34,14 +34,16 @@ export default {
       configured: 'Configured Networks',
       setup: 'Setup Wifi',
     },
-    diagnostics: {
-      title: 'Diagnostics',
-    },
     onboarding: {
       title: 'Onboarding',
       subtitle:
         'Onboard your hotspot to the IOT network. After onboarding this hotspot, you will be able to set the location and antenna details.',
       onboard: 'Onboard Hotspot',
+    },
+    selectDevice: {
+      title: 'Select Device',
+      subtitle:
+        "Select your Hotspot to continue. Don't see your device? Your manufacturer may have their own app for onboarding the hotspot. Check the instructions. You can also try onboarding it as a Generic Bluetooth Enabled Hotspot",
     },
   },
   accountImport: {

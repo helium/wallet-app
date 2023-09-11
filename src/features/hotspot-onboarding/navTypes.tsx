@@ -1,12 +1,20 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
-export type HotspotBLEStackParamList = {
-  ScanHotspots: undefined
-  WifiSettings: undefined
-  WifiSetup: { network: string }
-  AddGatewayBle: undefined
-  Diagnostics: undefined
+export type IotBleOptions = {
+  bleInstructions?: string
 }
 
-export type HotspotBleNavProp =
-  NativeStackNavigationProp<HotspotBLEStackParamList>
+export type OnboardableDevice = {
+  name: string
+  type: 'IotBle'
+  image: string
+  options: IotBleOptions
+}
+
+export type OnboardingtackParamList = {
+  IotBle: IotBleOptions
+  SelectDevice: undefined
+}
+
+export type OnboardingNavProp =
+  NativeStackNavigationProp<OnboardingtackParamList>

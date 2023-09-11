@@ -150,7 +150,7 @@ const HotspotList = () => {
   }, [navigation])
 
   const handleNavigateToHotspotOnboard = useCallback(() => {
-    navigation.navigate('HotspotBLENavigator')
+    navigation.navigate('OnboardingNavigator')
   }, [navigation])
 
   const toggleFiltersOpen = useCallback(
