@@ -262,7 +262,7 @@ const SwapScreen = () => {
 
   const validYouReceiveMints = useMemo(() => {
     if (youPayMint.equals(HNT_MINT)) return [DC_MINT]
-    return [HNT_MINT, DC_MINT]
+    return [HNT_MINT]
   }, [youPayMint])
 
   const tokenData = useMemo(() => {
