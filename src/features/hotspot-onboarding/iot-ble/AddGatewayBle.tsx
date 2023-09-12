@@ -65,12 +65,14 @@ const AddGatewayBle = () => {
 
     if (!onboardRecord) {
       throw new Error(
-        `This hotspot does not exist in the onboarding server. Contact your manufacturer to have them approve hotspot with id ${onboardAddress}`,
+        t('hotspotOnboarding.onboarding.hotspotNotFound', {
+          onboardAddress,
+        }),
       )
     }
 
     if (!onboardRecord?.maker.address) {
-      throw new Error('Could not get maker address')
+      throw new Error(t('hotspotOnboarding.onboarding.makerNotFound'))
     }
     const makerSolAddr = heliumAddressToSolAddress(onboardRecord?.maker.address)
     const makerSolBalance = (
@@ -83,7 +85,9 @@ const AddGatewayBle = () => {
       makerSolBalance / LAMPORTS_PER_SOL < 0.00089088 + 0.00001
     ) {
       throw new Error(
-        `Manufacturer ${onboardRecord?.maker.name} does not have enough SOL to onboard this hotspot. Please contact the manufacturer to resolve this issue.`,
+        t('hotspotOnboarding.onboarding.manufacturerMissingSol', {
+          name: onboardRecord?.maker.name,
+        }),
       )
     }
 
@@ -104,7 +108,9 @@ const AddGatewayBle = () => {
         e.InstructionError[1].Custom === 1
       ) {
         throw new Error(
-          `Manufacturer ${onboardRecord?.maker.name} does not have enough SOL or Data Credits to onboard this hotspot. Please contact the manufacturer to resolve this issue.`,
+          t('hotspotOnboarding.onboarding.manufacturerMissingDcOrSol', {
+            name: onboardRecord?.maker.name,
+          }),
         )
       }
       if (e.InstructionError) {

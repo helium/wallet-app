@@ -6,7 +6,6 @@ import { getSecureItem } from '../storage/secureStorage'
 import { AccountBalance, Prices } from '../types/balance'
 import makeApiToken from './makeApiToken'
 import { CSAccount } from '../storage/cloudStorage'
-import { OnboardableDevice } from '../features/hotspot-onboarding/navTypes'
 
 export type Notification = {
   title: string

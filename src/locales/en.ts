@@ -37,6 +37,13 @@ export default {
       subtitle:
         'Onboard your Hotspot to the IOT network. After onboarding this Hotspot, you will be able to set the location and antenna details.',
       onboard: 'Onboard Hotspot',
+      hotspotNotFound:
+        'This hotspot does not exist in the onboarding server. Contact your manufacturer to have them approve hotspot with id {{onboardAddress}}',
+      makerNotFound: 'Maker does not exist',
+      manufacturerMissingSol:
+        'Manufacturer {{name}} does not have enough SOL to onboard this hotspot. Please contact the manufacturer to resolve this issue.',
+      manufacturerMissingDcOrSol:
+        'Manufacturer {{name}} does not have enough Data Credits or SOL to onboard this hotspot. Please contact the manufacturer to resolve this issue.',
     },
     selectOnboardingMethod: {
       title: 'Select Onboarding Method',
