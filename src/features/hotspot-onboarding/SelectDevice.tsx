@@ -1,4 +1,5 @@
 import BackScreen from '@components/BackScreen'
+import Bluetooth from '@assets/images/bluetooth.svg'
 import ImageBox from '@components/ImageBox'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -12,8 +13,7 @@ const data: OnboardableDevice[] = [
   {
     name: 'Bluetooth Enabled Hotspot',
     type: 'IotBle',
-    image:
-      'https://shdw-drive.genesysgo.net/6tcnBSybPG7piEDShBcrVtYJDPSvGrDbVvXmXKpzBvWP/hotspot.png',
+    icon: <Bluetooth width={50} height={50} />,
     options: {
       bleInstructions:
         'Power on your Hotspot. Follow manufacturer instructions for enabling bluetooth discovery on the Hotspot.',
@@ -39,15 +39,18 @@ const SelectOnboardableDevice = () => {
           borderColor="grey900"
           borderBottomWidth={1}
         >
-          <ImageBox
-            mr="s"
-            height={50}
-            width={50}
-            source={{
-              uri: item.image,
-              cache: 'force-cache',
-            }}
-          />
+          {item.image && (
+            <ImageBox
+              mr="s"
+              height={50}
+              width={50}
+              source={{
+                uri: item.image,
+                cache: 'force-cache',
+              }}
+            />
+          )}
+          {item.icon && item.icon}
           <Text color="secondaryText" variant="body1Medium">
             {item.name}
           </Text>

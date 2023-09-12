@@ -7,7 +7,8 @@ export type IotBleOptions = {
 export type OnboardableDevice = {
   name: string
   type: 'IotBle'
-  image: string
+  image?: string
+  icon?: React.ReactElement
   options: IotBleOptions
 }
 
