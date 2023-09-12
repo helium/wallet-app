@@ -351,14 +351,16 @@ const SwapScreen = () => {
           ? new PublicKey(recipient)
           : new PublicKey(currentAccount.solanaAddress)
 
-        if (youPayMint.equals(HNT_MINT) && youReceiveTokenAmount) {
+        if (
+          youPayMint.equals(HNT_MINT) &&
+          youReceiveMint.equals(DC_MINT) &&
+          youReceiveTokenAmount
+        ) {
           await submitMintDataCredits({
             dcAmount: new BN(youReceiveTokenAmount),
             recipient: recipientAddr,
           })
-        }
-
-        if (!youPayMint.equals(HNT_MINT)) {
+        } else {
           await submitTreasurySwap(youPayMint, youPayTokenAmount, recipientAddr)
         }
 
