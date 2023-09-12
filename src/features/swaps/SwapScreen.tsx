@@ -189,6 +189,7 @@ const SwapScreen = () => {
     setInputMint(MOBILE_MINT)
     setOutputMint(HNT_MINT)
     setSolFee(SOL_TXN_FEE)
+    setSelectorMode(SelectorMode.youPay)
     setNetworkError(undefined)
   }, [])
 
