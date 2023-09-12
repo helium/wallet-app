@@ -260,22 +260,25 @@ const SwapScreen = () => {
     [refresh, selectorMode, youReceiveMint],
   )
 
+  const validYouReceiveMints = useMemo(() => {
+    if (youPayMint.equals(HNT_MINT)) return [DC_MINT]
+    return [HNT_MINT, DC_MINT]
+  }, [youPayMint])
+
   const tokenData = useMemo(() => {
     const tokens = {
       [SelectorMode.youPay]: [MOBILE_MINT, HNT_MINT, IOT_MINT].map((mint) => ({
         mint,
         selected: youPayMint.equals(mint),
       })),
-      [SelectorMode.youReceive]: [MOBILE_MINT, HNT_MINT, IOT_MINT].map(
-        (mint) => ({
-          mint,
-          selected: youReceiveMint.equals(mint),
-        }),
-      ),
+      [SelectorMode.youReceive]: validYouReceiveMints.map((mint) => ({
+        mint,
+        selected: youReceiveMint.equals(mint),
+      })),
     }
 
     return tokens[selectorMode]
-  }, [selectorMode, youPayMint, youReceiveMint])
+  }, [selectorMode, youPayMint, youReceiveMint, validYouReceiveMints])
 
   const onCurrencySelect = useCallback(
     (youPay: boolean) => () => {
