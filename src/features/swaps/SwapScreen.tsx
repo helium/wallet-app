@@ -119,16 +119,19 @@ const SwapScreen = () => {
     [visibleTokens, routeMap],
   )
 
-  const validOutputMints = useMemo(
-    () =>
+  const validOutputMints = useMemo(() => {
+    const routeMints =
       routeMap
         .get(inputMint?.toBase58() || '')
         ?.filter(
           (key) =>
             visibleTokens.has(key) && !inputMint.equals(new PublicKey(key)),
-        ) || [],
-    [visibleTokens, routeMap, inputMint],
-  )
+        ) || []
+
+    return inputMint.equals(HNT_MINT)
+      ? [DC_MINT.toBase58(), ...routeMints]
+      : routeMints
+  }, [visibleTokens, routeMap, inputMint])
 
   const handleRecipientClick = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
@@ -161,7 +164,7 @@ const SwapScreen = () => {
 
     return (
       !inputMint.equals(HNT_MINT) &&
-      !(routes?.outAmount && Number(routes?.outAmount) > 0) &&
+      !(routes?.outAmount && new BN(routes?.outAmount || 0).gt(new BN(0))) &&
       inputAmount > 0
     )
   }, [hntBalance, inputAmount, inputMint, routes])
@@ -254,7 +257,7 @@ const SwapScreen = () => {
         !outputMint.equals(DC_MINT)
       ) {
         await getRoute({
-          amount: toBN(inputAmount, inputMintDecimals).toNumber(),
+          amount: toBN(inputAmount || 0, inputMintDecimals).toNumber(),
           inputMint: inputMint.toBase58(),
           outputMint: outputMint.toBase58(),
           slippageBps,
