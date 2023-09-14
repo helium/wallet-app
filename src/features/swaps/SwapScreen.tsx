@@ -9,6 +9,7 @@ import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
 import CloseButton from '@components/CloseButton'
+import { FadeInFast } from '@components/FadeInOut'
 import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
@@ -35,6 +36,7 @@ import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useJupiter } from '@storage/JupiterProvider'
+import { useModal } from '@storage/ModalsProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { CSAccount } from '@storage/cloudStorage'
 import { useColors, useHitSlop } from '@theme/themeHooks'
@@ -57,7 +59,6 @@ import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { LayoutAnimation } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { FadeInFast } from '@components/FadeInOut'
 import { useSolana } from '../../solana/SolanaProvider'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
@@ -73,6 +74,7 @@ enum SelectorMode {
 
 const SwapScreen = () => {
   const { t } = useTranslation()
+  const { showModal } = useModal()
   const { currentAccount } = useAccountStorage()
   const { anchorProvider, connection } = useSolana()
   const wallet = useCurrentWallet()
@@ -86,7 +88,7 @@ const SwapScreen = () => {
   const [outputMint, setOutputMint] = useState<PublicKey>(HNT_MINT)
   const [slippageBps, setSlippageBps] = useState<number>(50)
   const [slippageInfoVisible, setSlippageInfoVisible] = useState(false)
-  const [solFee, setSolFee] = useState<BN | undefined>(SOL_TXN_FEE)
+  const [solFee, setSolFee] = useState<BN>(SOL_TXN_FEE)
   const [hasInsufficientBalance, setHasInsufficientBalance] = useState<
     undefined | boolean
   >()
@@ -279,13 +281,13 @@ const SwapScreen = () => {
         flexDirection="row"
         justifyContent="center"
         alignItems="center"
-        marginTop="l"
+        paddingHorizontal="m"
       >
-        <CloseButton marginStart="m" onPress={handleClose} />
+        <CloseButton onPress={handleClose} />
         <Text variant="h4" color="white" flex={1} textAlign="center">
           {t('swapsScreen.title')}
         </Text>
-        <TouchableOpacityBox padding="m" marginEnd="s" onPress={refresh}>
+        <TouchableOpacityBox paddingEnd="m" onPress={refresh}>
           <Refresh width={16} height={16} />
         </TouchableOpacityBox>
       </Box>
@@ -471,6 +473,10 @@ const SwapScreen = () => {
 
   const handleSwapTokens = useCallback(async () => {
     if (connection) {
+      if (!solBalance || solBalance?.lt(solFee)) {
+        return showModal('InsufficientSolConversion')
+      }
+
       try {
         setSwapping(true)
 
@@ -512,6 +518,9 @@ const SwapScreen = () => {
       }
     }
   }, [
+    showModal,
+    solFee,
+    solBalance,
     connection,
     currentAccount,
     recipient,
@@ -730,7 +739,7 @@ const SwapScreen = () => {
                 variant="body1Medium"
                 color="white"
                 flex={1}
-                textAlign="justify"
+                textAlign="center"
               >
                 {t('swapsScreen.slippageInfo')}
               </Text>

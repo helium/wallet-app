@@ -78,7 +78,6 @@ const RootNavigator = () => {
           component={OnboardingNavigator}
           options={screenOptions}
         />
-
         <RootStack.Screen
           name="LinkWallet"
           component={LinkWallet}

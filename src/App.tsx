@@ -5,6 +5,7 @@ import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import MapboxGL from '@rnmapbox/maps'
 import { ThemeProvider } from '@shopify/restyle'
 import { JupiterProvider } from '@storage/JupiterProvider'
+import { ModalProvider } from '@storage/ModalsProvider'
 import { TokenListProvider } from '@storage/TokenListProvider'
 import TokensProvider from '@storage/TokensProvider'
 import globalStyles from '@theme/globalStyles'
@@ -23,6 +24,7 @@ import NetworkAwareStatusBar from './components/NetworkAwareStatusBar'
 import SplashScreen from './components/SplashScreen'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
 import LockScreen from './features/lock/LockScreen'
+import InsufficientSolConversionModal from './features/modals/InsufficientSolConversionModal'
 import SecurityScreen from './features/security/SecurityScreen'
 import useMount from './hooks/useMount'
 import { navigationRef } from './navigation/NavigationHelper'
@@ -133,8 +135,13 @@ const App = () => {
                                     <TokensProvider>
                                       <WalletSignProvider>
                                         <JupiterProvider>
-                                          <NetworkAwareStatusBar />
-                                          <RootNavigator />
+                                          <ModalProvider>
+                                            <NetworkAwareStatusBar />
+                                            <RootNavigator />
+
+                                            {/* place app specific modals here */}
+                                            <InsufficientSolConversionModal />
+                                          </ModalProvider>
                                         </JupiterProvider>
                                       </WalletSignProvider>
                                     </TokensProvider>
