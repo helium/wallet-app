@@ -5,7 +5,7 @@ import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { PublicKey } from '@solana/web3.js'
 import { useCreateOpacity } from '@theme/themeHooks'
 import React, { memo, useCallback } from 'react'
-import { Pressable } from 'react-native'
+import { Pressable, ViewStyle } from 'react-native'
 import CarotDown from '../assets/images/carotDownFull.svg'
 
 export const TokenPill = memo(
@@ -14,11 +14,13 @@ export const TokenPill = memo(
     hasCarot = false,
     isActive = false,
     onPress,
+    ...rest
   }: {
     mint: PublicKey
     hasCarot?: boolean
     isActive?: boolean
     onPress: () => void
+    style?: ViewStyle | undefined
   }) => {
     const { symbol, json } = useMetaplexMetadata(mint)
     const { backgroundStyle: generateBackgroundStyle } = useCreateOpacity()
@@ -37,11 +39,14 @@ export const TokenPill = memo(
     )
 
     return (
-      <Box flexDirection="row">
+      <Box flexDirection="row" flex={1} justifyContent="center">
         <Pressable onPress={onPress}>
           {({ pressed }) => (
             <Box
-              style={getBackgroundColorStylePill({ active: isActive, pressed })}
+              style={[
+                getBackgroundColorStylePill({ active: isActive, pressed }),
+                rest.style ? rest.style : {},
+              ]}
               height={45}
               borderRadius="round"
               flexDirection="row"

@@ -27,7 +27,7 @@ const InsufficientSOLConversionModal: FC = () => {
 
   const validInputMints = useMemo(
     () =>
-      [MOBILE_MINT, HNT_MINT, IOT_MINT].filter((key) =>
+      [HNT_MINT, MOBILE_MINT, IOT_MINT].filter((key) =>
         visibleTokens.has(key.toBase58()),
       ),
     [visibleTokens],
@@ -78,7 +78,7 @@ const InsufficientSOLConversionModal: FC = () => {
           </Text>
           <Box
             flexDirection="row"
-            justifyContent="space-around"
+            justifyContent="space-between"
             marginTop="xxl"
           >
             {validInputMints.map((mint) => (
