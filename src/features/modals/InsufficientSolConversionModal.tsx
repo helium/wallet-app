@@ -73,7 +73,7 @@ const InsufficientSOLConversionModal: FC = () => {
             textAlign="center"
           >
             You currently dont have enough SOL to perform this action. Please
-            burn one of the following tokens to receive more Sol in order to
+            burn one of the following tokens to receive more SOL in order to
             continue.
           </Text>
           <Box
