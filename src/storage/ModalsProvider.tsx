@@ -7,7 +7,7 @@ import React, {
   useCallback,
 } from 'react'
 
-export type Modals = 'InsufficientSolConversion'
+export type Modals = 'InsufficientSOLConversion'
 
 export interface IModalProviderProps {
   children: ReactNode

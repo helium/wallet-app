@@ -474,7 +474,7 @@ const SwapScreen = () => {
   const handleSwapTokens = useCallback(async () => {
     if (connection) {
       if (!solBalance || solBalance?.lt(solFee)) {
-        return showModal('InsufficientSolConversion')
+        return showModal('InsufficientSOLConversion')
       }
 
       try {
@@ -668,7 +668,7 @@ const SwapScreen = () => {
                   onPress={handleSwapTokens}
                   TrailingComponent={
                     swapping ? (
-                      <CircleLoader loaderSize={20} color="white" />
+                      <CircleLoader loaderSize={20} color="black" />
                     ) : undefined
                   }
                 />
