@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
-import { AnchorProvider, BN } from '@coral-xyz/anchor'
+import { AnchorProvider, BN, IdlAccounts, Program } from '@coral-xyz/anchor'
+import { getSingleton } from '@helium/account-fetch-cache'
 import * as dc from '@helium/data-credits-sdk'
 import {
   delegatedDataCreditsKey,
@@ -25,6 +26,7 @@ import {
   updateMobileMetadata,
 } from '@helium/helium-entity-manager-sdk'
 import { subDaoKey } from '@helium/helium-sub-daos-sdk'
+import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'
 import * as lz from '@helium/lazy-distributor-sdk'
 import { HotspotType } from '@helium/onboarding'
 import {
@@ -37,6 +39,7 @@ import {
   searchAssets,
   sendAndConfirmWithRetry,
   toBN,
+  truthy,
 } from '@helium/spl-utils'
 import * as tm from '@helium/treasury-management-sdk'
 import {
@@ -1104,6 +1107,29 @@ export async function exists(
   return Boolean(await connection.getAccountInfo(account))
 }
 
+export async function getCachedKeyToAssets(
+  hemProgram: Program<HeliumEntityManager>,
+  keyToAssets: PublicKey[],
+) {
+  const cache = await getSingleton(hemProgram.provider.connection)
+  return (
+    await cache.searchMultiple(
+      keyToAssets,
+      (pubkey, account) => ({
+        pubkey,
+        account,
+        info: hemProgram.coder.accounts.decode<
+          IdlAccounts<HeliumEntityManager>['keyToAssetV0']
+        >('KeyToAssetV0', account.data),
+      }),
+      true,
+      false,
+    )
+  )
+    .map((kta) => kta?.info)
+    .filter(truthy)
+}
+
 export async function annotateWithPendingRewards(
   provider: AnchorProvider,
   hotspots: CompressedNFT[],
@@ -1114,9 +1140,7 @@ export async function annotateWithPendingRewards(
   const keyToAssets = hotspots.map((h) =>
     keyToAssetForAsset(toAsset(h as CompressedNFT)),
   )
-  const ktaAccs = await Promise.all(
-    keyToAssets.map((kta) => hemProgram.account.keyToAssetV0.fetch(kta)),
-  )
+  const ktaAccs = await getCachedKeyToAssets(hemProgram, keyToAssets)
   const entityKeys = ktaAccs.map(
     (kta) =>
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
