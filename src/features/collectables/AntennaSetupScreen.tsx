@@ -49,7 +49,7 @@ const AntennaSetupScreen = () => {
       return undefined
     }
 
-    return parseH3BNLocation(iotInfoAcc.info.location).reverse()
+    return parseH3BNLocation(iotInfoAcc.info.location)?.reverse()
   }, [iotInfoAcc])
 
   useEffect(() => {
