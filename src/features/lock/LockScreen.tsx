@@ -1,13 +1,13 @@
-import React, { memo, useCallback, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import * as LocalAuthentication from 'expo-local-authentication'
-import useAppState from 'react-native-appstate-hook'
-import { useAsync } from 'react-async-hook'
-import { FadeIn, FadeOutDown } from 'react-native-reanimated'
+import { ReAnimatedBox } from '@components/AnimatedBox'
 import ConfirmPinView from '@components/ConfirmPinView'
 import useAlert from '@hooks/useAlert'
 import usePrevious from '@hooks/usePrevious'
-import { ReAnimatedBox } from '@components/AnimatedBox'
+import * as LocalAuthentication from 'expo-local-authentication'
+import React, { memo, useCallback, useEffect } from 'react'
+import { useAsync } from 'react-async-hook'
+import { useTranslation } from 'react-i18next'
+import useAppState from 'react-native-appstate-hook'
+import { FadeIn, FadeOutDown } from 'react-native-reanimated'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import {
@@ -40,31 +40,37 @@ const LockScreen = ({ children }: Props) => {
   }, [authInterval, locked, pin, prevLocked])
 
   // handle app state changes
-  useAsync(async () => {
-    if (locked || !pin || pin?.status === 'off' || !hasAccounts) return
-    if (appState === 'background' || appState === 'inactive') {
-      await storeSecureItem('lastIdle', Date.now().toString())
-      return
-    }
+  useAsync(
+    async () => {
+      if (locked || !pin || pin?.status === 'off' || !hasAccounts) return
+      if (appState === 'background' || appState === 'inactive') {
+        await storeSecureItem('lastIdle', Date.now().toString())
+        return
+      }
 
-    const lastIdleString = await getSecureItem('lastIdle')
+      const lastIdleString = await getSecureItem('lastIdle')
 
-    if (!lastIdleString) return
+      if (!lastIdleString) return
 
-    const lastIdle = Number.parseInt(lastIdleString, 10)
-    const isActive = appState === 'active'
-    const now = Date.now()
-    const expiration = now - authInterval
-    const lastIdleExpired = lastIdle && expiration > lastIdle
+      const lastIdle = Number.parseInt(lastIdleString, 10)
+      const isActive = appState === 'active'
+      const now = Date.now()
+      const expiration = now - authInterval
+      const lastIdleExpired = lastIdle && expiration > lastIdle
 
-    // pin is required and last idle is past user interval, lock the screen
-    const shouldLock = isActive && lastIdleExpired
+      // pin is required and last idle is past user interval, lock the screen
+      const shouldLock = isActive && lastIdleExpired
 
-    if (shouldLock) {
-      await deleteSecureItem('lastIdle')
-      await updateLocked(true)
-    }
-  }, [appState, pin, authInterval, updateLocked, locked, hasAccounts])
+      if (shouldLock) {
+        await deleteSecureItem('lastIdle')
+        await updateLocked(true)
+      }
+    },
+    [appState, pin, authInterval, updateLocked, locked, hasAccounts],
+    {
+      executeOnUpdate: true,
+    },
+  )
 
   const handleSuccess = useCallback(async () => {
     await updateLocked(false)
@@ -98,6 +104,7 @@ const LockScreen = ({ children }: Props) => {
 
   return (
     <>
+      {children}
       {!!locked && (
         <ReAnimatedBox
           entering={FadeIn}
@@ -119,7 +126,6 @@ const LockScreen = ({ children }: Props) => {
           />
         </ReAnimatedBox>
       )}
-      {children}
     </>
   )
 }
