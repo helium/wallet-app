@@ -59,7 +59,7 @@ const PassphraseAutocomplete = ({
     [onSelectWord, wordIdx],
   )
 
-  const onChangeText = useCallback(
+  const handlePaste = useCallback(
     async (text) => {
       const copiedContent = await Clipboard.getString()
 
@@ -69,14 +69,20 @@ const PassphraseAutocomplete = ({
       if (copiedContent !== '' && isPasted && isPastedWords) {
         onPaste(copiedContent)
       }
+    },
+    [onPaste],
+  )
 
+  const onChangeText = useCallback(
+    async (text) => {
+      handlePaste(text)
       matchingListRef?.current?.scrollTo({
         y: 0,
         animated: true,
       })
       setWord(text)
     },
-    [onPaste],
+    [handlePaste],
   )
 
   const handleSubmit = useCallback(() => {
