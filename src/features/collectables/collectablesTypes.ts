@@ -51,3 +51,5 @@ export type CollectableStackParamList = {
 
 export type CollectableNavigationProp =
   StackNavigationProp<CollectableStackParamList>
+
+export const DEFAULT_PAGE_AMOUNT = 20

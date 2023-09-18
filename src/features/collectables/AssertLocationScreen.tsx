@@ -84,7 +84,7 @@ const AssertLocationScreen = () => {
       return undefined
     }
 
-    return parseH3BNLocation(iotInfoAcc.info.location).reverse()
+    return parseH3BNLocation(iotInfoAcc.info.location)?.reverse()
   }, [iotInfoAcc])
 
   const mobileLocation = useMemo(() => {
@@ -92,7 +92,7 @@ const AssertLocationScreen = () => {
       return undefined
     }
 
-    return parseH3BNLocation(mobileInfoAcc.info.location).reverse()
+    return parseH3BNLocation(mobileInfoAcc.info.location)?.reverse()
   }, [mobileInfoAcc])
 
   const sameLocation = useMemo(() => {

@@ -17,6 +17,7 @@ import { useMint } from '@helium/helium-react-hooks'
 import { Mints } from '../../utils/constants'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import { HotspotWithPendingRewards } from '../../types/solana'
+import useHotspotLocation from '../../hooks/useHotspotLocation'
 
 export type HotspotListItemProps = {
   hotspot: HotspotWithPendingRewards
@@ -31,6 +32,17 @@ const HotspotListItem = ({
   const {
     content: { metadata },
   } = hotspot
+
+  const eccCompact = useMemo(() => {
+    if (!metadata || !metadata?.attributes?.length) {
+      return undefined
+    }
+
+    return metadata.attributes.find((attr) => attr.trait_type === 'ecc_compact')
+      ?.value
+  }, [metadata])
+
+  const streetAddress = useHotspotLocation(eccCompact)
 
   const { info: iotMint } = useMint(IOT_MINT)
   const { info: mobileMint } = useMint(MOBILE_MINT)
@@ -65,15 +77,6 @@ const HotspotListItem = ({
     return formatLargeNumber(new BigNumber(num))
   }, [hotspot, mobileMint])
 
-  const eccCompact = useMemo(() => {
-    if (!metadata || !metadata?.attributes?.length) {
-      return undefined
-    }
-
-    return metadata.attributes.find((attr) => attr.trait_type === 'ecc_compact')
-      ?.value
-  }, [metadata])
-
   const hasIotRewards = useMemo(
     () => pendingIotRewards && pendingIotRewards.gt(new BN(0)),
     [pendingIotRewards],
@@ -102,22 +105,39 @@ const HotspotListItem = ({
             cache: 'force-cache',
           }}
         />
-        <Box marginStart="m" marginVertical="s" flex={1}>
+        <Box
+          marginStart="m"
+          marginVertical="s"
+          flex={1}
+          justifyContent="center"
+        >
           {metadata?.name && (
-            <Text textAlign="left" variant="subtitle2" adjustsFontSizeToFit>
+            <Text
+              textAlign="left"
+              variant="subtitle2"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
               {removeDashAndCapitalize(metadata.name)}
             </Text>
           )}
 
-          <Box flexGrow={1} />
-
-          <Box flexDirection="row" marginEnd="s" alignItems="flex-end">
-            <Text variant="subtitle3" color="secondaryText">
-              {eccCompact ? ellipsizeAddress(eccCompact) : ''}
+          {streetAddress && (
+            <Text variant="body2" numberOfLines={1} adjustsFontSizeToFit>
+              {streetAddress}
             </Text>
-          </Box>
+          )}
+
+          <Text
+            variant="subtitle3"
+            color="secondaryText"
+            numberOfLines={1}
+            adjustsFontSizeToFit
+          >
+            {eccCompact ? ellipsizeAddress(eccCompact) : ''}
+          </Text>
         </Box>
-        <Box marginVertical="s" marginEnd="s">
+        <Box marginVertical="s" marginHorizontal="s">
           {!!hasMobileRewards && (
             <Box
               marginBottom="s"
