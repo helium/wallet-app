@@ -23,8 +23,6 @@ import { ellipsizeAddress } from '@utils/accountUtils'
 import { toNumber } from '@helium/spl-utils'
 import { useEntityKey } from '@hooks/useEntityKey'
 import { useIotInfo } from '@hooks/useIotInfo'
-import { FadeIn } from 'react-native-reanimated'
-import useHotspotLocation from '@hooks/useHotspotLocation'
 import { ww } from '../../utils/layout'
 import {
   CollectableNavigationProp,
@@ -49,7 +47,6 @@ const HotspotDetailsScreen = () => {
   const { collectable } = route.params
   const entityKey = useEntityKey(collectable)
   const iotInfoAcc = useIotInfo(entityKey)
-  const streetAddress = useHotspotLocation(entityKey)
 
   const pendingIotRewards =
     collectable &&
@@ -214,19 +211,7 @@ const HotspotDetailsScreen = () => {
                 }}
               />
             </Box>
-            {streetAddress && (
-              <ReAnimatedBox entering={FadeIn}>
-                <Text variant="body1" marginTop="l" textAlign="center">
-                  {streetAddress || ' '}
-                </Text>
-              </ReAnimatedBox>
-            )}
-            {!streetAddress && (
-              <Text variant="body1" marginTop="l" textAlign="center">
-                {' '}
-              </Text>
-            )}
-            <Box marginTop="m">
+            <Box marginTop="l" marginBottom="m">
               <Text variant="body1" marginBottom="ms">
                 {t('collectablesScreen.hotspots.pendingRewardsTitle')}
               </Text>

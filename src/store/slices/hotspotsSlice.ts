@@ -2,9 +2,9 @@ import { AnchorProvider } from '@coral-xyz/anchor'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Cluster, PublicKey } from '@solana/web3.js'
 import { CompressedNFT, HotspotWithPendingRewards } from 'src/types/solana'
+import { DEFAULT_PAGE_AMOUNT } from '../../features/collectables/HotspotList'
 import { CSAccount } from '../../storage/cloudStorage'
 import * as solUtils from '../../utils/solanaUtils'
-import { DEFAULT_PAGE_AMOUNT } from '../../features/collectables/collectablesTypes'
 
 export type WalletHotspots = {
   hotspots: CompressedNFT[]
