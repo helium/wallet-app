@@ -40,37 +40,31 @@ const LockScreen = ({ children }: Props) => {
   }, [authInterval, locked, pin, prevLocked])
 
   // handle app state changes
-  useAsync(
-    async () => {
-      if (locked || !pin || pin?.status === 'off' || !hasAccounts) return
-      if (appState === 'background' || appState === 'inactive') {
-        await storeSecureItem('lastIdle', Date.now().toString())
-        return
-      }
+  useAsync(async () => {
+    if (locked || !pin || pin?.status === 'off' || !hasAccounts) return
+    if (appState === 'background' || appState === 'inactive') {
+      await storeSecureItem('lastIdle', Date.now().toString())
+      return
+    }
 
-      const lastIdleString = await getSecureItem('lastIdle')
+    const lastIdleString = await getSecureItem('lastIdle')
 
-      if (!lastIdleString) return
+    if (!lastIdleString) return
 
-      const lastIdle = Number.parseInt(lastIdleString, 10)
-      const isActive = appState === 'active'
-      const now = Date.now()
-      const expiration = now - authInterval
-      const lastIdleExpired = lastIdle && expiration > lastIdle
+    const lastIdle = Number.parseInt(lastIdleString, 10)
+    const isActive = appState === 'active'
+    const now = Date.now()
+    const expiration = now - authInterval
+    const lastIdleExpired = lastIdle && expiration > lastIdle
 
-      // pin is required and last idle is past user interval, lock the screen
-      const shouldLock = isActive && lastIdleExpired
+    // pin is required and last idle is past user interval, lock the screen
+    const shouldLock = isActive && lastIdleExpired
 
-      if (shouldLock) {
-        await deleteSecureItem('lastIdle')
-        await updateLocked(true)
-      }
-    },
-    [appState, pin, authInterval, updateLocked, locked, hasAccounts],
-    {
-      executeOnUpdate: true,
-    },
-  )
+    if (shouldLock) {
+      await deleteSecureItem('lastIdle')
+      await updateLocked(true)
+    }
+  }, [appState, pin, authInterval, updateLocked, locked, hasAccounts])
 
   const handleSuccess = useCallback(async () => {
     await updateLocked(false)
