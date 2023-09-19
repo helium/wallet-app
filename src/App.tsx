@@ -24,7 +24,7 @@ import NetworkAwareStatusBar from './components/NetworkAwareStatusBar'
 import SplashScreen from './components/SplashScreen'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
 import LockScreen from './features/lock/LockScreen'
-import InsufficientSOLConversionModal from './features/modals/InsufficientSolConversionModal'
+import InsufficientSolConversionModal from './features/modals/InsufficientSolConversionModal'
 import SecurityScreen from './features/security/SecurityScreen'
 import useMount from './hooks/useMount'
 import { navigationRef } from './navigation/NavigationHelper'
@@ -140,7 +140,7 @@ const App = () => {
                                             <RootNavigator />
 
                                             {/* place app specific modals here */}
-                                            <InsufficientSOLConversionModal />
+                                            <InsufficientSolConversionModal />
                                           </ModalProvider>
                                         </JupiterProvider>
                                       </WalletSignProvider>

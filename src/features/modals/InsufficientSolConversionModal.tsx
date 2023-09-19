@@ -33,7 +33,7 @@ import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
 import * as Logger from '../../utils/logger'
 
-const InsufficientSOLConversionModal: FC = () => {
+const InsufficientSolConversionModal: FC = () => {
   const { t } = useTranslation()
   const { anchorProvider } = useSolana()
   const { hideModal } = useModal()
@@ -297,6 +297,6 @@ const InsufficientSOLConversionModal: FC = () => {
 export default memo(() => {
   const { modalType } = useModal()
 
-  if (modalType !== 'InsufficientSOLConversion') return null
-  return <InsufficientSOLConversionModal />
+  if (modalType !== 'InsufficientSolConversion') return null
+  return <InsufficientSolConversionModal />
 })
