@@ -55,18 +55,32 @@ const AccountTokenList = ({ onLayout }: Props) => {
         syncTokenAccounts({ cluster, acct: currentAccount, anchorProvider }),
       )
       await Promise.all(
-        [...visibleTokens].map((mintStr) => {
+        [...visibleTokens].map(async (mintStr) => {
+          const ata = getAssociatedTokenAddressSync(
+            new PublicKey(mintStr),
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            new PublicKey(currentAccount!.solanaAddress!),
+          )
+          const ataStr = ata.toBase58()
           // Trigger a refetch on all visible token accounts
-          return cache.search(
-            getAssociatedTokenAddressSync(
-              new PublicKey(mintStr),
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              new PublicKey(currentAccount!.solanaAddress!),
-            ),
-            undefined,
+          const result = await cache.search(
+            ata,
+            cache.keyToAccountParser.get(ataStr),
             false,
             true,
           )
+          if (
+            !cache.genericCache.has(ataStr) ||
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            // eslint-disable-next-line
+            result != cache.genericCache[ataStr]
+          ) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            cache.updateCache(ataStr, result)
+          }
+          return result
         }),
       )
     })
