@@ -2,28 +2,56 @@ import { ReAnimatedBlurBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
-import CloseButton from '@components/CloseButton'
 import { FadeInFast } from '@components/FadeInOut'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TokenPill from '@components/TokenPill'
-import { HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
+import { useMint } from '@helium/helium-react-hooks'
+import {
+  HNT_MINT,
+  IOT_MINT,
+  MOBILE_MINT,
+  sendAndConfirmWithRetry,
+  toNumber,
+} from '@helium/spl-utils'
+import { useEecosystemTokenSolConvert } from '@hooks/useEcosystemTokensSolConvert'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { PublicKey } from '@solana/web3.js'
 import { useModal } from '@storage/ModalsProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
-import { useSpacing } from '@theme/themeHooks'
-import React, { FC, memo, useCallback, useMemo, useState } from 'react'
+import BN from 'bn.js'
+import React, {
+  FC,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
+import { useTranslation } from 'react-i18next'
 import { Edge } from 'react-native-safe-area-context'
+import { useSolana } from '../../solana/SolanaProvider'
+import * as Logger from '../../utils/logger'
 
 const InsufficientSOLConversionModal: FC = () => {
+  const { t } = useTranslation()
+  const { anchorProvider } = useSolana()
   const { hideModal } = useModal()
-  const spacing = useSpacing()
   const edges = useMemo(() => ['top', 'bottom'] as Edge[], [])
-  const [inputMint, setInputMint] = useState<PublicKey | undefined>(HNT_MINT)
+  const [inputMint, setInputMint] = useState<PublicKey | undefined>()
   const { symbol } = useMetaplexMetadata(inputMint)
+  const [transactionError, setTransactionError] = useState<string>()
   const [swapping, setSwapping] = useState(false)
   const { visibleTokens } = useVisibleTokens()
+  const {
+    loading,
+    error: solConvertError,
+    estimatesByMint,
+    hasEnoughForSolByMint,
+    solConvertTxByMint,
+  } = useEecosystemTokenSolConvert()
+
+  const inputMintDecimals = useMint(inputMint)?.info?.decimals
 
   const validInputMints = useMemo(
     () =>
@@ -33,23 +61,90 @@ const InsufficientSOLConversionModal: FC = () => {
     [visibleTokens],
   )
 
+  const hasAtLeastOne = useMemo(
+    () =>
+      Object.entries(hasEnoughForSolByMint).some(([_mint, value]) =>
+        Boolean(value),
+      ),
+    [hasEnoughForSolByMint],
+  )
+
+  const inputAmount = useMemo(() => {
+    if (
+      estimatesByMint &&
+      inputMint &&
+      estimatesByMint[inputMint.toBase58()] &&
+      typeof inputMintDecimals !== 'undefined'
+    ) {
+      return toNumber(
+        new BN(Number(estimatesByMint[inputMint.toBase58()] || 0)),
+        inputMintDecimals,
+      )
+    }
+
+    return 0
+  }, [inputMint, inputMintDecimals, estimatesByMint])
+
+  const swapTx = useMemo(() => {
+    if (inputMint) {
+      return solConvertTxByMint[inputMint.toBase58()]
+    }
+  }, [inputMint, solConvertTxByMint])
+
+  useEffect(() => {
+    if (hasAtLeastOne) {
+      const [[firstMint]] = Object.entries(hasEnoughForSolByMint).filter(
+        ([_mint, value]) => Boolean(value),
+      )
+
+      setInputMint(new PublicKey(firstMint))
+    }
+  }, [hasAtLeastOne, setInputMint, hasEnoughForSolByMint])
+
   const onMintSelect = useCallback(
-    (mint: PublicKey) => () => setInputMint(mint),
+    (mint: PublicKey) => () => {
+      setInputMint(mint)
+      setTransactionError(undefined)
+    },
     [],
   )
 
-  const handleSwapTokens = useCallback(() => {
-    setSwapping(true)
-  }, [])
+  const handleSwapTokens = useCallback(async () => {
+    if (!anchorProvider || !swapTx) return
+
+    try {
+      setSwapping(true)
+      const signed = await anchorProvider.wallet.signTransaction(swapTx)
+      await sendAndConfirmWithRetry(
+        anchorProvider.connection,
+        Buffer.from(signed.serialize()),
+        {
+          skipPreflight: true,
+        },
+        'confirmed',
+      )
+      hideModal()
+    } catch (error) {
+      setSwapping(false)
+      Logger.error(error)
+      setTransactionError((error as Error).message)
+    }
+  }, [swapTx, hideModal, anchorProvider])
+
+  const showError = useMemo(() => {
+    if (solConvertError) return t('generic.somethingWentWrong')
+    if (transactionError) return transactionError
+  }, [t, transactionError, solConvertError])
 
   return (
     <ReAnimatedBlurBox
       visible
       entering={FadeInFast}
       position="absolute"
+      zIndex={9999}
       height="100%"
       width="100%"
-      paddingBottom="xxxl"
+      paddingBottom="xl"
     >
       <SafeAreaBox edges={edges} flex={1}>
         <Box
@@ -59,11 +154,9 @@ const InsufficientSOLConversionModal: FC = () => {
           paddingTop="s"
           paddingHorizontal="m"
         >
-          <CloseButton onPress={hideModal} />
           <Text variant="h4" color="white" flex={1} textAlign="center">
-            Insufficient SOL
+            {t('insufficientSolConversionModal.title')}
           </Text>
-          <Box width={16 + spacing.m} height={16} />
         </Box>
         <Box flex={1} paddingHorizontal="m" marginTop="l">
           <Text
@@ -72,9 +165,7 @@ const InsufficientSOLConversionModal: FC = () => {
             opacity={0.6}
             textAlign="center"
           >
-            You currently dont have enough SOL to perform this action. Please
-            burn one of the following tokens to receive more SOL in order to
-            continue.
+            {t('insufficientSolConversionModal.body')}
           </Text>
           <Box
             flexDirection="row"
@@ -86,75 +177,118 @@ const InsufficientSOLConversionModal: FC = () => {
                 key={mint.toBase58()}
                 mint={mint}
                 isActive={inputMint?.equals(mint)}
+                isDisabled={!hasEnoughForSolByMint[mint.toBase58()]}
                 onPress={onMintSelect(mint)}
               />
             ))}
           </Box>
           <Box flex={1} marginTop="xxl" alignItems="center">
-            <Box justifyContent="center" alignItems="center">
-              <Text
-                variant="body3"
-                color="white"
-                opacity={0.6}
-                marginBottom="xs"
-              >
-                You Burn
-              </Text>
-              <Box flexDirection="row">
-                <Text marginEnd="s" variant="h4">
-                  0.20015
-                </Text>
-                <Text variant="h4" color="white" opacity={0.6}>
-                  {symbol}
+            {loading && <CircleLoader loaderSize={30} color="white" />}
+            {!loading && !hasAtLeastOne && (
+              <Box justifyContent="center" alignItems="center" marginTop="xxl">
+                <Text variant="body2Medium" color="white" textAlign="center">
+                  {t('insufficientSolConversionModal.noBalance')}
                 </Text>
               </Box>
-            </Box>
-            <Box marginTop="xxl" justifyContent="center" alignItems="center">
-              <Text
-                variant="body3"
-                color="white"
-                opacity={0.6}
-                marginBottom="xs"
-              >
-                You Receive
-              </Text>
-              <Box flexDirection="row">
-                <Text marginEnd="s" variant="h4">
-                  0.02
+            )}
+            {!loading && hasAtLeastOne && (
+              <>
+                <Box
+                  justifyContent="center"
+                  alignItems="center"
+                  marginTop="xxl"
+                >
+                  <Text
+                    variant="body3"
+                    color="white"
+                    opacity={0.6}
+                    marginBottom="xs"
+                  >
+                    {t('swapsScreen.youPay')}
+                  </Text>
+                  <Box flexDirection="row">
+                    <Text marginEnd="s" variant="h4">
+                      {inputAmount}
+                    </Text>
+                    <Text variant="h4" color="white" opacity={0.6}>
+                      {symbol}
+                    </Text>
+                  </Box>
+                </Box>
+                <Box
+                  marginTop="xxl"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <Text
+                    variant="body3"
+                    color="white"
+                    opacity={0.6}
+                    marginBottom="xs"
+                  >
+                    {t('swapsScreen.youReceive')}
+                  </Text>
+                  <Box flexDirection="row">
+                    <Text marginEnd="s" variant="h4">
+                      ~0.02
+                    </Text>
+                    <Text variant="h4" color="white" opacity={0.6}>
+                      SOL
+                    </Text>
+                  </Box>
+                </Box>
+                <Text
+                  opacity={transactionError || solConvertError ? 100 : 0}
+                  marginHorizontal="m"
+                  variant="body3Medium"
+                  marginBottom="l"
+                  color="red500"
+                >
+                  {showError}
                 </Text>
-                <Text variant="h4" color="white" opacity={0.6}>
-                  SOL
-                </Text>
-              </Box>
-            </Box>
+              </>
+            )}
           </Box>
         </Box>
-        <Box
-          flexDirection="column"
-          marginBottom="xl"
-          marginTop="m"
-          marginHorizontal="xl"
-        >
-          <ButtonPressable
-            height={65}
-            flexGrow={1}
-            borderRadius="round"
-            backgroundColor="white"
-            backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="secondaryBackground"
-            titleColorDisabled="secondaryText"
-            titleColor="black"
-            disabled={!inputMint}
-            titleColorPressedOpacity={0.3}
-            title={swapping ? '' : 'Swap Tokens'}
-            onPress={handleSwapTokens}
-            TrailingComponent={
-              swapping ? (
-                <CircleLoader loaderSize={20} color="black" />
-              ) : undefined
-            }
-          />
-        </Box>
+        {!loading && (
+          <Box
+            flexDirection="row"
+            marginHorizontal="m"
+            justifyContent="space-between"
+          >
+            <ButtonPressable
+              width={hasAtLeastOne ? '48%' : '100%'}
+              borderRadius="round"
+              backgroundColor="black400"
+              backgroundColorOpacityPressed={0.05}
+              titleColorPressedOpacity={0.3}
+              titleColor="white"
+              title={t('generic.cancel')}
+              disabled={loading}
+              onPress={hideModal}
+            />
+            {hasAtLeastOne && (
+              <ButtonPressable
+                width="48%"
+                borderRadius="round"
+                backgroundColor="white"
+                backgroundColorOpacityPressed={0.7}
+                backgroundColorDisabled="secondaryBackground"
+                titleColorDisabled="secondaryText"
+                titleColor="black"
+                disabled={!inputMint}
+                titleColorPressedOpacity={0.3}
+                title={swapping ? '' : t('generic.swap')}
+                onPress={handleSwapTokens}
+                TrailingComponent={
+                  swapping ? (
+                    <CircleLoader loaderSize={20} color="black" />
+                  ) : undefined
+                }
+              />
+            )}
+          </Box>
+        )}
       </SafeAreaBox>
     </ReAnimatedBlurBox>
   )

@@ -25,6 +25,7 @@ import {
 import {
   DC_MINT,
   HNT_MINT,
+  IOT_MINT,
   MOBILE_MINT,
   toBN,
   toNumber,
@@ -36,7 +37,6 @@ import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useJupiter } from '@storage/JupiterProvider'
-import { useModal } from '@storage/ModalsProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { CSAccount } from '@storage/cloudStorage'
 import { useColors, useHitSlop } from '@theme/themeHooks'
@@ -59,6 +59,7 @@ import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { LayoutAnimation } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
+import { useTreasuryPrice } from '@hooks/useTreasuryPrice'
 import { useSolana } from '../../solana/SolanaProvider'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
@@ -74,13 +75,13 @@ enum SelectorMode {
 
 const SwapScreen = () => {
   const { t } = useTranslation()
-  const { showModal } = useModal()
   const { currentAccount } = useAccountStorage()
-  const { anchorProvider, connection } = useSolana()
+  const { cluster, anchorProvider, connection } = useSolana()
   const wallet = useCurrentWallet()
   const colors = useColors()
   const navigation = useNavigation<SwapNavigationProp>()
-  const { submitJupiterSwap, submitMintDataCredits } = useSubmitTxn()
+  const { submitJupiterSwap, submitTreasurySwap, submitMintDataCredits } =
+    useSubmitTxn()
   const edges = useMemo(() => ['bottom'] as Edge[], [])
   const [selectorMode, setSelectorMode] = useState(SelectorMode.youPay)
   const [inputMint, setInputMint] = useState<PublicKey>(MOBILE_MINT)
@@ -105,6 +106,10 @@ const SwapScreen = () => {
   const [recipient, setRecipient] = useState('')
   const [isRecipientOpen, setRecipientOpen] = useState(false)
   const { visibleTokens } = useVisibleTokens()
+  const { price, loading: loadingPrice } = useTreasuryPrice(
+    inputMint,
+    inputAmount,
+  )
   const {
     loading,
     error: jupiterError,
@@ -113,15 +118,22 @@ const SwapScreen = () => {
     getRoute,
   } = useJupiter()
 
+  const isDevnet = useMemo(() => cluster === 'devnet', [cluster])
   const inputMintDecimals = useMint(inputMint)?.info?.decimals
   const outputMintDecimals = useMint(outputMint)?.info?.decimals
 
-  const validInputMints = useMemo(
-    () => [...routeMap.keys()].filter((key) => visibleTokens.has(key)),
-    [visibleTokens, routeMap],
-  )
+  const validInputMints = useMemo(() => {
+    if (isDevnet)
+      return [HNT_MINT.toBase58(), MOBILE_MINT.toBase58(), IOT_MINT.toBase58()]
+    return [...routeMap.keys()].filter((key) => visibleTokens.has(key))
+  }, [visibleTokens, routeMap, isDevnet])
 
   const validOutputMints = useMemo(() => {
+    if (isDevnet) {
+      if (HNT_MINT.equals(inputMint)) return [DC_MINT.toBase58()]
+      return [HNT_MINT.toBase58()]
+    }
+
     const routeMints =
       routeMap
         .get(inputMint?.toBase58() || '')
@@ -133,7 +145,7 @@ const SwapScreen = () => {
     return inputMint.equals(HNT_MINT)
       ? [DC_MINT.toBase58(), ...routeMints]
       : routeMints
-  }, [visibleTokens, routeMap, inputMint])
+  }, [visibleTokens, routeMap, inputMint, isDevnet])
 
   const handleRecipientClick = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
@@ -164,12 +176,18 @@ const SwapScreen = () => {
       return true
     }
 
+    if (isDevnet) {
+      return (
+        !inputMint.equals(HNT_MINT) && !(price && price > 0) && inputAmount > 0
+      )
+    }
+
     return (
       !inputMint.equals(HNT_MINT) &&
       !(routes?.outAmount && new BN(routes?.outAmount || 0).gt(new BN(0))) &&
       inputAmount > 0
     )
-  }, [hntBalance, inputAmount, inputMint, routes])
+  }, [hntBalance, inputAmount, inputMint, routes, price, isDevnet])
 
   const showError = useMemo(() => {
     if (hasRecipientError) return t('generic.notValidSolanaAddress')
@@ -194,6 +212,8 @@ const SwapScreen = () => {
     setInputMint(MOBILE_MINT)
     setOutputMint(HNT_MINT)
     setSolFee(SOL_TXN_FEE)
+    setRecipient('')
+    setRecipientOpen(false)
     setSelectorMode(SelectorMode.youPay)
     setNetworkError(undefined)
   }, [])
@@ -253,11 +273,14 @@ const SwapScreen = () => {
     // if changing outputMint ensure we get new routes
     ;(async () => {
       if (
+        !isDevnet &&
         typeof inputMintDecimals !== 'undefined' &&
         typeof inputAmount !== 'undefined' &&
         inputAmount > 0 &&
         !outputMint.equals(DC_MINT)
       ) {
+        setRecipient('')
+        setRecipientOpen(false)
         await getRoute({
           amount: toBN(inputAmount || 0, inputMintDecimals).toNumber(),
           inputMint: inputMint.toBase58(),
@@ -267,12 +290,15 @@ const SwapScreen = () => {
       }
     })()
   }, [
+    isDevnet,
     inputAmount,
     outputMint,
     inputMint,
     slippageBps,
     inputMintDecimals,
     getRoute,
+    setRecipient,
+    setRecipientOpen,
   ])
 
   const Header = useMemo(() => {
@@ -295,6 +321,18 @@ const SwapScreen = () => {
   }, [refresh, t, handleClose])
 
   const Slippage = useMemo(() => {
+    if (isDevnet)
+      return (
+        <Box
+          flexDirection="row"
+          borderRadius="l"
+          marginTop="xl"
+          marginBottom="xxl"
+          marginHorizontal="m"
+          backgroundColor="surfaceSecondary"
+        />
+      )
+
     const bpsOptions: number[] = [50, 100, 150]
     const disabled = outputMint.equals(DC_MINT)
 
@@ -353,7 +391,14 @@ const SwapScreen = () => {
         })}
       </Box>
     )
-  }, [slippageBps, setSlippageBps, outputMint, setSlippageInfoVisible, t])
+  }, [
+    slippageBps,
+    setSlippageBps,
+    outputMint,
+    setSlippageInfoVisible,
+    t,
+    isDevnet,
+  ])
 
   const setTokenTypeHandler = useCallback(
     (mint: PublicKey) => {
@@ -419,7 +464,7 @@ const SwapScreen = () => {
       const amount = toNumber(balance, inputMintDecimals)
       setInputAmount(amount)
 
-      if (!outputMint.equals(DC_MINT)) {
+      if (!isDevnet && !outputMint.equals(DC_MINT)) {
         await getRoute({
           amount: balance.toNumber(),
           inputMint: inputMint.toBase58(),
@@ -428,7 +473,7 @@ const SwapScreen = () => {
         })
       }
     },
-    [inputMintDecimals, inputMint, outputMint, slippageBps, getRoute],
+    [inputMintDecimals, inputMint, outputMint, slippageBps, getRoute, isDevnet],
   )
 
   const hitSlop = useHitSlop('l')
@@ -448,6 +493,14 @@ const SwapScreen = () => {
         )
       }
 
+      if (isDevnet) {
+        if (price && !inputMint.equals(HNT_MINT)) {
+          return price
+        }
+
+        return 0
+      }
+
       return toNumber(
         new BN(Number(routes?.outAmount || 0)),
         outputMintDecimals,
@@ -464,6 +517,8 @@ const SwapScreen = () => {
     outputMintDecimals,
     inputMintDecimals,
     routes,
+    isDevnet,
+    price,
   ])
 
   const minReceived = useMemo(
@@ -473,10 +528,6 @@ const SwapScreen = () => {
 
   const handleSwapTokens = useCallback(async () => {
     if (connection) {
-      if (!solBalance || solBalance?.lt(solFee)) {
-        return showModal('InsufficientSOLConversion')
-      }
-
       try {
         setSwapping(true)
 
@@ -502,6 +553,8 @@ const SwapScreen = () => {
             dcAmount: new BN(outputAmount),
             recipient: recipientAddr,
           })
+        } else if (isDevnet) {
+          await submitTreasurySwap(inputMint, inputAmount, recipientAddr)
         } else {
           await submitJupiterSwap()
         }
@@ -518,20 +571,25 @@ const SwapScreen = () => {
       }
     }
   }, [
-    showModal,
-    solFee,
-    solBalance,
     connection,
     currentAccount,
     recipient,
     inputMint,
+    inputAmount,
     outputMint,
     outputAmount,
     navigation,
+    submitTreasurySwap,
     submitMintDataCredits,
     submitJupiterSwap,
     setHasRecipientError,
+    isDevnet,
   ])
+
+  const isLoading = useMemo(() => {
+    if (!isDevnet) return loading
+    return loadingPrice
+  }, [loading, loadingPrice, isDevnet])
 
   return (
     <AddressBookSelector
@@ -572,10 +630,10 @@ const SwapScreen = () => {
                     onCurrencySelect={onCurrencySelect(false)}
                     mintSelected={outputMint}
                     amount={outputAmount}
-                    loading={loading}
+                    loading={isLoading}
                   />
 
-                  {!isRecipientOpen && (
+                  {!isRecipientOpen && outputMint.equals(DC_MINT) && (
                     <TouchableOpacityBox
                       marginTop="l"
                       hitSlop={hitSlop}
@@ -674,7 +732,7 @@ const SwapScreen = () => {
                 />
 
                 <Box marginTop="m">
-                  {!outputMint.equals(DC_MINT) && (
+                  {!isDevnet && !outputMint.equals(DC_MINT) && (
                     <TextTransform
                       textAlign="center"
                       marginHorizontal="m"
@@ -692,7 +750,7 @@ const SwapScreen = () => {
                     i18nKey="collectablesScreen.transferFee"
                     values={{ amount: humanReadable(solFee, 9) }}
                   />
-                  {!outputMint.equals(DC_MINT) && (
+                  {!isDevnet && !outputMint.equals(DC_MINT) && (
                     <TextTransform
                       textAlign="center"
                       marginHorizontal="m"

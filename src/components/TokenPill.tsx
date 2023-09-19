@@ -13,12 +13,14 @@ export const TokenPill = memo(
     mint,
     hasCarot = false,
     isActive = false,
+    isDisabled = false,
     onPress,
     ...rest
   }: {
     mint: PublicKey
     hasCarot?: boolean
     isActive?: boolean
+    isDisabled?: boolean
     onPress: () => void
     style?: ViewStyle | undefined
   }) => {
@@ -26,12 +28,23 @@ export const TokenPill = memo(
     const { backgroundStyle: generateBackgroundStyle } = useCreateOpacity()
 
     const getBackgroundColorStylePill = useCallback(
-      ({ pressed, active }: { pressed: boolean; active: boolean }) => {
+      ({
+        pressed,
+        active,
+        disabled,
+      }: {
+        pressed: boolean
+        active: boolean
+        disabled: boolean
+      }) => {
+        if (disabled) {
+          return generateBackgroundStyle('surfaceSecondary', 0.5)
+        }
         if (pressed) {
           return generateBackgroundStyle('surfaceSecondary', 1.0)
         }
         if (active) {
-          return generateBackgroundStyle('secondaryBackground', 1.0)
+          return generateBackgroundStyle('black', 1.0)
         }
         return generateBackgroundStyle('secondary', 1.0)
       },
@@ -39,12 +52,21 @@ export const TokenPill = memo(
     )
 
     return (
-      <Box flexDirection="row" flex={1} justifyContent="center">
-        <Pressable onPress={onPress}>
+      <Box
+        flexDirection="row"
+        flex={1}
+        justifyContent="center"
+        opacity={isDisabled ? 0.5 : 1}
+      >
+        <Pressable onPress={onPress} disabled={isDisabled}>
           {({ pressed }) => (
             <Box
               style={[
-                getBackgroundColorStylePill({ active: isActive, pressed }),
+                getBackgroundColorStylePill({
+                  active: isActive,
+                  pressed,
+                  disabled: isDisabled,
+                }),
                 rest.style ? rest.style : {},
               ]}
               height={45}

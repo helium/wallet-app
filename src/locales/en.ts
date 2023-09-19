@@ -387,6 +387,12 @@ export default {
     settingUpCompleteBody:
       'The gain and elevation of your antenna have been updated.',
   },
+  insufficientSolConversionModal: {
+    title: 'Insufficient SOL',
+    body: 'You currently dont have enough SOL to perform this action. Please swap one of the following tokens to receive more SOL in order to continue. Tokens that you dont have any balance in will be disabled.',
+    noBalance:
+      'You currently dont hold a balance of any of the tokens supported by this swap.',
+  },
   swapsScreen: {
     title: 'Swap my Tokens',
     swapTokens: 'Swap Tokens',
@@ -590,6 +596,7 @@ export default {
     and: 'and',
     back: 'Back',
     cancel: 'Cancel',
+    swap: 'Swap',
     clear: 'Clear',
     confirm: 'Confirm',
     copied: 'Copied {{target}}',
