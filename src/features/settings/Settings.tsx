@@ -1,34 +1,32 @@
+import Box from '@components/Box'
+import CloseButton from '@components/CloseButton'
+import SafeAreaBox from '@components/SafeAreaBox'
+import Text from '@components/Text'
+import useAlert from '@hooks/useAlert'
+import { useAppVersion } from '@hooks/useDevice'
+import { useNavigation } from '@react-navigation/native'
+import { Cluster } from '@solana/web3.js'
+import { useHitSlop, useSpacing } from '@theme/themeHooks'
 import React, { memo, ReactText, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigation } from '@react-navigation/native'
 import { Alert, Linking, Platform, SectionList } from 'react-native'
-import { Cluster } from '@solana/web3.js'
-import Text from '@components/Text'
-import SafeAreaBox from '@components/SafeAreaBox'
-import { useHitSlop, useSpacing } from '@theme/themeHooks'
-import Box from '@components/Box'
-import { useAppVersion } from '@hooks/useDevice'
-import useCopyText from '@hooks/useCopyText'
-import useAlert from '@hooks/useAlert'
-import CloseButton from '@components/CloseButton'
 import deviceInfo from 'react-native-device-info'
-import { HomeNavigationProp } from '../home/homeTypes'
-import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
-import { SUPPORTED_LANGUAGUES } from '../../utils/i18n'
-import useAuthIntervals from './useAuthIntervals'
-import SUPPORTED_CURRENCIES from '../../utils/supportedCurrencies'
+import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
+import { RootNavigationProp } from '../../navigation/rootTypes'
+import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
-import { SettingsNavigationProp } from './settingsTypes'
 import { useLanguageStorage } from '../../storage/LanguageProvider'
 import {
   checkSecureAccount,
   getSecureAccount,
 } from '../../storage/secureStorage'
-import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
-import { ellipsizeAddress } from '../../utils/accountUtils'
-import { RootNavigationProp } from '../../navigation/rootTypes'
-import { useSolana } from '../../solana/SolanaProvider'
+import { SUPPORTED_LANGUAGUES } from '../../utils/i18n'
+import SUPPORTED_CURRENCIES from '../../utils/supportedCurrencies'
+import { HomeNavigationProp } from '../home/homeTypes'
+import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
+import { SettingsNavigationProp } from './settingsTypes'
+import useAuthIntervals from './useAuthIntervals'
 
 const Settings = () => {
   const { t } = useTranslation()
@@ -57,7 +55,6 @@ const Settings = () => {
     updateCurrency,
     updateRequirePinForPayment,
   } = useAppStorage()
-  const copyText = useCopyText()
   const { showOKAlert, showOKCancelAlert } = useAlert()
   const { updateCluster, cluster } = useSolana()
 
@@ -369,30 +366,6 @@ const Settings = () => {
         value: isDefaultAccount,
       },
       {
-        title: t('settings.sections.account.copyAddress'),
-        onPress: undefined,
-        select: {
-          items: [
-            { label: 'Helium', value: 'helium' },
-            { label: 'Solana', value: 'solana' },
-          ],
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          onValueSelect: (val: any) => {
-            const address =
-              val === 'helium'
-                ? currentAccount?.address
-                : currentAccount?.solanaAddress
-
-            if (!address) return
-
-            copyText({
-              message: ellipsizeAddress(address),
-              copyText: address,
-            })
-          },
-        },
-      },
-      {
         title: t('settings.sections.account.shareAddress'),
         onPress: handleShareAddress,
       },
@@ -494,7 +467,6 @@ const Settings = () => {
     authInterval,
     authIntervals,
     cluster,
-    copyText,
     currency,
     currentAccount,
     handleCurrencyTypeChange,
