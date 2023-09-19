@@ -29,10 +29,9 @@ import { formatLargeNumber } from '../../utils/accountUtils'
 import HotspotCompressedListItem from './HotspotCompressedListItem'
 import HotspotListItem from './HotspotListItem'
 import { NFTSkeleton } from './NftListItem'
-import {
-  CollectableNavigationProp,
-  DEFAULT_PAGE_AMOUNT,
-} from './collectablesTypes'
+import { CollectableNavigationProp } from './collectablesTypes'
+
+export const DEFAULT_PAGE_AMOUNT = 20
 
 function RewardItem({
   mint,
@@ -302,7 +301,7 @@ const HotspotList = () => {
             hotspot={item}
             onPress={handleNavigateToCollectable}
             key={item.id}
-            marginBottom="s"
+            marginBottom="xs"
           />
         )
       }

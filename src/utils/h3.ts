@@ -14,8 +14,5 @@ export const DEFAULT_H3_RES = 12
 export const getH3Location = (lat: number, lng: number, res = DEFAULT_H3_RES) =>
   latLngToCell(lat, lng, res)
 
-export const parseH3BNLocation = (location: BN) => {
-  const hexStr = location.toString('hex')
-  if (hexStr === '0') return
-  return cellToLatLng(hexStr)
-}
+export const parseH3BNLocation = (location: BN) =>
+  cellToLatLng(location.toString('hex'))
