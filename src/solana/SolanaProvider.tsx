@@ -60,6 +60,7 @@ const useSolanaHook = () => {
       return getConnection(cluster, sessionKeyActual)
     }
   }, [cluster, sessionKey, loading])
+  const isDevnet = useMemo(() => cluster === 'devnet', [cluster])
   const address = useMemo(
     () => currentAccount?.address,
     [currentAccount?.address],
@@ -261,6 +262,7 @@ const useSolanaHook = () => {
   return {
     anchorProvider,
     cluster,
+    isDevnet,
     connection,
     dcProgram,
     hemProgram,
@@ -288,6 +290,7 @@ const initialState: {
 } = {
   anchorProvider: undefined,
   cluster: 'mainnet-beta' as Cluster,
+  isDevnet: false,
   connection: undefined,
   dcProgram: undefined,
   hemProgram: undefined,

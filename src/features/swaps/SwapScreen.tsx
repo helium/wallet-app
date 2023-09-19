@@ -76,7 +76,7 @@ enum SelectorMode {
 const SwapScreen = () => {
   const { t } = useTranslation()
   const { currentAccount } = useAccountStorage()
-  const { cluster, anchorProvider, connection } = useSolana()
+  const { isDevnet, anchorProvider, connection } = useSolana()
   const wallet = useCurrentWallet()
   const colors = useColors()
   const navigation = useNavigation<SwapNavigationProp>()
@@ -118,7 +118,6 @@ const SwapScreen = () => {
     getRoute,
   } = useJupiter()
 
-  const isDevnet = useMemo(() => cluster === 'devnet', [cluster])
   const inputMintDecimals = useMint(inputMint)?.info?.decimals
   const outputMintDecimals = useMint(outputMint)?.info?.decimals
 
