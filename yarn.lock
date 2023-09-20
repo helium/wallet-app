@@ -3752,10 +3752,10 @@
     redux-thunk "^2.4.2"
     reselect "^4.1.7"
 
-"@rnmapbox/maps@10.0.15":
-  version "10.0.15"
-  resolved "https://registry.yarnpkg.com/@rnmapbox/maps/-/maps-10.0.15.tgz#cf63c8eb6beffb22451718f148c2bea655a3cdb6"
-  integrity sha512-2diBwMF+e7gR6keZ1AEI3xw8U7Cu9+xhv8ce75Bw7flg9aTk+d0KgWv4VDQn4wSphD23EroUgFprVymHvVzZGQ==
+"@rnmapbox/maps@v10.1.0-beta.4":
+  version "10.1.0-beta.4"
+  resolved "https://registry.yarnpkg.com/@rnmapbox/maps/-/maps-10.1.0-beta.4.tgz#0c2161cb1a95cc96bb474e3fbb68b65a70a7ee73"
+  integrity sha512-BGT5uOgmH0pcls3Jc8PjMr+Xf+KblC8eNQtvqAYNgC0Usb/ytdoe29DyK4sq3bNi9/Rvcn8iFVWvEBFrpACutA==
   dependencies:
     "@turf/along" "6.5.0"
     "@turf/distance" "6.5.0"
@@ -13892,10 +13892,10 @@ react-native-randombytes@3.6.1:
     buffer "^4.9.1"
     sjcl "^1.0.3"
 
-react-native-reanimated@~3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/react-native-reanimated/-/react-native-reanimated-3.3.0.tgz#80f9d58e28fddf62fe4c1bc792337b8ab57936ab"
-  integrity sha512-LzfpPZ1qXBGy5BcUHqw3pBC0qSd22qXS3t8hWSbozXNrBkzMhhOrcILE/nEg/PHpNNp1xvGOW8NwpAMF006roQ==
+react-native-reanimated@3.5.3:
+  version "3.5.3"
+  resolved "https://registry.yarnpkg.com/react-native-reanimated/-/react-native-reanimated-3.5.3.tgz#3d860acc7a25f18752d823aba3804aac03b01967"
+  integrity sha512-zjGJL2rgYLiEqIwaIOd+/dgRZzot4wKUvKk0ZXeWY7SJg4Bp+9yQTOT98Jx6b1/Cga2YY71i0tIu3hanLajGAQ==
   dependencies:
     "@babel/plugin-transform-object-assign" "^7.16.7"
     "@babel/preset-typescript" "^7.16.7"

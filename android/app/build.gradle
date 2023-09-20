@@ -178,7 +178,7 @@ dependencies {
 
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.0.0")
 
-    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.0')
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.0')
 
     implementation 'com.google.firebase:firebase-core:18.0.0'
 
