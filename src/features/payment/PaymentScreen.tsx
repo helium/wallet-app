@@ -75,6 +75,7 @@ import PaymentCard from './PaymentCard'
 import PaymentItem from './PaymentItem'
 import PaymentSubmit from './PaymentSubmit'
 import usePaymentsReducer, { MAX_PAYMENTS } from './usePaymentsReducer'
+import { useDebouncedCallback } from 'use-debounce'
 
 type LinkedPayment = {
   amount?: string
@@ -490,12 +491,12 @@ const PaymentScreen = () => {
     [dispatch],
   )
 
-  const handleDomainAddress = useCallback(
+  const handleDomainAddress = useDebouncedCallback(
     async ({ domain }: { domain: string }) => {
       if (!connection) return
       return fetchDomainOwner(connection, domain)
     },
-    [connection],
+    300,
   )
 
   const handleAddressError = useCallback(
@@ -515,7 +516,7 @@ const PaymentScreen = () => {
       let invalidAddress = false
 
       // only handle address which include dots.
-      if (address.split('.').length === 2) {
+      if (address.split('.').length === 2 && handleDomainAddress) {
         // we have to revalidate.
         handleDomainAddress({ domain: address }).then((resolvedAddress) => {
           if (resolvedAddress) {
@@ -557,7 +558,7 @@ const PaymentScreen = () => {
         Object.values(accounts || {}),
         ({ address: addr }) => addr,
       )
-      let contact = allAccounts.find((c) => c.address === address)
+      let contact = allAccounts.find((c) => c.solanaAddress === address)
       if (!contact)
         contact = { address, netType: networkType, alias: domain || '' }
 
@@ -567,6 +568,7 @@ const PaymentScreen = () => {
           address,
           new PublicKey(mint),
         )
+
       dispatch({
         type: 'updatePayee',
         index,

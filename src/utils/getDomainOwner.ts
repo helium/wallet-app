@@ -9,8 +9,8 @@ export async function fetchDomainOwner(connection: Connection, domain: string) {
     const owner = await parser.getOwnerFromDomainTld(domain)
     if (!owner) return
     return owner.toBase58()
-  } catch (e) {
+  } catch (e: any) {
     // Handle the error here if needed
-    // console.error("Error fetching domain owner:", e);
+    console.error('Error fetching domain owner:', e)
   }
 }
