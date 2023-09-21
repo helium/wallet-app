@@ -28,6 +28,8 @@ import useAlert from '@hooks/useAlert'
 import CloseButton from '@components/CloseButton'
 import { solAddressIsValid, accountNetType } from '@utils/accountUtils'
 import { heliumAddressFromSolAddress } from '@helium/spl-utils'
+import { useDebounce } from 'use-debounce'
+import { fetchDomainOwner } from '@utils/getDomainOwner'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import {
@@ -37,6 +39,7 @@ import {
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import AddressExtra from './AddressExtra'
 import { CSAccount } from '../../storage/cloudStorage'
+import { useSolana } from '../../solana/SolanaProvider'
 
 const BUTTON_HEIGHT = 55
 
@@ -62,6 +65,9 @@ const ContactDetails = ({ action, contact }: Props) => {
   const { scannedAddress, setScannedAddress } = useAppStorage()
   const spacing = useSpacing()
   const { showOKCancelAlert } = useAlert()
+  const { connection } = useSolana()
+  // debounce is needed to avoid unneccessary rpc calls
+  const [debouncedAddress] = useDebounce(address, 800)
 
   useEffect(() => {
     if (route.params?.address) {
@@ -70,6 +76,30 @@ const ContactDetails = ({ action, contact }: Props) => {
       setAddress(contact.solanaAddress)
     }
   }, [contact, route])
+
+  const handleDomainAddress = useCallback(
+    async ({ domain }: { domain: string }) => {
+      if (!connection) return
+      return fetchDomainOwner(connection, domain)
+    },
+    [connection],
+  )
+
+  useEffect(() => {
+    // only parse addresses which include dots.
+    if (debouncedAddress.split('.').length === 2) {
+      handleDomainAddress({ domain: debouncedAddress }).then(
+        (resolvedAddress) => {
+          // owner was not found so we do not set the owner address
+          if (!resolvedAddress) return
+          setAddress(resolvedAddress)
+          // if nickname was previously set we ignore setting the domain as nickname
+          if (nickname) return
+          setNickname(debouncedAddress)
+        },
+      )
+    }
+  }, [debouncedAddress, handleDomainAddress, nickname])
 
   const onRequestClose = useCallback(() => {
     homeNav.goBack()

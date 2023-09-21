@@ -3,8 +3,8 @@ import Remove from '@assets/images/remove.svg'
 import AccountIcon from '@components/AccountIcon'
 import BackgroundFill from '@components/BackgroundFill'
 import Box from '@components/Box'
-import Text from '@components/Text'
 import MemoInput from '@components/MemoInput'
+import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address from '@helium/address'
@@ -17,18 +17,14 @@ import { useColors, useOpacity } from '@theme/themeHooks'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { toUpper } from 'lodash'
-import React, {
-  memo as reactMemo,
-  useCallback,
-  useEffect,
-  useMemo,
-} from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Keyboard,
   NativeSyntheticEvent,
   TextInputEndEditingEventData,
 } from 'react-native'
+import { useDebounce } from 'use-debounce'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useBalance } from '../../utils/Balance'
 import { accountNetType, ellipsizeAddress } from '../../utils/accountUtils'
@@ -96,6 +92,8 @@ const PaymentItem = ({
   const { t } = useTranslation()
   const { secondaryText } = useColors()
   const { symbol, loading: loadingMeta } = useMetaplexMetadata(mint)
+  const [rawAddress, setRawAddress] = useState('')
+  const [debouncedAddress] = useDebounce(rawAddress, 500)
 
   const addressIsWrongNetType = useMemo(
     () =>
@@ -110,6 +108,26 @@ const PaymentItem = ({
     onUpdateError(index, addressIsWrongNetType)
   }, [index, onUpdateError, addressIsWrongNetType])
 
+  const handleEditAddress = useCallback(
+    (text?: string) => {
+      onEditAddress({ address: text || '', index })
+    },
+    [index, onEditAddress],
+  )
+
+  // Use debounced address if there's a domain, otherwise rawAddress
+  useEffect(() => {
+    if (debouncedAddress && debouncedAddress.split('.').length === 2) {
+      handleEditAddress(debouncedAddress)
+    }
+  }, [debouncedAddress, handleEditAddress])
+
+  useEffect(() => {
+    if (rawAddress.split('.').length !== 2) {
+      handleEditAddress(rawAddress)
+    }
+  }, [rawAddress, handleEditAddress])
+
   const feeAsTokens = useMemo(() => {
     if (!fee || !oraclePrice) return
 
@@ -119,6 +137,7 @@ const PaymentItem = ({
   const handleAddressBookSelected = useCallback(() => {
     Keyboard.dismiss()
     onAddressBookSelected({ index })
+    setRawAddress('')
   }, [index, onAddressBookSelected])
 
   const handleEditAmount = useCallback(() => {
@@ -131,13 +150,6 @@ const PaymentItem = ({
     onToggleMax({ address, index })
   }, [address, index, onToggleMax])
 
-  const handleEditAddress = useCallback(
-    (text?: string) => {
-      onEditAddress({ address: text || '', index })
-    },
-    [index, onEditAddress],
-  )
-
   const handleEditMemo = useCallback(
     (text?: string) => {
       if (!onEditMemo) return
@@ -149,7 +161,7 @@ const PaymentItem = ({
 
   const handleAddressBlur = useCallback(
     (event?: NativeSyntheticEvent<TextInputEndEditingEventData>) => {
-      const text = event?.nativeEvent.text
+      const text = event?.nativeEvent?.text
       handleAddressError({
         address: text || '',
         index,
@@ -207,7 +219,9 @@ const PaymentItem = ({
                   <Text />
                   <Box position="absolute" top={10} left={0}>
                     <Text marginStart="m" variant="body3" color="secondaryText">
-                      {account?.alias}
+                      {account?.alias && account?.alias.split('.').length === 2
+                        ? address && shortenAddress(address, 6)
+                        : account?.alias}
                     </Text>
                   </Box>
                   <TextInput
@@ -215,8 +229,8 @@ const PaymentItem = ({
                     flex={1}
                     textInputProps={{
                       placeholder: t('payment.enterAddress'),
-                      value: address,
-                      onChangeText: handleEditAddress,
+                      value: rawAddress || address,
+                      onChangeText: setRawAddress,
                       onEndEditing: handleAddressBlur,
                       autoCapitalize: 'none',
                       numberOfLines: 1,
@@ -330,4 +344,8 @@ const PaymentItem = ({
     </Box>
   )
 }
-export default reactMemo(PaymentItem)
+export default React.memo(PaymentItem)
+
+export const shortenAddress = (address: string, chars = 4): string => {
+  return `${address.slice(0, chars)}...${address.slice(-chars)}`
+}
