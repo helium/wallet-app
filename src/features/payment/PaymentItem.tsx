@@ -3,8 +3,8 @@ import Remove from '@assets/images/remove.svg'
 import AccountIcon from '@components/AccountIcon'
 import BackgroundFill from '@components/BackgroundFill'
 import Box from '@components/Box'
-import Text from '@components/Text'
 import MemoInput from '@components/MemoInput'
+import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address from '@helium/address'
@@ -17,13 +17,14 @@ import { useColors, useOpacity } from '@theme/themeHooks'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { toUpper } from 'lodash'
-import React, { useCallback, useEffect, useState, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Keyboard,
   NativeSyntheticEvent,
   TextInputEndEditingEventData,
 } from 'react-native'
+import { useDebounce } from 'use-debounce'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useBalance } from '../../utils/Balance'
 import { accountNetType, ellipsizeAddress } from '../../utils/accountUtils'
@@ -92,6 +93,7 @@ const PaymentItem = ({
   const { secondaryText } = useColors()
   const { symbol, loading: loadingMeta } = useMetaplexMetadata(mint)
   const [rawAddress, setRawAddress] = useState('')
+  const [debouncedAddress] = useDebounce(rawAddress, 500)
 
   const addressIsWrongNetType = useMemo(
     () =>
@@ -113,8 +115,17 @@ const PaymentItem = ({
     [index, onEditAddress],
   )
 
+  // Use debounced address if there's a domain, otherwise rawAddress
   useEffect(() => {
-    handleEditAddress(rawAddress)
+    if (debouncedAddress && debouncedAddress.split('.').length === 2) {
+      handleEditAddress(debouncedAddress)
+    }
+  }, [debouncedAddress, handleEditAddress])
+
+  useEffect(() => {
+    if (rawAddress.split('.').length !== 2) {
+      handleEditAddress(rawAddress)
+    }
   }, [rawAddress, handleEditAddress])
 
   const feeAsTokens = useMemo(() => {
@@ -209,7 +220,7 @@ const PaymentItem = ({
                   <Box position="absolute" top={10} left={0}>
                     <Text marginStart="m" variant="body3" color="secondaryText">
                       {account?.alias && account?.alias.split('.').length === 2
-                        ? address
+                        ? address && shortenAddress(address, 6)
                         : account?.alias}
                     </Text>
                   </Box>
@@ -334,3 +345,7 @@ const PaymentItem = ({
   )
 }
 export default React.memo(PaymentItem)
+
+export const shortenAddress = (address: string, chars = 4): string => {
+  return `${address.slice(0, chars)}...${address.slice(-chars)}`
+}

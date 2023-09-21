@@ -29,6 +29,7 @@ import { PublicKey } from '@solana/web3.js'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { useColors, useHitSlop } from '@theme/themeHooks'
 import { Mints } from '@utils/constants'
+import { fetchDomainOwner } from '@utils/getDomainOwner'
 import {
   calcCreateAssociatedTokenAccountAccountFee,
   humanReadable,
@@ -49,7 +50,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-simple-toast'
 import { useSelector } from 'react-redux'
-import { fetchDomainOwner } from '@utils/getDomainOwner'
+import { useDebouncedCallback } from 'use-debounce'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -75,7 +76,6 @@ import PaymentCard from './PaymentCard'
 import PaymentItem from './PaymentItem'
 import PaymentSubmit from './PaymentSubmit'
 import usePaymentsReducer, { MAX_PAYMENTS } from './usePaymentsReducer'
-import { useDebouncedCallback } from 'use-debounce'
 
 type LinkedPayment = {
   amount?: string
@@ -492,12 +492,12 @@ const PaymentScreen = () => {
     [dispatch],
   )
 
-  const handleDomainAddress = useDebouncedCallback(
+  const handleDomainAddress = useCallback(
     async ({ domain }: { domain: string }) => {
       if (!connection) return
       return fetchDomainOwner(connection, domain)
     },
-    300,
+    [connection],
   )
 
   const handleAddressError = useCallback(
@@ -517,9 +517,9 @@ const PaymentScreen = () => {
       let invalidAddress = false
 
       // only handle address which include dots.
-      if (address.split('.').length === 2 && handleDomainAddress) {
+      if (address && address.split('.').length === 2 && handleDomainAddress) {
         // we have to revalidate.
-        handleDomainAddress({ domain: address }).then((resolvedAddress) => {
+        handleDomainAddress({ domain: address })?.then((resolvedAddress) => {
           if (resolvedAddress) {
             invalidAddress =
               !!resolvedAddress && !solAddressIsValid(resolvedAddress)
