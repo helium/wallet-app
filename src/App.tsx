@@ -4,6 +4,7 @@ import { AccountContext } from '@helium/account-fetch-cache-hooks'
 import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import MapboxGL from '@rnmapbox/maps'
 import { ThemeProvider } from '@shopify/restyle'
+import { TokenListProvider } from '@storage/TokenListProvider'
 import TokensProvider from '@storage/TokensProvider'
 import globalStyles from '@theme/globalStyles'
 import { darkThemeColors, lightThemeColors, theme } from '@theme/theme'
@@ -125,12 +126,14 @@ const App = () => {
                                 ref={navigationRef}
                               >
                                 <BalanceProvider>
-                                  <TokensProvider>
-                                    <WalletSignProvider>
-                                      <NetworkAwareStatusBar />
-                                      <RootNavigator />
-                                    </WalletSignProvider>
-                                  </TokensProvider>
+                                  <TokenListProvider>
+                                    <TokensProvider>
+                                      <WalletSignProvider>
+                                        <NetworkAwareStatusBar />
+                                        <RootNavigator />
+                                      </WalletSignProvider>
+                                    </TokensProvider>
+                                  </TokenListProvider>
                                 </BalanceProvider>
                               </NavigationContainer>
                               <SecurityScreen

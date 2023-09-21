@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
-import { AnchorProvider, BN } from '@coral-xyz/anchor'
+import { AnchorProvider, BN, IdlAccounts, Program } from '@coral-xyz/anchor'
+import { getSingleton } from '@helium/account-fetch-cache'
 import * as dc from '@helium/data-credits-sdk'
 import {
   delegatedDataCreditsKey,
@@ -25,6 +26,7 @@ import {
   updateMobileMetadata,
 } from '@helium/helium-entity-manager-sdk'
 import { subDaoKey } from '@helium/helium-sub-daos-sdk'
+import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'
 import * as lz from '@helium/lazy-distributor-sdk'
 import { HotspotType } from '@helium/onboarding'
 import {
@@ -37,6 +39,7 @@ import {
   searchAssets,
   sendAndConfirmWithRetry,
   toBN,
+  truthy,
 } from '@helium/spl-utils'
 import * as tm from '@helium/treasury-management-sdk'
 import {
@@ -60,9 +63,11 @@ import {
   SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
   SPL_NOOP_PROGRAM_ID,
 } from '@solana/spl-account-compression'
+import { createMemoInstruction } from '@solana/spl-memo'
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   AccountLayout,
+  NATIVE_MINT,
   TOKEN_PROGRAM_ID,
   createAssociatedTokenAccountIdempotentInstruction,
   createAssociatedTokenAccountInstruction,
@@ -344,9 +349,10 @@ export const transferToken = async (
     secretKey: secureAcct.privateKey,
   }
 
-  const transaction = !mintAddress
-    ? await createTransferSolTxn(anchorProvider, signer, payments)
-    : await createTransferTxn(anchorProvider, signer, payments, mintAddress)
+  const transaction =
+    !mintAddress || mintAddress === NATIVE_MINT.toBase58()
+      ? await createTransferSolTxn(anchorProvider, signer, payments)
+      : await createTransferTxn(anchorProvider, signer, payments, mintAddress)
 
   return transaction
 }
@@ -654,6 +660,7 @@ export const delegateDataCredits = async (
   delegateAddress: string,
   amount: number,
   mint: PublicKey,
+  memo?: string,
 ) => {
   try {
     const { connection } = anchorProvider
@@ -662,22 +669,36 @@ export const delegateDataCredits = async (
     const program = await dc.init(anchorProvider)
     const subDao = subDaoKey(mint)[0]
 
-    const tx = await program.methods
-      .delegateDataCreditsV0({
-        amount: new BN(amount, 0),
-        routerKey: delegateAddress,
-      })
-      .accounts({
-        subDao,
-      })
-      .transaction()
+    const instructions: TransactionInstruction[] = []
+
+    if (memo) {
+      instructions.push(createMemoInstruction(memo, [payer]))
+    }
+
+    instructions.push(
+      await program.methods
+        .delegateDataCreditsV0({
+          amount: new BN(amount, 0),
+          routerKey: delegateAddress,
+        })
+        .accounts({
+          subDao,
+        })
+        .instruction(),
+    )
 
     const { blockhash } = await connection.getLatestBlockhash()
 
-    tx.recentBlockhash = blockhash
-    tx.feePayer = payer
+    const transaction = new Transaction()
 
-    return tx
+    instructions.forEach((instruction) => {
+      transaction.add(instruction)
+    })
+
+    transaction.recentBlockhash = blockhash
+    transaction.feePayer = payer
+
+    return transaction
   } catch (e) {
     Logger.error(e)
     throw e as Error
@@ -1086,6 +1107,29 @@ export async function exists(
   return Boolean(await connection.getAccountInfo(account))
 }
 
+export async function getCachedKeyToAssets(
+  hemProgram: Program<HeliumEntityManager>,
+  keyToAssets: PublicKey[],
+) {
+  const cache = await getSingleton(hemProgram.provider.connection)
+  return (
+    await cache.searchMultiple(
+      keyToAssets,
+      (pubkey, account) => ({
+        pubkey,
+        account,
+        info: hemProgram.coder.accounts.decode<
+          IdlAccounts<HeliumEntityManager>['keyToAssetV0']
+        >('KeyToAssetV0', account.data),
+      }),
+      true,
+      false,
+    )
+  )
+    .map((kta) => kta?.info)
+    .filter(truthy)
+}
+
 export async function annotateWithPendingRewards(
   provider: AnchorProvider,
   hotspots: CompressedNFT[],
@@ -1096,9 +1140,7 @@ export async function annotateWithPendingRewards(
   const keyToAssets = hotspots.map((h) =>
     keyToAssetForAsset(toAsset(h as CompressedNFT)),
   )
-  const ktaAccs = await Promise.all(
-    keyToAssets.map((kta) => hemProgram.account.keyToAssetV0.fetch(kta)),
-  )
+  const ktaAccs = await getCachedKeyToAssets(hemProgram, keyToAssets)
   const entityKeys = ktaAccs.map(
     (kta) =>
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -1708,6 +1750,10 @@ export function toAsset(hotspot: CompressedNFT): Asset {
   return {
     ...hotspot,
     id: new PublicKey(hotspot.id),
+    creators: hotspot.creators.map((c) => ({
+      ...c,
+      address: new PublicKey(c.address),
+    })),
     grouping:
       hotspot.grouping &&
       hotspot.grouping.map((g) => ({

@@ -99,30 +99,36 @@ const useSolanaHook = () => {
       missingRefetchDelay: 60 * 1000,
       extendConnection: true,
     })
-    const oldGetAccountinfoAndContext =
-      connection.getAccountInfoAndContext.bind(connection)
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    if (!connection.wrapped) {
+      const oldGetAccountinfoAndContext =
+        connection.getAccountInfoAndContext.bind(connection)
 
-    // Anchor uses this call on .fetch and .fetchNullable even though it doesn't actually need the context. Add caching.
-    connection.getAccountInfoAndContext = async (
-      publicKey: PublicKey,
-      com?: Commitment,
-    ): Promise<RpcResponseAndContext<AccountInfo<Buffer> | null>> => {
-      if (
-        (com || connection.commitment) === 'confirmed' ||
-        typeof (com || connection.commitment) === 'undefined'
-      ) {
-        const [result, dispose] = await c.searchAndWatch(publicKey)
-        setTimeout(dispose, 30 * 1000) // cache for 30s
-        return {
-          value: result?.account || null,
-          context: {
-            slot: 0,
-          },
+      // Anchor uses this call on .fetch and .fetchNullable even though it doesn't actually need the context. Add caching.
+      connection.getAccountInfoAndContext = async (
+        publicKey: PublicKey,
+        com?: Commitment,
+      ): Promise<RpcResponseAndContext<AccountInfo<Buffer> | null>> => {
+        if (
+          (com || connection.commitment) === 'confirmed' ||
+          typeof (com || connection.commitment) === 'undefined'
+        ) {
+          const [result, dispose] = await c.searchAndWatch(publicKey)
+          setTimeout(dispose, 30 * 1000) // cache for 30s
+          return {
+            value: result?.account || null,
+            context: {
+              slot: 0,
+            },
+          }
         }
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        return oldGetAccountinfoAndContext!(publicKey, com)
       }
-
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return oldGetAccountinfoAndContext!(publicKey, com)
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      connection.wrapped = true
     }
 
     return c

@@ -44,8 +44,13 @@ export function useSimulatedTransaction(
   const { tokenAccounts } = useBalance()
   const { connection, anchorProvider } = useSolana()
   const { t: tr } = useTranslation()
-  const { hntSolConvertTransaction, hntEstimate, hasEnoughSol } =
-    useHntSolConvert()
+  const {
+    hntSolConvertTransaction,
+    hntEstimate,
+    hasEnoughSol,
+    hasEnoughHNTForSol,
+    hntEstimateLoading,
+  } = useHntSolConvert()
 
   const [simulationError, setSimulationError] = useState(false)
   const [insufficientFunds, setInsufficientFunds] = useState(false)
@@ -117,43 +122,6 @@ export function useSimulatedTransaction(
     [connection, transaction],
   )
 
-  const {
-    result: simulationAccounts,
-    loading: loadingAccounts,
-    // error: getAccountsErr,
-  } = useAsync(async () => {
-    if (!connection || !transaction) return []
-
-    const addressLookupTableAccounts: Array<AddressLookupTableAccount> = []
-    const { addressTableLookups } = transaction.message
-    if (addressTableLookups.length > 0) {
-      // eslint-disable-next-line no-restricted-syntax
-      for (const addressTableLookup of addressTableLookups) {
-        // eslint-disable-next-line no-await-in-loop
-        const result = await connection?.getAddressLookupTable(
-          addressTableLookup.accountKey,
-        )
-        if (result?.value) {
-          addressLookupTableAccounts.push(result?.value)
-        }
-      }
-    }
-    const accountKeys = transaction.message.getAccountKeys({
-      addressLookupTableAccounts,
-    })
-
-    return [
-      ...new Set(
-        accountKeys.staticAccountKeys.concat(
-          accountKeys.accountKeysFromLookups
-            ? // Only writable accounts will contribute to balance changes
-              accountKeys.accountKeysFromLookups.writable
-            : [],
-        ),
-      ),
-    ]
-  }, [transaction, connection])
-
   const { loading: loadingBal, result: estimatedBalanceChanges } =
     useAsync(async () => {
       if (
@@ -161,8 +129,8 @@ export function useSimulatedTransaction(
         !transaction ||
         !anchorProvider ||
         !wallet ||
-        !simulationAccounts ||
-        !tokenAccounts
+        !tokenAccounts ||
+        hntEstimateLoading
       )
         return undefined
 
@@ -170,6 +138,34 @@ export function useSimulatedTransaction(
       setInsufficientFunds(false)
 
       try {
+        const addressLookupTableAccounts: Array<AddressLookupTableAccount> = []
+        const { addressTableLookups } = transaction.message
+        if (addressTableLookups.length > 0) {
+          // eslint-disable-next-line no-restricted-syntax
+          for (const addressTableLookup of addressTableLookups) {
+            // eslint-disable-next-line no-await-in-loop
+            const result = await connection?.getAddressLookupTable(
+              addressTableLookup.accountKey,
+            )
+            if (result?.value) {
+              addressLookupTableAccounts.push(result?.value)
+            }
+          }
+        }
+        const accountKeys = transaction.message.getAccountKeys({
+          addressLookupTableAccounts,
+        })
+
+        const simulationAccounts = [
+          ...new Set(
+            accountKeys.staticAccountKeys.concat(
+              accountKeys.accountKeysFromLookups
+                ? // Only writable accounts will contribute to balance changes
+                  accountKeys.accountKeysFromLookups.writable
+                : [],
+            ),
+          ),
+        ]
         const { blockhash } = await connection?.getLatestBlockhash()
         transaction.message.recentBlockhash = blockhash
         const result = await connection?.simulateTransaction(transaction, {
@@ -184,7 +180,7 @@ export function useSimulatedTransaction(
           console.warn('failed to simulate', result?.value.err)
           console.warn(result?.value.logs?.join('\n'))
           if (JSON.stringify(result?.value.err).includes('{"Custom":1}')) {
-            if (!hasEnoughSol) {
+            if (!hasEnoughSol && hasEnoughHNTForSol) {
               await showHNTConversionAlert()
             }
             setInsufficientFunds(true)
@@ -306,7 +302,9 @@ export function useSimulatedTransaction(
                       nativeChange: Math.abs(toNumber(nativeChange, decimals)),
                       decimals,
                       mint: tokenMint,
-                      symbol: tokenMetadata?.symbol,
+                      symbol: tokenMint.equals(NATIVE_MINT)
+                        ? 'SOL'
+                        : tokenMetadata?.symbol,
                       type,
                     } as BalanceChange
                   }
@@ -328,17 +326,18 @@ export function useSimulatedTransaction(
         return undefined
       }
     }, [
-      simulationAccounts,
       connection,
       transaction,
       tokenAccounts,
       hasEnoughSol,
+      hasEnoughHNTForSol,
       anchorProvider,
       wallet,
+      hntEstimateLoading,
     ])
 
   return {
-    loading: loadingBal || loadingAccounts || loadingFee,
+    loading: loadingBal || loadingFee,
     simulationError,
     insufficientFunds,
     balanceChanges: estimatedBalanceChanges,

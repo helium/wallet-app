@@ -30,6 +30,8 @@ const PaymentQrScanner = () => {
           isDelegate: true,
           address: delegate.address,
           amount: delegate.amount,
+          memo: delegate.memo,
+          mint: delegate.mint,
         })
       } else {
         await showOKAlert({

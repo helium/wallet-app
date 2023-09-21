@@ -116,7 +116,8 @@ const PaymentScreen = () => {
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
   const { oraclePrice } = useBalance()
   const { visibleTokens } = useVisibleTokens()
-  const [mint, setMint] = useState<PublicKey>(HNT_MINT)
+  const inputMint = usePublicKey(route.params?.mint)
+  const [mint, setMint] = useState<PublicKey>(inputMint || HNT_MINT)
   const {
     currentAccount,
     currentNetworkAddress,

@@ -40,13 +40,15 @@ export function useHntSolConvert() {
     }
   }, [baseUrl])
 
+  const hasEnoughHNTForSol = useMemo(() => {
+    if (!hntBalance || !hntEstimate) return false
+
+    return hntBalance.gt(hntEstimate)
+  }, [hntBalance, hntEstimate])
+
   const hasEnoughSol = useMemo(() => {
-    if (!hntBalance || !hntEstimate) return true
-
-    if (hntBalance.lt(hntEstimate)) return true
-
     return (solBalance || new BN(0)).gt(new BN(0.02 * LAMPORTS_PER_SOL))
-  }, [hntBalance, solBalance, hntEstimate])
+  }, [solBalance])
 
   const {
     result: hntSolConvertTransaction,
@@ -76,5 +78,6 @@ export function useHntSolConvert() {
     hntEstimateLoading,
     hntEstimateError,
     hasEnoughSol,
+    hasEnoughHNTForSol,
   }
 }

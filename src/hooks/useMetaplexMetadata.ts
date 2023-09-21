@@ -1,6 +1,7 @@
 import { TypedAccountParser } from '@helium/account-fetch-cache'
 import { useAccount } from '@helium/account-fetch-cache-hooks'
 import {
+  JsonMetadata,
   Metadata,
   parseMetadataAccount,
   sol,
@@ -8,8 +9,11 @@ import {
 } from '@metaplex-foundation/js'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { AccountInfo, PublicKey } from '@solana/web3.js'
+import axios from 'axios'
 import { useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
+import { TokenInfo } from '@solana/spl-token-registry'
+import { useTokenList } from './useTokenList'
 
 const MPL_PID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s')
 
@@ -19,7 +23,11 @@ const cache: Record<string, Promise<any>> = {}
 export function getMetadata(uri: string | undefined): Promise<any | undefined> {
   if (uri) {
     if (!cache[uri]) {
-      cache[uri] = fetch(uri).then((res) => res.json())
+      cache[uri] = axios
+        .get(uri, {
+          timeout: 3000,
+        })
+        .then((res) => res)
     }
     return cache[uri]
   }
@@ -47,6 +55,22 @@ export function getMetadataId(mint: PublicKey): PublicKey {
   )[0]
 }
 
+export const tokenInfoToMetadata = (
+  tokenInfo: TokenInfo | null | undefined,
+): JsonMetadata | undefined => {
+  if (!tokenInfo) return undefined
+
+  return {
+    json: {
+      name: tokenInfo.name,
+      symbol: tokenInfo.symbol,
+      image: tokenInfo.logoURI,
+    },
+    symbol: tokenInfo.symbol,
+    name: tokenInfo.name,
+  }
+}
+
 export function useMetaplexMetadata(mint: PublicKey | undefined): {
   loading: boolean
   metadata: Metadata | undefined
@@ -55,6 +79,14 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
   symbol: string | undefined
   name: string | undefined
 } {
+  const tokenList = useTokenList()
+  const tokenListToken = useMemo(() => {
+    if (mint) {
+      return tokenList?.get(mint.toBase58())
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tokenList, mint?.toBase58()])
+
   const metadataAddr = useMemo(() => {
     if (mint) {
       return getMetadataId(mint)
@@ -67,6 +99,7 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
     METADATA_PARSER,
     true,
   )
+
   const { result: json, loading: jsonLoading } = useAsync(getMetadata, [
     metadataAcc?.uri,
   ])
@@ -88,9 +121,11 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
 
   return {
     loading: jsonLoading || loading,
-    json,
+    json: tokenListToken
+      ? tokenInfoToMetadata(tokenListToken)?.json
+      : json?.data,
     metadata: metadataAcc,
-    symbol: json?.symbol || metadataAcc?.symbol,
-    name: json?.name || metadataAcc?.name,
+    symbol: tokenListToken?.symbol || json?.data.symbol || metadataAcc?.symbol,
+    name: tokenListToken?.name || json?.data.name || metadataAcc?.name,
   }
 }

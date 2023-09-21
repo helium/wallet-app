@@ -274,7 +274,11 @@ export const claimRewards = createAsyncThunk(
     { dispatch },
   ) => {
     try {
-      const signatures = await bulkSendTransactions(anchorProvider, txns)
+      const signed = await anchorProvider.wallet.signAllTransactions(txns)
+      const signatures = await bulkSendRawTransactions(
+        anchorProvider.connection,
+        signed.map((s) => s.serialize()),
+      )
 
       postPayment({ signatures, cluster })
 
@@ -365,10 +369,9 @@ export const claimAllRewards = createAsyncThunk(
             const keyToAssets = chunk.map((h) =>
               keyToAssetForAsset(solUtils.toAsset(h)),
             )
-            const ktaAccs = await Promise.all(
-              keyToAssets.map((kta) =>
-                hemProgram.account.keyToAssetV0.fetch(kta),
-              ),
+            const ktaAccs = await solUtils.getCachedKeyToAssets(
+              hemProgram,
+              keyToAssets,
             )
             const entityKeys = ktaAccs.map(
               (kta) =>
