@@ -78,15 +78,20 @@ const useBalanceHook = () => {
     if (!anchorProvider) {
       return
     }
+
     const oraclePriceRaw = await getOraclePrice({
       tokenType: 'HNT',
       cluster,
       connection: anchorProvider.connection,
     })
-    return new BN(
-      (oraclePriceRaw.emaPrice.value - oraclePriceRaw.emaConfidence.value * 2) *
-        100000,
-    )
+
+    return oraclePriceRaw
+      ? new BN(
+          (oraclePriceRaw.emaPrice.value -
+            oraclePriceRaw.emaConfidence.value * 2) *
+            100000,
+        )
+      : new BN(0)
   }, [cluster, anchorProvider?.connection])
 
   const solanaPrice = useMemo(() => {
