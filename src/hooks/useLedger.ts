@@ -6,6 +6,7 @@ import { last } from 'lodash'
 import { useTranslation } from 'react-i18next'
 import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
 import { solAddressToHelium } from '@utils/accountUtils'
+import { useSolana } from 'solana/SolanaProvider'
 import { LedgerDevice } from '../storage/cloudStorage'
 import { runDerivationScheme } from '../utils/heliumLedger'
 
@@ -27,6 +28,7 @@ const useLedger = () => {
   const [ledgerAccounts, setLedgerAccounts] = useState<LedgerAccount[]>([])
   const [ledgerAccountsLoading, setLedgerAccountsLoading] = useState(false)
   const { t } = useTranslation()
+  const { anchorProvider } = useSolana()
 
   const openSolanaApp = useCallback(
     async (trans: TransportBLE | TransportHID) => {
@@ -84,7 +86,12 @@ const useLedger = () => {
         runDerivationScheme(accountIndex),
         display,
       )
-      const balance = 0
+      let balance = 0
+      try {
+        balance = await anchorProvider?.connection.getBalance(address)
+      } catch {
+        // ignore
+      }
       return {
         address: solAddressToHelium(bs58.encode(address)),
         balance,
@@ -93,11 +100,11 @@ const useLedger = () => {
         solanaAddress: bs58.encode(address),
       } as LedgerAccount
     },
-    [t],
+    [anchorProvider?.connection, t],
   )
 
   const getLedgerAccounts = useCallback(
-    async (helium: AppSolana, accounts: LedgerAccount[]): Promise<void> => {
+    async (solana: AppSolana, accounts: LedgerAccount[]): Promise<void> => {
       let index = 0
       const prevAcct = last(accounts)
       if (prevAcct) {
@@ -105,13 +112,13 @@ const useLedger = () => {
       }
       if (index >= 256) return
 
-      const acct = await getLedgerAcct(helium, index, false)
+      const acct = await getLedgerAcct(solana, index, false)
       const next = [...accounts, acct]
       setLedgerAccounts(next)
 
       if (!acct.balance) return
 
-      return getLedgerAccounts(helium, next)
+      return getLedgerAccounts(solana, next)
     },
     [getLedgerAcct],
   )

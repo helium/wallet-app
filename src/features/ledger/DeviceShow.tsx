@@ -157,7 +157,7 @@ const DeviceShow = () => {
         >
           <Ledger width={62} height={62} color={colors.primaryText} />
           <Box marginHorizontal="m">
-            <ArrowRight />
+            <ArrowRight color="white" />
           </Box>
           <Image source={require('@assets/images/fingerprintGreen.png')} />
         </Box>
