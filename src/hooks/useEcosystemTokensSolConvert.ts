@@ -19,9 +19,9 @@ export const useEecosystemTokenSolConvert = () => {
   const iotBalance = useBN(useOwnedAmount(wallet, IOT_MINT).amount)
 
   const baseUrl = useMemo(() => {
-    let url = Config.HNT_TO_RENT_SERVICE_DEVNET_URL
+    let url = Config.TOKENS_TO_RENT_SERVICE_DEVNET_URL
     if (cluster === 'mainnet-beta') {
-      url = Config.HNT_TO_RENT_SERVICE_URL
+      url = Config.TOKENS_TO_RENT_SERVICE_URL
     }
 
     return url
