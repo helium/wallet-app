@@ -133,17 +133,17 @@ const App = () => {
                                 <BalanceProvider>
                                   <TokenListProvider>
                                     <TokensProvider>
-                                      <WalletSignProvider>
-                                        <JupiterProvider>
-                                          <ModalProvider>
+                                      <ModalProvider>
+                                        <WalletSignProvider>
+                                          <JupiterProvider>
                                             <NetworkAwareStatusBar />
                                             <RootNavigator />
 
                                             {/* place app specific modals here */}
                                             <InsufficientSolConversionModal />
-                                          </ModalProvider>
-                                        </JupiterProvider>
-                                      </WalletSignProvider>
+                                          </JupiterProvider>
+                                        </WalletSignProvider>
+                                      </ModalProvider>
                                     </TokensProvider>
                                   </TokenListProvider>
                                 </BalanceProvider>

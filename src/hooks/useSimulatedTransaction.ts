@@ -151,8 +151,20 @@ export function useSimulatedTransaction(
             !hasEnoughSol ||
             JSON.stringify(result?.value.err).includes('{"Custom":1}')
           ) {
-            if (!hasEnoughSol) showModal('InsufficientSolConversion')
-            setInsufficientFunds(true)
+            if (!hasEnoughSol) {
+              showModal({
+                type: 'InsufficientSolConversion',
+                onCancel: async () => {
+                  setInsufficientFunds(true)
+                },
+                onSuccess: async () => {
+                  setInsufficientFunds(false)
+                  setSimulationError(false)
+                },
+              })
+            } else {
+              setInsufficientFunds(true)
+            }
           }
           setSimulationError(true)
           return undefined

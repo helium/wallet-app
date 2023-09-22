@@ -6,77 +6,41 @@ import CircleLoader from '@components/CircleLoader'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import RewardItem from '@components/RewardItem'
 import Text from '@components/Text'
-import {
-  IOT_MINT,
-  MOBILE_MINT,
-  sendAndConfirmWithRetry,
-  toNumber,
-} from '@helium/spl-utils'
-import useAlert from '@hooks/useAlert'
-import { useHntSolConvert } from '@hooks/useHntSolConvert'
+import { useSolOwnedAmount } from '@helium/helium-react-hooks'
+import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import { useBN } from '@hooks/useBN'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import useHotspots from '@hooks/useHotspots'
 import useSubmitTxn from '@hooks/useSubmitTxn'
 import { useNavigation } from '@react-navigation/native'
+import { useModal } from '@storage/ModalsProvider'
 import { IOT_LAZY_KEY, MOBILE_LAZY_KEY } from '@utils/constants'
 import BN from 'bn.js'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSolana } from '../../solana/SolanaProvider'
+import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 import { BalanceChange } from '../../solana/walletSignBottomSheetTypes'
 import { CollectableNavigationProp } from './collectablesTypes'
 
 const ClaimAllRewardsScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<CollectableNavigationProp>()
-  const [redeeming, setRedeeming] = useState(false)
-  const [claimError, setClaimError] = useState<string | undefined>()
+  const wallet = useCurrentWallet()
   const { submitClaimAllRewards } = useSubmitTxn()
-  const {
-    hntEstimateLoading,
-    hntSolConvertTransaction,
-    hntEstimate,
-    hasEnoughSol,
-  } = useHntSolConvert()
-  const { showOKCancelAlert } = useAlert()
-  const { anchorProvider } = useSolana()
-  const showHNTConversionAlert = useCallback(async () => {
-    if (!anchorProvider || !hntSolConvertTransaction) return false
-
-    const decision = await showOKCancelAlert({
-      title: t('browserScreen.insufficientSolToPayForFees'),
-      message: t('browserScreen.wouldYouLikeToConvert', {
-        amount: toNumber(hntEstimate || 0, 8),
-        ticker: 'HNT',
-      }),
-    })
-
-    if (!decision) return false
-    const signed = await anchorProvider.wallet.signTransaction(
-      hntSolConvertTransaction,
-    )
-    await sendAndConfirmWithRetry(
-      anchorProvider.connection,
-      signed.serialize(),
-      {
-        skipPreflight: true,
-      },
-      'confirmed',
-    )
-    return true
-  }, [
-    anchorProvider,
-    hntSolConvertTransaction,
-    showOKCancelAlert,
-    t,
-    hntEstimate,
-  ])
-
+  const { showModal } = useModal()
+  const solBalance = useBN(useSolOwnedAmount(wallet).amount)
+  const hasEnoughSol = useMemo(() => {
+    return (solBalance || new BN(0)).gt(new BN(0.02 * LAMPORTS_PER_SOL))
+  }, [solBalance])
   const {
     hotspots,
     hotspotsWithMeta,
     pendingIotRewards,
     pendingMobileRewards,
   } = useHotspots()
+
+  const [redeeming, setRedeeming] = useState(false)
+  const [claimError, setClaimError] = useState<string | undefined>()
 
   const title = useMemo(() => {
     return t('collectablesScreen.hotspots.claimAllRewards')
@@ -92,40 +56,46 @@ const ClaimAllRewardsScreen = () => {
     try {
       setClaimError(undefined)
       setRedeeming(true)
-      if (!hasEnoughSol) {
-        const success = await showHNTConversionAlert()
-        if (!success) {
-          setRedeeming(false)
-          return
+      const claim = async () => {
+        const balanceChanges: BalanceChange[] = []
+
+        if (pendingIotRewards) {
+          balanceChanges.push({
+            ticker: 'IOT',
+            amount: toNumber(pendingIotRewards, 6),
+            type: 'receive',
+          })
         }
+
+        if (pendingMobileRewards) {
+          balanceChanges.push({
+            ticker: 'MOBILE',
+            amount: toNumber(pendingMobileRewards, 6),
+            type: 'receive',
+          })
+        }
+
+        await submitClaimAllRewards(
+          [IOT_LAZY_KEY, MOBILE_LAZY_KEY],
+          hotspotsWithMeta,
+        )
+
+        navigation.replace('ClaimingRewardsScreen')
+
+        setRedeeming(false)
       }
 
-      const balanceChanges: BalanceChange[] = []
-
-      if (pendingIotRewards) {
-        balanceChanges.push({
-          ticker: 'IOT',
-          amount: toNumber(pendingIotRewards, 6),
-          type: 'receive',
+      if (!hasEnoughSol) {
+        showModal({
+          type: 'InsufficientSolConversion',
+          onCancel: async () => {
+            setRedeeming(false)
+          },
+          onSuccess: claim,
         })
+      } else {
+        await claim()
       }
-
-      if (pendingMobileRewards) {
-        balanceChanges.push({
-          ticker: 'MOBILE',
-          amount: toNumber(pendingMobileRewards, 6),
-          type: 'receive',
-        })
-      }
-
-      await submitClaimAllRewards(
-        [IOT_LAZY_KEY, MOBILE_LAZY_KEY],
-        hotspotsWithMeta,
-      )
-
-      navigation.replace('ClaimingRewardsScreen')
-
-      setRedeeming(false)
     } catch (e) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setClaimError((e as any)?.response?.data?.error || (e as Error)?.message)
@@ -138,7 +108,7 @@ const ClaimAllRewardsScreen = () => {
     submitClaimAllRewards,
     hotspotsWithMeta,
     navigation,
-    showHNTConversionAlert,
+    showModal,
   ])
 
   const addAllToAccountDisabled = useMemo(() => {
@@ -217,9 +187,7 @@ const ClaimAllRewardsScreen = () => {
             titleColor="black"
             marginHorizontal="l"
             onPress={onClaimRewards}
-            disabled={
-              addAllToAccountDisabled || redeeming || hntEstimateLoading
-            }
+            disabled={addAllToAccountDisabled || redeeming}
             TrailingComponent={
               redeeming ? (
                 <CircleLoader loaderSize={20} color="white" />

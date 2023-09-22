@@ -36,7 +36,7 @@ import * as Logger from '../../utils/logger'
 const InsufficientSolConversionModal: FC = () => {
   const { t } = useTranslation()
   const { anchorProvider } = useSolana()
-  const { hideModal } = useModal()
+  const { hideModal, onCancel, onSuccess } = useModal()
   const edges = useMemo(() => ['top', 'bottom'] as Edge[], [])
   const [inputMint, setInputMint] = useState<PublicKey | undefined>()
   const { symbol } = useMetaplexMetadata(inputMint)
@@ -123,13 +123,20 @@ const InsufficientSolConversionModal: FC = () => {
         },
         'confirmed',
       )
+
       hideModal()
+      if (onSuccess) await onSuccess()
     } catch (error) {
       setSwapping(false)
       Logger.error(error)
       setTransactionError((error as Error).message)
     }
-  }, [swapTx, hideModal, anchorProvider])
+  }, [swapTx, hideModal, onSuccess, anchorProvider])
+
+  const handleCancel = useCallback(async () => {
+    hideModal()
+    if (onCancel) await onCancel()
+  }, [onCancel, hideModal])
 
   const showError = useMemo(() => {
     if (solConvertError) return t('generic.somethingWentWrong')
@@ -265,7 +272,7 @@ const InsufficientSolConversionModal: FC = () => {
               titleColor="white"
               title={t('generic.cancel')}
               disabled={loading}
-              onPress={hideModal}
+              onPress={handleCancel}
             />
             {hasAtLeastOne && (
               <ButtonPressable
@@ -295,8 +302,8 @@ const InsufficientSolConversionModal: FC = () => {
 }
 
 export default memo(() => {
-  const { modalType } = useModal()
+  const { type } = useModal()
 
-  if (modalType !== 'InsufficientSolConversion') return null
+  if (type !== 'InsufficientSolConversion') return null
   return <InsufficientSolConversionModal />
 })

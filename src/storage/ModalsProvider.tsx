@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import React, {
   FC,
   ReactNode,
@@ -7,32 +8,39 @@ import React, {
   useCallback,
 } from 'react'
 
-export type Modals = 'InsufficientSolConversion'
+interface IModalProps {
+  type?: 'InsufficientSolConversion'
 
-export interface IModalProviderProps {
-  children: ReactNode
+  onHide?: () => Promise<void>
+  onCancel?: () => Promise<void>
+  onError?: () => Promise<void>
+  onSuccess?: () => Promise<void>
 }
 
-export interface IModalContextState {
-  modalType: undefined | Modals
-
-  showModal: (modalType: Modals) => void
+export interface IModalContextState extends IModalProps {
+  showModal: (modalProps: IModalProps) => void
   hideModal: () => void
 }
 
 const ModalContext = createContext<IModalContextState>({} as IModalContextState)
 
-const ModalProvider: FC<IModalProviderProps> = ({ children }) => {
-  const [modalType, setModalType] = useState<Modals | undefined>()
+const ModalProvider: FC<{ children: ReactNode }> = ({ children }) => {
+  const [modalProps, setModalProps] = useState<IModalProps>()
 
-  const hideModal = useCallback(() => setModalType(undefined), [setModalType])
-  const showModal = useCallback(
-    (type: Modals) => setModalType(type),
-    [setModalType],
-  )
+  const reset = useCallback(() => {
+    setModalProps(undefined)
+  }, [])
+
+  const hideModal = useCallback(() => {
+    reset()
+  }, [reset])
+
+  const showModal = useCallback((modalProps: IModalProps) => {
+    setModalProps(modalProps)
+  }, [])
 
   return (
-    <ModalContext.Provider value={{ modalType, showModal, hideModal }}>
+    <ModalContext.Provider value={{ ...modalProps, hideModal, showModal }}>
       {children}
     </ModalContext.Provider>
   )
