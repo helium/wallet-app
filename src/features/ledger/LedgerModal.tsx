@@ -70,82 +70,84 @@ const LedgerModal = forwardRef(
       handleContentLayout,
     } = useBottomSheetDynamicSnapPoints(snapPoints)
 
-    const openAppAndSign = useCallback(async () => {
-      if (
-        (!transactionBuffer && !messageBuffer) ||
-        !currentAccount?.ledgerDevice?.id ||
-        !currentAccount?.ledgerDevice?.type ||
-        currentAccount?.accountIndex === undefined
-      ) {
-        return
-      }
-
-      try {
-        setLedgerModalState('loading')
-        bottomSheetModalRef.current?.present()
-        setIsShowing(true)
-
-        let nextTransport = await getTransport(
-          currentAccount.ledgerDevice.id,
-          currentAccount.ledgerDevice.type,
-        )
-
-        if (!nextTransport) {
-          setLedgerModalState('error')
+    const openAppAndSign = useCallback(
+      async ({
+        transactionBuffer: tBuffer,
+        messageBuffer: mBuffer,
+      }: {
+        transactionBuffer?: Buffer
+        messageBuffer?: Buffer
+      }) => {
+        if (
+          (!tBuffer && !mBuffer) ||
+          !currentAccount?.ledgerDevice?.id ||
+          !currentAccount?.ledgerDevice?.type ||
+          currentAccount?.accountIndex === undefined
+        ) {
           return
         }
 
         try {
-          setLedgerModalState('openApp')
-          await openSolanaApp(nextTransport)
-        } catch {
-          // ignore
-        }
+          setLedgerModalState('loading')
+          bottomSheetModalRef.current?.present()
+          setIsShowing(true)
 
-        setLedgerModalState('sign')
+          let nextTransport = await getTransport(
+            currentAccount.ledgerDevice.id,
+            currentAccount.ledgerDevice.type,
+          )
 
-        // wait 2 seconds for user to open Solana app
-        await new Promise((resolve) => setTimeout(resolve, 2000))
+          if (!nextTransport) {
+            setLedgerModalState('error')
+            return
+          }
 
-        nextTransport = await getTransport(
-          currentAccount.ledgerDevice.id,
-          currentAccount.ledgerDevice.type,
-        )
+          try {
+            setLedgerModalState('openApp')
+            await openSolanaApp(nextTransport)
+          } catch {
+            // ignore
+          }
 
-        if (!nextTransport) {
+          setLedgerModalState('sign')
+
+          // wait 2 seconds for user to open Solana app
+          await new Promise((resolve) => setTimeout(resolve, 2000))
+
+          nextTransport = await getTransport(
+            currentAccount.ledgerDevice.id,
+            currentAccount.ledgerDevice.type,
+          )
+
+          if (!nextTransport) {
+            setLedgerModalState('error')
+            return
+          }
+
+          let signature
+
+          if (tBuffer) {
+            signature = await signLedgerTransaction(
+              nextTransport,
+              currentAccount.accountIndex,
+              tBuffer,
+            )
+          } else if (mBuffer) {
+            signature = await signLedgerMessage(
+              nextTransport,
+              currentAccount?.accountIndex,
+              mBuffer,
+            )
+          }
+
+          bottomSheetModalRef.current?.dismiss()
+          return signature
+        } catch (error) {
           setLedgerModalState('error')
-          return
         }
-
-        let signature
-
-        if (transactionBuffer) {
-          signature = await signLedgerTransaction(
-            nextTransport,
-            currentAccount.accountIndex,
-            transactionBuffer,
-          )
-        } else if (messageBuffer) {
-          signature = await signLedgerMessage(
-            nextTransport,
-            currentAccount?.accountIndex,
-            messageBuffer,
-          )
-        }
-
-        bottomSheetModalRef.current?.dismiss()
-        return signature
-      } catch (error) {
-        setLedgerModalState('error')
-      }
-    }, [
-      transactionBuffer,
-      currentAccount,
-      setIsShowing,
-      getTransport,
-      messageBuffer,
-      openSolanaApp,
-    ])
+      },
+      [currentAccount, setIsShowing, getTransport, openSolanaApp],
+    )
 
     const showLedgerModal = useCallback(
       async ({
@@ -161,7 +163,10 @@ const LedgerModal = forwardRef(
         if (message) {
           setMessageBuffer(message)
         }
-        return openAppAndSign()
+        return openAppAndSign({
+          transactionBuffer: transaction,
+          messageBuffer: message,
+        })
       },
       [openAppAndSign],
     )
@@ -212,6 +217,13 @@ const LedgerModal = forwardRef(
 
       return model
     }, [currentAccount?.ledgerDevice?.name])
+
+    const handleRetry = useCallback(() => {
+      openAppAndSign({
+        transactionBuffer,
+        messageBuffer,
+      })
+    }, [openAppAndSign, transactionBuffer, messageBuffer])
 
     return (
       <BottomSheetModalProvider>
@@ -273,7 +285,7 @@ const LedgerModal = forwardRef(
                 </>
               )}
               {ledgerModalState === 'error' && (
-                <LedgerConnectSteps onRetry={openAppAndSign} />
+                <LedgerConnectSteps onRetry={handleRetry} />
               )}
             </Box>
           </BottomSheetModal>
