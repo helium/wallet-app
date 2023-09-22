@@ -627,6 +627,8 @@ export default {
     title: 'Welcome to\nHelium Wallet',
   },
   ledger: {
+    openTheSolanaApp: 'Open the Solana app on your {{ device }}',
+    pleaseConfirmTransaction: 'Please confirm transaction on your {{ device }}',
     chooseType: {
       bluetooth: {
         title: 'Bluetooth',

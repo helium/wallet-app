@@ -246,6 +246,7 @@ const useAccountStorageHook = () => {
         address: string
         ledgerDevice?: LedgerDevice
         ledgerIndex?: number
+        solanaAddress: string
       }[],
     ) => {
       if (!accountBulk.length) return
@@ -260,6 +261,7 @@ const useAccountStorageHook = () => {
             netType: accountNetType(curr.address),
             ledgerDevice: curr.ledgerDevice,
             accountIndex,
+            solanaAddress: curr.solanaAddress,
           },
         }
       }, {})
@@ -271,7 +273,7 @@ const useAccountStorageHook = () => {
 
       setAccounts(nextAccounts)
       setCurrentAccount(
-        nextAccounts[accountBulk[accountBulk.length - 1].address],
+        nextAccounts[accountBulk[accountBulk.length - 1].solanaAddress],
       )
       await updateCloudAccounts(nextAccounts)
 
