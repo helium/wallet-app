@@ -27,9 +27,13 @@ import { signLedgerMessage, signLedgerTransaction } from '@utils/heliumLedger'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import useLedger from '@hooks/useLedger'
 import CircleLoader from '@components/CircleLoader'
+import CloseButton from '@components/CloseButton'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import LedgerConnectSteps from './LedgerConnectSteps'
 import Animation from './Animation'
 import { getDeviceAnimation } from './getDeviceAnimation'
+
+let promiseResolve: (value: Buffer | PromiseLike<Buffer>) => void
 
 export type LedgerModalRef = {
   showLedgerModal: ({
@@ -58,10 +62,10 @@ const LedgerModal = forwardRef(
     const [messageBuffer, setMessageBuffer] = useState<Buffer>()
 
     const [ledgerModalState, setLedgerModalState] = useState<
-      'loading' | 'openApp' | 'sign' | 'error'
+      'loading' | 'openApp' | 'sign' | 'enterPinCode' | 'error'
     >('loading')
 
-    const snapPoints = useMemo(() => ['25%', 'CONTENT_HEIGHT'], [])
+    const snapPoints = useMemo(() => ['40%', 'CONTENT_HEIGHT'], [])
 
     const {
       animatedHandleHeight,
@@ -92,6 +96,10 @@ const LedgerModal = forwardRef(
           bottomSheetModalRef.current?.present()
           setIsShowing(true)
 
+          const p = new Promise<Buffer>((resolve) => {
+            promiseResolve = resolve
+          })
+
           let nextTransport = await getTransport(
             currentAccount.ledgerDevice.id,
             currentAccount.ledgerDevice.type,
@@ -99,20 +107,27 @@ const LedgerModal = forwardRef(
 
           if (!nextTransport) {
             setLedgerModalState('error')
-            return
+            // eslint-disable-next-line @typescript-eslint/return-await
+            return p
           }
 
           try {
             setLedgerModalState('openApp')
             await openSolanaApp(nextTransport)
-          } catch {
-            // ignore
+            // wait 1 second ledger to open solana app
+            await new Promise((resolve) => setTimeout(resolve, 1000))
+          } catch (error) {
+            const ledgerError = error as Error
+            switch (ledgerError.message) {
+              case 'Ledger device: Locked device (0x5515)':
+                setLedgerModalState('enterPinCode')
+                return p
+              default:
+                break
+            }
           }
 
           setLedgerModalState('sign')
-
-          // wait 2 seconds for user to open Solana app
-          await new Promise((resolve) => setTimeout(resolve, 2000))
 
           nextTransport = await getTransport(
             currentAccount.ledgerDevice.id,
@@ -121,7 +136,8 @@ const LedgerModal = forwardRef(
 
           if (!nextTransport) {
             setLedgerModalState('error')
-            return
+            // eslint-disable-next-line @typescript-eslint/return-await
+            return p
           }
 
           let signature
@@ -144,6 +160,10 @@ const LedgerModal = forwardRef(
           return signature
         } catch (error) {
           setLedgerModalState('error')
+          const p = new Promise<Buffer>((resolve) => {
+            promiseResolve = resolve
+          })
+          return p
         }
       },
       [currentAccount, setIsShowing, getTransport, openSolanaApp],
@@ -218,80 +238,135 @@ const LedgerModal = forwardRef(
       return model
     }, [currentAccount?.ledgerDevice?.name])
 
-    const handleRetry = useCallback(() => {
-      openAppAndSign({
+    const handleRetry = useCallback(async () => {
+      const buffer = await openAppAndSign({
         transactionBuffer,
         messageBuffer,
       })
+
+      if (buffer) {
+        promiseResolve(buffer)
+      }
     }, [openAppAndSign, transactionBuffer, messageBuffer])
 
-    return (
-      <BottomSheetModalProvider>
-        <Box flex={1} {...boxProps}>
-          <BottomSheetModal
-            ref={bottomSheetModalRef}
-            index={0}
-            backgroundStyle={backgroundStyle}
-            backdropComponent={renderBackdrop}
-            snapPoints={animatedSnapPoints.value}
-            // onDismiss={handleModalDismiss}
-            handleIndicatorStyle={handleIndicatorStyle}
-            handleHeight={animatedHandleHeight}
-            contentHeight={animatedContentHeight}
-          >
-            <Box paddingHorizontal="l" onLayout={handleContentLayout}>
-              {ledgerModalState === 'loading' && (
-                <Box>
-                  <CircleLoader loaderSize={40} />
-                </Box>
-              )}
-              {(ledgerModalState === 'sign' ||
-                ledgerModalState === 'openApp') && (
-                <>
-                  <Box
-                    alignSelf="stretch"
-                    alignItems="center"
-                    justifyContent="center"
-                    height={150}
-                  >
-                    <Animation
-                      source={getDeviceAnimation({
-                        device: {
-                          deviceId: currentAccount?.ledgerDevice?.id || '',
-                          deviceName: currentAccount?.ledgerDevice?.name || '',
-                          modelId: deviceModelId,
-                          wired: currentAccount?.ledgerDevice?.type === 'usb',
-                        },
-                        key: ledgerModalState,
-                        theme: 'dark',
-                      })}
-                      style={
-                        deviceModelId === DeviceModelId.stax
-                          ? { height: 210 }
-                          : {}
-                      }
-                    />
-                  </Box>
-                  <Text variant="h4Medium" color="primaryText">
-                    {t(
-                      ledgerModalState === 'sign'
-                        ? 'ledger.pleaseConfirmTransaction'
-                        : 'ledger.openTheSolanaApp',
-                      {
-                        device: currentAccount?.ledgerDevice?.name,
-                      },
-                    )}
-                  </Text>
-                </>
-              )}
-              {ledgerModalState === 'error' && (
-                <LedgerConnectSteps onRetry={handleRetry} />
-              )}
+    const onDismiss = useCallback(() => {
+      bottomSheetModalRef.current?.dismiss()
+    }, [])
+
+    const LedgerMessage = useCallback(() => {
+      switch (ledgerModalState) {
+        case 'loading':
+          return null
+        case 'openApp':
+          return (
+            <Text variant="h4Medium" color="primaryText">
+              {t('ledger.openTheSolanaApp', {
+                device: currentAccount?.ledgerDevice?.name,
+              })}
+            </Text>
+          )
+        case 'sign':
+          return (
+            <Text variant="h4Medium" color="primaryText">
+              {t('ledger.pleaseConfirmTransaction', {
+                device: currentAccount?.ledgerDevice?.name,
+              })}
+            </Text>
+          )
+        case 'enterPinCode':
+          return (
+            <Box>
+              <Text variant="h4Medium" color="primaryText">
+                {t('ledger.pleaseEnterPinCode', {
+                  device: currentAccount?.ledgerDevice?.name,
+                })}
+              </Text>
+              <TouchableOpacityBox
+                marginTop="s"
+                onPress={handleRetry}
+                backgroundColor="surface"
+                padding="l"
+                borderRadius="round"
+              >
+                <Text variant="subtitle1" textAlign="center">
+                  {t('generic.tryAgain')}
+                </Text>
+              </TouchableOpacityBox>
             </Box>
-          </BottomSheetModal>
-          {children}
-        </Box>
-      </BottomSheetModalProvider>
+          )
+        case 'error':
+          return null
+        default:
+          return null
+      }
+    }, [currentAccount?.ledgerDevice?.name, handleRetry, ledgerModalState, t])
+
+    return (
+      <Box flex={1}>
+        <BottomSheetModalProvider>
+          <Box flex={1} {...boxProps}>
+            <BottomSheetModal
+              ref={bottomSheetModalRef}
+              index={0}
+              backgroundStyle={backgroundStyle}
+              backdropComponent={renderBackdrop}
+              snapPoints={animatedSnapPoints.value}
+              // onDismiss={handleModalDismiss}
+              handleIndicatorStyle={handleIndicatorStyle}
+              handleHeight={animatedHandleHeight}
+              contentHeight={animatedContentHeight}
+            >
+              <Box paddingHorizontal="l" onLayout={handleContentLayout}>
+                <Box flex={1} alignItems="flex-end">
+                  <CloseButton onPress={onDismiss} />
+                </Box>
+                {ledgerModalState === 'loading' && (
+                  <Box>
+                    <CircleLoader loaderSize={40} />
+                  </Box>
+                )}
+                {ledgerModalState !== 'loading' &&
+                  ledgerModalState !== 'error' && (
+                    <>
+                      <Box
+                        alignSelf="stretch"
+                        alignItems="center"
+                        justifyContent="center"
+                        height={150}
+                      >
+                        <Animation
+                          source={getDeviceAnimation({
+                            device: {
+                              deviceId: currentAccount?.ledgerDevice?.id ?? '',
+                              deviceName:
+                                currentAccount?.ledgerDevice?.name ?? '',
+                              modelId: deviceModelId,
+                              wired:
+                                currentAccount?.ledgerDevice?.type === 'usb' ??
+                                false,
+                            },
+                            key: ledgerModalState,
+                            theme: 'dark',
+                          })}
+                          style={
+                            deviceModelId === DeviceModelId.stax
+                              ? { height: 210 }
+                              : {}
+                          }
+                        />
+                      </Box>
+                      {LedgerMessage()}
+                    </>
+                  )}
+                {ledgerModalState === 'error' && (
+                  <LedgerConnectSteps onRetry={handleRetry} />
+                )}
+              </Box>
+            </BottomSheetModal>
+            {children}
+          </Box>
+        </BottomSheetModalProvider>
+      </Box>
     )
   },
 )
