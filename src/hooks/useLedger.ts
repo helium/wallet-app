@@ -6,7 +6,9 @@ import { last } from 'lodash'
 import { useTranslation } from 'react-i18next'
 import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
 import { solAddressToHelium } from '@utils/accountUtils'
-import { useSolana } from 'solana/SolanaProvider'
+import base58 from 'bs58'
+import { PublicKey } from '@solana/web3.js'
+import { useSolana } from '../solana/SolanaProvider'
 import { LedgerDevice } from '../storage/cloudStorage'
 import { runDerivationScheme } from '../utils/heliumLedger'
 
@@ -88,7 +90,13 @@ const useLedger = () => {
       )
       let balance = 0
       try {
-        balance = await anchorProvider?.connection.getBalance(address)
+        const balanceResponse = await anchorProvider?.connection.getBalance(
+          new PublicKey(base58.encode(address)),
+        )
+
+        if (balanceResponse) {
+          balance = balanceResponse / 10 ** 9
+        }
       } catch {
         // ignore
       }

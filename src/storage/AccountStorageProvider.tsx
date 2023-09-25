@@ -273,7 +273,7 @@ const useAccountStorageHook = () => {
 
       setAccounts(nextAccounts)
       setCurrentAccount(
-        nextAccounts[accountBulk[accountBulk.length - 1].solanaAddress],
+        nextAccounts[accountBulk[accountBulk.length - 1].address],
       )
       await updateCloudAccounts(nextAccounts)
 
