@@ -33,7 +33,7 @@ const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-      immutableCheck: { warnAfter: 500 },
+      immutableCheck: false,
     }).concat([solanaStatusApi.middleware]),
   enhancers,
 })

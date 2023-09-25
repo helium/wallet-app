@@ -1,13 +1,13 @@
-import React, { memo, useCallback, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import * as LocalAuthentication from 'expo-local-authentication'
-import useAppState from 'react-native-appstate-hook'
-import { useAsync } from 'react-async-hook'
-import { FadeIn, FadeOutDown } from 'react-native-reanimated'
+import { ReAnimatedBox } from '@components/AnimatedBox'
 import ConfirmPinView from '@components/ConfirmPinView'
 import useAlert from '@hooks/useAlert'
 import usePrevious from '@hooks/usePrevious'
-import { ReAnimatedBox } from '@components/AnimatedBox'
+import * as LocalAuthentication from 'expo-local-authentication'
+import React, { memo, useCallback, useEffect } from 'react'
+import { useAsync } from 'react-async-hook'
+import { useTranslation } from 'react-i18next'
+import useAppState from 'react-native-appstate-hook'
+import { FadeIn, FadeOutDown } from 'react-native-reanimated'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import {
@@ -98,6 +98,7 @@ const LockScreen = ({ children }: Props) => {
 
   return (
     <>
+      {children}
       {!!locked && (
         <ReAnimatedBox
           entering={FadeIn}
@@ -119,7 +120,6 @@ const LockScreen = ({ children }: Props) => {
           />
         </ReAnimatedBox>
       )}
-      {children}
     </>
   )
 }

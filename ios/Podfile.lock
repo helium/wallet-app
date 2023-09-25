@@ -499,7 +499,7 @@ PODS:
     - Turf
   - RNOS (1.2.6):
     - React
-  - RNPermissions (3.9.0):
+  - RNPermissions (3.9.2):
     - React-Core
   - RNReactNativeSharedGroupPreferences (1.1.23):
     - React
@@ -866,9 +866,9 @@ SPEC CHECKSUMS:
   FBLazyVector: f1897022b53abf1469d6ad692ee2c69f57d967f3
   FBReactNativeSpec: 627fd07f1b9d498c9fa572e76d7f1a6b1ee9a444
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
+  glog: 791fe035093b84822da7f0870421a25839ca7870
   helium-react-native-sdk: 816b3d02192e23ccb4d0be21780ea7c5ed46de4e
-  hermes-engine: 0784cadad14b011580615c496f77e0ae112eed75
+  hermes-engine: 7a53ccac09146018a08239c5425625fdb79a6162
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   MapboxCommon: fdf7fd31c90b7b607cd9c63e37797f023c01d860
   MapboxCoreMaps: 24270c7c6b8cb71819fc2f3c549db9620ee4d019
@@ -876,7 +876,7 @@ SPEC CHECKSUMS:
   MapboxMobileEvents: de50b3a4de180dd129c326e09cd12c8adaaa46d6
   MultiplatformBleAdapter: 5a6a897b006764392f9cef785e4360f54fb9477d
   OneSignalXCFramework: 81ceac017a290f23793443323090cfbe888f74ea
-  RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
+  RCT-Folly: 85766c3226c7ec638f05ad7cb3cf6a268d6c4241
   RCTRequired: bd6045fbd511da5efe6db89eecb21e4e36bd7cbf
   RCTTypeSafety: c06d9f906faa69dd1c88223204c3a24767725fd8
   React: b9ea33557ef1372af247f95d110fbdea114ed3b2
@@ -930,7 +930,7 @@ SPEC CHECKSUMS:
   RNLocalize: a64514b46a01375fdfae9349036b4dc7130333b5
   rnmapbox-maps: 3553325eec9e1501942bbb28702b3a44457961d2
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
-  RNPermissions: 1d1a8318f659ffd609dd7f81de8a7ecabfb52f10
+  RNPermissions: 2af759cf053542b2b4b3c4cf9f43874796106f2c
   RNReactNativeSharedGroupPreferences: de0121a4224c267bc7e9fb16c398f3f087c8da81
   RNReanimated: cc5e3aa479cb9170bcccf8204291a6950a3be128
   RNScreens: 218801c16a2782546d30bd2026bb625c0302d70f

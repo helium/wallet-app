@@ -1,21 +1,20 @@
-import React, { memo, useMemo, useCallback, useRef, useState } from 'react'
-import QRCode from 'react-native-qrcode-svg'
 import ShareAddress from '@assets/images/shareAddress.svg'
+import BackScreen from '@components/BackScreen'
+import Box from '@components/Box'
+import CopyAddress from '@components/CopyAddress'
+import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import useCopyText from '@hooks/useCopyText'
+import useHaptic from '@hooks/useHaptic'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { Spacing } from '@theme/theme'
+import { useSpacing } from '@theme/themeHooks'
+import { ellipsizeAddress } from '@utils/accountUtils'
+import React, { memo, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Platform } from 'react-native'
+import QRCode from 'react-native-qrcode-svg'
 import Share, { ShareOptions } from 'react-native-share'
-import { Spacing } from '@theme/theme'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
-import useHaptic from '@hooks/useHaptic'
-import { useSpacing } from '@theme/themeHooks'
-import Box from '@components/Box'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import Text from '@components/Text'
-import BackScreen from '@components/BackScreen'
-import { ellipsizeAddress } from '@utils/accountUtils'
-import CopyAddress from '@components/CopyAddress'
-import TabBar from '@components/TabBar'
-import useCopyText from '@hooks/useCopyText'
 
 const QR_CONTAINER_SIZE = 225
 
@@ -30,23 +29,9 @@ const ShareAddressScreen = () => {
   }>(null)
   const copyText = useCopyText()
 
-  const tabData = useMemo((): Array<{
-    value: string
-    title: string
-  }> => {
-    return [
-      { title: 'Solana', value: 'solana' },
-      { title: 'Helium', value: 'helium' },
-    ]
-  }, [])
-
-  const [selectedOption, setSelectedOption] = useState(tabData[0].value)
-
   const address = useMemo(() => {
-    if (selectedOption === 'helium') return currentAccount?.address
-
     return currentAccount?.solanaAddress
-  }, [currentAccount, selectedOption])
+  }, [currentAccount])
 
   const handleShare = useCallback(async () => {
     if (!address) return
@@ -88,10 +73,6 @@ const ShareAddressScreen = () => {
     })
   }, [address, triggerNavHaptic])
 
-  const handleItemSelected = useCallback((value: string) => {
-    setSelectedOption(value)
-  }, [])
-
   if (!currentAccount || !address) return null
 
   return (
@@ -103,13 +84,6 @@ const ShareAddressScreen = () => {
           alignItems="center"
           marginBottom="xxxl"
         >
-          <TabBar
-            tabBarOptions={tabData}
-            selectedValue={selectedOption}
-            onItemSelected={handleItemSelected}
-            marginBottom="xxl"
-          />
-
           <Text
             variant="h2"
             color="primaryText"

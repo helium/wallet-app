@@ -355,10 +355,9 @@ export const claimAllRewards = createAsyncThunk(
             const keyToAssets = chunk.map((h) =>
               keyToAssetForAsset(solUtils.toAsset(h)),
             )
-            const ktaAccs = await Promise.all(
-              keyToAssets.map((kta) =>
-                hemProgram.account.keyToAssetV0.fetch(kta),
-              ),
+            const ktaAccs = await solUtils.getCachedKeyToAssets(
+              hemProgram,
+              keyToAssets,
             )
             const entityKeys = ktaAccs.map(
               (kta) =>

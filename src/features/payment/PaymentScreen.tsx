@@ -29,6 +29,7 @@ import { PublicKey } from '@solana/web3.js'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { useColors, useHitSlop } from '@theme/themeHooks'
 import { Mints } from '@utils/constants'
+import { fetchDomainOwner } from '@utils/getDomainOwner'
 import {
   calcCreateAssociatedTokenAccountAccountFee,
   humanReadable,
@@ -49,6 +50,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-simple-toast'
 import { useSelector } from 'react-redux'
+import { useDebouncedCallback } from 'use-debounce'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -132,7 +134,7 @@ const PaymentScreen = () => {
       return new BN(balanceBigint.toString())
     }
   }, [balanceBigint])
-  const { anchorProvider } = useSolana()
+  const { anchorProvider, connection } = useSolana()
 
   const appDispatch = useAppDispatch()
   const navigation = useNavigation<HomeNavigationProp>()
@@ -490,6 +492,14 @@ const PaymentScreen = () => {
     [dispatch],
   )
 
+  const handleDomainAddress = useCallback(
+    async ({ domain }: { domain: string }) => {
+      if (!connection) return
+      return fetchDomainOwner(connection, domain)
+    },
+    [connection],
+  )
+
   const handleAddressError = useCallback(
     ({
       index,
@@ -506,6 +516,19 @@ const PaymentScreen = () => {
       }
       let invalidAddress = false
 
+      // only handle address which include dots.
+      if (address && address.split('.').length === 2 && handleDomainAddress) {
+        // we have to revalidate.
+        handleDomainAddress({ domain: address })?.then((resolvedAddress) => {
+          if (resolvedAddress) {
+            invalidAddress =
+              !!resolvedAddress && !solAddressIsValid(resolvedAddress)
+
+            const wrongNetType = accountNetType(resolvedAddress) !== networkType
+            handleSetPaymentError(index, invalidAddress || wrongNetType)
+          }
+        })
+      }
       invalidAddress = !!address && !solAddressIsValid(address)
 
       const wrongNetType =
@@ -514,20 +537,31 @@ const PaymentScreen = () => {
         accountNetType(address) !== networkType
       handleSetPaymentError(index, invalidAddress || wrongNetType)
     },
-    [handleSetPaymentError, networkType],
+    [handleSetPaymentError, networkType, handleDomainAddress],
   )
 
   const handleEditAddress = useCallback(
     async ({ index, address }: { index: number; address: string }) => {
       if (index === undefined || !currentAccount || !anchorProvider) return
-
+      let domain
+      if (address.split('.').length === 2) {
+        const resolvedAddress =
+          (await handleDomainAddress({ domain: address })) || ''
+        if (resolvedAddress) {
+          // if the address is resolved then the domain could also be an alias/nickname of the address.
+          domain = address
+          /* eslint-disable-next-line no-param-reassign */
+          address = resolvedAddress
+        }
+      }
       const allAccounts = unionBy(
         contacts,
         Object.values(accounts || {}),
         ({ address: addr }) => addr,
       )
-      let contact = allAccounts.find((c) => c.address === address)
-      if (!contact) contact = { address, netType: networkType, alias: '' }
+      let contact = allAccounts.find((c) => c.solanaAddress === address)
+      if (!contact)
+        contact = { address, netType: networkType, alias: domain || '' }
 
       const createTokenAccountFee =
         await calcCreateAssociatedTokenAccountAccountFee(
@@ -535,6 +569,7 @@ const PaymentScreen = () => {
           address,
           new PublicKey(mint),
         )
+
       dispatch({
         type: 'updatePayee',
         index,
@@ -552,6 +587,7 @@ const PaymentScreen = () => {
       networkType,
       anchorProvider,
       mint,
+      handleDomainAddress,
     ],
   )
 
