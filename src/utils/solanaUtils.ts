@@ -1130,7 +1130,8 @@ export async function annotateWithPendingRewards(
   const keyToAssets = hotspots.map((h) =>
     keyToAssetForAsset(toAsset(h as CompressedNFT)),
   )
-  const ktaAccs = await getCachedKeyToAssets(hemProgram, keyToAssets)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ktaAccs = await getCachedKeyToAssets(hemProgram as any, keyToAssets)
   const entityKeys = ktaAccs.map(
     (kta) =>
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

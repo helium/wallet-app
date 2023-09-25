@@ -187,7 +187,6 @@ const DeviceScan = () => {
         <BottomSheetScrollView>
           <LedgerConnectSteps
             onLayout={handleContentLayout}
-            error={error}
             onRetry={handleRetry}
           />
         </BottomSheetScrollView>

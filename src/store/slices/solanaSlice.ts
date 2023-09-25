@@ -356,7 +356,8 @@ export const claimAllRewards = createAsyncThunk(
               keyToAssetForAsset(solUtils.toAsset(h)),
             )
             const ktaAccs = await solUtils.getCachedKeyToAssets(
-              hemProgram,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              hemProgram as any,
               keyToAssets,
             )
             const entityKeys = ktaAccs.map(
