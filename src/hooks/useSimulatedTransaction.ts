@@ -1,4 +1,4 @@
-import { toNumber, truthy, sendAndConfirmWithRetry } from '@helium/spl-utils'
+import { sendAndConfirmWithRetry, toNumber, truthy } from '@helium/spl-utils'
 import useAlert from '@hooks/useAlert'
 import { AccountLayout, NATIVE_MINT, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
@@ -71,7 +71,7 @@ export function useSimulatedTransaction(
     const decision = await showOKCancelAlert({
       title: tr('browserScreen.insufficientSolToPayForFees'),
       message: tr('browserScreen.wouldYouLikeToConvert', {
-        amount: hntEstimate,
+        amount: toNumber(hntEstimate || 0, 8),
         ticker: 'HNT',
       }),
     })
@@ -179,7 +179,10 @@ export function useSimulatedTransaction(
         if (result?.value.err) {
           console.warn('failed to simulate', result?.value.err)
           console.warn(result?.value.logs?.join('\n'))
-          if (JSON.stringify(result?.value.err).includes('{"Custom":1}')) {
+          if (
+            !hasEnoughSol ||
+            JSON.stringify(result?.value.err).includes('{"Custom":1}')
+          ) {
             if (!hasEnoughSol && hasEnoughHNTForSol) {
               await showHNTConversionAlert()
             }
