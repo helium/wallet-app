@@ -45,7 +45,7 @@ const ClaimAllRewardsScreen = () => {
     const decision = await showOKCancelAlert({
       title: t('browserScreen.insufficientSolToPayForFees'),
       message: t('browserScreen.wouldYouLikeToConvert', {
-        amount: hntEstimate,
+        amount: toNumber(hntEstimate || 0, 8),
         ticker: 'HNT',
       }),
     })
