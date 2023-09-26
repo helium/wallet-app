@@ -5,6 +5,7 @@ import { init as initHem } from '@helium/helium-entity-manager-sdk'
 import { init as initHsd } from '@helium/helium-sub-daos-sdk'
 import { init as initLazy } from '@helium/lazy-distributor-sdk'
 import { DC_MINT, HNT_MINT } from '@helium/spl-utils'
+import { SolanaProvider as SolanaProviderRnHelium } from '@helium/react-native-sdk'
 import {
   AccountInfo,
   Cluster,
@@ -190,7 +191,19 @@ const SolanaContext =
 const { Provider } = SolanaContext
 
 const SolanaProvider = ({ children }: { children: ReactNode }) => {
-  return <Provider value={useSolanaHook()}>{children}</Provider>
+  const value = useSolanaHook()
+  return (
+    <Provider value={value}>
+      {value.connection && (
+        <SolanaProviderRnHelium
+          rpcEndpoint={value.connection.rpcEndpoint}
+          cluster={value.cluster}
+        >
+          {children}
+        </SolanaProviderRnHelium>
+      )}
+    </Provider>
+  )
 }
 
 export const useSolana = (): SolanaManager => useContext(SolanaContext)

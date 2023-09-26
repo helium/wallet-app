@@ -123,20 +123,6 @@ type DelegateDataCreditsInput = {
   delegateDCTxn: Transaction
 }
 
-type UpdateIotInfoInput = {
-  account: CSAccount
-  anchorProvider: AnchorProvider
-  cluster: Cluster
-  updateTxn: Transaction
-}
-
-type UpdateMobileInfoInput = {
-  account: CSAccount
-  anchorProvider: AnchorProvider
-  cluster: Cluster
-  updateTxn: Transaction
-}
-
 export const makePayment = createAsyncThunk(
   'solana/makePayment',
   async ({ account, cluster, anchorProvider, paymentTxns }: PaymentInput) => {
@@ -520,38 +506,6 @@ export const getTxns = createAsyncThunk(
   },
 )
 
-export const sendUpdateIotInfo = createAsyncThunk(
-  'solana/sendUpdateIotInfo',
-  async ({ cluster, anchorProvider, updateTxn }: UpdateIotInfoInput) => {
-    try {
-      const signed = await anchorProvider.wallet.signTransaction(updateTxn)
-      const sig = await anchorProvider.sendAndConfirm(signed)
-
-      postPayment({ signatures: [sig], cluster })
-    } catch (error) {
-      Logger.error(error)
-      throw error
-    }
-    return true
-  },
-)
-
-export const sendUpdateMobileInfo = createAsyncThunk(
-  'solana/sendUpdateMobileInfo',
-  async ({ cluster, anchorProvider, updateTxn }: UpdateMobileInfoInput) => {
-    try {
-      const signed = await anchorProvider.wallet.signTransaction(updateTxn)
-      const sig = await anchorProvider.sendAndConfirm(signed)
-
-      postPayment({ signatures: [sig], cluster })
-    } catch (error) {
-      Logger.error(error)
-      throw error
-    }
-    return true
-  },
-)
-
 const solanaSlice = createSlice({
   name: 'solana',
   initialState,
@@ -840,32 +794,6 @@ const solanaSlice = createSlice({
       // Only store the error if it was a fresh load
       if (meta.arg.requestType === 'start_fresh') {
         state.activity.error = error
-      }
-    })
-    builder.addCase(sendUpdateIotInfo.rejected, (state, action) => {
-      state.payment = { success: false, loading: false, error: action.error }
-    })
-    builder.addCase(sendUpdateIotInfo.pending, (state, _action) => {
-      state.payment = { success: false, loading: true, error: undefined }
-    })
-    builder.addCase(sendUpdateIotInfo.fulfilled, (state, _action) => {
-      state.payment = {
-        success: true,
-        loading: false,
-        error: undefined,
-      }
-    })
-    builder.addCase(sendUpdateMobileInfo.rejected, (state, action) => {
-      state.payment = { success: false, loading: false, error: action.error }
-    })
-    builder.addCase(sendUpdateMobileInfo.pending, (state, _action) => {
-      state.payment = { success: false, loading: true, error: undefined }
-    })
-    builder.addCase(sendUpdateMobileInfo.fulfilled, (state, _action) => {
-      state.payment = {
-        success: true,
-        loading: false,
-        error: undefined,
       }
     })
   },

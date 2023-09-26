@@ -149,6 +149,10 @@ const HotspotList = () => {
     navigation.navigate('ClaimAllRewardsScreen')
   }, [navigation])
 
+  const handleNavigateToHotspotOnboard = useCallback(() => {
+    navigation.navigate('OnboardingNavigator')
+  }, [navigation])
+
   const toggleFiltersOpen = useCallback(
     (open) => () => {
       setFiltersOpen(open)
@@ -267,7 +271,6 @@ const HotspotList = () => {
           titleColorDisabled="secondaryText"
           title={t('collectablesScreen.hotspots.claimAllRewards')}
           titleColor="black"
-          marginBottom="m"
           disabled={
             (pendingIotRewards &&
               pendingIotRewards.eq(new BN('0')) &&
@@ -276,6 +279,20 @@ const HotspotList = () => {
             hotspotsWithMeta?.length === 0
           }
           onPress={handleNavigateToClaimRewards}
+        />
+        <ButtonPressable
+          flexGrow={1}
+          marginTop="l"
+          borderRadius="round"
+          borderWidth={2}
+          borderColor="white"
+          backgroundColor="transparent"
+          backgroundColorOpacityPressed={0.7}
+          titleColorDisabled="secondaryText"
+          title={t('collectablesScreen.hotspots.new')}
+          titleColor="white"
+          marginBottom="m"
+          onPress={handleNavigateToHotspotOnboard}
         />
       </Box>
     )
@@ -290,6 +307,7 @@ const HotspotList = () => {
     toggleFiltersOpen,
     hotspotsWithMeta,
     pageAmount,
+    handleNavigateToHotspotOnboard,
   ])
 
   const renderCollectable = useCallback(

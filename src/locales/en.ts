@@ -17,6 +17,39 @@ export default {
   errors: {
     accountNotSelected: 'There must be a wallet selected to submit a txn',
   },
+  hotspotOnboarding: {
+    scan: {
+      title: 'Scan for Hotspots',
+      start: 'Start Scan',
+      stop: 'Stop Scan',
+      notEnabled: 'Bluetooth is not enabled',
+      scanning: 'Scanning for Hotspots',
+    },
+    wifiSettings: {
+      title: 'Wifi Settings',
+      remove: 'Would you like to remove {{network}}?',
+      available: 'Available Networks',
+      configured: 'Configured Networks',
+      setup: 'Setup Wifi',
+    },
+    onboarding: {
+      title: 'Onboarding',
+      subtitle:
+        'Onboard your Hotspot to the IOT network. After onboarding this Hotspot, you will be able to set the location and antenna details.',
+      onboard: 'Onboard Hotspot',
+      hotspotNotFound:
+        'This hotspot does not exist in the onboarding server. Contact your manufacturer to have them approve hotspot with id {{onboardAddress}}',
+      makerNotFound: 'Maker does not exist',
+      manufacturerMissingSol:
+        'Manufacturer {{name}} does not have enough SOL to onboard this hotspot. Please contact the manufacturer to resolve this issue.',
+      manufacturerMissingDcOrSol:
+        'Manufacturer {{name}} does not have enough Data Credits or SOL to onboard this hotspot. Please contact the manufacturer to resolve this issue.',
+    },
+    selectOnboardingMethod: {
+      title: 'Select Onboarding Method',
+      subtitle: 'Select your onboarding method to continue.',
+    },
+  },
   accountImport: {
     accountLimit:
       'You have reached the wallet limit.\nTo add another wallet, remove a wallet account and try again.',
@@ -213,6 +246,7 @@ export default {
       hotspotCount_plural: '{{count}} Hotspots',
       chooseAmountOfHotspots: 'Choose amount of hotspots to show per page',
       filter: 'Filter',
+      new: 'Connect a Hotspot',
       currentDisplayedRewards:
         'The rewards that are currently displayed as pending are only for the hotspots shown. Scroll to load more or click the filter to show more hotspots per page.',
       showAllHotspotsWarning:
@@ -555,7 +589,9 @@ export default {
     insufficientBalance: 'Insufficient balance',
     ok: 'OK',
     period: '.',
+    password: 'Password',
     retry: 'Retry',
+    remove: 'Remove',
     share: 'Share',
     skip: 'Skip',
     success: 'Success',

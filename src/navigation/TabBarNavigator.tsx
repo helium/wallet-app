@@ -6,7 +6,7 @@ import {
 } from '@react-navigation/bottom-tabs'
 import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Dollar from '@assets/images/dollar.svg'
-import Gem from '@assets/images/gem.svg'
+import Gem from '@assets/images/collectableIcon.svg'
 import Transactions from '@assets/images/transactions.svg'
 import Notifications from '@assets/images/notifications.svg'
 import { Portal } from '@gorhom/portal'
