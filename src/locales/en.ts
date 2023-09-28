@@ -703,8 +703,8 @@ export default {
   linkWallet: {
     body: 'By Linking Helium Wallet to {{appName}}, you can safely sign blockchain transactions without re-entering your seed phrase.',
     no: 'No, Cancel',
-    testnet: {
-      message: 'Linking requires a mainnet wallet.',
+    noWallet: {
+      message: 'Please create a wallet and try again.',
       title: 'Wallets not found',
     },
     title: 'Link Helium Wallet\nto {{appName}}?',

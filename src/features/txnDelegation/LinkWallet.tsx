@@ -103,11 +103,10 @@ const LinkWallet = () => {
       : null
 
     if (!mainnetAcct) {
-      // Edgecase - They only have testnet accts
       showOKAlert({
-        title: t('linkWallet.testnet.title'),
-        message: t('linkWallet.testnet.message'),
-      }).then(handleCancel)
+        title: t('linkWallet.noWallet.title'),
+        message: t('linkWallet.noWallet.message'),
+      }).then(navigation.goBack)
       return
     }
     const defaultAccount = accounts?.[defaultAccountAddress || '']
@@ -120,6 +119,7 @@ const LinkWallet = () => {
     currentAccount,
     defaultAccountAddress,
     handleCancel,
+    navigation.goBack,
     setCurrentAccount,
     showOKAlert,
     sortedMainnetAccounts,
