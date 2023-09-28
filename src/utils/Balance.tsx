@@ -136,7 +136,7 @@ const useBalanceHook = () => {
 
     const solToken = accountBalancesForCluster?.sol
 
-    const solBalance = solToken?.balance
+    const solBalance = solToken?.balance || 0
     const solPrice = tokenPrices?.solana?.[currency] || 0
     const solValue = solPrice * (solBalance / LAMPORTS_PER_SOL)
     const formattedSolValue = await CurrencyFormatter.format(solValue, currency)
