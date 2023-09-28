@@ -425,6 +425,8 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
   )
 
   const assertData = useMemo(() => {
+    if (!transactionList.length) return
+
     let location: string | undefined
     let elevation: number | undefined
     let gain: number | undefined
