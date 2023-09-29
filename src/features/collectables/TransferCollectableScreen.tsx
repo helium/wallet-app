@@ -5,6 +5,7 @@ import {
   LogBox,
   NativeSyntheticEvent,
   TextInputEndEditingEventData,
+  KeyboardAvoidingView,
 } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
@@ -197,135 +198,146 @@ const TransferCollectableScreen = () => {
           onContactSelected={handleContactSelected}
           hideCurrentAccount
         >
-          <ScrollView>
-            <SafeAreaBox
-              edges={safeEdges}
-              backgroundColor="transparent"
-              flex={1}
-              padding="m"
-              alignItems="center"
-            >
-              {metadata && (
-                <Box
-                  shadowColor="black"
-                  shadowOpacity={0.4}
-                  shadowOffset={{ width: 0, height: 10 }}
-                  shadowRadius={10}
-                  elevation={12}
+          <KeyboardAvoidingView
+            style={{
+              flex: 1,
+              flexDirection: 'column',
+              justifyContent: 'center',
+            }}
+            behavior="padding"
+            enabled
+            keyboardVerticalOffset={100}
+          >
+            <ScrollView>
+              <SafeAreaBox
+                edges={safeEdges}
+                backgroundColor="transparent"
+                flex={1}
+                padding="m"
+                alignItems="center"
+              >
+                {metadata && (
+                  <Box
+                    shadowColor="black"
+                    shadowOpacity={0.4}
+                    shadowOffset={{ width: 0, height: 10 }}
+                    shadowRadius={10}
+                    elevation={12}
+                  >
+                    <ImageBox
+                      marginTop="l"
+                      backgroundColor={
+                        metadata.image ? 'black' : 'surfaceSecondary'
+                      }
+                      height={COLLECTABLE_HEIGHT - spacing.xl * 5}
+                      width={COLLECTABLE_HEIGHT - spacing.xl * 5}
+                      source={{
+                        uri: metadata?.image,
+                        cache: 'force-cache',
+                      }}
+                      borderRadius="xxl"
+                    />
+                  </Box>
+                )}
+                <Text
+                  marginTop="l"
+                  marginBottom="s"
+                  marginHorizontal="l"
+                  textAlign="center"
+                  variant="h1Medium"
                 >
-                  <ImageBox
-                    marginTop="l"
-                    backgroundColor={
-                      metadata.image ? 'black' : 'surfaceSecondary'
+                  {metadata.name}
+                </Text>
+                <Text variant="body3Medium" color="grey600" marginBottom="xl">
+                  {metadata.description ||
+                    t('collectablesScreen.collectables.noDescription')}
+                </Text>
+                <TextInput
+                  floatingLabel={`${t(
+                    'collectablesScreen.transferTo',
+                  )} ${recipientName}`}
+                  variant="thickBlur"
+                  marginBottom="s"
+                  height={80}
+                  width="100%"
+                  textColor="white"
+                  fontSize={15}
+                  TrailingIcon={Menu}
+                  onTrailingIconPress={handleAddressBookSelected}
+                  textInputProps={{
+                    placeholder: t('generic.solanaAddress'),
+                    placeholderTextColor: 'white',
+                    autoCorrect: false,
+                    autoComplete: 'off',
+                    onChangeText: handleEditAddress,
+                    onEndEditing: handleAddressBlur,
+                    value: recipient,
+                  }}
+                />
+                {solFee ? (
+                  <TextTransform
+                    marginHorizontal="m"
+                    variant="body3Medium"
+                    marginBottom="s"
+                    color="white"
+                    i18nKey="collectablesScreen.transferFee"
+                    values={{ amount: solFee }}
+                  />
+                ) : (
+                  <Text
+                    marginHorizontal="m"
+                    variant="body3Medium"
+                    marginBottom="s"
+                    color="secondaryText"
+                  >
+                    {t('generic.calculatingTransactionFee')}
+                  </Text>
+                )}
+                <Text
+                  opacity={
+                    hasError || hasInsufficientBalance || networkError ? 100 : 0
+                  }
+                  marginHorizontal="m"
+                  variant="body3Medium"
+                  marginBottom="l"
+                  color="red500"
+                >
+                  {showError}
+                </Text>
+                <Box flexDirection="row" marginTop="m" marginHorizontal="xl">
+                  <ButtonPressable
+                    height={65}
+                    flexGrow={1}
+                    borderRadius="round"
+                    backgroundColor="white"
+                    backgroundColorOpacityPressed={0.7}
+                    backgroundColorDisabled="surfaceSecondary"
+                    backgroundColorDisabledOpacity={0.5}
+                    titleColorDisabled="secondaryText"
+                    title={transferring ? '' : t('collectablesScreen.transfer')}
+                    disabled={!solAddressIsValid(recipient) || transferring}
+                    titleColor="black"
+                    onPress={handleTransfer}
+                    TrailingComponent={
+                      transferring ? (
+                        <CircleLoader loaderSize={20} color="white" />
+                      ) : (
+                        <ArrowRight
+                          width={16}
+                          height={15}
+                          color={
+                            !solAddressIsValid(recipient)
+                              ? colors.grey600
+                              : colors.black
+                          }
+                        />
+                      )
                     }
-                    height={COLLECTABLE_HEIGHT - spacing.xl * 5}
-                    width={COLLECTABLE_HEIGHT - spacing.xl * 5}
-                    source={{
-                      uri: metadata?.image,
-                      cache: 'force-cache',
-                    }}
-                    borderRadius="xxl"
                   />
                 </Box>
-              )}
-              <Text
-                marginTop="l"
-                marginBottom="s"
-                marginHorizontal="l"
-                textAlign="center"
-                variant="h1Medium"
-              >
-                {metadata.name}
-              </Text>
-              <Text variant="body3Medium" color="grey600" marginBottom="xl">
-                {metadata.description ||
-                  t('collectablesScreen.collectables.noDescription')}
-              </Text>
-              <TextInput
-                floatingLabel={`${t(
-                  'collectablesScreen.transferTo',
-                )} ${recipientName}`}
-                variant="thickBlur"
-                marginBottom="s"
-                height={80}
-                width="100%"
-                textColor="white"
-                fontSize={15}
-                TrailingIcon={Menu}
-                onTrailingIconPress={handleAddressBookSelected}
-                textInputProps={{
-                  placeholder: t('generic.solanaAddress'),
-                  placeholderTextColor: 'white',
-                  autoCorrect: false,
-                  autoComplete: 'off',
-                  onChangeText: handleEditAddress,
-                  onEndEditing: handleAddressBlur,
-                  value: recipient,
-                }}
-              />
-              {solFee ? (
-                <TextTransform
-                  marginHorizontal="m"
-                  variant="body3Medium"
-                  marginBottom="s"
-                  color="white"
-                  i18nKey="collectablesScreen.transferFee"
-                  values={{ amount: solFee }}
-                />
-              ) : (
-                <Text
-                  marginHorizontal="m"
-                  variant="body3Medium"
-                  marginBottom="s"
-                  color="secondaryText"
-                >
-                  {t('generic.calculatingTransactionFee')}
-                </Text>
-              )}
-              <Text
-                opacity={
-                  hasError || hasInsufficientBalance || networkError ? 100 : 0
-                }
-                marginHorizontal="m"
-                variant="body3Medium"
-                marginBottom="l"
-                color="red500"
-              >
-                {showError}
-              </Text>
-              <Box flexDirection="row" marginTop="m" marginHorizontal="xl">
-                <ButtonPressable
-                  height={65}
-                  flexGrow={1}
-                  borderRadius="round"
-                  backgroundColor="white"
-                  backgroundColorOpacityPressed={0.7}
-                  backgroundColorDisabled="surfaceSecondary"
-                  backgroundColorDisabledOpacity={0.5}
-                  titleColorDisabled="secondaryText"
-                  title={transferring ? '' : t('collectablesScreen.transfer')}
-                  disabled={!solAddressIsValid(recipient) || transferring}
-                  titleColor="black"
-                  onPress={handleTransfer}
-                  TrailingComponent={
-                    transferring ? (
-                      <CircleLoader loaderSize={20} color="white" />
-                    ) : (
-                      <ArrowRight
-                        width={16}
-                        height={15}
-                        color={
-                          !solAddressIsValid(recipient)
-                            ? colors.grey600
-                            : colors.black
-                        }
-                      />
-                    )
-                  }
-                />
-              </Box>
-            </SafeAreaBox>
-          </ScrollView>
+              </SafeAreaBox>
+            </ScrollView>
+          </KeyboardAvoidingView>
         </AddressBookSelector>
       </BackScreen>
     </ReAnimatedBox>
