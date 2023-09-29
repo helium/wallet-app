@@ -357,6 +357,10 @@ export default {
     elevationPlaceholder: 'Elevation (meters)',
     locationNotFound: 'Location not found, Please try again.',
     mobileTitle: 'MOBILE',
+    success: {
+      title: 'Succesfully Asserted Location!',
+      message: 'The location was succesfully submitted to the blockchain',
+    },
   },
   antennaSetupScreen: {
     title: 'Antenna Setup',
