@@ -1,13 +1,6 @@
 import { useMemo } from 'react'
 import { HotspotWithPendingRewards } from '../types/solana'
-
-function withOptComma(value: string | undefined) {
-  if (value) {
-    return `${value}, `
-  }
-
-  return ''
-}
+import { truthy } from '@helium/spl-utils'
 
 export function useHotspotAddress(
   hotspot: HotspotWithPendingRewards | undefined,
@@ -27,9 +20,7 @@ export function useHotspotAddress(
       const city = attributes.iot_city || attributes.mobile_city || ''
       const state = attributes.iot_state || attributes.mobile_state || ''
 
-      return `${withOptComma(street)}${withOptComma(city)}${withOptComma(
-        state,
-      )}`
+      return [street, city, state].filter(truthy).join(', ')
     }
   }, [attributes])
 }
