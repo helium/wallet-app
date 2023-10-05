@@ -1,6 +1,6 @@
+import { truthy } from '@helium/spl-utils'
 import { useMemo } from 'react'
 import { HotspotWithPendingRewards } from '../types/solana'
-import { truthy } from '@helium/spl-utils'
 
 export function useHotspotAddress(
   hotspot: HotspotWithPendingRewards | undefined,
