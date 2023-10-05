@@ -89,8 +89,8 @@ const useSolanaHook = () => {
         !currentAccount?.ledgerDevice?.type ||
         currentAccount?.accountIndex === undefined
       ) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         if (!isVersionedTransaction) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           legacyTxn.partialSign(secureAcct!)
           return transaction
         }
