@@ -1,35 +1,37 @@
-import React, { useCallback, useMemo, useState, memo } from 'react'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { ScrollView } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
-import 'text-encoding-polyfill'
-import { useTranslation } from 'react-i18next'
 import InfoIcon from '@assets/images/info.svg'
-import BN from 'bn.js'
-import SafeAreaBox from '@components/SafeAreaBox'
-import { DelayedFadeIn } from '@components/FadeInOut'
-import Box from '@components/Box'
-import ImageBox from '@components/ImageBox'
-import ButtonPressable from '@components/ButtonPressable'
-import Text from '@components/Text'
+import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
 import BlurActionSheet from '@components/BlurActionSheet'
+import Box from '@components/Box'
+import ButtonPressable from '@components/ButtonPressable'
+import { DelayedFadeIn } from '@components/FadeInOut'
+import ImageBox from '@components/ImageBox'
 import ListItem from '@components/ListItem'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import { useSpacing } from '@theme/themeHooks'
-import useHaptic from '@hooks/useHaptic'
-import useCopyText from '@hooks/useCopyText'
-import { ellipsizeAddress } from '@utils/accountUtils'
+import SafeAreaBox from '@components/SafeAreaBox'
+import Text from '@components/Text'
 import { toNumber } from '@helium/spl-utils'
+import useCopyText from '@hooks/useCopyText'
 import { useEntityKey } from '@hooks/useEntityKey'
+import useHaptic from '@hooks/useHaptic'
+import { useHotspotAddress } from '@hooks/useHotspotAddress'
 import { useIotInfo } from '@hooks/useIotInfo'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useSpacing } from '@theme/themeHooks'
+import { ellipsizeAddress } from '@utils/accountUtils'
+import BN from 'bn.js'
+import React, { memo, useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { ScrollView } from 'react-native'
+import { FadeIn } from 'react-native-reanimated'
+import { Edge } from 'react-native-safe-area-context'
+import 'text-encoding-polyfill'
+import { Mints } from '../../utils/constants'
+import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import { ww } from '../../utils/layout'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
-import { Mints } from '../../utils/constants'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotDetailsScreen'>
 const HotspotDetailsScreen = () => {
@@ -47,6 +49,7 @@ const HotspotDetailsScreen = () => {
   const { collectable } = route.params
   const entityKey = useEntityKey(collectable)
   const iotInfoAcc = useIotInfo(entityKey)
+  const streetAddress = useHotspotAddress(collectable)
 
   const pendingIotRewards =
     collectable &&
@@ -211,7 +214,19 @@ const HotspotDetailsScreen = () => {
                 }}
               />
             </Box>
-            <Box marginTop="l" marginBottom="m">
+            {streetAddress && (
+              <ReAnimatedBox entering={FadeIn}>
+                <Text variant="body1" marginTop="l" textAlign="center">
+                  {streetAddress || ' '}
+                </Text>
+              </ReAnimatedBox>
+            )}
+            {!streetAddress && (
+              <Text variant="body1" marginTop="l" textAlign="center">
+                {' '}
+              </Text>
+            )}
+            <Box marginTop="m">
               <Text variant="body1" marginBottom="ms">
                 {t('collectablesScreen.hotspots.pendingRewardsTitle')}
               </Text>

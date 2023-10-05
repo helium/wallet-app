@@ -6,6 +6,7 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useHotspotBle } from '@helium/react-native-sdk'
 import { useNavigation } from '@react-navigation/native'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert, SectionList } from 'react-native'
 import type { HotspotBleNavProp } from './navTypes'
@@ -34,12 +35,20 @@ const WifiSettings = () => {
     isConnected().then(setConnected)
   }, [isConnected])
 
-  useEffect(() => {
-    if (!connected) return
+  const { execute: handleRefresh, loading: refreshing } = useAsyncCallback(
+    async () => {
+      if (!connected) return
 
-    readWifiNetworks(true).then(setConfiguredNetworks)
-    readWifiNetworks(false).then(setNetworks)
-  }, [connected, readWifiNetworks])
+      const configured = await readWifiNetworks(true)
+      setConfiguredNetworks(configured)
+      const available = await readWifiNetworks(false)
+      setNetworks(available)
+    },
+  )
+
+  useEffect(() => {
+    handleRefresh()
+  }, [handleRefresh])
 
   const handleNetworkSelected = useCallback(
     ({
@@ -149,6 +158,8 @@ const WifiSettings = () => {
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         renderSectionHeader={renderSectionHeader}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
       />
       <ButtonPressable
         marginTop="l"

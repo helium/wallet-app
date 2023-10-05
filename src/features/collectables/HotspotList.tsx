@@ -319,7 +319,7 @@ const HotspotList = () => {
             hotspot={item}
             onPress={handleNavigateToCollectable}
             key={item.id}
-            marginBottom="xs"
+            marginBottom="s"
           />
         )
       }
