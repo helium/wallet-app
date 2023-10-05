@@ -4,12 +4,12 @@ import FabButton from '@components/FabButton'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useHotspotBle } from '@helium/react-native-sdk'
-import { useNavigation } from '@react-navigation/native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert, SectionList } from 'react-native'
-import type { HotspotBleNavProp } from './navTypes'
+import type { HotspotBLEStackParamList, HotspotBleNavProp } from './navTypes'
 
 type Section = {
   title: string
@@ -17,7 +17,12 @@ type Section = {
   type: 'configured' | 'available'
 }
 
+type Route = RouteProp<HotspotBLEStackParamList, 'WifiSettings'>
+
 const WifiSettings = () => {
+  const {
+    params: { network: networkIn },
+  } = useRoute<Route>()
   const navigation = useNavigation<HotspotBleNavProp>()
   const { t } = useTranslation()
   const navNext = useCallback(
@@ -46,9 +51,10 @@ const WifiSettings = () => {
     },
   )
 
+  // Refresh on network change or on load
   useEffect(() => {
     handleRefresh()
-  }, [handleRefresh])
+  }, [handleRefresh, networkIn])
 
   const handleNetworkSelected = useCallback(
     ({

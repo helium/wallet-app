@@ -22,10 +22,10 @@ const WifiSetup = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<HotspotBleNavProp>()
   const onBack = useCallback(() => {
-    if (navigation.canGoBack()) {
-      navigation.goBack()
-    }
-  }, [navigation])
+    navigation.navigate('WifiSettings', {
+      network,
+    })
+  }, [network, navigation])
 
   const toggleSecureEntry = useCallback(() => {
     setSecureTextEntry(!secureTextEntry)
