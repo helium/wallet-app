@@ -888,7 +888,7 @@ SPEC CHECKSUMS:
   MapboxMobileEvents: de50b3a4de180dd129c326e09cd12c8adaaa46d6
   MultiplatformBleAdapter: 5a6a897b006764392f9cef785e4360f54fb9477d
   OneSignalXCFramework: 81ceac017a290f23793443323090cfbe888f74ea
-  RCT-Folly: 85766c3226c7ec638f05ad7cb3cf6a268d6c4241
+  RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
   RCTRequired: 8ef706f91e2b643cd32c26a57700b5f24fab0585
   RCTTypeSafety: 5fbddd8eb9242b91ac0d901c01da3673f358b1b7
   React: e5d2d559e89d256a1d6da64d51adaecda9c8ddae

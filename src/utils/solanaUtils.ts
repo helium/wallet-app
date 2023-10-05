@@ -125,6 +125,12 @@ import { decimalSeparator, groupSeparator } from './i18n'
 import * as Logger from './logger'
 import sleep from './sleep'
 
+export const isVersionedTransaction = (
+  tx: Transaction | VersionedTransaction,
+): tx is VersionedTransaction => {
+  return 'version' in tx
+}
+
 export function humanReadable(
   amount?: BN,
   decimals?: number,
