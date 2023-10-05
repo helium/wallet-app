@@ -1,22 +1,23 @@
-import React, { useMemo } from 'react'
-import { FadeIn, FadeOut } from 'react-native-reanimated'
-import { BoxProps } from '@shopify/restyle'
 import IotSymbol from '@assets/images/iotSymbol.svg'
 import MobileSymbol from '@assets/images/mobileSymbol.svg'
-import BN from 'bn.js'
+import { ReAnimatedBox } from '@components/AnimatedBox'
+import Box from '@components/Box'
+import ImageBox from '@components/ImageBox'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import Box from '@components/Box'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import ImageBox from '@components/ImageBox'
-import { Theme } from '@theme/theme'
-import { formatLargeNumber, ellipsizeAddress } from '@utils/accountUtils'
-import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
-import BigNumber from 'bignumber.js'
 import { useMint } from '@helium/helium-react-hooks'
+import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import { useHotspotAddress } from '@hooks/useHotspotAddress'
+import { BoxProps } from '@shopify/restyle'
+import { Theme } from '@theme/theme'
+import { ellipsizeAddress, formatLargeNumber } from '@utils/accountUtils'
+import BigNumber from 'bignumber.js'
+import BN from 'bn.js'
+import React, { useMemo } from 'react'
+import { FadeIn, FadeOut } from 'react-native-reanimated'
+import { HotspotWithPendingRewards } from '../../types/solana'
 import { Mints } from '../../utils/constants'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
-import { HotspotWithPendingRewards } from '../../types/solana'
 
 export type HotspotListItemProps = {
   hotspot: HotspotWithPendingRewards
@@ -31,6 +32,7 @@ const HotspotListItem = ({
   const {
     content: { metadata },
   } = hotspot
+  const streetAddress = useHotspotAddress(hotspot)
 
   const { info: iotMint } = useMint(IOT_MINT)
   const { info: mobileMint } = useMint(MOBILE_MINT)
@@ -104,20 +106,31 @@ const HotspotListItem = ({
         />
         <Box marginStart="m" marginVertical="s" flex={1}>
           {metadata?.name && (
-            <Text textAlign="left" variant="subtitle2" adjustsFontSizeToFit>
+            <Text
+              textAlign="left"
+              variant="subtitle2"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
               {removeDashAndCapitalize(metadata.name)}
             </Text>
           )}
 
-          <Box flexGrow={1} />
-
-          <Box flexDirection="row" marginEnd="s" alignItems="flex-end">
-            <Text variant="subtitle3" color="secondaryText">
-              {eccCompact ? ellipsizeAddress(eccCompact) : ''}
+          {streetAddress && (
+            <Text variant="body2" numberOfLines={1} adjustsFontSizeToFit>
+              {streetAddress}
             </Text>
-          </Box>
+          )}
+          <Text
+            variant="subtitle3"
+            color="secondaryText"
+            numberOfLines={1}
+            adjustsFontSizeToFit
+          >
+            {eccCompact ? ellipsizeAddress(eccCompact) : ''}
+          </Text>
         </Box>
-        <Box marginVertical="s" marginEnd="s">
+        <Box marginVertical="s" marginHorizontal="s">
           {!!hasMobileRewards && (
             <Box
               marginBottom="s"

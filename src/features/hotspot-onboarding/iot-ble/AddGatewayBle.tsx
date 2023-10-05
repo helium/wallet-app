@@ -229,7 +229,7 @@ const AddGatewayBle = () => {
         titleColor="white"
         backgroundColor="transparent"
         title={t('generic.skip')}
-        onPress={() => tabNav.push('Collectables')}
+        onPress={() => tabNav.navigate('Collectables')}
       />
     </BackScreen>
   )
