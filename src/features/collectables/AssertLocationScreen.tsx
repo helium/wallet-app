@@ -66,15 +66,14 @@ const AssertLocationScreen = () => {
   const route = useRoute<Route>()
   const { collectable } = route.params
   const entityKey = useEntityKey(collectable)
-  const iotInfoAcc = useIotInfo(entityKey)
-  const mobileInfoAcc = useMobileInfo(entityKey)
+  const { info: iotInfoAcc } = useIotInfo(entityKey)
+  const { info: mobileInfoAcc } = useMobileInfo(entityKey)
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])
   const camera = useRef<MapboxGL.Camera>(null)
   const userLocation = useRef<MapboxGL.UserLocation>(null)
   const { showOKAlert } = useAlert()
   const [mapCenter, setMapCenter] = useState<number[]>()
-  const [initialZoomHappend, setInitialZoomHappend] = useState(false)
   const [searchVisible, setSearchVisible] = useState(false)
   const [searchValue, setSearchValue] = useState<string>()
   const [elevGainVisible, setElevGainVisible] = useState(false)
@@ -92,19 +91,18 @@ const AssertLocationScreen = () => {
   } = collectable
 
   const iotLocation = useMemo(() => {
-    if (!iotInfoAcc?.info?.location) {
+    if (!iotInfoAcc?.location) {
       return undefined
     }
-
-    return parseH3BNLocation(iotInfoAcc.info.location).reverse()
+    return parseH3BNLocation(iotInfoAcc.location).reverse()
   }, [iotInfoAcc])
 
   const mobileLocation = useMemo(() => {
-    if (!mobileInfoAcc?.info?.location) {
+    if (!mobileInfoAcc?.location) {
       return undefined
     }
 
-    return parseH3BNLocation(mobileInfoAcc.info.location).reverse()
+    return parseH3BNLocation(mobileInfoAcc.location).reverse()
   }, [mobileInfoAcc])
 
   const sameLocation = useMemo(() => {
@@ -115,18 +113,29 @@ const AssertLocationScreen = () => {
     return JSON.stringify(iotLocation) === JSON.stringify(mobileLocation)
   }, [iotLocation, mobileLocation])
 
+  const [initialUserLocation, setInitialUserLocation] = useState<number[]>()
+  useEffect(() => {
+    const coords = userLocation?.current?.state?.coordinates
+    if (!initialUserLocation && coords) {
+      setInitialUserLocation(coords)
+    }
+  }, [
+    initialUserLocation,
+    setInitialUserLocation,
+    userLocation?.current?.state?.coordinates,
+  ])
+
   const initialCenter = useMemo(() => {
     return (
-      userLocation?.current?.state.coordinates ||
+      initialUserLocation ||
       iotLocation ||
       mobileLocation || [-122.419418, 37.774929]
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userLocation?.current, iotLocation, mobileLocation])
+  }, [initialUserLocation, iotLocation, mobileLocation])
 
   useEffect(() => {
-    if (camera?.current && !initialZoomHappend) {
-      setInitialZoomHappend(true)
+    if (camera?.current) {
       const coords = [initialCenter, iotLocation, mobileLocation].filter(
         Boolean,
       ) as number[][]
@@ -148,41 +157,30 @@ const AssertLocationScreen = () => {
         console.error(error)
       }
     }
-  }, [
-    camera,
-    iotLocation,
-    initialCenter,
-    mobileLocation,
-    initialZoomHappend,
-    setInitialZoomHappend,
-  ])
+  }, [iotLocation, initialCenter, mobileLocation])
 
   useEffect(() => {
     if (!elevGainVisible) {
-      if (iotInfoAcc?.info?.gain) {
-        setGain(`${iotInfoAcc?.info?.gain / 10}`)
+      if (iotInfoAcc?.gain) {
+        setGain(`${iotInfoAcc?.gain / 10}`)
       }
 
-      if (iotInfoAcc?.info?.elevation) {
-        setElevation(`${iotInfoAcc?.info?.elevation}`)
+      if (iotInfoAcc?.elevation) {
+        setElevation(`${iotInfoAcc?.elevation}`)
       }
     }
   }, [iotInfoAcc, elevGainVisible, setGain, setElevation])
 
   const resetGain = useCallback(
     () =>
-      setGain(
-        iotInfoAcc?.info?.gain ? `${iotInfoAcc.info.gain / 10}` : undefined,
-      ),
+      setGain(iotInfoAcc?.gain ? `${iotInfoAcc.info.gain / 10}` : undefined),
     [iotInfoAcc, setGain],
   )
 
   const resetElevation = useCallback(
     () =>
       setElevation(
-        iotInfoAcc?.info?.elevation
-          ? `${iotInfoAcc.info.elevation}`
-          : undefined,
+        iotInfoAcc?.elevation ? `${iotInfoAcc.info.elevation}` : undefined,
       ),
     [iotInfoAcc, setElevation],
   )

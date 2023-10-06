@@ -472,7 +472,11 @@ export default () => {
         // Onboarding record isn't actually used or needed, but if we don't
         // do this, the sdk will throw an error
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onboardingRecord: {} as any,
+        onboardingRecord: {
+          maker: {
+            address: currentAccount.address,
+          },
+        } as any,
       })
 
       const serializedTxs = data.solanaTransactions?.map((txn) =>
