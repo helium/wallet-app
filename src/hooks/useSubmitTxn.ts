@@ -469,6 +469,10 @@ export default () => {
         lng,
         owner: currentAccount.address,
         hotspotTypes: [type],
+        // Onboarding record isn't actually used or needed, but if we don't
+        // do this, the sdk will throw an error
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onboardingRecord: {} as any,
       })
 
       const serializedTxs = data.solanaTransactions?.map((txn) =>
