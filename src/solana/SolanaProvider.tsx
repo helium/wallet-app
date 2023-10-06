@@ -12,9 +12,7 @@ import {
   Commitment,
   PublicKey,
   RpcResponseAndContext,
-  Signer,
   Transaction,
-  TransactionMessage,
   VersionedTransaction,
 } from '@solana/web3.js'
 import React, {
@@ -39,7 +37,7 @@ import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
 import { DcProgram, HemProgram, HsdProgram, LazyProgram } from '../types/solana'
-import { getConnection } from '../utils/solanaUtils'
+import { getConnection, isVersionedTransaction } from '../utils/solanaUtils'
 import LedgerModal, { LedgerModalRef } from '../features/ledger/LedgerModal'
 
 const useSolanaHook = () => {
@@ -77,64 +75,45 @@ const useSolanaHook = () => {
 
   const signTxn = useCallback(
     async (transaction: Transaction | VersionedTransaction) => {
-      let isVersionedTransaction = false
-      const legacyTxn = transaction as Transaction
-      let versionedTxn = transaction as VersionedTransaction
-      if (!legacyTxn?.partialSign) {
-        isVersionedTransaction = true
-      }
-
       if (
         !currentAccount?.ledgerDevice?.id ||
         !currentAccount?.ledgerDevice?.type ||
         currentAccount?.accountIndex === undefined
       ) {
-        if (!isVersionedTransaction) {
+        if (!isVersionedTransaction(transaction)) {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          legacyTxn.partialSign(secureAcct!)
+          transaction.partialSign(secureAcct!)
           return transaction
         }
+
         if (!currentAccount?.solanaAddress || !secureAcct?.secretKey)
           return transaction
-        const signer = {
-          publicKey: new PublicKey(currentAccount.solanaAddress),
-          secretKey: secureAcct.secretKey,
-        } as Signer
-        versionedTxn.sign([signer])
-        return versionedTxn
+
+        transaction.sign([
+          {
+            publicKey: new PublicKey(currentAccount.solanaAddress),
+            secretKey: secureAcct.secretKey,
+          },
+        ])
+
+        return transaction
       }
-
-      // If its not a versioned txn we need to convert into one
-      if (!isVersionedTransaction) {
-        const res = await connection?.getLatestBlockhash()
-
-        const message: TransactionMessage = new TransactionMessage({
-          payerKey: new PublicKey(currentAccount.solanaAddress || ''),
-          recentBlockhash: res?.blockhash || '',
-          instructions: legacyTxn.instructions,
-        })
-
-        versionedTxn = new VersionedTransaction(
-          message.compileToLegacyMessage(),
-        )
-      }
-
-      const transactionBuffer = Buffer.from(versionedTxn.message.serialize())
 
       const signature = await ledgerModalRef?.current?.showLedgerModal({
-        transaction: transactionBuffer,
+        transaction: isVersionedTransaction(transaction)
+          ? Buffer.from(transaction.message.serialize())
+          : transaction.serializeMessage(),
       })
 
       if (!signature) throw new Error('Transaction not signed')
-
-      versionedTxn.addSignature(
+      transaction.addSignature(
         new PublicKey(currentAccount.solanaAddress || ''),
         signature,
       )
 
-      return versionedTxn
+      return transaction
     },
-    [connection, currentAccount, secureAcct],
+    [currentAccount, secureAcct],
   )
 
   const signMsg = useCallback(

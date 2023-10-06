@@ -271,9 +271,7 @@ export const claimRewards = createAsyncThunk(
       // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
       dispatch(fetchHotspots({ account, anchorProvider, cluster }))
 
-      return {
-        signatures,
-      }
+      return { signatures }
     } catch (error) {
       Logger.error(error)
       throw error
