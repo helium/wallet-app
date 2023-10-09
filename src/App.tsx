@@ -109,11 +109,11 @@ const App = () => {
     <GestureHandlerRootView style={globalStyles.container}>
       <SafeAreaProvider>
         <ThemeProvider theme={colorAdaptedTheme}>
-          <SolanaProvider>
-            <SplashScreen>
-              <PortalProvider>
-                <BottomSheetModalProvider>
-                  <PortalHost name="browser-portal" />
+          <PortalProvider>
+            <BottomSheetModalProvider>
+              <PortalHost name="browser-portal" />
+              <SolanaProvider>
+                <SplashScreen>
                   <WalletOnboardingProvider baseUrl={Config.ONBOARDING_API_URL}>
                     <WalletConnectProvider>
                       <HotspotOnboardingProvider
@@ -150,10 +150,10 @@ const App = () => {
                       </HotspotOnboardingProvider>
                     </WalletConnectProvider>
                   </WalletOnboardingProvider>
-                </BottomSheetModalProvider>
-              </PortalProvider>
-            </SplashScreen>
-          </SolanaProvider>
+                </SplashScreen>
+              </SolanaProvider>
+            </BottomSheetModalProvider>
+          </PortalProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

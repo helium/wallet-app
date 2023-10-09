@@ -48,7 +48,7 @@ type Props = {
   children: ReactNode
 } & BoxProps<Theme>
 const LedgerModal = forwardRef(
-  ({ children, ...boxProps }: Props, ref: Ref<LedgerModalRef | undefined>) => {
+  ({ children }: Props, ref: Ref<LedgerModalRef | undefined>) => {
     useImperativeHandle(ref, () => ({ showLedgerModal }))
 
     const { currentAccount } = useAccountStorage()
@@ -304,67 +304,65 @@ const LedgerModal = forwardRef(
     return (
       <Box flex={1}>
         <BottomSheetModalProvider>
-          <Box flex={1} {...boxProps}>
-            <BottomSheetModal
-              ref={bottomSheetModalRef}
-              index={0}
-              backgroundStyle={backgroundStyle}
-              backdropComponent={renderBackdrop}
-              snapPoints={animatedSnapPoints.value}
-              // onDismiss={handleModalDismiss}
-              handleIndicatorStyle={handleIndicatorStyle}
-              handleHeight={animatedHandleHeight}
-              contentHeight={animatedContentHeight}
-            >
-              <Box paddingHorizontal="l" onLayout={handleContentLayout}>
-                <Box flex={1} alignItems="flex-end">
-                  <CloseButton onPress={onDismiss} />
-                </Box>
-                {ledgerModalState === 'loading' && (
-                  <Box>
-                    <CircleLoader loaderSize={40} />
-                  </Box>
-                )}
-                {ledgerModalState !== 'loading' &&
-                  ledgerModalState !== 'error' && (
-                    <>
-                      <Box
-                        alignSelf="stretch"
-                        alignItems="center"
-                        justifyContent="center"
-                        height={150}
-                      >
-                        <Animation
-                          source={getDeviceAnimation({
-                            device: {
-                              deviceId: currentAccount?.ledgerDevice?.id ?? '',
-                              deviceName:
-                                currentAccount?.ledgerDevice?.name ?? '',
-                              modelId: deviceModelId,
-                              wired:
-                                currentAccount?.ledgerDevice?.type === 'usb' ??
-                                false,
-                            },
-                            key: ledgerModalState,
-                            theme: 'dark',
-                          })}
-                          style={
-                            deviceModelId === DeviceModelId.stax
-                              ? { height: 210 }
-                              : {}
-                          }
-                        />
-                      </Box>
-                      {LedgerMessage()}
-                    </>
-                  )}
-                {ledgerModalState === 'error' && (
-                  <LedgerConnectSteps onRetry={handleRetry} />
-                )}
+          {/* <Box flex={1} {...boxProps}> */}
+          <BottomSheetModal
+            ref={bottomSheetModalRef}
+            index={0}
+            backgroundStyle={backgroundStyle}
+            backdropComponent={renderBackdrop}
+            snapPoints={animatedSnapPoints.value}
+            // onDismiss={handleModalDismiss}
+            handleIndicatorStyle={handleIndicatorStyle}
+            handleHeight={animatedHandleHeight}
+            contentHeight={animatedContentHeight}
+          >
+            <Box paddingHorizontal="l" onLayout={handleContentLayout}>
+              <Box flex={1} alignItems="flex-end">
+                <CloseButton onPress={onDismiss} />
               </Box>
-            </BottomSheetModal>
-            {children}
-          </Box>
+              {ledgerModalState === 'loading' && (
+                <Box>
+                  <CircleLoader loaderSize={40} />
+                </Box>
+              )}
+              {ledgerModalState !== 'loading' && ledgerModalState !== 'error' && (
+                <>
+                  <Box
+                    alignSelf="stretch"
+                    alignItems="center"
+                    justifyContent="center"
+                    height={150}
+                  >
+                    <Animation
+                      source={getDeviceAnimation({
+                        device: {
+                          deviceId: currentAccount?.ledgerDevice?.id ?? '',
+                          deviceName: currentAccount?.ledgerDevice?.name ?? '',
+                          modelId: deviceModelId,
+                          wired:
+                            currentAccount?.ledgerDevice?.type === 'usb' ??
+                            false,
+                        },
+                        key: ledgerModalState,
+                        theme: 'dark',
+                      })}
+                      style={
+                        deviceModelId === DeviceModelId.stax
+                          ? { height: 210 }
+                          : {}
+                      }
+                    />
+                  </Box>
+                  {LedgerMessage()}
+                </>
+              )}
+              {ledgerModalState === 'error' && (
+                <LedgerConnectSteps onRetry={handleRetry} />
+              )}
+            </Box>
+          </BottomSheetModal>
+          {children}
+          {/* </Box> */}
         </BottomSheetModalProvider>
       </Box>
     )
