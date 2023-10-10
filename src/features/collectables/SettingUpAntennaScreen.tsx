@@ -67,7 +67,10 @@ const SettingUpAntennaScreen = () => {
           >
             <AccountIcon address={currentAccount?.solanaAddress} size={76} />
           </Box>
-          {solanaPayment && !solanaPayment.error && !solanaPayment.loading && (
+          {(!solanaPayment ||
+            (solanaPayment &&
+              !solanaPayment.error &&
+              !solanaPayment.loading)) && (
             <Animated.View
               style={{ alignItems: 'center' }}
               entering={FadeIn}
@@ -115,23 +118,6 @@ const SettingUpAntennaScreen = () => {
                   solBalance,
                   solanaPayment?.error?.message,
                 )}
-              </Text>
-            </Animated.View>
-          )}
-
-          {!solanaPayment && (
-            <Animated.View
-              style={{ alignItems: 'center' }}
-              entering={FadeIn}
-              exiting={FadeOut}
-            >
-              <Text
-                textAlign="center"
-                variant="h1Medium"
-                color="white"
-                marginTop="xl"
-              >
-                {t('antennaSetupScreen.settingUpError')}
               </Text>
             </Animated.View>
           )}
