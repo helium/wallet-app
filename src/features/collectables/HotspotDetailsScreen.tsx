@@ -12,18 +12,21 @@ import Text from '@components/Text'
 import { toNumber } from '@helium/spl-utils'
 import useCopyText from '@hooks/useCopyText'
 import { useEntityKey } from '@hooks/useEntityKey'
+import { getExplorerUrl, useExplorer } from '@hooks/useExplorer'
 import useHaptic from '@hooks/useHaptic'
 import { useHotspotAddress } from '@hooks/useHotspotAddress'
 import { useIotInfo } from '@hooks/useIotInfo'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useSpacing } from '@theme/themeHooks'
 import { ellipsizeAddress } from '@utils/accountUtils'
+import { Explorer } from '@utils/walletApiV2'
 import BN from 'bn.js'
-import React, { memo, useCallback, useMemo, useState } from 'react'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ScrollView } from 'react-native'
+import { Linking, ScrollView } from 'react-native'
 import { FadeIn } from 'react-native-reanimated'
 import { Edge } from 'react-native-safe-area-context'
+import { SvgUri } from 'react-native-svg'
 import 'text-encoding-polyfill'
 import { Mints } from '../../utils/constants'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
@@ -65,6 +68,7 @@ const HotspotDetailsScreen = () => {
   const toggleFiltersOpen = useCallback(
     (open) => () => {
       setOptionsOpen(open)
+      setSelectExplorerOpen(false)
     },
     [],
   )
@@ -75,6 +79,27 @@ const HotspotDetailsScreen = () => {
       collectable,
     })
   }, [collectable, navigation])
+
+  const {
+    current: explorer,
+    explorers: available,
+    updateExplorer,
+  } = useExplorer()
+
+  const [selectExplorerOpen, setSelectExplorerOpen] = useState(false)
+  useEffect(() => {
+    if (explorer) {
+      setSelectExplorerOpen(false)
+    }
+  }, [explorer])
+  const handleViewInExplorer = useCallback(async () => {
+    if (explorer && entityKey) {
+      const url = getExplorerUrl({ entityKey, explorer })
+      await Linking.openURL(url)
+    } else if (entityKey) {
+      setSelectExplorerOpen(true)
+    }
+  }, [explorer, entityKey, setSelectExplorerOpen])
 
   const handleAssertLocation = useCallback(() => {
     setOptionsOpen(false)
@@ -119,11 +144,79 @@ const HotspotDetailsScreen = () => {
       copyText: attribute.value,
     })
     setOptionsOpen(false)
+    setSelectExplorerOpen(false)
   }, [copyText, collectable, triggerImpact])
 
-  const hotspotOptions = useCallback(
-    () => (
+  const handleConfirmExplorer = useCallback(
+    async (selectedExplorer: string) => {
+      await updateExplorer(selectedExplorer)
+
+      const selected = available?.find(
+        (a: Explorer) => a.value === selectedExplorer,
+      )
+      if (entityKey && selected) {
+        const url = getExplorerUrl({
+          entityKey,
+          explorer: selected,
+        })
+        await Linking.openURL(url)
+      }
+      setOptionsOpen(false)
+    },
+    [available, entityKey, updateExplorer, setOptionsOpen],
+  )
+  const hotspotOptions = useCallback(() => {
+    if (selectExplorerOpen) {
+      return (
+        <>
+          <Box
+            borderBottomColor="black900"
+            paddingHorizontal="m"
+            paddingBottom="m"
+            borderBottomWidth={1}
+          >
+            <Text variant="h4">{t('activityScreen.selectExplorer')}</Text>
+
+            <Text variant="body2">
+              {t('activityScreen.selectExplorerSubtitle')}
+            </Text>
+          </Box>
+
+          {available?.map((a) => {
+            return (
+              <ListItem
+                paddingHorizontal="m"
+                key={a.value}
+                title={a.label}
+                Icon={
+                  a.image.endsWith('svg') ? (
+                    <SvgUri height={16} width={16} uri={a.image} />
+                  ) : (
+                    <ImageBox
+                      height={16}
+                      width={16}
+                      source={{ uri: a.image }}
+                    />
+                  )
+                }
+                onPress={() => handleConfirmExplorer(a.value)}
+                selected={explorer?.value === a.value}
+                hasPressedState={false}
+              />
+            )
+          })}
+        </>
+      )
+    }
+    return (
       <>
+        <ListItem
+          key="explorer"
+          title={t('collectablesScreen.hotspots.viewInExplorer')}
+          onPress={handleViewInExplorer}
+          selected={false}
+          hasPressedState={false}
+        />
         <ListItem
           key="transfer"
           title="Transfer"
@@ -155,16 +248,20 @@ const HotspotDetailsScreen = () => {
           hasPressedState={false}
         />
       </>
-    ),
-    [
-      handleSend,
-      handleAssertLocation,
-      handleAntennaSetup,
-      handleCopyAddress,
-      iotInfoAcc,
-      t,
-    ],
-  )
+    )
+  }, [
+    selectExplorerOpen,
+    t,
+    handleViewInExplorer,
+    handleSend,
+    handleAssertLocation,
+    iotInfoAcc?.info?.location,
+    handleAntennaSetup,
+    handleCopyAddress,
+    available,
+    explorer?.value,
+    handleConfirmExplorer,
+  ])
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} flex={1}>

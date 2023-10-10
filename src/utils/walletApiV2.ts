@@ -137,3 +137,14 @@ export const getSessionKey = async () => {
   )
   return data?.sessionKey
 }
+
+export type Explorer = {
+  label: string
+  value: string
+  image: string
+  urlTemplate: string
+}
+export const getExplorers = async () => {
+  const { data } = await axiosInstance.get<Explorer[]>('/explorers')
+  return data
+}
