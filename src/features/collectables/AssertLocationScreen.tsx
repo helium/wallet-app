@@ -172,15 +172,14 @@ const AssertLocationScreen = () => {
   }, [iotInfoAcc, elevGainVisible, setGain, setElevation])
 
   const resetGain = useCallback(
-    () =>
-      setGain(iotInfoAcc?.gain ? `${iotInfoAcc.info.gain / 10}` : undefined),
+    () => setGain(iotInfoAcc?.gain ? `${iotInfoAcc.gain / 10}` : undefined),
     [iotInfoAcc, setGain],
   )
 
   const resetElevation = useCallback(
     () =>
       setElevation(
-        iotInfoAcc?.elevation ? `${iotInfoAcc.info.elevation}` : undefined,
+        iotInfoAcc?.elevation ? `${iotInfoAcc.elevation}` : undefined,
       ),
     [iotInfoAcc, setElevation],
   )

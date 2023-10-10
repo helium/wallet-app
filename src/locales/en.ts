@@ -375,7 +375,7 @@ export default {
     settingUpError: 'Antenna Setup failed. Please try again later.',
     settingUpComplete: 'Antenna Setup!',
     settingUpCompleteBody:
-      'We’ve updated the gain and elevation of your antenna.',
+      'The gain and elevation of your antenna have been updated.',
   },
   swapsScreen: {
     title: 'Swap my Tokens',

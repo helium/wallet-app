@@ -462,13 +462,17 @@ export default () => {
       }
 
       const data = await getAssertData({
-        decimalGain: decimalGain ? parseFloat(decimalGain) : undefined,
-        elevation: elevation ? parseFloat(elevation) : undefined,
-        gateway: entityKey,
-        lat,
-        lng,
+        networkDetails: [
+          {
+            hotspotType: type,
+            decimalGain: decimalGain ? parseFloat(decimalGain) : undefined,
+            elevation: elevation ? parseFloat(elevation) : undefined,
+            lat,
+            lng,
+          },
+        ],
         owner: currentAccount.address,
-        hotspotTypes: [type],
+        gateway: entityKey,
         // Onboarding record isn't actually used or needed, but if we don't
         // do this, the sdk will throw an error
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
