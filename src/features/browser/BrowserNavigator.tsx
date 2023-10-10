@@ -5,7 +5,7 @@ import {
 } from '@react-navigation/native-stack'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import BrowserScreen from './BrowserScreen'
-import BrowserWebViewScreen from './BrowserWebViewScreen'
+import { BrowserWrapper } from './BrowserWebViewScreen'
 import DAppTutorial from './DAppTutorial'
 import { useSolana } from '../../solana/SolanaProvider'
 
@@ -37,7 +37,7 @@ const BrowserStackScreen = () => {
       <BrowserStack.Screen name="BrowserScreen" component={BrowserScreen} />
       <BrowserStack.Screen
         name="BrowserWebViewScreen"
-        component={BrowserWebViewScreen}
+        component={BrowserWrapper}
         options={modalPresentation}
       />
     </BrowserStack.Navigator>

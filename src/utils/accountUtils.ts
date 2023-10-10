@@ -22,8 +22,8 @@ export const heliumAddressToSolAddress = (heliumAddress: string) => {
   try {
     if (typeof heliumAddress !== 'string') return ''
     const heliumPK = Address.fromB58(heliumAddress).publicKey
-    const pk = new PublicKey(heliumPK)
-    return pk.toBase58()
+    const pk = bs58.encode(heliumPK)
+    return new PublicKey(pk).toBase58()
   } catch {
     return ''
   }

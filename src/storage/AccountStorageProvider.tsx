@@ -246,6 +246,7 @@ const useAccountStorageHook = () => {
         address: string
         ledgerDevice?: LedgerDevice
         ledgerIndex?: number
+        solanaAddress: string
       }[],
     ) => {
       if (!accountBulk.length) return
@@ -260,6 +261,7 @@ const useAccountStorageHook = () => {
             netType: accountNetType(curr.address),
             ledgerDevice: curr.ledgerDevice,
             accountIndex,
+            solanaAddress: curr.solanaAddress,
           },
         }
       }, {})
