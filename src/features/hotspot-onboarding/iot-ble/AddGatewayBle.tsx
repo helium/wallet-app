@@ -152,7 +152,7 @@ const AddGatewayBle = () => {
     if (!iotInfo) {
       const { solanaTransactions } = await getOnboardTransactions({
         hotspotAddress: onboardAddress,
-        hotspotTypes: ['iot'],
+        networkDetails: [{ hotspotType: 'iot' }],
       })
       let solanaSignedTransactions: Transaction[] | undefined
 
