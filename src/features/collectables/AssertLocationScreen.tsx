@@ -27,8 +27,6 @@ import { useReverseGeo } from '@hooks/useReverseGeo'
 import useSubmitTxn from '@hooks/useSubmitTxn'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import MapboxGL from '@rnmapbox/maps'
-import turfBbox from '@turf/bbox'
-import { points } from '@turf/helpers'
 import { parseH3BNLocation } from '@utils/h3'
 import { removeDashAndCapitalize } from '@utils/hotspotNftsUtils'
 import * as Logger from '@utils/logger'
@@ -127,37 +125,12 @@ const AssertLocationScreen = () => {
 
   const initialCenter = useMemo(() => {
     return (
-      initialUserLocation ||
       iotLocation ||
-      mobileLocation || [-122.419418, 37.774929]
+      mobileLocation ||
+      initialUserLocation || [-122.419418, 37.774929]
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialUserLocation, iotLocation, mobileLocation])
-
-  useEffect(() => {
-    if (camera?.current) {
-      const coords = [initialCenter, iotLocation, mobileLocation].filter(
-        Boolean,
-      ) as number[][]
-
-      try {
-        const bbox = turfBbox(points(coords))
-        camera.current.setCamera({
-          animationDuration: 500,
-          bounds: {
-            ne: [bbox[0], bbox[1]],
-            sw: [bbox[2], bbox[3]],
-            paddingLeft: 20,
-            paddingRight: 20,
-            paddingTop: 20,
-            paddingBottom: 20,
-          },
-        })
-      } catch (error) {
-        console.error(error)
-      }
-    }
-  }, [iotLocation, initialCenter, mobileLocation])
 
   useEffect(() => {
     if (!elevGainVisible) {
