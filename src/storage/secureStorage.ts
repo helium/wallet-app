@@ -16,6 +16,7 @@ export enum SecureStorageKeys {
   AUTH_INTERVAL = 'authInterval',
   LOCKED = 'locked',
   CURRENCY = 'currency',
+  EXPLORER = 'explorer',
   CONVERT_TO_CURRENCY = 'convertToCurrency',
   LAST_IDLE = 'lastIdle',
   ENABLE_TESTNET = 'enableTestnet',

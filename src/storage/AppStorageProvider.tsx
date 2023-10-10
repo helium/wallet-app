@@ -29,6 +29,7 @@ const useAppStorageHook = () => {
     Intervals.IMMEDIATELY,
   )
   const [currency, setCurrency] = useState('USD')
+  const [explorer, setExplorer] = useState<string | undefined>(undefined)
   const [locked, setLocked] = useState<boolean>()
   const [convertToCurrency, setConvertToCurrency] = useState(false)
   const [enableTestnet, setEnableTestnet] = useState(false)
@@ -142,6 +143,11 @@ const useAppStorageHook = () => {
     return storeSecureItem('currency', nextCurrency)
   }, [])
 
+  const updateExplorer = useCallback(async (nextExplorer: string) => {
+    setExplorer(nextExplorer)
+    return storeSecureItem('explorer', nextExplorer)
+  }, [])
+
   const updateEnableTestnet = useCallback(
     async (nextEnableTestnet: boolean) => {
       setEnableTestnet(nextEnableTestnet)
@@ -217,6 +223,7 @@ const useAppStorageHook = () => {
     authInterval,
     convertToCurrency,
     currency,
+    explorer,
     enableTestnet,
     locked,
     pin,
@@ -234,6 +241,7 @@ const useAppStorageHook = () => {
     updateSessionKey,
     updateAuthInterval,
     updateCurrency,
+    updateExplorer,
     updateEnableTestnet,
     updateLocked,
     updatePin,
@@ -248,6 +256,7 @@ const initialState = {
   authInterval: Intervals.IMMEDIATELY,
   convertToCurrency: false,
   currency: 'USD',
+  explorer: undefined,
   enableTestnet: false,
   locked: false,
   pin: undefined,
@@ -258,6 +267,7 @@ const initialState = {
   setVoteTutorialCompleted: () => new Promise<void>((resolve) => resolve()),
   updateAuthInterval: async () => undefined,
   updateCurrency: async () => undefined,
+  updateExplorer: async () => undefined,
   updateEnableTestnet: async () => undefined,
   updateLocked: async () => undefined,
   updatePin: async () => undefined,

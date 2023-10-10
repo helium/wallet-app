@@ -1,16 +1,19 @@
 import Box from '@components/Box'
 import CloseButton from '@components/CloseButton'
+import ImageBox from '@components/ImageBox'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import useAlert from '@hooks/useAlert'
 import { useAppVersion } from '@hooks/useDevice'
+import { useExplorer } from '@hooks/useExplorer'
 import { useNavigation } from '@react-navigation/native'
 import { Cluster } from '@solana/web3.js'
 import { useHitSlop, useSpacing } from '@theme/themeHooks'
-import React, { memo, ReactText, useCallback, useMemo } from 'react'
+import React, { ReactText, memo, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, Linking, Platform, SectionList } from 'react-native'
 import deviceInfo from 'react-native-device-info'
+import { SvgUri } from 'react-native-svg'
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -45,6 +48,7 @@ const Settings = () => {
     updateDefaultAccountAddress,
     signOut,
   } = useAccountStorage()
+  const { explorers, current: explorer, updateExplorer } = useExplorer()
   const { changeLanguage, language } = useLanguageStorage()
   const {
     authInterval,
@@ -244,6 +248,13 @@ const Settings = () => {
     [updateCurrency],
   )
 
+  const handleExplorerChange = useCallback(
+    async (ex: ReactText, _index: number) => {
+      await updateExplorer(ex as string)
+    },
+    [updateExplorer],
+  )
+
   const handleSolanaClusterChange = useCallback(
     async (network: ReactText, _index: number) => {
       updateCluster(network as Cluster)
@@ -335,7 +346,6 @@ const Settings = () => {
 
     const items = [
       { label: 'Devnet', value: 'devnet' },
-      { label: 'Testnet', value: 'testnet', disabled: true },
       {
         label: 'Mainnet-Beta',
         value: 'mainnet-beta',
@@ -438,6 +448,24 @@ const Settings = () => {
             },
           },
           {
+            title: t('settings.sections.app.explorer'),
+            value: explorer?.value,
+            select: {
+              onValueSelect: handleExplorerChange,
+              items:
+                explorers?.map((ex) => ({
+                  ...ex,
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  Icon: ({ ...props }: any) => {
+                    if (ex.image.endsWith('svg')) {
+                      return <SvgUri {...props} uri={ex.image} />
+                    }
+                    return <ImageBox {...props} source={{ uri: ex.image }} />
+                  },
+                })) || [],
+            },
+          },
+          {
             title: t('settings.sections.app.version'),
             staticText: true,
             value: `v${version} (${buildNumber})`,
@@ -464,32 +492,35 @@ const Settings = () => {
       },
     ]
   }, [
-    authInterval,
-    authIntervals,
-    cluster,
-    currency,
-    currentAccount,
-    handleCurrencyTypeChange,
-    handleIntervalSelected,
-    handleLanguageChange,
-    handlePinForPayment,
-    handlePinRequired,
-    handleResetPin,
-    handleRevealPrivateKey,
-    handleRevealWords,
-    handleSetDefaultAccount,
-    handleShareAddress,
-    handleSignOut,
-    handleSolanaClusterChange,
-    handleUpdateAlias,
-    isDefaultAccount,
-    isPinRequired,
-    language,
-    requirePinForPayment,
     t,
+    handlePinRequired,
+    isPinRequired,
+    cluster,
+    handleSolanaClusterChange,
+    currentAccount?.alias,
+    handleUpdateAlias,
+    handleSetDefaultAccount,
+    isDefaultAccount,
+    handleShareAddress,
+    handleMigrateWallet,
+    handleSignOut,
+    handleRevealWords,
+    handleRevealPrivateKey,
+    language,
+    handleLanguageChange,
+    currency,
+    handleCurrencyTypeChange,
+    explorer?.value,
+    handleExplorerChange,
+    explorers,
     version,
     buildNumber,
-    handleMigrateWallet,
+    authInterval,
+    authIntervals,
+    handleIntervalSelected,
+    handleResetPin,
+    handlePinForPayment,
+    requirePinForPayment,
   ])
 
   const renderItem = useCallback(
