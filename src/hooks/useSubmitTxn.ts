@@ -486,7 +486,6 @@ export default () => {
       const serializedTxs = data.solanaTransactions?.map((txn) =>
         Buffer.from(txn, 'base64'),
       )
-      console.log('data', data)
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
