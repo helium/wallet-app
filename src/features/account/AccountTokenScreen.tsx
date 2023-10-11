@@ -13,12 +13,15 @@ import BottomSheet, {
   BottomSheetFlatList,
   WINDOW_HEIGHT,
 } from '@gorhom/bottom-sheet'
+import { useOwnedAmount } from '@helium/helium-react-hooks'
 import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import useLayoutHeight from '@hooks/useLayoutHeight'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { RouteProp, useRoute } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
+import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 import globalStyles from '@theme/globalStyles'
 import { useColors } from '@theme/themeHooks'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -135,6 +138,8 @@ const AccountTokenScreen = () => {
     topHeaderHeight,
     topHeaderYPos,
   ])
+  const wallet = useCurrentWallet()
+  const { amount } = useOwnedAmount(wallet, mint)
 
   const canShowList = useMemo(() => snapPoints?.length === 2, [snapPoints])
 
@@ -490,7 +495,16 @@ const AccountTokenScreen = () => {
               />
             </Box>
           </Animated.View>
-          <Box height={topHeaderHeight} />
+          {mint.equals(NATIVE_MINT) &&
+          (amount || 0) < 0.02 * LAMPORTS_PER_SOL ? (
+            <Box mb="l" backgroundColor="warning" borderRadius="s" p="s">
+              <Text variant="body2" color="black700">
+                {t('accountsScreen.solWarning')}
+              </Text>
+            </Box>
+          ) : (
+            <Box height={topHeaderHeight} />
+          )}
         </Box>
       </BackScreen>
       {!!canShowList && (

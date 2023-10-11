@@ -275,7 +275,7 @@ const AccountsScreen = () => {
         <Box flex={1}>
           <AccountTokenCurrencyBalance ticker="ALL" variant="h2Medium" />
         </Box>
-        <AccountActionBar mint={HNT_MINT} maxCompact />
+        <AccountActionBar mint={HNT_MINT} maxCompact hasSwaps />
       </ReAnimatedBox>
     )
   }, [handleTopHeaderLayout, headerAnimatedStyle])

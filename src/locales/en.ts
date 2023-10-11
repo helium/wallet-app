@@ -169,6 +169,8 @@ export default {
       delegate: 'Delegated',
       mint: 'Received',
     },
+    solWarning:
+      'Your balance may not have enough SOL to cover all transactions. Solana wallets require a minimum of 0.00089088 SOL. We recommend keeping greater than 0.02 sol in your wallet for the best experience',
     hideFilters: 'Hide Filters',
     myTransactions: 'My Transactions',
     showFilters: 'Show Filters',
