@@ -76,6 +76,7 @@ import {
   getAssociatedTokenAddress,
   getAssociatedTokenAddressSync,
   getMint,
+  getOrCreateAssociatedTokenAccount,
 } from '@solana/spl-token'
 import {
   AccountMeta,
@@ -90,6 +91,7 @@ import {
   PublicKey,
   SignatureResult,
   SignaturesForAddressOptions,
+  Signer,
   SystemProgram,
   Transaction,
   TransactionInstruction,
@@ -124,12 +126,6 @@ import { getH3Location } from './h3'
 import { decimalSeparator, groupSeparator } from './i18n'
 import * as Logger from './logger'
 import sleep from './sleep'
-
-export const isVersionedTransaction = (
-  tx: Transaction | VersionedTransaction,
-): tx is VersionedTransaction => {
-  return 'version' in tx
-}
 
 export function humanReadable(
   amount?: BN,
@@ -227,7 +223,7 @@ export const readHeliumBalances = async (
 
 export const createTransferSolTxn = async (
   anchorProvider: AnchorProvider,
-  payer: PublicKey,
+  signer: Signer,
   payments: {
     payee: string
     balanceAmount: BN
@@ -235,6 +231,8 @@ export const createTransferSolTxn = async (
   }[],
 ) => {
   if (!payments.length) throw new Error('No payment found')
+
+  const payer = signer.publicKey
 
   let instructions: TransactionInstruction[] = []
   payments.forEach((p) => {
@@ -265,7 +263,7 @@ export const createTransferSolTxn = async (
 
 export const createTransferTxn = async (
   anchorProvider: AnchorProvider,
-  payer: PublicKey,
+  signer: Signer,
   payments: {
     payee: string
     balanceAmount: BN
@@ -277,10 +275,17 @@ export const createTransferTxn = async (
 
   const conn = anchorProvider.connection
 
+  const payer = signer.publicKey
+
   const mint = new PublicKey(mintAddress)
   const mintAcc = await getMint(conn, mint)
 
-  const payerATA = await getAssociatedTokenAddress(mint, payer)
+  const payerATA = await getOrCreateAssociatedTokenAccount(
+    conn,
+    signer,
+    mint,
+    payer,
+  )
 
   let instructions: TransactionInstruction[] = []
   payments.forEach((p) => {
@@ -296,12 +301,13 @@ export const createTransferTxn = async (
         mint,
       ),
       createTransferCheckedInstruction(
-        payerATA,
+        payerATA.address,
         mint,
         ata,
         payer,
         BigInt(amount.toString()),
         mintAcc.decimals,
+        [signer],
       ),
     ]
   })
@@ -332,11 +338,21 @@ export const transferToken = async (
   mintAddress?: string,
 ) => {
   const payer = new PublicKey(solanaAddress)
+  const secureAcct = await getKeypair(heliumAddress)
+
+  if (!secureAcct) {
+    throw new Error('Secure account not found')
+  }
+
+  const signer = {
+    publicKey: payer,
+    secretKey: secureAcct.privateKey,
+  }
 
   const transaction =
     !mintAddress || mintAddress === NATIVE_MINT.toBase58()
-      ? await createTransferSolTxn(anchorProvider, payer, payments)
-      : await createTransferTxn(anchorProvider, payer, payments, mintAddress)
+      ? await createTransferSolTxn(anchorProvider, signer, payments)
+      : await createTransferTxn(anchorProvider, signer, payments, mintAddress)
 
   return transaction
 }
@@ -1136,8 +1152,7 @@ export async function annotateWithPendingRewards(
   const keyToAssets = hotspots.map((h) =>
     keyToAssetForAsset(toAsset(h as CompressedNFT)),
   )
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ktaAccs = await getCachedKeyToAssets(hemProgram as any, keyToAssets)
+  const ktaAccs = await getCachedKeyToAssets(hemProgram, keyToAssets)
   const entityKeys = ktaAccs.map(
     (kta) =>
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

@@ -1,15 +1,12 @@
-import AppSolana from '@ledgerhq/hw-app-solana'
+import AppHelium from '@ledgerhq/hw-app-helium'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import TransportHID from '@ledgerhq/react-native-hid'
 import { useCallback, useState } from 'react'
+import { NetType } from '@helium/address/build/NetTypes'
 import { last } from 'lodash'
 import { useTranslation } from 'react-i18next'
-import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
-import { solAddressToHelium } from '@utils/accountUtils'
-import base58 from 'bs58'
-import { PublicKey } from '@solana/web3.js'
-import { useSolana } from '../solana/SolanaProvider'
 import { LedgerDevice } from '../storage/cloudStorage'
+import useDisappear from './useDisappear'
 import { runDerivationScheme } from '../utils/heliumLedger'
 
 export type LedgerAccount = {
@@ -17,10 +14,7 @@ export type LedgerAccount = {
   balance?: number
   alias: string
   accountIndex: number
-  solanaAddress: string
 }
-
-export const ManagerAppName = 'Solana'
 
 const useLedger = () => {
   const [transport, setTransport] = useState<{
@@ -30,20 +24,6 @@ const useLedger = () => {
   const [ledgerAccounts, setLedgerAccounts] = useState<LedgerAccount[]>([])
   const [ledgerAccountsLoading, setLedgerAccountsLoading] = useState(false)
   const { t } = useTranslation()
-  const { anchorProvider } = useSolana()
-
-  const openSolanaApp = useCallback(
-    async (trans: TransportBLE | TransportHID) => {
-      await trans.send(
-        0xe0,
-        0xd8,
-        0x00,
-        0x00,
-        Buffer.from(ManagerAppName, 'utf8'),
-      )
-    },
-    [],
-  )
 
   const getTransport = useCallback(
     async (nextDeviceId: string, type: 'usb' | 'bluetooth') => {
@@ -72,47 +52,47 @@ const useLedger = () => {
         setTransport(undefined)
       })
       setTransport({ transport: newTransport, deviceId: nextDeviceId })
+
       return newTransport
     },
     [transport],
   )
 
-  //   useDisappear(() => {
-  //     transport?.transport.close()
-  //     setTransport(undefined)
-  //   })
+  useDisappear(() => {
+    transport?.transport.close()
+    setTransport(undefined)
+  })
 
   const getLedgerAcct = useCallback(
-    async (solana: AppSolana, accountIndex: number, display: boolean) => {
-      const { address } = await solana.getAddress(
-        runDerivationScheme(accountIndex),
+    async (
+      helium: AppHelium,
+      netType: NetType,
+      accountIndex: number,
+      display: boolean,
+    ) => {
+      const { address } = await helium.getAddress(
+        runDerivationScheme(accountIndex, netType),
         display,
+        accountIndex,
       )
-      let balance = 0
-      try {
-        const balanceResponse = await anchorProvider?.connection.getBalance(
-          new PublicKey(base58.encode(address)),
-        )
-
-        if (balanceResponse) {
-          balance = balanceResponse / 10 ** 9
-        }
-      } catch {
-        // ignore
-      }
+      const balance = 0
+      console.error('LEDGER NOT CURRENTLY SUPPORTED')
       return {
-        address: solAddressToHelium(bs58.encode(address)),
+        address,
         balance,
         alias: t('ledger.show.alias', { accountIndex: accountIndex + 1 }),
         accountIndex,
-        solanaAddress: bs58.encode(address),
       } as LedgerAccount
     },
-    [anchorProvider?.connection, t],
+    [t],
   )
 
   const getLedgerAccounts = useCallback(
-    async (solana: AppSolana, accounts: LedgerAccount[]): Promise<void> => {
+    async (
+      helium: AppHelium,
+      netType: NetType,
+      accounts: LedgerAccount[],
+    ): Promise<void> => {
       let index = 0
       const prevAcct = last(accounts)
       if (prevAcct) {
@@ -120,19 +100,19 @@ const useLedger = () => {
       }
       if (index >= 256) return
 
-      const acct = await getLedgerAcct(solana, index, false)
+      const acct = await getLedgerAcct(helium, netType, index, false)
       const next = [...accounts, acct]
       setLedgerAccounts(next)
 
       if (!acct.balance) return
 
-      return getLedgerAccounts(solana, next)
+      return getLedgerAccounts(helium, netType, next)
     },
     [getLedgerAcct],
   )
 
   const updateLedgerAccounts = useCallback(
-    async (device: LedgerDevice) => {
+    async (device: LedgerDevice, netType: NetType) => {
       if (ledgerAccountsLoading) return
 
       const nextTransport = await getTransport(device.id, device.type)
@@ -140,10 +120,10 @@ const useLedger = () => {
         throw new Error('Transport could not be created')
       }
 
-      const solana = new AppSolana(nextTransport)
+      const helium = new AppHelium(nextTransport)
 
       setLedgerAccountsLoading(true)
-      await getLedgerAccounts(solana, [])
+      await getLedgerAccounts(helium, netType, [])
       setLedgerAccountsLoading(false)
     },
     [getLedgerAccounts, getTransport, ledgerAccountsLoading],
@@ -155,7 +135,6 @@ const useLedger = () => {
     ledgerAccounts,
     updateLedgerAccounts,
     ledgerAccountsLoading,
-    openSolanaApp,
   }
 }
 

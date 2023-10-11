@@ -225,7 +225,7 @@ const WalletSignBottomSheet = forwardRef(
             index={-1}
             backgroundStyle={backgroundStyle}
             backdropComponent={renderBackdrop}
-            snapPoints={animatedSnapPoints.value}
+            snapPoints={animatedSnapPoints}
             onDismiss={handleModalDismiss}
             enableDismissOnClose
             handleIndicatorStyle={handleIndicatorStyle}
