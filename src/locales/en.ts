@@ -627,6 +627,9 @@ export default {
     title: 'Welcome to\nHelium Wallet',
   },
   ledger: {
+    openTheSolanaApp: 'Open the Solana app on your {{ device }}',
+    pleaseConfirmTransaction: 'Please confirm transaction on your {{ device }}',
+    pleaseEnterPinCode: 'Please enter pin code on your {{ device }}',
     chooseType: {
       bluetooth: {
         title: 'Bluetooth',
@@ -643,7 +646,6 @@ export default {
         'Check network connection',
         'Check Bluetooth is enabled',
         'Open your Ledger device.',
-        'Open Helium app on Ledger Device',
       ],
       subtitle:
         'Please check that your Ledger\nDevice is connected to this phone.\n\nIf not, follow these steps:',

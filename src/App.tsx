@@ -1,6 +1,5 @@
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { PortalHost, PortalProvider } from '@gorhom/portal'
-import { AccountContext } from '@helium/account-fetch-cache-hooks'
 import { OnboardingProvider as HotspotOnboardingProvider } from '@helium/react-native-sdk'
 import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import MapboxGL from '@rnmapbox/maps'
@@ -28,7 +27,7 @@ import useMount from './hooks/useMount'
 import { navigationRef } from './navigation/NavigationHelper'
 import RootNavigator from './navigation/RootNavigator'
 import './polyfill'
-import { useSolana } from './solana/SolanaProvider'
+import SolanaProvider from './solana/SolanaProvider'
 import WalletSignProvider from './solana/WalletSignProvider'
 import { useAccountStorage } from './storage/AccountStorageProvider'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
@@ -58,7 +57,7 @@ const App = () => {
 
   const { appState } = useAppState()
   const { restored: accountsRestored } = useAccountStorage()
-  const { cache } = useSolana()
+  // const { cache } = useSolana()
   const { setOpenedNotification } = useNotificationStorage()
 
   const linking = useDeepLinking()
@@ -110,53 +109,51 @@ const App = () => {
     <GestureHandlerRootView style={globalStyles.container}>
       <SafeAreaProvider>
         <ThemeProvider theme={colorAdaptedTheme}>
-          <SplashScreen>
-            <PortalProvider>
-              <BottomSheetModalProvider>
-                <PortalHost name="browser-portal" />
-                <WalletOnboardingProvider baseUrl={Config.ONBOARDING_API_URL}>
-                  <WalletConnectProvider>
-                    <HotspotOnboardingProvider
-                      baseUrl={Config.ONBOARDING_API_URL}
-                    >
-                      {cache && (
+          <PortalProvider>
+            <BottomSheetModalProvider>
+              <PortalHost name="browser-portal" />
+              <SolanaProvider>
+                <SplashScreen>
+                  <WalletOnboardingProvider baseUrl={Config.ONBOARDING_API_URL}>
+                    <WalletConnectProvider>
+                      <HotspotOnboardingProvider
+                        baseUrl={Config.ONBOARDING_API_URL}
+                      >
                         <LockScreen>
-                          <AccountContext.Provider value={cache}>
-                            {accountsRestored && (
-                              <>
-                                <NavigationContainer
-                                  theme={navTheme}
-                                  linking={linking}
-                                  ref={navigationRef}
-                                >
-                                  <BalanceProvider>
-                                    <TokenListProvider>
-                                      <TokensProvider>
-                                        <WalletSignProvider>
-                                          <NetworkAwareStatusBar />
-                                          <RootNavigator />
-                                        </WalletSignProvider>
-                                      </TokensProvider>
-                                    </TokenListProvider>
-                                  </BalanceProvider>
-                                </NavigationContainer>
-                                <SecurityScreen
-                                  visible={
-                                    appState !== 'active' &&
-                                    appState !== 'unknown'
-                                  }
-                                />
-                              </>
-                            )}
-                          </AccountContext.Provider>
+                          {accountsRestored && (
+                            <>
+                              <NavigationContainer
+                                theme={navTheme}
+                                linking={linking}
+                                ref={navigationRef}
+                              >
+                                <BalanceProvider>
+                                  <TokenListProvider>
+                                    <TokensProvider>
+                                      <WalletSignProvider>
+                                        <NetworkAwareStatusBar />
+                                        <RootNavigator />
+                                      </WalletSignProvider>
+                                    </TokensProvider>
+                                  </TokenListProvider>
+                                </BalanceProvider>
+                              </NavigationContainer>
+                              <SecurityScreen
+                                visible={
+                                  appState !== 'active' &&
+                                  appState !== 'unknown'
+                                }
+                              />
+                            </>
+                          )}
                         </LockScreen>
-                      )}
-                    </HotspotOnboardingProvider>
-                  </WalletConnectProvider>
-                </WalletOnboardingProvider>
-              </BottomSheetModalProvider>
-            </PortalProvider>
-          </SplashScreen>
+                      </HotspotOnboardingProvider>
+                    </WalletConnectProvider>
+                  </WalletOnboardingProvider>
+                </SplashScreen>
+              </SolanaProvider>
+            </BottomSheetModalProvider>
+          </PortalProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

@@ -10,10 +10,9 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 
 type Props = {
   onLayout?: (event: LayoutChangeEvent) => void
-  error?: Error
   onRetry: () => void
 }
-const LedgerConnectSteps = ({ onLayout, error, onRetry }: Props) => {
+const LedgerConnectSteps = ({ onLayout, onRetry }: Props) => {
   const { t } = useTranslation()
   const steps: string[] = t('ledger.connectError.steps', {
     returnObjects: true,
@@ -21,7 +20,7 @@ const LedgerConnectSteps = ({ onLayout, error, onRetry }: Props) => {
   const { primaryText } = useColors()
 
   return (
-    <Box backgroundColor="secondary" onLayout={onLayout} marginHorizontal="l">
+    <Box onLayout={onLayout} marginHorizontal="l">
       <Box alignSelf="center" marginVertical="l">
         <InfoError />
       </Box>
@@ -45,17 +44,8 @@ const LedgerConnectSteps = ({ onLayout, error, onRetry }: Props) => {
           </Text>
         </Box>
       ))}
-
-      <Text
-        variant="subtitle1"
-        color="error"
-        marginTop="xxl"
-        textAlign="center"
-      >
-        {error?.toString()}
-      </Text>
       <TouchableOpacityBox
-        marginTop="xl"
+        marginTop="s"
         marginBottom="l"
         onPress={onRetry}
         backgroundColor="surface"

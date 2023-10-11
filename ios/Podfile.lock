@@ -61,10 +61,14 @@ PODS:
   - glog (0.3.5)
   - helium-react-native-sdk (3.0.0):
     - React-Core
-  - hermes-engine (0.71.5):
-    - hermes-engine/Pre-built (= 0.71.5)
-  - hermes-engine/Pre-built (0.71.5)
+  - hermes-engine (0.71.10):
+    - hermes-engine/Pre-built (= 0.71.10)
+  - hermes-engine/Pre-built (0.71.10)
   - libevent (2.1.12)
+  - lottie-ios (4.3.0)
+  - lottie-react-native (6.3.1):
+    - lottie-ios (~> 4.3.0)
+    - React-Core
   - MapboxCommon (23.5.0)
   - MapboxCoreMaps (10.13.1):
     - MapboxCommon (~> 23.5)
@@ -578,6 +582,7 @@ DEPENDENCIES:
   - "helium-react-native-sdk (from `../node_modules/@helium/react-native-sdk`)"
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - libevent (~> 2.1.12)
+  - lottie-react-native (from `../node_modules/lottie-react-native`)
   - OneSignalXCFramework (< 4.0, >= 3.0)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
@@ -652,6 +657,7 @@ SPEC REPOS:
     - Charts
     - fmt
     - libevent
+    - lottie-ios
     - MapboxCommon
     - MapboxCoreMaps
     - MapboxMaps
@@ -713,6 +719,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@helium/react-native-sdk"
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
+  lottie-react-native:
+    :path: "../node_modules/lottie-react-native"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTRequired:
@@ -868,8 +876,10 @@ SPEC CHECKSUMS:
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 791fe035093b84822da7f0870421a25839ca7870
   helium-react-native-sdk: 17b612b2dacebc8f10c18ba5611f200a81c940f9
-  hermes-engine: 7a53ccac09146018a08239c5425625fdb79a6162
+  hermes-engine: cdb8de7594393b62aaf9eba1877a78afeecac080
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
+  lottie-ios: c69214a487e1a1465a231c1918c6ce174e2d45bc
+  lottie-react-native: c9f1db4f4124dcce9f8159e65d8dc6e8bcb11fb4
   MapboxCommon: fdf7fd31c90b7b607cd9c63e37797f023c01d860
   MapboxCoreMaps: 24270c7c6b8cb71819fc2f3c549db9620ee4d019
   MapboxMaps: cb76511b98d3b95c74b0771ed105bc69f30ace6b
@@ -947,4 +957,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 5b4d3c6d9c5a303c84f0b5427958ba4a25671e76
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.12.1

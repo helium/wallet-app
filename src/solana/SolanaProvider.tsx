@@ -13,6 +13,7 @@ import {
   PublicKey,
   RpcResponseAndContext,
   Transaction,
+  VersionedTransaction,
 } from '@solana/web3.js'
 import React, {
   ReactNode,
@@ -21,18 +22,23 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import { useAsync } from 'react-async-hook'
 import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
+import nacl from 'tweetnacl'
+import { WrappedConnection } from '@utils/WrappedConnection'
+import { AccountContext } from '@helium/account-fetch-cache-hooks'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { getSessionKey, getSolanaKeypair } from '../storage/secureStorage'
 import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
 import { DcProgram, HemProgram, HsdProgram, LazyProgram } from '../types/solana'
-import { getConnection } from '../utils/solanaUtils'
+import { getConnection, isVersionedTransaction } from '../utils/solanaUtils'
+import LedgerModal, { LedgerModalRef } from '../features/ledger/LedgerModal'
 
 const useSolanaHook = () => {
   const { currentAccount } = useAccountStorage()
@@ -45,6 +51,7 @@ const useSolanaHook = () => {
   const [hsdProgram, setHsdProgram] = useState<HsdProgram>()
   const [lazyProgram, setLazyProgram] = useState<LazyProgram>()
   const { loading, result: sessionKey } = useAsync(getSessionKey, [])
+  const ledgerModalRef = useRef<LedgerModalRef>()
   const connection = useMemo(() => {
     const sessionKeyActual =
       !loading && !sessionKey ? Config.RPC_SESSION_KEY_FALLBACK : sessionKey
@@ -66,29 +73,118 @@ const useSolanaHook = () => {
     [address],
   )
 
+  const signTxn = useCallback(
+    async (transaction: Transaction | VersionedTransaction) => {
+      if (
+        !currentAccount?.ledgerDevice?.id ||
+        !currentAccount?.ledgerDevice?.type ||
+        currentAccount?.accountIndex === undefined
+      ) {
+        if (!isVersionedTransaction(transaction)) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          transaction.partialSign(secureAcct!)
+          return transaction
+        }
+
+        if (!currentAccount?.solanaAddress || !secureAcct?.secretKey)
+          return transaction
+
+        transaction.sign([
+          {
+            publicKey: new PublicKey(currentAccount.solanaAddress),
+            secretKey: secureAcct.secretKey,
+          },
+        ])
+
+        return transaction
+      }
+
+      const signature = await ledgerModalRef?.current?.showLedgerModal({
+        transaction: isVersionedTransaction(transaction)
+          ? Buffer.from(transaction.message.serialize())
+          : transaction.serializeMessage(),
+      })
+
+      if (!signature) throw new Error('Transaction not signed')
+      transaction.addSignature(
+        new PublicKey(currentAccount.solanaAddress || ''),
+        signature,
+      )
+
+      return transaction
+    },
+    [currentAccount, secureAcct],
+  )
+
+  const signMsg = useCallback(
+    async (msg: Buffer) => {
+      if (!currentAccount?.solanaAddress) return msg
+
+      if (
+        (!currentAccount?.ledgerDevice?.id ||
+          !currentAccount?.ledgerDevice?.type ||
+          !currentAccount?.accountIndex) &&
+        secureAcct?.secretKey
+      ) {
+        const signer = {
+          publicKey: currentAccount?.solanaAddress,
+          secretKey: secureAcct.secretKey,
+        }
+
+        const signedMessage = nacl.sign.detached(msg, signer.secretKey)
+        return signedMessage
+      }
+
+      const signedMessage = await ledgerModalRef?.current?.showLedgerModal({
+        message: msg,
+      })
+
+      if (!signedMessage) throw new Error('Message not signed')
+
+      return signedMessage
+    },
+    [currentAccount, secureAcct],
+  )
+
   const anchorProvider = useMemo(() => {
-    if (!secureAcct || !connection) return
+    if (
+      (!secureAcct &&
+        !currentAccount?.ledgerDevice &&
+        !currentAccount?.solanaAddress) ||
+      !connection
+    )
+      return
 
     const anchorWallet = {
-      signTransaction: async (transaction: Transaction) => {
-        transaction.partialSign(secureAcct)
-        return transaction
+      signTransaction: async (
+        transaction: Transaction | VersionedTransaction,
+      ) => {
+        const signedTx = await signTxn(transaction)
+        return signedTx
       },
-      signAllTransactions: async (transactions: Transaction[]) => {
-        return transactions.map((tx) => {
-          tx.partialSign(secureAcct)
-          return tx
-        })
+      signAllTransactions: async (
+        transactions: (Transaction | VersionedTransaction)[],
+      ) => {
+        const signedTxns = []
+        // eslint-disable-next-line no-restricted-syntax
+        for (const transaction of transactions) {
+          // eslint-disable-next-line no-await-in-loop
+          const signedTx = await signTxn(transaction)
+          signedTxns.push(signedTx)
+        }
+
+        return signedTxns
       },
       get publicKey() {
-        return secureAcct?.publicKey
+        return new PublicKey(currentAccount?.solanaAddress || '')
       },
     } as Wallet
     return new AnchorProvider(connection, anchorWallet, {
       preflightCommitment: 'confirmed',
       commitment: 'confirmed',
+      skipPreflight: true,
     })
-  }, [connection, secureAcct])
+  }, [connection, currentAccount, secureAcct, signTxn])
 
   const cache = useMemo(() => {
     if (!connection) return
@@ -172,10 +268,24 @@ const useSolanaHook = () => {
     lazyProgram,
     updateCluster,
     cache,
+    signMsg,
+    ledgerModalRef,
   }
 }
 
-const initialState = {
+const initialState: {
+  anchorProvider: AnchorProvider | undefined
+  cluster: Cluster
+  connection: WrappedConnection | undefined
+  dcProgram: DcProgram | undefined
+  hemProgram: HemProgram | undefined
+  hsdProgram: HsdProgram | undefined
+  lazyProgram: LazyProgram | undefined
+  cache: AccountFetchCache | undefined
+  updateCluster: (nextCluster: Cluster) => void
+  signMsg: (msg: Buffer) => Promise<Buffer>
+  ledgerModalRef: React.MutableRefObject<LedgerModalRef | undefined>
+} = {
   anchorProvider: undefined,
   cluster: 'mainnet-beta' as Cluster,
   connection: undefined,
@@ -185,22 +295,26 @@ const initialState = {
   lazyProgram: undefined,
   cache: undefined,
   updateCluster: (_nextCluster: Cluster) => {},
+  signMsg: (_msg: Buffer) => Promise.resolve(_msg),
+  ledgerModalRef: { current: undefined },
 }
 const SolanaContext =
   createContext<ReturnType<typeof useSolanaHook>>(initialState)
 const { Provider } = SolanaContext
 
 const SolanaProvider = ({ children }: { children: ReactNode }) => {
-  const value = useSolanaHook()
+  const values = useSolanaHook()
   return (
-    <Provider value={value}>
-      {value.connection && (
-        <SolanaProviderRnHelium
-          rpcEndpoint={value.connection.rpcEndpoint}
-          cluster={value.cluster}
-        >
-          {children}
-        </SolanaProviderRnHelium>
+    <Provider value={values}>
+      {values.cache && values.connection && (
+        <AccountContext.Provider value={values.cache}>
+          <SolanaProviderRnHelium
+            rpcEndpoint={values.connection.rpcEndpoint}
+            cluster={values.cluster}
+          >
+            <LedgerModal ref={values?.ledgerModalRef}>{children}</LedgerModal>
+          </SolanaProviderRnHelium>
+        </AccountContext.Provider>
       )}
     </Provider>
   )

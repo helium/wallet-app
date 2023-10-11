@@ -19,7 +19,6 @@ import {
 } from './ledgerNavigatorTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import LedgerAccountListItem, { Section } from './LedgerAccountListItem'
-import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 
 const MAX_ACCOUNTS = 10
@@ -57,10 +56,6 @@ const DeviceShow = () => {
 
   const spacing = useSpacing()
   const colors = useColors()
-  const {
-    onboardingData: { netType },
-  } = useOnboarding()
-
   const accountsToAdd = useMemo(
     () => newLedgerAccounts.filter((a) => selectedAccounts[a.address]),
 
@@ -162,7 +157,7 @@ const DeviceShow = () => {
         >
           <Ledger width={62} height={62} color={colors.primaryText} />
           <Box marginHorizontal="m">
-            <ArrowRight />
+            <ArrowRight color="white" />
           </Box>
           <Image source={require('@assets/images/fingerprintGreen.png')} />
         </Box>
@@ -260,7 +255,7 @@ const DeviceShow = () => {
 
   useAsync(async () => {
     try {
-      await updateLedgerAccounts(ledgerDevice, netType)
+      await updateLedgerAccounts(ledgerDevice)
     } catch (error) {
       // in this case, user is likely not on Helium app
 
@@ -289,6 +284,7 @@ const DeviceShow = () => {
         address: acc.address,
         ledgerDevice,
         ledgerIndex: acc.accountIndex,
+        solanaAddress: acc.solanaAddress,
       }
     })
 
