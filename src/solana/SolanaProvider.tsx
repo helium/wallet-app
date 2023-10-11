@@ -278,6 +278,7 @@ const useSolanaHook = () => {
 const initialState: {
   anchorProvider: AnchorProvider | undefined
   cluster: Cluster
+  isDevnet: boolean
   connection: WrappedConnection | undefined
   dcProgram: DcProgram | undefined
   hemProgram: HemProgram | undefined
