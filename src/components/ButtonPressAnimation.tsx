@@ -6,7 +6,7 @@ import {
   ViewStyle,
 } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
-import { withSpring, interpolate } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { Theme } from '@theme/theme'
 import useHaptic from '@hooks/useHaptic'
 import { ReAnimatedBox } from './AnimatedBox'
@@ -27,31 +27,33 @@ const ButtonPressAnimation = ({
 }: ButtonPressAnimationProps) => {
   const { triggerImpact } = useHaptic()
 
-  // const animation = 0
+  const animation = new Animated.Value(0)
   const inputRange = [0, 1]
   const outputRange = [1, 0.8]
-  const scale = interpolate(0, inputRange, outputRange)
+  const scale = animation.interpolate({ inputRange, outputRange })
 
   const onPressIn = () => {
     triggerImpact('light')
-    withSpring(0.3, {
+    Animated.spring(animation, {
+      toValue: 0.3,
       damping: 10,
       mass: 0.1,
       stiffness: 100,
       overshootClamping: false,
       restSpeedThreshold: 0.001,
       restDisplacementThreshold: 2,
-    })
+    }).start()
   }
   const onPressOut = () => {
-    withSpring(0, {
+    Animated.spring(animation, {
+      toValue: 0,
       damping: 10,
       mass: 0.1,
       stiffness: 100,
       overshootClamping: false,
       restSpeedThreshold: 0.001,
       restDisplacementThreshold: 2,
-    })
+    }).start()
   }
 
   return (
