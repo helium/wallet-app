@@ -149,6 +149,7 @@ const palette = {
   offWhite: '#F9FAFC',
 
   orange500: '#FFB156',
+  warning: '#FFE5C7',
 
   persianRose: '#FF2DB7',
 

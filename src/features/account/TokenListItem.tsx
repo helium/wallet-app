@@ -1,4 +1,5 @@
 import Arrow from '@assets/images/listItemRight.svg'
+import InfoWarning from '@assets/images/warning.svg'
 import Box from '@components/Box'
 import FadeInOut from '@components/FadeInOut'
 import Text from '@components/Text'
@@ -9,7 +10,8 @@ import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import useHaptic from '@hooks/useHaptic'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { useNavigation } from '@react-navigation/native'
-import { PublicKey } from '@solana/web3.js'
+import { NATIVE_MINT } from '@solana/spl-token'
+import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { useCallback, useMemo } from 'react'
@@ -105,6 +107,11 @@ const TokenListItem = ({ mint }: Props) => {
             />
           )}
         </Box>
+        {mint.equals(NATIVE_MINT) && (amount || 0) < 0.02 * LAMPORTS_PER_SOL && (
+          <Box mr="m">
+            <InfoWarning width={28} height={28} />
+          </Box>
+        )}
         <Arrow />
       </TouchableContainer>
     </FadeInOut>
