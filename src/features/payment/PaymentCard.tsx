@@ -43,13 +43,11 @@ const PaymentCard = ({
   const { currentAccount } = useAccountStorage()
 
   const handlePayPressed = useCallback(async () => {
-    if (!currentAccount?.ledgerDevice) {
-      const hasSecureAccount = await checkSecureAccount(
-        currentAccount?.address,
-        true,
-      )
-      if (!hasSecureAccount) return
-    }
+    const hasSecureAccount = await checkSecureAccount(
+      currentAccount?.address,
+      true,
+    )
+    if (!hasSecureAccount) return
     animateTransition('PaymentCard.payEnabled')
     setPayEnabled(true)
   }, [currentAccount])

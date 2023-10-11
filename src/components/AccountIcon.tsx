@@ -8,12 +8,10 @@ type Props = { address?: string; size: number } & Omit<
 >
 const AccountIcon = ({ address, ...jazzIconProps }: Props) => {
   const seed = useMemo(() => {
-    if (!address) return null
     return getJazzSeed(address)
   }, [address])
 
-  if (!seed) return null
-
+  // eslint-disable-next-line react/jsx-props-no-spreading
   return <Jazzicon {...jazzIconProps} seed={seed} />
 }
 export default memo(AccountIcon)

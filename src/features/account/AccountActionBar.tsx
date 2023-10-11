@@ -6,6 +6,7 @@ import { PublicKey } from '@solana/web3.js'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent } from 'react-native'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 
@@ -47,6 +48,7 @@ const AccountActionBar = ({
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const { requirePinForPayment, pin } = useAppStorage()
+  const { currentAccount } = useAccountStorage()
 
   const handleAction = useCallback(
     (type: Action) => () => {
@@ -101,6 +103,10 @@ const AccountActionBar = ({
     if (maxCompact) return 's'
     return undefined
   }, [compact, maxCompact])
+
+  if (currentAccount?.ledgerDevice) {
+    return null
+  }
 
   return (
     <Box

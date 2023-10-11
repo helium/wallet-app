@@ -8,7 +8,7 @@ import CheckBox from '@react-native-community/checkbox'
 import { useColors } from '@theme/themeHooks'
 import { humanReadable } from '@utils/solanaUtils'
 import React, { memo, useCallback, useMemo } from 'react'
-import { ellipsizeAddress } from '../../utils/accountUtils'
+import { ellipsizeAddress, isTestnet } from '../../utils/accountUtils'
 
 export enum Section {
   NEW_ACCOUNT = 0,
@@ -78,7 +78,9 @@ const LedgerAccountListItem = ({
         borderTopStartRadius={borderTopStartRadius}
         borderBottomEndRadius={borderBottomEndRadius}
         borderBottomStartRadius={borderBottomStartRadius}
-        backgroundColor="secondary"
+        backgroundColor={
+          isTestnet(account.address) ? 'lividBrown' : 'secondary'
+        }
       >
         <AccountIcon size={40} address={account.address} />
         <Box marginRight="l" marginLeft="l" flexGrow={1}>
@@ -92,7 +94,7 @@ const LedgerAccountListItem = ({
             adjustsFontSizeToFit
             maxFontSizeMultiplier={1.2}
           >
-            {`${ellipsizeAddress(account.solanaAddress, {
+            {`${ellipsizeAddress(account.address, {
               numChars: 4,
             })} | ${humanReadable(balance, 8)}`}
           </Text>

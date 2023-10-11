@@ -271,7 +271,9 @@ export const claimRewards = createAsyncThunk(
       // If the transfer is successful, we need to update the hotspots so pending rewards are updated.
       dispatch(fetchHotspots({ account, anchorProvider, cluster }))
 
-      return { signatures }
+      return {
+        signatures,
+      }
     } catch (error) {
       Logger.error(error)
       throw error
@@ -354,8 +356,7 @@ export const claimAllRewards = createAsyncThunk(
               keyToAssetForAsset(solUtils.toAsset(h)),
             )
             const ktaAccs = await solUtils.getCachedKeyToAssets(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              hemProgram as any,
+              hemProgram,
               keyToAssets,
             )
             const entityKeys = ktaAccs.map(
@@ -387,22 +388,17 @@ export const claimAllRewards = createAsyncThunk(
               assetEndpoint: anchorProvider.connection.rpcEndpoint,
               wallet: anchorProvider.wallet.publicKey,
             })
-
             const signedTxs = await anchorProvider.wallet.signAllTransactions(
               txns,
             )
-
             // eslint-disable-next-line @typescript-eslint/no-loop-func
-            const txsWithSigs = signedTxs.map((tx, index) => ({
-              transaction: chunk[index],
-              sig: bs58.encode(
-                !solUtils.isVersionedTransaction(tx)
-                  ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    tx.signatures[0]!.signature!
-                  : tx.signatures[0],
-              ),
-            }))
-
+            const txsWithSigs = signedTxs.map((tx, index) => {
+              return {
+                transaction: chunk[index],
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                sig: bs58.encode(tx.signatures[0]!.signature!),
+              }
+            })
             // eslint-disable-next-line no-await-in-loop
             const confirmedTxs = await bulkSendRawTransactions(
               anchorProvider.connection,
