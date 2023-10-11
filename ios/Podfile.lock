@@ -878,7 +878,7 @@ SPEC CHECKSUMS:
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 791fe035093b84822da7f0870421a25839ca7870
   helium-react-native-sdk: 17b612b2dacebc8f10c18ba5611f200a81c940f9
-  hermes-engine: 7a53ccac09146018a08239c5425625fdb79a6162
+  hermes-engine: cdb8de7594393b62aaf9eba1877a78afeecac080
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   lottie-ios: c69214a487e1a1465a231c1918c6ce174e2d45bc
   lottie-react-native: c9f1db4f4124dcce9f8159e65d8dc6e8bcb11fb4
