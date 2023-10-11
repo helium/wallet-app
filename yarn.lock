@@ -2378,10 +2378,10 @@
   dependencies:
     "@solana/web3.js" "^1.78.4"
 
-"@helium/account-fetch-cache@^0.4.1-next.0":
-  version "0.4.1-next.0"
-  resolved "https://registry.yarnpkg.com/@helium/account-fetch-cache/-/account-fetch-cache-0.4.1-next.0.tgz#8bc07df1b43ee11e0bce5dfec7c1d54efa5ef82c"
-  integrity sha512-Njf2XQ4IFWeH9VIiivUXFoTL+gU5d1sSq3c/71gPWX87OzOEpP59c5heRxVTj3hcV1R/5G5now7jeAy+RIkGng==
+"@helium/account-fetch-cache@^0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@helium/account-fetch-cache/-/account-fetch-cache-0.4.0.tgz#37f4acf7256c43eb8ab6830478e6da9bb65ef2f5"
+  integrity sha512-5cVNbrTjNebk5vjBtYi7R1lwMtdN9iwb3IZWykFB+DJMo8Fwe+op4ubBUXiH4QsG7yk9OOkfzFng1kNc9gesVw==
   dependencies:
     "@solana/web3.js" "^1.78.4"
 
@@ -2402,10 +2402,10 @@
     "@solana/spl-token" "^0.3.8"
     "@solana/web3.js" "^1.78.4"
 
-"@helium/anchor-resolvers@^0.4.1-next.0":
-  version "0.4.1-next.0"
-  resolved "https://registry.yarnpkg.com/@helium/anchor-resolvers/-/anchor-resolvers-0.4.1-next.0.tgz#bde846d9ecaa8768b97c88d0bfa1a1d7409cf717"
-  integrity sha512-TOdfvGWXkiymbZ+D9sjYhKbjAxGEt2HabKvFjbVo5NwKaLXmVIiv1IFRXbmHlukP4rllPo6+JJ9bnAJzqxPrLA==
+"@helium/anchor-resolvers@^0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@helium/anchor-resolvers/-/anchor-resolvers-0.4.0.tgz#3a1807b6577a158be4dd26da3b6a2b99dfe58590"
+  integrity sha512-L2NqZKyjtIAADQoY5VinpkSVEchRf6CW3d5pYwBM7pxAwxLVaJHK8fWT9EqDTy5jB0x/1dT++IgaQHzDrzjF9g==
   dependencies:
     "@solana/spl-token" "^0.3.8"
     "@solana/web3.js" "^1.78.4"
@@ -2815,15 +2815,15 @@
     borsh "^0.7.0"
     bs58 "^4.0.1"
 
-"@helium/spl-utils@^0.4.1-next.0":
-  version "0.4.1-next.0"
-  resolved "https://registry.yarnpkg.com/@helium/spl-utils/-/spl-utils-0.4.1-next.0.tgz#ead155cce1c29c8d99b89c5b5f9c45d4631ccaeb"
-  integrity sha512-wf8LWw/hcHZX7A781Ws1G99gR44iqSq8gtjw310z6Io02z46h/2uPVepWO9Bjzxk45MQw3jeFKxyIoymmbsadw==
+"@helium/spl-utils@^0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@helium/spl-utils/-/spl-utils-0.4.0.tgz#27b5d17d4be5395f51193be00573865670494907"
+  integrity sha512-T22JxFZhllkrW2dZRr6xXxPEwRvNUrei5u/JhUBasl20xK96qtrcePx0eBIl59TQqUGXai8GonVvlD9bCrSFlA==
   dependencies:
     "@coral-xyz/anchor" "^0.28.0"
-    "@helium/account-fetch-cache" "^0.4.1-next.0"
+    "@helium/account-fetch-cache" "^0.4.0"
     "@helium/address" "^4.10.2"
-    "@helium/anchor-resolvers" "^0.4.1-next.0"
+    "@helium/anchor-resolvers" "^0.4.0"
     "@metaplex-foundation/mpl-token-metadata" "^2.10.0"
     "@solana/spl-account-compression" "^0.1.7"
     "@solana/spl-token" "^0.3.8"
