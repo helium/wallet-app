@@ -497,7 +497,13 @@ const AccountTokenScreen = () => {
           </Animated.View>
           {mint.equals(NATIVE_MINT) &&
           (amount || 0) < 0.02 * LAMPORTS_PER_SOL ? (
-            <Box minHeight={topHeaderHeight} mb="l" backgroundColor="warning" borderRadius="s" p="s">
+            <Box
+              minHeight={topHeaderHeight}
+              mb="l"
+              backgroundColor="warning"
+              borderRadius="s"
+              p="s"
+            >
               <Text variant="body2" color="black700">
                 {t('accountsScreen.solWarning')}
               </Text>
