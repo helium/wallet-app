@@ -3,7 +3,6 @@ import { AccountLayout, NATIVE_MINT, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
   AddressLookupTableAccount,
   Connection,
-  Message,
   LAMPORTS_PER_SOL,
   ParsedAccountData,
   PublicKey,
@@ -79,9 +78,7 @@ export function useSimulatedTransaction(
       }
 
       try {
-        fee =
-          (await c?.getFeeForMessage(t.message as Message, 'confirmed'))
-            .value || fee
+        fee = (await c?.getFeeForMessage(t.message, 'confirmed')).value || fee
       } catch (err) {
         logger.error(err)
       }
@@ -134,6 +131,7 @@ export function useSimulatedTransaction(
             ),
           ),
         ]
+
         const { blockhash } = await connection?.getLatestBlockhash()
         transaction.message.recentBlockhash = blockhash
         const result = await connection?.simulateTransaction(transaction, {

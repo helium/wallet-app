@@ -4241,10 +4241,10 @@
     "@wallet-standard/app" "^1.0.1"
     "@wallet-standard/base" "^1.0.1"
 
-"@solana/web3.js@1.64.0":
-  version "1.64.0"
-  resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.64.0.tgz#b7f5a976976039a0161242e94d6e1224ab5d30f9"
-  integrity sha512-AcFaoy48GxSmzBryVwB88C/UPJd/UQa+nFrO/uPc8ww6RCjanZY2vEZxdfTZub+q1NMUckwXpPwF32jJLe7SPA==
+"@solana/web3.js@1.67.2":
+  version "1.67.2"
+  resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.67.2.tgz#6832139fb906ff2fb13390a81afab04d35b8aa0c"
+  integrity sha512-qfdV0m/qcTpoJsIwonvXJQz8YY5mrSfBVLS/Cp+MPaaUzDzkpSV7WU1QeHsj+dkHX82W37zuhhg/DadRJls7+g==
   dependencies:
     "@babel/runtime" "^7.12.5"
     "@noble/ed25519" "^1.7.0"

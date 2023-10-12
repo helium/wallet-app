@@ -176,6 +176,7 @@ export default {
     },
     solWarning:
       'Your balance may not have enough SOL to cover all transactions. Solana wallets require a minimum of 0.00089088 SOL. We recommend keeping greater than 0.02 sol in your wallet for the best experience',
+    solSwap: 'Swap Tokens To SOL',
     hideFilters: 'Hide Filters',
     myTransactions: 'My Transactions',
     showFilters: 'Show Filters',
@@ -389,7 +390,7 @@ export default {
   },
   insufficientSolConversionModal: {
     title: 'Insufficient SOL',
-    body: 'You currently dont have enough SOL to perform this action. Please swap one of the following tokens to receive more SOL in order to continue. Tokens that you dont have any balance in will be disabled.',
+    body: 'Please swap one of the following tokens to receive more SOL in order to continue. Tokens that you dont have any balance in will be disabled.',
     noBalance:
       'You currently dont hold a balance of any of the tokens supported by this swap.',
   },
