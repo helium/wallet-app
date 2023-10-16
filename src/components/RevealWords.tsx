@@ -121,6 +121,7 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
       {/* @ts-ignore */}
       <FlatList
         numColumns={2}
+        initialNumToRender={mnemonic.length}
         columnWrapperStyle={{
           flexDirection: 'row',
         }}
@@ -134,6 +135,7 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
         renderItem={renderItem}
         contentContainerStyle={contentContainerStyle}
         scrollEnabled
+        removeClippedSubviews={false}
       />
     </ReAnimatedBox>
   )
