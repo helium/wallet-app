@@ -93,14 +93,8 @@ export const checkSecureAccount = async (
             },
           },
           {
-            text: forceShow
-              ? t('generic.cancel')
-              : t('restoreAccount.missingAlert.button1'),
-            style: forceShow ? 'cancel' : 'destructive',
-            onPress: () => {
-              if (forceShow) return
-              storeSecureItem(SecureStorageKeys.HIDE_PRIVATE_KEY_ALERT, 'true')
-            },
+            text: t('generic.cancel'),
+            style: 'cancel',
           },
         ],
       )
