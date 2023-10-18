@@ -257,6 +257,11 @@ export default {
       fifty: '50',
       thousand: '1000',
       copyEccCompact: 'Copy Hotspot Key',
+      onboard: {
+        title: 'Repair Onboarding',
+        which:
+          'On rare occasions, onboarding a hotspot can fail. Use this utility to repair the hotspot. Which Sub Network does the hotspot use? If the network is not in this list, your hotspot is properly onboarded.',
+      },
       viewInExplorer: 'View in Explorer',
       assertLocation: 'Assert Location',
       antennaSetup: 'Antenna Setup',

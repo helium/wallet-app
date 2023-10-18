@@ -125,6 +125,15 @@ import { decimalSeparator, groupSeparator } from './i18n'
 import * as Logger from './logger'
 import sleep from './sleep'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isInsufficientBal(e: any) {
+  return (
+    e.toString().includes('Insufficient Balance') ||
+    e.toString().includes('"Custom":1') ||
+    e.InstructionError?.[1]?.Custom === 1
+  )
+}
+
 export const isVersionedTransaction = (
   tx: Transaction | VersionedTransaction,
 ): tx is VersionedTransaction => {

@@ -22,7 +22,7 @@ import { useNavigation } from '@react-navigation/native'
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { DAO_KEY, IOT_SUB_DAO_KEY } from '@utils/constants'
-import { getHotspotWithRewards } from '@utils/solanaUtils'
+import { getHotspotWithRewards, isInsufficientBal } from '@utils/solanaUtils'
 import { Buffer } from 'buffer'
 import React from 'react'
 import { useAsyncCallback } from 'react-async-hook'
@@ -102,11 +102,7 @@ const AddGatewayBle = () => {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function wrapProgramError(e: any) {
-      if (
-        e.toString().includes('Insufficient Balance') ||
-        e.toString().includes('"Custom":1') ||
-        e.InstructionError[1].Custom === 1
-      ) {
+      if (isInsufficientBal(e)) {
         throw new Error(
           t('hotspotOnboarding.onboarding.manufacturerMissingDcOrSol', {
             name: onboardRecord?.maker.name,
