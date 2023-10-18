@@ -518,11 +518,7 @@ export default () => {
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
-        if (
-          e.toString().includes('Insufficient Balance') ||
-          e.toString().includes('"Custom":1') ||
-          e.InstructionError[1].Custom === 1
-        ) {
+        if (solUtils.isInsufficientBal(e)) {
           if (data.isFree) {
             throw new Error(
               `Manufacturer ${data?.maker?.name} does not have enough SOL or Data Credits to assert location. Please contact the manufacturer of this hotspot to resolve this issue.`,

@@ -10,27 +10,44 @@ import { CollectableStackParamList } from './collectablesTypes'
 
 type Route = RouteProp<CollectableStackParamList, 'NftMetadataScreen'>
 
+function stringify(
+  s: boolean | string | string[] | undefined,
+): string | undefined {
+  if (Array.isArray(s)) {
+    if (s.length === 0) {
+      return 'None'
+    }
+    return s.join(', ')
+  }
+
+  return s?.toString()
+}
+
 const NftMetadataScreen = () => {
   const route = useRoute<Route>()
   const { t } = useTranslation()
   const { metadata } = route.params
 
   const renderProperty = useCallback(
-    (traitType: string | undefined, traitValue: string | undefined) => (
+    (
+      traitType: string | undefined,
+      traitValue: boolean | string | string[] | undefined,
+    ) => (
       <Box
         padding="s"
         paddingHorizontal="m"
         borderRadius="round"
         backgroundColor="transparent10"
         margin="s"
-        key={`${traitType}+${traitValue}`}
+        key={`${traitType}+${stringify(traitValue)}`}
       >
         <Text variant="subtitle4" color="grey600">
           {traitType?.toUpperCase() ||
             t('collectablesScreen.collectables.noTraitType')}
         </Text>
         <Text variant="body1" color="white" textAlign="center">
-          {traitValue || t('collectablesScreen.collectables.noTraitValue')}
+          {stringify(traitValue) ||
+            t('collectablesScreen.collectables.noTraitValue')}
         </Text>
       </Box>
     ),
