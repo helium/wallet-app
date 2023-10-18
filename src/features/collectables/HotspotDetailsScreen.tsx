@@ -10,6 +10,10 @@ import ImageBox from '@components/ImageBox'
 import ListItem from '@components/ListItem'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
+import {
+  makerApprovalKey,
+  rewardableEntityConfigKey,
+} from '@helium/helium-entity-manager-sdk'
 import { useOnboarding } from '@helium/react-native-sdk'
 import { sendAndConfirmWithRetry, toNumber } from '@helium/spl-utils'
 import useCopyText from '@hooks/useCopyText'
@@ -18,6 +22,8 @@ import { getExplorerUrl, useExplorer } from '@hooks/useExplorer'
 import useHaptic from '@hooks/useHaptic'
 import { useHotspotAddress } from '@hooks/useHotspotAddress'
 import { useIotInfo } from '@hooks/useIotInfo'
+import { useMakerApproval } from '@hooks/useMakerApproval'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { useMobileInfo } from '@hooks/useMobileInfo'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Transaction } from '@solana/web3.js'
@@ -36,7 +42,11 @@ import 'text-encoding-polyfill'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
-import { Mints } from '../../utils/constants'
+import {
+  IOT_SUB_DAO_KEY,
+  MOBILE_SUB_DAO_KEY,
+  Mints,
+} from '../../utils/constants'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import { ww } from '../../utils/layout'
 import { isInsufficientBal } from '../../utils/solanaUtils'
@@ -46,6 +56,12 @@ import {
 } from './collectablesTypes'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotDetailsScreen'>
+const [iotConfigKey] = rewardableEntityConfigKey(IOT_SUB_DAO_KEY, 'IOT')
+const [mobileConfigKey] = rewardableEntityConfigKey(
+  MOBILE_SUB_DAO_KEY,
+  'MOBILE',
+)
+
 const HotspotDetailsScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<CollectableNavigationProp>()
@@ -66,6 +82,28 @@ const HotspotDetailsScreen = () => {
   const iotInfoAcc = useIotInfo(entityKey)
   const mobileInfoAcc = useMobileInfo(entityKey)
   const streetAddress = useHotspotAddress(collectable)
+  const collection = collectable.grouping.find(
+    (k) => k.group_key === 'collection',
+  )?.group_value
+  const { metadata } = useMetaplexMetadata(collection)
+  const [iotMakerApproval, mobileMakerApproval] = useMemo(() => {
+    if (!metadata) {
+      return [undefined, undefined]
+    }
+
+    return [
+      makerApprovalKey(iotConfigKey, metadata.updateAuthorityAddress)[0],
+      makerApprovalKey(mobileConfigKey, metadata.updateAuthorityAddress)[0],
+    ]
+  }, [metadata])
+
+  const { info: iotMakerApprovalAcc } = useMakerApproval(iotMakerApproval)
+  const { info: mobileMakerApprovalAcc } = useMakerApproval(mobileMakerApproval)
+  // Need to repair this hotspot if it is missing an info struct but the maker
+  // has approval for that subnetwork.
+  const needsRepair =
+    (iotMakerApprovalAcc && !iotInfoAcc?.info) ||
+    (mobileMakerApprovalAcc && !mobileInfoAcc?.info)
 
   const pendingIotRewards =
     collectable &&
@@ -363,13 +401,15 @@ const HotspotDetailsScreen = () => {
           selected={false}
           hasPressedState={false}
         />
-        <ListItem
-          key="onboard"
-          title={t('collectablesScreen.hotspots.onboard.title')}
-          onPress={handleOnboard}
-          selected={false}
-          hasPressedState={false}
-        />
+        {needsRepair && (
+          <ListItem
+            key="onboard"
+            title={t('collectablesScreen.hotspots.onboard.title')}
+            onPress={handleOnboard}
+            selected={false}
+            hasPressedState={false}
+          />
+        )}
       </>
     )
   }, [
@@ -381,10 +421,11 @@ const HotspotDetailsScreen = () => {
     iotInfoAcc?.info?.location,
     handleAntennaSetup,
     handleCopyAddress,
+    needsRepair,
+    handleOnboard,
     available,
     explorer?.value,
     handleConfirmExplorer,
-    handleOnboard,
   ])
 
   return (
@@ -492,13 +533,15 @@ const HotspotDetailsScreen = () => {
                 borderColor="white"
                 backgroundColorOpacityPressed={0.7}
                 disabled={loading}
-                title={t('collectablesScreen.hotspots.manage')}
+                title={
+                  loading ? undefined : t('collectablesScreen.hotspots.manage')
+                }
                 titleColor="white"
                 titleColorPressed="black"
                 onPress={toggleFiltersOpen(true)}
                 TrailingComponent={
                   loading ? (
-                    <CircleLoader loaderSize={20} color="black" />
+                    <CircleLoader loaderSize={20} color="white" />
                   ) : undefined
                 }
               />
