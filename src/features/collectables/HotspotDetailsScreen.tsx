@@ -99,7 +99,6 @@ const HotspotDetailsScreen = () => {
 
   const { info: iotMakerApprovalAcc } = useMakerApproval(iotMakerApproval)
   const { info: mobileMakerApprovalAcc } = useMakerApproval(mobileMakerApproval)
-  console.log(iotMakerApprovalAcc, mobileMakerApprovalAcc)
   // Need to repair this hotspot if it is missing an info struct but the maker
   // has approval for that subnetwork.
   const needsRepair =
