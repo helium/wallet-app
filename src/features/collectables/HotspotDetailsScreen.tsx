@@ -492,13 +492,13 @@ const HotspotDetailsScreen = () => {
                 borderColor="white"
                 backgroundColorOpacityPressed={0.7}
                 disabled={loading}
-                title={t('collectablesScreen.hotspots.manage')}
+                title={loading ? '' : t('collectablesScreen.hotspots.manage')}
                 titleColor="white"
                 titleColorPressed="black"
                 onPress={toggleFiltersOpen(true)}
                 TrailingComponent={
                   loading ? (
-                    <CircleLoader loaderSize={20} color="black" />
+                    <CircleLoader loaderSize={20} color="white" />
                   ) : undefined
                 }
               />
