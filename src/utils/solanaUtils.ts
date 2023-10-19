@@ -294,7 +294,11 @@ export const createTransferTxn = async (
   let instructions: TransactionInstruction[] = []
   payments.forEach((p) => {
     const amount = p.balanceAmount
-    const ata = getAssociatedTokenAddressSync(mint, new PublicKey(p.payee))
+    const ata = getAssociatedTokenAddressSync(
+      mint,
+      new PublicKey(p.payee),
+      true,
+    )
 
     instructions = [
       ...instructions,
@@ -373,15 +377,6 @@ export const getTxn = async (
   })
 }
 
-export const getAssocTokenAddress = (
-  walletAddress: string,
-  mintAddress: string,
-) => {
-  const account = new PublicKey(walletAddress)
-  const mint = new PublicKey(mintAddress)
-  return getAssociatedTokenAddress(mint, account)
-}
-
 export const getTransactions = async (
   anchorProvider: AnchorProvider,
   walletAddress: string,
@@ -389,7 +384,9 @@ export const getTransactions = async (
   options?: SignaturesForAddressOptions,
 ) => {
   try {
-    const ata = await getAssocTokenAddress(walletAddress, mintAddress)
+    const account = new PublicKey(walletAddress)
+    const mint = new PublicKey(mintAddress)
+    const ata = await getAssociatedTokenAddress(account, mint)
     const transactionList =
       await anchorProvider.connection.getSignaturesForAddress(ata, options)
     const sigs = transactionList.map(({ signature }) => signature)
@@ -478,6 +475,7 @@ export const createTransferCollectableMessage = async (
   const recipientATA = await getAssociatedTokenAddress(
     mintPubkey,
     recipientPubKey,
+    true,
   )
 
   instructions.push(
@@ -546,6 +544,7 @@ export const transferCollectable = async (
     const recipientATA = await getAssociatedTokenAddress(
       mintPubkey,
       recipientPubKey,
+      true,
     )
 
     instructions.push(
@@ -1433,7 +1432,7 @@ export async function createTreasurySwapTxn(
       ])
       .accounts({
         treasuryManagement,
-        to: getAssociatedTokenAddressSync(HNT_MINT, recipient),
+        to: getAssociatedTokenAddressSync(HNT_MINT, recipient, true),
       })
       .transaction()
 
@@ -1477,7 +1476,7 @@ export async function createTreasurySwapMessage(
       ])
       .accounts({
         treasuryManagement,
-        to: getAssociatedTokenAddressSync(HNT_MINT, recipient),
+        to: getAssociatedTokenAddressSync(HNT_MINT, recipient, true),
       })
       .transaction()
 
@@ -1614,7 +1613,7 @@ export const calcCreateAssociatedTokenAccountAccountFee = async (
   }
 
   const payeePubKey = new PublicKey(payee)
-  const ata = await getAssociatedTokenAddress(mint, payeePubKey)
+  const ata = await getAssociatedTokenAddress(mint, payeePubKey, true)
   if (ata) {
     return new BN(0)
   }
