@@ -7,7 +7,7 @@ import QrScanner from '@components/QrScanner'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { parsePaymentLink } from '../../utils/linking'
-import { solAddressIsValid } from '../../utils/accountUtils'
+import { isValidPublicKey, solAddressIsValid } from '../../utils/accountUtils'
 
 const AddressQrScanner = () => {
   const { triggerNotification } = useHaptic()
@@ -19,7 +19,7 @@ const AddressQrScanner = () => {
   const handleBarCodeScanned = useCallback(
     async (data: string) => {
       // scanned qr is an address string
-      if (solAddressIsValid(data)) {
+      if (solAddressIsValid(data) || isValidPublicKey(data)) {
         setScannedAddress(data)
         triggerNotification('success')
         navigation.goBack()
