@@ -1,5 +1,5 @@
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
-import { PortalHost, PortalProvider } from '@gorhom/portal'
+import { PortalProvider } from '@gorhom/portal'
 import { OnboardingProvider as HotspotOnboardingProvider } from '@helium/react-native-sdk'
 import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import MapboxGL from '@rnmapbox/maps'
@@ -111,7 +111,6 @@ const App = () => {
         <ThemeProvider theme={colorAdaptedTheme}>
           <PortalProvider>
             <BottomSheetModalProvider>
-              <PortalHost name="browser-portal" />
               <SolanaProvider>
                 <SplashScreen>
                   <WalletOnboardingProvider baseUrl={Config.ONBOARDING_API_URL}>
