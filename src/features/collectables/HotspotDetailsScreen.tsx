@@ -25,6 +25,7 @@ import { useIotInfo } from '@hooks/useIotInfo'
 import { useMakerApproval } from '@hooks/useMakerApproval'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { useMobileInfo } from '@hooks/useMobileInfo'
+import { usePublicKey } from '@hooks/usePublicKey'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Transaction } from '@solana/web3.js'
 import { useSpacing } from '@theme/themeHooks'
@@ -85,7 +86,8 @@ const HotspotDetailsScreen = () => {
   const collection = collectable.grouping.find(
     (k) => k.group_key === 'collection',
   )?.group_value
-  const { metadata } = useMetaplexMetadata(collection)
+  const collectionKey = usePublicKey(collection)
+  const { metadata } = useMetaplexMetadata(collectionKey)
   const [iotMakerApproval, mobileMakerApproval] = useMemo(() => {
     if (!metadata) {
       return [undefined, undefined]
