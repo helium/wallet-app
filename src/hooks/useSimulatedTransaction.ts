@@ -11,7 +11,7 @@ import {
   VersionedTransaction,
 } from '@solana/web3.js'
 import { useBalance } from '@utils/Balance'
-import { getCollectableByMint } from '@utils/solanaUtils'
+import { getCollectableByMint, isInsufficientBal } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
@@ -90,12 +90,7 @@ export function useSimulatedTransaction(
 
   const { loading: loadingBal, result: estimatedBalanceChanges } =
     useAsync(async () => {
-      if (
-        !connection ||
-        !transaction ||
-        !wallet ||
-        !tokenAccounts
-      )
+      if (!connection || !transaction || !wallet || !tokenAccounts)
         return undefined
 
       setSimulationError(false)
@@ -144,10 +139,7 @@ export function useSimulatedTransaction(
         if (result?.value.err) {
           console.warn('failed to simulate', result?.value.err)
           console.warn(result?.value.logs?.join('\n'))
-          if (
-            !hasEnoughSol ||
-            JSON.stringify(result?.value.err).includes('{"Custom":1}')
-          ) {
+          if (!hasEnoughSol || isInsufficientBal(result?.value.err)) {
             if (!hasEnoughSol) {
               showModal({
                 type: 'InsufficientSolConversion',
@@ -313,7 +305,7 @@ export function useSimulatedTransaction(
     ])
 
   return {
-    loading: loadingBal || loadingFee || hntEstimateLoading,
+    loading: loadingBal || loadingFee,
     simulationError,
     insufficientFunds,
     balanceChanges: estimatedBalanceChanges,
