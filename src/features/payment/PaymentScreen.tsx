@@ -558,7 +558,9 @@ const PaymentScreen = () => {
         Object.values(accounts || {}),
         ({ address: addr }) => addr,
       )
-      let contact = allAccounts.find((c) => c.solanaAddress === address)
+      let contact = allAccounts.find(
+        (c) => c.solanaAddress && c.solanaAddress === address,
+      )
       if (!contact)
         contact = { address, netType: networkType, alias: domain || '' }
 
