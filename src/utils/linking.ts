@@ -8,7 +8,7 @@ import queryString from 'query-string'
 import { BurnRouteParam, PaymentRouteParam } from '../features/home/homeTypes'
 import { RootStackParamList } from '../navigation/rootTypes'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import { isValidPublicKey } from './accountUtils'
+import { solAddressIsValid } from './accountUtils'
 
 export const APP_LINK_SCHEME = Linking.createURL('')
 export const PAYMENT_PATH = 'payment'
@@ -109,7 +109,7 @@ export const parseDelegate = (qrContent: string) => {
 export const parsePaymentLink = (
   urlOrAddress: string,
 ): PaymentRouteParam | undefined => {
-  if (Address.isValid(urlOrAddress) || isValidPublicKey(urlOrAddress)) {
+  if (Address.isValid(urlOrAddress) || solAddressIsValid(urlOrAddress)) {
     const url = makePayRequestLink({ payee: urlOrAddress })
     return queryString.parseUrl(url).query
   }

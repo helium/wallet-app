@@ -62,7 +62,6 @@ import { useBalance } from '../../utils/Balance'
 import {
   accountNetType,
   formatAccountAlias,
-  isValidPublicKey,
   solAddressIsValid,
 } from '../../utils/accountUtils'
 import { SendDetails } from '../../utils/linking'
@@ -230,11 +229,7 @@ const PaymentScreen = () => {
       onTokenSelected(new PublicKey(paymentsArr[0].mint))
     }
 
-    if (
-      paymentsArr.find(
-        (p) => !(solAddressIsValid(p.payee) || isValidPublicKey(p.payee)),
-      )
-    ) {
+    if (paymentsArr.find((p) => !solAddressIsValid(p.payee))) {
       console.error('Invalid address found in deep link')
       return
     }
@@ -419,9 +414,7 @@ const PaymentScreen = () => {
     const paymentsValid =
       paymentState.payments.length &&
       paymentState.payments.every((p) => {
-        const addressValid =
-          !!(p.address && solAddressIsValid(p.address)) ||
-          !!(p.address && isValidPublicKey(p.address))
+        const addressValid = !!(p.address && solAddressIsValid(p.address))
 
         const paymentValid = p.amount && p.amount?.gt(new BN(0))
         return addressValid && paymentValid && !p.hasError

@@ -29,19 +29,10 @@ export const heliumAddressToSolAddress = (heliumAddress: string) => {
   }
 }
 
-export const isValidPublicKey = (address: string) => {
-  try {
-    const pubKey = new PublicKey(address)
-    return pubKey.toBuffer().length === PUBLIC_KEY_LENGTH
-  } catch {
-    return false
-  }
-}
-
 export const solAddressIsValid = (address: string) => {
   try {
     const pubKey = new PublicKey(address)
-    return PublicKey.isOnCurve(pubKey)
+    return pubKey.toBuffer().length === PUBLIC_KEY_LENGTH
   } catch {
     return false
   }
