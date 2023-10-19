@@ -93,7 +93,6 @@ export function useSimulatedTransaction(
       if (
         !connection ||
         !transaction ||
-        !anchorProvider ||
         !wallet ||
         !tokenAccounts
       )
@@ -314,7 +313,7 @@ export function useSimulatedTransaction(
     ])
 
   return {
-    loading: loadingBal || loadingFee,
+    loading: loadingBal || loadingFee || hntEstimateLoading,
     simulationError,
     insufficientFunds,
     balanceChanges: estimatedBalanceChanges,

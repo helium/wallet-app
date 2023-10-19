@@ -19,7 +19,7 @@ type Props = BoxProps<Theme> & {
   backgroundColorOpacityPressed?: number
   Icon?: FC<SvgProps>
   innerContainerProps?: BoxProps<Theme>
-  title: string
+  title?: string
   titleColor?: Color
   titleColorDisabled?: Color
   titleColorOpacity?: number

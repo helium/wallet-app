@@ -4,39 +4,64 @@ import BackScreen from '@components/BackScreen'
 import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
+import CircleLoader from '@components/CircleLoader'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import ImageBox from '@components/ImageBox'
 import ListItem from '@components/ListItem'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
-import { toNumber } from '@helium/spl-utils'
+import {
+  makerApprovalKey,
+  rewardableEntityConfigKey,
+} from '@helium/helium-entity-manager-sdk'
+import { useOnboarding } from '@helium/react-native-sdk'
+import { sendAndConfirmWithRetry, toNumber } from '@helium/spl-utils'
 import useCopyText from '@hooks/useCopyText'
 import { useEntityKey } from '@hooks/useEntityKey'
 import { getExplorerUrl, useExplorer } from '@hooks/useExplorer'
 import useHaptic from '@hooks/useHaptic'
 import { useHotspotAddress } from '@hooks/useHotspotAddress'
 import { useIotInfo } from '@hooks/useIotInfo'
+import { useMakerApproval } from '@hooks/useMakerApproval'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { useMobileInfo } from '@hooks/useMobileInfo'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { Transaction } from '@solana/web3.js'
 import { useSpacing } from '@theme/themeHooks'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import { Explorer } from '@utils/walletApiV2'
 import BN from 'bn.js'
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { Linking, ScrollView } from 'react-native'
+import { Alert, AlertButton, Linking, ScrollView } from 'react-native'
 import { FadeIn } from 'react-native-reanimated'
 import { Edge } from 'react-native-safe-area-context'
 import { SvgUri } from 'react-native-svg'
 import 'text-encoding-polyfill'
-import { Mints } from '../../utils/constants'
+import { useSolana } from '../../solana/SolanaProvider'
+import { useWalletSign } from '../../solana/WalletSignProvider'
+import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
+import {
+  IOT_SUB_DAO_KEY,
+  MOBILE_SUB_DAO_KEY,
+  Mints,
+} from '../../utils/constants'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import { ww } from '../../utils/layout'
+import { isInsufficientBal } from '../../utils/solanaUtils'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotDetailsScreen'>
+const [iotConfigKey] = rewardableEntityConfigKey(IOT_SUB_DAO_KEY, 'IOT')
+const [mobileConfigKey] = rewardableEntityConfigKey(
+  MOBILE_SUB_DAO_KEY,
+  'MOBILE',
+)
+
 const HotspotDetailsScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<CollectableNavigationProp>()
@@ -44,6 +69,9 @@ const HotspotDetailsScreen = () => {
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])
   const [optionsOpen, setOptionsOpen] = useState(false)
+  const { getOnboardTransactions } = useOnboarding()
+  const { walletSignBottomSheetRef } = useWalletSign()
+  const { anchorProvider } = useSolana()
 
   const { t } = useTranslation()
   const { triggerImpact } = useHaptic()
@@ -52,7 +80,30 @@ const HotspotDetailsScreen = () => {
   const { collectable } = route.params
   const entityKey = useEntityKey(collectable)
   const iotInfoAcc = useIotInfo(entityKey)
+  const mobileInfoAcc = useMobileInfo(entityKey)
   const streetAddress = useHotspotAddress(collectable)
+  const collection = collectable.grouping.find(
+    (k) => k.group_key === 'collection',
+  )?.group_value
+  const { metadata } = useMetaplexMetadata(collection)
+  const [iotMakerApproval, mobileMakerApproval] = useMemo(() => {
+    if (!metadata) {
+      return [undefined, undefined]
+    }
+
+    return [
+      makerApprovalKey(iotConfigKey, metadata.updateAuthorityAddress)[0],
+      makerApprovalKey(mobileConfigKey, metadata.updateAuthorityAddress)[0],
+    ]
+  }, [metadata])
+
+  const { info: iotMakerApprovalAcc } = useMakerApproval(iotMakerApproval)
+  const { info: mobileMakerApprovalAcc } = useMakerApproval(mobileMakerApproval)
+  // Need to repair this hotspot if it is missing an info struct but the maker
+  // has approval for that subnetwork.
+  const needsRepair =
+    (iotMakerApprovalAcc && !iotInfoAcc?.info) ||
+    (mobileMakerApprovalAcc && !mobileInfoAcc?.info)
 
   const pendingIotRewards =
     collectable &&
@@ -146,6 +197,109 @@ const HotspotDetailsScreen = () => {
     setOptionsOpen(false)
     setSelectExplorerOpen(false)
   }, [copyText, collectable, triggerImpact])
+
+  const {
+    execute: handleOnboard,
+    loading,
+    error,
+  } = useAsyncCallback(async () => {
+    if (!anchorProvider || !entityKey) {
+      return
+    }
+    setOptionsOpen(false)
+    const hotspotType: 'iot' | 'mobile' | undefined = await new Promise(
+      (resolve) => {
+        const options: AlertButton[] = []
+        if (!iotInfoAcc?.info) {
+          options.push({
+            text: 'IOT',
+            onPress: () => {
+              resolve('iot')
+            },
+          })
+        }
+        if (!mobileInfoAcc?.info) {
+          options.push({
+            text: 'MOBILE',
+            onPress: () => {
+              resolve('mobile')
+            },
+          })
+        }
+        options.push({
+          text: t('generic.cancel'),
+          style: 'destructive',
+          onPress: () => {
+            resolve(undefined)
+          },
+        })
+        Alert.alert(
+          t('collectablesScreen.hotspots.onboard.title'),
+          t('collectablesScreen.hotspots.onboard.which'),
+          options,
+        )
+      },
+    )
+    if (!hotspotType) {
+      return
+    }
+
+    const { solanaTransactions } = await getOnboardTransactions({
+      hotspotAddress: entityKey,
+      networkDetails: [
+        {
+          hotspotType,
+        },
+      ],
+    })
+    const serializedTxs = solanaTransactions?.map((txn) =>
+      Buffer.from(txn, 'base64'),
+    )
+
+    if ((serializedTxs?.length || 0) > 0 && walletSignBottomSheetRef) {
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        additionalMessage: t('transactions.signAssertLocationTxn'),
+        serializedTxs,
+      })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
+      }
+      const signedTxns =
+        serializedTxs &&
+        (await anchorProvider.wallet.signAllTransactions(
+          serializedTxs.map((ser) => Transaction.from(ser)),
+        ))
+
+      try {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const txn of signedTxns || []) {
+          // eslint-disable-next-line no-await-in-loop
+          await sendAndConfirmWithRetry(
+            anchorProvider.connection,
+            txn.serialize(),
+            {
+              skipPreflight: true,
+            },
+            'confirmed',
+          )
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (e: any) {
+        if (isInsufficientBal(e)) {
+          throw new Error(
+            'Manufacturer does not have enough SOL or Data Credits to assert location. Please contact the manufacturer of this hotspot to resolve this issue.',
+          )
+        }
+        if (e.InstructionError) {
+          throw new Error(`Program Error: ${JSON.stringify(e)}`)
+        }
+        throw e
+      }
+    }
+  })
 
   const handleConfirmExplorer = useCallback(
     async (selectedExplorer: string) => {
@@ -247,6 +401,15 @@ const HotspotDetailsScreen = () => {
           selected={false}
           hasPressedState={false}
         />
+        {needsRepair && (
+          <ListItem
+            key="onboard"
+            title={t('collectablesScreen.hotspots.onboard.title')}
+            onPress={handleOnboard}
+            selected={false}
+            hasPressedState={false}
+          />
+        )}
       </>
     )
   }, [
@@ -258,6 +421,8 @@ const HotspotDetailsScreen = () => {
     iotInfoAcc?.info?.location,
     handleAntennaSetup,
     handleCopyAddress,
+    needsRepair,
+    handleOnboard,
     available,
     explorer?.value,
     handleConfirmExplorer,
@@ -353,6 +518,11 @@ const HotspotDetailsScreen = () => {
               </Box>
             </Box>
             <Box>
+              {error && (
+                <Text mb="s" variant="body2Medium" color="red500">
+                  {error.toString()}
+                </Text>
+              )}
               <ButtonPressable
                 height={65}
                 flexGrow={1}
@@ -362,10 +532,18 @@ const HotspotDetailsScreen = () => {
                 borderWidth={2}
                 borderColor="white"
                 backgroundColorOpacityPressed={0.7}
-                title={t('collectablesScreen.hotspots.manage')}
+                disabled={loading}
+                title={
+                  loading ? undefined : t('collectablesScreen.hotspots.manage')
+                }
                 titleColor="white"
                 titleColorPressed="black"
                 onPress={toggleFiltersOpen(true)}
+                TrailingComponent={
+                  loading ? (
+                    <CircleLoader loaderSize={20} color="white" />
+                  ) : undefined
+                }
               />
               <Box paddingVertical="s" />
               <ButtonPressable
