@@ -888,6 +888,11 @@ export default {
         copyAddress: 'Copy Address',
         revealWords: 'Reveal Words',
         shareAddress: 'Share Address',
+        overwriteWallet: 'Overwrite Wallet',
+        overwriteWalletAlert: {
+          body: 'A wallet wwith the name {{alias}}, already exists. This will overwrite the existing wallet. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your HNT\n- your Wallet',
+          title: 'Overwrite {{alias}}?',
+        },
         signOut: 'Remove Wallet',
         signOutAlert: {
           body: 'You are removing your wallet, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your HNT\n- your Wallet',

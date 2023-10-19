@@ -1,23 +1,24 @@
-import React, { memo, useCallback, useMemo, useState } from 'react'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
-import { useTranslation } from 'react-i18next'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import CheckBox from '@react-native-community/checkbox'
-import Box from '@components/Box'
-import SafeAreaBox from '@components/SafeAreaBox'
-import TextInput from '@components/TextInput'
-import FabButton from '@components/FabButton'
 import AccountIcon from '@components/AccountIcon'
+import Box from '@components/Box'
+import FabButton from '@components/FabButton'
+import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
+import TextInput from '@components/TextInput'
+import CheckBox from '@react-native-community/checkbox'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useColors, useSpacing } from '@theme/themeHooks'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useOnboarding } from './OnboardingProvider'
-import { accountNetType } from '../../utils/accountUtils'
-import { ImportAccountNavigationProp } from './import/importAccountNavTypes'
-import { CreateAccountNavigationProp } from './create/createAccountNavTypes'
-import { HomeStackParamList } from '../home/homeTypes'
+import React, { memo, useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Alert, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import CircleLoader from '@components/CircleLoader'
 import { RootNavigationProp } from '../../navigation/rootTypes'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { accountNetType } from '../../utils/accountUtils'
+import { HomeStackParamList } from '../home/homeTypes'
+import { useOnboarding } from './OnboardingProvider'
+import { CreateAccountNavigationProp } from './create/createAccountNavTypes'
+import { ImportAccountNavigationProp } from './import/importAccountNavTypes'
 
 type Route = RouteProp<HomeStackParamList, 'AccountAssignScreen'>
 
@@ -30,6 +31,7 @@ const AccountAssignScreen = () => {
 
   const { t } = useTranslation()
   const [alias, setAlias] = useState('')
+  const [upserting, setUpserting] = useState(false)
   const {
     reset,
     onboardingData: { secureAccount },
@@ -37,7 +39,7 @@ const AccountAssignScreen = () => {
   const insets = useSafeAreaInsets()
   const spacing = useSpacing()
   const colors = useColors()
-  const { upsertAccount, hasAccounts, updateDefaultAccountAddress } =
+  const { accounts, upsertAccount, hasAccounts, updateDefaultAccountAddress } =
     useAccountStorage()
   const [setAsDefault, toggleSetAsDefault] = useState(false)
 
@@ -49,37 +51,72 @@ const AccountAssignScreen = () => {
     if (!account) return
 
     if (hasAccounts) {
-      try {
-        await upsertAccount({
-          alias,
-          address: account.address,
-          secureAccount: account,
-        })
-        if (setAsDefault) {
-          await updateDefaultAccountAddress(account.address)
+      const aliasExists = !!Object.values(accounts || {}).find(
+        (acc) => acc.alias === alias,
+      )
+
+      const execute = async () => {
+        setUpserting(true)
+
+        try {
+          await upsertAccount({
+            alias,
+            address: account.address,
+            secureAccount: account,
+          })
+
+          if (setAsDefault) {
+            await updateDefaultAccountAddress(account.address)
+          }
+
+          rootNav.reset({
+            index: 0,
+            routes: [{ name: 'TabBarNavigator' }],
+          })
+          reset()
+          return
+        } catch (e) {
+          setUpserting(false)
+          console.error(e)
         }
-
-        rootNav.reset({
-          index: 0,
-          routes: [{ name: 'TabBarNavigator' }],
-        })
-        reset()
-        return
-      } catch (e) {
-        console.error(e)
-        return
       }
-    }
 
-    onboardingNav.navigate('AccountCreatePinScreen', {
-      pinReset: false,
-      account: {
-        ...account,
-        alias,
-        netType: accountNetType(account.address),
-      },
-    })
+      if (aliasExists) {
+        Alert.alert(
+          t('settings.sections.account.overwriteWalletAlert.title', {
+            alias,
+          }),
+          t('settings.sections.account.overwriteWalletAlert.body', {
+            alias,
+          }),
+          [
+            {
+              text: t('generic.cancel'),
+              style: 'cancel',
+            },
+            {
+              text: t('settings.sections.account.overwriteWallet'),
+              style: 'destructive',
+              onPress: execute,
+            },
+          ],
+        )
+      } else {
+        await execute()
+      }
+    } else {
+      onboardingNav.navigate('AccountCreatePinScreen', {
+        pinReset: false,
+        account: {
+          ...account,
+          alias,
+          netType: accountNetType(account.address),
+        },
+      })
+    }
   }, [
+    t,
+    accounts,
     account,
     hasAccounts,
     onboardingNav,
@@ -89,6 +126,7 @@ const AccountAssignScreen = () => {
     reset,
     updateDefaultAccountAddress,
     rootNav,
+    setUpserting,
   ])
 
   const onCheckboxToggled = useCallback(
@@ -179,15 +217,19 @@ const AccountAssignScreen = () => {
 
           <Box flex={1} />
 
-          <FabButton
-            onPress={handlePress}
-            icon="arrowRight"
-            iconColor="primary"
-            disabled={!alias}
-            backgroundColor="primaryText"
-            backgroundColorPressed="surfaceContrast"
-            backgroundColorOpacityPressed={0.1}
-          />
+          {upserting ? (
+            <CircleLoader color="white" loaderSize={40} />
+          ) : (
+            <FabButton
+              onPress={handlePress}
+              icon="arrowRight"
+              iconColor="primary"
+              disabled={!alias}
+              backgroundColor="primaryText"
+              backgroundColorPressed="surfaceContrast"
+              backgroundColorOpacityPressed={0.1}
+            />
+          )}
         </Box>
       </KeyboardAvoidingView>
     </SafeAreaBox>
