@@ -229,11 +229,7 @@ const PaymentScreen = () => {
       onTokenSelected(new PublicKey(paymentsArr[0].mint))
     }
 
-    if (
-      paymentsArr.find((p) => {
-        return !solAddressIsValid(p.payee)
-      })
-    ) {
+    if (paymentsArr.find((p) => !solAddressIsValid(p.payee))) {
       console.error('Invalid address found in deep link')
       return
     }
@@ -558,7 +554,9 @@ const PaymentScreen = () => {
         Object.values(accounts || {}),
         ({ address: addr }) => addr,
       )
-      let contact = allAccounts.find((c) => c.solanaAddress === address)
+      let contact = allAccounts.find(
+        (c) => c.solanaAddress && c.solanaAddress === address,
+      )
       if (!contact)
         contact = { address, netType: networkType, alias: domain || '' }
 

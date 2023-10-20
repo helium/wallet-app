@@ -1,55 +1,43 @@
+import BackArrow from '@assets/images/backArrow.svg'
+import Bookmark from '@assets/images/bookmark.svg'
+import BookmarkFilled from '@assets/images/bookmarkFilled.svg'
+import Close from '@assets/images/close.svg'
+import Refresh from '@assets/images/refresh.svg'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import {
+  SolanaSignAndSendTransactionInput,
+  SolanaSignMessageInput,
+} from '@solana/wallet-standard-features'
+import { Transaction, VersionedTransaction } from '@solana/web3.js'
+import { useSpacing } from '@theme/themeHooks'
+import bs58 from 'bs58'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Platform, StyleSheet } from 'react-native'
 import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
   WebView,
   WebViewMessageEvent,
   WebViewNavigation,
 } from 'react-native-webview'
-import { Transaction, VersionedTransaction } from '@solana/web3.js'
-import bs58 from 'bs58'
-import {
-  SolanaSignMessageInput,
-  SolanaSignAndSendTransactionInput,
-} from '@solana/wallet-standard-features'
-import { Platform, StyleSheet } from 'react-native'
-import BackArrow from '@assets/images/backArrow.svg'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import Close from '@assets/images/close.svg'
-import Bookmark from '@assets/images/bookmark.svg'
-import BookmarkFilled from '@assets/images/bookmarkFilled.svg'
-import Refresh from '@assets/images/refresh.svg'
-import { Portal } from '@gorhom/portal'
-import { useSpacing } from '@theme/themeHooks'
+import Box from '../../components/Box'
 import SafeAreaBox from '../../components/SafeAreaBox'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import injectWalletStandard from './walletStandard'
-import * as Logger from '../../utils/logger'
+import Text from '../../components/Text'
+import TouchableOpacityBox from '../../components/TouchableOpacityBox'
+import useBrowser from '../../hooks/useBrowser'
+import SolanaProvider, { useSolana } from '../../solana/SolanaProvider'
 import WalletSignBottomSheet from '../../solana/WalletSignBottomSheet'
 import {
   WalletSignBottomSheetRef,
   WalletStandardMessageTypes,
 } from '../../solana/walletSignBottomSheetTypes'
-import Box from '../../components/Box'
-import TouchableOpacityBox from '../../components/TouchableOpacityBox'
-import Text from '../../components/Text'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import * as Logger from '../../utils/logger'
 import { BrowserNavigationProp, BrowserStackParamList } from './browserTypes'
-import useBrowser from '../../hooks/useBrowser'
-import SolanaProvider, { useSolana } from '../../solana/SolanaProvider'
+import injectWalletStandard from './walletStandard'
 
 type Route = RouteProp<BrowserStackParamList, 'BrowserWebViewScreen'>
 
 export const BrowserWrapper = () => {
-  const isAndroid = useMemo(() => Platform.OS === 'android', [])
-
-  if (isAndroid) {
-    return (
-      <Portal name="browser-portal">
-        <SolanaProvider>
-          <BrowserWebViewScreen />
-        </SolanaProvider>
-      </Portal>
-    )
-  }
   return (
     <Box flex={1}>
       <SolanaProvider>
