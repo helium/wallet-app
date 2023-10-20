@@ -1,5 +1,5 @@
 import Address, { NetTypes as NetType, utils } from '@helium/address'
-import { PublicKey } from '@solana/web3.js'
+import { PUBLIC_KEY_LENGTH, PublicKey } from '@solana/web3.js'
 import Bcrypt from 'bcrypt-react-native'
 import BigNumber from 'bignumber.js'
 import bs58 from 'bs58'
@@ -32,7 +32,7 @@ export const heliumAddressToSolAddress = (heliumAddress: string) => {
 export const solAddressIsValid = (address: string) => {
   try {
     const pubKey = new PublicKey(address)
-    return PublicKey.isOnCurve(pubKey)
+    return pubKey.toBuffer().length === PUBLIC_KEY_LENGTH
   } catch {
     return false
   }
