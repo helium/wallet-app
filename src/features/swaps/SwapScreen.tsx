@@ -36,13 +36,14 @@ import useSubmitTxn from '@hooks/useSubmitTxn'
 import { useTreasuryPrice } from '@hooks/useTreasuryPrice'
 import { useNavigation } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
-import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useJupiter } from '@storage/JupiterProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { CSAccount } from '@storage/cloudStorage'
 import { useColors, useHitSlop } from '@theme/themeHooks'
 import { useBalance } from '@utils/Balance'
+import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import {
   TXN_FEE_IN_LAMPORTS,
   getAtaAccountCreationFee,
@@ -605,7 +606,7 @@ const SwapScreen = () => {
         // Ensure that we keep at least 0.02 sol
         minTokens={
           inputMint.equals(NATIVE_MINT)
-            ? new BN(0.02 * LAMPORTS_PER_SOL)
+            ? new BN(MIN_BALANCE_THRESHOLD)
             : undefined
         }
         usePortal
