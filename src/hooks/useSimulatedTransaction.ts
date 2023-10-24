@@ -4,7 +4,6 @@ import { AccountLayout, NATIVE_MINT, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
   AddressLookupTableAccount,
   Connection,
-  LAMPORTS_PER_SOL,
   ParsedAccountData,
   PublicKey,
   SimulatedTransactionAccountInfo,
@@ -14,6 +13,7 @@ import {
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { useModal } from '@storage/ModalsProvider'
 import { useBalance } from '@utils/Balance'
+import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import { getCollectableByMint, isInsufficientBal } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { useMemo, useState } from 'react'
@@ -47,7 +47,7 @@ export function useSimulatedTransaction(
   const { showModal } = useModal()
   const solBalance = useBN(useSolOwnedAmount(wallet).amount)
   const hasEnoughSol = useMemo(() => {
-    return (solBalance || new BN(0)).gt(new BN(0.02 * LAMPORTS_PER_SOL))
+    return (solBalance || new BN(0)).gt(new BN(MIN_BALANCE_THRESHOLD))
   }, [solBalance])
   const { autoGasManagementToken } = useAppStorage()
 

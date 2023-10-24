@@ -11,7 +11,8 @@ import useHaptic from '@hooks/useHaptic'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { useNavigation } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
-import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
+import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { useCallback, useMemo } from 'react'
@@ -107,7 +108,7 @@ const TokenListItem = ({ mint }: Props) => {
             />
           )}
         </Box>
-        {mint.equals(NATIVE_MINT) && (amount || 0) < 0.02 * LAMPORTS_PER_SOL && (
+        {mint.equals(NATIVE_MINT) && (amount || 0) < MIN_BALANCE_THRESHOLD && (
           <Box mr="m">
             <InfoWarning width={28} height={28} />
           </Box>

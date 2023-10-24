@@ -21,9 +21,10 @@ import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { RouteProp, useRoute } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
-import { LAMPORTS_PER_SOL } from '@solana/web3.js'
+import { useModal } from '@storage/ModalsProvider'
 import globalStyles from '@theme/globalStyles'
 import { useColors } from '@theme/themeHooks'
+import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Platform, View } from 'react-native'
@@ -33,7 +34,6 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useModal } from '@storage/ModalsProvider'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { Activity } from '../../types/activity'
@@ -499,7 +499,7 @@ const AccountTokenScreen = () => {
           </Animated.View>
           {mint.equals(NATIVE_MINT) &&
           !isDevnet &&
-          (amount || 0) < 0.02 * LAMPORTS_PER_SOL ? (
+          (amount || 0) < MIN_BALANCE_THRESHOLD ? (
             <Box
               minHeight={topHeaderHeight}
               mb="l"

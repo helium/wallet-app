@@ -2,7 +2,7 @@ import { daoKey, subDaoKey } from '@helium/helium-sub-daos-sdk'
 import { lazyDistributorKey } from '@helium/lazy-distributor-sdk'
 import { HNT_MINT, IOT_MINT, MOBILE_MINT, DC_MINT } from '@helium/spl-utils'
 import { NATIVE_MINT } from '@solana/spl-token'
-import { PublicKey } from '@solana/web3.js'
+import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 
 export const Mints: Record<string, string> = {
   SOL: NATIVE_MINT.toBase58(),
@@ -20,3 +20,5 @@ export const IOT_LAZY_KEY = lazyDistributorKey(new PublicKey(Mints.IOT))[0]
 export const DAO_KEY = daoKey(HNT_MINT)[0]
 export const IOT_SUB_DAO_KEY = subDaoKey(IOT_MINT)[0]
 export const MOBILE_SUB_DAO_KEY = subDaoKey(MOBILE_MINT)[0]
+
+export const MIN_BALANCE_THRESHOLD = 0.02 * LAMPORTS_PER_SOL
