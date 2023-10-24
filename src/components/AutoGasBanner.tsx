@@ -1,5 +1,4 @@
 import CloseCircle from '@assets/images/closeCircleFilled.svg'
-import Info from '@assets/images/info.svg'
 import Warning from '@assets/images/warning.svg'
 import {
   useMint,
@@ -38,6 +37,7 @@ import { ReAnimatedBox } from './AnimatedBox'
 import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
+import CircleLoader from './CircleLoader'
 
 const MIN_HEIGHT = 52
 
@@ -124,6 +124,7 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
           url: '',
           additionalMessage: t('transactions.autoGasConvert', { symbol }),
           serializedTxs: [serializedTx],
+          header: t('transactions.autoGasConvertHeader'),
         })
         if (decision) {
           await sendAndConfirmRawTransaction(
@@ -185,7 +186,7 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
           {error ? (
             <Warning width={24} height={24} />
           ) : (
-            <Info width={24} height={24} />
+            <CircleLoader loaderSize={24} />
           )}
         </Box>
         <Text

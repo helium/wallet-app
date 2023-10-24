@@ -19,6 +19,7 @@ export type WalletSignOpts = {
   serializedTxs: Buffer[] | undefined
   warning?: string
   additionalMessage?: string
+  header?: string
 }
 
 export type WalletSignBottomSheetRef = {
@@ -27,6 +28,7 @@ export type WalletSignBottomSheetRef = {
     url,
     additionalMessage,
     serializedTxs,
+    header,
   }: WalletSignOpts) => Promise<boolean>
   hide: () => void
 }

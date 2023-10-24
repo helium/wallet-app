@@ -1099,5 +1099,6 @@ export default {
       'Recipient Account is empty, Double check the address before signing.',
     autoGasConvert:
       'Sign this transaction to convert {{ symbol }} into 0.02 SOL for gas.',
+    autoGasConvertHeader: 'Auto Gas Conversion: Low on SOL',
   },
 }

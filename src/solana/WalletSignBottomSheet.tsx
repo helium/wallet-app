@@ -61,6 +61,7 @@ const WalletSignBottomSheet = forwardRef(
       url: '',
       additionalMessage: '',
       serializedTxs: undefined,
+      header: undefined,
     })
 
     const itemsPerPage = 5
@@ -140,6 +141,7 @@ const WalletSignBottomSheet = forwardRef(
         warning,
         additionalMessage,
         serializedTxs,
+        header,
       }: WalletSignOpts) => {
         bottomSheetModalRef.current?.expand()
         setTotalSolFee(0)
@@ -150,6 +152,7 @@ const WalletSignBottomSheet = forwardRef(
           warning,
           additionalMessage,
           serializedTxs,
+          header,
         })
         const p = new Promise<boolean>((resolve) => {
           promiseResolve = resolve
@@ -249,6 +252,11 @@ const WalletSignBottomSheet = forwardRef(
               onLayout={handleContentLayout}
             >
               <Box marginBottom="l">
+                {walletSignOpts.header && (
+                  <Text variant="body1Medium" color="white" textAlign="center">
+                    {walletSignOpts.header}
+                  </Text>
+                )}
                 <Text
                   variant="body1Medium"
                   color="secondaryText"
