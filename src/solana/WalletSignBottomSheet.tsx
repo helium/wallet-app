@@ -253,7 +253,7 @@ const WalletSignBottomSheet = forwardRef(
             >
               <Box marginBottom="l">
                 {walletSignOpts.header && (
-                  <Text variant="body1Medium" color="white" textAlign="center">
+                  <Text variant="h4Medium" color="white" textAlign="center">
                     {walletSignOpts.header}
                   </Text>
                 )}

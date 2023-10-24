@@ -398,7 +398,8 @@ export default {
     body: 'Please swap one of the following tokens to receive more SOL in order to continue. Tokens that you dont have any balance in will be disabled.',
     noBalance:
       'You currently dont hold a balance of any of the tokens supported by this swap.',
-    useAuto: 'Automatically manage gas by swapping this token to SOL as needed',
+    useAuto:
+      'Automatically manage solana transaction fees by swapping this token to SOL as needed',
   },
   swapsScreen: {
     title: 'Swap my Tokens',
@@ -907,9 +908,9 @@ export default {
       warning: 'Helium cannot recover these words',
     },
     autoGasManagement: {
-      title: 'Automatic Gas Management',
+      title: 'Automatic Fee Management',
       body: 'Allow helium wallet to automatically manage your SOL balance by swapping the selected token into SOL as needed.',
-      enabled: 'Enable Auto Gas Management',
+      enabled: 'Enable Auto Fee Management',
       selectTokenBody: 'Which token should be swapped to SOL?',
     },
     sections: {
@@ -937,7 +938,7 @@ export default {
         title: 'App Settings',
         version: 'App Version',
         explorer: 'Preferred Hotspot Explorer',
-        autoGasManager: 'Automatic Gas Management',
+        autoGasManager: 'Automatic Fee Management',
       },
       backup: {
         revealPrivateKey: 'Reveal Private Key',
@@ -1098,7 +1099,7 @@ export default {
     recipientNonExistent:
       'Recipient Account is empty, Double check the address before signing.',
     autoGasConvert:
-      'Sign this transaction to convert {{ symbol }} into 0.02 SOL for gas.',
-    autoGasConvertHeader: 'Auto Gas Conversion: Low on SOL',
+      'Sign this transaction to convert {{ symbol }} into 0.02 SOL for transaction fees.',
+    autoGasConvertHeader: 'Auto Fee Conversion: Low on SOL',
   },
 }
