@@ -7,7 +7,7 @@ import React, {
 } from 'react'
 import { useAsync } from 'react-async-hook'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { Cluster } from '@solana/web3.js'
+import { Cluster, PublicKey } from '@solana/web3.js'
 import { Intervals } from '../features/settings/useAuthIntervals'
 import {
   getSecureItem,
@@ -19,6 +19,9 @@ const VOTE_TUTORIAL_SHOWN = 'voteTutorialShown'
 const DAPP_TUTORIAL_SHOWN = 'dAppTutorialShown'
 
 const useAppStorageHook = () => {
+  const [autoGasManagementToken, setAutoGasManagementToken] = useState<
+    PublicKey | undefined
+  >(undefined)
   const [pin, setPin] = useState<{
     value: string
     status: 'on' | 'restored' | 'off'
@@ -64,6 +67,9 @@ const useAppStorageHook = () => {
     // TODO: When performing an account restore pin will not be restored.
     // Find a way to detect when a restore happens and prompt user for a new pin
     try {
+      const nextAutoGasManagementToken = await getSecureItem(
+        'autoGasManagementToken',
+      )
       const nextPin = await getSecureItem('pin')
       const nextPinForPayment = await getSecureItem('pinForPayment')
       const nextAuthInterval = await getSecureItem('authInterval')
@@ -93,6 +99,11 @@ const useAppStorageHook = () => {
         setLocked(false)
       }
 
+      setAutoGasManagementToken(
+        nextAutoGasManagementToken
+          ? new PublicKey(nextAutoGasManagementToken)
+          : undefined,
+      )
       setCurrency(nextCurrency || 'USD')
       setConvertToCurrency(nextConvertToCurrency === 'true')
       setEnableTestnet(nextEnableTestnet === 'true')
@@ -114,6 +125,17 @@ const useAppStorageHook = () => {
       setPin({ value: '', status: 'off' })
     }
   }, [])
+
+  const updateAutoGasManagementToken = useCallback(
+    async (nextToken: PublicKey | undefined) => {
+      setAutoGasManagementToken(nextToken)
+      return storeSecureItem(
+        'autoGasManagementToken',
+        nextToken ? nextToken.toBase58() : '',
+      )
+    },
+    [],
+  )
 
   const updatePin = useCallback(async (nextPin: string) => {
     setPin({ value: nextPin, status: nextPin ? 'on' : 'off' })
@@ -220,6 +242,8 @@ const useAppStorageHook = () => {
   )
 
   return {
+    autoGasManagementToken,
+    updateAutoGasManagementToken,
     authInterval,
     convertToCurrency,
     currency,
@@ -253,6 +277,7 @@ const useAppStorageHook = () => {
 }
 
 const initialState = {
+  autoGasManagementToken: undefined,
   authInterval: Intervals.IMMEDIATELY,
   convertToCurrency: false,
   currency: 'USD',
@@ -265,6 +290,7 @@ const initialState = {
   setScannedAddress: () => undefined,
   setDAppTutorialCompleted: async () => undefined,
   setVoteTutorialCompleted: () => new Promise<void>((resolve) => resolve()),
+  updateAutoGasManagementToken: async () => undefined,
   updateAuthInterval: async () => undefined,
   updateCurrency: async () => undefined,
   updateExplorer: async () => undefined,

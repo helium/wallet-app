@@ -60,6 +60,8 @@ export type HNTKeyboardRef = {
 type Props = {
   mint?: PublicKey
   networkFee?: BN
+  // Ensure a minimum number of tokens, useful for swapping sol
+  minTokens?: BN
   children: ReactNode
   handleVisible?: (visible: boolean) => void
   onConfirmBalance: (opts: {
@@ -72,6 +74,7 @@ type Props = {
 const HNTKeyboardSelector = forwardRef(
   (
     {
+      minTokens,
       children,
       onConfirmBalance,
       handleVisible,
@@ -197,8 +200,15 @@ const HNTKeyboardSelector = forwardRef(
       let maxBalance: BN | undefined = balanceForMint
         ? new BN(balanceForMint.toString()).sub(currentAmount)
         : undefined
+      if (minTokens && maxBalance) {
+        maxBalance = maxBalance.sub(minTokens)
+      }
       if (mint?.equals(NATIVE_MINT)) {
         maxBalance = networkFee ? maxBalance?.sub(networkFee) : maxBalance
+      }
+
+      if (maxBalance?.lt(new BN(0))) {
+        maxBalance = new BN(0)
       }
 
       const val = humanReadable(maxBalance, decimals) || '0'
@@ -207,6 +217,7 @@ const HNTKeyboardSelector = forwardRef(
       setMaxEnabled((m) => !m)
     }, [
       valueAsBalance,
+      minTokens,
       networkFee,
       getNextPayments,
       balanceForMint,

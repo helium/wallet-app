@@ -398,6 +398,7 @@ export default {
     body: 'Please swap one of the following tokens to receive more SOL in order to continue. Tokens that you dont have any balance in will be disabled.',
     noBalance:
       'You currently dont hold a balance of any of the tokens supported by this swap.',
+    useAuto: 'Automatically manage gas by swapping this token to SOL as needed',
   },
   swapsScreen: {
     title: 'Swap my Tokens',
@@ -602,6 +603,7 @@ export default {
     and: 'and',
     back: 'Back',
     cancel: 'Cancel',
+    save: 'Save',
     swap: 'Swap',
     clear: 'Clear',
     confirm: 'Confirm',
@@ -617,6 +619,7 @@ export default {
     calculatingTransactionFee: 'Calculating Transaction Fee...',
     mainnet: 'Mainnet',
     next: 'Next',
+    none: 'None',
     solanaAddress: 'Solana Address',
     notValidAddress: 'Not a valid Wallet Address.',
     notValidSolanaAddress: 'Not a valid Solana Address.',
@@ -628,6 +631,7 @@ export default {
     remove: 'Remove',
     share: 'Share',
     skip: 'Skip',
+    swappingSol: 'Auto swapping {{ amount }} {{ symbol }} to 0.02 SOL',
     success: 'Success',
     testnet: 'Testnet',
     total: 'Total',
@@ -902,6 +906,12 @@ export default {
       title: 'Your {{numWords}} Word Password',
       warning: 'Helium cannot recover these words',
     },
+    autoGasManagement: {
+      title: 'Automatic Gas Management',
+      body: 'Allow helium wallet to automatically manage your SOL balance by swapping the selected token into SOL as needed.',
+      enabled: 'Enable Auto Gas Management',
+      selectTokenBody: 'Which token should be swapped to SOL?',
+    },
     sections: {
       account: {
         alias: 'Wallet Alias',
@@ -927,6 +937,7 @@ export default {
         title: 'App Settings',
         version: 'App Version',
         explorer: 'Preferred Hotspot Explorer',
+        autoGasManager: 'Automatic Gas Management',
       },
       backup: {
         revealPrivateKey: 'Reveal Private Key',

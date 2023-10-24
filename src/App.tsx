@@ -1,3 +1,4 @@
+import AutoGasBanner from '@components/AutoGasBanner'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { PortalProvider } from '@gorhom/portal'
 import { OnboardingProvider as HotspotOnboardingProvider } from '@helium/react-native-sdk'
@@ -19,12 +20,12 @@ import Config from 'react-native-config'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import OneSignal, { OpenedEvent } from 'react-native-onesignal'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import WalletOnboardingProvider from './features/onboarding/OnboardingProvider'
 import NetworkAwareStatusBar from './components/NetworkAwareStatusBar'
 import SplashScreen from './components/SplashScreen'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
 import LockScreen from './features/lock/LockScreen'
 import InsufficientSolConversionModal from './features/modals/InsufficientSolConversionModal'
+import WalletOnboardingProvider from './features/onboarding/OnboardingProvider'
 import SecurityScreen from './features/security/SecurityScreen'
 import useMount from './hooks/useMount'
 import { navigationRef } from './navigation/NavigationHelper'
@@ -132,6 +133,7 @@ const App = () => {
                                 <BalanceProvider>
                                   <TokenListProvider>
                                     <TokensProvider>
+                                      <AutoGasBanner />
                                       <ModalProvider>
                                         <WalletSignProvider>
                                           <JupiterProvider>

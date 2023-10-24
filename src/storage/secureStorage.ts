@@ -25,6 +25,7 @@ export enum SecureStorageKeys {
   DONE_SOLANA_MIGRATION = 'doneSolanaMigration',
   MANUAL_SOLANA_MIGRATION = 'manualSolanaMigration',
   SESSION_KEY = 'sessionKey',
+  AUTO_GAS_MANAGEMENT_TOKEN = 'autoGasManagementToken',
 }
 type SecureStorageKeyTypes = `${SecureStorageKeys}`
 

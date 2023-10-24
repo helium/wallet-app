@@ -15,6 +15,8 @@ export const TokenPill = memo(
     isActive = false,
     isDisabled = false,
     onPress,
+    activeColor = 'black',
+    inactiveColor = 'secondary',
     ...rest
   }: {
     mint: PublicKey
@@ -23,6 +25,8 @@ export const TokenPill = memo(
     isDisabled?: boolean
     onPress: () => void
     style?: ViewStyle | undefined
+    activeColor?: string
+    inactiveColor?: string
   }) => {
     const { symbol, json } = useMetaplexMetadata(mint)
     const { backgroundStyle: generateBackgroundStyle } = useCreateOpacity()
@@ -44,11 +48,13 @@ export const TokenPill = memo(
           return generateBackgroundStyle('surfaceSecondary', 1.0)
         }
         if (active) {
-          return generateBackgroundStyle('black', 1.0)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return generateBackgroundStyle(activeColor as any, 1.0)
         }
-        return generateBackgroundStyle('secondary', 1.0)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return generateBackgroundStyle(inactiveColor as any, 1.0)
       },
-      [generateBackgroundStyle],
+      [generateBackgroundStyle, inactiveColor, activeColor],
     )
 
     return (

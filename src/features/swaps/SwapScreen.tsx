@@ -33,8 +33,10 @@ import {
 import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import useSubmitTxn from '@hooks/useSubmitTxn'
+import { useTreasuryPrice } from '@hooks/useTreasuryPrice'
 import { useNavigation } from '@react-navigation/native'
-import { PublicKey } from '@solana/web3.js'
+import { NATIVE_MINT } from '@solana/spl-token'
+import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useJupiter } from '@storage/JupiterProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
@@ -59,7 +61,6 @@ import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { LayoutAnimation } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { useTreasuryPrice } from '@hooks/useTreasuryPrice'
 import { useSolana } from '../../solana/SolanaProvider'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
@@ -601,6 +602,12 @@ const SwapScreen = () => {
         onConfirmBalance={onConfirmBalance}
         mint={inputMint}
         networkFee={SOL_TXN_FEE}
+        // Ensure that we keep at least 0.02 sol
+        minTokens={
+          inputMint.equals(NATIVE_MINT)
+            ? new BN(0.02 * LAMPORTS_PER_SOL)
+            : undefined
+        }
         usePortal
       >
         <TokenSelector

@@ -43,7 +43,7 @@ const ProvidedListItem = ({
   return (
     <ListItem
       title={symbol || ''}
-      Icon={json?.image ? () => <TokenIcon img={json.image} /> : undefined}
+      Icon={json?.image ? <TokenIcon size={30} img={json.image} /> : undefined}
       onPress={onPress}
       selected={selected}
       paddingStart="l"

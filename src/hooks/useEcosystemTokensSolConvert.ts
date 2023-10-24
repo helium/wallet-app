@@ -11,7 +11,7 @@ import * as logger from '../utils/logger'
 import { useBN } from './useBN'
 import { useCurrentWallet } from './useCurrentWallet'
 
-export const useEecosystemTokenSolConvert = () => {
+export const useEcosystemTokenSolConvert = () => {
   const { cluster, anchorProvider } = useSolana()
   const wallet = useCurrentWallet()
   const hntBalance = useBN(useOwnedAmount(wallet, HNT_MINT).amount)
@@ -109,6 +109,7 @@ export const useEecosystemTokenSolConvert = () => {
       return tx
     } catch (e) {
       logger.error(e)
+      throw e
     }
   }, [baseUrl, hasEnoughHntForSol, anchorProvider])
 
