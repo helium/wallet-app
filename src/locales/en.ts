@@ -15,7 +15,12 @@ export default {
     title: 'Name this wallet',
   },
   errors: {
+    account: 'Account missing',
     accountNotSelected: 'There must be a wallet selected to submit a txn',
+    swap: {
+      routes: 'Swap routes missing',
+      tx: 'Swap tx not generated',
+    },
   },
   hotspotOnboarding: {
     scan: {
@@ -171,6 +176,7 @@ export default {
     },
     solWarning:
       'Your balance may not have enough SOL to cover all transactions. Solana wallets require a minimum of 0.00089088 SOL. We recommend keeping greater than 0.02 sol in your wallet for the best experience',
+    solSwap: 'Swap Tokens To SOL',
     hideFilters: 'Hide Filters',
     myTransactions: 'My Transactions',
     showFilters: 'Show Filters',
@@ -387,6 +393,12 @@ export default {
     settingUpCompleteBody:
       'The gain and elevation of your antenna have been updated.',
   },
+  insufficientSolConversionModal: {
+    title: 'Insufficient SOL',
+    body: 'Please swap one of the following tokens to receive more SOL in order to continue. Tokens that you dont have any balance in will be disabled.',
+    noBalance:
+      'You currently dont hold a balance of any of the tokens supported by this swap.',
+  },
   swapsScreen: {
     title: 'Swap my Tokens',
     swapTokens: 'Swap Tokens',
@@ -394,6 +406,13 @@ export default {
     youReceive: 'You Receive',
     chooseTokenToSwap: 'Choose a token to swap',
     chooseTokenToReceive: 'Choose a token to receive',
+    slippage: 'Slippage',
+    slippageLabelValue:
+      '<b>Slippage</b> <secondaryText> {{ amount }}% </secondaryText>',
+    slippageInfo:
+      'Slippage is the difference between the expected price of an order and the price when the order actually executes. The slippage percentage shows how much the price for a specific asset has moved. Due to the volatility of cryptocurrency, the price of an asset can fluctuate often depending on trade volume and activity.\n\nYour trade will not execute if slippage moves unfavorably by more than this amount during execution.',
+    minReceived:
+      '<b>Minimum Received</b> <secondaryText> {{ amount }} </secondaryText>',
     swapComplete: 'Tokens swapped!',
     swapCompleteBody: 'The tokens in your wallet have been updated.',
     swappingTokens: 'Swapping your tokens...',
@@ -583,6 +602,7 @@ export default {
     and: 'and',
     back: 'Back',
     cancel: 'Cancel',
+    swap: 'Swap',
     clear: 'Clear',
     confirm: 'Confirm',
     copied: 'Copied {{target}}',

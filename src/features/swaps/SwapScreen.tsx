@@ -4,11 +4,12 @@ import Refresh from '@assets/images/refresh.svg'
 import AddressBookSelector, {
   AddressBookRef,
 } from '@components/AddressBookSelector'
-import { ReAnimatedBox } from '@components/AnimatedBox'
+import { ReAnimatedBlurBox, ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
 import CloseButton from '@components/CloseButton'
+import { FadeInFast } from '@components/FadeInOut'
 import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
@@ -16,7 +17,6 @@ import TextInput from '@components/TextInput'
 import TextTransform from '@components/TextTransform'
 import TokenSelector, { TokenSelectorRef } from '@components/TokenSelector'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import TreasuryWarningScreen from '@components/TreasuryWarningScreen'
 import {
   useMint,
   useOwnedAmount,
@@ -32,32 +32,40 @@ import {
 } from '@helium/spl-utils'
 import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import { useTreasuryPrice } from '@hooks/useTreasuryPrice'
+import useSubmitTxn from '@hooks/useSubmitTxn'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { useJupiter } from '@storage/JupiterProvider'
+import { useVisibleTokens } from '@storage/TokensProvider'
 import { CSAccount } from '@storage/cloudStorage'
 import { useColors, useHitSlop } from '@theme/themeHooks'
+import { useBalance } from '@utils/Balance'
 import {
   TXN_FEE_IN_LAMPORTS,
-  TXN_FEE_IN_SOL,
   getAtaAccountCreationFee,
   humanReadable,
 } from '@utils/solanaUtils'
 import BN from 'bn.js'
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { LayoutAnimation } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import useSubmitTxn from '../../hooks/useSubmitTxn'
+import { useTreasuryPrice } from '@hooks/useTreasuryPrice'
 import { useSolana } from '../../solana/SolanaProvider'
-import { useBalance } from '../../utils/Balance'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
 import { SwapNavigationProp } from './swapTypes'
 
-const SOL_TXN_FEE = new BN(TXN_FEE_IN_SOL)
+const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 
 // Selector Mode enum
 enum SelectorMode {
@@ -68,41 +76,81 @@ enum SelectorMode {
 const SwapScreen = () => {
   const { t } = useTranslation()
   const { currentAccount } = useAccountStorage()
-  const { anchorProvider, connection } = useSolana()
+  const { isDevnet, anchorProvider, connection } = useSolana()
+  const wallet = useCurrentWallet()
+  const colors = useColors()
   const navigation = useNavigation<SwapNavigationProp>()
-  const { submitTreasurySwap, submitMintDataCredits } = useSubmitTxn()
+  const { submitJupiterSwap, submitTreasurySwap, submitMintDataCredits } =
+    useSubmitTxn()
   const edges = useMemo(() => ['bottom'] as Edge[], [])
   const [selectorMode, setSelectorMode] = useState(SelectorMode.youPay)
-  const [youPayMint, setYouPayMint] = useState<PublicKey>(MOBILE_MINT)
-  const colors = useColors()
-  const [youPayTokenAmount, setYouPayTokenAmount] = useState<number>(0)
-  const [youReceiveMint, setYouReceiveMint] = useState<PublicKey>(HNT_MINT)
-  const [solFee, setSolFee] = useState<BN | undefined>(undefined)
+  const [inputMint, setInputMint] = useState<PublicKey>(MOBILE_MINT)
+  const [inputAmount, setInputAmount] = useState<number>(0)
+  const [outputMint, setOutputMint] = useState<PublicKey>(HNT_MINT)
+  const [slippageBps, setSlippageBps] = useState<number>(50)
+  const [slippageInfoVisible, setSlippageInfoVisible] = useState(false)
+  const [solFee, setSolFee] = useState<BN>(SOL_TXN_FEE)
   const [hasInsufficientBalance, setHasInsufficientBalance] = useState<
     undefined | boolean
   >()
   const [networkError, setNetworkError] = useState<undefined | string>()
-  const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const wallet = useCurrentWallet()
   const solBalance = useBN(useSolOwnedAmount(wallet).amount)
   const hntBalance = useBN(useOwnedAmount(wallet, HNT_MINT).amount)
   const { networkTokensToDc } = useBalance()
+  const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
-  const {
-    price,
-    loading: loadingPrice,
-    freezeDate,
-  } = useTreasuryPrice(youPayMint, youPayTokenAmount)
+  const addressBookRef = useRef<AddressBookRef>(null)
   const [swapping, setSwapping] = useState(false)
   const [transactionError, setTransactionError] = useState<undefined | string>()
   const [hasRecipientError, setHasRecipientError] = useState(false)
   const [recipient, setRecipient] = useState('')
   const [isRecipientOpen, setRecipientOpen] = useState(false)
+  const { visibleTokens } = useVisibleTokens()
+  const { price, loading: loadingPrice } = useTreasuryPrice(
+    inputMint,
+    inputAmount,
+  )
+  const {
+    loading,
+    error: jupiterError,
+    routeMap,
+    routes,
+    getRoute,
+  } = useJupiter()
+
+  const inputMintDecimals = useMint(inputMint)?.info?.decimals
+  const outputMintDecimals = useMint(outputMint)?.info?.decimals
+
+  const validInputMints = useMemo(() => {
+    if (isDevnet)
+      return [HNT_MINT.toBase58(), MOBILE_MINT.toBase58(), IOT_MINT.toBase58()]
+    return [...routeMap.keys()].filter((key) => visibleTokens.has(key))
+  }, [visibleTokens, routeMap, isDevnet])
+
+  const validOutputMints = useMemo(() => {
+    if (isDevnet) {
+      if (HNT_MINT.equals(inputMint)) return [DC_MINT.toBase58()]
+      return [HNT_MINT.toBase58()]
+    }
+
+    const routeMints =
+      routeMap
+        .get(inputMint?.toBase58() || '')
+        ?.filter(
+          (key) =>
+            visibleTokens.has(key) && !inputMint.equals(new PublicKey(key)),
+        ) || []
+
+    return inputMint.equals(HNT_MINT)
+      ? [DC_MINT.toBase58(), ...routeMints]
+      : routeMints
+  }, [visibleTokens, routeMap, inputMint, isDevnet])
+
   const handleRecipientClick = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
     setRecipientOpen(!isRecipientOpen)
   }, [isRecipientOpen, setRecipientOpen])
-  const addressBookRef = useRef<AddressBookRef>(null)
+
   const handleAddressBookSelected = useCallback(() => {
     addressBookRef?.current?.showAddressBook({})
   }, [])
@@ -123,19 +171,22 @@ const SwapScreen = () => {
 
   // If user does not have enough tokens to swap for greater than 0.00000001 tokens
   const insufficientTokensToSwap = useMemo(() => {
-    if (
-      youPayMint.equals(HNT_MINT) &&
-      (hntBalance || new BN(0)).lt(new BN(1))
-    ) {
+    if (inputMint.equals(HNT_MINT) && (hntBalance || new BN(0)).lt(new BN(1))) {
       return true
     }
 
+    if (isDevnet) {
+      return (
+        !inputMint.equals(HNT_MINT) && !(price && price > 0) && inputAmount > 0
+      )
+    }
+
     return (
-      !youPayMint.equals(HNT_MINT) &&
-      !(price && price > 0) &&
-      youPayTokenAmount > 0
+      !inputMint.equals(HNT_MINT) &&
+      !(routes?.outAmount && new BN(routes?.outAmount || 0).gt(new BN(0))) &&
+      inputAmount > 0
     )
-  }, [hntBalance, price, youPayTokenAmount, youPayMint])
+  }, [hntBalance, inputAmount, inputMint, routes, price, isDevnet])
 
   const showError = useMemo(() => {
     if (hasRecipientError) return t('generic.notValidSolanaAddress')
@@ -144,26 +195,25 @@ const SwapScreen = () => {
     if (hasInsufficientBalance) return t('generic.insufficientBalance')
     if (networkError) return networkError
     if (transactionError) return transactionError
+    if (jupiterError) return jupiterError
   }, [
     hasRecipientError,
     hasInsufficientBalance,
     insufficientTokensToSwap,
     networkError,
+    jupiterError,
     t,
     transactionError,
   ])
 
-  const treasuryFrozen = useMemo(() => {
-    if (!freezeDate) return false
-    return freezeDate.getTime() > Date.now()
-  }, [freezeDate])
-
   const refresh = useCallback(async () => {
-    setYouPayTokenAmount(0)
-    setYouReceiveMint(HNT_MINT)
-    setYouPayMint(MOBILE_MINT)
+    setInputAmount(0)
+    setInputMint(MOBILE_MINT)
+    setOutputMint(HNT_MINT)
+    setSolFee(SOL_TXN_FEE)
+    setRecipient('')
+    setRecipientOpen(false)
     setSelectorMode(SelectorMode.youPay)
-    setSolFee(undefined)
     setNetworkError(undefined)
   }, [])
 
@@ -181,7 +231,7 @@ const SwapScreen = () => {
     const ataFee = await getAtaAccountCreationFee({
       solanaAddress: currentAccount.solanaAddress,
       connection,
-      mint: youReceiveMint,
+      mint: outputMint,
     })
     fee = fee.add(ataFee)
 
@@ -194,8 +244,8 @@ const SwapScreen = () => {
     anchorProvider,
     currentAccount?.solanaAddress,
     solBalance,
-    youReceiveMint,
-    youPayMint,
+    inputMint,
+    outputMint,
   ])
 
   const handleClose = useCallback(() => {
@@ -206,79 +256,189 @@ const SwapScreen = () => {
     refresh()
   }, [])
 
+  useEffect(() => {
+    // ensure outputMint can be swapable to inputMint
+    if (!inputMint.equals(HNT_MINT) && !outputMint.equals(DC_MINT)) {
+      if (
+        validOutputMints &&
+        !validOutputMints?.includes(outputMint?.toBase58() || '')
+      ) {
+        setOutputMint(new PublicKey(validOutputMints[0]))
+      }
+    }
+  }, [inputMint, outputMint, validOutputMints])
+
+  useEffect(() => {
+    // if changing outputMint ensure we get new routes
+    ;(async () => {
+      if (
+        !isDevnet &&
+        typeof inputMintDecimals !== 'undefined' &&
+        typeof inputAmount !== 'undefined' &&
+        inputAmount > 0 &&
+        !outputMint.equals(DC_MINT)
+      ) {
+        setRecipient('')
+        setRecipientOpen(false)
+        await getRoute({
+          amount: toBN(inputAmount || 0, inputMintDecimals).toNumber(),
+          inputMint: inputMint.toBase58(),
+          outputMint: outputMint.toBase58(),
+          slippageBps,
+        })
+      }
+    })()
+  }, [
+    isDevnet,
+    inputAmount,
+    outputMint,
+    inputMint,
+    slippageBps,
+    inputMintDecimals,
+    getRoute,
+    setRecipient,
+    setRecipientOpen,
+  ])
+
   const Header = useMemo(() => {
     return (
       <Box
         flexDirection="row"
         justifyContent="center"
         alignItems="center"
-        marginTop="l"
+        paddingHorizontal="m"
       >
-        <CloseButton marginStart="m" onPress={handleClose} />
+        <CloseButton onPress={handleClose} />
         <Text variant="h4" color="white" flex={1} textAlign="center">
           {t('swapsScreen.title')}
         </Text>
-        <TouchableOpacityBox padding="m" marginEnd="s" onPress={refresh}>
+        <TouchableOpacityBox paddingEnd="m" onPress={refresh}>
           <Refresh width={16} height={16} />
         </TouchableOpacityBox>
       </Box>
     )
   }, [refresh, t, handleClose])
 
+  const Slippage = useMemo(() => {
+    if (isDevnet)
+      return (
+        <Box
+          flexDirection="row"
+          borderRadius="l"
+          marginTop="xl"
+          marginBottom="xxl"
+          marginHorizontal="m"
+          backgroundColor="surfaceSecondary"
+        />
+      )
+
+    const bpsOptions: number[] = [50, 100, 150]
+    const disabled = outputMint.equals(DC_MINT)
+
+    return (
+      <Box
+        flexDirection="row"
+        borderRadius="l"
+        marginTop="xl"
+        marginBottom="xxl"
+        marginHorizontal="m"
+        backgroundColor="surfaceSecondary"
+        opacity={disabled ? 0.3 : 1}
+      >
+        <TouchableOpacityBox
+          flex={1}
+          borderEndWidth={2}
+          alignItems="center"
+          justifyContent="center"
+          alignContent="center"
+          flexDirection="row"
+          paddingHorizontal="ms"
+          onPress={() => setSlippageInfoVisible(true)}
+        >
+          <Text variant="body3Medium" color="surfaceSecondaryText">
+            {t('swapsScreen.slippage')}
+          </Text>
+        </TouchableOpacityBox>
+
+        {bpsOptions.map((bps, idx) => {
+          const isLast = idx === bpsOptions.length - 1
+          const isActive = slippageBps === bps
+
+          return (
+            <TouchableOpacityBox
+              disabled={disabled}
+              key={bps}
+              flex={1}
+              padding="ms"
+              alignItems="center"
+              borderEndWidth={isLast ? 0 : 2}
+              borderTopRightRadius={isLast ? 'l' : 'none'}
+              borderBottomRightRadius={isLast ? 'l' : 'none'}
+              backgroundColor={
+                !disabled && isActive ? 'black500' : 'surfaceSecondary'
+              }
+              onPress={() => setSlippageBps(bps)}
+            >
+              <Text
+                variant="body3Medium"
+                color={isActive ? 'primaryText' : 'surfaceSecondaryText'}
+              >
+                {bps / 100}%
+              </Text>
+            </TouchableOpacityBox>
+          )
+        })}
+      </Box>
+    )
+  }, [
+    slippageBps,
+    setSlippageBps,
+    outputMint,
+    setSlippageInfoVisible,
+    t,
+    isDevnet,
+  ])
+
   const setTokenTypeHandler = useCallback(
     (mint: PublicKey) => {
       if (selectorMode === SelectorMode.youPay) {
         refresh()
-        setYouPayMint(mint)
+        setInputMint(mint)
       }
 
       if (selectorMode === SelectorMode.youReceive) {
-        setYouReceiveMint(mint)
-      }
-
-      if (
-        selectorMode === SelectorMode.youPay &&
-        !mint.equals(HNT_MINT) &&
-        !youReceiveMint.equals(DC_MINT)
-      ) {
-        setYouReceiveMint(HNT_MINT)
-        setYouPayTokenAmount(0)
+        setOutputMint(mint)
       }
 
       if (selectorMode === SelectorMode.youPay && mint.equals(HNT_MINT)) {
-        setYouReceiveMint(DC_MINT)
-      }
-
-      if (selectorMode === SelectorMode.youReceive && mint.equals(HNT_MINT)) {
-        setYouPayMint(MOBILE_MINT)
-      }
-
-      if (selectorMode === SelectorMode.youReceive && mint.equals(DC_MINT)) {
-        setYouPayMint(HNT_MINT)
+        setOutputMint(DC_MINT)
       }
     },
-    [refresh, selectorMode, youReceiveMint],
+    [refresh, selectorMode],
   )
-
-  const validYouReceiveMints = useMemo(() => {
-    if (youPayMint.equals(HNT_MINT)) return [DC_MINT]
-    return [HNT_MINT]
-  }, [youPayMint])
 
   const tokenData = useMemo(() => {
     const tokens = {
-      [SelectorMode.youPay]: [MOBILE_MINT, HNT_MINT, IOT_MINT].map((mint) => ({
-        mint,
-        selected: youPayMint.equals(mint),
-      })),
-      [SelectorMode.youReceive]: validYouReceiveMints.map((mint) => ({
-        mint,
-        selected: youReceiveMint.equals(mint),
-      })),
+      [SelectorMode.youPay]: validInputMints.map((mint) => {
+        const pk = new PublicKey(mint)
+
+        return {
+          mint: pk,
+          selected: inputMint.equals(pk),
+        }
+      }),
+      [SelectorMode.youReceive]: validOutputMints.map((mint) => {
+        const pk = new PublicKey(mint)
+
+        return {
+          mint: pk,
+          selected: outputMint.equals(pk),
+        }
+      }),
     }
 
     return tokens[selectorMode]
-  }, [selectorMode, youPayMint, youReceiveMint, validYouReceiveMints])
+  }, [selectorMode, validInputMints, inputMint, validOutputMints, outputMint])
 
   const onCurrencySelect = useCallback(
     (youPay: boolean) => () => {
@@ -288,41 +448,61 @@ const SwapScreen = () => {
     [],
   )
 
-  const decimals = useMint(youPayMint)?.info?.decimals
-
   const onTokenItemPressed = useCallback(() => {
-    if (typeof decimals !== undefined) {
+    if (typeof inputMintDecimals !== undefined) {
       hntKeyboardRef.current?.show({
         payer: currentAccount,
       })
     }
-  }, [currentAccount, decimals])
+  }, [currentAccount, inputMintDecimals])
 
   const onConfirmBalance = useCallback(
-    ({ balance }: { balance: BN }) => {
-      if (typeof decimals === 'undefined') return
+    async ({ balance }: { balance: BN }) => {
+      if (typeof inputMintDecimals === 'undefined') return
 
-      const amount = toNumber(balance, decimals)
-      setYouPayTokenAmount(amount)
+      const amount = toNumber(balance, inputMintDecimals)
+      setInputAmount(amount)
+
+      if (!isDevnet && !outputMint.equals(DC_MINT)) {
+        await getRoute({
+          amount: balance.toNumber(),
+          inputMint: inputMint.toBase58(),
+          outputMint: outputMint.toBase58(),
+          slippageBps,
+        })
+      }
     },
-    [decimals],
+    [inputMintDecimals, inputMint, outputMint, slippageBps, getRoute, isDevnet],
   )
+
   const hitSlop = useHitSlop('l')
 
-  const youReceiveTokenAmount = useMemo(() => {
-    if (price && !youPayMint.equals(HNT_MINT)) {
-      return price
-    }
-
+  const outputAmount = useMemo(() => {
     if (
-      youPayMint.equals(HNT_MINT) &&
       currentAccount &&
-      typeof decimals !== 'undefined' &&
-      typeof youPayTokenAmount !== 'undefined'
+      typeof inputMintDecimals !== 'undefined' &&
+      typeof outputMintDecimals !== 'undefined' &&
+      typeof inputAmount !== 'undefined' &&
+      inputAmount > 0
     ) {
+      if (inputMint.equals(HNT_MINT) && outputMint.equals(DC_MINT)) {
+        return toNumber(
+          networkTokensToDc(toBN(inputAmount, inputMintDecimals)) || new BN(0),
+          inputMintDecimals,
+        )
+      }
+
+      if (isDevnet) {
+        if (price && !inputMint.equals(HNT_MINT)) {
+          return price
+        }
+
+        return 0
+      }
+
       return toNumber(
-        networkTokensToDc(toBN(youPayTokenAmount, decimals)) || new BN(0),
-        decimals,
+        new BN(Number(routes?.outAmount || 0)),
+        outputMintDecimals,
       )
     }
 
@@ -330,11 +510,20 @@ const SwapScreen = () => {
   }, [
     currentAccount,
     networkTokensToDc,
+    inputAmount,
+    inputMint,
+    outputMint,
+    outputMintDecimals,
+    inputMintDecimals,
+    routes,
+    isDevnet,
     price,
-    youPayTokenAmount,
-    youPayMint,
-    decimals,
   ])
+
+  const minReceived = useMemo(
+    () => outputAmount - outputAmount * (slippageBps / 100 / 100),
+    [slippageBps, outputAmount],
+  )
 
   const handleSwapTokens = useCallback(async () => {
     if (connection) {
@@ -355,23 +544,25 @@ const SwapScreen = () => {
           : new PublicKey(currentAccount.solanaAddress)
 
         if (
-          youPayMint.equals(HNT_MINT) &&
-          youReceiveMint.equals(DC_MINT) &&
-          youReceiveTokenAmount
+          inputMint.equals(HNT_MINT) &&
+          outputMint.equals(DC_MINT) &&
+          outputAmount
         ) {
           await submitMintDataCredits({
-            dcAmount: new BN(youReceiveTokenAmount),
+            dcAmount: new BN(outputAmount),
             recipient: recipientAddr,
           })
+        } else if (isDevnet) {
+          await submitTreasurySwap(inputMint, inputAmount, recipientAddr)
         } else {
-          await submitTreasurySwap(youPayMint, youPayTokenAmount, recipientAddr)
+          await submitJupiterSwap()
         }
 
         setSwapping(false)
 
         navigation.push('SwappingScreen', {
-          tokenA: youPayMint.toBase58(),
-          tokenB: youReceiveMint.toBase58(),
+          tokenA: inputMint.toBase58(),
+          tokenB: outputMint.toBase58(),
         })
       } catch (error) {
         setSwapping(false)
@@ -382,15 +573,22 @@ const SwapScreen = () => {
     connection,
     currentAccount,
     recipient,
-    youPayMint,
+    inputMint,
+    inputAmount,
+    outputMint,
+    outputAmount,
     navigation,
-    youReceiveMint,
-    submitMintDataCredits,
-    youReceiveTokenAmount,
     submitTreasurySwap,
-    youPayTokenAmount,
+    submitMintDataCredits,
+    submitJupiterSwap,
     setHasRecipientError,
+    isDevnet,
   ])
+
+  const isLoading = useMemo(() => {
+    if (!isDevnet) return loading
+    return loadingPrice
+  }, [loading, loadingPrice, isDevnet])
 
   return (
     <AddressBookSelector
@@ -398,170 +596,214 @@ const SwapScreen = () => {
       onContactSelected={handleContactSelected}
       hideCurrentAccount
     >
-      <TreasuryWarningScreen>
-        <HNTKeyboard
-          ref={hntKeyboardRef}
-          onConfirmBalance={onConfirmBalance}
-          mint={youPayMint}
-          networkFee={SOL_TXN_FEE}
-          usePortal
+      <HNTKeyboard
+        ref={hntKeyboardRef}
+        onConfirmBalance={onConfirmBalance}
+        mint={inputMint}
+        networkFee={SOL_TXN_FEE}
+        usePortal
+      >
+        <TokenSelector
+          ref={tokenSelectorRef}
+          onTokenSelected={setTokenTypeHandler}
+          tokenData={tokenData}
         >
-          <TokenSelector
-            ref={tokenSelectorRef}
-            onTokenSelected={setTokenTypeHandler}
-            tokenData={tokenData}
-          >
-            <ReAnimatedBox flex={1}>
-              <SafeAreaBox backgroundColor="black900" edges={edges} flex={1}>
-                {Header}
-                <Box flexGrow={1} justifyContent="center" marginTop="xxxl">
+          <ReAnimatedBox flex={1}>
+            <SafeAreaBox backgroundColor="black900" edges={edges} flex={1}>
+              {Header}
+              <Box flexGrow={1} justifyContent="center" marginTop="xxxl">
+                <SwapItem
+                  onPress={onTokenItemPressed}
+                  marginHorizontal="m"
+                  isPaying
+                  onCurrencySelect={onCurrencySelect(true)}
+                  mintSelected={inputMint}
+                  amount={inputAmount}
+                />
+                {Slippage}
+                <Box>
                   <SwapItem
-                    onPress={onTokenItemPressed}
+                    disabled
                     marginHorizontal="m"
-                    isPaying
-                    onCurrencySelect={onCurrencySelect(true)}
-                    mintSelected={youPayMint}
-                    amount={youPayTokenAmount}
+                    isPaying={false}
+                    onCurrencySelect={onCurrencySelect(false)}
+                    mintSelected={outputMint}
+                    amount={outputAmount}
+                    loading={isLoading}
                   />
-                  <Box>
-                    <SwapItem
-                      disabled
-                      marginTop="xxl"
-                      marginHorizontal="m"
-                      isPaying={false}
-                      onCurrencySelect={onCurrencySelect(false)}
-                      mintSelected={youReceiveMint}
-                      amount={youReceiveTokenAmount}
-                      loading={loadingPrice}
-                    />
 
-                    {!isRecipientOpen && (
-                      <TouchableOpacityBox
-                        marginTop="l"
-                        hitSlop={hitSlop}
+                  {!isRecipientOpen && outputMint.equals(DC_MINT) && (
+                    <TouchableOpacityBox
+                      marginTop="l"
+                      hitSlop={hitSlop}
+                      alignItems="center"
+                      onPress={handleRecipientClick}
+                    >
+                      <Box
                         alignItems="center"
-                        onPress={handleRecipientClick}
+                        marginTop="s"
+                        flexDirection="row"
+                        marginBottom="l"
                       >
-                        <Box
-                          alignItems="center"
-                          marginTop="s"
-                          flexDirection="row"
-                          marginBottom="l"
-                        >
-                          <Text
-                            marginLeft="ms"
-                            marginRight="xs"
-                            color="secondaryText"
-                          >
-                            {t('swapsScreen.addRecipient')}
-                          </Text>
-                          <Plus color={colors.secondaryText} />
-                        </Box>
-                      </TouchableOpacityBox>
-                    )}
-
-                    {isRecipientOpen && (
-                      <TextInput
-                        marginTop="l"
-                        floatingLabel={t('collectablesScreen.transferTo')}
-                        optional
-                        variant="thickDark"
-                        backgroundColor="red500"
-                        marginHorizontal="m"
-                        marginBottom="s"
-                        height={80}
-                        textColor="white"
-                        fontSize={15}
-                        TrailingIcon={Menu}
-                        onTrailingIconPress={handleAddressBookSelected}
-                        textInputProps={{
-                          placeholder: t('generic.solanaAddress'),
-                          placeholderTextColor: 'white',
-                          autoCorrect: false,
-                          autoComplete: 'off',
-                          onChangeText: handleEditAddress,
-                          value: recipient,
-                        }}
-                      />
-                    )}
-
-                    {showError && (
-                      <Box marginTop="s">
                         <Text
-                          marginTop="s"
-                          marginHorizontal="m"
-                          variant="body3Medium"
-                          color="red500"
-                          textAlign="center"
+                          marginLeft="ms"
+                          marginRight="xs"
+                          color="secondaryText"
                         >
-                          {showError}
+                          {t('swapsScreen.addRecipient')}
                         </Text>
+                        <Plus color={colors.secondaryText} />
                       </Box>
-                    )}
-                  </Box>
-                </Box>
+                    </TouchableOpacityBox>
+                  )}
 
-                <Box
-                  flexDirection="column"
-                  marginBottom="xl"
-                  marginTop="m"
-                  marginHorizontal="xl"
-                >
-                  <ButtonPressable
-                    height={65}
-                    flexGrow={1}
-                    borderRadius="round"
-                    backgroundColor="white"
-                    backgroundColorOpacityPressed={0.7}
-                    backgroundColorDisabled="surfaceSecondary"
-                    backgroundColorDisabledOpacity={0.5}
-                    titleColorDisabled="secondaryText"
-                    titleColor="black"
-                    disabled={
-                      hasInsufficientBalance ||
-                      insufficientTokensToSwap ||
-                      youPayTokenAmount === 0 ||
-                      treasuryFrozen ||
-                      swapping
-                    }
-                    titleColorPressedOpacity={0.3}
-                    title={swapping ? '' : t('swapsScreen.swapTokens')}
-                    onPress={handleSwapTokens}
-                    TrailingComponent={
-                      swapping ? (
-                        <CircleLoader loaderSize={20} color="white" />
-                      ) : undefined
-                    }
-                  />
+                  {isRecipientOpen && (
+                    <TextInput
+                      marginTop="l"
+                      floatingLabel={t('collectablesScreen.transferTo')}
+                      optional
+                      variant="thickDark"
+                      backgroundColor="red500"
+                      marginHorizontal="m"
+                      marginBottom="s"
+                      height={80}
+                      textColor="white"
+                      fontSize={15}
+                      TrailingIcon={Menu}
+                      onTrailingIconPress={handleAddressBookSelected}
+                      textInputProps={{
+                        placeholder: t('generic.solanaAddress'),
+                        placeholderTextColor: 'white',
+                        autoCorrect: false,
+                        autoComplete: 'off',
+                        onChangeText: handleEditAddress,
+                        value: recipient,
+                      }}
+                    />
+                  )}
 
-                  {solFee ? (
-                    <Box marginTop="m">
-                      <TextTransform
-                        textAlign="center"
+                  {showError && (
+                    <Box marginTop="s">
+                      <Text
+                        marginTop="s"
                         marginHorizontal="m"
                         variant="body3Medium"
-                        color="white"
-                        i18nKey="collectablesScreen.transferFee"
-                        values={{ amount: humanReadable(solFee, 9) }}
-                      />
+                        color="red500"
+                        textAlign="center"
+                      >
+                        {showError}
+                      </Text>
                     </Box>
-                  ) : (
-                    <Text
-                      marginTop="m"
-                      textAlign="center"
-                      marginHorizontal="m"
-                      variant="body2"
-                      color="secondaryText"
-                    >
-                      {t('generic.calculatingTransactionFee')}
-                    </Text>
                   )}
                 </Box>
-              </SafeAreaBox>
-            </ReAnimatedBox>
-          </TokenSelector>
-        </HNTKeyboard>
-      </TreasuryWarningScreen>
+              </Box>
+              <Box
+                flexDirection="column"
+                marginBottom="xl"
+                marginTop="m"
+                marginHorizontal="xl"
+              >
+                <ButtonPressable
+                  height={65}
+                  flexGrow={1}
+                  borderRadius="round"
+                  backgroundColor="white"
+                  backgroundColorOpacityPressed={0.7}
+                  backgroundColorDisabled="surfaceSecondary"
+                  backgroundColorDisabledOpacity={0.5}
+                  titleColorDisabled="secondaryText"
+                  titleColor="black"
+                  disabled={
+                    hasInsufficientBalance ||
+                    insufficientTokensToSwap ||
+                    inputAmount === 0 ||
+                    loading ||
+                    swapping
+                  }
+                  titleColorPressedOpacity={0.3}
+                  title={swapping ? '' : t('swapsScreen.swapTokens')}
+                  onPress={handleSwapTokens}
+                  TrailingComponent={
+                    swapping ? (
+                      <CircleLoader loaderSize={20} color="black" />
+                    ) : undefined
+                  }
+                />
+
+                <Box marginTop="m">
+                  {!isDevnet && !outputMint.equals(DC_MINT) && (
+                    <TextTransform
+                      textAlign="center"
+                      marginHorizontal="m"
+                      variant="body3Medium"
+                      color="white"
+                      i18nKey="swapsScreen.slippageLabelValue"
+                      values={{ amount: slippageBps / 100 }}
+                    />
+                  )}
+                  <TextTransform
+                    textAlign="center"
+                    marginHorizontal="m"
+                    variant="body3Medium"
+                    color="white"
+                    i18nKey="collectablesScreen.transferFee"
+                    values={{ amount: humanReadable(solFee, 9) }}
+                  />
+                  {!isDevnet && !outputMint.equals(DC_MINT) && (
+                    <TextTransform
+                      textAlign="center"
+                      marginHorizontal="m"
+                      variant="body3Medium"
+                      color="white"
+                      i18nKey="swapsScreen.minReceived"
+                      values={{ amount: minReceived }}
+                    />
+                  )}
+                </Box>
+              </Box>
+            </SafeAreaBox>
+          </ReAnimatedBox>
+        </TokenSelector>
+        {slippageInfoVisible ? (
+          <ReAnimatedBlurBox
+            visible
+            entering={FadeInFast}
+            position="absolute"
+            height="100%"
+            width="100%"
+          >
+            <Box
+              flexDirection="row"
+              justifyContent="space-between"
+              alignItems="center"
+              marginTop="l"
+            >
+              <Box flex={1}>
+                <CloseButton
+                  marginStart="m"
+                  onPress={() => setSlippageInfoVisible(false)}
+                />
+              </Box>
+              <Box flex={1} alignItems="center" flexDirection="row">
+                <Text variant="h4" color="white" flex={1} textAlign="center">
+                  {t('swapsScreen.slippage')}
+                </Text>
+              </Box>
+              <Box flex={1} />
+            </Box>
+            <Box flex={1} paddingHorizontal="m" marginTop="l">
+              <Text
+                variant="body1Medium"
+                color="white"
+                flex={1}
+                textAlign="center"
+              >
+                {t('swapsScreen.slippageInfo')}
+              </Text>
+            </Box>
+          </ReAnimatedBlurBox>
+        ) : undefined}
+      </HNTKeyboard>
     </AddressBookSelector>
   )
 }

@@ -10,10 +10,8 @@ import {
   useBottomSheetDynamicSnapPoints,
 } from '@gorhom/bottom-sheet'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
-import { usePublicKey } from '@hooks/usePublicKey'
 import { useRentExempt } from '@hooks/useRentExempt'
 import { LAMPORTS_PER_SOL } from '@solana/web3.js'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useColors, useOpacity } from '@theme/themeHooks'
 import BN from 'bn.js'
 import React, {
@@ -30,6 +28,8 @@ import React, {
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native-gesture-handler'
 import { Edge } from 'react-native-safe-area-context'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { useBN } from '@hooks/useBN'
 import WalletSignBottomSheetTransaction from './WalletSignBottomSheetTransaction'
 import {
   WalletSignBottomSheetProps,
@@ -50,9 +50,8 @@ const WalletSignBottomSheet = forwardRef(
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { secondaryText } = useColors()
     const { t } = useTranslation()
-    const { currentAccount } = useAccountStorage()
-    const solanaAddress = usePublicKey(currentAccount?.solanaAddress)
-    const { amount: solBalance } = useSolOwnedAmount(solanaAddress)
+    const wallet = useCurrentWallet()
+    const solBalance = useBN(useSolOwnedAmount(wallet).amount)
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const [totalSolFee, setTotalSolFee] = useState(0)
     const [isVisible, setIsVisible] = useState(false)

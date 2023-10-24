@@ -1,10 +1,9 @@
-import { sendAndConfirmWithRetry, toNumber, truthy } from '@helium/spl-utils'
-import useAlert from '@hooks/useAlert'
+import { toNumber, truthy } from '@helium/spl-utils'
 import { AccountLayout, NATIVE_MINT, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
   AddressLookupTableAccount,
   Connection,
-  Message,
+  LAMPORTS_PER_SOL,
   ParsedAccountData,
   PublicKey,
   SimulatedTransactionAccountInfo,
@@ -12,14 +11,15 @@ import {
   VersionedTransaction,
 } from '@solana/web3.js'
 import { useBalance } from '@utils/Balance'
-import { getCollectableByMint } from '@utils/solanaUtils'
+import { getCollectableByMint, isInsufficientBal } from '@utils/solanaUtils'
 import BN from 'bn.js'
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
-import { useTranslation } from 'react-i18next'
+import { useSolOwnedAmount } from '@helium/helium-react-hooks'
+import { useModal } from '@storage/ModalsProvider'
 import { useSolana } from '../solana/SolanaProvider'
 import * as logger from '../utils/logger'
-import { useHntSolConvert } from './useHntSolConvert'
+import { useBN } from './useBN'
 
 type BalanceChange = {
   nativeChange?: number
@@ -41,17 +41,13 @@ export function useSimulatedTransaction(
   serializedTx: Buffer | undefined,
   wallet: PublicKey | undefined,
 ): SimulatedTransactionResult {
-  const { showOKCancelAlert } = useAlert()
-  const { tokenAccounts } = useBalance()
   const { connection, anchorProvider } = useSolana()
-  const { t: tr } = useTranslation()
-  const {
-    hntSolConvertTransaction,
-    hntEstimate,
-    hasEnoughSol,
-    hasEnoughHNTForSol,
-    hntEstimateLoading,
-  } = useHntSolConvert()
+  const { tokenAccounts } = useBalance()
+  const { showModal } = useModal()
+  const solBalance = useBN(useSolOwnedAmount(wallet).amount)
+  const hasEnoughSol = useMemo(() => {
+    return (solBalance || new BN(0)).gt(new BN(0.02 * LAMPORTS_PER_SOL))
+  }, [solBalance])
 
   const [simulationError, setSimulationError] = useState(false)
   const [insufficientFunds, setInsufficientFunds] = useState(false)
@@ -65,37 +61,6 @@ export function useSimulatedTransaction(
       logger.error(err)
     }
   }, [serializedTx])
-
-  const showHNTConversionAlert = useCallback(async () => {
-    if (!anchorProvider || !hntSolConvertTransaction) return
-
-    const decision = await showOKCancelAlert({
-      title: tr('browserScreen.insufficientSolToPayForFees'),
-      message: tr('browserScreen.wouldYouLikeToConvert', {
-        amount: toNumber(hntEstimate || 0, 8),
-        ticker: 'HNT',
-      }),
-    })
-
-    if (!decision) return
-    const signed = await anchorProvider.wallet.signTransaction(
-      hntSolConvertTransaction,
-    )
-    await sendAndConfirmWithRetry(
-      anchorProvider.connection,
-      signed.serialize(),
-      {
-        skipPreflight: true,
-      },
-      'confirmed',
-    )
-  }, [
-    anchorProvider,
-    showOKCancelAlert,
-    tr,
-    hntSolConvertTransaction,
-    hntEstimate,
-  ])
 
   const {
     result: solFee,
@@ -113,9 +78,7 @@ export function useSimulatedTransaction(
       }
 
       try {
-        fee =
-          (await c?.getFeeForMessage(t.message as Message, 'confirmed'))
-            .value || fee
+        fee = (await c?.getFeeForMessage(t.message, 'confirmed')).value || fee
       } catch (err) {
         logger.error(err)
       }
@@ -127,13 +90,7 @@ export function useSimulatedTransaction(
 
   const { loading: loadingBal, result: estimatedBalanceChanges } =
     useAsync(async () => {
-      if (
-        !connection ||
-        !transaction ||
-        !wallet ||
-        !tokenAccounts ||
-        hntEstimateLoading
-      )
+      if (!connection || !transaction || !wallet || !tokenAccounts)
         return undefined
 
       setSimulationError(false)
@@ -168,6 +125,7 @@ export function useSimulatedTransaction(
             ),
           ),
         ]
+
         const { blockhash } = await connection?.getLatestBlockhash()
         transaction.message.recentBlockhash = blockhash
         const result = await connection?.simulateTransaction(transaction, {
@@ -181,14 +139,21 @@ export function useSimulatedTransaction(
         if (result?.value.err) {
           console.warn('failed to simulate', result?.value.err)
           console.warn(result?.value.logs?.join('\n'))
-          if (
-            !hasEnoughSol ||
-            JSON.stringify(result?.value.err).includes('{"Custom":1}')
-          ) {
-            if (!hasEnoughSol && hasEnoughHNTForSol) {
-              await showHNTConversionAlert()
+          if (!hasEnoughSol || isInsufficientBal(result?.value.err)) {
+            if (!hasEnoughSol) {
+              showModal({
+                type: 'InsufficientSolConversion',
+                onCancel: async () => {
+                  setInsufficientFunds(true)
+                },
+                onSuccess: async () => {
+                  setInsufficientFunds(false)
+                  setSimulationError(false)
+                },
+              })
+            } else {
+              setInsufficientFunds(true)
             }
-            setInsufficientFunds(true)
           }
           setSimulationError(true)
           return undefined
@@ -335,13 +300,12 @@ export function useSimulatedTransaction(
       transaction,
       tokenAccounts,
       hasEnoughSol,
-      hasEnoughHNTForSol,
+      anchorProvider,
       wallet,
-      hntEstimateLoading,
     ])
 
   return {
-    loading: loadingBal || loadingFee || hntEstimateLoading,
+    loading: loadingBal || loadingFee,
     simulationError,
     insufficientFunds,
     balanceChanges: estimatedBalanceChanges,

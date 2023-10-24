@@ -33,6 +33,7 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useModal } from '@storage/ModalsProvider'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { Activity } from '../../types/activity'
@@ -67,9 +68,10 @@ const AccountTokenScreen = () => {
   const [topHeaderYPos, setTopHeaderYPos] = useState(0)
   const [headerContainerYPos, setHeaderContainerYPos] = useState(0)
   const listAnimatedPos = useSharedValue<number>(0)
-  const { cluster } = useSolana()
+  const { cluster, isDevnet } = useSolana()
   const insets = useSafeAreaInsets()
   const colors = useColors()
+  const { showModal } = useModal()
   const [
     onEndReachedCalledDuringMomentum,
     setOnEndReachedCalledDuringMomentum,
@@ -496,6 +498,7 @@ const AccountTokenScreen = () => {
             </Box>
           </Animated.View>
           {mint.equals(NATIVE_MINT) &&
+          !isDevnet &&
           (amount || 0) < 0.02 * LAMPORTS_PER_SOL ? (
             <Box
               minHeight={topHeaderHeight}
@@ -507,6 +510,18 @@ const AccountTokenScreen = () => {
               <Text variant="body2" color="black700">
                 {t('accountsScreen.solWarning')}
               </Text>
+              <TouchableOpacityBox
+                marginTop="m"
+                justifyContent="center"
+                alignItems="center"
+                backgroundColor="orange500"
+                borderRadius="m"
+                onPress={() => showModal({ type: 'InsufficientSolConversion' })}
+              >
+                <Text variant="body1" padding="ms" color="black700">
+                  {t('accountsScreen.solSwap')}
+                </Text>
+              </TouchableOpacityBox>
             </Box>
           ) : (
             <Box height={topHeaderHeight} />
