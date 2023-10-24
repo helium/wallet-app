@@ -14,9 +14,10 @@ import {
   sendAndConfirmWithRetry,
   toNumber,
 } from '@helium/spl-utils'
-import { useEecosystemTokenSolConvert } from '@hooks/useEcosystemTokensSolConvert'
+import { useEcosystemTokenSolConvert } from '@hooks/useEcosystemTokensSolConvert'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { PublicKey } from '@solana/web3.js'
+import { useAppStorage } from '@storage/AppStorageProvider'
 import { useModal } from '@storage/ModalsProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import BN from 'bn.js'
@@ -29,6 +30,7 @@ import React, {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Switch } from 'react-native-gesture-handler'
 import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
 import * as Logger from '../../utils/logger'
@@ -49,7 +51,9 @@ const InsufficientSolConversionModal: FC = () => {
     estimatesByMint,
     hasEnoughForSolByMint,
     solConvertTxByMint,
-  } = useEecosystemTokenSolConvert()
+  } = useEcosystemTokenSolConvert()
+  const [useAuto, setUseAuto] = useState(false)
+  const { updateAutoGasManagementToken } = useAppStorage()
 
   const inputMintDecimals = useMint(inputMint)?.info?.decimals
 
@@ -113,6 +117,9 @@ const InsufficientSolConversionModal: FC = () => {
     if (!anchorProvider || !swapTx) return
 
     try {
+      if (useAuto) {
+        await updateAutoGasManagementToken(inputMint)
+      }
       setSwapping(true)
       const signed = await anchorProvider.wallet.signTransaction(swapTx)
       await sendAndConfirmWithRetry(
@@ -131,7 +138,15 @@ const InsufficientSolConversionModal: FC = () => {
       Logger.error(error)
       setTransactionError((error as Error).message)
     }
-  }, [swapTx, hideModal, onSuccess, anchorProvider])
+  }, [
+    anchorProvider,
+    swapTx,
+    useAuto,
+    hideModal,
+    onSuccess,
+    updateAutoGasManagementToken,
+    inputMint,
+  ])
 
   const handleCancel = useCallback(async () => {
     hideModal()
@@ -255,6 +270,25 @@ const InsufficientSolConversionModal: FC = () => {
                 </Text>
               </>
             )}
+          </Box>
+        </Box>
+        <Box
+          flexDirection="row"
+          paddingHorizontal="m"
+          marginBottom="l"
+          marginTop="xxl"
+          alignItems="center"
+        >
+          <Switch
+            value={useAuto}
+            trackColor={{ false: 'secondaryText', true: 'blueBright500' }}
+            thumbColor="primaryBackground"
+            onValueChange={() => setUseAuto((ua) => !ua)}
+          />
+          <Box flex={1}>
+            <Text ml="m" color="white">
+              {t('insufficientSolConversionModal.useAuto')}
+            </Text>
           </Box>
         </Box>
         {!loading && (

@@ -303,6 +303,10 @@ const Settings = () => {
     settingsNav.navigate('ShareAddress')
   }, [settingsNav])
 
+  const handlePressAutoGasManager = useCallback(() => {
+    settingsNav.navigate('AutoGasManager')
+  }, [settingsNav])
+
   const handleMigrateWallet = useCallback(() => {
     settingsNav.navigate('MigrateWallet')
   }, [settingsNav])
@@ -466,6 +470,10 @@ const Settings = () => {
             },
           },
           {
+            title: t('settings.sections.app.autoGasManager'),
+            onPress: handlePressAutoGasManager,
+          },
+          {
             title: t('settings.sections.app.version'),
             staticText: true,
             value: `v${version} (${buildNumber})`,
@@ -513,6 +521,7 @@ const Settings = () => {
     explorer?.value,
     handleExplorerChange,
     explorers,
+    handlePressAutoGasManager,
     version,
     buildNumber,
     authInterval,

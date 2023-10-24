@@ -1,15 +1,16 @@
-import React, { memo } from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { useOpacity } from '@theme/themeHooks'
+import React, { memo } from 'react'
+import SolanaMigration from '../migration/SolanaMigration'
+import AutoGasManager from './AutoGasManager'
+import ConfirmSignoutScreen from './ConfirmSignoutScreen'
+import RevealPrivateKeyScreen from './RevealPrivateKeyScreen'
+import RevealWordsScreen from './RevealWordsScreen'
 import Settings from './Settings'
 import SettingsConfirmPinScreen from './SettingsConfirmPinScreen'
 import SettingsCreatePinScreen from './SettingsCreatePinScreen'
-import RevealWordsScreen from './RevealWordsScreen'
-import UpdateAliasScreen from './UpdateAliasScreen'
 import ShareAddressScreen from './ShareAddressScreen'
-import ConfirmSignoutScreen from './ConfirmSignoutScreen'
-import RevealPrivateKeyScreen from './RevealPrivateKeyScreen'
-import SolanaMigration from '../migration/SolanaMigration'
+import UpdateAliasScreen from './UpdateAliasScreen'
 
 const SettingsStack = createNativeStackNavigator()
 
@@ -59,6 +60,11 @@ const SettingsNavigator = () => {
       <SettingsStack.Screen
         name="MigrateWallet"
         component={SolanaMigrationWrapper}
+        options={{ presentation: 'transparentModal' }}
+      />
+      <SettingsStack.Screen
+        name="AutoGasManager"
+        component={AutoGasManager}
         options={{ presentation: 'transparentModal' }}
       />
     </SettingsStack.Navigator>

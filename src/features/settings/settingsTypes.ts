@@ -19,6 +19,7 @@ export type SettingsStackParamList = {
   ShareAddress: undefined
   ConfirmSignout: undefined
   MigrateWallet: undefined
+  AutoGasManager: undefined
 }
 
 export type SettingsNavigationProp = StackNavigationProp<SettingsStackParamList>
