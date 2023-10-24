@@ -54,12 +54,13 @@ const AccountTokenList = ({ onLayout }: Props) => {
       await dispatch(
         syncTokenAccounts({ cluster, acct: currentAccount, anchorProvider }),
       )
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const solAddr = new PublicKey(currentAccount!.solanaAddress!)
       await Promise.all(
         [...visibleTokens].map(async (mintStr) => {
           const ata = getAssociatedTokenAddressSync(
             new PublicKey(mintStr),
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            new PublicKey(currentAccount!.solanaAddress!),
+            solAddr,
           )
           const ataStr = ata.toBase58()
           // Trigger a refetch on all visible token accounts
@@ -83,6 +84,24 @@ const AccountTokenList = ({ onLayout }: Props) => {
           return result
         }),
       )
+      // Trigger a refetch on all sol
+      const result = await cache.search(
+        solAddr,
+        cache.keyToAccountParser.get(solAddr.toBase58()),
+        false,
+        true,
+      )
+      if (
+        !cache.genericCache.has(solAddr.toBase58()) ||
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        // eslint-disable-next-line
+        result != cache.genericCache[solAddr.toBase58()]
+      ) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        cache.updateCache(solAddr.toBase58(), result)
+      }
     })
 
   // Trigger refresh when the app comes into the foreground from the background

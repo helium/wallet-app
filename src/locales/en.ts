@@ -1097,5 +1097,7 @@ export default {
     signAssertLocationTxn: 'Sign this transaction to assert the location.',
     recipientNonExistent:
       'Recipient Account is empty, Double check the address before signing.',
+    autoGasConvert:
+      'Sign this transaction to convert {{ symbol }} into 0.02 SOL for gas.',
   },
 }

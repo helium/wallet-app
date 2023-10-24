@@ -133,10 +133,10 @@ const App = () => {
                                 <BalanceProvider>
                                   <TokenListProvider>
                                     <TokensProvider>
-                                      <AutoGasBanner />
                                       <ModalProvider>
                                         <WalletSignProvider>
                                           <JupiterProvider>
+                                            <AutoGasBanner />
                                             <NetworkAwareStatusBar />
                                             <RootNavigator />
 

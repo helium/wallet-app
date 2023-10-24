@@ -1,3 +1,4 @@
+import { useSolOwnedAmount } from '@helium/helium-react-hooks'
 import { toNumber, truthy } from '@helium/spl-utils'
 import { AccountLayout, NATIVE_MINT, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
@@ -10,13 +11,13 @@ import {
   SystemProgram,
   VersionedTransaction,
 } from '@solana/web3.js'
+import { useAppStorage } from '@storage/AppStorageProvider'
+import { useModal } from '@storage/ModalsProvider'
 import { useBalance } from '@utils/Balance'
 import { getCollectableByMint, isInsufficientBal } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
-import { useSolOwnedAmount } from '@helium/helium-react-hooks'
-import { useModal } from '@storage/ModalsProvider'
 import { useSolana } from '../solana/SolanaProvider'
 import * as logger from '../utils/logger'
 import { useBN } from './useBN'
@@ -48,6 +49,7 @@ export function useSimulatedTransaction(
   const hasEnoughSol = useMemo(() => {
     return (solBalance || new BN(0)).gt(new BN(0.02 * LAMPORTS_PER_SOL))
   }, [solBalance])
+  const { autoGasManagementToken } = useAppStorage()
 
   const [simulationError, setSimulationError] = useState(false)
   const [insufficientFunds, setInsufficientFunds] = useState(false)
@@ -88,10 +90,9 @@ export function useSimulatedTransaction(
     [connection, transaction],
   )
 
-  const { loading: loadingBal, result: estimatedBalanceChanges } =
+  const { loading: loadingSim, result: simulatedTxnResult } =
     useAsync(async () => {
-      if (!connection || !transaction || !wallet || !tokenAccounts)
-        return undefined
+      if (!connection || !transaction || !wallet) return undefined
 
       setSimulationError(false)
       setInsufficientFunds(false)
@@ -128,19 +129,34 @@ export function useSimulatedTransaction(
 
         const { blockhash } = await connection?.getLatestBlockhash()
         transaction.message.recentBlockhash = blockhash
-        const result = await connection?.simulateTransaction(transaction, {
-          accounts: {
-            encoding: 'base64',
-            addresses:
-              simulationAccounts?.map((account) => account.toBase58()) || [],
-          },
-        })
+        return {
+          simulationAccounts,
+          simulatedTxn: await connection?.simulateTransaction(transaction, {
+            accounts: {
+              encoding: 'base64',
+              addresses:
+                simulationAccounts?.map((account) => account.toBase58()) || [],
+            },
+          }),
+        }
+      } catch (err) {
+        console.warn('err', err)
+        return undefined
+      }
+    }, [connection, transaction, anchorProvider, wallet])
 
+  const { loading: loadingBal, result: estimatedBalanceChanges } =
+    useAsync(async () => {
+      if (!simulatedTxnResult || !tokenAccounts || !connection || !wallet) {
+        return
+      }
+      try {
+        const { simulatedTxn: result, simulationAccounts } = simulatedTxnResult
         if (result?.value.err) {
           console.warn('failed to simulate', result?.value.err)
           console.warn(result?.value.logs?.join('\n'))
           if (!hasEnoughSol || isInsufficientBal(result?.value.err)) {
-            if (!hasEnoughSol) {
+            if (!hasEnoughSol && !autoGasManagementToken) {
               showModal({
                 type: 'InsufficientSolConversion',
                 onCancel: async () => {
@@ -296,16 +312,17 @@ export function useSimulatedTransaction(
         return undefined
       }
     }, [
+      simulatedTxnResult,
       connection,
-      transaction,
       tokenAccounts,
       hasEnoughSol,
       anchorProvider,
       wallet,
+      autoGasManagementToken,
     ])
 
   return {
-    loading: loadingBal || loadingFee,
+    loading: loadingBal || loadingFee || loadingSim,
     simulationError,
     insufficientFunds,
     balanceChanges: estimatedBalanceChanges,
