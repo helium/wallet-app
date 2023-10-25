@@ -113,7 +113,7 @@ const useLedger = () => {
 
   const getLedgerAccounts = useCallback(
     async (solana: AppSolana, accounts: LedgerAccount[]): Promise<void> => {
-      let index = 0
+      let index = -1
       const prevAcct = last(accounts)
       if (prevAcct) {
         index = prevAcct.accountIndex + 1
