@@ -33,7 +33,7 @@ import useSolTxns from './useSolTxns'
 
 type Route = RouteProp<RootStackParamList, 'SignHotspot'>
 
-const onboardingClient = new OnboardingClient(Config.ONBOARDING_API_URL)
+const onboardingClient = new OnboardingClient(`${Config.ONBOARDING_API_URL}/v3`)
 const SignHotspot = () => {
   const { params } = useRoute<Route>()
   const { token, submit } = params
