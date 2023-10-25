@@ -128,11 +128,15 @@ const PaymentScreen = () => {
   const wallet = usePublicKey(currentAccount?.solanaAddress)
   const { amount: solBalance } = useOwnedAmount(wallet, NATIVE_MINT)
   const { amount: balanceBigint } = useOwnedAmount(wallet, mint)
+  const balanceBigIntInclSol = useMemo(
+    () => (mint?.equals(NATIVE_MINT) ? solBalance : balanceBigint),
+    [mint, balanceBigint, solBalance],
+  )
   const balance = useMemo(() => {
-    if (typeof balanceBigint !== 'undefined') {
-      return new BN(balanceBigint.toString())
+    if (typeof balanceBigIntInclSol !== 'undefined') {
+      return new BN(balanceBigIntInclSol.toString())
     }
-  }, [balanceBigint])
+  }, [balanceBigIntInclSol])
   const { anchorProvider, connection } = useSolana()
 
   const appDispatch = useAppDispatch()
@@ -184,7 +188,7 @@ const PaymentScreen = () => {
       type: 'updateTokenBalance',
       balance,
     })
-  }, [dispatch, balance])
+  }, [dispatch, balance, mint])
 
   const { submitPayment } = useSubmitTxn()
 

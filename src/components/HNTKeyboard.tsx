@@ -5,7 +5,11 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
 import { Portal } from '@gorhom/portal'
-import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
+import {
+  useMint,
+  useOwnedAmount,
+  useSolOwnedAmount,
+} from '@helium/helium-react-hooks'
 import useBackHandler from '@hooks/useBackHandler'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
@@ -103,7 +107,12 @@ const HNTKeyboardSelector = forwardRef(
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
     const wallet = useCurrentWallet()
 
-    const { amount: balanceForMint } = useOwnedAmount(wallet, mint)
+    const { amount: balanceForMintToken } = useOwnedAmount(wallet, mint)
+    const { amount: solBalance } = useSolOwnedAmount(wallet)
+    const balanceForMint = useMemo(
+      () => (mint?.equals(NATIVE_MINT) ? solBalance : balanceForMintToken),
+      [mint, solBalance, balanceForMintToken],
+    )
 
     const snapPoints = useMemo(() => {
       const sheetHeight = containerHeight - headerHeight
