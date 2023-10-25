@@ -117,11 +117,11 @@ export class WrappedConnection extends Connection {
 
 export interface Asset {
   jsonrpc: string
-  result: Result
+  result: AssetResult
   id: string
 }
 
-export interface Result {
+export interface AssetResult {
   interface: string
   id: string
   content: Content

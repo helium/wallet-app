@@ -33,7 +33,7 @@ import useSolTxns from './useSolTxns'
 
 type Route = RouteProp<RootStackParamList, 'SignHotspot'>
 
-const onboardingClient = new OnboardingClient(Config.ONBOARDING_API_URL)
+const onboardingClient = new OnboardingClient(`${Config.ONBOARDING_API_URL}/v3`)
 const SignHotspot = () => {
   const { params } = useRoute<Route>()
   const { token, submit } = params
@@ -68,10 +68,11 @@ const SignHotspot = () => {
   const callback = useCallback(
     async (responseParams: SignHotspotResponse) => {
       if (!parsedToken?.callbackUrl) return
-      const url = createSignHotspotCallbackUrl(
-        parsedToken.callbackUrl,
-        responseParams,
-      )
+
+      const url = createSignHotspotCallbackUrl(parsedToken.callbackUrl, {
+        ...params, // include the original params in the response
+        ...responseParams, // override with the response params
+      })
       Linking.openURL(url)
 
       if (navigation.canGoBack()) {
@@ -83,7 +84,7 @@ const SignHotspot = () => {
         })
       }
     },
-    [navigation, parsedToken, rootNav],
+    [navigation, params, parsedToken, rootNav],
   )
 
   useEffect(() => {

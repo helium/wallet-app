@@ -14,11 +14,14 @@ import useHotspots from '@hooks/useHotspots'
 import useSubmitTxn from '@hooks/useSubmitTxn'
 import { useNavigation } from '@react-navigation/native'
 import { useModal } from '@storage/ModalsProvider'
-import { IOT_LAZY_KEY, MOBILE_LAZY_KEY } from '@utils/constants'
+import {
+  IOT_LAZY_KEY,
+  MIN_BALANCE_THRESHOLD,
+  MOBILE_LAZY_KEY,
+} from '@utils/constants'
 import BN from 'bn.js'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 import { BalanceChange } from '../../solana/walletSignBottomSheetTypes'
 import { CollectableNavigationProp } from './collectablesTypes'
 
@@ -30,7 +33,7 @@ const ClaimAllRewardsScreen = () => {
   const { showModal } = useModal()
   const solBalance = useBN(useSolOwnedAmount(wallet).amount)
   const hasEnoughSol = useMemo(() => {
-    return (solBalance || new BN(0)).gt(new BN(0.02 * LAMPORTS_PER_SOL))
+    return (solBalance || new BN(0)).gt(new BN(MIN_BALANCE_THRESHOLD))
   }, [solBalance])
   const {
     hotspots,

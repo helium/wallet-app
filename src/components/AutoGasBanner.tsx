@@ -10,12 +10,12 @@ import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
 import {
   Connection,
-  LAMPORTS_PER_SOL,
   VersionedTransaction,
   sendAndConfirmRawTransaction,
 } from '@solana/web3.js'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { Theme } from '@theme/theme'
+import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import axios from 'axios'
 import BN from 'bn.js'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -35,17 +35,15 @@ import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes
 import { appSlice } from '../store/slices/appSlice'
 import { ReAnimatedBox } from './AnimatedBox'
 import Box from './Box'
+import CircleLoader from './CircleLoader'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
-import CircleLoader from './CircleLoader'
 
 const MIN_HEIGHT = 52
 
 type BannerProps = {
   onLayout?: (event: LayoutChangeEvent) => void
 } & BoxProps<Theme>
-
-const MIN_BALANCE = 0.01 * LAMPORTS_PER_SOL
 
 const Banner = ({ onLayout, ...rest }: BannerProps) => {
   const dispatch = useDispatch()
@@ -66,7 +64,7 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
       anchorProvider &&
       typeof decimals !== 'undefined' &&
       solBalance &&
-      solBalance <= MIN_BALANCE,
+      solBalance <= MIN_BALANCE_THRESHOLD,
     [solBalance, autoGasManagementToken, anchorProvider, decimals],
   )
   const baseUrl = useMemo(() => {
@@ -98,7 +96,7 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
       const balance = (
         await cachelessConn.getAccountInfo(anchorProvider?.wallet.publicKey)
       )?.lamports
-      if (balance && balance > MIN_BALANCE) {
+      if (balance && balance > MIN_BALANCE_THRESHOLD) {
         return
       }
       const estimates: { [key: string]: string } = (

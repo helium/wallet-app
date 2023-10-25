@@ -26,6 +26,7 @@ import {
   RootNavigationProp,
   RootStackParamList,
 } from '../../navigation/rootTypes'
+import sleep from '../../utils/sleep'
 
 type Route = RouteProp<RootStackParamList, 'LinkWallet'>
 const LinkWallet = () => {
@@ -52,8 +53,11 @@ const LinkWallet = () => {
         currentAccount?.address || '',
         responseParams,
       )
+
       Linking.openURL(url)
 
+      // Wait a moment before going back so the ui doesn't jump
+      await sleep(300)
       if (navigation.canGoBack()) {
         navigation.goBack()
       } else {
