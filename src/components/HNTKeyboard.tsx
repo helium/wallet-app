@@ -70,6 +70,7 @@ type Props = {
     index?: number
   }) => void
   usePortal?: boolean
+  allowOverdraft?: boolean
 } & BoxProps<Theme>
 const HNTKeyboardSelector = forwardRef(
   (
@@ -81,6 +82,7 @@ const HNTKeyboardSelector = forwardRef(
       mint,
       networkFee,
       usePortal = false,
+      allowOverdraft = false,
       ...boxProps
     }: Props,
     ref: Ref<HNTKeyboardRef>,
@@ -200,6 +202,7 @@ const HNTKeyboardSelector = forwardRef(
       let maxBalance: BN | undefined = balanceForMint
         ? new BN(balanceForMint.toString()).sub(currentAmount)
         : undefined
+
       if (minTokens && maxBalance) {
         maxBalance = maxBalance.sub(minTokens)
       }
@@ -293,7 +296,7 @@ const HNTKeyboardSelector = forwardRef(
                 {payer && balanceForMint && typeof decimals !== 'undefined'
                   ? t('hntKeyboard.hntAvailable', {
                       amount:
-                        decimals &&
+                        typeof decimals !== 'undefined' &&
                         humanReadable(
                           new BN(balanceForMint.toString()),
                           decimals,
@@ -527,9 +530,11 @@ const HNTKeyboardSelector = forwardRef(
                     borderRadius="round"
                     flex={1}
                     backgroundColor={
-                      hasSufficientBalance ? 'surface' : 'grey300'
+                      allowOverdraft || hasSufficientBalance
+                        ? 'surface'
+                        : 'grey300'
                     }
-                    disabled={!hasSufficientBalance}
+                    disabled={!allowOverdraft ? !hasSufficientBalance : false}
                   >
                     <Text variant="subtitle2">{t('generic.confirm')}</Text>
                   </TouchableOpacityBox>

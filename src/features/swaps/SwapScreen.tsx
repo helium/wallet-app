@@ -88,6 +88,7 @@ const SwapScreen = () => {
   const [inputMint, setInputMint] = useState<PublicKey>(MOBILE_MINT)
   const [inputAmount, setInputAmount] = useState<number>(0)
   const [outputMint, setOutputMint] = useState<PublicKey>(HNT_MINT)
+  const [outputAmount, setOutputAmount] = useState<number>(0)
   const [slippageBps, setSlippageBps] = useState<number>(50)
   const [slippageInfoVisible, setSlippageInfoVisible] = useState(false)
   const [solFee, setSolFee] = useState<BN>(SOL_TXN_FEE)
@@ -96,8 +97,8 @@ const SwapScreen = () => {
   >()
   const [networkError, setNetworkError] = useState<undefined | string>()
   const solBalance = useBN(useSolOwnedAmount(wallet).amount)
-  const hntBalance = useBN(useOwnedAmount(wallet, HNT_MINT).amount)
-  const { networkTokensToDc } = useBalance()
+  const inputMintBalance = useBN(useOwnedAmount(wallet, inputMint).amount)
+  const { networkTokensToDc, dcToNetworkTokens } = useBalance()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const addressBookRef = useRef<AddressBookRef>(null)
@@ -164,30 +165,32 @@ const SwapScreen = () => {
     },
     [],
   )
+  const hitSlop = useHitSlop('l')
 
   const handleEditAddress = useCallback((text?: string) => {
     setRecipient(text || '')
     setHasRecipientError(false)
   }, [])
 
-  // If user does not have enough tokens to swap for greater than 0.00000001 tokens
   const insufficientTokensToSwap = useMemo(() => {
-    if (inputMint.equals(HNT_MINT) && (hntBalance || new BN(0)).lt(new BN(1))) {
-      return true
-    }
+    if (inputAmount > 0 && typeof inputMintDecimals !== 'undefined') {
+      if (!isDevnet && !outputMint.equals(DC_MINT)) {
+        return (
+          routes?.outAmount &&
+          new BN(routes?.outAmount || 0).lt(new BN(inputAmount))
+        )
+      }
 
-    if (isDevnet) {
-      return (
-        !inputMint.equals(HNT_MINT) && !(price && price > 0) && inputAmount > 0
-      )
+      return inputMintBalance?.lt(toBN(inputAmount || 0, inputMintDecimals))
     }
-
-    return (
-      !inputMint.equals(HNT_MINT) &&
-      !(routes?.outAmount && new BN(routes?.outAmount || 0).gt(new BN(0))) &&
-      inputAmount > 0
-    )
-  }, [hntBalance, inputAmount, inputMint, routes, price, isDevnet])
+  }, [
+    inputAmount,
+    inputMintDecimals,
+    inputMintBalance,
+    outputMint,
+    routes,
+    isDevnet,
+  ])
 
   const showError = useMemo(() => {
     if (hasRecipientError) return t('generic.notValidSolanaAddress')
@@ -209,6 +212,7 @@ const SwapScreen = () => {
 
   const refresh = useCallback(async () => {
     setInputAmount(0)
+    setOutputAmount(0)
     setInputMint(MOBILE_MINT)
     setOutputMint(HNT_MINT)
     setSolFee(SOL_TXN_FEE)
@@ -449,77 +453,96 @@ const SwapScreen = () => {
     [],
   )
 
-  const onTokenItemPressed = useCallback(() => {
-    if (typeof inputMintDecimals !== undefined) {
-      hntKeyboardRef.current?.show({
-        payer: currentAccount,
-      })
-    }
-  }, [currentAccount, inputMintDecimals])
+  const onTokenItemPressed = useCallback(
+    (youPay: boolean) => () => {
+      if (typeof inputMintDecimals !== undefined) {
+        setSelectorMode(youPay ? SelectorMode.youPay : SelectorMode.youReceive)
+        hntKeyboardRef.current?.show({
+          payer: currentAccount,
+        })
+      }
+    },
+    [currentAccount, inputMintDecimals],
+  )
 
   const onConfirmBalance = useCallback(
     async ({ balance }: { balance: BN }) => {
       if (typeof inputMintDecimals === 'undefined') return
+      if (typeof outputMintDecimals === 'undefined') return
+      const isPay = selectorMode === SelectorMode.youPay
+      const amount = toNumber(
+        balance,
+        isPay ? inputMintDecimals : outputMintDecimals,
+      )
 
-      const amount = toNumber(balance, inputMintDecimals)
-      setInputAmount(amount)
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      isPay ? setInputAmount(amount) : setOutputAmount(amount)
 
       if (!isDevnet && !outputMint.equals(DC_MINT)) {
-        await getRoute({
+        const route = await getRoute({
           amount: balance.toNumber(),
-          inputMint: inputMint.toBase58(),
-          outputMint: outputMint.toBase58(),
+          inputMint: isPay ? inputMint.toBase58() : outputMint.toBase58(),
+          outputMint: isPay ? outputMint.toBase58() : inputMint.toBase58(),
           slippageBps,
         })
+
+        return isPay
+          ? setOutputAmount(
+              toNumber(
+                new BN(Number(route?.outAmount || 0)),
+                outputMintDecimals,
+              ),
+            )
+          : setInputAmount(
+              toNumber(
+                new BN(Number(route?.outAmount || 0)),
+                inputMintDecimals,
+              ),
+            )
       }
-    },
-    [inputMintDecimals, inputMint, outputMint, slippageBps, getRoute, isDevnet],
-  )
 
-  const hitSlop = useHitSlop('l')
-
-  const outputAmount = useMemo(() => {
-    if (
-      currentAccount &&
-      typeof inputMintDecimals !== 'undefined' &&
-      typeof outputMintDecimals !== 'undefined' &&
-      typeof inputAmount !== 'undefined' &&
-      inputAmount > 0
-    ) {
       if (inputMint.equals(HNT_MINT) && outputMint.equals(DC_MINT)) {
-        return toNumber(
-          networkTokensToDc(toBN(inputAmount, inputMintDecimals)) || new BN(0),
-          inputMintDecimals,
-        )
+        return isPay
+          ? setOutputAmount(
+              toNumber(
+                networkTokensToDc(toBN(balance, inputMintDecimals)) ||
+                  new BN(0),
+                inputMintDecimals,
+              ),
+            )
+          : setInputAmount(
+              toNumber(
+                dcToNetworkTokens(toBN(balance, outputMintDecimals)) ||
+                  new BN(0),
+                outputMintDecimals,
+              ),
+            )
       }
 
       if (isDevnet) {
         if (price && !inputMint.equals(HNT_MINT)) {
-          return price
+          return isPay ? setOutputAmount(price) : setInputAmount(price)
         }
 
-        return 0
+        return isPay ? setOutputAmount(0) : setInputAmount(0)
       }
 
-      return toNumber(
-        new BN(Number(routes?.outAmount || 0)),
-        outputMintDecimals,
-      )
-    }
-
-    return 0
-  }, [
-    currentAccount,
-    networkTokensToDc,
-    inputAmount,
-    inputMint,
-    outputMint,
-    outputMintDecimals,
-    inputMintDecimals,
-    routes,
-    isDevnet,
-    price,
-  ])
+      return isPay ? setOutputAmount(0) : setInputAmount(0)
+    },
+    [
+      selectorMode,
+      networkTokensToDc,
+      dcToNetworkTokens,
+      price,
+      inputMint,
+      inputMintDecimals,
+      outputMint,
+      outputMintDecimals,
+      slippageBps,
+      getRoute,
+      isDevnet,
+    ],
+  )
 
   const minReceived = useMemo(
     () => outputAmount - outputAmount * (slippageBps / 100 / 100),
@@ -599,8 +622,9 @@ const SwapScreen = () => {
     >
       <HNTKeyboard
         ref={hntKeyboardRef}
+        allowOverdraft={selectorMode === SelectorMode.youReceive}
         onConfirmBalance={onConfirmBalance}
-        mint={inputMint}
+        mint={selectorMode === SelectorMode.youPay ? inputMint : outputMint}
         networkFee={SOL_TXN_FEE}
         // Ensure that we keep at least 0.02 sol
         minTokens={
@@ -620,7 +644,7 @@ const SwapScreen = () => {
               {Header}
               <Box flexGrow={1} justifyContent="center" marginTop="xxxl">
                 <SwapItem
-                  onPress={onTokenItemPressed}
+                  onPress={onTokenItemPressed(true)}
                   marginHorizontal="m"
                   isPaying
                   onCurrencySelect={onCurrencySelect(true)}
@@ -630,7 +654,7 @@ const SwapScreen = () => {
                 {Slippage}
                 <Box>
                   <SwapItem
-                    disabled
+                    onPress={onTokenItemPressed(false)}
                     marginHorizontal="m"
                     isPaying={false}
                     onCurrencySelect={onCurrencySelect(false)}

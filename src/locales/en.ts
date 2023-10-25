@@ -423,7 +423,7 @@ export default {
     swapError: 'Swap failed. Please try again later.',
     returnToSwaps: 'Return to Swaps',
     insufficientTokensToSwap:
-      'You do not have sufficient tokens to swap that will result in more than 0.00000001 HNT.',
+      'You do not have sufficient tokens for this swap.',
     swapAlertTitle: 'Are you sure you will like to swap your tokens?',
     swapAlertBody: 'This action is irreversible.',
     understood: 'Understood',
