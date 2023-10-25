@@ -27,7 +27,7 @@ import { useColors } from '@theme/themeHooks'
 import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Platform, View } from 'react-native'
+import { Platform, ScrollView, View } from 'react-native'
 import Animated, {
   FadeIn,
   useAnimatedStyle,
@@ -50,6 +50,8 @@ import TxnListItem from './TxnListItem'
 import useSolanaActivityList from './useSolanaActivityList'
 
 const delayedAnimation = FadeIn.delay(300)
+
+const MIN_BOTTOM_BAR_HEIGHT = 80
 
 type Route = RouteProp<HomeStackParamList, 'AccountTokenScreen'>
 
@@ -127,7 +129,10 @@ const AccountTokenScreen = () => {
 
   const snapPoints = useMemo(() => {
     if (!topHeaderYPos || !headerContainerYPos) return
-    const collapsed = actualHeight - headerContainerYPos
+    const collapsed = Math.max(
+      actualHeight - headerContainerYPos,
+      MIN_BOTTOM_BAR_HEIGHT,
+    )
     const expanded = actualHeight
       ? actualHeight - insets.top - backHeaderHeight - topHeaderHeight
       : 0
@@ -430,103 +435,118 @@ const AccountTokenScreen = () => {
         })}
         onHeaderLayout={setBackHeaderHeight}
       >
-        <Box
-          paddingHorizontal="l"
-          ref={headerContainerRef}
-          onLayout={handleHeaderLayout}
-          justifyContent="center"
+        <ScrollView
+          style={{
+            flexGrow: 1,
+          }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: 'center',
+          }}
         >
-          <Animated.View style={topHeaderAnimatedStyle}>
-            <Box
-              paddingTop="m"
-              paddingBottom={Platform.OS === 'android' ? 'l' : 'm'}
-              flexDirection="row"
-              alignItems="center"
-              justifyContent="center"
-              onLayout={handleTopHeaderLayout}
-              ref={topHeaderRef}
-            >
-              <Box flex={1}>
-                <AccountTokenBalance
-                  showTicker={false}
-                  textVariant="h2Medium"
-                  justifyContent="flex-start"
+          <Box
+            paddingHorizontal="l"
+            ref={headerContainerRef}
+            onLayout={handleHeaderLayout}
+            justifyContent="center"
+          >
+            <Animated.View style={topHeaderAnimatedStyle}>
+              <Box
+                paddingTop="m"
+                paddingBottom={Platform.OS === 'android' ? 'l' : 'm'}
+                flexDirection="row"
+                alignItems="center"
+                justifyContent="center"
+                onLayout={handleTopHeaderLayout}
+                ref={topHeaderRef}
+              >
+                <Box flex={1}>
+                  <AccountTokenBalance
+                    showTicker={false}
+                    textVariant="h2Medium"
+                    justifyContent="flex-start"
+                    mint={mint}
+                    flex={1}
+                  />
+                  {!!symbol && (
+                    <AccountTokenCurrencyBalance
+                      ticker={symbol.toUpperCase()}
+                      variant="body1"
+                      color="secondaryText"
+                    />
+                  )}
+                </Box>
+                <AccountActionBar
+                  hasSend={actionBarProps.hasSend}
+                  hasRequest={actionBarProps.hasRequest}
+                  hasDelegate={actionBarProps.hasDelegate}
                   mint={mint}
-                  flex={1}
+                  maxCompact
                 />
+              </Box>
+            </Animated.View>
+            <Animated.View style={bottomHeaderAnimatedStyle}>
+              <Box marginVertical="xl">
+                <Box alignItems="center" marginBottom="m">
+                  <TokenIcon img={json?.image} size={50} />
+                </Box>
+                <AccountTokenBalance marginTop="s" mint={mint} />
                 {!!symbol && (
                   <AccountTokenCurrencyBalance
                     ticker={symbol.toUpperCase()}
-                    variant="body1"
+                    variant="h4"
                     color="secondaryText"
+                    textAlign="center"
+                    marginBottom="xl"
                   />
                 )}
-              </Box>
-              <AccountActionBar
-                hasSend={actionBarProps.hasSend}
-                hasRequest={actionBarProps.hasRequest}
-                hasDelegate={actionBarProps.hasDelegate}
-                mint={mint}
-                maxCompact
-              />
-            </Box>
-          </Animated.View>
-          <Animated.View style={bottomHeaderAnimatedStyle}>
-            <Box marginVertical="xl">
-              <Box alignItems="center" marginBottom="m">
-                <TokenIcon img={json?.image} size={50} />
-              </Box>
-              <AccountTokenBalance marginTop="s" mint={mint} />
-              {!!symbol && (
-                <AccountTokenCurrencyBalance
-                  ticker={symbol.toUpperCase()}
-                  variant="h4"
-                  color="secondaryText"
-                  textAlign="center"
-                  marginBottom="xl"
+                <AccountActionBar
+                  hasSend={actionBarProps.hasSend}
+                  hasRequest={actionBarProps.hasRequest}
+                  hasDelegate={actionBarProps.hasDelegate}
+                  mint={mint}
+                  compact={!mint.equals(DC_MINT)}
+                  hasBottomTitle={!mint.equals(DC_MINT)}
+                  hasAirdrop={hasAirdrop}
                 />
-              )}
-              <AccountActionBar
-                hasSend={actionBarProps.hasSend}
-                hasRequest={actionBarProps.hasRequest}
-                hasDelegate={actionBarProps.hasDelegate}
-                mint={mint}
-                compact={!mint.equals(DC_MINT)}
-                hasBottomTitle={!mint.equals(DC_MINT)}
-                hasAirdrop={hasAirdrop}
-              />
-            </Box>
-          </Animated.View>
-          {mint.equals(NATIVE_MINT) &&
-          !isDevnet &&
-          (amount || 0) < MIN_BALANCE_THRESHOLD ? (
-            <Box
-              minHeight={topHeaderHeight}
-              mb="l"
-              backgroundColor="warning"
-              borderRadius="s"
-              p="s"
-            >
-              <Text variant="body2" color="black700">
-                {t('accountsScreen.solWarning')}
-              </Text>
-              <TouchableOpacityBox
-                marginTop="m"
-                justifyContent="center"
-                alignItems="center"
-                backgroundColor="orange500"
-                borderRadius="m"
-                onPress={() => showModal({ type: 'InsufficientSolConversion' })}
-              >
-                <Text variant="body1" padding="ms" color="black700">
-                  {t('accountsScreen.solSwap')}
-                </Text>
-              </TouchableOpacityBox>
-            </Box>
-          ) : (
-            <Box height={topHeaderHeight} />
-          )}
-        </Box>
+              </Box>
+            </Animated.View>
+            {mint.equals(NATIVE_MINT) &&
+            !isDevnet &&
+            (amount || 0) < MIN_BALANCE_THRESHOLD ? (
+              <>
+                <Box
+                  minHeight={topHeaderHeight}
+                  mb="l"
+                  backgroundColor="warning"
+                  borderRadius="s"
+                  p="s"
+                >
+                  <Text variant="body2" color="black700">
+                    {t('accountsScreen.solWarning')}
+                  </Text>
+                  <TouchableOpacityBox
+                    marginTop="m"
+                    justifyContent="center"
+                    alignItems="center"
+                    backgroundColor="orange500"
+                    borderRadius="m"
+                    onPress={() =>
+                      showModal({ type: 'InsufficientSolConversion' })
+                    }
+                  >
+                    <Text variant="body1" padding="ms" color="black700">
+                      {t('accountsScreen.solSwap')}
+                    </Text>
+                  </TouchableOpacityBox>
+                </Box>
+                <Box height={MIN_BOTTOM_BAR_HEIGHT} />
+              </>
+            ) : (
+              <Box height={topHeaderHeight} />
+            )}
+          </Box>
+        </ScrollView>
       </BackScreen>
       {!!canShowList && (
         <BottomSheet
