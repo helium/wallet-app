@@ -4,23 +4,21 @@ import {
   Instruction,
   Program,
 } from '@coral-xyz/anchor'
-import { heliumAddressToSolAddress } from '@helium/spl-utils'
+import { getAsset, Asset, heliumAddressToSolAddress } from '@helium/spl-utils'
 import { SignHotspotResponse } from '@helium/wallet-link'
 import { getLeafAssetId } from '@metaplex-foundation/mpl-bubblegum'
 import * as web3 from '@solana/web3.js'
-import { PublicKey } from '@solana/web3.js'
+import { Connection, PublicKey } from '@solana/web3.js'
 import bs58 from 'bs58'
 import { get, last } from 'lodash'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
-import { decodeEntityKey } from '@helium/helium-entity-manager-sdk'
+import {
+  decodeEntityKey,
+  keyToAssetForAsset,
+} from '@helium/helium-entity-manager-sdk'
 import { useSolana } from '../../solana/SolanaProvider'
 import { getSolanaKeypair } from '../../storage/secureStorage'
-import {
-  Asset,
-  AssetResult,
-  WrappedConnection,
-} from '../../utils/WrappedConnection'
 import { submitSolana } from '../../utils/solanaUtils'
 
 const ValidTxnKeys = [
@@ -87,7 +85,7 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
       decodedInstruction: Instruction
       instruction: web3.TransactionInstruction
       coder: BorshInstructionCoder
-      connection: web3.Connection
+      connection: Connection
     }) => {
       const formatted = coder.format(decodedInstruction, instruction.keys)
       const keyToAssetAccount = formatted?.accounts.find(
@@ -145,17 +143,17 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
   )
 
   const assetToAddress = useCallback(
-    async (asset: AssetResult) => {
-      if (asset.creators.length > 1) {
-        // This is an RSA hotspot
-        if (!hemProgram) return ''
-        const keyToAsset = await hemProgram.account.keyToAssetV0.fetch(
-          asset.creators[1].address.toString(),
-        )
-        return decodeEntityKey(keyToAsset.entityKey)
-      }
-
-      return asset.content.json_uri.split('/').slice(-1)[0]
+    async (asset?: Asset) => {
+      if (!hemProgram || !asset) return ''
+      const keyToAssetKey = keyToAssetForAsset(asset)
+      const keyToAsset = await hemProgram.account.keyToAssetV0.fetch(
+        keyToAssetKey,
+      )
+      const entityKey = decodeEntityKey(
+        keyToAsset.entityKey,
+        keyToAsset.keySerialization,
+      )
+      return entityKey || ''
     },
     [hemProgram],
   )
@@ -170,7 +168,7 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
       coder: BorshInstructionCoder
       decodedInstruction: Instruction
       instruction: web3.TransactionInstruction
-      connection: WrappedConnection
+      connection: Connection
     }) => {
       const formatted = coder.format(decodedInstruction, instruction.keys)
 
@@ -195,9 +193,9 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
         merkleTreeAccount.pubkey,
         new BN(index),
       )
-      const response = await connection.getAsset<Asset>(pubKey.toString())
+      const asset = await getAsset(connection.rpcEndpoint, pubKey)
 
-      const gatewayAddress = await assetToAddress(response.result)
+      const gatewayAddress = await assetToAddress(asset)
 
       return {
         location: location?.toString('hex'),
@@ -220,7 +218,7 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
       coder: BorshInstructionCoder
       decodedInstruction: Instruction
       instruction: web3.TransactionInstruction
-      connection: WrappedConnection
+      connection: Connection
     }) => {
       const formatted = coder.format(decodedInstruction, instruction.keys)
       const newOwnerAcct = formatted?.accounts.find(
@@ -252,9 +250,9 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
         merkleTreeAccount.pubkey,
         new BN(index),
       )
-      const asset = await connection.getAsset<Asset>(pubKey.toString())
+      const asset = await getAsset(connection.rpcEndpoint, pubKey)
 
-      const gatewayAddress = await assetToAddress(asset.result)
+      const gatewayAddress = await assetToAddress(asset)
 
       return {
         owner: ownerAcct.pubkey.toBase58(),
@@ -273,7 +271,7 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
       coder: BorshInstructionCoder
       decodedInstruction: Instruction
       instruction: web3.TransactionInstruction
-      connection: WrappedConnection
+      connection: Connection
     }) => {
       const data = decodedInstruction.data as {
         args: { dcAmount: string | null; hntAmount: string | null }
@@ -299,7 +297,7 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
   const decode = useCallback(
     async (instruction: web3.TransactionInstruction) => {
       if (!anchorProvider) return
-      const connection = anchorProvider.connection as WrappedConnection
+      const { connection } = anchorProvider
 
       try {
         const idl = await fetchIdl(instruction.programId)
