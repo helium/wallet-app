@@ -515,7 +515,7 @@ const SwapScreen = () => {
               toNumber(
                 dcToNetworkTokens(toBN(balance, outputMintDecimals)) ||
                   new BN(0),
-                outputMintDecimals,
+                inputMintDecimals,
               ),
             )
       }

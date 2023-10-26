@@ -4,6 +4,7 @@ import {
   HNT_MINT,
   IOT_MINT,
   MOBILE_MINT,
+  toBN,
   toNumber,
 } from '@helium/spl-utils'
 import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
@@ -110,10 +111,11 @@ const useBalanceHook = () => {
     (dcBalance: BN): BN | undefined => {
       if (!hntToDcPrice) return
 
-      return dcBalance.div(hntToDcPrice)
+      return toBN(toNumber(dcBalance, 8) / toNumber(hntToDcPrice, 8), 8)
     },
     [hntToDcPrice],
   )
+
   const networkTokensToDc = useCallback(
     (balance: BN): BN | undefined => {
       if (!hntToDcPrice) return
