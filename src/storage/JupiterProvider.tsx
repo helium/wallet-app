@@ -26,7 +26,7 @@ interface IJupiterContextState {
   routeMap: RouteMap
   routes?: QuoteResponse
 
-  getRoute: (opts: QuoteGetRequest) => Promise<void>
+  getRoute: (opts: QuoteGetRequest) => Promise<QuoteResponse | undefined>
   getSwapTx: (
     opts?: Pick<SwapPostRequest, 'swapRequest'>,
   ) => Promise<VersionedTransaction | undefined>
@@ -71,19 +71,22 @@ export const JupiterProvider: React.FC = ({ children }) => {
 
   const getRoute = useCallback(
     async (opts: QuoteGetRequest) => {
+      let foundRoutes: undefined | QuoteResponse
+
       try {
         setLoading(true)
-        setRoutes(
-          await api.quoteGet({
-            ...opts,
-            platformFeeBps: Number(Config.JUPITER_FEE_BPS) || 0,
-          }),
-        )
+        foundRoutes = await api.quoteGet({
+          ...opts,
+          platformFeeBps: Number(Config.JUPITER_FEE_BPS) || 0,
+        })
+        setRoutes(foundRoutes)
       } catch (err) {
         setError(err)
       } finally {
         setLoading(false)
       }
+
+      return foundRoutes
     },
     [api],
   )
