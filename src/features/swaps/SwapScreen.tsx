@@ -60,7 +60,12 @@ import React, {
 } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { LayoutAnimation } from 'react-native'
+import {
+  LayoutAnimation,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
 import { solAddressIsValid } from '../../utils/accountUtils'
@@ -448,6 +453,7 @@ const SwapScreen = () => {
 
   const onCurrencySelect = useCallback(
     (youPay: boolean) => () => {
+      Keyboard.dismiss()
       tokenSelectorRef.current?.showTokens()
       setSelectorMode(youPay ? SelectorMode.youPay : SelectorMode.youReceive)
     },
@@ -456,6 +462,7 @@ const SwapScreen = () => {
 
   const onTokenItemPressed = useCallback(
     (youPay: boolean) => () => {
+      Keyboard.dismiss()
       if (typeof inputMintDecimals !== undefined) {
         setSelectorMode(youPay ? SelectorMode.youPay : SelectorMode.youReceive)
         hntKeyboardRef.current?.show({
@@ -616,227 +623,225 @@ const SwapScreen = () => {
   }, [loading, loadingPrice, isDevnet])
 
   return (
-    <AddressBookSelector
-      ref={addressBookRef}
-      onContactSelected={handleContactSelected}
-      hideCurrentAccount
-    >
-      <HNTKeyboard
-        ref={hntKeyboardRef}
-        allowOverdraft={selectorMode === SelectorMode.youReceive}
-        onConfirmBalance={onConfirmBalance}
-        mint={selectorMode === SelectorMode.youPay ? inputMint : outputMint}
-        networkFee={SOL_TXN_FEE}
-        // Ensure that we keep at least 0.02 sol
-        minTokens={
-          inputMint.equals(NATIVE_MINT)
-            ? new BN(MIN_BALANCE_THRESHOLD)
-            : undefined
-        }
-        usePortal
+    <ReAnimatedBox flex={1}>
+      <AddressBookSelector
+        ref={addressBookRef}
+        onContactSelected={handleContactSelected}
+        hideCurrentAccount
       >
-        <TokenSelector
-          ref={tokenSelectorRef}
-          onTokenSelected={setTokenTypeHandler}
-          tokenData={tokenData}
+        <HNTKeyboard
+          ref={hntKeyboardRef}
+          allowOverdraft={selectorMode === SelectorMode.youReceive}
+          onConfirmBalance={onConfirmBalance}
+          mint={selectorMode === SelectorMode.youPay ? inputMint : outputMint}
+          networkFee={SOL_TXN_FEE}
+          // Ensure that we keep at least 0.02 sol
+          minTokens={
+            inputMint.equals(NATIVE_MINT)
+              ? new BN(MIN_BALANCE_THRESHOLD)
+              : undefined
+          }
+          usePortal
         >
-          <ReAnimatedBox flex={1}>
-            <SafeAreaBox backgroundColor="black900" edges={edges} flex={1}>
-              {Header}
-              <Box flexGrow={1} justifyContent="center" marginTop="xxxl">
-                <SwapItem
-                  onPress={onTokenItemPressed(true)}
+          <TokenSelector
+            ref={tokenSelectorRef}
+            onTokenSelected={setTokenTypeHandler}
+            tokenData={tokenData}
+          >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <SafeAreaBox backgroundColor="black900" edges={edges} flex={1}>
+                <KeyboardAvoidingView
+                  behavior="position"
+                  keyboardVerticalOffset={60}
+                >
+                  {Header}
+                  <Box flexGrow={1} justifyContent="center" marginTop="xxxl">
+                    <SwapItem
+                      onPress={onTokenItemPressed(true)}
+                      marginHorizontal="m"
+                      isPaying
+                      onCurrencySelect={onCurrencySelect(true)}
+                      mintSelected={inputMint}
+                      amount={inputAmount}
+                    />
+                    {Slippage}
+                    <Box>
+                      <SwapItem
+                        onPress={onTokenItemPressed(false)}
+                        marginHorizontal="m"
+                        marginBottom="m"
+                        isPaying={false}
+                        onCurrencySelect={onCurrencySelect(false)}
+                        mintSelected={outputMint}
+                        amount={outputAmount}
+                        loading={isLoading}
+                      />
+                      {!isRecipientOpen && outputMint.equals(DC_MINT) && (
+                        <TouchableOpacityBox
+                          marginBottom="m"
+                          hitSlop={hitSlop}
+                          alignItems="center"
+                          onPress={handleRecipientClick}
+                        >
+                          <Box alignItems="center" flexDirection="row">
+                            <Text
+                              marginLeft="ms"
+                              marginRight="xs"
+                              color="secondaryText"
+                            >
+                              {t('swapsScreen.addRecipient')}
+                            </Text>
+                            <Plus color={colors.secondaryText} />
+                          </Box>
+                        </TouchableOpacityBox>
+                      )}
+                      {isRecipientOpen && (
+                        <TextInput
+                          floatingLabel={t('collectablesScreen.transferTo')}
+                          optional
+                          variant="thickDark"
+                          backgroundColor="red500"
+                          marginHorizontal="m"
+                          marginBottom="m"
+                          height={80}
+                          textColor="white"
+                          fontSize={15}
+                          TrailingIcon={Menu}
+                          onTrailingIconPress={handleAddressBookSelected}
+                          textInputProps={{
+                            placeholder: t('generic.solanaAddress'),
+                            placeholderTextColor: 'white',
+                            autoCorrect: false,
+                            autoComplete: 'off',
+                            onChangeText: handleEditAddress,
+                            value: recipient,
+                          }}
+                        />
+                      )}
+                      {showError && (
+                        <Box marginTop="s">
+                          <Text
+                            marginTop="s"
+                            marginHorizontal="m"
+                            variant="body3Medium"
+                            color="red500"
+                            textAlign="center"
+                          >
+                            {showError}
+                          </Text>
+                        </Box>
+                      )}
+                    </Box>
+                  </Box>
+                </KeyboardAvoidingView>
+                <Box
+                  flexDirection="column"
+                  marginBottom="xl"
                   marginHorizontal="m"
-                  isPaying
-                  onCurrencySelect={onCurrencySelect(true)}
-                  mintSelected={inputMint}
-                  amount={inputAmount}
-                />
-                {Slippage}
-                <Box>
-                  <SwapItem
-                    onPress={onTokenItemPressed(false)}
-                    marginHorizontal="m"
-                    isPaying={false}
-                    onCurrencySelect={onCurrencySelect(false)}
-                    mintSelected={outputMint}
-                    amount={outputAmount}
-                    loading={isLoading}
+                >
+                  <ButtonPressable
+                    height={65}
+                    flexGrow={1}
+                    borderRadius="round"
+                    backgroundColor="white"
+                    backgroundColorOpacityPressed={0.7}
+                    backgroundColorDisabled="surfaceSecondary"
+                    backgroundColorDisabledOpacity={0.5}
+                    titleColorDisabled="secondaryText"
+                    titleColor="black"
+                    disabled={
+                      hasInsufficientBalance ||
+                      insufficientTokensToSwap ||
+                      inputAmount === 0 ||
+                      loading ||
+                      swapping
+                    }
+                    titleColorPressedOpacity={0.3}
+                    title={swapping ? '' : t('swapsScreen.swapTokens')}
+                    onPress={handleSwapTokens}
+                    TrailingComponent={
+                      swapping ? (
+                        <CircleLoader loaderSize={20} color="black" />
+                      ) : undefined
+                    }
                   />
 
-                  {!isRecipientOpen && outputMint.equals(DC_MINT) && (
-                    <TouchableOpacityBox
-                      marginTop="l"
-                      hitSlop={hitSlop}
-                      alignItems="center"
-                      onPress={handleRecipientClick}
-                    >
-                      <Box
-                        alignItems="center"
-                        marginTop="s"
-                        flexDirection="row"
-                        marginBottom="l"
-                      >
-                        <Text
-                          marginLeft="ms"
-                          marginRight="xs"
-                          color="secondaryText"
-                        >
-                          {t('swapsScreen.addRecipient')}
-                        </Text>
-                        <Plus color={colors.secondaryText} />
-                      </Box>
-                    </TouchableOpacityBox>
-                  )}
-
-                  {isRecipientOpen && (
-                    <TextInput
-                      marginTop="l"
-                      floatingLabel={t('collectablesScreen.transferTo')}
-                      optional
-                      variant="thickDark"
-                      backgroundColor="red500"
-                      marginHorizontal="m"
-                      marginBottom="s"
-                      height={80}
-                      textColor="white"
-                      fontSize={15}
-                      TrailingIcon={Menu}
-                      onTrailingIconPress={handleAddressBookSelected}
-                      textInputProps={{
-                        placeholder: t('generic.solanaAddress'),
-                        placeholderTextColor: 'white',
-                        autoCorrect: false,
-                        autoComplete: 'off',
-                        onChangeText: handleEditAddress,
-                        value: recipient,
-                      }}
-                    />
-                  )}
-
-                  {showError && (
-                    <Box marginTop="s">
-                      <Text
-                        marginTop="s"
+                  <Box marginTop="m">
+                    {!isDevnet && !outputMint.equals(DC_MINT) && (
+                      <TextTransform
+                        textAlign="center"
                         marginHorizontal="m"
                         variant="body3Medium"
-                        color="red500"
+                        color="white"
+                        i18nKey="swapsScreen.slippageLabelValue"
+                        values={{ amount: slippageBps / 100 }}
+                      />
+                    )}
+                    <TextTransform
+                      textAlign="center"
+                      marginHorizontal="m"
+                      variant="body3Medium"
+                      color="white"
+                      i18nKey="collectablesScreen.transferFee"
+                      values={{ amount: humanReadable(solFee, 9) }}
+                    />
+                    {!isDevnet && !outputMint.equals(DC_MINT) && (
+                      <TextTransform
                         textAlign="center"
-                      >
-                        {showError}
-                      </Text>
-                    </Box>
-                  )}
+                        marginHorizontal="m"
+                        variant="body3Medium"
+                        color="white"
+                        i18nKey="swapsScreen.minReceived"
+                        values={{ amount: minReceived }}
+                      />
+                    )}
+                  </Box>
                 </Box>
-              </Box>
-              <Box
-                flexDirection="column"
-                marginBottom="xl"
-                marginTop="m"
-                marginHorizontal="xl"
-              >
-                <ButtonPressable
-                  height={65}
-                  flexGrow={1}
-                  borderRadius="round"
-                  backgroundColor="white"
-                  backgroundColorOpacityPressed={0.7}
-                  backgroundColorDisabled="surfaceSecondary"
-                  backgroundColorDisabledOpacity={0.5}
-                  titleColorDisabled="secondaryText"
-                  titleColor="black"
-                  disabled={
-                    hasInsufficientBalance ||
-                    insufficientTokensToSwap ||
-                    inputAmount === 0 ||
-                    loading ||
-                    swapping
-                  }
-                  titleColorPressedOpacity={0.3}
-                  title={swapping ? '' : t('swapsScreen.swapTokens')}
-                  onPress={handleSwapTokens}
-                  TrailingComponent={
-                    swapping ? (
-                      <CircleLoader loaderSize={20} color="black" />
-                    ) : undefined
-                  }
-                />
-
-                <Box marginTop="m">
-                  {!isDevnet && !outputMint.equals(DC_MINT) && (
-                    <TextTransform
-                      textAlign="center"
-                      marginHorizontal="m"
-                      variant="body3Medium"
-                      color="white"
-                      i18nKey="swapsScreen.slippageLabelValue"
-                      values={{ amount: slippageBps / 100 }}
-                    />
-                  )}
-                  <TextTransform
-                    textAlign="center"
-                    marginHorizontal="m"
-                    variant="body3Medium"
-                    color="white"
-                    i18nKey="collectablesScreen.transferFee"
-                    values={{ amount: humanReadable(solFee, 9) }}
-                  />
-                  {!isDevnet && !outputMint.equals(DC_MINT) && (
-                    <TextTransform
-                      textAlign="center"
-                      marginHorizontal="m"
-                      variant="body3Medium"
-                      color="white"
-                      i18nKey="swapsScreen.minReceived"
-                      values={{ amount: minReceived }}
-                    />
-                  )}
-                </Box>
-              </Box>
-            </SafeAreaBox>
-          </ReAnimatedBox>
-        </TokenSelector>
-        {slippageInfoVisible ? (
-          <ReAnimatedBlurBox
-            visible
-            entering={FadeInFast}
-            position="absolute"
-            height="100%"
-            width="100%"
-          >
-            <Box
-              flexDirection="row"
-              justifyContent="space-between"
-              alignItems="center"
-              marginTop="l"
+              </SafeAreaBox>
+            </TouchableWithoutFeedback>
+          </TokenSelector>
+          {slippageInfoVisible ? (
+            <ReAnimatedBlurBox
+              visible
+              entering={FadeInFast}
+              position="absolute"
+              height="100%"
+              width="100%"
             >
-              <Box flex={1}>
-                <CloseButton
-                  marginStart="m"
-                  onPress={() => setSlippageInfoVisible(false)}
-                />
+              <Box
+                flexDirection="row"
+                justifyContent="space-between"
+                alignItems="center"
+                marginTop="l"
+              >
+                <Box flex={1}>
+                  <CloseButton
+                    marginStart="m"
+                    onPress={() => setSlippageInfoVisible(false)}
+                  />
+                </Box>
+                <Box flex={1} alignItems="center" flexDirection="row">
+                  <Text variant="h4" color="white" flex={1} textAlign="center">
+                    {t('swapsScreen.slippage')}
+                  </Text>
+                </Box>
+                <Box flex={1} />
               </Box>
-              <Box flex={1} alignItems="center" flexDirection="row">
-                <Text variant="h4" color="white" flex={1} textAlign="center">
-                  {t('swapsScreen.slippage')}
+              <Box flex={1} paddingHorizontal="m" marginTop="l">
+                <Text
+                  variant="body1Medium"
+                  color="white"
+                  flex={1}
+                  textAlign="center"
+                >
+                  {t('swapsScreen.slippageInfo')}
                 </Text>
               </Box>
-              <Box flex={1} />
-            </Box>
-            <Box flex={1} paddingHorizontal="m" marginTop="l">
-              <Text
-                variant="body1Medium"
-                color="white"
-                flex={1}
-                textAlign="center"
-              >
-                {t('swapsScreen.slippageInfo')}
-              </Text>
-            </Box>
-          </ReAnimatedBlurBox>
-        ) : undefined}
-      </HNTKeyboard>
-    </AddressBookSelector>
+            </ReAnimatedBlurBox>
+          ) : undefined}
+        </HNTKeyboard>
+      </AddressBookSelector>
+    </ReAnimatedBox>
   )
 }
 
