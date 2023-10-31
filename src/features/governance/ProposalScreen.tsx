@@ -8,7 +8,7 @@ import React, { useMemo } from 'react'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 
-export const VotingPowerScreen = () => {
+export const ProposalScreen = () => {
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])
 
@@ -34,3 +34,5 @@ export const VotingPowerScreen = () => {
     </ReAnimatedBox>
   )
 }
+
+export default ProposalScreen
