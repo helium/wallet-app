@@ -81,6 +81,7 @@ export const JupiterProvider: React.FC = ({ children }) => {
         })
         setRoutes(foundRoutes)
       } catch (err) {
+        console.error(err)
         setError(err)
       } finally {
         setLoading(false)
@@ -109,6 +110,7 @@ export const JupiterProvider: React.FC = ({ children }) => {
         const swapTransactionBuf = Buffer.from(swapTransaction, 'base64')
         return VersionedTransaction.deserialize(swapTransactionBuf)
       } catch (err) {
+        console.error(err)
         setError(err)
       }
     },
