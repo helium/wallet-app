@@ -96,10 +96,10 @@ export const JupiterProvider: React.FC = ({ children }) => {
 
   const getSwapTx = useCallback(
     async (opts?: Pick<SwapPostRequest, 'swapRequest'>) => {
-      if (!routes) throw new Error(t('errors.swap.routes'))
-      if (!wallet) throw new Error(t('errors.account'))
-
       try {
+        if (!routes) throw new Error(t('errors.swap.routes'))
+        if (!wallet) throw new Error(t('errors.account'))
+
         const { swapTransaction } = await api.swapPost({
           swapRequest: {
             quoteResponse: routes,
