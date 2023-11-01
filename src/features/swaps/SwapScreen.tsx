@@ -183,7 +183,7 @@ const SwapScreen = () => {
       if (!isDevnet && !outputMint.equals(DC_MINT)) {
         return (
           routes?.outAmount &&
-          new BN(routes?.outAmount || 0).lt(new BN(inputAmount))
+          new BN(routes?.outAmount || 0).gt(inputMintBalance || new BN(0))
         )
       }
 
