@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import {
   Configuration,
@@ -17,6 +18,7 @@ import React, {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import Config from 'react-native-config'
+import * as Logger from '../utils/logger'
 
 type RouteMap = Map<string, string[]>
 interface IJupiterContextState {
@@ -80,9 +82,9 @@ export const JupiterProvider: React.FC = ({ children }) => {
           platformFeeBps: Number(Config.JUPITER_FEE_BPS) || 0,
         })
         setRoutes(foundRoutes)
-      } catch (err) {
-        console.error(err)
-        setError(err)
+      } catch (err: any) {
+        Logger.error(err)
+        setError(err.toString())
       } finally {
         setLoading(false)
       }
@@ -109,9 +111,9 @@ export const JupiterProvider: React.FC = ({ children }) => {
 
         const swapTransactionBuf = Buffer.from(swapTransaction, 'base64')
         return VersionedTransaction.deserialize(swapTransactionBuf)
-      } catch (err) {
-        console.error(err)
-        setError(err)
+      } catch (err: any) {
+        Logger.error(err)
+        setError(err.toString())
       }
     },
     [t, api, routes, wallet],
