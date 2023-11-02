@@ -28,7 +28,7 @@ export const ProposalCard = ({ proposal, ...boxProps }: IProposalCardProps) => {
         </Box>
         <Text variant="body2" color="surfaceSecondaryText">
           This proposal seeks to regulate the number of witnesses a Hotspot is
-          rewarded for....
+          rewarded for ultra long text that should be truncated
         </Text>
       </Box>
       <Box
