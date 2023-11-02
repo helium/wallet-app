@@ -114,17 +114,11 @@ const SwapScreen = () => {
   const [recipient, setRecipient] = useState('')
   const [isRecipientOpen, setRecipientOpen] = useState(false)
   const { visibleTokens } = useVisibleTokens()
+  const { loading, error: jupiterError, routeMap, getRoute } = useJupiter()
   const { price, loading: loadingPrice } = useTreasuryPrice(
     inputMint,
     inputAmount,
   )
-  const {
-    loading,
-    error: jupiterError,
-    routeMap,
-    routes,
-    getRoute,
-  } = useJupiter()
 
   const inputMintDecimals = useMint(inputMint)?.info?.decimals
   const outputMintDecimals = useMint(outputMint)?.info?.decimals
@@ -180,23 +174,9 @@ const SwapScreen = () => {
 
   const insufficientTokensToSwap = useMemo(() => {
     if (inputAmount > 0 && typeof inputMintDecimals !== 'undefined') {
-      if (!isDevnet && !outputMint.equals(DC_MINT)) {
-        return (
-          routes?.outAmount &&
-          new BN(routes?.outAmount || 0).lt(new BN(inputAmount))
-        )
-      }
-
       return inputMintBalance?.lt(toBN(inputAmount || 0, inputMintDecimals))
     }
-  }, [
-    inputAmount,
-    inputMintDecimals,
-    inputMintBalance,
-    outputMint,
-    routes,
-    isDevnet,
-  ])
+  }, [inputAmount, inputMintDecimals, inputMintBalance])
 
   const showError = useMemo(() => {
     if (hasRecipientError) return t('generic.notValidSolanaAddress')
