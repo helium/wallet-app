@@ -9,6 +9,7 @@ import { useNavigation } from '@react-navigation/native'
 import globalStyles from '@theme/globalStyles'
 import React, { useMemo, useState } from 'react'
 import { Edge } from 'react-native-safe-area-context'
+import { ScrollView } from 'react-native'
 import { VotingPowerCard } from './VotingPowerCard'
 import { ProposalsList } from './ProposalsList'
 import { GovernanceNavigationProp } from './governanceTypes'
@@ -28,7 +29,11 @@ export const GovernanceScreen = () => {
         <Text marginTop="m" alignSelf="center" variant="h4">
           Governance
         </Text>
-        <Box flexDirection="row" justifyContent="space-between" marginTop="l">
+        <Box
+          flexDirection="row"
+          justifyContent="space-between"
+          marginVertical="l"
+        >
           {GovMints.map((mint) => (
             <TokenPill
               key={mint.toBase58()}
@@ -39,16 +44,17 @@ export const GovernanceScreen = () => {
             />
           ))}
         </Box>
-        <VotingPowerCard
-          marginTop="l"
-          mint={selectedMint}
-          onPress={async (mint) => {
-            navigation.push('VotingPowerScreen', {
-              mint: mint.toBase58(),
-            })
-          }}
-        />
-        <ProposalsList proposals={govState.proposals} />
+        <ScrollView>
+          <VotingPowerCard
+            mint={selectedMint}
+            onPress={async (mint) => {
+              navigation.push('VotingPowerScreen', {
+                mint: mint.toBase58(),
+              })
+            }}
+          />
+          <ProposalsList proposals={govState.proposals} />
+        </ScrollView>
       </SafeAreaBox>
     </ReAnimatedBox>
   )

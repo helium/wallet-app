@@ -7,6 +7,7 @@ import { RouteProp, useRoute } from '@react-navigation/native'
 import { usePublicKey } from '@hooks/usePublicKey'
 import ButtonPressable from '@components/ButtonPressable'
 import Box from '@components/Box'
+import { ScrollView } from 'react-native'
 import { VotingPowerCard } from './VotingPowerCard'
 import { GovernanceStackParamList } from './governanceTypes'
 import { PositionsList } from './PositionsList'
@@ -32,8 +33,10 @@ export const VotingPowerScreen = () => {
         title="Your Voting Power"
         edges={backEdges}
       >
-        <VotingPowerCard mint={mintKey} marginTop="l" />
-        <PositionsList positions={govState.positions} />
+        <ScrollView>
+          <VotingPowerCard mint={mintKey} marginTop="l" />
+          <PositionsList positions={govState.positions} />
+        </ScrollView>
         <Box flexDirection="row" paddingTop="m">
           <ButtonPressable
             height={50}

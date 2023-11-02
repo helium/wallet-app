@@ -48,7 +48,7 @@ export const PositionCard = ({ position, ...boxProps }: IPositionCardProps) => {
   return (
     <>
       <TouchableOpacityBox
-        backgroundColor="surfaceSecondary"
+        backgroundColor="secondaryBackground"
         borderRadius="l"
         onPress={() => setActionsOpen(true)}
         {...boxProps}

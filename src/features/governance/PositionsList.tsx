@@ -3,7 +3,6 @@ import Text from '@components/Text'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
 import React from 'react'
-import { ScrollView } from 'react-native'
 import { PositionCard } from './PositionCard'
 
 interface IPositionsListProps extends BoxProps<Theme> {
@@ -26,16 +25,14 @@ export const PositionsList = ({
           Positions
         </Text>
       </Box>
-      <ScrollView>
-        {positions?.map((p, idx) => (
-          <PositionCard
-            // eslint-disable-next-line react/no-array-index-key
-            key={`proposal-${idx}`}
-            position={p}
-            marginTop={idx > 0 ? 'm' : undefined}
-          />
-        ))}
-      </ScrollView>
+      {positions?.map((p, idx) => (
+        <PositionCard
+          // eslint-disable-next-line react/no-array-index-key
+          key={`proposal-${idx}`}
+          position={p}
+          marginTop={idx > 0 ? 'm' : undefined}
+        />
+      ))}
     </Box>
   )
 }

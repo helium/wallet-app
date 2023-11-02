@@ -111,7 +111,7 @@ export const VotingPowerCard = ({
 
   return onPress ? (
     <TouchableOpacityBox
-      backgroundColor="surfaceSecondary"
+      backgroundColor="secondaryBackground"
       borderRadius="l"
       onPress={handleOnPress}
       {...boxProps}
@@ -119,7 +119,7 @@ export const VotingPowerCard = ({
       {renderCard(true)}
     </TouchableOpacityBox>
   ) : (
-    <Box backgroundColor="surfaceSecondary" borderRadius="l" {...boxProps}>
+    <Box backgroundColor="secondaryBackground" borderRadius="l" {...boxProps}>
       {renderCard(false)}
     </Box>
   )
