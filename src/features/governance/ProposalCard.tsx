@@ -17,7 +17,7 @@ export const ProposalCard = ({ proposal, ...boxProps }: IProposalCardProps) => {
           justifyContent="space-between"
           alignItems="center"
         >
-          <Text variant="subtitle1" color="primaryText" fontSize={16}>
+          <Text variant="subtitle3" color="primaryText">
             {`Proposal ${proposal}`}
           </Text>
           <Box padding="s" backgroundColor="surfaceSecondary" borderRadius="m">

@@ -59,7 +59,7 @@ export const PositionCard = ({ position, ...boxProps }: IPositionCardProps) => {
             justifyContent="space-between"
             marginBottom="m"
           >
-            <Text variant="subtitle1" color="primaryText" fontSize={16}>
+            <Text variant="subtitle3" color="primaryText">
               {`Position ${position}`}
             </Text>
           </Box>

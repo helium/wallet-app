@@ -29,21 +29,11 @@ export const VotingPowerCard = ({
             justifyContent="space-between"
             marginBottom="m"
           >
-            <Text
-              variant="subtitle1"
-              color="primaryText"
-              fontSize={20}
-              lineHeight={23}
-            >
+            <Text variant="subtitle1" color="primaryText">
               Your Voting Power
             </Text>
             {onPress && (
-              <Text
-                variant="subtitle1"
-                color="primaryText"
-                fontSize={20}
-                lineHeight={23}
-              >
+              <Text variant="subtitle1" color="primaryText">
                 &gt;
               </Text>
             )}
