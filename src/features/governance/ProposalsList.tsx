@@ -1,15 +1,16 @@
+import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
+import ListItem from '@components/ListItem'
 import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { BoxProps } from '@shopify/restyle'
+import { PublicKey } from '@solana/web3.js'
 import { Theme } from '@theme/theme'
 import React, { useCallback, useState } from 'react'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import ListItem from '@components/ListItem'
-import BlurActionSheet from '@components/BlurActionSheet'
 import { ProposalCard } from './ProposalCard'
 
 interface IProposalsListProps extends BoxProps<Theme> {
-  proposals?: string[]
+  proposals?: PublicKey[]
 }
 
 type Filter = 'all' | 'active' | 'passed' | 'failed'
@@ -66,7 +67,7 @@ export const ProposalsList = ({
         <TouchableOpacityBox
           flexDirection="row"
           justifyContent="center"
-          padding="m"
+          paddingVertical="l"
           onPress={() => setFiltersOpen(true)}
         >
           <Text variant="body3" color="secondaryText">

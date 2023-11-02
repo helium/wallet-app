@@ -91,7 +91,7 @@ export const VotingPowerCard = ({
       </Box>
       {inOverview && (
         <Box borderTopColor="primaryBackground" borderTopWidth={2} padding="ms">
-          <Text variant="body3" color="secondaryText">
+          <Text variant="body2" color="secondaryText">
             You have 497.48730345 more HNT available to lock.
           </Text>
         </Box>

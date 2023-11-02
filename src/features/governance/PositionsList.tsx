@@ -19,7 +19,7 @@ export const PositionsList = ({
         flexDirection="row"
         justifyContent="center"
         alignItems="center"
-        paddingVertical="m"
+        paddingVertical="l"
       >
         <Text variant="body3" color="secondaryText">
           Positions

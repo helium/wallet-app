@@ -1,32 +1,51 @@
 import Box from '@components/Box'
 import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { BoxProps } from '@shopify/restyle'
+import { PublicKey } from '@solana/web3.js'
 import { Theme } from '@theme/theme'
-import React from 'react'
+import React, { useCallback } from 'react'
 
 interface IProposalCardProps extends BoxProps<Theme> {
-  proposal: string
+  proposal: PublicKey
+  onPress?: (proposal: PublicKey) => Promise<void>
 }
 
-export const ProposalCard = ({ proposal, ...boxProps }: IProposalCardProps) => {
+export const ProposalCard = ({
+  proposal,
+  onPress,
+  ...boxProps
+}: IProposalCardProps) => {
+  const handleOnPress = useCallback(async () => {
+    if (onPress) await onPress(proposal)
+  }, [proposal, onPress])
+
   return (
-    <Box backgroundColor="secondaryBackground" borderRadius="l" {...boxProps}>
-      <Box padding="m">
+    <TouchableOpacityBox
+      backgroundColor="secondaryBackground"
+      borderRadius="l"
+      onPress={handleOnPress}
+      {...boxProps}
+    >
+      <Box padding="m" paddingTop="s">
         <Box
           flexDirection="row"
-          justifyContent="space-between"
+          justifyContent="flex-end"
           alignItems="center"
+          paddingBottom="xs"
         >
-          <Text variant="subtitle3" color="primaryText">
-            {`Proposal ${proposal}`}
-          </Text>
           <Box padding="s" backgroundColor="surfaceSecondary" borderRadius="m">
             <Text variant="body3" color="secondaryText">
               HIP 42
             </Text>
           </Box>
         </Box>
-        <Text variant="body2" color="surfaceSecondaryText">
+        <Box flexShrink={1} paddingBottom="s">
+          <Text variant="subtitle3" color="primaryText">
+            {proposal.toBase58()}
+          </Text>
+        </Box>
+        <Text variant="body2" color="surfaceSecondaryText" numberOfLines={2}>
           This proposal seeks to regulate the number of witnesses a Hotspot is
           rewarded for ultra long text that should be truncated
         </Text>
@@ -61,6 +80,6 @@ export const ProposalCard = ({ proposal, ...boxProps }: IProposalCardProps) => {
           </Text>
         </Box>
       </Box>
-    </Box>
+    </TouchableOpacityBox>
   )
 }
