@@ -1,16 +1,17 @@
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
-import { DelayedFadeIn } from '@components/FadeInOut'
-import React, { useMemo, useState } from 'react'
-import { Edge } from 'react-native-safe-area-context'
-import { RouteProp, useRoute } from '@react-navigation/native'
-import { usePublicKey } from '@hooks/usePublicKey'
-import ButtonPressable from '@components/ButtonPressable'
 import Box from '@components/Box'
+import ButtonPressable from '@components/ButtonPressable'
+import { DelayedFadeIn } from '@components/FadeInOut'
+import { usePublicKey } from '@hooks/usePublicKey'
+import { RouteProp, useRoute } from '@react-navigation/native'
+import globalStyles from '@theme/globalStyles'
+import React, { useMemo, useState } from 'react'
 import { ScrollView } from 'react-native'
+import { Edge } from 'react-native-safe-area-context'
+import { PositionsList } from './PositionsList'
 import { VotingPowerCard } from './VotingPowerCard'
 import { GovernanceStackParamList } from './governanceTypes'
-import { PositionsList } from './PositionsList'
 
 type Route = RouteProp<GovernanceStackParamList, 'VotingPowerScreen'>
 export const VotingPowerScreen = () => {
@@ -26,7 +27,7 @@ export const VotingPowerScreen = () => {
   if (!mintKey) return null
 
   return (
-    <ReAnimatedBox flex={1} entering={DelayedFadeIn}>
+    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <BackScreen
         headerTopMargin="l"
         padding="none"
@@ -37,34 +38,34 @@ export const VotingPowerScreen = () => {
           <VotingPowerCard mint={mintKey} marginTop="l" />
           <PositionsList positions={govState.positions} />
         </ScrollView>
-        <Box flexDirection="row" paddingTop="m">
-          <ButtonPressable
-            height={50}
-            flex={1}
-            fontSize={16}
-            borderRadius="round"
-            borderWidth={2}
-            borderColor="white"
-            backgroundColorOpacityPressed={0.7}
-            title="Lock Tokens"
-            titleColor="white"
-            titleColorPressed="black"
-          />
-          <Box paddingHorizontal="s" />
-          <ButtonPressable
-            height={50}
-            flex={1}
-            fontSize={16}
-            borderRadius="round"
-            borderWidth={2}
-            borderColor="white"
-            backgroundColor="white"
-            backgroundColorOpacityPressed={0.7}
-            title="Claim Rewards"
-            titleColor="black"
-          />
-        </Box>
       </BackScreen>
+      <Box flexDirection="row" paddingTop="m">
+        <ButtonPressable
+          height={50}
+          flex={1}
+          fontSize={16}
+          borderRadius="round"
+          borderWidth={2}
+          borderColor="white"
+          backgroundColorOpacityPressed={0.7}
+          title="Lock Tokens"
+          titleColor="white"
+          titleColorPressed="black"
+        />
+        <Box paddingHorizontal="s" />
+        <ButtonPressable
+          height={50}
+          flex={1}
+          fontSize={16}
+          borderRadius="round"
+          borderWidth={2}
+          borderColor="white"
+          backgroundColor="white"
+          backgroundColorOpacityPressed={0.7}
+          title="Claim Rewards"
+          titleColor="black"
+        />
+      </Box>
     </ReAnimatedBox>
   )
 }

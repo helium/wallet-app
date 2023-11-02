@@ -33,25 +33,25 @@ export const GovernanceScreen = () => {
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <SafeAreaBox edges={safeEdges} flex={1}>
-        <Text marginTop="m" alignSelf="center" variant="h4">
-          Governance
-        </Text>
-        <Box
-          flexDirection="row"
-          justifyContent="space-between"
-          marginVertical="xl"
-        >
-          {GovMints.map((mint) => (
-            <TokenPill
-              key={mint.toBase58()}
-              mint={mint}
-              isActive={selectedMint.equals(mint)}
-              onPress={() => setSelectedMint(mint)}
-              activeColor="secondaryBackground"
-            />
-          ))}
-        </Box>
         <ScrollView>
+          <Text marginTop="m" alignSelf="center" variant="h4">
+            Governance
+          </Text>
+          <Box
+            flexDirection="row"
+            justifyContent="space-between"
+            marginVertical="xl"
+          >
+            {GovMints.map((mint) => (
+              <TokenPill
+                key={mint.toBase58()}
+                mint={mint}
+                isActive={selectedMint.equals(mint)}
+                onPress={() => setSelectedMint(mint)}
+                activeColor="secondaryBackground"
+              />
+            ))}
+          </Box>
           <VotingPowerCard
             mint={selectedMint}
             onPress={async (mint) => {

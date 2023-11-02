@@ -7,7 +7,9 @@ import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { Theme } from '@theme/theme'
 import React, { useCallback, useState } from 'react'
+import { useNavigation } from '@react-navigation/native'
 import { ProposalCard } from './ProposalCard'
+import { GovernanceNavigationProp } from './governanceTypes'
 
 interface IProposalsListProps extends BoxProps<Theme> {
   proposals?: PublicKey[]
@@ -18,6 +20,7 @@ export const ProposalsList = ({
   proposals,
   ...boxProps
 }: IProposalsListProps) => {
+  const navigation = useNavigation<GovernanceNavigationProp>()
   const [filter, setFilter] = useState<Filter>('all')
   const [filtersOpen, setFiltersOpen] = useState(false)
   const handleFilterPress = (f: Filter) => () => {
@@ -80,6 +83,11 @@ export const ProposalsList = ({
             key={`proposal-${idx}`}
             proposal={p}
             marginTop={idx > 0 ? 'm' : undefined}
+            onPress={async (proposal) => {
+              navigation.push('ProposalScreen', {
+                proposal: proposal.toBase58(),
+              })
+            }}
           />
         ))}
       </Box>
