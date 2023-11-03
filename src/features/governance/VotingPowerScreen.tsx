@@ -9,6 +9,7 @@ import globalStyles from '@theme/globalStyles'
 import React, { useMemo, useState } from 'react'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
+import { Keypair } from '@solana/web3.js'
 import { PositionsList } from './PositionsList'
 import { VotingPowerCard } from './VotingPowerCard'
 import { GovernanceStackParamList } from './governanceTypes'
@@ -17,12 +18,22 @@ type Route = RouteProp<GovernanceStackParamList, 'VotingPowerScreen'>
 export const VotingPowerScreen = () => {
   const route = useRoute<Route>()
   const backEdges = useMemo(() => ['top'] as Edge[], [])
-  const [govState] = useState({
-    positions: ['1', '2', '3', '4', '5', '6', '7', '8'],
-  })
-
   const { mint } = route.params
   const mintKey = usePublicKey(mint)
+  const [positions] = useState([
+    {
+      pubkey: Keypair.generate().publicKey,
+      isDelegated: true,
+      votingMint: mintKey,
+      hasGenesisMultiplier: true,
+    },
+    {
+      pubkey: Keypair.generate().publicKey,
+      isDelegated: false,
+      votingMint: mintKey,
+      hasGenesisMultiplier: false,
+    },
+  ])
 
   if (!mintKey) return null
 
@@ -36,7 +47,7 @@ export const VotingPowerScreen = () => {
       >
         <ScrollView>
           <VotingPowerCard mint={mintKey} marginTop="l" />
-          <PositionsList positions={govState.positions} />
+          <PositionsList positions={positions} />
         </ScrollView>
       </BackScreen>
       <Box flexDirection="row" paddingTop="m">

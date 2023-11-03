@@ -3,10 +3,16 @@ import Text from '@components/Text'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
 import React from 'react'
+import { PublicKey } from '@solana/web3.js'
 import { PositionCard } from './PositionCard'
 
 interface IPositionsListProps extends BoxProps<Theme> {
-  positions?: string[]
+  positions?: {
+    pubkey: PublicKey
+    isDelegated: boolean
+    votingMint?: PublicKey
+    hasGenesisMultiplier: boolean
+  }[]
 }
 
 export const PositionsList = ({

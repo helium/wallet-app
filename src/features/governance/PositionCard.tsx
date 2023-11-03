@@ -1,17 +1,26 @@
 import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import ListItem from '@components/ListItem'
+import Text from '@components/Text'
+import TokenIcon from '@components/TokenIcon'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
+import { PublicKey } from '@solana/web3.js'
 import { Theme } from '@theme/theme'
-import React, { useState, useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 
 interface IPositionCardProps extends Omit<BoxProps<Theme>, 'position'> {
-  position: string
+  position: {
+    pubkey: PublicKey
+    isDelegated: boolean
+    votingMint?: PublicKey
+    hasGenesisMultiplier: boolean
+  }
 }
 
 export const PositionCard = ({ position, ...boxProps }: IPositionCardProps) => {
+  const { symbol, json } = useMetaplexMetadata(position.votingMint)
   const [actionsOpen, setActionsOpen] = useState(false)
   const handleActionPress = () => {
     setActionsOpen(false)
@@ -53,15 +62,78 @@ export const PositionCard = ({ position, ...boxProps }: IPositionCardProps) => {
         onPress={() => setActionsOpen(true)}
         {...boxProps}
       >
-        <Box padding="m">
+        <Box paddingHorizontal="m" paddingVertical="ms">
           <Box
             flexDirection="row"
             justifyContent="space-between"
             marginBottom="m"
           >
-            <Text variant="subtitle3" color="primaryText">
-              {`Position ${position}`}
-            </Text>
+            <Box flexDirection="row" alignItems="center">
+              {json?.image ? (
+                <TokenIcon size={26} img={json.image} />
+              ) : undefined}
+              <Text variant="subtitle3" color="primaryText" marginLeft="m">
+                {`270,000 ${symbol}`}
+              </Text>
+            </Box>
+            {position.hasGenesisMultiplier && (
+              <Box
+                padding="s"
+                paddingHorizontal="m"
+                backgroundColor="blueBright500"
+                borderRadius="m"
+              >
+                <Text variant="body3" fontSize={10} color="black">
+                  LANDRUSH
+                </Text>
+              </Box>
+            )}
+          </Box>
+          <Box
+            flexDirection="row"
+            justifyContent="space-between"
+            paddingBottom="s"
+          >
+            <Box>
+              <Text variant="body2" color="secondaryText">
+                Lockup Type
+              </Text>
+              <Text variant="body2" color="primaryText">
+                Constant
+              </Text>
+            </Box>
+            <Box>
+              <Text variant="body2" color="secondaryText" textAlign="right">
+                Vote Multiplier
+              </Text>
+              <Text variant="body2" color="primaryText" textAlign="right">
+                12.00
+              </Text>
+            </Box>
+          </Box>
+          <Box
+            flexDirection="row"
+            justifyContent="space-between"
+            paddingBottom="s"
+          >
+            <Box>
+              <Text variant="body2" color="secondaryText">
+                Min Duration
+              </Text>
+              <Text variant="body2" color="primaryText">
+                6m
+              </Text>
+            </Box>
+            {position.hasGenesisMultiplier && (
+              <Box>
+                <Text variant="body2" color="secondaryText" textAlign="right">
+                  Landrush
+                </Text>
+                <Text variant="body2" color="primaryText" textAlign="right">
+                  3x (3y 5m 22d)
+                </Text>
+              </Box>
+            )}
           </Box>
         </Box>
       </TouchableOpacityBox>

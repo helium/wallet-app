@@ -1,6 +1,7 @@
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { Theme } from '@theme/theme'
@@ -16,6 +17,7 @@ export const VotingPowerCard = ({
   onPress,
   ...boxProps
 }: IVotingPowerCardProps) => {
+  const { symbol } = useMetaplexMetadata(mint)
   const handleOnPress = useCallback(async () => {
     if (onPress) await onPress(mint)
   }, [mint, onPress])
@@ -51,7 +53,7 @@ export const VotingPowerCard = ({
           {inOverview ? (
             <Box>
               <Text variant="body1" color="secondaryText" textAlign="right">
-                HNT Locked
+                {`${symbol || ''}`} Locked
               </Text>
               <Text variant="body1" color="primaryText" textAlign="right">
                 540,000
@@ -92,7 +94,7 @@ export const VotingPowerCard = ({
       {inOverview && (
         <Box borderTopColor="primaryBackground" borderTopWidth={2} padding="ms">
           <Text variant="body2" color="secondaryText">
-            You have 497.48730345 more HNT available to lock.
+            You have 497.48730345 more {symbol} available to lock.
           </Text>
         </Box>
       )}

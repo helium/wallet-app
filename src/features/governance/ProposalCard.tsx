@@ -27,7 +27,7 @@ export const ProposalCard = ({
       onPress={handleOnPress}
       {...boxProps}
     >
-      <Box padding="m" paddingTop="s">
+      <Box padding="m" paddingTop="ms">
         <Box
           flexDirection="row"
           justifyContent="space-between"
