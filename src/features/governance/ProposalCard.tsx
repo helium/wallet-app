@@ -67,22 +67,40 @@ export const ProposalCard = ({
           You Voted - Yes
         </Text>
       </Box>
-      <Box flexDirection="row" justifyContent="space-between" padding="m">
-        <Box>
-          <Text variant="body2" color="secondaryText">
-            Est. Time Remaining
-          </Text>
-          <Text variant="body2" color="primaryText">
-            4 days 20 minutes 50 seconds
-          </Text>
+      <Box paddingHorizontal="m" padding="m">
+        <Box
+          flexDirection="row"
+          justifyContent="space-between"
+          paddingBottom="s"
+        >
+          <Box>
+            <Text variant="body2" color="secondaryText">
+              Est. Time Remaining
+            </Text>
+            <Text variant="body2" color="primaryText">
+              4 days 20 minutes 50 seconds
+            </Text>
+          </Box>
+          <Box>
+            <Text variant="body2" color="secondaryText" textAlign="right">
+              Votes
+            </Text>
+            <Text variant="body2" color="primaryText" textAlign="right">
+              8,614
+            </Text>
+          </Box>
         </Box>
-        <Box>
-          <Text variant="body2" color="secondaryText" textAlign="right">
-            Votes
-          </Text>
-          <Text variant="body2" color="primaryText" textAlign="right">
-            8,614
-          </Text>
+        <Box
+          flexDirection="row"
+          flex={1}
+          height={6}
+          borderRadius="m"
+          overflow="hidden"
+        >
+          <Box width="25%" backgroundColor="turquoise" />
+          <Box width="25%" backgroundColor="orange500" />
+          <Box width="25%" backgroundColor="purple500" />
+          <Box width="25%" backgroundColor="purpleHeart" />
         </Box>
       </Box>
     </TouchableOpacityBox>
