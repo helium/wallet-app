@@ -30,20 +30,25 @@ export const ProposalCard = ({
       <Box padding="m" paddingTop="s">
         <Box
           flexDirection="row"
-          justifyContent="flex-end"
-          alignItems="center"
+          justifyContent="space-between"
           paddingBottom="xs"
         >
-          <Box padding="s" backgroundColor="surfaceSecondary" borderRadius="m">
-            <Text variant="body3" color="secondaryText">
-              HIP 42
+          <Box flexShrink={1}>
+            <Text variant="subtitle3" color="primaryText">
+              Beacon/Witness Ratio this iasdf asdf asdf ewfasd fe afe f
             </Text>
           </Box>
-        </Box>
-        <Box flexShrink={1} paddingBottom="s">
-          <Text variant="subtitle3" color="primaryText">
-            {proposal.toBase58()}
-          </Text>
+          <Box flexDirection="row" marginLeft="s" alignItems="flex-start">
+            <Box
+              padding="s"
+              backgroundColor="surfaceSecondary"
+              borderRadius="m"
+            >
+              <Text variant="body3" color="secondaryText">
+                HIP 42
+              </Text>
+            </Box>
+          </Box>
         </Box>
         <Text variant="body2" color="surfaceSecondaryText" numberOfLines={2}>
           This proposal seeks to regulate the number of witnesses a Hotspot is
