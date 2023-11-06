@@ -220,13 +220,15 @@ const AddGatewayBle = () => {
         onPress={handleAddGateway}
         disabled={loading}
       />
-      <ButtonPressable
-        marginTop="l"
-        titleColor="white"
-        backgroundColor="transparent"
-        title={t('generic.skip')}
-        onPress={() => tabNav.navigate('Collectables')}
-      />
+      {!error && (
+        <ButtonPressable
+          marginTop="l"
+          titleColor="white"
+          backgroundColor="transparent"
+          title={t('generic.skip')}
+          onPress={() => tabNav.navigate('Collectables')}
+        />
+      )}
     </BackScreen>
   )
 }
