@@ -8,7 +8,7 @@ import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Dollar from '@assets/images/dollar.svg'
 import Gem from '@assets/images/collectableIcon.svg'
 import Transactions from '@assets/images/transactions.svg'
-import Notifications from '@assets/images/notifications.svg'
+import Governance from '@assets/images/courthouse.svg'
 import { Portal } from '@gorhom/portal'
 import NavBar, { NavBarHeight } from '@components/NavBar'
 import { Color } from '@theme/theme'
@@ -57,7 +57,7 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
       },
       {
         value: 'governance',
-        Icon: Notifications,
+        Icon: Governance,
         iconColor: 'white',
         hasBadge: false,
       },

@@ -10,7 +10,6 @@ import globalStyles from '@theme/globalStyles'
 import React, { useMemo, useState } from 'react'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { Keypair } from '@solana/web3.js'
 import { ProposalsList } from './ProposalsList'
 import { VotingPowerCard } from './VotingPowerCard'
 import { GovernanceNavigationProp } from './governanceTypes'
@@ -20,15 +19,6 @@ export const GovernanceScreen = () => {
   const navigation = useNavigation<GovernanceNavigationProp>()
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
   const [selectedMint, setSelectedMint] = useState(HNT_MINT)
-  const [govState] = useState({
-    proposals: [
-      Keypair.generate().publicKey,
-      Keypair.generate().publicKey,
-      Keypair.generate().publicKey,
-      Keypair.generate().publicKey,
-      Keypair.generate().publicKey,
-    ],
-  })
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
@@ -60,7 +50,7 @@ export const GovernanceScreen = () => {
               })
             }}
           />
-          <ProposalsList proposals={govState.proposals} />
+          <ProposalsList mint={selectedMint} />
         </ScrollView>
       </SafeAreaBox>
     </ReAnimatedBox>

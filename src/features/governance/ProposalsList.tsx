@@ -6,24 +6,35 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { Theme } from '@theme/theme'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useMemo } from 'react'
 import { useNavigation } from '@react-navigation/native'
+import { useGovNetwork } from '@hooks/useGovNetwork'
+import { organizationKey, proposalKey } from '@helium/organization-sdk'
+import { useOrganization } from '@helium/modular-governance-hooks'
 import { ProposalCard } from './ProposalCard'
-import { GovernanceNavigationProp } from './governanceTypes'
+import { GovernanceNavigationProp, ProposalFilter } from './governanceTypes'
 
 interface IProposalsListProps extends BoxProps<Theme> {
-  proposals?: PublicKey[]
+  mint: PublicKey
 }
 
-type Filter = 'all' | 'active' | 'passed' | 'failed'
-export const ProposalsList = ({
-  proposals,
-  ...boxProps
-}: IProposalsListProps) => {
+export const ProposalsList = ({ mint, ...boxProps }: IProposalsListProps) => {
   const navigation = useNavigation<GovernanceNavigationProp>()
-  const [filter, setFilter] = useState<Filter>('all')
+  const [filter, setFilter] = useState<ProposalFilter>('all')
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const handleFilterPress = (f: Filter) => () => {
+  const { network } = useGovNetwork(mint)
+  const [orgKey] = organizationKey(network)
+  const { info: organization } = useOrganization(orgKey)
+  const proposalKeys = useMemo(
+    () =>
+      Array(organization?.numProposals)
+        .fill(0)
+        .map((_, index) => proposalKey(orgKey, index)[0])
+        .reverse(),
+    [organization?.numProposals, orgKey],
+  )
+
+  const handleFilterPress = (f: ProposalFilter) => () => {
     setFilter(f)
     setFiltersOpen(false)
   }
@@ -77,11 +88,11 @@ export const ProposalsList = ({
             {`Proposals: ${filter.charAt(0).toUpperCase() + filter.slice(1)}`}
           </Text>
         </TouchableOpacityBox>
-        {proposals?.map((p, idx) => (
+        {proposalKeys?.map((pKey, idx) => (
           <ProposalCard
-            // eslint-disable-next-line react/no-array-index-key
-            key={`proposal-${idx}`}
-            proposal={p}
+            key={pKey.toBase58()}
+            filter={filter}
+            proposalKey={pKey}
             marginTop={idx > 0 ? 'm' : undefined}
             onPress={async (proposal) => {
               navigation.push('ProposalScreen', {
