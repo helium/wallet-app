@@ -7,18 +7,20 @@ import TokenPill from '@components/TokenPill'
 import { HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { useNavigation } from '@react-navigation/native'
 import globalStyles from '@theme/globalStyles'
-import React, { useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
+import { useGovernance } from '@storage/GovernanceProvider'
 import { ProposalsList } from './ProposalsList'
 import { VotingPowerCard } from './VotingPowerCard'
 import { GovernanceNavigationProp } from './governanceTypes'
 
 const GovMints = [HNT_MINT, MOBILE_MINT, IOT_MINT]
+
 export const GovernanceScreen = () => {
   const navigation = useNavigation<GovernanceNavigationProp>()
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
-  const [selectedMint, setSelectedMint] = useState(HNT_MINT)
+  const { mint, setMint } = useGovernance()
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
@@ -32,25 +34,24 @@ export const GovernanceScreen = () => {
             justifyContent="space-between"
             marginVertical="xl"
           >
-            {GovMints.map((mint) => (
+            {GovMints.map((m) => (
               <TokenPill
-                key={mint.toBase58()}
-                mint={mint}
-                isActive={selectedMint.equals(mint)}
-                onPress={() => setSelectedMint(mint)}
+                key={m.toBase58()}
+                mint={m}
+                isActive={mint.equals(m)}
+                onPress={() => setMint(m)}
                 activeColor="secondaryBackground"
               />
             ))}
           </Box>
           <VotingPowerCard
-            mint={selectedMint}
-            onPress={async (mint) => {
+            onPress={async (m) => {
               navigation.push('VotingPowerScreen', {
-                mint: mint.toBase58(),
+                mint: m.toBase58(),
               })
             }}
           />
-          <ProposalsList mint={selectedMint} />
+          <ProposalsList />
         </ScrollView>
       </SafeAreaBox>
     </ReAnimatedBox>

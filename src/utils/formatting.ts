@@ -1,5 +1,6 @@
 import BN from 'bn.js'
 import { Mint } from '@solana/spl-token'
+import { groupSeparator, decimalSeparator } from './i18n'
 
 export const getMintMinAmountAsDecimal = (mint: Mint) => {
   return 1 * 10 ** -mint.decimals
@@ -16,15 +17,6 @@ export const calculatePct = (c = new BN(0), total?: BN) => {
     .toNumber()
 }
 
-const getSeparator = (separatorType: 'group' | 'decimal') => {
-  const numberWithGroupAndDecimalSeparator = 1000.1
-  const parts = Intl.NumberFormat().formatToParts(
-    numberWithGroupAndDecimalSeparator,
-  )
-  const part = parts.find((p) => p.type === separatorType)
-  return part ? part.value : ''
-}
-
 export const humanReadable = (
   amount?: BN,
   decimals?: number,
@@ -36,7 +28,7 @@ export const humanReadable = (
     input.length > decimals ? input.slice(0, input.length - decimals) : ''
   const formattedIntegerPart = integerPart.replace(
     /\B(?=(\d{3})+(?!\d))/g,
-    getSeparator('group'),
+    groupSeparator,
   )
   const decimalPart =
     decimals !== 0
@@ -47,7 +39,7 @@ export const humanReadable = (
       : ''
 
   return `${formattedIntegerPart.length > 0 ? formattedIntegerPart : '0'}${
-    Number(decimalPart) !== 0 ? `${getSeparator('decimal')}${decimalPart}` : ''
+    Number(decimalPart) !== 0 ? `${decimalSeparator}${decimalPart}` : ''
   }`
 }
 

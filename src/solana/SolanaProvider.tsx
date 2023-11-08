@@ -304,12 +304,11 @@ const initialState: {
 }
 const SolanaContext =
   createContext<ReturnType<typeof useSolanaHook>>(initialState)
-const { Provider } = SolanaContext
 
 const SolanaProvider = ({ children }: { children: ReactNode }) => {
   const values = useSolanaHook()
   return (
-    <Provider value={values}>
+    <SolanaContext.Provider value={values}>
       {values.cache && values.connection && (
         <AccountContext.Provider value={values.cache}>
           <SolanaProviderRnHelium
@@ -320,7 +319,7 @@ const SolanaProvider = ({ children }: { children: ReactNode }) => {
           </SolanaProviderRnHelium>
         </AccountContext.Provider>
       )}
-    </Provider>
+    </SolanaContext.Provider>
   )
 }
 

@@ -1,23 +1,30 @@
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useOwnedAmount } from '@helium/helium-react-hooks'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
+import { useGovernance } from '@storage/GovernanceProvider'
 import { Theme } from '@theme/theme'
+import { humanReadable } from '@utils/formatting'
+import BN from 'bn.js'
 import React, { useCallback } from 'react'
 
 interface IVotingPowerCardProps extends BoxProps<Theme> {
-  mint: PublicKey
   onPress?: (mint: PublicKey) => Promise<void>
 }
 
 export const VotingPowerCard = ({
-  mint,
   onPress,
   ...boxProps
 }: IVotingPowerCardProps) => {
+  const wallet = useCurrentWallet()
+  const { mint, votingPower, amountLocked } = useGovernance()
+  const { amount: ownedAmount, decimals } = useOwnedAmount(wallet, mint)
   const { symbol } = useMetaplexMetadata(mint)
+
   const handleOnPress = useCallback(async () => {
     if (onPress) await onPress(mint)
   }, [mint, onPress])
@@ -47,7 +54,7 @@ export const VotingPowerCard = ({
               Voting Power
             </Text>
             <Text variant="body1" color="primaryText">
-              6,768,492.53
+              {humanReadable(votingPower, decimals)}
             </Text>
           </Box>
           {inOverview ? (
@@ -56,7 +63,7 @@ export const VotingPowerCard = ({
                 {`${symbol || ''}`} Locked
               </Text>
               <Text variant="body1" color="primaryText" textAlign="right">
-                540,000
+                {humanReadable(amountLocked, decimals)}
               </Text>
             </Box>
           ) : (
@@ -77,7 +84,7 @@ export const VotingPowerCard = ({
                 HNT Locked
               </Text>
               <Text variant="body1" color="primaryText">
-                540,000
+                {humanReadable(amountLocked, decimals)}
               </Text>
             </Box>
             <Box>
@@ -85,7 +92,7 @@ export const VotingPowerCard = ({
                 HNT Available
               </Text>
               <Text variant="body1" color="primaryText" textAlign="right">
-                497.48730345
+                {humanReadable(new BN(ownedAmount?.toString() || 0), decimals)}
               </Text>
             </Box>
           </Box>
@@ -94,7 +101,9 @@ export const VotingPowerCard = ({
       {inOverview && (
         <Box borderTopColor="primaryBackground" borderTopWidth={2} padding="ms">
           <Text variant="body2" color="secondaryText">
-            You have 497.48730345 more {symbol} available to lock.
+            You have{' '}
+            {humanReadable(new BN(ownedAmount?.toString() || 0), decimals)} more{' '}
+            {symbol} available to lock.
           </Text>
         </Box>
       )}

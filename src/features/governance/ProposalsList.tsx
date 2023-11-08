@@ -4,35 +4,23 @@ import ListItem from '@components/ListItem'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { BoxProps } from '@shopify/restyle'
-import { PublicKey } from '@solana/web3.js'
 import { Theme } from '@theme/theme'
-import React, { useCallback, useState, useMemo } from 'react'
-import { useNavigation } from '@react-navigation/native'
-import { useGovNetwork } from '@hooks/useGovNetwork'
-import { organizationKey, proposalKey } from '@helium/organization-sdk'
-import { useOrganization } from '@helium/modular-governance-hooks'
-import { ProposalCard } from './ProposalCard'
-import { GovernanceNavigationProp, ProposalFilter } from './governanceTypes'
+import React, { useCallback, useState } from 'react'
+// import { useNavigation } from '@react-navigation/native'
+import { useGovernance } from '@storage/GovernanceProvider'
+import { ProposalCard, ProposalCardSkeleton } from './ProposalCard'
+import {
+  // GovernanceNavigationProp,
+  ProposalFilter,
+  ProposalV0,
+} from './governanceTypes'
 
-interface IProposalsListProps extends BoxProps<Theme> {
-  mint: PublicKey
-}
-
-export const ProposalsList = ({ mint, ...boxProps }: IProposalsListProps) => {
-  const navigation = useNavigation<GovernanceNavigationProp>()
+type IProposalsListProps = BoxProps<Theme>
+export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
+  // const navigation = useNavigation<GovernanceNavigationProp>()
+  const { proposals, loading } = useGovernance()
   const [filter, setFilter] = useState<ProposalFilter>('all')
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const { network } = useGovNetwork(mint)
-  const [orgKey] = organizationKey(network)
-  const { info: organization } = useOrganization(orgKey)
-  const proposalKeys = useMemo(
-    () =>
-      Array(organization?.numProposals)
-        .fill(0)
-        .map((_, index) => proposalKey(orgKey, index)[0])
-        .reverse(),
-    [organization?.numProposals, orgKey],
-  )
 
   const handleFilterPress = (f: ProposalFilter) => () => {
     setFilter(f)
@@ -88,19 +76,21 @@ export const ProposalsList = ({ mint, ...boxProps }: IProposalsListProps) => {
             {`Proposals: ${filter.charAt(0).toUpperCase() + filter.slice(1)}`}
           </Text>
         </TouchableOpacityBox>
-        {proposalKeys?.map((pKey, idx) => (
-          <ProposalCard
-            key={pKey.toBase58()}
-            filter={filter}
-            proposalKey={pKey}
-            marginTop={idx > 0 ? 'm' : undefined}
-            onPress={async (proposal) => {
-              navigation.push('ProposalScreen', {
-                proposal: proposal.toBase58(),
-              })
-            }}
-          />
-        ))}
+        {loading &&
+          Array(3).map((_, idx) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <ProposalCardSkeleton key={`prop-skeleton-${idx}`} />
+          ))}
+        {!loading &&
+          proposals?.map((proposal, idx) => (
+            <ProposalCard
+              key={`${proposal.publicKey.toBase58()}`}
+              filter={filter}
+              proposal={proposal.info as ProposalV0}
+              proposalKey={proposal.publicKey}
+              marginTop={idx > 0 ? 'm' : undefined}
+            />
+          ))}
       </Box>
       <BlurActionSheet
         title="Filter Proposals"

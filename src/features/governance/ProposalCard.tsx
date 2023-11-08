@@ -2,11 +2,6 @@ import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useMint } from '@helium/helium-react-hooks'
-import {
-  useProposal,
-  useProposalConfig,
-} from '@helium/modular-governance-hooks'
-import { useRegistrar } from '@helium/voter-stake-registry-hooks'
 import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { Color, Theme } from '@theme/theme'
@@ -16,30 +11,35 @@ import BN from 'bn.js'
 import MarkdownIt from 'markdown-it'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
-import { ProposalFilter } from './governanceTypes'
+import { useGovernance } from '@storage/GovernanceProvider'
+import { ProposalFilter, ProposalV0 } from './governanceTypes'
 
 interface IProposalCardProps extends BoxProps<Theme> {
   filter: ProposalFilter
+  proposal: ProposalV0
   proposalKey: PublicKey
   onPress?: (proposal: PublicKey) => Promise<void>
 }
 
+// TODO (gov): add you voted
 const markdownParser = MarkdownIt()
+export const ProposalCardSkeleton = (boxProps: BoxProps<Theme>) => (
+  <Box
+    backgroundColor="secondaryBackground"
+    borderRadius="l"
+    padding="xxl"
+    {...boxProps}
+  />
+)
 export const ProposalCard = ({
   filter,
+  proposal,
   proposalKey,
   onPress,
   ...boxProps
 }: IProposalCardProps) => {
-  const {
-    error: proposalError,
-    loading: proposalLoading,
-    info: proposal,
-  } = useProposal(proposalKey)
-
-  const { info: proposalConfig } = useProposalConfig(proposal?.proposalConfig)
-  const { info: registrar } = useRegistrar(proposalConfig?.voteController)
-  const decimals = useMint(registrar?.votingMints[0].mint)?.info?.decimals
+  const { mint } = useGovernance()
+  const decimals = useMint(mint)?.info?.decimals
 
   const {
     error: descError,
@@ -56,11 +56,10 @@ export const ProposalCard = ({
     }
   }, [proposal])
 
-  // TODO: Remove this
+  // TODO (gov): Add better error handling
   useEffect(() => {
-    if (proposalError) console.error(proposalError)
     if (descError) console.error(descError)
-  }, [proposalError, descError])
+  }, [descError])
 
   const votingResults = useMemo(() => {
     const totalVotes: BN = [...(proposal?.choices || [])].reduce(
@@ -77,8 +76,9 @@ export const ProposalCard = ({
           : (r.weight.toNumber() / totalVotes.toNumber()) * 100,
       }))
       .sort((a, b) => b.percent - a.percent)
+
     return { results, totalVotes }
-  }, [proposal?.choices])
+  }, [proposal])
 
   const derivedState: Omit<ProposalFilter, 'all'> | undefined = useMemo(() => {
     if (proposal?.state && proposal?.choices) {
@@ -102,10 +102,7 @@ export const ProposalCard = ({
     }
   }, [proposal?.state, proposal?.choices])
 
-  const isLoading = useMemo(
-    () => proposalLoading || descLoading,
-    [proposalLoading, descLoading],
-  )
+  const isLoading = useMemo(() => descLoading, [descLoading])
 
   const isVisible = useMemo(() => {
     if (!isLoading) {
@@ -119,20 +116,10 @@ export const ProposalCard = ({
     if (onPress) await onPress(proposalKey)
   }, [proposalKey, onPress])
 
-  // todo: add total votes
-  // todo: add you voted
-
   if (!isVisible) return null
   if (isLoading) {
-    // todo: add spinner or skeleton pulse
-    return (
-      <Box
-        backgroundColor="secondaryBackground"
-        borderRadius="l"
-        padding="xxl"
-        {...boxProps}
-      />
-    )
+    // TODO (gov): add spinner or skeleton pulse
+    return <ProposalCardSkeleton {...boxProps} />
   }
 
   return (
@@ -157,9 +144,10 @@ export const ProposalCard = ({
               {proposal?.name}
             </Text>
           </Box>
-          <Box flexDirection="row" marginLeft="s" alignItems="flex-start">
+          <Box flexDirection="row" marginLeft="s">
             {proposal?.tags.map((tag, idx) => (
               <Box
+                key={tag}
                 padding="s"
                 marginLeft={idx > 0 ? 's' : 'none'}
                 backgroundColor={
@@ -241,7 +229,7 @@ export const ProposalCard = ({
               Votes
             </Text>
             <Text variant="body2" color="primaryText" textAlign="right">
-              {humanReadable(votingResults?.totalVotes, decimals)}
+              {humanReadable(votingResults?.totalVotes, decimals) || 'None'}
             </Text>
           </Box>
         </Box>

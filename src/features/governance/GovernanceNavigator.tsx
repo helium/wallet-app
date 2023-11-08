@@ -1,11 +1,12 @@
-import React, { memo } from 'react'
 import {
   StackNavigationOptions,
   createStackNavigator,
 } from '@react-navigation/stack'
+import React, { memo } from 'react'
+import { GovernanceProvider } from '@storage/GovernanceProvider'
 import GovernanceScreen from './GovernanceScreen'
-import VotingPowerScreen from './VotingPowerScreen'
 import ProposalScreen from './ProposalScreen'
+import VotingPowerScreen from './VotingPowerScreen'
 
 const GovernanceStack = createStackNavigator()
 const screenOptions: StackNavigationOptions = {
@@ -14,20 +15,22 @@ const screenOptions: StackNavigationOptions = {
 
 const GovernanceStackScreen = () => {
   return (
-    <GovernanceStack.Navigator screenOptions={screenOptions}>
-      <GovernanceStack.Screen
-        name="GovernanceScreen"
-        component={GovernanceScreen}
-      />
-      <GovernanceStack.Screen
-        name="VotingPowerScreen"
-        component={VotingPowerScreen}
-      />
-      <GovernanceStack.Screen
-        name="ProposalScreen"
-        component={ProposalScreen}
-      />
-    </GovernanceStack.Navigator>
+    <GovernanceProvider>
+      <GovernanceStack.Navigator screenOptions={screenOptions}>
+        <GovernanceStack.Screen
+          name="GovernanceScreen"
+          component={GovernanceScreen}
+        />
+        <GovernanceStack.Screen
+          name="VotingPowerScreen"
+          component={VotingPowerScreen}
+        />
+        <GovernanceStack.Screen
+          name="ProposalScreen"
+          component={ProposalScreen}
+        />
+      </GovernanceStack.Navigator>
+    </GovernanceProvider>
   )
 }
 

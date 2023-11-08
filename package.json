@@ -266,7 +266,11 @@
     "typescript": "4.9.4"
   },
   "resolutions": {
-    "@types/react": "17"
+    "@types/react": "17",
+    "@helium/account-fetch-cache-hooks": "^0.4.6",
+    "@helium/helium-react-hooks": "^0.4.6",
+    "@helium/voter-stake-registry-hooks": "^0.4.6",
+    "@helium/modular-governance-hooks": "^0.0.7"
   },
   "jest": {
     "preset": "react-native",
