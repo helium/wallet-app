@@ -196,13 +196,9 @@ const SwapScreen = () => {
     transactionError,
   ])
 
-  const refreshInputs = useCallback(async () => {
+  const refresh = useCallback(async () => {
     setInputAmount(0)
     setOutputAmount(0)
-  }, [])
-
-  const refresh = useCallback(async () => {
-    refreshInputs()
     setInputMint(MOBILE_MINT)
     setOutputMint(HNT_MINT)
     setSolFee(SOL_TXN_FEE)
@@ -210,7 +206,7 @@ const SwapScreen = () => {
     setRecipientOpen(false)
     setSelectorMode(SelectorMode.youPay)
     setNetworkError(undefined)
-  }, [refreshInputs])
+  }, [])
 
   useAsync(async () => {
     if (
@@ -262,38 +258,6 @@ const SwapScreen = () => {
       }
     }
   }, [inputMint, outputMint, validOutputMints])
-
-  useEffect(() => {
-    // if changing outputMint ensure we get new routes
-    ;(async () => {
-      if (
-        !isDevnet &&
-        typeof inputMintDecimals !== 'undefined' &&
-        typeof inputAmount !== 'undefined' &&
-        inputAmount > 0 &&
-        !outputMint.equals(DC_MINT)
-      ) {
-        setRecipient('')
-        setRecipientOpen(false)
-        await getRoute({
-          amount: toBN(inputAmount || 0, inputMintDecimals).toNumber(),
-          inputMint: inputMint.toBase58(),
-          outputMint: outputMint.toBase58(),
-          slippageBps,
-        })
-      }
-    })()
-  }, [
-    isDevnet,
-    inputAmount,
-    outputMint,
-    inputMint,
-    slippageBps,
-    inputMintDecimals,
-    getRoute,
-    setRecipient,
-    setRecipientOpen,
-  ])
 
   const Header = useMemo(() => {
     return (
@@ -402,15 +366,16 @@ const SwapScreen = () => {
       }
 
       if (selectorMode === SelectorMode.youReceive) {
-        refreshInputs()
         setOutputMint(mint)
+        if (inputAmount > 0) {
+        }
       }
 
       if (selectorMode === SelectorMode.youPay && mint.equals(HNT_MINT)) {
         setOutputMint(DC_MINT)
       }
     },
-    [refresh, refreshInputs, selectorMode],
+    [refresh, selectorMode, inputAmount],
   )
 
   const tokenData = useMemo(() => {
@@ -458,6 +423,128 @@ const SwapScreen = () => {
     [currentAccount, inputMintDecimals],
   )
 
+  const getOutputAmount = useCallback(
+    async ({ balance }: { balance: BN }) => {
+      if (typeof inputMintDecimals === 'undefined') return
+      if (typeof outputMintDecimals === 'undefined') return
+      if (!isDevnet && !outputMint.equals(DC_MINT)) {
+        const route = await getRoute({
+          amount: balance.toNumber(),
+          inputMint: inputMint.toBase58(),
+          outputMint: outputMint.toBase58(),
+          slippageBps,
+        })
+
+        return setOutputAmount(
+          toNumber(new BN(Number(route?.outAmount || 0)), outputMintDecimals),
+        )
+      }
+      if (inputMint.equals(HNT_MINT) && outputMint.equals(DC_MINT)) {
+        return setOutputAmount(
+          toNumber(
+            networkTokensToDc(toBN(balance, inputMintDecimals)) || new BN(0),
+            inputMintDecimals,
+          ),
+        )
+      }
+      if (isDevnet) {
+        if (price && !inputMint.equals(HNT_MINT)) {
+          return setOutputAmount(price)
+        }
+
+        return setOutputAmount(0)
+      }
+
+      return setOutputAmount(0)
+    },
+    [
+      getRoute,
+      inputMint,
+      inputMintDecimals,
+      isDevnet,
+      networkTokensToDc,
+      outputMint,
+      outputMintDecimals,
+      price,
+      slippageBps,
+    ],
+  )
+
+  useEffect(() => {
+    // if changing outputMint ensure we get new routes
+    ;(async () => {
+      if (
+        !isDevnet &&
+        typeof inputMintDecimals !== 'undefined' &&
+        typeof inputAmount !== 'undefined' &&
+        inputAmount > 0 &&
+        !outputMint.equals(DC_MINT)
+      ) {
+        setRecipient('')
+        setRecipientOpen(false)
+        await getOutputAmount({
+          balance: toBN(inputAmount || 0, inputMintDecimals),
+        })
+      }
+    })()
+  }, [
+    getOutputAmount,
+    inputAmount,
+    inputMint,
+    inputMintDecimals,
+    isDevnet,
+    outputMint,
+    setRecipient,
+    setRecipientOpen,
+  ])
+
+  const getInputAmount = useCallback(
+    async ({ balance }: { balance: BN }) => {
+      if (typeof inputMintDecimals === 'undefined') return
+      if (typeof outputMintDecimals === 'undefined') return
+      if (!isDevnet && !outputMint.equals(DC_MINT)) {
+        const route = await getRoute({
+          amount: balance.toNumber(),
+          inputMint: outputMint.toBase58(),
+          outputMint: inputMint.toBase58(),
+          slippageBps,
+        })
+
+        return setInputAmount(
+          toNumber(new BN(Number(route?.outAmount || 0)), inputMintDecimals),
+        )
+      }
+      if (inputMint.equals(HNT_MINT) && outputMint.equals(DC_MINT)) {
+        return setInputAmount(
+          toNumber(
+            dcToNetworkTokens(toBN(balance, outputMintDecimals)) || new BN(0),
+            inputMintDecimals,
+          ),
+        )
+      }
+      if (isDevnet) {
+        if (price && !inputMint.equals(HNT_MINT)) {
+          return setInputAmount(price)
+        }
+
+        return setInputAmount(0)
+      }
+
+      return setInputAmount(0)
+    },
+    [
+      dcToNetworkTokens,
+      getRoute,
+      inputMint,
+      inputMintDecimals,
+      isDevnet,
+      outputMint,
+      outputMintDecimals,
+      price,
+      slippageBps,
+    ],
+  )
+
   const onConfirmBalance = useCallback(
     async ({ balance }: { balance: BN }) => {
       if (typeof inputMintDecimals === 'undefined') return
@@ -470,70 +557,14 @@ const SwapScreen = () => {
 
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       isPay ? setInputAmount(amount) : setOutputAmount(amount)
-
-      if (!isDevnet && !outputMint.equals(DC_MINT)) {
-        const route = await getRoute({
-          amount: balance.toNumber(),
-          inputMint: isPay ? inputMint.toBase58() : outputMint.toBase58(),
-          outputMint: isPay ? outputMint.toBase58() : inputMint.toBase58(),
-          slippageBps,
-        })
-
-        return isPay
-          ? setOutputAmount(
-              toNumber(
-                new BN(Number(route?.outAmount || 0)),
-                outputMintDecimals,
-              ),
-            )
-          : setInputAmount(
-              toNumber(
-                new BN(Number(route?.outAmount || 0)),
-                inputMintDecimals,
-              ),
-            )
-      }
-
-      if (inputMint.equals(HNT_MINT) && outputMint.equals(DC_MINT)) {
-        return isPay
-          ? setOutputAmount(
-              toNumber(
-                networkTokensToDc(toBN(balance, inputMintDecimals)) ||
-                  new BN(0),
-                inputMintDecimals,
-              ),
-            )
-          : setInputAmount(
-              toNumber(
-                dcToNetworkTokens(toBN(balance, outputMintDecimals)) ||
-                  new BN(0),
-                inputMintDecimals,
-              ),
-            )
-      }
-
-      if (isDevnet) {
-        if (price && !inputMint.equals(HNT_MINT)) {
-          return isPay ? setOutputAmount(price) : setInputAmount(price)
-        }
-
-        return isPay ? setOutputAmount(0) : setInputAmount(0)
-      }
-
-      return isPay ? setOutputAmount(0) : setInputAmount(0)
+      await (isPay ? getOutputAmount({ balance }) : getInputAmount({ balance }))
     },
     [
       selectorMode,
-      networkTokensToDc,
-      dcToNetworkTokens,
-      price,
-      inputMint,
       inputMintDecimals,
-      outputMint,
       outputMintDecimals,
-      slippageBps,
-      getRoute,
-      isDevnet,
+      getInputAmount,
+      getOutputAmount,
     ],
   )
 
