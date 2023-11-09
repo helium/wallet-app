@@ -196,9 +196,13 @@ const SwapScreen = () => {
     transactionError,
   ])
 
-  const refresh = useCallback(async () => {
+  const refreshInputs = useCallback(async () => {
     setInputAmount(0)
     setOutputAmount(0)
+  }, [])
+
+  const refresh = useCallback(async () => {
+    refreshInputs()
     setInputMint(MOBILE_MINT)
     setOutputMint(HNT_MINT)
     setSolFee(SOL_TXN_FEE)
@@ -206,7 +210,7 @@ const SwapScreen = () => {
     setRecipientOpen(false)
     setSelectorMode(SelectorMode.youPay)
     setNetworkError(undefined)
-  }, [])
+  }, [refreshInputs])
 
   useAsync(async () => {
     if (
@@ -398,6 +402,7 @@ const SwapScreen = () => {
       }
 
       if (selectorMode === SelectorMode.youReceive) {
+        refreshInputs()
         setOutputMint(mint)
       }
 
@@ -405,7 +410,7 @@ const SwapScreen = () => {
         setOutputMint(DC_MINT)
       }
     },
-    [refresh, selectorMode],
+    [refresh, refreshInputs, selectorMode],
   )
 
   const tokenData = useMemo(() => {
