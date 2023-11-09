@@ -367,15 +367,13 @@ const SwapScreen = () => {
 
       if (selectorMode === SelectorMode.youReceive) {
         setOutputMint(mint)
-        if (inputAmount > 0) {
-        }
       }
 
       if (selectorMode === SelectorMode.youPay && mint.equals(HNT_MINT)) {
         setOutputMint(DC_MINT)
       }
     },
-    [refresh, selectorMode, inputAmount],
+    [refresh, selectorMode],
   )
 
   const tokenData = useMemo(() => {
