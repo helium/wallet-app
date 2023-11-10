@@ -30,7 +30,7 @@ const HotspotListItem = ({
   ...rest
 }: HotspotListItemProps) => {
   const {
-    content: { metadata, json_uri },
+    content: { metadata },
   } = hotspot
   const streetAddress = useHotspotAddress(hotspot)
 
