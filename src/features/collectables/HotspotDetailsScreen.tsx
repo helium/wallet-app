@@ -186,7 +186,7 @@ const HotspotDetailsScreen = () => {
     if (!collectable?.content?.metadata) return
 
     const attribute = collectable?.content?.metadata.attributes?.find(
-      (a) => a.trait_type === 'ecc_compact',
+      (a) => a?.trait_type === 'ecc_compact',
     )
 
     if (!attribute?.value) return
