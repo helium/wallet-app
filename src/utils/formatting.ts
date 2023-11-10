@@ -65,3 +65,15 @@ export const fmtUnixTime = (d: BN | number) => {
   const days = Math.floor(difference / 86400)
   return `${days} day${days > 1 ? 's' : ''} ago`
 }
+
+export const precision = (a: number) => {
+  if (!Number.isFinite(a)) return 0
+  let e = 1
+  let p = 0
+  while (Math.round(a * e) / e !== a) {
+    e *= 10
+    // eslint-disable-next-line no-plusplus
+    p++
+  }
+  return p
+}

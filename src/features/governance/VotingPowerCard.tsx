@@ -5,15 +5,14 @@ import { useOwnedAmount } from '@helium/helium-react-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
-import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { Theme } from '@theme/theme'
 import { humanReadable } from '@utils/formatting'
 import BN from 'bn.js'
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 
 interface IVotingPowerCardProps extends BoxProps<Theme> {
-  onPress?: (mint: PublicKey) => Promise<void>
+  onPress?: () => void
 }
 
 export const VotingPowerCard = ({
@@ -25,9 +24,19 @@ export const VotingPowerCard = ({
   const { amount: ownedAmount, decimals } = useOwnedAmount(wallet, mint)
   const { symbol } = useMetaplexMetadata(mint)
 
+  const power = useMemo(
+    () => humanReadable(votingPower || new BN(0), decimals),
+    [votingPower, decimals],
+  )
+
+  const lockedAmount = useMemo(
+    () => humanReadable(amountLocked || new BN(0), decimals),
+    [amountLocked, decimals],
+  )
+
   const handleOnPress = useCallback(async () => {
-    if (onPress) await onPress(mint)
-  }, [mint, onPress])
+    if (onPress) await onPress()
+  }, [onPress])
 
   const renderCard = (inOverview = false) => (
     <>
@@ -54,7 +63,7 @@ export const VotingPowerCard = ({
               Voting Power
             </Text>
             <Text variant="body1" color="primaryText">
-              {humanReadable(votingPower, decimals)}
+              {power}
             </Text>
           </Box>
           {inOverview ? (
@@ -63,7 +72,7 @@ export const VotingPowerCard = ({
                 {`${symbol || ''}`} Locked
               </Text>
               <Text variant="body1" color="primaryText" textAlign="right">
-                {humanReadable(amountLocked, decimals)}
+                {lockedAmount}
               </Text>
             </Box>
           ) : (
@@ -84,7 +93,7 @@ export const VotingPowerCard = ({
                 HNT Locked
               </Text>
               <Text variant="body1" color="primaryText">
-                {humanReadable(amountLocked, decimals)}
+                {lockedAmount}
               </Text>
             </Box>
             <Box>

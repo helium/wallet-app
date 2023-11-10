@@ -109,7 +109,6 @@ const useGovernance = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { mint, ...heliumVsrState } = useHeliumVsrState()
-
   return {
     ...context,
     ...heliumVsrState,

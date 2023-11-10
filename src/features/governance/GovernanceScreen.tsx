@@ -45,11 +45,7 @@ export const GovernanceScreen = () => {
             ))}
           </Box>
           <VotingPowerCard
-            onPress={async (m) => {
-              navigation.push('VotingPowerScreen', {
-                mint: m.toBase58(),
-              })
-            }}
+            onPress={() => navigation.push('VotingPowerScreen')}
           />
           <ProposalsList />
         </ScrollView>

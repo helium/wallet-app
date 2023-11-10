@@ -3,20 +3,15 @@ import Text from '@components/Text'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
 import React from 'react'
-import { PublicKey } from '@solana/web3.js'
+import { PositionWithMeta } from '@helium/voter-stake-registry-hooks'
 import { PositionCard } from './PositionCard'
 
 interface IPositionsListProps extends BoxProps<Theme> {
-  positions?: {
-    pubkey: PublicKey
-    isDelegated: boolean
-    votingMint?: PublicKey
-    hasGenesisMultiplier: boolean
-  }[]
+  positions?: PositionWithMeta[]
 }
 
 export const PositionsList = ({
-  positions,
+  positions = [],
   ...boxProps
 }: IPositionsListProps) => {
   return (
@@ -31,6 +26,19 @@ export const PositionsList = ({
           Positions
         </Text>
       </Box>
+      {!positions.length && (
+        <Box
+          backgroundColor="secondaryBackground"
+          alignItems="center"
+          borderRadius="l"
+          padding="m"
+          {...boxProps}
+        >
+          <Text variant="body1" color="secondaryText">
+            Increase your voting power by locking tokens
+          </Text>
+        </Box>
+      )}
       {positions?.map((p, idx) => (
         <PositionCard
           // eslint-disable-next-line react/no-array-index-key

@@ -4,23 +4,18 @@ import ListItem from '@components/ListItem'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { PositionWithMeta } from '@helium/voter-stake-registry-hooks'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
-import { PublicKey } from '@solana/web3.js'
 import { Theme } from '@theme/theme'
 import React, { useCallback, useState } from 'react'
 
 interface IPositionCardProps extends Omit<BoxProps<Theme>, 'position'> {
-  position: {
-    pubkey: PublicKey
-    isDelegated: boolean
-    votingMint?: PublicKey
-    hasGenesisMultiplier: boolean
-  }
+  position: PositionWithMeta
 }
 
 export const PositionCard = ({ position, ...boxProps }: IPositionCardProps) => {
-  const { symbol, json } = useMetaplexMetadata(position.votingMint)
+  const { symbol, json } = useMetaplexMetadata(position.votingMint.mint)
   const [actionsOpen, setActionsOpen] = useState(false)
   const handleActionPress = () => {
     setActionsOpen(false)
