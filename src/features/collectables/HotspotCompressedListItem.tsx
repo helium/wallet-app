@@ -30,7 +30,7 @@ const HotspotListItem = ({
   ...rest
 }: HotspotListItemProps) => {
   const {
-    content: { metadata },
+    content: { metadata, json_uri },
   } = hotspot
   const streetAddress = useHotspotAddress(hotspot)
 
@@ -72,8 +72,9 @@ const HotspotListItem = ({
       return undefined
     }
 
-    return metadata.attributes.find((attr) => attr.trait_type === 'ecc_compact')
-      ?.value
+    return metadata.attributes.find(
+      (attr) => attr?.trait_type === 'ecc_compact',
+    )?.value
   }, [metadata])
 
   const hasIotRewards = useMemo(
