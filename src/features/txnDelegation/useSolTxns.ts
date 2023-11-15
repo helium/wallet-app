@@ -109,17 +109,26 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
         return {}
       }
 
-      const bs58Decoded = bs58.decode(
-        (last(instructions) as web3.PartiallyDecodedInstruction).data,
-      )
-      const decodedBs58Instruction = coder.decode(Buffer.from(bs58Decoded))
-      if (!decodedBs58Instruction) {
-        return {}
-      }
+      let gatewayAddress = ''
+      instructions.some((i) => {
+        try {
+          const bs58Decoded = bs58.decode(
+            (i as web3.PartiallyDecodedInstruction).data,
+          )
 
-      const entityKey = get(decodedBs58Instruction, 'data.args.entityKey')
+          const decodedBs58Instruction = coder.decode(Buffer.from(bs58Decoded))
+          if (!decodedBs58Instruction) {
+            return false
+          }
 
-      const gatewayAddress = bs58.encode(entityKey)
+          const entityKey = get(decodedBs58Instruction, 'data.args.entityKey')
+
+          gatewayAddress = bs58.encode(entityKey)
+          return !!gatewayAddress
+        } catch {
+          return false
+        }
+      })
 
       const { location, elevation, gain } = get(
         decodedInstruction,
@@ -365,8 +374,9 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
   )
 
   useAsync(async () => {
-    if (!solanaTransactions || handledTxnStr.current === solanaTransactions)
+    if (!solanaTransactions || handledTxnStr.current === solanaTransactions) {
       return
+    }
 
     const txns = solanaTransactions
       .split(',')
