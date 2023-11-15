@@ -4,6 +4,7 @@ import {
 } from '@react-navigation/stack'
 import React, { memo } from 'react'
 import { GovernanceProvider } from '@storage/GovernanceProvider'
+import { PortalHost } from '@gorhom/portal'
 import GovernanceScreen from './GovernanceScreen'
 import ProposalScreen from './ProposalScreen'
 import VotingPowerScreen from './VotingPowerScreen'
@@ -15,22 +16,25 @@ const screenOptions: StackNavigationOptions = {
 
 const GovernanceStackScreen = () => {
   return (
-    <GovernanceProvider>
-      <GovernanceStack.Navigator screenOptions={screenOptions}>
-        <GovernanceStack.Screen
-          name="GovernanceScreen"
-          component={GovernanceScreen}
-        />
-        <GovernanceStack.Screen
-          name="VotingPowerScreen"
-          component={VotingPowerScreen}
-        />
-        <GovernanceStack.Screen
-          name="ProposalScreen"
-          component={ProposalScreen}
-        />
-      </GovernanceStack.Navigator>
-    </GovernanceProvider>
+    <>
+      <GovernanceProvider>
+        <GovernanceStack.Navigator screenOptions={screenOptions}>
+          <GovernanceStack.Screen
+            name="GovernanceScreen"
+            component={GovernanceScreen}
+          />
+          <GovernanceStack.Screen
+            name="VotingPowerScreen"
+            component={VotingPowerScreen}
+          />
+          <GovernanceStack.Screen
+            name="ProposalScreen"
+            component={ProposalScreen}
+          />
+        </GovernanceStack.Navigator>
+      </GovernanceProvider>
+      <PortalHost name="GovernancePortalHost" />
+    </>
   )
 }
 

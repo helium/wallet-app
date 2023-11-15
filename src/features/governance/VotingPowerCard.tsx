@@ -1,15 +1,17 @@
+import LightningBolt from '@assets/images/transactions.svg'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useOwnedAmount } from '@helium/helium-react-hooks'
+import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { Theme } from '@theme/theme'
+import { useColors } from '@theme/themeHooks'
 import { humanReadable } from '@utils/formatting'
 import BN from 'bn.js'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback } from 'react'
 
 interface IVotingPowerCardProps extends BoxProps<Theme> {
   onPress?: () => void
@@ -20,19 +22,11 @@ export const VotingPowerCard = ({
   ...boxProps
 }: IVotingPowerCardProps) => {
   const wallet = useCurrentWallet()
+  const colors = useColors()
   const { mint, votingPower, amountLocked } = useGovernance()
-  const { amount: ownedAmount, decimals } = useOwnedAmount(wallet, mint)
+  const { info: mintAcc } = useMint(mint)
+  const { amount: ownedAmount } = useOwnedAmount(wallet, mint)
   const { symbol } = useMetaplexMetadata(mint)
-
-  const power = useMemo(
-    () => humanReadable(votingPower || new BN(0), decimals),
-    [votingPower, decimals],
-  )
-
-  const lockedAmount = useMemo(
-    () => humanReadable(amountLocked || new BN(0), decimals),
-    [amountLocked, decimals],
-  )
 
   const handleOnPress = useCallback(async () => {
     if (onPress) await onPress()
@@ -62,9 +56,46 @@ export const VotingPowerCard = ({
             <Text variant="body1" color="secondaryText">
               Voting Power
             </Text>
-            <Text variant="body1" color="primaryText">
-              {power}
-            </Text>
+            <Box flexDirection="row" alignItems="center">
+              <Text variant="body1" color="primaryText">
+                {mintAcc &&
+                  votingPower &&
+                  humanReadable(votingPower, mintAcc.decimals)}{' '}
+              </Text>
+              {amountLocked &&
+                votingPower &&
+                !amountLocked.isZero() &&
+                !votingPower.isZero() && (
+                  <Box
+                    flexDirection="row"
+                    justifyContent="center"
+                    alignItems="center"
+                    backgroundColor="black500"
+                    borderRadius="m"
+                    paddingHorizontal="s"
+                    paddingVertical="xs"
+                    paddingLeft="none"
+                  >
+                    <LightningBolt
+                      color={colors.blueBright500}
+                      width={20}
+                      height={18}
+                    />
+                    <Text variant="body3" color="primaryText">
+                      {`${
+                        votingPower &&
+                        amountLocked &&
+                        mintAcc &&
+                        // Add 2 decimals to the mulitiplier
+                        humanReadable(
+                          votingPower.mul(new BN(100)).div(amountLocked),
+                          2,
+                        )
+                      }x`}
+                    </Text>
+                  </Box>
+                )}
+            </Box>
           </Box>
           {inOverview ? (
             <Box>
@@ -72,7 +103,9 @@ export const VotingPowerCard = ({
                 {`${symbol || ''}`} Locked
               </Text>
               <Text variant="body1" color="primaryText" textAlign="right">
-                {lockedAmount}
+                {mintAcc &&
+                  amountLocked &&
+                  humanReadable(amountLocked, mintAcc.decimals)}
               </Text>
             </Box>
           ) : (
@@ -93,7 +126,9 @@ export const VotingPowerCard = ({
                 HNT Locked
               </Text>
               <Text variant="body1" color="primaryText">
-                {lockedAmount}
+                {mintAcc &&
+                  amountLocked &&
+                  humanReadable(amountLocked, mintAcc.decimals)}
               </Text>
             </Box>
             <Box>
@@ -101,7 +136,12 @@ export const VotingPowerCard = ({
                 HNT Available
               </Text>
               <Text variant="body1" color="primaryText" textAlign="right">
-                {humanReadable(new BN(ownedAmount?.toString() || 0), decimals)}
+                {mintAcc &&
+                  ownedAmount &&
+                  humanReadable(
+                    new BN(ownedAmount?.toString()),
+                    mintAcc.decimals,
+                  )}
               </Text>
             </Box>
           </Box>
@@ -111,8 +151,13 @@ export const VotingPowerCard = ({
         <Box borderTopColor="primaryBackground" borderTopWidth={2} padding="ms">
           <Text variant="body2" color="secondaryText">
             You have{' '}
-            {humanReadable(new BN(ownedAmount?.toString() || 0), decimals)} more{' '}
-            {symbol} available to lock.
+            {mintAcc &&
+              ownedAmount &&
+              humanReadable(
+                new BN(ownedAmount?.toString()),
+                mintAcc.decimals,
+              )}{' '}
+            more {symbol} available to lock.
           </Text>
         </Box>
       )}

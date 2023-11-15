@@ -66,16 +66,16 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
   return (
     <>
       <Box {...boxProps} flex={1}>
-        <TouchableOpacityBox
-          flexDirection="row"
-          justifyContent="center"
-          paddingVertical="l"
-          onPress={() => setFiltersOpen(true)}
-        >
-          <Text variant="body3" color="secondaryText">
-            {`Proposals: ${filter.charAt(0).toUpperCase() + filter.slice(1)}`}
-          </Text>
-        </TouchableOpacityBox>
+        <Box flexDirection="row" justifyContent="center">
+          <TouchableOpacityBox
+            paddingVertical="lm"
+            onPress={() => setFiltersOpen(true)}
+          >
+            <Text variant="body3" color="secondaryText">
+              {`Proposals: ${filter.charAt(0).toUpperCase() + filter.slice(1)}`}
+            </Text>
+          </TouchableOpacityBox>
+        </Box>
         {loading &&
           Array(3).map((_, idx) => (
             // eslint-disable-next-line react/no-array-index-key
@@ -84,7 +84,7 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
         {!loading &&
           proposals?.map((proposal, idx) => (
             <ProposalCard
-              key={`${proposal.publicKey.toBase58()}`}
+              key={proposal.publicKey.toBase58()}
               filter={filter}
               proposal={proposal.info as ProposalV0}
               proposalKey={proposal.publicKey}

@@ -3,35 +3,79 @@ import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import { DelayedFadeIn } from '@components/FadeInOut'
+import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
+import { toBN, toNumber } from '@helium/spl-utils'
+import {
+  calcLockupMultiplier,
+  useCreatePosition,
+} from '@helium/voter-stake-registry-hooks'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { useGovernance } from '@storage/GovernanceProvider'
 import globalStyles from '@theme/globalStyles'
-import React, { useMemo, useState } from 'react'
+import { daysToSecs } from '@utils/dateTools'
+import BN from 'bn.js'
+import React, { useCallback, useMemo, useState } from 'react'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { useGovernance } from '@storage/GovernanceProvider'
-import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import BN from 'bn.js'
-import { useOwnedAmount } from '@helium/helium-react-hooks'
-import { toNumber } from '@helium/spl-utils'
+import { useWalletSign } from '../../solana/WalletSignProvider'
+import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
+import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { PositionsList } from './PositionsList'
 import { VotingPowerCard } from './VotingPowerCard'
-import LockTokensModal from './LockTokensModal'
 
 export const VotingPowerScreen = () => {
   const wallet = useCurrentWallet()
+  const { walletSignBottomSheetRef } = useWalletSign()
   const backEdges = useMemo(() => ['top'] as Edge[], [])
-  const { mint } = useGovernance()
-  const { amount: ownedAmount, decimals } = useOwnedAmount(wallet, mint)
+  const { mint, registrar, refetch: refetchState } = useGovernance()
+  const { info: mintAcc } = useMint(mint)
+  const { amount: ownedAmount, loading: loadingBal } = useOwnedAmount(
+    wallet,
+    mint,
+  )
   const [isLockModalOpen, setIsLockModalOpen] = useState(false)
   const { positions } = useGovernance()
+  const { error, createPosition } = useCreatePosition()
 
   const maxLockupAmount =
-    ownedAmount && decimals
-      ? toNumber(new BN(ownedAmount.toString()), decimals)
+    ownedAmount && mintAcc
+      ? toNumber(new BN(ownedAmount.toString()), mintAcc.decimals)
       : 0
 
-  // TODO - implement
-  const handleLockTokens = async () => {
-    setIsLockModalOpen(false)
+  const handleCalcLockupMultiplier = useCallback(
+    (lockupPeriodInDays: number) =>
+      (registrar &&
+        calcLockupMultiplier({
+          lockupSecs: daysToSecs(lockupPeriodInDays),
+          registrar,
+          mint,
+        })) ||
+      0,
+    [mint, registrar],
+  )
+
+  const handleLockTokens = async (values: LockTokensModalFormValues) => {
+    const { amount, lockupPeriodInDays, lockupKind } = values
+    if (mintAcc && walletSignBottomSheetRef) {
+      const amountToLock = toBN(amount, mintAcc.decimals)
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        header: 'Lock tokens',
+        serializedTxs: undefined,
+      })
+
+      if (decision) {
+        await createPosition({
+          amount: amountToLock,
+          lockupPeriodsInDays: lockupPeriodInDays,
+          lockupKind: lockupKind.value,
+          mint,
+        })
+
+        await refetchState()
+      }
+    }
   }
 
   return (
@@ -50,7 +94,6 @@ export const VotingPowerScreen = () => {
         </BackScreen>
         <Box flexDirection="row" padding="m">
           <ButtonPressable
-            height={50}
             flex={1}
             fontSize={16}
             borderRadius="round"
@@ -65,7 +108,6 @@ export const VotingPowerScreen = () => {
           />
           <Box paddingHorizontal="s" />
           <ButtonPressable
-            height={50}
             flex={1}
             fontSize={16}
             borderRadius="round"
@@ -82,7 +124,7 @@ export const VotingPowerScreen = () => {
         <LockTokensModal
           mint={mint}
           maxLockupAmount={maxLockupAmount}
-          calcMultiplierFn={(x) => x * 2}
+          calcMultiplierFn={handleCalcLockupMultiplier}
           onClose={() => setIsLockModalOpen(false)}
           onSubmit={handleLockTokens}
         />

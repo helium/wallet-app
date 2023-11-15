@@ -6,10 +6,12 @@ import { init as initHsd } from '@helium/helium-sub-daos-sdk'
 import { init as initLazy } from '@helium/lazy-distributor-sdk'
 import { DC_MINT, HNT_MINT } from '@helium/spl-utils'
 import { SolanaProvider as SolanaProviderRnHelium } from '@helium/react-native-sdk'
+import { ConnectionContext } from '@solana/wallet-adapter-react'
 import {
   AccountInfo,
   Cluster,
   Commitment,
+  Connection,
   PublicKey,
   RpcResponseAndContext,
   Transaction,
@@ -310,14 +312,16 @@ const SolanaProvider = ({ children }: { children: ReactNode }) => {
   return (
     <SolanaContext.Provider value={values}>
       {values.cache && values.connection && (
-        <AccountContext.Provider value={values.cache}>
-          <SolanaProviderRnHelium
-            rpcEndpoint={values.connection.rpcEndpoint}
-            cluster={values.cluster}
-          >
-            <LedgerModal ref={values?.ledgerModalRef}>{children}</LedgerModal>
-          </SolanaProviderRnHelium>
-        </AccountContext.Provider>
+        <ConnectionContext.Provider value={{ connection: values.connection }}>
+          <AccountContext.Provider value={values.cache}>
+            <SolanaProviderRnHelium
+              rpcEndpoint={values.connection.rpcEndpoint}
+              cluster={values.cluster}
+            >
+              <LedgerModal ref={values?.ledgerModalRef}>{children}</LedgerModal>
+            </SolanaProviderRnHelium>
+          </AccountContext.Provider>
+        </ConnectionContext.Provider>
       )}
     </SolanaContext.Provider>
   )
