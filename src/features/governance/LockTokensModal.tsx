@@ -15,7 +15,7 @@ import { TXN_FEE_IN_LAMPORTS } from '@utils/solanaUtils'
 import { PublicKey } from '@solana/web3.js'
 import { getFormattedStringFromDays, yearsToDays } from '@utils/dateTools'
 import { getMintMinAmountAsDecimal, precision } from '@utils/formatting'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Keyboard,
@@ -130,33 +130,42 @@ export const LockTokensModal = ({
   const [lockupKind, setLockupKind] = useState(lockupKindOptions[0])
   const [amount, setAmount] = useState<number | undefined>()
   const [lockupPeriod, setLockupPeriod] = useState(lockupPeriodOptions[0])
+  const lockupMultiplier = useMemo(
+    () => calcMultiplierFn(lockupPeriod.value),
+    [lockupPeriod, calcMultiplierFn],
+  )
 
-  const handleAmountPressed = useCallback(() => {
+  const handleAmountPressed = () => {
     Keyboard.dismiss()
     hntKeyboardRef.current?.show({
       payer: currentAccount,
     })
-  }, [currentAccount])
+  }
 
-  const handleAmountChange = useCallback(
-    ({ balance }: { balance: BN }) => {
-      if (balance.eq(new BN(0)) || !mintAcc) {
-        setAmount(undefined)
-      } else {
-        setAmount(
-          parseFloat(
-            Math.max(
-              mintMinAmount,
-              Math.min(maxLockupAmount, toNumber(balance, mintAcc?.decimals)),
-            ).toFixed(currentPrecision),
-          ),
-        )
-      }
-    },
-    [mintAcc, maxLockupAmount, mintMinAmount, currentPrecision],
-  )
+  const handleAmountChange = ({ balance }: { balance: BN }) => {
+    if (balance.eq(new BN(0)) || !mintAcc) {
+      setAmount(undefined)
+    } else {
+      setAmount(
+        parseFloat(
+          Math.max(
+            mintMinAmount,
+            Math.min(maxLockupAmount, toNumber(balance, mintAcc?.decimals)),
+          ).toFixed(currentPrecision),
+        ),
+      )
+    }
+  }
 
-  const handleSubmit = useCallback(async () => {
+  const handleOnClose = () => {
+    if (showLockupKindInfo) {
+      setShowLockupKindInfo(false)
+    } else {
+      onClose()
+    }
+  }
+
+  const handleSubmit = async () => {
     try {
       setIsSubmitting(true)
       await onSubmit({
@@ -171,20 +180,7 @@ export const LockTokensModal = ({
       setIsSubmitting(false)
       console.error('Unable to lock tokens', e.message)
     }
-  }, [lockupKind, lockupPeriod, amount, onClose, onSubmit])
-
-  const handleOnClose = useCallback(() => {
-    if (showLockupKindInfo) {
-      setShowLockupKindInfo(false)
-    } else {
-      onClose()
-    }
-  }, [showLockupKindInfo, onClose])
-
-  const lockupMultiplier = useMemo(
-    () => calcMultiplierFn(lockupPeriod.value),
-    [lockupPeriod, calcMultiplierFn],
-  )
+  }
 
   return (
     <Portal hostName="GovernancePortalHost">
@@ -337,7 +333,6 @@ export const LockTokensModal = ({
                               <Text variant="subtitle4" color="grey600">
                                 Amount to lock
                               </Text>
-
                               <Text
                                 fontSize={19}
                                 fontWeight="400"
@@ -447,11 +442,7 @@ export const LockTokensModal = ({
                   {showLockupKindInfo && (
                     <Box flexGrow={1} justifyContent="center">
                       {lockupKindOptions.map((type) => (
-                        <Box
-                          key={type.value}
-                          flexGrow={1}
-                          justifyContent="center"
-                        >
+                        <Box key={type.value} justifyContent="center">
                           <Text
                             textAlign="left"
                             variant="subtitle2"
@@ -520,7 +511,7 @@ export const LockTokensModal = ({
                 }[mode]
               }
               TrailingComponent={
-                isSubmitting ? <CircleLoader color="black" /> : undefined
+                isSubmitting ? <CircleLoader color="white" /> : undefined
               }
             />
           ) : (

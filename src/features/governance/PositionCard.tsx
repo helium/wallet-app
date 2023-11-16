@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
+import CircleLoader from '@components/CircleLoader'
 import ListItem from '@components/ListItem'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
@@ -18,6 +20,7 @@ import {
   useTransferPosition,
   useUndelegatePosition,
 } from '@helium/voter-stake-registry-hooks'
+import useAlert from '@hooks/useAlert'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
 import { useGovernance } from '@storage/GovernanceProvider'
@@ -29,34 +32,70 @@ import {
   secsToDays,
 } from '@utils/dateTools'
 import BN from 'bn.js'
-import React, { useCallback, useState } from 'react'
-import useAlert from '@hooks/useAlert'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useWalletSign } from '../../solana/WalletSignProvider'
-import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
+import { DelegateTokensModal } from './DelegateTokensModal'
+import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
+import { TransferTokensModal } from './TransferTokensModal'
 
 interface IPositionCardProps extends Omit<BoxProps<Theme>, 'position'> {
   position: PositionWithMeta
 }
 
 export const PositionCard = ({ position, ...boxProps }: IPositionCardProps) => {
-  const unixNow = useSolanaUnixNow(500000) || 0
+  const unixNow = useSolanaUnixNow(60 * 5 * 1000) || 0
   const { showOKAlert } = useAlert()
   const { walletSignBottomSheetRef } = useWalletSign()
+  const [actionsOpen, setActionsOpen] = useState(false)
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false)
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false)
   const [isDelegateModalOpen, setIsDelegateModalOpen] = useState(false)
   const { loading: isLoading, positions, refetch, mint } = useGovernance()
-  const [actionsOpen, setActionsOpen] = useState(false)
+  const transferablePositions: PositionWithMeta[] = useMemo(() => {
+    if (!unixNow || !positions || !positions.length) {
+      return []
+    }
+
+    const { lockup } = position
+    const lockupKind = Object.keys(lockup.kind)[0]
+    const positionLockupPeriodInDays = secsToDays(
+      lockupKind === 'constant'
+        ? lockup.endTs.sub(lockup.startTs).toNumber()
+        : lockup.endTs.sub(new BN(unixNow || 0)).toNumber(),
+    )
+
+    return positions.filter((pos) => {
+      const { lockup } = pos
+      const lockupKind = Object.keys(lockup.kind)[0]
+      const lockupPeriodInDays = secsToDays(
+        lockupKind === 'constant'
+          ? lockup.endTs.sub(lockup.startTs).toNumber()
+          : lockup.endTs.sub(new BN(unixNow)).toNumber(),
+      )
+
+      return (
+        (unixNow >= pos.genesisEnd.toNumber() ||
+          unixNow <=
+            position.votingMint.genesisVotePowerMultiplierExpirationTs.toNumber() ||
+          !pos.hasGenesisMultiplier) &&
+        !pos.isDelegated &&
+        !position.pubkey.equals(pos.pubkey) &&
+        lockupPeriodInDays >= positionLockupPeriodInDays
+      )
+    })
+  }, [position, unixNow, positions])
 
   const { lockup, hasGenesisMultiplier, votingMint } = position
+  const { info: mintAcc } = useMint(votingMint.mint)
   const { symbol, json } = useMetaplexMetadata(votingMint.mint)
   const lockupKind = Object.keys(lockup.kind)[0] as string
   const isConstant = lockupKind === 'constant'
+  const lockupKindDisplay = isConstant ? 'Constant' : 'Decaying'
+  const hasActiveVotes = position.numActiveVotes > 0
   const lockupExpired =
     !isConstant && lockup.endTs.sub(new BN(unixNow || 0)).lt(new BN(0))
-  const { info: mintAcc } = useMint(votingMint.mint)
 
   const lockedTokens =
     mintAcc && humanReadable(position.amountDepositedNative, mintAcc.decimals)
@@ -91,57 +130,6 @@ export const PositionCard = ({ position, ...boxProps }: IPositionCardProps) => {
       }),
     [votingMint.mint, registrar],
   )
-
-  const actions = useCallback(() => {
-    return (
-      <>
-        <ListItem
-          key="split"
-          title="Split"
-          onPress={() => {
-            if (hasActiveVotes) {
-              showOKAlert({
-                title: 'Unable to split',
-                message: 'Position is partaking in an active vote!',
-              })
-            } else {
-              setIsSplitModalOpen(true)
-            }
-            setActionsOpen(false)
-          }}
-          selected={false}
-          hasPressedState={false}
-        />
-        <ListItem
-          key="transfer"
-          title="Transfer"
-          onPress={() => {
-            if (hasActiveVotes) {
-              showOKAlert({
-                title: 'Unable to transfer',
-                message: 'Position is partaking in an active vote!',
-              })
-            } else {
-              setIsTransferModalOpen(true)
-            }
-            setActionsOpen(false)
-          }}
-          selected={false}
-          hasPressedState={false}
-        />
-        <ListItem
-          key="extend"
-          title="Extend"
-          onPress={() => {
-            setIsExtendModalOpen(true)
-            setActionsOpen(false)
-          }}
-          selected={false}
-          hasPressedState={false}
-        />
-      </>
-    )
-  }, [])
 
   const refetchState = async () => {
     refetch()
@@ -189,6 +177,18 @@ export const PositionCard = ({ position, ...boxProps }: IPositionCardProps) => {
     undelegatePosition,
   } = useUndelegatePosition()
 
+  const handleFlipPositionLockupKind = async () => {
+    const decision = await getDecision('Pause Unlock')
+
+    if (decision) {
+      await flipPositionLockupKind({ position })
+
+      if (!flippingError) {
+        await refetchState()
+      }
+    }
+  }
+
   const handleExtendTokens = async (values: LockTokensModalFormValues) => {
     const decision = await getDecision('Extend Position')
 
@@ -221,18 +221,174 @@ export const PositionCard = ({ position, ...boxProps }: IPositionCardProps) => {
     }
   }
 
-  const lockupKindDisplay = isConstant ? 'Constant' : 'Decaying'
-  const hasActiveVotes = position.numActiveVotes > 0
+  const handleTransferTokens = async (
+    targetPosition: PositionWithMeta,
+    amount: number,
+  ) => {
+    const decision = await getDecision('Transfer Position')
 
-  if (isLoading)
+    if (decision) {
+      await transferPosition({
+        sourcePosition: position,
+        amount,
+        targetPosition,
+      })
+
+      if (!transferingError) {
+        await refetchState()
+      }
+    }
+  }
+
+  const handleDelegateTokens = async (subDao: SubDaoWithMeta) => {
+    const decision = await getDecision('Delegate Position')
+
+    if (decision) {
+      await delegatePosition({
+        position,
+        subDao,
+      })
+
+      if (!delegatingError) {
+        await refetchState()
+      }
+    }
+  }
+
+  const handleUndelegateTokens = async () => {
+    const decision = await getDecision('Undelegate Position')
+
+    if (decision) {
+      await undelegatePosition({ position })
+
+      if (!undelegatingError) {
+        await refetchState()
+      }
+    }
+  }
+
+  const actions = () => {
+    return (
+      <>
+        <ListItem
+          key="split"
+          title="Split"
+          onPress={() => {
+            if (hasActiveVotes) {
+              showOKAlert({
+                title: 'Unable to split',
+                message: 'Position is partaking in an active vote!',
+              })
+            } else {
+              setIsSplitModalOpen(true)
+            }
+            setActionsOpen(false)
+          }}
+          selected={false}
+          hasPressedState={false}
+        />
+        <ListItem
+          key="transfer"
+          title="Transfer"
+          onPress={() => {
+            if (hasActiveVotes) {
+              showOKAlert({
+                title: 'Unable to transfer',
+                message: 'Position is partaking in an active vote!',
+              })
+            } else {
+              setIsTransferModalOpen(true)
+            }
+            setActionsOpen(false)
+          }}
+          selected={false}
+          hasPressedState={false}
+        />
+        <ListItem
+          key="extend"
+          title="Extend"
+          onPress={() => {
+            setIsExtendModalOpen(true)
+            setActionsOpen(false)
+          }}
+          selected={false}
+          hasPressedState={false}
+        />
+        {!isConstant && (
+          <ListItem
+            key="pause"
+            title="Pause Unlock"
+            onPress={async () => {
+              setActionsOpen(false)
+              await handleFlipPositionLockupKind()
+            }}
+            selected={false}
+            hasPressedState={false}
+          />
+        )}
+        {canDelegate && !position.isDelegated && (
+          <ListItem
+            key="delegate"
+            title="Delegate"
+            onPress={async () => {
+              setIsDelegateModalOpen(true)
+              setActionsOpen(false)
+            }}
+            selected={false}
+            hasPressedState={false}
+          />
+        )}
+        {position.isDelegated && (
+          <ListItem
+            key="undelegate"
+            title="Undelgate"
+            onPress={async () => {
+              setActionsOpen(false)
+              await handleUndelegateTokens()
+            }}
+            selected={false}
+            hasPressedState={false}
+          />
+        )}
+      </>
+    )
+  }
+
+  const loading =
+    isLoading ||
+    isExtending ||
+    isSpliting ||
+    isClosing ||
+    isTransfering ||
+    isFlipping ||
+    isDelegating ||
+    isUndelegating
+
+  if (isLoading) {
     return (
       <Box
         backgroundColor="secondaryBackground"
         borderRadius="l"
-        padding="xxl"
+        padding="m"
         {...boxProps}
-      />
+      >
+        <Box flex={1} alignItems="center">
+          <Box flex={1} marginBottom="ms">
+            <CircleLoader color="white" />
+          </Box>
+          <Text variant="body2" color="primaryText">
+            {isSpliting && 'Splitting...'}
+            {isExtending && 'Extending...'}
+            {isTransfering && 'Transferring...'}
+            {isFlipping && 'Flipping...'}
+            {isClosing && 'Closing...'}
+            {isDelegating && 'Delegating...'}
+            {isUndelegating && 'Undelegating...'}
+          </Text>
+        </Box>
+      </Box>
     )
+  }
 
   return (
     <>
@@ -397,16 +553,21 @@ export const PositionCard = ({ position, ...boxProps }: IPositionCardProps) => {
           onSubmit={handleSplitTokens}
         />
       )}
-      {/*       {isTransferModalOpen && (
+      {isTransferModalOpen && (
         <TransferTokensModal
           mint={mint}
-          isOpen={isTransferModalOpen}
           positions={transferablePositions}
           maxTransferAmount={maxActionableAmount}
           onClose={() => setIsTransferModalOpen(false)}
           onSubmit={handleTransferTokens}
         />
-      )} */}
+      )}
+      {isDelegateModalOpen && (
+        <DelegateTokensModal
+          onClose={() => setIsDelegateModalOpen(false)}
+          onSubmit={handleDelegateTokens}
+        />
+      )}
     </>
   )
 }

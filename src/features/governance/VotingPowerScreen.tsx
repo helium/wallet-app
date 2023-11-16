@@ -27,15 +27,19 @@ export const VotingPowerScreen = () => {
   const wallet = useCurrentWallet()
   const { walletSignBottomSheetRef } = useWalletSign()
   const backEdges = useMemo(() => ['top'] as Edge[], [])
-  const { mint, registrar, refetch: refetchState } = useGovernance()
+  const [isLockModalOpen, setIsLockModalOpen] = useState(false)
+  const { mint, registrar, refetch: refetchState, positions } = useGovernance()
   const { info: mintAcc } = useMint(mint)
+  const { error, createPosition } = useCreatePosition()
   const { amount: ownedAmount, loading: loadingBal } = useOwnedAmount(
     wallet,
     mint,
   )
-  const [isLockModalOpen, setIsLockModalOpen] = useState(false)
-  const { positions } = useGovernance()
-  const { error, createPosition } = useCreatePosition()
+
+  const positionsWithRewards = useMemo(
+    () => positions?.filter((p) => p.hasRewards),
+    [positions],
+  )
 
   const maxLockupAmount =
     ownedAmount && mintAcc
@@ -112,11 +116,17 @@ export const VotingPowerScreen = () => {
             fontSize={16}
             borderRadius="round"
             borderWidth={2}
-            borderColor="white"
+            borderColor={
+              !positionsWithRewards?.length ? 'surfaceSecondary' : 'white'
+            }
             backgroundColor="white"
             backgroundColorOpacityPressed={0.7}
+            backgroundColorDisabled="surfaceSecondary"
+            backgroundColorDisabledOpacity={0.9}
+            titleColorDisabled="secondaryText"
             title="Claim Rewards"
             titleColor="black"
+            disabled={!positionsWithRewards?.length}
           />
         </Box>
       </ReAnimatedBox>
