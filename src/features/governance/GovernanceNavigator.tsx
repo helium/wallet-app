@@ -32,8 +32,8 @@ const GovernanceStackScreen = () => {
             component={ProposalScreen}
           />
         </GovernanceStack.Navigator>
+        <PortalHost name="GovernancePortalHost" />
       </GovernanceProvider>
-      <PortalHost name="GovernancePortalHost" />
     </>
   )
 }

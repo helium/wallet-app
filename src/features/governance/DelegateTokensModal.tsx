@@ -96,7 +96,7 @@ export const DelegateTokensModal = ({
                     color="secondaryText"
                     marginBottom="m"
                   >
-                    Loading SubDaos...
+                    Fetching SubDaos...
                   </Text>
                 </Box>
               )}
@@ -113,11 +113,17 @@ export const DelegateTokensModal = ({
                     }
                     onPress={() => setSelectedSubDaoPk(subDao.pubkey)}
                   >
-                    <Box flexDirection="row" padding="ms">
-                      <TokenIcon
-                        size={26}
-                        img={subDao.dntMetadata.json?.image || ''}
-                      />
+                    <Box flexDirection="row" padding="ms" alignItems="center">
+                      <Box
+                        borderColor="black"
+                        borderWidth={2}
+                        borderRadius="round"
+                      >
+                        <TokenIcon
+                          size={26}
+                          img={subDao.dntMetadata.json?.image || ''}
+                        />
+                      </Box>
                       <Text
                         variant="subtitle3"
                         color="primaryText"

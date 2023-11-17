@@ -28,7 +28,13 @@ export const VotingPowerScreen = () => {
   const { walletSignBottomSheetRef } = useWalletSign()
   const backEdges = useMemo(() => ['top'] as Edge[], [])
   const [isLockModalOpen, setIsLockModalOpen] = useState(false)
-  const { mint, registrar, refetch: refetchState, positions } = useGovernance()
+  const {
+    loading,
+    mint,
+    registrar,
+    refetch: refetchState,
+    positions,
+  } = useGovernance()
   const { info: mintAcc } = useMint(mint)
   const { error, createPosition } = useCreatePosition()
   const { amount: ownedAmount, loading: loadingBal } = useOwnedAmount(

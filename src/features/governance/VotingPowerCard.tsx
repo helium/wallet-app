@@ -52,7 +52,7 @@ export const VotingPowerCard = ({
           </Box>
         )}
         <Box flexDirection="row" justifyContent="space-between">
-          <Box>
+          <Box flex={1}>
             <Text variant="body1" color="secondaryText">
               Voting Power
             </Text>
@@ -70,16 +70,14 @@ export const VotingPowerCard = ({
                     flexDirection="row"
                     justifyContent="center"
                     alignItems="center"
-                    backgroundColor="black500"
                     borderRadius="m"
                     paddingHorizontal="s"
-                    paddingVertical="xs"
-                    paddingLeft="none"
+                    paddingLeft="s"
                   >
                     <LightningBolt
                       color={colors.blueBright500}
                       width={20}
-                      height={18}
+                      height={20}
                     />
                     <Text variant="body3" color="primaryText">
                       {`${
@@ -98,7 +96,7 @@ export const VotingPowerCard = ({
             </Box>
           </Box>
           {inOverview ? (
-            <Box>
+            <Box flex={1}>
               <Text variant="body1" color="secondaryText" textAlign="right">
                 {`${symbol || ''}`} Locked
               </Text>
@@ -109,7 +107,7 @@ export const VotingPowerCard = ({
               </Text>
             </Box>
           ) : (
-            <Box>
+            <Box flex={1}>
               <Text variant="body1" color="secondaryText" textAlign="right">
                 Active Votes
               </Text>
@@ -120,7 +118,12 @@ export const VotingPowerCard = ({
           )}
         </Box>
         {!inOverview && (
-          <Box flexDirection="row" justifyContent="space-between" marginTop="m">
+          <Box
+            flex={1}
+            flexDirection="row"
+            justifyContent="space-between"
+            marginTop="m"
+          >
             <Box>
               <Text variant="body1" color="secondaryText">
                 HNT Locked
@@ -148,7 +151,12 @@ export const VotingPowerCard = ({
         )}
       </Box>
       {inOverview && (
-        <Box borderTopColor="primaryBackground" borderTopWidth={2} padding="ms">
+        <Box
+          flex={1}
+          borderTopColor="primaryBackground"
+          borderTopWidth={2}
+          padding="ms"
+        >
           <Text variant="body2" color="secondaryText">
             You have{' '}
             {mintAcc &&

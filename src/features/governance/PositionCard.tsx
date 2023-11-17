@@ -10,6 +10,7 @@ import { useMint, useSolanaUnixNow } from '@helium/helium-react-hooks'
 import { HNT_MINT, humanReadable, toNumber } from '@helium/spl-utils'
 import {
   PositionWithMeta,
+  SubDaoWithMeta,
   calcLockupMultiplier,
   useClosePosition,
   useDelegatePosition,
@@ -40,10 +41,15 @@ import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { TransferTokensModal } from './TransferTokensModal'
 
 interface IPositionCardProps extends Omit<BoxProps<Theme>, 'position'> {
+  subDaos?: SubDaoWithMeta[]
   position: PositionWithMeta
 }
 
-export const PositionCard = ({ position, ...boxProps }: IPositionCardProps) => {
+export const PositionCard = ({
+  position,
+  subDaos,
+  ...boxProps
+}: IPositionCardProps) => {
   const unixNow = useSolanaUnixNow(60 * 5 * 1000) || 0
   const { showOKAlert } = useAlert()
   const { walletSignBottomSheetRef } = useWalletSign()
@@ -52,7 +58,7 @@ export const PositionCard = ({ position, ...boxProps }: IPositionCardProps) => {
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false)
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false)
   const [isDelegateModalOpen, setIsDelegateModalOpen] = useState(false)
-  const { loading: isLoading, positions, refetch, mint } = useGovernance()
+  const { loading, positions, refetch, mint } = useGovernance()
   const transferablePositions: PositionWithMeta[] = useMemo(() => {
     if (!unixNow || !positions || !positions.length) {
       return []
@@ -177,6 +183,18 @@ export const PositionCard = ({ position, ...boxProps }: IPositionCardProps) => {
     undelegatePosition,
   } = useUndelegatePosition()
 
+  const handleClosePosition = async () => {
+    const decision = await getDecision('Close Position')
+
+    if (decision) {
+      await closePosition({ position })
+
+      if (!closingError) {
+        await refetchState()
+      }
+    }
+  }
+
   const handleFlipPositionLockupKind = async () => {
     const decision = await getDecision('Pause Unlock')
 
@@ -270,75 +288,7 @@ export const PositionCard = ({ position, ...boxProps }: IPositionCardProps) => {
   const actions = () => {
     return (
       <>
-        <ListItem
-          key="split"
-          title="Split"
-          onPress={() => {
-            if (hasActiveVotes) {
-              showOKAlert({
-                title: 'Unable to split',
-                message: 'Position is partaking in an active vote!',
-              })
-            } else {
-              setIsSplitModalOpen(true)
-            }
-            setActionsOpen(false)
-          }}
-          selected={false}
-          hasPressedState={false}
-        />
-        <ListItem
-          key="transfer"
-          title="Transfer"
-          onPress={() => {
-            if (hasActiveVotes) {
-              showOKAlert({
-                title: 'Unable to transfer',
-                message: 'Position is partaking in an active vote!',
-              })
-            } else {
-              setIsTransferModalOpen(true)
-            }
-            setActionsOpen(false)
-          }}
-          selected={false}
-          hasPressedState={false}
-        />
-        <ListItem
-          key="extend"
-          title="Extend"
-          onPress={() => {
-            setIsExtendModalOpen(true)
-            setActionsOpen(false)
-          }}
-          selected={false}
-          hasPressedState={false}
-        />
-        {!isConstant && (
-          <ListItem
-            key="pause"
-            title="Pause Unlock"
-            onPress={async () => {
-              setActionsOpen(false)
-              await handleFlipPositionLockupKind()
-            }}
-            selected={false}
-            hasPressedState={false}
-          />
-        )}
-        {canDelegate && !position.isDelegated && (
-          <ListItem
-            key="delegate"
-            title="Delegate"
-            onPress={async () => {
-              setIsDelegateModalOpen(true)
-              setActionsOpen(false)
-            }}
-            selected={false}
-            hasPressedState={false}
-          />
-        )}
-        {position.isDelegated && (
+        {position.isDelegated ? (
           <ListItem
             key="undelegate"
             title="Undelgate"
@@ -349,13 +299,119 @@ export const PositionCard = ({ position, ...boxProps }: IPositionCardProps) => {
             selected={false}
             hasPressedState={false}
           />
+        ) : (
+          <>
+            {lockupExpired ? (
+              <ListItem
+                key="close"
+                title="Close"
+                onPress={async () => {
+                  setActionsOpen(false)
+                  if (hasActiveVotes) {
+                    showOKAlert({
+                      title: 'Unable to close',
+                      message: 'Position is partaking in an active vote!',
+                    })
+                  } else {
+                    await handleClosePosition()
+                  }
+                }}
+                selected={false}
+                hasPressedState={false}
+              />
+            ) : (
+              <>
+                <ListItem
+                  key="split"
+                  title="Split"
+                  onPress={() => {
+                    setActionsOpen(false)
+                    if (hasActiveVotes) {
+                      showOKAlert({
+                        title: 'Unable to split',
+                        message: 'Position is partaking in an active vote!',
+                      })
+                    } else {
+                      setIsSplitModalOpen(true)
+                    }
+                  }}
+                  selected={false}
+                  hasPressedState={false}
+                />
+                <ListItem
+                  key="transfer"
+                  title="Transfer"
+                  onPress={() => {
+                    setActionsOpen(false)
+                    if (hasActiveVotes) {
+                      showOKAlert({
+                        title: 'Unable to transfer',
+                        message: 'Position is partaking in an active vote!',
+                      })
+                    } else {
+                      setIsTransferModalOpen(true)
+                    }
+                  }}
+                  selected={false}
+                  hasPressedState={false}
+                />
+                <ListItem
+                  key="extend"
+                  title="Extend"
+                  onPress={() => {
+                    setIsExtendModalOpen(true)
+                    setActionsOpen(false)
+                  }}
+                  selected={false}
+                  hasPressedState={false}
+                />
+                {!isConstant && (
+                  <ListItem
+                    key="pause"
+                    title="Pause Unlock"
+                    onPress={async () => {
+                      setActionsOpen(false)
+                      if (hasActiveVotes) {
+                        showOKAlert({
+                          title: 'Unable to pause unlock',
+                          message: 'Position is partaking in an active vote!',
+                        })
+                      } else {
+                        await handleFlipPositionLockupKind()
+                      }
+                    }}
+                    selected={false}
+                    hasPressedState={false}
+                  />
+                )}
+                {canDelegate && !position.isDelegated && (
+                  <ListItem
+                    key="delegate"
+                    title="Delegate"
+                    onPress={async () => {
+                      setIsDelegateModalOpen(true)
+                      setActionsOpen(false)
+                    }}
+                    selected={false}
+                    hasPressedState={false}
+                  />
+                )}
+              </>
+            )}
+          </>
         )}
       </>
     )
   }
 
-  const loading =
-    isLoading ||
+  const delegatedSubDaoMetadata = position.delegatedSubDao
+    ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      subDaos?.find((sd) => sd.pubkey.equals(position.delegatedSubDao!))
+        ?.dntMetadata
+    : null
+
+  const isSubmitting =
+    loading ||
     isExtending ||
     isSpliting ||
     isClosing ||
@@ -364,7 +420,7 @@ export const PositionCard = ({ position, ...boxProps }: IPositionCardProps) => {
     isDelegating ||
     isUndelegating
 
-  if (isLoading) {
+  if (isSubmitting) {
     return (
       <Box
         backgroundColor="secondaryBackground"
@@ -458,11 +514,7 @@ export const PositionCard = ({ position, ...boxProps }: IPositionCardProps) => {
               </Text>
             </Box>
           </Box>
-          <Box
-            flexDirection="row"
-            justifyContent="space-between"
-            paddingBottom="s"
-          >
+          <Box flexDirection="row" justifyContent="space-between">
             <Box>
               <Text variant="body2" color="secondaryText">
                 {isConstant ? 'Min Duration' : 'Time left'}
@@ -488,6 +540,23 @@ export const PositionCard = ({ position, ...boxProps }: IPositionCardProps) => {
               </Box>
             )}
           </Box>
+          {delegatedSubDaoMetadata && (
+            <Box
+              flexDirection="row"
+              justifyContent="center"
+              alignItems="center"
+            >
+              <Box borderColor="black" borderWidth={2} borderRadius="round">
+                <TokenIcon
+                  size={18}
+                  img={delegatedSubDaoMetadata.json?.image || ''}
+                />
+              </Box>
+              <Text variant="body2" color="primaryText" marginLeft="m">
+                {delegatedSubDaoMetadata.name}
+              </Text>
+            </Box>
+          )}
         </Box>
       </TouchableOpacityBox>
       <BlurActionSheet

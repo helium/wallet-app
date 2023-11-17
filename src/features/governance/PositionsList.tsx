@@ -3,8 +3,11 @@ import Text from '@components/Text'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
 import LightningBolt from '@assets/images/transactions.svg'
-import React from 'react'
-import { PositionWithMeta } from '@helium/voter-stake-registry-hooks'
+import React, { useMemo } from 'react'
+import {
+  PositionWithMeta,
+  useSubDaos,
+} from '@helium/voter-stake-registry-hooks'
 import { useColors } from '@theme/themeHooks'
 import { PositionCard } from './PositionCard'
 
@@ -16,7 +19,23 @@ export const PositionsList = ({
   positions = [],
   ...boxProps
 }: IPositionsListProps) => {
+  const { result: subDaos } = useSubDaos()
   const colors = useColors()
+
+  const sortedPositions = useMemo(
+    () =>
+      positions?.sort((a, b) => {
+        if (a.hasGenesisMultiplier || b.hasGenesisMultiplier) {
+          if (b.hasGenesisMultiplier) {
+            return a.amountDepositedNative.gt(b.amountDepositedNative) ? 0 : -1
+          }
+          return -1
+        }
+
+        return a.amountDepositedNative.gt(b.amountDepositedNative) ? -1 : 0
+      }),
+    [positions],
+  )
 
   return (
     <Box {...boxProps} flex={1}>
@@ -49,10 +68,12 @@ export const PositionsList = ({
           </Text>
         </Box>
       </Box>
-      {positions?.map((p, idx) => (
+      {sortedPositions?.map((p, idx) => (
         <PositionCard
-          key={p.pubkey.toBase58()}
+          // eslint-disable-next-line react/no-array-index-key
+          key={`${p.pubkey.toBase58()}-${idx}`}
           position={p}
+          subDaos={subDaos}
           marginTop={idx > 0 ? 'm' : undefined}
         />
       ))}
