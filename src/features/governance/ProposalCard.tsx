@@ -12,6 +12,9 @@ import MarkdownIt from 'markdown-it'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useGovernance } from '@storage/GovernanceProvider'
+import CircleLoader from '@components/CircleLoader'
+import { ReAnimatedBox } from '@components/AnimatedBox'
+import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { ProposalFilter, ProposalV0 } from './governanceTypes'
 
 interface IProposalCardProps extends BoxProps<Theme> {
@@ -24,12 +27,17 @@ interface IProposalCardProps extends BoxProps<Theme> {
 // TODO (gov): add you voted
 const markdownParser = MarkdownIt()
 export const ProposalCardSkeleton = (boxProps: BoxProps<Theme>) => (
-  <Box
+  <ReAnimatedBox
+    flex={1}
     backgroundColor="secondaryBackground"
     borderRadius="l"
     padding="xxl"
+    entering={FadeIn}
+    exiting={FadeOut}
     {...boxProps}
-  />
+  >
+    <CircleLoader color="white" loaderSize={20} />
+  </ReAnimatedBox>
 )
 export const ProposalCard = ({
   filter,
@@ -38,7 +46,7 @@ export const ProposalCard = ({
   onPress,
   ...boxProps
 }: IProposalCardProps) => {
-  const { mint } = useGovernance()
+  const { loading, mint } = useGovernance()
   const decimals = useMint(mint)?.info?.decimals
 
   const {
@@ -102,7 +110,10 @@ export const ProposalCard = ({
     }
   }, [proposal?.state, proposal?.choices])
 
-  const isLoading = useMemo(() => descLoading, [descLoading])
+  const isLoading = useMemo(
+    () => loading || descLoading,
+    [loading, descLoading],
+  )
 
   const isVisible = useMemo(() => {
     if (!isLoading) {
@@ -118,148 +129,154 @@ export const ProposalCard = ({
 
   if (!isVisible) return null
   if (isLoading) {
-    // TODO (gov): add spinner or skeleton pulse
     return <ProposalCardSkeleton {...boxProps} />
   }
 
   return (
-    <TouchableOpacityBox
+    <ReAnimatedBox
       backgroundColor="secondaryBackground"
       borderRadius="l"
-      onPress={handleOnPress}
+      entering={FadeIn}
+      exiting={FadeOut}
       {...boxProps}
     >
-      <Box
-        paddingTop="ms"
-        padding="m"
-        paddingBottom={derivedState === 'active' ? 'm' : 'none'}
-      >
+      <TouchableOpacityBox onPress={handleOnPress}>
         <Box
-          flexDirection="row"
-          justifyContent="space-between"
-          paddingBottom="xs"
+          paddingTop="ms"
+          padding="m"
+          paddingBottom={derivedState === 'active' ? 'm' : 'none'}
         >
-          <Box flexShrink={1}>
-            <Text variant="subtitle3" color="primaryText">
-              {proposal?.name}
+          <Box
+            flexDirection="row"
+            justifyContent="space-between"
+            paddingBottom="xs"
+          >
+            <Box flexShrink={1}>
+              <Text variant="subtitle3" color="primaryText">
+                {proposal?.name}
+              </Text>
+            </Box>
+            <Box flexDirection="row" marginLeft="s">
+              {proposal?.tags.map((tag, idx) => (
+                <Box
+                  key={tag}
+                  padding="s"
+                  marginLeft={idx > 0 ? 's' : 'none'}
+                  backgroundColor={
+                    tag.toLowerCase().includes('temp check')
+                      ? 'orange500'
+                      : 'surfaceSecondary'
+                  }
+                  borderRadius="m"
+                >
+                  <Text fontSize={10} color="secondaryText">
+                    {tag.toUpperCase()}
+                  </Text>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+          {derivedState === 'active' && (
+            <Text
+              variant="body2"
+              color="surfaceSecondaryText"
+              numberOfLines={2}
+            >
+              {desc}
             </Text>
-          </Box>
-          <Box flexDirection="row" marginLeft="s">
-            {proposal?.tags.map((tag, idx) => (
-              <Box
-                key={tag}
-                padding="s"
-                marginLeft={idx > 0 ? 's' : 'none'}
-                backgroundColor={
-                  tag.toLowerCase().includes('temp check')
-                    ? 'orange500'
-                    : 'surfaceSecondary'
-                }
-                borderRadius="m"
-              >
-                <Text fontSize={10} color="secondaryText">
-                  {tag.toUpperCase()}
-                </Text>
-              </Box>
-            ))}
-          </Box>
-        </Box>
-        {derivedState === 'active' && (
-          <Text variant="body2" color="surfaceSecondaryText" numberOfLines={2}>
-            {desc}
-          </Text>
-        )}
-      </Box>
-      {derivedState === 'active' && (
-        <Box
-          borderTopColor="primaryBackground"
-          borderTopWidth={2}
-          borderBottomColor="primaryBackground"
-          borderBottomWidth={2}
-          paddingHorizontal="m"
-          paddingVertical="s"
-        >
-          <Text variant="body2" color="secondaryText">
-            You Voted - Yes
-          </Text>
-        </Box>
-      )}
-      <Box
-        paddingHorizontal="m"
-        paddingTop={derivedState === 'active' ? 's' : 'none'}
-        paddingBottom={derivedState === 'active' ? 'm' : 's'}
-      >
-        <Box
-          flexDirection="row"
-          justifyContent="space-between"
-          paddingBottom={derivedState === 'active' ? 's' : 'none'}
-        >
-          <Box>
-            {derivedState === 'active' && (
-              <Text variant="body2" color="secondaryText">
-                Est. Time Remaining
-              </Text>
-            )}
-            {derivedState === 'passed' && (
-              <Text variant="body2" color="greenBright500">
-                Success
-              </Text>
-            )}
-            {derivedState === 'failed' && (
-              <Text variant="body2" color="error">
-                Failed
-              </Text>
-            )}
-            {derivedState === 'cancelled' && (
-              <Text variant="body2" color="orange500">
-                Cancelled
-              </Text>
-            )}
-            {(derivedState === 'passed' || derivedState === 'failed') && (
-              <Text variant="body2" color="primaryText">
-                {
-                  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                  fmtUnixTime(proposal!.state.resolved!.endTs.toNumber())
-                }
-              </Text>
-            )}
-          </Box>
-          <Box>
-            <Text variant="body2" color="secondaryText" textAlign="right">
-              Votes
-            </Text>
-            <Text variant="body2" color="primaryText" textAlign="right">
-              {humanReadable(votingResults?.totalVotes, decimals) || 'None'}
-            </Text>
-          </Box>
+          )}
         </Box>
         {derivedState === 'active' && (
           <Box
-            flexDirection="row"
-            flex={1}
-            height={6}
-            borderRadius="m"
-            overflow="hidden"
+            borderTopColor="primaryBackground"
+            borderTopWidth={2}
+            borderBottomColor="primaryBackground"
+            borderBottomWidth={2}
+            paddingHorizontal="m"
+            paddingVertical="s"
           >
-            {votingResults.results?.map((result, idx) => {
-              const backgroundColors: Color[] = [
-                'turquoise',
-                'orange500',
-                'jazzberryJam',
-                'purple500',
-                'purpleHeart',
-              ]
-              return (
-                <Box
-                  key={result.name}
-                  width={`${result.percent}%`}
-                  backgroundColor={backgroundColors[idx]}
-                />
-              )
-            })}
+            <Text variant="body2" color="secondaryText">
+              You Voted - Yes
+            </Text>
           </Box>
         )}
-      </Box>
-    </TouchableOpacityBox>
+        <Box
+          paddingHorizontal="m"
+          paddingTop={derivedState === 'active' ? 's' : 'none'}
+          paddingBottom={derivedState === 'active' ? 'm' : 's'}
+        >
+          <Box
+            flexDirection="row"
+            justifyContent="space-between"
+            paddingBottom={derivedState === 'active' ? 's' : 'none'}
+          >
+            <Box>
+              {derivedState === 'active' && (
+                <Text variant="body2" color="secondaryText">
+                  Est. Time Remaining
+                </Text>
+              )}
+              {derivedState === 'passed' && (
+                <Text variant="body2" color="greenBright500">
+                  Success
+                </Text>
+              )}
+              {derivedState === 'failed' && (
+                <Text variant="body2" color="error">
+                  Failed
+                </Text>
+              )}
+              {derivedState === 'cancelled' && (
+                <Text variant="body2" color="orange500">
+                  Cancelled
+                </Text>
+              )}
+              {(derivedState === 'passed' || derivedState === 'failed') && (
+                <Text variant="body2" color="primaryText">
+                  {
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    fmtUnixTime(proposal!.state.resolved!.endTs.toNumber())
+                  }
+                </Text>
+              )}
+            </Box>
+            <Box>
+              <Text variant="body2" color="secondaryText" textAlign="right">
+                Votes
+              </Text>
+              <Text variant="body2" color="primaryText" textAlign="right">
+                {humanReadable(votingResults?.totalVotes, decimals) || 'None'}
+              </Text>
+            </Box>
+          </Box>
+          {derivedState === 'active' && (
+            <Box
+              flexDirection="row"
+              flex={1}
+              height={6}
+              borderRadius="m"
+              overflow="hidden"
+            >
+              {votingResults.results?.map((result, idx) => {
+                const backgroundColors: Color[] = [
+                  'turquoise',
+                  'orange500',
+                  'jazzberryJam',
+                  'purple500',
+                  'purpleHeart',
+                ]
+                return (
+                  <Box
+                    key={result.name}
+                    width={`${result.percent}%`}
+                    backgroundColor={backgroundColors[idx]}
+                  />
+                )
+              })}
+            </Box>
+          )}
+        </Box>
+      </TouchableOpacityBox>
+    </ReAnimatedBox>
   )
 }

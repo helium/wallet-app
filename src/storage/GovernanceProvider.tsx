@@ -33,7 +33,6 @@ const mintsToNetwork: { [key: string]: GovNetwork } = {
 }
 
 export interface IGovernanceContextState {
-  error: unknown
   loading: boolean
   mint: PublicKey
   network: GovNetwork
@@ -72,12 +71,10 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   const { info: registrar } = useRegistrar(registrarKey)
 
-  const error = useMemo(() => {}, [])
   const loading = useMemo(() => loadingProposals, [loadingProposals])
 
   const ret = useMemo(
     () => ({
-      error,
       loading,
       mint,
       network,
@@ -85,7 +82,7 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
       registrar,
       setMint,
     }),
-    [error, loading, mint, network, proposals, registrar, setMint],
+    [loading, mint, network, proposals, registrar, setMint],
   )
 
   return (
@@ -109,9 +106,15 @@ const useGovernance = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { mint, ...heliumVsrState } = useHeliumVsrState()
+  const loading = useMemo(
+    () => context.loading || heliumVsrState.loading,
+    [context.loading, heliumVsrState.loading],
+  )
+
   return {
     ...context,
     ...heliumVsrState,
+    loading,
   }
 }
 

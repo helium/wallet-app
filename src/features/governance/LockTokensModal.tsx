@@ -16,7 +16,6 @@ import { PublicKey } from '@solana/web3.js'
 import { getFormattedStringFromDays, yearsToDays } from '@utils/dateTools'
 import { getMintMinAmountAsDecimal, precision } from '@utils/formatting'
 import React, { useMemo, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -96,7 +95,6 @@ export const LockTokensModal = ({
   onClose: () => void
   onSubmit: (values: LockTokensModalFormValues) => Promise<void>
 }) => {
-  const { t } = useTranslation()
   const { currentAccount } = useAccountStorage()
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])

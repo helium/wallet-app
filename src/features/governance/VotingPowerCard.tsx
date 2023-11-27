@@ -1,4 +1,5 @@
 import LightningBolt from '@assets/images/transactions.svg'
+import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -12,6 +13,7 @@ import { useColors } from '@theme/themeHooks'
 import { humanReadable } from '@utils/formatting'
 import BN from 'bn.js'
 import React, { useCallback } from 'react'
+import { FadeIn, FadeOut } from 'react-native-reanimated'
 
 interface IVotingPowerCardProps extends BoxProps<Theme> {
   onPress?: () => void
@@ -172,18 +174,28 @@ export const VotingPowerCard = ({
     </>
   )
 
-  return onPress ? (
-    <TouchableOpacityBox
+  if (onPress)
+    return (
+      <ReAnimatedBox
+        backgroundColor="secondaryBackground"
+        borderRadius="l"
+        entering={FadeIn}
+        exiting={FadeOut}
+        {...boxProps}
+      >
+        <TouchableOpacityBox onPress={handleOnPress}>
+          {renderCard(true)}
+        </TouchableOpacityBox>
+      </ReAnimatedBox>
+    )
+
+  return (
+    <ReAnimatedBox
       backgroundColor="secondaryBackground"
       borderRadius="l"
-      onPress={handleOnPress}
       {...boxProps}
     >
-      {renderCard(true)}
-    </TouchableOpacityBox>
-  ) : (
-    <Box backgroundColor="secondaryBackground" borderRadius="l" {...boxProps}>
       {renderCard(false)}
-    </Box>
+    </ReAnimatedBox>
   )
 }

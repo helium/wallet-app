@@ -34,6 +34,8 @@ import {
 } from '@utils/dateTools'
 import BN from 'bn.js'
 import React, { useCallback, useMemo, useState } from 'react'
+import { ReAnimatedBox } from '@components/AnimatedBox'
+import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { DelegateTokensModal } from './DelegateTokensModal'
@@ -58,7 +60,7 @@ export const PositionCard = ({
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false)
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false)
   const [isDelegateModalOpen, setIsDelegateModalOpen] = useState(false)
-  const { loading, positions, refetch, mint } = useGovernance()
+  const { positions, refetch, mint } = useGovernance()
   const transferablePositions: PositionWithMeta[] = useMemo(() => {
     if (!unixNow || !positions || !positions.length) {
       return []
@@ -95,7 +97,11 @@ export const PositionCard = ({
 
   const { lockup, hasGenesisMultiplier, votingMint } = position
   const { info: mintAcc } = useMint(votingMint.mint)
-  const { symbol, json } = useMetaplexMetadata(votingMint.mint)
+  const {
+    loading: loadingMetadata,
+    symbol,
+    json,
+  } = useMetaplexMetadata(votingMint.mint)
   const lockupKind = Object.keys(lockup.kind)[0] as string
   const isConstant = lockupKind === 'constant'
   const lockupKindDisplay = isConstant ? 'Constant' : 'Decaying'
@@ -127,6 +133,7 @@ export const PositionCard = ({
 
     return decision
   }
+
   const handleCalcLockupMultiplier = useCallback(
     (lockupPeriodInDays: number) =>
       calcLockupMultiplier({
@@ -182,6 +189,54 @@ export const PositionCard = ({
     error: undelegatingError,
     undelegatePosition,
   } = useUndelegatePosition()
+
+  const transactionError = useMemo(() => {
+    if (extendingError) {
+      return extendingError.message || 'Extend failed, please try again.'
+    }
+
+    if (splitingError) {
+      return splitingError.message || 'Split failed, please try again.'
+    }
+
+    if (flippingError) {
+      return (
+        flippingError.message ||
+        (isConstant
+          ? 'Pause failed, please try again.'
+          : 'Unlock failed, please try again.')
+      )
+    }
+
+    if (transferingError) {
+      return transferingError.message || 'Transfer failed, please try again.'
+    }
+
+    if (closingError) {
+      return closingError.message || 'Close failed, please try again.'
+    }
+
+    if (delegatingError) {
+      return delegatingError.message || 'Delegate failed, please try again.'
+    }
+
+    if (undelegatingError) {
+      return undelegatingError.message || 'Undelgate failed, please try again.'
+    }
+  }, [
+    isConstant,
+    extendingError,
+    splitingError,
+    flippingError,
+    transferingError,
+    closingError,
+    delegatingError,
+    undelegatingError,
+  ])
+
+  const showError = useMemo(() => {
+    if (transactionError) return transactionError
+  }, [transactionError])
 
   const handleClosePosition = async () => {
     const decision = await getDecision('Close Position')
@@ -365,25 +420,25 @@ export const PositionCard = ({
                   selected={false}
                   hasPressedState={false}
                 />
-                {!isConstant && (
-                  <ListItem
-                    key="pause"
-                    title="Pause Unlock"
-                    onPress={async () => {
-                      setActionsOpen(false)
-                      if (hasActiveVotes) {
-                        showOKAlert({
-                          title: 'Unable to pause unlock',
-                          message: 'Position is partaking in an active vote!',
-                        })
-                      } else {
-                        await handleFlipPositionLockupKind()
-                      }
-                    }}
-                    selected={false}
-                    hasPressedState={false}
-                  />
-                )}
+                <ListItem
+                  key="pause"
+                  title={isConstant ? 'Start Unlock' : 'Pause Unlock'}
+                  onPress={async () => {
+                    setActionsOpen(false)
+                    if (hasActiveVotes) {
+                      showOKAlert({
+                        title: isConstant
+                          ? 'Unable to start unlock'
+                          : 'Unable to pause unlock',
+                        message: 'Position is partaking in an active vote!',
+                      })
+                    } else {
+                      await handleFlipPositionLockupKind()
+                    }
+                  }}
+                  selected={false}
+                  hasPressedState={false}
+                />
                 {canDelegate && !position.isDelegated && (
                   <ListItem
                     key="delegate"
@@ -411,7 +466,7 @@ export const PositionCard = ({
     : null
 
   const isSubmitting =
-    loading ||
+    loadingMetadata ||
     isExtending ||
     isSpliting ||
     isClosing ||
@@ -430,7 +485,7 @@ export const PositionCard = ({
       >
         <Box flex={1} alignItems="center">
           <Box flex={1} marginBottom="ms">
-            <CircleLoader color="white" />
+            <CircleLoader color="white" loaderSize={20} />
           </Box>
           <Text variant="body2" color="primaryText">
             {isSpliting && 'Splitting...'}
@@ -448,119 +503,134 @@ export const PositionCard = ({
 
   return (
     <>
-      <TouchableOpacityBox
+      <ReAnimatedBox
         backgroundColor="secondaryBackground"
         borderRadius="l"
-        onPress={() => setActionsOpen(true)}
+        entering={FadeIn}
+        exiting={FadeOut}
         {...boxProps}
       >
-        <Box paddingHorizontal="m" paddingVertical="ms">
-          <Box
-            flexDirection="row"
-            justifyContent="space-between"
-            marginBottom="m"
-          >
-            <Box flexDirection="row" alignItems="center">
-              {json?.image ? (
-                <TokenIcon size={26} img={json.image} />
-              ) : undefined}
-              <Text variant="subtitle3" color="primaryText" marginLeft="m">
-                {`${lockedTokens} ${symbol}`}
-              </Text>
-            </Box>
-            {hasGenesisMultiplier && (
-              <Box
-                padding="s"
-                paddingHorizontal="m"
-                backgroundColor="blueBright500"
-                borderRadius="m"
-              >
-                <Text variant="body3" fontSize={10} color="black">
-                  LANDRUSH
-                </Text>
-              </Box>
-            )}
-          </Box>
-          <Box
-            flexDirection="row"
-            justifyContent="space-between"
-            paddingBottom="s"
-          >
-            <Box>
-              <Text variant="body2" color="secondaryText">
-                Lockup Type
-              </Text>
-              <Text variant="body2" color="primaryText">
-                {lockupKindDisplay}
-              </Text>
-            </Box>
-            <Box>
-              <Text variant="body2" color="secondaryText" textAlign="right">
-                Vote Multiplier
-              </Text>
-              <Text variant="body2" color="primaryText" textAlign="right">
-                {(
-                  (position.votingPower.isZero()
-                    ? 0
-                    : // Mul by 100 to get 2 decimal places
-                      position.votingPower
-                        .mul(new BN(100))
-                        .div(position.amountDepositedNative)
-                        .toNumber() / 100) /
-                  (position.genesisEnd.gt(new BN(unixNow || 0))
-                    ? votingMint.genesisVotePowerMultiplier
-                    : 1)
-                ).toFixed(2)}
-              </Text>
-            </Box>
-          </Box>
-          <Box flexDirection="row" justifyContent="space-between">
-            <Box>
-              <Text variant="body2" color="secondaryText">
-                {isConstant ? 'Min Duration' : 'Time left'}
-              </Text>
-              <Text variant="body2" color="primaryText">
-                {isConstant
-                  ? getMinDurationFmt(
-                      position.lockup.startTs,
-                      position.lockup.endTs,
-                    )
-                  : getTimeLeftFromNowFmt(position.lockup.endTs)}
-              </Text>
-            </Box>
-            {hasGenesisMultiplier && (
-              <Box>
-                <Text variant="body2" color="secondaryText" textAlign="right">
-                  Landrush
-                </Text>
-                <Text variant="body2" color="primaryText" textAlign="right">
-                  {votingMint.genesisVotePowerMultiplier}x ($
-                  {getTimeLeftFromNowFmt(position.genesisEnd)}
-                </Text>
-              </Box>
-            )}
-          </Box>
-          {delegatedSubDaoMetadata && (
+        <TouchableOpacityBox onPress={() => setActionsOpen(true)}>
+          {showError && (
             <Box
               flexDirection="row"
               justifyContent="center"
               alignItems="center"
+              paddingTop="ms"
             >
-              <Box borderColor="black" borderWidth={2} borderRadius="round">
-                <TokenIcon
-                  size={18}
-                  img={delegatedSubDaoMetadata.json?.image || ''}
-                />
-              </Box>
-              <Text variant="body2" color="primaryText" marginLeft="m">
-                {delegatedSubDaoMetadata.name}
+              <Text variant="body3Medium" color="red500">
+                {showError}
               </Text>
             </Box>
           )}
-        </Box>
-      </TouchableOpacityBox>
+          <Box paddingHorizontal="m" paddingVertical="ms">
+            <Box
+              flexDirection="row"
+              justifyContent="space-between"
+              marginBottom="m"
+            >
+              <Box flexDirection="row" alignItems="center">
+                {json?.image ? (
+                  <TokenIcon size={26} img={json.image} />
+                ) : undefined}
+                <Text variant="subtitle3" color="primaryText" marginLeft="m">
+                  {`${lockedTokens} ${symbol}`}
+                </Text>
+              </Box>
+              {hasGenesisMultiplier && (
+                <Box
+                  padding="s"
+                  paddingHorizontal="m"
+                  backgroundColor="blueBright500"
+                  borderRadius="m"
+                >
+                  <Text variant="body3" fontSize={10} color="black">
+                    LANDRUSH
+                  </Text>
+                </Box>
+              )}
+            </Box>
+            <Box
+              flexDirection="row"
+              justifyContent="space-between"
+              paddingBottom="s"
+            >
+              <Box>
+                <Text variant="body2" color="secondaryText">
+                  Lockup Type
+                </Text>
+                <Text variant="body2" color="primaryText">
+                  {lockupKindDisplay}
+                </Text>
+              </Box>
+              <Box>
+                <Text variant="body2" color="secondaryText" textAlign="right">
+                  Vote Multiplier
+                </Text>
+                <Text variant="body2" color="primaryText" textAlign="right">
+                  {(
+                    (position.votingPower.isZero()
+                      ? 0
+                      : // Mul by 100 to get 2 decimal places
+                        position.votingPower
+                          .mul(new BN(100))
+                          .div(position.amountDepositedNative)
+                          .toNumber() / 100) /
+                    (position.genesisEnd.gt(new BN(unixNow || 0))
+                      ? votingMint.genesisVotePowerMultiplier
+                      : 1)
+                  ).toFixed(2)}
+                </Text>
+              </Box>
+            </Box>
+            <Box flexDirection="row" justifyContent="space-between">
+              <Box>
+                <Text variant="body2" color="secondaryText">
+                  {isConstant ? 'Min Duration' : 'Time left'}
+                </Text>
+                <Text variant="body2" color="primaryText">
+                  {isConstant
+                    ? getMinDurationFmt(
+                        position.lockup.startTs,
+                        position.lockup.endTs,
+                      )
+                    : getTimeLeftFromNowFmt(position.lockup.endTs)}
+                </Text>
+              </Box>
+              {hasGenesisMultiplier && (
+                <Box>
+                  <Text variant="body2" color="secondaryText" textAlign="right">
+                    Landrush
+                  </Text>
+                  <Text variant="body2" color="primaryText" textAlign="right">
+                    {votingMint.genesisVotePowerMultiplier}x ($
+                    {getTimeLeftFromNowFmt(position.genesisEnd)}
+                  </Text>
+                </Box>
+              )}
+            </Box>
+            {delegatedSubDaoMetadata && (
+              <Box
+                flexDirection="row"
+                justifyContent="center"
+                alignItems="center"
+              >
+                <Box borderColor="black" borderWidth={2} borderRadius="round">
+                  <TokenIcon
+                    size={18}
+                    img={delegatedSubDaoMetadata.json?.image || ''}
+                  />
+                </Box>
+                <Text variant="body2" color="primaryText" marginLeft="m">
+                  {delegatedSubDaoMetadata.name}
+                </Text>
+              </Box>
+            )}
+          </Box>
+        </TouchableOpacityBox>
+      </ReAnimatedBox>
       <BlurActionSheet
-        title="Position Actions"
+        title="Manage Position"
         open={actionsOpen}
         onClose={() => setActionsOpen(false)}
       >

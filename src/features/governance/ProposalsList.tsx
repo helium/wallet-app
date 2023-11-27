@@ -6,18 +6,18 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
 import React, { useCallback, useState } from 'react'
-// import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { ProposalCard, ProposalCardSkeleton } from './ProposalCard'
 import {
-  // GovernanceNavigationProp,
+  GovernanceNavigationProp,
   ProposalFilter,
   ProposalV0,
 } from './governanceTypes'
 
 type IProposalsListProps = BoxProps<Theme>
 export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
-  // const navigation = useNavigation<GovernanceNavigationProp>()
+  const navigation = useNavigation<GovernanceNavigationProp>()
   const { proposals, loading } = useGovernance()
   const [filter, setFilter] = useState<ProposalFilter>('all')
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -76,11 +76,7 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
             </Text>
           </TouchableOpacityBox>
         </Box>
-        {loading &&
-          Array(3).map((_, idx) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <ProposalCardSkeleton key={`prop-skeleton-${idx}`} />
-          ))}
+        {loading && <ProposalCardSkeleton backgroundColor="transparent" />}
         {!loading &&
           proposals?.map((proposal, idx) => (
             <ProposalCard
@@ -89,6 +85,11 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
               proposal={proposal.info as ProposalV0}
               proposalKey={proposal.publicKey}
               marginTop={idx > 0 ? 'm' : undefined}
+              onPress={async (p) =>
+                navigation.push('ProposalScreen', {
+                  proposal: p.toBase58(),
+                })
+              }
             />
           ))}
       </Box>

@@ -11,6 +11,7 @@ import React, { useMemo } from 'react'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useGovernance } from '@storage/GovernanceProvider'
+import CircleLoader from '@components/CircleLoader'
 import { ProposalsList } from './ProposalsList'
 import { VotingPowerCard } from './VotingPowerCard'
 import { GovernanceNavigationProp } from './governanceTypes'
@@ -20,7 +21,7 @@ const GovMints = [HNT_MINT, MOBILE_MINT, IOT_MINT]
 export const GovernanceScreen = () => {
   const navigation = useNavigation<GovernanceNavigationProp>()
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
-  const { mint, setMint } = useGovernance()
+  const { loading, mint, setMint } = useGovernance()
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
@@ -44,10 +45,15 @@ export const GovernanceScreen = () => {
               />
             ))}
           </Box>
-          <VotingPowerCard
-            onPress={() => navigation.push('VotingPowerScreen')}
-          />
-          <ProposalsList />
+          {loading && <CircleLoader loaderSize={24} color="white" />}
+          {!loading && (
+            <>
+              <VotingPowerCard
+                onPress={() => navigation.push('VotingPowerScreen')}
+              />
+              <ProposalsList />
+            </>
+          )}
         </ScrollView>
       </SafeAreaBox>
     </ReAnimatedBox>
