@@ -1,21 +1,29 @@
+import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
+import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useMint } from '@helium/helium-react-hooks'
+import {
+  useProposalConfig,
+  useResolutionSettings,
+} from '@helium/modular-governance-hooks'
 import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
-import { Color, Theme } from '@theme/theme'
+import { useGovernance } from '@storage/GovernanceProvider'
+import { Theme } from '@theme/theme'
 import { fmtUnixTime, humanReadable } from '@utils/formatting'
 import axios from 'axios'
 import BN from 'bn.js'
 import MarkdownIt from 'markdown-it'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
-import { useGovernance } from '@storage/GovernanceProvider'
-import CircleLoader from '@components/CircleLoader'
-import { ReAnimatedBox } from '@components/AnimatedBox'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
-import { ProposalFilter, ProposalV0 } from './governanceTypes'
+import {
+  ProposalFilter,
+  ProposalV0,
+  VotingResultColors,
+} from './governanceTypes'
 
 interface IProposalCardProps extends BoxProps<Theme> {
   filter: ProposalFilter
@@ -24,7 +32,6 @@ interface IProposalCardProps extends BoxProps<Theme> {
   onPress?: (proposal: PublicKey) => Promise<void>
 }
 
-// TODO (gov): add you voted
 const markdownParser = MarkdownIt()
 export const ProposalCardSkeleton = (boxProps: BoxProps<Theme>) => (
   <ReAnimatedBox
@@ -47,7 +54,22 @@ export const ProposalCard = ({
   ...boxProps
 }: IProposalCardProps) => {
   const { loading, mint } = useGovernance()
+  const { proposalConfig: proposalConfigKey } = proposal
   const decimals = useMint(mint)?.info?.decimals
+  const { info: proposalConfig } = useProposalConfig(proposalConfigKey)
+  const { info: resolution } = useResolutionSettings(
+    proposalConfig?.stateController,
+  )
+
+  const endTs =
+    resolution &&
+    (proposal?.state.resolved
+      ? proposal?.state.resolved.endTs
+      : proposal?.state.voting?.startTs.add(
+          resolution.settings.nodes.find(
+            (node) => typeof node.offsetFromStartTs !== 'undefined',
+          )?.offsetFromStartTs?.offset ?? new BN(0),
+        ))
 
   const {
     error: descError,
@@ -144,36 +166,34 @@ export const ProposalCard = ({
         <Box
           paddingTop="ms"
           padding="m"
-          paddingBottom={derivedState === 'active' ? 'm' : 'none'}
+          paddingBottom={derivedState === 'active' ? 'm' : 's'}
         >
-          <Box
-            flexDirection="row"
-            justifyContent="space-between"
-            paddingBottom="xs"
-          >
+          <Box flexDirection="row" justifyContent="space-between">
             <Box flexShrink={1}>
               <Text variant="subtitle3" color="primaryText">
                 {proposal?.name}
               </Text>
             </Box>
             <Box flexDirection="row" marginLeft="s">
-              {proposal?.tags.map((tag, idx) => (
-                <Box
-                  key={tag}
-                  padding="s"
-                  marginLeft={idx > 0 ? 's' : 'none'}
-                  backgroundColor={
-                    tag.toLowerCase().includes('temp check')
-                      ? 'orange500'
-                      : 'surfaceSecondary'
-                  }
-                  borderRadius="m"
-                >
-                  <Text fontSize={10} color="secondaryText">
-                    {tag.toUpperCase()}
-                  </Text>
-                </Box>
-              ))}
+              {proposal?.tags
+                .filter((tag) => tag !== 'tags')
+                .map((tag, idx) => (
+                  <Box key={tag} marginLeft={idx > 0 ? 's' : 'none'}>
+                    <Box
+                      padding="s"
+                      backgroundColor={
+                        tag.toLowerCase().includes('temp check')
+                          ? 'orange500'
+                          : 'surfaceSecondary'
+                      }
+                      borderRadius="m"
+                    >
+                      <Text fontSize={10} color="secondaryText">
+                        {tag.toUpperCase()}
+                      </Text>
+                    </Box>
+                  </Box>
+                ))}
             </Box>
           </Box>
           {derivedState === 'active' && (
@@ -186,7 +206,8 @@ export const ProposalCard = ({
             </Text>
           )}
         </Box>
-        {derivedState === 'active' && (
+        {/* todo: add back once we can derive what they voted easily */}
+        {/*         {derivedState === 'active' && (
           <Box
             borderTopColor="primaryBackground"
             borderTopWidth={2}
@@ -199,11 +220,12 @@ export const ProposalCard = ({
               You Voted - Yes
             </Text>
           </Box>
-        )}
+        )} */}
         <Box
           paddingHorizontal="m"
-          paddingTop={derivedState === 'active' ? 's' : 'none'}
-          paddingBottom={derivedState === 'active' ? 'm' : 's'}
+          /* todo: add back once we can derive what they voted easily */
+          /* paddingTop={derivedState === 'active' ? 'm' : 'none'} */
+          paddingBottom="ms"
         >
           <Box
             flexDirection="row"
@@ -231,15 +253,11 @@ export const ProposalCard = ({
                   Cancelled
                 </Text>
               )}
-              {(derivedState === 'passed' || derivedState === 'failed') && (
-                <Text variant="body2" color="primaryText">
-                  {
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    fmtUnixTime(proposal!.state.resolved!.endTs.toNumber())
-                  }
-                </Text>
-              )}
+              <Text variant="body2" color="primaryText">
+                {fmtUnixTime(endTs || new BN(0))}
+              </Text>
             </Box>
+            {}
             <Box>
               <Text variant="body2" color="secondaryText" textAlign="right">
                 Votes
@@ -257,22 +275,13 @@ export const ProposalCard = ({
               borderRadius="m"
               overflow="hidden"
             >
-              {votingResults.results?.map((result, idx) => {
-                const backgroundColors: Color[] = [
-                  'turquoise',
-                  'orange500',
-                  'jazzberryJam',
-                  'purple500',
-                  'purpleHeart',
-                ]
-                return (
-                  <Box
-                    key={result.name}
-                    width={`${result.percent}%`}
-                    backgroundColor={backgroundColors[idx]}
-                  />
-                )
-              })}
+              {votingResults.results?.map((result, idx) => (
+                <Box
+                  key={result.name}
+                  width={`${result.percent}%`}
+                  backgroundColor={VotingResultColors[idx]}
+                />
+              ))}
             </Box>
           )}
         </Box>

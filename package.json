@@ -171,6 +171,7 @@
     "react-native-linear-gradient": "2.6.2",
     "react-native-localize": "2.2.3",
     "react-native-mail": "6.1.1",
+    "react-native-markdown-display": "^7.0.0-alpha.2",
     "react-native-navigation-bar-color": "2.0.1",
     "react-native-network-info": "5.2.1",
     "react-native-onesignal": "4.4.1",

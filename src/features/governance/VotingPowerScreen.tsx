@@ -31,13 +31,7 @@ export const VotingPowerScreen = () => {
   const { walletSignBottomSheetRef } = useWalletSign()
   const backEdges = useMemo(() => ['top'] as Edge[], [])
   const [isLockModalOpen, setIsLockModalOpen] = useState(false)
-  const {
-    loading,
-    mint,
-    registrar,
-    refetch: refetchState,
-    positions,
-  } = useGovernance()
+  const { mint, registrar, refetch: refetchState, positions } = useGovernance()
   const { amount: ownedAmount, decimals } = useOwnedAmount(wallet, mint)
   const { error: createPositionError, createPosition } = useCreatePosition()
   const {
@@ -185,14 +179,19 @@ export const VotingPowerScreen = () => {
               borderRadius="round"
               borderWidth={2}
               borderColor={
-                !positionsWithRewards?.length ? 'surfaceSecondary' : 'white'
+                // eslint-disable-next-line no-nested-ternary
+                claimingAllRewards
+                  ? 'surfaceSecondary'
+                  : !positionsWithRewards?.length
+                  ? 'surfaceSecondary'
+                  : 'white'
               }
               backgroundColor="white"
               backgroundColorOpacityPressed={0.7}
               backgroundColorDisabled="surfaceSecondary"
               backgroundColorDisabledOpacity={0.9}
               titleColorDisabled="secondaryText"
-              title="Claim Rewards"
+              title={claimingAllRewards ? '' : 'Claim Rewards'}
               titleColor="black"
               onPress={handleClaimRewards}
               disabled={!positionsWithRewards?.length || claimingAllRewards}

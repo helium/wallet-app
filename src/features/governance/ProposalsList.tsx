@@ -78,20 +78,22 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
         </Box>
         {loading && <ProposalCardSkeleton backgroundColor="transparent" />}
         {!loading &&
-          proposals?.map((proposal, idx) => (
-            <ProposalCard
-              key={proposal.publicKey.toBase58()}
-              filter={filter}
-              proposal={proposal.info as ProposalV0}
-              proposalKey={proposal.publicKey}
-              marginTop={idx > 0 ? 'm' : undefined}
-              onPress={async (p) =>
-                navigation.push('ProposalScreen', {
-                  proposal: p.toBase58(),
-                })
-              }
-            />
-          ))}
+          proposals
+            ?.filter((p) => Boolean(p.info))
+            .map((proposal, idx) => (
+              <ProposalCard
+                key={proposal.publicKey.toBase58()}
+                filter={filter}
+                proposal={proposal.info as ProposalV0}
+                proposalKey={proposal.publicKey}
+                marginTop={idx > 0 ? 'm' : undefined}
+                onPress={async (p) =>
+                  navigation.push('ProposalScreen', {
+                    proposal: p.toBase58(),
+                  })
+                }
+              />
+            ))}
       </Box>
       <BlurActionSheet
         title="Filter Proposals"

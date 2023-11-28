@@ -34,6 +34,7 @@ export const VotingPowerCard = ({
     if (onPress) await onPress()
   }, [onPress])
 
+  // todo (gov): Add no voting power placeholder
   const renderCard = (inOverview = false) => (
     <>
       <Box padding="m">
@@ -128,7 +129,7 @@ export const VotingPowerCard = ({
           >
             <Box>
               <Text variant="body1" color="secondaryText">
-                HNT Locked
+                {`${symbol || ''}`} Locked
               </Text>
               <Text variant="body1" color="primaryText">
                 {mintAcc &&
@@ -138,7 +139,7 @@ export const VotingPowerCard = ({
             </Box>
             <Box>
               <Text variant="body1" color="secondaryText" textAlign="right">
-                HNT Available
+                {symbol} Available
               </Text>
               <Text variant="body1" color="primaryText" textAlign="right">
                 {mintAcc &&

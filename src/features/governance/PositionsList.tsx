@@ -22,16 +22,20 @@ export const PositionsList = ({
   const { result: subDaos } = useSubDaos()
   const colors = useColors()
 
-  const sortedPositions = positions?.sort((a, b) => {
-    if (a.hasGenesisMultiplier || b.hasGenesisMultiplier) {
-      if (b.hasGenesisMultiplier) {
-        return a.amountDepositedNative.gt(b.amountDepositedNative) ? 0 : -1
-      }
-      return -1
-    }
+  const sortedPositions = useMemo(
+    () =>
+      positions?.sort((a, b) => {
+        if (a.hasGenesisMultiplier || b.hasGenesisMultiplier) {
+          if (b.hasGenesisMultiplier) {
+            return a.amountDepositedNative.gt(b.amountDepositedNative) ? 0 : -1
+          }
+          return -1
+        }
 
-    return a.amountDepositedNative.gt(b.amountDepositedNative) ? -1 : 0
-  })
+        return a.amountDepositedNative.gt(b.amountDepositedNative) ? -1 : 0
+      }),
+    [positions],
+  )
 
   return (
     <Box {...boxProps} flex={1}>
@@ -66,10 +70,8 @@ export const PositionsList = ({
       </Box>
       {sortedPositions?.map((p, idx) => (
         <PositionCard
-          key={`${p.pubkey.toBase58()}-
-          ${p.isDelegated}-
-          ${p.hasRewards}-
-          ${p.numActiveVotes}`}
+          // eslint-disable-next-line react/no-array-index-key
+          key={`${p.pubkey.toBase58()}-${idx}`}
           position={p}
           subDaos={subDaos}
           marginTop={idx > 0 ? 'm' : undefined}
