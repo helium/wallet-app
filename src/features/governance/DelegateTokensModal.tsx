@@ -100,41 +100,42 @@ export const DelegateTokensModal = ({
                   </Text>
                 </Box>
               )}
-              {subDaos?.map((subDao, idx) => {
-                const isSelected = selectedSubDaoPk?.equals(subDao.pubkey)
+              <Box gap="m">
+                {subDaos?.map((subDao) => {
+                  const isSelected = selectedSubDaoPk?.equals(subDao.pubkey)
 
-                return (
-                  <TouchableOpacityBox
-                    key={subDao.pubkey.toString()}
-                    marginTop={idx === 0 ? 'none' : 'm'}
-                    borderRadius="l"
-                    backgroundColor={
-                      isSelected ? 'secondaryBackground' : 'secondary'
-                    }
-                    onPress={() => setSelectedSubDaoPk(subDao.pubkey)}
-                  >
-                    <Box flexDirection="row" padding="ms" alignItems="center">
-                      <Box
-                        borderColor="black"
-                        borderWidth={2}
-                        borderRadius="round"
-                      >
-                        <TokenIcon
-                          size={26}
-                          img={subDao.dntMetadata.json?.image || ''}
-                        />
+                  return (
+                    <TouchableOpacityBox
+                      key={subDao.pubkey.toString()}
+                      borderRadius="l"
+                      backgroundColor={
+                        isSelected ? 'secondaryBackground' : 'secondary'
+                      }
+                      onPress={() => setSelectedSubDaoPk(subDao.pubkey)}
+                    >
+                      <Box flexDirection="row" padding="ms" alignItems="center">
+                        <Box
+                          borderColor="black"
+                          borderWidth={2}
+                          borderRadius="round"
+                        >
+                          <TokenIcon
+                            size={26}
+                            img={subDao.dntMetadata.json?.image || ''}
+                          />
+                        </Box>
+                        <Text
+                          variant="subtitle3"
+                          color="primaryText"
+                          marginLeft="m"
+                        >
+                          {subDao.dntMetadata.name}
+                        </Text>
                       </Box>
-                      <Text
-                        variant="subtitle3"
-                        color="primaryText"
-                        marginLeft="m"
-                      >
-                        {subDao.dntMetadata.name}
-                      </Text>
-                    </Box>
-                  </TouchableOpacityBox>
-                )
-              })}
+                    </TouchableOpacityBox>
+                  )
+                })}
+              </Box>
             </Box>
           </SafeAreaBox>
         </BackScreen>

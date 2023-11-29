@@ -4,6 +4,11 @@ import { StackNavigationProp } from '@react-navigation/stack'
 import { Color } from '@theme/theme'
 
 export type ProposalV0 = IdlAccounts<Proposal>['proposalV0']
+export type VoteChoice = IdlAccounts<Proposal>['proposalV0']['choices'][0]
+export type VoteChoiceWithMeta = VoteChoice & {
+  index: number
+  percent: number
+}
 export type ProposalFilter =
   | 'all'
   | 'active'

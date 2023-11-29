@@ -1,7 +1,6 @@
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
@@ -11,24 +10,32 @@ import {
   useProposalConfig,
   useResolutionSettings,
 } from '@helium/modular-governance-hooks'
-import { useRegistrar } from '@helium/voter-stake-registry-hooks'
+import {
+  useRegistrar,
+  useRelinquishVote,
+  useVote,
+} from '@helium/voter-stake-registry-hooks'
 import { RouteProp, useRoute } from '@react-navigation/native'
+import { useTheme } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
+import { useGovernance } from '@storage/GovernanceProvider'
 import globalStyles from '@theme/globalStyles'
+import { Theme } from '@theme/theme'
 import { fmtUnixTime, humanReadable } from '@utils/formatting'
 import axios from 'axios'
-import React, { useMemo } from 'react'
+import BN from 'bn.js'
+import React, { useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { ScrollView } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
-import { Theme } from '@theme/theme'
-import BN from 'bn.js'
 import Markdown from 'react-native-markdown-display'
-import { useTheme } from '@shopify/restyle'
-import { useGovernance } from '@storage/GovernanceProvider'
+import { Edge } from 'react-native-safe-area-context'
+import { useWalletSign } from '../../solana/WalletSignProvider'
+import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
+import { VoteOption } from './VoteOption'
 import {
   GovernanceStackParamList,
   ProposalFilter,
+  VoteChoiceWithMeta,
   VotingResultColors,
 } from './governanceTypes'
 
@@ -38,20 +45,37 @@ export const ProposalScreen = () => {
   const theme = useTheme<Theme>()
   const { params } = route
   const { proposal: pk } = params
+  const [currVote, setCurrVote] = useState(0)
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])
-  const proposalK = useMemo(() => new PublicKey(pk), [pk])
+  const proposalKey = useMemo(() => new PublicKey(pk), [pk])
+  const { walletSignBottomSheetRef } = useWalletSign()
   const { loading, amountLocked } = useGovernance()
-  const { info: proposal } = useProposal(proposalK)
+  const { info: proposal } = useProposal(proposalKey)
   const { info: proposalConfig } = useProposalConfig(proposal?.proposalConfig)
   const { info: registrar } = useRegistrar(proposalConfig?.voteController)
+  const decimals = useMint(registrar?.votingMints[0].mint)?.info?.decimals
   const { info: resolution } = useResolutionSettings(
     proposalConfig?.stateController,
   )
-  const decimals = useMint(registrar?.votingMints[0].mint)?.info?.decimals
 
   const {
-    error: markdownError,
+    voteWeights,
+    canVote,
+    vote,
+    loading: voting,
+    error: voteErr,
+  } = useVote(proposalKey)
+
+  const {
+    canRelinquishVote,
+    relinquishVote,
+    loading: relinquishing,
+    error: relErr,
+  } = useRelinquishVote(proposalKey)
+
+  const {
+    error: markdownErr,
     loading: markdownLoading,
     result: markdown,
   } = useAsync(async () => {
@@ -60,6 +84,26 @@ export const ProposalScreen = () => {
       return data
     }
   }, [proposal])
+
+  const transactionError = useMemo(() => {
+    if (markdownErr) {
+      return markdownErr.message || 'Failed to retrive proposal markdown.'
+    }
+
+    if (voteErr) {
+      return voteErr.message || 'Vote failed, please try again.'
+    }
+
+    if (relErr) {
+      return relErr.message || 'Relinquish vote failed, please try again.'
+    }
+
+    return undefined
+  }, [voteErr, relErr, markdownErr])
+
+  const showError = useMemo(() => {
+    if (transactionError) return transactionError
+  }, [transactionError])
 
   const votingResults = useMemo(() => {
     const totalVotes: BN = [...(proposal?.choices || [])].reduce(
@@ -102,6 +146,43 @@ export const ProposalScreen = () => {
     }
   }, [proposal?.state, proposal?.choices])
 
+  const getDecision = async (header: string) => {
+    let decision
+
+    if (walletSignBottomSheetRef) {
+      decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        header,
+        serializedTxs: undefined,
+      })
+    }
+
+    return decision
+  }
+
+  const handleVote = (choice: VoteChoiceWithMeta) => async () => {
+    if (canVote(choice.index)) {
+      const decision = await getDecision(`Vote: ${choice.name}`)
+
+      if (decision) {
+        setCurrVote(choice.index)
+        vote({ choice: choice.index })
+      }
+    }
+  }
+
+  const handleRelinquish = (choice: VoteChoiceWithMeta) => async () => {
+    if (canRelinquishVote(choice.index)) {
+      const decision = await getDecision('Relinquish Vote')
+
+      if (decision) {
+        setCurrVote(choice.index)
+        relinquishVote({ choice: choice.index })
+      }
+    }
+  }
+
   const endTs =
     resolution &&
     (proposal?.state.resolved
@@ -137,14 +218,13 @@ export const ProposalScreen = () => {
               borderRadius="l"
               padding="m"
             >
-              <Box flexDirection="row">
+              <Box flexDirection="row" gap="s">
                 {proposal?.tags
                   .filter((tag) => tag !== 'tags')
-                  .map((tag, idx) => (
+                  .map((tag) => (
                     <Box
                       key={tag}
                       padding="s"
-                      marginLeft={idx > 0 ? 's' : 'none'}
                       backgroundColor={
                         tag.toLowerCase().includes('temp check')
                           ? 'orange500'
@@ -152,7 +232,7 @@ export const ProposalScreen = () => {
                       }
                       borderRadius="m"
                     >
-                      <Text fontSize={10} color="secondaryText">
+                      <Text variant="body3" color="secondaryText">
                         {tag.toUpperCase()}
                       </Text>
                     </Box>
@@ -204,13 +284,10 @@ export const ProposalScreen = () => {
                     backgroundColor="secondaryBackground"
                     borderRadius="l"
                     paddingTop="m"
+                    gap="s"
                   >
-                    {votingResults.results?.map((r, idx) => (
-                      <Box
-                        key={r.name}
-                        flex={1}
-                        marginTop={idx > 0 ? 's' : 'none'}
-                      >
+                    {votingResults.results?.map((r) => (
+                      <Box key={r.name} flex={1}>
                         <Box
                           flexDirection="row"
                           flex={1}
@@ -223,31 +300,22 @@ export const ProposalScreen = () => {
                             flexDirection="row"
                             height={6}
                             width={`${r.percent}%`}
-                            backgroundColor={VotingResultColors[idx]}
+                            backgroundColor={VotingResultColors[r.index]}
                           />
                         </Box>
                         <Box flexDirection="row" justifyContent="space-between">
-                          <Text
-                            fontSize={10}
-                            variant="body2"
-                            color="primaryText"
-                          >
+                          <Text variant="body2" color="primaryText">
                             {r.name}
                           </Text>
                           <Box flexDirection="row">
                             <Text
-                              fontSize={10}
                               variant="body2"
                               color="secondaryText"
                               marginRight="ms"
                             >
                               {humanReadable(r.weight, decimals)}
                             </Text>
-                            <Text
-                              fontSize={10}
-                              variant="body2"
-                              color="primaryText"
-                            >
+                            <Text variant="body2" color="primaryText">
                               {r.percent.toFixed(2)}%
                             </Text>
                           </Box>
@@ -258,8 +326,7 @@ export const ProposalScreen = () => {
                 )}
               </Box>
             </Box>
-            {/* {derivedState === 'active' && ( */}
-            {true && (
+            {noVotingPower && (
               <Box
                 flexGrow={1}
                 justifyContent="center"
@@ -268,35 +335,49 @@ export const ProposalScreen = () => {
                 padding="m"
                 marginTop="m"
               >
-                <Text fontSize={10} variant="body2" color="primaryText">
+                <Text variant="body2" color="primaryText">
+                  You have no voting power in this dao
+                </Text>
+              </Box>
+            )}
+            {derivedState === 'active' && !noVotingPower && (
+              <Box
+                flexGrow={1}
+                justifyContent="center"
+                backgroundColor="secondaryBackground"
+                borderRadius="l"
+                padding="m"
+                marginTop="m"
+              >
+                <Text variant="body2" color="primaryText">
                   To vote, click on any option. To remove your vote, click the
                   option again. Vote for up to {proposal?.maxChoicesPerVoter} of{' '}
                   {proposal?.choices.length} options.
                 </Text>
-                <Box
-                  flex={1}
-                  flexDirection="row"
-                  flexWrap="wrap"
-                  marginTop="m"
-                  gap={8}
-                >
-                  {votingResults.results?.map((r, idx) => (
-                    <Box
-                      key={r.name}
-                      flexGrow={1}
-                      flexShrink={0}
-                      flexDirection="row"
-                      justifyContent="center"
-                      padding="m"
-                      borderRadius="m"
-                      backgroundColor="surfaceSecondary"
-                      alignItems="center"
-                    >
-                      <Text fontSize={12} color="secondaryText">
-                        {r.name}
+                <Box marginTop="ms">
+                  {showError && (
+                    <Box flexDirection="row" paddingBottom="ms">
+                      <Text variant="body3Medium" color="red500">
+                        {showError}
                       </Text>
                     </Box>
-                  ))}
+                  )}
+                  <Box flex={1} flexDirection="row" flexWrap="wrap" gap="s">
+                    {votingResults.results?.map((r) => (
+                      <VoteOption
+                        key={r.name}
+                        voting={
+                          currVote === r.index && (voting || relinquishing)
+                        }
+                        option={r}
+                        myWeight={voteWeights?.[r.index]}
+                        canVote={canVote(r.index)}
+                        canRelinquishVote={canRelinquishVote(r.index)}
+                        onVote={handleVote(r)}
+                        onRelinquishVote={handleRelinquish(r)}
+                      />
+                    ))}
+                  </Box>
                 </Box>
               </Box>
             )}

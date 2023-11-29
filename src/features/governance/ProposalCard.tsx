@@ -160,11 +160,11 @@ export const ProposalCard = ({
                 {proposal?.name}
               </Text>
             </Box>
-            <Box flexDirection="row" marginLeft="s">
+            <Box flexDirection="row" marginLeft="s" gap="s">
               {proposal?.tags
                 .filter((tag) => tag !== 'tags')
-                .map((tag, idx) => (
-                  <Box key={tag} marginLeft={idx > 0 ? 's' : 'none'}>
+                .map((tag) => (
+                  <Box key={tag}>
                     <Box
                       padding="s"
                       backgroundColor={

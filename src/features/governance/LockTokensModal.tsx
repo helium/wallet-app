@@ -283,8 +283,8 @@ export const LockTokensModal = ({
                                   <InfoIcon width={20} />
                                 </TouchableOpacityBox>
                               </Box>
-                              <Box flexDirection="row">
-                                {lockupKindOptions.map((option, idx) => {
+                              <Box flexDirection="row" gap="ms">
+                                {lockupKindOptions.map((option) => {
                                   const isActive =
                                     option.value === lockupKind.value
 
@@ -293,7 +293,6 @@ export const LockTokensModal = ({
                                       key={option.value}
                                       flex={1}
                                       padding="s"
-                                      marginLeft={idx === 0 ? 'none' : 'ms'}
                                       alignItems="center"
                                       borderRadius="m"
                                       backgroundColor={
@@ -383,11 +382,11 @@ export const LockTokensModal = ({
                               </TouchableOpacityBox>
                             </Box>
                           ) : null}
-                          <Box flexDirection="row" flexWrap="wrap">
+                          <Box flexDirection="row" flexWrap="wrap" gap="ms">
                             {(hasMinLockup
                               ? [...lockupPeriodOptions.splice(1)]
                               : lockupPeriodOptions
-                            ).map((option, idx) => {
+                            ).map((option) => {
                               const isActive =
                                 option.value === lockupPeriod.value
 
@@ -396,7 +395,6 @@ export const LockTokensModal = ({
                                   key={option.value}
                                   flex={1}
                                   padding="s"
-                                  marginLeft={idx === 0 ? 'none' : 'ms'}
                                   alignItems="center"
                                   borderRadius="m"
                                   backgroundColor={

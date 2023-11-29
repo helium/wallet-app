@@ -58,6 +58,13 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
           selected={filter === 'failed'}
           hasPressedState={false}
         />
+        <ListItem
+          key="cancelled"
+          title="Cancelled"
+          onPress={handleFilterPress('cancelled')}
+          selected={filter === 'cancelled'}
+          hasPressedState={false}
+        />
       </>
     ),
     [filter],
@@ -77,23 +84,24 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
           </TouchableOpacityBox>
         </Box>
         {loading && <ProposalCardSkeleton backgroundColor="transparent" />}
-        {!loading &&
-          proposals
-            ?.filter((p) => Boolean(p.info))
-            .map((proposal, idx) => (
-              <ProposalCard
-                key={proposal.publicKey.toBase58()}
-                filter={filter}
-                proposal={proposal.info as ProposalV0}
-                proposalKey={proposal.publicKey}
-                marginTop={idx > 0 ? 'm' : undefined}
-                onPress={async (p) =>
-                  navigation.push('ProposalScreen', {
-                    proposal: p.toBase58(),
-                  })
-                }
-              />
-            ))}
+        <Box gap="m">
+          {!loading &&
+            proposals
+              ?.filter((p) => Boolean(p.info))
+              .map((proposal) => (
+                <ProposalCard
+                  key={proposal.publicKey.toBase58()}
+                  filter={filter}
+                  proposal={proposal.info as ProposalV0}
+                  proposalKey={proposal.publicKey}
+                  onPress={async (p) =>
+                    navigation.push('ProposalScreen', {
+                      proposal: p.toBase58(),
+                    })
+                  }
+                />
+              ))}
+        </Box>
       </Box>
       <BlurActionSheet
         title="Filter Proposals"

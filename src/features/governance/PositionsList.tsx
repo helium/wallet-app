@@ -68,15 +68,15 @@ export const PositionsList = ({
           </Text>
         </Box>
       </Box>
-      {sortedPositions?.map((p, idx) => (
-        <PositionCard
-          // eslint-disable-next-line react/no-array-index-key
-          key={`${p.pubkey.toBase58()}-${idx}`}
-          position={p}
-          subDaos={subDaos}
-          marginTop={idx > 0 ? 'm' : undefined}
-        />
-      ))}
+      <Box gap="m">
+        {sortedPositions?.map((p) => (
+          <PositionCard
+            key={`${p.pubkey.toBase58()}`}
+            position={p}
+            subDaos={subDaos}
+          />
+        ))}
+      </Box>
     </Box>
   )
 }
