@@ -25,6 +25,7 @@ import { Theme } from '@theme/theme'
 import BN from 'bn.js'
 import Markdown from 'react-native-markdown-display'
 import { useTheme } from '@shopify/restyle'
+import { useGovernance } from '@storage/GovernanceProvider'
 import {
   GovernanceStackParamList,
   ProposalFilter,
@@ -40,6 +41,7 @@ export const ProposalScreen = () => {
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])
   const proposalK = useMemo(() => new PublicKey(pk), [pk])
+  const { loading, amountLocked } = useGovernance()
   const { info: proposal } = useProposal(proposalK)
   const { info: proposalConfig } = useProposalConfig(proposal?.proposalConfig)
   const { info: registrar } = useRegistrar(proposalConfig?.voteController)
@@ -47,16 +49,6 @@ export const ProposalScreen = () => {
     proposalConfig?.stateController,
   )
   const decimals = useMint(registrar?.votingMints[0].mint)?.info?.decimals
-
-  const endTs =
-    resolution &&
-    (proposal?.state.resolved
-      ? proposal?.state.resolved.endTs
-      : proposal?.state.voting?.startTs.add(
-          resolution.settings.nodes.find(
-            (node) => typeof node.offsetFromStartTs !== 'undefined',
-          )?.offsetFromStartTs?.offset ?? new BN(0),
-        ))
 
   const {
     error: markdownError,
@@ -109,6 +101,19 @@ export const ProposalScreen = () => {
         return 'failed'
     }
   }, [proposal?.state, proposal?.choices])
+
+  const endTs =
+    resolution &&
+    (proposal?.state.resolved
+      ? proposal?.state.resolved.endTs
+      : proposal?.state.voting?.startTs.add(
+          resolution.settings.nodes.find(
+            (node) => typeof node.offsetFromStartTs !== 'undefined',
+          )?.offsetFromStartTs?.offset ?? new BN(0),
+        ))
+
+  const noVotingPower = !loading && (!amountLocked || amountLocked.isZero())
+  const showVoteResults = derivedState === 'passed' || derivedState === 'failed'
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
@@ -194,71 +199,107 @@ export const ProposalScreen = () => {
                     </Text>
                   </Box>
                 </Box>
-                {(derivedState === 'active' ||
-                  derivedState === 'passed' ||
-                  derivedState === 'failed') &&
-                  votingResults?.totalVotes.gt(new BN(0)) && (
-                    <Box
-                      backgroundColor="secondaryBackground"
-                      borderRadius="l"
-                      paddingTop="m"
-                    >
-                      {votingResults.results?.map((r, idx) => (
+                {showVoteResults && votingResults?.totalVotes.gt(new BN(0)) && (
+                  <Box
+                    backgroundColor="secondaryBackground"
+                    borderRadius="l"
+                    paddingTop="m"
+                  >
+                    {votingResults.results?.map((r, idx) => (
+                      <Box
+                        key={r.name}
+                        flex={1}
+                        marginTop={idx > 0 ? 's' : 'none'}
+                      >
                         <Box
-                          key={r.name}
+                          flexDirection="row"
                           flex={1}
-                          marginTop={idx > 0 ? 's' : 'none'}
+                          backgroundColor="grey900"
+                          borderRadius="m"
+                          overflow="hidden"
+                          marginBottom="xs"
                         >
                           <Box
                             flexDirection="row"
-                            flex={1}
-                            backgroundColor="grey900"
-                            borderRadius="m"
-                            overflow="hidden"
-                            marginBottom="xs"
+                            height={6}
+                            width={`${r.percent}%`}
+                            backgroundColor={VotingResultColors[idx]}
+                          />
+                        </Box>
+                        <Box flexDirection="row" justifyContent="space-between">
+                          <Text
+                            fontSize={10}
+                            variant="body2"
+                            color="primaryText"
                           >
-                            <Box
-                              flexDirection="row"
-                              height={6}
-                              width={`${r.percent}%`}
-                              backgroundColor={VotingResultColors[idx]}
-                            />
-                          </Box>
-                          <Box
-                            flexDirection="row"
-                            justifyContent="space-between"
-                          >
+                            {r.name}
+                          </Text>
+                          <Box flexDirection="row">
+                            <Text
+                              fontSize={10}
+                              variant="body2"
+                              color="secondaryText"
+                              marginRight="ms"
+                            >
+                              {humanReadable(r.weight, decimals)}
+                            </Text>
                             <Text
                               fontSize={10}
                               variant="body2"
                               color="primaryText"
                             >
-                              {r.name}
+                              {r.percent.toFixed(2)}%
                             </Text>
-                            <Box flexDirection="row">
-                              <Text
-                                fontSize={10}
-                                variant="body2"
-                                color="secondaryText"
-                                marginRight="ms"
-                              >
-                                {humanReadable(r.weight, decimals)}
-                              </Text>
-                              <Text
-                                fontSize={10}
-                                variant="body2"
-                                color="primaryText"
-                              >
-                                {r.percent.toFixed(2)}%
-                              </Text>
-                            </Box>
                           </Box>
                         </Box>
-                      ))}
-                    </Box>
-                  )}
+                      </Box>
+                    ))}
+                  </Box>
+                )}
               </Box>
             </Box>
+            {/* {derivedState === 'active' && ( */}
+            {true && (
+              <Box
+                flexGrow={1}
+                justifyContent="center"
+                backgroundColor="secondaryBackground"
+                borderRadius="l"
+                padding="m"
+                marginTop="m"
+              >
+                <Text fontSize={10} variant="body2" color="primaryText">
+                  To vote, click on any option. To remove your vote, click the
+                  option again. Vote for up to {proposal?.maxChoicesPerVoter} of{' '}
+                  {proposal?.choices.length} options.
+                </Text>
+                <Box
+                  flex={1}
+                  flexDirection="row"
+                  flexWrap="wrap"
+                  marginTop="m"
+                  gap={8}
+                >
+                  {votingResults.results?.map((r, idx) => (
+                    <Box
+                      key={r.name}
+                      flexGrow={1}
+                      flexShrink={0}
+                      flexDirection="row"
+                      justifyContent="center"
+                      padding="m"
+                      borderRadius="m"
+                      backgroundColor="surfaceSecondary"
+                      alignItems="center"
+                    >
+                      <Text fontSize={12} color="secondaryText">
+                        {r.name}
+                      </Text>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
             <Box
               flexGrow={1}
               justifyContent="center"
@@ -301,22 +342,6 @@ export const ProposalScreen = () => {
           </ScrollView>
         </SafeAreaBox>
       </BackScreen>
-      {derivedState === 'active' && (
-        <Box flexDirection="row" paddingTop="m">
-          <ButtonPressable
-            height={50}
-            flex={1}
-            fontSize={16}
-            borderRadius="round"
-            borderWidth={2}
-            borderColor="white"
-            backgroundColor="white"
-            backgroundColorOpacityPressed={0.7}
-            title="Cast Vote"
-            titleColor="black"
-          />
-        </Box>
-      )}
     </ReAnimatedBox>
   )
 }

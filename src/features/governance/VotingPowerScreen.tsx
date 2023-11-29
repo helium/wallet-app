@@ -167,10 +167,7 @@ export const VotingPowerScreen = () => {
               titleColor="white"
               titleColorPressed="black"
               onPress={() => setIsLockModalOpen(true)}
-              disabled={
-                new BN(ownedAmount?.toString() || 0).eq(new BN(0)) ||
-                claimingAllRewards
-              }
+              disabled={claimingAllRewards}
             />
             <Box paddingHorizontal="s" />
             <ButtonPressable

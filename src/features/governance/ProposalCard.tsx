@@ -19,11 +19,7 @@ import MarkdownIt from 'markdown-it'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
-import {
-  ProposalFilter,
-  ProposalV0,
-  VotingResultColors,
-} from './governanceTypes'
+import { ProposalFilter, ProposalV0 } from './governanceTypes'
 
 interface IProposalCardProps extends BoxProps<Theme> {
   filter: ProposalFilter
@@ -97,17 +93,7 @@ export const ProposalCard = ({
       new BN(0),
     )
 
-    const results = proposal?.choices
-      .map((r, index) => ({
-        ...r,
-        index,
-        percent: totalVotes?.isZero()
-          ? 100 / proposal?.choices.length
-          : (r.weight.toNumber() / totalVotes.toNumber()) * 100,
-      }))
-      .sort((a, b) => b.percent - a.percent)
-
-    return { results, totalVotes }
+    return { totalVotes }
   }, [proposal])
 
   const derivedState: Omit<ProposalFilter, 'all'> | undefined = useMemo(() => {
@@ -227,11 +213,7 @@ export const ProposalCard = ({
           /* paddingTop={derivedState === 'active' ? 'm' : 'none'} */
           paddingBottom="ms"
         >
-          <Box
-            flexDirection="row"
-            justifyContent="space-between"
-            paddingBottom={derivedState === 'active' ? 's' : 'none'}
-          >
+          <Box flexDirection="row" justifyContent="space-between">
             <Box>
               {derivedState === 'active' && (
                 <Text variant="body2" color="secondaryText">
@@ -267,23 +249,6 @@ export const ProposalCard = ({
               </Text>
             </Box>
           </Box>
-          {derivedState === 'active' && (
-            <Box
-              flexDirection="row"
-              flex={1}
-              height={6}
-              borderRadius="m"
-              overflow="hidden"
-            >
-              {votingResults.results?.map((result, idx) => (
-                <Box
-                  key={result.name}
-                  width={`${result.percent}%`}
-                  backgroundColor={VotingResultColors[idx]}
-                />
-              ))}
-            </Box>
-          )}
         </Box>
       </TouchableOpacityBox>
     </ReAnimatedBox>

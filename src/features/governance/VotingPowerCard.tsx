@@ -25,7 +25,7 @@ export const VotingPowerCard = ({
 }: IVotingPowerCardProps) => {
   const wallet = useCurrentWallet()
   const colors = useColors()
-  const { mint, votingPower, amountLocked } = useGovernance()
+  const { loading, mint, votingPower, amountLocked } = useGovernance()
   const { info: mintAcc } = useMint(mint)
   const { amount: ownedAmount } = useOwnedAmount(wallet, mint)
   const { symbol } = useMetaplexMetadata(mint)
@@ -34,11 +34,11 @@ export const VotingPowerCard = ({
     if (onPress) await onPress()
   }, [onPress])
 
-  // todo (gov): Add no voting power placeholder
-  const renderCard = (inOverview = false) => (
+  const noVotingPower = !loading && (!amountLocked || amountLocked.isZero())
+  const renderCard = (compact = false) => (
     <>
       <Box padding="m">
-        {inOverview && (
+        {!compact && (
           <Box
             flexDirection="row"
             justifyContent="space-between"
@@ -47,131 +47,92 @@ export const VotingPowerCard = ({
             <Text variant="subtitle1" color="primaryText">
               Your Voting Power
             </Text>
-            {onPress && (
-              <Text variant="subtitle1" color="primaryText">
-                &gt;
-              </Text>
-            )}
+            <Text variant="subtitle1" color="primaryText">
+              &gt;
+            </Text>
           </Box>
         )}
-        <Box flexDirection="row" justifyContent="space-between">
-          <Box flex={1}>
-            <Text variant="body1" color="secondaryText">
-              Voting Power
+        {!compact && noVotingPower && (
+          <Box flexDirection="row" alignItems="center">
+            <Text variant="body1" color="primaryText">
+              You have no voting power in this dao
             </Text>
-            <Box flexDirection="row" alignItems="center">
-              <Text variant="body1" color="primaryText">
-                {mintAcc &&
-                  votingPower &&
-                  humanReadable(votingPower, mintAcc.decimals)}{' '}
-              </Text>
-              {amountLocked &&
-                votingPower &&
-                !amountLocked.isZero() &&
-                !votingPower.isZero() && (
-                  <Box
-                    flexDirection="row"
-                    justifyContent="center"
-                    alignItems="center"
-                    borderRadius="m"
-                    paddingHorizontal="s"
-                    paddingLeft="s"
-                  >
-                    <LightningBolt
-                      color={colors.blueBright500}
-                      width={20}
-                      height={20}
-                    />
-                    <Text variant="body3" color="primaryText">
-                      {`${
-                        votingPower &&
-                        amountLocked &&
-                        mintAcc &&
-                        // Add 2 decimals to the mulitiplier
-                        humanReadable(
-                          votingPower.mul(new BN(100)).div(amountLocked),
-                          2,
-                        )
-                      }x`}
-                    </Text>
-                  </Box>
-                )}
-            </Box>
           </Box>
-          {inOverview ? (
-            <Box flex={1}>
-              <Text variant="body1" color="secondaryText" textAlign="right">
-                {`${symbol || ''}`} Locked
-              </Text>
-              <Text variant="body1" color="primaryText" textAlign="right">
-                {mintAcc &&
-                  amountLocked &&
-                  humanReadable(amountLocked, mintAcc.decimals)}
-              </Text>
+        )}
+        {((!compact && !noVotingPower) || compact) && (
+          <>
+            <Box flexDirection="row" justifyContent="space-between">
+              <Box flex={1}>
+                <Text variant="body1" color="secondaryText">
+                  Voting Power
+                </Text>
+                <Box flexDirection="row" alignItems="center">
+                  <Text variant="body1" color="primaryText">
+                    {mintAcc &&
+                      humanReadable(votingPower || new BN(0), mintAcc.decimals)}
+                  </Text>
+                  {amountLocked &&
+                    votingPower &&
+                    !amountLocked.isZero() &&
+                    !votingPower.isZero() && (
+                      <Box
+                        flexDirection="row"
+                        justifyContent="center"
+                        alignItems="center"
+                        borderRadius="m"
+                        paddingHorizontal="s"
+                        paddingLeft="s"
+                      >
+                        <LightningBolt
+                          color={colors.blueBright500}
+                          width={20}
+                          height={20}
+                        />
+                        <Text variant="body3" color="primaryText">
+                          {`${
+                            votingPower &&
+                            amountLocked &&
+                            mintAcc &&
+                            // Add 2 decimals to the mulitiplier
+                            humanReadable(
+                              votingPower.mul(new BN(100)).div(amountLocked),
+                              2,
+                            )
+                          }x`}
+                        </Text>
+                      </Box>
+                    )}
+                </Box>
+              </Box>
+              <Box flex={1}>
+                <Text variant="body1" color="secondaryText" textAlign="right">
+                  {`${symbol || ''}`} Locked
+                </Text>
+                <Text variant="body1" color="primaryText" textAlign="right">
+                  {mintAcc &&
+                    humanReadable(amountLocked || new BN(0), mintAcc.decimals)}
+                </Text>
+              </Box>
             </Box>
-          ) : (
-            <Box flex={1}>
-              <Text variant="body1" color="secondaryText" textAlign="right">
-                Active Votes
-              </Text>
-              <Text variant="body1" color="primaryText" textAlign="right">
-                2
-              </Text>
-            </Box>
-          )}
-        </Box>
-        {!inOverview && (
-          <Box
-            flex={1}
-            flexDirection="row"
-            justifyContent="space-between"
-            marginTop="m"
-          >
-            <Box>
-              <Text variant="body1" color="secondaryText">
-                {`${symbol || ''}`} Locked
-              </Text>
-              <Text variant="body1" color="primaryText">
-                {mintAcc &&
-                  amountLocked &&
-                  humanReadable(amountLocked, mintAcc.decimals)}
-              </Text>
-            </Box>
-            <Box>
-              <Text variant="body1" color="secondaryText" textAlign="right">
-                {symbol} Available
-              </Text>
-              <Text variant="body1" color="primaryText" textAlign="right">
-                {mintAcc &&
-                  ownedAmount &&
-                  humanReadable(
-                    new BN(ownedAmount?.toString()),
-                    mintAcc.decimals,
-                  )}
-              </Text>
-            </Box>
-          </Box>
+          </>
         )}
       </Box>
-      {inOverview && (
-        <Box
-          flex={1}
-          borderTopColor="primaryBackground"
-          borderTopWidth={2}
-          padding="ms"
-        >
-          <Text variant="body2" color="secondaryText">
-            You have{' '}
-            {mintAcc &&
-              ownedAmount &&
-              humanReadable(
-                new BN(ownedAmount?.toString()),
-                mintAcc.decimals,
-              )}{' '}
-            more {symbol} available to lock.
-          </Text>
-        </Box>
-      )}
+      <Box
+        flex={1}
+        borderTopColor="primaryBackground"
+        borderTopWidth={2}
+        padding="ms"
+      >
+        <Text variant="body2" color="secondaryText">
+          You have{' '}
+          {mintAcc &&
+            humanReadable(
+              new BN(ownedAmount?.toString() || 0),
+              mintAcc.decimals,
+            )}{' '}
+          more {symbol} available to lock.
+        </Text>
+      </Box>
     </>
   )
 
@@ -185,7 +146,7 @@ export const VotingPowerCard = ({
         {...boxProps}
       >
         <TouchableOpacityBox onPress={handleOnPress}>
-          {renderCard(true)}
+          {renderCard(false)}
         </TouchableOpacityBox>
       </ReAnimatedBox>
     )
@@ -196,7 +157,7 @@ export const VotingPowerCard = ({
       borderRadius="l"
       {...boxProps}
     >
-      {renderCard(false)}
+      {renderCard(true)}
     </ReAnimatedBox>
   )
 }
