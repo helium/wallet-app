@@ -11,7 +11,6 @@ import {
   AccountInfo,
   Cluster,
   Commitment,
-  Connection,
   PublicKey,
   RpcResponseAndContext,
   Transaction,
