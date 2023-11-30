@@ -27,6 +27,7 @@ import { TXN_FEE_IN_LAMPORTS } from '@utils/solanaUtils'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { getMinDurationFmt, getTimeLeftFromNowFmt } from '@utils/dateTools'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { useTranslation } from 'react-i18next'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 export const TransferTokensModal = ({
@@ -42,10 +43,12 @@ export const TransferTokensModal = ({
   onClose: () => void
   onSubmit: (position: PositionWithMeta, amount: number) => Promise<void>
 }) => {
+  const { t } = useTranslation()
   const unixNow = useSolanaUnixNow(60 * 5 * 1000) || 0
   const { currentAccount } = useAccountStorage()
   const { info: mintAcc } = useMint(mint)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [transactionError, setTransactionError] = useState()
   const [amount, setAmount] = useState<number | undefined>()
   const [selectedPosPk, setSelectedPosPk] = useState<PublicKey | undefined>()
   const mintMinAmount = mintAcc ? getMintMinAmountAsDecimal(mintAcc) : 1
@@ -94,12 +97,17 @@ export const TransferTokensModal = ({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
         setIsSubmitting(false)
-        console.error('Unable to transfer tokens', e.message)
+        setTransactionError(e.message || t('gov.errors.transferPosition'))
       }
     }
   }
 
+  const showError = useMemo(() => {
+    if (transactionError) return transactionError
+  }, [transactionError])
+
   const hasTransferablePositions = positions.length > 0
+
   return (
     <Portal hostName="GovernancePortalHost">
       <ReAnimatedBlurBox
@@ -144,14 +152,14 @@ export const TransferTokensModal = ({
                         variant="subtitle2"
                         adjustsFontSizeToFit
                       >
-                        Transfer Tokens
+                        {t('gov.transactions.transferPosition')}
                       </Text>
                       <Text
                         variant="subtitle4"
                         color="secondaryText"
                         marginBottom="m"
                       >
-                        Move tokens from this position to another.
+                        {t('gov.positions.transferBlurb')}
                       </Text>
                       <Box
                         borderRadius="l"
@@ -160,13 +168,12 @@ export const TransferTokensModal = ({
                         marginBottom="m"
                       >
                         <Text variant="body3">
-                          You can only transfer to positions that have a greater
-                          than or equal lockup time.
+                          {t('gov.positions.transferWarning')}
                         </Text>
                         <Text marginTop="m" variant="body3">
                           {hasTransferablePositions
-                            ? 'Transfering out of a Landrush position, will result in losing the multiplier!'
-                            : 'There are no positions that meet this criteria.'}
+                            ? t('gov.positions.transferLandrushWarning')
+                            : t('gov.positions.cantTransfer')}
                         </Text>
                       </Box>
                       {hasTransferablePositions && (
@@ -178,7 +185,7 @@ export const TransferTokensModal = ({
                               onPress={handleAmountPressed}
                             >
                               <Text variant="subtitle4" color="grey600">
-                                Amount to transfer
+                                {t('gov.positions.amountToTransfer')}
                               </Text>
                               <Text
                                 fontSize={19}
@@ -195,7 +202,7 @@ export const TransferTokensModal = ({
                               color="secondaryText"
                               marginBottom="m"
                             >
-                              Select position to transfer too.
+                              {t('gov.positions.selectTransfer')}
                             </Text>
                           </Box>
 
@@ -228,7 +235,7 @@ export const TransferTokensModal = ({
                                         variant="body2"
                                         color="secondaryText"
                                       >
-                                        Lockup Type
+                                        {t('gov.positions.lockupType')}
                                       </Text>
                                       <Text variant="body2" color="primaryText">
                                         {isConstant ? 'Constant' : 'Decaying'}
@@ -240,7 +247,7 @@ export const TransferTokensModal = ({
                                         color="secondaryText"
                                         textAlign="center"
                                       >
-                                        Vote Multiplier
+                                        {t('gov.positions.voteMult')}
                                       </Text>
                                       <Text
                                         variant="body2"
@@ -294,14 +301,16 @@ export const TransferTokensModal = ({
                                     paddingVertical="s"
                                     paddingHorizontal="ms"
                                   >
-                                    <Text variant="body2" color="secondaryText">
-                                      Locked Amount:{' '}
-                                      {mintAcc &&
-                                        humanReadable(
-                                          new BN(pos.amountDepositedNative),
-                                          mintAcc.decimals,
-                                        )}{' '}
-                                      {symbol}
+                                    <Text variant="body2" color="primaryText">
+                                      {t('gov.positions.lockedAmount', {
+                                        amount:
+                                          mintAcc &&
+                                          humanReadable(
+                                            new BN(pos.amountDepositedNative),
+                                            mintAcc.decimals,
+                                          ),
+                                        symbol,
+                                      })}
                                     </Text>
                                   </Box>
                                 </TouchableOpacityBox>
@@ -317,6 +326,18 @@ export const TransferTokensModal = ({
             </TouchableWithoutFeedback>
           </HNTKeyboard>
         </BackScreen>
+        {showError && (
+          <Box
+            flexDirection="row"
+            justifyContent="center"
+            alignItems="center"
+            paddingTop="ms"
+          >
+            <Text variant="body3Medium" color="red500">
+              {showError}
+            </Text>
+          </Box>
+        )}
         <Box flexDirection="row" padding="m">
           <ButtonPressable
             flex={1}
@@ -327,7 +348,7 @@ export const TransferTokensModal = ({
             backgroundColorDisabled="surfaceSecondary"
             backgroundColorDisabledOpacity={0.9}
             titleColorDisabled="secondaryText"
-            title={isSubmitting ? '' : 'Transfer Tokens'}
+            title={isSubmitting ? '' : t('gov.transactions.transferPosition')}
             titleColor="black"
             onPress={handleSubmit}
             disabled={!amount || !selectedPosPk || isSubmitting}

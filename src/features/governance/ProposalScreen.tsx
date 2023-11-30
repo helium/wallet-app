@@ -29,6 +29,7 @@ import { useAsync } from 'react-async-hook'
 import { ScrollView } from 'react-native'
 import Markdown from 'react-native-markdown-display'
 import { Edge } from 'react-native-safe-area-context'
+import { useTranslation } from 'react-i18next'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { VoteOption } from './VoteOption'
@@ -41,6 +42,7 @@ import {
 
 type Route = RouteProp<GovernanceStackParamList, 'ProposalScreen'>
 export const ProposalScreen = () => {
+  const { t } = useTranslation()
   const route = useRoute<Route>()
   const theme = useTheme<Theme>()
   const { params } = route
@@ -87,19 +89,19 @@ export const ProposalScreen = () => {
 
   const transactionError = useMemo(() => {
     if (markdownErr) {
-      return markdownErr.message || 'Failed to retrive proposal markdown.'
+      return markdownErr.message || t('gov.errors.markdown')
     }
 
     if (voteErr) {
-      return voteErr.message || 'Vote failed, please try again.'
+      return voteErr.message || t('gov.errors.castVote')
     }
 
     if (relErr) {
-      return relErr.message || 'Relinquish vote failed, please try again.'
+      return relErr.message || t('gov.errors.relinquishVote')
     }
 
     return undefined
-  }, [voteErr, relErr, markdownErr])
+  }, [t, voteErr, relErr, markdownErr])
 
   const showError = useMemo(() => {
     if (transactionError) return transactionError
@@ -163,7 +165,7 @@ export const ProposalScreen = () => {
 
   const handleVote = (choice: VoteChoiceWithMeta) => async () => {
     if (canVote(choice.index)) {
-      const decision = await getDecision(`Vote: ${choice.name}`)
+      const decision = await getDecision(t('gov.transctions.castVote'))
 
       if (decision) {
         setCurrVote(choice.index)
@@ -174,7 +176,7 @@ export const ProposalScreen = () => {
 
   const handleRelinquish = (choice: VoteChoiceWithMeta) => async () => {
     if (canRelinquishVote(choice.index)) {
-      const decision = await getDecision('Relinquish Vote')
+      const decision = await getDecision(t('gov.transactions.relinquishVote'))
 
       if (decision) {
         setCurrVote(choice.index)
@@ -243,22 +245,22 @@ export const ProposalScreen = () => {
                   <Box>
                     {derivedState === 'active' && (
                       <Text variant="body2" color="secondaryText">
-                        Est. Time Remaining
+                        {t('gov.proposals.estTime')}
                       </Text>
                     )}
                     {derivedState === 'passed' && (
                       <Text variant="body2" color="greenBright500">
-                        Success
+                        {t('gov.proposals.success')}
                       </Text>
                     )}
                     {derivedState === 'failed' && (
                       <Text variant="body2" color="error">
-                        Failed
+                        {t('gov.proposals.failed')}
                       </Text>
                     )}
                     {derivedState === 'cancelled' && (
                       <Text variant="body2" color="orange500">
-                        Cancelled
+                        {t('gov.proposals.cancelled')}
                       </Text>
                     )}
                     <Text variant="body2" color="primaryText">
@@ -271,7 +273,7 @@ export const ProposalScreen = () => {
                       color="secondaryText"
                       textAlign="right"
                     >
-                      Votes
+                      {t('gov.proposals.votes')}
                     </Text>
                     <Text variant="body2" color="primaryText" textAlign="right">
                       {humanReadable(votingResults?.totalVotes, decimals) ||
@@ -288,6 +290,13 @@ export const ProposalScreen = () => {
                   >
                     {votingResults.results?.map((r) => (
                       <Box key={r.name} flex={1}>
+                        <Text
+                          variant="body2"
+                          color="primaryText"
+                          marginBottom="xs"
+                        >
+                          {r.name}
+                        </Text>
                         <Box
                           flexDirection="row"
                           flex={1}
@@ -304,21 +313,16 @@ export const ProposalScreen = () => {
                           />
                         </Box>
                         <Box flexDirection="row" justifyContent="space-between">
-                          <Text variant="body2" color="primaryText">
-                            {r.name}
+                          <Text
+                            variant="body2"
+                            color="secondaryText"
+                            marginRight="ms"
+                          >
+                            {humanReadable(r.weight, decimals)}
                           </Text>
-                          <Box flexDirection="row">
-                            <Text
-                              variant="body2"
-                              color="secondaryText"
-                              marginRight="ms"
-                            >
-                              {humanReadable(r.weight, decimals)}
-                            </Text>
-                            <Text variant="body2" color="primaryText">
-                              {r.percent.toFixed(2)}%
-                            </Text>
-                          </Box>
+                          <Text variant="body2" color="primaryText">
+                            {r.percent.toFixed(2)}%
+                          </Text>
                         </Box>
                       </Box>
                     ))}
@@ -336,7 +340,7 @@ export const ProposalScreen = () => {
                 marginTop="m"
               >
                 <Text variant="body2" color="primaryText">
-                  You have no voting power in this dao
+                  {t('gov.votingPower.noPower')}
                 </Text>
               </Box>
             )}
@@ -350,9 +354,10 @@ export const ProposalScreen = () => {
                 marginTop="m"
               >
                 <Text variant="body2" color="primaryText">
-                  To vote, click on any option. To remove your vote, click the
-                  option again. Vote for up to {proposal?.maxChoicesPerVoter} of{' '}
-                  {proposal?.choices.length} options.
+                  {t('gov.proposals.toVote', {
+                    maxChoicesPerVoter: proposal?.maxChoicesPerVoter,
+                    choicesLength: proposal?.choices.length,
+                  })}
                 </Text>
                 <Box marginTop="ms">
                   {showError && (
@@ -392,6 +397,9 @@ export const ProposalScreen = () => {
               {!markdownLoading && markdown && (
                 <Markdown
                   style={{
+                    hr: {
+                      marginTop: theme.spacing.m,
+                    },
                     body: {
                       ...theme.textVariants.body2,
                       color: theme.colors.primaryText,

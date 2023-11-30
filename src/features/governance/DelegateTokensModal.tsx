@@ -13,6 +13,7 @@ import CircleLoader from '@components/CircleLoader'
 import ButtonPressable from '@components/ButtonPressable'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import TokenIcon from '@components/TokenIcon'
+import { useTranslation } from 'react-i18next'
 
 export const DelegateTokensModal = ({
   onClose,
@@ -21,8 +22,10 @@ export const DelegateTokensModal = ({
   onClose: () => void
   onSubmit: (subDao: SubDaoWithMeta) => Promise<void>
 }) => {
+  const { t } = useTranslation()
   const { loading, error, result: subDaos } = useSubDaos()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [transactionError, setTransactionError] = useState()
   const [selectedSubDaoPk, setSelectedSubDaoPk] = useState<PublicKey | null>(
     null,
   )
@@ -51,10 +54,14 @@ export const DelegateTokensModal = ({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
         setIsSubmitting(false)
-        console.error('Unable to delegate tokens', e.message)
+        setTransactionError(e.message || t('gov.errors.delegatePositions'))
       }
     }
   }
+
+  const showError = useMemo(() => {
+    if (transactionError) return transactionError
+  }, [transactionError])
 
   return (
     <Portal hostName="GovernancePortalHost">
@@ -81,10 +88,10 @@ export const DelegateTokensModal = ({
           >
             <Box flexGrow={1} justifyContent="center">
               <Text textAlign="left" variant="subtitle2" adjustsFontSizeToFit>
-                Delegate Tokens
+                {t('gov.transactions.delegatePosition')}
               </Text>
               <Text variant="subtitle4" color="secondaryText" marginBottom="m">
-                Select a existing SubDao to delegate to.
+                {t('gov.positions.selectSubDao')}
               </Text>
               {loading && (
                 <Box flexDirection="row" justifyContent="center">
@@ -96,7 +103,7 @@ export const DelegateTokensModal = ({
                     color="secondaryText"
                     marginBottom="m"
                   >
-                    Fetching SubDaos...
+                    {t('gov.positions.fetchignSubDaos')}
                   </Text>
                 </Box>
               )}
@@ -139,6 +146,18 @@ export const DelegateTokensModal = ({
             </Box>
           </SafeAreaBox>
         </BackScreen>
+        {showError && (
+          <Box
+            flexDirection="row"
+            justifyContent="center"
+            alignItems="center"
+            paddingTop="ms"
+          >
+            <Text variant="body3Medium" color="red500">
+              {showError}
+            </Text>
+          </Box>
+        )}
         <Box flexDirection="row" padding="m">
           <ButtonPressable
             flex={1}

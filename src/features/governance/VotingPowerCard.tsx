@@ -13,6 +13,7 @@ import { useColors } from '@theme/themeHooks'
 import { humanReadable } from '@utils/formatting'
 import BN from 'bn.js'
 import React, { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 
 interface IVotingPowerCardProps extends BoxProps<Theme> {
@@ -23,6 +24,7 @@ export const VotingPowerCard = ({
   onPress,
   ...boxProps
 }: IVotingPowerCardProps) => {
+  const { t } = useTranslation()
   const wallet = useCurrentWallet()
   const colors = useColors()
   const { loading, mint, votingPower, amountLocked } = useGovernance()
@@ -45,7 +47,7 @@ export const VotingPowerCard = ({
             marginBottom="m"
           >
             <Text variant="subtitle1" color="primaryText">
-              Your Voting Power
+              {t('gov.votingPower.yourPower')}
             </Text>
             <Text variant="subtitle1" color="primaryText">
               &gt;
@@ -55,7 +57,7 @@ export const VotingPowerCard = ({
         {!compact && noVotingPower && (
           <Box flexDirection="row" alignItems="center">
             <Text variant="body1" color="primaryText">
-              You have no voting power in this dao
+              {t('gov.votingPower.noPower')}
             </Text>
           </Box>
         )}
@@ -64,7 +66,7 @@ export const VotingPowerCard = ({
             <Box flexDirection="row" justifyContent="space-between">
               <Box flex={1}>
                 <Text variant="body1" color="secondaryText">
-                  Voting Power
+                  {t('gov.votingPower.title')}
                 </Text>
                 <Box flexDirection="row" alignItems="center">
                   <Text variant="body1" color="primaryText">
@@ -106,7 +108,7 @@ export const VotingPowerCard = ({
               </Box>
               <Box flex={1}>
                 <Text variant="body1" color="secondaryText" textAlign="right">
-                  {`${symbol || ''}`} Locked
+                  {t('gov.votingPower.locked', { symbol })}
                 </Text>
                 <Text variant="body1" color="primaryText" textAlign="right">
                   {mintAcc &&
@@ -124,13 +126,15 @@ export const VotingPowerCard = ({
         padding="ms"
       >
         <Text variant="body2" color="secondaryText">
-          You have{' '}
-          {mintAcc &&
-            humanReadable(
-              new BN(ownedAmount?.toString() || 0),
-              mintAcc.decimals,
-            )}{' '}
-          more {symbol} available to lock.
+          {t('gov.votingPower.youHave', {
+            amount:
+              mintAcc &&
+              humanReadable(
+                new BN(ownedAmount?.toString() || 0),
+                mintAcc.decimals,
+              ),
+            symbol,
+          })}
         </Text>
       </Box>
     </>

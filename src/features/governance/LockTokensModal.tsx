@@ -26,6 +26,7 @@ import BN from 'bn.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { toBN, toNumber } from '@helium/spl-utils'
 import { Portal } from '@gorhom/portal'
+import { useTranslation } from 'react-i18next'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 export const defaultLockupPeriods = [
@@ -95,20 +96,22 @@ export const LockTokensModal = ({
   onClose: () => void
   onSubmit: (values: LockTokensModalFormValues) => Promise<void>
 }) => {
+  const { t } = useTranslation()
   const { currentAccount } = useAccountStorage()
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])
   const { info: mintAcc } = useMint(mint)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showLockupKindInfo, setShowLockupKindInfo] = useState<boolean>(false)
+  const [transactionError, setTransactionError] = useState()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
   const mintMinAmount = mintAcc ? getMintMinAmountAsDecimal(mintAcc) : 1
   const currentPrecision = precision(mintMinAmount)
   const hasMinLockup = minLockupTimeInDays && minLockupTimeInDays > 0
 
   const lockupKindOptions = [
-    { value: LockupKind.cliff, display: 'Decaying' },
-    { value: LockupKind.constant, display: 'Constant' },
+    { value: LockupKind.cliff, display: t('gov.positions.decaying') },
+    { value: LockupKind.constant, display: t('gov.positions.constant') },
   ]
 
   const lockupPeriodOptions = [
@@ -176,9 +179,13 @@ export const LockTokensModal = ({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       setIsSubmitting(false)
-      console.error('Unable to lock tokens', e.message)
+      setTransactionError(e.message || t('gov.errors.lockTokens'))
     }
   }
+
+  const showError = useMemo(() => {
+    if (transactionError) return transactionError
+  }, [transactionError])
 
   return (
     <Portal hostName="GovernancePortalHost">
@@ -226,9 +233,9 @@ export const LockTokensModal = ({
                       >
                         {
                           {
-                            lock: 'Lock Tokens',
-                            extend: 'Extend Lockup',
-                            split: 'Split Position',
+                            lock: t('gov.transactions.lockTokens'),
+                            extend: t('gov.transactions.extendPosition'),
+                            split: t('gov.transactions.splitPosition'),
                           }[mode]
                         }
                       </Text>
@@ -237,7 +244,7 @@ export const LockTokensModal = ({
                         color="secondaryText"
                         marginBottom="m"
                       >
-                        Increase your voting power by locking tokens.
+                        {t('gov.votingPower.increase')}
                       </Text>
                       {hasMinLockup ? (
                         <Box
@@ -247,15 +254,14 @@ export const LockTokensModal = ({
                           marginBottom="m"
                         >
                           <Text variant="body3">
-                            Select a new lockup period longer than or equal to
-                            the existing{' '}
-                            {getFormattedStringFromDays(minLockupTimeInDays)}
+                            {t('gov.positions.longerLockup', {
+                              existing:
+                                getFormattedStringFromDays(minLockupTimeInDays),
+                            })}
                           </Text>
                           {mode === 'split' ? (
                             <Text marginTop="m" variant="body3">
-                              Splitting a Landrush position after the Landrush
-                              period will result in the split tokens losing the
-                              multiplier!
+                              {t('gov.positions.splitWarning')}
                             </Text>
                           ) : null}
                         </Box>
@@ -275,7 +281,7 @@ export const LockTokensModal = ({
                                   color="grey600"
                                   marginBottom="s"
                                 >
-                                  Lockup Type
+                                  {t('gov.positions.lockupType')}
                                 </Text>
                                 <TouchableOpacityBox
                                   onPress={() => setShowLockupKindInfo(true)}
@@ -328,7 +334,7 @@ export const LockTokensModal = ({
                               onPress={handleAmountPressed}
                             >
                               <Text variant="subtitle4" color="grey600">
-                                Amount to lock
+                                {t('gov.positions.amountToLock')}
                               </Text>
                               <Text
                                 fontSize={19}
@@ -346,7 +352,7 @@ export const LockTokensModal = ({
                             color="grey600"
                             marginBottom="s"
                           >
-                            Duration
+                            {t('gov.positions.duration')}
                           </Text>
                           {hasMinLockup ? (
                             <Box flexDirection="row" marginBottom="m">
@@ -423,7 +429,7 @@ export const LockTokensModal = ({
                       </Box>
                       <Box flexDirection="row" marginTop="m">
                         <Text variant="subtitle4" color="secondaryText">
-                          Initial Vote Weight Multiplier:
+                          {t('gov.positions.initialVoteWeightMult')}:
                         </Text>
                         <Text
                           variant="subtitle4"
@@ -446,8 +452,10 @@ export const LockTokensModal = ({
                           >
                             {type.display}
                           </Text>
-                          {lockupInfosByType[type.value].map((info) => (
+                          {lockupInfosByType[type.value].map((info, idx) => (
                             <Text
+                              // eslint-disable-next-line react/no-array-index-key
+                              key={`info-${idx}`}
                               variant="subtitle4"
                               color="secondaryText"
                               marginBottom="m"
@@ -464,6 +472,18 @@ export const LockTokensModal = ({
             </TouchableWithoutFeedback>
           </HNTKeyboard>
         </BackScreen>
+        {showError && (
+          <Box
+            flexDirection="row"
+            justifyContent="center"
+            alignItems="center"
+            paddingTop="ms"
+          >
+            <Text variant="body3Medium" color="red500">
+              {showError}
+            </Text>
+          </Box>
+        )}
         <Box flexDirection="row" padding="m">
           {!showLockupKindInfo ? (
             <ButtonPressable
@@ -479,9 +499,9 @@ export const LockTokensModal = ({
                 isSubmitting
                   ? ''
                   : {
-                      lock: 'Lock Tokens',
-                      extend: 'Extend Lockup',
-                      split: 'Split Position',
+                      lock: t('gov.transactions.lockTokens'),
+                      extend: t('gov.transactions.extendPosition'),
+                      split: t('gov.transactions.splitPosition'),
                     }[mode]
               }
               titleColor="black"

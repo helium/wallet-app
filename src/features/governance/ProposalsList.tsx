@@ -8,6 +8,7 @@ import { Theme } from '@theme/theme'
 import React, { useCallback, useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useGovernance } from '@storage/GovernanceProvider'
+import { useTranslation } from 'react-i18next'
 import { ProposalCard, ProposalCardSkeleton } from './ProposalCard'
 import {
   GovernanceNavigationProp,
@@ -17,6 +18,7 @@ import {
 
 type IProposalsListProps = BoxProps<Theme>
 export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
+  const { t } = useTranslation()
   const navigation = useNavigation<GovernanceNavigationProp>()
   const { proposals, loading } = useGovernance()
   const [filter, setFilter] = useState<ProposalFilter>('all')
@@ -79,7 +81,9 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
             onPress={() => setFiltersOpen(true)}
           >
             <Text variant="body3" color="secondaryText">
-              {`Proposals: ${filter.charAt(0).toUpperCase() + filter.slice(1)}`}
+              {t('gov.proposals.filter', {
+                filter: filter.charAt(0).toUpperCase() + filter.slice(1),
+              })}
             </Text>
           </TouchableOpacityBox>
         </Box>
@@ -104,7 +108,7 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
         </Box>
       </Box>
       <BlurActionSheet
-        title="Filter Proposals"
+        title={t('gov.proposals.filterTitle')}
         open={filtersOpen}
         onClose={() => setFiltersOpen(false)}
       >

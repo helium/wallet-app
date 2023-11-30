@@ -20,6 +20,7 @@ import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
+import { useTranslation } from 'react-i18next'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
@@ -27,6 +28,7 @@ import { PositionsList } from './PositionsList'
 import { VotingPowerCard } from './VotingPowerCard'
 
 export const VotingPowerScreen = () => {
+  const { t } = useTranslation()
   const wallet = useCurrentWallet()
   const { walletSignBottomSheetRef } = useWalletSign()
   const backEdges = useMemo(() => ['top'] as Edge[], [])
@@ -47,17 +49,15 @@ export const VotingPowerScreen = () => {
 
   const transactionError = useMemo(() => {
     if (createPositionError) {
-      return createPositionError.message || 'Lock failed. please try again.'
+      return createPositionError.message || t('gov.errors.lockTokens')
     }
 
     if (claimingAllRewardsError) {
-      return (
-        claimingAllRewardsError.message || 'Claim failed, please try again.'
-      )
+      return claimingAllRewardsError.message || t('gov.errors.claimRewards')
     }
 
     return undefined
-  }, [createPositionError, claimingAllRewardsError])
+  }, [createPositionError, claimingAllRewardsError, t])
 
   const showError = useMemo(() => {
     if (transactionError) return transactionError
@@ -99,7 +99,7 @@ export const VotingPowerScreen = () => {
     const { amount, lockupPeriodInDays, lockupKind } = values
     if (decimals && walletSignBottomSheetRef) {
       const amountToLock = toBN(amount, decimals)
-      const decision = await getDecision('Lock tokens')
+      const decision = await getDecision(t('gov.transctions.lockTokens'))
 
       if (decision) {
         await createPosition({
@@ -116,7 +116,7 @@ export const VotingPowerScreen = () => {
 
   const handleClaimRewards = async () => {
     if (positionsWithRewards && walletSignBottomSheetRef) {
-      const decision = await getDecision('Claim rewards')
+      const decision = await getDecision(t('gov.transactions.claimRewards'))
 
       if (decision) {
         await claimAllPositionsRewards({ positions: positionsWithRewards })
@@ -134,7 +134,7 @@ export const VotingPowerScreen = () => {
         <BackScreen
           headerTopMargin="l"
           padding="none"
-          title="Your Voting Power"
+          title={t('gov.votingPower.yourPower')}
           edges={backEdges}
         >
           <Box flex={1}>
@@ -163,7 +163,7 @@ export const VotingPowerScreen = () => {
               borderWidth={2}
               borderColor="white"
               backgroundColorOpacityPressed={0.7}
-              title="Lock Tokens"
+              title={t('gov.transactions.lockTokens')}
               titleColor="white"
               titleColorPressed="black"
               onPress={() => setIsLockModalOpen(true)}
@@ -188,7 +188,9 @@ export const VotingPowerScreen = () => {
               backgroundColorDisabled="surfaceSecondary"
               backgroundColorDisabledOpacity={0.9}
               titleColorDisabled="secondaryText"
-              title={claimingAllRewards ? '' : 'Claim Rewards'}
+              title={
+                claimingAllRewards ? '' : t('gov.transactions.claimRewards')
+              }
               titleColor="black"
               onPress={handleClaimRewards}
               disabled={!positionsWithRewards?.length || claimingAllRewards}

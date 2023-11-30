@@ -12,6 +12,7 @@ import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useGovernance } from '@storage/GovernanceProvider'
 import CircleLoader from '@components/CircleLoader'
+import { useTranslation } from 'react-i18next'
 import { ProposalsList } from './ProposalsList'
 import { VotingPowerCard } from './VotingPowerCard'
 import { GovernanceNavigationProp } from './governanceTypes'
@@ -19,6 +20,7 @@ import { GovernanceNavigationProp } from './governanceTypes'
 const GovMints = [HNT_MINT, MOBILE_MINT, IOT_MINT]
 
 export const GovernanceScreen = () => {
+  const { t } = useTranslation()
   const navigation = useNavigation<GovernanceNavigationProp>()
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
   const { loading, mint, setMint } = useGovernance()
@@ -28,7 +30,7 @@ export const GovernanceScreen = () => {
       <SafeAreaBox edges={safeEdges} flex={1}>
         <ScrollView>
           <Text marginTop="m" alignSelf="center" variant="h4">
-            Governance
+            {t('gov.title')}
           </Text>
           <Box
             flexDirection="row"

@@ -36,6 +36,7 @@ import BN from 'bn.js'
 import React, { useCallback, useMemo, useState } from 'react'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
+import { useTranslation } from 'react-i18next'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { DelegateTokensModal } from './DelegateTokensModal'
@@ -52,6 +53,7 @@ export const PositionCard = ({
   subDaos,
   ...boxProps
 }: IPositionCardProps) => {
+  const { t } = useTranslation()
   const unixNow = useSolanaUnixNow(60 * 5 * 1000) || 0
   const { showOKAlert } = useAlert()
   const { walletSignBottomSheetRef } = useWalletSign()
@@ -104,7 +106,9 @@ export const PositionCard = ({
   } = useMetaplexMetadata(votingMint.mint)
   const lockupKind = Object.keys(lockup.kind)[0] as string
   const isConstant = lockupKind === 'constant'
-  const lockupKindDisplay = isConstant ? 'Constant' : 'Decaying'
+  const lockupKindDisplay = isConstant
+    ? t('gov.positions.constant')
+    : t('gov.positions.decaying')
   const hasActiveVotes = position.numActiveVotes > 0
   const lockupExpired =
     !isConstant && lockup.endTs.sub(new BN(unixNow || 0)).lt(new BN(0))
@@ -192,38 +196,39 @@ export const PositionCard = ({
 
   const transactionError = useMemo(() => {
     if (extendingError) {
-      return extendingError.message || 'Extend failed, please try again.'
+      return extendingError.message || t('gov.errors.extendLockup')
     }
 
     if (splitingError) {
-      return splitingError.message || 'Split failed, please try again.'
+      return splitingError.message || t('gov.errors.splitTokens')
     }
 
     if (flippingError) {
       return (
         flippingError.message ||
         (isConstant
-          ? 'Pause failed, please try again.'
-          : 'Unlock failed, please try again.')
+          ? t('gov.errors.pauseLockup')
+          : t('gov.errors.unpauseLockup'))
       )
     }
 
     if (transferingError) {
-      return transferingError.message || 'Transfer failed, please try again.'
+      return transferingError.message || t('gov.errors.transferPosition')
     }
 
     if (closingError) {
-      return closingError.message || 'Close failed, please try again.'
+      return closingError.message || t('gov.errors.closePosition')
     }
 
     if (delegatingError) {
-      return delegatingError.message || 'Delegate failed, please try again.'
+      return delegatingError.message || t('gov.errors.delegatePosition')
     }
 
     if (undelegatingError) {
-      return undelegatingError.message || 'Undelgate failed, please try again.'
+      return undelegatingError.message || t('gov.errors.undelegatePosition')
     }
   }, [
+    t,
     isConstant,
     extendingError,
     splitingError,
@@ -239,7 +244,7 @@ export const PositionCard = ({
   }, [transactionError])
 
   const handleClosePosition = async () => {
-    const decision = await getDecision('Close Position')
+    const decision = await getDecision(t('gov.transactions.closePosition'))
 
     if (decision) {
       await closePosition({ position })
@@ -251,7 +256,11 @@ export const PositionCard = ({
   }
 
   const handleFlipPositionLockupKind = async () => {
-    const decision = await getDecision('Pause Unlock')
+    const decision = await getDecision(
+      isConstant
+        ? t('gov.transactions.unpauseLockup')
+        : t('gov.transactions.pauseLockup'),
+    )
 
     if (decision) {
       await flipPositionLockupKind({ position })
@@ -263,7 +272,7 @@ export const PositionCard = ({
   }
 
   const handleExtendTokens = async (values: LockTokensModalFormValues) => {
-    const decision = await getDecision('Extend Position')
+    const decision = await getDecision(t('gov.transactions.extendLockup'))
 
     if (decision) {
       await extendPosition({
@@ -278,7 +287,7 @@ export const PositionCard = ({
   }
 
   const handleSplitTokens = async (values: LockTokensModalFormValues) => {
-    const decision = await getDecision('Split Position')
+    const decision = await getDecision(t('gov.transactions.splitPosition'))
 
     if (decision) {
       await splitPosition({
@@ -298,7 +307,7 @@ export const PositionCard = ({
     targetPosition: PositionWithMeta,
     amount: number,
   ) => {
-    const decision = await getDecision('Transfer Position')
+    const decision = await getDecision(t('gov.transactions.transferPosition'))
 
     if (decision) {
       await transferPosition({
@@ -314,7 +323,7 @@ export const PositionCard = ({
   }
 
   const handleDelegateTokens = async (subDao: SubDaoWithMeta) => {
-    const decision = await getDecision('Delegate Position')
+    const decision = await getDecision(t('gov.transactions.delegatePosition'))
 
     if (decision) {
       await delegatePosition({
@@ -329,7 +338,7 @@ export const PositionCard = ({
   }
 
   const handleUndelegateTokens = async () => {
-    const decision = await getDecision('Undelegate Position')
+    const decision = await getDecision(t('gov.transactions.undelegatePosition'))
 
     if (decision) {
       await undelegatePosition({ position })
@@ -346,7 +355,7 @@ export const PositionCard = ({
         {position.isDelegated ? (
           <ListItem
             key="undelegate"
-            title="Undelgate"
+            title={t('gov.positions.undelegate')}
             onPress={async () => {
               setActionsOpen(false)
               await handleUndelegateTokens()
@@ -359,13 +368,13 @@ export const PositionCard = ({
             {lockupExpired ? (
               <ListItem
                 key="close"
-                title="Close"
+                title={t('gov.positions.close')}
                 onPress={async () => {
                   setActionsOpen(false)
                   if (hasActiveVotes) {
                     showOKAlert({
-                      title: 'Unable to close',
-                      message: 'Position is partaking in an active vote!',
+                      title: t('gov.positions.unableToClose'),
+                      message: t('gov.errors.partakingInVote'),
                     })
                   } else {
                     await handleClosePosition()
@@ -383,8 +392,8 @@ export const PositionCard = ({
                     setActionsOpen(false)
                     if (hasActiveVotes) {
                       showOKAlert({
-                        title: 'Unable to split',
-                        message: 'Position is partaking in an active vote!',
+                        title: t('gov.positions.unableToSplit'),
+                        message: t('gov.errors.partakingInVote'),
                       })
                     } else {
                       setIsSplitModalOpen(true)
@@ -400,8 +409,8 @@ export const PositionCard = ({
                     setActionsOpen(false)
                     if (hasActiveVotes) {
                       showOKAlert({
-                        title: 'Unable to transfer',
-                        message: 'Position is partaking in an active vote!',
+                        title: t('gov.positions.unableToTransfer'),
+                        message: t('gov.errors.partakingInVote'),
                       })
                     } else {
                       setIsTransferModalOpen(true)
@@ -412,7 +421,7 @@ export const PositionCard = ({
                 />
                 <ListItem
                   key="extend"
-                  title="Extend"
+                  title={t('gov.positions.extend')}
                   onPress={() => {
                     setIsExtendModalOpen(true)
                     setActionsOpen(false)
@@ -422,15 +431,19 @@ export const PositionCard = ({
                 />
                 <ListItem
                   key="pause"
-                  title={isConstant ? 'Start Unlock' : 'Pause Unlock'}
+                  title={
+                    isConstant
+                      ? t('gov.transactions.unpauseLockup')
+                      : t('gov.transactions.pauseLockup')
+                  }
                   onPress={async () => {
                     setActionsOpen(false)
                     if (hasActiveVotes) {
                       showOKAlert({
                         title: isConstant
-                          ? 'Unable to start unlock'
-                          : 'Unable to pause unlock',
-                        message: 'Position is partaking in an active vote!',
+                          ? t('gov.positions.unableToUnpauseLockup')
+                          : t('gov.positions.unableToPauseLockup'),
+                        message: t('gov.errors.partakingInVote'),
                       })
                     } else {
                       await handleFlipPositionLockupKind()
@@ -442,7 +455,7 @@ export const PositionCard = ({
                 {canDelegate && !position.isDelegated && (
                   <ListItem
                     key="delegate"
-                    title="Delegate"
+                    title={t('gov.positions.delegate')}
                     onPress={async () => {
                       setIsDelegateModalOpen(true)
                       setActionsOpen(false)
@@ -488,13 +501,14 @@ export const PositionCard = ({
             <CircleLoader color="white" loaderSize={20} />
           </Box>
           <Text variant="body2" color="primaryText">
-            {isSpliting && 'Splitting...'}
-            {isExtending && 'Extending...'}
-            {isTransfering && 'Transferring...'}
-            {isFlipping && 'Flipping...'}
-            {isClosing && 'Closing...'}
-            {isDelegating && 'Delegating...'}
-            {isUndelegating && 'Undelegating...'}
+            {isSpliting && t('gov.positions.splitting')}
+            {isExtending && t('gov.positions.extending')}
+            {isTransfering && t('gov.positions.transfering')}
+            {isClosing && t('gov.positions.closing')}
+            {isFlipping && isConstant && t('gov.positions.unlocking')}
+            {isFlipping && !isConstant && t('gov.positions.pausing')}
+            {isDelegating && t('gov.positions.delegating')}
+            {isUndelegating && t('gov.positions.undelegating')}
           </Text>
         </Box>
       </Box>
@@ -545,7 +559,7 @@ export const PositionCard = ({
                   borderRadius="m"
                 >
                   <Text variant="body3" fontSize={10} color="black">
-                    LANDRUSH
+                    {t('gov.positions.landrush').toUpperCase()}
                   </Text>
                 </Box>
               )}
@@ -557,7 +571,7 @@ export const PositionCard = ({
             >
               <Box>
                 <Text variant="body2" color="secondaryText">
-                  Lockup Type
+                  {t('gov.positions.lockupType')}
                 </Text>
                 <Text variant="body2" color="primaryText">
                   {lockupKindDisplay}
@@ -565,7 +579,7 @@ export const PositionCard = ({
               </Box>
               <Box>
                 <Text variant="body2" color="secondaryText" textAlign="right">
-                  Vote Multiplier
+                  {t('gov.positions.voteMult')}
                 </Text>
                 <Text variant="body2" color="primaryText" textAlign="right">
                   {(
@@ -586,7 +600,9 @@ export const PositionCard = ({
             <Box flexDirection="row" justifyContent="space-between">
               <Box>
                 <Text variant="body2" color="secondaryText">
-                  {isConstant ? 'Min Duration' : 'Time left'}
+                  {isConstant
+                    ? t('gov.positions.minDur')
+                    : t('gov.positions.timeLeft')}
                 </Text>
                 <Text variant="body2" color="primaryText">
                   {isConstant
@@ -600,7 +616,7 @@ export const PositionCard = ({
               {hasGenesisMultiplier && (
                 <Box>
                   <Text variant="body2" color="secondaryText" textAlign="right">
-                    Landrush
+                    {t('gov.positions.landrush')}
                   </Text>
                   <Text variant="body2" color="primaryText" textAlign="right">
                     {votingMint.genesisVotePowerMultiplier}x ($
@@ -630,7 +646,7 @@ export const PositionCard = ({
         </TouchableOpacityBox>
       </ReAnimatedBox>
       <BlurActionSheet
-        title="Manage Position"
+        title={t('gov.positions.actionsTitle')}
         open={actionsOpen}
         onClose={() => setActionsOpen(false)}
       >

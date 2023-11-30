@@ -16,9 +16,10 @@ import { fmtUnixTime, humanReadable } from '@utils/formatting'
 import axios from 'axios'
 import BN from 'bn.js'
 import MarkdownIt from 'markdown-it'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
+import { useTranslation } from 'react-i18next'
 import { ProposalFilter, ProposalV0 } from './governanceTypes'
 
 interface IProposalCardProps extends BoxProps<Theme> {
@@ -49,6 +50,7 @@ export const ProposalCard = ({
   onPress,
   ...boxProps
 }: IProposalCardProps) => {
+  const { t } = useTranslation()
   const { loading, mint } = useGovernance()
   const { proposalConfig: proposalConfigKey } = proposal
   const decimals = useMint(mint)?.info?.decimals
@@ -78,14 +80,9 @@ export const ProposalCard = ({
       const firstParagraphMatch = htmlContent.match(/<p>(.*?)<\/p>/i)
       return firstParagraphMatch
         ? firstParagraphMatch[0].replace(/<[^>]+>/g, '')
-        : 'No description for this propodal'
+        : t('gov.proposals.noDescription')
     }
   }, [proposal])
-
-  // TODO (gov): Add better error handling
-  useEffect(() => {
-    if (descError) console.error(descError)
-  }, [descError])
 
   const votingResults = useMemo(() => {
     const totalVotes: BN = [...(proposal?.choices || [])].reduce(
@@ -188,11 +185,11 @@ export const ProposalCard = ({
               color="surfaceSecondaryText"
               numberOfLines={2}
             >
-              {desc}
+              {!descError && desc ? desc : t('gov.proposals.noDescription')}
             </Text>
           )}
         </Box>
-        {/* todo: add back once we can derive what they voted easily */}
+        {/* todo (gov): add back once we can derive what they voted easily */}
         {/*         {derivedState === 'active' && (
           <Box
             borderTopColor="primaryBackground"
@@ -209,7 +206,7 @@ export const ProposalCard = ({
         )} */}
         <Box
           paddingHorizontal="m"
-          /* todo: add back once we can derive what they voted easily */
+          /* todo (gov): add back once we can derive what they voted easily */
           /* paddingTop={derivedState === 'active' ? 'm' : 'none'} */
           paddingBottom="ms"
         >
@@ -217,22 +214,22 @@ export const ProposalCard = ({
             <Box>
               {derivedState === 'active' && (
                 <Text variant="body2" color="secondaryText">
-                  Est. Time Remaining
+                  {t('gov.proposals.estTime')}
                 </Text>
               )}
               {derivedState === 'passed' && (
                 <Text variant="body2" color="greenBright500">
-                  Success
+                  {t('gov.proposals.success')}
                 </Text>
               )}
               {derivedState === 'failed' && (
                 <Text variant="body2" color="error">
-                  Failed
+                  {t('gov.proposals.failed')}
                 </Text>
               )}
               {derivedState === 'cancelled' && (
                 <Text variant="body2" color="orange500">
-                  Cancelled
+                  {t('gov.proposals.cancelled')}
                 </Text>
               )}
               <Text variant="body2" color="primaryText">
@@ -242,7 +239,7 @@ export const ProposalCard = ({
             {}
             <Box>
               <Text variant="body2" color="secondaryText" textAlign="right">
-                Votes
+                {t('gov.proposals.votes')}
               </Text>
               <Text variant="body2" color="primaryText" textAlign="right">
                 {humanReadable(votingResults?.totalVotes, decimals) || 'None'}
