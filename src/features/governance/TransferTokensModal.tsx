@@ -206,117 +206,111 @@ export const TransferTokensModal = ({
                             </Text>
                           </Box>
 
-                          <Box gap="m">
-                            {positions.map((pos) => {
-                              const { lockup } = pos
-                              const lockupKind = Object.keys(
-                                lockup.kind,
-                              )[0] as string
-                              const isConstant = lockupKind === 'constant'
-                              const isSelected = selectedPosPk?.equals(
-                                pos.pubkey,
-                              )
+                          {positions.map((pos, idx) => {
+                            const { lockup } = pos
+                            const lockupKind = Object.keys(
+                              lockup.kind,
+                            )[0] as string
+                            const isConstant = lockupKind === 'constant'
+                            const isSelected = selectedPosPk?.equals(pos.pubkey)
 
-                              return (
-                                <TouchableOpacityBox
-                                  key={pos.pubkey.toString()}
-                                  flex={1}
-                                  borderRadius="l"
-                                  backgroundColor={
-                                    isSelected
-                                      ? 'secondaryBackground'
-                                      : 'secondary'
-                                  }
-                                  onPress={() => setSelectedPosPk(pos.pubkey)}
-                                >
-                                  <Box flexDirection="row" padding="ms">
-                                    <Box flex={1}>
-                                      <Text
-                                        variant="body2"
-                                        color="secondaryText"
-                                      >
-                                        {t('gov.positions.lockupType')}
-                                      </Text>
-                                      <Text variant="body2" color="primaryText">
-                                        {isConstant ? 'Constant' : 'Decaying'}
-                                      </Text>
-                                    </Box>
-                                    <Box flex={1}>
-                                      <Text
-                                        variant="body2"
-                                        color="secondaryText"
-                                        textAlign="center"
-                                      >
-                                        {t('gov.positions.voteMult')}
-                                      </Text>
-                                      <Text
-                                        variant="body2"
-                                        color="primaryText"
-                                        textAlign="center"
-                                      >
-                                        {(
-                                          (pos.votingPower.isZero()
-                                            ? 0
-                                            : // Mul by 100 to get 2 decimal places
-                                              pos.votingPower
-                                                .mul(new BN(100))
-                                                .div(pos.amountDepositedNative)
-                                                .toNumber() / 100) /
-                                          (pos.genesisEnd.gt(new BN(unixNow))
-                                            ? pos.votingMint
-                                                .genesisVotePowerMultiplier
-                                            : 1)
-                                        ).toFixed(2)}
-                                      </Text>
-                                    </Box>
-                                    <Box flex={1} alignContent="center">
-                                      <Text
-                                        variant="body2"
-                                        color="secondaryText"
-                                        textAlign="right"
-                                      >
-                                        {isConstant
-                                          ? 'Min. Duration'
-                                          : 'Time left'}
-                                      </Text>
-                                      <Text
-                                        variant="body2"
-                                        color="primaryText"
-                                        textAlign="right"
-                                      >
-                                        {isConstant
-                                          ? getMinDurationFmt(
-                                              pos.lockup.startTs,
-                                              pos.lockup.endTs,
-                                            )
-                                          : getTimeLeftFromNowFmt(
-                                              pos.lockup.endTs,
-                                            )}
-                                      </Text>
-                                    </Box>
-                                  </Box>
-                                  <Box
-                                    borderTopColor="black200"
-                                    borderTopWidth={1}
-                                    paddingVertical="s"
-                                    paddingHorizontal="ms"
-                                  >
+                            return (
+                              <TouchableOpacityBox
+                                key={pos.pubkey.toString()}
+                                marginTop={idx > 0 ? 'm' : 'none'}
+                                flex={1}
+                                borderRadius="l"
+                                backgroundColor={
+                                  isSelected
+                                    ? 'secondaryBackground'
+                                    : 'secondary'
+                                }
+                                onPress={() => setSelectedPosPk(pos.pubkey)}
+                              >
+                                <Box flexDirection="row" padding="ms">
+                                  <Box flex={1}>
+                                    <Text variant="body2" color="secondaryText">
+                                      {t('gov.positions.lockupType')}
+                                    </Text>
                                     <Text variant="body2" color="primaryText">
-                                      {t('gov.positions.lockedAmount', {
-                                        amount:
-                                          mintAcc &&
-                                          humanReadable(
-                                            new BN(pos.amountDepositedNative),
-                                            mintAcc.decimals,
-                                          ),
-                                        symbol,
-                                      })}
+                                      {isConstant ? 'Constant' : 'Decaying'}
                                     </Text>
                                   </Box>
-                                </TouchableOpacityBox>
-                              )
-                            })}
-                          </Box>
+                                  <Box flex={1}>
+                                    <Text
+                                      variant="body2"
+                                      color="secondaryText"
+                                      textAlign="center"
+                                    >
+                                      {t('gov.positions.voteMult')}
+                                    </Text>
+                                    <Text
+                                      variant="body2"
+                                      color="primaryText"
+                                      textAlign="center"
+                                    >
+                                      {(
+                                        (pos.votingPower.isZero()
+                                          ? 0
+                                          : // Mul by 100 to get 2 decimal places
+                                            pos.votingPower
+                                              .mul(new BN(100))
+                                              .div(pos.amountDepositedNative)
+                                              .toNumber() / 100) /
+                                        (pos.genesisEnd.gt(new BN(unixNow))
+                                          ? pos.votingMint
+                                              .genesisVotePowerMultiplier
+                                          : 1)
+                                      ).toFixed(2)}
+                                    </Text>
+                                  </Box>
+                                  <Box flex={1} alignContent="center">
+                                    <Text
+                                      variant="body2"
+                                      color="secondaryText"
+                                      textAlign="right"
+                                    >
+                                      {isConstant
+                                        ? 'Min. Duration'
+                                        : 'Time left'}
+                                    </Text>
+                                    <Text
+                                      variant="body2"
+                                      color="primaryText"
+                                      textAlign="right"
+                                    >
+                                      {isConstant
+                                        ? getMinDurationFmt(
+                                            pos.lockup.startTs,
+                                            pos.lockup.endTs,
+                                          )
+                                        : getTimeLeftFromNowFmt(
+                                            pos.lockup.endTs,
+                                          )}
+                                    </Text>
+                                  </Box>
+                                </Box>
+                                <Box
+                                  borderTopColor="black200"
+                                  borderTopWidth={1}
+                                  paddingVertical="s"
+                                  paddingHorizontal="ms"
+                                >
+                                  <Text variant="body2" color="primaryText">
+                                    {t('gov.positions.lockedAmount', {
+                                      amount:
+                                        mintAcc &&
+                                        humanReadable(
+                                          new BN(pos.amountDepositedNative),
+                                          mintAcc.decimals,
+                                        ),
+                                      symbol,
+                                    })}
+                                  </Text>
+                                </Box>
+                              </TouchableOpacityBox>
+                            )
+                          })}
                         </>
                       )}
                     </Box>

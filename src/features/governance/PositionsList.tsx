@@ -68,11 +68,12 @@ export const PositionsList = ({
           </Text>
         </Box>
       </Box>
-      <Box gap="m">
-        {sortedPositions?.map((p) => (
+      <Box>
+        {sortedPositions?.map((p, idx) => (
           <PositionCard
             key={`${p.pubkey.toBase58()}`}
             position={p}
+            marginTop={idx > 0 ? 'm' : 'none'}
             subDaos={subDaos}
           />
         ))}

@@ -157,24 +157,24 @@ export const ProposalCard = ({
                 {proposal?.name}
               </Text>
             </Box>
-            <Box flexDirection="row" marginLeft="s" gap="s">
+            <Box flexDirection="row">
               {proposal?.tags
                 .filter((tag) => tag !== 'tags')
                 .map((tag) => (
-                  <Box key={tag}>
-                    <Box
-                      padding="s"
-                      backgroundColor={
-                        tag.toLowerCase().includes('temp check')
-                          ? 'orange500'
-                          : 'surfaceSecondary'
-                      }
-                      borderRadius="m"
-                    >
-                      <Text fontSize={10} color="secondaryText">
-                        {tag.toUpperCase()}
-                      </Text>
-                    </Box>
+                  <Box
+                    key={tag}
+                    marginLeft="s"
+                    padding="s"
+                    backgroundColor={
+                      tag.toLowerCase().includes('temp check')
+                        ? 'orange500'
+                        : 'surfaceSecondary'
+                    }
+                    borderRadius="m"
+                  >
+                    <Text fontSize={10} color="secondaryText">
+                      {tag.toUpperCase()}
+                    </Text>
                   </Box>
                 ))}
             </Box>

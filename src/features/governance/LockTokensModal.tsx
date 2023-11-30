@@ -289,8 +289,8 @@ export const LockTokensModal = ({
                                   <InfoIcon width={20} />
                                 </TouchableOpacityBox>
                               </Box>
-                              <Box flexDirection="row" gap="ms">
-                                {lockupKindOptions.map((option) => {
+                              <Box flexDirection="row">
+                                {lockupKindOptions.map((option, idx) => {
                                   const isActive =
                                     option.value === lockupKind.value
 
@@ -301,6 +301,7 @@ export const LockTokensModal = ({
                                       padding="s"
                                       alignItems="center"
                                       borderRadius="m"
+                                      marginLeft={idx > 0 ? 'ms' : 'none'}
                                       backgroundColor={
                                         isActive
                                           ? 'surfaceSecondary'
@@ -388,11 +389,11 @@ export const LockTokensModal = ({
                               </TouchableOpacityBox>
                             </Box>
                           ) : null}
-                          <Box flexDirection="row" flexWrap="wrap" gap="ms">
+                          <Box flexDirection="row" flexWrap="wrap">
                             {(hasMinLockup
                               ? [...lockupPeriodOptions.splice(1)]
                               : lockupPeriodOptions
-                            ).map((option) => {
+                            ).map((option, idx) => {
                               const isActive =
                                 option.value === lockupPeriod.value
 
@@ -403,6 +404,7 @@ export const LockTokensModal = ({
                                   padding="s"
                                   alignItems="center"
                                   borderRadius="m"
+                                  marginLeft={idx > 0 ? 'ms' : 'none'}
                                   backgroundColor={
                                     isActive ? 'surfaceSecondary' : 'black500'
                                   }

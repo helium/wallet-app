@@ -88,24 +88,23 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
           </TouchableOpacityBox>
         </Box>
         {loading && <ProposalCardSkeleton backgroundColor="transparent" />}
-        <Box gap="m">
-          {!loading &&
-            proposals
-              ?.filter((p) => Boolean(p.info))
-              .map((proposal) => (
-                <ProposalCard
-                  key={proposal.publicKey.toBase58()}
-                  filter={filter}
-                  proposal={proposal.info as ProposalV0}
-                  proposalKey={proposal.publicKey}
-                  onPress={async (p) =>
-                    navigation.push('ProposalScreen', {
-                      proposal: p.toBase58(),
-                    })
-                  }
-                />
-              ))}
-        </Box>
+        {!loading &&
+          proposals
+            ?.filter((p) => Boolean(p.info))
+            .map((proposal, idx) => (
+              <ProposalCard
+                key={proposal.publicKey.toBase58()}
+                filter={filter}
+                marginTop={idx > 0 ? 'm' : 'none'}
+                proposal={proposal.info as ProposalV0}
+                proposalKey={proposal.publicKey}
+                onPress={async (p) =>
+                  navigation.push('ProposalScreen', {
+                    proposal: p.toBase58(),
+                  })
+                }
+              />
+            ))}
       </Box>
       <BlurActionSheet
         title={t('gov.proposals.filterTitle')}

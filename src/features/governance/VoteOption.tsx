@@ -5,7 +5,8 @@ import React from 'react'
 import Box from '@components/Box'
 import CircleLoader from '@components/CircleLoader'
 import { useColors } from '@theme/themeHooks'
-import { Color } from '@theme/theme'
+import { Color, Theme } from '@theme/theme'
+import { BoxProps } from '@shopify/restyle'
 import { VoteChoiceWithMeta, VotingResultColors } from './governanceTypes'
 
 export const VoteOption = ({
@@ -16,6 +17,7 @@ export const VoteOption = ({
   voting,
   onVote,
   onRelinquishVote,
+  ...boxProps
 }: {
   option: VoteChoiceWithMeta
   myWeight?: BN
@@ -24,17 +26,17 @@ export const VoteOption = ({
   voting: boolean
   onVote?: () => Promise<void>
   onRelinquishVote?: () => Promise<void>
-}) => {
+} & BoxProps<Theme>) => {
   const colors = useColors()
 
   return (
     <TouchableOpacityBox
       flexGrow={1}
       flexDirection="row"
-      gap="ms"
       padding="ms"
       borderRadius="m"
       backgroundColor="surfaceSecondary"
+      {...boxProps}
       onPress={
         // eslint-disable-next-line no-nested-ternary
         canVote ? onVote : canRelinquishVote ? onRelinquishVote : undefined
@@ -45,6 +47,7 @@ export const VoteOption = ({
           width={20}
           height={20}
           borderRadius="round"
+          marginRight="ms"
           borderWidth={2}
           borderColor={VotingResultColors[option.index]}
           backgroundColor={
@@ -52,7 +55,7 @@ export const VoteOption = ({
           }
         />
       ) : (
-        <Box>
+        <Box marginRight="ms">
           <CircleLoader
             color={colors[VotingResultColors[option.index]] as Color}
             loaderSize={20}

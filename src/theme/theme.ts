@@ -10,9 +10,6 @@ export const Font = {
 }
 
 const textVariants = {
-  defaults: {
-    color: 'primaryText',
-  },
   h0: {
     fontFamily: Font.regular,
     fontSize: 42,

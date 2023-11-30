@@ -107,14 +107,15 @@ export const DelegateTokensModal = ({
                   </Text>
                 </Box>
               )}
-              <Box gap="m">
-                {subDaos?.map((subDao) => {
+              <Box>
+                {subDaos?.map((subDao, idx) => {
                   const isSelected = selectedSubDaoPk?.equals(subDao.pubkey)
 
                   return (
                     <TouchableOpacityBox
                       key={subDao.pubkey.toString()}
                       borderRadius="l"
+                      marginBottom={idx > 0 ? 'm' : 'none'}
                       backgroundColor={
                         isSelected ? 'secondaryBackground' : 'secondary'
                       }

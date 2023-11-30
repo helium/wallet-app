@@ -220,12 +220,13 @@ export const ProposalScreen = () => {
               borderRadius="l"
               padding="m"
             >
-              <Box flexDirection="row" gap="s">
+              <Box flexDirection="row">
                 {proposal?.tags
                   .filter((tag) => tag !== 'tags')
-                  .map((tag) => (
+                  .map((tag, idx) => (
                     <Box
                       key={tag}
+                      marginLeft={idx > 0 ? 's' : 'none'}
                       padding="s"
                       backgroundColor={
                         tag.toLowerCase().includes('temp check')
@@ -286,10 +287,13 @@ export const ProposalScreen = () => {
                     backgroundColor="secondaryBackground"
                     borderRadius="l"
                     paddingTop="m"
-                    gap="s"
                   >
-                    {votingResults.results?.map((r) => (
-                      <Box key={r.name} flex={1}>
+                    {votingResults.results?.map((r, idx) => (
+                      <Box
+                        key={r.name}
+                        flex={1}
+                        marginTop={idx > 0 ? 's' : 'none'}
+                      >
                         <Text
                           variant="body2"
                           color="primaryText"
@@ -367,10 +371,11 @@ export const ProposalScreen = () => {
                       </Text>
                     </Box>
                   )}
-                  <Box flex={1} flexDirection="row" flexWrap="wrap" gap="s">
-                    {votingResults.results?.map((r) => (
+                  <Box flex={1} flexDirection="row" flexWrap="wrap">
+                    {votingResults.results?.map((r, idx) => (
                       <VoteOption
                         key={r.name}
+                        marginLeft={idx % 2 === 0 ? 's' : 'none'}
                         voting={
                           currVote === r.index && (voting || relinquishing)
                         }
