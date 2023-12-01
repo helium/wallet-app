@@ -115,7 +115,7 @@ export const DelegateTokensModal = ({
                     <TouchableOpacityBox
                       key={subDao.pubkey.toString()}
                       borderRadius="l"
-                      marginBottom={idx > 0 ? 'm' : 'none'}
+                      marginTop={idx > 0 ? 'm' : 'none'}
                       backgroundColor={
                         isSelected ? 'secondaryBackground' : 'secondary'
                       }

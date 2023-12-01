@@ -371,11 +371,15 @@ export const ProposalScreen = () => {
                       </Text>
                     </Box>
                   )}
-                  <Box flex={1} flexDirection="row" flexWrap="wrap">
-                    {votingResults.results?.map((r, idx) => (
+                  <Box
+                    flex={1}
+                    flexDirection="row"
+                    flexWrap="wrap"
+                    {...{ gap: 8 }}
+                  >
+                    {votingResults.results?.map((r) => (
                       <VoteOption
                         key={r.name}
-                        marginLeft={idx % 2 === 0 ? 's' : 'none'}
                         voting={
                           currVote === r.index && (voting || relinquishing)
                         }
