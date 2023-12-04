@@ -161,20 +161,20 @@ export const ProposalCard = ({
               {proposal?.tags
                 .filter((tag) => tag !== 'tags')
                 .map((tag) => (
-                  <Box
-                    key={tag}
-                    marginLeft="s"
-                    padding="s"
-                    backgroundColor={
-                      tag.toLowerCase().includes('temp check')
-                        ? 'orange500'
-                        : 'surfaceSecondary'
-                    }
-                    borderRadius="m"
-                  >
-                    <Text fontSize={10} color="secondaryText">
-                      {tag.toUpperCase()}
-                    </Text>
+                  <Box key={tag} marginLeft="s">
+                    <Box
+                      padding="s"
+                      backgroundColor={
+                        tag.toLowerCase().includes('temp check')
+                          ? 'orange500'
+                          : 'surfaceSecondary'
+                      }
+                      borderRadius="m"
+                    >
+                      <Text fontSize={10} color="secondaryText">
+                        {tag.toUpperCase()}
+                      </Text>
+                    </Box>
                   </Box>
                 ))}
             </Box>
