@@ -241,6 +241,11 @@ export const ProposalScreen = () => {
                     </Box>
                   ))}
               </Box>
+              <Box flexShrink={1} marginTop="ms">
+                <Text variant="subtitle3" color="primaryText">
+                  {proposal?.name}
+                </Text>
+              </Box>
               <Box marginTop="ms">
                 <Box flexDirection="row" justifyContent="space-between">
                   <Box>

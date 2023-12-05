@@ -37,6 +37,7 @@ import { useAccountStorage } from './storage/AccountStorageProvider'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
 import { BalanceProvider } from './utils/Balance'
 import { useDeepLinking } from './utils/linking'
+import { GovernanceProvider } from './storage/GovernanceProvider'
 
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -136,12 +137,14 @@ const App = () => {
                                       <ModalProvider>
                                         <WalletSignProvider>
                                           <JupiterProvider>
-                                            <AutoGasBanner />
-                                            <NetworkAwareStatusBar />
-                                            <RootNavigator />
+                                            <GovernanceProvider>
+                                              <AutoGasBanner />
+                                              <NetworkAwareStatusBar />
+                                              <RootNavigator />
 
-                                            {/* place app specific modals here */}
-                                            <InsufficientSolConversionModal />
+                                              {/* place app specific modals here */}
+                                              <InsufficientSolConversionModal />
+                                            </GovernanceProvider>
                                           </JupiterProvider>
                                         </WalletSignProvider>
                                       </ModalProvider>

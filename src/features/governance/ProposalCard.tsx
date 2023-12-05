@@ -182,6 +182,7 @@ export const ProposalCard = ({
           {derivedState === 'active' && (
             <Text
               variant="body2"
+              marginTop="xs"
               color="surfaceSecondaryText"
               numberOfLines={2}
             >
