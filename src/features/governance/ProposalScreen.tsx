@@ -409,6 +409,11 @@ export const ProposalScreen = () => {
                     hr: {
                       marginTop: theme.spacing.m,
                     },
+                    blockquote: {
+                      ...theme.textVariants.body2,
+                      color: theme.colors.primaryText,
+                      backgroundColor: 'transparent',
+                    },
                     body: {
                       ...theme.textVariants.body2,
                       color: theme.colors.primaryText,

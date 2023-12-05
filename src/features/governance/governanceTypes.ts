@@ -27,8 +27,13 @@ export type GovernanceNavigationProp =
 
 export const VotingResultColors: Color[] = [
   'turquoise',
-  'orange500',
+  'red200',
   'jazzberryJam',
+  'persianRose',
+  'orange500',
+  'greenBright500',
+  'flamenco',
+  'gold',
   'purple500',
   'purpleHeart',
 ]
