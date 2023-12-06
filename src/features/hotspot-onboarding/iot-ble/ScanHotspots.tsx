@@ -101,10 +101,7 @@ const ScanHotspots = () => {
     }
   }, [scannedDevices.length, scanning, startScan, stopScan])
 
-  const navNext = useCallback(
-    () => navigation.push('WifiSettings', {}),
-    [navigation],
-  )
+  const navNext = useCallback(() => navigation.push('Settings'), [navigation])
 
   const [connecting, setConnecting] = useState(false)
   const connectDevice = useCallback(

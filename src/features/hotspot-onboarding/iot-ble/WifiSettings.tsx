@@ -25,10 +25,7 @@ const WifiSettings = () => {
   } = useRoute<Route>()
   const navigation = useNavigation<HotspotBleNavProp>()
   const { t } = useTranslation()
-  const navNext = useCallback(
-    () => navigation.push('AddGatewayBle'),
-    [navigation],
-  )
+  const navNext = useCallback(() => navigation.goBack(), [navigation])
   const [networks, setNetworks] = useState<string[]>()
   const [configuredNetworks, setConfiguredNetworks] = useState<string[]>()
   const [connected, setConnected] = useState(false)
@@ -40,7 +37,7 @@ const WifiSettings = () => {
     isConnected().then(setConnected)
   }, [isConnected])
 
-  const { execute: handleRefresh, loading: refreshing } = useAsyncCallback(
+  const { execute: handleRefresh, loading: refreshing, error } = useAsyncCallback(
     async () => {
       if (!connected) return
 
@@ -54,7 +51,7 @@ const WifiSettings = () => {
   // Refresh on network change or on load
   useEffect(() => {
     handleRefresh()
-  }, [handleRefresh, networkIn])
+  }, [handleRefresh, networkIn, connected])
 
   const handleNetworkSelected = useCallback(
     ({
@@ -159,6 +156,11 @@ const WifiSettings = () => {
 
   return (
     <BackScreen title={t('hotspotOnboarding.wifiSettings.title')}>
+      {error && (
+        <Text variant="body1Medium" color="red500">
+          {error.message ? error.message.toString() : error.toString()}
+        </Text>
+      )}
       <SectionList
         sections={sections}
         renderItem={renderItem}
@@ -173,7 +175,7 @@ const WifiSettings = () => {
         titleColor="black"
         borderColor="transparent"
         backgroundColor="white"
-        title={t('generic.next')}
+        title={t('generic.done')}
         onPress={navNext}
       />
     </BackScreen>
