@@ -25,10 +25,11 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
   const navigation = useNavigation<GovernanceNavigationProp>()
   const [filter, setFilter] = useState<ProposalFilter>('all')
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const { loading, network } = useGovernance()
+  const { network } = useGovernance()
   const organization = useMemo(() => organizationKey(network)[0], [network])
-  const { loading: loadingProposals, accounts: proposalsWithDups } =
+  const { loading, accounts: proposalsWithDups } =
     useOrganizationProposals(organization)
+
   const proposals = useMemo(() => {
     const seen = new Set()
     return proposalsWithDups?.filter((p) => {
@@ -38,11 +39,6 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
       return !has
     })
   }, [proposalsWithDups])
-
-  const isLoading = useMemo(
-    () => loading || loadingProposals,
-    [loading, loadingProposals],
-  )
 
   const handleFilterPress = (f: ProposalFilter) => () => {
     setFilter(f)
@@ -107,7 +103,7 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
             </Text>
           </TouchableOpacityBox>
         </Box>
-        {isLoading ? (
+        {loading ? (
           <CircleLoader loaderSize={24} color="white" />
         ) : (
           proposals

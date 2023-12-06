@@ -47,8 +47,9 @@ export const GovernanceScreen = () => {
               />
             ))}
           </Box>
-          {loading && <CircleLoader loaderSize={24} color="white" />}
-          {!loading && (
+          {loading ? (
+            <CircleLoader loaderSize={24} color="white" />
+          ) : (
             <>
               <VotingPowerCard
                 onPress={async (m) =>
