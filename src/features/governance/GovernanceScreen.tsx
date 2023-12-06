@@ -7,7 +7,7 @@ import TokenPill from '@components/TokenPill'
 import { HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { useNavigation } from '@react-navigation/native'
 import globalStyles from '@theme/globalStyles'
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useGovernance } from '@storage/GovernanceProvider'
@@ -23,7 +23,13 @@ export const GovernanceScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<GovernanceNavigationProp>()
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
-  const { loading, mint, setMint } = useGovernance()
+  const { loading, mint, setMint, refetch } = useGovernance()
+
+  useEffect(() => {
+    return navigation.addListener('focus', () => {
+      refetch()
+    })
+  }, [navigation, refetch])
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
