@@ -1126,7 +1126,7 @@ export default {
       unableToPauseLockup: 'Unable to pause unlock',
       unableToUnpauseLockup: 'Unable to start unlock',
       partakingInVote: 'Position is partaking in an active vote!',
-      spitting: 'Splitting...',
+      splitting: 'Splitting...',
       extending: 'Extending...',
       transfering: 'Transfering...',
       closing: 'Closing...',

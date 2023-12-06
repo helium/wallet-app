@@ -1,6 +1,5 @@
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
-import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useMint } from '@helium/helium-react-hooks'
@@ -39,9 +38,7 @@ export const ProposalCardSkeleton = (boxProps: BoxProps<Theme>) => (
     entering={FadeIn}
     exiting={FadeOut}
     {...boxProps}
-  >
-    <CircleLoader color="white" loaderSize={20} />
-  </ReAnimatedBox>
+  />
 )
 export const ProposalCard = ({
   filter,
@@ -51,7 +48,7 @@ export const ProposalCard = ({
   ...boxProps
 }: IProposalCardProps) => {
   const { t } = useTranslation()
-  const { loading, mint } = useGovernance()
+  const { mint } = useGovernance()
   const { proposalConfig: proposalConfigKey } = proposal
   const decimals = useMint(mint)?.info?.decimals
   const { info: proposalConfig } = useProposalConfig(proposalConfigKey)
@@ -115,11 +112,7 @@ export const ProposalCard = ({
     }
   }, [proposal?.state, proposal?.choices])
 
-  const isLoading = useMemo(
-    () => loading || descLoading,
-    [loading, descLoading],
-  )
-
+  const isLoading = descLoading
   const isVisible = useMemo(() => {
     if (!isLoading) {
       if (!proposal) return false

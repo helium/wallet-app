@@ -9,6 +9,8 @@ import {
   useSubDaos,
 } from '@helium/voter-stake-registry-hooks'
 import { useColors } from '@theme/themeHooks'
+import { useGovernance } from '@storage/GovernanceProvider'
+import CircleLoader from '@components/CircleLoader'
 import { PositionCard } from './PositionCard'
 
 interface IPositionsListProps extends BoxProps<Theme> {
@@ -20,21 +22,26 @@ export const PositionsList = ({
   ...boxProps
 }: IPositionsListProps) => {
   const { result: subDaos } = useSubDaos()
+  const { loading } = useGovernance()
   const colors = useColors()
 
   const sortedPositions = useMemo(
     () =>
-      positions?.sort((a, b) => {
-        if (a.hasGenesisMultiplier || b.hasGenesisMultiplier) {
-          if (b.hasGenesisMultiplier) {
-            return a.amountDepositedNative.gt(b.amountDepositedNative) ? 0 : -1
-          }
-          return -1
-        }
+      loading
+        ? []
+        : positions?.sort((a, b) => {
+            if (a.hasGenesisMultiplier || b.hasGenesisMultiplier) {
+              if (b.hasGenesisMultiplier) {
+                return a.amountDepositedNative.gt(b.amountDepositedNative)
+                  ? 0
+                  : -1
+              }
+              return -1
+            }
 
-        return a.amountDepositedNative.gt(b.amountDepositedNative) ? -1 : 0
-      }),
-    [positions],
+            return a.amountDepositedNative.gt(b.amountDepositedNative) ? -1 : 0
+          }),
+    [positions, loading],
   )
 
   return (
@@ -69,14 +76,19 @@ export const PositionsList = ({
         </Box>
       </Box>
       <Box>
-        {sortedPositions?.map((p, idx) => (
-          <PositionCard
-            key={`${p.pubkey.toBase58()}`}
-            position={p}
-            marginTop={idx > 0 ? 'm' : 'none'}
-            subDaos={subDaos}
-          />
-        ))}
+        {loading ? (
+          <CircleLoader loaderSize={24} color="white" />
+        ) : (
+          sortedPositions?.map((p, idx) => (
+            <PositionCard
+              // eslint-disable-next-line react/no-array-index-key
+              key={`${p.pubkey.toBase58()}-${idx}`}
+              position={p}
+              marginTop={idx > 0 ? 'm' : 'none'}
+              subDaos={subDaos}
+            />
+          ))
+        )}
       </Box>
     </Box>
   )

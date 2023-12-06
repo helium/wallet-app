@@ -62,7 +62,7 @@ export const PositionCard = ({
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false)
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false)
   const [isDelegateModalOpen, setIsDelegateModalOpen] = useState(false)
-  const { positions, refetch, mint } = useGovernance()
+  const { loading, positions, refetch, mint } = useGovernance()
   const transferablePositions: PositionWithMeta[] = useMemo(() => {
     if (!unixNow || !positions || !positions.length) {
       return []
@@ -478,250 +478,285 @@ export const PositionCard = ({
         ?.dntMetadata
     : null
 
-  const isSubmitting =
-    loadingMetadata ||
-    isExtending ||
-    isSpliting ||
-    isClosing ||
-    isTransfering ||
-    isFlipping ||
-    isDelegating ||
-    isUndelegating
-
-  if (isSubmitting) {
-    return (
-      <Box
-        backgroundColor="secondaryBackground"
-        borderRadius="l"
-        padding="m"
-        {...boxProps}
-      >
-        <Box flex={1} alignItems="center">
-          <Box flex={1} marginBottom="ms">
-            <CircleLoader color="white" loaderSize={20} />
-          </Box>
-          <Text variant="body2" color="primaryText">
-            {isSpliting && t('gov.positions.splitting')}
-            {isExtending && t('gov.positions.extending')}
-            {isTransfering && t('gov.positions.transfering')}
-            {isClosing && t('gov.positions.closing')}
-            {isFlipping && isConstant && t('gov.positions.unlocking')}
-            {isFlipping && !isConstant && t('gov.positions.pausing')}
-            {isDelegating && t('gov.positions.delegating')}
-            {isUndelegating && t('gov.positions.undelegating')}
-          </Text>
-        </Box>
-      </Box>
-    )
-  }
+  const isLoading = useMemo(
+    () =>
+      loading ||
+      loadingMetadata ||
+      isExtending ||
+      isSpliting ||
+      isClosing ||
+      isTransfering ||
+      isFlipping ||
+      isDelegating ||
+      isUndelegating,
+    [
+      loading,
+      loadingMetadata,
+      isExtending,
+      isSpliting,
+      isClosing,
+      isTransfering,
+      isFlipping,
+      isDelegating,
+      isUndelegating,
+    ],
+  )
 
   return (
     <>
-      <ReAnimatedBox
-        backgroundColor="secondaryBackground"
-        borderRadius="l"
-        entering={FadeIn}
-        exiting={FadeOut}
-        {...boxProps}
-      >
-        <TouchableOpacityBox onPress={() => setActionsOpen(true)}>
-          {showError && (
-            <Box
-              flexDirection="row"
-              justifyContent="center"
-              alignItems="center"
-              paddingTop="ms"
-            >
-              <Text variant="body3Medium" color="red500">
-                {showError}
-              </Text>
+      {isLoading && (
+        <Box
+          backgroundColor="secondaryBackground"
+          borderRadius="l"
+          padding="m"
+          {...boxProps}
+        >
+          <Box flex={1} alignItems="center">
+            <Box flex={1} marginBottom="ms">
+              <CircleLoader color="white" loaderSize={20} />
             </Box>
-          )}
-          <Box paddingHorizontal="m" paddingVertical="ms">
-            <Box
-              flexDirection="row"
-              justifyContent="space-between"
-              marginBottom="m"
-            >
-              <Box flexDirection="row" alignItems="center">
-                {json?.image ? (
-                  <TokenIcon size={26} img={json.image} />
-                ) : undefined}
-                <Text variant="subtitle3" color="primaryText" marginLeft="m">
-                  {`${lockedTokens} ${symbol}`}
-                </Text>
-              </Box>
-              {hasGenesisMultiplier && (
-                <Box
-                  padding="s"
-                  paddingHorizontal="m"
-                  backgroundColor="blueBright500"
-                  borderRadius="m"
-                >
-                  <Text variant="body3" fontSize={10} color="black">
-                    {t('gov.positions.landrush').toUpperCase()}
-                  </Text>
-                </Box>
-              )}
-            </Box>
-            <Box
-              flexDirection="row"
-              justifyContent="space-between"
-              paddingBottom="s"
-            >
-              <Box>
-                <Text variant="body2" color="secondaryText">
-                  {t('gov.positions.lockupType')}
-                </Text>
-                <Text variant="body2" color="primaryText">
-                  {lockupKindDisplay}
-                </Text>
-              </Box>
-              <Box>
-                <Text variant="body2" color="secondaryText" textAlign="right">
-                  {t('gov.positions.voteMult')}
-                </Text>
-                <Text variant="body2" color="primaryText" textAlign="right">
-                  {(
-                    (position.votingPower.isZero()
-                      ? 0
-                      : // Mul by 100 to get 2 decimal places
-                        position.votingPower
-                          .mul(new BN(100))
-                          .div(position.amountDepositedNative)
-                          .toNumber() / 100) /
-                    (position.genesisEnd.gt(new BN(unixNow || 0))
-                      ? votingMint.genesisVotePowerMultiplier
-                      : 1)
-                  ).toFixed(2)}
-                </Text>
-              </Box>
-            </Box>
-            <Box flexDirection="row" justifyContent="space-between">
-              <Box>
-                <Text variant="body2" color="secondaryText">
-                  {isConstant
-                    ? t('gov.positions.minDur')
-                    : t('gov.positions.timeLeft')}
-                </Text>
-                <Text variant="body2" color="primaryText">
-                  {isConstant
-                    ? getMinDurationFmt(
-                        position.lockup.startTs,
-                        position.lockup.endTs,
-                      )
-                    : getTimeLeftFromNowFmt(position.lockup.endTs)}
-                </Text>
-              </Box>
-              {hasGenesisMultiplier && (
-                <Box>
-                  <Text variant="body2" color="secondaryText" textAlign="right">
-                    {t('gov.positions.landrush')}
-                  </Text>
-                  <Text variant="body2" color="primaryText" textAlign="right">
-                    {votingMint.genesisVotePowerMultiplier}x ($
-                    {getTimeLeftFromNowFmt(position.genesisEnd)}
-                  </Text>
-                </Box>
-              )}
-            </Box>
-            {delegatedSubDaoMetadata && (
-              <Box
-                flexDirection="row"
-                justifyContent="center"
-                alignItems="center"
-              >
-                <Box borderColor="black" borderWidth={2} borderRadius="round">
-                  <TokenIcon
-                    size={18}
-                    img={delegatedSubDaoMetadata.json?.image || ''}
-                  />
-                </Box>
-                <Text variant="body2" color="primaryText" marginLeft="m">
-                  {delegatedSubDaoMetadata.name}
-                </Text>
-              </Box>
-            )}
+            <Text variant="body2" color="primaryText">
+              {isSpliting && t('gov.positions.splitting')}
+              {isExtending && t('gov.positions.extending')}
+              {isTransfering && t('gov.positions.transfering')}
+              {isClosing && t('gov.positions.closing')}
+              {isFlipping && isConstant && t('gov.positions.unlocking')}
+              {isFlipping && !isConstant && t('gov.positions.pausing')}
+              {isDelegating && t('gov.positions.delegating')}
+              {isUndelegating && t('gov.positions.undelegating')}
+            </Text>
           </Box>
-        </TouchableOpacityBox>
-      </ReAnimatedBox>
-      <BlurActionSheet
-        title={t('gov.positions.actionsTitle')}
-        open={actionsOpen}
-        onClose={() => setActionsOpen(false)}
-      >
-        {actions()}
-      </BlurActionSheet>
-      {isExtendModalOpen && (
-        <LockTokensModal
-          mint={mint}
-          mode="extend"
-          minLockupTimeInDays={
-            isConstant
-              ? Math.ceil(
-                  secsToDays(
-                    position.lockup.endTs
-                      .sub(position.lockup.startTs)
-                      .toNumber(),
-                  ),
-                )
-              : Math.ceil(
-                  secsToDays(
-                    position.lockup.endTs.sub(new BN(unixNow)).toNumber(),
-                  ),
-                )
-          }
-          maxLockupTimeInDays={secsToDays(
-            votingMint.lockupSaturationSecs.toNumber(),
+        </Box>
+      )}
+      {!isLoading && (
+        <>
+          <ReAnimatedBox
+            backgroundColor="secondaryBackground"
+            borderRadius="l"
+            entering={FadeIn}
+            exiting={FadeOut}
+            {...boxProps}
+          >
+            <TouchableOpacityBox onPress={() => setActionsOpen(true)}>
+              {showError && (
+                <Box
+                  flexDirection="row"
+                  justifyContent="center"
+                  alignItems="center"
+                  paddingTop="ms"
+                >
+                  <Text variant="body3Medium" color="red500">
+                    {showError}
+                  </Text>
+                </Box>
+              )}
+              <Box paddingHorizontal="m" paddingVertical="ms">
+                <Box
+                  flexDirection="row"
+                  justifyContent="space-between"
+                  marginBottom="m"
+                >
+                  <Box flexDirection="row" alignItems="center">
+                    {json?.image ? (
+                      <TokenIcon size={26} img={json.image} />
+                    ) : undefined}
+                    <Text
+                      variant="subtitle3"
+                      color="primaryText"
+                      marginLeft="m"
+                    >
+                      {`${lockedTokens} ${symbol}`}
+                    </Text>
+                  </Box>
+                  {hasGenesisMultiplier && (
+                    <Box
+                      padding="s"
+                      paddingHorizontal="m"
+                      backgroundColor="blueBright500"
+                      borderRadius="m"
+                    >
+                      <Text variant="body3" fontSize={10} color="black">
+                        {t('gov.positions.landrush').toUpperCase()}
+                      </Text>
+                    </Box>
+                  )}
+                </Box>
+                <Box
+                  flexDirection="row"
+                  justifyContent="space-between"
+                  paddingBottom="s"
+                >
+                  <Box>
+                    <Text variant="body2" color="secondaryText">
+                      {t('gov.positions.lockupType')}
+                    </Text>
+                    <Text variant="body2" color="primaryText">
+                      {lockupKindDisplay}
+                    </Text>
+                  </Box>
+                  <Box>
+                    <Text
+                      variant="body2"
+                      color="secondaryText"
+                      textAlign="right"
+                    >
+                      {t('gov.positions.voteMult')}
+                    </Text>
+                    <Text variant="body2" color="primaryText" textAlign="right">
+                      {(
+                        (position.votingPower.isZero()
+                          ? 0
+                          : // Mul by 100 to get 2 decimal places
+                            position.votingPower
+                              .mul(new BN(100))
+                              .div(position.amountDepositedNative)
+                              .toNumber() / 100) /
+                        (position.genesisEnd.gt(new BN(unixNow || 0))
+                          ? votingMint.genesisVotePowerMultiplier
+                          : 1)
+                      ).toFixed(2)}
+                    </Text>
+                  </Box>
+                </Box>
+                <Box flexDirection="row" justifyContent="space-between">
+                  <Box>
+                    <Text variant="body2" color="secondaryText">
+                      {isConstant
+                        ? t('gov.positions.minDur')
+                        : t('gov.positions.timeLeft')}
+                    </Text>
+                    <Text variant="body2" color="primaryText">
+                      {isConstant
+                        ? getMinDurationFmt(
+                            position.lockup.startTs,
+                            position.lockup.endTs,
+                          )
+                        : getTimeLeftFromNowFmt(position.lockup.endTs)}
+                    </Text>
+                  </Box>
+                  {hasGenesisMultiplier && (
+                    <Box>
+                      <Text
+                        variant="body2"
+                        color="secondaryText"
+                        textAlign="right"
+                      >
+                        {t('gov.positions.landrush')}
+                      </Text>
+                      <Text
+                        variant="body2"
+                        color="primaryText"
+                        textAlign="right"
+                      >
+                        {votingMint.genesisVotePowerMultiplier}x ($
+                        {getTimeLeftFromNowFmt(position.genesisEnd)}
+                      </Text>
+                    </Box>
+                  )}
+                </Box>
+                {delegatedSubDaoMetadata && (
+                  <Box
+                    flexDirection="row"
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <Box
+                      borderColor="black"
+                      borderWidth={2}
+                      borderRadius="round"
+                    >
+                      <TokenIcon
+                        size={18}
+                        img={delegatedSubDaoMetadata.json?.image || ''}
+                      />
+                    </Box>
+                    <Text variant="body2" color="primaryText" marginLeft="m">
+                      {delegatedSubDaoMetadata.name}
+                    </Text>
+                  </Box>
+                )}
+              </Box>
+            </TouchableOpacityBox>
+          </ReAnimatedBox>
+          <BlurActionSheet
+            title={t('gov.positions.actionsTitle')}
+            open={actionsOpen}
+            onClose={() => setActionsOpen(false)}
+          >
+            {actions()}
+          </BlurActionSheet>
+          {isExtendModalOpen && (
+            <LockTokensModal
+              mint={mint}
+              mode="extend"
+              minLockupTimeInDays={
+                isConstant
+                  ? Math.ceil(
+                      secsToDays(
+                        position.lockup.endTs
+                          .sub(position.lockup.startTs)
+                          .toNumber(),
+                      ),
+                    )
+                  : Math.ceil(
+                      secsToDays(
+                        position.lockup.endTs.sub(new BN(unixNow)).toNumber(),
+                      ),
+                    )
+              }
+              maxLockupTimeInDays={secsToDays(
+                votingMint.lockupSaturationSecs.toNumber(),
+              )}
+              maxLockupAmount={maxActionableAmount}
+              calcMultiplierFn={handleCalcLockupMultiplier}
+              onClose={() => setIsExtendModalOpen(false)}
+              onSubmit={handleExtendTokens}
+            />
           )}
-          maxLockupAmount={maxActionableAmount}
-          calcMultiplierFn={handleCalcLockupMultiplier}
-          onClose={() => setIsExtendModalOpen(false)}
-          onSubmit={handleExtendTokens}
-        />
-      )}
-      {isSplitModalOpen && (
-        <LockTokensModal
-          mint={mint}
-          mode="split"
-          minLockupTimeInDays={
-            isConstant
-              ? Math.ceil(
-                  secsToDays(
-                    position.lockup.endTs
-                      .sub(position.lockup.startTs)
-                      .toNumber(),
-                  ),
-                )
-              : Math.ceil(
-                  secsToDays(
-                    position.lockup.endTs.sub(new BN(unixNow)).toNumber(),
-                  ),
-                )
-          }
-          maxLockupTimeInDays={secsToDays(
-            votingMint.lockupSaturationSecs.toNumber(),
+          {isSplitModalOpen && (
+            <LockTokensModal
+              mint={mint}
+              mode="split"
+              minLockupTimeInDays={
+                isConstant
+                  ? Math.ceil(
+                      secsToDays(
+                        position.lockup.endTs
+                          .sub(position.lockup.startTs)
+                          .toNumber(),
+                      ),
+                    )
+                  : Math.ceil(
+                      secsToDays(
+                        position.lockup.endTs.sub(new BN(unixNow)).toNumber(),
+                      ),
+                    )
+              }
+              maxLockupTimeInDays={secsToDays(
+                votingMint.lockupSaturationSecs.toNumber(),
+              )}
+              maxLockupAmount={maxActionableAmount}
+              calcMultiplierFn={handleCalcLockupMultiplier}
+              onClose={() => setIsSplitModalOpen(false)}
+              onSubmit={handleSplitTokens}
+            />
           )}
-          maxLockupAmount={maxActionableAmount}
-          calcMultiplierFn={handleCalcLockupMultiplier}
-          onClose={() => setIsSplitModalOpen(false)}
-          onSubmit={handleSplitTokens}
-        />
-      )}
-      {isTransferModalOpen && (
-        <TransferTokensModal
-          mint={mint}
-          positions={transferablePositions}
-          maxTransferAmount={maxActionableAmount}
-          onClose={() => setIsTransferModalOpen(false)}
-          onSubmit={handleTransferTokens}
-        />
-      )}
-      {isDelegateModalOpen && (
-        <DelegateTokensModal
-          onClose={() => setIsDelegateModalOpen(false)}
-          onSubmit={handleDelegateTokens}
-        />
+          {isTransferModalOpen && (
+            <TransferTokensModal
+              mint={mint}
+              positions={transferablePositions}
+              maxTransferAmount={maxActionableAmount}
+              onClose={() => setIsTransferModalOpen(false)}
+              onSubmit={handleTransferTokens}
+            />
+          )}
+          {isDelegateModalOpen && (
+            <DelegateTokensModal
+              onClose={() => setIsDelegateModalOpen(false)}
+              onSubmit={handleDelegateTokens}
+            />
+          )}
+        </>
       )}
     </>
   )

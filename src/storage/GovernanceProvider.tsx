@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-shadow */
-import { useOrganizationProposals } from '@helium/modular-governance-hooks'
-import { organizationKey } from '@helium/organization-sdk'
 import { HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import {
   useRegistrar,
@@ -33,10 +30,8 @@ const mintsToNetwork: { [key: string]: GovNetwork } = {
 }
 
 export interface IGovernanceContextState {
-  loading: boolean
   mint: PublicKey
   network: GovNetwork
-  proposals: ReturnType<typeof useOrganizationProposals>['accounts']
   registrar?: ReturnType<typeof useRegistrar>['info']
 
   setMint: (mint: PublicKey) => void
@@ -50,19 +45,6 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const { anchorProvider } = useSolana()
   const [mint, setMint] = useState(HNT_MINT)
   const network = useMemo(() => mintsToNetwork[mint.toBase58()], [mint])
-  const organization = useMemo(() => organizationKey(network)[0], [network])
-  const { loading: loadingProposals, accounts: proposalsWithDups } =
-    useOrganizationProposals(organization)
-  const proposals = useMemo(() => {
-    const seen = new Set()
-    return proposalsWithDups?.filter((p) => {
-      const has = seen.has(p.info?.name)
-      seen.add(p.info?.name)
-
-      return !has
-    })
-  }, [proposalsWithDups])
-
   const registrarKey = useMemo(
     () => mint && getRegistrarKey(mint),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,18 +53,14 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   const { info: registrar } = useRegistrar(registrarKey)
 
-  const loading = useMemo(() => loadingProposals, [loadingProposals])
-
   const ret = useMemo(
     () => ({
-      loading,
       mint,
       network,
-      proposals,
       registrar,
       setMint,
     }),
-    [loading, mint, network, proposals, registrar, setMint],
+    [mint, network, registrar, setMint],
   )
 
   return (
@@ -106,15 +84,11 @@ const useGovernance = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { mint, ...heliumVsrState } = useHeliumVsrState()
-  const loading = useMemo(
-    () => context.loading || heliumVsrState.loading,
-    [context.loading, heliumVsrState.loading],
-  )
 
   return {
     ...context,
     ...heliumVsrState,
-    loading,
+    loading: heliumVsrState.loading,
   }
 }
 

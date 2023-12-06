@@ -161,21 +161,18 @@ export const TransferTokensModal = ({
                       >
                         {t('gov.positions.transferBlurb')}
                       </Text>
-                      <Box
-                        borderRadius="l"
-                        backgroundColor="secondary"
-                        padding="ms"
-                        marginBottom="m"
-                      >
-                        <Text variant="body3">
-                          {t('gov.positions.transferWarning')}
-                        </Text>
-                        <Text marginTop="m" variant="body3">
-                          {hasTransferablePositions
-                            ? t('gov.positions.transferLandrushWarning')
-                            : t('gov.positions.cantTransfer')}
-                        </Text>
-                      </Box>
+                      {!hasTransferablePositions && (
+                        <Box
+                          borderRadius="l"
+                          backgroundColor="secondary"
+                          padding="ms"
+                          marginBottom="m"
+                        >
+                          <Text marginTop="m" variant="body3">
+                            {t('gov.positions.cantTransfer')}
+                          </Text>
+                        </Box>
+                      )}
                       {hasTransferablePositions && (
                         <>
                           <Box backgroundColor="secondary" borderRadius="l">
@@ -203,6 +200,19 @@ export const TransferTokensModal = ({
                               marginBottom="m"
                             >
                               {t('gov.positions.selectTransfer')}
+                            </Text>
+                          </Box>
+                          <Box
+                            borderRadius="l"
+                            backgroundColor="secondary"
+                            padding="ms"
+                            marginBottom="m"
+                          >
+                            <Text variant="body3">
+                              {t('gov.positions.transferWarning')}
+                            </Text>
+                            <Text marginTop="m" variant="body3">
+                              {t('gov.positions.transferLandrushWarning')}
                             </Text>
                           </Box>
 

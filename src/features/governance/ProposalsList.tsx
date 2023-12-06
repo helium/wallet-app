@@ -5,11 +5,14 @@ import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { useTranslation } from 'react-i18next'
-import { ProposalCard, ProposalCardSkeleton } from './ProposalCard'
+import { organizationKey } from '@helium/organization-sdk'
+import { useOrganizationProposals } from '@helium/modular-governance-hooks'
+import CircleLoader from '@components/CircleLoader'
+import { ProposalCard } from './ProposalCard'
 import {
   GovernanceNavigationProp,
   ProposalFilter,
@@ -20,9 +23,26 @@ type IProposalsListProps = BoxProps<Theme>
 export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
   const { t } = useTranslation()
   const navigation = useNavigation<GovernanceNavigationProp>()
-  const { proposals, loading } = useGovernance()
   const [filter, setFilter] = useState<ProposalFilter>('all')
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const { loading, network } = useGovernance()
+  const organization = useMemo(() => organizationKey(network)[0], [network])
+  const { loading: loadingProposals, accounts: proposalsWithDups } =
+    useOrganizationProposals(organization)
+  const proposals = useMemo(() => {
+    const seen = new Set()
+    return proposalsWithDups?.filter((p) => {
+      const has = seen.has(p.info?.name)
+      seen.add(p.info?.name)
+
+      return !has
+    })
+  }, [proposalsWithDups])
+
+  const isLoading = useMemo(
+    () => loading || loadingProposals,
+    [loading, loadingProposals],
+  )
 
   const handleFilterPress = (f: ProposalFilter) => () => {
     setFilter(f)
@@ -87,8 +107,9 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
             </Text>
           </TouchableOpacityBox>
         </Box>
-        {loading && <ProposalCardSkeleton backgroundColor="transparent" />}
-        {!loading &&
+        {isLoading ? (
+          <CircleLoader loaderSize={24} color="white" />
+        ) : (
           proposals
             ?.filter((p) => Boolean(p.info))
             .map((proposal, idx) => (
@@ -105,7 +126,8 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
                   })
                 }
               />
-            ))}
+            ))
+        )}
       </Box>
       <BlurActionSheet
         title={t('gov.proposals.filterTitle')}
