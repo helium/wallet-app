@@ -98,8 +98,9 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
                 marginTop={idx > 0 ? 'm' : 'none'}
                 proposal={proposal.info as ProposalV0}
                 proposalKey={proposal.publicKey}
-                onPress={async (p) =>
+                onPress={async (m, p) =>
                   navigation.push('ProposalScreen', {
+                    mint: m.toBase58(),
                     proposal: p.toBase58(),
                   })
                 }

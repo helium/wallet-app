@@ -51,7 +51,11 @@ export const GovernanceScreen = () => {
           {!loading && (
             <>
               <VotingPowerCard
-                onPress={() => navigation.push('VotingPowerScreen')}
+                onPress={async (m) =>
+                  navigation.push('VotingPowerScreen', {
+                    mint: m.toBase58(),
+                  })
+                }
               />
               <ProposalsList />
             </>

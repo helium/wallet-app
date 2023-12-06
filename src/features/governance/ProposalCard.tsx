@@ -26,7 +26,7 @@ interface IProposalCardProps extends BoxProps<Theme> {
   filter: ProposalFilter
   proposal: ProposalV0
   proposalKey: PublicKey
-  onPress?: (proposal: PublicKey) => Promise<void>
+  onPress?: (mint: PublicKey, proposal: PublicKey) => Promise<void>
 }
 
 const markdownParser = MarkdownIt()
@@ -129,8 +129,8 @@ export const ProposalCard = ({
   }, [filter, derivedState, proposal, isLoading])
 
   const handleOnPress = useCallback(async () => {
-    if (onPress) await onPress(proposalKey)
-  }, [proposalKey, onPress])
+    if (onPress) await onPress(mint, proposalKey)
+  }, [mint, proposalKey, onPress])
 
   if (!isVisible) return null
   if (isLoading) {

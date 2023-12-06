@@ -15,25 +15,37 @@ import { useGovernance } from '@storage/GovernanceProvider'
 import globalStyles from '@theme/globalStyles'
 import { daysToSecs } from '@utils/dateTools'
 import BN from 'bn.js'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
 import { useTranslation } from 'react-i18next'
+import { RouteProp, useRoute } from '@react-navigation/native'
+import { PublicKey } from '@solana/web3.js'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { PositionsList } from './PositionsList'
 import { VotingPowerCard } from './VotingPowerCard'
+import { GovernanceStackParamList } from './governanceTypes'
+
+type Route = RouteProp<GovernanceStackParamList, 'VotingPowerScreen'>
 
 export const VotingPowerScreen = () => {
   const { t } = useTranslation()
+  const route = useRoute<Route>()
   const wallet = useCurrentWallet()
   const { walletSignBottomSheetRef } = useWalletSign()
   const backEdges = useMemo(() => ['top'] as Edge[], [])
   const [isLockModalOpen, setIsLockModalOpen] = useState(false)
-  const { mint, registrar, refetch: refetchState, positions } = useGovernance()
+  const {
+    mint,
+    registrar,
+    refetch: refetchState,
+    positions,
+    setMint,
+  } = useGovernance()
   const { amount: ownedAmount, decimals } = useOwnedAmount(wallet, mint)
   const { error: createPositionError, createPosition } = useCreatePosition()
   const {
@@ -41,6 +53,16 @@ export const VotingPowerScreen = () => {
     loading: claimingAllRewards,
     claimAllPositionsRewards,
   } = useClaimAllPositionsRewards()
+
+  useEffect(() => {
+    if (mint && route.params.mint) {
+      const routeMint = new PublicKey(route.params.mint)
+
+      if (!mint.equals(routeMint)) {
+        setMint(routeMint)
+      }
+    }
+  }, [mint, route, setMint])
 
   const positionsWithRewards = useMemo(
     () => positions?.filter((p) => p.hasRewards),

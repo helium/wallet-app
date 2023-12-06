@@ -24,7 +24,7 @@ import { Theme } from '@theme/theme'
 import { fmtUnixTime, humanReadable } from '@utils/formatting'
 import axios from 'axios'
 import BN from 'bn.js'
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { ScrollView } from 'react-native'
 import Markdown from 'react-native-markdown-display'
@@ -45,14 +45,15 @@ export const ProposalScreen = () => {
   const { t } = useTranslation()
   const route = useRoute<Route>()
   const theme = useTheme<Theme>()
-  const { params } = route
-  const { proposal: pk } = params
   const [currVote, setCurrVote] = useState(0)
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])
-  const proposalKey = useMemo(() => new PublicKey(pk), [pk])
+  const proposalKey = useMemo(
+    () => new PublicKey(route.params.proposal),
+    [route.params.proposal],
+  )
   const { walletSignBottomSheetRef } = useWalletSign()
-  const { loading, amountLocked } = useGovernance()
+  const { mint, setMint, loading, amountLocked } = useGovernance()
   const { info: proposal } = useProposal(proposalKey)
   const { info: proposalConfig } = useProposalConfig(proposal?.proposalConfig)
   const { info: registrar } = useRegistrar(proposalConfig?.voteController)
@@ -60,6 +61,16 @@ export const ProposalScreen = () => {
   const { info: resolution } = useResolutionSettings(
     proposalConfig?.stateController,
   )
+
+  useEffect(() => {
+    if (mint && route.params.mint) {
+      const routeMint = new PublicKey(route.params.mint)
+
+      if (!mint.equals(routeMint)) {
+        setMint(routeMint)
+      }
+    }
+  }, [mint, route, setMint])
 
   const {
     voteWeights,

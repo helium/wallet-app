@@ -7,6 +7,7 @@ import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
+import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { Theme } from '@theme/theme'
 import { useColors } from '@theme/themeHooks'
@@ -17,7 +18,7 @@ import { useTranslation } from 'react-i18next'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 
 interface IVotingPowerCardProps extends BoxProps<Theme> {
-  onPress?: () => void
+  onPress?: (mint: PublicKey) => Promise<void>
 }
 
 export const VotingPowerCard = ({
@@ -33,8 +34,8 @@ export const VotingPowerCard = ({
   const { symbol } = useMetaplexMetadata(mint)
 
   const handleOnPress = useCallback(async () => {
-    if (onPress) await onPress()
-  }, [onPress])
+    if (onPress) await onPress(mint)
+  }, [onPress, mint])
 
   const noVotingPower = !loading && (!amountLocked || amountLocked.isZero())
   const renderCard = (compact = false) => (
