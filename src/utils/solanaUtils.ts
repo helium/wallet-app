@@ -386,7 +386,10 @@ export const getTransactions = async (
   try {
     const account = new PublicKey(walletAddress)
     const mint = new PublicKey(mintAddress)
-    const ata = await getAssociatedTokenAddress(account, mint)
+    let ata = getAssociatedTokenAddressSync(mint, account)
+    if (mint.equals(NATIVE_MINT)) {
+      ata = account
+    }
     const transactionList =
       await anchorProvider.connection.getSignaturesForAddress(ata, options)
     const sigs = transactionList.map(({ signature }) => signature)
@@ -1518,6 +1521,29 @@ export const solInstructionsToActivity = (
   if (blockTime) {
     activity.time = blockTime
   }
+  if (meta?.preBalances && meta.postBalances) {
+    const { preBalances, postBalances } = meta
+
+    let payments = [] as Payment[]
+    postBalances.forEach((post, index) => {
+      const preBalance = preBalances[index]
+      const pre = preBalance || 0
+      const preAmount = pre || 0
+      const postAmount = post || 0
+      const amount = postAmount - preAmount
+      if (amount !== 0 && !Number.isNaN(amount)) {
+        const p: Payment = {
+          amount: amount / LAMPORTS_PER_SOL,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          owner:
+            parsedTxn.transaction.message.accountKeys[index].pubkey.toBase58(),
+          mint: NATIVE_MINT.toBase58(),
+        }
+        payments = [...payments, p]
+      }
+    })
+    activity.payments = [...payments, ...(activity.payments || [])]
+  }
   if (meta?.preTokenBalances && meta.postTokenBalances) {
     const { preTokenBalances, postTokenBalances } = meta
 
@@ -1543,7 +1569,7 @@ export const solInstructionsToActivity = (
         payments = [...payments, p]
       }
     })
-    activity.payments = payments
+    activity.payments = [...payments, ...(activity.payments || [])]
   }
 
   if ((activity.payments?.length || 0) > 0) {
