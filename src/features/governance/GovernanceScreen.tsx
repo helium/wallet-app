@@ -4,7 +4,6 @@ import { DelayedFadeIn } from '@components/FadeInOut'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TokenPill from '@components/TokenPill'
-import { HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { useNavigation } from '@react-navigation/native'
 import globalStyles from '@theme/globalStyles'
 import React, { useEffect, useMemo } from 'react'
@@ -13,11 +12,12 @@ import { Edge } from 'react-native-safe-area-context'
 import { useGovernance } from '@storage/GovernanceProvider'
 import CircleLoader from '@components/CircleLoader'
 import { useTranslation } from 'react-i18next'
+import { GovMints } from '@utils/constants'
+import { PublicKeyMismatchError } from '@metaplex-foundation/mpl-bubblegum'
+import { PublicKey } from '@solana/web3.js'
 import { ProposalsList } from './ProposalsList'
 import { VotingPowerCard } from './VotingPowerCard'
 import { GovernanceNavigationProp } from './governanceTypes'
-
-const GovMints = [HNT_MINT, MOBILE_MINT, IOT_MINT]
 
 export const GovernanceScreen = () => {
   const { t } = useTranslation()
@@ -43,15 +43,19 @@ export const GovernanceScreen = () => {
             justifyContent="space-between"
             marginVertical="xl"
           >
-            {GovMints.map((m) => (
-              <TokenPill
-                key={m.toBase58()}
-                mint={m}
-                isActive={mint.equals(m)}
-                onPress={() => setMint(m)}
-                activeColor="secondaryBackground"
-              />
-            ))}
+            {GovMints.map((m) => {
+              const pk = new PublicKey(m)
+
+              return (
+                <TokenPill
+                  key={m}
+                  mint={pk}
+                  isActive={mint.equals(pk)}
+                  onPress={() => setMint(pk)}
+                  activeColor="secondaryBackground"
+                />
+              )
+            })}
           </Box>
           {loading ? (
             <CircleLoader loaderSize={24} color="white" />

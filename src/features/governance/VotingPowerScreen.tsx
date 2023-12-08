@@ -121,7 +121,7 @@ export const VotingPowerScreen = () => {
     const { amount, lockupPeriodInDays, lockupKind } = values
     if (decimals && walletSignBottomSheetRef) {
       const amountToLock = toBN(amount, decimals)
-      const decision = await getDecision(t('gov.transctions.lockTokens'))
+      const decision = await getDecision(t('gov.transactions.lockTokens'))
 
       if (decision) {
         await createPosition({

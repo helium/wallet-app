@@ -22,35 +22,56 @@ interface IVotingPowerCardProps extends BoxProps<Theme> {
   onPress?: (mint: PublicKey) => Promise<void>
 }
 
-export const VotingPowerCardSkeleton = (boxProps: BoxProps<Theme>) => (
-  <FadeInOut>
-    <Box
-      flexDirection="row"
-      justifyContent="space-between"
-      backgroundColor="secondaryBackground"
-      borderRadius="l"
-      padding="m"
-      {...boxProps}
-    >
-      <Box flex={1}>
-        <Box width={120} height={16} backgroundColor="surface" />
-        <Box width={70} height={16} marginTop="ms" backgroundColor="surface" />
+export const VotingPowerCardSkeleton = (boxProps: BoxProps<Theme>) => {
+  const { t } = useTranslation()
+  const { mint } = useGovernance()
+  const { symbol } = useMetaplexMetadata(mint)
+
+  return (
+    <FadeInOut>
+      <Box
+        flexDirection="row"
+        justifyContent="space-between"
+        backgroundColor="secondaryBackground"
+        borderRadius="l"
+        padding="m"
+        {...boxProps}
+      >
+        <Box flex={1}>
+          <Text variant="body1" color="secondaryText">
+            {t('gov.votingPower.title')}
+          </Text>
+          <Box
+            width={70}
+            height={16}
+            marginTop="xs"
+            backgroundColor="surface"
+          />
+        </Box>
+        <Box flex={1} alignItems="flex-end">
+          <Text variant="body1" color="secondaryText" textAlign="right">
+            {t('gov.votingPower.locked', { symbol })}
+          </Text>
+          <Box
+            width={70}
+            height={16}
+            marginTop="xs"
+            backgroundColor="surface"
+          />
+        </Box>
       </Box>
-      <Box flex={1} alignItems="flex-end">
-        <Box width={120} height={16} backgroundColor="surface" />
-        <Box width={70} height={16} marginTop="ms" backgroundColor="surface" />
+      <Box
+        flex={1}
+        borderTopColor="primaryBackground"
+        borderTopWidth={2}
+        paddingVertical="m"
+        paddingHorizontal="m"
+      >
+        <Box width={320} height={16} backgroundColor="surface" />
       </Box>
-    </Box>
-    <Box
-      flex={1}
-      borderTopColor="primaryBackground"
-      borderTopWidth={2}
-      padding="ms"
-    >
-      <Box width={320} height={16} backgroundColor="surface" />
-    </Box>
-  </FadeInOut>
-)
+    </FadeInOut>
+  )
+}
 
 export const VotingPowerCard = ({
   onPress,
@@ -164,7 +185,8 @@ export const VotingPowerCard = ({
           flex={1}
           borderTopColor="primaryBackground"
           borderTopWidth={2}
-          padding="ms"
+          paddingVertical="ms"
+          paddingHorizontal="m"
         >
           <Text variant="body2" color="secondaryText">
             {t('gov.votingPower.youHave', {
@@ -189,7 +211,6 @@ export const VotingPowerCard = ({
         borderRadius="l"
         entering={FadeIn}
         exiting={FadeOut}
-        {...boxProps}
       >
         <TouchableOpacityBox onPress={handleOnPress}>
           {renderCard(false)}
