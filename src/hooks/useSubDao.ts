@@ -9,10 +9,7 @@ export type SubDaoV0 = IdlAccounts<HeliumSubDaos>['subDaoV0'] & {
   pubKey: PublicKey
 }
 
-export const useSubDao = (
-  subDaoKey: string | undefined,
-  isStatic: boolean = false,
-) => {
+export const useSubDao = (subDaoKey: string | undefined, isStatic = false) => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   return useAnchorAccount<HeliumSubDaos, type>(

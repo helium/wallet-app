@@ -4,142 +4,93 @@ import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
 import RadioButton from '@components/RadioButton'
 import Text from '@components/Text'
-import Address from '@helium/address'
-import { init as initDataCredits } from '@helium/data-credits-sdk'
 import {
   init,
   iotInfoKey,
   keyToAssetKey,
   rewardableEntityConfigKey,
 } from '@helium/helium-entity-manager-sdk'
-import { useOwnedAmount, useSolOwnedAmount } from '@helium/helium-react-hooks'
-import { Maker } from '@helium/onboarding'
 import {
   AddGatewayV1,
   useHotspotBle,
   useOnboarding,
 } from '@helium/react-native-sdk'
 import {
-  DC_MINT,
-  HNT_MINT,
+  IOT_MINT,
   bufferToTransaction,
-  heliumAddressToSolAddress,
   sendAndConfirmWithRetry,
   truthy,
 } from '@helium/spl-utils'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import { usePublicKey } from '@hooks/usePublicKey'
-import { useSubDao } from '@hooks/useSubDao'
+import { useImplicitBurn } from '@hooks/useImplicitBurn'
+import { useOnboardingBalnces } from '@hooks/useOnboardingBalances'
 import { useNavigation } from '@react-navigation/native'
-import {
-  createAssociatedTokenAccountIdempotentInstruction,
-  getAssociatedTokenAddressSync,
-} from '@solana/spl-token'
-import { Transaction } from '@solana/web3.js'
+import { LAMPORTS_PER_SOL, Transaction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { useBalance } from '@utils/Balance'
 import { DAO_KEY, IOT_SUB_DAO_KEY } from '@utils/constants'
+import sleep from '@utils/sleep'
 import { getHotspotWithRewards, isInsufficientBal } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { Buffer } from 'buffer'
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { useAsync, useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert, Linking, ScrollView } from 'react-native'
 import { useSolana } from '../../../solana/SolanaProvider'
-import { useWalletSign } from '../../../solana/WalletSignProvider'
-import { WalletStandardMessageTypes } from '../../../solana/walletSignBottomSheetTypes'
 import { CollectableNavigationProp } from '../../collectables/collectablesTypes'
-import { getTestHotspot } from './Settings'
 
-type MakerInfo = {
-  maker?: Maker
-  onboardAddress?: string
-}
-
+const REQUIRED_SOL = new BN((0.00089088 + 0.00001) * LAMPORTS_PER_SOL)
 const AddGatewayBle = () => {
-  const { getOnboardingRecord, onboardingClient, getOnboardTransactions } =
-    useOnboarding()
-  const { getOnboardingAddress } = useHotspotBle()
+  const { onboardingClient, getOnboardTransactions } = useOnboarding()
+  const { getOnboardingAddress, createGatewayTxn } = useHotspotBle()
   const { currentAccount } = useAccountStorage()
   const { anchorProvider } = useSolana()
-  const { walletSignBottomSheetRef } = useWalletSign()
   const { t } = useTranslation()
   const collectNav = useNavigation<CollectableNavigationProp>()
+  const wallet = useCurrentWallet()
   const {
-    result: { onboardAddress, maker } = {} as MakerInfo,
-    error: fetchRecordError,
+    result: onboardAddress,
+    error: fetchOnboardAddrError,
     loading: fetchLoading,
   } = useAsync(async () => {
-    // const onboardAddr = await getOnboardingAddress()
-    // TODO: Disable when debug done
-    const onboardAddr = getTestHotspot().address.b58
-    const onboardRecord = await getOnboardingRecord(onboardAddr)
-    if (!onboardRecord) {
-      throw new Error(
-        t('hotspotOnboarding.onboarding.hotspotNotFound', {
-          onboardAddress,
-        }),
-      )
-    }
-
-    return {
-      onboardAddress: onboardAddr,
-      maker: onboardRecord.maker,
-    } as MakerInfo
-  }, [getOnboardingRecord, getOnboardingAddress])
-  const makerSolAddr = useMemo(
-    () => maker && heliumAddressToSolAddress(maker.address),
-    [maker],
-  )
-
-  const { amount: makerDc, loading: loadingMakerDc } = useOwnedAmount(
-    usePublicKey(makerSolAddr),
-    DC_MINT,
-  )
-  const wallet = useCurrentWallet()
-  const { amount: myDc, loading: loadingMyDc } = useOwnedAmount(wallet, DC_MINT)
-  const { amount: myHnt, loading: loadingMyHnt } = useOwnedAmount(
-    wallet,
-    HNT_MINT,
-  )
-  const { networkTokensToDc } = useBalance()
-  const myTotalDc =
-    typeof myDc !== 'undefined' && typeof myHnt !== 'undefined'
-      ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        new BN(myDc!.toString()).add(
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          networkTokensToDc(new BN(myHnt!.toString()))!.div(new BN(100000000)),
-        )
-      : undefined
-  const loadingDc = loadingMyDc || loadingMakerDc || loadingMyHnt
-  const { info: subDao } = useSubDao(IOT_SUB_DAO_KEY.toBase58(), true)
-  // NOTE: This only works for IOT subdao. Which is what this was built for so that's fine.
-  const totalDcReq = subDao?.onboardingDcFee
-  const { amount: makerSol, loading: loadingMakerSol } = useSolOwnedAmount(
-    usePublicKey(makerSolAddr),
-  )
-  const { amount: mySol, loading: loadingMySol } = useSolOwnedAmount(
-    usePublicKey(makerSolAddr),
-  )
-  const loadingSol = loadingMakerSol || loadingMySol
+    const onboardAddr = await getOnboardingAddress()
+    // For testing
+    // const onboardAddr = getTestHotspot().address.b58
+    return onboardAddr
+  }, [getOnboardingAddress])
+  const {
+    error: onboardBalError,
+    maker,
+    loadingMaker,
+    mySol,
+    makerDc,
+    loadingMakerSol,
+    loadingMySol,
+    myDcWithHnt,
+    loadingMyDc,
+    makerSol,
+    loadingMakerDc,
+    onboardingDcRequirements,
+    locationAssertDcRequirements,
+    loadingOnboardingDcRequirements,
+  } = useOnboardingBalnces(onboardAddress)
+  const requiredDc = onboardingDcRequirements[IOT_MINT.toBase58()] || new BN(0)
+  const assertRequiredDc =
+    locationAssertDcRequirements[IOT_MINT.toBase58()] || new BN(0)
   const insufficientMakerSolBal =
-    !loadingSol &&
-    typeof makerSol !== 'undefined' &&
-    makerSol < 0.00089088 + 0.00001
+    !loadingMakerSol && (makerSol || new BN(0)).lt(REQUIRED_SOL)
   const insufficientMakerDcBal =
-    !loadingDc &&
-    totalDcReq &&
-    typeof makerDc !== 'undefined' &&
-    makerDc < totalDcReq.toNumber()
+    !loadingMakerDc &&
+    !loadingOnboardingDcRequirements &&
+    (makerDc || new BN(0)).lt(requiredDc)
   const insufficientMySolBal =
-    !loadingSol && typeof mySol !== 'undefined' && mySol < 0.00089088 + 0.00001
+    !loadingMySol && (mySol || new BN(0)).lt(REQUIRED_SOL)
   const insufficientMyDcBal =
-    !loadingDc &&
-    totalDcReq &&
-    typeof myTotalDc !== 'undefined' &&
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    myTotalDc!.toNumber() < totalDcReq.toNumber()
+    !loadingOnboardingDcRequirements &&
+    !loadingMyDc &&
+    (myDcWithHnt || new BN(0)).lt(requiredDc)
+
+  const { implicitBurn } = useImplicitBurn()
 
   // eslint-disable-next-line no-nested-ternary
   const balError = maker
@@ -182,15 +133,23 @@ const AddGatewayBle = () => {
     }
     const payer = balError ? wallet?.toBase58() : undefined
 
-    // TODO: Undo when done testing
-    const tx = await new AddGatewayV1({
-      owner: Address.fromB58(accountAddress),
-      gateway: getTestHotspot().address,
-      payer: Address.fromB58(maker.address),
-    }).sign({
-      gateway: getTestHotspot(),
+    // For testing
+    // const tx = await new AddGatewayV1({
+    //   owner: Address.fromB58(accountAddress),
+    //   gateway: getTestHotspot().address,
+    //   payer: Address.fromB58(maker.address),
+    // }).sign({
+    //   gateway: getTestHotspot(),
+    // })
+    // const txnStr = tx.toString()
+    const txnStr = await createGatewayTxn({
+      ownerAddress: accountAddress,
+      payerAddress: maker.address,
     })
-    const txnStr = tx.toString()
+    const tx = AddGatewayV1.fromString(txnStr)
+    if (!tx?.gateway) {
+      throw new Error('Invalid transaction')
+    }
     // const txnStr = await createGatewayTxn({
     //   ownerAddress: accountAddress,
     //   payerAddress: maker?.address,
@@ -244,56 +203,8 @@ const AddGatewayBle = () => {
     )
     if (!iotInfo && onboardAddress) {
       // Implicit burn to DC if needed
-      if (payer && (myDc || 0) < totalDcReq.toNumber()) {
-        const program = await initDataCredits(anchorProvider)
-        const dcDeficit = BigInt(totalDcReq.toNumber()) - (myDc || BigInt(0))
-        const burnTx = new Transaction({
-          feePayer: wallet,
-          recentBlockhash: (
-            await anchorProvider.connection.getLatestBlockhash()
-          ).blockhash,
-        })
-        burnTx.add(
-          await program.methods
-            .mintDataCreditsV0({
-              hntAmount: null,
-              dcAmount: new BN(dcDeficit.toString()),
-            })
-            .preInstructions([
-              createAssociatedTokenAccountIdempotentInstruction(
-                wallet,
-                getAssociatedTokenAddressSync(DC_MINT, wallet, true),
-                wallet,
-                DC_MINT,
-              ),
-            ])
-            .accounts({
-              dcMint: DC_MINT,
-              recipient: wallet,
-            })
-            .instruction(),
-        )
-        if (!walletSignBottomSheetRef) {
-          throw new Error('No wallet bottom sheet')
-        }
-        const decision = await walletSignBottomSheetRef.show({
-          type: WalletStandardMessageTypes.signTransaction,
-          url: '',
-          serializedTxs: [burnTx.serialize({ requireAllSignatures: false })],
-          header: t('transactions.buyDc'),
-        })
-        const signed = await anchorProvider.wallet.signTransaction(burnTx)
-        const serializedTx = Buffer.from(signed.serialize())
-        if (decision) {
-          await sendAndConfirmWithRetry(
-            anchorProvider.connection,
-            serializedTx,
-            { skipPreflight: true },
-            'confirmed',
-          )
-        } else {
-          throw new Error('User rejected transaction')
-        }
+      if (payer) {
+        await implicitBurn(requiredDc.toNumber())
       }
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -336,7 +247,23 @@ const AddGatewayBle = () => {
     }
 
     const keyToAssetK = keyToAssetKey(DAO_KEY, tx.gateway.b58, 'b58')[0]
-    const keyToAsset = await hemProgram.account.keyToAssetV0.fetch(keyToAssetK)
+    let totalTime = 0
+    let keyToAsset = await hemProgram.account.keyToAssetV0.fetchNullable(
+      keyToAssetK,
+    )
+    // Wait up to 30s for hotspot to exist
+    while (!keyToAsset && totalTime < 30 * 1000) {
+      // eslint-disable-next-line no-await-in-loop
+      await sleep(2000)
+      totalTime += 2000
+      // eslint-disable-next-line no-await-in-loop
+      keyToAsset = await hemProgram.account.keyToAssetV0.fetchNullable(
+        keyToAssetK,
+      )
+    }
+    if (!keyToAsset) {
+      throw new Error(t('hotspotOnboarding.onboarding.failedToFind'))
+    }
     const { asset } = keyToAsset
     const collectable = await getHotspotWithRewards(asset, anchorProvider)
     collectNav.navigate(
@@ -344,13 +271,28 @@ const AddGatewayBle = () => {
       { collectable },
     )
   })
-  const error = fetchRecordError || callbackError
-  const loading = fetchLoading || callbackLoading || loadingDc || loadingSol
+  const error =
+    fetchOnboardAddrError ||
+    onboardBalError ||
+    callbackError ||
+    (!maker &&
+      !loadingMaker &&
+      new Error(t('hotspotOnboarding.onboarding.makerNotFound')))
+  const loading =
+    fetchLoading ||
+    callbackLoading ||
+    loadingMakerDc ||
+    loadingMakerSol ||
+    loadingMyDc ||
+    loadingMySol ||
+    loadingOnboardingDcRequirements
   const disabled =
     loading || (balError && (insufficientMyDcBal || insufficientMySolBal))
   const [selectedOption, setSelectedOption] = useState<'contact' | 'pay'>(
     'contact',
   )
+  const usd = requiredDc.toNumber() / 100000
+  const assertUsd = assertRequiredDc.toNumber() / 100000
 
   return (
     <BackScreen title={t('hotspotOnboarding.onboarding.title')}>
@@ -402,7 +344,8 @@ const AddGatewayBle = () => {
               />
               <RadioButton
                 label={t('hotspotOnboarding.onboarding.optionPay', {
-                  usd: totalDcReq.toNumber() / 100000,
+                  usd,
+                  assertUsd,
                 })}
                 selected={selectedOption === 'pay'}
                 onClick={() => setSelectedOption('pay')}
@@ -431,17 +374,18 @@ const AddGatewayBle = () => {
 
             {selectedOption === 'pay' && (
               <>
-                {insufficientMySolBal && (
+                {!callbackLoading && insufficientMySolBal && (
                   <Text mt="s" variant="body1Medium" color="red500">
                     {t('hotspotOnboarding.onboarding.notEnoughSol')}
                   </Text>
                 )}
-                {insufficientMyDcBal && (
+                {!callbackLoading && insufficientMyDcBal && (
                   <Text mt="s" variant="body1Medium" color="red500">
                     {t('hotspotOnboarding.onboarding.notEnoughDc')}
                   </Text>
                 )}
-                {!insufficientMySolBal && !insufficientMyDcBal && (
+                {(callbackLoading ||
+                  (!insufficientMySolBal && !insufficientMyDcBal)) && (
                   <>
                     <Text
                       fontWeight="bold"
@@ -450,7 +394,8 @@ const AddGatewayBle = () => {
                       color="red500"
                     >
                       {t('hotspotOnboarding.onboarding.pay', {
-                        usd: totalDcReq.toNumber() / 100000,
+                        usd,
+                        assertUsd,
                       })}
                     </Text>
                     <ButtonPressable
@@ -460,7 +405,11 @@ const AddGatewayBle = () => {
                       borderColor="transparent"
                       opacity={disabled ? 0.5 : undefined}
                       backgroundColor="red500"
-                      title={t('hotspotOnboarding.onboarding.onboardAndPay')}
+                      title={
+                        loading
+                          ? undefined
+                          : t('hotspotOnboarding.onboarding.onboardAndPay')
+                      }
                       onPress={handleAddGateway}
                       disabled={disabled}
                       LeadingComponent={loading ? <CircleLoader /> : undefined}

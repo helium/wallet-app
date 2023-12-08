@@ -68,7 +68,7 @@ const Diagnostics = () => {
         borderColor="white"
         borderWidth={2}
         backgroundColor="transparent"
-        title={t('hotspotOnboarding.diagnostics.get')}
+        title={loading ? undefined : t('hotspotOnboarding.diagnostics.get')}
         onPress={handleSetDiagnostics}
         backgroundColorDisabled="surfaceSecondary"
         backgroundColorDisabledOpacity={0.5}

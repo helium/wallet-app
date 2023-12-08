@@ -489,6 +489,7 @@ export default () => {
       lng,
       elevation,
       decimalGain,
+      payer,
     }: {
       type: HotspotType
       entityKey: string
@@ -496,6 +497,7 @@ export default () => {
       lng: number
       elevation?: string
       decimalGain?: string
+      payer?: string
     }) => {
       if (!anchorProvider || !currentAccount || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
@@ -515,6 +517,7 @@ export default () => {
             lng,
           },
         ],
+        payer,
         owner: currentAccount.address,
         gateway: entityKey,
         // Onboarding record isn't actually used or needed, but if we don't

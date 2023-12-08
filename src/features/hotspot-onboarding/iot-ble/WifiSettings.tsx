@@ -37,16 +37,18 @@ const WifiSettings = () => {
     isConnected().then(setConnected)
   }, [isConnected])
 
-  const { execute: handleRefresh, loading: refreshing, error } = useAsyncCallback(
-    async () => {
-      if (!connected) return
+  const {
+    execute: handleRefresh,
+    loading: refreshing,
+    error,
+  } = useAsyncCallback(async () => {
+    if (!connected) return
 
-      const configured = await readWifiNetworks(true)
-      setConfiguredNetworks(configured)
-      const available = await readWifiNetworks(false)
-      setNetworks(available)
-    },
-  )
+    const configured = await readWifiNetworks(true)
+    setConfiguredNetworks(configured)
+    const available = await readWifiNetworks(false)
+    setNetworks(available)
+  })
 
   // Refresh on network change or on load
   useEffect(() => {

@@ -5,18 +5,20 @@ import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { keyToAssetKey } from '@helium/helium-entity-manager-sdk'
 import { useHotspotBle } from '@helium/react-native-sdk'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useIotInfo } from '@hooks/useIotInfo'
 import { useKeyToAsset } from '@hooks/useKeyToAsset'
 import { PublicKey } from '@metaplex-foundation/js'
 import { useNavigation } from '@react-navigation/native'
 import { DAO_KEY } from '@utils/constants'
+import { getHotspotWithRewards } from '@utils/solanaUtils'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native'
+import { useSolana } from '../../../solana/SolanaProvider'
 import { CollectableNavigationProp } from '../../collectables/collectablesTypes'
 import type { HotspotBLEStackParamList, HotspotBleNavProp } from './navTypes'
-import { Keypair, Mnemonic } from '@helium/crypto'
 
 type Option = {
   name: string
@@ -34,37 +36,27 @@ const data: Option[] = [
   },
 ]
 
-export const TEST_HOTSPOT_WORDS = [
-  'give',
-  'example',
-  'tag',
-  'boil',
-  'load',
-  'over',
-  'device',
-  'hamster',
-  'river',
-  'soft',
-  'cliff',
-  'casual',
-]
-let TEST_HOTSPOT: Keypair = null
+// For testing "fresh" hotspots
+// export const TEST_HOTSPOT_WORDS = [
 
-async function setTestHotspot() {
-  TEST_HOTSPOT = await Keypair.fromMnemonic(new Mnemonic(TEST_HOTSPOT_WORDS))
-}
-setTestHotspot()
-
-export function getTestHotspot() {
-  return TEST_HOTSPOT!
-}
+// ]
+// let TEST_HOTSPOT: Keypair = null
+// async function setTestHotspot() {
+//   TEST_HOTSPOT = await Keypair.fromMnemonic(new Mnemonic(TEST_HOTSPOT_WORDS))
+// }
+// setTestHotspot()
+// export function getTestHotspot() {
+//   return TEST_HOTSPOT!
+// }
 
 const Settings = () => {
   const navigation = useNavigation<HotspotBleNavProp>()
   const collectNav = useNavigation<CollectableNavigationProp>()
   const { t } = useTranslation()
-  const { getOnboardingAddress, isConnected } = useHotspotBle()
+  const { isConnected, getOnboardingAddress } = useHotspotBle()
   const [connected, setConnected] = useState(false)
+  const { anchorProvider } = useSolana()
+  const wallet = useCurrentWallet()
 
   useEffect(() => {
     isConnected().then(setConnected)
@@ -80,9 +72,9 @@ const Settings = () => {
       c: boolean,
     ): Promise<{ address?: string; keyToAssetK?: PublicKey }> => {
       if (c) {
-        // TODO: FIx when done dbugging
-        // const addr = await getOnboardingAddress()
-        const addr = TEST_HOTSPOT.address.b58
+        const addr = await getOnboardingAddress()
+        // For testing
+        // const addr = TEST_HOTSPOT.address.b58
         return {
           address: addr,
           keyToAssetK: keyToAssetKey(DAO_KEY, addr, 'b58')[0],
@@ -99,17 +91,20 @@ const Settings = () => {
   const loading = loadingInfo || loadingAddress || loadingKta
 
   const navNext = useCallback(async () => {
-    if (iotInfo && keyToAsset) {
+    if (iotInfo && keyToAsset && anchorProvider && wallet) {
       const collectable = await getHotspotWithRewards(
         keyToAsset.asset,
         anchorProvider,
       )
+      if (collectable.ownership.owner !== wallet.toBase58()) {
+        collectNav.push('CollectablesTopTab')
+      }
 
       collectNav.push('HotspotDetailsScreen', { collectable })
     } else {
       navigation.push('AddGatewayBle')
     }
-  }, [navigation, iotInfo, keyToAsset, collectNav])
+  }, [anchorProvider, navigation, iotInfo, keyToAsset, collectNav, wallet])
 
   const renderItem = React.useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
@@ -152,7 +147,7 @@ const Settings = () => {
         renderItem={renderItem}
         keyExtractor={keyExtractor}
       />
-      {!loadingInfo && (
+      {!loadingInfo && !loadingKta && (
         <ButtonPressable
           marginTop="l"
           borderRadius="round"

@@ -54,12 +54,12 @@ export default {
       responsible:
         'In almost all cases, Hotspots manufacturers are responsible for paying the onboarding and initial location assert fees.',
       // eslint-disable-next-line no-template-curly-in-string
-      pay: 'I understand that the ${{usd}} onboarding fee was included in the purchase price of my Hotspot and the manufacturer is responsible for paying that fee.  Nonetheless, I would like to pay the ${{usd}} onboarding fee out of my wallet to onboard my Hotspot now.',
+      pay: 'I understand that the ${{usd}} onboarding fee was included in the purchase price of my Hotspot and the manufacturer is responsible for paying that fee.  Nonetheless, I would like to pay the ${{usd}} onboarding fee out of my wallet to onboard my Hotspot now. I will also pay the ${{assertUsd}} fee to assert this hotspot location.',
       notEnoughSol: 'You do not have enough sol to self-onboard',
       notEnoughDc: 'You do not have enough DC or HNT to self-onboard',
       hotspotNotFound:
         'This hotspot does not exist in the onboarding server. Contact your manufacturer to have them approve hotspot with id {{onboardAddress}}',
-      makerNotFound: 'Maker does not exist',
+      makerNotFound: 'No manufacturer found for this hotspot',
       manufacturerMissing:
         'The manufacturer of your hotspot ({{name}}) does not have enough {{tokens}} for you to complete onboarding.',
       twoSolutions: 'At this time there are two solutions:',
@@ -67,8 +67,10 @@ export default {
         'Contact the manufacturer and request assistance onboarding your Hotspot.',
       optionPay:
         // eslint-disable-next-line no-template-curly-in-string
-        'Pay ${{usd}} in Data Credits or burn HNT to onboard my Hotspot.',
+        'Pay ${{usd}} in Data Credits or burn HNT to onboard my Hotspot. I will also pay the ${{assertUsd}} to assert this hotspot location.',
       contact: 'Contact Manufacturer',
+      failedToFind:
+        'Failed to find onboarded hotspot. Check your hotspots page, as it may have been onboarded. This can happen due to network issues',
     },
     selectOnboardingMethod: {
       title: 'Select Connection Method',
