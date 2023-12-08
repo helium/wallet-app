@@ -215,6 +215,7 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(navigation as any).navigate('Governance', {
       screen: 'VotingPowerScreen',
+      initial: false,
       params: { mint: mintStr },
     })
   }, [navigation, mintStr, triggerImpact])
