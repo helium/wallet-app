@@ -157,7 +157,7 @@ export const TokenListItem = ({ mint }: Props) => {
 }
 
 export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation()
   const { anchorProvider, connection } = useSolana()
   const wallet = useCurrentWallet()
   const { triggerImpact } = useHaptic()
@@ -174,15 +174,10 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
         mint,
         provider: anchorProvider,
       },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [mint],
+    [mint, wallet, connection, anchorProvider],
   )
 
-  const {
-    result,
-    loading: loadingPositionKeys,
-    error,
-  } = useAsync(
+  const { result, loading: loadingPositionKeys } = useAsync(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async (args: any | undefined) => {
       if (args) {
@@ -197,7 +192,7 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
   )
 
   const { amountLocked } = useMemo(() => {
-    if (positions) {
+    if (positions && positions.length) {
       let amountLocked = new BN(0)
       positions.forEach((position) => {
         if (position && position.info) {
@@ -217,8 +212,10 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
 
   const handleNavigation = useCallback(() => {
     triggerImpact('light')
-    navigation.navigate('AccountTokenScreen', {
-      mint: mintStr,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(navigation as any).navigate('Governance', {
+      screen: 'VotingPowerScreen',
+      params: { mint: mintStr },
     })
   }, [navigation, mintStr, triggerImpact])
 
@@ -227,6 +224,10 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
       ? humanReadable(new BN(amountLocked.toString()), decimals)
       : '0'
   }, [amountLocked, decimals])
+
+  const loadingAmount = useMemo(() => {
+    return !prevLocked && (loadingPositionKeys || loadingPositions)
+  }, [loadingPositionKeys, loadingPositions, prevLocked])
 
   return (
     <FadeInOut>
@@ -252,32 +253,24 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
             <TokenIcon img={json?.image} />
             <Box
               position="absolute"
+              top={-6}
+              right={-8}
+              backgroundColor="orange500"
+              borderRadius="round"
+              borderWidth={2}
+              borderColor="black"
+              height={22}
+              width={22}
               justifyContent="center"
               alignItems="center"
-              top={-4}
-              right={-6}
-              backgroundColor="black"
-              borderRadius="round"
-              height={20}
-              width={20}
             >
-              <Box
-                backgroundColor="grey900"
-                borderRadius="round"
-                height={16}
-                width={16}
-                justifyContent="center"
-                alignItems="center"
-              >
-                <Lock width={10} height={10} color="white" />
-              </Box>
+              <Lock width={12} height={12} color="black" />
             </Box>
           </Box>
         )}
 
         <Box flex={1} paddingHorizontal="m">
-          {prevLocked === undefined &&
-          (loadingPositionKeys || loadingPositions) ? (
+          {loadingAmount ? (
             <Box flex={1} paddingHorizontal="m">
               <Box width={120} height={16} backgroundColor="surface" />
               <Box
