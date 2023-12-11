@@ -11,7 +11,7 @@ import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { Theme } from '@theme/theme'
-import { fmtUnixTime, humanReadable } from '@utils/formatting'
+import { humanReadable } from '@utils/formatting'
 import axios from 'axios'
 import BN from 'bn.js'
 import MarkdownIt from 'markdown-it'
@@ -19,6 +19,7 @@ import React, { useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useTranslation } from 'react-i18next'
+import { getTimeFromNowFmt } from '@utils/dateTools'
 import { ProposalFilter, ProposalV0 } from './governanceTypes'
 
 interface IProposalCardProps extends BoxProps<Theme> {
@@ -227,10 +228,9 @@ export const ProposalCard = ({
                 </Text>
               )}
               <Text variant="body2" color="primaryText">
-                {fmtUnixTime(endTs || new BN(0))}
+                {getTimeFromNowFmt(endTs || new BN(0))}
               </Text>
             </Box>
-            {}
             <Box>
               <Text variant="body2" color="secondaryText" textAlign="right">
                 {t('gov.proposals.votes')}

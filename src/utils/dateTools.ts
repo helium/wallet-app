@@ -58,11 +58,21 @@ export const daysToMonths = (days: number) => {
 export const getMinDurationFmt = (startTs: BN, endTs: BN) => {
   return getFormattedStringFromDays(getMinDurationInDays(startTs, endTs))
 }
-export const getTimeLeftFromNowFmt = (ts: BN) => {
+
+export const getTimeLeftFromNowFmt = (ts: BN, fullFormat = false) => {
   const dateNowSecTimeStampBN = new BN(new Date().getTime() / 1000)
   return getFormattedStringFromDays(
     ts.sub(dateNowSecTimeStampBN).toNumber() / SECS_PER_DAY,
+    fullFormat,
   )
+}
+
+export const getTimeFromNowFmt = (ts: BN, fullFormat = false) => {
+  const dateNowSecTimeStampBN = new BN(new Date().getTime() / 1000)
+  const adjustedTs = ts.sub(dateNowSecTimeStampBN).toNumber() / SECS_PER_DAY
+  return `${getFormattedStringFromDays(Math.abs(adjustedTs), fullFormat)}${
+    adjustedTs < 0 ? ' ago' : ' from now'
+  }`
 }
 
 export const getMinDurationInDays = (startTs: BN, endTs: BN) => {

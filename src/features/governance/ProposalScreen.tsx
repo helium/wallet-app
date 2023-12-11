@@ -21,7 +21,7 @@ import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import globalStyles from '@theme/globalStyles'
 import { Theme } from '@theme/theme'
-import { fmtUnixTime, humanReadable } from '@utils/formatting'
+import { humanReadable } from '@utils/formatting'
 import axios from 'axios'
 import BN from 'bn.js'
 import React, { useEffect, useMemo, useState } from 'react'
@@ -30,6 +30,7 @@ import { ScrollView } from 'react-native'
 import Markdown from 'react-native-markdown-display'
 import { Edge } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
+import { getTimeFromNowFmt } from '@utils/dateTools'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { VoteOption } from './VoteOption'
@@ -124,15 +125,13 @@ export const ProposalScreen = () => {
       new BN(0),
     )
 
-    const results = proposal?.choices
-      .map((r, index) => ({
-        ...r,
-        index,
-        percent: totalVotes?.isZero()
-          ? 100 / proposal?.choices.length
-          : (r.weight.toNumber() / totalVotes.toNumber()) * 100,
-      }))
-      .sort((a, b) => b.percent - a.percent)
+    const results = proposal?.choices.map((r, index) => ({
+      ...r,
+      index,
+      percent: totalVotes?.isZero()
+        ? 100 / proposal?.choices.length
+        : (r.weight.toNumber() / totalVotes.toNumber()) * 100,
+    }))
 
     return { results, totalVotes }
   }, [proposal])
@@ -281,7 +280,7 @@ export const ProposalScreen = () => {
                       </Text>
                     )}
                     <Text variant="body2" color="primaryText">
-                      {fmtUnixTime(endTs || new BN(0))}
+                      {getTimeFromNowFmt(endTs || new BN(0))}
                     </Text>
                   </Box>
                   <Box>
@@ -304,48 +303,53 @@ export const ProposalScreen = () => {
                     borderRadius="l"
                     paddingTop="m"
                   >
-                    {votingResults.results?.map((r, idx) => (
-                      <Box
-                        key={r.name}
-                        flex={1}
-                        marginTop={idx > 0 ? 's' : 'none'}
-                      >
-                        <Text
-                          variant="body2"
-                          color="primaryText"
-                          marginBottom="xs"
-                        >
-                          {r.name}
-                        </Text>
+                    {votingResults.results
+                      ?.sort((a, b) => b.percent - a.percent)
+                      .map((r, idx) => (
                         <Box
-                          flexDirection="row"
+                          key={r.name}
                           flex={1}
-                          backgroundColor="grey900"
-                          borderRadius="m"
-                          overflow="hidden"
-                          marginBottom="xs"
+                          marginTop={idx > 0 ? 's' : 'none'}
                         >
-                          <Box
-                            flexDirection="row"
-                            height={6}
-                            width={`${r.percent}%`}
-                            backgroundColor={VotingResultColors[r.index]}
-                          />
-                        </Box>
-                        <Box flexDirection="row" justifyContent="space-between">
                           <Text
                             variant="body2"
-                            color="secondaryText"
-                            marginRight="ms"
+                            color="primaryText"
+                            marginBottom="xs"
                           >
-                            {humanReadable(r.weight, decimals)}
+                            {r.name}
                           </Text>
-                          <Text variant="body2" color="primaryText">
-                            {r.percent.toFixed(2)}%
-                          </Text>
+                          <Box
+                            flexDirection="row"
+                            flex={1}
+                            backgroundColor="grey900"
+                            borderRadius="m"
+                            overflow="hidden"
+                            marginBottom="xs"
+                          >
+                            <Box
+                              flexDirection="row"
+                              height={6}
+                              width={`${r.percent}%`}
+                              backgroundColor={VotingResultColors[r.index]}
+                            />
+                          </Box>
+                          <Box
+                            flexDirection="row"
+                            justifyContent="space-between"
+                          >
+                            <Text
+                              variant="body2"
+                              color="secondaryText"
+                              marginRight="ms"
+                            >
+                              {humanReadable(r.weight, decimals)}
+                            </Text>
+                            <Text variant="body2" color="primaryText">
+                              {r.percent.toFixed(2)}%
+                            </Text>
+                          </Box>
                         </Box>
-                      </Box>
-                    ))}
+                      ))}
                   </Box>
                 )}
               </Box>

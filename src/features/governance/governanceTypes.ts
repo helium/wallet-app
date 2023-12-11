@@ -17,6 +17,7 @@ export type ProposalFilter =
   | 'failed'
 
 export type GovernanceStackParamList = {
+  GovernanceTutorialScreen: undefined
   GovernanceScreen: undefined
   VotingPowerScreen: { mint: string }
   ProposalScreen: { mint: string; proposal: string }
@@ -25,15 +26,22 @@ export type GovernanceStackParamList = {
 export type GovernanceNavigationProp =
   StackNavigationProp<GovernanceStackParamList>
 
+const voteAccentColors = [] as Color[]
+
+export default voteAccentColors
 export const VotingResultColors: Color[] = [
-  'turquoise',
-  'red200',
-  'jazzberryJam',
-  'persianRose',
-  'orange500',
-  'greenBright500',
-  'flamenco',
-  'gold',
+  'blueRibbon',
+  'aquaMarine',
   'purple500',
-  'purpleHeart',
+  'blueBright500',
+  'greenBright500',
+  'orange500',
+  'persianRose',
+  'gold',
+  'electricViolet',
+  'flamenco',
+  'malachite',
+  'turquoise',
+  'white',
+  'red500',
 ]
