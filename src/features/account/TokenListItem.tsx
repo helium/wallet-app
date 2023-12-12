@@ -23,7 +23,8 @@ import {
 } from '@helium/voter-stake-registry-hooks'
 import { useAsync } from 'react-async-hook'
 import usePrevious from '@hooks/usePrevious'
-import Lock from '@assets/images/lock.svg'
+import Lock from '@assets/images/lockClosed.svg'
+import { useColors } from '@theme/themeHooks'
 import { useSolana } from '../../solana/SolanaProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
@@ -164,6 +165,7 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
   const { json, symbol, loading } = useMetaplexMetadata(mint)
   const decimals = useMint(mint)?.info?.decimals
   const mintStr = mint.toBase58()
+  const colors = useColors()
 
   const args = useMemo(
     () =>
@@ -265,7 +267,7 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
               justifyContent="center"
               alignItems="center"
             >
-              <Lock width={12} height={12} color="black" />
+              <Lock width={12} height={12} color={colors.secondaryBackground} />
             </Box>
           </Box>
         )}

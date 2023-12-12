@@ -16,11 +16,7 @@ import { PublicKey } from '@solana/web3.js'
 import { getFormattedStringFromDays, yearsToDays } from '@utils/dateTools'
 import { getMintMinAmountAsDecimal, precision } from '@utils/formatting'
 import React, { useMemo, useRef, useState } from 'react'
-import {
-  Keyboard,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
-} from 'react-native'
+import { Keyboard } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import BN from 'bn.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
@@ -215,188 +211,82 @@ export const LockTokensModal = ({
             }
             onConfirmBalance={handleAmountChange}
           >
-            <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-              <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-                <SafeAreaBox
-                  edges={safeEdges}
-                  backgroundColor="transparent"
-                  flex={1}
-                  padding="m"
-                  marginHorizontal="s"
-                  marginVertical="xs"
-                >
-                  {!showLockupKindInfo && (
-                    <Box flexGrow={1} justifyContent="center">
-                      <Text
-                        textAlign="left"
-                        variant="subtitle2"
-                        adjustsFontSizeToFit
-                      >
-                        {
-                          {
-                            lock: t('gov.transactions.lockTokens'),
-                            extend: t('gov.transactions.extendPosition'),
-                            split: t('gov.transactions.splitPosition'),
-                          }[mode]
-                        }
+            <SafeAreaBox
+              edges={safeEdges}
+              backgroundColor="transparent"
+              flex={1}
+              padding="m"
+              marginHorizontal="s"
+              marginVertical="xs"
+            >
+              {!showLockupKindInfo && (
+                <Box flexGrow={1} justifyContent="center">
+                  <Text
+                    textAlign="left"
+                    variant="subtitle2"
+                    adjustsFontSizeToFit
+                  >
+                    {
+                      {
+                        lock: t('gov.transactions.lockTokens'),
+                        extend: t('gov.transactions.extendPosition'),
+                        split: t('gov.transactions.splitPosition'),
+                      }[mode]
+                    }
+                  </Text>
+                  <Text
+                    variant="subtitle4"
+                    color="secondaryText"
+                    marginBottom="m"
+                  >
+                    {t('gov.votingPower.increase')}
+                  </Text>
+                  {hasMinLockup ? (
+                    <Box
+                      borderRadius="l"
+                      backgroundColor="secondary"
+                      padding="ms"
+                      marginBottom="m"
+                    >
+                      <Text variant="body3">
+                        {t('gov.positions.longerLockup', {
+                          existing:
+                            getFormattedStringFromDays(minLockupTimeInDays),
+                        })}
                       </Text>
-                      <Text
-                        variant="subtitle4"
-                        color="secondaryText"
-                        marginBottom="m"
-                      >
-                        {t('gov.votingPower.increase')}
-                      </Text>
-                      {hasMinLockup ? (
-                        <Box
-                          borderRadius="l"
-                          backgroundColor="secondary"
-                          padding="ms"
-                          marginBottom="m"
-                        >
-                          <Text variant="body3">
-                            {t('gov.positions.longerLockup', {
-                              existing:
-                                getFormattedStringFromDays(minLockupTimeInDays),
-                            })}
-                          </Text>
-                          {mode === 'split' ? (
-                            <Text marginTop="m" variant="body3">
-                              {t('gov.positions.splitWarning')}
-                            </Text>
-                          ) : null}
-                        </Box>
+                      {mode === 'split' ? (
+                        <Text marginTop="m" variant="body3">
+                          {t('gov.positions.splitWarning')}
+                        </Text>
                       ) : null}
-                      <Box backgroundColor="secondary" borderRadius="l">
-                        {['lock', 'split'].includes(mode) && (
-                          <>
-                            <Box padding="ms">
-                              <Box
-                                flexDirection="row"
-                                justifyContent="space-between"
-                                alignContent="center"
-                                marginBottom="s"
-                              >
-                                <Text
-                                  variant="subtitle4"
-                                  color="grey600"
-                                  marginBottom="s"
-                                >
-                                  {t('gov.positions.lockupType')}
-                                </Text>
-                                <TouchableOpacityBox
-                                  onPress={() => setShowLockupKindInfo(true)}
-                                >
-                                  <InfoIcon width={20} />
-                                </TouchableOpacityBox>
-                              </Box>
-                              <Box flexDirection="row">
-                                {lockupKindOptions.map((option, idx) => {
-                                  const isActive =
-                                    option.value === lockupKind.value
-
-                                  return (
-                                    <TouchableOpacityBox
-                                      key={option.value}
-                                      flex={1}
-                                      padding="s"
-                                      alignItems="center"
-                                      borderRadius="m"
-                                      marginLeft={idx > 0 ? 'ms' : 'none'}
-                                      backgroundColor={
-                                        isActive
-                                          ? 'surfaceSecondary'
-                                          : 'black500'
-                                      }
-                                      onPress={() => setLockupKind(option)}
-                                    >
-                                      <Text
-                                        fontSize={19}
-                                        fontWeight="400"
-                                        color={
-                                          isActive
-                                            ? 'primaryText'
-                                            : 'surfaceSecondaryText'
-                                        }
-                                      >
-                                        {option.display}
-                                      </Text>
-                                    </TouchableOpacityBox>
-                                  )
-                                })}
-                              </Box>
-                            </Box>
-                            <TouchableOpacityBox
-                              borderTopColor="black200"
-                              borderTopWidth={1}
-                              borderBottomColor="black200"
-                              borderBottomWidth={1}
-                              paddingHorizontal="m"
-                              paddingVertical="l"
-                              onPress={handleAmountPressed}
-                            >
-                              <Text variant="subtitle4" color="grey600">
-                                {t('gov.positions.amountToLock')}
-                              </Text>
-                              <Text
-                                fontSize={19}
-                                fontWeight="400"
-                                color="grey600"
-                              >
-                                {amount || 'Amount (tokens)'}
-                              </Text>
-                            </TouchableOpacityBox>
-                          </>
-                        )}
+                    </Box>
+                  ) : null}
+                  <Box backgroundColor="secondary" borderRadius="l">
+                    {['lock', 'split'].includes(mode) && (
+                      <>
                         <Box padding="ms">
-                          <Text
-                            variant="subtitle4"
-                            color="grey600"
+                          <Box
+                            flexDirection="row"
+                            justifyContent="space-between"
+                            alignContent="center"
                             marginBottom="s"
                           >
-                            {t('gov.positions.duration')}
-                          </Text>
-                          {hasMinLockup ? (
-                            <Box flexDirection="row" marginBottom="m">
-                              <TouchableOpacityBox
-                                flex={1}
-                                padding="s"
-                                alignItems="center"
-                                borderRadius="m"
-                                backgroundColor={
-                                  lockupPeriodOptions[0].value ===
-                                  lockupPeriod.value
-                                    ? 'surfaceSecondary'
-                                    : 'black500'
-                                }
-                                onPress={() => {
-                                  setLockupPeriod(lockupPeriodOptions[0])
-                                }}
-                              >
-                                <Text
-                                  fontSize={19}
-                                  fontWeight="400"
-                                  color={
-                                    lockupPeriodOptions[0].value ===
-                                    lockupPeriod.value
-                                      ? 'primaryText'
-                                      : 'surfaceSecondaryText'
-                                  }
-                                >
-                                  {getFormattedStringFromDays(
-                                    minLockupTimeInDays,
-                                  )}
-                                </Text>
-                              </TouchableOpacityBox>
-                            </Box>
-                          ) : null}
-                          <Box flexDirection="row" flexWrap="wrap">
-                            {(hasMinLockup
-                              ? [...lockupPeriodOptions.splice(1)]
-                              : lockupPeriodOptions
-                            ).map((option, idx) => {
-                              const isActive =
-                                option.value === lockupPeriod.value
+                            <Text
+                              variant="subtitle4"
+                              color="grey600"
+                              marginBottom="s"
+                            >
+                              {t('gov.positions.lockupType')}
+                            </Text>
+                            <TouchableOpacityBox
+                              onPress={() => setShowLockupKindInfo(true)}
+                            >
+                              <InfoIcon width={20} />
+                            </TouchableOpacityBox>
+                          </Box>
+                          <Box flexDirection="row">
+                            {lockupKindOptions.map((option, idx) => {
+                              const isActive = option.value === lockupKind.value
 
                               return (
                                 <TouchableOpacityBox
@@ -409,12 +299,10 @@ export const LockTokensModal = ({
                                   backgroundColor={
                                     isActive ? 'surfaceSecondary' : 'black500'
                                   }
-                                  onPress={() => {
-                                    setLockupPeriod(option)
-                                  }}
+                                  onPress={() => setLockupKind(option)}
                                 >
                                   <Text
-                                    fontSize={19}
+                                    variant="body1"
                                     fontWeight="400"
                                     color={
                                       isActive
@@ -429,50 +317,148 @@ export const LockTokensModal = ({
                             })}
                           </Box>
                         </Box>
+                        <TouchableOpacityBox
+                          borderTopColor="black200"
+                          borderTopWidth={1}
+                          borderBottomColor="black200"
+                          borderBottomWidth={1}
+                          paddingHorizontal="m"
+                          paddingVertical="l"
+                          onPress={handleAmountPressed}
+                        >
+                          <Text variant="subtitle4" color="grey600">
+                            {t('gov.positions.amountToLock')}
+                          </Text>
+                          <Text
+                            variant="body1"
+                            fontWeight="400"
+                            color="grey600"
+                          >
+                            {amount || 'Amount (tokens)'}
+                          </Text>
+                        </TouchableOpacityBox>
+                      </>
+                    )}
+                    <Box padding="ms">
+                      <Text
+                        variant="subtitle4"
+                        color="grey600"
+                        marginBottom="s"
+                      >
+                        {t('gov.positions.duration')}
+                      </Text>
+                      {hasMinLockup ? (
+                        <Box flexDirection="row" marginBottom="m">
+                          <TouchableOpacityBox
+                            flex={1}
+                            padding="s"
+                            alignItems="center"
+                            borderRadius="m"
+                            backgroundColor={
+                              lockupPeriodOptions[0].value ===
+                              lockupPeriod.value
+                                ? 'surfaceSecondary'
+                                : 'black500'
+                            }
+                            onPress={() => {
+                              setLockupPeriod(lockupPeriodOptions[0])
+                            }}
+                          >
+                            <Text
+                              variant="body1"
+                              fontWeight="400"
+                              color={
+                                lockupPeriodOptions[0].value ===
+                                lockupPeriod.value
+                                  ? 'primaryText'
+                                  : 'surfaceSecondaryText'
+                              }
+                            >
+                              {getFormattedStringFromDays(minLockupTimeInDays)}
+                            </Text>
+                          </TouchableOpacityBox>
+                        </Box>
+                      ) : null}
+                      <Box flexDirection="row" flexWrap="wrap">
+                        {(hasMinLockup
+                          ? [...lockupPeriodOptions.splice(1)]
+                          : lockupPeriodOptions
+                        ).map((option, idx) => {
+                          const isActive = option.value === lockupPeriod.value
+
+                          return (
+                            <TouchableOpacityBox
+                              key={option.value}
+                              flex={1}
+                              padding="s"
+                              alignItems="center"
+                              borderRadius="m"
+                              marginLeft={idx > 0 ? 'ms' : 'none'}
+                              backgroundColor={
+                                isActive ? 'surfaceSecondary' : 'black500'
+                              }
+                              onPress={() => {
+                                setLockupPeriod(option)
+                              }}
+                            >
+                              <Text
+                                variant="body1"
+                                fontWeight="400"
+                                color={
+                                  isActive
+                                    ? 'primaryText'
+                                    : 'surfaceSecondaryText'
+                                }
+                              >
+                                {option.display}
+                              </Text>
+                            </TouchableOpacityBox>
+                          )
+                        })}
                       </Box>
-                      <Box flexDirection="row" marginTop="m">
-                        <Text variant="subtitle4" color="secondaryText">
-                          {t('gov.positions.initialVoteWeightMult')}:
-                        </Text>
+                    </Box>
+                  </Box>
+                  <Box flexDirection="row" marginTop="m">
+                    <Text variant="subtitle4" color="secondaryText">
+                      {t('gov.positions.initialVoteWeightMult')}:
+                    </Text>
+                    <Text
+                      variant="subtitle4"
+                      color="secondaryText"
+                      marginLeft="m"
+                    >
+                      {lockupMultiplier}x
+                    </Text>
+                  </Box>
+                </Box>
+              )}
+              {showLockupKindInfo && (
+                <Box flexGrow={1} justifyContent="center">
+                  {lockupKindOptions.map((type) => (
+                    <Box key={type.value} justifyContent="center">
+                      <Text
+                        textAlign="left"
+                        variant="subtitle2"
+                        adjustsFontSizeToFit
+                      >
+                        {type.display}
+                      </Text>
+                      {lockupInfosByType[type.value].map((info, idx) => (
                         <Text
+                          // eslint-disable-next-line react/no-array-index-key
+                          key={`info-${idx}`}
                           variant="subtitle4"
                           color="secondaryText"
-                          marginLeft="m"
+                          marginBottom="m"
                         >
-                          {lockupMultiplier}x
+                          {info}
                         </Text>
-                      </Box>
-                    </Box>
-                  )}
-                  {showLockupKindInfo && (
-                    <Box flexGrow={1} justifyContent="center">
-                      {lockupKindOptions.map((type) => (
-                        <Box key={type.value} justifyContent="center">
-                          <Text
-                            textAlign="left"
-                            variant="subtitle2"
-                            adjustsFontSizeToFit
-                          >
-                            {type.display}
-                          </Text>
-                          {lockupInfosByType[type.value].map((info, idx) => (
-                            <Text
-                              // eslint-disable-next-line react/no-array-index-key
-                              key={`info-${idx}`}
-                              variant="subtitle4"
-                              color="secondaryText"
-                              marginBottom="m"
-                            >
-                              {info}
-                            </Text>
-                          ))}
-                        </Box>
                       ))}
                     </Box>
-                  )}
-                </SafeAreaBox>
-              </KeyboardAvoidingView>
-            </TouchableWithoutFeedback>
+                  ))}
+                </Box>
+              )}
+            </SafeAreaBox>
           </HNTKeyboard>
         </BackScreen>
         {showError && (

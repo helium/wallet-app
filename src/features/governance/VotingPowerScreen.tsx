@@ -4,7 +4,7 @@ import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
-import { toBN, toNumber } from '@helium/spl-utils'
+import { HNT_MINT, toBN, toNumber } from '@helium/spl-utils'
 import {
   calcLockupMultiplier,
   useClaimAllPositionsRewards,
@@ -192,34 +192,40 @@ export const VotingPowerScreen = () => {
               onPress={() => setIsLockModalOpen(true)}
               disabled={claimingAllRewards || loading}
             />
-            <Box paddingHorizontal="s" />
-            <ButtonPressable
-              flex={1}
-              fontSize={16}
-              borderRadius="round"
-              borderWidth={2}
-              borderColor={
-                // eslint-disable-next-line no-nested-ternary
-                claimingAllRewards
-                  ? 'surfaceSecondary'
-                  : !positionsWithRewards?.length
-                  ? 'surfaceSecondary'
-                  : 'white'
-              }
-              backgroundColor="white"
-              backgroundColorOpacityPressed={0.7}
-              backgroundColorDisabled="surfaceSecondary"
-              backgroundColorDisabledOpacity={0.9}
-              titleColorDisabled="secondaryText"
-              title={
-                claimingAllRewards ? '' : t('gov.transactions.claimRewards')
-              }
-              titleColor="black"
-              onPress={handleClaimRewards}
-              disabled={
-                !positionsWithRewards?.length || claimingAllRewards || loading
-              }
-            />
+            {HNT_MINT.equals(mint) && (
+              <>
+                <Box paddingHorizontal="s" />
+                <ButtonPressable
+                  flex={1}
+                  fontSize={16}
+                  borderRadius="round"
+                  borderWidth={2}
+                  borderColor={
+                    // eslint-disable-next-line no-nested-ternary
+                    claimingAllRewards
+                      ? 'surfaceSecondary'
+                      : !positionsWithRewards?.length
+                      ? 'surfaceSecondary'
+                      : 'white'
+                  }
+                  backgroundColor="white"
+                  backgroundColorOpacityPressed={0.7}
+                  backgroundColorDisabled="surfaceSecondary"
+                  backgroundColorDisabledOpacity={0.9}
+                  titleColorDisabled="secondaryText"
+                  title={
+                    claimingAllRewards ? '' : t('gov.transactions.claimRewards')
+                  }
+                  titleColor="black"
+                  onPress={handleClaimRewards}
+                  disabled={
+                    !positionsWithRewards?.length ||
+                    claimingAllRewards ||
+                    loading
+                  }
+                />
+              </>
+            )}
           </Box>
         </BackScreen>
       </ReAnimatedBox>
