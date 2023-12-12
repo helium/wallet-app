@@ -1129,6 +1129,10 @@ export default {
         },
       ],
     },
+    claiming: {
+      title: 'Claiming Rewards',
+      body: 'Please wait while we claim all\nthe rewards from your positions',
+    },
     votingPower: {
       title: 'Voting Power',
       yourPower: 'Your Voting Power',

@@ -18,7 +18,6 @@ import BN from 'bn.js'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useRoute } from '@react-navigation/native'
@@ -29,6 +28,7 @@ import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { PositionsList } from './PositionsList'
 import { VotingPowerCard } from './VotingPowerCard'
 import { GovernanceStackParamList } from './governanceTypes'
+import { ClaimingRewardsModal } from './ClaimingRewardsModal'
 
 type Route = RouteProp<GovernanceStackParamList, 'VotingPowerScreen'>
 
@@ -42,6 +42,7 @@ export const VotingPowerScreen = () => {
   const {
     mint,
     registrar,
+    loading,
     refetch: refetchState,
     positions,
     setMint,
@@ -189,7 +190,7 @@ export const VotingPowerScreen = () => {
               titleColor="white"
               titleColorPressed="black"
               onPress={() => setIsLockModalOpen(true)}
-              disabled={claimingAllRewards}
+              disabled={claimingAllRewards || loading}
             />
             <Box paddingHorizontal="s" />
             <ButtonPressable
@@ -215,14 +216,14 @@ export const VotingPowerScreen = () => {
               }
               titleColor="black"
               onPress={handleClaimRewards}
-              disabled={!positionsWithRewards?.length || claimingAllRewards}
-              TrailingComponent={
-                claimingAllRewards ? <CircleLoader color="white" /> : undefined
+              disabled={
+                !positionsWithRewards?.length || claimingAllRewards || loading
               }
             />
           </Box>
         </BackScreen>
       </ReAnimatedBox>
+      {claimingAllRewards && <ClaimingRewardsModal />}
       {isLockModalOpen && (
         <LockTokensModal
           mint={mint}
