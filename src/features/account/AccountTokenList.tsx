@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next'
 import { AppState, RefreshControl } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from '@components/Box'
+import { useAppStorage } from '@storage/AppStorageProvider'
 import { GovMints } from '../../utils/constants'
 import { useSolana } from '../../solana/SolanaProvider'
 import { syncTokenAccounts } from '../../store/slices/balancesSlice'
@@ -43,6 +44,7 @@ export function getSortValue(mint: string): number {
 const AccountTokenList = ({ onLayout }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
+  const { voteTutorialShown } = useAppStorage()
   const { visibleTokens } = useVisibleTokens()
   const { currentAccount } = useAccountStorage()
   const dispatch = useAppDispatch()
@@ -144,18 +146,24 @@ const AccountTokenList = ({ onLayout }: Props) => {
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
 
-  // eslint-disable-next-line react/no-unused-prop-types
-  const renderItem = useCallback(({ item }: { item: PublicKey }) => {
-    if (GovMints.some((m) => new PublicKey(m).equals(item)))
-      return (
-        <Box>
-          <TokenListItem mint={item} />
-          <TokenListGovItem mint={item} />
-        </Box>
+  const renderItem = useCallback(
+    // eslint-disable-next-line react/no-unused-prop-types
+    ({ item }: { item: PublicKey }) => {
+      if (
+        GovMints.some((m) => new PublicKey(m).equals(item)) &&
+        voteTutorialShown
       )
+        return (
+          <Box>
+            <TokenListItem mint={item} />
+            <TokenListGovItem mint={item} />
+          </Box>
+        )
 
-    return <TokenListItem mint={item} />
-  }, [])
+      return <TokenListItem mint={item} />
+    },
+    [voteTutorialShown],
+  )
 
   const renderEmptyComponent = useCallback(() => {
     return (

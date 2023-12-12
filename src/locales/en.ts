@@ -1104,6 +1104,31 @@ export default {
   },
   gov: {
     title: 'Governance',
+    tutorial: {
+      goToVote: 'Go To Vote',
+      slides: [
+        {
+          body: 'Helium Vote is where the\nHelium Community comes\ntogether to make decisions\non the Network.',
+          title: 'Helium Vote',
+        },
+        {
+          body: 'Each Vote is driven by a\nHelium Improvement\nProposal (HIP).',
+          title: 'HIPs',
+        },
+        {
+          body: 'Each HIP will have multiple\nvoting choices. After reading the HIP.\nVote for choices you align with.\n\nVote transactions have a\nsmall fee.',
+          title: 'How to Vote',
+        },
+        {
+          body: 'Your <primaryText>Vote Power</primaryText>\nis determined by the amount of\nHNT, MOBILE, IOT that you have\nlocked up in the account.\n\nLocked HNT can be delegated\nto SubDaos for rewards.',
+          title: 'Vote Power',
+        },
+        {
+          body: '<caribbeanGreen>Get your voice heard.</caribbeanGreen>\n\nVote on Active Votes\nManage your locked positions\nOr browse past HIPs.',
+          title: 'Ready to Vote?',
+        },
+      ],
+    },
     votingPower: {
       title: 'Voting Power',
       yourPower: 'Your Voting Power',

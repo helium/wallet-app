@@ -23,12 +23,12 @@ const GovernanceStackScreen = () => {
     <>
       <GovernanceProvider>
         <GovernanceStack.Navigator screenOptions={screenOptions}>
-          {/*       {!voteTutorialShown && (
+          {!voteTutorialShown && (
             <GovernanceStack.Screen
               name="GovernanceTutorialScreen"
               component={GovernanceTutorialScreen}
             />
-          )} */}
+          )}
           <GovernanceStack.Screen
             name="GovernanceScreen"
             component={GovernanceScreen}
