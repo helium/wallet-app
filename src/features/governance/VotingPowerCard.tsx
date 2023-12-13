@@ -211,6 +211,7 @@ export const VotingPowerCard = ({
         borderRadius="l"
         entering={FadeIn}
         exiting={FadeOut}
+        {...boxProps}
       >
         <TouchableOpacityBox onPress={handleOnPress}>
           {renderCard(false)}
