@@ -173,6 +173,7 @@ const palette = {
   turquoise: '#2BD7E2',
 
   white: '#FFFFFF',
+  bottomSheetBg: '#191919',
 }
 
 export const lightThemeColors = {
@@ -197,6 +198,7 @@ export const lightThemeColors = {
   highlight: palette.blueBright500,
   testnet: palette.red500,
   transparent: palette.transparent,
+  bottomSheetBg: palette.bottomSheetBg,
 }
 
 export const darkThemeColors = {

@@ -258,16 +258,27 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
               position="absolute"
               top={-6}
               right={-8}
-              backgroundColor="orange500"
+              backgroundColor="bottomSheetBg"
+              justifyContent="center"
               borderRadius="round"
-              borderWidth={2}
-              borderColor="black"
+              alignItems="center"
               height={22}
               width={22}
-              justifyContent="center"
-              alignItems="center"
             >
-              <Lock width={12} height={12} color={colors.secondaryBackground} />
+              <Box
+                backgroundColor="orange500"
+                borderRadius="round"
+                justifyContent="center"
+                alignItems="center"
+                height={18}
+                width={18}
+              >
+                <Lock
+                  width={12}
+                  height={12}
+                  color={colors.secondaryBackground}
+                />
+              </Box>
             </Box>
           </Box>
         )}
