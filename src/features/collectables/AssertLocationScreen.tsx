@@ -267,9 +267,9 @@ const AssertLocationScreen = () => {
           numLocationChanges >= maker.locationNonceLimit
         if (isPayer && insufficientMyDcBal) {
           throw new Error(
-            `Assertion costs $${
-              requiredDc.toNumber() / 100000
-            }. You do not have enough HNT or DC.`,
+            t('assertLocationScreen.error.insufficientFunds', {
+              usd: requiredDc.toNumber() / 100000,
+            }),
           )
         }
         if (isPayer) {

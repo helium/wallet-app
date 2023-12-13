@@ -399,6 +399,11 @@ export default {
       title: 'Succesfully Asserted Location!',
       message: 'The location was succesfully submitted to the blockchain',
     },
+    error: {
+      insufficientFunds:
+        // eslint-disable-next-line no-template-curly-in-string
+        'Assertion costs ${{usd}}. You do not have enough HNT or DC.',
+    },
   },
   antennaSetupScreen: {
     title: 'Antenna Setup',
