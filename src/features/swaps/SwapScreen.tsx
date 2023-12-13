@@ -126,7 +126,7 @@ const SwapScreen = () => {
   const validInputMints = useMemo(() => {
     if (isDevnet)
       return [HNT_MINT.toBase58(), MOBILE_MINT.toBase58(), IOT_MINT.toBase58()]
-    return [...routeMap.keys()].filter((key) => visibleTokens.has(key))
+    return [...routeMap.keys()].filter((key) => key && visibleTokens.has(key))
   }, [visibleTokens, routeMap, isDevnet])
 
   const validOutputMints = useMemo(() => {
@@ -140,7 +140,9 @@ const SwapScreen = () => {
         .get(inputMint?.toBase58() || '')
         ?.filter(
           (key) =>
-            visibleTokens.has(key) && !inputMint.equals(new PublicKey(key)),
+            key &&
+            visibleTokens.has(key) &&
+            !inputMint.equals(new PublicKey(key)),
         ) || []
 
     return inputMint.equals(HNT_MINT)
@@ -252,6 +254,7 @@ const SwapScreen = () => {
     if (!inputMint.equals(HNT_MINT) && !outputMint.equals(DC_MINT)) {
       if (
         validOutputMints &&
+        validOutputMints[0] &&
         !validOutputMints?.includes(outputMint?.toBase58() || '')
       ) {
         setOutputMint(new PublicKey(validOutputMints[0]))
@@ -383,7 +386,7 @@ const SwapScreen = () => {
 
         return {
           mint: pk,
-          selected: inputMint.equals(pk),
+          selected: pk ? inputMint.equals(pk) : false,
         }
       }),
       [SelectorMode.youReceive]: validOutputMints.map((mint) => {
@@ -391,7 +394,7 @@ const SwapScreen = () => {
 
         return {
           mint: pk,
-          selected: outputMint.equals(pk),
+          selected: pk ? outputMint.equals(pk) : false,
         }
       }),
     }
@@ -573,7 +576,7 @@ const SwapScreen = () => {
   )
 
   const handleSwapTokens = useCallback(async () => {
-    if (connection) {
+    if (connection && currentAccount?.solanaAddress) {
       try {
         setSwapping(true)
 

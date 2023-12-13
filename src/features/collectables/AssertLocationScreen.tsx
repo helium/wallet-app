@@ -18,11 +18,15 @@ import {
 } from '@components'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { HotspotType } from '@helium/onboarding'
+import { IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import useAlert from '@hooks/useAlert'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useEntityKey } from '@hooks/useEntityKey'
 import { useForwardGeo } from '@hooks/useForwardGeo'
+import { useImplicitBurn } from '@hooks/useImplicitBurn'
 import { useIotInfo } from '@hooks/useIotInfo'
 import { useMobileInfo } from '@hooks/useMobileInfo'
+import { useOnboardingBalnces } from '@hooks/useOnboardingBalances'
 import { useReverseGeo } from '@hooks/useReverseGeo'
 import useSubmitTxn from '@hooks/useSubmitTxn'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
@@ -31,6 +35,7 @@ import { parseH3BNLocation } from '@utils/h3'
 import { removeDashAndCapitalize } from '@utils/hotspotNftsUtils'
 import * as Logger from '@utils/logger'
 import { MAX_MAP_ZOOM, MIN_MAP_ZOOM } from '@utils/mapbox'
+import BN from 'bn.js'
 import debounce from 'lodash/debounce'
 import React, {
   memo,
@@ -83,7 +88,17 @@ const AssertLocationScreen = () => {
   const forwardGeo = useForwardGeo()
   const { submitUpdateEntityInfo } = useSubmitTxn()
   const collectNav = useNavigation<CollectableNavigationProp>()
-
+  const {
+    maker,
+    makerDc,
+    myDcWithHnt,
+    loadingMyDc,
+    loadingMakerDc,
+    locationAssertDcRequirements,
+    loadingLocationAssertDcRequirements,
+  } = useOnboardingBalnces(entityKey)
+  const { implicitBurn } = useImplicitBurn()
+  const wallet = useCurrentWallet()
   const {
     content: { metadata },
   } = collectable
@@ -219,12 +234,47 @@ const AssertLocationScreen = () => {
 
   const assertLocation = useCallback(
     async (type: HotspotType) => {
-      if (!mapCenter || !entityKey) return
+      if (
+        !mapCenter ||
+        !entityKey ||
+        loadingMakerDc ||
+        loadingLocationAssertDcRequirements ||
+        !wallet
+      )
+        return
 
       setTransactionError(undefined)
       setAsserting(true)
       try {
         hideElevGain()
+        const requiredDc =
+          locationAssertDcRequirements[
+            type === 'IOT' ? IOT_MINT.toBase58() : MOBILE_MINT.toBase58()
+          ]
+        const insufficientMakerDcBal = (makerDc || new BN(0)).lt(requiredDc)
+        const insufficientMyDcBal =
+          !loadingMyDc && (myDcWithHnt || new BN(0)).lt(requiredDc)
+
+        let numLocationChanges = 0
+        if (type === 'IOT') {
+          numLocationChanges = iotInfoAcc?.numLocationAsserts || 0
+        } else {
+          numLocationChanges = mobileInfoAcc?.numLocationAsserts || 0
+        }
+        const isPayer =
+          insufficientMakerDcBal ||
+          !maker ||
+          numLocationChanges >= maker.locationNonceLimit
+        if (isPayer && insufficientMyDcBal) {
+          throw new Error(
+            t('assertLocationScreen.error.insufficientFunds', {
+              usd: requiredDc.toNumber() / 100000,
+            }),
+          )
+        }
+        if (isPayer) {
+          await implicitBurn(requiredDc.toNumber())
+        }
         await submitUpdateEntityInfo({
           type,
           entityKey,
@@ -232,6 +282,7 @@ const AssertLocationScreen = () => {
           lat: mapCenter[1],
           elevation,
           decimalGain: gain,
+          payer: isPayer ? wallet.toBase58() : undefined,
         })
         setAsserting(false)
 
@@ -247,9 +298,18 @@ const AssertLocationScreen = () => {
       }
     },
     [
+      maker,
+      implicitBurn,
+      wallet,
       mapCenter,
       entityKey,
+      loadingMakerDc,
+      loadingLocationAssertDcRequirements,
       hideElevGain,
+      locationAssertDcRequirements,
+      makerDc,
+      loadingMyDc,
+      myDcWithHnt,
       submitUpdateEntityInfo,
       elevation,
       gain,
@@ -257,6 +317,8 @@ const AssertLocationScreen = () => {
       t,
       collectNav,
       collectable,
+      iotInfoAcc?.numLocationAsserts,
+      mobileInfoAcc?.numLocationAsserts,
     ],
   )
 
@@ -272,7 +334,7 @@ const AssertLocationScreen = () => {
           },
           {
             text: 'Mobile',
-            onPress: async () => assertLocation('mobile'),
+            onPress: async () => assertLocation('MOBILE'),
           },
           {
             text: t('generic.cancel'),
@@ -283,7 +345,7 @@ const AssertLocationScreen = () => {
     } else {
       // elevGainVisible
       // we can assume user is asserting location from elevGain UI
-      await assertLocation('iot')
+      await assertLocation('IOT')
     }
   }, [t, elevGainVisible, assertLocation])
 
@@ -292,8 +354,21 @@ const AssertLocationScreen = () => {
   }, [transactionError])
 
   const disabled = useMemo(
-    () => !mapCenter || reverseGeo.loading || asserting,
-    [asserting, mapCenter, reverseGeo.loading],
+    () =>
+      !mapCenter ||
+      reverseGeo.loading ||
+      asserting ||
+      loadingLocationAssertDcRequirements ||
+      loadingMakerDc ||
+      loadingMyDc,
+    [
+      asserting,
+      mapCenter,
+      reverseGeo.loading,
+      loadingLocationAssertDcRequirements,
+      loadingMakerDc,
+      loadingMyDc,
+    ],
   )
   const [debouncedDisabled] = useDebounce(disabled, 300)
   const [reverseGeoLoading] = useDebounce(reverseGeo.loading, 300)

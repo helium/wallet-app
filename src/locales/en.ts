@@ -30,6 +30,14 @@ export default {
       notEnabled: 'Bluetooth is not enabled',
       scanning: 'Scanning for Hotspots',
     },
+    settings: {
+      title: 'Settings',
+    },
+    diagnostics: {
+      title: 'Diagnostics',
+      get: 'Get Diagnostics',
+      noneFound: 'No diagnostics found',
+    },
     wifiSettings: {
       title: 'Wifi Settings',
       remove: 'Would you like to remove {{network}}?',
@@ -42,17 +50,31 @@ export default {
       subtitle:
         'Onboard your Hotspot to the IOT network. After onboarding this Hotspot, you will be able to set the location and antenna details.',
       onboard: 'Onboard Hotspot',
+      onboardAndPay: 'Onboard and Pay Maker Fees',
+      responsible:
+        'In almost all cases, Hotspots manufacturers are responsible for paying the onboarding and initial location assert fees.',
+      // eslint-disable-next-line no-template-curly-in-string
+      pay: 'I understand that the ${{usd}} onboarding fee was included in the purchase price of my Hotspot and the manufacturer is responsible for paying that fee.  Nonetheless, I would like to pay the ${{usd}} onboarding fee out of my wallet to onboard my Hotspot now. I will also pay the ${{assertUsd}} fee to assert this hotspot location.',
+      notEnoughSol: 'You do not have enough sol to self-onboard',
+      notEnoughDc: 'You do not have enough DC or HNT to self-onboard',
       hotspotNotFound:
         'This hotspot does not exist in the onboarding server. Contact your manufacturer to have them approve hotspot with id {{onboardAddress}}',
-      makerNotFound: 'Maker does not exist',
-      manufacturerMissingSol:
-        'Manufacturer {{name}} does not have enough SOL to onboard this hotspot. Please contact the manufacturer to resolve this issue.',
-      manufacturerMissingDcOrSol:
-        'Manufacturer {{name}} does not have enough Data Credits or SOL to onboard this hotspot. Please contact the manufacturer to resolve this issue.',
+      makerNotFound: 'No manufacturer found for this hotspot',
+      manufacturerMissing:
+        'The manufacturer of your hotspot ({{name}}) does not have enough {{tokens}} for you to complete onboarding.',
+      twoSolutions: 'At this time there are two solutions:',
+      optionContact:
+        'Contact the manufacturer and request assistance onboarding your Hotspot.',
+      optionPay:
+        // eslint-disable-next-line no-template-curly-in-string
+        'Pay ${{usd}} in Data Credits or burn HNT to onboard my Hotspot. I will also pay the ${{assertUsd}} to assert this hotspot location.',
+      contact: 'Contact Manufacturer',
+      failedToFind:
+        'Failed to find onboarded hotspot. Check your hotspots page, as it may have been onboarded. This can happen due to network issues',
     },
     selectOnboardingMethod: {
-      title: 'Select Onboarding Method',
-      subtitle: 'Select your onboarding method to continue.',
+      title: 'Select Connection Method',
+      subtitle: 'Select your connection method to continue.',
     },
   },
   accountImport: {
@@ -377,6 +399,11 @@ export default {
       title: 'Succesfully Asserted Location!',
       message: 'The location was succesfully submitted to the blockchain',
     },
+    error: {
+      insufficientFunds:
+        // eslint-disable-next-line no-template-curly-in-string
+        'Assertion costs ${{usd}}. You do not have enough HNT or DC.',
+    },
   },
   antennaSetupScreen: {
     title: 'Antenna Setup',
@@ -612,6 +639,7 @@ export default {
     copiedSeedPhrase: 'Copied Seed Phrase',
     copy: 'Copy',
     copyToClipboard: 'Copy to clipboard',
+    done: 'Done',
     error: 'Error',
     fee: 'Fee',
     loadFailed: 'Cannot validate address. Please try again.',
@@ -1047,6 +1075,7 @@ export default {
     location_v2: 'Update Location',
     memo: 'Memo',
     mining: 'Mining Rewards',
+    buyDc: 'Buy DC',
     mobileRewards: 'Mobile Rewards',
     newAddress: 'New Address',
     newOwner: 'New Owner',

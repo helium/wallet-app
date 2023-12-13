@@ -26,7 +26,6 @@ const UpdateAliasScreen = () => {
       try {
         await upsertAccount({ ...currentAccount, alias })
         navigation.popToTop()
-        return
       } catch (e) {
         console.error(e)
       }

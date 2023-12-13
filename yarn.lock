@@ -2668,19 +2668,19 @@
     bn.js "^5.2.0"
     bs58 "^4.0.1"
 
-"@helium/onboarding@4.9.0":
-  version "4.9.0"
-  resolved "https://registry.yarnpkg.com/@helium/onboarding/-/onboarding-4.9.0.tgz#3327746d2f64dc640113f0587ce7be224557a824"
-  integrity sha512-6Ye4X2yc1SYh5m9cakO0tPCEUL1bpJBhVP6BxVwZmT0iIT3hv5XRuuYUFTJRvzJ6PcpM1i39ypx5kp2ZBQ6MDA==
+"@helium/onboarding@^4.10.0":
+  version "4.10.2"
+  resolved "https://registry.yarnpkg.com/@helium/onboarding/-/onboarding-4.10.2.tgz#5991f0c0c6d15ebbddeaf92ddf5be7625da3bf73"
+  integrity sha512-Kbh7WD7Fu/AEqHvn0GVhhusN0Zpp+h7ENFjq5+NKEOOyQj7k3m5skSwl1RmwPqpO58QdBM4DKNvBASX7XNuXjA==
   dependencies:
     axios "^0.24.0"
     axios-retry "^3.4.0"
     qs "^6.10.3"
 
-"@helium/onboarding@^4.10.0":
-  version "4.10.2"
-  resolved "https://registry.yarnpkg.com/@helium/onboarding/-/onboarding-4.10.2.tgz#5991f0c0c6d15ebbddeaf92ddf5be7625da3bf73"
-  integrity sha512-Kbh7WD7Fu/AEqHvn0GVhhusN0Zpp+h7ENFjq5+NKEOOyQj7k3m5skSwl1RmwPqpO58QdBM4DKNvBASX7XNuXjA==
+"@helium/onboarding@^4.10.3":
+  version "4.10.3"
+  resolved "https://registry.yarnpkg.com/@helium/onboarding/-/onboarding-4.10.3.tgz#88fa6ae127d1ea836c6af016939cd93b26acc85c"
+  integrity sha512-DbKwwMttuWHhtHo4VF5NkcLS7/KVOsIW1TlmVp5mmBZHk4rHoCvNRXr8LBtPNnO341jgNxgxQZuA9gH2W7ggSA==
   dependencies:
     axios "^0.24.0"
     axios-retry "^3.4.0"
@@ -2707,10 +2707,10 @@
   dependencies:
     protobufjs "^6.11.3"
 
-"@helium/react-native-sdk@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@helium/react-native-sdk/-/react-native-sdk-3.0.0.tgz#4377fc6563d22cce7cdf8a2537bd251949be4f98"
-  integrity sha512-QwNCol/tTUNWKOnx4BX00B0Hgtz2Osxe/joX5Mo+u5ZanKM/zuFUQ9FtMSw1Vdzcgr+1Pk93gAA9f7Lma/6lwQ==
+"@helium/react-native-sdk@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@helium/react-native-sdk/-/react-native-sdk-3.0.2.tgz#8ca616e6175b13f37edbd5c6ce93f47d002ded02"
+  integrity sha512-cnL3u3Im5mbIioEgzd1DwryFJ54CAY5K/trs035eHUt8ub2Fp65Cy4TLT4HSNOlZX8CgNrhWyowporLv7eVg1A==
   dependencies:
     "@azure/core-asynciterator-polyfill" "^1.0.2"
     "@coral-xyz/anchor" "^0.26.0"

@@ -209,14 +209,14 @@ const HotspotDetailsScreen = () => {
       return
     }
     setOptionsOpen(false)
-    const hotspotType: 'iot' | 'mobile' | undefined = await new Promise(
+    const hotspotType: 'IOT' | 'MOBILE' | undefined = await new Promise(
       (resolve) => {
         const options: AlertButton[] = []
         if (!iotInfoAcc?.info) {
           options.push({
             text: 'IOT',
             onPress: () => {
-              resolve('iot')
+              resolve('IOT')
             },
           })
         }
@@ -224,7 +224,7 @@ const HotspotDetailsScreen = () => {
           options.push({
             text: 'MOBILE',
             onPress: () => {
-              resolve('mobile')
+              resolve('MOBILE')
             },
           })
         }
