@@ -57,7 +57,7 @@
     "@helium/lazy-distributor-sdk": "^0.4.0",
     "@helium/onboarding": "^4.10.3",
     "@helium/proto-ble": "4.0.0",
-    "@helium/react-native-sdk": "^3.0.1",
+    "@helium/react-native-sdk": "^3.0.2",
     "@helium/spl-utils": "^0.4.0",
     "@helium/transactions": "4.8.1",
     "@helium/treasury-management-sdk": "^0.4.0",
