@@ -1,4 +1,4 @@
-import { HotspotType } from '@helium/onboarding'
+import { NetworkType } from '@helium/onboarding'
 import { useOnboarding } from '@helium/react-native-sdk'
 import { chunks, sendAndConfirmWithRetry } from '@helium/spl-utils'
 import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js'
@@ -485,7 +485,7 @@ export default () => {
       decimalGain,
       payer,
     }: {
-      type: HotspotType
+      type: NetworkType
       entityKey: string
       lat: number
       lng: number

@@ -28,7 +28,7 @@ import {
 import { subDaoKey } from '@helium/helium-sub-daos-sdk'
 import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'
 import * as lz from '@helium/lazy-distributor-sdk'
-import { HotspotType } from '@helium/onboarding'
+import { NetworkType } from '@helium/onboarding'
 import {
   Asset,
   DC_MINT,
@@ -1681,7 +1681,7 @@ export const updateEntityInfoTxn = async ({
   decimalGain,
 }: {
   anchorProvider: AnchorProvider
-  type: HotspotType
+  type: NetworkType
   entityKey: string
   lat: number
   lng: number
