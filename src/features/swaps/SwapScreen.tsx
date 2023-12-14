@@ -95,7 +95,8 @@ const SwapScreen = () => {
   const [inputAmount, setInputAmount] = useState<number>(0)
   const [outputMint, setOutputMint] = useState<PublicKey>(HNT_MINT)
   const [outputAmount, setOutputAmount] = useState<number>(0)
-  const [slippageBps, setSlippageBps] = useState<number>(50)
+  const [priceImpact, setPriceImpact] = useState<number>(0)
+  const [slippageBps, setSlippageBps] = useState<number>(10)
   const [slippageInfoVisible, setSlippageInfoVisible] = useState(false)
   const [solFee, setSolFee] = useState<BN>(SOL_TXN_FEE)
   const [hasInsufficientBalance, setHasInsufficientBalance] = useState<
@@ -201,6 +202,7 @@ const SwapScreen = () => {
   const refresh = useCallback(async () => {
     setInputAmount(0)
     setOutputAmount(0)
+    setPriceImpact(0)
     setInputMint(MOBILE_MINT)
     setOutputMint(HNT_MINT)
     setSolFee(SOL_TXN_FEE)
@@ -294,7 +296,7 @@ const SwapScreen = () => {
         />
       )
 
-    const bpsOptions: number[] = [50, 100, 150]
+    const bpsOptions: number[] = [10, 50, 100]
     const disabled = outputMint.equals(DC_MINT)
 
     return (
@@ -435,6 +437,7 @@ const SwapScreen = () => {
             outputMint: output.toBase58(),
             slippageBps,
           })
+          setPriceImpact(Number(route?.priceImpactPct || '0') * 100)
 
           return setOutputAmount(
             toNumber(new BN(Number(route?.outAmount || 0)), outputDecimals),
@@ -746,6 +749,21 @@ const SwapScreen = () => {
                             textAlign="center"
                           >
                             {showError}
+                          </Text>
+                        </Box>
+                      )}
+                      {priceImpact > 2.5 && (
+                        <Box marginTop="s">
+                          <Text
+                            color="orange500"
+                            textAlign="center"
+                            marginTop="s"
+                            marginBottom="m"
+                            marginHorizontal="m"
+                          >
+                            {t('swapsScreen.priceImpact', {
+                              percent: priceImpact.toFixed(2),
+                            })}
                           </Text>
                         </Box>
                       )}
