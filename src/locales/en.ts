@@ -429,6 +429,8 @@ export default {
       'Automatically manage solana transaction fees by swapping this token to SOL as needed',
   },
   swapsScreen: {
+    priceImpact:
+      'Price impact more than {{percent}}%. Try swapping a smaller amount.',
     title: 'Swap my Tokens',
     swapTokens: 'Swap Tokens',
     youPay: 'You Pay',
