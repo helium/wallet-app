@@ -1,4 +1,3 @@
-import { HotspotBleProvider } from '@helium/react-native-sdk'
 import {
   createNativeStackNavigator,
   NativeStackNavigationOptions,
@@ -13,19 +12,17 @@ const screenOptions = { headerShown: false } as NativeStackNavigationOptions
 
 export default React.memo(function OnboardingNav() {
   return (
-    <HotspotBleProvider>
-      <Stack.Navigator>
-        <Stack.Screen
-          name="SelectDevice"
-          component={SelectDevice}
-          options={screenOptions}
-        />
-        <Stack.Screen
-          name="IotBle"
-          component={HotspotBLENav}
-          options={screenOptions}
-        />
-      </Stack.Navigator>
-    </HotspotBleProvider>
+    <Stack.Navigator>
+      <Stack.Screen
+        name="SelectDevice"
+        component={SelectDevice}
+        options={screenOptions}
+      />
+      <Stack.Screen
+        name="IotBle"
+        component={HotspotBLENav}
+        options={screenOptions}
+      />
+    </Stack.Navigator>
   )
 })
