@@ -21,8 +21,7 @@ import type { HotspotBleNavProp } from './navTypes'
 import { useIotBleOptions } from './optionsContext'
 
 const ScanHotspots = () => {
-  const { startScan, stopScan, connect, scannedDevices } =
-    useHotspotBle()
+  const { startScan, stopScan, connect, scannedDevices } = useHotspotBle()
   const [scanning, setScanning] = useState(false)
   const { bleInstructions } = useIotBleOptions()
   const [canScan, setCanScan] = useState<boolean | undefined>(undefined)
