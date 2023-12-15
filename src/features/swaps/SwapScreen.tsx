@@ -139,12 +139,7 @@ const SwapScreen = () => {
     const routeMints =
       routeMap
         .get(inputMint?.toBase58() || '')
-        ?.filter(
-          (key) =>
-            key &&
-            visibleTokens.has(key) &&
-            !inputMint.equals(new PublicKey(key)),
-        ) || []
+        ?.filter((key) => key && visibleTokens.has(key)) || []
 
     return inputMint.equals(HNT_MINT)
       ? [DC_MINT.toBase58(), ...routeMints]
@@ -367,18 +362,22 @@ const SwapScreen = () => {
     (mint: PublicKey) => {
       if (selectorMode === SelectorMode.youPay) {
         refresh()
+
+        if (mint.equals(outputMint)) {
+          setOutputMint(inputMint)
+        }
         setInputMint(mint)
       }
 
       if (selectorMode === SelectorMode.youReceive) {
+        if (mint.equals(inputMint)) {
+          setInputMint(outputMint)
+        }
         setOutputMint(mint)
       }
 
-      if (selectorMode === SelectorMode.youPay && mint.equals(HNT_MINT)) {
-        setOutputMint(DC_MINT)
-      }
     },
-    [refresh, selectorMode],
+    [selectorMode, refresh, inputMint, outputMint],
   )
 
   const tokenData = useMemo(() => {
