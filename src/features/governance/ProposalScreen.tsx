@@ -136,27 +136,29 @@ export const ProposalScreen = () => {
     return { results, totalVotes }
   }, [proposal])
 
-  const derivedState: Omit<ProposalFilter, 'all'> | undefined = useMemo(() => {
-    if (proposal?.state && proposal?.choices) {
-      const keys = Object.keys(proposal.state)
-      if (keys.includes('voting')) return 'active'
-      if (keys.includes('cancelled')) return 'cancelled'
-      if (
-        keys.includes('resolved') &&
-        proposal.state.resolved &&
-        proposal.state.resolved.choices.length > 0
-      )
-        return 'passed'
-      if (
-        keys.includes('resolved') &&
-        proposal.state.resolved &&
-        (proposal.state.resolved.choices.length === 0 ||
-          (proposal.state.resolved.choices.length === 1 &&
-            proposal.choices[proposal.state.resolved.choices[0]].name === 'No'))
-      )
-        return 'failed'
-    }
-  }, [proposal?.state, proposal?.choices])
+  const derivedState: Omit<ProposalFilter, 'all' | 'unseen'> | undefined =
+    useMemo(() => {
+      if (proposal?.state && proposal?.choices) {
+        const keys = Object.keys(proposal.state)
+        if (keys.includes('voting')) return 'active'
+        if (keys.includes('cancelled')) return 'cancelled'
+        if (
+          keys.includes('resolved') &&
+          proposal.state.resolved &&
+          proposal.state.resolved.choices.length > 0
+        )
+          return 'passed'
+        if (
+          keys.includes('resolved') &&
+          proposal.state.resolved &&
+          (proposal.state.resolved.choices.length === 0 ||
+            (proposal.state.resolved.choices.length === 1 &&
+              proposal.choices[proposal.state.resolved.choices[0]].name ===
+                'No'))
+        )
+          return 'failed'
+      }
+    }, [proposal?.state, proposal?.choices])
 
   const getDecision = async (header: string) => {
     let decision

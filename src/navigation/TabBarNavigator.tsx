@@ -18,6 +18,7 @@ import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import useHaptic from '@hooks/useHaptic'
 import Globe from '@assets/images/earth-globe.svg'
 import { useDispatch } from 'react-redux'
+import { useGovernance } from '@storage/GovernanceProvider'
 import GovernanceNavigator from '../features/governance/GovernanceNavigator'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
@@ -34,6 +35,7 @@ const Tab = createBottomTabNavigator()
 function MyTabBar({ state, navigation }: BottomTabBarProps) {
   const { hasNewTransactions, resetNewTransactions } = useEnrichedTransactions()
   const { triggerImpact } = useHaptic()
+  const { hasUnseenProposals } = useGovernance()
 
   const tabData = useMemo((): Array<{
     value: string
@@ -59,11 +61,11 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
         value: 'governance',
         Icon: Governance,
         iconColor: 'white',
-        hasBadge: false,
+        hasBadge: hasUnseenProposals && state.index !== 3,
       },
       { value: 'browser', Icon: Globe, iconColor: 'white' },
     ]
-  }, [hasNewTransactions, state.index])
+  }, [hasNewTransactions, hasUnseenProposals, state.index])
 
   const selectedValue = tabData[state.index].value
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])

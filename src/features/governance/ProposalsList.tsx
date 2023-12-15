@@ -63,6 +63,13 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
           hasPressedState={false}
         />
         <ListItem
+          key="unseen"
+          title="Unseen"
+          onPress={handleFilterPress('unseen')}
+          selected={filter === 'unseen'}
+          hasPressedState={false}
+        />
+        <ListItem
           key="passed"
           title="Passed"
           onPress={handleFilterPress('passed')}

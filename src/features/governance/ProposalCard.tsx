@@ -20,6 +20,9 @@ import { useAsync } from 'react-async-hook'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useTranslation } from 'react-i18next'
 import { getTimeFromNowFmt } from '@utils/dateTools'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
+import Unseen from '@assets/images/unseen.svg'
+import { useColors } from '@theme/themeHooks'
 import { ProposalFilter, ProposalV0 } from './governanceTypes'
 
 interface IProposalCardProps extends BoxProps<Theme> {
@@ -49,6 +52,8 @@ export const ProposalCard = ({
   ...boxProps
 }: IProposalCardProps) => {
   const { t } = useTranslation()
+  const colors = useColors()
+  const { upsertAccount, currentAccount } = useAccountStorage()
   const { mint } = useGovernance()
   const { proposalConfig: proposalConfigKey } = proposal
   const decimals = useMint(mint)?.info?.decimals
@@ -56,6 +61,14 @@ export const ProposalCard = ({
   const { info: resolution } = useResolutionSettings(
     proposalConfig?.stateController,
   )
+
+  const hasSeen = useMemo(() => {
+    if (currentAccount?.proposalIdsSeenByMint) {
+      return currentAccount.proposalIdsSeenByMint[mint.toBase58()]?.includes(
+        proposalKey.toBase58(),
+      )
+    }
+  }, [currentAccount, mint, proposalKey])
 
   const endTs =
     resolution &&
@@ -91,40 +104,59 @@ export const ProposalCard = ({
     return { totalVotes }
   }, [proposal])
 
-  const derivedState: Omit<ProposalFilter, 'all'> | undefined = useMemo(() => {
-    if (proposal?.state && proposal?.choices) {
-      const keys = Object.keys(proposal.state)
-      if (keys.includes('voting')) return 'active'
-      if (keys.includes('cancelled')) return 'cancelled'
-      if (
-        keys.includes('resolved') &&
-        proposal.state.resolved &&
-        proposal.state.resolved.choices.length > 0
-      )
-        return 'passed'
-      if (
-        keys.includes('resolved') &&
-        proposal.state.resolved &&
-        (proposal.state.resolved.choices.length === 0 ||
-          (proposal.state.resolved.choices.length === 1 &&
-            proposal.choices[proposal.state.resolved.choices[0]].name === 'No'))
-      )
-        return 'failed'
-    }
-  }, [proposal?.state, proposal?.choices])
+  const derivedState: Omit<ProposalFilter, 'all' | 'unseen'> | undefined =
+    useMemo(() => {
+      if (proposal?.state && proposal?.choices) {
+        const keys = Object.keys(proposal.state)
+        if (keys.includes('voting')) return 'active'
+        if (keys.includes('cancelled')) return 'cancelled'
+        if (
+          keys.includes('resolved') &&
+          proposal.state.resolved &&
+          proposal.state.resolved.choices.length > 0
+        )
+          return 'passed'
+        if (
+          keys.includes('resolved') &&
+          proposal.state.resolved &&
+          (proposal.state.resolved.choices.length === 0 ||
+            (proposal.state.resolved.choices.length === 1 &&
+              proposal.choices[proposal.state.resolved.choices[0]].name ===
+                'No'))
+        )
+          return 'failed'
+      }
+    }, [proposal?.state, proposal?.choices])
 
   const isLoading = descLoading
   const isVisible = useMemo(() => {
     if (!isLoading) {
       if (!proposal) return false
       if (filter === 'all') return true
+      if (filter === 'unseen' && !hasSeen) return true
       return derivedState === filter
     }
-  }, [filter, derivedState, proposal, isLoading])
+  }, [filter, hasSeen, derivedState, proposal, isLoading])
 
   const handleOnPress = useCallback(async () => {
     if (onPress) await onPress(mint, proposalKey)
-  }, [mint, proposalKey, onPress])
+    if (!hasSeen && currentAccount) {
+      const proposalIdsSeenByMint = {
+        ...(currentAccount.proposalIdsSeenByMint || {}),
+        [mint.toBase58()]: [
+          ...(currentAccount.proposalIdsSeenByMint
+            ? currentAccount.proposalIdsSeenByMint[mint.toBase58()]
+            : []),
+          proposalKey.toBase58(),
+        ],
+      }
+
+      await upsertAccount({
+        ...currentAccount,
+        proposalIdsSeenByMint,
+      })
+    }
+  }, [mint, proposalKey, onPress, hasSeen, currentAccount, upsertAccount])
 
   if (!isVisible) return null
   if (isLoading) {
@@ -135,43 +167,58 @@ export const ProposalCard = ({
     <ReAnimatedBox
       backgroundColor="secondaryBackground"
       borderRadius="l"
+      position="relative"
       entering={FadeIn}
       exiting={FadeOut}
       {...boxProps}
     >
       <TouchableOpacityBox onPress={handleOnPress}>
         <Box
+          position="relative"
           paddingTop="ms"
           padding="m"
           paddingBottom={derivedState === 'active' ? 'm' : 's'}
         >
-          <Box flexDirection="row" justifyContent="space-between">
-            <Box flexShrink={1}>
-              <Text variant="subtitle3" color="primaryText">
-                {proposal?.name}
-              </Text>
-            </Box>
-            <Box flexDirection="row">
-              {proposal?.tags
-                .filter((tag) => tag !== 'tags')
-                .map((tag) => (
-                  <Box key={tag} marginLeft="s">
-                    <Box
-                      padding="s"
-                      backgroundColor={
-                        tag.toLowerCase().includes('temp check')
-                          ? 'orange500'
-                          : 'surfaceSecondary'
-                      }
-                      borderRadius="m"
-                    >
-                      <Text fontSize={10} color="secondaryText">
-                        {tag.toUpperCase()}
-                      </Text>
-                    </Box>
+          <Box flexDirection="row" alignItems="center" marginBottom="s">
+            {!hasSeen && (
+              <Box
+                backgroundColor="surfaceSecondary"
+                flexDirection="row"
+                alignItems="center"
+                padding="s"
+                borderRadius="m"
+                marginRight="s"
+              >
+                <Unseen height={12} width={12} color={colors.orange500} />
+                <Text fontSize={10} color="secondaryText" marginLeft="s">
+                  UNSEEN
+                </Text>
+              </Box>
+            )}
+            {proposal?.tags
+              .filter((tag) => tag !== 'tags')
+              .map((tag) => (
+                <Box key={tag} marginRight="s">
+                  <Box
+                    padding="s"
+                    backgroundColor={
+                      tag.toLowerCase().includes('temp check')
+                        ? 'orange500'
+                        : 'surfaceSecondary'
+                    }
+                    borderRadius="m"
+                  >
+                    <Text fontSize={10} color="secondaryText">
+                      {tag.toUpperCase()}
+                    </Text>
                   </Box>
-                ))}
-            </Box>
+                </Box>
+              ))}
+          </Box>
+          <Box flexDirection="row">
+            <Text variant="subtitle3" color="primaryText">
+              {proposal?.name}
+            </Text>
           </Box>
           {derivedState === 'active' && (
             <Text
@@ -199,6 +246,7 @@ export const ProposalCard = ({
             </Text>
           </Box>
         )} */}
+        {}
         <Box
           paddingHorizontal="m"
           /* todo (gov): add back once we can derive what they voted easily */

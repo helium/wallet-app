@@ -15,7 +15,10 @@ import React, {
   useState,
 } from 'react'
 import { Wallet } from '@coral-xyz/anchor'
+import { organizationKey } from '@helium/organization-sdk'
+import { useOrganization } from '@helium/modular-governance-hooks'
 import { useSolana } from '../solana/SolanaProvider'
+import { useAccountStorage } from './AccountStorageProvider'
 
 enum GovNetwork {
   hnt = 'Helium',
@@ -28,11 +31,13 @@ const mintsToNetwork: { [key: string]: GovNetwork } = {
   [MOBILE_MINT.toBase58()]: GovNetwork.mobile,
   [IOT_MINT.toBase58()]: GovNetwork.iot,
 }
-
 export interface IGovernanceContextState {
+  loading: boolean
   mint: PublicKey
   network: GovNetwork
   registrar?: ReturnType<typeof useRegistrar>['info']
+  proposalCountByMint?: Record<string, number>
+  hasUnseenProposals?: boolean
 
   setMint: (mint: PublicKey) => void
 }
@@ -45,22 +50,74 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const { anchorProvider } = useSolana()
   const [mint, setMint] = useState(HNT_MINT)
   const network = useMemo(() => mintsToNetwork[mint.toBase58()], [mint])
-  const registrarKey = useMemo(
-    () => mint && getRegistrarKey(mint),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [mint.toBase58()],
+  const registrarKey = useMemo(() => mint && getRegistrarKey(mint), [mint])
+  const { info: registrar } = useRegistrar(registrarKey)
+  const { upsertAccount, currentAccount } = useAccountStorage()
+
+  const { loading: loadingHntOrg, info: hntOrg } = useOrganization(
+    organizationKey(mintsToNetwork[HNT_MINT.toBase58()])[0],
   )
 
-  const { info: registrar } = useRegistrar(registrarKey)
+  const { loading: loadingMobileOrg, info: mobileOrg } = useOrganization(
+    organizationKey(mintsToNetwork[MOBILE_MINT.toBase58()])[0],
+  )
+
+  const { loading: loadingIotOrg, info: iotOrg } = useOrganization(
+    organizationKey(mintsToNetwork[IOT_MINT.toBase58()])[0],
+  )
+
+  const proposalCountByMint = useMemo(
+    () => ({
+      [HNT_MINT.toBase58()]: hntOrg?.numProposals || 0,
+      [MOBILE_MINT.toBase58()]: mobileOrg?.numProposals || 0,
+      [IOT_MINT.toBase58()]: iotOrg?.numProposals || 0,
+    }),
+    [hntOrg, mobileOrg, iotOrg],
+  )
+
+  const hasUnseenProposals = useMemo(() => {
+    if (currentAccount && proposalCountByMint) {
+      // first time seeing proposals for this account
+      // default to undefined so we dont show the badge
+      if (currentAccount.proposalCountByMint === undefined) {
+        upsertAccount({
+          ...currentAccount,
+          proposalCountByMint,
+        })
+      } else if (
+        JSON.stringify(currentAccount.proposalCountByMint) !==
+        JSON.stringify(proposalCountByMint)
+      ) {
+        return true
+      }
+    }
+  }, [currentAccount, upsertAccount, proposalCountByMint])
+
+  const loading = useMemo(
+    () => loadingHntOrg || loadingMobileOrg || loadingIotOrg,
+    [loadingHntOrg, loadingMobileOrg, loadingIotOrg],
+  )
 
   const ret = useMemo(
     () => ({
+      loading,
       mint,
       network,
       registrar,
+      proposalCountByMint,
+      hasUnseenProposals: hasUnseenProposals || false,
+
       setMint,
     }),
-    [mint, network, registrar, setMint],
+    [
+      loading,
+      mint,
+      network,
+      registrar,
+      proposalCountByMint,
+      hasUnseenProposals,
+      setMint,
+    ],
   )
 
   return (
@@ -84,11 +141,15 @@ const useGovernance = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { mint, ...heliumVsrState } = useHeliumVsrState()
+  const loading = useMemo(
+    () => context.loading || heliumVsrState.loading,
+    [context.loading, heliumVsrState.loading],
+  )
 
   return {
     ...context,
     ...heliumVsrState,
-    loading: heliumVsrState.loading,
+    loading,
   }
 }
 

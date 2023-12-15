@@ -9,12 +9,14 @@ export type VoteChoiceWithMeta = VoteChoice & {
   index: number
   percent: number
 }
+
 export type ProposalFilter =
   | 'all'
   | 'active'
   | 'cancelled'
   | 'passed'
   | 'failed'
+  | 'unseen'
 
 export type GovernanceStackParamList = {
   GovernanceTutorialScreen: undefined

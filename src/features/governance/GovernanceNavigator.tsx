@@ -3,7 +3,6 @@ import {
   createStackNavigator,
 } from '@react-navigation/stack'
 import React, { memo } from 'react'
-import { GovernanceProvider } from '@storage/GovernanceProvider'
 import { PortalHost } from '@gorhom/portal'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import GovernanceTutorialScreen from './GovernanceTutorialScreen'
@@ -21,29 +20,27 @@ const GovernanceStackScreen = () => {
 
   return (
     <>
-      <GovernanceProvider>
-        <GovernanceStack.Navigator screenOptions={screenOptions}>
-          {!voteTutorialShown && (
-            <GovernanceStack.Screen
-              name="GovernanceTutorialScreen"
-              component={GovernanceTutorialScreen}
-            />
-          )}
+      <GovernanceStack.Navigator screenOptions={screenOptions}>
+        {!voteTutorialShown && (
           <GovernanceStack.Screen
-            name="GovernanceScreen"
-            component={GovernanceScreen}
+            name="GovernanceTutorialScreen"
+            component={GovernanceTutorialScreen}
           />
-          <GovernanceStack.Screen
-            name="VotingPowerScreen"
-            component={VotingPowerScreen}
-          />
-          <GovernanceStack.Screen
-            name="ProposalScreen"
-            component={ProposalScreen}
-          />
-        </GovernanceStack.Navigator>
-        <PortalHost name="GovernancePortalHost" />
-      </GovernanceProvider>
+        )}
+        <GovernanceStack.Screen
+          name="GovernanceScreen"
+          component={GovernanceScreen}
+        />
+        <GovernanceStack.Screen
+          name="VotingPowerScreen"
+          component={VotingPowerScreen}
+        />
+        <GovernanceStack.Screen
+          name="ProposalScreen"
+          component={ProposalScreen}
+        />
+      </GovernanceStack.Navigator>
+      <PortalHost name="GovernancePortalHost" />
     </>
   )
 }
