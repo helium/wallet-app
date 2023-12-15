@@ -375,7 +375,6 @@ const SwapScreen = () => {
         }
         setOutputMint(mint)
       }
-
     },
     [selectorMode, refresh, inputMint, outputMint],
   )
