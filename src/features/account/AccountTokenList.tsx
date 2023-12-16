@@ -4,7 +4,13 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
 import { useAccountFetchCache } from '@helium/account-fetch-cache-hooks'
-import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT, truthy } from '@helium/spl-utils'
+import {
+  DC_MINT,
+  HNT_MINT,
+  IOT_MINT,
+  MOBILE_MINT,
+  truthy,
+} from '@helium/spl-utils'
 import { useNavigation } from '@react-navigation/native'
 import { getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
