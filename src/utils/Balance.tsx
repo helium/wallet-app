@@ -67,7 +67,8 @@ const useBalanceHook = () => {
   const [oracleDateTime, setOracleDateTime] = useState<Date>()
 
   const tokenAccounts = useMemo(() => {
-    if (!cluster || !anchorProvider) return undefined
+    if (!cluster || !anchorProvider || !anchorProvider.publicKey)
+      return undefined
 
     return (
       allBalances?.[cluster]?.[anchorProvider.publicKey.toBase58() as string]

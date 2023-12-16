@@ -1,11 +1,11 @@
 import { useTokenAccount } from '@helium/helium-react-hooks'
-import { PublicKey } from '@solana/web3.js'
-import { useEffect } from 'react'
+import { usePublicKey } from '@hooks/usePublicKey'
 import { AccountLayout } from '@solana/spl-token'
+import { useEffect } from 'react'
+import { useSolana } from '../solana/SolanaProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { balancesSlice } from '../store/slices/balancesSlice'
 import { useAppDispatch } from '../store/store'
-import { useSolana } from '../solana/SolanaProvider'
 
 type TokenInput = {
   tokenAccount: string
@@ -13,7 +13,7 @@ type TokenInput = {
 }
 
 const StoreAtaBalance = ({ tokenAccount, mint }: TokenInput) => {
-  const tokenAccountResponse = useTokenAccount(new PublicKey(tokenAccount))
+  const tokenAccountResponse = useTokenAccount(usePublicKey(tokenAccount))
   const { currentAccount } = useAccountStorage()
   const dispatch = useAppDispatch()
   const { cluster } = useSolana()
