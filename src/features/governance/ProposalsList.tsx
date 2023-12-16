@@ -12,6 +12,8 @@ import { useTranslation } from 'react-i18next'
 import { organizationKey } from '@helium/organization-sdk'
 import { useOrganizationProposals } from '@helium/modular-governance-hooks'
 import CircleLoader from '@components/CircleLoader'
+import { useAsync } from 'react-async-hook'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { ProposalCard } from './ProposalCard'
 import {
   GovernanceNavigationProp,
@@ -22,10 +24,11 @@ import {
 type IProposalsListProps = BoxProps<Theme>
 export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
   const { t } = useTranslation()
+  const { upsertAccount, currentAccount } = useAccountStorage()
   const navigation = useNavigation<GovernanceNavigationProp>()
   const [filter, setFilter] = useState<ProposalFilter>('all')
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const { network } = useGovernance()
+  const { mint, network } = useGovernance()
   const organization = useMemo(() => organizationKey(network)[0], [network])
   const { loading, accounts: proposalsWithDups } =
     useOrganizationProposals(organization)
@@ -39,6 +42,26 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
       return !has
     })
   }, [proposalsWithDups])
+
+  // If we have no record of proposals seen by mint, set it to all proposals
+  // In order to prevent spamming the Ui with false positives of past proposals
+  // being unseen, new proposals should act properly
+  useAsync(async () => {
+    if (
+      currentAccount &&
+      proposals?.length &&
+      (currentAccount.proposalIdsSeenByMint === undefined ||
+        currentAccount.proposalIdsSeenByMint[mint.toBase58()] === undefined)
+    ) {
+      await upsertAccount({
+        ...currentAccount,
+        proposalIdsSeenByMint: {
+          ...currentAccount?.proposalIdsSeenByMint,
+          [mint.toBase58()]: proposals.map((p) => p.publicKey.toBase58()),
+        },
+      })
+    }
+  }, [proposals])
 
   const handleFilterPress = (f: ProposalFilter) => () => {
     setFilter(f)

@@ -31,6 +31,7 @@ import Markdown from 'react-native-markdown-display'
 import { Edge } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import { getTimeFromNowFmt } from '@utils/dateTools'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { VoteOption } from './VoteOption'
@@ -46,6 +47,7 @@ export const ProposalScreen = () => {
   const { t } = useTranslation()
   const route = useRoute<Route>()
   const theme = useTheme<Theme>()
+  const { upsertAccount, currentAccount } = useAccountStorage()
   const [currVote, setCurrVote] = useState(0)
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])
@@ -63,6 +65,14 @@ export const ProposalScreen = () => {
     proposalConfig?.stateController,
   )
 
+  const hasSeen = useMemo(() => {
+    if (currentAccount?.proposalIdsSeenByMint) {
+      return currentAccount.proposalIdsSeenByMint[mint.toBase58()]?.includes(
+        proposalKey.toBase58(),
+      )
+    }
+  }, [currentAccount, mint, proposalKey])
+
   useEffect(() => {
     if (mint && route.params.mint) {
       const routeMint = new PublicKey(route.params.mint)
@@ -72,6 +82,22 @@ export const ProposalScreen = () => {
       }
     }
   }, [mint, route, setMint])
+
+  useAsync(async () => {
+    if (currentAccount?.address && !hasSeen && proposal && resolution) {
+      const { proposalIdsSeenByMint = {} } = currentAccount
+      await upsertAccount({
+        ...currentAccount,
+        proposalIdsSeenByMint: {
+          ...proposalIdsSeenByMint,
+          [mint.toBase58()]: [
+            ...(proposalIdsSeenByMint[mint.toBase58()] || []),
+            proposalKey.toBase58(),
+          ],
+        },
+      })
+    }
+  }, [hasSeen])
 
   const {
     voteWeights,

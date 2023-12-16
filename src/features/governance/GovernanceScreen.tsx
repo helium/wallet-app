@@ -7,7 +7,7 @@ import Text from '@components/Text'
 import TokenPill from '@components/TokenPill'
 import { useNavigation } from '@react-navigation/native'
 import globalStyles from '@theme/globalStyles'
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import { ScrollView, Animated } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useGovernance } from '@storage/GovernanceProvider'
@@ -24,7 +24,7 @@ export const GovernanceScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<GovernanceNavigationProp>()
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
-  const { upsertAccount, currentAccount } = useAccountStorage()
+  const { currentAccount } = useAccountStorage()
   const {
     loading,
     mint,
@@ -71,28 +71,6 @@ export const GovernanceScreen = () => {
     }
   }, [loading, hasUnseenProposals])
 
-  const handleMintPress = useCallback(
-    (mint: PublicKey) => () => {
-      setMint(mint)
-
-      if (
-        currentAccount &&
-        (!currentAccount.proposalCountByMint ||
-          currentAccount.proposalCountByMint[mint.toBase58()] !==
-            proposalCountByMint?.[mint.toBase58()])
-      ) {
-        upsertAccount({
-          ...currentAccount,
-          proposalCountByMint: {
-            ...currentAccount.proposalCountByMint,
-            [mint.toBase58()]: proposalCountByMint?.[mint.toBase58()] || 0,
-          },
-        })
-      }
-    },
-    [setMint, upsertAccount, currentAccount, proposalCountByMint],
-  )
-
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <SafeAreaBox edges={safeEdges} flex={1}>
@@ -113,12 +91,12 @@ export const GovernanceScreen = () => {
                 (currentAccount?.proposalCountByMint?.[m] || 0)
 
               return (
-                <Box key={m}>
+                <Box key={m} position="relative">
                   <Box zIndex={2}>
                     <TokenPill
                       mint={pk}
                       isActive={mint.equals(pk)}
-                      onPress={handleMintPress(pk)}
+                      onPress={() => setMint(pk)}
                       activeColor="secondaryBackground"
                     />
                   </Box>

@@ -17,6 +17,7 @@ import React, {
 import { Wallet } from '@coral-xyz/anchor'
 import { organizationKey } from '@helium/organization-sdk'
 import { useOrganization } from '@helium/modular-governance-hooks'
+import { useAsync } from 'react-async-hook'
 import { useSolana } from '../solana/SolanaProvider'
 import { useAccountStorage } from './AccountStorageProvider'
 
@@ -66,6 +67,11 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
     organizationKey(mintsToNetwork[IOT_MINT.toBase58()])[0],
   )
 
+  const loading = useMemo(
+    () => loadingHntOrg || loadingMobileOrg || loadingIotOrg,
+    [loadingHntOrg, loadingMobileOrg, loadingIotOrg],
+  )
+
   const proposalCountByMint = useMemo(
     () => ({
       [HNT_MINT.toBase58()]: hntOrg?.numProposals || 0,
@@ -75,28 +81,34 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
     [hntOrg, mobileOrg, iotOrg],
   )
 
+  // If we have no record of proposals count by mint, set it to value from provider
+  // In order to prevent spamming the Ui with false positives of past proposals
+  // being unseen, new proposals should act properly
+  useAsync(async () => {
+    if (
+      !loading &&
+      proposalCountByMint &&
+      currentAccount &&
+      currentAccount.proposalCountByMint === undefined
+    ) {
+      await upsertAccount({
+        ...currentAccount,
+        proposalCountByMint,
+      })
+    }
+  }, [loading])
+
   const hasUnseenProposals = useMemo(() => {
     if (currentAccount && proposalCountByMint) {
-      // first time seeing proposals for this account
-      // default to undefined so we dont show the badge
-      if (currentAccount.proposalCountByMint === undefined) {
-        upsertAccount({
-          ...currentAccount,
-          proposalCountByMint,
-        })
-      } else if (
+      if (
         JSON.stringify(currentAccount.proposalCountByMint) !==
         JSON.stringify(proposalCountByMint)
       ) {
         return true
       }
     }
-  }, [currentAccount, upsertAccount, proposalCountByMint])
-
-  const loading = useMemo(
-    () => loadingHntOrg || loadingMobileOrg || loadingIotOrg,
-    [loadingHntOrg, loadingMobileOrg, loadingIotOrg],
-  )
+    return false
+  }, [currentAccount, proposalCountByMint])
 
   const ret = useMemo(
     () => ({

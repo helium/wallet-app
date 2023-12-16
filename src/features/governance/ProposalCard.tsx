@@ -15,14 +15,13 @@ import { humanReadable } from '@utils/formatting'
 import axios from 'axios'
 import BN from 'bn.js'
 import MarkdownIt from 'markdown-it'
-import React, { useCallback, useMemo } from 'react'
+import React, { useRef, useCallback, useEffect, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
+import { Animated } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import Unseen from '@assets/images/unseen.svg'
-import { useColors } from '@theme/themeHooks'
 import { ProposalFilter, ProposalV0 } from './governanceTypes'
 
 interface IProposalCardProps extends BoxProps<Theme> {
@@ -52,8 +51,8 @@ export const ProposalCard = ({
   ...boxProps
 }: IProposalCardProps) => {
   const { t } = useTranslation()
-  const colors = useColors()
-  const { upsertAccount, currentAccount } = useAccountStorage()
+  const anim = useRef(new Animated.Value(1))
+  const { currentAccount } = useAccountStorage()
   const { mint } = useGovernance()
   const { proposalConfig: proposalConfigKey } = proposal
   const decimals = useMint(mint)?.info?.decimals
@@ -69,6 +68,36 @@ export const ProposalCard = ({
       )
     }
   }, [currentAccount, mint, proposalKey])
+
+  useEffect(() => {
+    if (!hasSeen) {
+      const res = Animated.loop(
+        // runs given animations in a sequence
+        Animated.sequence([
+          // increase size
+          Animated.timing(anim.current, {
+            toValue: 1.7,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+          // decrease size
+          Animated.timing(anim.current, {
+            toValue: 1,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+        ]),
+      )
+
+      // start the animation
+      res.start()
+
+      return () => {
+        // stop animation
+        res.reset()
+      }
+    }
+  }, [hasSeen])
 
   const endTs =
     resolution &&
@@ -140,23 +169,7 @@ export const ProposalCard = ({
 
   const handleOnPress = useCallback(async () => {
     if (onPress) await onPress(mint, proposalKey)
-    if (!hasSeen && currentAccount) {
-      const proposalIdsSeenByMint = {
-        ...(currentAccount.proposalIdsSeenByMint || {}),
-        [mint.toBase58()]: [
-          ...(currentAccount.proposalIdsSeenByMint
-            ? currentAccount.proposalIdsSeenByMint[mint.toBase58()]
-            : []),
-          proposalKey.toBase58(),
-        ],
-      }
-
-      await upsertAccount({
-        ...currentAccount,
-        proposalIdsSeenByMint,
-      })
-    }
-  }, [mint, proposalKey, onPress, hasSeen, currentAccount, upsertAccount])
+  }, [mint, proposalKey, onPress])
 
   if (!isVisible) return null
   if (isLoading) {
@@ -179,46 +192,72 @@ export const ProposalCard = ({
           padding="m"
           paddingBottom={derivedState === 'active' ? 'm' : 's'}
         >
-          <Box flexDirection="row" alignItems="center" marginBottom="s">
-            {!hasSeen && (
-              <Box
-                backgroundColor="surfaceSecondary"
-                flexDirection="row"
-                alignItems="center"
-                padding="s"
-                borderRadius="m"
-                marginRight="s"
-              >
-                <Unseen height={12} width={12} color={colors.orange500} />
+          {!hasSeen && (
+            <Box flexDirection="row" marginBottom="s">
+              <Box flexDirection="row" alignItems="center" marginRight="s">
+                <Box>
+                  <Box
+                    zIndex={2}
+                    width={12}
+                    height={12}
+                    backgroundColor="flamenco"
+                    borderRadius="round"
+                  />
+                  <Box
+                    position="absolute"
+                    top={0}
+                    left={0}
+                    right={0}
+                    bottom={0}
+                  >
+                    <Animated.View
+                      style={{ transform: [{ scale: anim.current }] }}
+                    >
+                      <Box
+                        opacity={0.3}
+                        borderRadius="round"
+                        width="100%"
+                        height="100%"
+                        backgroundColor="flamenco"
+                      />
+                    </Animated.View>
+                  </Box>
+                </Box>
                 <Text fontSize={10} color="secondaryText" marginLeft="s">
                   UNSEEN
                 </Text>
               </Box>
-            )}
-            {proposal?.tags
-              .filter((tag) => tag !== 'tags')
-              .map((tag) => (
-                <Box key={tag} marginRight="s">
-                  <Box
-                    padding="s"
-                    backgroundColor={
-                      tag.toLowerCase().includes('temp check')
-                        ? 'orange500'
-                        : 'surfaceSecondary'
-                    }
-                    borderRadius="m"
-                  >
-                    <Text fontSize={10} color="secondaryText">
-                      {tag.toUpperCase()}
-                    </Text>
-                  </Box>
-                </Box>
-              ))}
-          </Box>
-          <Box flexDirection="row">
-            <Text variant="subtitle3" color="primaryText">
+            </Box>
+          )}
+          <Box
+            flexDirection="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Text variant="subtitle3" color="primaryText" flexShrink={1}>
               {proposal?.name}
             </Text>
+            <Box flexDirection="row">
+              {proposal?.tags
+                .filter((tag) => tag !== 'tags')
+                .map((tag) => (
+                  <Box key={tag} marginLeft="s">
+                    <Box
+                      padding="s"
+                      backgroundColor={
+                        tag.toLowerCase().includes('temp check')
+                          ? 'orange500'
+                          : 'surfaceSecondary'
+                      }
+                      borderRadius="m"
+                    >
+                      <Text fontSize={10} color="secondaryText">
+                        {tag.toUpperCase()}
+                      </Text>
+                    </Box>
+                  </Box>
+                ))}
+            </Box>
           </Box>
           {derivedState === 'active' && (
             <Text
