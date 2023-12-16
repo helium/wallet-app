@@ -101,7 +101,9 @@ const InsufficientSolConversionModal: FC = () => {
         ([_mint, value]) => Boolean(value),
       )
 
-      setInputMint(new PublicKey(firstMint))
+      if (firstMint) {
+        setInputMint(new PublicKey(firstMint))
+      }
     }
   }, [hasAtLeastOne, setInputMint, hasEnoughForSolByMint])
 
