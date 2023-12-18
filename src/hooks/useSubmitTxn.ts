@@ -1,9 +1,8 @@
 import { HotspotType } from '@helium/onboarding'
 import { useOnboarding } from '@helium/react-native-sdk'
 import { chunks, sendAndConfirmWithRetry } from '@helium/spl-utils'
-import { PublicKey, Transaction } from '@solana/web3.js'
+import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { useJupiter } from '@storage/JupiterProvider'
 import i18n from '@utils/i18n'
 import * as solUtils from '@utils/solanaUtils'
 import BN from 'bn.js'
@@ -31,7 +30,6 @@ import {
 
 export default () => {
   const { cluster, anchorProvider } = useSolana()
-  const { getSwapTx } = useJupiter()
   const { currentAccount } = useAccountStorage()
   const { t } = i18n
   const { walletSignBottomSheetRef } = useWalletSign()
@@ -166,46 +164,42 @@ export default () => {
     ],
   )
 
-  const submitJupiterSwap = useCallback(async () => {
-    if (!currentAccount || !anchorProvider || !walletSignBottomSheetRef) {
-      throw new Error(t('errors.account'))
-    }
+  const submitJupiterSwap = useCallback(
+    async (swapTxn: VersionedTransaction) => {
+      if (!currentAccount || !anchorProvider || !walletSignBottomSheetRef) {
+        throw new Error(t('errors.account'))
+      }
 
-    const swapTxn = await getSwapTx()
+      const serializedTx = Buffer.from(swapTxn.serialize())
 
-    if (!swapTxn) {
-      throw new Error(t('errors.swap.tx'))
-    }
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        additionalMessage: t('transactions.signSwapTxn'),
+        serializedTxs: [Buffer.from(serializedTx)],
+      })
 
-    const serializedTx = Buffer.from(swapTxn.serialize())
+      if (!decision) {
+        throw new Error('User rejected transaction')
+      }
 
-    const decision = await walletSignBottomSheetRef.show({
-      type: WalletStandardMessageTypes.signTransaction,
-      url: '',
-      additionalMessage: t('transactions.signSwapTxn'),
-      serializedTxs: [Buffer.from(serializedTx)],
-    })
-
-    if (!decision) {
-      throw new Error('User rejected transaction')
-    }
-
-    dispatch(
-      sendJupiterSwap({
-        anchorProvider,
-        cluster,
-        swapTxn,
-      }),
-    )
-  }, [
-    anchorProvider,
-    cluster,
-    currentAccount,
-    dispatch,
-    t,
-    getSwapTx,
-    walletSignBottomSheetRef,
-  ])
+      dispatch(
+        sendJupiterSwap({
+          anchorProvider,
+          cluster,
+          swapTxn,
+        }),
+      )
+    },
+    [
+      anchorProvider,
+      cluster,
+      currentAccount,
+      dispatch,
+      t,
+      walletSignBottomSheetRef,
+    ],
+  )
 
   const submitTreasurySwap = useCallback(
     async (fromMint: PublicKey, amount: number, recipient: PublicKey) => {

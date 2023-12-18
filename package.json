@@ -1,6 +1,6 @@
 {
   "name": "helium-wallet",
-  "version": "2.5.2",
+  "version": "2.5.3",
   "private": true,
   "scripts": {
     "postinstall": "patch-package && ./node_modules/.bin/rn-nodeify --hack --install && npx jetify",
@@ -89,7 +89,6 @@
     "@solana/spl-account-compression": "0.1.4",
     "@solana/spl-memo": "0.2.3",
     "@solana/spl-token": "0.3.6",
-    "@solana/spl-token-registry": "0.2.4574",
     "@solana/wallet-adapter-react": "0.15.33",
     "@solana/wallet-standard-features": "1.0.0",
     "@solana/web3.js": "1.67.2",
