@@ -95,7 +95,8 @@ const SwapScreen = () => {
   const [inputAmount, setInputAmount] = useState<number>(0)
   const [outputMint, setOutputMint] = useState<PublicKey>(HNT_MINT)
   const [outputAmount, setOutputAmount] = useState<number>(0)
-  const [slippageBps, setSlippageBps] = useState<number>(50)
+  const [priceImpact, setPriceImpact] = useState<number>(0)
+  const [slippageBps, setSlippageBps] = useState<number>(10)
   const [slippageInfoVisible, setSlippageInfoVisible] = useState(false)
   const [solFee, setSolFee] = useState<BN>(SOL_TXN_FEE)
   const [hasInsufficientBalance, setHasInsufficientBalance] = useState<
@@ -114,25 +115,19 @@ const SwapScreen = () => {
   const [recipient, setRecipient] = useState('')
   const [isRecipientOpen, setRecipientOpen] = useState(false)
   const { visibleTokens } = useVisibleTokens()
+  const { loading, error: jupiterError, routeMap, getRoute } = useJupiter()
   const { price, loading: loadingPrice } = useTreasuryPrice(
     inputMint,
     inputAmount,
   )
-  const {
-    loading,
-    error: jupiterError,
-    routeMap,
-    routes,
-    getRoute,
-  } = useJupiter()
 
-  const inputMintDecimals = useMint(inputMint)?.info?.decimals
-  const outputMintDecimals = useMint(outputMint)?.info?.decimals
+  const inputMintAcc = useMint(inputMint)?.info
+  const outputMintAcc = useMint(outputMint)?.info
 
   const validInputMints = useMemo(() => {
     if (isDevnet)
       return [HNT_MINT.toBase58(), MOBILE_MINT.toBase58(), IOT_MINT.toBase58()]
-    return [...routeMap.keys()].filter((key) => visibleTokens.has(key))
+    return [...routeMap.keys()].filter((key) => key && visibleTokens.has(key))
   }, [visibleTokens, routeMap, isDevnet])
 
   const validOutputMints = useMemo(() => {
@@ -144,10 +139,7 @@ const SwapScreen = () => {
     const routeMints =
       routeMap
         .get(inputMint?.toBase58() || '')
-        ?.filter(
-          (key) =>
-            visibleTokens.has(key) && !inputMint.equals(new PublicKey(key)),
-        ) || []
+        ?.filter((key) => key && visibleTokens.has(key)) || []
 
     return inputMint.equals(HNT_MINT)
       ? [DC_MINT.toBase58(), ...routeMints]
@@ -179,24 +171,10 @@ const SwapScreen = () => {
   }, [])
 
   const insufficientTokensToSwap = useMemo(() => {
-    if (inputAmount > 0 && typeof inputMintDecimals !== 'undefined') {
-      if (!isDevnet && !outputMint.equals(DC_MINT)) {
-        return (
-          routes?.outAmount &&
-          new BN(routes?.outAmount || 0).lt(new BN(inputAmount))
-        )
-      }
-
-      return inputMintBalance?.lt(toBN(inputAmount || 0, inputMintDecimals))
+    if (inputAmount > 0 && inputMintAcc) {
+      return inputMintBalance?.lt(toBN(inputAmount || 0, inputMintAcc.decimals))
     }
-  }, [
-    inputAmount,
-    inputMintDecimals,
-    inputMintBalance,
-    outputMint,
-    routes,
-    isDevnet,
-  ])
+  }, [inputAmount, inputMintBalance, inputMintAcc])
 
   const showError = useMemo(() => {
     if (hasRecipientError) return t('generic.notValidSolanaAddress')
@@ -219,6 +197,7 @@ const SwapScreen = () => {
   const refresh = useCallback(async () => {
     setInputAmount(0)
     setOutputAmount(0)
+    setPriceImpact(0)
     setInputMint(MOBILE_MINT)
     setOutputMint(HNT_MINT)
     setSolFee(SOL_TXN_FEE)
@@ -272,44 +251,13 @@ const SwapScreen = () => {
     if (!inputMint.equals(HNT_MINT) && !outputMint.equals(DC_MINT)) {
       if (
         validOutputMints &&
+        validOutputMints[0] &&
         !validOutputMints?.includes(outputMint?.toBase58() || '')
       ) {
         setOutputMint(new PublicKey(validOutputMints[0]))
       }
     }
   }, [inputMint, outputMint, validOutputMints])
-
-  useEffect(() => {
-    // if changing outputMint ensure we get new routes
-    ;(async () => {
-      if (
-        !isDevnet &&
-        typeof inputMintDecimals !== 'undefined' &&
-        typeof inputAmount !== 'undefined' &&
-        inputAmount > 0 &&
-        !outputMint.equals(DC_MINT)
-      ) {
-        setRecipient('')
-        setRecipientOpen(false)
-        await getRoute({
-          amount: toBN(inputAmount || 0, inputMintDecimals).toNumber(),
-          inputMint: inputMint.toBase58(),
-          outputMint: outputMint.toBase58(),
-          slippageBps,
-        })
-      }
-    })()
-  }, [
-    isDevnet,
-    inputAmount,
-    outputMint,
-    inputMint,
-    slippageBps,
-    inputMintDecimals,
-    getRoute,
-    setRecipient,
-    setRecipientOpen,
-  ])
 
   const Header = useMemo(() => {
     return (
@@ -343,7 +291,7 @@ const SwapScreen = () => {
         />
       )
 
-    const bpsOptions: number[] = [50, 100, 150]
+    const bpsOptions: number[] = [10, 50, 100]
     const disabled = outputMint.equals(DC_MINT)
 
     return (
@@ -414,18 +362,21 @@ const SwapScreen = () => {
     (mint: PublicKey) => {
       if (selectorMode === SelectorMode.youPay) {
         refresh()
+
+        if (mint.equals(outputMint)) {
+          setOutputMint(inputMint)
+        }
         setInputMint(mint)
       }
 
       if (selectorMode === SelectorMode.youReceive) {
+        if (mint.equals(inputMint)) {
+          setInputMint(outputMint)
+        }
         setOutputMint(mint)
       }
-
-      if (selectorMode === SelectorMode.youPay && mint.equals(HNT_MINT)) {
-        setOutputMint(DC_MINT)
-      }
     },
-    [refresh, selectorMode],
+    [selectorMode, refresh, inputMint, outputMint],
   )
 
   const tokenData = useMemo(() => {
@@ -435,7 +386,7 @@ const SwapScreen = () => {
 
         return {
           mint: pk,
-          selected: inputMint.equals(pk),
+          selected: pk ? inputMint.equals(pk) : false,
         }
       }),
       [SelectorMode.youReceive]: validOutputMints.map((mint) => {
@@ -443,7 +394,7 @@ const SwapScreen = () => {
 
         return {
           mint: pk,
-          selected: outputMint.equals(pk),
+          selected: pk ? outputMint.equals(pk) : false,
         }
       }),
     }
@@ -463,92 +414,160 @@ const SwapScreen = () => {
   const onTokenItemPressed = useCallback(
     (youPay: boolean) => () => {
       Keyboard.dismiss()
-      if (typeof inputMintDecimals !== undefined) {
-        setSelectorMode(youPay ? SelectorMode.youPay : SelectorMode.youReceive)
-        hntKeyboardRef.current?.show({
-          payer: currentAccount,
-        })
+      setSelectorMode(youPay ? SelectorMode.youPay : SelectorMode.youReceive)
+      hntKeyboardRef.current?.show({
+        payer: currentAccount,
+      })
+    },
+    [currentAccount],
+  )
+
+  const getOutputAmount = useCallback(
+    async ({ balance }: { balance: BN }) => {
+      if (outputMintAcc && inputMintAcc) {
+        const { address: input, decimals: inputDecimals } = inputMintAcc
+        const { address: output, decimals: outputDecimals } = outputMintAcc
+
+        if (!isDevnet && !output.equals(DC_MINT)) {
+          const route = await getRoute({
+            amount: balance.toNumber(),
+            inputMint: input.toBase58(),
+            outputMint: output.toBase58(),
+            slippageBps,
+          })
+          setPriceImpact(Number(route?.priceImpactPct || '0') * 100)
+
+          return setOutputAmount(
+            toNumber(new BN(Number(route?.outAmount || 0)), outputDecimals),
+          )
+        }
+        if (input.equals(HNT_MINT) && output.equals(DC_MINT)) {
+          return setOutputAmount(
+            toNumber(
+              networkTokensToDc(toBN(balance, inputDecimals)) || new BN(0),
+              inputDecimals,
+            ),
+          )
+        }
+        if (isDevnet) {
+          if (price && !input.equals(HNT_MINT)) {
+            return setOutputAmount(price)
+          }
+
+          return setOutputAmount(0)
+        }
+
+        return setOutputAmount(0)
       }
     },
-    [currentAccount, inputMintDecimals],
+    [
+      getRoute,
+      inputMintAcc,
+      isDevnet,
+      networkTokensToDc,
+      outputMintAcc,
+      price,
+      slippageBps,
+    ],
+  )
+
+  useEffect(() => {
+    // if changing outputMint ensure we get new routes
+    ;(async () => {
+      if (
+        !isDevnet &&
+        inputMintAcc &&
+        outputMintAcc &&
+        typeof inputAmount !== 'undefined' &&
+        inputAmount > 0 &&
+        !outputMintAcc?.address.equals(DC_MINT)
+      ) {
+        setRecipient('')
+        setRecipientOpen(false)
+        await getOutputAmount({
+          balance: toBN(inputAmount || 0, inputMintAcc.decimals),
+        })
+      }
+    })()
+  }, [
+    getOutputAmount,
+    inputAmount,
+    inputMintAcc,
+    outputMintAcc,
+    isDevnet,
+    setRecipient,
+    setRecipientOpen,
+  ])
+
+  const getInputAmount = useCallback(
+    async ({ balance }: { balance: BN }) => {
+      if (outputMintAcc && inputMintAcc) {
+        const { address: input, decimals: inputDecimals } = inputMintAcc
+        const { address: output, decimals: outputDecimals } = outputMintAcc
+
+        if (!isDevnet && !output.equals(DC_MINT)) {
+          const route = await getRoute({
+            amount: balance.toNumber(),
+            inputMint: output.toBase58(),
+            outputMint: input.toBase58(),
+            slippageBps,
+          })
+
+          return setInputAmount(
+            toNumber(new BN(Number(route?.outAmount || 0)), inputDecimals),
+          )
+        }
+        if (input.equals(HNT_MINT) && output.equals(DC_MINT)) {
+          return setInputAmount(
+            toNumber(
+              dcToNetworkTokens(toBN(balance, outputDecimals)) || new BN(0),
+              inputDecimals,
+            ),
+          )
+        }
+        if (isDevnet) {
+          if (price && !input.equals(HNT_MINT)) {
+            return setInputAmount(price)
+          }
+
+          return setInputAmount(0)
+        }
+
+        return setInputAmount(0)
+      }
+    },
+    [
+      dcToNetworkTokens,
+      getRoute,
+      inputMintAcc,
+      isDevnet,
+      outputMintAcc,
+      price,
+      slippageBps,
+    ],
   )
 
   const onConfirmBalance = useCallback(
     async ({ balance }: { balance: BN }) => {
-      if (typeof inputMintDecimals === 'undefined') return
-      if (typeof outputMintDecimals === 'undefined') return
-      const isPay = selectorMode === SelectorMode.youPay
-      const amount = toNumber(
-        balance,
-        isPay ? inputMintDecimals : outputMintDecimals,
-      )
+      if (inputMintAcc && outputMintAcc) {
+        const { decimals: inputDecimals } = inputMintAcc
+        const { decimals: outputDecimals } = outputMintAcc
+        const isPay = selectorMode === SelectorMode.youPay
+        const amount = toNumber(balance, isPay ? inputDecimals : outputDecimals)
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      isPay ? setInputAmount(amount) : setOutputAmount(amount)
-
-      if (!isDevnet && !outputMint.equals(DC_MINT)) {
-        const route = await getRoute({
-          amount: balance.toNumber(),
-          inputMint: isPay ? inputMint.toBase58() : outputMint.toBase58(),
-          outputMint: isPay ? outputMint.toBase58() : inputMint.toBase58(),
-          slippageBps,
-        })
-
-        return isPay
-          ? setOutputAmount(
-              toNumber(
-                new BN(Number(route?.outAmount || 0)),
-                outputMintDecimals,
-              ),
-            )
-          : setInputAmount(
-              toNumber(
-                new BN(Number(route?.outAmount || 0)),
-                inputMintDecimals,
-              ),
-            )
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        isPay ? setInputAmount(amount) : setOutputAmount(amount)
+        await (isPay
+          ? getOutputAmount({ balance })
+          : getInputAmount({ balance }))
       }
-
-      if (inputMint.equals(HNT_MINT) && outputMint.equals(DC_MINT)) {
-        return isPay
-          ? setOutputAmount(
-              toNumber(
-                networkTokensToDc(toBN(balance, inputMintDecimals)) ||
-                  new BN(0),
-                inputMintDecimals,
-              ),
-            )
-          : setInputAmount(
-              toNumber(
-                dcToNetworkTokens(toBN(balance, outputMintDecimals)) ||
-                  new BN(0),
-                inputMintDecimals,
-              ),
-            )
-      }
-
-      if (isDevnet) {
-        if (price && !inputMint.equals(HNT_MINT)) {
-          return isPay ? setOutputAmount(price) : setInputAmount(price)
-        }
-
-        return isPay ? setOutputAmount(0) : setInputAmount(0)
-      }
-
-      return isPay ? setOutputAmount(0) : setInputAmount(0)
     },
     [
       selectorMode,
-      networkTokensToDc,
-      dcToNetworkTokens,
-      price,
-      inputMint,
-      inputMintDecimals,
-      outputMint,
-      outputMintDecimals,
-      slippageBps,
-      getRoute,
-      isDevnet,
+      inputMintAcc,
+      outputMintAcc,
+      getInputAmount,
+      getOutputAmount,
     ],
   )
 
@@ -558,7 +577,7 @@ const SwapScreen = () => {
   )
 
   const handleSwapTokens = useCallback(async () => {
-    if (connection) {
+    if (connection && currentAccount?.solanaAddress) {
       try {
         setSwapping(true)
 
@@ -728,6 +747,21 @@ const SwapScreen = () => {
                             textAlign="center"
                           >
                             {showError}
+                          </Text>
+                        </Box>
+                      )}
+                      {priceImpact > 2.5 && (
+                        <Box marginTop="s">
+                          <Text
+                            color="orange500"
+                            textAlign="center"
+                            marginTop="s"
+                            marginBottom="m"
+                            marginHorizontal="m"
+                          >
+                            {t('swapsScreen.priceImpact', {
+                              percent: priceImpact.toFixed(2),
+                            })}
                           </Text>
                         </Box>
                       )}

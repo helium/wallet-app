@@ -8,7 +8,9 @@ import * as React from 'react'
 import { OnboardingtackParamList } from '../navTypes'
 import AddGatewayBle from './AddGatewayBle'
 import ScanHotspots from './ScanHotspots'
+import Settings from './Settings'
 import WifiSettings from './WifiSettings'
+import Diagnostics from './Diagnostics'
 import WifiSetup from './WifiSetup'
 import { IotBleOptionsProvider } from './optionsContext'
 
@@ -30,8 +32,18 @@ export default React.memo(function HotspotBLENav() {
             options={screenOptions}
           />
           <Stack.Screen
+            name="Settings"
+            component={Settings}
+            options={screenOptions}
+          />
+          <Stack.Screen
             name="WifiSettings"
             component={WifiSettings}
+            options={screenOptions}
+          />
+          <Stack.Screen
+            name="Diagnostics"
+            component={Diagnostics}
             options={screenOptions}
           />
           <Stack.Screen

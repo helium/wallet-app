@@ -8,7 +8,7 @@ import { Device, useHotspotBle } from '@helium/react-native-sdk'
 import { useNavigation } from '@react-navigation/native'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlatList, Platform } from 'react-native'
+import { FlatList, Platform, PermissionsAndroid } from 'react-native'
 import {
   PERMISSIONS,
   PermissionStatus,
@@ -67,9 +67,42 @@ const ScanHotspots = () => {
       .catch(showError)
   }, [canScan, updateCanScan])
 
-  const handleScanPress = useCallback(() => {
+  const checkPermission = async () => {
+    if (Platform.OS === 'ios') {
+      return true
+    }
+
+    const perms = [
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+    ]
+
+    const results = await Promise.all(
+      perms.map((p) => PermissionsAndroid.check(p)),
+    )
+
+    if (results.findIndex((r) => r === false) === -1) {
+      return true
+    }
+
+    const granted = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+    ])
+
+    perms.forEach((p) => {
+      if (!granted[p]) {
+        return false
+      }
+    })
+
+    return true
+  }
+
+  const handleScanPress = useCallback(async () => {
     const shouldScan = !scanning
     setScanning(shouldScan)
+    await checkPermission()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let timeout: any | undefined
     if (shouldScan) {
@@ -97,14 +130,12 @@ const ScanHotspots = () => {
     return () => {
       if (timeout) {
         clearTimeout(timeout)
+        stopScan()
       }
     }
   }, [scannedDevices.length, scanning, startScan, stopScan])
 
-  const navNext = useCallback(
-    () => navigation.push('WifiSettings', {}),
-    [navigation],
-  )
+  const navNext = useCallback(() => navigation.push('Settings'), [navigation])
 
   const [connecting, setConnecting] = useState(false)
   const connectDevice = useCallback(

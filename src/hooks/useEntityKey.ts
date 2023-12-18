@@ -1,9 +1,9 @@
 import { decodeEntityKey } from '@helium/helium-entity-manager-sdk'
 import { HotspotWithPendingRewards } from '../types/solana'
-import { useKeyToAsset } from './useKeyToAsset'
+import { useKeyToAssetForHotspot } from './useKeyToAssetForHotspot'
 
 export const useEntityKey = (hotspot: HotspotWithPendingRewards) => {
-  const { info: kta } = useKeyToAsset(hotspot)
+  const { info: kta } = useKeyToAssetForHotspot(hotspot)
 
   return kta ? decodeEntityKey(kta.entityKey, kta.keySerialization) : undefined
 }

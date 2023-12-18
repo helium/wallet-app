@@ -178,7 +178,9 @@ const useSolanaHook = () => {
         return signedTxns
       },
       get publicKey() {
-        return new PublicKey(currentAccount?.solanaAddress || '')
+        if (currentAccount?.solanaAddress) {
+          return new PublicKey(currentAccount?.solanaAddress || '')
+        }
       },
     } as Wallet
     return new AnchorProvider(connection, anchorWallet, {

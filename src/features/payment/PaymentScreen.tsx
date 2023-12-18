@@ -19,7 +19,7 @@ import TokenSelector, {
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address, { NetTypes } from '@helium/address'
 import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
-import { DC_MINT, HNT_MINT } from '@helium/spl-utils'
+import { DC_MINT, HNT_MINT, truthy } from '@helium/spl-utils'
 import useDisappear from '@hooks/useDisappear'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
@@ -541,7 +541,8 @@ const PaymentScreen = () => {
 
   const handleEditAddress = useCallback(
     async ({ index, address }: { index: number; address: string }) => {
-      if (index === undefined || !currentAccount || !anchorProvider) return
+      if (index === undefined || !currentAccount || !anchorProvider || !mint)
+        return
       let domain
       if (address.split('.').length === 2) {
         const resolvedAddress =
@@ -601,7 +602,7 @@ const PaymentScreen = () => {
       prevAddress?: string
       index?: number
     }) => {
-      if (index === undefined || !currentNetworkAddress) return
+      if (index === undefined || !currentNetworkAddress || !mint) return
 
       const payee = contact.solanaAddress
       const payer = currentNetworkAddress
@@ -658,6 +659,7 @@ const PaymentScreen = () => {
 
   const data = useMemo((): TokenListItem[] => {
     const tokens = [...visibleTokens]
+      .filter(truthy)
       .filter((vt: string) => vt !== DC_MINT.toBase58())
       .map((token) => ({
         mint: new PublicKey(token),

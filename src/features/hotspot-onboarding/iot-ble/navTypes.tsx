@@ -3,6 +3,7 @@ import { IotBleOptions } from '../navTypes'
 
 export type HotspotBLEStackParamList = {
   ScanHotspots: IotBleOptions
+  Settings: undefined
   WifiSettings: { network?: string }
   WifiSetup: { network: string }
   AddGatewayBle: undefined

@@ -72,7 +72,7 @@ const AntennaSetupScreen = () => {
       setUpdating(true)
       try {
         await submitUpdateEntityInfo({
-          type: 'iot',
+          type: 'IOT',
           entityKey,
           lng: iotLocation[0],
           lat: iotLocation[1],

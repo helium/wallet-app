@@ -123,7 +123,7 @@ const PaymentItem = ({
   }, [debouncedAddress, handleEditAddress])
 
   useEffect(() => {
-    if (rawAddress.split('.').length !== 2) {
+    if (rawAddress && rawAddress.split('.').length !== 2) {
       handleEditAddress(rawAddress)
     }
   }, [rawAddress, handleEditAddress])

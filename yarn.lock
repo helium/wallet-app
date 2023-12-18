@@ -2679,17 +2679,6 @@
     borsh "^0.7.0"
     bs58 "^4.0.1"
 
-"@helium/lazy-distributor-sdk@^0.6.6":
-  version "0.6.6"
-  resolved "https://registry.yarnpkg.com/@helium/lazy-distributor-sdk/-/lazy-distributor-sdk-0.6.6.tgz#821d8cdb7a82f90f09e575be5dbf064dd3a3f67e"
-  integrity sha512-pncL5HeEYR1ZVF3g2Ryb/aEK/t1kIXPk6H9vO9BTGZGuKGamZoQalb80QxtWXES2drJCx2swJ+L/kDMWvWVErg==
-  dependencies:
-    "@coral-xyz/anchor" "^0.28.0"
-    "@helium/anchor-resolvers" "^0.6.6"
-    "@helium/circuit-breaker-sdk" "^0.6.6"
-    bn.js "^5.2.0"
-    bs58 "^4.0.1"
-
 "@helium/modular-governance-hooks@^0.0.8":
   version "0.0.8"
   resolved "https://registry.yarnpkg.com/@helium/modular-governance-hooks/-/modular-governance-hooks-0.0.8.tgz#4c19d3368ca8e3bb38068bdd05451f5822abaa0e"
@@ -2724,9 +2713,11 @@
   resolved "https://registry.yarnpkg.com/@helium/onboarding/-/onboarding-4.9.0.tgz#3327746d2f64dc640113f0587ce7be224557a824"
   integrity sha512-6Ye4X2yc1SYh5m9cakO0tPCEUL1bpJBhVP6BxVwZmT0iIT3hv5XRuuYUFTJRvzJ6PcpM1i39ypx5kp2ZBQ6MDA==
   dependencies:
-    axios "^0.24.0"
-    axios-retry "^3.4.0"
-    qs "^6.10.3"
+    "@coral-xyz/anchor" "^0.28.0"
+    "@helium/anchor-resolvers" "^0.6.6"
+    "@helium/circuit-breaker-sdk" "^0.6.6"
+    bn.js "^5.2.0"
+    bs58 "^4.0.1"
 
 "@helium/onboarding@^4.10.0":
   version "4.10.2"
@@ -2777,10 +2768,10 @@
   dependencies:
     protobufjs "^6.11.3"
 
-"@helium/react-native-sdk@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@helium/react-native-sdk/-/react-native-sdk-3.0.0.tgz#4377fc6563d22cce7cdf8a2537bd251949be4f98"
-  integrity sha512-QwNCol/tTUNWKOnx4BX00B0Hgtz2Osxe/joX5Mo+u5ZanKM/zuFUQ9FtMSw1Vdzcgr+1Pk93gAA9f7Lma/6lwQ==
+"@helium/react-native-sdk@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@helium/react-native-sdk/-/react-native-sdk-3.0.2.tgz#8ca616e6175b13f37edbd5c6ce93f47d002ded02"
+  integrity sha512-cnL3u3Im5mbIioEgzd1DwryFJ54CAY5K/trs035eHUt8ub2Fp65Cy4TLT4HSNOlZX8CgNrhWyowporLv7eVg1A==
   dependencies:
     "@azure/core-asynciterator-polyfill" "^1.0.2"
     "@coral-xyz/anchor" "^0.26.0"

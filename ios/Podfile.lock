@@ -59,7 +59,7 @@ PODS:
     - ReactCommon/turbomodule/core (= 0.71.5)
   - fmt (6.2.1)
   - glog (0.3.5)
-  - helium-react-native-sdk (3.0.0):
+  - helium-react-native-sdk (3.0.2):
     - React-Core
   - hermes-engine (0.71.5):
     - hermes-engine/Pre-built (= 0.71.5)
@@ -874,9 +874,9 @@ SPEC CHECKSUMS:
   FBLazyVector: f1897022b53abf1469d6ad692ee2c69f57d967f3
   FBReactNativeSpec: 627fd07f1b9d498c9fa572e76d7f1a6b1ee9a444
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  glog: 791fe035093b84822da7f0870421a25839ca7870
-  helium-react-native-sdk: 17b612b2dacebc8f10c18ba5611f200a81c940f9
-  hermes-engine: 7a53ccac09146018a08239c5425625fdb79a6162
+  glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
+  helium-react-native-sdk: e57b8baf65673b9428c9883ca95574718adb7890
+  hermes-engine: 0784cadad14b011580615c496f77e0ae112eed75
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   lottie-ios: 25e7b2675dad5c3ddad369ac9baab03560c5bfdd
   lottie-react-native: c9f1db4f4124dcce9f8159e65d8dc6e8bcb11fb4
@@ -955,6 +955,6 @@ SPEC CHECKSUMS:
   Yoga: cd7d7f509dbfac14ee7f31a6c750acb957cd5022
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: 5b4d3c6d9c5a303c84f0b5427958ba4a25671e76
+PODFILE CHECKSUM: ca81fc3ff2cc73a5ab3e1674a7d2281321c928fb
 
-COCOAPODS: 1.12.1
+COCOAPODS: 1.11.3
