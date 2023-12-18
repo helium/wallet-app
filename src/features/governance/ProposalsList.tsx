@@ -33,6 +33,11 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
   const { loading, accounts: proposalsWithDups } =
     useOrganizationProposals(organization)
 
+  const isLoading = useMemo(
+    () => !currentAccount || loading,
+    [currentAccount, loading],
+  )
+
   const proposals = useMemo(() => {
     const seen = new Set()
     return proposalsWithDups?.filter((p) => {
@@ -47,19 +52,39 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
   // In order to prevent spamming the Ui with false positives of past proposals
   // being unseen, new proposals should act properly
   useAsync(async () => {
-    if (
-      currentAccount &&
-      proposals?.length &&
-      (currentAccount.proposalIdsSeenByMint === undefined ||
-        currentAccount.proposalIdsSeenByMint[mint.toBase58()] === undefined)
-    ) {
-      await upsertAccount({
-        ...currentAccount,
-        proposalIdsSeenByMint: {
-          ...currentAccount?.proposalIdsSeenByMint,
-          [mint.toBase58()]: proposals.map((p) => p.publicKey.toBase58()),
-        },
-      })
+    if (currentAccount && proposalsWithDups) {
+      const shouldUpdateIds =
+        currentAccount.proposalIdsSeenByMint === undefined ||
+        currentAccount.proposalIdsSeenByMint[mint.toBase58()] === undefined
+
+      const shouldUpdateCount =
+        currentAccount.proposalCountByMint === undefined ||
+        currentAccount.proposalCountByMint[mint.toBase58()] === undefined ||
+        currentAccount.proposalCountByMint[mint.toBase58()] !==
+          proposalsWithDups.length
+
+      if (shouldUpdateIds || shouldUpdateCount) {
+        await upsertAccount({
+          ...currentAccount,
+          ...(shouldUpdateCount && {
+            proposalCountByMint: {
+              ...currentAccount?.proposalCountByMint,
+              [mint.toBase58()]: proposalsWithDups.length,
+            },
+          }),
+          ...(shouldUpdateIds && {
+            proposalIdsSeenByMint: {
+              ...currentAccount?.proposalIdsSeenByMint,
+              [mint.toBase58()]: [
+                ...proposalsWithDups.reduce((acc, p) => {
+                  acc.add(p.publicKey.toBase58())
+                  return acc
+                }, new Set<string>()),
+              ],
+            },
+          }),
+        })
+      }
     }
   }, [proposals])
 
@@ -133,7 +158,7 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
             </Text>
           </TouchableOpacityBox>
         </Box>
-        {loading ? (
+        {isLoading ? (
           <CircleLoader loaderSize={24} color="white" />
         ) : (
           proposals

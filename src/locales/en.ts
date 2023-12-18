@@ -1216,7 +1216,7 @@ export default {
       cantTransfer: 'There are no positions that meet this criteria.',
       selectTransfer: 'Select position to transfer too.',
       selectSubDao: 'Select a existing SubDao to delegate to.',
-      fetchingSubdaos: 'Fetching SubDaos...',
+      fetchingSubDaos: 'Fetching SubDaos...',
     },
     proposals: {
       overviewTitle: 'Proposal Overview',

@@ -72,14 +72,14 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
     [loadingHntOrg, loadingMobileOrg, loadingIotOrg],
   )
 
-  const proposalCountByMint = useMemo(
-    () => ({
-      [HNT_MINT.toBase58()]: hntOrg?.numProposals || 0,
-      [MOBILE_MINT.toBase58()]: mobileOrg?.numProposals || 0,
-      [IOT_MINT.toBase58()]: iotOrg?.numProposals || 0,
-    }),
-    [hntOrg, mobileOrg, iotOrg],
-  )
+  const proposalCountByMint = useMemo(() => {
+    if (!loading)
+      return {
+        [HNT_MINT.toBase58()]: hntOrg?.numProposals || 0,
+        [MOBILE_MINT.toBase58()]: mobileOrg?.numProposals || 0,
+        [IOT_MINT.toBase58()]: iotOrg?.numProposals || 0,
+      }
+  }, [loading, hntOrg, mobileOrg, iotOrg])
 
   // If we have no record of proposals count by mint, set it to value from provider
   // In order to prevent spamming the Ui with false positives of past proposals
@@ -87,6 +87,9 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
   useAsync(async () => {
     if (
       !loading &&
+      hntOrg &&
+      mobileOrg &&
+      iotOrg &&
       proposalCountByMint &&
       currentAccount &&
       currentAccount.proposalCountByMint === undefined
@@ -99,13 +102,15 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
   }, [loading])
 
   const hasUnseenProposals = useMemo(() => {
-    if (currentAccount && proposalCountByMint) {
-      if (
-        JSON.stringify(currentAccount.proposalCountByMint) !==
-        JSON.stringify(proposalCountByMint)
-      ) {
-        return true
-      }
+    if (
+      currentAccount &&
+      currentAccount.proposalCountByMint &&
+      proposalCountByMint !== undefined
+    ) {
+      return Object.keys(currentAccount.proposalCountByMint).some(
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        (m) => currentAccount.proposalCountByMint![m] < proposalCountByMint[m],
+      )
     }
     return false
   }, [currentAccount, proposalCountByMint])

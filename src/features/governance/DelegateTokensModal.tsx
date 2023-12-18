@@ -50,6 +50,7 @@ export const DelegateTokensModal = ({
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           subDaos.find((subDao) => subDao.pubkey.equals(selectedSubDaoPk!))!,
         )
+
         onClose()
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
@@ -103,46 +104,54 @@ export const DelegateTokensModal = ({
                     color="secondaryText"
                     marginBottom="m"
                   >
-                    {t('gov.positions.fetchignSubDaos')}
+                    {t('gov.positions.fetchingSubDaos')}
                   </Text>
                 </Box>
               )}
               <Box>
-                {subDaos?.map((subDao, idx) => {
-                  const isSelected = selectedSubDaoPk?.equals(subDao.pubkey)
-
-                  return (
-                    <TouchableOpacityBox
-                      key={subDao.pubkey.toString()}
-                      borderRadius="l"
-                      marginTop={idx > 0 ? 'm' : 'none'}
-                      backgroundColor={
-                        isSelected ? 'secondaryBackground' : 'secondary'
-                      }
-                      onPress={() => setSelectedSubDaoPk(subDao.pubkey)}
-                    >
-                      <Box flexDirection="row" padding="ms" alignItems="center">
-                        <Box
-                          borderColor="black"
-                          borderWidth={2}
-                          borderRadius="round"
-                        >
-                          <TokenIcon
-                            size={26}
-                            img={subDao.dntMetadata.json?.image || ''}
-                          />
-                        </Box>
-                        <Text
-                          variant="subtitle3"
-                          color="primaryText"
-                          marginLeft="m"
-                        >
-                          {subDao.dntMetadata.name}
-                        </Text>
-                      </Box>
-                    </TouchableOpacityBox>
+                {subDaos
+                  ?.sort((a, b) =>
+                    a.dntMetadata.name.localeCompare(b.dntMetadata.name),
                   )
-                })}
+                  .map((subDao, idx) => {
+                    const isSelected = selectedSubDaoPk?.equals(subDao.pubkey)
+
+                    return (
+                      <TouchableOpacityBox
+                        key={subDao.pubkey.toString()}
+                        borderRadius="l"
+                        marginTop={idx > 0 ? 'm' : 'none'}
+                        backgroundColor={
+                          isSelected ? 'secondaryBackground' : 'secondary'
+                        }
+                        onPress={() => setSelectedSubDaoPk(subDao.pubkey)}
+                      >
+                        <Box
+                          flexDirection="row"
+                          padding="ms"
+                          alignItems="center"
+                        >
+                          <Box
+                            borderColor="black"
+                            borderWidth={2}
+                            borderRadius="round"
+                          >
+                            <TokenIcon
+                              size={26}
+                              img={subDao.dntMetadata.json?.image || ''}
+                            />
+                          </Box>
+                          <Text
+                            variant="subtitle3"
+                            color="primaryText"
+                            marginLeft="m"
+                          >
+                            {subDao.dntMetadata.name}
+                          </Text>
+                        </Box>
+                      </TouchableOpacityBox>
+                    )
+                  })}
               </Box>
             </Box>
           </SafeAreaBox>

@@ -21,9 +21,14 @@ export const PositionsList = ({
   positions = [],
   ...boxProps
 }: IPositionsListProps) => {
-  const { result: subDaos } = useSubDaos()
-  const { loading } = useGovernance()
+  const { loading: loadingSubDaos, result: subDaos } = useSubDaos()
+  const { loading: loadingGov } = useGovernance()
   const colors = useColors()
+
+  const loading = useMemo(
+    () => !subDaos || loadingSubDaos || loadingGov,
+    [subDaos, loadingSubDaos, loadingGov],
+  )
 
   const sortedPositions = useMemo(
     () =>
