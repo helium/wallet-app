@@ -269,10 +269,10 @@
   },
   "resolutions": {
     "@types/react": "17",
-    "@helium/account-fetch-cache": "^0.6.4",
-    "@helium/account-fetch-cache-hooks": "^0.6.4",
-    "@helium/helium-react-hooks": "^0.6.4",
-    "@helium/voter-stake-registry-hooks": "^0.6.4",
+    "@helium/account-fetch-cache": "^0.6.6",
+    "@helium/account-fetch-cache-hooks": "^0.6.6",
+    "@helium/helium-react-hooks": "^0.6.6",
+    "@helium/voter-stake-registry-hooks": "^0.6.6",
     "@helium/modular-governance-hooks": "^0.0.8"
   },
   "jest": {
