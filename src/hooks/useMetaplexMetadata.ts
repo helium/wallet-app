@@ -12,8 +12,6 @@ import { AccountInfo, PublicKey } from '@solana/web3.js'
 import axios from 'axios'
 import { useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
-import { TokenInfo } from '@solana/spl-token-registry'
-import { useTokenList } from './useTokenList'
 
 const MPL_PID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s')
 
@@ -55,6 +53,12 @@ export function getMetadataId(mint: PublicKey): PublicKey {
   )[0]
 }
 
+type TokenInfo = {
+  name: string
+  symbol: string
+  logoURI: string
+}
+
 export const tokenInfoToMetadata = (
   tokenInfo: TokenInfo | null | undefined,
 ): JsonMetadata | undefined => {
@@ -71,6 +75,7 @@ export const tokenInfoToMetadata = (
   }
 }
 
+const USDC = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
 export function useMetaplexMetadata(mint: PublicKey | undefined): {
   loading: boolean
   metadata: Metadata | undefined
@@ -79,14 +84,6 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
   symbol: string | undefined
   name: string | undefined
 } {
-  const tokenList = useTokenList()
-  const tokenListToken = useMemo(() => {
-    if (mint) {
-      return tokenList?.get(mint.toBase58())
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tokenList, mint?.toBase58()])
-
   const metadataAddr = useMemo(() => {
     if (mint) {
       return getMetadataId(mint)
@@ -119,13 +116,26 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
     }
   }
 
+  if (mint?.equals(USDC)) {
+    return {
+      metadata: undefined,
+      loading: false,
+      json: {
+        name: 'USDC',
+        symbol: 'USDC',
+        image:
+          'https://github.com/solana-labs/token-list/blob/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png?raw=true',
+      },
+      symbol: 'USDC',
+      name: 'USDC',
+    }
+  }
+
   return {
     loading: jsonLoading || loading,
-    json: tokenListToken
-      ? tokenInfoToMetadata(tokenListToken)?.json
-      : json?.data,
+    json: json?.data,
     metadata: metadataAcc,
-    symbol: tokenListToken?.symbol || json?.data.symbol || metadataAcc?.symbol,
-    name: tokenListToken?.name || json?.data.name || metadataAcc?.name,
+    symbol: json?.data.symbol || metadataAcc?.symbol,
+    name: json?.data.name || metadataAcc?.name,
   }
 }

@@ -115,7 +115,13 @@ const SwapScreen = () => {
   const [recipient, setRecipient] = useState('')
   const [isRecipientOpen, setRecipientOpen] = useState(false)
   const { visibleTokens } = useVisibleTokens()
-  const { loading, error: jupiterError, routeMap, getRoute } = useJupiter()
+  const {
+    loading,
+    error: jupiterError,
+    routeMap,
+    getRoute,
+    getSwapTx,
+  } = useJupiter()
   const { price, loading: loadingPrice } = useTreasuryPrice(
     inputMint,
     inputAmount,
@@ -606,7 +612,12 @@ const SwapScreen = () => {
         } else if (isDevnet) {
           await submitTreasurySwap(inputMint, inputAmount, recipientAddr)
         } else {
-          await submitJupiterSwap()
+          const swapTxn = await getSwapTx()
+
+          if (!swapTxn) {
+            throw new Error(t('errors.swap.tx'))
+          }
+          await submitJupiterSwap(swapTxn)
         }
 
         setSwapping(false)
@@ -634,6 +645,8 @@ const SwapScreen = () => {
     submitJupiterSwap,
     setHasRecipientError,
     isDevnet,
+    t,
+    getSwapTx,
   ])
 
   const isLoading = useMemo(() => {
