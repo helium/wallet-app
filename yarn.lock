@@ -2679,6 +2679,17 @@
     borsh "^0.7.0"
     bs58 "^4.0.1"
 
+"@helium/lazy-distributor-sdk@^0.6.6":
+  version "0.6.6"
+  resolved "https://registry.yarnpkg.com/@helium/lazy-distributor-sdk/-/lazy-distributor-sdk-0.6.6.tgz#821d8cdb7a82f90f09e575be5dbf064dd3a3f67e"
+  integrity sha512-pncL5HeEYR1ZVF3g2Ryb/aEK/t1kIXPk6H9vO9BTGZGuKGamZoQalb80QxtWXES2drJCx2swJ+L/kDMWvWVErg==
+  dependencies:
+    "@coral-xyz/anchor" "^0.28.0"
+    "@helium/anchor-resolvers" "^0.6.6"
+    "@helium/circuit-breaker-sdk" "^0.6.6"
+    bn.js "^5.2.0"
+    bs58 "^4.0.1"
+
 "@helium/modular-governance-hooks@^0.0.8":
   version "0.0.8"
   resolved "https://registry.yarnpkg.com/@helium/modular-governance-hooks/-/modular-governance-hooks-0.0.8.tgz#4c19d3368ca8e3bb38068bdd05451f5822abaa0e"
@@ -2708,21 +2719,19 @@
     "@coral-xyz/anchor" "^0.28.0"
     "@solana/web3.js" "^1.78.4"
 
-"@helium/onboarding@4.9.0":
-  version "4.9.0"
-  resolved "https://registry.yarnpkg.com/@helium/onboarding/-/onboarding-4.9.0.tgz#3327746d2f64dc640113f0587ce7be224557a824"
-  integrity sha512-6Ye4X2yc1SYh5m9cakO0tPCEUL1bpJBhVP6BxVwZmT0iIT3hv5XRuuYUFTJRvzJ6PcpM1i39ypx5kp2ZBQ6MDA==
-  dependencies:
-    "@coral-xyz/anchor" "^0.28.0"
-    "@helium/anchor-resolvers" "^0.6.6"
-    "@helium/circuit-breaker-sdk" "^0.6.6"
-    bn.js "^5.2.0"
-    bs58 "^4.0.1"
-
 "@helium/onboarding@^4.10.0":
   version "4.10.2"
   resolved "https://registry.yarnpkg.com/@helium/onboarding/-/onboarding-4.10.2.tgz#5991f0c0c6d15ebbddeaf92ddf5be7625da3bf73"
   integrity sha512-Kbh7WD7Fu/AEqHvn0GVhhusN0Zpp+h7ENFjq5+NKEOOyQj7k3m5skSwl1RmwPqpO58QdBM4DKNvBASX7XNuXjA==
+  dependencies:
+    axios "^0.24.0"
+    axios-retry "^3.4.0"
+    qs "^6.10.3"
+
+"@helium/onboarding@^4.10.3":
+  version "4.10.3"
+  resolved "https://registry.yarnpkg.com/@helium/onboarding/-/onboarding-4.10.3.tgz#88fa6ae127d1ea836c6af016939cd93b26acc85c"
+  integrity sha512-DbKwwMttuWHhtHo4VF5NkcLS7/KVOsIW1TlmVp5mmBZHk4rHoCvNRXr8LBtPNnO341jgNxgxQZuA9gH2W7ggSA==
   dependencies:
     axios "^0.24.0"
     axios-retry "^3.4.0"

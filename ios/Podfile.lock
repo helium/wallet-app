@@ -874,9 +874,9 @@ SPEC CHECKSUMS:
   FBLazyVector: f1897022b53abf1469d6ad692ee2c69f57d967f3
   FBReactNativeSpec: 627fd07f1b9d498c9fa572e76d7f1a6b1ee9a444
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
+  glog: 791fe035093b84822da7f0870421a25839ca7870
   helium-react-native-sdk: e57b8baf65673b9428c9883ca95574718adb7890
-  hermes-engine: 0784cadad14b011580615c496f77e0ae112eed75
+  hermes-engine: 7a53ccac09146018a08239c5425625fdb79a6162
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   lottie-ios: 25e7b2675dad5c3ddad369ac9baab03560c5bfdd
   lottie-react-native: c9f1db4f4124dcce9f8159e65d8dc6e8bcb11fb4
@@ -957,4 +957,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: ca81fc3ff2cc73a5ab3e1674a7d2281321c928fb
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.12.1
