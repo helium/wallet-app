@@ -5,9 +5,7 @@ import { OnboardingProvider as HotspotOnboardingProvider } from '@helium/react-n
 import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import MapboxGL from '@rnmapbox/maps'
 import { ThemeProvider } from '@shopify/restyle'
-import { JupiterProvider } from '@storage/JupiterProvider'
 import { ModalProvider } from '@storage/ModalsProvider'
-import { TokenListProvider } from '@storage/TokenListProvider'
 import TokensProvider from '@storage/TokensProvider'
 import globalStyles from '@theme/globalStyles'
 import { darkThemeColors, lightThemeColors, theme } from '@theme/theme'
@@ -132,24 +130,20 @@ const App = () => {
                                 ref={navigationRef}
                               >
                                 <BalanceProvider>
-                                  <TokenListProvider>
-                                    <TokensProvider>
-                                      <ModalProvider>
-                                        <WalletSignProvider>
-                                          <JupiterProvider>
-                                            <GovernanceProvider>
-                                              <AutoGasBanner />
-                                              <NetworkAwareStatusBar />
-                                              <RootNavigator />
+                                  <TokensProvider>
+                                    <ModalProvider>
+                                      <WalletSignProvider>
+                                        <GovernanceProvider>
+                                          <AutoGasBanner />
+                                          <NetworkAwareStatusBar />
+                                          <RootNavigator />
 
-                                              {/* place app specific modals here */}
-                                              <InsufficientSolConversionModal />
-                                            </GovernanceProvider>
-                                          </JupiterProvider>
-                                        </WalletSignProvider>
-                                      </ModalProvider>
-                                    </TokensProvider>
-                                  </TokenListProvider>
+                                          {/* place app specific modals here */}
+                                          <InsufficientSolConversionModal />
+                                        </GovernanceProvider>
+                                      </WalletSignProvider>
+                                    </ModalProvider>
+                                  </TokensProvider>
                                 </BalanceProvider>
                               </NavigationContainer>
                               <SecurityScreen
