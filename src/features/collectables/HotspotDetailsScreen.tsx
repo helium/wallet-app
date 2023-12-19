@@ -40,6 +40,7 @@ import { FadeIn } from 'react-native-reanimated'
 import { Edge } from 'react-native-safe-area-context'
 import { SvgUri } from 'react-native-svg'
 import 'text-encoding-polyfill'
+import { NetworkType } from '@helium/onboarding'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
@@ -209,7 +210,7 @@ const HotspotDetailsScreen = () => {
       return
     }
     setOptionsOpen(false)
-    const hotspotType: 'IOT' | 'MOBILE' | undefined = await new Promise(
+    const hotspotType: NetworkType | undefined = await new Promise(
       (resolve) => {
         const options: AlertButton[] = []
         if (!iotInfoAcc?.info) {

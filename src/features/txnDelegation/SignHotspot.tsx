@@ -3,7 +3,10 @@ import Box from '@components/Box'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import OnboardingClient, { OnboardingRecord } from '@helium/onboarding'
+import OnboardingClient, {
+  OnboardingRecord,
+  degToCompass,
+} from '@helium/onboarding'
 import {
   SignHotspotResponse,
   createSignHotspotCallbackUrl,
@@ -31,9 +34,9 @@ import * as Logger from '../../utils/logger'
 import { HomeNavigationProp } from '../home/homeTypes'
 import useSolTxns from './useSolTxns'
 
-type Route = RouteProp<RootStackParamList, 'SignHotspot'>
-
 const onboardingClient = new OnboardingClient(`${Config.ONBOARDING_API_URL}/v3`)
+const METERS_TO_FEET = 3.28084
+type Route = RouteProp<RootStackParamList, 'SignHotspot'>
 const SignHotspot = () => {
   const { params } = useRoute<Route>()
   const { token, submit } = params
@@ -42,6 +45,7 @@ const SignHotspot = () => {
   const solana = useSolTxns(
     parseWalletLinkToken(token).address,
     params.solanaTransactions,
+    params.configurationMessage,
   )
 
   const navigation = useNavigation<HomeNavigationProp>()
@@ -281,6 +285,24 @@ const SignHotspot = () => {
               marginBottom="m"
             >
               {locationData.location}
+            </Text>
+          </>
+        )}
+        {solana.configMsg && (
+          <>
+            <Text variant="body1" color="surfaceContrastText">
+              {t('signHotspot.direction')}
+            </Text>
+            <Text
+              variant="subtitle1"
+              color="surfaceContrastText"
+              marginBottom="m"
+            >
+              {`${(
+                METERS_TO_FEET * solana.configMsg.height
+              ).toLocaleString()}ft/${solana.configMsg.azimuth}° ${degToCompass(
+                solana.configMsg.azimuth,
+              )}`}
             </Text>
           </>
         )}
