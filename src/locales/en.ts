@@ -1037,6 +1037,7 @@ export default {
   },
   signHotspot: {
     burnAmounts: 'Amount To Be Burned',
+    direction: 'Direction',
     elevation: 'Elevation:',
     error: {
       subtitle:

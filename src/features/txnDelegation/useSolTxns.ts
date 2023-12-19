@@ -18,9 +18,11 @@ import bs58 from 'bs58'
 import { get, last } from 'lodash'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
+import { Message } from '@helium/onboarding'
 import { useSolana } from '../../solana/SolanaProvider'
-import { getSolanaKeypair } from '../../storage/secureStorage'
+import { getKeypair, getSolanaKeypair } from '../../storage/secureStorage'
 import { submitSolana } from '../../utils/solanaUtils'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
 const ValidTxnKeys = [
   'onboardIotHotspotV0',
@@ -43,13 +45,19 @@ type Txn = {
   hntFee?: BN | null
 }
 
-const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
+const useSolTxns = (
+  heliumAddress: string,
+  solanaTransactions?: string,
+  configMsgStr?: string,
+) => {
   const { anchorProvider } = useSolana()
   const [submitLoading, setSubmitLoading] = useState(false)
   const handledTxnStr = useRef('')
   const [transactions, setTransactions] = useState<
     Partial<Record<ValidTxn, Txn>>
   >({} as Record<ValidTxn, Txn>)
+  const [configMsg, setConfigMsg] = useState<Message>()
+  const { currentAccount } = useAccountStorage()
 
   const transactionList = useMemo(() => {
     const keys = ValidTxnKeys.filter((k) => k !== 'mintDataCreditsV0')
@@ -402,6 +410,12 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
     })
 
     setTransactions(nextRecord)
+
+    if (configMsgStr) {
+      const configMessage = Uint8Array.from(Buffer.from(configMsgStr, 'base64'))
+      const message = Message.decode(configMessage)
+      setConfigMsg(message)
+    }
   }, [solanaTransactions])
 
   const gatewayAddress = useMemo(() => {
@@ -446,9 +460,31 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
       })
 
       responseParams.solanaTransactions = txnList.join(',')
+
+      if (
+        currentAccount &&
+        configMsgStr &&
+        configMsg?.azimuth !== undefined &&
+        configMsg?.height !== undefined
+      ) {
+        const keypair = await getKeypair(currentAccount.address)
+        if (!keypair) {
+          return
+        }
+        const signedMsg = await keypair.sign(configMsgStr)
+        responseParams.configurationMessage =
+          Buffer.from(signedMsg).toString('base64')
+      }
       callback(responseParams)
     },
-    [gatewayAddress, heliumAddress, transactionList],
+    [
+      configMsg,
+      configMsgStr,
+      currentAccount,
+      gatewayAddress,
+      heliumAddress,
+      transactionList,
+    ],
   )
 
   const assertData = useMemo(() => {
@@ -505,6 +541,7 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
   return {
     assertData,
     burnAmounts,
+    configMsg,
     decode,
     fetchIdl,
     gatewayAddress,

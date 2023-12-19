@@ -17,7 +17,7 @@ import {
   TextInput,
 } from '@components'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { HotspotType } from '@helium/onboarding'
+import { NetworkType } from '@helium/onboarding'
 import { IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import useAlert from '@hooks/useAlert'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
@@ -233,7 +233,7 @@ const AssertLocationScreen = () => {
   }, [userLocation, camera])
 
   const assertLocation = useCallback(
-    async (type: HotspotType) => {
+    async (type: NetworkType) => {
       if (
         !mapCenter ||
         !entityKey ||
