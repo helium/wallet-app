@@ -174,15 +174,20 @@ export const ProposalScreen = () => {
           proposal.state.resolved.choices.length > 0
         )
           return 'passed'
-        if (
-          keys.includes('resolved') &&
-          proposal.state.resolved &&
-          (proposal.state.resolved.choices.length === 0 ||
-            (proposal.state.resolved.choices.length === 1 &&
-              proposal.choices[proposal.state.resolved.choices[0]].name ===
-                'No'))
-        )
-          return 'failed'
+
+        if (keys.includes('resolved') && proposal.state.resolved) {
+          if (proposal.state.resolved.choices.length === 0) {
+            // was a multi choice proposal
+            return 'passed'
+          }
+
+          if (
+            proposal.state.resolved.choices.length === 1 &&
+            proposal.choices[proposal.state.resolved.choices[0]].name === 'No'
+          ) {
+            return 'failed'
+          }
+        }
       }
     }, [proposal?.state, proposal?.choices])
 
