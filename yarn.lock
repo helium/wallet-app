@@ -4280,6 +4280,15 @@
     "@wallet-standard/features" "^1.0.3"
     eventemitter3 "^4.0.7"
 
+"@solana/wallet-adapter-react@0.15.33":
+  version "0.15.33"
+  resolved "https://registry.yarnpkg.com/@solana/wallet-adapter-react/-/wallet-adapter-react-0.15.33.tgz#85c7e6528cb572338cc5fa331e2371a3c2818392"
+  integrity sha512-0bkP6wbWuLtIiswwFke4XjF++Tbyk+cBa1XY7r4msMCg+oQo+BA3TvoiuuL3dPOgsZ2f21A+cr6ekXZ5nfZNIA==
+  dependencies:
+    "@solana-mobile/wallet-adapter-mobile" "^2.0.0"
+    "@solana/wallet-adapter-base" "^0.9.22"
+    "@solana/wallet-standard-wallet-adapter-react" "^1.0.2"
+
 "@solana/wallet-adapter-react@^0.15.32":
   version "0.15.35"
   resolved "https://registry.yarnpkg.com/@solana/wallet-adapter-react/-/wallet-adapter-react-0.15.35.tgz#0d42e6774c0d55f3782d3eb5edb6ac9888858b08"
@@ -4335,7 +4344,7 @@
     "@wallet-standard/features" "^1.0.3"
     "@wallet-standard/wallet" "^1.0.1"
 
-"@solana/wallet-standard-wallet-adapter-react@^1.1.0":
+"@solana/wallet-standard-wallet-adapter-react@^1.0.2", "@solana/wallet-standard-wallet-adapter-react@^1.1.0":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@solana/wallet-standard-wallet-adapter-react/-/wallet-standard-wallet-adapter-react-1.1.1.tgz#d6106e436b8846a7627114667cd9c0afb5508c96"
   integrity sha512-uioyIU6huyTVHu8eF/hgbW+IbeY4qzoJRCO1UddMl84l8Y1WGkSPCsGliAGc0NNMwHCBi+icP+DjhGc9JdwEMA==
@@ -12603,13 +12612,6 @@ node-dir@^0.1.17:
   integrity sha512-tmPX422rYgofd4epzrNoOXiE8XFZYOcCq1vD7MAXCDO+O+zndlA2ztdKKMa+EeuBG5tHETpr4ml4RGgpqDCCAg==
   dependencies:
     minimatch "^3.0.2"
-
-node-fetch@2, node-fetch@^2.2.0, node-fetch@^2.6.0, node-fetch@^2.6.1, node-fetch@^2.6.12, node-fetch@^2.6.7:
-  version "2.7.0"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.7.0.tgz#d0f0fa6e3e2dc1d27efcd8ad99d550bda94d187d"
-  integrity sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==
-  dependencies:
-    whatwg-url "^5.0.0"
 
 node-fetch@^1.0.1:
   version "1.7.3"
