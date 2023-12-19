@@ -1,6 +1,6 @@
 {
   "name": "helium-wallet",
-  "version": "2.5.3",
+  "version": "2.5.4",
   "private": true,
   "scripts": {
     "postinstall": "patch-package && ./node_modules/.bin/rn-nodeify --hack --install && npx jetify",
@@ -60,7 +60,7 @@
     "@helium/onboarding": "^4.10.3",
     "@helium/organization-sdk": "^0.0.8",
     "@helium/proto-ble": "4.0.0",
-    "@helium/react-native-sdk": "^3.0.2",
+    "@helium/react-native-sdk": "^3.0.3",
     "@helium/spl-utils": "^0.6.6",
     "@helium/state-controller-sdk": "^0.0.8",
     "@helium/transactions": "4.8.1",

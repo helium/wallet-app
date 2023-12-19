@@ -453,6 +453,8 @@ export default {
     returnToSwaps: 'Return to Swaps',
     insufficientTokensToSwap:
       'You do not have sufficient tokens for this swap.',
+    routeNotFound:
+      'No route found on Jupiter from source token to target token. Please select another token.',
     swapAlertTitle: 'Are you sure you will like to swap your tokens?',
     swapAlertBody: 'This action is irreversible.',
     understood: 'Understood',

@@ -29,6 +29,7 @@ import {
   MOBILE_MINT,
   toBN,
   toNumber,
+  truthy,
 } from '@helium/spl-utils'
 import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
@@ -98,6 +99,7 @@ const SwapScreen = () => {
   const [priceImpact, setPriceImpact] = useState<number>(0)
   const [slippageBps, setSlippageBps] = useState<number>(10)
   const [slippageInfoVisible, setSlippageInfoVisible] = useState(false)
+  const [routeNotFound, setRouteNotFound] = useState(false)
   const [solFee, setSolFee] = useState<BN>(SOL_TXN_FEE)
   const [hasInsufficientBalance, setHasInsufficientBalance] = useState<
     undefined | boolean
@@ -115,13 +117,7 @@ const SwapScreen = () => {
   const [recipient, setRecipient] = useState('')
   const [isRecipientOpen, setRecipientOpen] = useState(false)
   const { visibleTokens } = useVisibleTokens()
-  const {
-    loading,
-    error: jupiterError,
-    routeMap,
-    getRoute,
-    getSwapTx,
-  } = useJupiter()
+  const { loading, error: jupiterError, getRoute, getSwapTx } = useJupiter()
   const { price, loading: loadingPrice } = useTreasuryPrice(
     inputMint,
     inputAmount,
@@ -133,8 +129,8 @@ const SwapScreen = () => {
   const validInputMints = useMemo(() => {
     if (isDevnet)
       return [HNT_MINT.toBase58(), MOBILE_MINT.toBase58(), IOT_MINT.toBase58()]
-    return [...routeMap.keys()].filter((key) => key && visibleTokens.has(key))
-  }, [visibleTokens, routeMap, isDevnet])
+    return [...visibleTokens].filter(truthy)
+  }, [visibleTokens, isDevnet])
 
   const validOutputMints = useMemo(() => {
     if (isDevnet) {
@@ -142,15 +138,8 @@ const SwapScreen = () => {
       return [HNT_MINT.toBase58()]
     }
 
-    const routeMints =
-      routeMap
-        .get(inputMint?.toBase58() || '')
-        ?.filter((key) => key && visibleTokens.has(key)) || []
-
-    return inputMint.equals(HNT_MINT)
-      ? [DC_MINT.toBase58(), ...routeMints]
-      : routeMints
-  }, [visibleTokens, routeMap, inputMint, isDevnet])
+    return [...visibleTokens].filter(truthy)
+  }, [inputMint, visibleTokens, isDevnet])
 
   const handleRecipientClick = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
@@ -190,14 +179,16 @@ const SwapScreen = () => {
     if (networkError) return networkError
     if (transactionError) return transactionError
     if (jupiterError) return jupiterError
+    if (routeNotFound) return t('swapsScreen.routeNotFound')
   }, [
     hasRecipientError,
-    hasInsufficientBalance,
-    insufficientTokensToSwap,
-    networkError,
-    jupiterError,
     t,
+    insufficientTokensToSwap,
+    hasInsufficientBalance,
+    networkError,
     transactionError,
+    jupiterError,
+    routeNotFound,
   ])
 
   const refresh = useCallback(async () => {
@@ -430,6 +421,7 @@ const SwapScreen = () => {
 
   const getOutputAmount = useCallback(
     async ({ balance }: { balance: BN }) => {
+      setRouteNotFound(false)
       if (outputMintAcc && inputMintAcc) {
         const { address: input, decimals: inputDecimals } = inputMintAcc
         const { address: output, decimals: outputDecimals } = outputMintAcc
@@ -441,20 +433,28 @@ const SwapScreen = () => {
             outputMint: output.toBase58(),
             slippageBps,
           })
+          if (!route) {
+            setRouteNotFound(true)
+          }
           setPriceImpact(Number(route?.priceImpactPct || '0') * 100)
 
           return setOutputAmount(
             toNumber(new BN(Number(route?.outAmount || 0)), outputDecimals),
           )
         }
-        if (input.equals(HNT_MINT) && output.equals(DC_MINT)) {
-          return setOutputAmount(
-            toNumber(
-              networkTokensToDc(toBN(balance, inputDecimals)) || new BN(0),
-              inputDecimals,
-            ),
-          )
+        if (output.equals(DC_MINT)) {
+          if (input.equals(HNT_MINT)) {
+            return setOutputAmount(
+              toNumber(
+                networkTokensToDc(toBN(balance, inputDecimals)) || new BN(0),
+                inputDecimals,
+              ),
+            )
+          }
+          setRouteNotFound(true)
+          return setOutputAmount(0)
         }
+
         if (isDevnet) {
           if (price && !input.equals(HNT_MINT)) {
             return setOutputAmount(price)
@@ -519,17 +519,25 @@ const SwapScreen = () => {
             slippageBps,
           })
 
+          if (!route) {
+            setRouteNotFound(true)
+            return setInputAmount(0)
+          }
+
           return setInputAmount(
             toNumber(new BN(Number(route?.outAmount || 0)), inputDecimals),
           )
         }
-        if (input.equals(HNT_MINT) && output.equals(DC_MINT)) {
-          return setInputAmount(
-            toNumber(
-              dcToNetworkTokens(toBN(balance, outputDecimals)) || new BN(0),
-              inputDecimals,
-            ),
-          )
+        if (output.equals(DC_MINT)) {
+          if (input.equals(HNT_MINT)) {
+            return setInputAmount(
+              toNumber(
+                dcToNetworkTokens(toBN(balance, outputDecimals)) || new BN(0),
+                inputDecimals,
+              ),
+            )
+          }
+          setRouteNotFound(true)
         }
         if (isDevnet) {
           if (price && !input.equals(HNT_MINT)) {

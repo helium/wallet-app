@@ -1,12 +1,9 @@
 import { AnchorProvider, Wallet } from '@coral-xyz/anchor'
 import { AccountFetchCache } from '@helium/account-fetch-cache'
-import { init as initDc } from '@helium/data-credits-sdk'
-import { init as initHem } from '@helium/helium-entity-manager-sdk'
-import { init as initHsd } from '@helium/helium-sub-daos-sdk'
-import { init as initLazy } from '@helium/lazy-distributor-sdk'
-import { DC_MINT, HNT_MINT } from '@helium/spl-utils'
+import { AccountContext } from '@helium/account-fetch-cache-hooks'
 import { SolanaProvider as SolanaProviderRnHelium } from '@helium/react-native-sdk'
 import { ConnectionContext } from '@solana/wallet-adapter-react'
+import { DC_MINT, HNT_MINT } from '@helium/spl-utils'
 import {
   AccountInfo,
   Cluster,
@@ -16,6 +13,7 @@ import {
   Transaction,
   VersionedTransaction,
 } from '@solana/web3.js'
+import { WrappedConnection } from '@utils/WrappedConnection'
 import React, {
   ReactNode,
   createContext,
@@ -24,22 +22,18 @@ import React, {
   useEffect,
   useMemo,
   useRef,
-  useState,
 } from 'react'
 import { useAsync } from 'react-async-hook'
 import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
 import nacl from 'tweetnacl'
-import { WrappedConnection } from '@utils/WrappedConnection'
-import { AccountContext } from '@helium/account-fetch-cache-hooks'
+import LedgerModal, { LedgerModalRef } from '../features/ledger/LedgerModal'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { getSessionKey, getSolanaKeypair } from '../storage/secureStorage'
 import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
-import { DcProgram, HemProgram, HsdProgram, LazyProgram } from '../types/solana'
 import { getConnection, isVersionedTransaction } from '../utils/solanaUtils'
-import LedgerModal, { LedgerModalRef } from '../features/ledger/LedgerModal'
 
 const useSolanaHook = () => {
   const { currentAccount } = useAccountStorage()
@@ -47,10 +41,6 @@ const useSolanaHook = () => {
   const cluster = useSelector(
     (state: RootState) => state.app.cluster || 'mainnet-beta',
   )
-  const [dcProgram, setDcProgram] = useState<DcProgram>()
-  const [hemProgram, setHemProgram] = useState<HemProgram>()
-  const [hsdProgram, setHsdProgram] = useState<HsdProgram>()
-  const [lazyProgram, setLazyProgram] = useState<LazyProgram>()
   const { loading, result: sessionKey } = useAsync(getSessionKey, [])
   const ledgerModalRef = useRef<LedgerModalRef>()
   const connection = useMemo(() => {
@@ -242,19 +232,6 @@ const useSolanaHook = () => {
     return () => cache?.close()
   }, [cache])
 
-  const handleConnectionChanged = useCallback(async () => {
-    if (!anchorProvider) return
-
-    initHem(anchorProvider).then(setHemProgram)
-    initHsd(anchorProvider).then(setHsdProgram)
-    initDc(anchorProvider).then(setDcProgram)
-    initLazy(anchorProvider).then(setLazyProgram)
-  }, [anchorProvider])
-
-  useEffect(() => {
-    handleConnectionChanged()
-  }, [cluster, address, handleConnectionChanged])
-
   const updateCluster = useCallback(
     (nextCluster: Cluster) => {
       dispatch(appSlice.actions.setCluster(nextCluster))
@@ -267,10 +244,6 @@ const useSolanaHook = () => {
     cluster,
     isDevnet,
     connection,
-    dcProgram,
-    hemProgram,
-    hsdProgram,
-    lazyProgram,
     updateCluster,
     cache,
     signMsg,
@@ -283,10 +256,6 @@ const initialState: {
   cluster: Cluster
   isDevnet: boolean
   connection: WrappedConnection | undefined
-  dcProgram: DcProgram | undefined
-  hemProgram: HemProgram | undefined
-  hsdProgram: HsdProgram | undefined
-  lazyProgram: LazyProgram | undefined
   cache: AccountFetchCache | undefined
   updateCluster: (nextCluster: Cluster) => void
   signMsg: (msg: Buffer) => Promise<Buffer>
@@ -296,10 +265,6 @@ const initialState: {
   cluster: 'mainnet-beta' as Cluster,
   isDevnet: false,
   connection: undefined,
-  dcProgram: undefined,
-  hemProgram: undefined,
-  hsdProgram: undefined,
-  lazyProgram: undefined,
   cache: undefined,
   updateCluster: (_nextCluster: Cluster) => {},
   signMsg: (_msg: Buffer) => Promise.resolve(_msg),
@@ -316,7 +281,7 @@ const SolanaProvider = ({ children }: { children: ReactNode }) => {
         <ConnectionContext.Provider value={{ connection: values.connection }}>
           <AccountContext.Provider value={values.cache}>
             <SolanaProviderRnHelium
-              rpcEndpoint={values.connection.rpcEndpoint}
+              connection={values.connection}
               cluster={values.cluster}
             >
               <LedgerModal ref={values?.ledgerModalRef}>{children}</LedgerModal>

@@ -4,7 +4,12 @@ import {
   Instruction,
   Program,
 } from '@coral-xyz/anchor'
-import { getAsset, Asset, heliumAddressToSolAddress } from '@helium/spl-utils'
+import {
+  decodeEntityKey,
+  init,
+  keyToAssetForAsset,
+} from '@helium/helium-entity-manager-sdk'
+import { Asset, getAsset, heliumAddressToSolAddress } from '@helium/spl-utils'
 import { SignHotspotResponse } from '@helium/wallet-link'
 import { getLeafAssetId } from '@metaplex-foundation/mpl-bubblegum'
 import * as web3 from '@solana/web3.js'
@@ -13,10 +18,6 @@ import bs58 from 'bs58'
 import { get, last } from 'lodash'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
-import {
-  decodeEntityKey,
-  keyToAssetForAsset,
-} from '@helium/helium-entity-manager-sdk'
 import { useSolana } from '../../solana/SolanaProvider'
 import { getSolanaKeypair } from '../../storage/secureStorage'
 import { submitSolana } from '../../utils/solanaUtils'
@@ -43,7 +44,7 @@ type Txn = {
 }
 
 const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
-  const { anchorProvider, hemProgram } = useSolana()
+  const { anchorProvider } = useSolana()
   const [submitLoading, setSubmitLoading] = useState(false)
   const handledTxnStr = useRef('')
   const [transactions, setTransactions] = useState<
@@ -152,8 +153,9 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
   )
 
   const assetToAddress = useCallback(
-    async (asset?: Asset) => {
-      if (!hemProgram || !asset) return ''
+    async (asset?: Asset): Promise<string> => {
+      if (!anchorProvider || !asset) return ''
+      const hemProgram = await init(anchorProvider)
       const keyToAssetKey = keyToAssetForAsset(asset)
       const keyToAsset = await hemProgram.account.keyToAssetV0.fetch(
         keyToAssetKey,
@@ -164,7 +166,7 @@ const useSolTxns = (heliumAddress: string, solanaTransactions?: string) => {
       )
       return entityKey || ''
     },
-    [hemProgram],
+    [anchorProvider],
   )
 
   const handleUpdateMeta = useCallback(
