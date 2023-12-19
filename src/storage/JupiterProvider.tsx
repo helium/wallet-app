@@ -12,7 +12,6 @@ import React, {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from 'react'
@@ -20,12 +19,10 @@ import { useTranslation } from 'react-i18next'
 import Config from 'react-native-config'
 import * as Logger from '../utils/logger'
 
-type RouteMap = Map<string, string[]>
 interface IJupiterContextState {
   loading: boolean
   error: unknown
   api: DefaultApi
-  routeMap: RouteMap
   routes?: QuoteResponse
 
   getRoute: (opts: QuoteGetRequest) => Promise<QuoteResponse | undefined>
@@ -38,7 +35,6 @@ const JupiterContext = createContext<IJupiterContextState | null>(null)
 export const JupiterProvider: React.FC = ({ children }) => {
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
-  const [routeMap, setRouteMap] = useState<RouteMap>(new Map())
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<unknown>()
   const [routes, setRoutes] = useState<QuoteResponse>()
@@ -48,27 +44,6 @@ export const JupiterProvider: React.FC = ({ children }) => {
       basePath: 'https://quote-api.jup.ag/v6',
     })
     return new DefaultApi(config)
-  }, [])
-
-  useEffect(() => {
-    ;(async () => {
-      setLoading(true)
-      const indexedRouteMapResult = await api.indexedRouteMapGet()
-      const { indexedRouteMap = {}, mintKeys = [] } = indexedRouteMapResult
-
-      setRouteMap(
-        Object.keys(indexedRouteMap).reduce((map, key) => {
-          map.set(
-            mintKeys[Number(key)],
-            indexedRouteMap[key].map((index) => mintKeys[index]),
-          )
-          return map
-        }, new Map<string, string[]>()),
-      )
-
-      setLoading(false)
-    })()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const getRoute = useCallback(
@@ -125,7 +100,6 @@ export const JupiterProvider: React.FC = ({ children }) => {
         loading,
         error,
         api,
-        routeMap,
         routes,
 
         getRoute,
