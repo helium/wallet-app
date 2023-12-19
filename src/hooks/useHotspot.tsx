@@ -1,10 +1,11 @@
 import * as client from '@helium/distributor-oracle'
+import { init } from '@helium/lazy-distributor-sdk'
 import { PublicKey, Transaction } from '@solana/web3.js'
 import { useEffect, useState } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
+import { useSolana } from '../solana/SolanaProvider'
 import { IOT_LAZY_KEY, MOBILE_LAZY_KEY } from '../utils/constants'
 import * as Logger from '../utils/logger'
-import { useSolana } from '../solana/SolanaProvider'
 
 export function useHotspot(mint: PublicKey): {
   iotRewardsError: Error | undefined
@@ -14,7 +15,7 @@ export function useHotspot(mint: PublicKey): {
   iotRewardsLoading: boolean
   mobileRewardsLoading: boolean
 } {
-  const { anchorProvider: provider, lazyProgram: program } = useSolana()
+  const { anchorProvider: provider } = useSolana()
 
   const [error, setError] = useState<string | null>(null)
 
@@ -24,9 +25,10 @@ export function useHotspot(mint: PublicKey): {
     loading: mobileRewardsLoading,
   } = useAsyncCallback(async () => {
     if (!provider) return
-
+    const program = await init(provider)
     const { connection } = provider
-    if (mint && program && provider) {
+
+    if (mint && provider) {
       const rewards = await client.getCurrentRewards(
         // TODO: Fix program type once HPL is upgraded to anchor v0.26
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -56,6 +58,7 @@ export function useHotspot(mint: PublicKey): {
     loading: iotRewardsLoading,
   } = useAsyncCallback(async () => {
     if (!provider) return
+    const program = await init(provider)
     const { connection } = provider
 
     if (mint && program && provider) {
