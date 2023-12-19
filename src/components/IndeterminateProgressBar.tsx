@@ -61,14 +61,14 @@ const IndeterminateProgressBar = ({ ...rest }: BoxProps<Theme>) => {
       {...rest}
       borderRadius="round"
       width="100%"
-      height={HEIGHT}
+      height={rest.height || HEIGHT}
       backgroundColor="transparent10"
       overflow="hidden"
     >
       <ReAnimatedBox style={progress}>
         <Box
           width={PROGRESS_WIDTH / 2}
-          height={HEIGHT - 1}
+          height={rest.height || HEIGHT - 1}
           borderRadius="round"
           backgroundColor="lightGrey"
         />

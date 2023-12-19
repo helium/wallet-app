@@ -88,21 +88,31 @@ export const DelegateTokensModal = ({
             marginVertical="xs"
           >
             <Box flexGrow={1} justifyContent="center">
-              <Text textAlign="left" variant="subtitle2" adjustsFontSizeToFit>
-                {t('gov.transactions.delegatePosition')}
-              </Text>
-              <Text variant="subtitle4" color="secondaryText" marginBottom="m">
-                {t('gov.positions.selectSubDao')}
-              </Text>
-              {loading && (
-                <Box flexDirection="row" justifyContent="center">
-                  <Box marginRight="m">
-                    <CircleLoader loaderSize={20} />
-                  </Box>
+              {!loading && (
+                <>
+                  <Text
+                    textAlign="left"
+                    variant="subtitle2"
+                    adjustsFontSizeToFit
+                  >
+                    {t('gov.transactions.delegatePosition')}
+                  </Text>
                   <Text
                     variant="subtitle4"
                     color="secondaryText"
                     marginBottom="m"
+                  >
+                    {t('gov.positions.selectSubDao')}
+                  </Text>
+                </>
+              )}
+              {loading && (
+                <Box justifyContent="center" alignItems="center">
+                  <CircleLoader loaderSize={20} />
+                  <Text
+                    variant="subtitle4"
+                    color="secondaryText"
+                    marginTop="ms"
                   >
                     {t('gov.positions.fetchingSubDaos')}
                   </Text>

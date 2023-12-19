@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
-import CircleLoader from '@components/CircleLoader'
 import ListItem from '@components/ListItem'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
@@ -37,6 +36,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useTranslation } from 'react-i18next'
+import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { DelegateTokensModal } from './DelegateTokensModal'
@@ -62,7 +62,7 @@ export const PositionCard = ({
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false)
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false)
   const [isDelegateModalOpen, setIsDelegateModalOpen] = useState(false)
-  const { loading, positions, refetch, mint } = useGovernance()
+  const { positions, refetch, mint } = useGovernance()
   const transferablePositions: PositionWithMeta[] = useMemo(() => {
     if (!unixNow || !positions || !positions.length) {
       return []
@@ -480,7 +480,6 @@ export const PositionCard = ({
 
   const isLoading = useMemo(
     () =>
-      loading ||
       loadingMetadata ||
       isExtending ||
       isSpliting ||
@@ -490,7 +489,6 @@ export const PositionCard = ({
       isDelegating ||
       isUndelegating,
     [
-      loading,
       loadingMetadata,
       isExtending,
       isSpliting,
@@ -509,12 +507,10 @@ export const PositionCard = ({
           backgroundColor="secondaryBackground"
           borderRadius="l"
           padding="m"
+          paddingHorizontal="xl"
           {...boxProps}
         >
           <Box flex={1} alignItems="center">
-            <Box flex={1} marginBottom="ms">
-              <CircleLoader color="white" loaderSize={20} />
-            </Box>
             <Text variant="body2" color="primaryText">
               {isSpliting && t('gov.positions.splitting')}
               {isExtending && t('gov.positions.extending')}
@@ -525,6 +521,9 @@ export const PositionCard = ({
               {isDelegating && t('gov.positions.delegating')}
               {isUndelegating && t('gov.positions.undelegating')}
             </Text>
+            <Box flex={1} marginTop="ms" width="100%">
+              <IndeterminateProgressBar height={6} />
+            </Box>
           </Box>
         </Box>
       )}

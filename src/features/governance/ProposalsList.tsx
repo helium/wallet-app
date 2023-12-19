@@ -34,8 +34,8 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
     useOrganizationProposals(organization)
 
   const isLoading = useMemo(
-    () => !currentAccount || loading,
-    [currentAccount, loading],
+    () => !currentAccount || loading || !proposalsWithDups,
+    [currentAccount, loading, proposalsWithDups],
   )
 
   const proposals = useMemo(() => {
@@ -149,6 +149,9 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
         <Box flexDirection="row" justifyContent="center">
           <TouchableOpacityBox
             paddingVertical="lm"
+            paddingHorizontal="xxl"
+            flexDirection="row"
+            justifyContent="center"
             onPress={() => setFiltersOpen(true)}
           >
             <Text variant="body3" color="secondaryText">

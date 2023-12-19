@@ -9,7 +9,6 @@ import {
   useSubDaos,
 } from '@helium/voter-stake-registry-hooks'
 import { useColors } from '@theme/themeHooks'
-import { useGovernance } from '@storage/GovernanceProvider'
 import CircleLoader from '@components/CircleLoader'
 import { PositionCard } from './PositionCard'
 
@@ -22,12 +21,11 @@ export const PositionsList = ({
   ...boxProps
 }: IPositionsListProps) => {
   const { loading: loadingSubDaos, result: subDaos } = useSubDaos()
-  const { loading: loadingGov } = useGovernance()
   const colors = useColors()
 
   const loading = useMemo(
-    () => !subDaos || loadingSubDaos || loadingGov,
-    [subDaos, loadingSubDaos, loadingGov],
+    () => !subDaos || loadingSubDaos,
+    [subDaos, loadingSubDaos],
   )
 
   const sortedPositions = useMemo(
@@ -42,6 +40,12 @@ export const PositionsList = ({
                   : -1
               }
               return -1
+            }
+
+            if (a.isDelegated || b.isDelegated) {
+              if (a.isDelegated && !b.isDelegated) return -1
+              if (b.isDelegated && !a.isDelegated) return 0
+              return 0
             }
 
             return a.amountDepositedNative.gt(b.amountDepositedNative) ? -1 : 0
@@ -86,8 +90,7 @@ export const PositionsList = ({
         ) : (
           sortedPositions?.map((p, idx) => (
             <PositionCard
-              // eslint-disable-next-line react/no-array-index-key
-              key={`${p.pubkey.toBase58()}-${idx}`}
+              key={`${p.pubkey.toBase58()}${p.amountDepositedNative.toString()}${p.delegatedSubDao?.toBase58()}}`}
               position={p}
               marginTop={idx > 0 ? 'm' : 'none'}
               subDaos={subDaos}

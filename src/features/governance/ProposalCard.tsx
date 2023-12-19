@@ -145,6 +145,7 @@ export const ProposalCard = ({
           proposal.state.resolved.choices.length > 0
         )
           return 'passed'
+
         if (
           keys.includes('resolved') &&
           proposal.state.resolved &&
