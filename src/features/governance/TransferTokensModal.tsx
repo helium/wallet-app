@@ -88,12 +88,16 @@ export const TransferTokensModal = ({
           positions.find((pos) => pos.pubkey.equals(selectedPosPk))!,
           amount,
         )
+
         onClose()
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
         setIsSubmitting(false)
         setTransactionError(e.message || t('gov.errors.transferPosition'))
       }
+
+      // error handling on postiion card
+      onClose()
     }
   }
 
@@ -158,14 +162,30 @@ export const TransferTokensModal = ({
                     <Box
                       borderRadius="l"
                       backgroundColor="secondary"
-                      padding="ms"
+                      padding="m"
                       marginBottom="m"
                     >
-                      <Text marginTop="m" variant="body3">
+                      <Text variant="body3">
+                        {t('gov.positions.transferWarning')}
+                      </Text>
+                      <Text marginTop="m" variant="body3" color="flamenco">
                         {t('gov.positions.cantTransfer')}
                       </Text>
                     </Box>
                   )}
+                  <Box
+                    borderRadius="l"
+                    backgroundColor="secondary"
+                    padding="m"
+                    marginBottom="m"
+                  >
+                    <Text variant="body3">
+                      {t('gov.positions.transferWarning')}
+                    </Text>
+                    <Text marginTop="m" variant="body3">
+                      {t('gov.positions.transferLandrushWarning')}
+                    </Text>
+                  </Box>
                   {hasTransferablePositions && (
                     <>
                       <Box backgroundColor="secondary" borderRadius="l">
@@ -195,20 +215,6 @@ export const TransferTokensModal = ({
                           {t('gov.positions.selectTransfer')}
                         </Text>
                       </Box>
-                      <Box
-                        borderRadius="l"
-                        backgroundColor="secondary"
-                        padding="ms"
-                        marginBottom="m"
-                      >
-                        <Text variant="body3">
-                          {t('gov.positions.transferWarning')}
-                        </Text>
-                        <Text marginTop="m" variant="body3">
-                          {t('gov.positions.transferLandrushWarning')}
-                        </Text>
-                      </Box>
-
                       {positions.map((pos, idx) => {
                         const { lockup } = pos
                         const lockupKind = Object.keys(lockup.kind)[0] as string
@@ -226,70 +232,75 @@ export const TransferTokensModal = ({
                             }
                             onPress={() => setSelectedPosPk(pos.pubkey)}
                           >
-                            <Box flexDirection="row" padding="ms">
-                              <Box flex={1}>
-                                <Text variant="body2" color="secondaryText">
-                                  {t('gov.positions.lockupType')}
-                                </Text>
-                                <Text variant="body2" color="primaryText">
-                                  {isConstant ? 'Constant' : 'Decaying'}
-                                </Text>
+                            <Box
+                              flex={1}
+                              flexDirection="row"
+                              padding="m"
+                              justifyContent="space-between"
+                            >
+                              <Box
+                                flex={1}
+                                flexShrink={0}
+                                flexDirection="row"
+                                justifyContent="center"
+                              >
+                                <Box flex={1}>
+                                  <Text variant="body2" color="secondaryText">
+                                    {t('gov.positions.lockupType')}
+                                  </Text>
+                                  <Text variant="body2" color="primaryText">
+                                    {isConstant ? 'Constant' : 'Decaying'}
+                                  </Text>
+                                </Box>
                               </Box>
-                              <Box flex={1}>
-                                <Text
-                                  variant="body2"
-                                  color="secondaryText"
-                                  textAlign="center"
-                                >
-                                  {t('gov.positions.voteMult')}
-                                </Text>
-                                <Text
-                                  variant="body2"
-                                  color="primaryText"
-                                  textAlign="center"
-                                >
-                                  {(
-                                    (pos.votingPower.isZero()
-                                      ? 0
-                                      : // Mul by 100 to get 2 decimal places
-                                        pos.votingPower
-                                          .mul(new BN(100))
-                                          .div(pos.amountDepositedNative)
-                                          .toNumber() / 100) /
-                                    (pos.genesisEnd.gt(new BN(unixNow))
-                                      ? pos.votingMint
-                                          .genesisVotePowerMultiplier
-                                      : 1)
-                                  ).toFixed(2)}
-                                </Text>
+                              <Box
+                                flex={1}
+                                flexShrink={0}
+                                flexDirection="row"
+                                justifyContent="center"
+                              >
+                                <Box flex={1}>
+                                  <Text variant="body2" color="secondaryText">
+                                    {t('gov.positions.voteMult')}
+                                  </Text>
+                                  <Text variant="body2" color="primaryText">
+                                    {(
+                                      (pos.votingPower.isZero()
+                                        ? 0
+                                        : // Mul by 100 to get 2 decimal places
+                                          pos.votingPower
+                                            .mul(new BN(100))
+                                            .div(pos.amountDepositedNative)
+                                            .toNumber() / 100) /
+                                      (pos.genesisEnd.gt(new BN(unixNow))
+                                        ? pos.votingMint
+                                            .genesisVotePowerMultiplier
+                                        : 1)
+                                    ).toFixed(2)}
+                                  </Text>
+                                </Box>
                               </Box>
-                              <Box flex={1} alignContent="center">
-                                <Text
-                                  variant="body2"
-                                  color="secondaryText"
-                                  textAlign="right"
-                                >
-                                  {isConstant ? 'Min. Duration' : 'Time left'}
-                                </Text>
-                                <Text
-                                  variant="body2"
-                                  color="primaryText"
-                                  textAlign="right"
-                                >
-                                  {isConstant
-                                    ? getMinDurationFmt(
-                                        pos.lockup.startTs,
-                                        pos.lockup.endTs,
-                                      )
-                                    : getTimeLeftFromNowFmt(pos.lockup.endTs)}
-                                </Text>
+                              <Box flex={1} flexShrink={0} flexDirection="row">
+                                <Box flex={1}>
+                                  <Text variant="body2" color="secondaryText">
+                                    {isConstant ? 'Min. Duration' : 'Time left'}
+                                  </Text>
+                                  <Text variant="body2" color="primaryText">
+                                    {isConstant
+                                      ? getMinDurationFmt(
+                                          pos.lockup.startTs,
+                                          pos.lockup.endTs,
+                                        )
+                                      : getTimeLeftFromNowFmt(pos.lockup.endTs)}
+                                  </Text>
+                                </Box>
                               </Box>
                             </Box>
                             <Box
                               borderTopColor="black200"
                               borderTopWidth={1}
                               paddingVertical="s"
-                              paddingHorizontal="ms"
+                              paddingHorizontal="m"
                             >
                               <Text variant="body2" color="primaryText">
                                 {t('gov.positions.lockedAmount', {
@@ -318,7 +329,7 @@ export const TransferTokensModal = ({
             flexDirection="row"
             justifyContent="center"
             alignItems="center"
-            paddingTop="ms"
+            paddingTop="m"
           >
             <Text variant="body3Medium" color="red500">
               {showError}

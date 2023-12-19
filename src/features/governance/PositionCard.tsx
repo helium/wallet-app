@@ -37,6 +37,7 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useTranslation } from 'react-i18next'
 import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
+import { useCreateOpacity } from '@theme/themeHooks'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { DelegateTokensModal } from './DelegateTokensModal'
@@ -63,6 +64,7 @@ export const PositionCard = ({
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false)
   const [isDelegateModalOpen, setIsDelegateModalOpen] = useState(false)
   const { positions, refetch, mint } = useGovernance()
+  const { backgroundStyle } = useCreateOpacity()
   const transferablePositions: PositionWithMeta[] = useMemo(() => {
     if (!unixNow || !positions || !positions.length) {
       return []
@@ -537,18 +539,6 @@ export const PositionCard = ({
             {...boxProps}
           >
             <TouchableOpacityBox onPress={() => setActionsOpen(true)}>
-              {showError && (
-                <Box
-                  flexDirection="row"
-                  justifyContent="center"
-                  alignItems="center"
-                  paddingTop="ms"
-                >
-                  <Text variant="body3Medium" color="red500">
-                    {showError}
-                  </Text>
-                </Box>
-              )}
               <Box paddingHorizontal="m" paddingVertical="ms">
                 <Box
                   flexDirection="row"
@@ -676,6 +666,25 @@ export const PositionCard = ({
                 )}
               </Box>
             </TouchableOpacityBox>
+            {showError && (
+              <Box
+                flex={1}
+                flexDirection="row"
+                width="100%"
+                height="100%"
+                justifyContent="center"
+                paddingVertical="ms"
+                borderBottomLeftRadius="l"
+                borderBottomRightRadius="l"
+                style={backgroundStyle('error', 0.1)}
+              >
+                <Box flexDirection="row" alignSelf="center" marginRight="s">
+                  <Text fontSize={10} color="error" marginLeft="s">
+                    {showError}
+                  </Text>
+                </Box>
+              </Box>
+            )}
           </ReAnimatedBox>
           <BlurActionSheet
             title={t('gov.positions.actionsTitle')}

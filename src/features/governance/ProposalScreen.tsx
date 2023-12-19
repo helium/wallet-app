@@ -256,244 +256,250 @@ export const ProposalScreen = () => {
           marginTop="l"
         >
           <ScrollView>
-            <Box
-              flexGrow={1}
-              justifyContent="center"
-              backgroundColor="secondaryBackground"
-              borderRadius="l"
-              padding="m"
-            >
-              <Box flexDirection="row">
-                {proposal?.tags
-                  .filter((tag) => tag !== 'tags')
-                  .map((tag, idx) => (
-                    <Box
-                      key={tag}
-                      marginLeft={idx > 0 ? 's' : 'none'}
-                      padding="s"
-                      backgroundColor={
-                        tag.toLowerCase().includes('temp check')
-                          ? 'orange500'
-                          : 'surfaceSecondary'
-                      }
-                      borderRadius="m"
-                    >
-                      <Text variant="body3" color="secondaryText">
-                        {tag.toUpperCase()}
+            <Box paddingHorizontal="m">
+              <Box
+                flexGrow={1}
+                justifyContent="center"
+                backgroundColor="secondaryBackground"
+                borderRadius="l"
+                padding="m"
+              >
+                <Box flexDirection="row">
+                  {proposal?.tags
+                    .filter((tag) => tag !== 'tags')
+                    .map((tag, idx) => (
+                      <Box
+                        key={tag}
+                        marginLeft={idx > 0 ? 's' : 'none'}
+                        padding="s"
+                        backgroundColor={
+                          tag.toLowerCase().includes('temp check')
+                            ? 'orange500'
+                            : 'surfaceSecondary'
+                        }
+                        borderRadius="m"
+                      >
+                        <Text variant="body3" color="secondaryText">
+                          {tag.toUpperCase()}
+                        </Text>
+                      </Box>
+                    ))}
+                </Box>
+                <Box flexShrink={1} marginTop="ms">
+                  <Text variant="subtitle3" color="primaryText">
+                    {proposal?.name}
+                  </Text>
+                </Box>
+                <Box marginTop="ms">
+                  <Box flexDirection="row" justifyContent="space-between">
+                    <Box>
+                      {derivedState === 'active' && (
+                        <Text variant="body2" color="secondaryText">
+                          {t('gov.proposals.estTime')}
+                        </Text>
+                      )}
+                      {derivedState === 'passed' && (
+                        <Text variant="body2" color="greenBright500">
+                          {t('gov.proposals.success')}
+                        </Text>
+                      )}
+                      {derivedState === 'failed' && (
+                        <Text variant="body2" color="error">
+                          {t('gov.proposals.failed')}
+                        </Text>
+                      )}
+                      {derivedState === 'cancelled' && (
+                        <Text variant="body2" color="orange500">
+                          {t('gov.proposals.cancelled')}
+                        </Text>
+                      )}
+                      <Text variant="body2" color="primaryText">
+                        {getTimeFromNowFmt(endTs || new BN(0))}
                       </Text>
                     </Box>
-                  ))}
-              </Box>
-              <Box flexShrink={1} marginTop="ms">
-                <Text variant="subtitle3" color="primaryText">
-                  {proposal?.name}
-                </Text>
-              </Box>
-              <Box marginTop="ms">
-                <Box flexDirection="row" justifyContent="space-between">
-                  <Box>
-                    {derivedState === 'active' && (
-                      <Text variant="body2" color="secondaryText">
-                        {t('gov.proposals.estTime')}
+                    <Box>
+                      <Text
+                        variant="body2"
+                        color="secondaryText"
+                        textAlign="right"
+                      >
+                        {t('gov.proposals.votes')}
                       </Text>
-                    )}
-                    {derivedState === 'passed' && (
-                      <Text variant="body2" color="greenBright500">
-                        {t('gov.proposals.success')}
+                      <Text
+                        variant="body2"
+                        color="primaryText"
+                        textAlign="right"
+                      >
+                        {humanReadable(votingResults?.totalVotes, decimals) ||
+                          'None'}
                       </Text>
-                    )}
-                    {derivedState === 'failed' && (
-                      <Text variant="body2" color="error">
-                        {t('gov.proposals.failed')}
-                      </Text>
-                    )}
-                    {derivedState === 'cancelled' && (
-                      <Text variant="body2" color="orange500">
-                        {t('gov.proposals.cancelled')}
-                      </Text>
-                    )}
-                    <Text variant="body2" color="primaryText">
-                      {getTimeFromNowFmt(endTs || new BN(0))}
-                    </Text>
+                    </Box>
                   </Box>
-                  <Box>
-                    <Text
-                      variant="body2"
-                      color="secondaryText"
-                      textAlign="right"
+                  {showVoteResults && votingResults?.totalVotes.gt(new BN(0)) && (
+                    <Box
+                      backgroundColor="secondaryBackground"
+                      borderRadius="l"
+                      paddingTop="m"
                     >
-                      {t('gov.proposals.votes')}
-                    </Text>
-                    <Text variant="body2" color="primaryText" textAlign="right">
-                      {humanReadable(votingResults?.totalVotes, decimals) ||
-                        'None'}
-                    </Text>
-                  </Box>
-                </Box>
-                {showVoteResults && votingResults?.totalVotes.gt(new BN(0)) && (
-                  <Box
-                    backgroundColor="secondaryBackground"
-                    borderRadius="l"
-                    paddingTop="m"
-                  >
-                    {votingResults.results
-                      ?.sort((a, b) => b.percent - a.percent)
-                      .map((r, idx) => (
-                        <Box
-                          key={r.name}
-                          flex={1}
-                          marginTop={idx > 0 ? 's' : 'none'}
-                        >
-                          <Text
-                            variant="body2"
-                            color="primaryText"
-                            marginBottom="xs"
-                          >
-                            {r.name}
-                          </Text>
+                      {votingResults.results
+                        ?.sort((a, b) => b.percent - a.percent)
+                        .map((r, idx) => (
                           <Box
-                            flexDirection="row"
+                            key={r.name}
                             flex={1}
-                            backgroundColor="grey900"
-                            borderRadius="m"
-                            overflow="hidden"
-                            marginBottom="xs"
-                          >
-                            <Box
-                              flexDirection="row"
-                              height={6}
-                              width={`${r.percent}%`}
-                              backgroundColor={VotingResultColors[r.index]}
-                            />
-                          </Box>
-                          <Box
-                            flexDirection="row"
-                            justifyContent="space-between"
+                            marginTop={idx > 0 ? 's' : 'none'}
                           >
                             <Text
                               variant="body2"
-                              color="secondaryText"
-                              marginRight="ms"
+                              color="primaryText"
+                              marginBottom="xs"
                             >
-                              {humanReadable(r.weight, decimals)}
+                              {r.name}
                             </Text>
-                            <Text variant="body2" color="primaryText">
-                              {r.percent.toFixed(2)}%
-                            </Text>
+                            <Box
+                              flexDirection="row"
+                              flex={1}
+                              backgroundColor="grey900"
+                              borderRadius="m"
+                              overflow="hidden"
+                              marginBottom="xs"
+                            >
+                              <Box
+                                flexDirection="row"
+                                height={6}
+                                width={`${r.percent}%`}
+                                backgroundColor={VotingResultColors[r.index]}
+                              />
+                            </Box>
+                            <Box
+                              flexDirection="row"
+                              justifyContent="space-between"
+                            >
+                              <Text
+                                variant="body2"
+                                color="secondaryText"
+                                marginRight="ms"
+                              >
+                                {humanReadable(r.weight, decimals)}
+                              </Text>
+                              <Text variant="body2" color="primaryText">
+                                {r.percent.toFixed(2)}%
+                              </Text>
+                            </Box>
                           </Box>
-                        </Box>
-                      ))}
-                  </Box>
-                )}
-              </Box>
-            </Box>
-            {noVotingPower && (
-              <Box
-                flexGrow={1}
-                justifyContent="center"
-                backgroundColor="secondaryBackground"
-                borderRadius="l"
-                padding="m"
-                marginTop="m"
-              >
-                <Text variant="body2" color="primaryText">
-                  {t('gov.votingPower.noPower')}
-                </Text>
-              </Box>
-            )}
-            {derivedState === 'active' && !noVotingPower && (
-              <Box
-                flexGrow={1}
-                justifyContent="center"
-                backgroundColor="secondaryBackground"
-                borderRadius="l"
-                padding="m"
-                marginTop="m"
-              >
-                <Text variant="body2" color="primaryText">
-                  {t('gov.proposals.toVote', {
-                    maxChoicesPerVoter: proposal?.maxChoicesPerVoter,
-                    choicesLength: proposal?.choices.length,
-                  })}
-                </Text>
-                <Box marginTop="ms">
-                  {showError && (
-                    <Box flexDirection="row" paddingBottom="ms">
-                      <Text variant="body3Medium" color="red500">
-                        {showError}
-                      </Text>
+                        ))}
                     </Box>
                   )}
-                  <Box
-                    flex={1}
-                    flexDirection="row"
-                    flexWrap="wrap"
-                    {...{ gap: 8 }}
-                  >
-                    {votingResults.results?.map((r) => (
-                      <VoteOption
-                        key={r.name}
-                        voting={
-                          currVote === r.index && (voting || relinquishing)
-                        }
-                        option={r}
-                        myWeight={voteWeights?.[r.index]}
-                        canVote={canVote(r.index)}
-                        canRelinquishVote={canRelinquishVote(r.index)}
-                        onVote={handleVote(r)}
-                        onRelinquishVote={handleRelinquish(r)}
-                      />
-                    ))}
-                  </Box>
                 </Box>
               </Box>
-            )}
-            <Box
-              flexGrow={1}
-              justifyContent="center"
-              backgroundColor="secondaryBackground"
-              borderRadius="l"
-              padding="m"
-              marginTop="m"
-            >
-              {!markdownLoading && markdown && (
-                <Markdown
-                  style={{
-                    hr: {
-                      marginTop: theme.spacing.m,
-                    },
-                    blockquote: {
-                      ...theme.textVariants.body2,
-                      color: theme.colors.primaryText,
-                      backgroundColor: 'transparent',
-                    },
-                    body: {
-                      ...theme.textVariants.body2,
-                      color: theme.colors.primaryText,
-                    },
-                    heading1: {
-                      ...theme.textVariants.subtitle1,
-                      color: theme.colors.primaryText,
-                      paddingTop: theme.spacing.ms,
-                      paddingBottom: theme.spacing.ms,
-                    },
-                    heading2: {
-                      ...theme.textVariants.subtitle2,
-                      color: theme.colors.primaryText,
-                      paddingTop: theme.spacing.ms,
-                      paddingBottom: theme.spacing.ms,
-                    },
-                    heading3: {
-                      ...theme.textVariants.subtitle3,
-                      color: theme.colors.primaryText,
-                      paddingTop: theme.spacing.ms,
-                      paddingBottom: theme.spacing.ms,
-                    },
-                  }}
+              {noVotingPower && (
+                <Box
+                  flexGrow={1}
+                  justifyContent="center"
+                  backgroundColor="secondaryBackground"
+                  borderRadius="l"
+                  padding="m"
+                  marginTop="m"
                 >
-                  {markdown}
-                </Markdown>
+                  <Text variant="body2" color="primaryText">
+                    {t('gov.votingPower.noPower')}
+                  </Text>
+                </Box>
               )}
+              {derivedState === 'active' && !noVotingPower && (
+                <Box
+                  flexGrow={1}
+                  justifyContent="center"
+                  backgroundColor="secondaryBackground"
+                  borderRadius="l"
+                  padding="m"
+                  marginTop="m"
+                >
+                  <Text variant="body2" color="primaryText">
+                    {t('gov.proposals.toVote', {
+                      maxChoicesPerVoter: proposal?.maxChoicesPerVoter,
+                      choicesLength: proposal?.choices.length,
+                    })}
+                  </Text>
+                  <Box marginTop="ms">
+                    {showError && (
+                      <Box flexDirection="row" paddingBottom="ms">
+                        <Text variant="body3Medium" color="red500">
+                          {showError}
+                        </Text>
+                      </Box>
+                    )}
+                    <Box
+                      flex={1}
+                      flexDirection="row"
+                      flexWrap="wrap"
+                      {...{ gap: 8 }}
+                    >
+                      {votingResults.results?.map((r) => (
+                        <VoteOption
+                          key={r.name}
+                          voting={
+                            currVote === r.index && (voting || relinquishing)
+                          }
+                          option={r}
+                          myWeight={voteWeights?.[r.index]}
+                          canVote={canVote(r.index)}
+                          canRelinquishVote={canRelinquishVote(r.index)}
+                          onVote={handleVote(r)}
+                          onRelinquishVote={handleRelinquish(r)}
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                </Box>
+              )}
+              <Box
+                flexGrow={1}
+                justifyContent="center"
+                backgroundColor="secondaryBackground"
+                borderRadius="l"
+                padding="m"
+                marginTop="m"
+              >
+                {!markdownLoading && markdown && (
+                  <Markdown
+                    style={{
+                      hr: {
+                        marginTop: theme.spacing.m,
+                      },
+                      blockquote: {
+                        ...theme.textVariants.body2,
+                        color: theme.colors.primaryText,
+                        backgroundColor: 'transparent',
+                      },
+                      body: {
+                        ...theme.textVariants.body2,
+                        color: theme.colors.primaryText,
+                      },
+                      heading1: {
+                        ...theme.textVariants.subtitle1,
+                        color: theme.colors.primaryText,
+                        paddingTop: theme.spacing.ms,
+                        paddingBottom: theme.spacing.ms,
+                      },
+                      heading2: {
+                        ...theme.textVariants.subtitle2,
+                        color: theme.colors.primaryText,
+                        paddingTop: theme.spacing.ms,
+                        paddingBottom: theme.spacing.ms,
+                      },
+                      heading3: {
+                        ...theme.textVariants.subtitle3,
+                        color: theme.colors.primaryText,
+                        paddingTop: theme.spacing.ms,
+                        paddingBottom: theme.spacing.ms,
+                      },
+                    }}
+                  >
+                    {markdown}
+                  </Markdown>
+                )}
+              </Box>
             </Box>
           </ScrollView>
         </SafeAreaBox>

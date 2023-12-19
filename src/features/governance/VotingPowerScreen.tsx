@@ -160,12 +160,12 @@ export const VotingPowerScreen = () => {
           title={t('gov.votingPower.yourPower')}
           edges={backEdges}
         >
-          <Box flex={1}>
-            <ScrollView>
+          <ScrollView>
+            <Box flex={1} paddingHorizontal="m">
               <VotingPowerCard marginTop="l" />
               <PositionsList positions={positions} />
-            </ScrollView>
-          </Box>
+            </Box>
+          </ScrollView>
           {showError && (
             <Box
               flexDirection="row"

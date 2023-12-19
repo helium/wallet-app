@@ -90,7 +90,8 @@ export const PositionsList = ({
         ) : (
           sortedPositions?.map((p, idx) => (
             <PositionCard
-              key={`${p.pubkey.toBase58()}${p.amountDepositedNative.toString()}${p.delegatedSubDao?.toBase58()}}`}
+              // eslint-disable-next-line react/no-array-index-key
+              key={`${p.pubkey.toBase58()}${p.amountDepositedNative.toString()}-${idx}}`}
               position={p}
               marginTop={idx > 0 ? 'm' : 'none'}
               subDaos={subDaos}

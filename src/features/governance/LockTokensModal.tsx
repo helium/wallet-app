@@ -178,6 +178,11 @@ export const LockTokensModal = ({
       setIsSubmitting(false)
       setTransactionError(e.message || t('gov.errors.lockTokens'))
     }
+
+    // error handling handled on position card
+    if (['split', 'extend'].includes(mode)) {
+      onClose()
+    }
   }
 
   const showError = useMemo(() => {

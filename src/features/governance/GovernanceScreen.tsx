@@ -128,7 +128,7 @@ export const GovernanceScreen = () => {
           {loading ? (
             <CircleLoader loaderSize={24} color="white" />
           ) : (
-            <>
+            <Box paddingHorizontal="m">
               <VotingPowerCard
                 onPress={async (m) =>
                   navigation.push('VotingPowerScreen', {
@@ -137,7 +137,7 @@ export const GovernanceScreen = () => {
                 }
               />
               <ProposalsList />
-            </>
+            </Box>
           )}
         </ScrollView>
       </SafeAreaBox>
