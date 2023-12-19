@@ -55,14 +55,14 @@
     "@helium/http": "4.7.5",
     "@helium/idls": "^0.6.6",
     "@helium/lazy-distributor-sdk": "^0.6.6",
-    "@helium/onboarding": "4.8.3-next.58+7ab9a36",
+    "@helium/onboarding": "4.11.0",
     "@helium/proto-ble": "4.0.0",
     "@helium/react-native-sdk": "^3.0.3",
     "@helium/spl-utils": "^0.6.6",
     "@helium/transactions": "4.8.1",
     "@helium/treasury-management-sdk": "^0.6.6",
     "@helium/voter-stake-registry-sdk": "^0.6.6",
-    "@helium/wallet-link": "4.8.3-next.58+7ab9a36",
+    "@helium/wallet-link": "4.11.0",
     "@jup-ag/api": "^6.0.6",
     "@ledgerhq/hw-app-solana": "7.0.13",
     "@ledgerhq/react-native-hid": "6.30.0",
@@ -260,7 +260,8 @@
     "typescript": "4.9.4"
   },
   "resolutions": {
-    "@types/react": "17"
+    "@types/react": "17",
+    "@helium/onboarding": "4.11.0"
   },
   "jest": {
     "preset": "react-native",

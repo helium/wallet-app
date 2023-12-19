@@ -2378,10 +2378,19 @@
   dependencies:
     "@solana/web3.js" "^1.78.4"
 
-"@helium/address@4.10.2", "@helium/address@^4.10.2", "@helium/address@^4.6.2", "@helium/address@^4.8.0", "@helium/address@^4.8.1", "@helium/address@^4.8.3-next.58+7ab9a36":
+"@helium/address@4.10.2", "@helium/address@^4.10.2", "@helium/address@^4.6.2", "@helium/address@^4.8.0", "@helium/address@^4.8.1":
   version "4.10.2"
   resolved "https://registry.yarnpkg.com/@helium/address/-/address-4.10.2.tgz#56960b118fceb6b6ddabe3e4ecec467d9ae50e26"
   integrity sha512-qCswC7Z3GXuJyHv36RcOSnffeghjqJQx0fdu2Lxpf9fgOnIi1JZO2tjjk1mBaqOwCyp+0YzrTPUoEukL/WCtsA==
+  dependencies:
+    bs58 "^5.0.0"
+    js-sha256 "^0.9.0"
+    multiformats "^9.6.4"
+
+"@helium/address@^4.11.0", "@helium/address@^4.11.1":
+  version "4.11.1"
+  resolved "https://registry.yarnpkg.com/@helium/address/-/address-4.11.1.tgz#e6c6debaee2f50ed16383d5660ba81d29e604948"
+  integrity sha512-QMrdBx5l5XIy0K9fL3R64Whuk556BLz/pa6yhOQtog1hb3C904m1ykAU8eg2hgiA265Yp98XZkIK3GKTHbH+0A==
   dependencies:
     bs58 "^5.0.0"
     js-sha256 "^0.9.0"
@@ -2703,19 +2712,19 @@
     bn.js "^5.2.0"
     bs58 "^4.0.1"
 
-"@helium/onboarding@4.8.3-next.58+7ab9a36":
-  version "4.8.3-next.58"
-  resolved "https://registry.yarnpkg.com/@helium/onboarding/-/onboarding-4.8.3-next.58.tgz#9209f687f79ec827261d564c8247ed3e581e10b3"
-  integrity sha512-E9RN2Tb5WvGAZRyrCo9V2qqom2GBkMPoB1GMJomXip0y2towTk6KEKshqacuzq3Iq4zFZh3iAu4vu3ah2crc4Q==
+"@helium/onboarding@4.11.0", "@helium/onboarding@^4.10.0":
+  version "4.11.0"
+  resolved "https://registry.yarnpkg.com/@helium/onboarding/-/onboarding-4.11.0.tgz#a8699c0e2baec0e824248ad3ecaab06c30688b25"
+  integrity sha512-E8G3Z9IAHwRK7ahxcXsgKZkHtR7TgXh/i2+x7lC8bbCFIniGA+dxwFB0jzwoKFRWHQwknzJLh7eSs+8hp3c3Tw==
   dependencies:
     "@coral-xyz/anchor" "^0.28.1-beta.2"
-    "@helium/address" "^4.8.3-next.58+7ab9a36"
+    "@helium/address" "^4.11.0"
     "@helium/currency-utils" "^0.6.6"
     "@helium/data-credits-sdk" "^0.6.6"
     "@helium/helium-entity-manager-sdk" "^0.6.6"
     "@helium/hotspot-utils" "^0.6.6"
     "@helium/spl-utils" "^0.6.6"
-    "@helium/transactions" "^4.8.3-next.58+7ab9a36"
+    "@helium/transactions" "^4.11.0"
     "@metaplex-foundation/mpl-bubblegum" "^0.7.0"
     "@solana/web3.js" "^1.78.4"
     axios "^1.5.0"
@@ -2731,15 +2740,6 @@
     ts-proto "^1.165.1"
     ts-protoc-gen "^0.15.0"
     uuid "^9.0.0"
-
-"@helium/onboarding@^4.10.0":
-  version "4.10.3"
-  resolved "https://registry.yarnpkg.com/@helium/onboarding/-/onboarding-4.10.3.tgz#88fa6ae127d1ea836c6af016939cd93b26acc85c"
-  integrity sha512-DbKwwMttuWHhtHo4VF5NkcLS7/KVOsIW1TlmVp5mmBZHk4rHoCvNRXr8LBtPNnO341jgNxgxQZuA9gH2W7ggSA==
-  dependencies:
-    axios "^0.24.0"
-    axios-retry "^3.4.0"
-    qs "^6.10.3"
 
 "@helium/proto-ble@4.0.0":
   version "4.0.0"
@@ -2873,12 +2873,12 @@
     long "^4.0.0"
     path "^0.12.7"
 
-"@helium/transactions@^4.8.3-next.58+7ab9a36":
-  version "4.10.2"
-  resolved "https://registry.yarnpkg.com/@helium/transactions/-/transactions-4.10.2.tgz#7b5bdd0fa1c37db3c273522b266b8e5f16ad79ed"
-  integrity sha512-WVbkJDIdcQQ81Dta9K9IH2qXQTJ/pMUpdmivs9W+DDSudFX2yLB35bCzqcFfa8RYGld52EhmTWXyuq0HSDaoQw==
+"@helium/transactions@^4.11.0":
+  version "4.11.1"
+  resolved "https://registry.yarnpkg.com/@helium/transactions/-/transactions-4.11.1.tgz#38c48d0c2c395ce1e0a78fd57510c09d958c24e8"
+  integrity sha512-uL6OKo5o8AKn7oOuuW6/T7MSwPikbYU2HsSDu2O7ZhnGiyzKcKXQMkIHSBuFKz9KT+DKVpVSwjeLXr4a6/D/eQ==
   dependencies:
-    "@helium/address" "^4.10.2"
+    "@helium/address" "^4.11.1"
     "@helium/proto" "^1.6.0"
     "@types/libsodium-wrappers" "^0.7.8"
     long "^4.0.0"
@@ -2948,13 +2948,13 @@
     bn.js "^5.2.0"
     bs58 "^4.0.1"
 
-"@helium/wallet-link@4.8.3-next.58+7ab9a36":
-  version "4.8.3-next.58"
-  resolved "https://registry.yarnpkg.com/@helium/wallet-link/-/wallet-link-4.8.3-next.58.tgz#0395f2bc90e16c0b5369f38e70217b5fa988725d"
-  integrity sha512-zDMk9gzicwvlfHH5AKjivUOT0d3vX1AYN+uMfYX8oE/fHC2eW35r7gVjuytAKfYm1GpI91teK+OVN/hJnyEwNw==
+"@helium/wallet-link@4.11.0":
+  version "4.11.0"
+  resolved "https://registry.yarnpkg.com/@helium/wallet-link/-/wallet-link-4.11.0.tgz#6f4aba381473ba1552e547d02a8dbfbd0cdb5844"
+  integrity sha512-9KwXDV7QqdlGhB9fwyTl/P2NrW9b/Fyp1E1VLPiYbJ16C0uxJvlJgdHPeydcZZUDI8xHsqYFTVJC3xnX6zzyJg==
   dependencies:
-    "@helium/address" "^4.8.3-next.58+7ab9a36"
-    "@helium/transactions" "^4.8.3-next.58+7ab9a36"
+    "@helium/address" "^4.11.0"
+    "@helium/transactions" "^4.11.0"
     date-fns "^2.28.0"
     query-string "^7.1.1"
 
@@ -6059,7 +6059,7 @@ axios-retry@^3.3.1:
     "@babel/runtime" "^7.15.4"
     is-retry-allowed "^2.2.0"
 
-axios-retry@^3.4.0, axios-retry@^3.7.0:
+axios-retry@^3.7.0:
   version "3.9.1"
   resolved "https://registry.yarnpkg.com/axios-retry/-/axios-retry-3.9.1.tgz#c8924a8781c8e0a2c5244abf773deb7566b3830d"
   integrity sha512-8PJDLJv7qTTMMwdnbMvrLYuvB47M81wRtxQmEdV5w4rgbTXTt+vtPkXwajOfOdSyv/wZICJOC+/UhXH4aQ/R+w==
@@ -6082,13 +6082,6 @@ axios@^0.21.1, axios@^0.21.3:
   integrity sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==
   dependencies:
     follow-redirects "^1.14.0"
-
-axios@^0.24.0:
-  version "0.24.0"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-0.24.0.tgz#804e6fa1e4b9c5288501dd9dff56a7a0940d20d6"
-  integrity sha512-Q6cWsys88HoPgAaFAVUb0WpPk0O8iTeisR9IMqy9G8AbO4NlpVknrnQS03zzF9PGAWgO3cgletO3VjV/P7VztA==
-  dependencies:
-    follow-redirects "^1.14.4"
 
 axios@^0.25.0:
   version "0.25.0"
@@ -9217,7 +9210,7 @@ flow-parser@^0.185.0:
   resolved "https://registry.yarnpkg.com/flow-parser/-/flow-parser-0.185.2.tgz#cb7ee57f77377d6c5d69a469e980f6332a15e492"
   integrity sha512-2hJ5ACYeJCzNtiVULov6pljKOLygy0zddoqSI1fFetM+XRPpRshFdGEijtqlamA1XwyZ+7rhryI6FQFzvtLWUQ==
 
-follow-redirects@^1.14.0, follow-redirects@^1.14.4, follow-redirects@^1.14.7, follow-redirects@^1.15.0:
+follow-redirects@^1.14.0, follow-redirects@^1.14.7, follow-redirects@^1.15.0:
   version "1.15.3"
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.3.tgz#fe2f3ef2690afce7e82ed0b44db08165b207123a"
   integrity sha512-1VzOtuEM8pC9SFU1E+8KfTjZyMztRsgEfwQl44z8A25uy13jSzTj6dyK2Df52iV0vgHCfBwLhDWevLn95w5v6Q==
