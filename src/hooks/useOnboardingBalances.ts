@@ -88,11 +88,13 @@ export function useOnboardingBalnces(hotspotAddress: string | undefined): {
   )
   const { networkTokensToDc } = useBalance()
   const myDcWithHnt =
-    typeof myDc !== 'undefined' && typeof myHnt !== 'undefined'
+    !loadingMyDc && !loadingMyHnt
       ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        new BN(myDc!.toString()).add(
+        new BN(myDc?.toString() || '0').add(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          networkTokensToDc(new BN(myHnt!.toString()))!.div(new BN(100000000)),
+          networkTokensToDc(new BN(myHnt?.toString() || '0'))!.div(
+            new BN(100000000),
+          ),
         )
       : undefined
   const { info: iotSubDao, loading: loadingSubDao } = useSubDao(
