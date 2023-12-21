@@ -36,9 +36,9 @@ const markdownParser = MarkdownIt()
 export const ProposalCardSkeleton = (boxProps: BoxProps<Theme>) => (
   <ReAnimatedBox
     flex={1}
-    backgroundColor="secondaryBackground"
+    backgroundColor="black900"
     borderRadius="l"
-    padding="xxl"
+    padding="xxxl"
     entering={FadeIn}
     exiting={FadeOut}
     {...boxProps}
@@ -137,8 +137,8 @@ export const ProposalCard = ({
     () => getDerivedProposalState(proposal),
     [proposal],
   )
-  const isLoading = descLoading
 
+  const isLoading = descLoading
   const handleOnPress = useCallback(async () => {
     if (onPress) await onPress(mint, proposalKey)
   }, [mint, proposalKey, onPress])
