@@ -14,6 +14,7 @@ import { useOrganizationProposals } from '@helium/modular-governance-hooks'
 import CircleLoader from '@components/CircleLoader'
 import { useAsync } from 'react-async-hook'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { getDerivedProposalState } from '@utils/governanceUtils'
 import { ProposalCard } from './ProposalCard'
 import {
   GovernanceNavigationProp,
@@ -40,13 +41,27 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
 
   const proposals = useMemo(() => {
     const seen = new Set()
-    return proposalsWithDups?.filter((p) => {
-      const has = seen.has(p.info?.name)
-      seen.add(p.info?.name)
+    return proposalsWithDups
+      ?.filter((p) => {
+        const has = seen.has(p.info?.name)
+        seen.add(p.info?.name)
 
-      return !has
-    })
-  }, [proposalsWithDups])
+        return !has
+      })
+      .filter((proposal) => {
+        if (filter === 'all') return true
+        if (
+          filter === 'unseen' &&
+          currentAccount?.proposalIdsSeenByMint &&
+          !currentAccount?.proposalIdsSeenByMint[mint.toBase58()]?.includes(
+            proposal.publicKey.toBase58(),
+          )
+        ) {
+          return true
+        }
+        return getDerivedProposalState(proposal.info as ProposalV0) === filter
+      })
+  }, [mint, filter, currentAccount, proposalsWithDups])
 
   // If we have no record of proposals seen by mint, set it to all proposals
   // In order to prevent spamming the Ui with false positives of past proposals

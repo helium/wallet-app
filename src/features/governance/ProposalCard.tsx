@@ -22,6 +22,7 @@ import { Animated } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { getDerivedProposalState } from '@utils/governanceUtils'
 import { ProposalFilter, ProposalV0 } from './governanceTypes'
 
 interface IProposalCardProps extends BoxProps<Theme> {
@@ -44,7 +45,6 @@ export const ProposalCardSkeleton = (boxProps: BoxProps<Theme>) => (
   />
 )
 export const ProposalCard = ({
-  filter,
   proposal,
   proposalKey,
   onPress,
@@ -133,51 +133,15 @@ export const ProposalCard = ({
     return { totalVotes }
   }, [proposal])
 
-  const derivedState: Omit<ProposalFilter, 'all' | 'unseen'> | undefined =
-    useMemo(() => {
-      if (proposal?.state && proposal?.choices) {
-        const keys = Object.keys(proposal.state)
-        if (keys.includes('voting')) return 'active'
-        if (keys.includes('cancelled')) return 'cancelled'
-        if (keys.includes('resolved') && proposal.state.resolved) {
-          if (
-            (proposal.state.resolved.choices.length === 1 &&
-              proposal.choices[
-                proposal.state.resolved.choices[0]
-              ].name.startsWith('Yes')) ||
-            proposal.state.resolved.choices.length > 1 ||
-            proposal.state.resolved.choices.length === 0
-          ) {
-            return 'passed'
-          }
-
-          if (
-            proposal.state.resolved.choices.length === 1 &&
-            proposal.choices[
-              proposal.state.resolved.choices[0]
-            ].name.startsWith('No')
-          ) {
-            return 'failed'
-          }
-        }
-      }
-    }, [proposal?.state, proposal?.choices])
-
+  const derivedState = useMemo(
+    () => getDerivedProposalState(proposal as ProposalV0),
+    [proposal],
+  )
   const isLoading = descLoading
-  const isVisible = useMemo(() => {
-    if (!isLoading) {
-      if (!proposal) return false
-      if (filter === 'all') return true
-      if (filter === 'unseen' && !hasSeen) return true
-      return derivedState === filter
-    }
-  }, [filter, hasSeen, derivedState, proposal, isLoading])
-
   const handleOnPress = useCallback(async () => {
     if (onPress) await onPress(mint, proposalKey)
   }, [mint, proposalKey, onPress])
 
-  if (!isVisible) return null
   if (isLoading) {
     return <ProposalCardSkeleton {...boxProps} />
   }

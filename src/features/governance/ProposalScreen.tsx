@@ -32,12 +32,13 @@ import { Edge } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { getDerivedProposalState } from '@utils/governanceUtils'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { VoteOption } from './VoteOption'
 import {
   GovernanceStackParamList,
-  ProposalFilter,
+  ProposalV0,
   VoteChoiceWithMeta,
   VotingResultColors,
 } from './governanceTypes'
@@ -162,35 +163,10 @@ export const ProposalScreen = () => {
     return { results, totalVotes }
   }, [proposal])
 
-  const derivedState: Omit<ProposalFilter, 'all' | 'unseen'> | undefined =
-    useMemo(() => {
-      if (proposal?.state && proposal?.choices) {
-        const keys = Object.keys(proposal.state)
-        if (keys.includes('voting')) return 'active'
-        if (keys.includes('cancelled')) return 'cancelled'
-        if (keys.includes('resolved') && proposal.state.resolved) {
-          if (
-            (proposal.state.resolved.choices.length === 1 &&
-              proposal.choices[
-                proposal.state.resolved.choices[0]
-              ].name.startsWith('Yes')) ||
-            proposal.state.resolved.choices.length > 1 ||
-            proposal.state.resolved.choices.length === 0
-          ) {
-            return 'passed'
-          }
-
-          if (
-            proposal.state.resolved.choices.length === 1 &&
-            proposal.choices[
-              proposal.state.resolved.choices[0]
-            ].name.startsWith('No')
-          ) {
-            return 'failed'
-          }
-        }
-      }
-    }, [proposal?.state, proposal?.choices])
+  const derivedState = useMemo(
+    () => getDerivedProposalState(proposal as ProposalV0),
+    [proposal],
+  )
 
   const getDecision = async (header: string) => {
     let decision
