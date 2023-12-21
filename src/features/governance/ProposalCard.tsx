@@ -143,10 +143,7 @@ export const ProposalCard = ({
     if (onPress) await onPress(mint, proposalKey)
   }, [mint, proposalKey, onPress])
 
-  if (isLoading) {
-    return <ProposalCardSkeleton {...boxProps} />
-  }
-
+  if (isLoading) return null
   return (
     <ReAnimatedBox
       backgroundColor="secondaryBackground"
