@@ -139,22 +139,23 @@ export const ProposalCard = ({
         const keys = Object.keys(proposal.state)
         if (keys.includes('voting')) return 'active'
         if (keys.includes('cancelled')) return 'cancelled'
-        if (
-          keys.includes('resolved') &&
-          proposal.state.resolved &&
-          proposal.state.resolved.choices.length > 0
-        )
-          return 'passed'
-
         if (keys.includes('resolved') && proposal.state.resolved) {
-          if (proposal.state.resolved.choices.length === 0) {
-            // was a multi choice proposal
+          if (
+            (proposal.state.resolved.choices.length === 1 &&
+              proposal.choices[
+                proposal.state.resolved.choices[0]
+              ].name.startsWith('Yes')) ||
+            proposal.state.resolved.choices.length > 1 ||
+            proposal.state.resolved.choices.length === 0
+          ) {
             return 'passed'
           }
 
           if (
             proposal.state.resolved.choices.length === 1 &&
-            proposal.choices[proposal.state.resolved.choices[0]].name === 'No'
+            proposal.choices[
+              proposal.state.resolved.choices[0]
+            ].name.startsWith('No')
           ) {
             return 'failed'
           }
@@ -234,6 +235,27 @@ export const ProposalCard = ({
               </Box>
             </Box>
           )}
+          <Box flexDirection="row" marginBottom="s">
+            {proposal?.tags
+              .filter((tag) => tag !== 'tags')
+              .map((tag) => (
+                <Box key={tag} marginRight="s">
+                  <Box
+                    padding="s"
+                    backgroundColor={
+                      tag.toLowerCase().includes('temp check')
+                        ? 'orange500'
+                        : 'surfaceSecondary'
+                    }
+                    borderRadius="m"
+                  >
+                    <Text fontSize={10} color="secondaryText">
+                      {tag.toUpperCase()}
+                    </Text>
+                  </Box>
+                </Box>
+              ))}
+          </Box>
           <Box
             flexDirection="row"
             justifyContent="space-between"
@@ -242,27 +264,6 @@ export const ProposalCard = ({
             <Text variant="subtitle3" color="primaryText" flexShrink={1}>
               {proposal?.name}
             </Text>
-            <Box flexDirection="row">
-              {proposal?.tags
-                .filter((tag) => tag !== 'tags')
-                .map((tag) => (
-                  <Box key={tag} marginLeft="s">
-                    <Box
-                      padding="s"
-                      backgroundColor={
-                        tag.toLowerCase().includes('temp check')
-                          ? 'orange500'
-                          : 'surfaceSecondary'
-                      }
-                      borderRadius="m"
-                    >
-                      <Text fontSize={10} color="secondaryText">
-                        {tag.toUpperCase()}
-                      </Text>
-                    </Box>
-                  </Box>
-                ))}
-            </Box>
           </Box>
           {derivedState === 'active' && (
             <Text

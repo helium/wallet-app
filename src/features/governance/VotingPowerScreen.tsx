@@ -4,7 +4,7 @@ import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
-import { HNT_MINT, toBN, toNumber } from '@helium/spl-utils'
+import { HNT_MINT, Status, toBN, toNumber } from '@helium/spl-utils'
 import {
   calcLockupMultiplier,
   useClaimAllPositionsRewards,
@@ -39,6 +39,7 @@ export const VotingPowerScreen = () => {
   const { walletSignBottomSheetRef } = useWalletSign()
   const backEdges = useMemo(() => ['top'] as Edge[], [])
   const [isLockModalOpen, setIsLockModalOpen] = useState(false)
+  const [statusOfClaim, setStatusOfClaim] = useState<Status | undefined>()
   const {
     mint,
     registrar,
@@ -142,7 +143,10 @@ export const VotingPowerScreen = () => {
       const decision = await getDecision(t('gov.transactions.claimRewards'))
 
       if (decision) {
-        await claimAllPositionsRewards({ positions: positionsWithRewards })
+        await claimAllPositionsRewards({
+          positions: positionsWithRewards,
+          onProgress: setStatusOfClaim,
+        })
 
         if (!claimingAllRewardsError) {
           await refetchState()
@@ -229,7 +233,12 @@ export const VotingPowerScreen = () => {
           </Box>
         </BackScreen>
       </ReAnimatedBox>
-      {claimingAllRewards && <ClaimingRewardsModal />}
+      {claimingAllRewards && (
+        <ClaimingRewardsModal
+          status={statusOfClaim}
+          positions={positionsWithRewards}
+        />
+      )}
       {isLockModalOpen && (
         <LockTokensModal
           mint={mint}

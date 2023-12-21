@@ -168,22 +168,23 @@ export const ProposalScreen = () => {
         const keys = Object.keys(proposal.state)
         if (keys.includes('voting')) return 'active'
         if (keys.includes('cancelled')) return 'cancelled'
-        if (
-          keys.includes('resolved') &&
-          proposal.state.resolved &&
-          proposal.state.resolved.choices.length > 0
-        )
-          return 'passed'
-
         if (keys.includes('resolved') && proposal.state.resolved) {
-          if (proposal.state.resolved.choices.length === 0) {
-            // was a multi choice proposal
+          if (
+            (proposal.state.resolved.choices.length === 1 &&
+              proposal.choices[
+                proposal.state.resolved.choices[0]
+              ].name.startsWith('Yes')) ||
+            proposal.state.resolved.choices.length > 1 ||
+            proposal.state.resolved.choices.length === 0
+          ) {
             return 'passed'
           }
 
           if (
             proposal.state.resolved.choices.length === 1 &&
-            proposal.choices[proposal.state.resolved.choices[0]].name === 'No'
+            proposal.choices[
+              proposal.state.resolved.choices[0]
+            ].name.startsWith('No')
           ) {
             return 'failed'
           }

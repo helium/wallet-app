@@ -158,21 +158,6 @@ export const TransferTokensModal = ({
                   >
                     {t('gov.positions.transferBlurb')}
                   </Text>
-                  {!hasTransferablePositions && (
-                    <Box
-                      borderRadius="l"
-                      backgroundColor="secondary"
-                      padding="m"
-                      marginBottom="m"
-                    >
-                      <Text variant="body3">
-                        {t('gov.positions.transferWarning')}
-                      </Text>
-                      <Text marginTop="m" variant="body3" color="flamenco">
-                        {t('gov.positions.cantTransfer')}
-                      </Text>
-                    </Box>
-                  )}
                   <Box
                     borderRadius="l"
                     backgroundColor="secondary"
@@ -182,9 +167,15 @@ export const TransferTokensModal = ({
                     <Text variant="body3">
                       {t('gov.positions.transferWarning')}
                     </Text>
-                    <Text marginTop="m" variant="body3">
-                      {t('gov.positions.transferLandrushWarning')}
-                    </Text>
+                    {!hasTransferablePositions ? (
+                      <Text marginTop="m" variant="body3" color="flamenco">
+                        {t('gov.positions.cantTransfer')}
+                      </Text>
+                    ) : (
+                      <Text marginTop="m" variant="body3">
+                        {t('gov.positions.transferLandrushWarning')}
+                      </Text>
+                    )}
                   </Box>
                   {hasTransferablePositions && (
                     <>

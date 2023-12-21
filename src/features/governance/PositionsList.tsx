@@ -24,8 +24,8 @@ export const PositionsList = ({
   const colors = useColors()
 
   const loading = useMemo(
-    () => !subDaos || loadingSubDaos,
-    [subDaos, loadingSubDaos],
+    () => !subDaos || loadingSubDaos || !positions.length,
+    [subDaos, loadingSubDaos, positions],
   )
 
   const sortedPositions = useMemo(
@@ -91,7 +91,7 @@ export const PositionsList = ({
           sortedPositions?.map((p, idx) => (
             <PositionCard
               // eslint-disable-next-line react/no-array-index-key
-              key={`${p.pubkey.toBase58()}${p.amountDepositedNative.toString()}-${idx}}`}
+              key={`${p.pubkey.toBase58()}-${p.amountDepositedNative.toString()}-${idx}`}
               position={p}
               marginTop={idx > 0 ? 'm' : 'none'}
               subDaos={subDaos}

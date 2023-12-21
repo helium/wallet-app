@@ -1154,7 +1154,7 @@ export default {
           title: 'How to Vote',
         },
         {
-          body: 'Your <primaryText>Vote Power</primaryText>\nis determined by the amount of\nHNT, MOBILE, IOT that you have\nlocked up in the account.\n\nLocked HNT can be delegated\nto SubDaos for rewards.',
+          body: 'Your <primaryText>Vote Power</primaryText>\nis determined by the amount of\nHNT, MOBILE, IOT that you have\nlocked up in the account.\n\nLocked HNT can be delegated\nto SubNetworks for rewards.',
           title: 'Vote Power',
         },
         {
@@ -1218,7 +1218,7 @@ export default {
         'Transfering out of a Landrush position, will result in losing the multiplier!',
       cantTransfer: 'There are no positions that meet this criteria.',
       selectTransfer: 'Select position to transfer too.',
-      selectSubDao: 'Select a existing SubDao to delegate to.',
+      selectSubDao: 'Select a existing SubNetwork to delegate to.',
       fetchingSubDaos: 'Fetching SubDaos...',
     },
     proposals: {
