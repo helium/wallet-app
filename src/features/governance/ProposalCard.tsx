@@ -134,10 +134,11 @@ export const ProposalCard = ({
   }, [proposal])
 
   const derivedState = useMemo(
-    () => getDerivedProposalState(proposal as ProposalV0),
+    () => getDerivedProposalState(proposal),
     [proposal],
   )
   const isLoading = descLoading
+
   const handleOnPress = useCallback(async () => {
     if (onPress) await onPress(mint, proposalKey)
   }, [mint, proposalKey, onPress])
