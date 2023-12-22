@@ -233,12 +233,7 @@ export const VotingPowerScreen = () => {
           </Box>
         </BackScreen>
       </ReAnimatedBox>
-      {claimingAllRewards && (
-        <ClaimingRewardsModal
-          status={statusOfClaim}
-          positions={positionsWithRewards}
-        />
-      )}
+      {claimingAllRewards && <ClaimingRewardsModal status={statusOfClaim} />}
       {isLockModalOpen && (
         <LockTokensModal
           mint={mint}

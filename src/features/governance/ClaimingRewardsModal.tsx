@@ -11,29 +11,26 @@ import { useTranslation } from 'react-i18next'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { Status } from '@helium/spl-utils'
 import ProgressBar from '@components/ProgressBar'
-import { PositionWithMeta } from '@helium/voter-stake-registry-hooks'
 
-export const ClaimingRewardsModal = ({
-  status,
-  positions,
-}: {
-  status?: Status
-  positions?: PositionWithMeta[]
-}) => {
+export const ClaimingRewardsModal = ({ status }: { status?: Status }) => {
   const { t } = useTranslation()
   const { currentAccount } = useAccountStorage()
   const edges = useMemo(() => ['bottom'] as Edge[], [])
   const { helpText, percent } = useMemo(() => {
     if (!status) return { helpText: 'Preparing Transactions...', percent: 0 }
-    const totalTxns = positions?.length || 0
+    const { totalTxs, totalProgress, currentBatchSize } = status
+
+    const remainingTxs = totalTxs - totalProgress
+    const actualBatchSize =
+      totalTxs < currentBatchSize ? totalTxs : currentBatchSize
 
     return {
-      helpText: `Sending batch of ${status.currentBatchSize} transactions.\n${
-        totalTxns - (status.currentBatchProgress - 1)
-      } total transactions remaning.`,
-      percent: (status.totalProgress * 100) / totalTxns,
+      helpText: `Sending batch of ${actualBatchSize} transactions.\n${remainingTxs} total transaction${
+        remainingTxs > 1 ? 's' : ''
+      } remaning.`,
+      percent: (totalProgress * 100) / totalTxs,
     }
-  }, [status, positions])
+  }, [status])
 
   return (
     <Portal hostName="GovernancePortalHost">
