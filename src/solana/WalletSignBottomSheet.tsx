@@ -53,7 +53,7 @@ const WalletSignBottomSheet = forwardRef(
     const wallet = useCurrentWallet()
     const solBalance = useBN(useSolOwnedAmount(wallet).amount)
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-    const [totalSolFee, setTotalSolFee] = useState(0)
+    const [totalSolFeeByTx, setTotalSolFeeByTx] = useState<number[]>([])
     const [isVisible, setIsVisible] = useState(false)
     const [nestedInsufficentFunds, setNestedInsufficentFunds] = useState(false)
     const [walletSignOpts, setWalletSignOpts] = useState<WalletSignOpts>({
@@ -85,6 +85,10 @@ const WalletSignBottomSheet = forwardRef(
       setCurrentPage((page) => page + 1)
     }, [setCurrentPage])
 
+    const totalSolFee = useMemo(
+      () => totalSolFeeByTx.reduce((a, b) => a + b, 0),
+      [totalSolFeeByTx],
+    )
     const estimatedTotalSolByLamports = useMemo(() => {
       const { serializedTxs } = walletSignOpts
 
@@ -144,7 +148,7 @@ const WalletSignBottomSheet = forwardRef(
         header,
       }: WalletSignOpts) => {
         bottomSheetModalRef.current?.expand()
-        setTotalSolFee(0)
+        setTotalSolFeeByTx(new Array(serializedTxs?.length || 0).fill(5000))
         setIsVisible(true)
         setWalletSignOpts({
           type,
@@ -208,10 +212,12 @@ const WalletSignBottomSheet = forwardRef(
     }, [hide])
 
     const incrementTotalSolFee = useCallback(
-      (fee: number) => {
-        setTotalSolFee((currentFee) => currentFee + fee)
+      (idx: number, fee: number) => {
+        setTotalSolFeeByTx((current) =>
+          current.map((item, index) => (index === idx ? fee : item)),
+        )
       },
-      [setTotalSolFee],
+      [setTotalSolFeeByTx],
     )
 
     useEffect(() => {
@@ -367,8 +373,8 @@ const WalletSignBottomSheet = forwardRef(
                     flex={1}
                     maxHeight={
                       (walletSignOpts?.serializedTxs?.length || 0) > 1
-                        ? 214
-                        : 180
+                        ? 274
+                        : 250
                     }
                     paddingTop="m"
                   >
@@ -389,11 +395,7 @@ const WalletSignBottomSheet = forwardRef(
                       </Box>
                     )}
                     {isVisible && currentTxs && (
-                      <ScrollView
-                        scrollEnabled={
-                          (walletSignOpts?.serializedTxs?.length || 0) > 1
-                        }
-                      >
+                      <ScrollView>
                         {currentTxs.map((tx, idx) => (
                           <WalletSignBottomSheetTransaction
                             // eslint-disable-next-line react/no-array-index-key

@@ -1,6 +1,6 @@
 import { init as initDataCredits } from '@helium/data-credits-sdk'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
-import { DC_MINT, sendAndConfirmWithRetry } from '@helium/spl-utils'
+import { DC_MINT, sendAndConfirmWithRetry, withPriorityFees } from '@helium/spl-utils'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import {
   createAssociatedTokenAccountIdempotentInstruction,
@@ -44,24 +44,30 @@ export function useImplicitBurn(): {
           .blockhash,
       })
       burnTx.add(
-        await program.methods
-          .mintDataCreditsV0({
-            hntAmount: null,
-            dcAmount: new BN(dcDeficit.toString()),
-          })
-          .preInstructions([
-            createAssociatedTokenAccountIdempotentInstruction(
-              wallet,
-              getAssociatedTokenAddressSync(DC_MINT, wallet, true),
-              wallet,
-              DC_MINT,
-            ),
-          ])
-          .accounts({
-            dcMint: DC_MINT,
-            recipient: wallet,
-          })
-          .instruction(),
+        ...(await withPriorityFees({
+          connection: anchorProvider.connection,
+          computeUnits: 120000,
+          instructions: [
+            await program.methods
+              .mintDataCreditsV0({
+                hntAmount: null,
+                dcAmount: new BN(dcDeficit.toString()),
+              })
+              .preInstructions([
+                createAssociatedTokenAccountIdempotentInstruction(
+                  wallet,
+                  getAssociatedTokenAddressSync(DC_MINT, wallet, true),
+                  wallet,
+                  DC_MINT,
+                ),
+              ])
+              .accounts({
+                dcMint: DC_MINT,
+                recipient: wallet,
+              })
+              .instruction(),
+          ],
+        })),
       )
       if (!walletSignBottomSheetRef) {
         throw new Error('No wallet bottom sheet')
