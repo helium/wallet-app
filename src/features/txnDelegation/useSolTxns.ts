@@ -467,11 +467,14 @@ const useSolTxns = (
         configMsg?.azimuth !== undefined &&
         configMsg?.height !== undefined
       ) {
-        const keypair = await getKeypair(currentAccount.address)
+        const keypair = await getKeypair(heliumAddress)
         if (!keypair) {
           return
         }
-        const signedMsg = await keypair.sign(configMsgStr)
+        const configMessage = Uint8Array.from(
+          Buffer.from(configMsgStr, 'base64'),
+        )
+        const signedMsg = await keypair.sign(configMessage)
         responseParams.configurationMessage =
           Buffer.from(signedMsg).toString('base64')
       }
