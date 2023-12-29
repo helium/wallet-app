@@ -1,10 +1,14 @@
-import React, { memo, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
+import InfoIcon from '@assets/images/info.svg'
 import Box from '@components/Box'
+import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
 import { useSimulatedTransaction } from '@hooks/useSimulatedTransaction'
 import { LAMPORTS_PER_SOL } from '@solana/web3.js'
-import CircleLoader from '@components/CircleLoader'
+import BN from 'bn.js'
+import React, { memo, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { TouchableOpacity } from 'react-native'
+import { humanReadable } from '../utils/solanaUtils'
 import { useSolana } from './SolanaProvider'
 
 const WalletSignBottomSheetTransaction = ({
@@ -17,19 +21,21 @@ const WalletSignBottomSheetTransaction = ({
   transaction: Buffer
   transactionIdx: number
   totalTransactions: number
-  incrementTotalSolFee: (fee: number) => void
+  incrementTotalSolFee: (idx: number, fee: number) => void
   setNestedInsufficentFunds: React.Dispatch<React.SetStateAction<boolean>>
 }) => {
   const { anchorProvider } = useSolana()
   const { t } = useTranslation()
-  const { loading, balanceChanges, solFee, insufficientFunds } =
+  const { loading, balanceChanges, solFee, priorityFee, insufficientFunds } =
     useSimulatedTransaction(transaction, anchorProvider?.publicKey)
+
+  const [prioDescriptionVisible, setPrioDescriptionVisible] = useState(false)
 
   useEffect(() => {
     if (solFee) {
-      incrementTotalSolFee(solFee)
+      incrementTotalSolFee(transactionIdx, solFee + (priorityFee || 0))
     }
-  }, [solFee, incrementTotalSolFee])
+  }, [priorityFee, solFee, transactionIdx, incrementTotalSolFee])
 
   useEffect(() => {
     if (insufficientFunds) {
@@ -38,7 +44,7 @@ const WalletSignBottomSheetTransaction = ({
   }, [insufficientFunds, setNestedInsufficentFunds])
 
   return (
-    <Box marginBottom="m">
+    <Box marginBottom="m" flexDirection="column">
       {loading && (
         <Box
           borderRadius="l"
@@ -130,23 +136,46 @@ const WalletSignBottomSheetTransaction = ({
               })}
             </Box>
           )}
-
           {solFee && (
             <Box
               borderBottomStartRadius="l"
               borderBottomEndRadius="l"
               backgroundColor="secondaryBackground"
               padding="m"
-              flexDirection="row"
+              flexDirection="column"
             >
-              <Box flexGrow={1}>
-                <Text variant="body1Medium">
-                  {t('browserScreen.networkFee')}
+              <Box flexDirection="row">
+                <Box flexGrow={1}>
+                  <Text variant="body1Medium">
+                    {t('browserScreen.networkFee')}
+                  </Text>
+                </Box>
+                <Text variant="body1Medium" color="secondaryText">
+                  {`~${solFee / LAMPORTS_PER_SOL} SOL`}
                 </Text>
               </Box>
-              <Text variant="body1Medium" color="secondaryText">
-                {`~${solFee / LAMPORTS_PER_SOL} SOL`}
-              </Text>
+              {priorityFee && (
+                <Box flexDirection="row">
+                  <Box flexGrow={1} flexDirection="row" alignItems="center">
+                    <Text variant="body1Medium" mr="s">
+                      {t('browserScreen.priorityFee')}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => setPrioDescriptionVisible((prev) => !prev)}
+                    >
+                      <InfoIcon width={15} height={15} />
+                    </TouchableOpacity>
+                  </Box>
+                  <Text variant="body1Medium" color="secondaryText">
+                    {`~${humanReadable(new BN(priorityFee), 9)} SOL`}
+                  </Text>
+                </Box>
+              )}
+              {prioDescriptionVisible && (
+                <Text mt="s" variant="body2" color="secondaryText">
+                  {t('browserScreen.priorityFeeDescription')}
+                </Text>
+              )}
             </Box>
           )}
         </Box>

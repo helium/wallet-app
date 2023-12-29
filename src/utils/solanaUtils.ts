@@ -40,6 +40,7 @@ import {
   sendAndConfirmWithRetry,
   toBN,
   truthy,
+  withPriorityFees,
 } from '@helium/spl-utils'
 import * as tm from '@helium/treasury-management-sdk'
 import {
@@ -262,10 +263,13 @@ export const createTransferSolTxn = async (
 
   const transaction = new Transaction()
 
-  instructions.forEach((instruction) => {
-    transaction.add(instruction)
-  })
-
+  transaction.add(
+    ...(await withPriorityFees({
+      connection: anchorProvider.connection,
+      computeUnits: 20000 * instructions.length,
+      instructions,
+    })),
+  )
   transaction.feePayer = payer
   transaction.recentBlockhash = blockhash
 
@@ -323,9 +327,13 @@ export const createTransferTxn = async (
 
   const transaction = new Transaction()
 
-  instructions.forEach((instruction) => {
-    transaction.add(instruction)
-  })
+  transaction.add(
+    ...(await withPriorityFees({
+      computeUnits: 20000 * instructions.length,
+      connection: anchorProvider.connection,
+      instructions,
+    })),
+  )
 
   transaction.feePayer = payer
   transaction.recentBlockhash = blockhash
@@ -574,10 +582,13 @@ export const transferCollectable = async (
     const { blockhash } = await conn.getLatestBlockhash()
 
     const transaction = new Transaction()
-
-    instructions.forEach((instruction) => {
-      transaction.add(instruction)
-    })
+    transaction.add(
+      ...(await withPriorityFees({
+        connection: anchorProvider.connection,
+        instructions,
+        computeUnits: 20000,
+      })),
+    )
 
     transaction.recentBlockhash = blockhash
     transaction.feePayer = payer
@@ -627,7 +638,7 @@ export const mintDataCredits = async ({
 
     const program = await dc.init(anchorProvider)
 
-    const tx = await program.methods
+    const ix = await program.methods
       .mintDataCreditsV0({
         hntAmount: null,
         dcAmount,
@@ -636,7 +647,16 @@ export const mintDataCredits = async ({
         dcMint: DC_MINT,
         recipient,
       })
-      .transaction()
+      .instruction()
+
+    const tx = new Transaction()
+    tx.add(
+      ...(await withPriorityFees({
+        connection: anchorProvider.connection,
+        instructions: [ix],
+        computeUnits: 120000,
+      })),
+    )
 
     const { blockhash } = await connection.getLatestBlockhash()
 
@@ -685,10 +705,13 @@ export const delegateDataCredits = async (
     const { blockhash } = await connection.getLatestBlockhash()
 
     const transaction = new Transaction()
-
-    instructions.forEach((instruction) => {
-      transaction.add(instruction)
-    })
+    transaction.add(
+      ...(await withPriorityFees({
+        computeUnits: 80000,
+        connection: anchorProvider.connection,
+        instructions,
+      })),
+    )
 
     transaction.recentBlockhash = blockhash
     transaction.feePayer = payer
@@ -856,10 +879,13 @@ export const transferCompressedCollectable = async (
     const { blockhash } = await conn.getLatestBlockhash()
 
     const transaction = new Transaction()
-
-    instructions.forEach((instruction) => {
-      transaction.add(instruction)
-    })
+    transaction.add(
+      ...(await withPriorityFees({
+        connection: anchorProvider.connection,
+        instructions,
+        computeUnits: 120000,
+      })),
+    )
 
     transaction.recentBlockhash = blockhash
     transaction.feePayer = payer
@@ -1424,7 +1450,7 @@ export async function createTreasurySwapTxn(
     const fromMintAcc = await getMint(conn, fromMint)
     const treasuryManagement = tm.treasuryManagementKey(fromMint)[0]
 
-    const tx = await program.methods
+    const ix = await program.methods
       .redeemV0({
         amount: toBN(amount, fromMintAcc.decimals),
         expectedOutputAmount: new BN(0),
@@ -1436,7 +1462,16 @@ export async function createTreasurySwapTxn(
         treasuryManagement,
         to: getAssociatedTokenAddressSync(HNT_MINT, recipient, true),
       })
-      .transaction()
+      .instruction()
+
+    const tx = new Transaction()
+    tx.add(
+      ...(await withPriorityFees({
+        connection: conn,
+        instructions: [ix],
+        computeUnits: 350000,
+      })),
+    )
 
     const { blockhash } = await conn.getLatestBlockhash('recent')
     tx.recentBlockhash = blockhash
