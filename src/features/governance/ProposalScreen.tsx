@@ -11,28 +11,33 @@ import {
   useResolutionSettings,
 } from '@helium/modular-governance-hooks'
 import {
+  batchInstructionsToTxsWithPriorityFee,
+  bulkSendTransactions,
+} from '@helium/spl-utils'
+import {
   useRegistrar,
   useRelinquishVote,
   useVote,
 } from '@helium/voter-stake-registry-hooks'
 import { RouteProp, useRoute } from '@react-navigation/native'
 import { useTheme } from '@shopify/restyle'
-import { PublicKey } from '@solana/web3.js'
+import { PublicKey, TransactionInstruction } from '@solana/web3.js'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useGovernance } from '@storage/GovernanceProvider'
 import globalStyles from '@theme/globalStyles'
 import { Theme } from '@theme/theme'
+import { getTimeFromNowFmt } from '@utils/dateTools'
 import { humanReadable } from '@utils/formatting'
+import { getDerivedProposalState } from '@utils/governanceUtils'
 import axios from 'axios'
 import BN from 'bn.js'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
+import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
 import Markdown from 'react-native-markdown-display'
 import { Edge } from 'react-native-safe-area-context'
-import { useTranslation } from 'react-i18next'
-import { getTimeFromNowFmt } from '@utils/dateTools'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { getDerivedProposalState } from '@utils/governanceUtils'
+import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { VoteOption } from './VoteOption'
@@ -56,6 +61,7 @@ export const ProposalScreen = () => {
     () => new PublicKey(route.params.proposal),
     [route.params.proposal],
   )
+  const { anchorProvider } = useSolana()
   const { walletSignBottomSheetRef } = useWalletSign()
   const { mint, setMint, loading, amountLocked } = useGovernance()
   const { info: proposal } = useProposal(proposalKey)
@@ -168,40 +174,52 @@ export const ProposalScreen = () => {
     [proposal],
   )
 
-  const getDecision = async (header: string) => {
-    let decision
+  const decideAndExecute = async (
+    header: string,
+    instructions: TransactionInstruction[],
+  ) => {
+    if (!anchorProvider || !walletSignBottomSheetRef) return
 
-    if (walletSignBottomSheetRef) {
-      decision = await walletSignBottomSheetRef.show({
-        type: WalletStandardMessageTypes.signTransaction,
-        url: '',
-        header,
-        serializedTxs: undefined,
-      })
+    const transactions = await batchInstructionsToTxsWithPriorityFee(
+      anchorProvider,
+      instructions,
+    )
+
+    const decision = await walletSignBottomSheetRef.show({
+      type: WalletStandardMessageTypes.signTransaction,
+      url: '',
+      header,
+      serializedTxs: transactions.map((transaction) =>
+        transaction.serialize({ requireAllSignatures: false }),
+      ),
+    })
+
+    if (decision) {
+      await bulkSendTransactions(anchorProvider, transactions)
+    } else {
+      throw new Error('User rejected transaction')
     }
-
-    return decision
   }
 
   const handleVote = (choice: VoteChoiceWithMeta) => async () => {
     if (canVote(choice.index)) {
-      const decision = await getDecision(t('gov.transctions.castVote'))
-
-      if (decision) {
-        setCurrVote(choice.index)
-        vote({ choice: choice.index })
-      }
+      setCurrVote(choice.index)
+      await vote({
+        choice: choice.index,
+        onInstructions: (ixs) =>
+          decideAndExecute(t('gov.transctions.castVote'), ixs),
+      })
     }
   }
 
   const handleRelinquish = (choice: VoteChoiceWithMeta) => async () => {
     if (canRelinquishVote(choice.index)) {
-      const decision = await getDecision(t('gov.transactions.relinquishVote'))
-
-      if (decision) {
-        setCurrVote(choice.index)
-        relinquishVote({ choice: choice.index })
-      }
+      setCurrVote(choice.index)
+      relinquishVote({
+        choice: choice.index,
+        onInstructions: async (instructions) =>
+          decideAndExecute(t('gov.transactions.relinquishVote'), instructions),
+      })
     }
   }
 

@@ -312,13 +312,7 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
               </Text>
             </Box>
           )}
-          {symbol && (
-            <AccountTokenCurrencyBalance
-              variant="subtitle4"
-              color="secondaryText"
-              ticker={symbol.toUpperCase()}
-            />
-          )}
+          <Text color="secondaryText">-</Text>
         </Box>
         <Arrow />
       </TouchableContainer>

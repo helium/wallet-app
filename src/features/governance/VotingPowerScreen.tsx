@@ -3,32 +3,40 @@ import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import { DelayedFadeIn } from '@components/FadeInOut'
+import Text from '@components/Text'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
-import { HNT_MINT, Status, toBN, toNumber } from '@helium/spl-utils'
+import {
+  HNT_MINT,
+  Status,
+  batchInstructionsToTxsWithPriorityFee,
+  bulkSendTransactions,
+  toBN,
+  toNumber,
+} from '@helium/spl-utils'
 import {
   calcLockupMultiplier,
   useClaimAllPositionsRewards,
   useCreatePosition,
 } from '@helium/voter-stake-registry-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { RouteProp, useRoute } from '@react-navigation/native'
+import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import globalStyles from '@theme/globalStyles'
 import { daysToSecs } from '@utils/dateTools'
 import BN from 'bn.js'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import Text from '@components/Text'
-import { useTranslation } from 'react-i18next'
-import { RouteProp, useRoute } from '@react-navigation/native'
-import { PublicKey } from '@solana/web3.js'
+import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
+import { ClaimingRewardsModal } from './ClaimingRewardsModal'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { PositionsList } from './PositionsList'
 import { VotingPowerCard } from './VotingPowerCard'
 import { GovernanceStackParamList } from './governanceTypes'
-import { ClaimingRewardsModal } from './ClaimingRewardsModal'
 
 type Route = RouteProp<GovernanceStackParamList, 'VotingPowerScreen'>
 
@@ -104,53 +112,64 @@ export const VotingPowerScreen = () => {
     [mint, registrar],
   )
 
-  const getDecision = async (header: string) => {
-    let decision
+  const { anchorProvider } = useSolana()
 
-    if (walletSignBottomSheetRef) {
-      decision = await walletSignBottomSheetRef.show({
-        type: WalletStandardMessageTypes.signTransaction,
-        url: '',
-        header,
-        serializedTxs: undefined,
-      })
+  const decideAndExecute = async (
+    header: string,
+    instructions: TransactionInstruction[],
+  ) => {
+    if (!anchorProvider || !walletSignBottomSheetRef) return
+
+    const transactions = await batchInstructionsToTxsWithPriorityFee(
+      anchorProvider,
+      instructions,
+    )
+
+    const decision = await walletSignBottomSheetRef.show({
+      type: WalletStandardMessageTypes.signTransaction,
+      url: '',
+      header,
+      serializedTxs: transactions.map((transaction) =>
+        transaction.serialize({ requireAllSignatures: false }),
+      ),
+    })
+
+    if (decision) {
+      await bulkSendTransactions(anchorProvider, transactions)
+    } else {
+      throw new Error('User rejected transaction')
     }
-
-    return decision
   }
 
   const handleLockTokens = async (values: LockTokensModalFormValues) => {
     const { amount, lockupPeriodInDays, lockupKind } = values
     if (decimals && walletSignBottomSheetRef) {
       const amountToLock = toBN(amount, decimals)
-      const decision = await getDecision(t('gov.transactions.lockTokens'))
 
-      if (decision) {
-        await createPosition({
-          amount: amountToLock,
-          lockupPeriodsInDays: lockupPeriodInDays,
-          lockupKind: lockupKind.value,
-          mint,
-        })
+      await createPosition({
+        amount: amountToLock,
+        lockupPeriodsInDays: lockupPeriodInDays,
+        lockupKind: lockupKind.value,
+        mint,
+        onInstructions: (ixs) =>
+          decideAndExecute(t('gov.transactions.lockTokens'), ixs),
+      })
 
-        await refetchState()
-      }
+      await refetchState()
     }
   }
 
   const handleClaimRewards = async () => {
     if (positionsWithRewards && walletSignBottomSheetRef) {
-      const decision = await getDecision(t('gov.transactions.claimRewards'))
+      await claimAllPositionsRewards({
+        positions: positionsWithRewards,
+        onProgress: setStatusOfClaim,
+        onInstructions: (ixs) =>
+          decideAndExecute(t('gov.transactions.claimRewards'), ixs),
+      })
 
-      if (decision) {
-        await claimAllPositionsRewards({
-          positions: positionsWithRewards,
-          onProgress: setStatusOfClaim,
-        })
-
-        if (!claimingAllRewardsError) {
-          await refetchState()
-        }
+      if (!claimingAllRewardsError) {
+        await refetchState()
       }
     }
   }

@@ -1,12 +1,20 @@
 /* eslint-disable @typescript-eslint/no-shadow */
+import { ReAnimatedBox } from '@components/AnimatedBox'
 import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
+import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import ListItem from '@components/ListItem'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useMint, useSolanaUnixNow } from '@helium/helium-react-hooks'
-import { HNT_MINT, humanReadable, toNumber } from '@helium/spl-utils'
+import {
+  HNT_MINT,
+  batchInstructionsToTxsWithPriorityFee,
+  bulkSendTransactions,
+  humanReadable,
+  toNumber,
+} from '@helium/spl-utils'
 import {
   PositionWithMeta,
   SubDaoWithMeta,
@@ -23,8 +31,10 @@ import {
 import useAlert from '@hooks/useAlert'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
+import { TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { Theme } from '@theme/theme'
+import { useCreateOpacity } from '@theme/themeHooks'
 import {
   daysToSecs,
   getMinDurationFmt,
@@ -33,11 +43,9 @@ import {
 } from '@utils/dateTools'
 import BN from 'bn.js'
 import React, { useCallback, useMemo, useState } from 'react'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useTranslation } from 'react-i18next'
-import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
-import { useCreateOpacity } from '@theme/themeHooks'
+import { FadeIn, FadeOut } from 'react-native-reanimated'
+import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { DelegateTokensModal } from './DelegateTokensModal'
@@ -125,19 +133,33 @@ export const PositionCard = ({
 
   const { info: registrar = null } = useRegistrar(position.registrar)
 
-  const getDecision = async (header: string) => {
-    let decision
+  const { anchorProvider } = useSolana()
 
-    if (walletSignBottomSheetRef) {
-      decision = await walletSignBottomSheetRef.show({
-        type: WalletStandardMessageTypes.signTransaction,
-        url: '',
-        header,
-        serializedTxs: undefined,
-      })
+  const decideAndExecute = async (
+    header: string,
+    instructions: TransactionInstruction[],
+  ) => {
+    if (!anchorProvider || !walletSignBottomSheetRef) return
+
+    const transactions = await batchInstructionsToTxsWithPriorityFee(
+      anchorProvider,
+      instructions,
+    )
+
+    const decision = await walletSignBottomSheetRef.show({
+      type: WalletStandardMessageTypes.signTransaction,
+      url: '',
+      header,
+      serializedTxs: transactions.map((transaction) =>
+        transaction.serialize({ requireAllSignatures: false }),
+      ),
+    })
+
+    if (decision) {
+      await bulkSendTransactions(anchorProvider, transactions)
+    } else {
+      throw new Error('User rejected transaction')
     }
-
-    return decision
   }
 
   const handleCalcLockupMultiplier = useCallback(
@@ -246,62 +268,59 @@ export const PositionCard = ({
   }, [transactionError])
 
   const handleClosePosition = async () => {
-    const decision = await getDecision(t('gov.transactions.closePosition'))
+    await closePosition({
+      position,
+      onInstructions: (ixs) =>
+        decideAndExecute(t('gov.transactions.closePosition'), ixs),
+    })
 
-    if (decision) {
-      await closePosition({ position })
-
-      if (!closingError) {
-        await refetchState()
-      }
+    if (!closingError) {
+      await refetchState()
     }
   }
 
   const handleFlipPositionLockupKind = async () => {
-    const decision = await getDecision(
-      isConstant
-        ? t('gov.transactions.unpauseLockup')
-        : t('gov.transactions.pauseLockup'),
-    )
+    await flipPositionLockupKind({
+      position,
+      onInstructions: (ixs) =>
+        decideAndExecute(
+          isConstant
+            ? t('gov.transactions.unpauseLockup')
+            : t('gov.transactions.pauseLockup'),
+          ixs,
+        ),
+    })
 
-    if (decision) {
-      await flipPositionLockupKind({ position })
-
-      if (!flippingError) {
-        await refetchState()
-      }
+    if (!flippingError) {
+      await refetchState()
     }
   }
 
   const handleExtendTokens = async (values: LockTokensModalFormValues) => {
-    const decision = await getDecision(t('gov.transactions.extendLockup'))
+    await extendPosition({
+      position,
+      lockupPeriodsInDays: values.lockupPeriodInDays,
+      onInstructions: (ixs) =>
+        decideAndExecute(t('gov.transactions.extendLockup'), ixs),
+    })
 
-    if (decision) {
-      await extendPosition({
-        position,
-        lockupPeriodsInDays: values.lockupPeriodInDays,
-      })
-
-      if (!extendingError) {
-        await refetchState()
-      }
+    if (!extendingError) {
+      await refetchState()
     }
   }
 
   const handleSplitTokens = async (values: LockTokensModalFormValues) => {
-    const decision = await getDecision(t('gov.transactions.splitPosition'))
+    await splitPosition({
+      sourcePosition: position,
+      amount: values.amount,
+      lockupKind: values.lockupKind.value,
+      lockupPeriodsInDays: values.lockupPeriodInDays,
+      onInstructions: (ixs) =>
+        decideAndExecute(t('gov.transactions.splitPosition'), ixs),
+    })
 
-    if (decision) {
-      await splitPosition({
-        sourcePosition: position,
-        amount: values.amount,
-        lockupKind: values.lockupKind.value,
-        lockupPeriodsInDays: values.lockupPeriodInDays,
-      })
-
-      if (!splitingError) {
-        await refetchState()
-      }
+    if (!splitingError) {
+      await refetchState()
     }
   }
 
@@ -309,45 +328,41 @@ export const PositionCard = ({
     targetPosition: PositionWithMeta,
     amount: number,
   ) => {
-    const decision = await getDecision(t('gov.transactions.transferPosition'))
+    await transferPosition({
+      sourcePosition: position,
+      amount,
+      targetPosition,
+      onInstructions: (ixs) =>
+        decideAndExecute(t('gov.transactions.transferPosition'), ixs),
+    })
 
-    if (decision) {
-      await transferPosition({
-        sourcePosition: position,
-        amount,
-        targetPosition,
-      })
-
-      if (!transferingError) {
-        await refetchState()
-      }
+    if (!transferingError) {
+      await refetchState()
     }
   }
 
   const handleDelegateTokens = async (subDao: SubDaoWithMeta) => {
-    const decision = await getDecision(t('gov.transactions.delegatePosition'))
+    await delegatePosition({
+      position,
+      subDao,
+      onInstructions: (ixs) =>
+        decideAndExecute(t('gov.transactions.delegatePosition'), ixs),
+    })
 
-    if (decision) {
-      await delegatePosition({
-        position,
-        subDao,
-      })
-
-      if (!delegatingError) {
-        await refetchState()
-      }
+    if (!delegatingError) {
+      await refetchState()
     }
   }
 
   const handleUndelegateTokens = async () => {
-    const decision = await getDecision(t('gov.transactions.undelegatePosition'))
+    await undelegatePosition({
+      position,
+      onInstructions: (ixs) =>
+        decideAndExecute(t('gov.transactions.undelegatePosition'), ixs),
+    })
 
-    if (decision) {
-      await undelegatePosition({ position })
-
-      if (!undelegatingError) {
-        await refetchState()
-      }
+    if (!undelegatingError) {
+      await refetchState()
     }
   }
 
