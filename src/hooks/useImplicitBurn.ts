@@ -1,6 +1,10 @@
 import { init as initDataCredits } from '@helium/data-credits-sdk'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
-import { DC_MINT, sendAndConfirmWithRetry, withPriorityFees } from '@helium/spl-utils'
+import {
+  DC_MINT,
+  sendAndConfirmWithRetry,
+  withPriorityFees,
+} from '@helium/spl-utils'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import {
   createAssociatedTokenAccountIdempotentInstruction,
