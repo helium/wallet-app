@@ -154,7 +154,7 @@ const WalletSignBottomSheetTransaction = ({
                   {`~${solFee / LAMPORTS_PER_SOL} SOL`}
                 </Text>
               </Box>
-              {priorityFee && (
+              {typeof priorityFee !== 'undefined' && (
                 <Box flexDirection="row">
                   <Box flexGrow={1} flexDirection="row" alignItems="center">
                     <Text variant="body1Medium" mr="s">

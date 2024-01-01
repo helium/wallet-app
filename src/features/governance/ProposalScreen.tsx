@@ -426,7 +426,7 @@ export const ProposalScreen = () => {
                     )}
                     <Box
                       flex={1}
-                      flexDirection="row"
+                      flexDirection="column"
                       flexWrap="wrap"
                       {...{ gap: 8 }}
                     >

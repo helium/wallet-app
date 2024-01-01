@@ -20,7 +20,7 @@ import {
 } from '@helium/voter-stake-registry-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { RouteProp, useRoute } from '@react-navigation/native'
-import { PublicKey, TransactionInstruction } from '@solana/web3.js'
+import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import globalStyles from '@theme/globalStyles'
 import { daysToSecs } from '@utils/dateTools'
@@ -117,6 +117,7 @@ export const VotingPowerScreen = () => {
   const decideAndExecute = async (
     header: string,
     instructions: TransactionInstruction[],
+    signers: Keypair[] = [],
   ) => {
     if (!anchorProvider || !walletSignBottomSheetRef) return
 
@@ -135,7 +136,13 @@ export const VotingPowerScreen = () => {
     })
 
     if (decision) {
-      await bulkSendTransactions(anchorProvider, transactions)
+      await bulkSendTransactions(
+        anchorProvider,
+        transactions,
+        undefined,
+        undefined,
+        signers,
+      )
     } else {
       throw new Error('User rejected transaction')
     }
@@ -151,8 +158,8 @@ export const VotingPowerScreen = () => {
         lockupPeriodsInDays: lockupPeriodInDays,
         lockupKind: lockupKind.value,
         mint,
-        onInstructions: (ixs) =>
-          decideAndExecute(t('gov.transactions.lockTokens'), ixs),
+        onInstructions: (ixs, sigs) =>
+          decideAndExecute(t('gov.transactions.lockTokens'), ixs, sigs),
       })
 
       await refetchState()

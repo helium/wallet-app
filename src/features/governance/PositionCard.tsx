@@ -13,6 +13,7 @@ import {
   batchInstructionsToTxsWithPriorityFee,
   bulkSendTransactions,
   humanReadable,
+  sendAndConfirmWithRetry,
   toNumber,
 } from '@helium/spl-utils'
 import {
@@ -31,7 +32,7 @@ import {
 import useAlert from '@hooks/useAlert'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
-import { TransactionInstruction } from '@solana/web3.js'
+import { Keypair, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { Theme } from '@theme/theme'
 import { useCreateOpacity } from '@theme/themeHooks'
@@ -138,6 +139,7 @@ export const PositionCard = ({
   const decideAndExecute = async (
     header: string,
     instructions: TransactionInstruction[],
+    sigs: Keypair[] = [],
   ) => {
     if (!anchorProvider || !walletSignBottomSheetRef) return
 
@@ -156,7 +158,35 @@ export const PositionCard = ({
     })
 
     if (decision) {
-      await bulkSendTransactions(anchorProvider, transactions)
+      if (sigs) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const tx of await anchorProvider.wallet.signAllTransactions(
+          transactions,
+        )) {
+          sigs.forEach((sig) => {
+            if (tx.signatures.some((s) => s.publicKey.equals(sig.publicKey))) {
+              tx.partialSign(sig)
+            }
+          })
+
+          await sendAndConfirmWithRetry(
+            anchorProvider.connection,
+            tx.serialize(),
+            {
+              skipPreflight: true,
+            },
+            'confirmed',
+          )
+        }
+      } else {
+        await bulkSendTransactions(
+          anchorProvider,
+          transactions,
+          undefined,
+          undefined,
+          sigs,
+        )
+      }
     } else {
       throw new Error('User rejected transaction')
     }
@@ -315,8 +345,8 @@ export const PositionCard = ({
       amount: values.amount,
       lockupKind: values.lockupKind.value,
       lockupPeriodsInDays: values.lockupPeriodInDays,
-      onInstructions: (ixs) =>
-        decideAndExecute(t('gov.transactions.splitPosition'), ixs),
+      onInstructions: (ixs, sigs) =>
+        decideAndExecute(t('gov.transactions.splitPosition'), ixs, sigs),
     })
 
     if (!splitingError) {
@@ -746,7 +776,7 @@ export const PositionCard = ({
                       secsToDays(
                         position.lockup.endTs
                           .sub(position.lockup.startTs)
-                          .toNumber(),
+                          .toNumber() + 1,
                       ),
                     )
                   : Math.ceil(

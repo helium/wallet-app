@@ -23,6 +23,7 @@ module.exports = {
     'prefer-exponentiation-operator': 'off',
     'prettier/prettier': 'error',
     'global-require': 'off',
+    'no-await-in-loop': 'off',
     'no-prototype-builtins': 'off',
     'react/destructuring-assignment': 'off',
     'react/jsx-filename-extension': 'off',
