@@ -33,6 +33,7 @@ type BalanceChanges = BalanceChange[] | null
 export type SimulatedTransactionResult = {
   loading: boolean
   solFee?: number
+  priorityFee?: number
   estimateFeeErr?: Error | undefined
   simulationError: boolean
   insufficientFunds: boolean
@@ -65,27 +66,34 @@ export function useSimulatedTransaction(
   }, [serializedTx])
 
   const {
-    result: solFee,
+    result: { solFee, priorityFee } = { solFee: 5000, priorityFee: 0 },
     loading: loadingFee,
     error: estimateFeeErr,
   } = useAsync(
     async (
       c: Connection | undefined,
       t: VersionedTransaction | undefined,
-    ): Promise<number> => {
-      let fee = 5000
+    ): Promise<{ solFee: number; priorityFee: number }> => {
+      const sFee = (t?.signatures.length || 1) * 5000
+      let pFee = 0
 
       if (!c || !t) {
-        return Promise.resolve(fee)
+        return Promise.resolve({ solFee: sFee, priorityFee: pFee })
       }
 
       try {
-        fee = (await c?.getFeeForMessage(t.message, 'confirmed')).value || fee
+        const fee =
+          (await c?.getFeeForMessage(t.message, 'confirmed')).value || solFee
+        pFee = fee - sFee
+        return {
+          priorityFee: pFee,
+          solFee: sFee,
+        }
       } catch (err) {
         logger.error(err)
       }
 
-      return fee
+      return { solFee: sFee, priorityFee: pFee }
     },
     [connection, transaction],
   )
@@ -327,6 +335,7 @@ export function useSimulatedTransaction(
     insufficientFunds,
     balanceChanges: estimatedBalanceChanges,
     solFee: solFee || 5000,
+    priorityFee,
     estimateFeeErr,
   }
 }

@@ -504,7 +504,10 @@ export default {
     unableToSimulate:
       'Unable to simulate. Make sure you trust this app since approving can lead to loss of funds.',
     networkFee: 'Network Fee',
+    priorityFee: 'Priority Fee',
     totalNetworkFees: 'Total Network Fees',
+    priorityFeeDescription:
+      'When the network is congested, priority fees help your transaction get included in the block. The app has automatically adjusted the priority fee to make it more likely your transaction lands.',
     connect: 'Connect',
     approve: 'Approve',
     cancel: 'Cancel',
