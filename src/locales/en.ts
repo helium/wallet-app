@@ -55,6 +55,7 @@ export default {
         'In almost all cases, Hotspots manufacturers are responsible for paying the onboarding and initial location assert fees.',
       // eslint-disable-next-line no-template-curly-in-string
       pay: 'I understand that the ${{usd}} onboarding fee was included in the purchase price of my Hotspot and the manufacturer is responsible for paying that fee.  Nonetheless, I would like to pay the ${{usd}} onboarding fee out of my wallet to onboard my Hotspot now. I will also pay the ${{assertUsd}} fee to assert this hotspot location.',
+      wrongOwner: 'You do not own this hotspot, so you cannot onboard it',
       notEnoughSol: 'You do not have enough sol to self-onboard',
       notEnoughDc: 'You do not have enough DC or HNT to self-onboard',
       hotspotNotFound:
@@ -400,6 +401,7 @@ export default {
       message: 'The location was succesfully submitted to the blockchain',
     },
     error: {
+      wrongOwner: 'You do not own this hotspot, so you cannot assert its location',
       insufficientFunds:
         // eslint-disable-next-line no-template-curly-in-string
         'Assertion costs ${{usd}}. You do not have enough HNT or DC.',

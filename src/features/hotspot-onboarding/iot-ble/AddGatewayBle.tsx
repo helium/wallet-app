@@ -18,6 +18,7 @@ import {
 import {
   IOT_MINT,
   bufferToTransaction,
+  getAsset,
   sendAndConfirmWithRetry,
   truthy,
 } from '@helium/spl-utils'
@@ -150,6 +151,21 @@ const AddGatewayBle = () => {
     if (!tx?.gateway) {
       throw new Error('Invalid transaction')
     }
+
+    const hemProgram = await init(anchorProvider)
+    const keyToAssetK = keyToAssetKey(DAO_KEY, tx.gateway.b58, 'b58')[0]
+    let keyToAsset = await hemProgram.account.keyToAssetV0.fetchNullable(
+      keyToAssetK,
+    )
+    if (keyToAsset) {
+      const asset = await getAsset(
+        anchorProvider.connection.rpcEndpoint,
+        keyToAsset.asset,
+      )
+      if (!asset?.ownership.owner.equals(wallet)) {
+        throw new Error(t('hotspotOnboarding.onboarding.wrongOwner'))
+      }
+    }
     // const txnStr = await createGatewayTxn({
     //   ownerAddress: accountAddress,
     //   payerAddress: maker?.address,
@@ -196,7 +212,6 @@ const AddGatewayBle = () => {
       wrapProgramError(e)
     }
 
-    const hemProgram = await init(anchorProvider)
     const [iotConfigKey] = rewardableEntityConfigKey(IOT_SUB_DAO_KEY, 'IOT')
     const iotInfo = await hemProgram.account.iotHotspotInfoV0.fetchNullable(
       iotInfoKey(iotConfigKey, tx?.gateway?.b58)[0],
@@ -246,11 +261,7 @@ const AddGatewayBle = () => {
       }
     }
 
-    const keyToAssetK = keyToAssetKey(DAO_KEY, tx.gateway.b58, 'b58')[0]
     let totalTime = 0
-    let keyToAsset = await hemProgram.account.keyToAssetV0.fetchNullable(
-      keyToAssetK,
-    )
     // Wait up to 30s for hotspot to exist
     while (!keyToAsset && totalTime < 30 * 1000) {
       // eslint-disable-next-line no-await-in-loop
