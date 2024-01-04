@@ -401,7 +401,8 @@ export default {
       message: 'The location was succesfully submitted to the blockchain',
     },
     error: {
-      wrongOwner: 'You do not own this hotspot, so you cannot assert its location',
+      wrongOwner:
+        'You do not own this hotspot, so you cannot assert its location',
       insufficientFunds:
         // eslint-disable-next-line no-template-curly-in-string
         'Assertion costs ${{usd}}. You do not have enough HNT or DC.',
