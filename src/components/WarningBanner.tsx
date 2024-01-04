@@ -85,7 +85,7 @@ const Banner = ({ type, onLayout, ...rest }: BannerProps) => {
           <InfoWarning width={24} height={24} />
         </Box>
         <Text
-          variant="body2"
+          variant="body3"
           marginStart="s"
           flex={1}
           adjustsFontSizeToFit

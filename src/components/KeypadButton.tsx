@@ -78,6 +78,7 @@ const KeypadButton = ({ value, onPress }: Props) => {
             <Text
               variant="body1"
               width="100%"
+              textAlign="center"
               adjustsFontSizeToFit
               numberOfLines={1}
               color={pressed ? 'gold' : 'surfaceSecondaryText'}

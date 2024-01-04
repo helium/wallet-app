@@ -2,6 +2,7 @@ import { AnchorProvider, Wallet } from '@coral-xyz/anchor'
 import { AccountFetchCache } from '@helium/account-fetch-cache'
 import { AccountContext } from '@helium/account-fetch-cache-hooks'
 import { SolanaProvider as SolanaProviderRnHelium } from '@helium/react-native-sdk'
+import { ConnectionContext } from '@solana/wallet-adapter-react'
 import { DC_MINT, HNT_MINT } from '@helium/spl-utils'
 import {
   AccountInfo,
@@ -271,23 +272,24 @@ const initialState: {
 }
 const SolanaContext =
   createContext<ReturnType<typeof useSolanaHook>>(initialState)
-const { Provider } = SolanaContext
 
 const SolanaProvider = ({ children }: { children: ReactNode }) => {
   const values = useSolanaHook()
   return (
-    <Provider value={values}>
+    <SolanaContext.Provider value={values}>
       {values.cache && values.connection && (
-        <AccountContext.Provider value={values.cache}>
-          <SolanaProviderRnHelium
-            connection={values.connection}
-            cluster={values.cluster}
-          >
-            <LedgerModal ref={values?.ledgerModalRef}>{children}</LedgerModal>
-          </SolanaProviderRnHelium>
-        </AccountContext.Provider>
+        <ConnectionContext.Provider value={{ connection: values.connection }}>
+          <AccountContext.Provider value={values.cache}>
+            <SolanaProviderRnHelium
+              connection={values.connection}
+              cluster={values.cluster}
+            >
+              <LedgerModal ref={values?.ledgerModalRef}>{children}</LedgerModal>
+            </SolanaProviderRnHelium>
+          </AccountContext.Provider>
+        </ConnectionContext.Provider>
       )}
-    </Provider>
+    </SolanaContext.Provider>
   )
 }
 

@@ -36,6 +36,7 @@ type Props = TextProps<Theme> & {
   maxFontSizeMultiplier?: number
   colorTextVariant?: ResponsiveValue<TextVariant, Theme>
 }
+
 const TextTransform = ({
   i18nKey,
   values,

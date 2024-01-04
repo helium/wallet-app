@@ -107,7 +107,7 @@ const parseNode = (
       ...attrs,
       children: element.childNodes.map(parseNode),
     },
-    key: Math.random(),
+    key: Math.random().toString(),
   }
 }
 

@@ -24,11 +24,13 @@ import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { AppState, RefreshControl } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Box from '@components/Box'
+import { GovMints } from '../../utils/constants'
 import { useSolana } from '../../solana/SolanaProvider'
 import { syncTokenAccounts } from '../../store/slices/balancesSlice'
 import { useAppDispatch } from '../../store/store'
 import { HomeNavigationProp } from '../home/homeTypes'
-import TokenListItem, { TokenSkeleton } from './TokenListItem'
+import { TokenListItem, TokenListGovItem, TokenSkeleton } from './TokenListItem'
 
 type Props = {
   onLayout?: BottomSheetFlatListProps<PublicKey>['onLayout']
@@ -154,10 +156,21 @@ const AccountTokenList = ({ onLayout }: Props) => {
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
 
-  // eslint-disable-next-line react/no-unused-prop-types
-  const renderItem = useCallback(({ item }: { item: PublicKey }) => {
-    return <TokenListItem mint={item} />
-  }, [])
+  const renderItem = useCallback(
+    // eslint-disable-next-line react/no-unused-prop-types
+    ({ item }: { item: PublicKey }) => {
+      if (GovMints.some((m) => new PublicKey(m).equals(item)))
+        return (
+          <Box>
+            <TokenListItem mint={item} />
+            <TokenListGovItem mint={item} />
+          </Box>
+        )
+
+      return <TokenListItem mint={item} />
+    },
+    [],
+  )
 
   const renderEmptyComponent = useCallback(() => {
     return (
@@ -186,7 +199,8 @@ const AccountTokenList = ({ onLayout }: Props) => {
   }, [onManageTokenList, t])
 
   const keyExtractor = useCallback((mint: PublicKey) => {
-    return mint.toBase58()
+    const isGov = GovMints.some((m) => new PublicKey(m).equals(mint))
+    return `${mint.toBase58}${isGov ? '-gov' : ''}`
   }, [])
 
   const contentContainerStyle = useMemo(

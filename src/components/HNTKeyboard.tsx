@@ -75,6 +75,9 @@ type Props = {
   }) => void
   usePortal?: boolean
   allowOverdraft?: boolean
+  // allow this keyboard to be used with BN values of a mint other
+  // than just owned amount
+  actionableAmount?: BN
 } & BoxProps<Theme>
 const HNTKeyboardSelector = forwardRef(
   (
@@ -87,6 +90,7 @@ const HNTKeyboardSelector = forwardRef(
       networkFee,
       usePortal = false,
       allowOverdraft = false,
+      actionableAmount,
       ...boxProps
     }: Props,
     ref: Ref<HNTKeyboardRef>,
@@ -112,8 +116,10 @@ const HNTKeyboardSelector = forwardRef(
     const { amount: balanceForMintToken } = useOwnedAmount(wallet, mint)
     const { amount: solBalance } = useSolOwnedAmount(wallet)
     const balanceForMint = useMemo(
-      () => (mint?.equals(NATIVE_MINT) ? solBalance : balanceForMintToken),
-      [mint, solBalance, balanceForMintToken],
+      () =>
+        actionableAmount ||
+        (mint?.equals(NATIVE_MINT) ? solBalance : balanceForMintToken),
+      [mint, solBalance, balanceForMintToken, actionableAmount],
     )
 
     const snapPoints = useMemo(() => {
