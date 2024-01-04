@@ -195,7 +195,7 @@
     "stream": "0.0.2",
     "stream-browserify": "1.0.0",
     "string_decoder": "0.10.31",
-    "text-encoding-polyfill": "0.6.7",
+    "text-encoding-polyfill": "^0.6.7",
     "timers-browserify": "1.4.2",
     "tinycolor2": "1.4.2",
     "tty-browserify": "0.0.0",

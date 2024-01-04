@@ -1,3 +1,4 @@
+import 'text-encoding-polyfill'
 import AutoGasBanner from '@components/AutoGasBanner'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { PortalProvider } from '@gorhom/portal'
