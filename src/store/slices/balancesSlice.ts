@@ -56,6 +56,7 @@ export const syncTokenAccounts = createAsyncThunk(
     const tokenAccounts = await connection.getTokenAccountsByOwner(pubKey, {
       programId: TOKEN_PROGRAM_ID,
     })
+
     const solAcct = await connection.getAccountInfo(pubKey)
 
     const atas = await Promise.all(

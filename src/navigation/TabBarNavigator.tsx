@@ -8,7 +8,7 @@ import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Dollar from '@assets/images/dollar.svg'
 import Gem from '@assets/images/collectableIcon.svg'
 import Transactions from '@assets/images/transactions.svg'
-import Notifications from '@assets/images/notifications.svg'
+import Governance from '@assets/images/courthouse.svg'
 import { Portal } from '@gorhom/portal'
 import NavBar, { NavBarHeight } from '@components/NavBar'
 import { Color } from '@theme/theme'
@@ -17,37 +17,25 @@ import Box from '@components/Box'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import useHaptic from '@hooks/useHaptic'
 import Globe from '@assets/images/earth-globe.svg'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
+import { useGovernance } from '@storage/GovernanceProvider'
+import GovernanceNavigator from '../features/governance/GovernanceNavigator'
 import { useAppStorage } from '../storage/AppStorageProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import SolanaMigration from '../features/migration/SolanaMigration'
 import HomeNavigator from '../features/home/HomeNavigator'
 import CollectablesNavigator from '../features/collectables/CollectablesNavigator'
 import ActivityNavigator from '../features/activity/ActivityNavigator'
-import NotificationsNavigator from '../features/notifications/NotificationsNavigator'
 import BrowserNavigator from '../features/browser/BrowserNavigator'
 import { appSlice } from '../store/slices/appSlice'
 import { useSolana } from '../solana/SolanaProvider'
-import { RootState } from '../store/rootReducer'
 
 const Tab = createBottomTabNavigator()
 
 function MyTabBar({ state, navigation }: BottomTabBarProps) {
   const { hasNewTransactions, resetNewTransactions } = useEnrichedTransactions()
   const { triggerImpact } = useHaptic()
-
-  const notificationsByResource = useSelector(
-    (appState: RootState) => appState.notifications.notifications,
-  )
-
-  const hasUnreadNotifications = useMemo(() => {
-    const allNotifs = Object.keys(notificationsByResource).flatMap(
-      (k) => notificationsByResource[k],
-    )
-
-    const unread = allNotifs.find((n) => !n.viewedAt)
-    return !!unread
-  }, [notificationsByResource])
+  const { hasUnseenProposals } = useGovernance()
 
   const tabData = useMemo((): Array<{
     value: string
@@ -70,14 +58,14 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
         hasBadge: hasNewTransactions && state.index !== 2,
       },
       {
-        value: 'notifications',
-        Icon: Notifications,
+        value: 'governance',
+        Icon: Governance,
         iconColor: 'white',
-        hasBadge: hasUnreadNotifications && state.index !== 3,
+        hasBadge: hasUnseenProposals && state.index !== 3,
       },
       { value: 'browser', Icon: Globe, iconColor: 'white' },
     ]
-  }, [hasNewTransactions, state.index, hasUnreadNotifications])
+  }, [hasNewTransactions, hasUnseenProposals, state.index])
 
   const selectedValue = tabData[state.index].value
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
@@ -210,10 +198,7 @@ const TabBarNavigator = () => {
         <Tab.Screen name="Home" component={HomeNavigator} />
         <Tab.Screen name="Collectables" component={CollectablesNavigator} />
         <Tab.Screen name="Activity" component={ActivityNavigator} />
-        <Tab.Screen
-          name="NotificationsNavigator"
-          component={NotificationsNavigator}
-        />
+        <Tab.Screen name="Governance" component={GovernanceNavigator} />
         <Tab.Screen name="Browser" component={BrowserNavigator} />
       </Tab.Navigator>
     </>

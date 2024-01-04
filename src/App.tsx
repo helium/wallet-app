@@ -32,6 +32,7 @@ import './polyfill'
 import SolanaProvider from './solana/SolanaProvider'
 import WalletSignProvider from './solana/WalletSignProvider'
 import { useAccountStorage } from './storage/AccountStorageProvider'
+import { GovernanceProvider } from './storage/GovernanceProvider'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
 import { BalanceProvider } from './utils/Balance'
 import { useDeepLinking } from './utils/linking'
@@ -132,12 +133,14 @@ const App = () => {
                                   <TokensProvider>
                                     <ModalProvider>
                                       <WalletSignProvider>
-                                        <AutoGasBanner />
-                                        <NetworkAwareStatusBar />
-                                        <RootNavigator />
+                                        <GovernanceProvider>
+                                          <AutoGasBanner />
+                                          <NetworkAwareStatusBar />
+                                          <RootNavigator />
 
-                                        {/* place app specific modals here */}
-                                        <InsufficientSolConversionModal />
+                                          {/* place app specific modals here */}
+                                          <InsufficientSolConversionModal />
+                                        </GovernanceProvider>
                                       </WalletSignProvider>
                                     </ModalProvider>
                                   </TokensProvider>
