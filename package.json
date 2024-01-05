@@ -33,7 +33,7 @@
     "@babel/preset-typescript": "7.21.0",
     "@bonfida/spl-name-service": "^1.1.1",
     "@coral-xyz/anchor": "^0.28.0",
-    "@gorhom/bottom-sheet": "4.4.6",
+    "@gorhom/bottom-sheet": "4.6.0",
     "@gorhom/portal": "1.0.14",
     "@helium/account-fetch-cache": "^0.6.13",
     "@helium/account-fetch-cache-hooks": "^0.6.13",
