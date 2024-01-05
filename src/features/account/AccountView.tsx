@@ -52,9 +52,6 @@ const AccountView = ({ selectedBalance, ...boxProps }: Props) => {
 
   return (
     <Box flexDirection="column" alignItems="center" {...boxProps}>
-      <Box>
-        <TokenPricesTicker marginVertical="m" />
-      </Box>
       <Box alignItems="center" flex={1} justifyContent="center" width="100%">
         <CopyAddressPill />
 
