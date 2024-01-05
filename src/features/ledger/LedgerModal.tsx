@@ -1,13 +1,22 @@
+import Box from '@components/Box'
+import CircleLoader from '@components/CircleLoader'
+import CloseButton from '@components/CloseButton'
+import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetModalProvider,
-  useBottomSheetDynamicSnapPoints,
+  BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
 import useBackHandler from '@hooks/useBackHandler'
+import useLedger from '@hooks/useLedger'
+import { DeviceModelId } from '@ledgerhq/types-devices'
 import { BoxProps } from '@shopify/restyle'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { Theme } from '@theme/theme'
 import { useColors, useOpacity } from '@theme/themeHooks'
+import { signLedgerMessage, signLedgerTransaction } from '@utils/heliumLedger'
 import React, {
   ReactNode,
   Ref,
@@ -19,18 +28,10 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import Box from '@components/Box'
-import { DeviceModelId } from '@ledgerhq/types-devices'
-import Text from '@components/Text'
 import { useTranslation } from 'react-i18next'
-import { signLedgerMessage, signLedgerTransaction } from '@utils/heliumLedger'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
-import useLedger from '@hooks/useLedger'
-import CircleLoader from '@components/CircleLoader'
-import CloseButton from '@components/CloseButton'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import LedgerConnectSteps from './LedgerConnectSteps'
+import { useSharedValue } from 'react-native-reanimated'
 import Animation from './Animation'
+import LedgerConnectSteps from './LedgerConnectSteps'
 import { getDeviceAnimation } from './getDeviceAnimation'
 
 let promiseResolve: (value: Buffer | PromiseLike<Buffer>) => void
@@ -65,14 +66,7 @@ const LedgerModal = forwardRef(
       'loading' | 'openApp' | 'sign' | 'enterPinCode' | 'error'
     >('loading')
 
-    const snapPoints = useMemo(() => ['40%', 'CONTENT_HEIGHT'], [])
-
-    const {
-      animatedHandleHeight,
-      animatedSnapPoints,
-      animatedContentHeight,
-      handleContentLayout,
-    } = useBottomSheetDynamicSnapPoints(snapPoints)
+    const animatedContentHeight = useSharedValue(0)
 
     const openAppAndSign = useCallback(
       async ({
@@ -310,56 +304,59 @@ const LedgerModal = forwardRef(
             index={0}
             backgroundStyle={backgroundStyle}
             backdropComponent={renderBackdrop}
-            snapPoints={animatedSnapPoints.value}
             // onDismiss={handleModalDismiss}
             handleIndicatorStyle={handleIndicatorStyle}
-            handleHeight={animatedHandleHeight}
             contentHeight={animatedContentHeight}
+            enableDynamicSizing
           >
-            <Box paddingHorizontal="l" onLayout={handleContentLayout}>
-              <Box flex={1} alignItems="flex-end">
-                <CloseButton onPress={onDismiss} />
-              </Box>
-              {ledgerModalState === 'loading' && (
-                <Box>
-                  <CircleLoader loaderSize={40} />
+            <BottomSheetScrollView>
+              <Box paddingHorizontal="l">
+                <Box flex={1} alignItems="flex-end">
+                  <CloseButton onPress={onDismiss} />
                 </Box>
-              )}
-              {ledgerModalState !== 'loading' && ledgerModalState !== 'error' && (
-                <>
-                  <Box
-                    alignSelf="stretch"
-                    alignItems="center"
-                    justifyContent="center"
-                    height={150}
-                  >
-                    <Animation
-                      source={getDeviceAnimation({
-                        device: {
-                          deviceId: currentAccount?.ledgerDevice?.id ?? '',
-                          deviceName: currentAccount?.ledgerDevice?.name ?? '',
-                          modelId: deviceModelId,
-                          wired:
-                            currentAccount?.ledgerDevice?.type === 'usb' ??
-                            false,
-                        },
-                        key: ledgerModalState,
-                        theme: 'dark',
-                      })}
-                      style={
-                        deviceModelId === DeviceModelId.stax
-                          ? { height: 210 }
-                          : {}
-                      }
-                    />
+                {ledgerModalState === 'loading' && (
+                  <Box>
+                    <CircleLoader loaderSize={40} />
                   </Box>
-                  {LedgerMessage()}
-                </>
-              )}
-              {ledgerModalState === 'error' && (
-                <LedgerConnectSteps onRetry={handleRetry} />
-              )}
-            </Box>
+                )}
+                {ledgerModalState !== 'loading' &&
+                  ledgerModalState !== 'error' && (
+                    <>
+                      <Box
+                        alignSelf="stretch"
+                        alignItems="center"
+                        justifyContent="center"
+                        height={150}
+                      >
+                        <Animation
+                          source={getDeviceAnimation({
+                            device: {
+                              deviceId: currentAccount?.ledgerDevice?.id ?? '',
+                              deviceName:
+                                currentAccount?.ledgerDevice?.name ?? '',
+                              modelId: deviceModelId,
+                              wired:
+                                currentAccount?.ledgerDevice?.type === 'usb' ??
+                                false,
+                            },
+                            key: ledgerModalState,
+                            theme: 'dark',
+                          })}
+                          style={
+                            deviceModelId === DeviceModelId.stax
+                              ? { height: 210 }
+                              : {}
+                          }
+                        />
+                      </Box>
+                      {LedgerMessage()}
+                    </>
+                  )}
+                {ledgerModalState === 'error' && (
+                  <LedgerConnectSteps onRetry={handleRetry} />
+                )}
+              </Box>
+            </BottomSheetScrollView>
           </BottomSheetModal>
           {children}
           {/* </Box> */}
