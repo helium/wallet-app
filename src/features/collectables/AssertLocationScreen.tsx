@@ -247,6 +247,9 @@ const AssertLocationScreen = () => {
       setAsserting(true)
       try {
         hideElevGain()
+        if (collectable.ownership.owner !== wallet.toBase58()) {
+          throw new Error(t('assertLocationScreen.error.wrongOwner'))
+        }
         const requiredDc =
           locationAssertDcRequirements[
             type === 'IOT' ? IOT_MINT.toBase58() : MOBILE_MINT.toBase58()
