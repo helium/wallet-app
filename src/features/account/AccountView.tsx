@@ -7,7 +7,6 @@ import FadeInOut from '@components/FadeInOut'
 import useLayoutHeight from '@hooks/useLayoutHeight'
 import Box from '@components/Box'
 import { Theme } from '@theme/theme'
-import TokenPricesTicker from '@components/TokenPricesTicker'
 import CopyAddressPill from '@components/CopyAddressPill'
 import CurrencyFormatter from 'react-native-currency-format'
 import { useBalance } from '../../utils/Balance'
@@ -52,9 +51,6 @@ const AccountView = ({ selectedBalance, ...boxProps }: Props) => {
 
   return (
     <Box flexDirection="column" alignItems="center" {...boxProps}>
-      <Box>
-        <TokenPricesTicker marginVertical="m" />
-      </Box>
       <Box alignItems="center" flex={1} justifyContent="center" width="100%">
         <CopyAddressPill />
 
