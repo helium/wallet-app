@@ -121,29 +121,31 @@ export const TokenListItem = ({ mint }: Props) => {
               />
             </Box>
           ) : (
-            <Box flexDirection="row" alignItems="center">
-              <Text
-                variant="body1"
-                color="primaryText"
-                maxFontSizeMultiplier={1.3}
-              >
-                {`${balanceToDisplay} `}
-              </Text>
-              <Text
-                variant="body2Medium"
-                color="secondaryText"
-                maxFontSizeMultiplier={1.3}
-              >
-                {symbol}
-              </Text>
+            <Box>
+              <Box flexDirection="row" alignItems="center">
+                <Text
+                  variant="body1"
+                  color="primaryText"
+                  maxFontSizeMultiplier={1.3}
+                >
+                  {`${balanceToDisplay} `}
+                </Text>
+                <Text
+                  variant="body2Medium"
+                  color="secondaryText"
+                  maxFontSizeMultiplier={1.3}
+                >
+                  {symbol}
+                </Text>
+              </Box>
+              {symbol && (
+                <AccountTokenCurrencyBalance
+                  variant="subtitle4"
+                  color="secondaryText"
+                  ticker={symbol.toUpperCase()}
+                />
+              )}
             </Box>
-          )}
-          {symbol && (
-            <AccountTokenCurrencyBalance
-              variant="subtitle4"
-              color="secondaryText"
-              ticker={symbol.toUpperCase()}
-            />
           )}
         </Box>
         {mint.equals(NATIVE_MINT) && (amount || 0) < MIN_BALANCE_THRESHOLD && (
