@@ -118,6 +118,7 @@ export const VotingPowerScreen = () => {
     header: string,
     instructions: TransactionInstruction[],
     signers: Keypair[] = [],
+    onProgress: (status: Status) => void = () => {},
   ) => {
     if (!anchorProvider || !walletSignBottomSheetRef) return
 
@@ -139,7 +140,7 @@ export const VotingPowerScreen = () => {
       await bulkSendTransactions(
         anchorProvider,
         transactions,
-        undefined,
+        onProgress,
         undefined,
         signers,
       )
@@ -162,7 +163,7 @@ export const VotingPowerScreen = () => {
           decideAndExecute(t('gov.transactions.lockTokens'), ixs, sigs),
       })
 
-      await refetchState()
+      refetchState()
     }
   }
 
@@ -170,13 +171,17 @@ export const VotingPowerScreen = () => {
     if (positionsWithRewards && walletSignBottomSheetRef) {
       await claimAllPositionsRewards({
         positions: positionsWithRewards,
-        onProgress: setStatusOfClaim,
         onInstructions: (ixs) =>
-          decideAndExecute(t('gov.transactions.claimRewards'), ixs),
+          decideAndExecute(
+            t('gov.transactions.claimRewards'),
+            ixs,
+            undefined,
+            setStatusOfClaim,
+          ),
       })
 
       if (!claimingAllRewardsError) {
-        await refetchState()
+        refetchState()
       }
     }
   }

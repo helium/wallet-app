@@ -72,7 +72,7 @@ export const PositionCard = ({
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false)
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false)
   const [isDelegateModalOpen, setIsDelegateModalOpen] = useState(false)
-  const { positions, refetch, mint } = useGovernance()
+  const { positions, mint, refetch: refetchState } = useGovernance()
   const { backgroundStyle } = useCreateOpacity()
   const transferablePositions: PositionWithMeta[] = useMemo(() => {
     if (!unixNow || !positions || !positions.length) {
@@ -202,10 +202,6 @@ export const PositionCard = ({
     [votingMint.mint, registrar],
   )
 
-  const refetchState = async () => {
-    refetch()
-  }
-
   const {
     loading: isExtending,
     error: extendingError,
@@ -305,7 +301,7 @@ export const PositionCard = ({
     })
 
     if (!closingError) {
-      await refetchState()
+      refetchState()
     }
   }
 
@@ -322,7 +318,7 @@ export const PositionCard = ({
     })
 
     if (!flippingError) {
-      await refetchState()
+      refetchState()
     }
   }
 
@@ -335,7 +331,7 @@ export const PositionCard = ({
     })
 
     if (!extendingError) {
-      await refetchState()
+      refetchState()
     }
   }
 
@@ -350,7 +346,7 @@ export const PositionCard = ({
     })
 
     if (!splitingError) {
-      await refetchState()
+      refetchState()
     }
   }
 
@@ -367,7 +363,7 @@ export const PositionCard = ({
     })
 
     if (!transferingError) {
-      await refetchState()
+      refetchState()
     }
   }
 
@@ -380,7 +376,7 @@ export const PositionCard = ({
     })
 
     if (!delegatingError) {
-      await refetchState()
+      refetchState()
     }
   }
 
@@ -392,7 +388,7 @@ export const PositionCard = ({
     })
 
     if (!undelegatingError) {
-      await refetchState()
+      refetchState()
     }
   }
 

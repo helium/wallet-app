@@ -295,24 +295,26 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
               />
             </Box>
           ) : (
-            <Box flexDirection="row" alignItems="center">
-              <Text
-                variant="body1"
-                color="primaryText"
-                maxFontSizeMultiplier={1.3}
-              >
-                {`${balanceToDisplay} `}
-              </Text>
-              <Text
-                variant="body2Medium"
-                color="secondaryText"
-                maxFontSizeMultiplier={1.3}
-              >
-                {symbol} (Locked)
-              </Text>
+            <Box>
+              <Box flexDirection="row" alignItems="center">
+                <Text
+                  variant="body1"
+                  color="primaryText"
+                  maxFontSizeMultiplier={1.3}
+                >
+                  {`${balanceToDisplay} `}
+                </Text>
+                <Text
+                  variant="body2Medium"
+                  color="secondaryText"
+                  maxFontSizeMultiplier={1.3}
+                >
+                  {symbol} (Locked)
+                </Text>
+              </Box>
+              <Text color="secondaryText">-</Text>
             </Box>
           )}
-          <Text color="secondaryText">-</Text>
         </Box>
         <Arrow />
       </TouchableContainer>
