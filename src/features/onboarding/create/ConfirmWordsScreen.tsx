@@ -185,6 +185,14 @@ const ConfirmWordsScreen: React.FC<Props> = ({
     onClose()
   }, [onClose, onForgotWords])
 
+  const handleOnComplete = useCallback(() => {
+    if (words.every((w, idx) => mnemonic[idx] === w)) {
+      onComplete()
+    } else {
+      wordFailure()
+    }
+  }, [words, mnemonic, wordFailure, onComplete])
+
   return (
     <SafeAreaBox
       flex={1}
@@ -239,7 +247,7 @@ const ConfirmWordsScreen: React.FC<Props> = ({
               onSelectWord={handleSelectWord}
               wordIdx={wordIndex}
               totalWords={wordCount}
-              onSubmit={onComplete}
+              onSubmit={handleOnComplete}
               accentKey={getAccent(wordIndex).key}
               accentValue={getAccent(wordIndex).value}
               onPaste={handleOnPaste}
