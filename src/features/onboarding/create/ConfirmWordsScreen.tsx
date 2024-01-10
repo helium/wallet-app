@@ -4,7 +4,6 @@ import { useNavigation } from '@react-navigation/native'
 import { Animated, FlatList } from 'react-native'
 import Box from '@components/Box'
 import Text from '@components/Text'
-import SafeAreaBox from '@components/SafeAreaBox'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import CloseButton from '@components/CloseButton'
 import { Color } from '@theme/theme'
@@ -194,79 +193,62 @@ const ConfirmWordsScreen: React.FC<Props> = ({
   }, [words, mnemonic, wordFailure, onComplete])
 
   return (
-    <SafeAreaBox
-      flex={1}
-      backgroundColor="secondaryBackground"
-      paddingHorizontal="xl"
-    >
+    <Box flex={1} backgroundColor="secondaryBackground">
       <Box width="100%" alignItems="flex-end">
         <CloseButton onPress={onClose} />
       </Box>
-      <Box flex={1} justifyContent="center" alignItems="center">
-        <KeyboardAwareScrollView
-          extraScrollHeight={80}
-          enableOnAndroid
-          keyboardShouldPersistTaps="always"
+      <KeyboardAwareScrollView
+        extraScrollHeight={80}
+        enableOnAndroid
+        keyboardShouldPersistTaps="always"
+      >
+        <Animated.View
+          style={{ transform: [{ translateX: shakeAnim.current }] }}
         >
-          <Animated.View
-            style={{ transform: [{ translateX: shakeAnim.current }] }}
-          >
-            <Text
-              variant="subtitle1"
-              color="secondaryText"
-              textAlign="center"
-              marginTop="m"
-            >
-              {title || t('accountSetup.confirm.title')}
-            </Text>
-            <Text
-              variant="h1"
-              textAlign="center"
-              marginTop="m"
-              fontSize={40}
-              lineHeight={40}
-            >
-              {t('accountSetup.confirm.subtitleOrdinal', {
-                ordinal: wordIndex + 1,
-              })}
-            </Text>
-            <FlatList
-              data={words}
-              contentContainerStyle={flatListStyle}
-              renderItem={renderItem}
-              keyExtractor={keyExtractor}
-              horizontal
-              ref={flatlistRef}
-              showsHorizontalScrollIndicator={false}
-              initialScrollIndex={wordIndex}
-              onContentSizeChange={handleContentSizeChanged}
-            />
-            <PassphraseAutocomplete
-              word={words[wordIndex]}
-              complete={words.findIndex((w) => !w) === -1}
-              onSelectWord={handleSelectWord}
-              wordIdx={wordIndex}
-              totalWords={wordCount}
-              onSubmit={handleOnComplete}
-              accentKey={getAccent(wordIndex).key}
-              accentValue={getAccent(wordIndex).value}
-              onPaste={handleOnPaste}
-            />
-          </Animated.View>
-        </KeyboardAwareScrollView>
-        <TouchableOpacityBox onPress={onPressForgot} paddingVertical="xxxl">
           <Text
-            variant="h4"
-            adjustsFontSizeToFit
-            maxFontSizeMultiplier={1}
-            textAlign="center"
+            variant="subtitle1"
             color="secondaryText"
+            textAlign="center"
+            marginTop="m"
           >
-            {t('accountSetup.confirm.forgot')}
+            {title || t('accountSetup.confirm.title')}
           </Text>
-        </TouchableOpacityBox>
-        {__DEV__ && (
-          <TouchableOpacityBox onPress={onSkip}>
+          <Text
+            variant="h1"
+            textAlign="center"
+            marginTop="m"
+            fontSize={40}
+            lineHeight={40}
+          >
+            {t('accountSetup.confirm.subtitleOrdinal', {
+              ordinal: wordIndex + 1,
+            })}
+          </Text>
+          <FlatList
+            data={words}
+            contentContainerStyle={flatListStyle}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            horizontal
+            ref={flatlistRef}
+            showsHorizontalScrollIndicator={false}
+            initialScrollIndex={wordIndex}
+            onContentSizeChange={handleContentSizeChanged}
+          />
+          <PassphraseAutocomplete
+            word={words[wordIndex]}
+            complete={words.findIndex((w) => !w) === -1}
+            onSelectWord={handleSelectWord}
+            wordIdx={wordIndex}
+            totalWords={wordCount}
+            onSubmit={handleOnComplete}
+            accentKey={getAccent(wordIndex).key}
+            accentValue={getAccent(wordIndex).value}
+            onPaste={handleOnPaste}
+          />
+        </Animated.View>
+        <Box flex={1} justifyContent="center" alignItems="center">
+          <TouchableOpacityBox onPress={onPressForgot} paddingVertical="xxxl">
             <Text
               variant="h4"
               adjustsFontSizeToFit
@@ -274,12 +256,25 @@ const ConfirmWordsScreen: React.FC<Props> = ({
               textAlign="center"
               color="secondaryText"
             >
-              {t('generic.skip')}
+              {t('accountSetup.confirm.forgot')}
             </Text>
           </TouchableOpacityBox>
-        )}
-      </Box>
-    </SafeAreaBox>
+          {__DEV__ && (
+            <TouchableOpacityBox onPress={onSkip}>
+              <Text
+                variant="h4"
+                adjustsFontSizeToFit
+                maxFontSizeMultiplier={1}
+                textAlign="center"
+                color="secondaryText"
+              >
+                {t('generic.skip')}
+              </Text>
+            </TouchableOpacityBox>
+          )}
+        </Box>
+      </KeyboardAwareScrollView>
+    </Box>
   )
 }
 
