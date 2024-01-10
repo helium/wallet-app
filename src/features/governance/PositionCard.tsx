@@ -296,43 +296,44 @@ export const PositionCard = ({
   const handleClosePosition = async () => {
     await closePosition({
       position,
-      onInstructions: (ixs) =>
-        decideAndExecute(t('gov.transactions.closePosition'), ixs),
+      onInstructions: async (ixs) => {
+        await decideAndExecute(t('gov.transactions.closePosition'), ixs)
+        if (!closingError) {
+          refetchState()
+        }
+      },
     })
-
-    if (!closingError) {
-      refetchState()
-    }
   }
 
   const handleFlipPositionLockupKind = async () => {
     await flipPositionLockupKind({
       position,
-      onInstructions: (ixs) =>
-        decideAndExecute(
+      onInstructions: async (ixs) => {
+        await decideAndExecute(
           isConstant
             ? t('gov.transactions.unpauseLockup')
             : t('gov.transactions.pauseLockup'),
           ixs,
-        ),
-    })
+        )
 
-    if (!flippingError) {
-      refetchState()
-    }
+        if (!flippingError) {
+          refetchState()
+        }
+      },
+    })
   }
 
   const handleExtendTokens = async (values: LockTokensModalFormValues) => {
     await extendPosition({
       position,
       lockupPeriodsInDays: values.lockupPeriodInDays,
-      onInstructions: (ixs) =>
-        decideAndExecute(t('gov.transactions.extendLockup'), ixs),
+      onInstructions: async (ixs) => {
+        await decideAndExecute(t('gov.transactions.extendLockup'), ixs)
+        if (!extendingError) {
+          refetchState()
+        }
+      },
     })
-
-    if (!extendingError) {
-      refetchState()
-    }
   }
 
   const handleSplitTokens = async (values: LockTokensModalFormValues) => {
@@ -341,13 +342,13 @@ export const PositionCard = ({
       amount: values.amount,
       lockupKind: values.lockupKind.value,
       lockupPeriodsInDays: values.lockupPeriodInDays,
-      onInstructions: (ixs, sigs) =>
-        decideAndExecute(t('gov.transactions.splitPosition'), ixs, sigs),
+      onInstructions: async (ixs, sigs) => {
+        await decideAndExecute(t('gov.transactions.splitPosition'), ixs, sigs)
+        if (!splitingError) {
+          refetchState()
+        }
+      },
     })
-
-    if (!splitingError) {
-      refetchState()
-    }
   }
 
   const handleTransferTokens = async (
@@ -358,38 +359,38 @@ export const PositionCard = ({
       sourcePosition: position,
       amount,
       targetPosition,
-      onInstructions: (ixs) =>
-        decideAndExecute(t('gov.transactions.transferPosition'), ixs),
+      onInstructions: async (ixs) => {
+        await decideAndExecute(t('gov.transactions.transferPosition'), ixs)
+        if (!transferingError) {
+          refetchState()
+        }
+      },
     })
-
-    if (!transferingError) {
-      refetchState()
-    }
   }
 
   const handleDelegateTokens = async (subDao: SubDaoWithMeta) => {
     await delegatePosition({
       position,
       subDao,
-      onInstructions: (ixs) =>
-        decideAndExecute(t('gov.transactions.delegatePosition'), ixs),
+      onInstructions: async (ixs) => {
+        await decideAndExecute(t('gov.transactions.delegatePosition'), ixs)
+        if (!delegatingError) {
+          refetchState()
+        }
+      },
     })
-
-    if (!delegatingError) {
-      refetchState()
-    }
   }
 
   const handleUndelegateTokens = async () => {
     await undelegatePosition({
       position,
-      onInstructions: (ixs) =>
-        decideAndExecute(t('gov.transactions.undelegatePosition'), ixs),
+      onInstructions: async (ixs) => {
+        await decideAndExecute(t('gov.transactions.undelegatePosition'), ixs)
+        if (!undelegatingError) {
+          refetchState()
+        }
+      },
     })
-
-    if (!undelegatingError) {
-      refetchState()
-    }
   }
 
   const actions = () => {
