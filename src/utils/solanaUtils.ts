@@ -1297,6 +1297,7 @@ export const getAllTransactions = async (
   anchorProvider: AnchorProvider,
   cluster: Cluster,
   oldestTransaction?: string,
+  newestTransaction?: string,
 ): Promise<(EnrichedTransaction | ConfirmedSignatureInfo)[]> => {
   const pubKey = new PublicKey(address)
   const conn = anchorProvider.connection
@@ -1312,6 +1313,7 @@ export const getAllTransactions = async (
     const txList = await conn.getSignaturesForAddress(pubKey, {
       before: oldestTransaction,
       limit: 100,
+      until: newestTransaction,
     })
     const sigList = txList.map((tx) => tx.signature)
 

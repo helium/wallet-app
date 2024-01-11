@@ -34,6 +34,7 @@ import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
 import { getConnection, isVersionedTransaction } from '../utils/solanaUtils'
+import { AsyncAccountCache } from './AsyncAccountCache'
 
 const useSolanaHook = () => {
   const { currentAccount } = useAccountStorage()
@@ -180,16 +181,39 @@ const useSolanaHook = () => {
     })
   }, [connection, currentAccount, secureAcct, signTxn])
 
-  const cache = useMemo(() => {
-    if (!connection) return
+  const { result: cache } = useAsync(async () => {
+    if (!connection || !cluster) return
 
+    const asyncCache = new AsyncAccountCache(`accounts-${cluster}`)
+    try {
+      await asyncCache.init()
+    } catch (e) {
+      console.error('Failed to init cache', e)
+    }
     const c = new AccountFetchCache({
       connection,
       delay: 100,
       commitment: 'confirmed',
       missingRefetchDelay: 60 * 1000,
       extendConnection: true,
+      cache: asyncCache,
     })
+    // Async fetch the cache accounts to check for changes and update account fetch cache
+    ;(async () => {
+      const keys = asyncCache.keys().map((k) => new PublicKey(k))
+      const accts = await connection.getMultipleAccountsInfo(keys)
+      accts.forEach((acc, index) => {
+        if (acc) {
+          const key = keys[index]
+          if (!c.get(key)?.account.data.equals(acc.data)) {
+            c.updateCacheAndRaiseUpdated(key.toBase58(), {
+              pubkey: key,
+              account: acc,
+            })
+          }
+        }
+      })
+    })()
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     if (!connection.wrapped) {
@@ -223,7 +247,7 @@ const useSolanaHook = () => {
     }
 
     return c
-  }, [connection])
+  }, [connection, cluster])
   useEffect(() => {
     // Don't sub to hnt or dc they change a bunch
     cache?.statics.add(HNT_MINT.toBase58())

@@ -174,11 +174,12 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
       wallet &&
       mint &&
       connection && {
-        wallet: anchorProvider?.wallet.publicKey,
+        wallet,
         mint,
         provider: anchorProvider,
       },
-    [mint, wallet, connection, anchorProvider],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [wallet?.toBase58(), mint.toBase58(), connection, anchorProvider],
   )
 
   const { result, loading: loadingPositionKeys } = useAsync(
