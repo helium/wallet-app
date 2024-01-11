@@ -328,7 +328,7 @@ export const PositionCard = ({
       position,
       lockupPeriodsInDays: values.lockupPeriodInDays,
       onInstructions: async (ixs) => {
-        await decideAndExecute(t('gov.transactions.extendLockup'), ixs)
+        await decideAndExecute(t('gov.transactions.extendPosition'), ixs)
         if (!extendingError) {
           refetchState()
         }
@@ -679,8 +679,8 @@ export const PositionCard = ({
                         color="primaryText"
                         textAlign="right"
                       >
-                        {votingMint.genesisVotePowerMultiplier}x ($
-                        {getTimeLeftFromNowFmt(position.genesisEnd)}
+                        {votingMint.genesisVotePowerMultiplier}x (
+                        {getTimeLeftFromNowFmt(position.genesisEnd)})
                       </Text>
                     </Box>
                   )}

@@ -103,12 +103,18 @@ const WalletSignBottomSheetTransaction = ({
                   if (change.type === 'send') {
                     balanceChange = t('browserScreen.sendToken', {
                       ticker: change.symbol,
-                      amount: change.nativeChange,
+                      amount: change.nativeChange.toLocaleString('fullwide', {
+                        useGrouping: false,
+                        maximumSignificantDigits: 20,
+                      }),
                     })
                   } else {
                     balanceChange = t('browserScreen.receiveToken', {
                       ticker: change.symbol,
-                      amount: change.nativeChange,
+                      amount: change.nativeChange.toLocaleString('fullwide', {
+                        useGrouping: false,
+                        maximumSignificantDigits: 20,
+                      }),
                     })
                   }
                 }
