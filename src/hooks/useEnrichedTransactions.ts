@@ -39,7 +39,6 @@ const useEnrichedTransactions = (): {
   )
 
   useEffect(() => {
-
     if (transactions.length > 0) {
       AsyncStorage.setItem(
         `txs-${cluster}-${currentAccount?.solanaAddress}`,
