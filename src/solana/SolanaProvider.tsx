@@ -205,10 +205,12 @@ const useSolanaHook = () => {
       accts.forEach((acc, index) => {
         if (acc) {
           const key = keys[index]
-          c.updateCacheAndRaiseUpdated(key.toBase58(), {
-            pubkey: key,
-            account: acc,
-          })
+          if (!c.get(key)?.account.data.equals(acc.data)) {
+            c.updateCacheAndRaiseUpdated(key.toBase58(), {
+              pubkey: key,
+              account: acc,
+            })
+          }
         }
       })
     })()
