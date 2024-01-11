@@ -3,7 +3,7 @@ import { AccountFetchCache } from '@helium/account-fetch-cache'
 import { AccountContext } from '@helium/account-fetch-cache-hooks'
 import { SolanaProvider as SolanaProviderRnHelium } from '@helium/react-native-sdk'
 import { ConnectionContext } from '@solana/wallet-adapter-react'
-import { DC_MINT, HNT_MINT } from '@helium/spl-utils'
+import { DC_MINT, HNT_MINT, chunks } from '@helium/spl-utils'
 import {
   AccountInfo,
   Cluster,
@@ -201,7 +201,11 @@ const useSolanaHook = () => {
     // Async fetch the cache accounts to check for changes and update account fetch cache
     ;(async () => {
       const keys = asyncCache.keys().map((k) => new PublicKey(k))
-      const accts = await connection.getMultipleAccountsInfo(keys)
+      const accts = (
+        await Promise.all(
+          chunks(keys, 100).map((k) => connection.getMultipleAccountsInfo(k)),
+        )
+      ).flat()
       accts.forEach((acc, index) => {
         if (acc) {
           const key = keys[index]
