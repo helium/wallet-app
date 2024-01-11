@@ -48,7 +48,7 @@ export const GovernanceScreen = () => {
         Animated.sequence([
           // increase size
           Animated.timing(anim.current, {
-            toValue: 1.05,
+            toValue: 1.7,
             duration: 2000,
             useNativeDriver: true,
           }),
@@ -92,33 +92,50 @@ export const GovernanceScreen = () => {
 
               return (
                 <Box key={m} position="relative">
-                  <Box zIndex={2}>
-                    <TokenPill
-                      mint={pk}
-                      isActive={mint.equals(pk)}
-                      onPress={() => setMint(pk)}
-                      activeColor="secondaryBackground"
-                    />
-                  </Box>
+                  <TokenPill
+                    mint={pk}
+                    isActive={mint.equals(pk)}
+                    onPress={() => setMint(pk)}
+                    inactiveColor="secondaryBackground"
+                    activeColor="secondary"
+                  />
                   {!mint.equals(pk) && hasUnseenProposals && (
                     <Box
+                      flexDirection="row"
+                      alignItems="center"
+                      marginRight="s"
                       position="absolute"
-                      top={0}
-                      left={0}
-                      right={0}
-                      bottom={0}
+                      top={-4}
+                      right={4}
                     >
-                      <Animated.View
-                        style={{ transform: [{ scale: anim.current }] }}
-                      >
+                      <Box>
                         <Box
-                          opacity={0.3}
+                          zIndex={2}
+                          width={12}
+                          height={12}
+                          backgroundColor="flamenco"
                           borderRadius="round"
-                          width="100%"
-                          height="100%"
-                          backgroundColor="white"
                         />
-                      </Animated.View>
+                        <Box
+                          position="absolute"
+                          top={0}
+                          left={0}
+                          right={0}
+                          bottom={0}
+                        >
+                          <Animated.View
+                            style={{ transform: [{ scale: anim.current }] }}
+                          >
+                            <Box
+                              opacity={0.3}
+                              borderRadius="round"
+                              width="100%"
+                              height="100%"
+                              backgroundColor="flamenco"
+                            />
+                          </Animated.View>
+                        </Box>
+                      </Box>
                     </Box>
                   )}
                 </Box>

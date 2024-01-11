@@ -6,6 +6,7 @@ import { PublicKey } from '@solana/web3.js'
 import { useCreateOpacity } from '@theme/themeHooks'
 import React, { memo, useCallback } from 'react'
 import { Pressable, ViewStyle } from 'react-native'
+import { Color } from '@theme/theme'
 import CarotDown from '../assets/images/carotDownFull.svg'
 
 export const TokenPill = memo(
@@ -25,8 +26,8 @@ export const TokenPill = memo(
     isDisabled?: boolean
     onPress: () => void
     style?: ViewStyle | undefined
-    activeColor?: string
-    inactiveColor?: string
+    activeColor?: Color
+    inactiveColor?: Color
   }) => {
     const { symbol, json } = useMetaplexMetadata(mint)
     const { backgroundStyle: generateBackgroundStyle } = useCreateOpacity()
@@ -45,7 +46,7 @@ export const TokenPill = memo(
           return generateBackgroundStyle('surfaceSecondary', 0.5)
         }
         if (pressed) {
-          return generateBackgroundStyle('surfaceSecondary', 1.0)
+          return generateBackgroundStyle(activeColor || 'surfaceSecondary', 1.0)
         }
         if (active) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
