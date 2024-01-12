@@ -305,6 +305,9 @@ export default {
     selectExplorerSubtitle: 'Your choice will be saved in App Settings',
     activityDetails: 'Activity Details',
     myAccount: 'My Account',
+    scamWarning:
+      'NFTs sent to you may contain links to scams. Do not share your secret words with anyone, or sign transactions on unknown websites.',
+    showAnyway: 'Show me anyway',
     compressedNFTDescription: 'Minted {{ count }} {{ symbol }}(s).',
     enrichedTransactionTypes: {
       UNKNOWN: 'App Interaction',

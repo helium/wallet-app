@@ -27,6 +27,58 @@ import { EnrichedTransaction } from '../../types/solana'
 
 type Route = RouteProp<ActivityStackParamList, 'ActivityDetailsScreen'>
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function ScamWarningImageBox(props: any): React.ReactElement<any> {
+  const [dismissed, setDismissed] = useState(false)
+  const { t } = useTranslation()
+
+  if (!dismissed) {
+    return (
+      <Box
+        width={props.width}
+        height={props.height}
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        position="relative"
+      >
+        <ImageBox {...props} blurRadius={100} />
+        <Box
+          p="s"
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          alignItems="center"
+          justifyContent="center"
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          }}
+        >
+          <Text textAlign="center" variant="body1Bold" color="red500">
+            {t('activityScreen.scamWarning')}
+          </Text>
+          <ButtonPressable
+            title={t('activityScreen.showAnyway')}
+            onPress={() => setDismissed(true)}
+            borderRadius="round"
+            borderColor="red500"
+            borderWidth={1}
+            px="m"
+            titleColorDisabled="black500"
+            titleColor="red500"
+            fontWeight="500"
+            marginTop="l"
+          />
+        </Box>
+      </Box>
+    )
+  }
+
+  return <ImageBox {...props} />
+}
+
 const ActivityDetailsScreen = () => {
   const route = useRoute<Route>()
   const colors = useColors()
@@ -97,7 +149,7 @@ const ActivityDetailsScreen = () => {
       }
 
       return (
-        <ImageBox
+        <ScamWarningImageBox
           source={{
             uri: nft?.metadata?.image || '',
             cache: 'force-cache',
