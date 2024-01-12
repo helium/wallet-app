@@ -70,7 +70,7 @@ const ClaimingRewardsScreen = () => {
       '\n\n' +
       `signedTxn-sig: ${signedTxn?.signature}`
     sendMail({ subject: 'Claim error', body, isHTML: false })
-  }, [solanaPayment, anchorProvider, cluster, currentAccount])
+  }, [solanaPayment, anchorProvider, cluster, currentAccount?.solanaAddress])
 
   if (!currentAccount) {
     return null

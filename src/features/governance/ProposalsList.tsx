@@ -101,7 +101,7 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
         })
       }
     }
-  }, [proposals])
+  }, [proposalsWithDups])
 
   const handleFilterPress = (f: ProposalFilter) => () => {
     setFilter(f)

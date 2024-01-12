@@ -368,7 +368,13 @@ const BrowserWebViewScreen = () => {
         Logger.breadcrumb('Unknown type', type)
       }
     },
-    [anchorProvider, currentAccount, currentUrl, signMsg],
+    [
+      anchorProvider,
+      currentAccount?.address,
+      currentAccount?.solanaAddress,
+      currentUrl,
+      signMsg,
+    ],
   )
 
   const injectedJavascript = useCallback(() => {

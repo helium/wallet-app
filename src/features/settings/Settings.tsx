@@ -64,7 +64,7 @@ const Settings = () => {
 
   const isDefaultAccount = useMemo(
     () => defaultAccountAddress === currentAccount?.address,
-    [currentAccount, defaultAccountAddress],
+    [currentAccount?.address, defaultAccountAddress],
   )
 
   const isPinRequired = useMemo(
@@ -125,7 +125,7 @@ const Settings = () => {
 
   const handleSetDefaultAccount = useCallback(
     async (value?: boolean) => {
-      if (!isDefaultAccount && value && currentAccount && accounts) {
+      if (!isDefaultAccount && value && currentAccount?.alias && accounts) {
         // toggling on
         const oldAccount = Object.values(accounts).find(
           (a) => a.address === defaultAccountAddress,
@@ -152,7 +152,8 @@ const Settings = () => {
     },
     [
       accounts,
-      currentAccount,
+      currentAccount?.alias,
+      currentAccount?.address,
       defaultAccountAddress,
       isDefaultAccount,
       showOKAlert,

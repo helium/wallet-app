@@ -25,21 +25,9 @@ export const GovernanceScreen = () => {
   const navigation = useNavigation<GovernanceNavigationProp>()
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
   const { currentAccount } = useAccountStorage()
-  const {
-    loading,
-    mint,
-    setMint,
-    refetch,
-    proposalCountByMint,
-    hasUnseenProposals,
-  } = useGovernance()
+  const { loading, mint, setMint, proposalCountByMint, hasUnseenProposals } =
+    useGovernance()
   const anim = useRef(new Animated.Value(1))
-
-  useEffect(() => {
-    return navigation.addListener('focus', () => {
-      refetch()
-    })
-  }, [navigation, refetch])
 
   useEffect(() => {
     if (!loading && hasUnseenProposals) {

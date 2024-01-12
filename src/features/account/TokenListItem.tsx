@@ -19,6 +19,7 @@ import BN from 'bn.js'
 import React, { useCallback, useMemo } from 'react'
 import {
   getPositionKeys,
+  useHeliumVsrState,
   usePositions,
 } from '@helium/voter-stake-registry-hooks'
 import { useAsync } from 'react-async-hook'
@@ -168,6 +169,15 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
   const decimals = useMint(mint)?.info?.decimals
   const mintStr = mint.toBase58()
   const colors = useColors()
+  const {
+    positions: contextPositions,
+    mint: govMint,
+    loading: loadingContext,
+  } = useHeliumVsrState()
+  const useContextPositions = useMemo(
+    () => !!govMint?.equals(mint),
+    [govMint, mint],
+  )
 
   const args = useMemo(
     () =>
@@ -184,24 +194,31 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
 
   const { result, loading: loadingPositionKeys } = useAsync(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async (args: any | undefined) => {
-      if (args) {
+    async (args: any | undefined, useContext: boolean) => {
+      if (args && !useContext) {
         return getPositionKeys(args)
       }
     },
-    [args],
+    [args, useContextPositions],
   )
 
-  const { accounts: positions, loading: loadingPositions } = usePositions(
-    result?.positionKeys,
+  const { accounts: fetchedPositions, loading: loadingFetchedPositions } =
+    usePositions(result?.positionKeys)
+  const loadingPositions = loadingFetchedPositions || loadingContext
+  const positions = useMemo(
+    () =>
+      useContextPositions
+        ? contextPositions
+        : fetchedPositions?.map((fetched) => fetched.info),
+    [useContextPositions, contextPositions, fetchedPositions],
   )
 
   const { amountLocked } = useMemo(() => {
     if (positions && positions.length) {
       let amountLocked = new BN(0)
       positions.forEach((position) => {
-        if (position && position.info) {
-          amountLocked = amountLocked.add(position.info.amountDepositedNative)
+        if (position) {
+          amountLocked = amountLocked.add(position.amountDepositedNative)
         }
       })
 

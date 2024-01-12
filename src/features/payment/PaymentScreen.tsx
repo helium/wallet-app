@@ -257,7 +257,7 @@ const PaymentScreen = () => {
 
   const handleBalance = useCallback(
     (opts: { balance: BN; payee?: string; index?: number }) => {
-      if (opts.index === undefined || !currentAccount) return
+      if (opts.index === undefined || !currentAccount?.address) return
 
       dispatch({
         type: 'updateBalance',
@@ -267,7 +267,7 @@ const PaymentScreen = () => {
         payer: currentAccount.address,
       })
     },
-    [currentAccount, dispatch],
+    [currentAccount?.address, dispatch],
   )
 
   const handleQrScan = useCallback(() => {
@@ -287,7 +287,7 @@ const PaymentScreen = () => {
       !!lastPayee.amount &&
       lastPayee.amount?.gt(new BN(0))
     )
-  }, [currentAccount, paymentState.payments])
+  }, [currentAccount?.ledgerDevice, paymentState.payments])
 
   const payments = useMemo(
     (): Array<SendDetails> =>
@@ -374,7 +374,7 @@ const PaymentScreen = () => {
         if (!p.address || !Address.isValid(p.address)) return false
         return accountNetType(p.address) !== currentAccount?.netType
       }),
-    [currentAccount, paymentState.payments],
+    [currentAccount?.netType, paymentState.payments],
   )
 
   const errors = useMemo(() => {

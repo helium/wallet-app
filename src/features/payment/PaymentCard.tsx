@@ -52,7 +52,7 @@ const PaymentCard = ({
     }
     animateTransition('PaymentCard.payEnabled')
     setPayEnabled(true)
-  }, [currentAccount])
+  }, [currentAccount?.ledgerDevice, currentAccount?.address])
 
   const handleLayout = useCallback(
     (e: LayoutChangeEvent) => {

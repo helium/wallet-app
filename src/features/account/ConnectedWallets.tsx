@@ -163,7 +163,12 @@ const ConnectedWallets = forwardRef(
           </TouchableContainer>
         )
       },
-      [currentAccount, handleAccountChange, primaryText, setListItemHeight],
+      [
+        currentAccount?.address,
+        handleAccountChange,
+        primaryText,
+        setListItemHeight,
+      ],
     )
 
     const footer = useCallback(

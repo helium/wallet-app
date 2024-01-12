@@ -140,9 +140,10 @@ const AccountsScreen = () => {
   }, [balanceHistory, showChart])
 
   useEffect(() => {
-    if (!currentAccount || !!currentAccount.ledgerDevice) return
-    checkSecureAccount(currentAccount.address)
-  }, [currentAccount])
+    if (currentAccount?.ledgerDevice) return
+    const address = currentAccount?.address
+    if (address) checkSecureAccount(address)
+  }, [currentAccount?.address, currentAccount?.ledgerDevice])
 
   useEffect(() => {
     if (openedNotification && !locked) {
@@ -156,7 +157,7 @@ const AccountsScreen = () => {
 
     // Set onboarding back to import when navigating away
     setOnboardingType('import')
-  }, [currentAccount, onboardingType])
+  }, [currentAccount?.address, onboardingType])
 
   // Hook that is used for helium balance widget.
   useAsync(async () => {

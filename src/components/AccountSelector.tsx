@@ -112,7 +112,7 @@ const AccountSelector = forwardRef(
           />
         )
       },
-      [currentAccount, handleAccountPress],
+      [currentAccount?.address, handleAccountPress],
     )
     const renderBackdrop = useCallback(
       (props) => (
