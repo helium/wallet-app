@@ -15,10 +15,9 @@ import { humanReadable } from '@utils/formatting'
 import axios from 'axios'
 import BN from 'bn.js'
 import MarkdownIt from 'markdown-it'
-import React, { useRef, useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
-import { Animated } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
@@ -51,7 +50,6 @@ export const ProposalCard = ({
   ...boxProps
 }: IProposalCardProps) => {
   const { t } = useTranslation()
-  const anim = useRef(new Animated.Value(1))
   const { currentAccount } = useAccountStorage()
   const { mint } = useGovernance()
   const { proposalConfig: proposalConfigKey } = proposal
@@ -61,6 +59,11 @@ export const ProposalCard = ({
     proposalConfig?.stateController,
   )
 
+  const derivedState = useMemo(
+    () => getDerivedProposalState(proposal),
+    [proposal],
+  )
+
   const hasSeen = useMemo(() => {
     if (currentAccount?.proposalIdsSeenByMint) {
       return currentAccount.proposalIdsSeenByMint[mint.toBase58()]?.includes(
@@ -68,36 +71,6 @@ export const ProposalCard = ({
       )
     }
   }, [currentAccount?.proposalIdsSeenByMint, mint, proposalKey])
-
-  useEffect(() => {
-    if (!hasSeen) {
-      const res = Animated.loop(
-        // runs given animations in a sequence
-        Animated.sequence([
-          // increase size
-          Animated.timing(anim.current, {
-            toValue: 1.7,
-            duration: 2000,
-            useNativeDriver: true,
-          }),
-          // decrease size
-          Animated.timing(anim.current, {
-            toValue: 1,
-            duration: 2000,
-            useNativeDriver: true,
-          }),
-        ]),
-      )
-
-      // start the animation
-      res.start()
-
-      return () => {
-        // stop animation
-        res.reset()
-      }
-    }
-  }, [hasSeen])
 
   const endTs =
     resolution &&
@@ -133,11 +106,6 @@ export const ProposalCard = ({
     return { totalVotes }
   }, [proposal])
 
-  const derivedState = useMemo(
-    () => getDerivedProposalState(proposal),
-    [proposal],
-  )
-
   const isLoading = descLoading
   const handleOnPress = useCallback(async () => {
     if (onPress) await onPress(mint, proposalKey)
@@ -160,48 +128,55 @@ export const ProposalCard = ({
           padding="m"
           paddingBottom={derivedState === 'active' ? 'm' : 's'}
         >
-          {!hasSeen && (
-            <Box flexDirection="row" marginBottom="s">
-              <Box flexDirection="row" alignItems="center" marginRight="s">
-                <Box>
+          <Box flexDirection="row" flexWrap="wrap">
+            {!hasSeen && derivedState === 'active' && (
+              <Box marginRight="s" marginBottom="s">
+                <Box
+                  flexDirection="row"
+                  padding="s"
+                  alignItems="center"
+                  backgroundColor="surfaceSecondary"
+                  borderRadius="m"
+                >
                   <Box
                     zIndex={2}
-                    width={12}
-                    height={12}
+                    width={10}
+                    height={10}
                     backgroundColor="flamenco"
                     borderRadius="round"
                   />
-                  <Box
-                    position="absolute"
-                    top={0}
-                    left={0}
-                    right={0}
-                    bottom={0}
-                  >
-                    <Animated.View
-                      style={{ transform: [{ scale: anim.current }] }}
-                    >
-                      <Box
-                        opacity={0.3}
-                        borderRadius="round"
-                        width="100%"
-                        height="100%"
-                        backgroundColor="flamenco"
-                      />
-                    </Animated.View>
-                  </Box>
+                  <Text fontSize={10} color="secondaryText" marginLeft="s">
+                    UNSEEN
+                  </Text>
                 </Box>
-                <Text fontSize={10} color="secondaryText" marginLeft="s">
-                  UNSEEN
-                </Text>
               </Box>
-            </Box>
-          )}
-          <Box flexDirection="row" marginBottom="s">
+            )}
+            {hasSeen && derivedState === 'active' && (
+              <Box marginRight="s" marginBottom="s">
+                <Box
+                  flexDirection="row"
+                  padding="s"
+                  alignItems="center"
+                  backgroundColor="surfaceSecondary"
+                  borderRadius="m"
+                >
+                  <Box
+                    zIndex={2}
+                    width={10}
+                    height={10}
+                    backgroundColor="blueBright500"
+                    borderRadius="round"
+                  />
+                  <Text fontSize={10} color="secondaryText" marginLeft="s">
+                    ACTIVE
+                  </Text>
+                </Box>
+              </Box>
+            )}
             {proposal?.tags
               .filter((tag) => tag !== 'tags')
               .map((tag) => (
-                <Box key={tag} marginRight="s">
+                <Box key={tag} marginRight="s" marginBottom="s">
                   <Box
                     padding="s"
                     backgroundColor={
