@@ -207,7 +207,7 @@ export const ProposalScreen = () => {
       await vote({
         choice: choice.index,
         onInstructions: (ixs) =>
-          decideAndExecute(t('gov.transctions.castVote'), ixs),
+          decideAndExecute(t('gov.transactions.castVote'), ixs),
       })
     }
   }
