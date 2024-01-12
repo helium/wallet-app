@@ -10,6 +10,7 @@ import {
 } from '@helium/voter-stake-registry-hooks'
 import { useColors } from '@theme/themeHooks'
 import CircleLoader from '@components/CircleLoader'
+import { useGovernance } from '@storage/GovernanceProvider'
 import { PositionCard } from './PositionCard'
 
 interface IPositionsListProps extends BoxProps<Theme> {
@@ -20,12 +21,13 @@ export const PositionsList = ({
   positions = [],
   ...boxProps
 }: IPositionsListProps) => {
+  const { loading: loadingGov } = useGovernance()
   const { loading: loadingSubDaos, result: subDaos } = useSubDaos()
   const colors = useColors()
 
   const loading = useMemo(
-    () => !subDaos || loadingSubDaos,
-    [subDaos, loadingSubDaos],
+    () => !subDaos || loadingSubDaos || loadingGov,
+    [subDaos, loadingSubDaos, loadingGov],
   )
 
   const sortedPositions = useMemo(
