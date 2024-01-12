@@ -9,6 +9,7 @@ import {
   init,
   keyToAssetForAsset,
 } from '@helium/helium-entity-manager-sdk'
+import { Message } from '@helium/onboarding'
 import { Asset, getAsset, heliumAddressToSolAddress } from '@helium/spl-utils'
 import { SignHotspotResponse } from '@helium/wallet-link'
 import { getLeafAssetId } from '@metaplex-foundation/mpl-bubblegum'
@@ -18,11 +19,9 @@ import bs58 from 'bs58'
 import { get, last } from 'lodash'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
-import { Message } from '@helium/onboarding'
 import { useSolana } from '../../solana/SolanaProvider'
 import { getKeypair, getSolanaKeypair } from '../../storage/secureStorage'
 import { submitSolana } from '../../utils/solanaUtils'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
 const ValidTxnKeys = [
   'onboardIotHotspotV0',
@@ -57,7 +56,6 @@ const useSolTxns = (
     Partial<Record<ValidTxn, Txn>>
   >({} as Record<ValidTxn, Txn>)
   const [configMsg, setConfigMsg] = useState<Message>()
-  const { currentAccount } = useAccountStorage()
 
   const transactionList = useMemo(() => {
     const keys = ValidTxnKeys.filter((k) => k !== 'mintDataCreditsV0')
@@ -462,7 +460,6 @@ const useSolTxns = (
       responseParams.solanaTransactions = txnList.join(',')
 
       if (
-        currentAccount &&
         configMsgStr &&
         configMsg?.azimuth !== undefined &&
         configMsg?.height !== undefined
@@ -480,14 +477,7 @@ const useSolTxns = (
       }
       callback(responseParams)
     },
-    [
-      configMsg,
-      configMsgStr,
-      currentAccount,
-      gatewayAddress,
-      heliumAddress,
-      transactionList,
-    ],
+    [configMsg, configMsgStr, gatewayAddress, heliumAddress, transactionList],
   )
 
   const assertData = useMemo(() => {

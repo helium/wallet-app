@@ -25,13 +25,13 @@ const RevealPrivateKeyScreen = () => {
   useAsync(async () => {
     // don't remove key from secure store until they press reveal
     if (!revealed) return
-    if (!currentAccount || !currentAccount.address) return
+    if (!currentAccount?.address) return
     const secureAccount = await getSecureAccount(currentAccount.address)
     if (!secureAccount?.keypair.sk) return
     setPrivateKey(
       bs58.encode(Buffer.from(secureAccount?.keypair?.sk, 'base64')),
     )
-  }, [currentAccount, revealed])
+  }, [currentAccount?.address, revealed])
 
   const showConfirmDialog = useCallback(async () => {
     const decision = await showOKCancelAlert({

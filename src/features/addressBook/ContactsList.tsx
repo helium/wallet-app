@@ -134,7 +134,13 @@ const ContactsList = ({
         })
     }
     return listData.sort((a, b) => a.alias.localeCompare(b.alias))
-  }, [allContacts, currentAccount, hideCurrentAccount, searchTerm])
+  }, [
+    allContacts,
+    currentAccount?.address,
+    currentAccount?.solanaAddress,
+    hideCurrentAccount,
+    searchTerm,
+  ])
 
   if (insideBottomSheet) {
     return (

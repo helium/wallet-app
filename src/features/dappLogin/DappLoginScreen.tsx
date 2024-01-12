@@ -136,7 +136,7 @@ const DappLoginScreen = () => {
         message: (error as Error).toString(),
       })
     }
-  }, [approvePair, currentAccount, sessionProposal, showOKAlert, t])
+  }, [approvePair, currentAccount?.address, sessionProposal, showOKAlert, t])
 
   useAsync(async () => {
     if (!currentAccount?.address || !loginRequest) return
@@ -166,7 +166,7 @@ const DappLoginScreen = () => {
     if (params.callback && (await Linking.canOpenURL(params.callback))) {
       await Linking.openURL(params.callback)
     }
-  }, [currentAccount, loginRequest])
+  }, [currentAccount?.address, loginRequest])
 
   const checkTimeoutError = useCallback(async () => {
     if (connectionState !== 'undetermined') return

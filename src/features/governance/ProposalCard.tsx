@@ -67,7 +67,7 @@ export const ProposalCard = ({
         proposalKey.toBase58(),
       )
     }
-  }, [currentAccount, mint, proposalKey])
+  }, [currentAccount?.proposalIdsSeenByMint, mint, proposalKey])
 
   useEffect(() => {
     if (!hasSeen) {

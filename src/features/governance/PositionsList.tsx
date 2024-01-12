@@ -24,8 +24,8 @@ export const PositionsList = ({
   const colors = useColors()
 
   const loading = useMemo(
-    () => !subDaos || loadingSubDaos || !positions.length,
-    [subDaos, loadingSubDaos, positions],
+    () => !subDaos || loadingSubDaos,
+    [subDaos, loadingSubDaos],
   )
 
   const sortedPositions = useMemo(

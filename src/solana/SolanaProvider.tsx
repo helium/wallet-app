@@ -179,7 +179,13 @@ const useSolanaHook = () => {
       commitment: 'confirmed',
       skipPreflight: true,
     })
-  }, [connection, currentAccount, secureAcct, signTxn])
+  }, [
+    connection,
+    currentAccount?.solanaAddress,
+    currentAccount?.ledgerDevice,
+    secureAcct,
+    signTxn,
+  ])
 
   const { result: cache } = useAsync(async () => {
     if (!connection || !cluster) return

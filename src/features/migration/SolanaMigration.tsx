@@ -122,7 +122,6 @@ const SolanaMigration = ({
     onProgress,
     retry,
     cluster,
-    currentAccount,
     dispatch,
     doneSolanaMigration,
     updateDoneSolanaMigration,

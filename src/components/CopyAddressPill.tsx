@@ -27,7 +27,7 @@ const CopyAddressPill = ({ ...rest }: BoxProps<Theme>) => {
       message: ellipsizeAddress(currentAccount?.solanaAddress),
       copyText: currentAccount?.solanaAddress,
     })
-  }, [copyText, currentAccount, triggerImpact])
+  }, [copyText, currentAccount?.solanaAddress, triggerImpact])
 
   const CopyAddressStyles = useMemo(() => {
     return {

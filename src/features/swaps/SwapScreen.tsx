@@ -595,8 +595,7 @@ const SwapScreen = () => {
       try {
         setSwapping(true)
 
-        if (!currentAccount || !currentAccount.solanaAddress)
-          throw new Error('No account found')
+        if (!currentAccount?.solanaAddress) throw new Error('No account found')
 
         if (recipient && !solAddressIsValid(recipient)) {
           setSwapping(false)
@@ -641,7 +640,7 @@ const SwapScreen = () => {
     }
   }, [
     connection,
-    currentAccount,
+    currentAccount?.solanaAddress,
     recipient,
     inputMint,
     inputAmount,

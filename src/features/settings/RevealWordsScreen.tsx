@@ -16,10 +16,10 @@ const RevealWordsScreen = () => {
   const [mnemonic, setMnemonic] = useState<string[]>()
 
   useAsync(async () => {
-    if (!currentAccount || !currentAccount.address) return
+    if (!currentAccount?.address) return
     const secureAccount = await getSecureAccount(currentAccount.address)
     setMnemonic(secureAccount?.mnemonic)
-  }, [currentAccount])
+  }, [currentAccount?.address])
 
   const ListHeaderComponent = useMemo(() => {
     return (

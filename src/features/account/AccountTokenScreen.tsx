@@ -191,7 +191,7 @@ const AccountTokenScreen = () => {
         mint,
       })
     },
-    [currentAccount, showTxnDetail, mint],
+    [currentAccount?.address, showTxnDetail, mint],
   )
 
   const hasAirdrop = useMemo(() => {
