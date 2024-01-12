@@ -424,12 +424,7 @@ export const ProposalScreen = () => {
                         </Text>
                       </Box>
                     )}
-                    <Box
-                      flex={1}
-                      flexDirection="column"
-                      flexWrap="wrap"
-                      {...{ gap: 8 }}
-                    >
+                    <Box flex={1} flexDirection="column" {...{ gap: 8 }}>
                       {votingResults.results?.map((r) => (
                         <VoteOption
                           key={r.name}
