@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { useOpacity } from '@theme/themeHooks'
 import React, { memo } from 'react'
+import SecretKeyWarningScreen from '@components/SecretKeyWarningScreen'
 import SolanaMigration from '../migration/SolanaMigration'
 import AutoGasManager from './AutoGasManager'
 import ConfirmSignoutScreen from './ConfirmSignoutScreen'
@@ -16,6 +17,22 @@ const SettingsStack = createNativeStackNavigator()
 
 const SolanaMigrationWrapper = () => {
   return <SolanaMigration hideBack={false} manual />
+}
+
+const RevealWordsWrapper = () => {
+  return (
+    <SecretKeyWarningScreen>
+      <RevealWordsScreen />
+    </SecretKeyWarningScreen>
+  )
+}
+
+const RevealPrivateKeyWrapper = () => {
+  return (
+    <SecretKeyWarningScreen>
+      <RevealPrivateKeyScreen />
+    </SecretKeyWarningScreen>
+  )
 }
 
 const SettingsNavigator = () => {
@@ -40,12 +57,12 @@ const SettingsNavigator = () => {
       />
       <SettingsStack.Screen
         name="RevealWords"
-        component={RevealWordsScreen}
+        component={RevealWordsWrapper}
         options={{ presentation: 'fullScreenModal' }}
       />
       <SettingsStack.Screen
         name="RevealPrivateKey"
-        component={RevealPrivateKeyScreen}
+        component={RevealPrivateKeyWrapper}
         options={{ presentation: 'fullScreenModal' }}
       />
       <SettingsStack.Screen name="UpdateAlias" component={UpdateAliasScreen} />
