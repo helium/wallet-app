@@ -96,7 +96,7 @@ const Settings = () => {
         keyToAsset.asset,
         anchorProvider,
       )
-      if (collectable.ownership.owner !== wallet.toBase58()) {
+      if (collectable.ownership.owner.toString() !== wallet.toBase58()) {
         collectNav.push('CollectablesTopTab')
       }
 

@@ -247,7 +247,7 @@ const AssertLocationScreen = () => {
       setAsserting(true)
       try {
         hideElevGain()
-        if (collectable.ownership.owner !== wallet.toBase58()) {
+        if (collectable.ownership.owner.toString() !== wallet.toBase58()) {
           throw new Error(t('assertLocationScreen.error.wrongOwner'))
         }
         const requiredDc =
