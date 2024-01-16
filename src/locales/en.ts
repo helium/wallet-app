@@ -463,7 +463,9 @@ export default {
   },
   secretKeyWarningScreen: {
     title: 'Warning! Nobody should ask for your secret phrase or private key.',
-    body: 'Would you give the username and password to your bank account? The answer is no. Nobody should have your secret phrase. Not even helium employees.',
+    body: 'Would you give the username and password to your bank account? The answer is no. Nobody should have your secret phrase. Not even someone claiming to be a "Helium employee" or "Helium support."',
+    youMayContinueInSeconds: 'You may continue in {{seconds}} seconds',
+    goBack: 'Go Back',
     proceed: 'Proceed with caution',
   },
   defiTutorial: {
