@@ -469,6 +469,13 @@ export default {
       'Please be advised that the subDAO treasury has only been active for a few days since the Solana migration. Swapping subtokens to HNT may be affected by a limited HNT supply in the subDAO treasury and may not reflect up-to-date prices. Please proceed with caution.',
     addRecipient: 'Add Recipient',
   },
+  secretKeyWarningScreen: {
+    title: 'Warning! Nobody should ask for your secret phrase or private key.',
+    body: 'Would you give the username and password to your bank account? The answer is no. Nobody should have your secret phrase. Not even someone claiming to be a "Helium employee" or "Helium support."',
+    youMayContinueInSeconds: 'You may continue in {{seconds}} seconds',
+    goBack: 'Go Back',
+    proceed: 'Proceed with caution',
+  },
   defiTutorial: {
     title: 'Safety Tips',
     enterDApps: 'Enter Browser',
