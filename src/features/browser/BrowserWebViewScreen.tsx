@@ -11,7 +11,7 @@ import {
 import { Transaction, VersionedTransaction } from '@solana/web3.js'
 import { useSpacing } from '@theme/themeHooks'
 import bs58 from 'bs58'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { Platform, StyleSheet } from 'react-native'
 import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
@@ -57,18 +57,15 @@ const BrowserWebViewScreen = () => {
   const walletSignBottomSheetRef = useRef<WalletSignBottomSheetRef | null>(null)
 
   const [currentUrl, setCurrentUrl] = useState(uri)
-  const [accountAddress, setAccountAddress] = useState<string>('')
+  const accountAddress = useMemo(
+    () => currentAccount?.solanaAddress,
+    [currentAccount?.solanaAddress],
+  )
   const { top, bottom } = useSafeAreaInsets()
   const navigation = useNavigation<BrowserNavigationProp>()
   const { favorites, addFavorite, removeFavorite } = useBrowser()
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
   const spacing = useSpacing()
-
-  useEffect(() => {
-    if (currentAccount?.solanaAddress) {
-      setAccountAddress(currentAccount?.solanaAddress || '')
-    }
-  }, [currentAccount])
 
   const isFavorite = useMemo(() => {
     return favorites.some((favorite) => favorite === currentUrl)
@@ -382,9 +379,9 @@ const BrowserWebViewScreen = () => {
     ${injectWalletStandard.toString()}
 
     // noinspection JSIgnoredPromiseFromCall
-    injectWalletStandard("${accountAddress}", [${bs58.decode(
-      accountAddress,
-    )}], ${isAndroid});
+    injectWalletStandard("${accountAddress}", [${
+      accountAddress && bs58.decode(accountAddress)
+    }], ${isAndroid});
     true;
     `
 
@@ -511,6 +508,10 @@ const BrowserWebViewScreen = () => {
             onMessage={onMessage}
             source={{
               uri,
+            }}
+            onShouldStartLoadWithRequest={(event) => {
+              // Sites should not do this, but if you click MWA on realms it bricks us
+              return !event.url.startsWith('solana-wallet:')
             }}
           />
           <BrowserFooter />
