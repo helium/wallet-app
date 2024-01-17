@@ -18,6 +18,7 @@ export type TabBarStackParamList = {
   Collectables: undefined
   Swaps: undefined
   Activity: undefined
+  Governance: undefined
   NotificationsNavigator: undefined
 }
 
