@@ -20,7 +20,7 @@ export type ProposalFilter =
 
 export type GovernanceStackParamList = {
   GovernanceTutorialScreen: undefined
-  GovernanceScreen: undefined
+  GovernanceScreen: { mint?: string; proposal?: string }
   VotingPowerScreen: { mint: string }
   ProposalScreen: { mint: string; proposal: string }
 }

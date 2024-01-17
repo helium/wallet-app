@@ -5,7 +5,7 @@ import { DelayedFadeIn } from '@components/FadeInOut'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TokenPill from '@components/TokenPill'
-import { useNavigation } from '@react-navigation/native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import globalStyles from '@theme/globalStyles'
 import React, { useEffect, useMemo, useRef } from 'react'
 import { ScrollView, Animated } from 'react-native'
@@ -18,16 +18,33 @@ import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { ProposalsList } from './ProposalsList'
 import { VotingPowerCard } from './VotingPowerCard'
-import { GovernanceNavigationProp } from './governanceTypes'
+import {
+  GovernanceStackParamList,
+  GovernanceNavigationProp,
+} from './governanceTypes'
 
+type Route = RouteProp<GovernanceStackParamList, 'GovernanceScreen'>
 export const GovernanceScreen = () => {
   const { t } = useTranslation()
+  const route = useRoute<Route>()
   const navigation = useNavigation<GovernanceNavigationProp>()
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
   const { currentAccount } = useAccountStorage()
   const { loading, mint, setMint, proposalCountByMint, hasUnseenProposals } =
     useGovernance()
   const anim = useRef(new Animated.Value(1))
+
+  useEffect(() => {
+    // if we have a mint and proposal, navigate to the proposal screen
+    // this is used for deep linking and to maintain
+    // GovernanceScreen as the back button
+    if (route.params?.mint && route.params?.proposal) {
+      navigation.navigate('ProposalScreen', {
+        mint: route.params.mint,
+        proposal: route.params.proposal,
+      })
+    }
+  }, [route, navigation])
 
   useEffect(() => {
     if (!loading && hasUnseenProposals) {

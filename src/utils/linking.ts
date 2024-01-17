@@ -33,8 +33,7 @@ export const authenticatedLinking: LinkingOptions<RootStackParamList> = {
         screens: {
           Governance: {
             screens: {
-              GovernanceScreen: 'governance',
-              ProposalScreen: 'governance/:mint/proposal/:proposal',
+              GovernanceScreen: 'governance/:mint/proposal/:proposal',
             },
           },
         },
