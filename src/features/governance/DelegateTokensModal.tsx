@@ -4,7 +4,6 @@ import { FadeInFast } from '@components/FadeInOut'
 import { Portal } from '@gorhom/portal'
 import React, { useEffect, useMemo, useState } from 'react'
 import Text from '@components/Text'
-import SafeAreaBox from '@components/SafeAreaBox'
 import Box from '@components/Box'
 import { Edge } from 'react-native-safe-area-context'
 import { SubDaoWithMeta, useSubDaos } from '@helium/voter-stake-registry-hooks'
@@ -29,7 +28,6 @@ export const DelegateTokensModal = ({
   const [selectedSubDaoPk, setSelectedSubDaoPk] = useState<PublicKey | null>(
     null,
   )
-  const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])
 
   useEffect(() => {
@@ -74,129 +72,111 @@ export const DelegateTokensModal = ({
         width="100%"
       >
         <BackScreen
-          padding="none"
           hideBack
           edges={backEdges}
           onClose={handleOnClose}
+          backgroundColor="transparent"
+          flex={1}
+          padding="m"
+          marginHorizontal="s"
         >
-          <SafeAreaBox
-            edges={safeEdges}
-            backgroundColor="transparent"
-            flex={1}
-            padding="m"
-            marginHorizontal="s"
-            marginVertical="xs"
-          >
-            <Box flexGrow={1} justifyContent="center">
-              {!loading && (
-                <>
-                  <Text
-                    textAlign="left"
-                    variant="subtitle2"
-                    adjustsFontSizeToFit
-                  >
-                    {t('gov.transactions.delegatePosition')}
-                  </Text>
-                  <Text
-                    variant="subtitle4"
-                    color="secondaryText"
-                    marginBottom="m"
-                  >
-                    {t('gov.positions.selectSubDao')}
-                  </Text>
-                </>
-              )}
-              {loading && (
-                <Box justifyContent="center" alignItems="center">
-                  <CircleLoader loaderSize={20} />
-                  <Text
-                    variant="subtitle4"
-                    color="secondaryText"
-                    marginTop="ms"
-                  >
-                    {t('gov.positions.fetchingSubDaos')}
-                  </Text>
-                </Box>
-              )}
-              <Box>
-                {subDaos
-                  ?.sort((a, b) =>
-                    a.dntMetadata.name.localeCompare(b.dntMetadata.name),
-                  )
-                  .map((subDao, idx) => {
-                    const isSelected = selectedSubDaoPk?.equals(subDao.pubkey)
-
-                    return (
-                      <TouchableOpacityBox
-                        key={subDao.pubkey.toString()}
-                        borderRadius="l"
-                        marginTop={idx > 0 ? 'm' : 'none'}
-                        backgroundColor={
-                          isSelected ? 'secondaryBackground' : 'secondary'
-                        }
-                        onPress={() => setSelectedSubDaoPk(subDao.pubkey)}
-                      >
-                        <Box
-                          flexDirection="row"
-                          padding="ms"
-                          alignItems="center"
-                        >
-                          <Box
-                            borderColor="black"
-                            borderWidth={2}
-                            borderRadius="round"
-                          >
-                            <TokenIcon
-                              size={26}
-                              img={subDao.dntMetadata.json?.image || ''}
-                            />
-                          </Box>
-                          <Text
-                            variant="subtitle3"
-                            color="primaryText"
-                            marginLeft="m"
-                          >
-                            {subDao.dntMetadata.name}
-                          </Text>
-                        </Box>
-                      </TouchableOpacityBox>
-                    )
-                  })}
+          <Box flexGrow={1} justifyContent="center">
+            {!loading && (
+              <>
+                <Text textAlign="left" variant="subtitle2" adjustsFontSizeToFit>
+                  {t('gov.transactions.delegatePosition')}
+                </Text>
+                <Text
+                  variant="subtitle4"
+                  color="secondaryText"
+                  marginBottom="m"
+                >
+                  {t('gov.positions.selectSubDao')}
+                </Text>
+              </>
+            )}
+            {loading && (
+              <Box justifyContent="center" alignItems="center">
+                <CircleLoader loaderSize={20} />
+                <Text variant="subtitle4" color="secondaryText" marginTop="ms">
+                  {t('gov.positions.fetchingSubDaos')}
+                </Text>
               </Box>
+            )}
+            <Box>
+              {subDaos
+                ?.sort((a, b) =>
+                  a.dntMetadata.name.localeCompare(b.dntMetadata.name),
+                )
+                .map((subDao, idx) => {
+                  const isSelected = selectedSubDaoPk?.equals(subDao.pubkey)
+
+                  return (
+                    <TouchableOpacityBox
+                      key={subDao.pubkey.toString()}
+                      borderRadius="l"
+                      marginTop={idx > 0 ? 'm' : 'none'}
+                      backgroundColor={
+                        isSelected ? 'secondaryBackground' : 'secondary'
+                      }
+                      onPress={() => setSelectedSubDaoPk(subDao.pubkey)}
+                    >
+                      <Box flexDirection="row" padding="ms" alignItems="center">
+                        <Box
+                          borderColor="black"
+                          borderWidth={2}
+                          borderRadius="round"
+                        >
+                          <TokenIcon
+                            size={26}
+                            img={subDao.dntMetadata.json?.image || ''}
+                          />
+                        </Box>
+                        <Text
+                          variant="subtitle3"
+                          color="primaryText"
+                          marginLeft="m"
+                        >
+                          {subDao.dntMetadata.name}
+                        </Text>
+                      </Box>
+                    </TouchableOpacityBox>
+                  )
+                })}
             </Box>
-          </SafeAreaBox>
-        </BackScreen>
-        {showError && (
-          <Box
-            flexDirection="row"
-            justifyContent="center"
-            alignItems="center"
-            paddingTop="ms"
-          >
-            <Text variant="body3Medium" color="red500">
-              {showError}
-            </Text>
           </Box>
-        )}
-        <Box flexDirection="row" padding="m">
-          <ButtonPressable
-            flex={1}
-            fontSize={16}
-            borderRadius="round"
-            backgroundColor="white"
-            backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="surfaceSecondary"
-            backgroundColorDisabledOpacity={0.9}
-            titleColorDisabled="secondaryText"
-            title={isSubmitting ? '' : 'Delegate Tokens'}
-            titleColor="black"
-            onPress={handleSubmit}
-            disabled={!selectedSubDaoPk || isSubmitting}
-            TrailingComponent={
-              isSubmitting ? <CircleLoader color="white" /> : undefined
-            }
-          />
-        </Box>
+          {showError && (
+            <Box
+              flexDirection="row"
+              justifyContent="center"
+              alignItems="center"
+              paddingTop="ms"
+            >
+              <Text variant="body3Medium" color="red500">
+                {showError}
+              </Text>
+            </Box>
+          )}
+          <Box flexDirection="row" paddingTop="m">
+            <ButtonPressable
+              flex={1}
+              fontSize={16}
+              borderRadius="round"
+              backgroundColor="white"
+              backgroundColorOpacityPressed={0.7}
+              backgroundColorDisabled="surfaceSecondary"
+              backgroundColorDisabledOpacity={0.9}
+              titleColorDisabled="secondaryText"
+              title={isSubmitting ? '' : 'Delegate Tokens'}
+              titleColor="black"
+              onPress={handleSubmit}
+              disabled={!selectedSubDaoPk || isSubmitting}
+              TrailingComponent={
+                isSubmitting ? <CircleLoader color="white" /> : undefined
+              }
+            />
+          </Box>
+        </BackScreen>
       </ReAnimatedBlurBox>
     </Portal>
   )
