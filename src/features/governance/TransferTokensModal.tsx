@@ -134,15 +134,14 @@ export const TransferTokensModal = ({
             }
             onConfirmBalance={handleAmountChange}
           >
-            <ScrollView>
-              <SafeAreaBox
-                edges={safeEdges}
-                backgroundColor="transparent"
-                flex={1}
-                padding="m"
-                marginHorizontal="s"
-                marginVertical="xs"
-              >
+            <SafeAreaBox
+              edges={safeEdges}
+              backgroundColor="transparent"
+              flex={1}
+              paddingHorizontal="m"
+              marginHorizontal="s"
+            >
+              <ScrollView>
                 <Box flexGrow={1} justifyContent="center">
                   <Text
                     textAlign="left"
@@ -311,41 +310,43 @@ export const TransferTokensModal = ({
                     </>
                   )}
                 </Box>
-              </SafeAreaBox>
-            </ScrollView>
+                {showError && (
+                  <Box
+                    flexDirection="row"
+                    justifyContent="center"
+                    alignItems="center"
+                    paddingTop="m"
+                  >
+                    <Text variant="body3Medium" color="red500">
+                      {showError}
+                    </Text>
+                  </Box>
+                )}
+              </ScrollView>
+              <Box flexDirection="row" paddingTop="m">
+                <ButtonPressable
+                  flex={1}
+                  fontSize={16}
+                  borderRadius="round"
+                  backgroundColor="white"
+                  backgroundColorOpacityPressed={0.7}
+                  backgroundColorDisabled="surfaceSecondary"
+                  backgroundColorDisabledOpacity={0.9}
+                  titleColorDisabled="secondaryText"
+                  title={
+                    isSubmitting ? '' : t('gov.transactions.transferPosition')
+                  }
+                  titleColor="black"
+                  onPress={handleSubmit}
+                  disabled={!amount || !selectedPosPk || isSubmitting}
+                  TrailingComponent={
+                    isSubmitting ? <CircleLoader color="white" /> : undefined
+                  }
+                />
+              </Box>
+            </SafeAreaBox>
           </HNTKeyboard>
         </BackScreen>
-        {showError && (
-          <Box
-            flexDirection="row"
-            justifyContent="center"
-            alignItems="center"
-            paddingTop="m"
-          >
-            <Text variant="body3Medium" color="red500">
-              {showError}
-            </Text>
-          </Box>
-        )}
-        <Box flexDirection="row" padding="m">
-          <ButtonPressable
-            flex={1}
-            fontSize={16}
-            borderRadius="round"
-            backgroundColor="white"
-            backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="surfaceSecondary"
-            backgroundColorDisabledOpacity={0.9}
-            titleColorDisabled="secondaryText"
-            title={isSubmitting ? '' : t('gov.transactions.transferPosition')}
-            titleColor="black"
-            onPress={handleSubmit}
-            disabled={!amount || !selectedPosPk || isSubmitting}
-            TrailingComponent={
-              isSubmitting ? <CircleLoader color="white" /> : undefined
-            }
-          />
-        </Box>
       </ReAnimatedBlurBox>
     </Portal>
   )

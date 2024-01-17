@@ -83,9 +83,8 @@ export const DelegateTokensModal = ({
             edges={safeEdges}
             backgroundColor="transparent"
             flex={1}
-            padding="m"
+            paddingHorizontal="m"
             marginHorizontal="s"
-            marginVertical="xs"
           >
             <Box flexGrow={1} justifyContent="center">
               {!loading && (
@@ -164,39 +163,39 @@ export const DelegateTokensModal = ({
                   })}
               </Box>
             </Box>
+            {showError && (
+              <Box
+                flexDirection="row"
+                justifyContent="center"
+                alignItems="center"
+                paddingTop="ms"
+              >
+                <Text variant="body3Medium" color="red500">
+                  {showError}
+                </Text>
+              </Box>
+            )}
+            <Box flexDirection="row" paddingTop="m">
+              <ButtonPressable
+                flex={1}
+                fontSize={16}
+                borderRadius="round"
+                backgroundColor="white"
+                backgroundColorOpacityPressed={0.7}
+                backgroundColorDisabled="surfaceSecondary"
+                backgroundColorDisabledOpacity={0.9}
+                titleColorDisabled="secondaryText"
+                title={isSubmitting ? '' : 'Delegate Tokens'}
+                titleColor="black"
+                onPress={handleSubmit}
+                disabled={!selectedSubDaoPk || isSubmitting}
+                TrailingComponent={
+                  isSubmitting ? <CircleLoader color="white" /> : undefined
+                }
+              />
+            </Box>
           </SafeAreaBox>
         </BackScreen>
-        {showError && (
-          <Box
-            flexDirection="row"
-            justifyContent="center"
-            alignItems="center"
-            paddingTop="ms"
-          >
-            <Text variant="body3Medium" color="red500">
-              {showError}
-            </Text>
-          </Box>
-        )}
-        <Box flexDirection="row" padding="m">
-          <ButtonPressable
-            flex={1}
-            fontSize={16}
-            borderRadius="round"
-            backgroundColor="white"
-            backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="surfaceSecondary"
-            backgroundColorDisabledOpacity={0.9}
-            titleColorDisabled="secondaryText"
-            title={isSubmitting ? '' : 'Delegate Tokens'}
-            titleColor="black"
-            onPress={handleSubmit}
-            disabled={!selectedSubDaoPk || isSubmitting}
-            TrailingComponent={
-              isSubmitting ? <CircleLoader color="white" /> : undefined
-            }
-          />
-        </Box>
       </ReAnimatedBlurBox>
     </Portal>
   )
