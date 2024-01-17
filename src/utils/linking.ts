@@ -29,6 +29,16 @@ export const authenticatedLinking: LinkingOptions<RootStackParamList> = {
       PaymentScreen: 'payment',
       DappLoginScreen: 'dapp_login',
       ImportPrivateKey: 'import_key/:key',
+      TabBarNavigator: {
+        screens: {
+          Governance: {
+            screens: {
+              GovernanceScreen: 'governance',
+              ProposalScreen: 'governance/:mint/proposal/:proposal',
+            },
+          },
+        },
+      },
     },
   },
   getInitialURL: async () => {

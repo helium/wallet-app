@@ -418,7 +418,7 @@ export const PositionCard = ({
                   if (hasActiveVotes) {
                     showOKAlert({
                       title: t('gov.positions.unableToClose'),
-                      message: t('gov.errors.partakingInVote'),
+                      message: t('gov.positions.partakingInVote'),
                     })
                   } else {
                     await handleClosePosition()
@@ -437,7 +437,7 @@ export const PositionCard = ({
                     if (hasActiveVotes) {
                       showOKAlert({
                         title: t('gov.positions.unableToSplit'),
-                        message: t('gov.errors.partakingInVote'),
+                        message: t('gov.positions.partakingInVote'),
                       })
                     } else {
                       setIsSplitModalOpen(true)
@@ -454,7 +454,7 @@ export const PositionCard = ({
                     if (hasActiveVotes) {
                       showOKAlert({
                         title: t('gov.positions.unableToTransfer'),
-                        message: t('gov.errors.partakingInVote'),
+                        message: t('gov.positions.partakingInVote'),
                       })
                     } else {
                       setIsTransferModalOpen(true)
@@ -487,7 +487,7 @@ export const PositionCard = ({
                         title: isConstant
                           ? t('gov.positions.unableToUnpauseLockup')
                           : t('gov.positions.unableToPauseLockup'),
-                        message: t('gov.errors.partakingInVote'),
+                        message: t('gov.positions.partakingInVote'),
                       })
                     } else {
                       await handleFlipPositionLockupKind()
