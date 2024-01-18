@@ -29,7 +29,6 @@ import { RootState } from '../store/rootReducer'
 import { syncTokenAccounts } from '../store/slices/balancesSlice'
 import { useAppDispatch } from '../store/store'
 import { AccountBalance, BalanceInfo, TokenAccount } from '../types/balance'
-import StoreAtaBalance from './StoreAtaBalance'
 import { humanReadable } from './solanaUtils'
 import { useBalanceHistory } from './useBalanceHistory'
 import { usePollTokenPrices } from './usePollTokenPrices'
@@ -62,7 +61,8 @@ const useBalanceHook = () => {
     dispatch(
       syncTokenAccounts({ cluster, acct: currentAccount, anchorProvider }),
     )
-  }, [anchorProvider, cluster, currentAccount, dispatch])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anchorProvider, cluster, currentAccount?.solanaAddress, dispatch])
 
   const [oracleDateTime, setOracleDateTime] = useState<Date>()
 
@@ -252,8 +252,6 @@ const { Provider } = BalanceContext
 
 export const BalanceProvider = ({ children }: { children: ReactNode }) => {
   const balanceHook = useBalanceHook()
-
-  const { atas } = balanceHook
   const { cluster } = useSolana()
   const prevCluster = usePrevious(cluster)
   const clusterChanged = prevCluster && cluster && prevCluster !== cluster
@@ -262,15 +260,7 @@ export const BalanceProvider = ({ children }: { children: ReactNode }) => {
     return <>{children}</>
   }
 
-  return (
-    <Provider value={balanceHook}>
-      {atas?.map((ta) => (
-        <StoreAtaBalance key={`${ta.mint}.${ta.tokenAccount}`} {...ta} />
-      ))}
-
-      {children}
-    </Provider>
-  )
+  return <Provider value={balanceHook}>{children}</Provider>
 }
 
 export const useBalance = () => useContext(BalanceContext)
