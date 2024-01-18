@@ -20,15 +20,11 @@ export const signLedgerTransaction = async (
   txBuffer: Buffer,
 ) => {
   const solana = new AppSolana(transport)
-  try {
-    const { signature } = await solana.signTransaction(
-      runDerivationScheme(accountIndex),
-      txBuffer,
-    )
-    return signature
-  } catch (e) {
-    console.error(e)
-  }
+  const { signature } = await solana.signTransaction(
+    runDerivationScheme(accountIndex),
+    txBuffer,
+  )
+  return signature
 }
 
 export const signLedgerMessage = async (
@@ -37,13 +33,9 @@ export const signLedgerMessage = async (
   msgBuffer: Buffer,
 ) => {
   const solana = new AppSolana(transport)
-  try {
-    const { signature } = await solana.signOffchainMessage(
-      runDerivationScheme(accountIndex),
-      msgBuffer,
-    )
-    return signature
-  } catch (e) {
-    console.error(e)
-  }
+  const { signature } = await solana.signOffchainMessage(
+    runDerivationScheme(accountIndex),
+    msgBuffer,
+  )
+  return signature
 }

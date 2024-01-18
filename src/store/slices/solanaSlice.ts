@@ -159,8 +159,14 @@ export const makeCollectablePayment = createAsyncThunk(
     try {
       const signed = await anchorProvider.wallet.signTransaction(transferTxn)
 
-      const sig = await anchorProvider.sendAndConfirm(signed)
-
+      const { txid: sig } = await sendAndConfirmWithRetry(
+        anchorProvider.connection,
+        Buffer.from(signed.serialize()),
+        {
+          skipPreflight: true,
+        },
+        'confirmed',
+      )
       postPayment({ signatures: [sig], cluster })
 
       dispatch(
@@ -185,7 +191,14 @@ export const sendTreasurySwap = createAsyncThunk(
     try {
       const signed = await anchorProvider.wallet.signTransaction(swapTxn)
 
-      const sig = await anchorProvider.sendAndConfirm(signed)
+      const { txid: sig } = await sendAndConfirmWithRetry(
+        anchorProvider.connection,
+        Buffer.from(signed.serialize()),
+        {
+          skipPreflight: true,
+        },
+        'confirmed',
+      )
 
       postPayment({ signatures: [sig], cluster })
     } catch (error) {
@@ -202,7 +215,14 @@ export const sendJupiterSwap = createAsyncThunk(
     try {
       const signed = await anchorProvider.wallet.signTransaction(swapTxn)
 
-      const sig = await anchorProvider.sendAndConfirm(signed)
+      const { txid: sig } = await sendAndConfirmWithRetry(
+        anchorProvider.connection,
+        Buffer.from(signed.serialize()),
+        {
+          skipPreflight: true,
+        },
+        'confirmed',
+      )
 
       postPayment({ signatures: [sig], cluster })
     } catch (error) {
@@ -219,7 +239,14 @@ export const sendMintDataCredits = createAsyncThunk(
     try {
       const signed = await anchorProvider.wallet.signTransaction(swapTxn)
 
-      const sig = await anchorProvider.sendAndConfirm(signed)
+      const { txid: sig } = await sendAndConfirmWithRetry(
+        anchorProvider.connection,
+        Buffer.from(signed.serialize()),
+        {
+          skipPreflight: true,
+        },
+        'confirmed',
+      )
 
       postPayment({ signatures: [sig], cluster })
     } catch (error) {
@@ -240,7 +267,14 @@ export const sendDelegateDataCredits = createAsyncThunk(
     try {
       const signed = await anchorProvider.wallet.signTransaction(delegateDCTxn)
 
-      const sig = await anchorProvider.sendAndConfirm(signed)
+      const { txid: sig } = await sendAndConfirmWithRetry(
+        anchorProvider.connection,
+        Buffer.from(signed.serialize()),
+        {
+          skipPreflight: true,
+        },
+        'confirmed',
+      )
 
       postPayment({ signatures: [sig], cluster })
     } catch (error) {
