@@ -1,4 +1,3 @@
-import { JsonMetadata } from '@metaplex-foundation/js'
 import { StackNavigationProp } from '@react-navigation/stack'
 import {
   Collectable,
@@ -35,7 +34,8 @@ export type CollectableStackParamList = {
     collectable: Collectable
   }
   NftMetadataScreen: {
-    metadata: JsonMetadata<string>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    metadata: any
   }
   TransferCollectableScreen: {
     collectable: CompressedNFT | Collectable
