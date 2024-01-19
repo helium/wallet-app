@@ -1,3 +1,6 @@
+import { NetTypes as NetType } from '@helium/address'
+import { useAppState } from '@react-native-community/hooks'
+import * as SecureStore from 'expo-secure-store'
 import React, {
   createContext,
   ReactNode,
@@ -9,22 +12,17 @@ import React, {
   useState,
 } from 'react'
 import { useAsync } from 'react-async-hook'
-import * as SecureStore from 'expo-secure-store'
-import { NetTypes as NetType } from '@helium/address'
-import { useAppState } from '@react-native-community/hooks'
+import Config from 'react-native-config'
+import { authSlice } from '../store/slices/authSlice'
+import { useAppDispatch } from '../store/store'
 import {
   accountNetType,
   AccountNetTypeOpt,
   heliumAddressToSolAddress,
 } from '../utils/accountUtils'
-import {
-  createSecureAccount,
-  deleteSecureAccount,
-  SecureAccount,
-  signoutSecureStore,
-  storeSecureAccount,
-  storeSecureItem,
-} from './secureStorage'
+import makeApiToken from '../utils/makeApiToken'
+import { getSessionKey } from '../utils/walletApiV2'
+import { useAppStorage } from './AppStorageProvider'
 import {
   CSAccount,
   CSAccounts,
@@ -38,11 +36,16 @@ import {
   updateCloudContacts,
 } from './cloudStorage'
 import { removeAccountTag, tagAccount } from './oneSignalStorage'
-import { useAppStorage } from './AppStorageProvider'
-import { useAppDispatch } from '../store/store'
-import makeApiToken from '../utils/makeApiToken'
-import { authSlice } from '../store/slices/authSlice'
-import { getSessionKey } from '../utils/walletApiV2'
+import {
+  createSecureAccount,
+  deleteSecureAccount,
+  SecureAccount,
+  signoutSecureStore,
+  storeSecureAccount,
+  storeSecureItem,
+} from './secureStorage'
+
+const { VIEW_AS } = Config
 
 const useAccountStorageHook = () => {
   const [currentAccount, setCurrentAccount] = useState<
@@ -131,7 +134,7 @@ const useAccountStorageHook = () => {
         ...result,
         [addy]: {
           ...acct,
-          solanaAddress: heliumAddressToSolAddress(addy),
+          solanaAddress: VIEW_AS || heliumAddressToSolAddress(addy),
         },
       }
     }, {} as CSAccounts)
@@ -152,7 +155,7 @@ const useAccountStorageHook = () => {
       if (c.solanaAddress) return c
       return {
         ...c,
-        solanaAddress: heliumAddressToSolAddress(c.address),
+        solanaAddress: VIEW_AS || heliumAddressToSolAddress(c.address),
       }
     })
 
