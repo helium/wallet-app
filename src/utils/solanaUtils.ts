@@ -53,7 +53,6 @@ import {
   getMetadata,
   getMetadataId,
 } from '@hooks/useMetaplexMetadata'
-import { JsonMetadata, Metadata, Metaplex } from '@metaplex-foundation/js'
 import {
   PROGRAM_ID as BUBBLEGUM_PROGRAM_ID,
   TreeConfig,
@@ -969,12 +968,20 @@ export const heliumNFTs = (): string[] => {
  * @param metaplex metaplex connection
  * @returns NFTs
  */
-export const getNFTs = async (pubKey: PublicKey, metaplex: Metaplex) => {
+export const getNFTs = async (
+  pubKey: PublicKey,
+  connection: WrappedConnection,
+) => {
   const approvedNFTs = heliumNFTs()
 
-  const collectables = (await metaplex
-    .nfts()
-    .findAllByOwner({ owner: pubKey })) as Metadata<JsonMetadata<string>>[]
+  const collectables = (await connection.getAssetsByOwner(
+    pubKey.toBase58(),
+    { sortBy: 'created', sortDirection: 'asc' },
+    500,
+    0,
+    '',
+    '',
+  )) as any[]
 
   return collectables.filter((c) =>
     approvedNFTs.includes(c.collection?.address.toBase58() || ''),
@@ -1022,7 +1029,7 @@ export const getCompressedCollectablesByCreator = async (
   page?: number,
   limit?: number,
 ) => {
-  const conn = anchorProvider.connection
+  const conn = anchorProvider.connection as WrappedConnection
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const items = await searchAssets(conn.rpcEndpoint, {
@@ -1042,10 +1049,7 @@ export const getCompressedCollectablesByCreator = async (
  * @param metaplex metaplex connection
  * @returns collectables with metadata
  */
-export const getNFTsMetadata = async (
-  collectables: Metadata<JsonMetadata<string>>[],
-  metaplex: Metaplex,
-) => {
+export const getNFTsMetadata = async (collectables: any[]) => {
   const collectablesWithMetadata = await Promise.all(
     collectables.map(async (col) => {
       try {
@@ -1053,8 +1057,7 @@ export const getNFTsMetadata = async (
           timeout: 3000,
         })
 
-        const metadata = await metaplex.nfts().load({ metadata: col })
-        return { ...metadata, json: data }
+        return { ...col, json: data }
       } catch (e: any) {
         return null
       }
@@ -1069,7 +1072,7 @@ export const getNFTsMetadata = async (
  * @param collectables collectables
  * @returns grouped collecables by token type
  */
-export const groupNFTs = (collectables: Metadata<JsonMetadata<string>>[]) => {
+export const groupNFTs = (collectables: any[]) => {
   const collectablesGroupedByName = collectables.reduce((acc, cur) => {
     const { collection, symbol } = cur
     if (!acc[collection?.address?.toBase58() || symbol]) {
@@ -1078,7 +1081,7 @@ export const groupNFTs = (collectables: Metadata<JsonMetadata<string>>[]) => {
       acc[collection?.address?.toBase58() || symbol].push(cur)
     }
     return acc
-  }, {} as Record<string, Metadata<JsonMetadata<string>>[]>)
+  }, {} as Record<string, any[]>)
 
   return collectablesGroupedByName
 }
@@ -1114,7 +1117,7 @@ export const getCompressedNFTMetadata = async (
   const collectablesWithMetadata = await Promise.all(
     collectables.map(async (col) => {
       try {
-        const { data } = await getMetadata(col.content.json_uri)
+        const data = await getMetadata(col.content.json_uri)
         return {
           ...col,
           content: {
@@ -1271,8 +1274,8 @@ export const getCollectableByMint = async (
     const metadataAccount = await connection.getAccountInfo(metadata)
     if (metadataAccount) {
       const collectable = METADATA_PARSER(metadata, metadataAccount)
-      if (!collectable.json && collectable.uri) {
-        const json = await (await fetch(collectable.uri)).json()
+      if (collectable.data.uri) {
+        const json = await getMetadata(collectable.data.uri)
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         return { ...collectable, json }

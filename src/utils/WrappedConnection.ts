@@ -1,7 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Commitment, Connection, ConnectionConfig } from '@solana/web3.js'
-import axios from 'axios'
 import * as logger from '@utils/logger'
+import axios from 'axios'
+import type { CompressedNFT } from '../types/solana'
+
+export type SearchAssetsOpts = {
+  sortBy?: { sortBy: 'created'; sortDirection: 'asc' | 'desc' }
+  page?: number
+  limit?: number
+  collection?: string
+  ownerAddress: string
+  creatorAddress?: string
+  creatorVerified?: boolean
+  tokenType?:
+    | 'all'
+    | 'compressedNft'
+    | 'regularNft'
+    | 'nonFungible'
+    | 'fungible'
+} & { [key: string]: unknown }
 
 export class WrappedConnection extends Connection {
   baseURL: string
@@ -32,35 +49,48 @@ export class WrappedConnection extends Connection {
   }
 
   async searchAssets(
-    ownerAddress: string,
-    creatorAddress: string,
-    creatorVerified?: boolean,
-    sortBy?: { sortBy: 'created'; sortDirection: 'asc' | 'desc' },
-    page?: number,
-    collection?: string,
-  ): Promise<any> {
+    url: string,
+    {
+      creatorVerified = true,
+      sortBy = { sortBy: 'created', sortDirection: 'asc' },
+      page = 1,
+      limit = 1000,
+      collection,
+      tokenType,
+      ...rest
+    }: SearchAssetsOpts,
+  ): Promise<CompressedNFT[]> {
+    const params = {
+      page,
+      limit,
+      sortBy:
+        tokenType && ['all', 'fungible'].includes(tokenType) ? null : sortBy,
+      creatorVerified:
+        tokenType && ['all', 'fungible'].includes(tokenType)
+          ? null
+          : creatorVerified,
+      tokenType,
+      ...(collection ? { grouping: ['collection', collection] } : {}),
+      ...rest,
+    }
+
     try {
       const response = await axios.post(this.baseURL, {
         jsonrpc: '2.0',
         method: 'searchAssets',
         id: 'get-assets-op-1',
-        params: {
-          page,
-          creatorVerified,
-          sortBy,
-          ownerAddress,
-          creatorAddress,
-          collection,
-        },
+        params,
         headers: {
           'Cache-Control': 'no-cache',
           Pragma: 'no-cache',
           Expires: '0',
         },
       })
-      return response.data.result
+
+      return response.data.result?.items
     } catch (error) {
       logger.error(error)
+      throw error
     }
   }
 

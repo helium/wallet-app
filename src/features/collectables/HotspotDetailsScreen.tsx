@@ -95,8 +95,8 @@ const HotspotDetailsScreen = () => {
     }
 
     return [
-      makerApprovalKey(iotConfigKey, metadata.updateAuthorityAddress)[0],
-      makerApprovalKey(mobileConfigKey, metadata.updateAuthorityAddress)[0],
+      makerApprovalKey(iotConfigKey, metadata.updateAuthority)[0],
+      makerApprovalKey(mobileConfigKey, metadata.updateAuthority)[0],
     ]
   }, [metadata])
 
@@ -187,7 +187,7 @@ const HotspotDetailsScreen = () => {
     if (!collectable?.content?.metadata) return
 
     const attribute = collectable?.content?.metadata.attributes?.find(
-      (a) => a?.trait_type === 'ecc_compact',
+      (a: any) => a?.trait_type === 'ecc_compact',
     )
 
     if (!attribute?.value) return

@@ -1,31 +1,32 @@
 import { TypedAccountParser } from '@helium/account-fetch-cache'
-import { useAccount } from '@helium/account-fetch-cache-hooks'
 import {
-  JsonMetadata,
+  PROGRAM_ID as MPL_PID,
   Metadata,
-  parseMetadataAccount,
-  sol,
-  toMetadata,
-} from '@metaplex-foundation/js'
+} from '@metaplex-foundation/mpl-token-metadata'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { AccountInfo, PublicKey } from '@solana/web3.js'
 import axios from 'axios'
 import { useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
-
-const MPL_PID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s')
+import { useAccount } from '@helium/account-fetch-cache-hooks'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const cache: Record<string, Promise<any>> = {}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getMetadata(uri: string | undefined): Promise<any | undefined> {
+export function getMetadata(
+  uriIn: string | undefined,
+): Promise<any | undefined> {
+  const uri = uriIn?.replace(/\0/g, '')
   if (uri) {
     if (!cache[uri]) {
       cache[uri] = axios
-        .get(uri, {
+        .get(uri.replace(/\0/g, ''), {
           timeout: 3000,
         })
-        .then((res) => res)
+        .then((res) => res.data)
+        .catch((err: any) => {
+          console.error(`Error at uri ${uri}`, err)
+        })
     }
     return cache[uri]
   }
@@ -33,17 +34,10 @@ export function getMetadata(uri: string | undefined): Promise<any | undefined> {
 }
 
 export const METADATA_PARSER: TypedAccountParser<Metadata> = (
-  publicKey: PublicKey,
+  _: PublicKey,
   account: AccountInfo<Buffer>,
 ) => {
-  return toMetadata(
-    parseMetadataAccount({
-      ...account,
-      lamports: sol(account.lamports),
-      data: account.data,
-      publicKey,
-    }),
-  )
+  return Metadata.fromAccountInfo(account)[0]
 }
 
 export function getMetadataId(mint: PublicKey): PublicKey {
@@ -61,7 +55,8 @@ type TokenInfo = {
 
 export const tokenInfoToMetadata = (
   tokenInfo: TokenInfo | null | undefined,
-): JsonMetadata | undefined => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any | undefined => {
   if (!tokenInfo) return undefined
 
   return {
@@ -94,11 +89,10 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
   const { info: metadataAcc, loading } = useAccount(
     metadataAddr,
     METADATA_PARSER,
-    true,
   )
 
   const { result: json, loading: jsonLoading } = useAsync(getMetadata, [
-    metadataAcc?.uri,
+    metadataAcc?.data.uri.trim(),
   ])
 
   if (mint?.equals(NATIVE_MINT)) {
@@ -133,9 +127,9 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
 
   return {
     loading: jsonLoading || loading,
-    json: json?.data,
+    json,
     metadata: metadataAcc,
-    symbol: json?.data.symbol || metadataAcc?.symbol,
-    name: json?.data.name || metadataAcc?.name,
+    symbol: json?.symbol || metadataAcc?.data?.symbol,
+    name: json?.name || metadataAcc?.data?.name,
   }
 }
