@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next'
 import { GovMints } from '@utils/constants'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { ProposalsList } from './ProposalsList'
 import { VotingPowerCard } from './VotingPowerCard'
 import {
@@ -30,8 +31,14 @@ export const GovernanceScreen = () => {
   const navigation = useNavigation<GovernanceNavigationProp>()
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
   const { currentAccount } = useAccountStorage()
-  const { loading, mint, setMint, proposalCountByMint, hasUnseenProposals } =
-    useGovernance()
+  const {
+    loading,
+    mint,
+    setMint,
+    numActiveVotes,
+    proposalCountByMint,
+    hasUnseenProposals,
+  } = useGovernance()
   const anim = useRef(new Animated.Value(1))
 
   useEffect(() => {
@@ -158,6 +165,39 @@ export const GovernanceScreen = () => {
                   })
                 }
               />
+              {numActiveVotes > 0 && (
+                <TouchableOpacityBox onPress={() => {}}>
+                  <Box
+                    flexDirection="row"
+                    backgroundColor="secondaryBackground"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    borderRadius="l"
+                    padding="m"
+                    marginTop="m"
+                  >
+                    <Box flexDirection="row">
+                      <Text
+                        variant="body2"
+                        color="secondaryText"
+                        marginRight="xs"
+                      >
+                        Active Votes:
+                      </Text>
+                      <Text variant="body2" color="primaryText">
+                        {numActiveVotes}
+                      </Text>
+                    </Box>
+                    <Text
+                      variant="body2"
+                      color="secondaryText"
+                      marginRight="xs"
+                    >
+                      Relinquish &gt;
+                    </Text>
+                  </Box>
+                </TouchableOpacityBox>
+              )}
               <ProposalsList />
             </Box>
           )}

@@ -157,7 +157,13 @@ const useGovernance = () => {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { mint, ...heliumVsrState } = useHeliumVsrState()
+  const { mint, positions, ...heliumVsrState } = useHeliumVsrState()
+
+  const numActiveVotes = useMemo(
+    () => positions?.reduce((acc, p) => acc + p.numActiveVotes, 0) || 0,
+    [positions],
+  )
+
   const loading = useMemo(
     () => context.loading || heliumVsrState.loading,
     [context.loading, heliumVsrState.loading],
@@ -166,6 +172,8 @@ const useGovernance = () => {
   return {
     ...context,
     ...heliumVsrState,
+    numActiveVotes,
+    positions,
     loading,
   }
 }
