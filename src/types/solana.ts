@@ -1,11 +1,3 @@
-import {
-  JsonMetadata,
-  Nft,
-  NftWithToken,
-  Option,
-  Sft,
-  SftWithToken,
-} from '@metaplex-foundation/js'
 import { init as initHsd } from '@helium/helium-sub-daos-sdk'
 import { init as initDc } from '@helium/data-credits-sdk'
 import { init as initHem } from '@helium/helium-entity-manager-sdk'
@@ -53,7 +45,7 @@ export type CompressedNFT = {
       uri: string
       mime: string
     }[]
-    metadata: JsonMetadata
+    metadata: any
   }
   authorities: {
     address: string
@@ -94,7 +86,7 @@ export type CompressedNFT = {
   mutable: boolean
 }
 
-export type Collectable = Sft | SftWithToken | Nft | NftWithToken
+export type Collectable = any
 
 type NativeTransfer = {
   fromUserAccount: string
@@ -107,7 +99,7 @@ type TokenMetadata = {
   name: string
   symbol: string
   uri: string
-  json: Option<JsonMetadata<string>> | undefined
+  json: any | undefined
 }
 
 type TokenTransfer = {
@@ -170,7 +162,7 @@ export type EnrichedTransaction = {
         leafIndex: number
         treeId: string
         type: string
-        metadata: JsonMetadata
+        metadata: any
       },
       {
         assetId: string

@@ -71,7 +71,7 @@ const NftMetadataScreen = () => {
             flexWrap="wrap"
             justifyContent="center"
           >
-            {metadata.attributes?.map(({ trait_type, value }) =>
+            {metadata.attributes?.map(({ trait_type, value }: any) =>
               renderProperty(trait_type, value),
             )}
           </Box>
