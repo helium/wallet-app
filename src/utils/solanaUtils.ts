@@ -1276,7 +1276,6 @@ export const getCollectableByMint = async (
       const collectable = METADATA_PARSER(metadata, metadataAccount)
       if (collectable.data.uri) {
         const json = await getMetadata(collectable.data.uri)
-        console.log("JSON", json)
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         return { ...collectable, json }
