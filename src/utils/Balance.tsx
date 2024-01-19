@@ -8,6 +8,7 @@ import {
   toNumber,
 } from '@helium/spl-utils'
 import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
+import { useVisibleTokens } from '@storage/TokensProvider'
 import BN from 'bn.js'
 import React, {
   ReactNode,
@@ -253,6 +254,7 @@ const { Provider } = BalanceContext
 export const BalanceProvider = ({ children }: { children: ReactNode }) => {
   const balanceHook = useBalanceHook()
 
+  const { visibleTokens } = useVisibleTokens()
   const { atas } = balanceHook
   const { cluster } = useSolana()
   const prevCluster = usePrevious(cluster)
@@ -264,9 +266,11 @@ export const BalanceProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <Provider value={balanceHook}>
-      {atas?.map((ta) => (
-        <StoreAtaBalance key={`${ta.mint}.${ta.tokenAccount}`} {...ta} />
-      ))}
+      {atas
+        ?.filter((ta) => visibleTokens.has(ta.mint))
+        .map((ta) => (
+          <StoreAtaBalance key={`${ta.mint}.${ta.tokenAccount}`} {...ta} />
+        ))}
 
       {children}
     </Provider>
