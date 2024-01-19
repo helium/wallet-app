@@ -28,6 +28,7 @@ import {
   useSplitPosition,
   useTransferPosition,
   useUndelegatePosition,
+  useRelinquishVote,
 } from '@helium/voter-stake-registry-hooks'
 import useAlert from '@hooks/useAlert'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
@@ -244,6 +245,12 @@ export const PositionCard = ({
     undelegatePosition,
   } = useUndelegatePosition()
 
+  const {
+    loading: isRelinquishing,
+    error: relinquishingError,
+    relinquishVote,
+  } = useRelinquishVote()
+
   const transactionError = useMemo(() => {
     if (extendingError) {
       return extendingError.message || t('gov.errors.extendLockup')
@@ -393,6 +400,8 @@ export const PositionCard = ({
     })
   }
 
+  const handleRelinquishVotes = async () => {}
+
   const actions = () => {
     return (
       <>
@@ -500,9 +509,21 @@ export const PositionCard = ({
                   <ListItem
                     key="delegate"
                     title={t('gov.positions.delegate')}
-                    onPress={async () => {
+                    onPress={() => {
                       setIsDelegateModalOpen(true)
                       setActionsOpen(false)
+                    }}
+                    selected={false}
+                    hasPressedState={false}
+                  />
+                )}
+                {hasActiveVotes && (
+                  <ListItem
+                    key="relinquish"
+                    title={t('gov.positions.relinquish')}
+                    onPress={async () => {
+                      setActionsOpen(false)
+                      await handleRelinquishVotes()
                     }}
                     selected={false}
                     hasPressedState={false}

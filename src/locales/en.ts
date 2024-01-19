@@ -1194,6 +1194,7 @@ export default {
       increase: 'Increase your voting power by locking tokens.',
     },
     positions: {
+      relinquish: 'Relinquish Votes',
       lockedAmount: 'Locked Amount {{amount}} {{symbol}}',
       constant: 'Constant',
       decaying: 'Decaying',
