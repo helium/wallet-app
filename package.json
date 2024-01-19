@@ -60,7 +60,6 @@
     "@ledgerhq/react-native-hid": "6.30.0",
     "@ledgerhq/react-native-hw-transport-ble": "6.29.5",
     "@ledgerhq/types-devices": "^6.22.4",
-    "@metaplex-foundation/js": "^0.19.4",
     "@metaplex-foundation/mpl-bubblegum": "0.6.0",
     "@metaplex-foundation/mpl-token-metadata": "2.10.0",
     "@onsol/tldparser": "^0.5.3",
