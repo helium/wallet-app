@@ -63,7 +63,12 @@ const LedgerModal = forwardRef(
     const [messageBuffer, setMessageBuffer] = useState<Buffer>()
 
     const [ledgerModalState, setLedgerModalState] = useState<
-      'loading' | 'openApp' | 'sign' | 'enterPinCode' | 'error'
+      | 'loading'
+      | 'openApp'
+      | 'sign'
+      | 'enterPinCode'
+      | 'error'
+      | 'enableBlindSign'
     >('loading')
 
     const animatedContentHeight = useSharedValue(0)
@@ -116,7 +121,11 @@ const LedgerModal = forwardRef(
               case 'Ledger device: Locked device (0x5515)':
                 setLedgerModalState('enterPinCode')
                 return p
+              // Happens when solana app already open
+              case 'Ledger device: INS_NOT_SUPPORTED (0x6d00)':
+                break
               default:
+                setLedgerModalState('error')
                 break
             }
           }
@@ -153,7 +162,16 @@ const LedgerModal = forwardRef(
           bottomSheetModalRef.current?.dismiss()
           return signature
         } catch (error) {
-          setLedgerModalState('error')
+          console.error(error)
+          const ledgerError = error as Error
+          switch (ledgerError.message) {
+            case 'Missing a parameter. Try enabling blind signature in the app':
+              setLedgerModalState('enableBlindSign')
+              break
+            default:
+              setLedgerModalState('error')
+          }
+
           const p = new Promise<Buffer>((resolve) => {
             promiseResolve = resolve
           })
@@ -274,6 +292,25 @@ const LedgerModal = forwardRef(
                 {t('ledger.pleaseEnterPinCode', {
                   device: currentAccount?.ledgerDevice?.name,
                 })}
+              </Text>
+              <TouchableOpacityBox
+                marginTop="s"
+                onPress={handleRetry}
+                backgroundColor="surface"
+                padding="l"
+                borderRadius="round"
+              >
+                <Text variant="subtitle1" textAlign="center">
+                  {t('generic.tryAgain')}
+                </Text>
+              </TouchableOpacityBox>
+            </Box>
+          )
+        case 'enableBlindSign':
+          return (
+            <Box>
+              <Text variant="h4Medium" color="primaryText">
+                {t('ledger.enableBlindSign')}
               </Text>
               <TouchableOpacityBox
                 marginTop="s"

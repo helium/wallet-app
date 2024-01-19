@@ -44,10 +44,7 @@ const SwappingScreen = () => {
 
   const onReturn = useCallback(() => {
     // Reset Swap stack to first screen
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Home' }],
-    })
+    navigation.goBack()
   }, [navigation])
 
   const TokensSwappedContainer = useMemo(() => {

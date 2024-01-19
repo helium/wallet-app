@@ -710,6 +710,8 @@ export default {
     openTheSolanaApp: 'Open the Solana app on your {{ device }}',
     pleaseConfirmTransaction: 'Please confirm transaction on your {{ device }}',
     pleaseEnterPinCode: 'Please enter pin code on your {{ device }}',
+    enableBlindSign:
+      'Please enable blind signing in the ledger solana app settings. This error can also occur if your ledger firmware is out of date.',
     chooseType: {
       bluetooth: {
         title: 'Bluetooth',

@@ -307,7 +307,7 @@ export function getDeviceAnimation({
     animation = animations[modelId as S_SP_BLUE][key][theme]
   } else {
     animation =
-      animations[modelId]?.[wired ? 'wired' : 'bluetooth']?.[key][theme]
+      animations[modelId]?.[wired ? 'wired' : 'bluetooth']?.[key]?.[theme]
   }
 
   if (!animation) {

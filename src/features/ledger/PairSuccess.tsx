@@ -8,22 +8,29 @@ import ButtonPressable from '@components/ButtonPressable'
 import { useColors } from '@theme/themeHooks'
 import { LedgerNavigatorNavigationProp } from './ledgerNavigatorTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { HomeNavigationProp } from '../home/homeTypes'
+import { RootNavigationProp } from '../../navigation/rootTypes'
 
 const PairSuccess = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<LedgerNavigatorNavigationProp>()
-  const homeNav = useNavigation<HomeNavigationProp>()
+  const rootNav = useNavigation<RootNavigationProp>()
   const { primaryText } = useColors()
   const { hasAccounts } = useAccountStorage()
 
   const next = useCallback(() => {
     if (hasAccounts) {
-      homeNav.navigate('AccountsScreen')
+      rootNav.reset({
+        index: 0,
+        routes: [
+          {
+            name: 'TabBarNavigator',
+          },
+        ],
+      })
     } else {
       navigation.navigate('DeviceScan')
     }
-  }, [hasAccounts, homeNav, navigation])
+  }, [hasAccounts, rootNav, navigation])
 
   return (
     <Box
