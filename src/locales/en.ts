@@ -1216,6 +1216,7 @@ export default {
       pausing: 'Pausing...',
       delegating: 'Delegating...',
       undelegating: 'Undelegating...',
+      relinquishing: 'Relinquishing...',
       landrush: 'Landrush',
       lockupType: 'Lockup Type',
       amountToLock: 'Amount to lock',
@@ -1266,6 +1267,7 @@ export default {
       transferPosition: 'Transfer Tokens',
       delegatePosition: 'Delegate Position',
       undelegatePosition: 'Undelegate Tokens',
+      relinquishPosition: 'Relinquish Votes',
     },
     errors: {
       lockTokens: 'Lock failed, please try again.',
@@ -1281,6 +1283,7 @@ export default {
       markdown: 'Failed to retrive proposal markdown.',
       castVote: 'Vote failed, please try again.',
       relinquishVote: 'Relinquish vote failed, please try again.',
+      relinquishVotes: 'Relinquish votes failed, please try again.',
     },
   },
 }
