@@ -158,6 +158,35 @@ export const GovernanceScreen = () => {
                   })
                 }
               />
+              {/*               {numActiveVotes > 0 && (
+                <TouchableOpacityBox onPress={() => {}}>
+                  <Box
+                    flexDirection="row"
+                    backgroundColor="secondaryBackground"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    borderRadius="l"
+                    padding="m"
+                    marginTop="m"
+                  >
+                    <Box flexDirection="row">
+                      <Text
+                        variant="body2"
+                        color="secondaryText"
+                        marginRight="xs"
+                      >
+                        Relinquish Active Votes:
+                      </Text>
+                      <Text variant="body2" color="secondaryText">
+                        {numActiveVotes}
+                      </Text>
+                    </Box>
+                    <Text variant="body2" color="white" marginRight="xs">
+                      &gt;
+                    </Text>
+                  </Box>
+                </TouchableOpacityBox>
+              )} */}
               <ProposalsList />
             </Box>
           )}

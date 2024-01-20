@@ -4,6 +4,7 @@ import Box from '@components/Box'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useMint } from '@helium/helium-react-hooks'
 import {
   useProposal,
@@ -19,7 +20,7 @@ import {
   useRelinquishVote,
   useVote,
 } from '@helium/voter-stake-registry-hooks'
-import { RouteProp, useRoute } from '@react-navigation/native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useTheme } from '@shopify/restyle'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
@@ -43,6 +44,7 @@ import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTy
 import { VoteOption } from './VoteOption'
 import {
   GovernanceStackParamList,
+  GovernanceNavigationProp,
   ProposalV0,
   VoteChoiceWithMeta,
   VotingResultColors,
@@ -52,6 +54,7 @@ type Route = RouteProp<GovernanceStackParamList, 'ProposalScreen'>
 export const ProposalScreen = () => {
   const { t } = useTranslation()
   const route = useRoute<Route>()
+  const navigation = useNavigation<GovernanceNavigationProp>()
   const theme = useTheme<Theme>()
   const { upsertAccount, currentAccount } = useAccountStorage()
   const [currVote, setCurrVote] = useState(0)
@@ -388,18 +391,33 @@ export const ProposalScreen = () => {
                 </Box>
               </Box>
               {noVotingPower && (
-                <Box
-                  flexGrow={1}
-                  justifyContent="center"
-                  backgroundColor="secondaryBackground"
-                  borderRadius="l"
-                  padding="m"
-                  marginTop="m"
+                <TouchableOpacityBox
+                  onPress={() =>
+                    navigation.push('VotingPowerScreen', {
+                      mint: mint.toBase58(),
+                    })
+                  }
                 >
-                  <Text variant="body2" color="primaryText">
-                    {t('gov.votingPower.noPower')}
-                  </Text>
-                </Box>
+                  <Box
+                    flexDirection="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    flexGrow={1}
+                    backgroundColor="secondaryBackground"
+                    borderRadius="l"
+                    padding="m"
+                    marginTop="m"
+                  >
+                    <Text variant="body2" color="flamenco">
+                      {`${t('gov.votingPower.noPower')}, ${t(
+                        'gov.votingPower.increase',
+                      )}`}
+                    </Text>
+                    <Text variant="subtitle1" color="primaryText">
+                      &gt;
+                    </Text>
+                  </Box>
+                </TouchableOpacityBox>
               )}
               {derivedState === 'active' && !noVotingPower && (
                 <Box

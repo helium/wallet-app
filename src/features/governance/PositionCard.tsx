@@ -28,7 +28,9 @@ import {
   useSplitPosition,
   useTransferPosition,
   useUndelegatePosition,
+  useRelinquishPositionVotes,
 } from '@helium/voter-stake-registry-hooks'
+import { organizationKey } from '@helium/organization-sdk'
 import useAlert from '@hooks/useAlert'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
@@ -72,8 +74,9 @@ export const PositionCard = ({
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false)
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false)
   const [isDelegateModalOpen, setIsDelegateModalOpen] = useState(false)
-  const { positions, mint, refetch: refetchState } = useGovernance()
+  const { positions, mint, network, refetch: refetchState } = useGovernance()
   const { backgroundStyle } = useCreateOpacity()
+  const organization = useMemo(() => organizationKey(network)[0], [network])
   const transferablePositions: PositionWithMeta[] = useMemo(() => {
     if (!unixNow || !positions || !positions.length) {
       return []
@@ -244,6 +247,12 @@ export const PositionCard = ({
     undelegatePosition,
   } = useUndelegatePosition()
 
+  const {
+    loading: isRelinquishing,
+    error: relinquishingError,
+    relinquishPositionVotes,
+  } = useRelinquishPositionVotes()
+
   const transactionError = useMemo(() => {
     if (extendingError) {
       return extendingError.message || t('gov.errors.extendLockup')
@@ -277,6 +286,10 @@ export const PositionCard = ({
     if (undelegatingError) {
       return undelegatingError.message || t('gov.errors.undelegatePosition')
     }
+
+    if (relinquishingError) {
+      return relinquishingError.message || t('gov.errors.relinquishVotes')
+    }
   }, [
     t,
     isConstant,
@@ -287,6 +300,7 @@ export const PositionCard = ({
     closingError,
     delegatingError,
     undelegatingError,
+    relinquishingError,
   ])
 
   const showError = useMemo(() => {
@@ -387,6 +401,19 @@ export const PositionCard = ({
       onInstructions: async (ixs) => {
         await decideAndExecute(t('gov.transactions.undelegatePosition'), ixs)
         if (!undelegatingError) {
+          refetchState()
+        }
+      },
+    })
+  }
+
+  const handleRelinquishVotes = async () => {
+    await relinquishPositionVotes({
+      position,
+      organization,
+      onInstructions: async (ixs) => {
+        await decideAndExecute(t('gov.transactions.relinquishPosition'), ixs)
+        if (!relinquishingError) {
           refetchState()
         }
       },
@@ -500,9 +527,21 @@ export const PositionCard = ({
                   <ListItem
                     key="delegate"
                     title={t('gov.positions.delegate')}
-                    onPress={async () => {
+                    onPress={() => {
                       setIsDelegateModalOpen(true)
                       setActionsOpen(false)
+                    }}
+                    selected={false}
+                    hasPressedState={false}
+                  />
+                )}
+                {hasActiveVotes && (
+                  <ListItem
+                    key="relinquish"
+                    title={t('gov.positions.relinquish')}
+                    onPress={async () => {
+                      setActionsOpen(false)
+                      await handleRelinquishVotes()
                     }}
                     selected={false}
                     hasPressedState={false}
@@ -531,7 +570,8 @@ export const PositionCard = ({
       isTransfering ||
       isFlipping ||
       isDelegating ||
-      isUndelegating,
+      isUndelegating ||
+      isRelinquishing,
     [
       loadingMetadata,
       isExtending,
@@ -541,6 +581,7 @@ export const PositionCard = ({
       isFlipping,
       isDelegating,
       isUndelegating,
+      isRelinquishing,
     ],
   )
 
@@ -564,6 +605,7 @@ export const PositionCard = ({
               {isFlipping && !isConstant && t('gov.positions.pausing')}
               {isDelegating && t('gov.positions.delegating')}
               {isUndelegating && t('gov.positions.undelegating')}
+              {isRelinquishing && t('gov.positions.relinquishing')}
             </Text>
             <Box flex={1} marginTop="ms" width="100%">
               <IndeterminateProgressBar height={6} />
