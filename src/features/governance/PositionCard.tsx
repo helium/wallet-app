@@ -45,9 +45,10 @@ import {
   secsToDays,
 } from '@utils/dateTools'
 import BN from 'bn.js'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
+import { useAsync } from 'react-async-hook'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
@@ -70,6 +71,9 @@ export const PositionCard = ({
   const { showOKAlert } = useAlert()
   const { walletSignBottomSheetRef } = useWalletSign()
   const [actionsOpen, setActionsOpen] = useState(false)
+  const actionRef = useRef<
+    null | 'undelegate' | 'relinquish' | 'flipLockupKind' | 'close'
+  >(null)
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false)
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false)
@@ -253,6 +257,21 @@ export const PositionCard = ({
     relinquishPositionVotes,
   } = useRelinquishPositionVotes()
 
+  // used for actions that run right after clicking the action button
+  useAsync(async () => {
+    const ref = actionRef.current
+    actionRef.current = null
+
+    if (ref !== null) {
+      await {
+        relinquish: handleRelinquishVotes,
+        flipLockupKind: handleFlipPositionLockupKind,
+        undelegate: handleUndelegateTokens,
+        close: handleClosePosition,
+      }[ref]?.()
+    }
+  }, [actionRef.current])
+
   const transactionError = useMemo(() => {
     if (extendingError) {
       return extendingError.message || t('gov.errors.extendLockup')
@@ -429,7 +448,7 @@ export const PositionCard = ({
             title={t('gov.positions.undelegate')}
             onPress={async () => {
               setActionsOpen(false)
-              await handleUndelegateTokens()
+              actionRef.current = 'undelegate'
             }}
             selected={false}
             hasPressedState={false}
@@ -448,7 +467,7 @@ export const PositionCard = ({
                       message: t('gov.positions.partakingInVote'),
                     })
                   } else {
-                    await handleClosePosition()
+                    actionRef.current = 'close'
                   }
                 }}
                 selected={false}
@@ -494,8 +513,8 @@ export const PositionCard = ({
                   key="extend"
                   title={t('gov.positions.extend')}
                   onPress={() => {
-                    setIsExtendModalOpen(true)
                     setActionsOpen(false)
+                    setIsExtendModalOpen(true)
                   }}
                   selected={false}
                   hasPressedState={false}
@@ -517,7 +536,7 @@ export const PositionCard = ({
                         message: t('gov.positions.partakingInVote'),
                       })
                     } else {
-                      await handleFlipPositionLockupKind()
+                      actionRef.current = 'flipLockupKind'
                     }
                   }}
                   selected={false}
@@ -528,8 +547,8 @@ export const PositionCard = ({
                     key="delegate"
                     title={t('gov.positions.delegate')}
                     onPress={() => {
-                      setIsDelegateModalOpen(true)
                       setActionsOpen(false)
+                      setIsDelegateModalOpen(true)
                     }}
                     selected={false}
                     hasPressedState={false}
@@ -539,9 +558,9 @@ export const PositionCard = ({
                   <ListItem
                     key="relinquish"
                     title={t('gov.positions.relinquish')}
-                    onPress={async () => {
+                    onPress={() => {
                       setActionsOpen(false)
-                      await handleRelinquishVotes()
+                      actionRef.current = 'relinquish'
                     }}
                     selected={false}
                     hasPressedState={false}
