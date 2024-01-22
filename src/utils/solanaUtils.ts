@@ -1278,7 +1278,7 @@ export const getCollectableByMint = async (
         const json = await getMetadata(collectable.data.uri)
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        return { ...collectable, json }
+        return { ...collectable.data, json }
       }
     }
 
