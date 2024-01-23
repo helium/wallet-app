@@ -5,7 +5,7 @@ import { SecureAccount } from '../../../storage/secureStorage'
 export type CreateAccountStackParamList = {
   AccountCreateStartScreen: undefined
   AccountCreatePassphraseScreen: undefined
-  AccountEnterPassphraseScreen: undefined
+  AccountEnterPassphraseScreen: undefined | { secureAccount?: SecureAccount }
   AccountAssignScreen: undefined | { secureAccount?: SecureAccount }
   AccountCreatePinScreen:
     | {

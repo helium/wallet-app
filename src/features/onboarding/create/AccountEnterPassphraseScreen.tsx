@@ -25,7 +25,9 @@ const AccountEnterPassphraseScreen = () => {
 
   return (
     <ConfirmWordsScreen
-      mnemonic={secureAccount?.mnemonic || []}
+      mnemonic={
+        params?.secureAccount?.mnemonic || secureAccount?.mnemonic || []
+      }
       onComplete={onWordsConfirmed}
     />
   )

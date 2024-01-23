@@ -41,7 +41,7 @@ const AccountCreatePassphraseScreen = () => {
     if (!secureAccount) return
 
     setOnboardingData((prev) => ({ ...prev, secureAccount }))
-    navigation.navigate('AccountEnterPassphraseScreen')
+    navigation.navigate('AccountEnterPassphraseScreen', { secureAccount })
   }, [navigation, secureAccount, setOnboardingData])
 
   const ListHeaderComponent = useMemo(() => {
