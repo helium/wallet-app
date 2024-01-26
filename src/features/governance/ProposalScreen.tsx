@@ -238,8 +238,10 @@ export const ProposalScreen = () => {
           )?.offsetFromStartTs?.offset ?? new BN(0),
         ))
 
+  const completed = endTs && endTs.toNumber() <= Date.now().valueOf() / 1000
   const noVotingPower = !loading && (!amountLocked || amountLocked.isZero())
-  const showVoteResults = derivedState === 'passed' || derivedState === 'failed'
+  const showVoteResults =
+    derivedState === 'passed' || derivedState === 'failed' || completed
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
@@ -293,9 +295,14 @@ export const ProposalScreen = () => {
                 <Box marginTop="ms">
                   <Box flexDirection="row" justifyContent="space-between">
                     <Box>
-                      {derivedState === 'active' && (
+                      {derivedState === 'active' && !completed && (
                         <Text variant="body2" color="secondaryText">
                           {t('gov.proposals.estTime')}
+                        </Text>
+                      )}
+                      {derivedState === 'active' && completed && (
+                        <Text variant="body2" color="secondaryText">
+                          {t('gov.proposals.votingClosed')}
                         </Text>
                       )}
                       {derivedState === 'passed' && (
