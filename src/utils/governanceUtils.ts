@@ -14,19 +14,27 @@ export const getDerivedProposalState = (
       if (
         (proposal.state.resolved.choices.length === 1 &&
           proposal.choices[proposal.state.resolved.choices[0]].name.startsWith(
+            'For',
+          )) ||
+        (proposal.state.resolved.choices.length === 1 &&
+          proposal.choices[proposal.state.resolved.choices[0]].name.startsWith(
             'Yes',
           )) ||
-        proposal.state.resolved.choices.length > 1 ||
-        proposal.state.resolved.choices.length === 0
+        proposal.state.resolved.choices.length > 1
       ) {
         return 'passed'
       }
 
       if (
-        proposal.state.resolved.choices.length === 1 &&
-        proposal.choices[proposal.state.resolved.choices[0]].name.startsWith(
-          'No',
-        )
+        proposal.state.resolved.choices.length === 0 ||
+        (proposal.state.resolved.choices.length === 1 &&
+          proposal.choices[proposal.state.resolved.choices[0]].name.startsWith(
+            'Against',
+          )) ||
+        (proposal.state.resolved.choices.length === 1 &&
+          proposal.choices[proposal.state.resolved.choices[0]].name.startsWith(
+            'No',
+          ))
       ) {
         return 'failed'
       }
