@@ -1247,6 +1247,7 @@ export default {
       filter: 'Proposals: {{filter}}',
       noDesc: 'No description for this proposal',
       estTime: 'Est. Time Remaining',
+      votingClosed: 'Voting Closed',
       success: 'Success',
       failed: 'Failed',
       cancelled: 'Cancelled',

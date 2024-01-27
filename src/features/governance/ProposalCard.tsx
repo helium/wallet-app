@@ -106,6 +106,7 @@ export const ProposalCard = ({
     return { totalVotes }
   }, [proposal])
 
+  const completed = endTs && endTs.toNumber() <= Date.now().valueOf() / 1000
   const isLoading = descLoading
   const handleOnPress = useCallback(async () => {
     if (onPress) await onPress(mint, proposalKey)
@@ -129,7 +130,7 @@ export const ProposalCard = ({
           paddingBottom={derivedState === 'active' ? 'm' : 's'}
         >
           <Box flexDirection="row" flexWrap="wrap">
-            {!hasSeen && derivedState === 'active' && (
+            {!hasSeen && derivedState === 'active' && !completed && (
               <Box marginRight="s" marginBottom="s">
                 <Box
                   flexDirection="row"
@@ -151,7 +152,7 @@ export const ProposalCard = ({
                 </Box>
               </Box>
             )}
-            {hasSeen && derivedState === 'active' && (
+            {hasSeen && derivedState === 'active' && !completed && (
               <Box marginRight="s" marginBottom="s">
                 <Box
                   flexDirection="row"
@@ -237,9 +238,14 @@ export const ProposalCard = ({
         >
           <Box flexDirection="row" justifyContent="space-between">
             <Box>
-              {derivedState === 'active' && (
+              {derivedState === 'active' && !completed && (
                 <Text variant="body2" color="secondaryText">
                   {t('gov.proposals.estTime')}
+                </Text>
+              )}
+              {derivedState === 'active' && completed && (
+                <Text variant="body2" color="secondaryText">
+                  {t('gov.proposals.votingClosed')}
                 </Text>
               )}
               {derivedState === 'passed' && (
