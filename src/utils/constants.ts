@@ -24,3 +24,6 @@ export const IOT_SUB_DAO_KEY = subDaoKey(IOT_MINT)[0]
 export const MOBILE_SUB_DAO_KEY = subDaoKey(MOBILE_MINT)[0]
 
 export const MIN_BALANCE_THRESHOLD = 0.02 * LAMPORTS_PER_SOL
+
+// Make a smaller batch for the sake of ledger.
+export const MAX_TRANSACTIONS_PER_SIGNATURE_BATCH = 5

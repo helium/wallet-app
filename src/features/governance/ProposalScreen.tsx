@@ -27,6 +27,7 @@ import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useGovernance } from '@storage/GovernanceProvider'
 import globalStyles from '@theme/globalStyles'
 import { Theme } from '@theme/theme'
+import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import { humanReadable } from '@utils/formatting'
 import { getDerivedProposalState } from '@utils/governanceUtils'
@@ -204,7 +205,14 @@ export const ProposalScreen = () => {
     })
 
     if (decision) {
-      await bulkSendTransactions(anchorProvider, transactions)
+      await bulkSendTransactions(
+        anchorProvider,
+        transactions,
+        undefined,
+        10,
+        [],
+        MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
+      )
     } else {
       throw new Error('User rejected transaction')
     }

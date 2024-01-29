@@ -30,6 +30,7 @@ import {
   Transaction,
   VersionedTransaction,
 } from '@solana/web3.js'
+import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import BN from 'bn.js'
 import bs58 from 'bs58'
 import { first, last } from 'lodash'
@@ -135,7 +136,14 @@ export const makePayment = createAsyncThunk(
   async ({ account, cluster, anchorProvider, paymentTxns }: PaymentInput) => {
     if (!account?.solanaAddress) throw new Error('No solana account found')
 
-    const signatures = await bulkSendTransactions(anchorProvider, paymentTxns)
+    const signatures = await bulkSendTransactions(
+      anchorProvider,
+      paymentTxns,
+      undefined,
+      10,
+      [],
+      MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
+    )
 
     postPayment({ signatures, cluster })
 
