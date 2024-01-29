@@ -8,6 +8,7 @@ import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useMint, useSolanaUnixNow } from '@helium/helium-react-hooks'
+import { getBasePriorityFee } from '@utils/walletApiV2'
 import {
   HNT_MINT,
   batchInstructionsToTxsWithPriorityFee,
@@ -153,6 +154,9 @@ export const PositionCard = ({
     const transactions = await batchInstructionsToTxsWithPriorityFee(
       anchorProvider,
       instructions,
+      {
+        basePriorityFee: await getBasePriorityFee(),
+      },
     )
 
     const decision = await walletSignBottomSheetRef.show({

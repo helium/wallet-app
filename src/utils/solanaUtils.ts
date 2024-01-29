@@ -40,7 +40,6 @@ import {
   sendAndConfirmWithRetry,
   toBN,
   truthy,
-  withPriorityFees,
 } from '@helium/spl-utils'
 import * as tm from '@helium/treasury-management-sdk'
 import {
@@ -99,6 +98,7 @@ import {
   VersionedTransactionResponse,
   clusterApiUrl,
 } from '@solana/web3.js'
+import { withPriorityFees } from '@utils/priorityFees'
 import axios from 'axios'
 import bs58 from 'bs58'
 import Config from 'react-native-config'
