@@ -5,7 +5,7 @@ import {
   VariantProps,
   createVariant,
 } from '@shopify/restyle'
-import { TextInput } from 'react-native'
+import { TextInput, TextStyle } from 'react-native'
 import tinycolor from 'tinycolor2'
 import { SvgProps } from 'react-native-svg'
 import { Color, theme, Theme } from '@theme/theme'
@@ -25,7 +25,9 @@ type Props = React.ComponentProps<typeof BoxWrapper> & {
   placeholderTextColor?: Color
   textColor?: Color
   fontSize?: number
+  fontWeight?: TextStyle['fontWeight']
   floatingLabel?: string
+  floatingLabelWeight?: TextStyle['fontWeight']
   optional?: boolean
   onTrailingIconPress?: () => void
   TrailingIcon?: React.FC<SvgProps>
@@ -39,8 +41,10 @@ const TI = forwardRef(
       placeholderTextColor,
       textColor,
       fontSize,
+      fontWeight,
       textInputProps,
       floatingLabel,
+      floatingLabelWeight,
       optional,
       TrailingIcon,
       onTrailingIconPress,
@@ -84,7 +88,11 @@ const TI = forwardRef(
         <Box flexGrow={1} width="80%">
           <Box flexDirection="row" alignItems="center">
             {floatingLabel && (
-              <Text variant="body2" color="grey600">
+              <Text
+                variant="body2"
+                color="grey600"
+                fontWeight={floatingLabelWeight}
+              >
                 {floatingLabel}
               </Text>
             )}
@@ -103,6 +111,7 @@ const TI = forwardRef(
             style={{
               color: getTextColor,
               fontSize: fontSize || inputVariants.regular.fontSize,
+              fontWeight: fontWeight || 'bold',
               fontFamily: floatingLabel
                 ? textVariants.subtitle4.fontFamily
                 : undefined,

@@ -1223,6 +1223,8 @@ export default {
       amountToTransfer: 'Amount to transfer',
       voteMult: 'Vote Multiplier',
       duration: 'Duration',
+      customDuration: 'Custom Duration',
+      customDurationPlaceholder: 'Custom Duration (days)',
       minDur: 'Min Duration',
       timeLeft: 'Time Left',
       actionsTitle: 'Manage Position',
