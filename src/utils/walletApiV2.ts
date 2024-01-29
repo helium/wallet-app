@@ -131,6 +131,19 @@ export const getRecommendedDapps = async () => {
   return data
 }
 
+export const getBasePriorityFee = async () => {
+  try {
+    const { data } = await axiosInstance.get<{ basePriorityFee: number }>(
+      '/basePriorityFee',
+    )
+    return data.basePriorityFee
+  } catch (e: any) {
+    // Do not block on this failing
+    console.error(e)
+    return 1
+  }
+}
+
 export const getSessionKey = async () => {
   const { data } = await axiosInstance.get<{ sessionKey: string }>(
     '/sessionKey',

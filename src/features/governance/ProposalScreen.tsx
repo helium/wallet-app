@@ -30,6 +30,7 @@ import { Theme } from '@theme/theme'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import { humanReadable } from '@utils/formatting'
 import { getDerivedProposalState } from '@utils/governanceUtils'
+import { getBasePriorityFee } from '@utils/walletApiV2'
 import axios from 'axios'
 import BN from 'bn.js'
 import React, { useEffect, useMemo, useState } from 'react'
@@ -43,8 +44,8 @@ import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { VoteOption } from './VoteOption'
 import {
-  GovernanceStackParamList,
   GovernanceNavigationProp,
+  GovernanceStackParamList,
   ProposalV0,
   VoteChoiceWithMeta,
   VotingResultColors,
@@ -188,6 +189,9 @@ export const ProposalScreen = () => {
     const transactions = await batchInstructionsToTxsWithPriorityFee(
       anchorProvider,
       instructions,
+      {
+        basePriorityFee: await getBasePriorityFee(),
+      },
     )
 
     const decision = await walletSignBottomSheetRef.show({
