@@ -10,6 +10,7 @@ import {
   Status,
   batchInstructionsToTxsWithPriorityFee,
   bulkSendTransactions,
+  sendAndConfirmWithRetry,
   toBN,
   toNumber,
 } from '@helium/spl-utils'
@@ -119,8 +120,9 @@ export const VotingPowerScreen = () => {
   const decideAndExecute = async (
     header: string,
     instructions: TransactionInstruction[],
-    signers: Keypair[] = [],
+    sigs: Keypair[] = [],
     onProgress: (status: Status) => void = () => {},
+    sequentially = false,
   ) => {
     if (!anchorProvider || !walletSignBottomSheetRef) return
 
@@ -142,21 +144,43 @@ export const VotingPowerScreen = () => {
     })
 
     if (decision) {
-      await bulkSendTransactions(
-        anchorProvider,
-        transactions,
-        onProgress,
-        undefined,
-        signers,
-        MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
-      )
+      if (transactions.length > 1 && sequentially) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const tx of await anchorProvider.wallet.signAllTransactions(
+          transactions,
+        )) {
+          sigs.forEach((sig) => {
+            if (tx.signatures.some((s) => s.publicKey.equals(sig.publicKey))) {
+              tx.partialSign(sig)
+            }
+          })
+
+          await sendAndConfirmWithRetry(
+            anchorProvider.connection,
+            tx.serialize(),
+            {
+              skipPreflight: true,
+            },
+            'confirmed',
+          )
+        }
+      } else {
+        await bulkSendTransactions(
+          anchorProvider,
+          transactions,
+          onProgress,
+          undefined,
+          sigs,
+          MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
+        )
+      }
     } else {
       throw new Error('User rejected transaction')
     }
   }
 
   const handleLockTokens = async (values: LockTokensModalFormValues) => {
-    const { amount, lockupPeriodInDays, lockupKind } = values
+    const { amount, lockupPeriodInDays, lockupKind, subDao } = values
     if (decimals && walletSignBottomSheetRef) {
       const amountToLock = toBN(amount, decimals)
 
@@ -165,8 +189,15 @@ export const VotingPowerScreen = () => {
         lockupPeriodsInDays: lockupPeriodInDays,
         lockupKind: lockupKind.value,
         mint,
+        subDao,
         onInstructions: (ixs, sigs) =>
-          decideAndExecute(t('gov.transactions.lockTokens'), ixs, sigs),
+          decideAndExecute(
+            t('gov.transactions.lockTokens'),
+            ixs,
+            sigs,
+            undefined,
+            !!subDao,
+          ),
       })
 
       refetchState()

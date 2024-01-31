@@ -170,7 +170,7 @@ export const PositionCard = ({
     })
 
     if (decision) {
-      if (sigs) {
+      if (sigs.length) {
         // eslint-disable-next-line no-restricted-syntax
         for (const tx of await anchorProvider.wallet.signAllTransactions(
           transactions,

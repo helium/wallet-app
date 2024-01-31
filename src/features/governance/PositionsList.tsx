@@ -38,19 +38,22 @@ export const PositionsList = ({
             if (a.hasGenesisMultiplier || b.hasGenesisMultiplier) {
               if (b.hasGenesisMultiplier) {
                 return a.amountDepositedNative.gt(b.amountDepositedNative)
-                  ? 0
-                  : -1
+                  ? -1
+                  : 1
               }
-              return -1
+              return 0
             }
 
             if (a.isDelegated || b.isDelegated) {
               if (a.isDelegated && !b.isDelegated) return -1
-              if (b.isDelegated && !a.isDelegated) return 0
-              return 0
+              if (b.isDelegated && !a.isDelegated) return 1
+
+              return a.amountDepositedNative.gt(b.amountDepositedNative)
+                ? -1
+                : 1
             }
 
-            return a.amountDepositedNative.gt(b.amountDepositedNative) ? -1 : 0
+            return a.amountDepositedNative.gt(b.amountDepositedNative) ? -1 : 1
           }),
     [positions, loading],
   )
