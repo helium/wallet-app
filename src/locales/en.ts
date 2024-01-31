@@ -1230,6 +1230,8 @@ export default {
       actionsTitle: 'Manage Position',
       longerLockup:
         'Select a new lockup period longer than or equal to the existing {{existing}}',
+      delegateBlurb:
+        'Delegating to a SubNetwork will earn you rewards in that SubNetworks token.',
       splitWarning:
         'Splitting a Landrush position after the Landrush period will result in the split tokens losing the multiplier!',
       initialVoteWeightMult: 'Initial Vote Weight Multiplier',
