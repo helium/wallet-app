@@ -263,18 +263,22 @@ export const ProposalCard = ({
                   {t('gov.proposals.cancelled')}
                 </Text>
               )}
-              <Text variant="body2" color="primaryText">
-                {getTimeFromNowFmt(endTs || new BN(0))}
-              </Text>
+              {derivedState !== 'cancelled' && (
+                <Text variant="body2" color="primaryText">
+                  {getTimeFromNowFmt(endTs || new BN(0))}
+                </Text>
+              )}
             </Box>
-            <Box>
-              <Text variant="body2" color="secondaryText" textAlign="right">
-                {t('gov.proposals.votes')}
-              </Text>
-              <Text variant="body2" color="primaryText" textAlign="right">
-                {humanReadable(votingResults?.totalVotes, decimals) || 'None'}
-              </Text>
-            </Box>
+            {derivedState !== 'cancelled' && (
+              <Box>
+                <Text variant="body2" color="secondaryText" textAlign="right">
+                  {t('gov.proposals.votes')}
+                </Text>
+                <Text variant="body2" color="primaryText" textAlign="right">
+                  {humanReadable(votingResults?.totalVotes, decimals) || 'None'}
+                </Text>
+              </Box>
+            )}
           </Box>
         </Box>
       </TouchableOpacityBox>
