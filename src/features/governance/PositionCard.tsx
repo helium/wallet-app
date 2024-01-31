@@ -8,6 +8,7 @@ import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useMint, useSolanaUnixNow } from '@helium/helium-react-hooks'
+import { organizationKey } from '@helium/organization-sdk'
 import {
   HNT_MINT,
   batchInstructionsToTxsWithPriorityFee,
@@ -25,12 +26,11 @@ import {
   useExtendPosition,
   useFlipPositionLockupKind,
   useRegistrar,
+  useRelinquishPositionVotes,
   useSplitPosition,
   useTransferPosition,
   useUndelegatePosition,
-  useRelinquishPositionVotes,
 } from '@helium/voter-stake-registry-hooks'
-import { organizationKey } from '@helium/organization-sdk'
 import useAlert from '@hooks/useAlert'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
@@ -38,17 +38,19 @@ import { Keypair, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { Theme } from '@theme/theme'
 import { useCreateOpacity } from '@theme/themeHooks'
+import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import {
   daysToSecs,
   getMinDurationFmt,
   getTimeLeftFromNowFmt,
   secsToDays,
 } from '@utils/dateTools'
+import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
-import { useAsync } from 'react-async-hook'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
@@ -153,6 +155,9 @@ export const PositionCard = ({
     const transactions = await batchInstructionsToTxsWithPriorityFee(
       anchorProvider,
       instructions,
+      {
+        basePriorityFee: await getBasePriorityFee(),
+      },
     )
 
     const decision = await walletSignBottomSheetRef.show({
@@ -192,6 +197,7 @@ export const PositionCard = ({
           undefined,
           undefined,
           sigs,
+          MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
         )
       }
     } else {

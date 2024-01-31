@@ -1,16 +1,13 @@
 import { init as initDataCredits } from '@helium/data-credits-sdk'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
-import {
-  DC_MINT,
-  sendAndConfirmWithRetry,
-  withPriorityFees,
-} from '@helium/spl-utils'
+import { DC_MINT, sendAndConfirmWithRetry } from '@helium/spl-utils'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import {
   createAssociatedTokenAccountIdempotentInstruction,
   getAssociatedTokenAddressSync,
 } from '@solana/spl-token'
 import { Transaction } from '@solana/web3.js'
+import { withPriorityFees } from '@utils/priorityFees'
 import BN from 'bn.js'
 import { Buffer } from 'buffer'
 import { useAsyncCallback } from 'react-async-hook'

@@ -27,9 +27,11 @@ import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useGovernance } from '@storage/GovernanceProvider'
 import globalStyles from '@theme/globalStyles'
 import { Theme } from '@theme/theme'
+import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import { humanReadable } from '@utils/formatting'
 import { getDerivedProposalState } from '@utils/governanceUtils'
+import { getBasePriorityFee } from '@utils/walletApiV2'
 import axios from 'axios'
 import BN from 'bn.js'
 import React, { useEffect, useMemo, useState } from 'react'
@@ -43,8 +45,8 @@ import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { VoteOption } from './VoteOption'
 import {
-  GovernanceStackParamList,
   GovernanceNavigationProp,
+  GovernanceStackParamList,
   ProposalV0,
   VoteChoiceWithMeta,
   VotingResultColors,
@@ -188,6 +190,9 @@ export const ProposalScreen = () => {
     const transactions = await batchInstructionsToTxsWithPriorityFee(
       anchorProvider,
       instructions,
+      {
+        basePriorityFee: await getBasePriorityFee(),
+      },
     )
 
     const decision = await walletSignBottomSheetRef.show({
@@ -200,7 +205,14 @@ export const ProposalScreen = () => {
     })
 
     if (decision) {
-      await bulkSendTransactions(anchorProvider, transactions)
+      await bulkSendTransactions(
+        anchorProvider,
+        transactions,
+        undefined,
+        10,
+        [],
+        MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
+      )
     } else {
       throw new Error('User rejected transaction')
     }

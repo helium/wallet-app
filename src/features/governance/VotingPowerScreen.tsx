@@ -24,7 +24,9 @@ import { RouteProp, useRoute } from '@react-navigation/native'
 import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import globalStyles from '@theme/globalStyles'
+import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import { daysToSecs } from '@utils/dateTools'
+import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -127,6 +129,9 @@ export const VotingPowerScreen = () => {
     const transactions = await batchInstructionsToTxsWithPriorityFee(
       anchorProvider,
       instructions,
+      {
+        basePriorityFee: await getBasePriorityFee(),
+      },
     )
 
     const decision = await walletSignBottomSheetRef.show({
@@ -166,6 +171,7 @@ export const VotingPowerScreen = () => {
           onProgress,
           undefined,
           sigs,
+          MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
         )
       }
     } else {
