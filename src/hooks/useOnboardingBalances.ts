@@ -126,7 +126,7 @@ export function useOnboardingBalnces(hotspotAddress: string | undefined): {
   const { info: iotInfo, loading: loadingIotInfo } = useIotInfo(hotspotAddress)
   const iotAssertFee = useMemo(
     () =>
-      iotInfo?.isFullHotspot
+      !iotInfo || iotInfo?.isFullHotspot
         ? iotREC?.settings.iotConfig.fullLocationStakingFee
         : iotREC?.settings.iotConfig.dataonlyLocationStakingFee,
     [iotInfo, iotREC],
