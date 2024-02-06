@@ -66,12 +66,12 @@ export enum LockupKind {
 const lockupInfosByType = {
   [LockupKind.cliff]: [
     'Tokens are locked for a fixed duration and are released in full at the end of it.',
-    'Vote weight declines linearly until release.',
+    'Vote power declines linearly until release.',
     'Example: You lock 10.000 tokens for two years. They are then unavailable for the next two years. After this time, you can withdraw them again.',
   ],
   [LockupKind.constant]: [
     'Tokens are locked indefinitely. At any time you can start the unlock process which lasts for the initially chosen lockup duration.',
-    'Vote weight stays constant until you start the unlock process, then it declines linearly until release.',
+    'Vote power stays constant until you start the unlock process, then it declines linearly until release.',
     'Example: You lock 10.000 tokens with a lockup duration of one year. After two years you decide to start the unlocking process. Another year after that, you can withdraw the tokens.',
   ],
 }
@@ -549,7 +549,7 @@ export const LockTokensModal = ({
                             justifyContent="space-between"
                           >
                             <Text variant="subtitle4" color="grey600">
-                              {t('gov.positions.initialVoteWeightMult')}:
+                              {t('gov.positions.initialVotePowerMult')}:
                             </Text>
                             <Text variant="subtitle4" color="white">
                               {lockupMultiplier}x

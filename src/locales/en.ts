@@ -1234,7 +1234,7 @@ export default {
         "Delegating to a subnetwork may earn you rewards in that subnetwork's token.",
       splitWarning:
         'Splitting a Landrush position after the Landrush period will result in the split tokens losing the multiplier!',
-      initialVoteWeightMult: 'Initial Vote Weight Multiplier',
+      initialVotePowerMult: 'Initial Vote Power Multiplier',
       transferBlurb: 'Move tokens from this position to another.',
       transferWarning:
         'You can only transfer to positions that have a greater than or equal lockup time.',
