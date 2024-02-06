@@ -27,7 +27,7 @@ export const ClaimingRewardsModal = ({ status }: { status?: Status }) => {
     return {
       helpText: `Sending batch of ${actualBatchSize} transactions.\n${remainingTxs} total transaction${
         remainingTxs > 1 ? 's' : ''
-      } remaning.`,
+      } remaining.`,
       percent: (totalProgress * 100) / totalTxs,
     }
   }, [status])
