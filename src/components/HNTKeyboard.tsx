@@ -70,6 +70,7 @@ type Props = {
   handleVisible?: (visible: boolean) => void
   onConfirmBalance: (opts: {
     balance: BN
+    max: boolean
     payee?: string
     index?: number
   }) => void
@@ -221,6 +222,7 @@ const HNTKeyboardSelector = forwardRef(
       if (minTokens && maxBalance) {
         maxBalance = maxBalance.sub(minTokens)
       }
+
       if (mint?.equals(NATIVE_MINT)) {
         maxBalance = networkFee ? maxBalance?.sub(networkFee) : maxBalance
       }
@@ -394,10 +396,18 @@ const HNTKeyboardSelector = forwardRef(
       onConfirmBalance({
         balance: valueAsBalance,
         payee: payeeAddress,
+        max: maxEnabled,
         index: paymentIndex,
       })
       bottomSheetModalRef.current?.dismiss()
-    }, [valueAsBalance, decimals, onConfirmBalance, payeeAddress, paymentIndex])
+    }, [
+      valueAsBalance,
+      maxEnabled,
+      decimals,
+      onConfirmBalance,
+      payeeAddress,
+      paymentIndex,
+    ])
 
     const handleCancel = useCallback(() => {
       setValue(originalValue)
@@ -412,12 +422,14 @@ const HNTKeyboardSelector = forwardRef(
     }, [])
 
     const handleBackspace = useCallback(() => {
+      setMaxEnabled(false)
       setValue((prevVal) => prevVal.substring(0, prevVal.length - 1) || '0')
     }, [])
 
     const handleNumber = useCallback(
       (nextDigit: number) => {
         if (hasMaxDecimals) return
+        setMaxEnabled(false)
         setValue((prevVal) => {
           if (prevVal !== '0') {
             return `${prevVal}${nextDigit}`

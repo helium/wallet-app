@@ -135,7 +135,7 @@ export const ProposalScreen = () => {
       const { data } = await axios.get(proposal.uri)
       return data
     }
-  }, [proposal])
+  }, [])
 
   const transactionError = useMemo(() => {
     if (markdownErr) {
