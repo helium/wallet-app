@@ -422,12 +422,14 @@ const HNTKeyboardSelector = forwardRef(
     }, [])
 
     const handleBackspace = useCallback(() => {
+      setMaxEnabled(false)
       setValue((prevVal) => prevVal.substring(0, prevVal.length - 1) || '0')
     }, [])
 
     const handleNumber = useCallback(
       (nextDigit: number) => {
         if (hasMaxDecimals) return
+        setMaxEnabled(false)
         setValue((prevVal) => {
           if (prevVal !== '0') {
             return `${prevVal}${nextDigit}`
