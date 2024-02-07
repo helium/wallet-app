@@ -262,7 +262,20 @@ export const createTransferSolTxn = async (
 
   const transaction = new Transaction()
 
-  transaction.add(...instructions)
+  if (payments.some((p) => p.max)) {
+    // cant account for priority fees if sending max
+    // TODO: need to refactor PaymentScreen and usePaymentReducer to handle sub priority fee from maxAmount
+    transaction.add(...instructions)
+  } else {
+    transaction.add(
+      ...(await withPriorityFees({
+        connection: anchorProvider.connection,
+        computeUnits: 20000 * instructions.length,
+        instructions,
+      })),
+    )
+  }
+
   transaction.feePayer = payer
   transaction.recentBlockhash = blockhash
 

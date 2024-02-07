@@ -2,6 +2,7 @@ import { NetTypes } from '@helium/address'
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import { useReducer } from 'react'
+import { NATIVE_MINT } from '@solana/spl-token'
 import { CSAccount } from '../../storage/cloudStorage'
 import { TXN_FEE_IN_LAMPORTS } from '../../utils/solanaUtils'
 import { Payment } from './PaymentItem'
@@ -20,6 +21,7 @@ type UpdateBalanceAction = {
   address?: string
   index: number
   value?: BN
+  max?: boolean
   payer: string
 }
 
@@ -118,16 +120,20 @@ const calculateFee = (payments: Payment[]) => {
 const recalculate = (payments: Payment[], state: PaymentState) => {
   const accountBalance = state.balance
   const { networkFee } = calculateFee(payments)
-
   const maxPayment = payments.find((p) => p.max)
   const totalAmount = paymentsSum(payments)
+
   if (!maxPayment) {
     return { networkFee, payments, totalAmount }
   }
-  const prevPaymentAmount = maxPayment?.amount ?? new BN(0)
 
+  const prevPaymentAmount = maxPayment?.amount ?? new BN(0)
   const totalMinusPrevPayment = totalAmount.sub(prevPaymentAmount)
   let maxBalance = accountBalance?.sub(totalMinusPrevPayment)
+
+  if (state.mint.equals(NATIVE_MINT)) {
+    maxBalance = maxBalance?.sub(networkFee)
+  }
 
   if (maxBalance.lt(new BN(0))) {
     maxBalance = new BN(0)
@@ -210,7 +216,7 @@ function reducer(
         return {
           ...p,
           amount: action.value,
-          max: false,
+          max: action.max,
         }
       })
       return { ...state, ...recalculate(nextPayments, state) }

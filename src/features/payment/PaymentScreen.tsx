@@ -256,12 +256,13 @@ const PaymentScreen = () => {
   }, [route])
 
   const handleBalance = useCallback(
-    (opts: { balance: BN; payee?: string; index?: number }) => {
+    (opts: { balance: BN; max: boolean; payee?: string; index?: number }) => {
       if (opts.index === undefined || !currentAccount?.address) return
 
       dispatch({
         type: 'updateBalance',
         value: opts.balance,
+        max: opts.max,
         address: opts.payee,
         index: opts.index,
         payer: currentAccount.address,
@@ -314,6 +315,8 @@ const PaymentScreen = () => {
             payee: payment.address!,
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             balanceAmount: payment.amount!,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            max: payment.max!,
           })),
         paymentState.mint,
       )
