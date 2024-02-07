@@ -262,13 +262,7 @@ export const createTransferSolTxn = async (
 
   const transaction = new Transaction()
 
-  transaction.add(
-    ...(await withPriorityFees({
-      connection: anchorProvider.connection,
-      computeUnits: 20000 * instructions.length,
-      instructions,
-    })),
-  )
+  transaction.add(...instructions)
   transaction.feePayer = payer
   transaction.recentBlockhash = blockhash
 
