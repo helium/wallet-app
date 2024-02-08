@@ -14,8 +14,8 @@ import {
   makerApprovalKey,
   rewardableEntityConfigKey,
 } from '@helium/helium-entity-manager-sdk'
-import { useOnboarding } from '@helium/react-native-sdk'
-import { sendAndConfirmWithRetry, toNumber } from '@helium/spl-utils'
+import { NetworkType } from '@helium/onboarding'
+import { toNumber } from '@helium/spl-utils'
 import useCopyText from '@hooks/useCopyText'
 import { useEntityKey } from '@hooks/useEntityKey'
 import { getExplorerUrl, useExplorer } from '@hooks/useExplorer'
@@ -27,7 +27,6 @@ import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { useMobileInfo } from '@hooks/useMobileInfo'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { Transaction } from '@solana/web3.js'
 import { useSpacing } from '@theme/themeHooks'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import { Explorer } from '@utils/walletApiV2'
@@ -40,10 +39,7 @@ import { FadeIn } from 'react-native-reanimated'
 import { Edge } from 'react-native-safe-area-context'
 import { SvgUri } from 'react-native-svg'
 import 'text-encoding-polyfill'
-import { NetworkType } from '@helium/onboarding'
 import { useSolana } from '../../solana/SolanaProvider'
-import { useWalletSign } from '../../solana/WalletSignProvider'
-import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import {
   IOT_SUB_DAO_KEY,
   MOBILE_SUB_DAO_KEY,
@@ -51,7 +47,6 @@ import {
 } from '../../utils/constants'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import { ww } from '../../utils/layout'
-import { isInsufficientBal } from '../../utils/solanaUtils'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
@@ -71,8 +66,6 @@ const HotspotDetailsScreen = () => {
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])
   const [optionsOpen, setOptionsOpen] = useState(false)
-  const { getOnboardTransactions } = useOnboarding()
-  const { walletSignBottomSheetRef } = useWalletSign()
   const { anchorProvider } = useSolana()
 
   const { t } = useTranslation()
@@ -210,98 +203,51 @@ const HotspotDetailsScreen = () => {
       return
     }
     setOptionsOpen(false)
-    const hotspotType: NetworkType | undefined = await new Promise(
-      (resolve) => {
-        const options: AlertButton[] = []
-        if (!iotInfoAcc?.info) {
-          options.push({
-            text: 'IOT',
-            onPress: () => {
-              resolve('IOT')
-            },
-          })
-        }
-        if (!mobileInfoAcc?.info) {
-          options.push({
-            text: 'MOBILE',
-            onPress: () => {
-              resolve('MOBILE')
-            },
-          })
-        }
+    const network: NetworkType | undefined = await new Promise((resolve) => {
+      const options: AlertButton[] = []
+      if (!iotInfoAcc?.info) {
         options.push({
-          text: t('generic.cancel'),
-          style: 'destructive',
+          text: 'IOT',
           onPress: () => {
-            resolve(undefined)
+            resolve('IOT')
           },
         })
-        Alert.alert(
-          t('collectablesScreen.hotspots.onboard.title'),
-          t('collectablesScreen.hotspots.onboard.which'),
-          options,
-        )
-      },
-    )
-    if (!hotspotType) {
+      }
+      if (!mobileInfoAcc?.info) {
+        options.push({
+          text: 'MOBILE',
+          onPress: () => {
+            resolve('MOBILE')
+          },
+        })
+      }
+      options.push({
+        text: t('generic.cancel'),
+        style: 'destructive',
+        onPress: () => {
+          resolve(undefined)
+        },
+      })
+      Alert.alert(
+        t('collectablesScreen.hotspots.onboard.title'),
+        t('collectablesScreen.hotspots.onboard.which'),
+        options,
+      )
+    })
+    if (!network) {
       return
     }
 
-    const { solanaTransactions } = await getOnboardTransactions({
-      hotspotAddress: entityKey,
-      networkDetails: [
-        {
-          hotspotType,
+    navigation.push('OnboardingNavigator', {
+      screen: 'IotBle',
+      params: {
+        screen: 'AddGatewayBle',
+        params: {
+          network,
+          onboardingAddress: entityKey,
         },
-      ],
+      },
     })
-    const serializedTxs = solanaTransactions?.map((txn) =>
-      Buffer.from(txn, 'base64'),
-    )
-
-    if ((serializedTxs?.length || 0) > 0 && walletSignBottomSheetRef) {
-      const decision = await walletSignBottomSheetRef.show({
-        type: WalletStandardMessageTypes.signTransaction,
-        url: '',
-        additionalMessage: t('transactions.signAssertLocationTxn'),
-        serializedTxs,
-      })
-
-      if (!decision) {
-        throw new Error('User rejected transaction')
-      }
-      const signedTxns =
-        serializedTxs &&
-        (await anchorProvider.wallet.signAllTransactions(
-          serializedTxs.map((ser) => Transaction.from(ser)),
-        ))
-
-      try {
-        // eslint-disable-next-line no-restricted-syntax
-        for (const txn of signedTxns || []) {
-          // eslint-disable-next-line no-await-in-loop
-          await sendAndConfirmWithRetry(
-            anchorProvider.connection,
-            txn.serialize(),
-            {
-              skipPreflight: true,
-            },
-            'confirmed',
-          )
-        }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (e: any) {
-        if (isInsufficientBal(e)) {
-          throw new Error(
-            'Manufacturer does not have enough SOL or Data Credits to assert location. Please contact the manufacturer of this hotspot to resolve this issue.',
-          )
-        }
-        if (e.InstructionError) {
-          throw new Error(`Program Error: ${JSON.stringify(e)}`)
-        }
-        throw e
-      }
-    }
   })
 
   const handleConfirmExplorer = useCallback(

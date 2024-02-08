@@ -8,8 +8,9 @@ import { useHotspotBle } from '@helium/react-native-sdk'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useIotInfo } from '@hooks/useIotInfo'
 import { useKeyToAsset } from '@hooks/useKeyToAsset'
-import { PublicKey } from '@solana/web3.js'
 import { useNavigation } from '@react-navigation/native'
+import { PublicKey } from '@solana/web3.js'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { DAO_KEY } from '@utils/constants'
 import { getHotspotWithRewards } from '@utils/solanaUtils'
 import React, { useCallback, useEffect, useState } from 'react'
@@ -53,36 +54,53 @@ const Settings = () => {
   const navigation = useNavigation<HotspotBleNavProp>()
   const collectNav = useNavigation<CollectableNavigationProp>()
   const { t } = useTranslation()
-  const { isConnected, getOnboardingAddress } = useHotspotBle()
+  const {
+    isConnected,
+    getOnboardingAddress,
+    createGatewayTxn: getCreateGatewayTxn,
+  } = useHotspotBle()
   const [connected, setConnected] = useState(false)
   const { anchorProvider } = useSolana()
   const wallet = useCurrentWallet()
+  const { currentAccount } = useAccountStorage()
 
   useEffect(() => {
     isConnected().then(setConnected)
   }, [isConnected])
   const {
-    result: { address, keyToAssetK } = {} as {
+    result: { address, keyToAssetK, createGatewayTx } = {} as {
       address?: string
       keyToAssetK?: PublicKey
+      createGatewayTx?: string
     },
     loading: loadingAddress,
+    error,
   } = useAsync(
     async (
       c: boolean,
-    ): Promise<{ address?: string; keyToAssetK?: PublicKey }> => {
-      if (c) {
+      accountAddress?: string,
+    ): Promise<{
+      address?: string
+      keyToAssetK?: PublicKey
+      createGatewayTx?: string
+    }> => {
+      if (c && accountAddress) {
         const addr = await getOnboardingAddress()
+        const tx = await getCreateGatewayTxn({
+          ownerAddress: accountAddress,
+          payerAddress: accountAddress,
+        })
         // For testing
         // const addr = TEST_HOTSPOT.address.b58
         return {
           address: addr,
           keyToAssetK: keyToAssetKey(DAO_KEY, addr, 'b58')[0],
+          createGatewayTx: tx,
         }
       }
       return {}
     },
-    [connected],
+    [connected, currentAccount?.address],
   )
   const { info: iotInfo, loading: loadingInfo } = useIotInfo(address)
   const { info: keyToAsset, loading: loadingKta } = useKeyToAsset(
@@ -102,9 +120,23 @@ const Settings = () => {
 
       collectNav.push('HotspotDetailsScreen', { collectable })
     } else {
-      navigation.push('AddGatewayBle')
+      navigation.push('AddGatewayBle', {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        onboardingAddress: address!,
+        createGatewayTx,
+        network: 'IOT',
+      })
     }
-  }, [anchorProvider, navigation, iotInfo, keyToAsset, collectNav, wallet])
+  }, [
+    createGatewayTx,
+    address,
+    anchorProvider,
+    navigation,
+    iotInfo,
+    keyToAsset,
+    collectNav,
+    wallet,
+  ])
 
   const renderItem = React.useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
@@ -147,6 +179,12 @@ const Settings = () => {
         renderItem={renderItem}
         keyExtractor={keyExtractor}
       />
+      {error && (
+        <Text variant="body1Medium" color="red500">
+          {t('hotspotOnboarding.settings.hotspotError')}
+          {error.message ? error.message.toString() : error.toString()}
+        </Text>
+      )}
       {!loadingInfo && !loadingKta && (
         <ButtonPressable
           marginTop="l"
@@ -154,7 +192,7 @@ const Settings = () => {
           titleColor="black"
           borderColor="transparent"
           backgroundColor="white"
-          disabled={loading}
+          disabled={loading || !!error || !address}
           title={iotInfo ? t('generic.done') : t('generic.next')}
           onPress={navNext}
         />
