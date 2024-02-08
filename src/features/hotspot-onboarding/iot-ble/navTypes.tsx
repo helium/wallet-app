@@ -6,7 +6,11 @@ export type HotspotBLEStackParamList = {
   Settings: undefined
   WifiSettings: { network?: string }
   WifiSetup: { network: string }
-  AddGatewayBle: undefined
+  AddGatewayBle: {
+    createGatewayTx?: string
+    onboardingAddress: string
+    network: 'IOT' | 'MOBILE'
+  }
   Diagnostics: undefined
 }
 

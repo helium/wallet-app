@@ -32,6 +32,7 @@ export default {
     },
     settings: {
       title: 'Settings',
+      hotspotError: 'Hotspot Returned Error: ',
     },
     diagnostics: {
       title: 'Diagnostics',
@@ -48,7 +49,7 @@ export default {
     onboarding: {
       title: 'Onboarding',
       subtitle:
-        'Onboard your Hotspot to the IOT network. After onboarding this Hotspot, you will be able to set the location and antenna details.',
+        'Onboard your Hotspot to the {{network}} network. After onboarding this Hotspot, you will be able to set the location and antenna details.',
       onboard: 'Onboard Hotspot',
       onboardAndPay: 'Onboard and Pay Maker Fees',
       responsible:

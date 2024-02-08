@@ -7,16 +7,14 @@ import Text from '@components/Text'
 import {
   init,
   iotInfoKey,
+  mobileInfoKey,
   keyToAssetKey,
   rewardableEntityConfigKey,
 } from '@helium/helium-entity-manager-sdk'
-import {
-  AddGatewayV1,
-  useHotspotBle,
-  useOnboarding,
-} from '@helium/react-native-sdk'
+import { useOnboarding } from '@helium/react-native-sdk'
 import {
   IOT_MINT,
+  MOBILE_MINT,
   bufferToTransaction,
   getAsset,
   sendAndConfirmWithRetry,
@@ -25,40 +23,35 @@ import {
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useImplicitBurn } from '@hooks/useImplicitBurn'
 import { useOnboardingBalnces } from '@hooks/useOnboardingBalances'
-import { useNavigation } from '@react-navigation/native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { LAMPORTS_PER_SOL, Transaction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { DAO_KEY, IOT_SUB_DAO_KEY } from '@utils/constants'
+import { DAO_KEY, IOT_SUB_DAO_KEY, MOBILE_SUB_DAO_KEY } from '@utils/constants'
 import sleep from '@utils/sleep'
 import { getHotspotWithRewards, isInsufficientBal } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { Buffer } from 'buffer'
 import React, { useState } from 'react'
-import { useAsync, useAsyncCallback } from 'react-async-hook'
+import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert, Linking, ScrollView } from 'react-native'
 import { useSolana } from '../../../solana/SolanaProvider'
 import { CollectableNavigationProp } from '../../collectables/collectablesTypes'
+import { HotspotBLEStackParamList } from './navTypes'
+
+type Route = RouteProp<HotspotBLEStackParamList, 'AddGatewayBle'>
 
 const REQUIRED_SOL = new BN((0.00089088 + 0.00001) * LAMPORTS_PER_SOL)
 const AddGatewayBle = () => {
+  const route = useRoute<Route>()
+  const { createGatewayTx, onboardingAddress, network } = route.params
   const { onboardingClient, getOnboardTransactions } = useOnboarding()
-  const { getOnboardingAddress, createGatewayTxn } = useHotspotBle()
   const { currentAccount } = useAccountStorage()
   const { anchorProvider } = useSolana()
   const { t } = useTranslation()
   const collectNav = useNavigation<CollectableNavigationProp>()
   const wallet = useCurrentWallet()
-  const {
-    result: onboardAddress,
-    error: fetchOnboardAddrError,
-    loading: fetchLoading,
-  } = useAsync(async () => {
-    const onboardAddr = await getOnboardingAddress()
-    // For testing
-    // const onboardAddr = getTestHotspot().address.b58
-    return onboardAddr
-  }, [getOnboardingAddress])
+
   const {
     error: onboardBalError,
     maker,
@@ -74,10 +67,11 @@ const AddGatewayBle = () => {
     onboardingDcRequirements,
     locationAssertDcRequirements,
     loadingOnboardingDcRequirements,
-  } = useOnboardingBalnces(onboardAddress)
-  const requiredDc = onboardingDcRequirements[IOT_MINT.toBase58()] || new BN(0)
+  } = useOnboardingBalnces(onboardingAddress)
+  const mint = network === 'IOT' ? IOT_MINT : MOBILE_MINT
+  const requiredDc = onboardingDcRequirements[mint.toBase58()] || new BN(0)
   const assertRequiredDc =
-    locationAssertDcRequirements[IOT_MINT.toBase58()] || new BN(0)
+    locationAssertDcRequirements[mint.toBase58()] || new BN(0)
   const insufficientMakerSolBal =
     !loadingMakerSol && (makerSol || new BN(0)).lt(REQUIRED_SOL)
   const insufficientMakerDcBal =
@@ -143,17 +137,9 @@ const AddGatewayBle = () => {
     //   gateway: getTestHotspot(),
     // })
     // const txnStr = tx.toString()
-    const txnStr = await createGatewayTxn({
-      ownerAddress: accountAddress,
-      payerAddress: maker.address,
-    })
-    const tx = AddGatewayV1.fromString(txnStr)
-    if (!tx?.gateway) {
-      throw new Error('Invalid transaction')
-    }
-
+    const txnStr = createGatewayTx
     const hemProgram = await init(anchorProvider)
-    const keyToAssetK = keyToAssetKey(DAO_KEY, tx.gateway.b58, 'b58')[0]
+    const keyToAssetK = keyToAssetKey(DAO_KEY, onboardingAddress, 'b58')[0]
     let keyToAsset = await hemProgram.account.keyToAssetV0.fetchNullable(
       keyToAssetK,
     )
@@ -187,13 +173,18 @@ const AddGatewayBle = () => {
       throw e
     }
 
-    const createTxns = await onboardingClient.createHotspot({
-      transaction: txnStr,
-    })
+    let createHotspotTxns: Buffer[] = []
+    if (txnStr) {
+      const createTxns = await onboardingClient.createHotspot({
+        transaction: txnStr,
+      })
 
-    const createHotspotTxns = createTxns.data?.solanaTransactions?.map(
-      (createHotspotTx) => Buffer.from(createHotspotTx),
-    )
+      createHotspotTxns =
+        createTxns.data?.solanaTransactions?.map((createHotspotTx) =>
+          Buffer.from(createHotspotTx),
+        ) || []
+    }
+
     try {
       // eslint-disable-next-line no-restricted-syntax
       for (const txn of createHotspotTxns || []) {
@@ -212,11 +203,20 @@ const AddGatewayBle = () => {
       wrapProgramError(e)
     }
 
-    const [iotConfigKey] = rewardableEntityConfigKey(IOT_SUB_DAO_KEY, 'IOT')
-    const iotInfo = await hemProgram.account.iotHotspotInfoV0.fetchNullable(
-      iotInfoKey(iotConfigKey, tx?.gateway?.b58)[0],
+    const [configKey] = rewardableEntityConfigKey(
+      network === 'IOT' ? IOT_SUB_DAO_KEY : MOBILE_SUB_DAO_KEY,
+      network,
     )
-    if (!iotInfo && onboardAddress) {
+    const fetcher =
+      network === 'IOT'
+        ? hemProgram.account.iotHotspotInfoV0
+        : hemProgram.account.mobileHotspotInfoV0
+    const networkInfoK =
+      network === 'IOT'
+        ? iotInfoKey(configKey, onboardingAddress)[0]
+        : mobileInfoKey(configKey, onboardingAddress)[0]
+    const networkInfo = await fetcher.fetchNullable(networkInfoK)
+    if (!networkInfo && onboardingAddress) {
       // Implicit burn to DC if needed
       if (payer) {
         await implicitBurn(requiredDc.toNumber())
@@ -224,9 +224,9 @@ const AddGatewayBle = () => {
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const { solanaTransactions } = await getOnboardTransactions({
-        hotspotAddress: onboardAddress,
+        hotspotAddress: onboardingAddress,
         payer,
-        networkDetails: [{ hotspotType: 'IOT' }],
+        networkDetails: [{ hotspotType: network }],
       })
 
       let solanaSignedTransactions: Transaction[] | undefined
@@ -278,19 +278,18 @@ const AddGatewayBle = () => {
     const { asset } = keyToAsset
     const collectable = await getHotspotWithRewards(asset, anchorProvider)
     collectNav.navigate(
-      iotInfo ? 'HotspotDetailsScreen' : 'AssertLocationScreen',
+      networkInfo ? 'HotspotDetailsScreen' : 'AssertLocationScreen',
       { collectable },
     )
   })
   const error =
-    fetchOnboardAddrError ||
     onboardBalError ||
     callbackError ||
     (!maker &&
       !loadingMaker &&
       new Error(t('hotspotOnboarding.onboarding.makerNotFound')))
   const loading =
-    fetchLoading ||
+    loadingMaker ||
     callbackLoading ||
     loadingMakerDc ||
     loadingMakerSol ||
@@ -298,7 +297,9 @@ const AddGatewayBle = () => {
     loadingMySol ||
     loadingOnboardingDcRequirements
   const disabled =
-    loading || (balError && (insufficientMyDcBal || insufficientMySolBal))
+    !maker ||
+    loading ||
+    (balError && (insufficientMyDcBal || insufficientMySolBal))
   const [selectedOption, setSelectedOption] = useState<'contact' | 'pay'>(
     'contact',
   )
@@ -316,7 +317,9 @@ const AddGatewayBle = () => {
           textAlign="left"
           adjustsFontSizeToFit
         >
-          {t('hotspotOnboarding.onboarding.subtitle')}
+          {t('hotspotOnboarding.onboarding.subtitle', {
+            network,
+          })}
         </Text>
         {error && (
           <Text variant="body1Medium" color="red500">
@@ -431,7 +434,7 @@ const AddGatewayBle = () => {
             )}
           </>
         )}
-        {!balError && maker && (
+        {!balError && (
           <ButtonPressable
             marginTop="l"
             borderRadius="round"

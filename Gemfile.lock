@@ -101,7 +101,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  cocoapods (>= 1.14.1)
+  cocoapods (= 1.14.3)
 
 RUBY VERSION
    ruby 2.7.5p203
