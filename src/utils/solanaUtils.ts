@@ -661,7 +661,7 @@ export const mintDataCredits = async ({
       ...(await withPriorityFees({
         connection: anchorProvider.connection,
         instructions: [ix],
-        computeUnits: 120000,
+        computeUnits: 180000,
       })),
     )
 
