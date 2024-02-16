@@ -144,6 +144,14 @@ In the meantime here are some important highlights:
 - Be mindful when creating Pull Requests, specify the reason of the change clearly and write tests if needed.
 - Wallet app is mostly accepting bugfix contributions. For features we may reject them based on the fact that they do not fit our roadmap or our long-term goals.
 
+### Using custom Swap API endpoints
+
+You can set custom URLs via the configuration for any self-hosted Jupiter APIs, like the [V6 Swap API](https://station.jup.ag/docs/apis/self-hosted) or [QuickNode's Metis API](https://marketplace.quicknode.com/add-on/metis-jupiter-v6-swap-api). Here is an example:
+
+```
+JUP_SWAP_API=https://quote-api.jup.ag/
+```
+
 ## License
 
 Please check each project `LICENSE` file, most of them are under the `MIT` license.
