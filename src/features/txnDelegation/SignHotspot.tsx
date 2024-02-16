@@ -38,15 +38,16 @@ const onboardingClient = new OnboardingClient(`${Config.ONBOARDING_API_URL}/v3`)
 const METERS_TO_FEET = 3.28084
 type Route = RouteProp<RootStackParamList, 'SignHotspot'>
 const SignHotspot = () => {
-  const { params } = useRoute<Route>()
+  const { params, ...route } = useRoute<Route>()
   const { token, submit } = params
   const [onboardingRecord, setOnboardingRecord] = useState<OnboardingRecord>()
 
-  const solana = useSolTxns(
-    parseWalletLinkToken(token).address,
-    params.solanaTransactions,
-    params.configurationMessage,
-  )
+  const solana = useSolTxns({
+    heliumAddress: parseWalletLinkToken(token).address,
+    deepLinkPath: route.path,
+    solanaTransactions: params.solanaTransactions,
+    configMsgStr: params.configurationMessage,
+  })
 
   const navigation = useNavigation<HomeNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
@@ -60,7 +61,8 @@ const SignHotspot = () => {
       !params.addGatewayTxn &&
       !params.assertLocationTxn &&
       !params.transferHotspotTxn &&
-      !params.solanaTransactions
+      !params.solanaTransactions &&
+      !params.configurationMessage
     )
   }, [params])
 
@@ -195,7 +197,11 @@ const SignHotspot = () => {
     if (locationData) {
       return t('signHotspot.titleLocationOnly')
     }
-  }, [locationData, solana.transactions, t, transferData])
+
+    if (solana.configMsg) {
+      return t('signHotspot.titleConfig')
+    }
+  }, [locationData, solana.configMsg, solana.transactions, t, transferData])
 
   useAsync(async () => {
     if (!parsedToken) return
@@ -255,7 +261,15 @@ const SignHotspot = () => {
       justifyContent="center"
     >
       {title ? (
-        <Text variant="h1" color="primaryText">
+        <Text
+          variant="h1"
+          letterSpacing={-0.5}
+          lineHeight={42}
+          color="primaryText"
+          numberOfLines={2}
+          maxFontSizeMultiplier={1}
+          adjustsFontSizeToFit
+        >
           {title}
         </Text>
       ) : (

@@ -44,14 +44,20 @@ type Txn = {
   hntFee?: BN | null
 }
 
-const useSolTxns = (
-  heliumAddress: string,
-  solanaTransactions?: string,
-  configMsgStr?: string,
-) => {
+const useSolTxns = ({
+  heliumAddress,
+  deepLinkPath,
+  solanaTransactions,
+  configMsgStr,
+}: {
+  heliumAddress: string
+  deepLinkPath?: string
+  solanaTransactions?: string
+  configMsgStr?: string
+}) => {
   const { anchorProvider } = useSolana()
   const [submitLoading, setSubmitLoading] = useState(false)
-  const handledTxnStr = useRef('')
+  const handledDeepLink = useRef('')
   const [transactions, setTransactions] = useState<
     Partial<Record<ValidTxn, Txn>>
   >({} as Record<ValidTxn, Txn>)
@@ -382,32 +388,32 @@ const useSolTxns = (
   )
 
   useAsync(async () => {
-    if (!solanaTransactions || handledTxnStr.current === solanaTransactions) {
+    if (handledDeepLink.current === deepLinkPath || !deepLinkPath) {
       return
     }
 
-    const txns = solanaTransactions
-      .split(',')
-      .map((t) => web3.Transaction.from(Buffer.from(t, 'base64')))
+    handledDeepLink.current = deepLinkPath
 
-    if (!txns?.length) return
+    if (solanaTransactions) {
+      const txns = solanaTransactions
+        .split(',')
+        .map((t) => web3.Transaction.from(Buffer.from(t, 'base64')))
 
-    handledTxnStr.current = solanaTransactions
-
-    const handledTxns = await Promise.all(txns.map(handleTransaction))
-    const nextRecord = {} as Record<ValidTxn, Txn>
-    handledTxns.forEach(({ txn, info }) => {
-      info.forEach((i) => {
-        if (i) {
-          const name = i.name as ValidTxn
-          if (ValidTxnKeys.includes(name)) {
-            nextRecord[name] = { transaction: txn, ...i }
+      const handledTxns = await Promise.all(txns.map(handleTransaction))
+      const nextRecord = {} as Record<ValidTxn, Txn>
+      handledTxns.forEach(({ txn, info }) => {
+        info.forEach((i) => {
+          if (i) {
+            const name = i.name as ValidTxn
+            if (ValidTxnKeys.includes(name)) {
+              nextRecord[name] = { transaction: txn, ...i }
+            }
           }
-        }
+        })
       })
-    })
 
-    setTransactions(nextRecord)
+      setTransactions(nextRecord)
+    }
 
     if (configMsgStr) {
       const configMessage = Uint8Array.from(Buffer.from(configMsgStr, 'base64'))
@@ -426,7 +432,11 @@ const useSolTxns = (
         transactions.transfer?.gatewayAddress
       )
     }
-  }, [transactions])
+
+    if (configMsg?.hmhPubKey) {
+      return bs58.encode(configMsg.hmhPubKey)
+    }
+  }, [configMsg?.hmhPubKey, transactions])
 
   const burnAmounts = useMemo(() => {
     if (!transactions.mintDataCreditsV0) return

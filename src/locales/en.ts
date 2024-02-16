@@ -1071,6 +1071,7 @@ export default {
     newOwner: 'New Owner:',
     owner: 'Owner:',
     title: 'Onboard {{networks}}\nHotspot?',
+    titleConfig: 'Update Hotspot Configuration?',
     titleLocationOnly: 'Update Location?',
     titleTransfer: 'Transfer Hotspot?',
   },
