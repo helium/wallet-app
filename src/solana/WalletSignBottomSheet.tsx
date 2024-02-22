@@ -1,9 +1,15 @@
 import Checkmark from '@assets/images/checkmark.svg'
 import IndentArrow from '@assets/images/indentArrow.svg'
+import InfoIcon from '@assets/images/info.svg'
+import CancelIcon from '@assets/images/remixCancel.svg'
+import ChevronDown from '@assets/images/remixChevronDown.svg'
+import ChevronUp from '@assets/images/remixChevronUp.svg'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
+import SubmitButton from '@components/SubmitButton'
 import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { WarningPill } from '@components/WarningPill'
 import {
   BottomSheetBackdrop,
@@ -35,6 +41,7 @@ import React, {
 } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
+import { TouchableOpacity } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useSharedValue } from 'react-native-reanimated'
 import { useSolana } from './SolanaProvider'
@@ -45,8 +52,6 @@ import {
   WalletSignOpts,
   WalletStandardMessageTypes,
 } from './walletSignBottomSheetTypes'
-import SubmitButton from '@components/SubmitButton'
-import CancelIcon from '@assets/images/remixCancel.svg'
 
 let promiseResolve: (value: boolean | PromiseLike<boolean>) => void
 
@@ -68,12 +73,15 @@ const WalletSignBottomSheet = forwardRef(
     const solBalance = useBN(useSolOwnedAmount(wallet).amount)
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const [isVisible, setIsVisible] = useState(false)
+    const [infoVisible, setInfoVisible] = useState(false)
+    const [writableInfoVisible, setWritableInfoVisible] = useState(false)
     const [walletSignOpts, setWalletSignOpts] = useState<WalletSignOpts>({
       type: WalletStandardMessageTypes.connect,
       url: '',
       additionalMessage: '',
       serializedTxs: undefined,
       header: undefined,
+      suppressWarnings: false,
     })
     const { connection, cluster } = useSolana()
     const { result: accountBlacklist } = useAsync(async () => {
@@ -88,6 +96,8 @@ const WalletSignBottomSheet = forwardRef(
 
       return new Set([])
     }, [])
+    const [feesExpanded, setFeesExpanded] = useState(false)
+    const Chevron = feesExpanded ? ChevronUp : ChevronDown
 
     const itemsPerPage = 5
     const [currentPage, setCurrentPage] = useState(1)
@@ -102,22 +112,18 @@ const WalletSignBottomSheet = forwardRef(
         walletSignOpts.serializedTxs &&
         accountBlacklist
       ) {
-        return Promise.all(
-          walletSignOpts.serializedTxs.map((serializedTransaction) =>
-            sus({
-              connection,
-              wallet,
-              serializedTransaction,
-              checkCNfts: true,
-              cluster,
-              extraSearchAssetParams: {
-                creatorVerified: true,
-                creatorAddress: entityCreatorKey(DAO_KEY)[0].toBase58(),
-              },
-              accountBlacklist,
-            }),
-          ),
-        )
+        return sus({
+          connection,
+          wallet,
+          serializedTransactions: walletSignOpts.serializedTxs,
+          checkCNfts: true,
+          cluster,
+          extraSearchAssetParams: {
+            creatorVerified: true,
+            creatorAddress: entityCreatorKey(DAO_KEY)[0].toBase58(),
+          },
+          accountBlacklist,
+        })
       }
     }, [
       walletSignOpts.serializedTxs,
@@ -157,8 +163,9 @@ const WalletSignBottomSheet = forwardRef(
       [simulationResults],
     )
     const estimatedTotalSol = useMemo(
-      () => humanReadable(new BN(estimatedTotalLamports), 9),
-      [estimatedTotalLamports],
+      () =>
+        loading ? '...' : humanReadable(new BN(estimatedTotalLamports), 9),
+      [estimatedTotalLamports, loading],
     )
     const estimatedTotalBaseFee = useMemo(
       () =>
@@ -234,6 +241,7 @@ const WalletSignBottomSheet = forwardRef(
         additionalMessage,
         serializedTxs,
         header,
+        suppressWarnings,
       }: WalletSignOpts) => {
         bottomSheetModalRef.current?.expand()
         setIsVisible(true)
@@ -244,6 +252,7 @@ const WalletSignBottomSheet = forwardRef(
           additionalMessage,
           serializedTxs,
           header,
+          suppressWarnings,
         })
         const p = new Promise<boolean>((resolve) => {
           promiseResolve = resolve
@@ -300,6 +309,11 @@ const WalletSignBottomSheet = forwardRef(
     useEffect(() => {
       bottomSheetModalRef.current?.present()
     }, [bottomSheetModalRef])
+
+    const showWarnings =
+      totalWarnings &&
+      !walletSignOpts.suppressWarnings &&
+      worstSeverity === 'critical'
 
     const { type, warning, additionalMessage } = walletSignOpts
     return (
@@ -397,9 +411,21 @@ const WalletSignBottomSheet = forwardRef(
                       </Box>
                     )}
 
-                    <Text variant="subtitle2">
-                      {t('browserScreen.estimatedChanges')}
-                    </Text>
+                    <Box flexGrow={1} flexDirection="row" alignItems="center">
+                      <Text variant="subtitle2" mr="s">
+                        {t('browserScreen.estimatedChanges')}
+                      </Text>
+                      <TouchableOpacity
+                        onPress={() => setInfoVisible((prev) => !prev)}
+                      >
+                        <InfoIcon width={15} height={15} />
+                      </TouchableOpacity>
+                    </Box>
+                    {infoVisible && (
+                      <Text mt="s" variant="body3" color="white">
+                        {t('browserScreen.estimatedChangesDescription')}
+                      </Text>
+                    )}
 
                     {!(insufficientFunds || insufficientRentExempt) &&
                       additionalMessage && (
@@ -413,7 +439,7 @@ const WalletSignBottomSheet = forwardRef(
                         </Text>
                       )}
 
-                    {totalWarnings ? (
+                    {showWarnings ? (
                       <Box
                         marginVertical="s"
                         flexDirection="row"
@@ -447,28 +473,38 @@ const WalletSignBottomSheet = forwardRef(
                       </Box>
                     )}
 
-                    <Box flexDirection="row" justifyContent="space-between">
-                      <Text variant="subtitle3">
-                        {t('browserScreen.writableAccounts')}
-                      </Text>
+                    <Box
+                      flexDirection="row"
+                      justifyContent="space-between"
+                      marginTop="s"
+                    >
+                      <Box flexGrow={1} flexDirection="row" alignItems="center">
+                        <Text variant="subtitle3" mr="s">
+                          {t('browserScreen.writableAccounts')}
+                        </Text>
+                        <TouchableOpacity
+                          onPress={() =>
+                            setWritableInfoVisible((prev) => !prev)
+                          }
+                        >
+                          <InfoIcon width={15} height={15} />
+                        </TouchableOpacity>
+                      </Box>
                       <Text variant="body1" color="grey50">
                         {t('browserScreen.transactions', {
                           num: simulationResults?.length || 1,
                         })}
                       </Text>
                     </Box>
+                    {writableInfoVisible && (
+                      <Text mt="s" variant="body3" color="white">
+                        {t('browserScreen.writableAccountsDescription')}
+                      </Text>
+                    )}
 
-                    <Box
-                      flex={1}
-                      maxHeight={
-                        (walletSignOpts?.serializedTxs?.length || 0) > 1
-                          ? 294
-                          : 270
-                      }
-                      paddingTop="m"
-                    >
+                    <Box flex={1} maxHeight={350} paddingTop="m">
                       {loading && <CircleLoader />}
-                      {!currentTxs && (
+                      {error ? (
                         <Box marginBottom="m">
                           <Box>
                             <Box
@@ -477,17 +513,16 @@ const WalletSignBottomSheet = forwardRef(
                               backgroundColor="secondaryBackground"
                               padding="m"
                             >
-                              <Text variant="body1Medium" color="orange500">
-                                {!loading
-                                  ? error
-                                    ? error.message
-                                    : t('browserScreen.unableToSimulate')
-                                  : t('generic.loading')}
+                              <Text
+                                variant="body1Medium"
+                                color={loading ? 'white' : 'matchaRed500'}
+                              >
+                                {error.message || error.toString()}
                               </Text>
                             </Box>
                           </Box>
                         </Box>
-                      )}
+                      ) : null}
                       {isVisible && currentTxs && (
                         <ScrollView>
                           {currentTxs.map((tx, idx) => (
@@ -521,7 +556,8 @@ const WalletSignBottomSheet = forwardRef(
                       WalletStandardMessageTypes.signAndSendTransaction ||
                       type === WalletStandardMessageTypes.signTransaction) && (
                       <Box flexDirection="column">
-                        <Box
+                        <TouchableOpacityBox
+                          onPress={() => setFeesExpanded(!feesExpanded)}
                           marginTop="s"
                           flexDirection="row"
                           justifyContent="space-between"
@@ -529,47 +565,54 @@ const WalletSignBottomSheet = forwardRef(
                           <Text variant="body1Bold">
                             {t('browserScreen.totalNetworkFee')}
                           </Text>
-                          <Text variant="body1Medium" color="blue500">
-                            {`~${estimatedTotalSol} SOL`}
-                          </Text>
-                        </Box>
-                        <Box
-                          marginTop="s"
-                          flexDirection="row"
-                          justifyContent="space-between"
-                        >
                           <Box flexDirection="row">
-                            <IndentArrow />
-                            <Text variant="body1" ml="s" color="grey50">
-                              {t('browserScreen.totalBaseFee')}
+                            <Text variant="body1Medium" color="blue500">
+                              {`~${estimatedTotalSol} SOL`}
                             </Text>
+                            <Chevron color="grey500" />
                           </Box>
+                        </TouchableOpacityBox>
+                        {feesExpanded ? (
+                          <Box paddingRight="l">
+                            <Box
+                              marginTop="s"
+                              flexDirection="row"
+                              justifyContent="space-between"
+                            >
+                              <Box flexDirection="row">
+                                <IndentArrow />
+                                <Text variant="body1" ml="s" color="grey50">
+                                  {t('browserScreen.totalBaseFee')}
+                                </Text>
+                              </Box>
 
-                          <Text variant="body1" color="blue500">
-                            {`~${estimatedTotalBaseFee} SOL`}
-                          </Text>
-                        </Box>
-                        <Box
-                          marginTop="s"
-                          flexDirection="row"
-                          justifyContent="space-between"
-                        >
-                          <Box flexDirection="row">
-                            <IndentArrow />
-                            <Text variant="body1" ml="s" color="grey50">
-                              {t('browserScreen.totalPriorityFee')}
-                            </Text>
+                              <Text variant="body1" color="blue500">
+                                {`~${estimatedTotalBaseFee} SOL`}
+                              </Text>
+                            </Box>
+                            <Box
+                              marginTop="s"
+                              flexDirection="row"
+                              justifyContent="space-between"
+                            >
+                              <Box flexDirection="row">
+                                <IndentArrow />
+                                <Text variant="body1" ml="s" color="grey50">
+                                  {t('browserScreen.totalPriorityFee')}
+                                </Text>
+                              </Box>
+
+                              <Text variant="body1" color="blue500">
+                                {`~${estimatedTotalPriorityFee} SOL`}
+                              </Text>
+                            </Box>
                           </Box>
-
-                          <Text variant="body1" color="blue500">
-                            {`~${estimatedTotalPriorityFee} SOL`}
-                          </Text>
-                        </Box>
+                        ) : null}
                       </Box>
                     )}
                   </Box>
                 )}
-                {totalWarnings ? (
+                {showWarnings ? (
                   <Box
                     flexDirection="row"
                     justifyContent="flex-start"

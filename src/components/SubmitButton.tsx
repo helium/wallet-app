@@ -34,11 +34,13 @@ const SubmitButton = ({
       titleStyles: {
         fontFamily: Font.regular,
         color: disabled ? secondaryText : colorActual,
-        fontSize: 18,
+        fontSize: 19,
+        paddingLeft: 30,
       },
       railStyles: {
         backgroundColor: surfaceSecondary,
         borderColor: surfaceSecondary,
+        paddingLeft: 8,
       },
     }),
 

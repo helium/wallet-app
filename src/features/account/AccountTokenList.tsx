@@ -1,12 +1,9 @@
 import Config from '@assets/images/config.svg'
-import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
 import { useAccountFetchCache } from '@helium/account-fetch-cache-hooks'
-import { init } from '@helium/data-credits-sdk'
-import { subDaoKey } from '@helium/helium-sub-daos-sdk'
 import {
   DC_MINT,
   HNT_MINT,
@@ -15,33 +12,25 @@ import {
   truthy,
 } from '@helium/spl-utils'
 import { useNavigation } from '@react-navigation/native'
-import {
-  AuthorityType,
-  createAssociatedTokenAccountIdempotentInstruction,
-  createSetAuthorityInstruction,
-  createTransferInstruction,
-  getAssociatedTokenAddressSync,
-} from '@solana/spl-token'
-import { PublicKey, Transaction } from '@solana/web3.js'
+import { getAssociatedTokenAddressSync } from '@solana/spl-token'
+import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { DEFAULT_TOKENS, useVisibleTokens } from '@storage/TokensProvider'
 import { useColors } from '@theme/themeHooks'
 import { useBalance } from '@utils/Balance'
-import BN from 'bn.js'
 import { times } from 'lodash'
 import React, { useCallback, useEffect, useMemo } from 'react'
-import { useAsync, useAsyncCallback } from 'react-async-hook'
+import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { AppState, RefreshControl } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Box from '@components/Box'
+import { GovMints } from '../../utils/constants'
 import { useSolana } from '../../solana/SolanaProvider'
-import { useWalletSign } from '../../solana/WalletSignProvider'
-import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { syncTokenAccounts } from '../../store/slices/balancesSlice'
 import { useAppDispatch } from '../../store/store'
-import { GovMints } from '../../utils/constants'
 import { HomeNavigationProp } from '../home/homeTypes'
-import { TokenListGovItem, TokenListItem, TokenSkeleton } from './TokenListItem'
+import { TokenListItem, TokenListGovItem, TokenSkeleton } from './TokenListItem'
 
 type Props = {
   onLayout?: BottomSheetFlatListProps<PublicKey>['onLayout']
@@ -63,100 +52,9 @@ const AccountTokenList = ({ onLayout }: Props) => {
   const { visibleTokens } = useVisibleTokens()
   const { currentAccount } = useAccountStorage()
   const dispatch = useAppDispatch()
-  const { anchorProvider, cluster, connection } = useSolana()
+  const { anchorProvider, cluster } = useSolana()
   const colors = useColors()
   const cache = useAccountFetchCache()
-
-  // TODO: Remove when done testing
-  const { walletSignBottomSheetRef } = useWalletSign()
-  const { result: txn, error } = useAsync(async () => {
-    try {
-      if (currentAccount && currentAccount.solanaAddress && anchorProvider) {
-        const me = new PublicKey(currentAccount.solanaAddress)
-        const blockhash = (await connection?.getLatestBlockhash())?.blockhash
-        const dcProgram = await init(anchorProvider)
-        if (blockhash) {
-          const tx = new Transaction({
-            recentBlockhash: blockhash,
-            feePayer: me,
-          })
-          const incinerator = new PublicKey(
-            '1nc1nerator11111111111111111111111111111111',
-          )
-          const myAta = getAssociatedTokenAddressSync(HNT_MINT, me)
-          const destAta = getAssociatedTokenAddressSync(
-            HNT_MINT,
-            incinerator,
-            true,
-          )
-          const myAta2 = getAssociatedTokenAddressSync(IOT_MINT, me)
-          const destAta2 = getAssociatedTokenAddressSync(
-            IOT_MINT,
-            incinerator,
-            true,
-          )
-          tx.add(await createTransferInstruction(myAta, destAta, me, 1))
-          tx.add(
-            await createAssociatedTokenAccountIdempotentInstruction(
-              me,
-              destAta2,
-              incinerator,
-              IOT_MINT,
-            ),
-          )
-          tx.add(await createTransferInstruction(myAta2, destAta2, me, 2))
-          tx.add(
-            await dcProgram.methods
-              .mintDataCreditsV0({
-                dcAmount: new BN(1),
-                hntAmount: null,
-              })
-              .accounts({
-                dcMint: DC_MINT,
-              })
-              .instruction(),
-          )
-          tx.add(
-            await dcProgram.methods
-              .delegateDataCreditsV0({
-                amount: new BN(1),
-                routerKey: 'foo',
-              })
-              .accounts({
-                dcMint: DC_MINT,
-                subDao: subDaoKey(IOT_MINT)[0],
-              })
-              .instruction(),
-          )
-          tx.add(
-            createSetAuthorityInstruction(
-              myAta,
-              me,
-              AuthorityType.AccountOwner,
-              incinerator,
-            ),
-          )
-
-          return tx
-        }
-      }
-    } catch (e: any) {
-      console.error(e)
-    }
-  }, [currentAccount?.solanaAddress])
-  if (error) {
-    console.error(error)
-  }
-  useEffect(() => {
-    if (txn && walletSignBottomSheetRef) {
-      console.log('YEEAEHkss')
-      walletSignBottomSheetRef.show({
-        type: WalletStandardMessageTypes.signTransaction,
-        url: '',
-        serializedTxs: [txn.serialize({ requireAllSignatures: false })],
-      })
-    }
-  }, [txn, walletSignBottomSheetRef])
 
   const { loading: refetchingTokens, execute: refetchTokens } =
     useAsyncCallback(async () => {

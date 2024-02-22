@@ -505,11 +505,15 @@ export default {
     suspiciousActivity: 'Suspicious Activity: {{num}} transactions',
     instructionsAndPrograms: 'Instructions & Programs',
     estimatedAccountChanges: 'Estimated Account Changes',
-    accountDeleted: 'Account Deleted',
+    estimatedChangesDescription:
+      'These changes may differ from what occurs when the transaction completes. Any writable account can be drained if the program you are calling is malicious. Changes to your accounts are estimated by simulating these transactions against the Solana Blockchain; however, malicious actors can fool simulations. Only approve transactions from trusted sources.',
+    accountDeleted: 'Account Closed',
     accountCreated: 'Account Created',
     accounts: 'accounts',
     transactions: '{{num}} transactions',
     writableAccounts: 'Writable Accounts',
+    writableAccountsDescription:
+      'This transaction can make changes to any of the following accounts. These changes may differ from what occurs when the transaction completes. Any writable account listed can be drained by a malicious actor; malicious actors can fake these simulations. Only approve transactions from trusted sources.',
     myFavoritesEmpty:
       'No favorites yet. Start browsing and add your favorite URLs!',
     recentlyVisited: 'Recently Visited',

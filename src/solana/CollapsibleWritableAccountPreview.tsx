@@ -9,20 +9,21 @@ import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import {
-  Warning,
   ParsedInstruction,
   RawInstruction,
+  Warning,
   WritableAccount,
 } from '@helium/sus'
 import { getMetadata, useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { NATIVE_MINT } from '@solana/spl-token'
+import { AccountInfo } from '@solana/web3.js'
 import { useColors } from '@theme/themeHooks'
+import { shortenAddress } from '@utils/formatting'
 import { humanReadable } from '@utils/solanaUtils'
 import { BN } from 'bn.js'
 import React, { useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { WritableAccountPreview } from './WritableAccountPreview'
-import { shortenAddress } from '@utils/formatting'
 
 const TokenChange = ({
   symbol,
@@ -89,6 +90,9 @@ const NativeSolBalanceChange = ({
     />
   )
 }
+function accountExists(account: AccountInfo<Buffer> | null): boolean {
+  return account ? account.lamports > 0 : false
+}
 
 export const CollapsibleWritableAccountPreview = ({
   writableAccount,
@@ -112,6 +116,13 @@ export const CollapsibleWritableAccountPreview = ({
     writableAccount.metadata &&
     (writableAccount.pre.type === 'TokenAccount' ||
       writableAccount.post.type === 'TokenAccount')
+
+  const created =
+    !accountExists(writableAccount.pre.account) &&
+    accountExists(writableAccount.post.account)
+  const closed =
+    accountExists(writableAccount.pre.account) &&
+    !accountExists(writableAccount.post.account)
 
   return (
     <TouchableOpacityBox onPress={() => setExpanded(!expanded)}>
@@ -155,11 +166,15 @@ export const CollapsibleWritableAccountPreview = ({
                     ? `${warnings.length} Warnings`
                     : warnings[0].shortMessage
                 }
-                color="red"
+                color={
+                  warnings.some((w) => w.severity === 'critical')
+                    ? 'red'
+                    : 'orange'
+                }
               />
             </Box>
           ) : null}
-          {isNative || isToken ? (
+          {isNative || isToken || created || closed ? (
             <Box mr="xs">
               {isToken ? (
                 <TokenBalanceChange
@@ -169,6 +184,12 @@ export const CollapsibleWritableAccountPreview = ({
               ) : null}
               {isNative ? (
                 <NativeSolBalanceChange writableAccount={writableAccount} />
+              ) : null}
+              {!isToken && !isNative && warnings.length === 0 && created ? (
+                <Pill text="Created" color="green" />
+              ) : null}
+              {!isToken && !isNative && warnings.length === 0 && closed ? (
+                <Pill text="Closed" color="blue" />
               ) : null}
             </Box>
           ) : null}
