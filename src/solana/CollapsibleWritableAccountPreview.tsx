@@ -22,6 +22,7 @@ import { BN } from 'bn.js'
 import React, { useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { WritableAccountPreview } from './WritableAccountPreview'
+import { shortenAddress } from '@utils/formatting'
 
 const TokenChange = ({
   symbol,
@@ -120,25 +121,31 @@ export const CollapsibleWritableAccountPreview = ({
         justifyContent="space-between"
         alignItems="center"
       >
-        {writableAccount.metadata ? (
-          <TokenChange
-            symbol={
-              writableAccount.name.includes('Mint')
-                ? writableAccount.name
-                : writableAccount.metadata.symbol
-            }
-            image={metadata?.image}
-          />
-        ) : isNative ? (
-          <TokenChange symbol="SOL" image={solMetadata.image} />
-        ) : (
-          <Box flexDirection="row" alignItems="center">
-            <UnknownAccount width={24} height={24} />
-            <Text ml="xs" color="white">
-              {writableAccount.name}
-            </Text>
-          </Box>
-        )}
+        <Box flexDirection="row" alignItems="center">
+          {writableAccount.metadata ? (
+            <TokenChange
+              symbol={
+                writableAccount.name.includes('Mint')
+                  ? writableAccount.name
+                  : writableAccount.metadata.symbol
+              }
+              image={metadata?.image}
+            />
+          ) : isNative ? (
+            <TokenChange symbol="SOL" image={solMetadata.image} />
+          ) : (
+            <Box flexDirection="row" alignItems="center">
+              <UnknownAccount width={24} height={24} />
+              <Text ml="xs" color="white">
+                {writableAccount.name}
+              </Text>
+            </Box>
+          )}
+          <Text variant="body4" ml="xs" color="grey50">
+            {shortenAddress(writableAccount.address.toBase58())}
+          </Text>
+        </Box>
+
         <Box flexDirection="row" justifyContent="flex-end" alignItems="center">
           {warnings.length > 0 ? (
             <Box mr="xs">

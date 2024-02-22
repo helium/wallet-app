@@ -76,6 +76,11 @@ const textVariants = {
     fontSize: 12,
     color: 'primaryText',
   },
+  body4: {
+    fontFamily: Font.regular,
+    fontSize: 8,
+    color: 'primaryText',
+  },
   regular: {
     fontFamily: Font.regular,
   },

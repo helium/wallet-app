@@ -520,9 +520,9 @@ const WalletSignBottomSheet = forwardRef(
                     {(type ===
                       WalletStandardMessageTypes.signAndSendTransaction ||
                       type === WalletStandardMessageTypes.signTransaction) && (
-                      <Box marginTop="m" flexDirection="column">
+                      <Box flexDirection="column">
                         <Box
-                          marginTop="m"
+                          marginTop="s"
                           flexDirection="row"
                           justifyContent="space-between"
                         >
@@ -574,11 +574,11 @@ const WalletSignBottomSheet = forwardRef(
                     flexDirection="row"
                     justifyContent="flex-start"
                     alignItems="center"
+                    mt="s"
                   >
                     <Box flex={1}>
                       <SubmitButton
                         color="matchaRed500"
-                        marginTop="l"
                         backgroundColor="white"
                         title={
                           type === WalletStandardMessageTypes.connect
@@ -606,7 +606,7 @@ const WalletSignBottomSheet = forwardRef(
                   <Box
                     flexDirection="row"
                     justifyContent="space-between"
-                    marginTop="m"
+                    mt="s"
                   >
                     <ButtonPressable
                       width="48%"
