@@ -10,21 +10,31 @@ type Props = {
   onSubmit?: () => void
   title: string
   disabled?: boolean
+  color?: string
+  backgroundColor?: string
 } & BoxProps<Theme>
-const SubmitButton = ({ onSubmit, title, disabled, ...boxProps }: Props) => {
-  const { surfaceSecondary, secondaryText, blueBright500, secondaryIcon } =
-    useColors()
+const SubmitButton = ({
+  color = 'blueBright500',
+  onSubmit,
+  title,
+  disabled,
+  backgroundColor = 'secondaryIcon',
+  ...boxProps
+}: Props) => {
+  const { surfaceSecondary, secondaryText, ...rest } = useColors()
+  const colorActual = rest[color as keyof typeof rest]
+  const backgroundActual = rest[backgroundColor as keyof typeof rest]
   const icon = useMemo(
-    () => () => <SwipeIcon color={blueBright500} />,
-    [blueBright500],
+    () => () => <SwipeIcon color={colorActual} />,
+    [colorActual],
   )
 
   const styles = useMemo(
     () => ({
       titleStyles: {
         fontFamily: Font.regular,
-        color: disabled ? secondaryText : blueBright500,
-        fontSize: 19,
+        color: disabled ? secondaryText : colorActual,
+        fontSize: 18,
       },
       railStyles: {
         backgroundColor: surfaceSecondary,
@@ -32,21 +42,25 @@ const SubmitButton = ({ onSubmit, title, disabled, ...boxProps }: Props) => {
       },
     }),
 
-    [blueBright500, disabled, secondaryText, surfaceSecondary],
+    [colorActual, disabled, secondaryText, surfaceSecondary],
   )
 
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <Box backgroundColor="secondaryIcon" borderRadius="round" {...boxProps}>
+    <Box
+      backgroundColor={backgroundColor as any}
+      borderRadius="round"
+      {...boxProps}
+    >
       <SwipeButton
         shouldResetAfterSuccess
-        railBackgroundColor={secondaryIcon}
+        railBackgroundColor={backgroundActual}
         railStyles={styles.railStyles}
-        railBorderColor={secondaryIcon}
+        railBorderColor={backgroundActual}
         titleStyles={styles.titleStyles}
         titleMaxFontScale={1}
-        thumbIconBackgroundColor={secondaryIcon}
-        thumbIconBorderColor={blueBright500}
+        thumbIconBackgroundColor={backgroundActual}
+        thumbIconBorderColor={colorActual}
         title={title}
         onSwipeSuccess={onSubmit}
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment

@@ -110,6 +110,18 @@ const palette = {
 
   black: '#000000',
 
+  blue500: '#3B82F6',
+  blue950: '#172554',
+  blueBorder: 'rgba(59, 130, 246, 0.25)',
+
+  green500: '#22C55E',
+  green950: '#052E16',
+  greenBorder: 'rgba(34, 197, 94, 0.25)',
+
+  orange500: '#f97316',
+  orange950: '#431407',
+  orangeBorder: 'rgba(245, 115, 22, 0.25)',
+
   blueBright500: '#009FF9',
 
   blueRibbon: '#484CF6',
@@ -126,6 +138,7 @@ const palette = {
 
   greenBright500: '#27EE76',
 
+  grey50: '#B8B8B8',
   grey100: '#F7F7F7',
   grey200: '#EFEFF0',
   grey300: '#AEAEAE',
@@ -138,6 +151,8 @@ const palette = {
   grey900: '#2C2E37',
   lightGrey: '#E2E2E2',
 
+  matchaGray900: '#2B2B2B',
+
   havelockBlue: '#0C93E5',
 
   jazzberryJam: '#D23E72',
@@ -148,8 +163,11 @@ const palette = {
 
   offWhite: '#F9FAFC',
 
-  orange500: '#FFB156',
   warning: '#FFE5C7',
+
+  critical500: '#EF4444',
+  critical950: '#450A0A',
+  criticalBorder: 'rgba(239, 68, 68, 0.25)',
 
   persianRose: '#FF2DB7',
 
@@ -163,6 +181,9 @@ const palette = {
   red400: '#FF6666',
   red500: '#E43B70',
   red500Transparent10: '#E43B701A',
+  matchaRed500: '#EF4444',
+  matchaRed950: '#450A0A',
+  redBorder: 'rgba(239, 68, 68, 0.25)',
 
   solanaGreen: '#14F195',
   solanaPurple: '#9945FF',

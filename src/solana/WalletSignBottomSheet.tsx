@@ -1,19 +1,26 @@
 import Checkmark from '@assets/images/checkmark.svg'
+import IndentArrow from '@assets/images/indentArrow.svg'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
+import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
+import { WarningPill } from '@components/WarningPill'
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetModalProvider,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
+import { entityCreatorKey } from '@helium/helium-entity-manager-sdk'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
+import { sus } from '@helium/sus'
 import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useRentExempt } from '@hooks/useRentExempt'
-import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 import { useColors, useOpacity } from '@theme/themeHooks'
+import { DAO_KEY } from '@utils/constants'
+import { humanReadable } from '@utils/solanaUtils'
+import axios from 'axios'
 import BN from 'bn.js'
 import React, {
   Ref,
@@ -26,9 +33,11 @@ import React, {
   useRef,
   useState,
 } from 'react'
+import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useSharedValue } from 'react-native-reanimated'
+import { useSolana } from './SolanaProvider'
 import WalletSignBottomSheetTransaction from './WalletSignBottomSheetTransaction'
 import {
   WalletSignBottomSheetProps,
@@ -36,8 +45,14 @@ import {
   WalletSignOpts,
   WalletStandardMessageTypes,
 } from './walletSignBottomSheetTypes'
+import SubmitButton from '@components/SubmitButton'
+import CancelIcon from '@assets/images/remixCancel.svg'
 
 let promiseResolve: (value: boolean | PromiseLike<boolean>) => void
+
+const WELL_KNOWN_CANOPY_URL =
+  'https://shdw-drive.genesysgo.net/6tcnBSybPG7piEDShBcrVtYJDPSvGrDbVvXmXKpzBvWP/merkles.json'
+let wellKnownCanopyCache: Record<string, number> | undefined
 
 const WalletSignBottomSheet = forwardRef(
   (
@@ -52,9 +67,7 @@ const WalletSignBottomSheet = forwardRef(
     const wallet = useCurrentWallet()
     const solBalance = useBN(useSolOwnedAmount(wallet).amount)
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-    const [totalSolFeeByTx, setTotalSolFeeByTx] = useState<number[]>([])
     const [isVisible, setIsVisible] = useState(false)
-    const [nestedInsufficentFunds, setNestedInsufficentFunds] = useState(false)
     const [walletSignOpts, setWalletSignOpts] = useState<WalletSignOpts>({
       type: WalletStandardMessageTypes.connect,
       url: '',
@@ -62,70 +75,154 @@ const WalletSignBottomSheet = forwardRef(
       serializedTxs: undefined,
       header: undefined,
     })
+    const { connection, cluster } = useSolana()
+    const { result: accountBlacklist } = useAsync(async () => {
+      if (!wellKnownCanopyCache)
+        wellKnownCanopyCache = await (
+          await axios.get(WELL_KNOWN_CANOPY_URL)
+        ).data
+
+      if (wellKnownCanopyCache) {
+        return new Set(Object.keys(wellKnownCanopyCache))
+      }
+
+      return new Set([])
+    }, [])
 
     const itemsPerPage = 5
     const [currentPage, setCurrentPage] = useState(1)
-    const [currentTxs, hasMore] = useMemo(() => {
-      const totalPages = Math.ceil(
-        (walletSignOpts?.serializedTxs?.length || 0) / itemsPerPage,
-      )
-      const more = currentPage < totalPages
-      let scopedTxs
-
-      if (walletSignOpts.serializedTxs) {
-        const endIndex = currentPage * itemsPerPage
-        scopedTxs = walletSignOpts.serializedTxs.slice(0, endIndex)
+    const {
+      result: simulationResults,
+      error,
+      loading,
+    } = useAsync(async () => {
+      if (
+        connection &&
+        wallet &&
+        walletSignOpts.serializedTxs &&
+        accountBlacklist
+      ) {
+        return Promise.all(
+          walletSignOpts.serializedTxs.map((serializedTransaction) =>
+            sus({
+              connection,
+              wallet,
+              serializedTransaction,
+              checkCNfts: true,
+              cluster,
+              extraSearchAssetParams: {
+                creatorVerified: true,
+                creatorAddress: entityCreatorKey(DAO_KEY)[0].toBase58(),
+              },
+              accountBlacklist,
+            }),
+          ),
+        )
       }
+    }, [
+      walletSignOpts.serializedTxs,
+      cluster,
+      connection,
+      wallet,
+      accountBlacklist,
+    ])
+    const [currentTxs, hasMore] = useMemo(() => {
+      if (simulationResults) {
+        const totalPages = Math.ceil(
+          (simulationResults.length || 0) / itemsPerPage,
+        )
+        const more = currentPage < totalPages
+        let scopedTxs
 
-      return [scopedTxs, more]
-    }, [walletSignOpts, currentPage])
+        if (simulationResults) {
+          const endIndex = currentPage * itemsPerPage
+          scopedTxs = simulationResults.slice(0, endIndex)
+        }
+
+        return [scopedTxs, more]
+      }
+      return [[], false]
+    }, [simulationResults, currentPage])
 
     const handleLoadMore = useCallback(() => {
       setCurrentPage((page) => page + 1)
     }, [setCurrentPage])
 
-    const totalSolFee = useMemo(
-      () => totalSolFeeByTx.reduce((a, b) => a + b, 0),
-      [totalSolFeeByTx],
+    const estimatedTotalLamports = useMemo(
+      () =>
+        simulationResults?.reduce(
+          (a, b) => a + b.solFee + (b.priorityFee || 0),
+          0,
+        ) || 0,
+      [simulationResults],
     )
-    const estimatedTotalSolByLamports = useMemo(() => {
-      const { serializedTxs } = walletSignOpts
+    const estimatedTotalSol = useMemo(
+      () => humanReadable(new BN(estimatedTotalLamports), 9),
+      [estimatedTotalLamports],
+    )
+    const estimatedTotalBaseFee = useMemo(
+      () =>
+        humanReadable(
+          new BN(simulationResults?.reduce((a, b) => a + b.solFee, 0) || 0),
+          9,
+        ),
+      [simulationResults],
+    )
+    const estimatedTotalPriorityFee = useMemo(
+      () =>
+        humanReadable(
+          new BN(
+            simulationResults?.reduce((a, b) => a + (b.priorityFee || 0), 0) ||
+              0,
+          ),
+          9,
+        ),
+      [simulationResults],
+    )
+    const totalWarnings = useMemo(
+      () =>
+        simulationResults?.reduce(
+          (a, b) => a + (b.warnings.length > 0 ? 1 : 0),
+          0,
+        ),
+      [simulationResults],
+    )
+    const worstSeverity = useMemo(() => {
+      if (simulationResults) {
+        return simulationResults?.reduce((a, b) => {
+          if (a === 'critical') {
+            return 'critical'
+          }
+          if (b.warnings.some((w) => w.severity === 'critical')) {
+            return 'critical'
+          }
 
-      if (serializedTxs) {
-        if (currentTxs && currentTxs.length < serializedTxs.length) {
-          // we have unsimulated transactions, do rough estimate
-          const diff = serializedTxs.length - currentTxs.length
-          return (totalSolFee + diff * 5000) / LAMPORTS_PER_SOL
-        }
-
-        return totalSolFee / LAMPORTS_PER_SOL
+          return a
+        }, 'warning')
       }
-
-      return 5000 / LAMPORTS_PER_SOL
-    }, [walletSignOpts, totalSolFee, currentTxs])
+      return 'critical'
+    }, [simulationResults])
 
     const insufficientRentExempt = useMemo(() => {
       if (solBalance) {
         return new BN(solBalance.toString())
-          .sub(new BN(estimatedTotalSolByLamports))
+          .sub(new BN(estimatedTotalLamports))
           .lt(new BN(rentExempt || 0))
       }
-    }, [solBalance, estimatedTotalSolByLamports, rentExempt])
+    }, [solBalance, estimatedTotalLamports, rentExempt])
 
     const insufficientFunds = useMemo(
       () =>
-        nestedInsufficentFunds ||
-        new BN(estimatedTotalSolByLamports).gt(
+        new BN(estimatedTotalLamports).gt(
           new BN(solBalance?.toString() || '0'),
-        ),
-      [solBalance, estimatedTotalSolByLamports, nestedInsufficentFunds],
+        ) || simulationResults?.some((r) => r.insufficientFunds),
+      [solBalance, estimatedTotalLamports, simulationResults],
     )
 
     const animatedContentHeight = useSharedValue(0)
 
     const hide = useCallback(() => {
       setIsVisible(false)
-      setNestedInsufficentFunds(false)
       bottomSheetModalRef.current?.close()
     }, [])
 
@@ -139,7 +236,6 @@ const WalletSignBottomSheet = forwardRef(
         header,
       }: WalletSignOpts) => {
         bottomSheetModalRef.current?.expand()
-        setTotalSolFeeByTx(new Array(serializedTxs?.length || 0).fill(5000))
         setIsVisible(true)
         setWalletSignOpts({
           type,
@@ -176,7 +272,6 @@ const WalletSignBottomSheet = forwardRef(
       // We need to re present the bottom sheet after it is dismissed so that it can be expanded again
       bottomSheetModalRef.current?.present()
       setIsVisible(false)
-      setNestedInsufficentFunds(false)
       if (onClose) {
         onClose()
       }
@@ -201,15 +296,6 @@ const WalletSignBottomSheet = forwardRef(
         promiseResolve(false)
       }
     }, [hide])
-
-    const incrementTotalSolFee = useCallback(
-      (idx: number, fee: number) => {
-        setTotalSolFeeByTx((current) =>
-          current.map((item, index) => (index === idx ? fee : item)),
-        )
-      },
-      [setTotalSolFeeByTx],
-    )
 
     useEffect(() => {
       bottomSheetModalRef.current?.present()
@@ -243,20 +329,24 @@ const WalletSignBottomSheet = forwardRef(
           >
             <BottomSheetScrollView>
               <Box p="m">
-                <Box marginBottom="l">
-                  {walletSignOpts.header && (
-                    <Text variant="h4Medium" color="white" textAlign="center">
-                      {walletSignOpts.header}
-                    </Text>
-                  )}
-                  <Text
-                    variant="body1Medium"
-                    color="secondaryText"
-                    textAlign="center"
-                  >
-                    {walletSignOpts?.url || ''}
-                  </Text>
-                </Box>
+                {walletSignOpts.header || walletSignOpts.url ? (
+                  <Box marginBottom="l">
+                    {walletSignOpts.header ? (
+                      <Text variant="h4Medium" color="white" textAlign="center">
+                        {walletSignOpts.header}
+                      </Text>
+                    ) : null}
+                    {walletSignOpts.url ? (
+                      <Text
+                        variant="body1Medium"
+                        color="secondaryText"
+                        textAlign="center"
+                      >
+                        {walletSignOpts.url || ''}
+                      </Text>
+                    ) : null}
+                  </Box>
+                ) : null}
                 {type === WalletStandardMessageTypes.connect && (
                   <Box flexGrow={1} justifyContent="center">
                     <Box
@@ -307,63 +397,77 @@ const WalletSignBottomSheet = forwardRef(
                       </Box>
                     )}
 
-                    {!(insufficientFunds || insufficientRentExempt) && (
-                      <Box
-                        borderTopStartRadius="l"
-                        borderTopEndRadius="l"
-                        borderBottomStartRadius={
-                          additionalMessage ? 'none' : 'l'
-                        }
-                        borderBottomEndRadius={additionalMessage ? 'none' : 'l'}
-                        backgroundColor="secondaryBackground"
-                        padding="m"
-                      >
-                        <Text variant="body1Medium">
-                          {t('browserScreen.estimatedChanges')}
-                        </Text>
-                      </Box>
-                    )}
+                    <Text variant="subtitle2">
+                      {t('browserScreen.estimatedChanges')}
+                    </Text>
 
                     {!(insufficientFunds || insufficientRentExempt) &&
                       additionalMessage && (
-                        <Box
-                          backgroundColor="secondaryBackground"
-                          borderBottomStartRadius="l"
-                          borderBottomEndRadius="l"
-                          padding="m"
+                        <Text
+                          mt="s"
+                          mb="s"
+                          variant="body1Medium"
+                          color="secondaryText"
                         >
-                          <Text variant="body1Medium" color="secondaryText">
-                            {additionalMessage}
-                          </Text>
-                        </Box>
+                          {additionalMessage}
+                        </Text>
                       )}
+
+                    {totalWarnings ? (
+                      <Box
+                        marginVertical="s"
+                        flexDirection="row"
+                        justifyContent="flex-start"
+                      >
+                        <WarningPill
+                          text={t('browserScreen.suspiciousActivity', {
+                            num: totalWarnings,
+                          })}
+                          variant={worstSeverity as any}
+                        />
+                      </Box>
+                    ) : null}
 
                     {(insufficientFunds || insufficientRentExempt) && (
                       <Box
-                        borderRadius="l"
-                        backgroundColor="secondaryBackground"
-                        padding="m"
-                        marginTop="m"
+                        marginVertical="s"
+                        flexDirection="row"
+                        justifyContent="flex-start"
                       >
-                        <Text variant="body1Medium" color="red500">
-                          {insufficientFunds
-                            ? t('browserScreen.insufficientFunds')
-                            : t('browserScreen.insufficientRentExempt', {
-                                amount: rentExempt,
-                              })}
-                        </Text>
+                        <WarningPill
+                          text={
+                            insufficientFunds
+                              ? t('browserScreen.insufficientFunds')
+                              : t('browserScreen.insufficientRentExempt', {
+                                  amount: rentExempt,
+                                })
+                          }
+                          variant="critical"
+                        />
                       </Box>
                     )}
+
+                    <Box flexDirection="row" justifyContent="space-between">
+                      <Text variant="subtitle3">
+                        {t('browserScreen.writableAccounts')}
+                      </Text>
+                      <Text variant="body1" color="grey50">
+                        {t('browserScreen.transactions', {
+                          num: simulationResults?.length || 1,
+                        })}
+                      </Text>
+                    </Box>
 
                     <Box
                       flex={1}
                       maxHeight={
                         (walletSignOpts?.serializedTxs?.length || 0) > 1
-                          ? 274
-                          : 250
+                          ? 294
+                          : 270
                       }
                       paddingTop="m"
                     >
+                      {loading && <CircleLoader />}
                       {!currentTxs && (
                         <Box marginBottom="m">
                           <Box>
@@ -374,7 +478,11 @@ const WalletSignBottomSheet = forwardRef(
                               padding="m"
                             >
                               <Text variant="body1Medium" color="orange500">
-                                {t('browserScreen.unableToSimulate')}
+                                {!loading
+                                  ? error
+                                    ? error.message
+                                    : t('browserScreen.unableToSimulate')
+                                  : t('generic.loading')}
                               </Text>
                             </Box>
                           </Box>
@@ -390,10 +498,6 @@ const WalletSignBottomSheet = forwardRef(
                               transactionIdx={idx}
                               totalTransactions={
                                 walletSignOpts?.serializedTxs?.length || 0
-                              }
-                              incrementTotalSolFee={incrementTotalSolFee}
-                              setNestedInsufficentFunds={
-                                setNestedInsufficentFunds
                               }
                             />
                           ))}
@@ -416,60 +520,124 @@ const WalletSignBottomSheet = forwardRef(
                     {(type ===
                       WalletStandardMessageTypes.signAndSendTransaction ||
                       type === WalletStandardMessageTypes.signTransaction) && (
-                      <Box
-                        marginTop="m"
-                        borderRadius="l"
-                        backgroundColor="secondaryBackground"
-                        padding="m"
-                        flexDirection="row"
-                      >
-                        <Box flexGrow={1}>
-                          <Text variant="body1Medium">
-                            {t('browserScreen.totalNetworkFees')}
+                      <Box marginTop="m" flexDirection="column">
+                        <Box
+                          marginTop="m"
+                          flexDirection="row"
+                          justifyContent="space-between"
+                        >
+                          <Text variant="body1Bold">
+                            {t('browserScreen.totalNetworkFee')}
+                          </Text>
+                          <Text variant="body1Medium" color="blue500">
+                            {`~${estimatedTotalSol} SOL`}
                           </Text>
                         </Box>
-                        <Text variant="body1Medium" color="secondaryText">
-                          {`~${estimatedTotalSolByLamports} SOL`}
-                        </Text>
+                        <Box
+                          marginTop="s"
+                          flexDirection="row"
+                          justifyContent="space-between"
+                        >
+                          <Box flexDirection="row">
+                            <IndentArrow />
+                            <Text variant="body1" ml="s" color="grey50">
+                              {t('browserScreen.totalBaseFee')}
+                            </Text>
+                          </Box>
+
+                          <Text variant="body1" color="blue500">
+                            {`~${estimatedTotalBaseFee} SOL`}
+                          </Text>
+                        </Box>
+                        <Box
+                          marginTop="s"
+                          flexDirection="row"
+                          justifyContent="space-between"
+                        >
+                          <Box flexDirection="row">
+                            <IndentArrow />
+                            <Text variant="body1" ml="s" color="grey50">
+                              {t('browserScreen.totalPriorityFee')}
+                            </Text>
+                          </Box>
+
+                          <Text variant="body1" color="blue500">
+                            {`~${estimatedTotalPriorityFee} SOL`}
+                          </Text>
+                        </Box>
                       </Box>
                     )}
                   </Box>
                 )}
-                <Box
-                  flexDirection="row"
-                  justifyContent="space-between"
-                  marginBottom="m"
-                  marginTop="l"
-                >
-                  <ButtonPressable
-                    width="48%"
-                    borderRadius="round"
-                    backgroundColor="white"
-                    backgroundColorOpacity={0.1}
-                    backgroundColorOpacityPressed={0.05}
-                    titleColorPressedOpacity={0.3}
-                    titleColor="white"
-                    title={t('browserScreen.cancel')}
-                    onPress={onCancelHandler}
-                  />
+                {totalWarnings ? (
+                  <Box
+                    flexDirection="row"
+                    justifyContent="flex-start"
+                    alignItems="center"
+                  >
+                    <Box flex={1}>
+                      <SubmitButton
+                        color="matchaRed500"
+                        marginTop="l"
+                        backgroundColor="white"
+                        title={
+                          type === WalletStandardMessageTypes.connect
+                            ? t('browserScreen.connect')
+                            : t('browserScreen.swipeToApprove')
+                        }
+                        onSubmit={onAcceptHandler}
+                      />
+                    </Box>
+                    <ButtonPressable
+                      mt="m"
+                      ml="s"
+                      width={65}
+                      height={65}
+                      innerContainerProps={{
+                        justifyContent: 'center',
+                      }}
+                      borderRadius="round"
+                      backgroundColor="black200"
+                      Icon={CancelIcon}
+                      onPress={onCancelHandler}
+                    />
+                  </Box>
+                ) : (
+                  <Box
+                    flexDirection="row"
+                    justifyContent="space-between"
+                    marginTop="m"
+                  >
+                    <ButtonPressable
+                      width="48%"
+                      borderRadius="round"
+                      backgroundColor="white"
+                      backgroundColorOpacity={0.1}
+                      backgroundColorOpacityPressed={0.05}
+                      titleColorPressedOpacity={0.3}
+                      titleColor="white"
+                      title={t('browserScreen.cancel')}
+                      onPress={onCancelHandler}
+                    />
 
-                  <ButtonPressable
-                    width="48%"
-                    borderRadius="round"
-                    backgroundColor="white"
-                    backgroundColorOpacityPressed={0.7}
-                    backgroundColorDisabled="surfaceSecondary"
-                    backgroundColorDisabledOpacity={0.5}
-                    titleColorDisabled="secondaryText"
-                    title={
-                      type === WalletStandardMessageTypes.connect
-                        ? t('browserScreen.connect')
-                        : t('browserScreen.approve')
-                    }
-                    titleColor="black"
-                    onPress={onAcceptHandler}
-                  />
-                </Box>
+                    <ButtonPressable
+                      width="48%"
+                      borderRadius="round"
+                      backgroundColor="white"
+                      backgroundColorOpacityPressed={0.7}
+                      backgroundColorDisabled="surfaceSecondary"
+                      backgroundColorDisabledOpacity={0.5}
+                      titleColorDisabled="secondaryText"
+                      title={
+                        type === WalletStandardMessageTypes.connect
+                          ? t('browserScreen.connect')
+                          : t('browserScreen.approve')
+                      }
+                      titleColor="black"
+                      onPress={onAcceptHandler}
+                    />
+                  </Box>
+                )}
               </Box>
             </BottomSheetScrollView>
           </BottomSheetModal>
