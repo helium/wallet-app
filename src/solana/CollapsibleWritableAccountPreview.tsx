@@ -3,6 +3,7 @@ import ChevronDown from '@assets/images/remixChevronDown.svg'
 import ChevronUp from '@assets/images/remixChevronUp.svg'
 import Send from '@assets/images/send.svg'
 import UnknownAccount from '@assets/images/unknownAccount.svg'
+import AnchorAccount from '@assets/images/anchorAccount.svg'
 import Box from '@components/Box'
 import { Pill } from '@components/Pill'
 import Text from '@components/Text'
@@ -146,7 +147,11 @@ export const CollapsibleWritableAccountPreview = ({
             <TokenChange symbol="SOL" image={solMetadata.image} />
           ) : (
             <Box flexDirection="row" alignItems="center">
-              <UnknownAccount width={24} height={24} />
+              {writableAccount.name.startsWith('Unknown') ? (
+                <UnknownAccount color="white" width={24} height={24} />
+              ) : (
+                <AnchorAccount width={24} height={24} />
+              )}
               <Text ml="xs" color="white">
                 {writableAccount.name}
               </Text>
