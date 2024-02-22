@@ -589,7 +589,6 @@ const WalletSignBottomSheet = forwardRef(
                       />
                     </Box>
                     <ButtonPressable
-                      mt="m"
                       ml="s"
                       width={65}
                       height={65}
