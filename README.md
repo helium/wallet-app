@@ -20,11 +20,18 @@ In order to interact with any package contained in this repository you will need
 
 - [**NVM**](https://github.com/nvm-sh/nvm/blob/master/README.md)
 - [**Homebrew**](https://brew.sh/)
-- [**Node.js@18.x.x**](https://nodejs.org/)
+- [**Node.js@18.x.x**](https://nodejs.org/) `18.x.x`
 - [**Yarn**](https://www.npmjs.com/package/yarn)
 - [**Cocoapods**](https://cocoapods.org/)
-- [**Xcode@14.2**](https://xcodereleases.com/)
-- [**Android Studio**](https://developer.android.com/studio)
+- [**Xcode**](https://developer.apple.com/xcode/) `14.2`
+  - [Download older versions of Xcode here](https://developer.apple.com/download/all/?q=xcode%2014.2)
+- [**Android Studio**](https://developer.android.com/studio) `Chipmunk`
+  - [Download older versions of Android Studio here](https://developer.android.com/studio/archive)
+  - [Install a Virtual Device](https://developer.android.com/studio/run/emulator#avd) (`Nexus 5` with `UpsideDownCake` good default)
+  - When [installing the Android SDK](https://reactnative.dev/docs/environment-setup#android-sdk) use these:
+  - `Android 13.0`
+    - `Android SDK Platform 31`
+  - `Android SDK Build-Tools 34-rc4` -> `33.0.0`
 
 ### Set up your development environment
 
@@ -40,6 +47,10 @@ Follow the instructions for "React Native CLI Quickstart" found [here](https://r
 - Install NVM
   ```bash
   brew install nvm
+  ```
+- Add the following to `~/.bash_profile` or `~/.zshrc` and open a new shell
+  ```bash
+  source $(brew --prefix nvm)/nvm.sh
   ```
 - Install Node Version 18
   ```bash
@@ -57,7 +68,7 @@ Follow the instructions for "React Native CLI Quickstart" found [here](https://r
   ```bash
   softwareupdate --install-rosetta
   ```
-- Install Cocoapods
+- Install Cocoapods (if cocoapods is not already installed, the `uninstall` commands will fail, thats ok)
   ```bash
   gem cleanup
   brew uninstall cocoapods
@@ -94,6 +105,8 @@ Follow the instructions for "React Native CLI Quickstart" found [here](https://r
   ```bash
   yarn ios
   ```
+  - If you get this pop-up, click `OK` and let the build continue.
+    ![Unable To Boot Pop up](/readme/ios-yarn-build-unable-to-boot.png)
 - Start the android app
   ```bash
   yarn android
@@ -108,9 +121,9 @@ yarn
 yarn pod-install
 ```
 
-> If `yarn pod-install` fails with error `xcrun: error: SDK "iphoneos" cannot be located`, run `sudo xcode-select --switch /Applications/Xcode.app` [[Stack Overflow]](https://stackoverflow.com/questions/68565356/xcrun-error-sdk-iphoneos-cannot-be-located)
+For iOS:
+If `yarn pod-install` fails with error `xcrun: error: SDK "iphoneos" cannot be located`, run `sudo xcode-select --switch /Applications/Xcode.app` [[Stack Overflow]](https://stackoverflow.com/questions/68565356/xcrun-error-sdk-iphoneos-cannot-be-located)
 
-For IOS:
 
 ```bash
 yarn ios
