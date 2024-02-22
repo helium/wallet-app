@@ -20,6 +20,8 @@ export type WalletSignOpts = {
   warning?: string
   additionalMessage?: string
   header?: string
+  // Allow supressing warnings for our own txs
+  suppressWarnings?: boolean
 }
 
 export type WalletSignBottomSheetRef = {
@@ -29,6 +31,7 @@ export type WalletSignBottomSheetRef = {
     additionalMessage,
     serializedTxs,
     header,
+    suppressWarnings,
   }: WalletSignOpts) => Promise<boolean>
   hide: () => void
 }

@@ -14,6 +14,7 @@ import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { Theme } from '@theme/theme'
 import { useColors, useOpacity } from '@theme/themeHooks'
+import { shortenAddress } from '@utils/formatting'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { toUpper } from 'lodash'
@@ -345,7 +346,3 @@ const PaymentItem = ({
   )
 }
 export default React.memo(PaymentItem)
-
-export const shortenAddress = (address: string, chars = 4): string => {
-  return `${address.slice(0, chars)}...${address.slice(-chars)}`
-}

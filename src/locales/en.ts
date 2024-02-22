@@ -502,6 +502,18 @@ export default {
   browserScreen: {
     topPicks: 'Verified Websites',
     myFavorites: 'My Favorites',
+    suspiciousActivity: 'Suspicious Activity: {{num}} transactions',
+    instructionsAndPrograms: 'Instructions & Programs',
+    estimatedAccountChanges: 'Estimated Account Changes',
+    estimatedChangesDescription:
+      'These changes may differ from what occurs when the transaction completes. Any writable account can be drained if the program you are calling is malicious. Changes to your accounts are estimated by simulating these transactions against the Solana Blockchain; however, malicious actors can fool simulations. Only approve transactions from trusted sources.',
+    accountDeleted: 'Account Closed',
+    accountCreated: 'Account Created',
+    accounts: 'accounts',
+    transactions: '{{num}} transactions',
+    writableAccounts: 'Writable Accounts',
+    writableAccountsDescription:
+      'This transaction can make changes to any of the following accounts. These changes may differ from what occurs when the transaction completes. Any writable account listed can be drained by a malicious actor; malicious actors can fake these simulations. Only approve transactions from trusted sources.',
     myFavoritesEmpty:
       'No favorites yet. Start browsing and add your favorite URLs!',
     recentlyVisited: 'Recently Visited',
@@ -518,12 +530,14 @@ export default {
     unableToSimulate:
       'Unable to simulate. Make sure you trust this app since approving can lead to loss of funds.',
     networkFee: 'Network Fee',
-    priorityFee: 'Priority Fee',
-    totalNetworkFees: 'Total Network Fees',
+    totalPriorityFee: 'Total Priority Fee',
+    totalNetworkFee: 'Total Network Fee',
+    totalBaseFee: 'Total Base Fee',
     priorityFeeDescription:
       'When the network is congested, priority fees help your transaction get included in the block. The app has automatically adjusted the priority fee to make it more likely your transaction lands.',
     connect: 'Connect',
     approve: 'Approve',
+    swipeToApprove: 'Swipe To Approve',
     cancel: 'Cancel',
     insufficientSolToPayForFees: 'Insufficient SOL to pay for fees',
     wouldYouLikeToConvert:
@@ -655,6 +669,7 @@ export default {
     save: 'Save',
     swap: 'Swap',
     clear: 'Clear',
+    of: 'of',
     confirm: 'Confirm',
     copied: 'Copied {{target}}',
     copiedSeedPhrase: 'Copied Seed Phrase',
@@ -670,6 +685,7 @@ export default {
     mainnet: 'Mainnet',
     next: 'Next',
     none: 'None',
+    unknown: 'Unknown',
     solanaAddress: 'Solana Address',
     notValidAddress: 'Not a valid Wallet Address.',
     notValidSolanaAddress: 'Not a valid Solana Address.',

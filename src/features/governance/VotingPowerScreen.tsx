@@ -141,6 +141,7 @@ export const VotingPowerScreen = () => {
       serializedTxs: transactions.map((transaction) =>
         transaction.serialize({ requireAllSignatures: false }),
       ),
+      suppressWarnings: sequentially,
     })
 
     if (decision) {
