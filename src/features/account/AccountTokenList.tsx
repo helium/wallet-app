@@ -84,7 +84,10 @@ const AccountTokenList = ({ onLayout }: Props) => {
             false,
             true,
           )
-          if (
+          if (result?.account && cache.missingAccounts.has(ata.toBase58())) {
+            cache.missingAccounts.delete(ata.toBase58())
+            cache.updateCache(ataStr, result)
+          } else if (
             !cache.genericCache.has(ataStr) ||
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
@@ -94,6 +97,11 @@ const AccountTokenList = ({ onLayout }: Props) => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             cache.updateCache(ataStr, result)
+            cache.emitter.raiseCacheUpdated(
+              ataStr,
+              true,
+              cache.keyToAccountParser.get(ataStr),
+            )
           }
           return result
         }),

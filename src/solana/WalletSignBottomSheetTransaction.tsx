@@ -1,12 +1,16 @@
 import Alert from '@assets/images/alert.svg'
 import ExternalLink from '@assets/images/externalLink.svg'
+import ChevronDown from '@assets/images/remixChevronDown.svg'
+import ChevronUp from '@assets/images/remixChevronUp.svg'
+import UnknownAccount from '@assets/images/unknownAccount.svg'
 import Box from '@components/Box'
+import { Pill } from '@components/Pill'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { SusResult, Warning } from '@helium/sus'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { getMetadata } from '@hooks/useMetaplexMetadata'
-import React, { memo, useMemo } from 'react'
+import React, { memo, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Image, Linking } from 'react-native'
@@ -26,6 +30,15 @@ const AssetImage = ({ uri }: { uri: string }) => {
   )
 }
 
+function splitArray<T>(arr: T[], predicate: (item: T) => boolean): [T[], T[]] {
+  return arr.reduce(
+    ([pass, fail], item) => {
+      return predicate(item) ? [[...pass, item], fail] : [pass, [...fail, item]]
+    },
+    [[], []] as [T[], T[]],
+  )
+}
+
 const WalletSignBottomSheetTransaction = ({
   transaction,
   transactionIdx,
@@ -37,10 +50,16 @@ const WalletSignBottomSheetTransaction = ({
 }) => {
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
+  const [expanded, setExpanded] = useState(false)
+  const Chevron = expanded ? ChevronUp : ChevronDown
 
   const nonAccountWarnings = useMemo(
     () => transaction.warnings.filter((w) => !w.account),
     [transaction.warnings],
+  )
+  const [errorsCollapsed, setErrorsCollapsed] = useState(
+    transaction.possibleCNftChanges.length <= 10 &&
+      !nonAccountWarnings.some((w) => w.severity === 'critical'),
   )
   const warningsByAccount = useMemo(() => {
     return transaction.warnings.reduce((acc, warning) => {
@@ -51,6 +70,17 @@ const WalletSignBottomSheetTransaction = ({
       return acc
     }, {} as Record<string, Warning[]>)
   }, [transaction])
+
+  // Collapse non-token accounts with unchanged warning
+  const [collapsedAccounts, uncollapsedAccounts] = useMemo(() => {
+    return splitArray(
+      transaction.writableAccounts,
+      (wa) =>
+        warningsByAccount[wa.address.toBase58()]?.some(
+          (warning) => warning.shortMessage === 'Unchanged',
+        ) && !wa.metadata,
+    )
+  }, [transaction.writableAccounts, warningsByAccount])
 
   return (
     <Box flexDirection="column" marginBottom="m">
@@ -74,7 +104,11 @@ const WalletSignBottomSheetTransaction = ({
             <Text variant="body1"> {t('browserScreen.accounts')}</Text>
           </Box>
           {nonAccountWarnings.length > 0 ? (
-            <Box flexDirection="row" alignItems="center">
+            <TouchableOpacityBox
+              onPress={() => setErrorsCollapsed((prev) => !prev)}
+              flexDirection="row"
+              alignItems="center"
+            >
               <Box mr="s">
                 <Alert width={16} height={16} color="matchaRed500" />
               </Box>
@@ -83,7 +117,7 @@ const WalletSignBottomSheetTransaction = ({
                   ? nonAccountWarnings[0].shortMessage
                   : `${nonAccountWarnings.length} Warnings`}
               </Text>
-            </Box>
+            </TouchableOpacityBox>
           ) : null}
           <Box flexDirection="row" alignItems="center">
             <Text variant="body1">{transactionIdx + 1}</Text>
@@ -100,7 +134,9 @@ const WalletSignBottomSheetTransaction = ({
             </TouchableOpacityBox>
           </Box>
         </Box>
-        {!transaction.error && nonAccountWarnings.length > 0 ? (
+        {!transaction.error &&
+        nonAccountWarnings.length > 0 &&
+        !errorsCollapsed ? (
           <Box mt="s">
             {nonAccountWarnings.map((warning, idx) => (
               <WarningBox
@@ -147,7 +183,7 @@ const WalletSignBottomSheetTransaction = ({
           borderBottomRightRadius="l"
           backgroundColor="black500"
         >
-          {transaction.writableAccounts
+          {uncollapsedAccounts
             .sort((acca, accb) => {
               if (warningsByAccount[acca.address.toBase58()]?.length > 0) {
                 return -1
@@ -199,6 +235,54 @@ const WalletSignBottomSheetTransaction = ({
                 }
               />
             ))}
+          {collapsedAccounts.length > 0 ? (
+            <>
+              <TouchableOpacityBox onPress={() => setExpanded(!expanded)}>
+                <Box
+                  p="s"
+                  flexDirection="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Box flexDirection="row" alignItems="center">
+                    <Box flexDirection="row" alignItems="center">
+                      <UnknownAccount color="white" width={24} height={24} />
+                    </Box>
+                    <Text ml="xs" color="white">
+                      {collapsedAccounts.length} {t('browserScreen.accounts')}
+                    </Text>
+                  </Box>
+                  <Box
+                    flexDirection="row"
+                    justifyContent="flex-end"
+                    alignItems="center"
+                  >
+                    <Box mr="xs">
+                      <Pill text="Unknown Changes" color="orange" />
+                    </Box>
+                    <Chevron color="grey500" />
+                  </Box>
+                </Box>
+              </TouchableOpacityBox>
+              {expanded
+                ? collapsedAccounts.map((writableAccount) => (
+                    <CollapsibleWritableAccountPreview
+                      key={writableAccount.address.toBase58()}
+                      writableAccount={writableAccount}
+                      instructions={transaction.instructions.filter((ix) =>
+                        ix.raw.accounts.some((a) =>
+                          a.pubkey.equals(writableAccount.address),
+                        ),
+                      )}
+                      warnings={
+                        warningsByAccount[writableAccount.address.toBase58()] ||
+                        []
+                      }
+                    />
+                  ))
+                : null}
+            </>
+          ) : null}
           {transaction.possibleCNftChanges.slice(0, 10).map((asset) => (
             <Box key={asset.id} p="s" flexDirection="row" alignItems="center">
               <AssetImage uri={asset.content.json_uri} />
