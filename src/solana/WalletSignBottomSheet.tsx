@@ -189,7 +189,11 @@ const WalletSignBottomSheet = forwardRef(
     const totalWarnings = useMemo(
       () =>
         simulationResults?.reduce(
-          (a, b) => a + (b.warnings.length > 0 ? 1 : 0),
+          (a, b) =>
+            a +
+            (b.warnings.filter((w) => w.severity === 'critical').length > 0
+              ? 1
+              : 0),
           0,
         ),
       [simulationResults],
@@ -411,205 +415,214 @@ const WalletSignBottomSheet = forwardRef(
                       </Box>
                     )}
 
-                    <Box flexGrow={1} flexDirection="row" alignItems="center">
-                      <Text variant="subtitle2" mr="s">
-                        {t('browserScreen.estimatedChanges')}
-                      </Text>
-                      <TouchableOpacity
-                        onPress={() => setInfoVisible((prev) => !prev)}
-                      >
-                        <InfoIcon width={15} height={15} />
-                      </TouchableOpacity>
-                    </Box>
-                    {infoVisible && (
-                      <Text mt="s" variant="body3" color="white">
-                        {t('browserScreen.estimatedChangesDescription')}
-                      </Text>
-                    )}
-
-                    {!(insufficientFunds || insufficientRentExempt) &&
-                      additionalMessage && (
-                        <Text
-                          mt="s"
-                          mb="s"
-                          variant="body1Medium"
-                          color="secondaryText"
-                        >
-                          {additionalMessage}
-                        </Text>
-                      )}
-
-                    {showWarnings ? (
-                      <Box
-                        marginVertical="s"
-                        flexDirection="row"
-                        justifyContent="flex-start"
-                      >
-                        <WarningPill
-                          text={t('browserScreen.suspiciousActivity', {
-                            num: totalWarnings,
-                          })}
-                          variant={worstSeverity as any}
-                        />
-                      </Box>
-                    ) : null}
-
-                    {(insufficientFunds || insufficientRentExempt) && (
-                      <Box
-                        marginVertical="s"
-                        flexDirection="row"
-                        justifyContent="flex-start"
-                      >
-                        <WarningPill
-                          text={
-                            insufficientFunds
-                              ? t('browserScreen.insufficientFunds')
-                              : t('browserScreen.insufficientRentExempt', {
-                                  amount: rentExempt,
-                                })
-                          }
-                          variant="critical"
-                        />
-                      </Box>
-                    )}
-
-                    <Box
-                      flexDirection="row"
-                      justifyContent="space-between"
-                      marginTop="s"
-                    >
-                      <Box flexGrow={1} flexDirection="row" alignItems="center">
-                        <Text variant="subtitle3" mr="s">
-                          {t('browserScreen.writableAccounts')}
-                        </Text>
-                        <TouchableOpacity
-                          onPress={() =>
-                            setWritableInfoVisible((prev) => !prev)
-                          }
-                        >
-                          <InfoIcon width={15} height={15} />
-                        </TouchableOpacity>
-                      </Box>
-                      <Text variant="body1" color="grey50">
-                        {t('browserScreen.transactions', {
-                          num: simulationResults?.length || 1,
-                        })}
-                      </Text>
-                    </Box>
-                    {writableInfoVisible && (
-                      <Text mt="s" variant="body3" color="white">
-                        {t('browserScreen.writableAccountsDescription')}
-                      </Text>
-                    )}
-
-                    <Box flex={1} maxHeight={350} paddingTop="m">
-                      {loading && <CircleLoader />}
-                      {error ? (
-                        <Box marginBottom="m">
-                          <Box>
-                            <Box
-                              borderBottomStartRadius="l"
-                              borderBottomEndRadius="l"
-                              backgroundColor="secondaryBackground"
-                              padding="m"
-                            >
-                              <Text
-                                variant="body1Medium"
-                                color={loading ? 'white' : 'matchaRed500'}
-                              >
-                                {error.message || error.toString()}
-                              </Text>
-                            </Box>
-                          </Box>
-                        </Box>
-                      ) : null}
-                      {isVisible && currentTxs && (
-                        <ScrollView>
-                          {currentTxs.map((tx, idx) => (
-                            <WalletSignBottomSheetTransaction
-                              // eslint-disable-next-line react/no-array-index-key
-                              key={`transaction-${idx}`}
-                              transaction={tx}
-                              transactionIdx={idx}
-                              totalTransactions={
-                                walletSignOpts?.serializedTxs?.length || 0
-                              }
-                            />
-                          ))}
-                          {hasMore && (
-                            <ButtonPressable
-                              width="100%"
-                              borderRadius="round"
-                              backgroundColor="white"
-                              backgroundColorOpacity={0.1}
-                              backgroundColorOpacityPressed={0.05}
-                              titleColorPressedOpacity={0.3}
-                              titleColor="white"
-                              title={t('generic.loadMore')}
-                              onPress={handleLoadMore}
-                            />
-                          )}
-                        </ScrollView>
-                      )}
-                    </Box>
-                    {(type ===
-                      WalletStandardMessageTypes.signAndSendTransaction ||
-                      type === WalletStandardMessageTypes.signTransaction) && (
-                      <Box flexDirection="column">
-                        <TouchableOpacityBox
-                          onPress={() => setFeesExpanded(!feesExpanded)}
-                          marginTop="s"
-                          flexDirection="row"
-                          justifyContent="space-between"
-                        >
-                          <Text variant="body1Bold">
-                            {t('browserScreen.totalNetworkFee')}
+                    <Box flexDirection="column" maxHeight={500}>
+                      <ScrollView>
+                        <Box flexDirection="row" alignItems="center">
+                          <Text variant="subtitle2" mr="s">
+                            {t('browserScreen.estimatedChanges')}
                           </Text>
-                          <Box flexDirection="row">
-                            <Text variant="body1Medium" color="blue500">
-                              {`~${estimatedTotalSol} SOL`}
+                          <TouchableOpacity
+                            onPress={() => setInfoVisible((prev) => !prev)}
+                          >
+                            <InfoIcon width={15} height={15} />
+                          </TouchableOpacity>
+                        </Box>
+                        {infoVisible && (
+                          <Text mt="s" variant="body3" color="white">
+                            {t('browserScreen.estimatedChangesDescription')}
+                          </Text>
+                        )}
+
+                        {!(insufficientFunds || insufficientRentExempt) &&
+                          additionalMessage && (
+                            <Text
+                              mt="s"
+                              mb="s"
+                              variant="body1Medium"
+                              color="secondaryText"
+                            >
+                              {additionalMessage}
                             </Text>
-                            <Chevron color="grey500" />
-                          </Box>
-                        </TouchableOpacityBox>
-                        {feesExpanded ? (
-                          <Box paddingRight="l">
-                            <Box
-                              marginTop="s"
-                              flexDirection="row"
-                              justifyContent="space-between"
-                            >
-                              <Box flexDirection="row">
-                                <IndentArrow />
-                                <Text variant="body1" ml="s" color="grey50">
-                                  {t('browserScreen.totalBaseFee')}
-                                </Text>
-                              </Box>
+                          )}
 
-                              <Text variant="body1" color="blue500">
-                                {`~${estimatedTotalBaseFee} SOL`}
-                              </Text>
-                            </Box>
-                            <Box
-                              marginTop="s"
-                              flexDirection="row"
-                              justifyContent="space-between"
-                            >
-                              <Box flexDirection="row">
-                                <IndentArrow />
-                                <Text variant="body1" ml="s" color="grey50">
-                                  {t('browserScreen.totalPriorityFee')}
-                                </Text>
-                              </Box>
-
-                              <Text variant="body1" color="blue500">
-                                {`~${estimatedTotalPriorityFee} SOL`}
-                              </Text>
-                            </Box>
+                        {showWarnings ? (
+                          <Box
+                            marginVertical="s"
+                            flexDirection="row"
+                            justifyContent="flex-start"
+                          >
+                            <WarningPill
+                              text={t('browserScreen.suspiciousActivity', {
+                                num: totalWarnings,
+                              })}
+                              variant={worstSeverity as any}
+                            />
                           </Box>
                         ) : null}
-                      </Box>
-                    )}
+
+                        {(insufficientFunds || insufficientRentExempt) && (
+                          <Box
+                            marginVertical="s"
+                            flexDirection="row"
+                            justifyContent="flex-start"
+                          >
+                            <WarningPill
+                              text={
+                                insufficientFunds
+                                  ? t('browserScreen.insufficientFunds')
+                                  : t('browserScreen.insufficientRentExempt', {
+                                      amount: rentExempt,
+                                    })
+                              }
+                              variant="critical"
+                            />
+                          </Box>
+                        )}
+
+                        <Box
+                          flexDirection="row"
+                          justifyContent="space-between"
+                          marginTop="s"
+                        >
+                          <Box
+                            flexGrow={1}
+                            flexDirection="row"
+                            alignItems="center"
+                          >
+                            <Text variant="subtitle3" mr="s">
+                              {t('browserScreen.writableAccounts')}
+                            </Text>
+                            <TouchableOpacity
+                              onPress={() =>
+                                setWritableInfoVisible((prev) => !prev)
+                              }
+                            >
+                              <InfoIcon width={15} height={15} />
+                            </TouchableOpacity>
+                          </Box>
+                          <Text variant="body1" color="grey50">
+                            {t('browserScreen.transactions', {
+                              num: simulationResults?.length || 1,
+                            })}
+                          </Text>
+                        </Box>
+                        {writableInfoVisible && (
+                          <Text mt="s" variant="body3" color="white">
+                            {t('browserScreen.writableAccountsDescription')}
+                          </Text>
+                        )}
+
+                        <Box flex={1} paddingTop="m">
+                          {loading && <CircleLoader />}
+                          {error ? (
+                            <Box marginBottom="m">
+                              <Box>
+                                <Box
+                                  borderBottomStartRadius="l"
+                                  borderBottomEndRadius="l"
+                                  backgroundColor="secondaryBackground"
+                                  padding="m"
+                                >
+                                  <Text
+                                    variant="body1Medium"
+                                    color={loading ? 'white' : 'matchaRed500'}
+                                  >
+                                    {error.message || error.toString()}
+                                  </Text>
+                                </Box>
+                              </Box>
+                            </Box>
+                          ) : null}
+                          {isVisible && currentTxs && (
+                            <>
+                              {currentTxs.map((tx, idx) => (
+                                <WalletSignBottomSheetTransaction
+                                  // eslint-disable-next-line react/no-array-index-key
+                                  key={`transaction-${idx}`}
+                                  transaction={tx}
+                                  transactionIdx={idx}
+                                  totalTransactions={
+                                    walletSignOpts?.serializedTxs?.length || 0
+                                  }
+                                />
+                              ))}
+                              {hasMore && (
+                                <ButtonPressable
+                                  width="100%"
+                                  borderRadius="round"
+                                  backgroundColor="white"
+                                  backgroundColorOpacity={0.1}
+                                  backgroundColorOpacityPressed={0.05}
+                                  titleColorPressedOpacity={0.3}
+                                  titleColor="white"
+                                  title={t('generic.loadMore')}
+                                  onPress={handleLoadMore}
+                                />
+                              )}
+                            </>
+                          )}
+                        </Box>
+                      </ScrollView>
+                      {(type ===
+                        WalletStandardMessageTypes.signAndSendTransaction ||
+                        type ===
+                          WalletStandardMessageTypes.signTransaction) && (
+                        <Box flexDirection="column">
+                          <TouchableOpacityBox
+                            onPress={() => setFeesExpanded(!feesExpanded)}
+                            marginTop="s"
+                            flexDirection="row"
+                            justifyContent="space-between"
+                          >
+                            <Text variant="body1Bold">
+                              {t('browserScreen.totalNetworkFee')}
+                            </Text>
+                            <Box flexDirection="row">
+                              <Text variant="body1Medium" color="blue500">
+                                {`~${estimatedTotalSol} SOL`}
+                              </Text>
+                              <Chevron color="grey500" />
+                            </Box>
+                          </TouchableOpacityBox>
+                          {feesExpanded ? (
+                            <Box paddingRight="l">
+                              <Box
+                                marginTop="s"
+                                flexDirection="row"
+                                justifyContent="space-between"
+                              >
+                                <Box flexDirection="row">
+                                  <IndentArrow />
+                                  <Text variant="body1" ml="s" color="grey50">
+                                    {t('browserScreen.totalBaseFee')}
+                                  </Text>
+                                </Box>
+
+                                <Text variant="body1" color="blue500">
+                                  {`~${estimatedTotalBaseFee} SOL`}
+                                </Text>
+                              </Box>
+                              <Box
+                                marginTop="s"
+                                flexDirection="row"
+                                justifyContent="space-between"
+                              >
+                                <Box flexDirection="row">
+                                  <IndentArrow />
+                                  <Text variant="body1" ml="s" color="grey50">
+                                    {t('browserScreen.totalPriorityFee')}
+                                  </Text>
+                                </Box>
+
+                                <Text variant="body1" color="blue500">
+                                  {`~${estimatedTotalPriorityFee} SOL`}
+                                </Text>
+                              </Box>
+                            </Box>
+                          ) : null}
+                        </Box>
+                      )}
+                    </Box>
                   </Box>
                 )}
                 {showWarnings ? (
@@ -617,7 +630,7 @@ const WalletSignBottomSheet = forwardRef(
                     flexDirection="row"
                     justifyContent="flex-start"
                     alignItems="center"
-                    mt="s"
+                    mt={feesExpanded ? 's' : 'm'}
                   >
                     <Box flex={1}>
                       <SubmitButton
@@ -648,7 +661,7 @@ const WalletSignBottomSheet = forwardRef(
                   <Box
                     flexDirection="row"
                     justifyContent="space-between"
-                    mt="s"
+                    mt={feesExpanded ? 's' : 'm'}
                   >
                     <ButtonPressable
                       width="48%"

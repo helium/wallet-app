@@ -59,7 +59,7 @@ const TokenBalanceChange = ({
     <Pill
       text={
         showText
-          ? `${amount < 0 ? 'Send' : 'Receive'} ${humanReadable(
+          ? `${humanReadable(
               bn,
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               writableAccount.metadata!.decimals,
@@ -85,7 +85,7 @@ const NativeSolBalanceChange = ({
     amount < 0 ? new BN((-amount).toString()) : new BN(amount.toString())
   return (
     <Pill
-      text={`${amount < 0 ? 'Send' : 'Receive'} ${humanReadable(bn, 9)}`}
+      text={`${humanReadable(bn, 9)}`}
       Icon={amount < 0 ? Send : Receive}
       color={amount < 0 ? 'blue' : 'green'}
     />
@@ -152,7 +152,7 @@ export const CollapsibleWritableAccountPreview = ({
               ) : (
                 <AnchorAccount width={24} height={24} />
               )}
-              <Text ml="xs" color="white">
+              <Text maxWidth={115} ml="xs" color="white" numberOfLines={1}>
                 {writableAccount.name}
               </Text>
             </Box>
@@ -169,6 +169,8 @@ export const CollapsibleWritableAccountPreview = ({
                 text={
                   warnings.length > 1
                     ? `${warnings.length} Warnings`
+                    : warnings[0].shortMessage === 'Unchanged'
+                    ? 'Unknown Changes'
                     : warnings[0].shortMessage
                 }
                 color={

@@ -506,14 +506,14 @@ export default {
     instructionsAndPrograms: 'Instructions & Programs',
     estimatedAccountChanges: 'Estimated Account Changes',
     estimatedChangesDescription:
-      'These changes may differ from what occurs when the transaction completes. Any writable account can be drained if the program you are calling is malicious. Changes to your accounts are estimated by simulating these transactions against the Solana Blockchain; however, malicious actors can fool simulations. Only approve transactions from trusted sources.',
+      'Outcomes may vary from the simulation. A malicious program can drain any writable accounts listed below. Simulations against the Solana Blockchain may be fooled by malicious actors. Only approve transactions from trusted sources.',
     accountDeleted: 'Account Closed',
     accountCreated: 'Account Created',
     accounts: 'accounts',
     transactions: '{{num}} transactions',
     writableAccounts: 'Writable Accounts',
     writableAccountsDescription:
-      'This transaction can make changes to any of the following accounts. These changes may differ from what occurs when the transaction completes. Any writable account listed can be drained by a malicious actor; malicious actors can fake these simulations. Only approve transactions from trusted sources.',
+      'Be cautious: This transaction can alter listed accounts, and outcomes may vary from the simulation. Malicious actors may drain writable accounts and fake simulations. Only approve transactions from trusted sources.',
     myFavoritesEmpty:
       'No favorites yet. Start browsing and add your favorite URLs!',
     recentlyVisited: 'Recently Visited',
