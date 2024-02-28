@@ -213,14 +213,21 @@ const useSolanaHook = () => {
         )
       ).flat()
       accts.forEach((acc, index) => {
+        const key = keys[index]
         if (acc) {
-          const key = keys[index]
-          if (!c.get(key)?.account.data.equals(acc.data)) {
+          if (
+            !c.get(key)?.account.data.equals(acc.data) ||
+            c.get(key)?.account.lamports !== acc.lamports ||
+            !c.get(key)?.account.owner.equals(acc.owner)
+          ) {
             c.updateCacheAndRaiseUpdated(key.toBase58(), {
               pubkey: key,
               account: acc,
             })
           }
+          // Account existed and now doesn't
+        } else if (c.get(key)) {
+          c.updateCacheAndRaiseUpdated(key.toBase58(), null)
         }
       })
     })()
