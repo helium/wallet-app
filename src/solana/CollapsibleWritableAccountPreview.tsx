@@ -55,6 +55,9 @@ const TokenBalanceChange = ({
     ((writableAccount.pre.parsed?.amount as bigint) || BigInt(0))
   const bn =
     amount < 0 ? new BN((-amount).toString()) : new BN(amount.toString())
+  if (bn.isZero()) {
+    return null
+  }
   return (
     <Pill
       text={
