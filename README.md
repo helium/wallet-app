@@ -149,7 +149,7 @@ In the meantime here are some important highlights:
 You can set custom URLs via the configuration for any self-hosted Jupiter APIs, like the [V6 Swap API](https://station.jup.ag/docs/apis/self-hosted) or [Paid Hosted APIs](https://station.jup.ag/docs/apis/self-hosted#paid-hosted-apis) Here is an example:
 
 ```
-JUP_SWAP_API=https://quote-api.jup.ag/
+JUP_SWAP_API=https://quote-api.jup.ag/v6
 ```
 
 ## License
