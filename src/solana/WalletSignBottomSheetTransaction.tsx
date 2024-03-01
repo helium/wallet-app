@@ -74,13 +74,50 @@ const WalletSignBottomSheetTransaction = ({
   // Collapse non-token accounts with unchanged warning
   const [collapsedAccounts, uncollapsedAccounts] = useMemo(() => {
     return splitArray(
-      transaction.writableAccounts,
+      transaction.writableAccounts
+        .filter((acc) => !acc.owner || (wallet && acc.owner.equals(wallet)))
+        .sort((acca, accb) => {
+          if (warningsByAccount[acca.address.toBase58()]?.length > 0) {
+            return -1
+          }
+
+          if (warningsByAccount[accb.address.toBase58()]?.length > 0) {
+            return 1
+          }
+
+          const aIsSol = acca.name === 'Native SOL Account'
+          const bIsSol = accb.name === 'Native SOL Account'
+          if (aIsSol && !bIsSol) {
+            return -1
+          }
+
+          if (!aIsSol && bIsSol) {
+            return 1
+          }
+
+          const aIsToken =
+            acca.pre.type === 'TokenAccount' ||
+            acca.post.type === 'TokenAccount'
+          const bIsToken =
+            accb.pre.type === 'TokenAccount' ||
+            accb.post.type === 'TokenAccount'
+
+          if (aIsToken && !bIsToken) {
+            return -1
+          }
+
+          if (!aIsToken && bIsToken) {
+            return 1
+          }
+
+          return 0
+        }),
       (wa) =>
         warningsByAccount[wa.address.toBase58()]?.some(
           (warning) => warning.shortMessage === 'Unchanged',
         ) && !wa.metadata,
     )
-  }, [transaction.writableAccounts, warningsByAccount])
+  }, [transaction.writableAccounts, warningsByAccount, wallet])
 
   return (
     <Box flexDirection="column" marginBottom="m">
@@ -98,8 +135,7 @@ const WalletSignBottomSheetTransaction = ({
         >
           <Box flexDirection="row" alignItems="center">
             <Text variant="body1Bold">
-              {transaction.writableAccounts.length +
-                transaction.possibleCNftChanges.length}
+              {uncollapsedAccounts.length + collapsedAccounts.length}
             </Text>
             <Text variant="body1"> {t('browserScreen.accounts')}</Text>
           </Box>
@@ -183,58 +219,20 @@ const WalletSignBottomSheetTransaction = ({
           borderBottomRightRadius="l"
           backgroundColor="black500"
         >
-          {uncollapsedAccounts
-            .sort((acca, accb) => {
-              if (warningsByAccount[acca.address.toBase58()]?.length > 0) {
-                return -1
+          {uncollapsedAccounts.map((writableAccount) => (
+            <CollapsibleWritableAccountPreview
+              key={writableAccount.address.toBase58()}
+              writableAccount={writableAccount}
+              instructions={transaction.instructions.filter((ix) =>
+                ix.raw.accounts.some((a) =>
+                  a.pubkey.equals(writableAccount.address),
+                ),
+              )}
+              warnings={
+                warningsByAccount[writableAccount.address.toBase58()] || []
               }
-
-              if (warningsByAccount[accb.address.toBase58()]?.length > 0) {
-                return 1
-              }
-
-              const aIsSol = acca.name === 'Native SOL Account'
-              const bIsSol = accb.name === 'Native SOL Account'
-              if (aIsSol && !bIsSol) {
-                return -1
-              }
-
-              if (!aIsSol && bIsSol) {
-                return 1
-              }
-
-              const aIsToken =
-                acca.pre.type === 'TokenAccount' ||
-                acca.post.type === 'TokenAccount'
-              const bIsToken =
-                accb.pre.type === 'TokenAccount' ||
-                accb.post.type === 'TokenAccount'
-
-              if (aIsToken && !bIsToken) {
-                return -1
-              }
-
-              if (!aIsToken && bIsToken) {
-                return 1
-              }
-
-              return 0
-            })
-            .filter((acc) => !acc.owner || (wallet && acc.owner.equals(wallet)))
-            .map((writableAccount) => (
-              <CollapsibleWritableAccountPreview
-                key={writableAccount.address.toBase58()}
-                writableAccount={writableAccount}
-                instructions={transaction.instructions.filter((ix) =>
-                  ix.raw.accounts.some((a) =>
-                    a.pubkey.equals(writableAccount.address),
-                  ),
-                )}
-                warnings={
-                  warningsByAccount[writableAccount.address.toBase58()] || []
-                }
-              />
-            ))}
+            />
+          ))}
           {collapsedAccounts.length > 0 ? (
             <>
               <TouchableOpacityBox onPress={() => setExpanded(!expanded)}>
