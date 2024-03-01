@@ -97,7 +97,7 @@ const SwapScreen = () => {
   const [outputMint, setOutputMint] = useState<PublicKey>(HNT_MINT)
   const [outputAmount, setOutputAmount] = useState<number>(0)
   const [priceImpact, setPriceImpact] = useState<number>(0)
-  const [slippageBps, setSlippageBps] = useState<number>(10)
+  const [slippageBps, setSlippageBps] = useState<number>(50)
   const [slippageInfoVisible, setSlippageInfoVisible] = useState(false)
   const [routeNotFound, setRouteNotFound] = useState(false)
   const [solFee, setSolFee] = useState<BN>(SOL_TXN_FEE)
@@ -288,7 +288,7 @@ const SwapScreen = () => {
         />
       )
 
-    const bpsOptions: number[] = [10, 50, 100]
+    const bpsOptions: number[] = [30, 50, 100]
     const disabled = outputMint.equals(DC_MINT)
 
     return (
