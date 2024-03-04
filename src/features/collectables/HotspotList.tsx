@@ -127,6 +127,7 @@ const HotspotList = () => {
     pendingIotRewards,
     pendingMobileRewards,
     onEndReached,
+    totalHotspots,
   } = useHotspots()
 
   const handleNavigateToCollectable = useCallback(
@@ -221,7 +222,7 @@ const HotspotList = () => {
             hasIndicator={false}
             hasDivider={false}
           />
-
+          <Text color="white">Hahahahah {totalHotspots}</Text>
           <TouchableOpacityBox
             onPress={toggleFiltersOpen(true)}
             position="absolute"
@@ -308,6 +309,7 @@ const HotspotList = () => {
     hotspotsWithMeta,
     pageAmount,
     handleNavigateToHotspotOnboard,
+    totalHotspots,
   ])
 
   const renderCollectable = useCallback(

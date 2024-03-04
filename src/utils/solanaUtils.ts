@@ -36,7 +36,7 @@ import {
   IOT_MINT,
   MOBILE_MINT,
   getAsset,
-  searchAssets,
+  searchAssetsWithPageInfo,
   sendAndConfirmWithRetry,
   toBN,
   truthy,
@@ -1040,7 +1040,7 @@ export const getCompressedCollectablesByCreator = async (
   const conn = anchorProvider.connection as WrappedConnection
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  const items = await searchAssets(conn.rpcEndpoint, {
+  const { items, ...rest } = await searchAssetsWithPageInfo(conn.rpcEndpoint, {
     ownerAddress: pubKey.toBase58(),
     creatorVerified: true,
     creatorAddress: entityCreatorKey(DAO_KEY)[0].toBase58(),
@@ -1049,7 +1049,10 @@ export const getCompressedCollectablesByCreator = async (
     burnt: false,
   })
 
-  return items as unknown as CompressedNFT[]
+  return {
+    ...rest,
+    items: items.map(recursivelyConvertPubkeysToString) as CompressedNFT[],
+  }
 }
 
 /**
@@ -1854,4 +1857,24 @@ export function toAsset(hotspot: CompressedNFT): Asset {
       owner: new PublicKey(hotspot.ownership.owner),
     },
   }
+}
+
+function recursivelyConvertPubkeysToString(value: any): any {
+  if (value instanceof PublicKey) {
+    return value.toBase58()
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(recursivelyConvertPubkeysToString)
+  }
+
+  if (typeof value === 'object' && value !== null) {
+    const newObj: any = {}
+    // eslint-disable-next-line no-restricted-syntax, guard-for-in
+    for (const key in value) {
+      newObj[key] = recursivelyConvertPubkeysToString(value[key])
+    }
+    return newObj
+  }
+  return value
 }
