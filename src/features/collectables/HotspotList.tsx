@@ -212,6 +212,18 @@ const HotspotList = () => {
   const renderHeader = useCallback(() => {
     return (
       <Box marginHorizontal="l" marginTop="l">
+        <Box flexDirection="row" alignItems="center">
+          <Box backgroundColor="grey500" height={1} flexGrow={1} />
+          <Box flexDirection="row" alignItems="center" paddingHorizontal="s">
+            <Text color="grey50">You own</Text>
+            <Text color="white" ml="xs">
+              {totalHotspots} hotspots
+            </Text>
+          </Box>
+
+          <Box backgroundColor="grey500" height={1} flexGrow={1} />
+        </Box>
+
         <Box flex={1} marginBottom="l">
           <TabBar
             marginStart="s"
@@ -222,7 +234,6 @@ const HotspotList = () => {
             hasIndicator={false}
             hasDivider={false}
           />
-          <Text color="white">Hahahahah {totalHotspots}</Text>
           <TouchableOpacityBox
             onPress={toggleFiltersOpen(true)}
             position="absolute"
@@ -315,6 +326,7 @@ const HotspotList = () => {
   const renderCollectable = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: HotspotWithPendingRewards }) => {
+      console.log("FUCK", item.id)
       if (tabSelected === 'list') {
         return (
           <HotspotCompressedListItem

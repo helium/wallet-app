@@ -1047,6 +1047,9 @@ export const getCompressedCollectablesByCreator = async (
     page,
     limit,
     burnt: false,
+    options: {
+      showGrandTotal: true,
+    },
   })
 
   return {
@@ -1860,7 +1863,7 @@ export function toAsset(hotspot: CompressedNFT): Asset {
 }
 
 function recursivelyConvertPubkeysToString(value: any): any {
-  if (value instanceof PublicKey) {
+  if (value && value.toBase58) {
     return value.toBase58()
   }
 

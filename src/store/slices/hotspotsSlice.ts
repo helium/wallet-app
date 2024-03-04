@@ -63,7 +63,7 @@ export const fetchHotspots = createAsyncThunk(
       hotspotsWithMetadata: hotspotsWithPendingRewards,
       page: 1,
       limit,
-      total: fetchedHotspots.total,
+      total: fetchedHotspots.grandTotal,
     }
   },
 )
