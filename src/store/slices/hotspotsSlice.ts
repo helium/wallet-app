@@ -13,7 +13,7 @@ export type WalletHotspots = {
   fetchingMore: boolean
   onEndReached: boolean
   page: number
-  totalHotspots: number
+  totalHotspots?: number
 }
 
 export type HotspotsByWallet = Record<string, WalletHotspots>
@@ -107,7 +107,7 @@ export const fetchMoreHotspots = createAsyncThunk(
       hotspotsWithMetadata: hotspotsWithPendingRewards,
       page: page + 1,
       limit,
-      total: fetchedHotspots.total,
+      total: fetchedHotspots.grandTotal,
     }
   },
 )
@@ -157,11 +157,12 @@ const hotspotSlice = createSlice({
       state[cluster][address] = {
         ...state[cluster][address],
         hotspots: fetchedHotspots.items,
-        totalHotspots: fetchedHotspots.total,
+        totalHotspots: fetchedHotspots.grandTotal,
         hotspotsWithMeta: hotspotsWithMetadata,
         loading: false,
         fetchingMore: false,
-        onEndReached: false,
+        onEndReached:
+          fetchedHotspots.grandTotal === fetchedHotspots.items.length,
         page: action.payload.page,
       }
     })

@@ -94,12 +94,15 @@ const HotspotListItem = ({
         marginVertical="xs"
         backgroundColor="surfaceSecondary"
         borderRadius="xl"
+        alignItems="center"
+        paddingVertical="xs"
+        paddingHorizontal="m"
         onPress={() => onPress(hotspot)}
       >
         <ImageBox
           borderRadius="lm"
-          height={80}
-          width={80}
+          height={72}
+          width={62}
           source={{
             uri: metadata?.image,
             cache: 'force-cache',

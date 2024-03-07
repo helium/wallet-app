@@ -40,6 +40,7 @@ const ClaimAllRewardsScreen = () => {
     hotspotsWithMeta,
     pendingIotRewards,
     pendingMobileRewards,
+    totalHotspots,
   } = useHotspots()
 
   const [redeeming, setRedeeming] = useState(false)
@@ -51,36 +52,19 @@ const ClaimAllRewardsScreen = () => {
 
   const subtitle = useMemo(() => {
     return t('collectablesScreen.hotspots.hotspotCount', {
-      count: hotspots.length,
+      count: totalHotspots,
     })
-  }, [hotspots.length, t])
+  }, [totalHotspots, t])
 
   const onClaimRewards = useCallback(async () => {
     try {
       setClaimError(undefined)
       setRedeeming(true)
       const claim = async () => {
-        const balanceChanges: BalanceChange[] = []
-
-        if (pendingIotRewards) {
-          balanceChanges.push({
-            ticker: 'IOT',
-            amount: toNumber(pendingIotRewards, 6),
-            type: 'receive',
-          })
-        }
-
-        if (pendingMobileRewards) {
-          balanceChanges.push({
-            ticker: 'MOBILE',
-            amount: toNumber(pendingMobileRewards, 6),
-            type: 'receive',
-          })
-        }
-
         await submitClaimAllRewards(
           [IOT_LAZY_KEY, MOBILE_LAZY_KEY],
           hotspotsWithMeta,
+          totalHotspots,
         )
 
         navigation.replace('ClaimingRewardsScreen')
@@ -106,22 +90,14 @@ const ClaimAllRewardsScreen = () => {
     }
   }, [
     hasEnoughSol,
-    pendingIotRewards,
-    pendingMobileRewards,
     submitClaimAllRewards,
     hotspotsWithMeta,
+    totalHotspots,
     navigation,
     showModal,
   ])
-
-  const addAllToAccountDisabled = useMemo(() => {
-    return (
-      pendingIotRewards &&
-      pendingIotRewards.eq(new BN(0)) &&
-      pendingMobileRewards &&
-      pendingMobileRewards.eq(new BN(0))
-    )
-  }, [pendingIotRewards, pendingMobileRewards])
+  const hasMore = hotspots.length < (totalHotspots || 0)
+  console.log("hasMore",hasMore)
 
   return (
     <ReAnimatedBox
@@ -147,20 +123,24 @@ const ClaimAllRewardsScreen = () => {
             justifyContent="center"
             flexDirection="row"
           >
-            {pendingMobileRewards && pendingMobileRewards.gt(new BN(0)) && (
+            {hasMore ||
+            (pendingMobileRewards && pendingMobileRewards.gt(new BN(0))) ? (
               <RewardItem
                 mint={MOBILE_MINT}
-                amount={pendingMobileRewards}
+                amount={pendingMobileRewards || new BN(0)}
                 marginEnd="s"
+                hasMore={hasMore}
               />
-            )}
-            {pendingIotRewards && pendingIotRewards.gt(new BN(0)) && (
+            ) : null}
+            {hasMore ||
+            (pendingIotRewards && pendingIotRewards.gt(new BN(0))) ? (
               <RewardItem
                 mint={IOT_MINT}
-                amount={pendingIotRewards}
+                amount={pendingIotRewards || new BN(0)}
                 marginStart="s"
+                hasMore={hasMore}
               />
-            )}
+            ) : null}
           </Box>
           {claimError && (
             <Box>
@@ -190,7 +170,7 @@ const ClaimAllRewardsScreen = () => {
             titleColor="black"
             marginHorizontal="l"
             onPress={onClaimRewards}
-            disabled={addAllToAccountDisabled || redeeming}
+            disabled={redeeming}
             TrailingComponent={
               redeeming ? (
                 <CircleLoader loaderSize={20} color="white" />

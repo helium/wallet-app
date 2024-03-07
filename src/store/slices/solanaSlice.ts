@@ -36,7 +36,7 @@ import bs58 from 'bs58'
 import { first, last } from 'lodash'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
-import { HotspotWithPendingRewards } from '../../types/solana'
+import { CompressedNFT, HotspotWithPendingRewards } from '../../types/solana'
 import * as Logger from '../../utils/logger'
 import * as solUtils from '../../utils/solanaUtils'
 import { postPayment } from '../../utils/walletApiV2'
@@ -105,6 +105,7 @@ type ClaimAllRewardsInput = {
   hotspots: HotspotWithPendingRewards[]
   anchorProvider: AnchorProvider
   cluster: Cluster
+  totalHotspots: number | undefined
 }
 
 type TreasurySwapTxn = {
@@ -344,6 +345,31 @@ export const claimRewards = createAsyncThunk(
   },
 )
 
+async function getAllHotspots(
+  provider: AnchorProvider,
+  wallet: PublicKey,
+): Promise<HotspotWithPendingRewards[]> {
+  let fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
+    wallet,
+    provider,
+    1,
+    1000,
+  )
+
+  let hotspots: CompressedNFT[] = []
+
+  while (hotspots.length < fetchedHotspots.total) {
+    hotspots = hotspots.concat(fetchedHotspots.items)
+    fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
+      wallet,
+      provider,
+      fetchedHotspots.page + 1,
+      1000,
+    )
+  }
+
+  return solUtils.annotateWithPendingRewards(provider, hotspots)
+}
 const CHUNK_SIZE = 25
 export const claimAllRewards = createAsyncThunk(
   'solana/claimAllRewards',
@@ -353,11 +379,19 @@ export const claimAllRewards = createAsyncThunk(
       anchorProvider,
       cluster,
       lazyDistributors,
-      hotspots,
+      hotspots: hotspotsIn,
+      totalHotspots,
     }: ClaimAllRewardsInput,
     { dispatch },
   ) => {
     try {
+      let hotspots = hotspotsIn
+      if (hotspots.length < (totalHotspots || 0)) {
+        hotspots = await getAllHotspots(
+          anchorProvider,
+          anchorProvider.wallet.publicKey,
+        )
+      }
       const ret: string[] = []
       let triesRemaining = 10
       const program = await lz.init(anchorProvider)

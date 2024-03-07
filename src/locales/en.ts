@@ -277,15 +277,7 @@ export default {
       hotspotCount_other: '{{count}} Hotspots',
       hotspotCount_plural: '{{count}} Hotspots',
       chooseAmountOfHotspots: 'Choose amount of hotspots to show per page',
-      filter: 'Filter',
-      new: 'Connect a Hotspot',
-      currentDisplayedRewards:
-        'The rewards that are currently displayed as pending are only for the hotspots shown. Scroll to load more or click the filter to show more hotspots per page.',
-      showAllHotspotsWarning:
-        'Warning: Load times may be affected when showing all hotspots per page.',
-      twenty: '20',
-      fifty: '50',
-      thousand: '1000',
+      connect: 'Connect Hotspot',
       copyEccCompact: 'Copy Hotspot Key',
       onboard: {
         title: 'Repair Onboarding',

@@ -118,6 +118,7 @@ const palette = {
   blue500: '#3B82F6',
   blue950: '#172554',
   blueBorder: 'rgba(59, 130, 246, 0.25)',
+  hntBlue: '#2755F8',
 
   green500: '#22C55E',
   green950: '#052E16',

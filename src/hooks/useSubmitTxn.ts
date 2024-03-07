@@ -339,6 +339,7 @@ export default () => {
     async (
       lazyDistributors: PublicKey[],
       hotspots: HotspotWithPendingRewards[],
+      totalHotspots: number | undefined,
     ) => {
       if (!anchorProvider || !currentAccount || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
@@ -355,6 +356,7 @@ export default () => {
           hotspots,
           anchorProvider,
           cluster,
+          totalHotspots,
         }),
       )
     },

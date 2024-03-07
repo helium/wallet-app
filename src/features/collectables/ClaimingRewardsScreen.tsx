@@ -1,28 +1,32 @@
 import BackArrow from '@assets/images/backArrow.svg'
+import iotMobileTokens from '@assets/videos/iot-mobile-tokens.mp4'
+import iotTokens from '@assets/videos/iot-tokens.mp4'
+import mobileTokens from '@assets/videos/mobile-tokens.mp4'
 import AccountIcon from '@components/AccountIcon'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
-import { DelayedFadeIn } from '@components/FadeInOut'
+import FadeInOut, { DelayedFadeIn } from '@components/FadeInOut'
 import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import ProgressBar from '@components/ProgressBar'
 import Text from '@components/Text'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
+import { toNumber } from '@helium/spl-utils'
 import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import useHotspots from '@hooks/useHotspots'
 import { useNavigation } from '@react-navigation/native'
-import { Transaction } from '@solana/web3.js'
-import sendMail from '@utils/sendMail'
+import globalStyles from '@theme/globalStyles'
 import { parseTransactionError } from '@utils/solanaUtils'
-import React, { memo, useCallback } from 'react'
+import React, { memo, useCallback, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { StyleSheet } from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import RNTestFlight from 'react-native-test-flight'
+import Video from 'react-native-video'
 import { useSelector } from 'react-redux'
 import 'text-encoding-polyfill'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
-import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { RootState } from '../../store/rootReducer'
 
@@ -32,12 +36,28 @@ const ClaimingRewardsScreen = () => {
   const wallet = useCurrentWallet()
   const solBalance = useBN(useSolOwnedAmount(wallet).amount)
   const { bottom } = useSafeAreaInsets()
-  const { cluster, anchorProvider } = useSolana()
-
+  const [videoEnded, setVideoEnded] = useState(false)
+  const handleVideoEnded = useCallback(() => {
+    setVideoEnded(true)
+  }, [])
   const { t } = useTranslation()
   const solanaPayment = useSelector(
     (reduxState: RootState) => reduxState.solana.payment,
   )
+  const { pendingIotRewards, pendingMobileRewards } = useHotspots()
+  const pendingIotRewardsNum = pendingIotRewards
+    ? toNumber(pendingIotRewards, 6)
+    : 0
+  const pendingMobileRewardsNum = pendingMobileRewards
+    ? toNumber(pendingMobileRewards, 6)
+    : 0
+
+  const video =
+    pendingIotRewardsNum && pendingMobileRewardsNum
+      ? iotMobileTokens
+      : pendingMobileRewardsNum
+      ? mobileTokens
+      : iotTokens
 
   const onReturn = useCallback(() => {
     // Reset Collectables stack to first screen
@@ -47,50 +67,31 @@ const ClaimingRewardsScreen = () => {
     })
   }, [navigation])
 
-  const handleSend = useCallback(async () => {
-    if (!anchorProvider) return
-    const transaction = new Transaction()
-    const { blockhash } = await anchorProvider.connection.getLatestBlockhash(
-      'recent',
-    )
+  // Pause the video so we can actuall see the coins flying up
+  const [videoPaused, setVideoPaused] = useState(true)
 
-    transaction.recentBlockhash = blockhash
-    transaction.feePayer = anchorProvider.wallet.publicKey
-    const signedTxn = await anchorProvider.wallet.signTransaction(transaction)
-    const body =
-      `${solanaPayment?.error?.message}\n\n` +
-      `solanaAddress: ${currentAccount?.solanaAddress}\n\n` +
-      `cluster: ${cluster}` +
-      '\n\n' +
-      `anchorProvider Connection: ${anchorProvider?.connection.rpcEndpoint}` +
-      '\n\n' +
-      `anchorProvider public key: ${anchorProvider?.wallet?.publicKey}` +
-      '\n\n' +
-      `signature: ${solanaPayment?.signature}` +
-      '\n\n' +
-      `signedTxn-sig: ${signedTxn?.signature}`
-    sendMail({ subject: 'Claim error', body, isHTML: false })
-  }, [solanaPayment, anchorProvider, cluster, currentAccount?.solanaAddress])
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      setVideoPaused(false)
+    }, 500) // 1000 milliseconds delay
+    return () => clearTimeout(delay)
+  }, [])
 
   if (!currentAccount) {
     return null
   }
 
   return (
-    <ReAnimatedBox
-      entering={DelayedFadeIn}
-      flex={1}
-      backgroundColor="secondaryBackground"
-    >
+    <ReAnimatedBox entering={DelayedFadeIn} flex={1} backgroundColor="black">
       <Box
         backgroundColor="transparent"
         flex={1}
-        padding="m"
         alignItems="center"
         justifyContent="center"
       >
         <Box flexGrow={1} justifyContent="center" alignItems="center">
           <Box
+            padding="m"
             shadowColor="black"
             shadowOpacity={0.4}
             shadowOffset={{ width: 0, height: 10 }}
@@ -120,7 +121,7 @@ const ClaimingRewardsScreen = () => {
             </Animated.View>
           )}
 
-          {solanaPayment?.error && (
+          {solanaPayment?.error ? (
             <Animated.View
               style={{
                 alignItems: 'center',
@@ -128,110 +129,114 @@ const ClaimingRewardsScreen = () => {
               entering={FadeIn}
               exiting={FadeOut}
             >
-              <Text
-                variant="h1Medium"
-                color="white"
-                marginTop="xl"
-                textAlign="center"
-              >
-                {t('collectablesScreen.rewardsError')}
-              </Text>
-              <Text
-                variant="body2"
-                color="secondaryText"
-                marginTop="xl"
-                numberOfLines={2}
-                textAlign="center"
-              >
-                {parseTransactionError(
-                  solBalance,
-                  solanaPayment?.error?.message,
-                )}
-              </Text>
-            </Animated.View>
-          )}
-
-          {!solanaPayment && (
-            <Animated.View
-              style={{ alignItems: 'center' }}
-              entering={FadeIn}
-              exiting={FadeOut}
-            >
-              <Text
-                textAlign="center"
-                variant="h1Medium"
-                color="white"
-                marginTop="xl"
-              >
-                {t('collectablesScreen.rewardsError')}
-              </Text>
-            </Animated.View>
-          )}
-
-          {solanaPayment && solanaPayment.loading && (
-            <Animated.View
-              style={{ alignItems: 'center' }}
-              entering={FadeIn}
-              exiting={FadeOut}
-            >
-              <Text
-                variant="h1Medium"
-                color="white"
-                marginTop="xl"
-                textAlign="center"
-              >
-                {t('collectablesScreen.claimingRewards')}
-              </Text>
-              <Text
-                variant="body0"
-                color="grey600"
-                textAlign="center"
-                marginBottom="m"
-                marginTop="s"
-              >
-                {t('collectablesScreen.claimingRewardsBody')}
-              </Text>
-              <Box flexDirection="row" marginHorizontal="xxl" marginTop="m">
-                {typeof solanaPayment.progress !== 'undefined' ? (
-                  <Box
-                    width="100%"
-                    flexDirection="column"
-                    alignContent="stretch"
-                    alignItems="stretch"
-                  >
-                    <ProgressBar progress={solanaPayment.progress.percent} />
-                    <Text
-                      textAlign="center"
-                      variant="body2"
-                      color="secondaryText"
-                      marginTop="s"
-                      numberOfLines={2}
-                    >
-                      {solanaPayment.progress.text}
-                    </Text>
-                  </Box>
-                ) : (
-                  <IndeterminateProgressBar paddingHorizontal="l" />
-                )}
+              <Box padding="m">
+                <Text variant="h2Medium" color="white" textAlign="center">
+                  {t('collectablesScreen.rewardsError')}
+                </Text>
+                <Text
+                  variant="body2"
+                  color="secondaryText"
+                  marginTop="m"
+                  numberOfLines={2}
+                  textAlign="center"
+                >
+                  {parseTransactionError(
+                    solBalance,
+                    solanaPayment?.error?.message,
+                  )}
+                </Text>
               </Box>
             </Animated.View>
-          )}
+          ) : null}
 
-          {(RNTestFlight.isTestFlight || __DEV__) && (
-            <ButtonPressable
-              marginHorizontal="m"
-              marginTop="m"
-              height={65}
-              borderRadius="round"
-              backgroundColor="secondaryBackground"
-              backgroundColorOpacity={0.8}
-              backgroundColorOpacityPressed={0.9}
-              titleColorPressedOpacity={0.9}
-              title={t('generic.sendLogs')}
-              titleColor="blueBright500"
-              onPress={handleSend}
-            />
-          )}
+          {!solanaPayment ? (
+            <Animated.View
+              style={{ alignItems: 'center' }}
+              entering={FadeIn}
+              exiting={FadeOut}
+            >
+              <Box padding="m">
+                <Text
+                  textAlign="center"
+                  variant="h1Medium"
+                  color="white"
+                  marginTop="xl"
+                >
+                  {t('collectablesScreen.rewardsError')}
+                </Text>
+              </Box>
+            </Animated.View>
+          ) : null}
+
+          {solanaPayment && solanaPayment.loading ? (
+            <Animated.View
+              style={{ alignItems: 'center' }}
+              entering={FadeIn}
+              exiting={FadeOut}
+            >
+              <Box paddingHorizontal="m" mb="m">
+                <Text variant="h2Medium" color="white" textAlign="center">
+                  {t('collectablesScreen.claimingRewards')}
+                </Text>
+                <Text
+                  variant="body1"
+                  color="grey50"
+                  textAlign="center"
+                  marginTop="s"
+                >
+                  {t('collectablesScreen.claimingRewardsBody')}
+                </Text>
+              </Box>
+
+              {videoEnded ? (
+                <Box
+                  height={230}
+                  flexDirection="row"
+                  marginHorizontal="xxl"
+                  marginTop="m"
+                >
+                  {typeof solanaPayment.progress !== 'undefined' ? (
+                    <Box
+                      width="100%"
+                      flexDirection="column"
+                      alignContent="stretch"
+                      alignItems="stretch"
+                    >
+                      <ProgressBar progress={solanaPayment.progress.percent} />
+                      <Text
+                        textAlign="center"
+                        variant="body2"
+                        color="secondaryText"
+                        marginTop="s"
+                        numberOfLines={2}
+                      >
+                        {solanaPayment.progress.text}
+                      </Text>
+                    </Box>
+                  ) : (
+                    <IndeterminateProgressBar paddingHorizontal="l" />
+                  )}
+                </Box>
+              ) : (
+                <Box
+                  style={{ marginBottom: -40 }}
+                  width="100%"
+                  aspectRatio={1.4}
+                  height={230}
+                >
+                  <FadeInOut style={globalStyles.container}>
+                    <Video
+                      paused={videoPaused}
+                      resizeMode="cover"
+                      source={video}
+                      style={StyleSheet.absoluteFill}
+                      onEnd={handleVideoEnded}
+                    />
+                  </FadeInOut>
+                </Box>
+              )}
+            </Animated.View>
+          ) : null}
         </Box>
         <Box
           width="100%"

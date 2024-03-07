@@ -11,16 +11,20 @@ import Box from './Box'
 import Text from './Text'
 import TokenIcon from './TokenIcon'
 
-type RewardItemProps = { mint: PublicKey; amount: BN } & BoxProps<Theme>
+type RewardItemProps = {
+  mint: PublicKey
+  amount: BN
+  hasMore: boolean
+} & BoxProps<Theme>
 
-const RewardItem = ({ mint, amount, ...rest }: RewardItemProps) => {
+const RewardItem = ({ mint, amount, hasMore, ...rest }: RewardItemProps) => {
   const decimals = useMint(mint)?.info?.decimals
   const { json, symbol } = useMetaplexMetadata(mint)
   const pendingRewardsString = useMemo(() => {
     if (!amount) return
 
-    return humanReadable(amount, decimals || 6)
-  }, [amount, decimals])
+    return `${humanReadable(amount, decimals || 6)}${hasMore ? '+' : ''}`
+  }, [amount, decimals, hasMore])
 
   return (
     <Box
