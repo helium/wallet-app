@@ -1,7 +1,4 @@
 import BackArrow from '@assets/images/backArrow.svg'
-import iotMobileTokens from '@assets/videos/iot-mobile-tokens.json'
-import iotTokens from '@assets/videos/iot-tokens.json'
-import mobileTokens from '@assets/videos/mobile-tokens.json'
 import AccountIcon from '@components/AccountIcon'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
@@ -28,6 +25,9 @@ import 'text-encoding-polyfill'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { RootState } from '../../store/rootReducer'
+import iotMobileTokens from './animations/iot-mobile-tokens.json'
+import iotTokens from './animations/iot-tokens.json'
+import mobileTokens from './animations/mobile-tokens.json'
 
 const ClaimingRewardsScreen = () => {
   const { currentAccount } = useAccountStorage()

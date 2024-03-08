@@ -138,6 +138,7 @@ const ClaimRewardsScreen = () => {
                 mint={MOBILE_MINT}
                 amount={pendingMobileRewards}
                 marginEnd="s"
+                hasMore={false}
               />
             )}
             {!!pendingIotRewards && pendingIotRewards.gt(new BN(0)) && (
@@ -145,6 +146,7 @@ const ClaimRewardsScreen = () => {
                 mint={IOT_MINT}
                 amount={pendingIotRewards}
                 marginStart="s"
+                hasMore={false}
               />
             )}
           </Box>

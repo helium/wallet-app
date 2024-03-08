@@ -115,5 +115,9 @@ export const formatLargeNumber = (number: BigNumber) => {
     return [round(number.div(THOUSAND).toNumber(), 2), 'K'].join('')
   }
 
+  if (number.lt(new BigNumber(0.01))) {
+    return number.toString()
+  }
+  
   return Number(number.toFixed(2)).toString()
 }
