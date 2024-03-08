@@ -157,7 +157,7 @@ const ClaimAllRewardsScreen = () => {
           <ButtonPressable
             marginBottom="l"
             borderRadius="round"
-            backgroundColor="white"
+            backgroundColor="hntBlue"
             backgroundColorOpacityPressed={0.7}
             backgroundColorDisabled="surfaceSecondary"
             backgroundColorDisabledOpacity={0.5}
@@ -165,7 +165,7 @@ const ClaimAllRewardsScreen = () => {
             title={
               !redeeming ? t('collectablesScreen.hotspots.addAllToAccount') : ''
             }
-            titleColor="black"
+            titleColor="white"
             marginHorizontal="l"
             onPress={onClaimRewards}
             disabled={redeeming}
