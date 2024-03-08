@@ -7,7 +7,7 @@ import { DelayedFadeIn } from '@components/FadeInOut'
 import RewardItem from '@components/RewardItem'
 import Text from '@components/Text'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
-import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import { IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import useHotspots from '@hooks/useHotspots'
@@ -22,7 +22,6 @@ import {
 import BN from 'bn.js'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BalanceChange } from '../../solana/walletSignBottomSheetTypes'
 import { CollectableNavigationProp } from './collectablesTypes'
 
 const ClaimAllRewardsScreen = () => {
@@ -97,7 +96,6 @@ const ClaimAllRewardsScreen = () => {
     showModal,
   ])
   const hasMore = hotspots.length < (totalHotspots || 0)
-  console.log("hasMore",hasMore)
 
   return (
     <ReAnimatedBox

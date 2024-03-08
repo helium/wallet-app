@@ -119,6 +119,10 @@ const palette = {
   blue950: '#172554',
   blueBorder: 'rgba(59, 130, 246, 0.25)',
   hntBlue: '#2755F8',
+  mobileDarkBlue: '#00273D',
+  mobileBlue: '#009EF8',
+  iotDarkGreen: '#053919',
+  iotGreen: '#26ED75',
 
   green500: '#22C55E',
   green950: '#052E16',

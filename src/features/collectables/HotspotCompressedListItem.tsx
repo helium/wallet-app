@@ -96,11 +96,12 @@ const HotspotListItem = ({
         borderRadius="xl"
         alignItems="center"
         paddingVertical="xs"
-        paddingHorizontal="m"
+        paddingHorizontal="s"
         onPress={() => onPress(hotspot)}
       >
         <ImageBox
           borderRadius="lm"
+          ml="s"
           height={72}
           width={62}
           source={{
@@ -134,52 +135,56 @@ const HotspotListItem = ({
             {eccCompact ? ellipsizeAddress(eccCompact) : ''}
           </Text>
         </Box>
-        <Box marginVertical="s" marginHorizontal="s">
+        <Box marginVertical="s" marginLeft="s">
           {!!hasMobileRewards && (
-            <Box
-              marginBottom="s"
-              justifyContent="center"
-              alignItems="center"
-              backgroundColor="white"
-              borderRadius="xl"
-              padding="xs"
-              flexDirection="row"
-              shadowRadius={6}
-              shadowColor="black"
-              shadowOffset={{
-                width: 0,
-                height: 3,
-              }}
-              shadowOpacity={0.3}
-              elevation={2}
-            >
-              <Text variant="body2Medium" marginEnd="xs" color="black">
-                {pendingMobileRewardsString}
-              </Text>
-              <MobileSymbol color="black" />
+            <Box flex={1}>
+              <Box
+                marginBottom="s"
+                justifyContent="center"
+                alignItems="center"
+                backgroundColor="mobileDarkBlue"
+                borderRadius="xl"
+                padding="xs"
+                flexDirection="row"
+                shadowRadius={6}
+                shadowColor="black"
+                shadowOffset={{
+                  width: 0,
+                  height: 3,
+                }}
+                shadowOpacity={0.3}
+                elevation={2}
+              >
+                <MobileSymbol color="black" />
+                <Text variant="body2Medium" marginLeft="xs" color="mobileBlue">
+                  {pendingMobileRewardsString}
+                </Text>
+              </Box>
             </Box>
           )}
           {!!hasIotRewards && (
-            <Box
-              justifyContent="center"
-              alignItems="center"
-              backgroundColor="white"
-              borderRadius="xl"
-              padding="xs"
-              flexDirection="row"
-              shadowRadius={6}
-              shadowColor="black"
-              shadowOffset={{
-                width: 0,
-                height: 3,
-              }}
-              shadowOpacity={0.3}
-              elevation={2}
-            >
-              <Text variant="body2Medium" marginEnd="xs" color="black">
-                {pendingIotRewardsString}
-              </Text>
-              <IotSymbol color="black" />
+            <Box flex={1}>
+              <Box
+                justifyContent="flex-end"
+                alignItems="center"
+                backgroundColor="iotDarkGreen"
+                borderRadius="xl"
+                padding="xs"
+                flexDirection="row"
+                shadowRadius={6}
+                shadowColor="black"
+                shadowOffset={{
+                  width: 0,
+                  height: 3,
+                }}
+                shadowOpacity={0.3}
+                elevation={2}
+              >
+                <IotSymbol color="black" />
+                <Text variant="body2Medium" marginLeft="xs" color="iotGreen">
+                  {pendingIotRewardsString}
+                </Text>
+              </Box>
             </Box>
           )}
         </Box>

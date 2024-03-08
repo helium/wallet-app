@@ -1,7 +1,7 @@
 import BackArrow from '@assets/images/backArrow.svg'
-import iotMobileTokens from '@assets/videos/iot-mobile-tokens.mp4'
-import iotTokens from '@assets/videos/iot-tokens.mp4'
-import mobileTokens from '@assets/videos/mobile-tokens.mp4'
+import iotMobileTokens from '@assets/videos/iot-mobile-tokens.json'
+import iotTokens from '@assets/videos/iot-tokens.json'
+import mobileTokens from '@assets/videos/mobile-tokens.json'
 import AccountIcon from '@components/AccountIcon'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
@@ -18,12 +18,11 @@ import useHotspots from '@hooks/useHotspots'
 import { useNavigation } from '@react-navigation/native'
 import globalStyles from '@theme/globalStyles'
 import { parseTransactionError } from '@utils/solanaUtils'
-import React, { memo, useCallback, useState, useEffect } from 'react'
+import LottieView from 'lottie-react-native'
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { StyleSheet } from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Video from 'react-native-video'
 import { useSelector } from 'react-redux'
 import 'text-encoding-polyfill'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
@@ -36,10 +35,6 @@ const ClaimingRewardsScreen = () => {
   const wallet = useCurrentWallet()
   const solBalance = useBN(useSolOwnedAmount(wallet).amount)
   const { bottom } = useSafeAreaInsets()
-  const [videoEnded, setVideoEnded] = useState(false)
-  const handleVideoEnded = useCallback(() => {
-    setVideoEnded(true)
-  }, [])
   const { t } = useTranslation()
   const solanaPayment = useSelector(
     (reduxState: RootState) => reduxState.solana.payment,
@@ -67,15 +62,16 @@ const ClaimingRewardsScreen = () => {
     })
   }, [navigation])
 
-  // Pause the video so we can actuall see the coins flying up
-  const [videoPaused, setVideoPaused] = useState(true)
+  // Don't start the video until the screen has been up for 500ms
+  const [videoEnded, setVideoEnded] = useState(false)
+  const animationRef = useRef<LottieView>(null)
 
   useEffect(() => {
     const delay = setTimeout(() => {
-      setVideoPaused(false)
-    }, 500) // 1000 milliseconds delay
+      animationRef.current?.play()
+    }, 800) // 1000 milliseconds delay
     return () => clearTimeout(delay)
-  }, [])
+  }, [animationRef])
 
   if (!currentAccount) {
     return null
@@ -190,7 +186,7 @@ const ClaimingRewardsScreen = () => {
 
               {videoEnded ? (
                 <Box
-                  height={230}
+                  height={240}
                   flexDirection="row"
                   marginHorizontal="xxl"
                   marginTop="m"
@@ -222,15 +218,17 @@ const ClaimingRewardsScreen = () => {
                   style={{ marginBottom: -40 }}
                   width="100%"
                   aspectRatio={1.4}
-                  height={230}
+                  height={240}
                 >
                   <FadeInOut style={globalStyles.container}>
-                    <Video
-                      paused={videoPaused}
-                      resizeMode="cover"
+                    <LottieView
+                      ref={animationRef}
                       source={video}
-                      style={StyleSheet.absoluteFill}
-                      onEnd={handleVideoEnded}
+                      loop={false}
+                      style={{ width: '100%', height: '100%' }}
+                      onAnimationFinish={() => {
+                        setVideoEnded(true)
+                      }}
                     />
                   </FadeInOut>
                 </Box>
