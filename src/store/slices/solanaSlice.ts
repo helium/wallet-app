@@ -478,7 +478,7 @@ export const claimAllRewards = createAsyncThunk(
                     percent:
                       ((totalProgress + ret.length + thisRet.length) * 100) /
                       totalTxns,
-                    text: `Confiming ${txns.length - totalProgress}/${
+                    text: `Confirming ${txns.length - totalProgress}/${
                       txns.length
                     } transactions.\n${
                       totalTxns - ret.length - thisRet.length
