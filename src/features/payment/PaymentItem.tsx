@@ -10,6 +10,7 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address from '@helium/address'
 import { useMint } from '@helium/helium-react-hooks'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { usePublicKey } from '@hooks/usePublicKey'
 import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { Theme } from '@theme/theme'
@@ -95,6 +96,12 @@ const PaymentItem = ({
   const { symbol, loading: loadingMeta } = useMetaplexMetadata(mint)
   const [rawAddress, setRawAddress] = useState('')
   const [debouncedAddress] = useDebounce(rawAddress, 500)
+
+  const pubkey = usePublicKey(debouncedAddress)
+  const isProgramAccount = useMemo(
+    () => pubkey && PublicKey.isOnCurve(pubkey),
+    [pubkey],
+  )
 
   const addressIsWrongNetType = useMemo(
     () =>
@@ -241,6 +248,11 @@ const PaymentItem = ({
                       returnKeyType: 'done',
                     }}
                   />
+                  {isProgramAccount ? (
+                    <Text ml="m" mb="s" color="orange500">
+                      {t('payment.programOwnedWarning')}
+                    </Text>
+                  ) : null}
                 </Box>
                 <TouchableOpacityBox
                   marginEnd="l"
