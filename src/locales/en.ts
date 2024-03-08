@@ -903,7 +903,8 @@ export default {
     totalRecipients_other: '{{count}} Recipients',
     totalRecipients_plural: '{{count}} Recipients',
     wrongNetType: 'Wrong Net Type',
-    programOwnedWarning: 'This is a smart-contract owned account. Are you sure this is the correct address?'
+    programOwnedWarning:
+      'This is a smart-contract owned account. Are you sure this is the correct address?',
   },
   placeholder: {
     accountBalanceValue: 'Wallet Balance: {{balance}}',
