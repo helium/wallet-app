@@ -118,6 +118,6 @@ export const formatLargeNumber = (number: BigNumber) => {
   if (number.lt(new BigNumber(0.01))) {
     return number.toString()
   }
-  
+
   return Number(number.toFixed(2)).toString()
 }
