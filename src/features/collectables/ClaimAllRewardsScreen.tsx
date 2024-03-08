@@ -7,7 +7,7 @@ import { DelayedFadeIn } from '@components/FadeInOut'
 import RewardItem from '@components/RewardItem'
 import Text from '@components/Text'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
-import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import { IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import useHotspots from '@hooks/useHotspots'
@@ -22,7 +22,6 @@ import {
 import BN from 'bn.js'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BalanceChange } from '../../solana/walletSignBottomSheetTypes'
 import { CollectableNavigationProp } from './collectablesTypes'
 
 const ClaimAllRewardsScreen = () => {
@@ -40,6 +39,7 @@ const ClaimAllRewardsScreen = () => {
     hotspotsWithMeta,
     pendingIotRewards,
     pendingMobileRewards,
+    totalHotspots,
   } = useHotspots()
 
   const [redeeming, setRedeeming] = useState(false)
@@ -51,36 +51,19 @@ const ClaimAllRewardsScreen = () => {
 
   const subtitle = useMemo(() => {
     return t('collectablesScreen.hotspots.hotspotCount', {
-      count: hotspots.length,
+      count: totalHotspots,
     })
-  }, [hotspots.length, t])
+  }, [totalHotspots, t])
 
   const onClaimRewards = useCallback(async () => {
     try {
       setClaimError(undefined)
       setRedeeming(true)
       const claim = async () => {
-        const balanceChanges: BalanceChange[] = []
-
-        if (pendingIotRewards) {
-          balanceChanges.push({
-            ticker: 'IOT',
-            amount: toNumber(pendingIotRewards, 6),
-            type: 'receive',
-          })
-        }
-
-        if (pendingMobileRewards) {
-          balanceChanges.push({
-            ticker: 'MOBILE',
-            amount: toNumber(pendingMobileRewards, 6),
-            type: 'receive',
-          })
-        }
-
         await submitClaimAllRewards(
           [IOT_LAZY_KEY, MOBILE_LAZY_KEY],
           hotspotsWithMeta,
+          totalHotspots,
         )
 
         navigation.replace('ClaimingRewardsScreen')
@@ -106,22 +89,13 @@ const ClaimAllRewardsScreen = () => {
     }
   }, [
     hasEnoughSol,
-    pendingIotRewards,
-    pendingMobileRewards,
     submitClaimAllRewards,
     hotspotsWithMeta,
+    totalHotspots,
     navigation,
     showModal,
   ])
-
-  const addAllToAccountDisabled = useMemo(() => {
-    return (
-      pendingIotRewards &&
-      pendingIotRewards.eq(new BN(0)) &&
-      pendingMobileRewards &&
-      pendingMobileRewards.eq(new BN(0))
-    )
-  }, [pendingIotRewards, pendingMobileRewards])
+  const hasMore = hotspots.length < (totalHotspots || 0)
 
   return (
     <ReAnimatedBox
@@ -147,20 +121,24 @@ const ClaimAllRewardsScreen = () => {
             justifyContent="center"
             flexDirection="row"
           >
-            {pendingMobileRewards && pendingMobileRewards.gt(new BN(0)) && (
+            {hasMore ||
+            (pendingMobileRewards && pendingMobileRewards.gt(new BN(0))) ? (
               <RewardItem
                 mint={MOBILE_MINT}
-                amount={pendingMobileRewards}
+                amount={pendingMobileRewards || new BN(0)}
                 marginEnd="s"
+                hasMore={hasMore}
               />
-            )}
-            {pendingIotRewards && pendingIotRewards.gt(new BN(0)) && (
+            ) : null}
+            {hasMore ||
+            (pendingIotRewards && pendingIotRewards.gt(new BN(0))) ? (
               <RewardItem
                 mint={IOT_MINT}
-                amount={pendingIotRewards}
+                amount={pendingIotRewards || new BN(0)}
                 marginStart="s"
+                hasMore={hasMore}
               />
-            )}
+            ) : null}
           </Box>
           {claimError && (
             <Box>
@@ -179,7 +157,7 @@ const ClaimAllRewardsScreen = () => {
           <ButtonPressable
             marginBottom="l"
             borderRadius="round"
-            backgroundColor="white"
+            backgroundColor="hntBlue"
             backgroundColorOpacityPressed={0.7}
             backgroundColorDisabled="surfaceSecondary"
             backgroundColorDisabledOpacity={0.5}
@@ -187,10 +165,10 @@ const ClaimAllRewardsScreen = () => {
             title={
               !redeeming ? t('collectablesScreen.hotspots.addAllToAccount') : ''
             }
-            titleColor="black"
+            titleColor="white"
             marginHorizontal="l"
             onPress={onClaimRewards}
-            disabled={addAllToAccountDisabled || redeeming}
+            disabled={redeeming}
             TrailingComponent={
               redeeming ? (
                 <CircleLoader loaderSize={20} color="white" />

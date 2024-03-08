@@ -14,6 +14,7 @@ import { CompressedNFT, HotspotWithPendingRewards } from '../types/solana'
 import { Mints } from '../utils/constants'
 
 const useHotspots = (): {
+  totalHotspots: number | undefined
   pendingIotRewards: BN | undefined
   pendingMobileRewards: BN | undefined
   hotspots: CompressedNFT[]
@@ -30,7 +31,6 @@ const useHotspots = (): {
   const hotspots = useSelector(
     (state: RootState) => state.hotspots[cluster] || {},
   )
-
   const page = useMemo(() => {
     if (
       !currentAccount?.solanaAddress ||
@@ -38,6 +38,14 @@ const useHotspots = (): {
     )
       return 0
     return hotspots[currentAccount?.solanaAddress].page
+  }, [currentAccount?.solanaAddress, hotspots])
+  const totalHotspots = useMemo(() => {
+    if (
+      !currentAccount?.solanaAddress ||
+      !hotspots[currentAccount?.solanaAddress]
+    )
+      return undefined
+    return hotspots[currentAccount?.solanaAddress].totalHotspots
   }, [currentAccount?.solanaAddress, hotspots])
 
   const onEndReached = useMemo(() => {
@@ -140,6 +148,7 @@ const useHotspots = (): {
     !hotspots[currentAccount?.solanaAddress]
   ) {
     return {
+      totalHotspots,
       pendingIotRewards,
       pendingMobileRewards,
       loading: false,
@@ -153,6 +162,7 @@ const useHotspots = (): {
   }
 
   return {
+    totalHotspots,
     pendingIotRewards,
     pendingMobileRewards,
     hotspots: hotspots[currentAccount?.solanaAddress].hotspots,

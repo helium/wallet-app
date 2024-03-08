@@ -13,6 +13,7 @@ export type WalletHotspots = {
   fetchingMore: boolean
   onEndReached: boolean
   page: number
+  totalHotspots?: number
 }
 
 export type HotspotsByWallet = Record<string, WalletHotspots>
@@ -48,7 +49,7 @@ export const fetchHotspots = createAsyncThunk(
     )
 
     const hotspotsWithMetadata = await solUtils.getCompressedNFTMetadata(
-      fetchedHotspots,
+      fetchedHotspots.items,
     )
 
     const hotspotsWithPendingRewards =
@@ -62,6 +63,7 @@ export const fetchHotspots = createAsyncThunk(
       hotspotsWithMetadata: hotspotsWithPendingRewards,
       page: 1,
       limit,
+      total: fetchedHotspots.grandTotal,
     }
   },
 )
@@ -94,7 +96,7 @@ export const fetchMoreHotspots = createAsyncThunk(
     )
 
     const hotspotsWithMetadata = await solUtils.getCompressedNFTMetadata(
-      fetchedHotspots,
+      fetchedHotspots.items,
     )
 
     const hotspotsWithPendingRewards =
@@ -105,6 +107,7 @@ export const fetchMoreHotspots = createAsyncThunk(
       hotspotsWithMetadata: hotspotsWithPendingRewards,
       page: page + 1,
       limit,
+      total: fetchedHotspots.grandTotal,
     }
   },
 )
@@ -136,6 +139,7 @@ const hotspotSlice = createSlice({
       const prev = state[cluster][address] || {
         hotspotsWithMeta: [],
         hotspots: [],
+        totalHotspots: undefined,
       }
       state[cluster][address] = {
         ...prev,
@@ -152,11 +156,13 @@ const hotspotSlice = createSlice({
       const { cluster } = action.meta.arg
       state[cluster][address] = {
         ...state[cluster][address],
-        hotspots: fetchedHotspots,
+        hotspots: fetchedHotspots.items,
+        totalHotspots: fetchedHotspots.grandTotal,
         hotspotsWithMeta: hotspotsWithMetadata,
         loading: false,
         fetchingMore: false,
-        onEndReached: false,
+        onEndReached:
+          fetchedHotspots.grandTotal === fetchedHotspots.items.length,
         page: action.payload.page,
       }
     })
@@ -204,7 +210,10 @@ const hotspotSlice = createSlice({
 
       state[cluster][address] = {
         ...state[cluster][address],
-        hotspots: [...state[cluster][address].hotspots, ...fetchedHotspots],
+        hotspots: [
+          ...state[cluster][address].hotspots,
+          ...fetchedHotspots.items,
+        ],
         hotspotsWithMeta: [
           ...state[cluster][address].hotspotsWithMeta,
           ...hotspotsWithMetadata,
