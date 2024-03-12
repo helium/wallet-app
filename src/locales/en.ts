@@ -33,6 +33,7 @@ export default {
     settings: {
       title: 'Settings',
       hotspotError: 'Hotspot Returned Error: ',
+      notReady: 'Not Ready to Onboard',
     },
     diagnostics: {
       title: 'Diagnostics',
