@@ -47,6 +47,8 @@ import {
 
 const { VIEW_AS } = Config
 
+export const MAX_ACCOUNTS = 50
+
 const useAccountStorageHook = () => {
   const [currentAccount, setCurrentAccount] = useState<
     CSAccount | null | undefined
@@ -92,7 +94,7 @@ const useAccountStorageHook = () => {
   )
 
   const reachedAccountLimit = useMemo(
-    () => accountAddresses?.length >= 10,
+    () => accountAddresses?.length >= MAX_ACCOUNTS,
     [accountAddresses.length],
   )
 

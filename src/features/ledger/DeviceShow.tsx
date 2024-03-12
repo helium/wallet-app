@@ -17,11 +17,12 @@ import {
   LedgerNavigatorNavigationProp,
   LedgerNavigatorStackParamList,
 } from './ledgerNavigatorTypes'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import {
+  useAccountStorage,
+  MAX_ACCOUNTS,
+} from '../../storage/AccountStorageProvider'
 import LedgerAccountListItem, { Section } from './LedgerAccountListItem'
 import { HomeNavigationProp } from '../home/homeTypes'
-
-const MAX_ACCOUNTS = 10
 
 type Route = RouteProp<LedgerNavigatorStackParamList, 'DeviceShow'>
 
