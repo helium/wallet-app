@@ -58,6 +58,8 @@ const Settings = () => {
     updateAuthInterval,
     updateCurrency,
     updateRequirePinForPayment,
+    enableHaptic,
+    updateEnableHaptic,
   } = useAppStorage()
   const { showOKAlert, showOKCancelAlert } = useAlert()
   const { updateCluster, cluster } = useSolana()
@@ -471,6 +473,11 @@ const Settings = () => {
             },
           },
           {
+            title: t('settings.sections.app.enableHaptic'),
+            onToggle: updateEnableHaptic,
+            value: enableHaptic,
+          },
+          {
             title: t('settings.sections.app.autoGasManager'),
             onPress: handlePressAutoGasManager,
           },
@@ -522,6 +529,8 @@ const Settings = () => {
     explorer?.value,
     handleExplorerChange,
     explorers,
+    updateEnableHaptic,
+    enableHaptic,
     handlePressAutoGasManager,
     version,
     buildNumber,

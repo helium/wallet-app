@@ -1,3 +1,4 @@
+import { useAppStorage } from '@storage/AppStorageProvider'
 import * as Haptics from 'expo-haptics'
 
 export type FeedbackStyle = 'light' | 'medium' | 'heavy'
@@ -16,7 +17,8 @@ const notificationStyles: Record<string, Haptics.NotificationFeedbackType> = {
 }
 
 const useHaptic = () => {
-  const isHapticDisabled = false
+  const { enableHaptic } = useAppStorage()
+  const isHapticDisabled = !enableHaptic
 
   const triggerImpact = (feedbackStyle: FeedbackStyle = 'medium') => {
     if (isHapticDisabled) return
