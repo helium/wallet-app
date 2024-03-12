@@ -33,6 +33,9 @@ const useAppStorageHook = () => {
   )
   const [currency, setCurrency] = useState('USD')
   const [explorer, setExplorer] = useState<string | undefined>(undefined)
+  const [enableHaptic, setEnableHaptic] = useState<boolean | undefined>(
+    undefined,
+  )
   const [locked, setLocked] = useState<boolean>()
   const [convertToCurrency, setConvertToCurrency] = useState(false)
   const [enableTestnet, setEnableTestnet] = useState(false)
@@ -77,6 +80,8 @@ const useAppStorageHook = () => {
       const nextCurrency = await getSecureItem('currency')
       const nextConvertToCurrency = await getSecureItem('convertToCurrency')
       const nextEnableTestnet = await getSecureItem('enableTestnet')
+      const nextEnableHaptic = await getSecureItem('enableHaptic')
+      const nextExplorer = await getSecureItem('explorer')
       const nextDAppShown = await AsyncStorage.getItem(DAPP_TUTORIAL_SHOWN)
       const nextVoteShown = await AsyncStorage.getItem(VOTE_TUTORIAL_SHOWN)
       const nextShowNumericChange = await getSecureItem('showNumericChange')
@@ -106,6 +111,8 @@ const useAppStorageHook = () => {
       )
       setCurrency(nextCurrency || 'USD')
       setConvertToCurrency(nextConvertToCurrency === 'true')
+      setExplorer(nextExplorer || undefined)
+      setEnableHaptic(nextEnableHaptic === 'true')
       setEnableTestnet(nextEnableTestnet === 'true')
       setDAppTutorialShown(
         JSON.parse(nextDAppShown || '{}') as Record<string, boolean>,
@@ -170,6 +177,10 @@ const useAppStorageHook = () => {
     return storeSecureItem('explorer', nextExplorer)
   }, [])
 
+  const updateEnableHaptic = useCallback(async (nextEnableHaptic: boolean) => {
+    setEnableHaptic(nextEnableHaptic)
+    return storeSecureItem('enableHaptic', nextEnableHaptic ? 'true' : 'false')
+  }, [])
   const updateEnableTestnet = useCallback(
     async (nextEnableTestnet: boolean) => {
       setEnableTestnet(nextEnableTestnet)
@@ -250,6 +261,8 @@ const useAppStorageHook = () => {
     explorer,
     enableTestnet,
     locked,
+    enableHaptic,
+    updateEnableHaptic,
     pin,
     requirePinForPayment,
     scannedAddress,
@@ -280,6 +293,7 @@ const initialState = {
   autoGasManagementToken: undefined,
   authInterval: Intervals.IMMEDIATELY,
   convertToCurrency: false,
+  enableHaptic: false,
   currency: 'USD',
   explorer: undefined,
   enableTestnet: false,
@@ -290,6 +304,7 @@ const initialState = {
   setScannedAddress: () => undefined,
   setDAppTutorialCompleted: async () => undefined,
   setVoteTutorialCompleted: () => new Promise<void>((resolve) => resolve()),
+  updateEnableHaptic: async () => undefined,
   updateAutoGasManagementToken: async () => undefined,
   updateAuthInterval: async () => undefined,
   updateCurrency: async () => undefined,

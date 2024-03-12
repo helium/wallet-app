@@ -999,6 +999,7 @@ export default {
         title: 'App Settings',
         version: 'App Version',
         explorer: 'Preferred Hotspot Explorer',
+        enableHaptic: 'Enable Haptic Feedback',
         autoGasManager: 'Automatic Fee Management',
       },
       backup: {

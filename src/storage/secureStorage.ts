@@ -17,6 +17,7 @@ export enum SecureStorageKeys {
   LOCKED = 'locked',
   CURRENCY = 'currency',
   EXPLORER = 'explorer',
+  ENABLE_HAPTIC = 'enableHaptic',
   CONVERT_TO_CURRENCY = 'convertToCurrency',
   LAST_IDLE = 'lastIdle',
   ENABLE_TESTNET = 'enableTestnet',
