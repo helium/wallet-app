@@ -287,6 +287,7 @@ export default {
       },
       viewInExplorer: 'View in Explorer',
       assertLocation: 'Assert Location',
+      transferHotspot: 'Transfer Hotspot',
       antennaSetup: 'Antenna Setup',
     },
   },
