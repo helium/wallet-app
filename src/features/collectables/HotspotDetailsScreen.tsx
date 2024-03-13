@@ -324,7 +324,7 @@ const HotspotDetailsScreen = () => {
         />
         <ListItem
           key="transfer"
-          title="Transfer"
+          title={t('collectablesScreen.hotspots.transferHotspot')}
           onPress={handleSend}
           selected={false}
           hasPressedState={false}
