@@ -63,8 +63,7 @@ const ClaimingRewardsScreen = () => {
   }, [navigation])
 
   // Don't start the video until the screen has been up for 500ms
-  // TODO: Set to false when we want to re-enable the video
-  const [videoEnded, setVideoEnded] = useState(true)
+  const [videoEnded, setVideoEnded] = useState(false)
   const animationRef = useRef<LottieView>(null)
 
   useEffect(() => {
