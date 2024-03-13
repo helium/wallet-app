@@ -171,6 +171,12 @@ const Settings = () => {
   )
 
   const keyExtractor = useCallback((option: Option) => option.name, [])
+  let errorMessage = error?.message
+    ? error?.message.toString()
+    : error?.toString()
+  if (errorMessage === 'wait') {
+    errorMessage = t('hotspotOnboarding.settings.notReady')
+  }
 
   return (
     <BackScreen title={t('hotspotOnboarding.settings.title')}>
@@ -182,7 +188,7 @@ const Settings = () => {
       {error && (
         <Text variant="body1Medium" color="red500">
           {t('hotspotOnboarding.settings.hotspotError')}
-          {error.message ? error.message.toString() : error.toString()}
+          {errorMessage}
         </Text>
       )}
       {!loadingInfo && !loadingKta && (
