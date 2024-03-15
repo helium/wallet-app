@@ -10,7 +10,6 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address from '@helium/address'
 import { useMint } from '@helium/helium-react-hooks'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
-import { usePublicKey } from '@hooks/usePublicKey'
 import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { Theme } from '@theme/theme'
@@ -29,7 +28,11 @@ import {
 import { useDebounce } from 'use-debounce'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useBalance } from '../../utils/Balance'
-import { accountNetType, ellipsizeAddress } from '../../utils/accountUtils'
+import {
+  accountNetType,
+  ellipsizeAddress,
+  solAddressIsValid,
+} from '../../utils/accountUtils'
 
 export type Payment = {
   address?: string
@@ -97,11 +100,14 @@ const PaymentItem = ({
   const [rawAddress, setRawAddress] = useState('')
   const [debouncedAddress] = useDebounce(rawAddress, 500)
 
-  const pubkey = usePublicKey(debouncedAddress)
-  const isProgramAccount = useMemo(
-    () => pubkey && PublicKey.isOnCurve(pubkey),
-    [pubkey],
-  )
+  const isProgramAccount = useMemo(() => {
+    if (solAddressIsValid(debouncedAddress)) {
+      const pubkey = new PublicKey(debouncedAddress)
+      return PublicKey.isOnCurve(pubkey)
+    }
+
+    return false
+  }, [debouncedAddress])
 
   const addressIsWrongNetType = useMemo(
     () =>
