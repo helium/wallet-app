@@ -279,6 +279,7 @@ export default {
       hotspotCount_plural: '{{count}} Hotspots',
       chooseAmountOfHotspots: 'Choose amount of hotspots to show per page',
       connect: 'Connect Hotspot',
+      openMap: 'Open Map',
       copyEccCompact: 'Copy Hotspot Key',
       onboard: {
         title: 'Repair Onboarding',

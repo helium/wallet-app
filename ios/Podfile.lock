@@ -360,6 +360,8 @@ PODS:
     - React-Core
   - react-native-mail (6.1.1):
     - React-Core
+  - react-native-maps (1.11.3):
+    - React-Core
   - react-native-netinfo (9.3.7):
     - React-Core
   - react-native-network-info (5.2.1):
@@ -608,6 +610,7 @@ DEPENDENCIES:
   - react-native-currency-format (from `../node_modules/react-native-currency-format`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - react-native-mail (from `../node_modules/react-native-mail`)
+  - react-native-maps (from `../node_modules/react-native-maps`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-network-info (from `../node_modules/react-native-network-info`)
   - react-native-onesignal (from `../node_modules/react-native-onesignal`)
@@ -765,6 +768,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-get-random-values"
   react-native-mail:
     :path: "../node_modules/react-native-mail"
+  react-native-maps:
+    :path: "../node_modules/react-native-maps"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-network-info:
@@ -909,6 +914,7 @@ SPEC CHECKSUMS:
   react-native-currency-format: cd0a30868fddb004c3b5b5e9b7fe7717876927f5
   react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
   react-native-mail: 8fdcd3aef007c33a6877a18eb4cf7447a1d4ce4a
+  react-native-maps: 79610ffcd0ec2ca8e0cefb48aa8ae7c62a75d7cc
   react-native-netinfo: 2517ad504b3d303e90d7a431b0fcaef76d207983
   react-native-network-info: d1290ffc0bd0709e11436f5b8d7f605dcc5c4530
   react-native-onesignal: e1f82b98767a9014d2c46f395b083330cfa29cea

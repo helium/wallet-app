@@ -1,27 +1,28 @@
-import React, { memo } from 'react'
 import {
   StackNavigationOptions,
   createStackNavigator,
 } from '@react-navigation/stack'
-import CollectablesTopTabs from './CollectablesTopTabs'
-import HotspotDetailsScreen from './HotspotDetailsScreen'
-import AssertLocationScreen from './AssertLocationScreen'
-import PaymentScreen from '../payment/PaymentScreen'
+import React, { memo } from 'react'
 import AddNewContact from '../addressBook/AddNewContact'
-import PaymentQrScanner from '../payment/PaymentQrScanner'
-import AddressQrScanner from '../addressBook/AddressQrScanner'
-import NftMetadataScreen from './NftMetadataScreen'
-import TransferCollectableScreen from './TransferCollectableScreen'
 import AddressBookNavigator from '../addressBook/AddressBookNavigator'
-import TransferCompleteScreen from './TransferCompleteScreen'
-import ClaimRewardsScreen from './ClaimRewardsScreen'
-import ClaimAllRewardsScreen from './ClaimAllRewardsScreen'
-import ClaimingRewardsScreen from './ClaimingRewardsScreen'
-import CollectionScreen from './CollectionScreen'
-import NftDetailsScreen from './NftDetailsScreen'
-import AntennaSetupScreen from './AntennaSetupScreen'
-import SettingUpAntennaScreen from './SettingUpAntennaScreen'
+import AddressQrScanner from '../addressBook/AddressQrScanner'
 import OnboardingNav from '../hotspot-onboarding/OnboardingNav'
+import PaymentQrScanner from '../payment/PaymentQrScanner'
+import PaymentScreen from '../payment/PaymentScreen'
+import AntennaSetupScreen from './AntennaSetupScreen'
+import AssertLocationScreen from './AssertLocationScreen'
+import ClaimAllRewardsScreen from './ClaimAllRewardsScreen'
+import ClaimRewardsScreen from './ClaimRewardsScreen'
+import ClaimingRewardsScreen from './ClaimingRewardsScreen'
+import CollectablesTopTabs from './CollectablesTopTabs'
+import CollectionScreen from './CollectionScreen'
+import HotspotDetailsScreen from './HotspotDetailsScreen'
+import NftDetailsScreen from './NftDetailsScreen'
+import NftMetadataScreen from './NftMetadataScreen'
+import SettingUpAntennaScreen from './SettingUpAntennaScreen'
+import TransferCollectableScreen from './TransferCollectableScreen'
+import TransferCompleteScreen from './TransferCompleteScreen'
+import HotspotMapScreen from './hotspotMap/HotspotMapScreen'
 
 const CollectablesStack = createStackNavigator()
 
@@ -35,6 +36,10 @@ const CollectablesStackScreen = () => {
       <CollectablesStack.Screen
         name="CollectablesTopTab"
         component={CollectablesTopTabs}
+      />
+      <CollectablesStack.Screen
+        name="HotspotMapScreen"
+        component={HotspotMapScreen}
       />
       <CollectablesStack.Screen
         name="HotspotDetailsScreen"
