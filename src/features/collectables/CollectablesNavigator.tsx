@@ -10,7 +10,6 @@ import OnboardingNav from '../hotspot-onboarding/OnboardingNav'
 import PaymentQrScanner from '../payment/PaymentQrScanner'
 import PaymentScreen from '../payment/PaymentScreen'
 import AntennaSetupScreen from './AntennaSetupScreen'
-import AssertLocationScreen from './AssertLocationScreen'
 import ClaimAllRewardsScreen from './ClaimAllRewardsScreen'
 import ClaimRewardsScreen from './ClaimRewardsScreen'
 import ClaimingRewardsScreen from './ClaimingRewardsScreen'
@@ -44,10 +43,6 @@ const CollectablesStackScreen = () => {
       <CollectablesStack.Screen
         name="HotspotDetailsScreen"
         component={HotspotDetailsScreen}
-      />
-      <CollectablesStack.Screen
-        name="AssertLocationScreen"
-        component={AssertLocationScreen}
       />
       <CollectablesStack.Screen
         name="AntennaSetupScreen"

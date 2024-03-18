@@ -1,4 +1,4 @@
-import MapPin from '@assets/images/mapPin.svg'
+/* import MapPin from '@assets/images/mapPin.svg'
 import {
   BackScreen,
   Box,
@@ -743,4 +743,4 @@ const AssertLocationScreen = () => {
   )
 }
 
-export default memo(AssertLocationScreen)
+export default memo(AssertLocationScreen) */
