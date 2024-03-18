@@ -177,6 +177,7 @@ export default () => {
         url: '',
         additionalMessage: t('transactions.signSwapTxn'),
         serializedTxs: [Buffer.from(serializedTx)],
+        suppressWarnings: true,
       })
 
       if (!decision) {

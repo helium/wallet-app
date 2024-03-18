@@ -205,7 +205,11 @@ const WalletSignBottomSheetTransaction = ({
             header="Simulation Failed"
             body={`${JSON.stringify(transaction.error)}\n${
               transaction.logs
-                ? transaction.logs[transaction.logs.length - 1]
+                ? transaction.logs.some((log) =>
+                    log.includes('SlippageToleranceExceeded'),
+                  )
+                  ? 'Slippage tolerance exceeded. Please increase slippage'
+                  : transaction.logs.slice(-3).join('\n')
                 : ''
             }`}
           />
