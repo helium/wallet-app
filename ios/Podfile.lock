@@ -69,15 +69,6 @@ PODS:
   - lottie-react-native (6.7.0):
     - lottie-ios (~> 4.4.1)
     - React-Core
-  - MapboxCommon (23.5.0)
-  - MapboxCoreMaps (10.13.1):
-    - MapboxCommon (~> 23.5)
-  - MapboxMaps (10.13.1):
-    - MapboxCommon (= 23.5.0)
-    - MapboxCoreMaps (= 10.13.1)
-    - MapboxMobileEvents (= 1.0.10)
-    - Turf (~> 2.0)
-  - MapboxMobileEvents (1.0.10)
   - maplibre-react-native (10.0.0-alpha.2):
     - maplibre-react-native/DynamicLibrary (= 10.0.0-alpha.2)
     - React
@@ -497,17 +488,6 @@ PODS:
     - React
   - RNLocalize (2.2.3):
     - React-Core
-  - rnmapbox-maps (10.0.7-rc.0):
-    - MapboxMaps (~> 10.13.1)
-    - React
-    - React-Core
-    - rnmapbox-maps/DynamicLibrary (= 10.0.7-rc.0)
-    - Turf
-  - rnmapbox-maps/DynamicLibrary (10.0.7-rc.0):
-    - MapboxMaps (~> 10.13.1)
-    - React
-    - React-Core
-    - Turf
   - RNOS (1.2.6):
     - React
   - RNPermissions (3.9.2):
@@ -555,7 +535,6 @@ PODS:
   - TcpSockets (3.3.2):
     - React
   - Toast (4.0.0)
-  - Turf (2.7.0)
   - Yoga (1.14.0)
   - ZXingObjC/Core (3.6.9)
   - ZXingObjC/OneD (3.6.9):
@@ -647,7 +626,6 @@ DEPENDENCIES:
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNICloudStore (from `../node_modules/react-native-icloudstore`)
   - RNLocalize (from `../node_modules/react-native-localize`)
-  - "rnmapbox-maps (from `../node_modules/@rnmapbox/maps`)"
   - RNOS (from `../node_modules/react-native-os`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReactNativeSharedGroupPreferences (from `../node_modules/react-native-shared-group-preferences`)
@@ -666,16 +644,11 @@ SPEC REPOS:
     - Charts
     - fmt
     - libevent
-    - MapboxCommon
-    - MapboxCoreMaps
-    - MapboxMaps
-    - MapboxMobileEvents
     - MultiplatformBleAdapter
     - OneSignalXCFramework
     - SwiftAlgorithms
     - SwiftyJSON
     - Toast
-    - Turf
     - ZXingObjC
 
 EXTERNAL SOURCES:
@@ -837,8 +810,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-icloudstore"
   RNLocalize:
     :path: "../node_modules/react-native-localize"
-  rnmapbox-maps:
-    :path: "../node_modules/@rnmapbox/maps"
   RNOS:
     :path: "../node_modules/react-native-os"
   RNPermissions:
@@ -892,10 +863,6 @@ SPEC CHECKSUMS:
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   lottie-ios: e047b1d2e6239b787cc5e9755b988869cf190494
   lottie-react-native: e3205322282d72e23efb3bff3287d0bd16fb1b01
-  MapboxCommon: fdf7fd31c90b7b607cd9c63e37797f023c01d860
-  MapboxCoreMaps: 24270c7c6b8cb71819fc2f3c549db9620ee4d019
-  MapboxMaps: cb76511b98d3b95c74b0771ed105bc69f30ace6b
-  MapboxMobileEvents: de50b3a4de180dd129c326e09cd12c8adaaa46d6
   maplibre-react-native: beef649402d352d1063f5a1a9a9f7b274c8550d1
   MultiplatformBleAdapter: 5a6a897b006764392f9cef785e4360f54fb9477d
   OneSignalXCFramework: 81ceac017a290f23793443323090cfbe888f74ea
@@ -951,7 +918,6 @@ SPEC CHECKSUMS:
   RNGestureHandler: 071d7a9ad81e8b83fe7663b303d132406a7d8f39
   RNICloudStore: bc6e225811637c09bd1eb055d6cd7448e61cd451
   RNLocalize: a64514b46a01375fdfae9349036b4dc7130333b5
-  rnmapbox-maps: 3553325eec9e1501942bbb28702b3a44457961d2
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNPermissions: 2af759cf053542b2b4b3c4cf9f43874796106f2c
   RNReactNativeSharedGroupPreferences: de0121a4224c267bc7e9fb16c398f3f087c8da81
@@ -964,10 +930,9 @@ SPEC CHECKSUMS:
   SwiftyJSON: 36413e04c44ee145039d332b4f4e2d3e8d6c4db7
   TcpSockets: 14306fb79f9750ea7d2ddd02d8bed182abb01797
   Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
-  Turf: 13d1a92d969ca0311bbc26e8356cca178ce95da2
   Yoga: cd7d7f509dbfac14ee7f31a6c750acb957cd5022
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: ca81fc3ff2cc73a5ab3e1674a7d2281321c928fb
+PODFILE CHECKSUM: 52c87942416cf44bc98d891288a0683d916cb850
 
 COCOAPODS: 1.15.2

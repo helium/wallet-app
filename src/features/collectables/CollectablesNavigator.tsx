@@ -21,7 +21,7 @@ import NftMetadataScreen from './NftMetadataScreen'
 import SettingUpAntennaScreen from './SettingUpAntennaScreen'
 import TransferCollectableScreen from './TransferCollectableScreen'
 import TransferCompleteScreen from './TransferCompleteScreen'
-import HotspotMapScreen from './hotspotMap/HotspotMapScreen'
+import HotspotMapScreen from './HotspotMapScreen'
 
 const CollectablesStack = createStackNavigator()
 
