@@ -19,9 +19,9 @@ export type CollectableStackParamList = {
   HotspotDetailsScreen: {
     collectable: HotspotWithPendingRewards
   }
-  AssertLocationScreen: {
+  /*   AssertLocationScreen: {
     collectable: HotspotWithPendingRewards
-  }
+  } */
   AntennaSetupScreen: {
     collectable: HotspotWithPendingRewards
   }
