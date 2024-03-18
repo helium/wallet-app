@@ -208,7 +208,7 @@ const WalletSignBottomSheetTransaction = ({
                 ? transaction.logs.some((log) =>
                     log.includes('SlippageToleranceExceeded'),
                   )
-                  ? 'Slippage tolerance exceeded. Please increase slippage'
+                  ? t('browserScreen.slippageToleranceExceeded')
                   : transaction.logs.slice(-3).join('\n')
                 : ''
             }`}
