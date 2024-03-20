@@ -4534,6 +4534,11 @@
   dependencies:
     "@babel/types" "^7.20.7"
 
+"@types/base-64@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@types/base-64/-/base-64-1.0.2.tgz#f7bc80d242306f20c57f076d79d1efe2d31032ca"
+  integrity sha512-uPgKMmM9fmn7I+Zi6YBqctOye4SlJsHKcisjHIMWpb2YKZRc36GpKyNuQ03JcT+oNXg1m7Uv4wU94EVltn8/cw==
+
 "@types/bluebird@*":
   version "3.5.39"
   resolved "https://registry.yarnpkg.com/@types/bluebird/-/bluebird-3.5.39.tgz#6aaf8bcbf005bb091d06ddaa0f620be078bf6a73"

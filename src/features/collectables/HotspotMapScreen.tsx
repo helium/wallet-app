@@ -17,11 +17,11 @@ import {
   keyToAssetForAsset,
   mobileInfoKey,
 } from '@helium/helium-entity-manager-sdk'
+import { featureCollection, feature, Point } from '@turf/helpers'
 import { chunks } from '@helium/spl-utils'
 import useHotspots from '@hooks/useHotspots'
 import MapLibreGL from '@maplibre/maplibre-react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { featureCollection, polygon } from '@turf/helpers'
 import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY } from '@utils/constants'
 import { parseH3BNLocation } from '@utils/h3'
 import {
@@ -43,37 +43,6 @@ import {
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotMapScreen'>
 
-const calculateHexagonVertices = (center: [number, number], radius: number) => {
-  const vertices = []
-  // eslint-disable-next-line no-plusplus
-  for (let i = 0; i < 6; i++) {
-    const angleDeg = 60 * i // Hexagon angle offset
-    const angleRad = (Math.PI / 180) * angleDeg
-    vertices.push([
-      center[0] + radius * Math.cos(angleRad),
-      center[1] + radius * Math.sin(angleRad),
-    ])
-  }
-  vertices.push(vertices[0]) // Close the polygon by repeating the first vertex
-  return vertices
-}
-
-// Function to create a hexagon FeatureCollection from an array of { location: number[] }
-const createHexagonFeatureCollection = (
-  hexes: { location: number[] }[],
-  hexRadius: number,
-) => {
-  const hexagonFeatures = hexes.map(({ location }) => {
-    const hexagonVertices = calculateHexagonVertices(
-      [location[1], location[0]],
-      hexRadius,
-    )
-    return polygon([hexagonVertices], {})
-  })
-
-  return featureCollection(hexagonFeatures)
-}
-
 const HotspotMapScreen = () => {
   const { t } = useTranslation()
   const route = useRoute<Route>()
@@ -83,6 +52,7 @@ const HotspotMapScreen = () => {
   const userLocation = useRef<MapLibreGL.UserLocation>(null)
   const navigation = useNavigation<CollectableNavigationProp>()
   const [safeEdges, backEdges] = [['bottom'], ['top']] as Edge[][]
+  const [hotspotType, setHotspotType] = useState<'IOT' | 'MOBILE'>('IOT')
   const [loadingInfos, setLoadingInfos] = useState(false)
   const [hexBuckets, setHexBuckets] = useState<{ [key: string]: string[] }>({})
   const [selectedHex, setSelectedHex] = useState()
@@ -110,19 +80,18 @@ const HotspotMapScreen = () => {
           (kta) => decodeEntityKey(kta.entityKey, kta.keySerialization)!,
         )
 
-        const type = 'IOT'
         const infoKeys = entityKeys.map(
           (ek) =>
             ({
               IOT: iotInfoKey(IOT_CONFIG_KEY, ek)[0],
               MOBILE: mobileInfoKey(MOBILE_CONFIG_KEY, ek)[0],
-            }[type]),
+            }[hotspotType]),
         )
 
-        const infos =
-          type === 'IOT'
-            ? await getCachedIotInfos(hemProgram, infoKeys)
-            : await getCachedMobileInfos(hemProgram, infoKeys)
+        const infos = await {
+          IOT: getCachedIotInfos(hemProgram, infoKeys),
+          MOBILE: getCachedMobileInfos(hemProgram, infoKeys),
+        }[hotspotType]
 
         setHexBuckets(
           infos.reduce(
@@ -149,19 +118,24 @@ const HotspotMapScreen = () => {
     fetchingMore,
     onEndReached,
     anchorProvider,
+    hotspotType,
     hotspotsWithMeta,
     setLoadingInfos,
     setHexBuckets,
   ])
 
-  const hexsFeature = useMemo(() => {
-    return createHexagonFeatureCollection(
-      Object.keys(hexBuckets).map((h) => ({
-        location: parseH3BNLocation(new BN(h)),
-      })),
-      0.0005,
-    )
-  }, [hexBuckets])
+  const hexsFeature = useMemo(
+    () =>
+      featureCollection(
+        Object.keys(hexBuckets).map((h) =>
+          feature({
+            type: 'Point',
+            coordinates: parseH3BNLocation(new BN(h)).reverse(),
+          } as Point),
+        ),
+      ),
+    [hexBuckets],
+  )
 
   const isLoading = useMemo(
     () => loading || fetchingMore || !onEndReached || loadingInfos,
@@ -183,8 +157,8 @@ const HotspotMapScreen = () => {
   }, [])
 
   const handleToggleType = useCallback(() => {
-    console.log('TODO: Implement handleToggleType')
-  }, [])
+    setHotspotType(hotspotType === 'IOT' ? 'MOBILE' : 'IOT')
+  }, [hotspotType, setHotspotType])
 
   const handleHexClick = (event) => {
     // You can access the clicked hexagon properties through event.features
@@ -215,16 +189,25 @@ const HotspotMapScreen = () => {
             <CircleLoader loaderSize={24} color="white" />
           </ReAnimatedBlurBox>
           <Map camera={camera} userLocation={userLocation}>
+            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+            {/* @ts-ignore */}
+            <MapLibreGL.Images
+              images={{
+                iotHex: require('@assets/images/mapIotHex.png'),
+                mobileHex: require('@assets/images/mapMobileHex.png'),
+              }}
+            />
             <MapLibreGL.ShapeSource
-              id="hexagons"
-              shape={hexsFeature}
+              id="hexsFeature"
               onPress={handleHexClick}
+              shape={hexsFeature}
             >
-              <MapLibreGL.FillLayer
-                id="hexagonLayer"
+              <MapLibreGL.SymbolLayer
+                id="hexs"
                 style={{
-                  fillColor: '#3B82F6',
-                  fillOpacity: 0.7,
+                  iconImage: hotspotType === 'IOT' ? 'iotHex' : 'mobileHex',
+                  iconOpacity: 0.6,
+                  iconAllowOverlap: false,
                 }}
               />
             </MapLibreGL.ShapeSource>

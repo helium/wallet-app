@@ -1221,7 +1221,7 @@ export async function getCachedMobileInfos(
       false,
     )
   )
-    .map((iotInfo) => iotInfo?.info)
+    .map((mobileInfo) => mobileInfo?.info)
     .filter(truthy)
 }
 

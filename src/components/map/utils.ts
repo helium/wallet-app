@@ -1,6 +1,7 @@
 import { ViewProps } from 'react-native'
 import { CameraBounds } from '@maplibre/maplibre-react-native'
 import { CameraStop } from '@maplibre/maplibre-react-native/javascript/components/Camera'
+import base64 from 'base-64'
 
 export const MIN_MAP_ZOOM = 2
 export const MAX_MAP_ZOOM = 14
