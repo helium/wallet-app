@@ -62,13 +62,13 @@ import {
 } from './collectablesTypes'
 
 const BUTTON_HEIGHT = 65
-type Route = RouteProp<CollectableStackParamList, 'AssertLocationScreen'>
+type Route = RouteProp<CollectableStackParamList, 'AssertLocationScreen'>x
 
 const AssertLocationScreen = () => {
   const { t } = useTranslation()
   const route = useRoute<Route>()
   const { collectable } = route.params
-  const entityKey = useEntityKey(collectable)
+const entityKey = useEntityKey(collectable)
   const { info: iotInfoAcc } = useIotInfo(entityKey)
   const { info: mobileInfoAcc } = useMobileInfo(entityKey)
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])

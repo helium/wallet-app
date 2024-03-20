@@ -1,8 +1,7 @@
-import { Box, FabButton } from '@components'
 import useMount from '@hooks/useMount'
 import MapLibreGL from '@maplibre/maplibre-react-native'
 import { Position } from '@turf/helpers'
-import React, { PropsWithChildren, useCallback, useRef } from 'react'
+import React, { PropsWithChildren } from 'react'
 import Config from 'react-native-config'
 import { mapLayers } from './mapLayers'
 import {
@@ -14,12 +13,12 @@ import {
 
 const Map: React.FC<
   PropsWithChildren<{
+    map?: React.RefObject<MapLibreGL.MapView>
+    camera?: React.RefObject<MapLibreGL.Camera>
+    userLocation?: React.RefObject<MapLibreGL.UserLocation>
     centerCoordinate?: Position
   }>
-> = ({ children, centerCoordinate }) => {
-  const camera = useRef<MapLibreGL.Camera>(null)
-  const userLocation = useRef<MapLibreGL.UserLocation>(null)
-
+> = ({ children, map, camera, userLocation, centerCoordinate }) => {
   useMount(() => {
     // Will be null for most users (only Mapbox authenticates this way).
     // Required on Android. See Android installation notes.
@@ -38,67 +37,30 @@ const Map: React.FC<
     layers: mapLayers,
   })
 
-  const handleUserLocationPress = useCallback(() => {
-    if (camera?.current && userLocation?.current?.state.coordinates) {
-      camera.current.setCamera({
-        animationDuration: 500,
-        zoomLevel: MAX_MAP_ZOOM,
-        centerCoordinate: userLocation.current.state.coordinates,
-      })
-    }
-  }, [userLocation, camera])
-
   return (
-    <Box
-      flexGrow={1}
-      justifyContent="center"
-      alignItems="center"
-      borderRadius="l"
-      backgroundColor="white"
-      overflow="hidden"
-      position="relative"
+    <MapLibreGL.MapView
+      ref={map}
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      style={MAP_CONTAINER_STYLE}
+      logoEnabled={false}
+      attributionEnabled={false}
+      rotateEnabled={false}
+      styleJSON={mapStyle}
     >
-      <MapLibreGL.MapView
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        style={MAP_CONTAINER_STYLE}
-        logoEnabled={false}
-        rotateEnabled={false}
-        styleJSON={mapStyle}
-      >
-        <MapLibreGL.Camera
-          ref={camera}
-          defaultSettings={{
-            ...INITIAL_MAP_VIEW_STATE,
-            centerCoordinate:
-              centerCoordinate || INITIAL_MAP_VIEW_STATE.centerCoordinate,
-          }}
-          minZoomLevel={MIN_MAP_ZOOM}
-          maxZoomLevel={MAX_MAP_ZOOM}
-        />
-        <MapLibreGL.UserLocation ref={userLocation} />
-        {children}
-      </MapLibreGL.MapView>
-      <Box
-        flexDirection="row"
-        justifyContent="center"
-        alignItems="center"
-        position="absolute"
-        bottom={8}
-        right={8}
-      >
-        <FabButton
-          icon="mapUserLocation"
-          backgroundColor="white"
-          backgroundColorOpacity={0.3}
-          backgroundColorOpacityPressed={0.5}
-          width={36}
-          height={36}
-          justifyContent="center"
-          onPress={handleUserLocationPress}
-        />
-      </Box>
-    </Box>
+      <MapLibreGL.Camera
+        ref={camera}
+        defaultSettings={{
+          ...INITIAL_MAP_VIEW_STATE,
+          centerCoordinate:
+            centerCoordinate || INITIAL_MAP_VIEW_STATE.centerCoordinate,
+        }}
+        minZoomLevel={MIN_MAP_ZOOM}
+        maxZoomLevel={MAX_MAP_ZOOM}
+      />
+      <MapLibreGL.UserLocation ref={userLocation} />
+      {children}
+    </MapLibreGL.MapView>
   )
 }
 

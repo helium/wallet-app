@@ -10,10 +10,7 @@ import ImageBox from '@components/ImageBox'
 import ListItem from '@components/ListItem'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
-import {
-  makerApprovalKey,
-  rewardableEntityConfigKey,
-} from '@helium/helium-entity-manager-sdk'
+import { makerApprovalKey } from '@helium/helium-entity-manager-sdk'
 import { NetworkType } from '@helium/onboarding'
 import { toNumber } from '@helium/spl-utils'
 import useCopyText from '@hooks/useCopyText'
@@ -40,11 +37,7 @@ import { Edge } from 'react-native-safe-area-context'
 import { SvgUri } from 'react-native-svg'
 import 'text-encoding-polyfill'
 import { useSolana } from '../../solana/SolanaProvider'
-import {
-  IOT_SUB_DAO_KEY,
-  MOBILE_SUB_DAO_KEY,
-  Mints,
-} from '../../utils/constants'
+import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY, Mints } from '../../utils/constants'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import { ww } from '../../utils/layout'
 import {
@@ -53,11 +46,6 @@ import {
 } from './collectablesTypes'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotDetailsScreen'>
-const [iotConfigKey] = rewardableEntityConfigKey(IOT_SUB_DAO_KEY, 'IOT')
-const [mobileConfigKey] = rewardableEntityConfigKey(
-  MOBILE_SUB_DAO_KEY,
-  'MOBILE',
-)
 
 const HotspotDetailsScreen = () => {
   const route = useRoute<Route>()
@@ -88,8 +76,8 @@ const HotspotDetailsScreen = () => {
     }
 
     return [
-      makerApprovalKey(iotConfigKey, metadata.updateAuthority)[0],
-      makerApprovalKey(mobileConfigKey, metadata.updateAuthority)[0],
+      makerApprovalKey(IOT_CONFIG_KEY, metadata.updateAuthority)[0],
+      makerApprovalKey(MOBILE_CONFIG_KEY, metadata.updateAuthority)[0],
     ]
   }, [metadata])
 

@@ -31,6 +31,7 @@ const useHotspots = (): {
   const hotspots = useSelector(
     (state: RootState) => state.hotspots[cluster] || {},
   )
+
   const page = useMemo(() => {
     if (
       !currentAccount?.solanaAddress ||
@@ -39,6 +40,7 @@ const useHotspots = (): {
       return 0
     return hotspots[currentAccount?.solanaAddress].page
   }, [currentAccount?.solanaAddress, hotspots])
+
   const totalHotspots = useMemo(() => {
     if (
       !currentAccount?.solanaAddress ||
@@ -131,6 +133,7 @@ const useHotspots = (): {
       }, new BN(0)),
     [hotspotsWithMeta],
   )
+
   const pendingMobileRewards = useMemo(
     () =>
       hotspotsWithMeta?.reduce((acc, hotspot) => {

@@ -21,7 +21,6 @@ import {
   keyToAssetForAsset,
   keyToAssetKey,
   mobileInfoKey,
-  rewardableEntityConfigKey,
   updateIotMetadata,
   updateMobileMetadata,
 } from '@helium/helium-entity-manager-sdk'
@@ -114,10 +113,10 @@ import { WrappedConnection } from './WrappedConnection'
 import { solAddressIsValid } from './accountUtils'
 import {
   DAO_KEY,
+  IOT_CONFIG_KEY,
   IOT_LAZY_KEY,
-  IOT_SUB_DAO_KEY,
+  MOBILE_CONFIG_KEY,
   MOBILE_LAZY_KEY,
-  MOBILE_SUB_DAO_KEY,
   Mints,
 } from './constants'
 import { getH3Location } from './h3'
@@ -1180,6 +1179,52 @@ export async function getCachedKeyToAssets(
     .filter(truthy)
 }
 
+export async function getCachedIotInfos(
+  hemProgram: Program<HeliumEntityManager>,
+  infoKeys: PublicKey[],
+) {
+  const cache = await getSingleton(hemProgram.provider.connection)
+  return (
+    await cache.searchMultiple(
+      infoKeys,
+      (pubkey, account) => ({
+        pubkey,
+        account,
+        info: hemProgram.coder.accounts.decode<
+          IdlAccounts<HeliumEntityManager>['iotHotspotInfoV0']
+        >('IotHotspotInfoV0', account.data),
+      }),
+      true,
+      false,
+    )
+  )
+    .map((iotInfo) => iotInfo?.info)
+    .filter(truthy)
+}
+
+export async function getCachedMobileInfos(
+  hemProgram: Program<HeliumEntityManager>,
+  infoKeys: PublicKey[],
+) {
+  const cache = await getSingleton(hemProgram.provider.connection)
+  return (
+    await cache.searchMultiple(
+      infoKeys,
+      (pubkey, account) => ({
+        pubkey,
+        account,
+        info: hemProgram.coder.accounts.decode<
+          IdlAccounts<HeliumEntityManager>['mobileHotspotInfoV0']
+        >('MobileHotspotInfoV0', account.data),
+      }),
+      true,
+      false,
+    )
+  )
+    .map((iotInfo) => iotInfo?.info)
+    .filter(truthy)
+}
+
 export async function annotateWithPendingRewards(
   provider: AnchorProvider,
   hotspots: CompressedNFT[],
@@ -1763,9 +1808,8 @@ export const updateEntityInfoTxn = async ({
     const assetId = keyToAsset.asset
 
     if (type === 'IOT') {
-      const [iotConfigKey] = rewardableEntityConfigKey(IOT_SUB_DAO_KEY, 'IOT')
       const iotInfo = await program.account.iotHotspotInfoV0.fetchNullable(
-        iotInfoKey(iotConfigKey, entityKey)[0],
+        iotInfoKey(IOT_CONFIG_KEY, entityKey)[0],
       )
 
       if (!iotInfo) {
@@ -1779,23 +1823,16 @@ export const updateEntityInfoTxn = async ({
           location,
           elevation: elevation || null,
           gain,
-          rewardableEntityConfig: rewardableEntityConfigKey(
-            IOT_SUB_DAO_KEY,
-            'IOT',
-          )[0],
+          rewardableEntityConfig: IOT_CONFIG_KEY,
         })
       ).transaction()
     }
 
     if (type === 'MOBILE') {
-      const [mobileConfigKey] = rewardableEntityConfigKey(
-        MOBILE_SUB_DAO_KEY,
-        'MOBILE',
-      )
       const mobileInfo =
         await program.account.mobileHotspotInfoV0.fetchNullable(
           (
-            await mobileInfoKey(mobileConfigKey, entityKey)
+            await mobileInfoKey(MOBILE_CONFIG_KEY, entityKey)
           )[0],
         )
 
@@ -1808,10 +1845,7 @@ export const updateEntityInfoTxn = async ({
           program,
           assetId,
           location,
-          rewardableEntityConfig: rewardableEntityConfigKey(
-            MOBILE_SUB_DAO_KEY,
-            'MOBILE',
-          )[0],
+          rewardableEntityConfig: MOBILE_CONFIG_KEY,
         })
       ).transaction()
     }
