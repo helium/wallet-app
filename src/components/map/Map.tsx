@@ -17,8 +17,18 @@ const Map: React.FC<
     camera?: React.RefObject<MapLibreGL.Camera>
     userLocation?: React.RefObject<MapLibreGL.UserLocation>
     centerCoordinate?: Position
+    mapProps?: Omit<React.ComponentProps<typeof MapLibreGL.MapView>, 'children'>
+    cameraProps?: React.ComponentProps<typeof MapLibreGL.Camera>
   }>
-> = ({ children, map, camera, userLocation, centerCoordinate }) => {
+> = ({
+  children,
+  map,
+  camera,
+  userLocation,
+  centerCoordinate,
+  mapProps = {},
+  cameraProps = {},
+}) => {
   useMount(() => {
     // Will be null for most users (only Mapbox authenticates this way).
     // Required on Android. See Android installation notes.
@@ -44,9 +54,11 @@ const Map: React.FC<
       // @ts-ignore
       style={MAP_CONTAINER_STYLE}
       logoEnabled={false}
+      pitchEnabled={false}
       attributionEnabled={false}
       rotateEnabled={false}
       styleJSON={mapStyle}
+      {...mapProps}
     >
       <MapLibreGL.Camera
         ref={camera}
@@ -57,6 +69,7 @@ const Map: React.FC<
         }}
         minZoomLevel={MIN_MAP_ZOOM}
         maxZoomLevel={MAX_MAP_ZOOM}
+        {...cameraProps}
       />
       <MapLibreGL.UserLocation ref={userLocation} />
       {children}

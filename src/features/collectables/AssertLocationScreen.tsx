@@ -490,7 +490,7 @@ const entityKey = useEntityKey(collectable)
                   if (!location || location.length < 2) return null
 
                   return (
-                    <MapboxGL.MarkerView
+                    <MapboxGL.eView
                       key={`MarkerView-${i + 1}`}
                       coordinate={[
                         i === 0 ? location[0] + 0.001 : location[0],
@@ -522,7 +522,7 @@ const entityKey = useEntityKey(collectable)
                           borderRadius="round"
                         />
                       )}
-                    </MapboxGL.MarkerView>
+                    </MapboxGL.eView>
                   )
                 })
                 .filter(Boolean)}

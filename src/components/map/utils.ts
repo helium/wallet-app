@@ -1,7 +1,6 @@
 import { ViewProps } from 'react-native'
 import { CameraBounds } from '@maplibre/maplibre-react-native'
 import { CameraStop } from '@maplibre/maplibre-react-native/javascript/components/Camera'
-import base64 from 'base-64'
 
 export const MIN_MAP_ZOOM = 2
 export const MAX_MAP_ZOOM = 14
@@ -11,7 +10,13 @@ const WORLD_BOUNDS: CameraBounds = {
   sw: [129.767893, -30.955724],
 }
 
-export const INITIAL_MAP_VIEW_STATE: CameraStop = {
+export const INITIAL_MAP_VIEW_STATE: {
+  centerCoordinate: [number, number]
+  bounds: CameraBounds
+  zoomLevel: number
+  animationDuration: number
+  cameraStop?: CameraStop
+} = {
   centerCoordinate: [-122.419418, 37.774929],
   bounds: WORLD_BOUNDS,
   zoomLevel: MAX_MAP_ZOOM / 1.2,

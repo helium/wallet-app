@@ -9,7 +9,11 @@ import {
   SafeAreaBox,
   Text,
 } from '@components'
-import { MAX_MAP_ZOOM } from '@components/map/utils'
+import {
+  INITIAL_MAP_VIEW_STATE,
+  MAX_MAP_ZOOM,
+  MIN_MAP_ZOOM,
+} from '@components/map/utils'
 import {
   decodeEntityKey,
   init,
@@ -48,10 +52,12 @@ const HotspotMapScreen = () => {
   const route = useRoute<Route>()
   const { hotspot } = route.params || {}
   const { anchorProvider } = useSolana()
+  const map = useRef<MapLibreGL.MapView>(null)
   const camera = useRef<MapLibreGL.Camera>(null)
   const userLocation = useRef<MapLibreGL.UserLocation>(null)
   const navigation = useNavigation<CollectableNavigationProp>()
   const [safeEdges, backEdges] = [['bottom'], ['top']] as Edge[][]
+  const [zoomLevel, setZoomLevel] = useState(INITIAL_MAP_VIEW_STATE.zoomLevel)
   const [hotspotType, setHotspotType] = useState<'IOT' | 'MOBILE'>('IOT')
   const [loadingInfos, setLoadingInfos] = useState(false)
   const [hexBuckets, setHexBuckets] = useState<{ [key: string]: string[] }>({})
@@ -128,10 +134,13 @@ const HotspotMapScreen = () => {
     () =>
       featureCollection(
         Object.keys(hexBuckets).map((h) =>
-          feature({
-            type: 'Point',
-            coordinates: parseH3BNLocation(new BN(h)).reverse(),
-          } as Point),
+          feature(
+            {
+              type: 'Point',
+              coordinates: parseH3BNLocation(new BN(h)).reverse(),
+            },
+            { id: h },
+          ),
         ),
       ),
     [hexBuckets],
@@ -151,6 +160,15 @@ const HotspotMapScreen = () => {
       })
     }
   }, [userLocation, camera])
+
+  const handleRegionChange = useCallback(async () => {
+    if (map?.current) {
+      const zoom = await map.current.getZoom()
+      if (zoomLevel !== zoom) {
+        setZoomLevel(zoom)
+      }
+    }
+  }, [map, zoomLevel, setZoomLevel])
 
   const handleLegendPress = useCallback(() => {
     console.log('TODO: Implement handleLegendPress')
@@ -188,7 +206,14 @@ const HotspotMapScreen = () => {
           >
             <CircleLoader loaderSize={24} color="white" />
           </ReAnimatedBlurBox>
-          <Map camera={camera} userLocation={userLocation}>
+          <Map
+            map={map}
+            camera={camera}
+            userLocation={userLocation}
+            mapProps={{
+              onRegionDidChange: handleRegionChange,
+            }}
+          >
             {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
             {/* @ts-ignore */}
             <MapLibreGL.Images
@@ -207,7 +232,7 @@ const HotspotMapScreen = () => {
                   id="hexs"
                   style={{
                     iconImage: hotspotType === 'IOT' ? 'iotHex' : 'mobileHex',
-                    iconSize: 0.3,
+                    iconSize: zoomLevel / (MAX_MAP_ZOOM * 4),
                     iconAllowOverlap: false,
                   }}
                 />
