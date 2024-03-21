@@ -197,20 +197,22 @@ const HotspotMapScreen = () => {
                 mobileHex: require('@assets/images/mapMobileHex.png'),
               }}
             />
-            <MapLibreGL.ShapeSource
-              id="hexsFeature"
-              onPress={handleHexClick}
-              shape={hexsFeature}
-            >
-              <MapLibreGL.SymbolLayer
-                id="hexs"
-                style={{
-                  iconImage: hotspotType === 'IOT' ? 'iotHex' : 'mobileHex',
-                  iconOpacity: 0.6,
-                  iconAllowOverlap: false,
-                }}
-              />
-            </MapLibreGL.ShapeSource>
+            {!isLoading && (
+              <MapLibreGL.ShapeSource
+                id="hexsFeature"
+                onPress={handleHexClick}
+                shape={hexsFeature}
+              >
+                <MapLibreGL.SymbolLayer
+                  id="hexs"
+                  style={{
+                    iconImage: hotspotType === 'IOT' ? 'iotHex' : 'mobileHex',
+                    iconSize: 0.3,
+                    iconAllowOverlap: false,
+                  }}
+                />
+              </MapLibreGL.ShapeSource>
+            )}
           </Map>
           <Box
             flexDirection="row"
@@ -239,7 +241,7 @@ const HotspotMapScreen = () => {
                 backgroundColorOpacityPressed={0.5}
                 justifyContent="center"
                 size={36}
-                title="Iot Hotspots"
+                title={`${hotspotType} Hotspots`}
                 onPress={handleToggleType}
               />
             </Box>
