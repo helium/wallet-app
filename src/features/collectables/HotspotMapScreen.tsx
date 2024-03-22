@@ -181,11 +181,11 @@ const HotspotMapScreen = () => {
   useEffect(() => {
     if (activeHex || legendVisible) {
       if (activeHex) {
-        // TODO: figure out proper offset for centerCoordiantes based on zoomLevel and drawer height
         const cords = parseH3BNLocation(new BN(activeHex)).reverse()
         cameraRef.current?.setCamera({
           centerCoordinate: [
             cords[0],
+            // TODO: figure out proper offset for centerCoordiantes based on zoomLevel and drawer height
             cords[1] - (MAX_MAP_ZOOM - zoomLevel) * 0.02,
           ],
         })
