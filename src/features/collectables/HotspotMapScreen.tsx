@@ -1,3 +1,5 @@
+import BackArrow from '@assets/images/backArrow.svg'
+import Hex from '@assets/images/hex.svg'
 import {
   Box,
   CircleLoader,
@@ -9,11 +11,13 @@ import {
   SafeAreaBox,
   Text,
 } from '@components'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { INITIAL_MAP_VIEW_STATE, MAX_MAP_ZOOM } from '@components/map/utils'
 import {
-  INITIAL_MAP_VIEW_STATE,
-  MAX_MAP_ZOOM,
-  MIN_MAP_ZOOM,
-} from '@components/map/utils'
+  BottomSheetModal,
+  BottomSheetModalProvider,
+  BottomSheetView,
+} from '@gorhom/bottom-sheet'
 import {
   decodeEntityKey,
   init,
@@ -21,11 +25,13 @@ import {
   keyToAssetForAsset,
   mobileInfoKey,
 } from '@helium/helium-entity-manager-sdk'
-import { featureCollection, feature, Point } from '@turf/helpers'
 import { chunks } from '@helium/spl-utils'
 import useHotspots from '@hooks/useHotspots'
 import MapLibreGL from '@maplibre/maplibre-react-native'
+import OnPressEvent from '@maplibre/maplibre-react-native/javascript/types/OnPressEvent'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useBackgroundStyle, useColors } from '@theme/themeHooks'
+import { Point, feature, featureCollection } from '@turf/helpers'
 import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY } from '@utils/constants'
 import { parseH3BNLocation } from '@utils/h3'
 import {
@@ -44,6 +50,7 @@ import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
+import { HotspotMapLegend } from './HotspotMapLegend'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotMapScreen'>
 
@@ -52,17 +59,25 @@ const HotspotMapScreen = () => {
   const route = useRoute<Route>()
   const { hotspot } = route.params || {}
   const { anchorProvider } = useSolana()
-  const map = useRef<MapLibreGL.MapView>(null)
-  const camera = useRef<MapLibreGL.Camera>(null)
-  const userLocation = useRef<MapLibreGL.UserLocation>(null)
+  const colors = useColors()
+  const mapRef = useRef<MapLibreGL.MapView>(null)
+  const cameraRef = useRef<MapLibreGL.Camera>(null)
+  const userLocationRef = useRef<MapLibreGL.UserLocation>(null)
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+  const bottomSheetStyle = useBackgroundStyle('surfaceSecondary')
   const navigation = useNavigation<CollectableNavigationProp>()
   const [safeEdges, backEdges] = [['bottom'], ['top']] as Edge[][]
   const [zoomLevel, setZoomLevel] = useState(INITIAL_MAP_VIEW_STATE.zoomLevel)
-  const [hotspotType, setHotspotType] = useState<'IOT' | 'MOBILE'>('IOT')
+  const [networkType, setNetworkType] = useState<'IOT' | 'MOBILE'>('IOT')
   const [loadingInfos, setLoadingInfos] = useState(false)
   const [hexBuckets, setHexBuckets] = useState<{ [key: string]: string[] }>({})
-  const [selectedHex, setSelectedHex] = useState()
-  const [selectedHotspot, setSelectedHotspot] = useState()
+  const [activeHex, setActiveHex] = useState(null)
+  const [activeHotspot, setActiveHotspot] = useState(null)
+  const [legendVisible, setLegendVisible] = useState(false)
+  const snapPoints = useMemo(
+    () => (legendVisible ? [10, 120] : [10, '55%', '90%']),
+    [legendVisible],
+  )
   const { hotspotsWithMeta, fetchMore, fetchingMore, loading, onEndReached } =
     useHotspots()
 
@@ -77,6 +92,7 @@ const HotspotMapScreen = () => {
       setLoadingInfos(true)
       const hemProgram = await init(anchorProvider)
 
+      // TODO: Properly chunk the hotspots to buckets.
       // eslint-disable-next-line no-restricted-syntax
       for (const chunk of chunks(hotspotsWithMeta, 25)) {
         const keyToAssetKeys = chunk.map((h) => keyToAssetForAsset(toAsset(h)))
@@ -91,13 +107,13 @@ const HotspotMapScreen = () => {
             ({
               IOT: iotInfoKey(IOT_CONFIG_KEY, ek)[0],
               MOBILE: mobileInfoKey(MOBILE_CONFIG_KEY, ek)[0],
-            }[hotspotType]),
+            }[networkType]),
         )
 
         const infos = await {
           IOT: getCachedIotInfos(hemProgram, infoKeys),
           MOBILE: getCachedMobileInfos(hemProgram, infoKeys),
-        }[hotspotType]
+        }[networkType]
 
         setHexBuckets(
           infos.reduce(
@@ -107,7 +123,8 @@ const HotspotMapScreen = () => {
                 ? {
                     [i.location.toString()]: [
                       ...(acc[i.location.toString()] || []),
-                      'test',
+                      // TODO: actualy set the hotspot here
+                      '0',
                     ],
                   }
                 : {}),
@@ -124,7 +141,7 @@ const HotspotMapScreen = () => {
     fetchingMore,
     onEndReached,
     anchorProvider,
-    hotspotType,
+    networkType,
     hotspotsWithMeta,
     setLoadingInfos,
     setHexBuckets,
@@ -138,50 +155,77 @@ const HotspotMapScreen = () => {
             {
               type: 'Point',
               coordinates: parseH3BNLocation(new BN(h)).reverse(),
+            } as Point,
+            {
+              id: h,
+              iconImage:
+                h === activeHex
+                  ? `${networkType.toLowerCase()}HexActive`
+                  : `${networkType.toLowerCase()}Hex`,
+              iconSize: zoomLevel * 0.02,
             },
-            { id: h },
           ),
         ),
       ),
-    [hexBuckets],
+    [hexBuckets, activeHex, networkType, zoomLevel],
+  )
+
+  useEffect(() => {
+    if (activeHex || legendVisible) {
+      if (activeHex) {
+        // TODO: figure out proper offset for centerCoordiantes based on zoomLevel and drawer height
+        cameraRef.current?.setCamera({
+          animationDuration: 500,
+          centerCoordinate: parseH3BNLocation(new BN(activeHex)).reverse(),
+        })
+      }
+      bottomSheetModalRef.current?.present()
+    } else {
+      bottomSheetModalRef.current?.dismiss()
+    }
+  }, [activeHex, legendVisible, cameraRef])
+
+  const handleUserLocationPress = useCallback(() => {
+    if (cameraRef?.current && userLocationRef?.current?.state.coordinates) {
+      cameraRef.current.setCamera({
+        animationDuration: 500,
+        zoomLevel: MAX_MAP_ZOOM,
+        centerCoordinate: userLocationRef.current.state.coordinates,
+      })
+    }
+  }, [userLocationRef, cameraRef])
+
+  const handleRegionIsChanging = useCallback(async () => {
+    // TODO: Maybe throttle this
+    if (mapRef?.current) {
+      const zoom = await mapRef.current.getZoom()
+      if (zoomLevel !== zoom) {
+        setZoomLevel(zoom)
+      }
+    }
+  }, [mapRef, zoomLevel, setZoomLevel])
+
+  const handleLegendPress = useCallback(() => {
+    setLegendVisible(true)
+  }, [setLegendVisible])
+
+  const handleToggleNetwork = useCallback(() => {
+    setNetworkType(networkType === 'IOT' ? 'MOBILE' : 'IOT')
+  }, [networkType, setNetworkType])
+
+  const handleHexClick = useCallback(
+    (event: OnPressEvent) => {
+      const hex = event.features[0]
+      setLegendVisible(false)
+      setActiveHex(hex.properties?.id)
+    },
+    [setActiveHex, setLegendVisible],
   )
 
   const isLoading = useMemo(
     () => loading || fetchingMore || !onEndReached || loadingInfos,
     [loading, fetchingMore, onEndReached, loadingInfos],
   )
-
-  const handleUserLocationPress = useCallback(() => {
-    if (camera?.current && userLocation?.current?.state.coordinates) {
-      camera.current.setCamera({
-        animationDuration: 500,
-        zoomLevel: MAX_MAP_ZOOM,
-        centerCoordinate: userLocation.current.state.coordinates,
-      })
-    }
-  }, [userLocation, camera])
-
-  const handleRegionChange = useCallback(async () => {
-    if (map?.current) {
-      const zoom = await map.current.getZoom()
-      if (zoomLevel !== zoom) {
-        setZoomLevel(zoom)
-      }
-    }
-  }, [map, zoomLevel, setZoomLevel])
-
-  const handleLegendPress = useCallback(() => {
-    console.log('TODO: Implement handleLegendPress')
-  }, [])
-
-  const handleToggleType = useCallback(() => {
-    setHotspotType(hotspotType === 'IOT' ? 'MOBILE' : 'IOT')
-  }, [hotspotType, setHotspotType])
-
-  const handleHexClick = (event) => {
-    // You can access the clicked hexagon properties through event.features
-    console.log('Clicked on hexagon', event.features)
-  }
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
@@ -207,11 +251,15 @@ const HotspotMapScreen = () => {
             <CircleLoader loaderSize={24} color="white" />
           </ReAnimatedBlurBox>
           <Map
-            map={map}
-            camera={camera}
-            userLocation={userLocation}
+            map={mapRef}
+            camera={cameraRef}
+            userLocation={userLocationRef}
             mapProps={{
-              onRegionDidChange: handleRegionChange,
+              onPress: () => {
+                setActiveHex(null)
+                setLegendVisible(false)
+              },
+              onRegionIsChanging: handleRegionIsChanging,
             }}
           >
             {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
@@ -219,7 +267,9 @@ const HotspotMapScreen = () => {
             <MapLibreGL.Images
               images={{
                 iotHex: require('@assets/images/mapIotHex.png'),
+                iotHexActive: require('@assets/images/mapIotHexActive.png'),
                 mobileHex: require('@assets/images/mapMobileHex.png'),
+                mobileHexActive: require('@assets/images/mapMobileHexActive.png'),
               }}
             />
             {!isLoading && (
@@ -231,8 +281,8 @@ const HotspotMapScreen = () => {
                 <MapLibreGL.SymbolLayer
                   id="hexs"
                   style={{
-                    iconImage: hotspotType === 'IOT' ? 'iotHex' : 'mobileHex',
-                    iconSize: zoomLevel / (MAX_MAP_ZOOM * 4),
+                    iconImage: ['get', 'iconImage'],
+                    iconSize: ['get', 'iconSize'],
                     iconAllowOverlap: false,
                   }}
                 />
@@ -241,15 +291,24 @@ const HotspotMapScreen = () => {
           </Map>
           <Box
             flexDirection="row"
-            justifyContent="space-between"
             alignItems="center"
             position="absolute"
             width="100%"
-            top={20}
+            paddingTop="l"
+            paddingLeft="ms"
+            top={0}
           >
-            <Box flexDirection="row" alignItems="center" marginHorizontal="ms">
-              <Text variant="body1">{'< Back to Hotspot List'}</Text>
-            </Box>
+            <TouchableOpacityBox
+              flexDirection="row"
+              justifyContent="center"
+              alignItems="center"
+              onPress={() => navigation.goBack()}
+            >
+              <BackArrow color="white" />
+              <Text variant="subtitle3" color="white" marginLeft="ms">
+                Back to Hotspot List
+              </Text>
+            </TouchableOpacityBox>
           </Box>
           <Box
             flexDirection="row"
@@ -259,16 +318,34 @@ const HotspotMapScreen = () => {
             width="100%"
             bottom={10}
           >
-            <Box flexDirection="row" alignItems="center" marginHorizontal="ms">
-              <FabButton
-                backgroundColor="white"
-                backgroundColorOpacity={0.3}
-                backgroundColorOpacityPressed={0.5}
+            <Box marginHorizontal="ms">
+              <TouchableOpacityBox
+                flexDirection="row"
                 justifyContent="center"
-                size={36}
-                title={`${hotspotType} Hotspots`}
-                onPress={handleToggleType}
-              />
+                alignItems="center"
+                backgroundColor={networkType === 'IOT' ? 'green950' : 'blue950'}
+                paddingRight="ms"
+                paddingLeft="s"
+                paddingVertical="sx"
+                borderRadius="round"
+                opacity={0.8}
+                activeOpacity={1}
+                onPress={handleToggleNetwork}
+              >
+                <Hex
+                  width={24}
+                  height={24}
+                  color={
+                    networkType === 'IOT' ? colors.green500 : colors.blue500
+                  }
+                />
+                <Text
+                  marginLeft="sx"
+                  color={networkType === 'IOT' ? 'green500' : 'blue500'}
+                >
+                  {networkType} Hotspots
+                </Text>
+              </TouchableOpacityBox>
             </Box>
             <Box flexDirection="row" alignItems="center" marginHorizontal="ms">
               <FabButton
@@ -281,6 +358,8 @@ const HotspotMapScreen = () => {
                 height={36}
                 justifyContent="center"
                 onPress={handleLegendPress}
+                // TODO: Make this visible when modled coverage is available
+                visible={false}
               />
               <FabButton
                 icon="mapUserLocation"
@@ -295,6 +374,30 @@ const HotspotMapScreen = () => {
             </Box>
           </Box>
         </Box>
+        <BottomSheetModalProvider>
+          <BottomSheetModal
+            ref={bottomSheetModalRef}
+            index={1}
+            snapPoints={snapPoints}
+            backgroundStyle={bottomSheetStyle}
+            handleIndicatorStyle={{ backgroundColor: colors.secondaryText }}
+          >
+            <BottomSheetView>
+              {legendVisible && <HotspotMapLegend network={networkType} />}
+              {activeHex && (
+                <>
+                  <Text color="white">
+                    Total Hotspots: {Object.values(hexBuckets).flat().length}
+                  </Text>
+                  <Text color="white">Active Hex: {activeHex}</Text>
+                  <Text color="white">
+                    Hotspots In Hex: {hexBuckets[activeHex]?.length}{' '}
+                  </Text>
+                </>
+              )}
+            </BottomSheetView>
+          </BottomSheetModal>
+        </BottomSheetModalProvider>
       </SafeAreaBox>
     </ReAnimatedBox>
   )
