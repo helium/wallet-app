@@ -54,6 +54,14 @@ import { HotspotMapLegend } from './HotspotMapLegend'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotMapScreen'>
 
+// TODO:
+// When a hotspot is passed in as a param
+// Determine if it has a iotInfo or mobileInfo
+// Based on that set the networkType and then find hex it belongs too
+// From the hexBuckets and setActiveHex to that and activeHotspot to the passed in hotspot
+// Desired data structure
+// { hex: [hotspot1, hotspot2, hotspot3] }
+
 const HotspotMapScreen = () => {
   const { t } = useTranslation()
   const route = useRoute<Route>()
@@ -75,7 +83,7 @@ const HotspotMapScreen = () => {
   const [activeHotspot, setActiveHotspot] = useState(null)
   const [legendVisible, setLegendVisible] = useState(false)
   const snapPoints = useMemo(
-    () => (legendVisible ? [10, 120] : [10, '55%', '90%']),
+    () => (legendVisible ? [120, 120] : ['55%', '55%', '90%']),
     [legendVisible],
   )
   const { hotspotsWithMeta, fetchMore, fetchingMore, loading, onEndReached } =
@@ -174,15 +182,19 @@ const HotspotMapScreen = () => {
     if (activeHex || legendVisible) {
       if (activeHex) {
         // TODO: figure out proper offset for centerCoordiantes based on zoomLevel and drawer height
+        const cords = parseH3BNLocation(new BN(activeHex)).reverse()
         cameraRef.current?.setCamera({
-          animationDuration: 500,
-          centerCoordinate: parseH3BNLocation(new BN(activeHex)).reverse(),
+          centerCoordinate: [
+            cords[0],
+            cords[1] - (MAX_MAP_ZOOM - zoomLevel) * 0.02,
+          ],
         })
       }
       bottomSheetModalRef.current?.present()
     } else {
       bottomSheetModalRef.current?.dismiss()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeHex, legendVisible, cameraRef])
 
   const handleUserLocationPress = useCallback(() => {
@@ -381,6 +393,7 @@ const HotspotMapScreen = () => {
             snapPoints={snapPoints}
             backgroundStyle={bottomSheetStyle}
             handleIndicatorStyle={{ backgroundColor: colors.secondaryText }}
+            onDismiss={() => setActiveHex(null)}
           >
             <BottomSheetView>
               {legendVisible && <HotspotMapLegend network={networkType} />}
