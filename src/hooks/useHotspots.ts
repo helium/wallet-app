@@ -166,7 +166,8 @@ const useHotspots = (): {
     pendingIotRewards,
     pendingMobileRewards,
     hotspots: hotspots[currentAccount?.solanaAddress].hotspots || [],
-    hotspotsWithMeta: hotspots[currentAccount?.solanaAddress]?.hotspotsWithMeta || [],
+    hotspotsWithMeta:
+      hotspots[currentAccount?.solanaAddress]?.hotspotsWithMeta || [],
     loading: hotspots[currentAccount?.solanaAddress].loading,
     refresh,
     fetchMore,
