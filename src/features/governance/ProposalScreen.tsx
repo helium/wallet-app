@@ -14,6 +14,8 @@ import {
 import {
   batchInstructionsToTxsWithPriorityFee,
   bulkSendTransactions,
+  populateMissingDraftInfo,
+  toVersionedTx,
 } from '@helium/spl-utils'
 import {
   useRegistrar,
@@ -194,13 +196,19 @@ export const ProposalScreen = () => {
         basePriorityFee: await getBasePriorityFee(),
       },
     )
+    const populatedTxs = await Promise.all(
+      transactions.map((tx) =>
+        populateMissingDraftInfo(anchorProvider.connection, tx),
+      ),
+    )
+    const txs = populatedTxs.map((tx) => toVersionedTx(tx))
 
     const decision = await walletSignBottomSheetRef.show({
       type: WalletStandardMessageTypes.signTransaction,
       url: '',
       header,
-      serializedTxs: transactions.map((transaction) =>
-        transaction.serialize({ requireAllSignatures: false }),
+      serializedTxs: txs.map((transaction) =>
+        Buffer.from(transaction.serialize()),
       ),
     })
 

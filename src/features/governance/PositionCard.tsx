@@ -14,8 +14,10 @@ import {
   batchInstructionsToTxsWithPriorityFee,
   bulkSendTransactions,
   humanReadable,
+  populateMissingDraftInfo,
   sendAndConfirmWithRetry,
   toNumber,
+  toVersionedTx,
 } from '@helium/spl-utils'
 import {
   PositionWithMeta,
@@ -159,36 +161,46 @@ export const PositionCard = ({
         basePriorityFee: await getBasePriorityFee(),
       },
     )
+    const populatedDrafts = await Promise.all(
+      transactions.map((tx) =>
+        populateMissingDraftInfo(anchorProvider.connection, tx),
+      ),
+    )
+    const txs = populatedDrafts.map((transaction) => toVersionedTx(transaction))
 
     const decision = await walletSignBottomSheetRef.show({
       type: WalletStandardMessageTypes.signTransaction,
       url: '',
       header,
-      serializedTxs: transactions.map((transaction) =>
-        transaction.serialize({ requireAllSignatures: false }),
-      ),
+      serializedTxs: txs.map((t) => Buffer.from(t.serialize())),
     })
 
     if (decision) {
       if (sigs.length) {
+        let i = 0
         // eslint-disable-next-line no-restricted-syntax
-        for (const tx of await anchorProvider.wallet.signAllTransactions(
-          transactions,
-        )) {
+        for (const tx of await anchorProvider.wallet.signAllTransactions(txs)) {
+          // eslint-disable-next-line @typescript-eslint/no-loop-func
           sigs.forEach((sig) => {
-            if (tx.signatures.some((s) => s.publicKey.equals(sig.publicKey))) {
-              tx.partialSign(sig)
+            if (
+              transactions[i].signers?.some((s) =>
+                s.publicKey.equals(sig.publicKey),
+              )
+            ) {
+              tx.sign([sig])
             }
           })
 
           await sendAndConfirmWithRetry(
             anchorProvider.connection,
-            tx.serialize(),
+            Buffer.from(tx.serialize()),
             {
               skipPreflight: true,
             },
             'confirmed',
           )
+          // eslint-disable-next-line no-plusplus
+          i++
         }
       } else {
         await bulkSendTransactions(

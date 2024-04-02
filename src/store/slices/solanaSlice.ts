@@ -12,10 +12,13 @@ import {
 } from '@helium/helium-entity-manager-sdk'
 import * as lz from '@helium/lazy-distributor-sdk'
 import {
+  TransactionDraft,
   bulkSendRawTransactions,
   bulkSendTransactions,
   chunks,
+  populateMissingDraftInfo,
   sendAndConfirmWithRetry,
+  toVersionedTx,
 } from '@helium/spl-utils'
 import {
   PayloadAction,
@@ -27,7 +30,6 @@ import {
   Cluster,
   PublicKey,
   SignaturesForAddressOptions,
-  Transaction,
   VersionedTransaction,
 } from '@solana/web3.js'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
@@ -76,25 +78,25 @@ type PaymentInput = {
   account: CSAccount
   cluster: Cluster
   anchorProvider: AnchorProvider
-  paymentTxns: Transaction[]
+  paymentTxns: TransactionDraft[]
 }
 
 type CollectablePaymentInput = {
   account: CSAccount
   cluster: Cluster
   anchorProvider: AnchorProvider
-  transferTxn: Transaction
+  transferTxn: TransactionDraft
 }
 
 type AnchorTxnInput = {
-  txn: Transaction
+  txn: TransactionDraft
   anchorProvider: AnchorProvider
   cluster: Cluster
 }
 
 type ClaimRewardInput = {
   account: CSAccount
-  txns: Transaction[]
+  txns: VersionedTransaction[]
   anchorProvider: AnchorProvider
   cluster: Cluster
 }
@@ -111,7 +113,7 @@ type ClaimAllRewardsInput = {
 type TreasurySwapTxn = {
   cluster: Cluster
   anchorProvider: AnchorProvider
-  swapTxn: Transaction
+  swapTxn: TransactionDraft
 }
 
 type JupiterSwapTxn = {
@@ -123,13 +125,13 @@ type JupiterSwapTxn = {
 type MintDataCreditsInput = {
   anchorProvider: AnchorProvider
   cluster: Cluster
-  swapTxn: Transaction
+  swapTxn: TransactionDraft
 }
 
 type DelegateDataCreditsInput = {
   anchorProvider: AnchorProvider
   cluster: Cluster
-  delegateDCTxn: Transaction
+  delegateDCTxn: TransactionDraft
 }
 
 export const makePayment = createAsyncThunk(
@@ -166,7 +168,14 @@ export const makeCollectablePayment = createAsyncThunk(
     if (!account?.solanaAddress) throw new Error('No solana account found')
 
     try {
-      const signed = await anchorProvider.wallet.signTransaction(transferTxn)
+      const signed = await anchorProvider.wallet.signTransaction(
+        toVersionedTx(
+          await populateMissingDraftInfo(
+            anchorProvider.connection,
+            transferTxn,
+          ),
+        ),
+      )
 
       const { txid: sig } = await sendAndConfirmWithRetry(
         anchorProvider.connection,
@@ -198,7 +207,11 @@ export const sendTreasurySwap = createAsyncThunk(
   'solana/sendTreasurySwap',
   async ({ cluster, anchorProvider, swapTxn }: TreasurySwapTxn) => {
     try {
-      const signed = await anchorProvider.wallet.signTransaction(swapTxn)
+      const signed = await anchorProvider.wallet.signTransaction(
+        toVersionedTx(
+          await populateMissingDraftInfo(anchorProvider.connection, swapTxn),
+        ),
+      )
 
       const { txid: sig } = await sendAndConfirmWithRetry(
         anchorProvider.connection,
@@ -246,7 +259,11 @@ export const sendMintDataCredits = createAsyncThunk(
   'solana/sendMintDataCredits',
   async ({ cluster, anchorProvider, swapTxn }: MintDataCreditsInput) => {
     try {
-      const signed = await anchorProvider.wallet.signTransaction(swapTxn)
+      const signed = await anchorProvider.wallet.signTransaction(
+        toVersionedTx(
+          await populateMissingDraftInfo(anchorProvider.connection, swapTxn),
+        ),
+      )
 
       const { txid: sig } = await sendAndConfirmWithRetry(
         anchorProvider.connection,
@@ -274,7 +291,14 @@ export const sendDelegateDataCredits = createAsyncThunk(
     delegateDCTxn,
   }: DelegateDataCreditsInput) => {
     try {
-      const signed = await anchorProvider.wallet.signTransaction(delegateDCTxn)
+      const signed = await anchorProvider.wallet.signTransaction(
+        toVersionedTx(
+          await populateMissingDraftInfo(
+            anchorProvider.connection,
+            delegateDCTxn,
+          ),
+        ),
+      )
 
       const { txid: sig } = await sendAndConfirmWithRetry(
         anchorProvider.connection,
@@ -298,15 +322,14 @@ export const sendAnchorTxn = createAsyncThunk(
   'solana/sendAnchorTxn',
   async ({ txn, anchorProvider, cluster }: AnchorTxnInput) => {
     try {
-      const { blockhash } = await anchorProvider.connection.getLatestBlockhash(
-        'recent',
+      const signed = await anchorProvider.wallet.signTransaction(
+        toVersionedTx(
+          await populateMissingDraftInfo(anchorProvider.connection, txn),
+        ),
       )
-      txn.recentBlockhash = blockhash
-      txn.feePayer = anchorProvider.wallet.publicKey
-      const signed = await anchorProvider.wallet.signTransaction(txn)
       const { txid } = await sendAndConfirmWithRetry(
         anchorProvider.connection,
-        signed.serialize(),
+        Buffer.from(signed.serialize()),
         { skipPreflight: true },
         'confirmed',
       )
@@ -329,7 +352,7 @@ export const claimRewards = createAsyncThunk(
       const signed = await anchorProvider.wallet.signAllTransactions(txns)
       const signatures = await bulkSendRawTransactions(
         anchorProvider.connection,
-        signed.map((s) => s.serialize()),
+        signed.map((s) => Buffer.from(s.serialize())),
       )
 
       postPayment({ signatures, cluster })
@@ -494,18 +517,13 @@ export const claimAllRewards = createAsyncThunk(
             // eslint-disable-next-line @typescript-eslint/no-loop-func
             const txsWithSigs = signedTxs.map((tx, index) => ({
               transaction: chunk[index],
-              sig: bs58.encode(
-                !solUtils.isVersionedTransaction(tx)
-                  ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    tx.signatures[0]!.signature!
-                  : tx.signatures[0],
-              ),
+              sig: bs58.encode(tx.signatures[0]),
             }))
 
             // eslint-disable-next-line no-await-in-loop
             const confirmedTxs = await bulkSendRawTransactions(
               anchorProvider.connection,
-              signedTxs.map((s) => s.serialize()),
+              signedTxs.map((s) => Buffer.from(s.serialize())),
               ({ totalProgress }) =>
                 dispatch(
                   solanaSlice.actions.setPaymentProgress({
