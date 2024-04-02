@@ -13,6 +13,9 @@ import {
   sendAndConfirmWithRetry,
   toBN,
   toNumber,
+  toVersionedTx,
+  HELIUM_COMMON_LUT_DEVNET,
+  HELIUM_COMMON_LUT,
 } from '@helium/spl-utils'
 import {
   calcLockupMultiplier,
@@ -66,6 +69,7 @@ export const VotingPowerScreen = () => {
     loading: claimingAllRewards,
     claimAllPositionsRewards,
   } = useClaimAllPositionsRewards()
+  const { cluster } = useSolana()
 
   useEffect(() => {
     if (mint && route.params.mint) {
@@ -131,39 +135,47 @@ export const VotingPowerScreen = () => {
       instructions,
       {
         basePriorityFee: await getBasePriorityFee(),
+        addressLookupTableAddresses: [
+          cluster === 'devnet' ? HELIUM_COMMON_LUT_DEVNET : HELIUM_COMMON_LUT,
+        ],
       },
     )
+    const asVersionedTx = transactions.map(toVersionedTx)
 
     const decision = await walletSignBottomSheetRef.show({
       type: WalletStandardMessageTypes.signTransaction,
       url: '',
       header,
-      serializedTxs: transactions.map((transaction) =>
-        transaction.serialize({ requireAllSignatures: false }),
+      serializedTxs: asVersionedTx.map((transaction) =>
+        Buffer.from(transaction.serialize()),
       ),
       suppressWarnings: sequentially,
     })
 
     if (decision) {
       if (transactions.length > 1 && sequentially) {
+        let i = 0
         // eslint-disable-next-line no-restricted-syntax
         for (const tx of await anchorProvider.wallet.signAllTransactions(
-          transactions,
+          asVersionedTx,
         )) {
+          const draft = transactions[i]
           sigs.forEach((sig) => {
-            if (tx.signatures.some((s) => s.publicKey.equals(sig.publicKey))) {
-              tx.partialSign(sig)
+            if (draft.signers?.some((s) => s.publicKey.equals(sig.publicKey))) {
+              tx.sign([sig])
             }
           })
 
           await sendAndConfirmWithRetry(
             anchorProvider.connection,
-            tx.serialize(),
+            Buffer.from(tx.serialize()),
             {
               skipPreflight: true,
             },
             'confirmed',
           )
+          // eslint-disable-next-line no-plusplus
+          i++
         }
       } else {
         await bulkSendTransactions(

@@ -8,7 +8,7 @@ export async function withPriorityFees({
   instructions,
 }: {
   connection: Connection
-  computeUnits: number
+  computeUnits?: number
   instructions: TransactionInstruction[]
 }): Promise<TransactionInstruction[]> {
   return withPriorityFeesUtils({

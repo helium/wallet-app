@@ -1,6 +1,6 @@
 import * as client from '@helium/distributor-oracle'
 import { init } from '@helium/lazy-distributor-sdk'
-import { PublicKey, Transaction } from '@solana/web3.js'
+import { PublicKey, VersionedTransaction } from '@solana/web3.js'
 import { useEffect, useState } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { useSolana } from '../solana/SolanaProvider'
@@ -10,8 +10,8 @@ import * as Logger from '../utils/logger'
 export function useHotspot(mint: PublicKey): {
   iotRewardsError: Error | undefined
   mobileRewardsError: Error | undefined
-  createClaimIotTx: () => Promise<Transaction | undefined>
-  createClaimMobileTx: () => Promise<Transaction | undefined>
+  createClaimIotTx: () => Promise<VersionedTransaction | undefined>
+  createClaimMobileTx: () => Promise<VersionedTransaction | undefined>
   iotRewardsLoading: boolean
   mobileRewardsLoading: boolean
 } {
