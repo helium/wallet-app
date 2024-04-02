@@ -266,7 +266,9 @@ export const createTransferSolTxn = async (
   if (!maxPayment) {
     finalInstructions = await withPriorityFees({
       connection: anchorProvider.connection,
+      computeUnits: 10000,
       instructions,
+      feePayer: payer,
     })
   }
 
@@ -327,6 +329,7 @@ export const createTransferTxn = async (
     instructions: await withPriorityFees({
       connection: anchorProvider.connection,
       instructions,
+      feePayer: new PublicKey(payer),
     }),
     feePayer: payer,
   }
@@ -573,6 +576,7 @@ export const transferCollectable = async (
       instructions: await withPriorityFees({
         connection: anchorProvider.connection,
         instructions,
+        feePayer: payer,
       }),
       feePayer: payer,
     }
@@ -634,7 +638,7 @@ export const mintDataCredits = async ({
       instructions: await withPriorityFees({
         connection: anchorProvider.connection,
         instructions: [ix],
-        computeUnits: 180000,
+        feePayer: payer,
       }),
       feePayer: payer,
     }
@@ -677,7 +681,7 @@ export const delegateDataCredits = async (
 
     return {
       instructions: await withPriorityFees({
-        computeUnits: 80000,
+        feePayer: payer,
         connection: anchorProvider.connection,
         instructions,
       }),
@@ -846,7 +850,7 @@ export const transferCompressedCollectable = async (
       instructions: await withPriorityFees({
         connection: anchorProvider.connection,
         instructions,
-        computeUnits: 120000,
+        feePayer: payer,
       }),
       feePayer: payer,
     }
@@ -1440,7 +1444,7 @@ export async function createTreasurySwapTxn(
       instructions: await withPriorityFees({
         connection: conn,
         instructions: [ix],
-        computeUnits: 350000,
+        feePayer: anchorProvider.wallet.publicKey,
       }),
       feePayer: anchorProvider.wallet.publicKey,
     }

@@ -47,7 +47,7 @@ export function useImplicitBurn(): {
       burnTx.add(
         ...(await withPriorityFees({
           connection: anchorProvider.connection,
-          computeUnits: 120000,
+          feePayer: wallet,
           instructions: [
             await program.methods
               .mintDataCreditsV0({
