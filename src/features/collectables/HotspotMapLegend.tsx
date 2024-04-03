@@ -12,7 +12,13 @@ export const HotspotMapLegend = ({
   const colors = useColors()
 
   return (
-    <Box flexDirection="column" justifyContent="center" alignItems="center">
+    <Box
+      flexDirection="column"
+      justifyContent="center"
+      alignItems="center"
+      paddingTop="ms"
+      paddingBottom="m"
+    >
       <Box
         flexDirection="row"
         flexWrap="wrap"

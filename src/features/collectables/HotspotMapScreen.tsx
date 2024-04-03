@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-properties */
 import BackArrow from '@assets/images/backArrow.svg'
 import Hex from '@assets/images/hex.svg'
 import {
@@ -25,7 +26,7 @@ import {
   keyToAssetForAsset,
   mobileInfoKey,
 } from '@helium/helium-entity-manager-sdk'
-import { chunks } from '@helium/spl-utils'
+import { chunks, truthy } from '@helium/spl-utils'
 import useHotspots from '@hooks/useHotspots'
 import MapLibreGL from '@maplibre/maplibre-react-native'
 import OnPressEvent from '@maplibre/maplibre-react-native/javascript/types/OnPressEvent'
@@ -45,12 +46,14 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Edge } from 'react-native-safe-area-context'
+import { HotspotWithPendingRewards } from '../../types/solana'
 import { useSolana } from '../../solana/SolanaProvider'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
 import { HotspotMapLegend } from './HotspotMapLegend'
+import { HotspotMapHotspotDetails } from './HotspotMapHotspotDetails'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotMapScreen'>
 
@@ -71,23 +74,28 @@ const HotspotMapScreen = () => {
   const mapRef = useRef<MapLibreGL.MapView>(null)
   const cameraRef = useRef<MapLibreGL.Camera>(null)
   const userLocationRef = useRef<MapLibreGL.UserLocation>(null)
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+  const bottomSheetRef = useRef<BottomSheetModal>(null)
+  const [bottomSheetHeight, setBottomSheetHeight] = useState(0)
   const bottomSheetStyle = useBackgroundStyle('surfaceSecondary')
   const navigation = useNavigation<CollectableNavigationProp>()
-  const [safeEdges, backEdges] = [['bottom'], ['top']] as Edge[][]
+  const [backEdges] = [['top']] as Edge[][]
   const [zoomLevel, setZoomLevel] = useState(INITIAL_MAP_VIEW_STATE.zoomLevel)
   const [networkType, setNetworkType] = useState<'IOT' | 'MOBILE'>('IOT')
   const [loadingInfos, setLoadingInfos] = useState(false)
-  const [hexBuckets, setHexBuckets] = useState<{ [key: string]: string[] }>({})
+  const [hexBuckets, setHexBuckets] = useState<{
+    [key: string]: HotspotWithPendingRewards[]
+  }>({})
   const [activeHex, setActiveHex] = useState(null)
-  const [activeHotspot, setActiveHotspot] = useState(null)
+  const [activeHotspotIndex, setActiveHotSpotIndex] = useState(0)
   const [legendVisible, setLegendVisible] = useState(false)
-  const snapPoints = useMemo(
-    () => (legendVisible ? [120, 120] : ['55%', '55%', '90%']),
-    [legendVisible],
-  )
   const { hotspotsWithMeta, fetchMore, fetchingMore, loading, onEndReached } =
     useHotspots()
+
+  const activeHotspot = useMemo(() => {
+    if (activeHex) {
+      return hexBuckets[activeHex][activeHotspotIndex]
+    }
+  }, [activeHex, hexBuckets, activeHotspotIndex])
 
   useEffect(() => {
     if (!loading && !fetchingMore && !onEndReached) {
@@ -100,7 +108,6 @@ const HotspotMapScreen = () => {
       setLoadingInfos(true)
       const hemProgram = await init(anchorProvider)
 
-      // TODO: Properly chunk the hotspots to buckets.
       // eslint-disable-next-line no-restricted-syntax
       for (const chunk of chunks(hotspotsWithMeta, 25)) {
         const keyToAssetKeys = chunk.map((h) => keyToAssetForAsset(toAsset(h)))
@@ -125,15 +132,17 @@ const HotspotMapScreen = () => {
 
         setHexBuckets(
           infos.reduce(
-            (acc: { [key: string]: string[] }, i) => ({
+            (acc: { [key: string]: HotspotWithPendingRewards[] }, i) => ({
               ...acc,
               ...(i.location
                 ? {
                     [i.location.toString()]: [
                       ...(acc[i.location.toString()] || []),
-                      // TODO: actualy set the hotspot here
-                      '0',
-                    ],
+                      chunk.find(
+                        (h) =>
+                          h.content.metadata.asset_id === i.asset.toBase58(),
+                      ) || undefined,
+                    ].filter(truthy),
                   }
                 : {}),
             }),
@@ -180,22 +189,50 @@ const HotspotMapScreen = () => {
 
   useEffect(() => {
     if (activeHex || legendVisible) {
-      if (activeHex) {
-        const cords = parseH3BNLocation(new BN(activeHex)).reverse()
+      bottomSheetRef.current?.present()
+    } else {
+      bottomSheetRef.current?.dismiss()
+    }
+  }, [activeHex, legendVisible, bottomSheetRef])
+
+  useAsync(async () => {
+    if (activeHex && mapRef?.current && bottomSheetHeight) {
+      const cords = parseH3BNLocation(new BN(activeHex)).reverse()
+      const mapHeight = mapRef.current.state.height
+
+      if (mapHeight - bottomSheetHeight > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-shadow
+        const zoomLevel = await mapRef.current.getZoom()
+
+        // Define the shift needed to adjust the map's center. This is set to a quarter of the bottom sheet's height.
+        // This means the hexagon will be centered in the upper 3/4 of the map's viewable area.
+        const centeringShift = bottomSheetHeight / 4
+
+        // Convert the latitude to radians for more accurate calculations
+        const latitudeRadians = (cords[1] * Math.PI) / 180
+
+        // Calculate the number of meters per pixel at the current latitude and zoom level. This uses the Earth's
+        // radius in meters and accounts for the zoom level to approximate how much geographic space each pixel covers.
+        const metersPerPixel =
+          (Math.cos(latitudeRadians) * 2 * Math.PI * 6378137) /
+          (256 * 2 ** zoomLevel)
+
+        // Calculate the shift in pixels needed to adjust the map's center based on the bottom sheet's height
+        const pixelShift = centeringShift
+
+        // Convert the pixel shift into a latitude degree shift, using the average meter per degree at the equator.
+        const degreeShift = (pixelShift * metersPerPixel) / 111319.9
+
+        // Adjust the map's center coordinate by subtracting the degree shift from the latitude. This effectively
+        // moves the map's center up to account for the bottom sheet, ensuring the hexagon is centered in the
+        // viewable area above the bottom sheet.
         cameraRef.current?.setCamera({
-          centerCoordinate: [
-            cords[0],
-            // TODO: figure out proper offset for centerCoordiantes based on zoomLevel and drawer height
-            cords[1] - (MAX_MAP_ZOOM - zoomLevel) * 0.02,
-          ],
+          centerCoordinate: [cords[0], cords[1] - degreeShift],
+          animationDuration: 200,
         })
       }
-      bottomSheetModalRef.current?.present()
-    } else {
-      bottomSheetModalRef.current?.dismiss()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeHex, legendVisible, cameraRef])
+  }, [activeHex, mapRef, bottomSheetHeight, cameraRef])
 
   const handleUserLocationPress = useCallback(() => {
     if (cameraRef?.current && userLocationRef?.current?.state.coordinates) {
@@ -388,26 +425,30 @@ const HotspotMapScreen = () => {
         </Box>
         <BottomSheetModalProvider>
           <BottomSheetModal
-            ref={bottomSheetModalRef}
-            index={1}
-            snapPoints={snapPoints}
+            ref={bottomSheetRef}
+            snapPoints={['92%']}
+            enablePanDownToClose
+            enableDynamicSizing
+            animateOnMount
+            index={0}
             backgroundStyle={bottomSheetStyle}
             handleIndicatorStyle={{ backgroundColor: colors.secondaryText }}
             onDismiss={() => setActiveHex(null)}
           >
             <BottomSheetView>
-              {legendVisible && <HotspotMapLegend network={networkType} />}
-              {activeHex && (
-                <>
-                  <Text color="white">
-                    Total Hotspots: {Object.values(hexBuckets).flat().length}
-                  </Text>
-                  <Text color="white">Active Hex: {activeHex}</Text>
-                  <Text color="white">
-                    Hotspots In Hex: {hexBuckets[activeHex]?.length}{' '}
-                  </Text>
-                </>
-              )}
+              <Box
+                onLayout={(e) => {
+                  setBottomSheetHeight(e.nativeEvent.layout.height)
+                }}
+              >
+                {legendVisible && <HotspotMapLegend network={networkType} />}
+                {activeHotspot && (
+                  <HotspotMapHotspotDetails
+                    hotspot={activeHotspot}
+                    network={networkType}
+                  />
+                )}
+              </Box>
             </BottomSheetView>
           </BottomSheetModal>
         </BottomSheetModalProvider>
