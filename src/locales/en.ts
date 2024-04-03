@@ -1270,6 +1270,7 @@ export default {
       estTime: 'Est. Time Remaining',
       votingClosed: 'Voting Closed',
       success: 'Success',
+      completed: 'Completed',
       failed: 'Failed',
       cancelled: 'Cancelled',
       votes: 'Votes',

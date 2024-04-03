@@ -262,7 +262,10 @@ export const ProposalScreen = () => {
   const noVotingPower = !loading && (!amountLocked || amountLocked.isZero())
   const showVoteResults =
     derivedState !== 'cancelled' &&
-    (derivedState === 'passed' || derivedState === 'failed' || completed)
+    (derivedState === 'passed' ||
+      derivedState === 'failed' ||
+      derivedState === 'completed' ||
+      completed)
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
@@ -329,6 +332,11 @@ export const ProposalScreen = () => {
                       {derivedState === 'passed' && (
                         <Text variant="body2" color="greenBright500">
                           {t('gov.proposals.success')}
+                        </Text>
+                      )}
+                      {derivedState === 'completed' && (
+                        <Text variant="body2" color="greenBright500">
+                          {t('gov.proposals.completed')}
                         </Text>
                       )}
                       {derivedState === 'failed' && (
