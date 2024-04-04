@@ -63,7 +63,7 @@ const ListItem = ({
         marginStart={Icon ? 'm' : 'l'}
         marginEnd="m"
       >
-        <Text variant="subtitle2">{title}</Text>
+        <Text variant="subtitle3">{title}</Text>
         {subtitle && (
           <Text marginTop="xs" color={subtitleColor}>
             {subtitle}

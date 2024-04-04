@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-restricted-properties */
 import BackArrow from '@assets/images/backArrow.svg'
 import Hex from '@assets/images/hex.svg'
@@ -17,7 +18,7 @@ import { INITIAL_MAP_VIEW_STATE, MAX_MAP_ZOOM } from '@components/map/utils'
 import {
   BottomSheetModal,
   BottomSheetModalProvider,
-  BottomSheetView,
+  BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
 import {
   decodeEntityKey,
@@ -46,6 +47,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Edge } from 'react-native-safe-area-context'
+import { IotHotspotInfoV0 } from '@hooks/useIotInfo'
+import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
 import { HotspotWithPendingRewards } from '../../types/solana'
 import { useSolana } from '../../solana/SolanaProvider'
 import {
@@ -83,7 +86,10 @@ const HotspotMapScreen = () => {
   const [networkType, setNetworkType] = useState<'IOT' | 'MOBILE'>('IOT')
   const [loadingInfos, setLoadingInfos] = useState(false)
   const [hexBuckets, setHexBuckets] = useState<{
-    [key: string]: HotspotWithPendingRewards[]
+    [key: string]: {
+      hotspot: HotspotWithPendingRewards
+      info: IotHotspotInfoV0 | MobileHotspotInfoV0
+    }[]
   }>({})
   const [activeHex, setActiveHex] = useState(null)
   const [activeHotspotIndex, setActiveHotSpotIndex] = useState(0)
@@ -91,7 +97,7 @@ const HotspotMapScreen = () => {
   const { hotspotsWithMeta, fetchMore, fetchingMore, loading, onEndReached } =
     useHotspots()
 
-  const activeHotspot = useMemo(() => {
+  const activeHexItem = useMemo(() => {
     if (activeHex) {
       return hexBuckets[activeHex][activeHotspotIndex]
     }
@@ -131,23 +137,32 @@ const HotspotMapScreen = () => {
         }[networkType]
 
         setHexBuckets(
-          infos.reduce(
-            (acc: { [key: string]: HotspotWithPendingRewards[] }, i) => ({
-              ...acc,
-              ...(i.location
-                ? {
-                    [i.location.toString()]: [
-                      ...(acc[i.location.toString()] || []),
-                      chunk.find(
-                        (h) =>
-                          h.content.metadata.asset_id === i.asset.toBase58(),
-                      ) || undefined,
-                    ].filter(truthy),
-                  }
-                : {}),
-            }),
-            {},
-          ),
+          infos
+            .filter((info) => truthy(info.location))
+            .reduce(
+              (
+                acc: {
+                  [key: string]: {
+                    hotspot: HotspotWithPendingRewards
+                    info: IotHotspotInfoV0 | MobileHotspotInfoV0
+                  }[]
+                },
+                info,
+              ) => ({
+                ...acc,
+                [info.location!.toString()]: [
+                  ...(acc[info.location!.toString()] || []),
+                  {
+                    hotspot: chunk.find(
+                      (h) =>
+                        h.content.metadata.asset_id === info.asset.toBase58(),
+                    ) as HotspotWithPendingRewards,
+                    info,
+                  },
+                ],
+              }),
+              {},
+            ),
         )
 
         setLoadingInfos(false)
@@ -426,7 +441,7 @@ const HotspotMapScreen = () => {
         <BottomSheetModalProvider>
           <BottomSheetModal
             ref={bottomSheetRef}
-            snapPoints={['92%']}
+            snapPoints={[]}
             enablePanDownToClose
             enableDynamicSizing
             animateOnMount
@@ -435,21 +450,22 @@ const HotspotMapScreen = () => {
             handleIndicatorStyle={{ backgroundColor: colors.secondaryText }}
             onDismiss={() => setActiveHex(null)}
           >
-            <BottomSheetView>
+            <BottomSheetScrollView>
               <Box
                 onLayout={(e) => {
                   setBottomSheetHeight(e.nativeEvent.layout.height)
                 }}
               >
                 {legendVisible && <HotspotMapLegend network={networkType} />}
-                {activeHotspot && (
+                {activeHexItem && (
                   <HotspotMapHotspotDetails
-                    hotspot={activeHotspot}
+                    hotspot={activeHexItem.hotspot}
+                    info={activeHexItem.info}
                     network={networkType}
                   />
                 )}
               </Box>
-            </BottomSheetView>
+            </BottomSheetScrollView>
           </BottomSheetModal>
         </BottomSheetModalProvider>
       </SafeAreaBox>

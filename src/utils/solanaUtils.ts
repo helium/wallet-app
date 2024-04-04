@@ -101,6 +101,9 @@ import { withPriorityFees } from '@utils/priorityFees'
 import axios from 'axios'
 import bs58 from 'bs58'
 import Config from 'react-native-config'
+import { IotHotspotInfoV0 } from '@hooks/useIotInfo'
+import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
+import { KeyToAssetV0 } from '@hooks/useKeyToAsset'
 import { getKeypair, getSessionKey } from '../storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
 import {
@@ -1159,7 +1162,7 @@ export async function exists(
 export async function getCachedKeyToAssets(
   hemProgram: Program<HeliumEntityManager>,
   keyToAssets: PublicKey[],
-) {
+): Promise<KeyToAssetV0[]> {
   const cache = await getSingleton(hemProgram.provider.connection)
   return (
     await cache.searchMultiple(
@@ -1182,7 +1185,7 @@ export async function getCachedKeyToAssets(
 export async function getCachedIotInfos(
   hemProgram: Program<HeliumEntityManager>,
   infoKeys: PublicKey[],
-) {
+): Promise<IotHotspotInfoV0[]> {
   const cache = await getSingleton(hemProgram.provider.connection)
   return (
     await cache.searchMultiple(
@@ -1205,7 +1208,7 @@ export async function getCachedIotInfos(
 export async function getCachedMobileInfos(
   hemProgram: Program<HeliumEntityManager>,
   infoKeys: PublicKey[],
-) {
+): Promise<MobileHotspotInfoV0[]> {
   const cache = await getSingleton(hemProgram.provider.connection)
   return (
     await cache.searchMultiple(

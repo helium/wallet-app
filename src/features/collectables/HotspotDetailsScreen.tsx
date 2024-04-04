@@ -136,6 +136,13 @@ const HotspotDetailsScreen = () => {
     }
   }, [explorer, entityKey, setSelectExplorerOpen])
 
+  const handleAssertLocation = useCallback(() => {
+    setOptionsOpen(false)
+    navigation.navigate('AssertLocationScreen', {
+      collectable,
+    })
+  }, [collectable, navigation])
+
   const handleAntennaSetup = useCallback(() => {
     setOptionsOpen(false)
     navigation.navigate('AntennaSetupScreen', {
@@ -310,6 +317,13 @@ const HotspotDetailsScreen = () => {
           selected={false}
           hasPressedState={false}
         />
+        <ListItem
+          key="assertLocation"
+          title={t('collectablesScreen.hotspots.assertLocation')}
+          onPress={handleAssertLocation}
+          selected={false}
+          hasPressedState={false}
+        />
         {iotInfoAcc?.info?.location && (
           <ListItem
             key="antennaSetup"
@@ -342,6 +356,7 @@ const HotspotDetailsScreen = () => {
     t,
     handleViewInExplorer,
     handleSend,
+    handleAssertLocation,
     iotInfoAcc?.info?.location,
     handleAntennaSetup,
     handleCopyAddress,

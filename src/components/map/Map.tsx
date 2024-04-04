@@ -1,7 +1,7 @@
 import useMount from '@hooks/useMount'
 import MapLibreGL from '@maplibre/maplibre-react-native'
 import { Position } from '@turf/helpers'
-import React, { PropsWithChildren } from 'react'
+import React, { PropsWithChildren, useMemo } from 'react'
 import Config from 'react-native-config'
 import { mapLayers } from './mapLayers'
 import {
@@ -35,17 +35,21 @@ const Map: React.FC<
     MapLibreGL.setAccessToken(null)
   })
 
-  const mapStyle: string = JSON.stringify({
-    version: 8,
-    sources: {
-      protomaps: {
-        type: 'vector',
-        tiles: [`${Config.PMTILES_URL}/{z}/{x}/{y}.mvt`],
-      },
-    },
-    glyphs: 'https://cdn.protomaps.com/fonts/pbf/{fontstack}/{range}.pbf',
-    layers: mapLayers,
-  })
+  const mapStyle: string = useMemo(
+    () =>
+      JSON.stringify({
+        version: 8,
+        sources: {
+          protomaps: {
+            type: 'vector',
+            tiles: [`${Config.PMTILES_URL}/{z}/{x}/{y}.mvt`],
+          },
+        },
+        glyphs: 'https://cdn.protomaps.com/fonts/pbf/{fontstack}/{range}.pbf',
+        layers: mapLayers,
+      }),
+    [],
+  )
 
   return (
     <MapLibreGL.MapView
