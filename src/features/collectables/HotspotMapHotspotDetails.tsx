@@ -11,9 +11,14 @@ import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { useColors } from '@theme/themeHooks'
 import { ellipsizeAddress } from '@utils/accountUtils'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
+import { useEntityKey } from '@hooks/useEntityKey'
+import { getExplorerUrl, useExplorer } from '@hooks/useExplorer'
+import { Linking } from 'react-native'
+import { Explorer } from '@utils/walletApiV2'
+import { SvgUri } from 'react-native-svg'
 import { HotspotWithPendingRewards } from '../../types/solana'
 import { CollectableNavigationProp } from './collectablesTypes'
 
@@ -102,16 +107,34 @@ export const HotspotMapHotspotDetails = ({
 }) => {
   const { t } = useTranslation()
   const navigation = useNavigation<CollectableNavigationProp>()
+  const entityKey = useEntityKey(hotspot)
+  const [selectExplorerOpen, setSelectExplorerOpen] = useState(false)
   const streetAddress = useHotspotAddress(hotspot)
   const { metadata } = hotspot.content
   const collection = hotspot.grouping.find(
     (k) => k.group_key === 'collection',
   )?.group_value
   const collectionKey = usePublicKey(collection)
-  const { metadata: mplxMetadata } = useMetaplexMetadata(collectionKey)
-  const { loading, info: makerAcc } = useMaker(
+
+  const { loading: mplxLoading, metadata: mplxMetadata } =
+    useMetaplexMetadata(collectionKey)
+
+  const {
+    loading: explorerLoading,
+    current: explorer,
+    explorers: available,
+    updateExplorer,
+  } = useExplorer()
+
+  const { loading: makerLoading, info: makerAcc } = useMaker(
     mplxMetadata?.updateAuthority.toBase58(),
   )
+
+  const isLoading = useMemo(
+    () => mplxLoading || explorerLoading || makerLoading,
+    [mplxLoading, explorerLoading, makerLoading],
+  )
+
   const eccCompact = useMemo(() => {
     if (!metadata || !metadata?.attributes?.length) {
       return undefined
@@ -121,6 +144,39 @@ export const HotspotMapHotspotDetails = ({
       (attr: any) => attr?.trait_type === 'ecc_compact',
     )?.value
   }, [metadata])
+
+  useEffect(() => {
+    if (explorer) {
+      setSelectExplorerOpen(false)
+    }
+  }, [explorer])
+
+  const handleViewInExplorer = useCallback(async () => {
+    if (explorer && entityKey) {
+      const url = getExplorerUrl({ entityKey, explorer })
+      await Linking.openURL(url)
+    } else if (entityKey) {
+      setSelectExplorerOpen(true)
+    }
+  }, [explorer, entityKey, setSelectExplorerOpen])
+
+  const handleConfirmExplorer = useCallback(
+    async (selectedExplorer: string) => {
+      await updateExplorer(selectedExplorer)
+
+      const selected = available?.find(
+        (a: Explorer) => a.value === selectedExplorer,
+      )
+      if (entityKey && selected) {
+        const url = getExplorerUrl({
+          entityKey,
+          explorer: selected,
+        })
+        await Linking.openURL(url)
+      }
+    },
+    [available, entityKey, updateExplorer],
+  )
 
   const handleClaimRewards = useCallback(() => {
     navigation.navigate('ClaimRewardsScreen', {
@@ -153,6 +209,8 @@ export const HotspotMapHotspotDetails = ({
       })
     }
   }
+
+  if (isLoading) return null
 
   return (
     <>
@@ -203,7 +261,7 @@ export const HotspotMapHotspotDetails = ({
             </Box>
           </Box>
         </Box>
-        {loading ? null : network === 'IOT' ? (
+        {isLoading ? null : network === 'IOT' ? (
           <IotMapDetails
             maker={makerAcc?.name || 'Unknown'}
             info={info as IotHotspotInfoV0}
@@ -215,43 +273,82 @@ export const HotspotMapHotspotDetails = ({
           />
         )}
       </Box>
-      <ListItem
-        title="Claim Rewards"
-        onPress={handleClaimRewards}
-        selected={false}
-        hasPressedState={false}
-      />
-      <ListItem
-        title={t('collectablesScreen.hotspots.viewInExplorer')}
-        onPress={() => console.log('test')}
-        selected={false}
-        hasPressedState={false}
-      />
-      <ListItem
-        title="Transfer"
-        onPress={handleTransfer}
-        selected={false}
-        hasPressedState={false}
-      />
-      <ListItem
-        title={t('collectablesScreen.hotspots.assertLocation')}
-        onPress={handleAssertLocation}
-        selected={false}
-        hasPressedState={false}
-      />
-      <ListItem
-        title={t('collectablesScreen.hotspots.antennaSetup')}
-        onPress={handleAntennaSetup}
-        selected={false}
-        hasPressedState={false}
-      />
-      <ListItem
-        title="Show Metadata"
-        onPress={handleMetadataPress}
-        selected={false}
-        hasPressedState={false}
-        hasDivider={false}
-      />
+      {selectExplorerOpen ? (
+        <>
+          <Box borderBottomColor="black900" padding="m" borderBottomWidth={1}>
+            <Text variant="subtitle1">
+              {t('activityScreen.selectExplorer')}
+            </Text>
+
+            <Text variant="body2">
+              {t('activityScreen.selectExplorerSubtitle')}
+            </Text>
+          </Box>
+
+          {available?.map((a) => {
+            return (
+              <ListItem
+                key={a.value}
+                title={a.label}
+                Icon={
+                  a.image.endsWith('svg') ? (
+                    <SvgUri height={16} width={16} uri={a.image} />
+                  ) : (
+                    <ImageBox
+                      height={16}
+                      width={16}
+                      source={{ uri: a.image }}
+                    />
+                  )
+                }
+                onPress={() => handleConfirmExplorer(a.value)}
+                selected={explorer?.value === a.value}
+                hasPressedState={false}
+              />
+            )
+          })}
+        </>
+      ) : (
+        <>
+          <ListItem
+            title="Claim Rewards"
+            onPress={handleClaimRewards}
+            selected={false}
+            hasPressedState={false}
+          />
+          <ListItem
+            title={t('collectablesScreen.hotspots.viewInExplorer')}
+            onPress={handleViewInExplorer}
+            selected={false}
+            hasPressedState={false}
+          />
+          <ListItem
+            title="Transfer"
+            onPress={handleTransfer}
+            selected={false}
+            hasPressedState={false}
+          />
+          <ListItem
+            title={t('collectablesScreen.hotspots.assertLocation')}
+            onPress={handleAssertLocation}
+            selected={false}
+            hasPressedState={false}
+          />
+          <ListItem
+            title={t('collectablesScreen.hotspots.antennaSetup')}
+            onPress={handleAntennaSetup}
+            selected={false}
+            hasPressedState={false}
+          />
+          <ListItem
+            title="Show Metadata"
+            onPress={handleMetadataPress}
+            selected={false}
+            hasPressedState={false}
+            hasDivider={false}
+          />
+        </>
+      )}
     </>
   )
 }

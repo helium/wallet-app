@@ -258,6 +258,7 @@ const HotspotDetailsScreen = () => {
     },
     [available, entityKey, updateExplorer, setOptionsOpen],
   )
+
   const hotspotOptions = useCallback(() => {
     if (selectExplorerOpen) {
       return (
