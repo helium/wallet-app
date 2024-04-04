@@ -436,7 +436,14 @@ export const PositionCard = ({
     await undelegatePosition({
       position,
       onInstructions: async (ixs) => {
-        await decideAndExecute(t('gov.transactions.undelegatePosition'), ixs)
+        const undelegate = ixs[ixs.length - 1]
+        const claims = ixs.slice(0, ixs.length - 1)
+        if (claims.length > 0) {
+          await decideAndExecute(t('gov.transactions.claimRewards'), claims)
+        }
+        await decideAndExecute(t('gov.transactions.undelegatePosition'), [
+          undelegate,
+        ])
         if (!undelegatingError) {
           refetchState()
         }
