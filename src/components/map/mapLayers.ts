@@ -252,17 +252,6 @@ export const mapLayers: { [key: string]: unknown }[] = [
     },
   },
   {
-    id: 'physical_line_waterway',
-    type: 'line',
-    source: 'protomaps',
-    'source-layer': 'physical_line',
-    filter: ['==', ['get', 'pmap:kind'], 'waterway'],
-    paint: {
-      'line-color': '#202020',
-      'line-width': 0.5,
-    },
-  },
-  {
     id: 'roads_other',
     type: 'line',
     source: 'protomaps',

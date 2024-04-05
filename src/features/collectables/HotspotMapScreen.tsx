@@ -2,19 +2,16 @@
 /* eslint-disable no-restricted-properties */
 import BackArrow from '@assets/images/backArrow.svg'
 import Hex from '@assets/images/hex.svg'
-import {
-  Box,
-  CircleLoader,
-  DelayedFadeIn,
-  FabButton,
-  Map,
-  ReAnimatedBlurBox,
-  ReAnimatedBox,
-  SafeAreaBox,
-  Text,
-} from '@components'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { ReAnimatedBlurBox, ReAnimatedBox } from '@components/AnimatedBox'
+import Box from '@components/Box'
+import CircleLoader from '@components/CircleLoader'
+import FabButton from '@components/FabButton'
+import { DelayedFadeIn } from '@components/FadeInOut'
+import Map from '@components/map/Map'
 import { INITIAL_MAP_VIEW_STATE, MAX_MAP_ZOOM } from '@components/map/utils'
+import SafeAreaBox from '@components/SafeAreaBox'
+import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import {
   BottomSheetModal,
   BottomSheetModalProvider,
@@ -29,6 +26,8 @@ import {
 } from '@helium/helium-entity-manager-sdk'
 import { chunks, truthy } from '@helium/spl-utils'
 import useHotspots from '@hooks/useHotspots'
+import { IotHotspotInfoV0 } from '@hooks/useIotInfo'
+import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
 import MapLibreGL from '@maplibre/maplibre-react-native'
 import OnPressEvent from '@maplibre/maplibre-react-native/javascript/types/OnPressEvent'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
@@ -47,16 +46,14 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Edge } from 'react-native-safe-area-context'
-import { IotHotspotInfoV0 } from '@hooks/useIotInfo'
-import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
-import { HotspotWithPendingRewards } from '../../types/solana'
 import { useSolana } from '../../solana/SolanaProvider'
+import { HotspotWithPendingRewards } from '../../types/solana'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import { HotspotMapLegend } from './HotspotMapLegend'
 import { HotspotMapHotspotDetails } from './HotspotMapHotspotDetails'
+import { HotspotMapLegend } from './HotspotMapLegend'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotMapScreen'>
 
@@ -259,7 +256,7 @@ const HotspotMapScreen = () => {
     }
   }, [userLocationRef, cameraRef])
 
-  const handleRegionIsChanging = useCallback(async () => {
+  const handleRegionChanged = useCallback(async () => {
     // TODO: Maybe throttle this
     if (mapRef?.current) {
       const zoom = await mapRef.current.getZoom()
@@ -323,7 +320,7 @@ const HotspotMapScreen = () => {
                 setActiveHex(null)
                 setLegendVisible(false)
               },
-              onRegionIsChanging: handleRegionIsChanging,
+              onRegionDidChange: handleRegionChanged,
             }}
           >
             {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}

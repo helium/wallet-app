@@ -141,6 +141,7 @@ export const HotspotMapHotspotDetails = ({
     }
 
     return metadata.attributes.find(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (attr: any) => attr?.trait_type === 'ecc_compact',
     )?.value
   }, [metadata])
@@ -214,7 +215,7 @@ export const HotspotMapHotspotDetails = ({
 
   return (
     <>
-      <Box padding="m" borderBottomColor="black900" borderBottomWidth={1}>
+      <Box padding="ms" borderBottomColor="black900" borderBottomWidth={1}>
         <Box flexDirection="row">
           <ImageBox
             borderRadius="lm"

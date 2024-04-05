@@ -1,6 +1,7 @@
-/* import MapPin from '@assets/images/mapPin.svg'
+import BackArrow from '@assets/images/backArrow.svg'
+import Hex from '@assets/images/hex.svg'
+import MapPin from '@assets/images/mapPin.svg'
 import {
-  BackScreen,
   Box,
   ButtonPressable,
   CircleLoader,
@@ -16,6 +17,8 @@ import {
   Text,
   TextInput,
 } from '@components'
+import Map from '@components/map/Map'
+import { MAX_MAP_ZOOM } from '@components/map/utils'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { NetworkType } from '@helium/onboarding'
 import { IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
@@ -29,14 +32,12 @@ import { useMobileInfo } from '@hooks/useMobileInfo'
 import { useOnboardingBalnces } from '@hooks/useOnboardingBalances'
 import { useReverseGeo } from '@hooks/useReverseGeo'
 import useSubmitTxn from '@hooks/useSubmitTxn'
+import MapLibreGL from '@maplibre/maplibre-react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import MapboxGL from '@rnmapbox/maps'
 import { parseH3BNLocation } from '@utils/h3'
 import { removeDashAndCapitalize } from '@utils/hotspotNftsUtils'
 import * as Logger from '@utils/logger'
-import { MAX_MAP_ZOOM, MIN_MAP_ZOOM } from '@utils/mapbox'
 import BN from 'bn.js'
-import debounce from 'lodash/debounce'
 import React, {
   memo,
   useCallback,
@@ -52,30 +53,31 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
 } from 'react-native'
-import { Config } from 'react-native-config'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useDebounce } from 'use-debounce'
+import { useColors, useCreateOpacity } from '@theme/themeHooks'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
 
-const BUTTON_HEIGHT = 65
-type Route = RouteProp<CollectableStackParamList, 'AssertLocationScreen'>x
+type Route = RouteProp<CollectableStackParamList, 'AssertLocationScreen'>
 
 const AssertLocationScreen = () => {
   const { t } = useTranslation()
   const route = useRoute<Route>()
+  const { backgroundStyle } = useCreateOpacity()
   const { collectable } = route.params
-const entityKey = useEntityKey(collectable)
+  const entityKey = useEntityKey(collectable)
   const { info: iotInfoAcc } = useIotInfo(entityKey)
   const { info: mobileInfoAcc } = useMobileInfo(entityKey)
-  const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])
-  const camera = useRef<MapboxGL.Camera>(null)
-  const userLocation = useRef<MapboxGL.UserLocation>(null)
+  const mapRef = useRef<MapLibreGL.MapView>(null)
+  const cameraRef = useRef<MapLibreGL.Camera>(null)
+  const userLocationRef = useRef<MapLibreGL.UserLocation>(null)
   const { showOKAlert } = useAlert()
+  const colors = useColors()
   const [mapCenter, setMapCenter] = useState<number[]>()
   const [searchVisible, setSearchVisible] = useState(false)
   const [searchValue, setSearchValue] = useState<string>()
@@ -87,7 +89,7 @@ const entityKey = useEntityKey(collectable)
   const reverseGeo = useReverseGeo(mapCenter)
   const forwardGeo = useForwardGeo()
   const { submitUpdateEntityInfo } = useSubmitTxn()
-  const collectNav = useNavigation<CollectableNavigationProp>()
+  const navigation = useNavigation<CollectableNavigationProp>()
   const {
     maker,
     makerDc,
@@ -128,14 +130,14 @@ const entityKey = useEntityKey(collectable)
 
   const [initialUserLocation, setInitialUserLocation] = useState<number[]>()
   useEffect(() => {
-    const coords = userLocation?.current?.state?.coordinates
+    const coords = userLocationRef?.current?.state?.coordinates
     if (!initialUserLocation && coords) {
       setInitialUserLocation(coords)
     }
   }, [
     initialUserLocation,
     setInitialUserLocation,
-    userLocation?.current?.state?.coordinates,
+    userLocationRef?.current?.state?.coordinates,
   ])
 
   const initialCenter = useMemo(() => {
@@ -192,8 +194,8 @@ const entityKey = useEntityKey(collectable)
       try {
         const coords = await forwardGeo.execute(searchValue)
 
-        if (camera?.current && coords) {
-          camera.current.setCamera({
+        if (cameraRef?.current && coords) {
+          cameraRef.current.setCamera({
             animationDuration: 500,
             centerCoordinate: coords,
             zoomLevel: MAX_MAP_ZOOM / 1.2,
@@ -211,26 +213,28 @@ const entityKey = useEntityKey(collectable)
     }
 
     hideSearch()
-  }, [camera, t, hideSearch, searchValue, forwardGeo, showOKAlert])
+  }, [cameraRef, t, hideSearch, searchValue, forwardGeo, showOKAlert])
 
-  const onCameraChanged = debounce(async (state: MapboxGL.MapState) => {
-    const { center } = state.properties
-    if (JSON.stringify(center) !== JSON.stringify(mapCenter)) {
-      setMapCenter(center)
-      setTransactionError(undefined)
-      hideSearch()
+  const handleRegionChanged = useCallback(async () => {
+    if (mapRef?.current) {
+      const center = await mapRef?.current.getCenter()
+      if (JSON.stringify(center) !== JSON.stringify(mapCenter)) {
+        setMapCenter(center)
+        setTransactionError(undefined)
+        hideSearch()
+      }
     }
-  }, 600)
+  }, [mapRef, mapCenter, setMapCenter, hideSearch])
 
   const handleUserLocationPress = useCallback(() => {
-    if (camera?.current && userLocation?.current?.state.coordinates) {
-      camera.current.setCamera({
+    if (cameraRef?.current && userLocationRef?.current?.state.coordinates) {
+      cameraRef.current.setCamera({
         animationDuration: 500,
         zoomLevel: MAX_MAP_ZOOM,
-        centerCoordinate: userLocation.current.state.coordinates,
+        centerCoordinate: userLocationRef.current.state.coordinates,
       })
     }
-  }, [userLocation, camera])
+  }, [userLocationRef, cameraRef])
 
   const assertLocation = useCallback(
     async (type: NetworkType) => {
@@ -293,7 +297,7 @@ const entityKey = useEntityKey(collectable)
           title: t('assertLocationScreen.success.title'),
           message: t('assertLocationScreen.success.message'),
         })
-        collectNav.navigate('HotspotDetailsScreen', { collectable })
+        navigation.navigate('HotspotDetailsScreen', { collectable })
       } catch (error) {
         setAsserting(false)
         Logger.error(error)
@@ -318,7 +322,7 @@ const entityKey = useEntityKey(collectable)
       gain,
       showOKAlert,
       t,
-      collectNav,
+      navigation,
       collectable,
       iotInfoAcc?.numLocationAsserts,
       mobileInfoAcc?.numLocationAsserts,
@@ -378,44 +382,244 @@ const entityKey = useEntityKey(collectable)
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
-      <BackScreen
-        headerTopMargin="l"
-        padding="none"
-        title={t('assertLocationScreen.title')}
-        backgroundImageUri={metadata?.image || ''}
-        edges={backEdges}
-      >
-        <SafeAreaBox
-          edges={safeEdges}
-          backgroundColor="transparent"
-          flex={1}
-          padding="m"
-          marginHorizontal="s"
-          marginVertical="xs"
+      <SafeAreaBox edges={backEdges} flex={1}>
+        <Box
+          flexGrow={1}
+          justifyContent="center"
+          alignItems="center"
+          backgroundColor="surfaceSecondary"
+          overflow="hidden"
+          position="relative"
         >
+          <Map
+            map={mapRef}
+            camera={cameraRef}
+            userLocation={userLocationRef}
+            centerCoordinate={initialCenter}
+            mapProps={{
+              onPress: hideSearch,
+              onRegionDidChange: handleRegionChanged,
+            }}
+          >
+            {(sameLocation ? [iotLocation] : [iotLocation, mobileLocation])
+              .map((location, i) => {
+                if (!location || location.length < 2) return null
+
+                return (
+                  <MapLibreGL.MarkerView
+                    key={`MarkerView-${i + 1}`}
+                    allowOverlap
+                    coordinate={[
+                      i === 0 ? location[0] + 0.001 : location[0],
+                      location[1],
+                    ]}
+                  >
+                    {sameLocation ? (
+                      <Box flexDirection="row">
+                        <Box
+                          position="relative"
+                          height={16}
+                          width={8}
+                          overflow="hidden"
+                        >
+                          <Box position="absolute" left={0}>
+                            <Hex
+                              width={16}
+                              height={16}
+                              color={colors.greenBright500}
+                            />
+                          </Box>
+                        </Box>
+                        <Box
+                          position="relative"
+                          height={16}
+                          width={8}
+                          overflow="hidden"
+                        >
+                          <Box position="absolute" left={-8}>
+                            <Hex
+                              width={16}
+                              height={16}
+                              color={colors.blueBright500}
+                            />
+                          </Box>
+                        </Box>
+                      </Box>
+                    ) : (
+                      <Hex
+                        width={16}
+                        height={16}
+                        color={
+                          i === 0 ? colors.greenBright500 : colors.blueBright500
+                        }
+                      />
+                    )}
+                  </MapLibreGL.MarkerView>
+                )
+              })
+              .filter(Boolean)}
+          </Map>
           <Box
             flexDirection="row"
             alignItems="center"
-            backgroundColor="surfaceSecondary"
-            borderRadius="l"
-            marginBottom="s"
+            position="absolute"
+            width="100%"
+            paddingTop="l"
+            paddingLeft="ms"
+            top={0}
           >
+            <TouchableOpacityBox
+              flexDirection="row"
+              justifyContent="center"
+              alignItems="center"
+              onPress={() => navigation.goBack()}
+            >
+              <BackArrow color="white" />
+              <Text variant="subtitle3" color="white" marginLeft="ms">
+                Back
+              </Text>
+            </TouchableOpacityBox>
+          </Box>
+          <Box
+            flexDirection="column"
+            justifyContent="center"
+            position="absolute"
+            bottom="50%"
+          >
+            <MapPin width={30} height={30} />
+          </Box>
+
+          <Box
+            flexDirection="row"
+            justifyContent="space-between"
+            position="absolute"
+            marginHorizontal="ms"
+            width="100%"
+            bottom={!searchVisible ? 20 : 0}
+          >
+            {!searchVisible ? (
+              <>
+                <Box
+                  flexShrink={1}
+                  flexDirection="row"
+                  alignItems="center"
+                  marginHorizontal="ms"
+                >
+                  {reverseGeoLoading && (
+                    <Box>
+                      <CircleLoader
+                        loaderSize={20}
+                        color="white"
+                        marginRight={reverseGeo.result ? 'ms' : 'none'}
+                      />
+                    </Box>
+                  )}
+                  {showError && (
+                    <Text variant="body3Medium" color="red500">
+                      {showError}
+                    </Text>
+                  )}
+                  {!reverseGeoLoading && !showError && reverseGeo.result && (
+                    <FadeInOut>
+                      <Box
+                        flexShrink={1}
+                        style={backgroundStyle('white', 0.3)}
+                        flexDirection="row"
+                        alignItems="center"
+                        paddingHorizontal="ms"
+                        paddingVertical="sx"
+                        borderRadius="round"
+                        minHeight={36}
+                      >
+                        <Text
+                          variant="body3Medium"
+                          color="white"
+                          numberOfLines={1}
+                        >
+                          {reverseGeo.result}
+                        </Text>
+                      </Box>
+                    </FadeInOut>
+                  )}
+                </Box>
+                <Box
+                  flexShrink={0}
+                  flexDirection="row"
+                  alignItems="center"
+                  justifyContent="flex-end"
+                  marginHorizontal="ms"
+                >
+                  <FabButton
+                    icon="search"
+                    backgroundColor="white"
+                    backgroundColorOpacity={0.3}
+                    backgroundColorOpacityPressed={0.5}
+                    marginRight="ms"
+                    width={36}
+                    height={36}
+                    justifyContent="center"
+                    onPress={handleSearchPress}
+                  />
+                  <FabButton
+                    icon="mapUserLocation"
+                    backgroundColor="white"
+                    backgroundColorOpacity={0.3}
+                    backgroundColorOpacityPressed={0.5}
+                    width={36}
+                    height={36}
+                    justifyContent="center"
+                    onPress={handleUserLocationPress}
+                  />
+                </Box>
+              </>
+            ) : (
+              <SearchInput
+                paddingBottom="s"
+                placeholder={t('assertLocationScreen.searchLocation')}
+                onChangeText={setSearchValue}
+                onEnter={handleOnSearch}
+                value={searchValue}
+                width="100%"
+                borderRadius="none"
+                autoFocus
+              />
+            )}
+          </Box>
+        </Box>
+        <Box
+          style={{
+            marginTop: -10,
+          }}
+          backgroundColor="surfaceSecondary"
+          borderTopLeftRadius="l"
+          borderTopRightRadius="l"
+          padding="ms"
+        >
+          <Box flexDirection="row" marginBottom="m">
             <ImageBox
               borderRadius="lm"
               height={60}
               width={60}
+              mr="ms"
               source={{
                 uri: metadata?.image,
                 cache: 'force-cache',
               }}
             />
-            <Box marginStart="s" flex={1}>
-              {metadata?.name && (
-                <Text textAlign="left" variant="subtitle2" adjustsFontSizeToFit>
-                  {removeDashAndCapitalize(metadata.name)}
-                </Text>
-              )}
-              <Box flexDirection="row">
+            <Box flex={1}>
+              <Box flexDirection="row" alignItems="center">
+                {metadata?.name && (
+                  <Text
+                    variant="h3Bold"
+                    color="white"
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                  >
+                    {removeDashAndCapitalize(metadata.name)}
+                  </Text>
+                )}
+              </Box>
+              <Box flexDirection="row" alignItems="center">
                 <Box flexDirection="row" alignItems="center" marginRight="m">
                   <Text
                     variant="subtitle4"
@@ -424,14 +628,7 @@ const entityKey = useEntityKey(collectable)
                   >
                     IOT:
                   </Text>
-                  <Box
-                    backgroundColor={
-                      iotLocation ? 'greenBright500' : 'darkGrey'
-                    }
-                    width={12}
-                    height={12}
-                    borderRadius="round"
-                  />
+                  <Hex width={16} height={16} color={colors.greenBright500} />
                 </Box>
                 <Box flexDirection="row" alignItems="center" marginRight="m">
                   <Text
@@ -441,306 +638,139 @@ const entityKey = useEntityKey(collectable)
                   >
                     {t('assertLocationScreen.mobileTitle')}:
                   </Text>
-                  <Box
-                    backgroundColor={
-                      mobileLocation ? 'blueBright500' : 'darkGrey'
+                  <Hex
+                    width={16}
+                    height={16}
+                    color={
+                      mobileLocation ? colors.blueBright500 : colors.darkGrey
                     }
-                    width={12}
-                    height={12}
-                    borderRadius="round"
                   />
                 </Box>
               </Box>
             </Box>
           </Box>
-          <Box
-            flexGrow={1}
-            justifyContent="center"
+          <TouchableOpacityBox
+            width="100%"
+            backgroundColor="surfaceContrast"
+            borderRadius="round"
+            paddingVertical="lm"
+            disabled={disabled}
+            height={65}
             alignItems="center"
-            borderRadius="l"
-            backgroundColor="white"
-            overflow="hidden"
-            position="relative"
+            justifyContent="center"
+            onPress={handleAssertLocationPress}
           >
-            <MapboxGL.MapView
-              styleURL={Config.MAPBOX_STYLE_URL || MapboxGL.StyleURL.Dark}
-              style={{ flex: 1, width: '100%' }}
-              logoEnabled={false}
-              scaleBarEnabled={false}
-              attributionEnabled={false}
-              zoomEnabled={!asserting}
-              scrollEnabled={!asserting}
-              pitchEnabled={false}
-              rotateEnabled={false}
-              onCameraChanged={onCameraChanged}
-              onPress={() => hideSearch()}
-            >
-              <MapboxGL.Camera
-                ref={camera}
-                minZoomLevel={MIN_MAP_ZOOM}
-                maxZoomLevel={MAX_MAP_ZOOM}
-                defaultSettings={{
-                  zoomLevel: MAX_MAP_ZOOM,
-                  centerCoordinate: initialCenter,
-                }}
-              />
-              <MapboxGL.UserLocation visible ref={userLocation} />
-              {(sameLocation ? [iotLocation] : [iotLocation, mobileLocation])
-                .map((location, i) => {
-                  if (!location || location.length < 2) return null
-
-                  return (
-                    <MapboxGL.eView
-                      key={`MarkerView-${i + 1}`}
-                      coordinate={[
-                        i === 0 ? location[0] + 0.001 : location[0],
-                        location[1],
-                      ]}
-                      allowOverlap
-                    >
-                      {sameLocation ? (
-                        <Box flexDirection="row">
-                          <Box
-                            width={0}
-                            height={0}
-                            borderWidth={6.5}
-                            borderStyle="solid"
-                            borderRadius="round"
-                            borderTopColor="greenBright500"
-                            borderBottomColor="blueBright500"
-                            borderRightColor="greenBright500"
-                            borderLeftColor="blueBright500"
-                          />
-                        </Box>
-                      ) : (
-                        <Box
-                          backgroundColor={
-                            i === 0 ? 'greenBright500' : 'blueBright500'
-                          }
-                          width={12}
-                          height={12}
-                          borderRadius="round"
-                        />
-                      )}
-                    </MapboxGL.eView>
-                  )
-                })
-                .filter(Boolean)}
-            </MapboxGL.MapView>
-
-            <Box
-              flexDirection="column"
-              justifyContent="center"
-              position="absolute"
-              bottom="50%"
-            >
-              <MapPin width={30} height={30} />
-            </Box>
-
-            <Box
-              flexDirection="row"
-              justifyContent="center"
-              alignItems="center"
-              position="absolute"
-              top={searchVisible ? 0 : 8}
-              right={searchVisible ? 0 : 8}
-            >
-              {!searchVisible ? (
-                <FabButton
-                  icon="search"
-                  backgroundColor="white"
-                  backgroundColorOpacity={0.1}
-                  backgroundColorOpacityPressed={0.5}
-                  width={40}
-                  height={40}
-                  justifyContent="center"
-                  onPress={handleSearchPress}
-                />
-              ) : (
-                <SearchInput
-                  placeholder={t('assertLocationScreen.searchLocation')}
-                  onChangeText={setSearchValue}
-                  onEnter={handleOnSearch}
-                  value={searchValue}
-                  width="100%"
-                  borderRadius="none"
-                  autoFocus
-                />
-              )}
-            </Box>
-
-            {userLocation?.current && (
-              <Box
-                flexDirection="row"
-                justifyContent="center"
-                alignItems="center"
-                position="absolute"
-                bottom={8}
-                left={8}
+            {debouncedDisabled || asserting ? (
+              <CircleLoader loaderSize={19} color="black" />
+            ) : (
+              <Text
+                variant="subtitle2"
+                marginHorizontal="xs"
+                color="surfaceContrastText"
               >
-                <FabButton
-                  icon="mapUserLocation"
-                  backgroundColor="white"
-                  backgroundColorOpacity={0.3}
-                  backgroundColorOpacityPressed={0.5}
-                  width={40}
-                  height={40}
-                  justifyContent="center"
-                  onPress={handleUserLocationPress}
-                />
-              </Box>
-            )}
-          </Box>
-          <Box
-            flexDirection="row"
-            justifyContent="center"
-            alignItems="center"
-            marginVertical="s"
-            minHeight={40}
-          >
-            {reverseGeoLoading && (
-              <CircleLoader loaderSize={20} color="white" />
-            )}
-            {showError && (
-              <Text variant="body3Medium" color="red500">
-                {showError}
+                {t('assertLocationScreen.title')}
               </Text>
             )}
-            {!reverseGeo.loading && !showError && (
-              <FadeInOut>
-                <Text variant="body3Medium" color="grey600">
-                  {reverseGeo.result}
-                </Text>
-              </FadeInOut>
-            )}
-          </Box>
-          <Box>
-            <TouchableOpacityBox
-              backgroundColor="surfaceContrast"
-              borderRadius="round"
-              paddingVertical="lm"
-              disabled={disabled}
-              height={65}
-              alignItems="center"
-              justifyContent="center"
-              onPress={handleAssertLocationPress}
-            >
-              {debouncedDisabled || asserting ? (
-                <CircleLoader loaderSize={19} color="black" />
-              ) : (
-                <Text
-                  variant="subtitle2"
-                  marginHorizontal="xs"
-                  color="surfaceContrastText"
-                >
-                  {t('assertLocationScreen.title')}
-                </Text>
-              )}
-            </TouchableOpacityBox>
-          </Box>
-        </SafeAreaBox>
-      </BackScreen>
-      {elevGainVisible ? (
-        <ReAnimatedBlurBox
-          visible={elevGainVisible}
-          entering={FadeInFast}
-          flexDirection="row"
-          position="absolute"
-          height="100%"
-          width="100%"
-        >
-          <BackScreen
-            headerTopMargin="l"
-            padding="none"
-            hideBack
-            edges={backEdges}
-            onClose={hideElevGain}
+          </TouchableOpacityBox>
+        </Box>
+        {elevGainVisible ? (
+          <ReAnimatedBlurBox
+            visible={elevGainVisible}
+            entering={FadeInFast}
+            flexDirection="row"
+            position="absolute"
+            bottom={0}
+            height="100%"
+            width="100%"
           >
             <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-              <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-                <SafeAreaBox
-                  edges={safeEdges}
-                  backgroundColor="transparent"
-                  flex={1}
-                  padding="m"
-                  marginHorizontal="s"
-                  marginVertical="xs"
-                >
-                  <Box flexGrow={1} justifyContent="center">
-                    <Text
-                      textAlign="left"
-                      variant="subtitle2"
-                      adjustsFontSizeToFit
-                    >
-                      {t('assertLocationScreen.antennaSetup')}
-                    </Text>
-                    <Text
-                      variant="subtitle4"
-                      color="secondaryText"
-                      marginBottom="m"
-                    >
-                      {t('assertLocationScreen.antennaSetupDescription')}
-                    </Text>
-                    <Box
-                      width="100%"
-                      backgroundColor="secondary"
-                      borderRadius="l"
-                      paddingVertical="xs"
-                    >
-                      <TextInput
-                        variant="transparent"
-                        floatingLabel={`${t(
-                          'assertLocationScreen.gainPlaceholder',
-                        )}`}
-                        textInputProps={{
-                          placeholder: t(
+              <Box flex={1}>
+                <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+                  <Box
+                    backgroundColor="transparent"
+                    flex={1}
+                    height="100%"
+                    marginHorizontal="ms"
+                  >
+                    <Box flex={1} justifyContent="center" height="100%">
+                      <Text
+                        textAlign="left"
+                        variant="subtitle2"
+                        adjustsFontSizeToFit
+                      >
+                        {t('assertLocationScreen.antennaSetup')}
+                      </Text>
+                      <Text
+                        variant="subtitle4"
+                        color="secondaryText"
+                        marginBottom="m"
+                      >
+                        {t('assertLocationScreen.antennaSetupDescription')}
+                      </Text>
+                      <Box
+                        width="100%"
+                        backgroundColor="secondary"
+                        borderRadius="l"
+                        paddingVertical="xs"
+                      >
+                        <TextInput
+                          variant="transparent"
+                          floatingLabel={`${t(
                             'assertLocationScreen.gainPlaceholder',
-                          ),
-                          onChangeText: setGain,
-                          value: gain,
-                          keyboardType: 'decimal-pad',
-                        }}
-                      />
-                      <Box height={1} width="100%" backgroundColor="black200" />
-                      <TextInput
-                        variant="transparent"
-                        floatingLabel={`${t(
-                          'assertLocationScreen.elevationPlaceholder',
-                        )}`}
-                        textInputProps={{
-                          placeholder: t(
+                          )}`}
+                          textInputProps={{
+                            placeholder: t(
+                              'assertLocationScreen.gainPlaceholder',
+                            ),
+                            onChangeText: setGain,
+                            value: gain,
+                            keyboardType: 'decimal-pad',
+                          }}
+                        />
+                        <Box
+                          height={1}
+                          width="100%"
+                          backgroundColor="black200"
+                        />
+                        <TextInput
+                          variant="transparent"
+                          floatingLabel={`${t(
                             'assertLocationScreen.elevationPlaceholder',
-                          ),
-                          onChangeText: setElevation,
-                          value: elevation,
-                          keyboardType: 'decimal-pad',
-                        }}
-                      />
+                          )}`}
+                          textInputProps={{
+                            placeholder: t(
+                              'assertLocationScreen.elevationPlaceholder',
+                            ),
+                            onChangeText: setElevation,
+                            value: elevation,
+                            keyboardType: 'decimal-pad',
+                          }}
+                        />
+                      </Box>
                     </Box>
                   </Box>
-                  <Box>
-                    <ButtonPressable
-                      height={BUTTON_HEIGHT}
-                      flexGrow={1}
-                      borderRadius="round"
-                      backgroundColor="white"
-                      backgroundColorOpacityPressed={0.7}
-                      backgroundColorDisabled="white"
-                      backgroundColorDisabledOpacity={0.0}
-                      titleColorDisabled="grey600"
-                      title={asserting ? '' : t('assertLocationScreen.title')}
-                      titleColor="black"
-                      onPress={handleAssertLocationPress}
-                    />
-                  </Box>
-                </SafeAreaBox>
-              </KeyboardAvoidingView>
+                </KeyboardAvoidingView>
+                <Box padding="ms">
+                  <ButtonPressable
+                    flexGrow={1}
+                    borderRadius="round"
+                    backgroundColor="white"
+                    backgroundColorOpacityPressed={0.7}
+                    backgroundColorDisabled="white"
+                    backgroundColorDisabledOpacity={0.0}
+                    titleColorDisabled="grey600"
+                    title={asserting ? '' : t('assertLocationScreen.title')}
+                    titleColor="black"
+                    onPress={handleAssertLocationPress}
+                  />
+                </Box>
+              </Box>
             </TouchableWithoutFeedback>
-          </BackScreen>
-        </ReAnimatedBlurBox>
-      ) : undefined}
+          </ReAnimatedBlurBox>
+        ) : undefined}
+      </SafeAreaBox>
     </ReAnimatedBox>
   )
 }
 
-export default memo(AssertLocationScreen) */
+export default memo(AssertLocationScreen)

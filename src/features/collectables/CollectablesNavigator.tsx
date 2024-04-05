@@ -22,6 +22,7 @@ import SettingUpAntennaScreen from './SettingUpAntennaScreen'
 import TransferCollectableScreen from './TransferCollectableScreen'
 import TransferCompleteScreen from './TransferCompleteScreen'
 import HotspotMapScreen from './HotspotMapScreen'
+import AssertLocationScreen from './AssertLocationScreen'
 
 const CollectablesStack = createStackNavigator()
 
@@ -39,6 +40,10 @@ const CollectablesStackScreen = () => {
       <CollectablesStack.Screen
         name="HotspotMapScreen"
         component={HotspotMapScreen}
+      />
+      <CollectablesStack.Screen
+        name="AssertLocationScreen"
+        component={AssertLocationScreen}
       />
       <CollectablesStack.Screen
         name="HotspotDetailsScreen"
