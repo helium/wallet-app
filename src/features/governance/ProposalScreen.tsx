@@ -260,9 +260,11 @@ export const ProposalScreen = () => {
 
   const completed = endTs && endTs.toNumber() <= Date.now().valueOf() / 1000
   const noVotingPower = !loading && (!amountLocked || amountLocked.isZero())
+  const voted = !voting && voteWeights?.some((n) => n.gt(new BN(0)))
   const showVoteResults =
     derivedState !== 'cancelled' &&
-    (derivedState === 'passed' ||
+    (voted ||
+      derivedState === 'passed' ||
       derivedState === 'failed' ||
       derivedState === 'completed' ||
       completed)
