@@ -103,7 +103,7 @@ import { withPriorityFees } from '@utils/priorityFees'
 import axios from 'axios'
 import bs58 from 'bs58'
 import Config from 'react-native-config'
-import { getKeypair, getSessionKey } from '../storage/secureStorage'
+import { getSessionKey } from '../storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
 import {
   Collectable,
@@ -458,24 +458,14 @@ export const createTransferCollectableMessage = async (
   const compressedNFT = collectable as CompressedNFT
   const nft = collectable as Collectable
   const payer = new PublicKey(solanaAddress)
-  const secureAcct = await getKeypair(heliumAddress)
   const conn = anchorProvider.connection
-
-  if (!secureAcct) {
-    throw new Error('Secure account not found')
-  }
-
-  const signer = {
-    publicKey: payer,
-    secretKey: secureAcct.privateKey,
-  }
 
   const recipientPubKey = new PublicKey(payee)
   const mintPubkey = new PublicKey(nft.address || compressedNFT.id)
 
   const instructions: TransactionInstruction[] = []
 
-  const ownerATA = await getAssociatedTokenAddress(mintPubkey, signer.publicKey)
+  const ownerATA = await getAssociatedTokenAddress(mintPubkey, payer)
 
   const recipientATA = await getAssociatedTokenAddress(
     mintPubkey,
@@ -497,7 +487,7 @@ export const createTransferCollectableMessage = async (
       ownerATA, // from (should be a token account)
       mintPubkey, // mint
       recipientATA, // to (should be a token account)
-      signer.publicKey, // from's owner
+      payer, // from's owner
       1, // amount
       0, // decimals
       [], // signers
@@ -524,26 +514,12 @@ export const transferCollectable = async (
 ): Promise<TransactionDraft> => {
   const payer = new PublicKey(solanaAddress)
   try {
-    const secureAcct = await getKeypair(heliumAddress)
-
-    if (!secureAcct) {
-      throw new Error('Secure account not found')
-    }
-
-    const signer = {
-      publicKey: payer,
-      secretKey: secureAcct.privateKey,
-    }
-
     const recipientPubKey = new PublicKey(payee)
     const mintPubkey = new PublicKey(collectable.address)
 
     const instructions: TransactionInstruction[] = []
 
-    const ownerATA = await getAssociatedTokenAddress(
-      mintPubkey,
-      signer.publicKey,
-    )
+    const ownerATA = await getAssociatedTokenAddress(mintPubkey, payer)
 
     const recipientATA = await getAssociatedTokenAddress(
       mintPubkey,
@@ -565,7 +541,7 @@ export const transferCollectable = async (
         ownerATA, // from (should be a token account)
         mintPubkey, // mint
         recipientATA, // to (should be a token account)
-        signer.publicKey, // from's owner
+        payer, // from's owner
         1, // amount
         0, // decimals
         [], // signers
@@ -781,12 +757,7 @@ export const transferCompressedCollectable = async (
 ): Promise<TransactionDraft> => {
   const payer = new PublicKey(solanaAddress)
   try {
-    const secureAcct = await getKeypair(heliumAddress)
     const conn = anchorProvider.connection as WrappedConnection
-
-    if (!secureAcct) {
-      throw new Error('Secure account not found')
-    }
 
     const recipientPubKey = new PublicKey(payee)
 
