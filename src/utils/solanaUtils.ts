@@ -1159,6 +1159,27 @@ export async function exists(
   return Boolean(await connection.getAccountInfo(account))
 }
 
+export async function getCachedKeyToAsset(
+  hemProgram: Program<HeliumEntityManager>,
+  keyToAsset: PublicKey,
+): Promise<KeyToAssetV0 | undefined> {
+  const cache = await getSingleton(hemProgram.provider.connection)
+  const kta = await cache.search(
+    keyToAsset,
+    (pubkey, account) => ({
+      pubkey,
+      account,
+      info: hemProgram.coder.accounts.decode<
+        IdlAccounts<HeliumEntityManager>['keyToAssetV0']
+      >('KeyToAssetV0', account.data),
+    }),
+    true,
+    false,
+  )
+
+  return kta?.info
+}
+
 export async function getCachedKeyToAssets(
   hemProgram: Program<HeliumEntityManager>,
   keyToAssets: PublicKey[],
@@ -1182,6 +1203,27 @@ export async function getCachedKeyToAssets(
     .filter(truthy)
 }
 
+export async function getCachedIotInfo(
+  hemProgram: Program<HeliumEntityManager>,
+  infoKey: PublicKey,
+): Promise<IotHotspotInfoV0 | undefined> {
+  const cache = await getSingleton(hemProgram.provider.connection)
+  const iotInfo = await cache.search(
+    infoKey,
+    (pubkey, account) => ({
+      pubkey,
+      account,
+      info: hemProgram.coder.accounts.decode<
+        IdlAccounts<HeliumEntityManager>['iotHotspotInfoV0']
+      >('IotHotspotInfoV0', account.data),
+    }),
+    true,
+    false,
+  )
+
+  return iotInfo?.info
+}
+
 export async function getCachedIotInfos(
   hemProgram: Program<HeliumEntityManager>,
   infoKeys: PublicKey[],
@@ -1203,6 +1245,27 @@ export async function getCachedIotInfos(
   )
     .map((iotInfo) => iotInfo?.info)
     .filter(truthy)
+}
+
+export async function getCachedMobileInfo(
+  hemProgram: Program<HeliumEntityManager>,
+  infoKey: PublicKey,
+): Promise<MobileHotspotInfoV0 | undefined> {
+  const cache = await getSingleton(hemProgram.provider.connection)
+  const mobileInfo = await cache.search(
+    infoKey,
+    (pubkey, account) => ({
+      pubkey,
+      account,
+      info: hemProgram.coder.accounts.decode<
+        IdlAccounts<HeliumEntityManager>['mobileHotspotInfoV0']
+      >('MobileHotspotInfoV0', account.data),
+    }),
+    true,
+    false,
+  )
+
+  return mobileInfo?.info
 }
 
 export async function getCachedMobileInfos(

@@ -36,8 +36,11 @@ import { Point, feature, featureCollection } from '@turf/helpers'
 import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY } from '@utils/constants'
 import { parseH3BNLocation } from '@utils/h3'
 import {
+  getCachedIotInfo,
   getCachedIotInfos,
+  getCachedKeyToAsset,
   getCachedKeyToAssets,
+  getCachedMobileInfo,
   getCachedMobileInfos,
   toAsset,
 } from '@utils/solanaUtils'
@@ -57,13 +60,13 @@ import { HotspotMapLegend } from './HotspotMapLegend'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotMapScreen'>
 
-// TODO:
-// When a hotspot is passed in as a param
-// Determine if it has a iotInfo or mobileInfo
-// Based on that set the networkType and then find hex it belongs too
-// From the hexBuckets and setActiveHex to that and activeHotspot to the passed in hotspot
-// Desired data structure
-// { hex: [hotspot1, hotspot2, hotspot3] }
+// flow #1 I have no hotspot on the route
+// - I show the map with all hotspots starting with IOT
+
+// flow #2 I have a hotspot on the route
+// - fetch that hotspots IotInfo and MobileInfo.
+// - if they have a IotInfo fetch all other IotInfos and render map with all Iot hotspots
+// - if they have a MobileInfo fetch all other MobileInfos and render map with all Mobile hotspots
 
 const HotspotMapScreen = () => {
   const { t } = useTranslation()
@@ -88,7 +91,7 @@ const HotspotMapScreen = () => {
       info: IotHotspotInfoV0 | MobileHotspotInfoV0
     }[]
   }>({})
-  const [activeHex, setActiveHex] = useState(null)
+  const [activeHex, setActiveHex] = useState<string>()
   const [activeHotspotIndex, setActiveHotSpotIndex] = useState(0)
   const [legendVisible, setLegendVisible] = useState(false)
   const { hotspotsWithMeta, fetchMore, fetchingMore, loading, onEndReached } =
@@ -110,6 +113,28 @@ const HotspotMapScreen = () => {
     if (!loading && !fetchingMore && onEndReached && anchorProvider) {
       setLoadingInfos(true)
       const hemProgram = await init(anchorProvider)
+      let localNetworkType = networkType
+
+      // TODO
+      // if we have a hotspot on the route, determine if we have an IotInfo or MobileInfo
+      // render map depending on that
+      if (hotspot) {
+        const keyToAsset = keyToAssetForAsset(toAsset(hotspot))
+        const ktaAcc = await getCachedKeyToAsset(hemProgram, keyToAsset)
+        const entityKey =
+          ktaAcc && decodeEntityKey(ktaAcc.entityKey, ktaAcc.keySerialization)!
+
+        if (entityKey) {
+          const [iotKey] = iotInfoKey(IOT_CONFIG_KEY, entityKey)
+          const [mobileKey] = mobileInfoKey(MOBILE_CONFIG_KEY, entityKey)
+
+          const iotInfo = await getCachedIotInfo(hemProgram, iotKey)
+          const mobileInfo = await getCachedMobileInfo(hemProgram, mobileKey)
+
+          if (iotInfo) localNetworkType = 'IOT'
+          if (!iotInfo && mobileInfo) localNetworkType = 'MOBILE'
+        }
+      }
 
       // eslint-disable-next-line no-restricted-syntax
       for (const chunk of chunks(hotspotsWithMeta, 25)) {
@@ -125,13 +150,13 @@ const HotspotMapScreen = () => {
             ({
               IOT: iotInfoKey(IOT_CONFIG_KEY, ek)[0],
               MOBILE: mobileInfoKey(MOBILE_CONFIG_KEY, ek)[0],
-            }[networkType]),
+            }[localNetworkType]),
         )
 
         const infos = await {
           IOT: getCachedIotInfos(hemProgram, infoKeys),
           MOBILE: getCachedMobileInfos(hemProgram, infoKeys),
-        }[networkType]
+        }[localNetworkType]
 
         setHexBuckets(
           infos
@@ -170,11 +195,28 @@ const HotspotMapScreen = () => {
     fetchingMore,
     onEndReached,
     anchorProvider,
+    hotspot,
     networkType,
     hotspotsWithMeta,
     setLoadingInfos,
     setHexBuckets,
   ])
+
+  /* useAsync(async () => {
+    if (hotspot && hexBuckets && !loadingInfos && hemProgram) {
+      const keyToAsset = keyToAssetForAsset(toAsset(hotspot))
+      const kta = await getCachedKeyToAsset(hemProgram, keyToAsset)
+
+      if (kta) {
+        const entityKey = decodeEntityKey(kta.entityKey, kta.keySerialization)!
+        const iotKey = iotInfoKey(IOT_CONFIG_KEY, entityKey)[0]
+        const mobileKey = mobileInfoKey(MOBILE_CONFIG_KEY, entityKey)[0]
+
+        const iotInfo = await getCachedIotInfo(hemProgram, iotKey)
+        const mobileInfo = await getCachedMobileInfo(hemProgram, mobileKey)
+      }
+    }
+  }, [hotspot, hexBuckets, hemProgram, loadingInfos, hemProgram]) */
 
   const hexsFeature = useMemo(
     () =>
@@ -317,7 +359,7 @@ const HotspotMapScreen = () => {
             userLocation={userLocationRef}
             mapProps={{
               onPress: () => {
-                setActiveHex(null)
+                setActiveHex(undefined)
                 setLegendVisible(false)
               },
               onRegionDidChange: handleRegionChanged,
@@ -445,7 +487,7 @@ const HotspotMapScreen = () => {
             index={0}
             backgroundStyle={bottomSheetStyle}
             handleIndicatorStyle={{ backgroundColor: colors.secondaryText }}
-            onDismiss={() => setActiveHex(null)}
+            onDismiss={() => setActiveHex(undefined)}
           >
             <BottomSheetScrollView>
               <Box

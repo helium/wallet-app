@@ -335,12 +335,14 @@ export const HotspotMapHotspotDetails = ({
             selected={false}
             hasPressedState={false}
           />
-          <ListItem
-            title={t('collectablesScreen.hotspots.antennaSetup')}
-            onPress={handleAntennaSetup}
-            selected={false}
-            hasPressedState={false}
-          />
+          {network === 'IOT' && (
+            <ListItem
+              title={t('collectablesScreen.hotspots.antennaSetup')}
+              onPress={handleAntennaSetup}
+              selected={false}
+              hasPressedState={false}
+            />
+          )}
           <ListItem
             title="Show Metadata"
             onPress={handleMetadataPress}
