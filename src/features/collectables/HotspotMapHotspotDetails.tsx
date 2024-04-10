@@ -1,25 +1,33 @@
 import Hex from '@assets/images/hex.svg'
+import IotSymbol from '@assets/images/iotSymbol.svg'
+import MobileSymbol from '@assets/images/mobileSymbol.svg'
 import Box from '@components/Box'
 import ImageBox from '@components/ImageBox'
 import ListItem from '@components/ListItem'
 import Text from '@components/Text'
+import TouchableContainer from '@components/TouchableContainer'
+import { useMint } from '@helium/helium-react-hooks'
+import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import { useEntityKey } from '@hooks/useEntityKey'
+import { getExplorerUrl, useExplorer } from '@hooks/useExplorer'
 import { useHotspotAddress } from '@hooks/useHotspotAddress'
 import { IotHotspotInfoV0 } from '@hooks/useIotInfo'
 import { useMaker } from '@hooks/useMaker'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
 import { usePublicKey } from '@hooks/usePublicKey'
+import { useNavigation } from '@react-navigation/native'
 import { useColors } from '@theme/themeHooks'
-import { ellipsizeAddress } from '@utils/accountUtils'
+import { ellipsizeAddress, formatLargeNumber } from '@utils/accountUtils'
+import { Explorer } from '@utils/walletApiV2'
+import BigNumber from 'bignumber.js'
+import BN from 'bn.js'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigation } from '@react-navigation/native'
-import { useEntityKey } from '@hooks/useEntityKey'
-import { getExplorerUrl, useExplorer } from '@hooks/useExplorer'
 import { Linking } from 'react-native'
-import { Explorer } from '@utils/walletApiV2'
 import { SvgUri } from 'react-native-svg'
 import { HotspotWithPendingRewards } from '../../types/solana'
+import { Mints } from '../../utils/constants'
 import { CollectableNavigationProp } from './collectablesTypes'
 
 const IotMapDetails = ({
@@ -29,6 +37,7 @@ const IotMapDetails = ({
   maker: string
   info: IotHotspotInfoV0
 }) => {
+  const { t } = useTranslation()
   const colors = useColors()
   const { gain, elevation } = info
 
@@ -36,7 +45,9 @@ const IotMapDetails = ({
     <Box flexDirection="row" marginTop="m">
       <Box flex={1} flexDirection="row" justifyContent="space-between">
         <Box>
-          <Text variant="body1Medium">Transmit Scale</Text>
+          <Text variant="body1Medium">
+            {t('collectablesScreen.hotspots.map.transmitScale')}
+          </Text>
           <Box flexDirection="row" alignItems="center">
             <Hex width={16} height={16} color={colors.darkGrey} />
             <Text marginLeft="s" variant="body1">
@@ -45,15 +56,17 @@ const IotMapDetails = ({
           </Box>
         </Box>
         <Box>
-          <Text variant="body1Medium">Maker</Text>
+          <Text variant="body1Medium">{t('generic.maker')}</Text>
           <Text variant="body1">{maker}</Text>
         </Box>
         <Box>
-          <Text variant="body1Medium">Gain</Text>
-          <Text variant="body1">{gain} dBi</Text>
+          <Text variant="body1Medium">{t('generic.gain')}</Text>
+          <Text variant="body1">
+            {gain} {t('generic.dBi')}
+          </Text>
         </Box>
         <Box>
-          <Text variant="body1Medium">Elevation</Text>
+          <Text variant="body1Medium">{t('generic.elevation')}</Text>
           <Text variant="body1">{elevation}m</Text>
         </Box>
       </Box>
@@ -68,6 +81,7 @@ const MobileMapDetails = ({
   maker: string
   info: MobileHotspotInfoV0
 }) => {
+  const { t } = useTranslation()
   const colors = useColors()
   const { deviceType } = info
 
@@ -75,7 +89,7 @@ const MobileMapDetails = ({
     <Box flexDirection="row" marginTop="m">
       <Box flex={1} flexDirection="row" justifyContent="space-between">
         <Box>
-          <Text variant="body1Medium">Coverage</Text>
+          <Text variant="body1Medium">{t('generic.coverage')}</Text>
           <Box flexDirection="row" alignItems="center">
             <Hex width={16} height={16} color={colors.darkGrey} />
             <Text marginLeft="s" variant="body1">
@@ -84,12 +98,14 @@ const MobileMapDetails = ({
           </Box>
         </Box>
         <Box>
-          <Text variant="body1Medium">Maker</Text>
+          <Text variant="body1Medium">{t('generic.maker')}</Text>
           <Text variant="body1">{maker}</Text>
         </Box>
         <Box>
-          <Text variant="body1Medium">Radio Type</Text>
-          <Text variant="body1">{Object.keys(deviceType)[0]}</Text>
+          <Text variant="body1Medium">{t('generic.radioType')}</Text>
+          <Text variant="body1">
+            {deviceType ? Object.keys(deviceType)[0] : '---'}
+          </Text>
         </Box>
       </Box>
     </Box>
@@ -110,6 +126,8 @@ export const HotspotMapHotspotDetails = ({
   const entityKey = useEntityKey(hotspot)
   const [selectExplorerOpen, setSelectExplorerOpen] = useState(false)
   const streetAddress = useHotspotAddress(hotspot)
+  const { info: iotMint } = useMint(IOT_MINT)
+  const { info: mobileMint } = useMint(MOBILE_MINT)
   const { metadata } = hotspot.content
   const collection = hotspot.grouping.find(
     (k) => k.group_key === 'collection',
@@ -128,6 +146,49 @@ export const HotspotMapHotspotDetails = ({
 
   const { loading: makerLoading, info: makerAcc } = useMaker(
     mplxMetadata?.updateAuthority.toBase58(),
+  )
+
+  const pendingIotRewards = useMemo(
+    () => hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.IOT]),
+    [hotspot],
+  )
+
+  const pendingIotRewardsString = useMemo(() => {
+    if (!hotspot.pendingRewards) return
+    const num = toNumber(
+      new BN(hotspot.pendingRewards[Mints.IOT]),
+      iotMint?.decimals || 6,
+    )
+    return formatLargeNumber(new BigNumber(num))
+  }, [hotspot, iotMint])
+
+  const pendingMobileRewards = useMemo(
+    () =>
+      hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.MOBILE]),
+    [hotspot],
+  )
+
+  const pendingMobileRewardsString = useMemo(() => {
+    if (!hotspot.pendingRewards) return
+    const num = toNumber(
+      new BN(hotspot.pendingRewards[Mints.MOBILE]),
+      mobileMint?.decimals || 6,
+    )
+    return formatLargeNumber(new BigNumber(num))
+  }, [hotspot, mobileMint])
+
+  const hasIotRewards = useMemo(
+    () => pendingIotRewards && pendingIotRewards.gt(new BN(0)),
+    [pendingIotRewards],
+  )
+  const hasMobileRewards = useMemo(
+    () => pendingMobileRewards && pendingMobileRewards.gt(new BN(0)),
+    [pendingMobileRewards],
+  )
+
+  const hasRewards = useMemo(
+    () => hasIotRewards || hasMobileRewards,
+    [hasIotRewards, hasMobileRewards],
   )
 
   const isLoading = useMemo(
@@ -311,12 +372,64 @@ export const HotspotMapHotspotDetails = ({
         </>
       ) : (
         <>
-          <ListItem
-            title="Claim Rewards"
-            onPress={handleClaimRewards}
-            selected={false}
-            hasPressedState={false}
-          />
+          <TouchableContainer
+            alignItems="center"
+            flex={1}
+            flexDirection="row"
+            paddingVertical="m"
+            borderBottomColor="black900"
+            borderBottomWidth={1}
+            onPress={hasRewards ? handleClaimRewards : undefined}
+            disabled={!hasRewards}
+          >
+            <Box
+              flex={1}
+              flexDirection="row"
+              alignItems="center"
+              marginHorizontal="m"
+            >
+              <Text variant="subtitle3" opacity={!hasRewards ? 0.5 : 1}>
+                {t('collectablesScreen.hotspots.claimRewards')}
+              </Text>
+              <Box
+                flex={1}
+                flexDirection="row"
+                justifyContent="flex-end"
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                gap={4}
+              >
+                <Box
+                  justifyContent="center"
+                  alignItems="center"
+                  backgroundColor="iotDarkGreen"
+                  borderRadius="xl"
+                  padding="xs"
+                  paddingRight="s"
+                  flexDirection="row"
+                >
+                  <IotSymbol color="black" />
+                  <Text variant="body2Medium" marginLeft="s" color="iotGreen">
+                    {pendingIotRewardsString}
+                  </Text>
+                </Box>
+                <Box
+                  justifyContent="center"
+                  alignItems="center"
+                  backgroundColor="mobileDarkBlue"
+                  borderRadius="xl"
+                  padding="xs"
+                  paddingRight="s"
+                  flexDirection="row"
+                >
+                  <MobileSymbol color="black" />
+                  <Text variant="body2Medium" marginLeft="s" color="mobileBlue">
+                    {pendingMobileRewardsString}
+                  </Text>
+                </Box>
+              </Box>
+            </Box>
+          </TouchableContainer>
           <ListItem
             title={t('collectablesScreen.hotspots.viewInExplorer')}
             onPress={handleViewInExplorer}
@@ -324,7 +437,7 @@ export const HotspotMapHotspotDetails = ({
             hasPressedState={false}
           />
           <ListItem
-            title="Transfer"
+            title={t('collectablesScreen.hotspots.transferHotspot')}
             onPress={handleTransfer}
             selected={false}
             hasPressedState={false}
@@ -344,7 +457,7 @@ export const HotspotMapHotspotDetails = ({
             />
           )}
           <ListItem
-            title="Show Metadata"
+            title={t('collectablesScreen.hotspots.showMetadata')}
             onPress={handleMetadataPress}
             selected={false}
             hasPressedState={false}
