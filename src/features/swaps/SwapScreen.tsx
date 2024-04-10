@@ -862,34 +862,41 @@ const SwapScreen = () => {
               height="100%"
               width="100%"
             >
-              <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                alignItems="center"
-                marginTop="l"
-              >
-                <Box flex={1}>
-                  <CloseButton
-                    marginStart="m"
-                    onPress={() => setSlippageInfoVisible(false)}
-                  />
+              <Box flexDirection="column" height="100%">
+                <Box
+                  flexDirection="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  marginTop="l"
+                >
+                  <Box flex={1}>
+                    <CloseButton
+                      marginStart="m"
+                      onPress={() => setSlippageInfoVisible(false)}
+                    />
+                  </Box>
+                  <Box flex={1} alignItems="center" flexDirection="row">
+                    <Text
+                      variant="h4"
+                      color="white"
+                      flex={1}
+                      textAlign="center"
+                    >
+                      {t('swapsScreen.slippage')}
+                    </Text>
+                  </Box>
+                  <Box flex={1} />
                 </Box>
-                <Box flex={1} alignItems="center" flexDirection="row">
-                  <Text variant="h4" color="white" flex={1} textAlign="center">
-                    {t('swapsScreen.slippage')}
+                <Box flex={1} paddingHorizontal="m" marginTop="l">
+                  <Text
+                    variant="body1Medium"
+                    color="white"
+                    flex={1}
+                    textAlign="center"
+                  >
+                    {t('swapsScreen.slippageInfo')}
                   </Text>
                 </Box>
-                <Box flex={1} />
-              </Box>
-              <Box flex={1} paddingHorizontal="m" marginTop="l">
-                <Text
-                  variant="body1Medium"
-                  color="white"
-                  flex={1}
-                  textAlign="center"
-                >
-                  {t('swapsScreen.slippageInfo')}
-                </Text>
               </Box>
             </ReAnimatedBlurBox>
           ) : undefined}
