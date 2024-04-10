@@ -1,6 +1,7 @@
 import Hex from '@assets/images/hex.svg'
 import IotSymbol from '@assets/images/iotSymbol.svg'
 import MobileSymbol from '@assets/images/mobileSymbol.svg'
+import CopyAddress from '@assets/images/copyAddress.svg'
 import Box from '@components/Box'
 import ImageBox from '@components/ImageBox'
 import ListItem from '@components/ListItem'
@@ -26,6 +27,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Linking } from 'react-native'
 import { SvgUri } from 'react-native-svg'
+import useCopyText from '@hooks/useCopyText'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { HotspotWithPendingRewards } from '../../types/solana'
 import { Mints } from '../../utils/constants'
 import { CollectableNavigationProp } from './collectablesTypes'
@@ -129,10 +132,12 @@ export const HotspotMapHotspotDetails = ({
   const { info: iotMint } = useMint(IOT_MINT)
   const { info: mobileMint } = useMint(MOBILE_MINT)
   const { metadata } = hotspot.content
+  const copyText = useCopyText()
   const collection = hotspot.grouping.find(
     (k) => k.group_key === 'collection',
   )?.group_value
   const collectionKey = usePublicKey(collection)
+  const { primaryText } = useColors()
 
   const { loading: mplxLoading, metadata: mplxMetadata } =
     useMetaplexMetadata(collectionKey)
@@ -212,6 +217,15 @@ export const HotspotMapHotspotDetails = ({
       setSelectExplorerOpen(false)
     }
   }, [explorer])
+
+  const handleCopyAddress = useCallback(() => {
+    if (!eccCompact) return
+
+    copyText({
+      message: ellipsizeAddress(eccCompact),
+      copyText: eccCompact,
+    })
+  }, [copyText, eccCompact])
 
   const handleViewInExplorer = useCallback(async () => {
     if (explorer && entityKey) {
@@ -299,27 +313,33 @@ export const HotspotMapHotspotDetails = ({
                 {hotspot.content.metadata.name}
               </Text>
             </Box>
-            <Box
-              flexDirection="row"
-              justifyContent="space-between"
-              alignItems="center"
-            >
+            <Box flexDirection="row" alignItems="center">
               {streetAddress && (
                 <Text numberOfLines={1} variant="body1">
                   {streetAddress}
                 </Text>
               )}
-              <Box
-                backgroundColor="surfaceContrast"
-                height={6}
-                width={6}
-                borderRadius="round"
-              />
-              <Box>
-                <Text variant="body1" numberOfLines={1}>
-                  {eccCompact && ellipsizeAddress(eccCompact, { numChars: 4 })}
-                </Text>
-              </Box>
+              {eccCompact && (
+                <>
+                  <Box
+                    backgroundColor="surfaceContrast"
+                    height={6}
+                    width={6}
+                    borderRadius="round"
+                    marginHorizontal="ms"
+                  />
+                  <TouchableOpacityBox
+                    flexDirection="row"
+                    alignItems="center"
+                    onPress={handleCopyAddress}
+                  >
+                    <Text variant="body1" numberOfLines={1} marginRight="xs">
+                      {ellipsizeAddress(eccCompact, { numChars: 4 })}
+                    </Text>
+                    <CopyAddress width={16} height={16} color={primaryText} />
+                  </TouchableOpacityBox>
+                </>
+              )}
             </Box>
           </Box>
         </Box>

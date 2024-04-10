@@ -91,40 +91,60 @@ const HotspotMapScreen = () => {
 
   useEffect(() => {
     if (!loading && !fetchingMore && !onEndReached) {
-      fetchMore(100)
+      fetchMore(50)
     }
   }, [loading, fetchingMore, fetchMore, onEndReached])
+
+  useAsync(async () => {
+    // if hotspot is provided, check if it's IOT or MOBILE
+    // scope networkType to the hotspot's network type
+    if (
+      !loading &&
+      !fetchingMore &&
+      onEndReached &&
+      anchorProvider &&
+      hotspot
+    ) {
+      const hemProgram = await init(anchorProvider)
+      const keyToAsset = keyToAssetForAsset(toAsset(hotspot))
+      const ktaAcc = await getCachedKeyToAsset(hemProgram, keyToAsset)
+      const entityKey =
+        ktaAcc && decodeEntityKey(ktaAcc.entityKey, ktaAcc.keySerialization)!
+
+      if (entityKey) {
+        const [iotKey] = iotInfoKey(IOT_CONFIG_KEY, entityKey)
+        const [mobileKey] = mobileInfoKey(MOBILE_CONFIG_KEY, entityKey)
+
+        const iotInfo = await getCachedIotInfo(hemProgram, iotKey)
+        const mobileInfo = await getCachedMobileInfo(hemProgram, mobileKey)
+
+        if (iotInfo || mobileInfo) {
+          setNetworkType(iotInfo ? 'IOT' : 'MOBILE')
+          /* localActiveHex =
+            iotInfo?.location?.toString() || mobileInfo?.location?.toString()
+            setActiveHex(localActiveHex)
+            // setNetworkType(localNetworkType)
+            if (hotspot && localActiveHex) {
+              setActiveHotspotIndex(
+                buckets[localActiveHex].findIndex((h) => h.hotspot.id === hotspot.id),
+              )
+            } */
+        }
+      }
+    }
+  }, [
+    loading,
+    fetchingMore,
+    onEndReached,
+    anchorProvider,
+    hotspot,
+    setNetworkType,
+  ])
 
   useAsync(async () => {
     if (!loading && !fetchingMore && onEndReached && anchorProvider) {
       setLoadingInfos(true)
       const hemProgram = await init(anchorProvider)
-      let localNetworkType = networkType
-      let localActiveHex: string | undefined
-
-      // if hotspot is provided, check if it's IOT or MOBILE
-      // scope networkType to the hotspot's network type
-      if (hotspot) {
-        const keyToAsset = keyToAssetForAsset(toAsset(hotspot))
-        const ktaAcc = await getCachedKeyToAsset(hemProgram, keyToAsset)
-        const entityKey =
-          ktaAcc && decodeEntityKey(ktaAcc.entityKey, ktaAcc.keySerialization)!
-
-        if (entityKey) {
-          const [iotKey] = iotInfoKey(IOT_CONFIG_KEY, entityKey)
-          const [mobileKey] = mobileInfoKey(MOBILE_CONFIG_KEY, entityKey)
-
-          const iotInfo = await getCachedIotInfo(hemProgram, iotKey)
-          const mobileInfo = await getCachedMobileInfo(hemProgram, mobileKey)
-
-          if (iotInfo || mobileInfo) {
-            localNetworkType = iotInfo ? 'IOT' : 'MOBILE'
-            setNetworkType(localNetworkType)
-            localActiveHex =
-              iotInfo?.location?.toString() || mobileInfo?.location?.toString()
-          }
-        }
-      }
 
       // fetch infos by localNetworkType for all hotspots
       const infos = (
@@ -145,17 +165,21 @@ const HotspotMapScreen = () => {
                 ({
                   IOT: iotInfoKey(IOT_CONFIG_KEY, ek)[0],
                   MOBILE: mobileInfoKey(MOBILE_CONFIG_KEY, ek)[0],
-                }[localNetworkType]),
+                }[networkType]),
             )
 
             return {
               IOT: getCachedIotInfos(hemProgram, infoKeys),
               MOBILE: getCachedMobileInfos(hemProgram, infoKeys),
-            }[localNetworkType]
+            }[networkType]
           }),
         )
       ).flat()
 
+      console.log({
+        infos: infos.length,
+        infosWithLocation: infos.filter((i) => truthy(i.location)).length,
+      })
       const buckets = infos
         .filter((info) => truthy(info.location))
         .reduce(
@@ -180,13 +204,6 @@ const HotspotMapScreen = () => {
         )
 
       setHexBuckets(buckets)
-      setActiveHex(localActiveHex)
-      if (hotspot && localActiveHex) {
-        setActiveHotspotIndex(
-          buckets[localActiveHex].findIndex((h) => h.hotspot.id === hotspot.id),
-        )
-      }
-
       setLoadingInfos(false)
     }
   }, [
@@ -194,13 +211,10 @@ const HotspotMapScreen = () => {
     fetchingMore,
     onEndReached,
     anchorProvider,
-    hotspot,
+    networkType,
     hotspotsWithMeta,
     setLoadingInfos,
-    setNetworkType,
     setHexBuckets,
-    setActiveHex,
-    setActiveHotspotIndex,
   ])
 
   const hexsFeature = useMemo(
@@ -378,7 +392,7 @@ const HotspotMapScreen = () => {
                     style={{
                       iconImage: ['get', 'iconImage'],
                       iconSize: ['get', 'iconSize'],
-                      iconAllowOverlap: false,
+                      iconAllowOverlap: true,
                     }}
                   />
                 </MapLibreGL.ShapeSource>
