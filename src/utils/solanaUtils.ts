@@ -1130,6 +1130,8 @@ export async function annotateWithPendingRewards(
     MOBILE_LAZY_KEY,
     dao,
     entityKeys,
+    'b58',
+    true,
   )
 
   const iotRewards = await getPendingRewards(
@@ -1137,6 +1139,8 @@ export async function annotateWithPendingRewards(
     IOT_LAZY_KEY,
     dao,
     entityKeys,
+    'b58',
+    true,
   )
 
   return hotspots.map((hotspot, index) => {
