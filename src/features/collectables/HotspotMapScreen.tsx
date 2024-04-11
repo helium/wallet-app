@@ -77,11 +77,8 @@ const HotspotMapScreen = () => {
   const [zoomLevel, setZoomLevel] = useState(INITIAL_MAP_VIEW_STATE.zoomLevel)
   const [networkType, setNetworkType] = useState<'IOT' | 'MOBILE'>('IOT')
   const [loadingInfos, setLoadingInfos] = useState(false)
-  const [hexBuckets, setHexBuckets] = useState<{
-    [key: string]: {
-      hotspot: HotspotWithPendingRewards
-      info: IotHotspotInfoV0 | MobileHotspotInfoV0
-    }[]
+  const [hexInfoBuckets, setHexInfoBuckets] = useState<{
+    [key: string]: IotHotspotInfoV0[] | MobileHotspotInfoV0[]
   }>({})
   const [activeHex, setActiveHex] = useState<string>()
   const [activeHotspotIndex, setActiveHotspotIndex] = useState(0)
@@ -89,22 +86,95 @@ const HotspotMapScreen = () => {
   const { hotspotsWithMeta, fetchMore, fetchingMore, loading, onEndReached } =
     useHotspots()
 
+  // - fetch all hotspots
   useEffect(() => {
     if (!loading && !fetchingMore && !onEndReached) {
-      fetchMore(50)
+      fetchMore(100)
     }
-  }, [loading, fetchingMore, fetchMore, onEndReached])
+  }, [loading, fetchingMore, onEndReached, fetchMore])
+
+  // - fetch infos by networkType for all hotspots
+  // - setUp hexInfoBuckets
+  useAsync(async () => {
+    if (!loading && !fetchingMore && onEndReached && anchorProvider) {
+      setLoadingInfos(true)
+      const hemProgram = await init(anchorProvider)
+
+      const infos = (
+        await Promise.all(
+          chunks(hotspotsWithMeta, 100).map(async (chunk) => {
+            const keyToAssetKeys = chunk.map((h) =>
+              keyToAssetForAsset(toAsset(h)),
+            )
+            const ktaAccs = await getCachedKeyToAssets(
+              hemProgram,
+              keyToAssetKeys,
+            )
+
+            const entityKeys = ktaAccs
+              .map((kta) => {
+                return decodeEntityKey(kta.entityKey, kta.keySerialization)
+              })
+              .filter(truthy)
+
+            const infoKeys = entityKeys.map((ek) => {
+              const keys = {
+                IOT: iotInfoKey(IOT_CONFIG_KEY, ek)[0],
+                MOBILE: mobileInfoKey(MOBILE_CONFIG_KEY, ek)[0],
+              }
+
+              return keys[networkType]
+            })
+
+            if (networkType === 'IOT') {
+              return getCachedIotInfos(hemProgram, infoKeys)
+            }
+
+            if (networkType === 'MOBILE') {
+              return getCachedMobileInfos(hemProgram, infoKeys)
+            }
+          }),
+        )
+      ).flat()
+
+      const infoBuckets = infos
+        .filter((info) => info && truthy(info.location))
+        .reduce(
+          (acc, info) => ({
+            ...acc,
+            ...(info?.location
+              ? {
+                  [info.location.toString()]: [
+                    ...(acc[info.location.toString()] || []),
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    info as any,
+                  ],
+                }
+              : {}),
+          }),
+          {} as {
+            [key: string]: IotHotspotInfoV0[] | MobileHotspotInfoV0[]
+          },
+        )
+
+      setHexInfoBuckets(infoBuckets)
+      setLoadingInfos(false)
+    }
+  }, [
+    loading,
+    fetchingMore,
+    onEndReached,
+    anchorProvider,
+    networkType,
+    hotspotsWithMeta,
+    setLoadingInfos,
+    setHexInfoBuckets,
+  ])
 
   useAsync(async () => {
     // if hotspot is provided, check if it's IOT or MOBILE
     // scope networkType to the hotspot's network type
-    if (
-      !loading &&
-      !fetchingMore &&
-      onEndReached &&
-      anchorProvider &&
-      hotspot
-    ) {
+    if (onEndReached && !loadingInfos && anchorProvider && hotspot) {
       const hemProgram = await init(anchorProvider)
       const keyToAsset = keyToAssetForAsset(toAsset(hotspot))
       const ktaAcc = await getCachedKeyToAsset(hemProgram, keyToAsset)
@@ -132,114 +202,9 @@ const HotspotMapScreen = () => {
         }
       }
     }
-  }, [
-    loading,
-    fetchingMore,
-    onEndReached,
-    anchorProvider,
-    hotspot,
-    setNetworkType,
-  ])
+  }, [anchorProvider, onEndReached, loadingInfos, hotspot, setNetworkType])
 
-  useAsync(async () => {
-    if (!loading && !fetchingMore && onEndReached && anchorProvider) {
-      setLoadingInfos(true)
-      const hemProgram = await init(anchorProvider)
-
-      // fetch infos by localNetworkType for all hotspots
-      const infos = (
-        await Promise.all(
-          chunks(hotspotsWithMeta, 25).map(async (c) => {
-            const keyToAssetKeys = c.map((h) => keyToAssetForAsset(toAsset(h)))
-            const ktaAccs = await getCachedKeyToAssets(
-              hemProgram,
-              keyToAssetKeys,
-            )
-            const entityKeys = ktaAccs.map(
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              (kta) => decodeEntityKey(kta.entityKey, kta.keySerialization)!,
-            )
-
-            const infoKeys = entityKeys.map(
-              (ek) =>
-                ({
-                  IOT: iotInfoKey(IOT_CONFIG_KEY, ek)[0],
-                  MOBILE: mobileInfoKey(MOBILE_CONFIG_KEY, ek)[0],
-                }[networkType]),
-            )
-
-            return {
-              IOT: getCachedIotInfos(hemProgram, infoKeys),
-              MOBILE: getCachedMobileInfos(hemProgram, infoKeys),
-            }[networkType]
-          }),
-        )
-      ).flat()
-
-      console.log({
-        infos: infos.length,
-        infosWithLocation: infos.filter((i) => truthy(i.location)).length,
-      })
-      const buckets = infos
-        .filter((info) => truthy(info.location))
-        .reduce(
-          (acc, info) => ({
-            ...acc,
-            [info.location!.toString()]: [
-              ...(acc[info.location!.toString()] || []),
-              {
-                hotspot: hotspotsWithMeta.find(
-                  (h) => h.content.metadata.asset_id === info.asset.toBase58(),
-                ) as HotspotWithPendingRewards,
-                info,
-              },
-            ],
-          }),
-          {} as {
-            [key: string]: {
-              hotspot: HotspotWithPendingRewards
-              info: IotHotspotInfoV0 | MobileHotspotInfoV0
-            }[]
-          },
-        )
-
-      setHexBuckets(buckets)
-      setLoadingInfos(false)
-    }
-  }, [
-    loading,
-    fetchingMore,
-    onEndReached,
-    anchorProvider,
-    networkType,
-    hotspotsWithMeta,
-    setLoadingInfos,
-    setHexBuckets,
-  ])
-
-  const hexsFeature = useMemo(
-    () =>
-      featureCollection(
-        Object.keys(hexBuckets).map((h) =>
-          feature(
-            {
-              type: 'Point',
-              coordinates: parseH3BNLocation(new BN(h)).reverse(),
-            } as Point,
-            {
-              id: h,
-              iconImage:
-                h === activeHex
-                  ? `${networkType.toLowerCase()}HexActive`
-                  : `${networkType.toLowerCase()}Hex`,
-              iconSize: zoomLevel * 0.02,
-            },
-          ),
-        ),
-      ),
-    [hexBuckets, activeHex, networkType, zoomLevel],
-  )
-
+  // - show bottom sheet when activeHex is set
   useEffect(() => {
     if (activeHex || legendVisible) {
       bottomSheetRef.current?.present()
@@ -248,6 +213,7 @@ const HotspotMapScreen = () => {
     }
   }, [loadingInfos, activeHex, legendVisible, bottomSheetRef])
 
+  // - center the map on the active hex
   useAsync(async () => {
     if (activeHex && mapRef?.current && bottomSheetHeight) {
       const cords = parseH3BNLocation(new BN(activeHex)).reverse()
@@ -287,6 +253,54 @@ const HotspotMapScreen = () => {
     }
   }, [activeHex, mapRef, bottomSheetHeight, cameraRef])
 
+  const hexsHitBox = useMemo(() => zoomLevel * 0.02, [zoomLevel])
+  const hexsFeature = useMemo(
+    () =>
+      featureCollection(
+        Object.keys(hexInfoBuckets).map((h) =>
+          feature(
+            {
+              type: 'Point',
+              coordinates: parseH3BNLocation(new BN(h)).reverse(),
+            } as Point,
+            {
+              id: h,
+              iconImage:
+                h === activeHex
+                  ? `${networkType.toLowerCase()}HexActive`
+                  : `${networkType.toLowerCase()}Hex`,
+              iconSize: zoomLevel * 0.02,
+            },
+          ),
+        ),
+      ),
+    [hexInfoBuckets, activeHex, networkType, zoomLevel],
+  )
+
+  const activeHexItem = useMemo(() => {
+    if (!loadingInfos && activeHex) {
+      const info = hexInfoBuckets[activeHex][activeHotspotIndex]
+
+      return {
+        hotspot: hotspotsWithMeta.find(
+          (h) => h.content.metadata.asset_id === info.asset.toBase58(),
+        ) as HotspotWithPendingRewards,
+        info,
+      }
+    }
+  }, [
+    loadingInfos,
+    hexInfoBuckets,
+    activeHex,
+    activeHotspotIndex,
+    hotspotsWithMeta,
+  ])
+
+  const isLoading = useMemo(
+    () => loading || fetchingMore || !onEndReached || loadingInfos,
+    [loading, fetchingMore, onEndReached, loadingInfos],
+  )
+
   const handleUserLocationPress = useCallback(() => {
     if (cameraRef?.current && userLocationRef?.current?.state.coordinates) {
       cameraRef.current.setCamera({
@@ -298,7 +312,6 @@ const HotspotMapScreen = () => {
   }, [userLocationRef, cameraRef])
 
   const handleRegionChanged = useCallback(async () => {
-    // TODO: Maybe throttle this
     if (mapRef?.current) {
       const zoom = await mapRef.current.getZoom()
       if (zoomLevel !== zoom) {
@@ -322,17 +335,6 @@ const HotspotMapScreen = () => {
       setActiveHex(hex.properties?.id)
     },
     [setActiveHex, setLegendVisible],
-  )
-
-  const activeHexItem = useMemo(() => {
-    if (!loadingInfos && hexBuckets && activeHex) {
-      return hexBuckets[activeHex][activeHotspotIndex]
-    }
-  }, [loadingInfos, hexBuckets, activeHex, activeHotspotIndex])
-
-  const isLoading = useMemo(
-    () => loading || fetchingMore || !onEndReached || loadingInfos,
-    [loading, fetchingMore, onEndReached, loadingInfos],
   )
 
   return (
@@ -384,6 +386,7 @@ const HotspotMapScreen = () => {
                 />
                 <MapLibreGL.ShapeSource
                   id="hexsFeature"
+                  hitbox={{ width: hexsHitBox, height: hexsHitBox }}
                   onPress={handleHexClick}
                   shape={hexsFeature}
                 >
