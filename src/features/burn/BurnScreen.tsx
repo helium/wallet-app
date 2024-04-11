@@ -258,14 +258,11 @@ const BurnScreen = () => {
       let invalidAddress = false
 
       if (isDelegate) {
-        console.log('WHAT 1')
         invalidAddress = !!address && !Address.isValid(address)
       } else {
-        console.log('WHAT 2')
         invalidAddress = !!address && !solAddressIsValid(address)
       }
 
-      console.log({ invalidAddress })
       const wrongNetType =
         address !== undefined &&
         address !== '' &&
