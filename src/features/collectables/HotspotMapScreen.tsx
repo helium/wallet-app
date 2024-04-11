@@ -36,11 +36,8 @@ import { Point, feature, featureCollection } from '@turf/helpers'
 import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY } from '@utils/constants'
 import { parseH3BNLocation } from '@utils/h3'
 import {
-  getCachedIotInfo,
   getCachedIotInfos,
-  getCachedKeyToAsset,
   getCachedKeyToAssets,
-  getCachedMobileInfo,
   getCachedMobileInfos,
   toAsset,
 } from '@utils/solanaUtils'
@@ -64,7 +61,7 @@ const HotspotMapScreen = () => {
   const { t } = useTranslation()
   const { anchorProvider } = useSolana()
   const route = useRoute<Route>()
-  const { hotspot } = route.params || {}
+  const { hotspot, network } = route.params || {}
   const bottomSheetStyle = useBackgroundStyle('surfaceSecondary')
   const navigation = useNavigation<CollectableNavigationProp>()
   const colors = useColors()
@@ -75,7 +72,9 @@ const HotspotMapScreen = () => {
   const [bottomSheetHeight, setBottomSheetHeight] = useState(0)
   const [backEdges] = [['top']] as Edge[][]
   const [zoomLevel, setZoomLevel] = useState(INITIAL_MAP_VIEW_STATE.zoomLevel)
-  const [networkType, setNetworkType] = useState<'IOT' | 'MOBILE'>('IOT')
+  const [networkType, setNetworkType] = useState<'IOT' | 'MOBILE'>(
+    network || 'IOT',
+  )
   const [loadingInfos, setLoadingInfos] = useState(false)
   const [hexInfoBuckets, setHexInfoBuckets] = useState<{
     [key: string]: IotHotspotInfoV0[] | MobileHotspotInfoV0[]
@@ -175,34 +174,20 @@ const HotspotMapScreen = () => {
     // if hotspot is provided, check if it's IOT or MOBILE
     // scope networkType to the hotspot's network type
     if (onEndReached && !loadingInfos && anchorProvider && hotspot) {
-      const hemProgram = await init(anchorProvider)
-      const keyToAsset = keyToAssetForAsset(toAsset(hotspot))
-      const ktaAcc = await getCachedKeyToAsset(hemProgram, keyToAsset)
-      const entityKey =
-        ktaAcc && decodeEntityKey(ktaAcc.entityKey, ktaAcc.keySerialization)!
+      const hex = Object.entries(hexInfoBuckets).find(([_, infos]) =>
+        infos.find((info) => info.asset.toBase58() === hotspot.id),
+      )?.[0]
 
-      if (entityKey) {
-        const [iotKey] = iotInfoKey(IOT_CONFIG_KEY, entityKey)
-        const [mobileKey] = mobileInfoKey(MOBILE_CONFIG_KEY, entityKey)
-
-        const iotInfo = await getCachedIotInfo(hemProgram, iotKey)
-        const mobileInfo = await getCachedMobileInfo(hemProgram, mobileKey)
-
-        if (iotInfo || mobileInfo) {
-          setNetworkType(iotInfo ? 'IOT' : 'MOBILE')
-          /* localActiveHex =
-            iotInfo?.location?.toString() || mobileInfo?.location?.toString()
-            setActiveHex(localActiveHex)
-            // setNetworkType(localNetworkType)
-            if (hotspot && localActiveHex) {
-              setActiveHotspotIndex(
-                buckets[localActiveHex].findIndex((h) => h.hotspot.id === hotspot.id),
-              )
-            } */
-        }
+      if (hex) {
+        setActiveHex(hex)
+        setActiveHotspotIndex(
+          hexInfoBuckets[hex].findIndex(
+            (info) => info.asset.toBase58() === hotspot.id,
+          ),
+        )
       }
     }
-  }, [anchorProvider, onEndReached, loadingInfos, hotspot, setNetworkType])
+  }, [anchorProvider, onEndReached, loadingInfos, hotspot])
 
   // - show bottom sheet when activeHex is set
   useEffect(() => {
@@ -253,7 +238,7 @@ const HotspotMapScreen = () => {
     }
   }, [activeHex, mapRef, bottomSheetHeight, cameraRef])
 
-  const hexsHitBox = useMemo(() => zoomLevel * 0.02, [zoomLevel])
+  const iconSize = useMemo(() => zoomLevel * 0.02, [zoomLevel])
   const hexsFeature = useMemo(
     () =>
       featureCollection(
@@ -269,12 +254,12 @@ const HotspotMapScreen = () => {
                 h === activeHex
                   ? `${networkType.toLowerCase()}HexActive`
                   : `${networkType.toLowerCase()}Hex`,
-              iconSize: zoomLevel * 0.02,
+              iconSize,
             },
           ),
         ),
       ),
-    [hexInfoBuckets, activeHex, networkType, zoomLevel],
+    [hexInfoBuckets, activeHex, networkType, iconSize],
   )
 
   const activeHexItem = useMemo(() => {
@@ -386,7 +371,7 @@ const HotspotMapScreen = () => {
                 />
                 <MapLibreGL.ShapeSource
                   id="hexsFeature"
-                  hitbox={{ width: hexsHitBox, height: hexsHitBox }}
+                  hitbox={{ width: iconSize, height: iconSize }}
                   onPress={handleHexClick}
                   shape={hexsFeature}
                 >

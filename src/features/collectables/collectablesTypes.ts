@@ -15,6 +15,7 @@ export type CollectableStackParamList = {
     | undefined
     | {
         hotspot?: HotspotWithPendingRewards
+        network?: 'IOT' | 'MOBILE'
       }
   HotspotDetailsScreen: {
     collectable: HotspotWithPendingRewards
