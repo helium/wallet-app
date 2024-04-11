@@ -11,6 +11,10 @@ export const getDerivedProposalState = (
     if (keys.includes('voting')) return 'active'
     if (keys.includes('cancelled')) return 'cancelled'
     if (keys.includes('resolved') && proposal.state.resolved) {
+      if (proposal.choices.length > 2) {
+        return 'completed'
+      }
+
       if (
         (proposal.state.resolved.choices.length === 1 &&
           proposal.choices[proposal.state.resolved.choices[0]].name.startsWith(

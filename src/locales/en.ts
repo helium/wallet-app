@@ -543,6 +543,8 @@ export default {
     insufficientSolToPayForFees: 'Insufficient SOL to pay for fees',
     wouldYouLikeToConvert:
       'Would you like to convert ~{{amount}} {{ticker}} to ~0.02 SOL for tx fees?',
+    slippageToleranceExceeded:
+      'Slippage tolerance exceeded. Please increase slippage',
   },
   accountTokenList: {
     tokens: 'Tokens',
@@ -1279,6 +1281,7 @@ export default {
       estTime: 'Est. Time Remaining',
       votingClosed: 'Voting Closed',
       success: 'Success',
+      completed: 'Completed',
       failed: 'Failed',
       cancelled: 'Cancelled',
       votes: 'Votes',

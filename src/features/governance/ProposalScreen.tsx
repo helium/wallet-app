@@ -14,6 +14,8 @@ import {
 import {
   batchInstructionsToTxsWithPriorityFee,
   bulkSendTransactions,
+  populateMissingDraftInfo,
+  toVersionedTx,
 } from '@helium/spl-utils'
 import {
   useRegistrar,
@@ -194,13 +196,19 @@ export const ProposalScreen = () => {
         basePriorityFee: await getBasePriorityFee(),
       },
     )
+    const populatedTxs = await Promise.all(
+      transactions.map((tx) =>
+        populateMissingDraftInfo(anchorProvider.connection, tx),
+      ),
+    )
+    const txs = populatedTxs.map((tx) => toVersionedTx(tx))
 
     const decision = await walletSignBottomSheetRef.show({
       type: WalletStandardMessageTypes.signTransaction,
       url: '',
       header,
-      serializedTxs: transactions.map((transaction) =>
-        transaction.serialize({ requireAllSignatures: false }),
+      serializedTxs: txs.map((transaction) =>
+        Buffer.from(transaction.serialize()),
       ),
     })
 
@@ -252,9 +260,14 @@ export const ProposalScreen = () => {
 
   const completed = endTs && endTs.toNumber() <= Date.now().valueOf() / 1000
   const noVotingPower = !loading && (!amountLocked || amountLocked.isZero())
+  const voted = !voting && voteWeights?.some((n) => n.gt(new BN(0)))
   const showVoteResults =
     derivedState !== 'cancelled' &&
-    (derivedState === 'passed' || derivedState === 'failed' || completed)
+    (voted ||
+      derivedState === 'passed' ||
+      derivedState === 'failed' ||
+      derivedState === 'completed' ||
+      completed)
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
@@ -321,6 +334,11 @@ export const ProposalScreen = () => {
                       {derivedState === 'passed' && (
                         <Text variant="body2" color="greenBright500">
                           {t('gov.proposals.success')}
+                        </Text>
+                      )}
+                      {derivedState === 'completed' && (
+                        <Text variant="body2" color="greenBright500">
+                          {t('gov.proposals.completed')}
                         </Text>
                       )}
                       {derivedState === 'failed' && (

@@ -253,6 +253,11 @@ export const ProposalCard = ({
                   {t('gov.proposals.success')}
                 </Text>
               )}
+              {derivedState === 'completed' && (
+                <Text variant="body2" color="greenBright500">
+                  {t('gov.proposals.completed')}
+                </Text>
+              )}
               {derivedState === 'failed' && (
                 <Text variant="body2" color="error">
                   {t('gov.proposals.failed')}

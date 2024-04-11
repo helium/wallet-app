@@ -9,7 +9,7 @@ import Text from '@components/Text'
 import { IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { useHotspot } from '@hooks/useHotspot'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { PublicKey, Transaction } from '@solana/web3.js'
+import { PublicKey, VersionedTransaction } from '@solana/web3.js'
 import BN from 'bn.js'
 import React, { memo, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -73,7 +73,7 @@ const ClaimRewardsScreen = () => {
         pendingMobileRewards && !pendingMobileRewards.eq(new BN(0))
           ? await createClaimMobileTx()
           : undefined
-      const transactions: Transaction[] = []
+      const transactions: VersionedTransaction[] = []
 
       if (claimIotTx && pendingIotRewards) {
         transactions.push(claimIotTx)

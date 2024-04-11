@@ -16,24 +16,18 @@ import {
   decodeEntityKey,
   entityCreatorKey,
   init,
-  init as initHem,
-  iotInfoKey,
   keyToAssetForAsset,
-  keyToAssetKey,
-  mobileInfoKey,
-  updateIotMetadata,
-  updateMobileMetadata,
 } from '@helium/helium-entity-manager-sdk'
 import { subDaoKey } from '@helium/helium-sub-daos-sdk'
 import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'
 import * as lz from '@helium/lazy-distributor-sdk'
-import { NetworkType } from '@helium/onboarding'
 import {
   Asset,
   DC_MINT,
   HNT_MINT,
   IOT_MINT,
   MOBILE_MINT,
+  TransactionDraft,
   getAsset,
   searchAssetsWithPageInfo,
   sendAndConfirmWithRetry,
@@ -104,7 +98,7 @@ import Config from 'react-native-config'
 import { IotHotspotInfoV0 } from '@hooks/useIotInfo'
 import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
 import { KeyToAssetV0 } from '@hooks/useKeyToAsset'
-import { getKeypair, getSessionKey } from '../storage/secureStorage'
+import { getSessionKey } from '../storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
 import {
   Collectable,
@@ -244,7 +238,7 @@ export const createTransferSolTxn = async (
     balanceAmount: BN
     max?: boolean
   }[],
-) => {
+): Promise<TransactionDraft> => {
   if (!payments.length) throw new Error('No payment found')
 
   let instructions: TransactionInstruction[] = []
@@ -260,29 +254,23 @@ export const createTransferSolTxn = async (
     instructions = [...instructions, instruction]
   })
 
-  const { blockhash } = await anchorProvider.connection.getLatestBlockhash()
-
-  const transaction = new Transaction()
   const maxPayment = payments.find((p) => p.max)
 
-  if (maxPayment) {
-    // cant account for priority fees if sending max
-    // TODO: need to refactor PaymentScreen and usePaymentReducer to handle sub priority fee from maxAmount
-    transaction.add(...instructions)
-  } else {
-    transaction.add(
-      ...(await withPriorityFees({
-        connection: anchorProvider.connection,
-        computeUnits: 20000 * instructions.length,
-        instructions,
-      })),
-    )
+  let finalInstructions = instructions
+  // TODO: need to refactor PaymentScreen and usePaymentReducer to handle sub priority fee from maxAmount
+  if (!maxPayment) {
+    finalInstructions = await withPriorityFees({
+      connection: anchorProvider.connection,
+      computeUnits: 10000,
+      instructions,
+      feePayer: payer,
+    })
   }
 
-  transaction.feePayer = payer
-  transaction.recentBlockhash = blockhash
-
-  return transaction
+  return {
+    instructions: finalInstructions,
+    feePayer: payer,
+  }
 }
 
 export const createTransferTxn = async (
@@ -294,7 +282,7 @@ export const createTransferTxn = async (
     max?: boolean
   }[],
   mintAddress: string,
-) => {
+): Promise<TransactionDraft> => {
   if (!payments.length) throw new Error('No payment found')
 
   const conn = anchorProvider.connection
@@ -332,22 +320,14 @@ export const createTransferTxn = async (
     ]
   })
 
-  const { blockhash } = await anchorProvider.connection.getLatestBlockhash()
-
-  const transaction = new Transaction()
-
-  transaction.add(
-    ...(await withPriorityFees({
-      computeUnits: 20000 * instructions.length,
+  return {
+    instructions: await withPriorityFees({
       connection: anchorProvider.connection,
       instructions,
-    })),
-  )
-
-  transaction.feePayer = payer
-  transaction.recentBlockhash = blockhash
-
-  return transaction
+      feePayer: new PublicKey(payer),
+    }),
+    feePayer: payer,
+  }
 }
 
 export const transferToken = async (
@@ -473,24 +453,14 @@ export const createTransferCollectableMessage = async (
   const compressedNFT = collectable as CompressedNFT
   const nft = collectable as Collectable
   const payer = new PublicKey(solanaAddress)
-  const secureAcct = await getKeypair(heliumAddress)
   const conn = anchorProvider.connection
-
-  if (!secureAcct) {
-    throw new Error('Secure account not found')
-  }
-
-  const signer = {
-    publicKey: payer,
-    secretKey: secureAcct.privateKey,
-  }
 
   const recipientPubKey = new PublicKey(payee)
   const mintPubkey = new PublicKey(nft.address || compressedNFT.id)
 
   const instructions: TransactionInstruction[] = []
 
-  const ownerATA = await getAssociatedTokenAddress(mintPubkey, signer.publicKey)
+  const ownerATA = await getAssociatedTokenAddress(mintPubkey, payer)
 
   const recipientATA = await getAssociatedTokenAddress(
     mintPubkey,
@@ -512,7 +482,7 @@ export const createTransferCollectableMessage = async (
       ownerATA, // from (should be a token account)
       mintPubkey, // mint
       recipientATA, // to (should be a token account)
-      signer.publicKey, // from's owner
+      payer, // from's owner
       1, // amount
       0, // decimals
       [], // signers
@@ -536,30 +506,15 @@ export const transferCollectable = async (
   heliumAddress: string,
   collectable: Collectable,
   payee: string,
-): Promise<Transaction> => {
+): Promise<TransactionDraft> => {
   const payer = new PublicKey(solanaAddress)
   try {
-    const secureAcct = await getKeypair(heliumAddress)
-    const conn = anchorProvider.connection
-
-    if (!secureAcct) {
-      throw new Error('Secure account not found')
-    }
-
-    const signer = {
-      publicKey: payer,
-      secretKey: secureAcct.privateKey,
-    }
-
     const recipientPubKey = new PublicKey(payee)
     const mintPubkey = new PublicKey(collectable.address)
 
     const instructions: TransactionInstruction[] = []
 
-    const ownerATA = await getAssociatedTokenAddress(
-      mintPubkey,
-      signer.publicKey,
-    )
+    const ownerATA = await getAssociatedTokenAddress(mintPubkey, payer)
 
     const recipientATA = await getAssociatedTokenAddress(
       mintPubkey,
@@ -581,28 +536,21 @@ export const transferCollectable = async (
         ownerATA, // from (should be a token account)
         mintPubkey, // mint
         recipientATA, // to (should be a token account)
-        signer.publicKey, // from's owner
+        payer, // from's owner
         1, // amount
         0, // decimals
         [], // signers
       ),
     )
 
-    const { blockhash } = await conn.getLatestBlockhash()
-
-    const transaction = new Transaction()
-    transaction.add(
-      ...(await withPriorityFees({
+    return {
+      instructions: await withPriorityFees({
         connection: anchorProvider.connection,
         instructions,
-        computeUnits: 20000,
-      })),
-    )
-
-    transaction.recentBlockhash = blockhash
-    transaction.feePayer = payer
-
-    return transaction
+        feePayer: payer,
+      }),
+      feePayer: payer,
+    }
   } catch (e) {
     Logger.error(e)
     throw new Error((e as Error).message)
@@ -640,9 +588,8 @@ export const mintDataCredits = async ({
   anchorProvider: AnchorProvider
   dcAmount: BN
   recipient: PublicKey
-}) => {
+}): Promise<TransactionDraft> => {
   try {
-    const { connection } = anchorProvider
     const { publicKey: payer } = anchorProvider.wallet
 
     const program = await dc.init(anchorProvider)
@@ -658,21 +605,14 @@ export const mintDataCredits = async ({
       })
       .instruction()
 
-    const tx = new Transaction()
-    tx.add(
-      ...(await withPriorityFees({
+    return {
+      instructions: await withPriorityFees({
         connection: anchorProvider.connection,
         instructions: [ix],
-        computeUnits: 180000,
-      })),
-    )
-
-    const { blockhash } = await connection.getLatestBlockhash()
-
-    tx.recentBlockhash = blockhash
-    tx.feePayer = payer
-
-    return tx
+        feePayer: payer,
+      }),
+      feePayer: payer,
+    }
   } catch (e) {
     Logger.error(e)
     throw e as Error
@@ -687,7 +627,6 @@ export const delegateDataCredits = async (
   memo?: string,
 ) => {
   try {
-    const { connection } = anchorProvider
     const { publicKey: payer } = anchorProvider.wallet
 
     const program = await dc.init(anchorProvider)
@@ -711,21 +650,14 @@ export const delegateDataCredits = async (
         .instruction(),
     )
 
-    const { blockhash } = await connection.getLatestBlockhash()
-
-    const transaction = new Transaction()
-    transaction.add(
-      ...(await withPriorityFees({
-        computeUnits: 80000,
+    return {
+      instructions: await withPriorityFees({
+        feePayer: payer,
         connection: anchorProvider.connection,
         instructions,
-      })),
-    )
-
-    transaction.recentBlockhash = blockhash
-    transaction.feePayer = payer
-
-    return transaction
+      }),
+      feePayer: payer,
+    }
   } catch (e) {
     Logger.error(e)
     throw e as Error
@@ -817,15 +749,10 @@ export const transferCompressedCollectable = async (
   heliumAddress: string,
   collectable: CompressedNFT,
   payee: string,
-): Promise<Transaction> => {
+): Promise<TransactionDraft> => {
   const payer = new PublicKey(solanaAddress)
   try {
-    const secureAcct = await getKeypair(heliumAddress)
     const conn = anchorProvider.connection as WrappedConnection
-
-    if (!secureAcct) {
-      throw new Error('Secure account not found')
-    }
 
     const recipientPubKey = new PublicKey(payee)
 
@@ -885,21 +812,14 @@ export const transferCompressedCollectable = async (
       ),
     )
 
-    const { blockhash } = await conn.getLatestBlockhash()
-
-    const transaction = new Transaction()
-    transaction.add(
-      ...(await withPriorityFees({
+    return {
+      instructions: await withPriorityFees({
         connection: anchorProvider.connection,
         instructions,
-        computeUnits: 120000,
-      })),
-    )
-
-    transaction.recentBlockhash = blockhash
-    transaction.feePayer = payer
-
-    return transaction
+        feePayer: payer,
+      }),
+      feePayer: payer,
+    }
   } catch (e) {
     Logger.error(e)
     throw new Error((e as Error).message)
@@ -1314,6 +1234,8 @@ export async function annotateWithPendingRewards(
     MOBILE_LAZY_KEY,
     dao,
     entityKeys,
+    'b58',
+    true,
   )
 
   const iotRewards = await getPendingRewards(
@@ -1321,6 +1243,8 @@ export async function annotateWithPendingRewards(
     IOT_LAZY_KEY,
     dao,
     entityKeys,
+    'b58',
+    true,
   )
 
   return hotspots.map((hotspot, index) => {
@@ -1574,7 +1498,7 @@ export async function createTreasurySwapTxn(
   fromMint: PublicKey,
   anchorProvider: AnchorProvider,
   recipient: PublicKey,
-) {
+): Promise<TransactionDraft> {
   const conn = anchorProvider.connection
   try {
     const program = await tm.init(anchorProvider)
@@ -1595,20 +1519,14 @@ export async function createTreasurySwapTxn(
       })
       .instruction()
 
-    const tx = new Transaction()
-    tx.add(
-      ...(await withPriorityFees({
+    return {
+      instructions: await withPriorityFees({
         connection: conn,
         instructions: [ix],
-        computeUnits: 350000,
-      })),
-    )
-
-    const { blockhash } = await conn.getLatestBlockhash('recent')
-    tx.recentBlockhash = blockhash
-    tx.feePayer = anchorProvider.wallet.publicKey
-
-    return tx
+        feePayer: anchorProvider.wallet.publicKey,
+      }),
+      feePayer: anchorProvider.wallet.publicKey,
+    }
   } catch (e) {
     throw e as Error
   }
@@ -1834,100 +1752,6 @@ export const calcCreateAssociatedTokenAccountAccountFee = async (
     return new BN(fee)
   } catch (e) {
     return new BN(0)
-  }
-}
-
-export const updateEntityInfoTxn = async ({
-  anchorProvider,
-  type,
-  entityKey,
-  lat,
-  lng,
-  elevation,
-  decimalGain,
-}: {
-  anchorProvider: AnchorProvider
-  type: NetworkType
-  entityKey: string
-  lat: number
-  lng: number
-  elevation?: number
-  decimalGain?: number
-}) => {
-  try {
-    const { connection } = anchorProvider
-    const { publicKey: payer } = anchorProvider.wallet
-
-    const program = await initHem(anchorProvider)
-    const location = new BN(getH3Location(lat, lng), 'hex')
-    const gain = decimalGain ? Math.round(decimalGain * 10.0) : null
-    let tx: Transaction | undefined
-
-    const keyToAsset = await program.account.keyToAssetV0.fetchNullable(
-      keyToAssetKey(DAO_KEY, entityKey)[0],
-    )
-
-    if (!keyToAsset) {
-      throw new Error('Key to asset not found')
-    }
-
-    const assetId = keyToAsset.asset
-
-    if (type === 'IOT') {
-      const iotInfo = await program.account.iotHotspotInfoV0.fetchNullable(
-        iotInfoKey(IOT_CONFIG_KEY, entityKey)[0],
-      )
-
-      if (!iotInfo) {
-        throw new Error('Hotspot info does not exist, has it been onboarded?')
-      }
-
-      tx = await (
-        await updateIotMetadata({
-          program,
-          assetId,
-          location,
-          elevation: elevation || null,
-          gain,
-          rewardableEntityConfig: IOT_CONFIG_KEY,
-        })
-      ).transaction()
-    }
-
-    if (type === 'MOBILE') {
-      const mobileInfo =
-        await program.account.mobileHotspotInfoV0.fetchNullable(
-          (
-            await mobileInfoKey(MOBILE_CONFIG_KEY, entityKey)
-          )[0],
-        )
-
-      if (!mobileInfo) {
-        throw new Error('Hotspot info does not exist, has it been onboarded?')
-      }
-
-      tx = await (
-        await updateMobileMetadata({
-          program,
-          assetId,
-          location,
-          rewardableEntityConfig: MOBILE_CONFIG_KEY,
-        })
-      ).transaction()
-    }
-
-    if (!tx) {
-      throw new Error('Unable to determine hotspot type')
-    }
-
-    const { blockhash } = await connection.getLatestBlockhash()
-    tx.recentBlockhash = blockhash
-    tx.feePayer = payer
-
-    return tx
-  } catch (e) {
-    Logger.error(e)
-    throw e as Error
   }
 }
 

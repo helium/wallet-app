@@ -1,6 +1,11 @@
 import { NetworkType } from '@helium/onboarding'
 import { useOnboarding } from '@helium/react-native-sdk'
-import { chunks, sendAndConfirmWithRetry } from '@helium/spl-utils'
+import {
+  chunks,
+  populateMissingDraftInfo,
+  sendAndConfirmWithRetry,
+  toVersionedTx,
+} from '@helium/spl-utils'
 import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import i18n from '@utils/i18n'
@@ -15,7 +20,6 @@ import {
   claimRewards,
   makeCollectablePayment,
   makePayment,
-  sendAnchorTxn,
   sendDelegateDataCredits,
   sendJupiterSwap,
   sendMintDataCredits,
@@ -55,14 +59,17 @@ export default () => {
       }
 
       const txns = await Promise.all(
-        chunks(payments, 5).map((p) => {
-          return solUtils.transferToken(
-            anchorProvider,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            currentAccount.solanaAddress!,
-            currentAccount.address,
-            p,
-            mint.toBase58(),
+        chunks(payments, 5).map(async (p) => {
+          return populateMissingDraftInfo(
+            anchorProvider.connection,
+            await solUtils.transferToken(
+              anchorProvider,
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              currentAccount.solanaAddress!,
+              currentAccount.address,
+              p,
+              mint.toBase58(),
+            ),
           )
         }),
       )
@@ -72,9 +79,7 @@ export default () => {
         url: '',
         additionalMessage: t('transactions.signPaymentTxn'),
         serializedTxs: txns.map((tx) =>
-          tx.serialize({
-            requireAllSignatures: false,
-          }),
+          Buffer.from(toVersionedTx(tx).serialize()),
         ),
       })
 
@@ -130,9 +135,7 @@ export default () => {
             payee,
           )
 
-      const serializedTx = transferTxn.serialize({
-        requireAllSignatures: false,
-      })
+      const serializedTx = toVersionedTx(transferTxn).serialize()
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
@@ -177,6 +180,7 @@ export default () => {
         url: '',
         additionalMessage: t('transactions.signSwapTxn'),
         serializedTxs: [Buffer.from(serializedTx)],
+        suppressWarnings: true,
       })
 
       if (!decision) {
@@ -219,9 +223,7 @@ export default () => {
         recipient,
       )
 
-      const serializedTx = swapTxn.serialize({
-        requireAllSignatures: false,
-      })
+      const serializedTx = toVersionedTx(swapTxn).serialize()
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
@@ -253,40 +255,8 @@ export default () => {
     ],
   )
 
-  const submitAnchorTxn = useCallback(
-    async (txn: Transaction) => {
-      if (!anchorProvider || !walletSignBottomSheetRef) {
-        throw new Error(t('errors.account'))
-      }
-
-      const serializedTx = txn.serialize({
-        requireAllSignatures: false,
-      })
-
-      const decision = await walletSignBottomSheetRef.show({
-        type: WalletStandardMessageTypes.signTransaction,
-        url: '',
-        additionalMessage: t('transactions.signGenericTxn'),
-        serializedTxs: [Buffer.from(serializedTx)],
-      })
-
-      if (!decision) {
-        throw new Error('User rejected transaction')
-      }
-
-      dispatch(
-        sendAnchorTxn({
-          txn,
-          anchorProvider,
-          cluster,
-        }),
-      )
-    },
-    [anchorProvider, cluster, dispatch, t, walletSignBottomSheetRef],
-  )
-
   const submitClaimRewards = useCallback(
-    async (txns: Transaction[]) => {
+    async (txns: VersionedTransaction[]) => {
       if (!anchorProvider) {
         throw new Error(t('errors.account'))
       }
@@ -299,11 +269,7 @@ export default () => {
         throw new Error('No wallet sign bottom sheet ref')
       }
 
-      const serializedTxs = txns.map((txn) =>
-        txn.serialize({
-          requireAllSignatures: false,
-        }),
-      )
+      const serializedTxs = txns.map((txn) => Buffer.from(txn.serialize()))
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
@@ -385,15 +351,14 @@ export default () => {
         await connection.getAccountInfo(recipient),
       )
 
-      const swapTxn = await solUtils.mintDataCredits({
+      const draft = await solUtils.mintDataCredits({
         anchorProvider,
         dcAmount,
         recipient,
       })
+      const swapTxn = await populateMissingDraftInfo(connection, draft)
 
-      const serializedTx = swapTxn.serialize({
-        requireAllSignatures: false,
-      })
+      const serializedTx = toVersionedTx(swapTxn).serialize()
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
@@ -436,17 +401,18 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      const delegateDCTxn = await solUtils.delegateDataCredits(
-        anchorProvider,
-        delegateAddress,
-        amount,
-        mint,
-        memo,
+      const delegateDCTxn = await populateMissingDraftInfo(
+        anchorProvider.connection,
+        await solUtils.delegateDataCredits(
+          anchorProvider,
+          delegateAddress,
+          amount,
+          mint,
+          memo,
+        ),
       )
 
-      const serializedTx = delegateDCTxn.serialize({
-        requireAllSignatures: false,
-      })
+      const serializedTx = toVersionedTx(delegateDCTxn).serialize()
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
@@ -592,7 +558,6 @@ export default () => {
     submitCollectable,
     submitJupiterSwap,
     submitTreasurySwap,
-    submitAnchorTxn,
     submitClaimRewards,
     submitClaimAllRewards,
     submitLedger,
