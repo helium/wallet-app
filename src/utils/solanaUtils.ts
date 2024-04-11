@@ -16,19 +16,11 @@ import {
   decodeEntityKey,
   entityCreatorKey,
   init,
-  init as initHem,
-  iotInfoKey,
   keyToAssetForAsset,
-  keyToAssetKey,
-  mobileInfoKey,
-  rewardableEntityConfigKey,
-  updateIotMetadata,
-  updateMobileMetadata,
 } from '@helium/helium-entity-manager-sdk'
 import { subDaoKey } from '@helium/helium-sub-daos-sdk'
 import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'
 import * as lz from '@helium/lazy-distributor-sdk'
-import { NetworkType } from '@helium/onboarding'
 import {
   Asset,
   DC_MINT,
@@ -113,15 +105,7 @@ import {
 } from '../types/solana'
 import { WrappedConnection } from './WrappedConnection'
 import { solAddressIsValid } from './accountUtils'
-import {
-  DAO_KEY,
-  IOT_LAZY_KEY,
-  IOT_SUB_DAO_KEY,
-  MOBILE_LAZY_KEY,
-  MOBILE_SUB_DAO_KEY,
-  Mints,
-} from './constants'
-import { getH3Location } from './h3'
+import { DAO_KEY, IOT_LAZY_KEY, MOBILE_LAZY_KEY, Mints } from './constants'
 import { decimalSeparator, groupSeparator } from './i18n'
 import * as Logger from './logger'
 import sleep from './sleep'
@@ -1648,111 +1632,6 @@ export const calcCreateAssociatedTokenAccountAccountFee = async (
     return new BN(fee)
   } catch (e) {
     return new BN(0)
-  }
-}
-
-export const updateEntityInfoTxn = async ({
-  anchorProvider,
-  type,
-  entityKey,
-  lat,
-  lng,
-  elevation,
-  decimalGain,
-}: {
-  anchorProvider: AnchorProvider
-  type: NetworkType
-  entityKey: string
-  lat: number
-  lng: number
-  elevation?: number
-  decimalGain?: number
-}) => {
-  try {
-    const { connection } = anchorProvider
-    const { publicKey: payer } = anchorProvider.wallet
-
-    const program = await initHem(anchorProvider)
-    const location = new BN(getH3Location(lat, lng), 'hex')
-    const gain = decimalGain ? Math.round(decimalGain * 10.0) : null
-    let tx: Transaction | undefined
-
-    const keyToAsset = await program.account.keyToAssetV0.fetchNullable(
-      keyToAssetKey(DAO_KEY, entityKey)[0],
-    )
-
-    if (!keyToAsset) {
-      throw new Error('Key to asset not found')
-    }
-
-    const assetId = keyToAsset.asset
-
-    if (type === 'IOT') {
-      const [iotConfigKey] = rewardableEntityConfigKey(IOT_SUB_DAO_KEY, 'IOT')
-      const iotInfo = await program.account.iotHotspotInfoV0.fetchNullable(
-        iotInfoKey(iotConfigKey, entityKey)[0],
-      )
-
-      if (!iotInfo) {
-        throw new Error('Hotspot info does not exist, has it been onboarded?')
-      }
-
-      tx = await (
-        await updateIotMetadata({
-          program,
-          assetId,
-          location,
-          elevation: elevation || null,
-          gain,
-          rewardableEntityConfig: rewardableEntityConfigKey(
-            IOT_SUB_DAO_KEY,
-            'IOT',
-          )[0],
-        })
-      ).transaction()
-    }
-
-    if (type === 'MOBILE') {
-      const [mobileConfigKey] = rewardableEntityConfigKey(
-        MOBILE_SUB_DAO_KEY,
-        'MOBILE',
-      )
-      const mobileInfo =
-        await program.account.mobileHotspotInfoV0.fetchNullable(
-          (
-            await mobileInfoKey(mobileConfigKey, entityKey)
-          )[0],
-        )
-
-      if (!mobileInfo) {
-        throw new Error('Hotspot info does not exist, has it been onboarded?')
-      }
-
-      tx = await (
-        await updateMobileMetadata({
-          program,
-          assetId,
-          location,
-          rewardableEntityConfig: rewardableEntityConfigKey(
-            MOBILE_SUB_DAO_KEY,
-            'MOBILE',
-          )[0],
-        })
-      ).transaction()
-    }
-
-    if (!tx) {
-      throw new Error('Unable to determine hotspot type')
-    }
-
-    const { blockhash } = await connection.getLatestBlockhash()
-    tx.recentBlockhash = blockhash
-    tx.feePayer = payer
-
-    return tx
-  } catch (e) {
-    Logger.error(e)
-    throw e as Error
   }
 }
 
