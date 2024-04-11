@@ -159,6 +159,5 @@ export type Explorer = {
 }
 export const getExplorers = async () => {
   const { data } = await axiosInstance.get<Explorer[]>('/explorers')
-  console.log('data', data)
   return data
 }

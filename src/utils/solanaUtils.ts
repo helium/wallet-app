@@ -108,15 +108,7 @@ import {
 } from '../types/solana'
 import { WrappedConnection } from './WrappedConnection'
 import { solAddressIsValid } from './accountUtils'
-import {
-  DAO_KEY,
-  IOT_CONFIG_KEY,
-  IOT_LAZY_KEY,
-  MOBILE_CONFIG_KEY,
-  MOBILE_LAZY_KEY,
-  Mints,
-} from './constants'
-import { getH3Location } from './h3'
+import { DAO_KEY, IOT_LAZY_KEY, MOBILE_LAZY_KEY, Mints } from './constants'
 import { decimalSeparator, groupSeparator } from './i18n'
 import * as Logger from './logger'
 import sleep from './sleep'
