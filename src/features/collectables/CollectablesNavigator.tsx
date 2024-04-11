@@ -15,7 +15,6 @@ import ClaimRewardsScreen from './ClaimRewardsScreen'
 import ClaimingRewardsScreen from './ClaimingRewardsScreen'
 import CollectablesTopTabs from './CollectablesTopTabs'
 import CollectionScreen from './CollectionScreen'
-import HotspotDetailsScreen from './HotspotDetailsScreen'
 import NftDetailsScreen from './NftDetailsScreen'
 import NftMetadataScreen from './NftMetadataScreen'
 import SettingUpAntennaScreen from './SettingUpAntennaScreen'
@@ -44,10 +43,6 @@ const CollectablesStackScreen = () => {
       <CollectablesStack.Screen
         name="AssertLocationScreen"
         component={AssertLocationScreen}
-      />
-      <CollectablesStack.Screen
-        name="HotspotDetailsScreen"
-        component={HotspotDetailsScreen}
       />
       <CollectablesStack.Screen
         name="AntennaSetupScreen"

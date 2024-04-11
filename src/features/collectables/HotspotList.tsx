@@ -100,7 +100,11 @@ const HotspotList = () => {
         const { iot, mobile } = hotspot.content.metadata.hotspot_infos
         navigation.navigate('HotspotMapScreen', {
           hotspot,
-          network: iot ? 'IOT' : mobile ? 'MOBILE' : undefined,
+          network: iot?.location
+            ? 'IOT'
+            : mobile?.location
+            ? 'MOBILE'
+            : undefined,
         })
       }
     },

@@ -273,10 +273,12 @@ const AddGatewayBle = () => {
     }
     const { asset } = keyToAsset
     const collectable = await getHotspotWithRewards(asset, anchorProvider)
-    collectNav.navigate(
-      networkInfo ? 'HotspotDetailsScreen' : 'AssertLocationScreen',
-      { collectable },
-    )
+
+    if (networkInfo) {
+      collectNav.navigate('HotspotMapScreen', { hotspot: collectable, network })
+    } else {
+      collectNav.navigate('AssertLocationScreen', { collectable })
+    }
   })
   const error =
     onboardBalError ||

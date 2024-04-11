@@ -114,11 +114,15 @@ const Settings = () => {
         keyToAsset.asset,
         anchorProvider,
       )
+
       if (collectable.ownership.owner.toString() !== wallet.toBase58()) {
         collectNav.push('CollectablesTopTab')
       }
 
-      collectNav.push('HotspotDetailsScreen', { collectable })
+      collectNav.push('HotspotMapScreen', {
+        hotspot: collectable,
+        network: 'IOT',
+      })
     } else {
       navigation.push('AddGatewayBle', {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

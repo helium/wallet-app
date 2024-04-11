@@ -17,9 +17,6 @@ export type CollectableStackParamList = {
         hotspot?: HotspotWithPendingRewards
         network?: 'IOT' | 'MOBILE'
       }
-  HotspotDetailsScreen: {
-    collectable: HotspotWithPendingRewards
-  }
   AssertLocationScreen: {
     collectable: HotspotWithPendingRewards
   }
