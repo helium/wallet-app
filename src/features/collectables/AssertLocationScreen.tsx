@@ -129,6 +129,7 @@ const AssertLocationScreen = () => {
   }, [iotLocation, mobileLocation])
 
   const [initialUserLocation, setInitialUserLocation] = useState<number[]>()
+
   useEffect(() => {
     const coords = userLocationRef?.current?.state?.coordinates
     if (!initialUserLocation && coords) {
@@ -377,6 +378,12 @@ const AssertLocationScreen = () => {
       loadingMyDc,
     ],
   )
+
+  const isLoading = useMemo(
+    () => loadingMyDc || loadingMakerDc || loadingLocationAssertDcRequirements,
+    [loadingMyDc, loadingMakerDc, loadingLocationAssertDcRequirements],
+  )
+
   const [debouncedDisabled] = useDebounce(disabled, 300)
   const [reverseGeoLoading] = useDebounce(reverseGeo.loading, 300)
 
@@ -391,6 +398,18 @@ const AssertLocationScreen = () => {
           overflow="hidden"
           position="relative"
         >
+          <ReAnimatedBlurBox
+            visible={isLoading}
+            exiting={DelayedFadeIn}
+            position="absolute"
+            width="100%"
+            height="100%"
+            justifyContent="center"
+            alignItems="center"
+            zIndex={100}
+          >
+            <CircleLoader loaderSize={24} color="white" />
+          </ReAnimatedBlurBox>
           <Map
             map={mapRef}
             camera={cameraRef}
