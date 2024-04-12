@@ -97,7 +97,7 @@ const HotspotList = () => {
     (hotspot: HotspotWithPendingRewards) => {
       if (hotspot.content.metadata) {
         triggerImpact('light')
-        const { iot, mobile } = hotspot.content.metadata.hotspot_infos
+        const { iot, mobile } = hotspot.content.metadata.hotspot_infos || {}
         navigation.navigate('HotspotMapScreen', {
           hotspot,
           network: iot?.location

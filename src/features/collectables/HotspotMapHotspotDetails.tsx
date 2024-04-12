@@ -48,29 +48,37 @@ const IotMapDetails = ({
     <Box flexDirection="row" marginTop="m">
       <Box flex={1} flexDirection="row" justifyContent="space-between">
         <Box>
-          <Text variant="body1Medium">
+          <Text variant="body2Medium">
             {t('collectablesScreen.hotspots.map.transmitScale')}
           </Text>
           <Box flexDirection="row" alignItems="center">
             <Hex width={16} height={16} color={colors.darkGrey} />
-            <Text marginLeft="s" variant="body1">
+            <Text marginLeft="s" variant="body3">
               ---
             </Text>
           </Box>
         </Box>
         <Box>
-          <Text variant="body1Medium">{t('generic.maker')}</Text>
-          <Text variant="body1">{maker}</Text>
+          <Text variant="body2Medium" adjustsFontSizeToFit numberOfLines={1}>
+            {t('generic.maker')}
+          </Text>
+          <Text variant="body3" numberOfLines={1}>
+            {maker}
+          </Text>
         </Box>
         <Box>
-          <Text variant="body1Medium">{t('generic.gain')}</Text>
-          <Text variant="body1">
+          <Text variant="body2Medium" adjustsFontSizeToFit numberOfLines={1}>
+            {t('generic.gain')}
+          </Text>
+          <Text variant="body3">
             {gain} {t('generic.dBi')}
           </Text>
         </Box>
         <Box>
-          <Text variant="body1Medium">{t('generic.elevation')}</Text>
-          <Text variant="body1">{elevation}m</Text>
+          <Text variant="body2Medium" adjustsFontSizeToFit numberOfLines={1}>
+            {t('generic.elevation')}
+          </Text>
+          <Text variant="body3">{elevation}m</Text>
         </Box>
       </Box>
     </Box>
@@ -92,21 +100,21 @@ const MobileMapDetails = ({
     <Box flexDirection="row" marginTop="m">
       <Box flex={1} flexDirection="row" justifyContent="space-between">
         <Box>
-          <Text variant="body1Medium">{t('generic.coverage')}</Text>
+          <Text variant="body2Medium">{t('generic.coverage')}</Text>
           <Box flexDirection="row" alignItems="center">
             <Hex width={16} height={16} color={colors.darkGrey} />
-            <Text marginLeft="s" variant="body1">
+            <Text marginLeft="s" variant="body3">
               ---
             </Text>
           </Box>
         </Box>
         <Box>
-          <Text variant="body1Medium">{t('generic.maker')}</Text>
-          <Text variant="body1">{maker}</Text>
+          <Text variant="body2Medium">{t('generic.maker')}</Text>
+          <Text variant="body3">{maker}</Text>
         </Box>
         <Box>
-          <Text variant="body1Medium">{t('generic.radioType')}</Text>
-          <Text variant="body1">
+          <Text variant="body2Medium">{t('generic.radioType')}</Text>
+          <Text variant="body3">
             {deviceType ? Object.keys(deviceType)[0] : '---'}
           </Text>
         </Box>
@@ -118,10 +126,12 @@ const MobileMapDetails = ({
 export const HotspotMapHotspotDetails = ({
   hotspot,
   info,
+  showActions,
   network,
 }: {
   hotspot: HotspotWithPendingRewards
   info: IotHotspotInfoV0 | MobileHotspotInfoV0
+  showActions: boolean
   network: 'IOT' | 'MOBILE'
 }) => {
   const { t } = useTranslation()
@@ -313,11 +323,13 @@ export const HotspotMapHotspotDetails = ({
                 {hotspot.content.metadata.name}
               </Text>
             </Box>
-            <Box flexDirection="row" alignItems="center">
+            <Box flex={1} flexDirection="row" alignItems="center">
               {streetAddress && (
-                <Text numberOfLines={1} variant="body1">
-                  {streetAddress}
-                </Text>
+                <Box flexShrink={1} flexDirection="row">
+                  <Text numberOfLines={1} variant="body1">
+                    {streetAddress}
+                  </Text>
+                </Box>
               )}
               {eccCompact && (
                 <>
@@ -355,134 +367,150 @@ export const HotspotMapHotspotDetails = ({
           />
         )}
       </Box>
-      {selectExplorerOpen ? (
+      {showActions && (
         <>
-          <Box borderBottomColor="black900" padding="m" borderBottomWidth={1}>
-            <Text variant="subtitle1">
-              {t('activityScreen.selectExplorer')}
-            </Text>
-
-            <Text variant="body2">
-              {t('activityScreen.selectExplorerSubtitle')}
-            </Text>
-          </Box>
-
-          {available?.map((a) => {
-            return (
-              <ListItem
-                key={a.value}
-                title={a.label}
-                Icon={
-                  a.image.endsWith('svg') ? (
-                    <SvgUri height={16} width={16} uri={a.image} />
-                  ) : (
-                    <ImageBox
-                      height={16}
-                      width={16}
-                      source={{ uri: a.image }}
-                    />
-                  )
-                }
-                onPress={() => handleConfirmExplorer(a.value)}
-                selected={explorer?.value === a.value}
-                hasPressedState={false}
-              />
-            )
-          })}
-        </>
-      ) : (
-        <>
-          <TouchableContainer
-            alignItems="center"
-            flex={1}
-            flexDirection="row"
-            paddingVertical="m"
-            borderBottomColor="black900"
-            borderBottomWidth={1}
-            onPress={hasRewards ? handleClaimRewards : undefined}
-            disabled={!hasRewards}
-          >
-            <Box
-              flex={1}
-              flexDirection="row"
-              alignItems="center"
-              marginHorizontal="m"
-            >
-              <Text variant="subtitle3" opacity={!hasRewards ? 0.5 : 1}>
-                {t('collectablesScreen.hotspots.claimRewards')}
-              </Text>
+          {selectExplorerOpen ? (
+            <>
               <Box
+                borderBottomColor="black900"
+                padding="m"
+                borderBottomWidth={1}
+              >
+                <Text variant="subtitle1">
+                  {t('activityScreen.selectExplorer')}
+                </Text>
+
+                <Text variant="body2">
+                  {t('activityScreen.selectExplorerSubtitle')}
+                </Text>
+              </Box>
+
+              {available?.map((a) => {
+                return (
+                  <ListItem
+                    key={a.value}
+                    title={a.label}
+                    Icon={
+                      a.image.endsWith('svg') ? (
+                        <SvgUri height={16} width={16} uri={a.image} />
+                      ) : (
+                        <ImageBox
+                          height={16}
+                          width={16}
+                          source={{ uri: a.image }}
+                        />
+                      )
+                    }
+                    onPress={() => handleConfirmExplorer(a.value)}
+                    selected={explorer?.value === a.value}
+                    hasPressedState={false}
+                  />
+                )
+              })}
+            </>
+          ) : (
+            <>
+              <TouchableContainer
+                alignItems="center"
                 flex={1}
                 flexDirection="row"
-                justifyContent="flex-end"
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                gap={4}
+                paddingVertical="m"
+                borderBottomColor="black900"
+                borderBottomWidth={1}
+                onPress={hasRewards ? handleClaimRewards : undefined}
+                disabled={!hasRewards}
               >
                 <Box
-                  justifyContent="center"
-                  alignItems="center"
-                  backgroundColor="iotDarkGreen"
-                  borderRadius="xl"
-                  padding="xs"
-                  paddingRight="s"
+                  flex={1}
                   flexDirection="row"
-                >
-                  <IotSymbol color="black" />
-                  <Text variant="body2Medium" marginLeft="s" color="iotGreen">
-                    {pendingIotRewardsString}
-                  </Text>
-                </Box>
-                <Box
-                  justifyContent="center"
                   alignItems="center"
-                  backgroundColor="mobileDarkBlue"
-                  borderRadius="xl"
-                  padding="xs"
-                  paddingRight="s"
-                  flexDirection="row"
+                  marginHorizontal="m"
                 >
-                  <MobileSymbol color="black" />
-                  <Text variant="body2Medium" marginLeft="s" color="mobileBlue">
-                    {pendingMobileRewardsString}
+                  <Text variant="subtitle3" opacity={!hasRewards ? 0.5 : 1}>
+                    {t('collectablesScreen.hotspots.claimRewards')}
                   </Text>
+                  <Box
+                    flex={1}
+                    flexDirection="row"
+                    justifyContent="flex-end"
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    gap={4}
+                  >
+                    <Box
+                      justifyContent="center"
+                      alignItems="center"
+                      backgroundColor="iotDarkGreen"
+                      borderRadius="xl"
+                      padding="xs"
+                      paddingRight="s"
+                      flexDirection="row"
+                    >
+                      <IotSymbol color="black" />
+                      <Text
+                        variant="body2Medium"
+                        marginLeft="s"
+                        color="iotGreen"
+                      >
+                        {pendingIotRewardsString}
+                      </Text>
+                    </Box>
+                    <Box
+                      justifyContent="center"
+                      alignItems="center"
+                      backgroundColor="mobileDarkBlue"
+                      borderRadius="xl"
+                      padding="xs"
+                      paddingRight="s"
+                      flexDirection="row"
+                    >
+                      <MobileSymbol color="black" />
+                      <Text
+                        variant="body2Medium"
+                        marginLeft="s"
+                        color="mobileBlue"
+                      >
+                        {pendingMobileRewardsString}
+                      </Text>
+                    </Box>
+                  </Box>
                 </Box>
-              </Box>
-            </Box>
-          </TouchableContainer>
-          <ListItem
-            title={t('collectablesScreen.hotspots.viewInExplorer')}
-            onPress={handleViewInExplorer}
-            selected={false}
-            hasPressedState={false}
-          />
-          <ListItem
-            title={t('collectablesScreen.hotspots.transferHotspot')}
-            onPress={handleTransfer}
-            selected={false}
-            hasPressedState={false}
-          />
-          <ListItem
-            title={t('collectablesScreen.hotspots.assertLocation')}
-            onPress={handleAssertLocation}
-            selected={false}
-            hasPressedState={false}
-          />
-          {network === 'IOT' && (
-            <ListItem
-              title={t('collectablesScreen.hotspots.antennaSetup')}
-              onPress={handleAntennaSetup}
-              selected={false}
-              hasPressedState={false}
-            />
+              </TouchableContainer>
+              <ListItem
+                title={t('collectablesScreen.hotspots.viewInExplorer')}
+                onPress={handleViewInExplorer}
+                selected={false}
+                hasPressedState={false}
+              />
+              <ListItem
+                title={t('collectablesScreen.hotspots.transferHotspot')}
+                onPress={handleTransfer}
+                selected={false}
+                hasPressedState={false}
+              />
+              <ListItem
+                title={t('collectablesScreen.hotspots.assertLocation')}
+                onPress={handleAssertLocation}
+                selected={false}
+                hasPressedState={false}
+              />
+              {network === 'IOT' && (
+                <ListItem
+                  title={t('collectablesScreen.hotspots.antennaSetup')}
+                  onPress={handleAntennaSetup}
+                  selected={false}
+                  hasPressedState={false}
+                />
+              )}
+              <ListItem
+                title={t('collectablesScreen.hotspots.showMetadata')}
+                onPress={handleMetadataPress}
+                selected={false}
+                hasPressedState={false}
+                hasDivider={false}
+              />
+            </>
           )}
-          <ListItem
-            title={t('collectablesScreen.hotspots.showMetadata')}
-            onPress={handleMetadataPress}
-            selected={false}
-            hasPressedState={false}
-            hasDivider={false}
-          />
         </>
       )}
     </>

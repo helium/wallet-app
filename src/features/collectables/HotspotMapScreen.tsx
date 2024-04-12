@@ -70,6 +70,7 @@ const HotspotMapScreen = () => {
   const userLocationRef = useRef<MapLibreGL.UserLocation>(null)
   const bottomSheetRef = useRef<BottomSheetModal>(null)
   const [bottomSheetHeight, setBottomSheetHeight] = useState(0)
+  const [bottomSheetSnapIndex, setBottomSheetSnapIndex] = useState(-1)
   const [backEdges] = [['top']] as Edge[][]
   const [zoomLevel, setZoomLevel] = useState(INITIAL_MAP_VIEW_STATE.zoomLevel)
   const [networkType, setNetworkType] = useState<'IOT' | 'MOBILE'>(
@@ -477,7 +478,7 @@ const HotspotMapScreen = () => {
         <BottomSheetModalProvider>
           <BottomSheetModal
             ref={bottomSheetRef}
-            snapPoints={[]}
+            snapPoints={[160]}
             enablePanDownToClose
             enableDynamicSizing
             animateOnMount
@@ -485,18 +486,20 @@ const HotspotMapScreen = () => {
             backgroundStyle={bottomSheetStyle}
             handleIndicatorStyle={{ backgroundColor: colors.secondaryText }}
             onDismiss={() => setActiveHex(undefined)}
+            onChange={(idx) => setBottomSheetSnapIndex(idx)}
           >
             <BottomSheetScrollView>
               <Box
-                onLayout={(e) => {
+                onLayout={(e) =>
                   setBottomSheetHeight(e.nativeEvent.layout.height)
-                }}
+                }
               >
                 {legendVisible && <HotspotMapLegend network={networkType} />}
                 {activeHexItem && (
                   <HotspotMapHotspotDetails
                     hotspot={activeHexItem.hotspot}
                     info={activeHexItem.info}
+                    showActions={bottomSheetSnapIndex === 1}
                     network={networkType}
                   />
                 )}
