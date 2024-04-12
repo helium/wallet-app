@@ -174,9 +174,9 @@ const HotspotMapScreen = () => {
     // if hotspot is provided, check if it's IOT or MOBILE
     // scope networkType to the hotspot's network type
     if (onEndReached && !loadingInfos && anchorProvider && hotspot) {
-      const hex = Object.entries(hexInfoBuckets).find(([_, infos]) =>
-        infos.find((info) => info?.asset.toBase58() === hotspot.id),
-      )?.[0]
+      const [hex] = Object.entries(hexInfoBuckets).find(([_, infos]) => {
+        return infos.some((info) => info?.asset.toBase58() === hotspot.id)
+      }) || [undefined]
 
       if (hex) {
         setActiveHex(hex)
