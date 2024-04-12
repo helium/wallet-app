@@ -1,21 +1,26 @@
+import CopyAddress from '@assets/images/copyAddress.svg'
 import Hex from '@assets/images/hex.svg'
 import IotSymbol from '@assets/images/iotSymbol.svg'
 import MobileSymbol from '@assets/images/mobileSymbol.svg'
-import CopyAddress from '@assets/images/copyAddress.svg'
 import Box from '@components/Box'
 import ImageBox from '@components/ImageBox'
 import ListItem from '@components/ListItem'
 import Text from '@components/Text'
 import TouchableContainer from '@components/TouchableContainer'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { makerApprovalKey } from '@helium/helium-entity-manager-sdk'
 import { useMint } from '@helium/helium-react-hooks'
+import { NetworkType } from '@helium/onboarding'
 import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import useCopyText from '@hooks/useCopyText'
 import { useEntityKey } from '@hooks/useEntityKey'
 import { getExplorerUrl, useExplorer } from '@hooks/useExplorer'
 import { useHotspotAddress } from '@hooks/useHotspotAddress'
-import { IotHotspotInfoV0 } from '@hooks/useIotInfo'
+import { IotHotspotInfoV0, useIotInfo } from '@hooks/useIotInfo'
 import { useMaker } from '@hooks/useMaker'
+import { useMakerApproval } from '@hooks/useMakerApproval'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
-import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
+import { MobileHotspotInfoV0, useMobileInfo } from '@hooks/useMobileInfo'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { useNavigation } from '@react-navigation/native'
 import { useColors } from '@theme/themeHooks'
@@ -24,13 +29,16 @@ import { Explorer } from '@utils/walletApiV2'
 import BigNumber from 'bignumber.js'
 import BN from 'bn.js'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { Linking } from 'react-native'
+import { Alert, AlertButton, Linking } from 'react-native'
 import { SvgUri } from 'react-native-svg'
-import useCopyText from '@hooks/useCopyText'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { ReAnimatedBlurBox } from '@components/AnimatedBox'
+import CircleLoader from '@components/CircleLoader'
+import { DelayedFadeIn } from '@components/FadeInOut'
+import { useSolana } from '../../solana/SolanaProvider'
 import { HotspotWithPendingRewards } from '../../types/solana'
-import { Mints } from '../../utils/constants'
+import { IOT_CONFIG_KEY, Mints, MOBILE_CONFIG_KEY } from '../../utils/constants'
 import { CollectableNavigationProp } from './collectablesTypes'
 
 const IotMapDetails = ({
@@ -130,17 +138,20 @@ export const HotspotMapHotspotDetails = ({
   network,
 }: {
   hotspot: HotspotWithPendingRewards
-  info: IotHotspotInfoV0 | MobileHotspotInfoV0
+  info?: IotHotspotInfoV0 | MobileHotspotInfoV0
   showActions: boolean
-  network: 'IOT' | 'MOBILE'
+  network: NetworkType
 }) => {
   const { t } = useTranslation()
   const navigation = useNavigation<CollectableNavigationProp>()
+  const { anchorProvider } = useSolana()
   const entityKey = useEntityKey(hotspot)
   const [selectExplorerOpen, setSelectExplorerOpen] = useState(false)
   const streetAddress = useHotspotAddress(hotspot)
   const { info: iotMint } = useMint(IOT_MINT)
   const { info: mobileMint } = useMint(MOBILE_MINT)
+  const iotInfoAcc = useIotInfo(entityKey)
+  const mobileInfoAcc = useMobileInfo(entityKey)
   const { metadata } = hotspot.content
   const copyText = useCopyText()
   const collection = hotspot.grouping.find(
@@ -162,6 +173,26 @@ export const HotspotMapHotspotDetails = ({
   const { loading: makerLoading, info: makerAcc } = useMaker(
     mplxMetadata?.updateAuthority.toBase58(),
   )
+
+  const [iotMakerApproval, mobileMakerApproval] = useMemo(() => {
+    if (!mplxMetadata) {
+      return [undefined, undefined]
+    }
+
+    return [
+      makerApprovalKey(IOT_CONFIG_KEY, mplxMetadata.updateAuthority)[0],
+      makerApprovalKey(MOBILE_CONFIG_KEY, mplxMetadata.updateAuthority)[0],
+    ]
+  }, [mplxMetadata])
+
+  const { info: iotMakerApprovalAcc } = useMakerApproval(iotMakerApproval)
+  const { info: mobileMakerApprovalAcc } = useMakerApproval(mobileMakerApproval)
+
+  // Need to repair this hotspot if it is missing an info struct but the maker
+  // has approval for that subnetwork.
+  const needsRepair =
+    (iotMakerApprovalAcc && !iotInfoAcc?.info) ||
+    (mobileMakerApprovalAcc && !mobileInfoAcc?.info)
 
   const pendingIotRewards = useMemo(
     () => hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.IOT]),
@@ -296,6 +327,71 @@ export const HotspotMapHotspotDetails = ({
     }
   }
 
+  const {
+    execute: handleOnboard,
+    loading: onboardLoading,
+    error: onboardError,
+  } = useAsyncCallback(async () => {
+    if (!anchorProvider || !entityKey) {
+      return
+    }
+
+    const networkType: NetworkType | undefined = await new Promise(
+      (resolve) => {
+        const options: AlertButton[] = []
+
+        if (!iotInfoAcc?.info) {
+          options.push({
+            text: 'IOT',
+            onPress: () => {
+              resolve('IOT')
+            },
+          })
+        }
+
+        if (!mobileInfoAcc?.info) {
+          options.push({
+            text: 'MOBILE',
+            onPress: () => {
+              resolve('MOBILE')
+            },
+          })
+        }
+
+        options.push({
+          text: t('generic.cancel'),
+          style: 'destructive',
+          onPress: () => {
+            resolve(undefined)
+          },
+        })
+
+        Alert.alert(
+          t('collectablesScreen.hotspots.onboard.title'),
+          t('collectablesScreen.hotspots.onboard.which'),
+          options,
+        )
+      },
+    )
+
+    if (!networkType) {
+      return
+    }
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    navigation.push('OnboardingNavigator', {
+      screen: 'IotBle',
+      params: {
+        screen: 'AddGatewayBle',
+        params: {
+          network: networkType,
+          onboardingAddress: entityKey,
+        },
+      },
+    })
+  })
+
   if (isLoading) return null
 
   return (
@@ -325,14 +421,12 @@ export const HotspotMapHotspotDetails = ({
             </Box>
             <Box flex={1} flexDirection="row" alignItems="center">
               {streetAddress && (
-                <Box flexShrink={1} flexDirection="row">
-                  <Text numberOfLines={1} variant="body1">
-                    {streetAddress}
-                  </Text>
-                </Box>
-              )}
-              {eccCompact && (
                 <>
+                  <Box flexShrink={1} flexDirection="row">
+                    <Text numberOfLines={1} variant="body1">
+                      {streetAddress}
+                    </Text>
+                  </Box>
                   <Box
                     backgroundColor="surfaceContrast"
                     height={6}
@@ -340,35 +434,62 @@ export const HotspotMapHotspotDetails = ({
                     borderRadius="round"
                     marginHorizontal="ms"
                   />
-                  <TouchableOpacityBox
-                    flexDirection="row"
-                    alignItems="center"
-                    onPress={handleCopyAddress}
-                  >
-                    <Text variant="body1" numberOfLines={1} marginRight="xs">
-                      {ellipsizeAddress(eccCompact, { numChars: 4 })}
-                    </Text>
-                    <CopyAddress width={16} height={16} color={primaryText} />
-                  </TouchableOpacityBox>
                 </>
+              )}
+              {eccCompact && (
+                <TouchableOpacityBox
+                  flexDirection="row"
+                  alignItems="center"
+                  onPress={handleCopyAddress}
+                >
+                  <Text variant="body1" numberOfLines={1} marginRight="xs">
+                    {ellipsizeAddress(eccCompact, { numChars: 4 })}
+                  </Text>
+                  <CopyAddress width={16} height={16} color={primaryText} />
+                </TouchableOpacityBox>
               )}
             </Box>
           </Box>
         </Box>
-        {isLoading ? null : network === 'IOT' ? (
+        {!isLoading && network === 'IOT' && info && (
           <IotMapDetails
             maker={makerAcc?.name || 'Unknown'}
             info={info as IotHotspotInfoV0}
           />
-        ) : (
+        )}
+        {!isLoading && network === 'MOBILE' && info && (
           <MobileMapDetails
             maker={makerAcc?.name || 'Unknown'}
             info={info as MobileHotspotInfoV0}
           />
         )}
+        {onboardError && (
+          <Box
+            flexDirection="row"
+            justifyContent="center"
+            alignItems="center"
+            paddingTop="ms"
+          >
+            <Text variant="body3Medium" color="red500">
+              {onboardError.toString()}
+            </Text>
+          </Box>
+        )}
       </Box>
       {showActions && (
-        <>
+        <Box position="relative">
+          <ReAnimatedBlurBox
+            visible={onboardLoading}
+            exiting={DelayedFadeIn}
+            position="absolute"
+            width="100%"
+            height="100%"
+            justifyContent="center"
+            alignItems="center"
+            zIndex={100}
+          >
+            <CircleLoader loaderSize={24} color="white" />
+          </ReAnimatedBlurBox>
           {selectExplorerOpen ? (
             <>
               <Box
@@ -504,14 +625,25 @@ export const HotspotMapHotspotDetails = ({
               )}
               <ListItem
                 title={t('collectablesScreen.hotspots.showMetadata')}
+                disabled
                 onPress={handleMetadataPress}
                 selected={false}
                 hasPressedState={false}
-                hasDivider={false}
+                hasDivider={!!needsRepair}
               />
+              {needsRepair && (
+                <ListItem
+                  key="onboard"
+                  disabled
+                  title={t('collectablesScreen.hotspots.onboard.title')}
+                  onPress={handleOnboard}
+                  selected={false}
+                  hasPressedState={false}
+                />
+              )}
             </>
           )}
-        </>
+        </Box>
       )}
     </>
   )

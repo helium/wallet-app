@@ -57,6 +57,7 @@ import { HotspotMapLegend } from './HotspotMapLegend'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotMapScreen'>
 
+const DEFAULT_HEX = '631210968843200500' // used for when a hotspot has no iotInfo or mobileInfo
 const HotspotMapScreen = () => {
   const { t } = useTranslation()
   const { anchorProvider } = useSolana()
@@ -177,10 +178,10 @@ const HotspotMapScreen = () => {
     if (onEndReached && !loadingInfos && anchorProvider && hotspot) {
       const [hex] = Object.entries(hexInfoBuckets).find(([_, infos]) => {
         return infos.some((info) => info?.asset.toBase58() === hotspot.id)
-      }) || [undefined]
+      }) || [DEFAULT_HEX]
 
-      if (hex) {
-        setActiveHex(hex)
+      setActiveHex(hex)
+      if (hex !== DEFAULT_HEX) {
         setActiveHotspotIndex(
           hexInfoBuckets[hex].findIndex(
             (info) => info.asset.toBase58() === hotspot.id,
@@ -197,7 +198,7 @@ const HotspotMapScreen = () => {
     } else {
       bottomSheetRef.current?.dismiss()
     }
-  }, [loadingInfos, activeHex, legendVisible, bottomSheetRef])
+  }, [loadingInfos, activeHex, hotspot, legendVisible, bottomSheetRef])
 
   // - center the map on the active hex
   useAsync(async () => {
@@ -265,6 +266,13 @@ const HotspotMapScreen = () => {
 
   const activeHexItem = useMemo(() => {
     if (!loadingInfos && activeHex) {
+      if (activeHex === DEFAULT_HEX && hotspot) {
+        return {
+          hotspot,
+          info: undefined,
+        }
+      }
+
       const info = hexInfoBuckets[activeHex][activeHotspotIndex]
 
       return {
@@ -280,6 +288,7 @@ const HotspotMapScreen = () => {
     activeHex,
     activeHotspotIndex,
     hotspotsWithMeta,
+    hotspot,
   ])
 
   const isLoading = useMemo(
@@ -498,7 +507,7 @@ const HotspotMapScreen = () => {
                 {activeHexItem && (
                   <HotspotMapHotspotDetails
                     hotspot={activeHexItem.hotspot}
-                    info={activeHexItem.info}
+                    info={activeHexItem?.info}
                     showActions={bottomSheetSnapIndex === 1}
                     network={networkType}
                   />
