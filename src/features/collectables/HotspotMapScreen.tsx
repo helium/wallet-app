@@ -62,7 +62,6 @@ const HotspotMapScreen = () => {
   const { t } = useTranslation()
   const { anchorProvider } = useSolana()
   const route = useRoute<Route>()
-  const { hotspot, network } = route.params || {}
   const bottomSheetStyle = useBackgroundStyle('surfaceSecondary')
   const navigation = useNavigation<CollectableNavigationProp>()
   const colors = useColors()
@@ -74,8 +73,9 @@ const HotspotMapScreen = () => {
   const [bottomSheetSnapIndex, setBottomSheetSnapIndex] = useState(-1)
   const [backEdges] = [['top']] as Edge[][]
   const [zoomLevel, setZoomLevel] = useState(INITIAL_MAP_VIEW_STATE.zoomLevel)
+  const [hotspot, setHotspot] = useState(route.params?.hotspot)
   const [networkType, setNetworkType] = useState<'IOT' | 'MOBILE'>(
-    network || 'IOT',
+    route.params?.network || 'IOT',
   )
   const [loadingInfos, setLoadingInfos] = useState(false)
   const [hexInfoBuckets, setHexInfoBuckets] = useState<{
@@ -202,7 +202,12 @@ const HotspotMapScreen = () => {
 
   // - center the map on the active hex
   useAsync(async () => {
-    if (activeHex && mapRef?.current && bottomSheetHeight) {
+    if (
+      activeHex &&
+      activeHex !== DEFAULT_HEX &&
+      mapRef?.current &&
+      bottomSheetHeight
+    ) {
       const cords = parseH3BNLocation(new BN(activeHex)).reverse()
       const mapHeight = mapRef.current.state.height
 
@@ -274,7 +279,6 @@ const HotspotMapScreen = () => {
       }
 
       const info = hexInfoBuckets[activeHex][activeHotspotIndex]
-
       return {
         hotspot: hotspotsWithMeta.find(
           (h) => h.content.metadata.asset_id === info.asset.toBase58(),
@@ -321,6 +325,7 @@ const HotspotMapScreen = () => {
 
   const handleToggleNetwork = useCallback(() => {
     setNetworkType(networkType === 'IOT' ? 'MOBILE' : 'IOT')
+    setHotspot(undefined)
   }, [networkType, setNetworkType])
 
   const handleHexClick = useCallback(
@@ -367,34 +372,32 @@ const HotspotMapScreen = () => {
               onRegionDidChange: handleRegionChanged,
             }}
           >
-            {!isLoading && (
-              <>
-                {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-                {/* @ts-ignore */}
-                <MapLibreGL.Images
-                  images={{
-                    iotHex: require('@assets/images/mapIotHex.png'),
-                    iotHexActive: require('@assets/images/mapIotHexActive.png'),
-                    mobileHex: require('@assets/images/mapMobileHex.png'),
-                    mobileHexActive: require('@assets/images/mapMobileHexActive.png'),
+            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+            {/* @ts-ignore */}
+            <MapLibreGL.Images
+              images={{
+                iotHex: require('@assets/images/mapIotHex.png'),
+                iotHexActive: require('@assets/images/mapIotHexActive.png'),
+                mobileHex: require('@assets/images/mapMobileHex.png'),
+                mobileHexActive: require('@assets/images/mapMobileHexActive.png'),
+              }}
+            />
+            {!isLoading && !!hexsFeature?.features?.length && (
+              <MapLibreGL.ShapeSource
+                id="hexsFeature"
+                hitbox={{ width: iconSize, height: iconSize }}
+                onPress={handleHexClick}
+                shape={hexsFeature}
+              >
+                <MapLibreGL.SymbolLayer
+                  id="hexs"
+                  style={{
+                    iconImage: ['get', 'iconImage'],
+                    iconSize: ['get', 'iconSize'],
+                    iconAllowOverlap: true,
                   }}
                 />
-                <MapLibreGL.ShapeSource
-                  id="hexsFeature"
-                  hitbox={{ width: iconSize, height: iconSize }}
-                  onPress={handleHexClick}
-                  shape={hexsFeature}
-                >
-                  <MapLibreGL.SymbolLayer
-                    id="hexs"
-                    style={{
-                      iconImage: ['get', 'iconImage'],
-                      iconSize: ['get', 'iconSize'],
-                      iconAllowOverlap: true,
-                    }}
-                  />
-                </MapLibreGL.ShapeSource>
-              </>
+              </MapLibreGL.ShapeSource>
             )}
           </Map>
           <Box
