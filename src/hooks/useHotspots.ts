@@ -122,27 +122,19 @@ const useHotspots = (): {
     ? hotspots[currentAccount?.solanaAddress]?.hotspotsWithMeta
     : undefined
 
-  const pendingIotRewards = useMemo(
+  const [pendingIotRewards, pendingMobileRewards] = useMemo(
     () =>
-      hotspotsWithMeta?.reduce((acc, hotspot) => {
-        if (hotspot.pendingRewards) {
-          return acc.add(new BN(hotspot.pendingRewards[Mints.IOT] || '0'))
-        }
+      hotspotsWithMeta?.reduce(
+        (acc, hotspot) => {
+          if (hotspot.pendingRewards) {
+            acc[0].add(new BN(hotspot.pendingRewards[Mints.IOT] || '0'))
+            acc[1].add(new BN(hotspot.pendingRewards[Mints.MOBILE] || '0'))
+          }
 
-        return acc
-      }, new BN(0)),
-    [hotspotsWithMeta],
-  )
-
-  const pendingMobileRewards = useMemo(
-    () =>
-      hotspotsWithMeta?.reduce((acc, hotspot) => {
-        if (hotspot.pendingRewards) {
-          return acc.add(new BN(hotspot.pendingRewards[Mints.MOBILE] || '0'))
-        }
-
-        return acc
-      }, new BN(0)),
+          return acc
+        },
+        [new BN(0), new BN(0)],
+      ) ?? [new BN(0), new BN(0)],
     [hotspotsWithMeta],
   )
 

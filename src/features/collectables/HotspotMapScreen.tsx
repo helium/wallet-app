@@ -97,7 +97,7 @@ const HotspotMapScreen = () => {
   // - fetch infos by networkType for all hotspots
   // - setUp hexInfoBuckets
   useAsync(async () => {
-    if (!loading && !fetchingMore && onEndReached && anchorProvider) {
+    if (onEndReached && anchorProvider) {
       setLoadingInfos(true)
       const hemProgram = await init(anchorProvider)
 
@@ -107,6 +107,7 @@ const HotspotMapScreen = () => {
             const keyToAssetKeys = chunk.map((h) =>
               keyToAssetForAsset(toAsset(h)),
             )
+
             const ktaAccs = await getCachedKeyToAssets(
               hemProgram,
               keyToAssetKeys,
@@ -162,8 +163,6 @@ const HotspotMapScreen = () => {
       setLoadingInfos(false)
     }
   }, [
-    loading,
-    fetchingMore,
     onEndReached,
     anchorProvider,
     networkType,
@@ -175,18 +174,20 @@ const HotspotMapScreen = () => {
   useAsync(async () => {
     // if hotspot is provided, check if it's IOT or MOBILE
     // scope networkType to the hotspot's network type
-    if (onEndReached && !loadingInfos && anchorProvider && hotspot) {
-      const [hex] = Object.entries(hexInfoBuckets).find(([_, infos]) => {
-        return infos.some((info) => info?.asset.toBase58() === hotspot.id)
-      }) || [DEFAULT_HEX]
+    if (hotspot) {
+      if (onEndReached && !loadingInfos && anchorProvider) {
+        const [hex] = Object.entries(hexInfoBuckets).find(([_, infos]) => {
+          return infos.some((info) => info?.asset.toBase58() === hotspot.id)
+        }) || [DEFAULT_HEX]
 
-      setActiveHex(hex)
-      if (hex !== DEFAULT_HEX) {
-        setActiveHotspotIndex(
-          hexInfoBuckets[hex].findIndex(
-            (info) => info.asset.toBase58() === hotspot.id,
-          ),
-        )
+        setActiveHex(hex)
+        if (hex !== DEFAULT_HEX) {
+          setActiveHotspotIndex(
+            hexInfoBuckets[hex].findIndex(
+              (info) => info.asset.toBase58() === hotspot.id,
+            ),
+          )
+        }
       }
     }
   }, [anchorProvider, onEndReached, loadingInfos, hotspot])
@@ -246,6 +247,7 @@ const HotspotMapScreen = () => {
   }, [activeHex, mapRef, bottomSheetHeight, cameraRef])
 
   const iconSize = useMemo(() => zoomLevel * 0.02, [zoomLevel])
+
   const hexsFeature = useMemo(
     () =>
       featureCollection(
@@ -382,23 +384,21 @@ const HotspotMapScreen = () => {
                 mobileHexActive: require('@assets/images/mapMobileHexActive.png'),
               }}
             />
-            {!isLoading && !!hexsFeature?.features?.length && (
-              <MapLibreGL.ShapeSource
-                id="hexsFeature"
-                hitbox={{ width: iconSize, height: iconSize }}
-                onPress={handleHexClick}
-                shape={hexsFeature}
-              >
-                <MapLibreGL.SymbolLayer
-                  id="hexs"
-                  style={{
-                    iconImage: ['get', 'iconImage'],
-                    iconSize: ['get', 'iconSize'],
-                    iconAllowOverlap: true,
-                  }}
-                />
-              </MapLibreGL.ShapeSource>
-            )}
+            <MapLibreGL.ShapeSource
+              id="hexsFeature"
+              hitbox={{ width: iconSize, height: iconSize }}
+              onPress={handleHexClick}
+              shape={hexsFeature}
+            >
+              <MapLibreGL.SymbolLayer
+                id="hexs"
+                style={{
+                  iconImage: ['get', 'iconImage'],
+                  iconSize: ['get', 'iconSize'],
+                  iconAllowOverlap: true,
+                }}
+              />
+            </MapLibreGL.ShapeSource>
           </Map>
           <Box
             flexDirection="row"
