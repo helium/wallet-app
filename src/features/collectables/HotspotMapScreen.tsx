@@ -246,7 +246,7 @@ const HotspotMapScreen = () => {
     }
   }, [activeHex, mapRef, bottomSheetHeight, cameraRef])
 
-  const iconSize = useMemo(() => zoomLevel * 0.02, [zoomLevel])
+  const iconSize = useMemo(() => 0.25 * (zoomLevel / MAX_MAP_ZOOM), [zoomLevel])
 
   const hexsFeature = useMemo(
     () =>
@@ -263,12 +263,11 @@ const HotspotMapScreen = () => {
                 h === activeHex
                   ? `${networkType.toLowerCase()}HexActive`
                   : `${networkType.toLowerCase()}Hex`,
-              iconSize,
             },
           ),
         ),
       ),
-    [hexInfoBuckets, activeHex, networkType, iconSize],
+    [hexInfoBuckets, activeHex, networkType],
   )
 
   const activeHexItem = useMemo(() => {
@@ -378,7 +377,6 @@ const HotspotMapScreen = () => {
             {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
             {/* @ts-ignore */}
             <MapLibreGL.Images
-              id="hexImages"
               images={{
                 iotHex: require('@assets/images/mapIotHex.png'),
                 iotHexActive: require('@assets/images/mapIotHexActive.png'),
@@ -388,17 +386,16 @@ const HotspotMapScreen = () => {
             />
             <MapLibreGL.ShapeSource
               id="hexsFeature"
-              hitbox={{ width: iconSize, height: iconSize }}
               onPress={handleHexClick}
               shape={hexsFeature}
+              hitbox={{ width: iconSize, height: iconSize }}
             >
               <MapLibreGL.SymbolLayer
                 id="hexs"
                 style={{
-                  iconImage: ['get', 'iconImage'],
-                  iconSize: ['get', 'iconSize'],
-                  iconAnchor: 'center',
+                  iconSize,
                   iconAllowOverlap: true,
+                  iconImage: ['get', 'iconImage'],
                 }}
               />
             </MapLibreGL.ShapeSource>
