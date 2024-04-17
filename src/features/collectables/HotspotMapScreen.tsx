@@ -367,11 +367,11 @@ const HotspotMapScreen = () => {
             camera={cameraRef}
             userLocation={userLocationRef}
             mapProps={{
+              onRegionDidChange: handleRegionChanged,
               onPress: () => {
                 setActiveHex(undefined)
                 setLegendVisible(false)
               },
-              onRegionDidChange: handleRegionChanged,
             }}
           >
             {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
@@ -386,8 +386,8 @@ const HotspotMapScreen = () => {
             />
             <MapLibreGL.ShapeSource
               id="hexsFeature"
-              onPress={handleHexClick}
               shape={hexsFeature}
+              onPress={handleHexClick}
               hitbox={{ width: iconSize, height: iconSize }}
             >
               <MapLibreGL.SymbolLayer
