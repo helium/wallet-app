@@ -246,7 +246,7 @@ const HotspotMapScreen = () => {
     }
   }, [activeHex, mapRef, bottomSheetHeight, cameraRef])
 
-  const iconSize = useMemo(() => zoomLevel * 0.01, [zoomLevel])
+  const iconSize = useMemo(() => zoomLevel * 0.02, [zoomLevel])
 
   const hexsFeature = useMemo(
     () =>
@@ -354,13 +354,14 @@ const HotspotMapScreen = () => {
             visible={isLoading}
             exiting={DelayedFadeIn}
             position="absolute"
+            flex={1}
             width="100%"
             height="100%"
-            justifyContent="center"
-            alignItems="center"
             zIndex={100}
           >
-            <CircleLoader loaderSize={24} color="white" />
+            <Box flex={1} height="100%" justifyContent="center">
+              <CircleLoader loaderSize={24} color="white" />
+            </Box>
           </ReAnimatedBlurBox>
           <Map
             map={mapRef}
@@ -377,15 +378,14 @@ const HotspotMapScreen = () => {
             {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
             {/* @ts-ignore */}
             <MapLibreGL.Images
+              id="hexImages"
               images={{
                 iotHex: require('@assets/images/mapIotHex.png'),
                 iotHexActive: require('@assets/images/mapIotHexActive.png'),
                 mobileHex: require('@assets/images/mapMobileHex.png'),
                 mobileHexActive: require('@assets/images/mapMobileHexActive.png'),
               }}
-            >
-              <Box />
-            </MapLibreGL.Images>
+            />
             <MapLibreGL.ShapeSource
               id="hexsFeature"
               hitbox={{ width: iconSize, height: iconSize }}
@@ -395,8 +395,9 @@ const HotspotMapScreen = () => {
               <MapLibreGL.SymbolLayer
                 id="hexs"
                 style={{
-                  iconSize: 0.2,
                   iconImage: ['get', 'iconImage'],
+                  iconSize: ['get', 'iconSize'],
+                  iconAnchor: 'center',
                   iconAllowOverlap: true,
                 }}
               />
