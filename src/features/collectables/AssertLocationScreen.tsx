@@ -405,13 +405,14 @@ const AssertLocationScreen = () => {
             visible={isLoading}
             exiting={DelayedFadeIn}
             position="absolute"
+            flex={1}
             width="100%"
             height="100%"
-            justifyContent="center"
-            alignItems="center"
             zIndex={100}
           >
-            <CircleLoader loaderSize={24} color="white" />
+            <Box flex={1} height="100%" justifyContent="center">
+              <CircleLoader loaderSize={24} color="white" />
+            </Box>
           </ReAnimatedBlurBox>
           <Map
             map={mapRef}

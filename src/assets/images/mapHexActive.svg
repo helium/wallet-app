@@ -1,0 +1,14 @@
+<svg
+  width="50"
+  height="62"
+  viewBox="0 0 50 62"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <path
+    d="M25 2L49 16.5V45.5L25 60L1 45.5V16.5L25 2Z"
+    fill="currentColor"
+    stroke="white"
+    stroke-width="2"
+  />
+</svg>

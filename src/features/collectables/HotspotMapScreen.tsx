@@ -2,6 +2,8 @@
 /* eslint-disable no-restricted-properties */
 import BackArrow from '@assets/images/backArrow.svg'
 import Hex from '@assets/images/hex.svg'
+import MapHex from '@assets/images/mapHex.svg'
+import MapHexActive from '@assets/images/mapHexActive.svg'
 import { ReAnimatedBlurBox, ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import CircleLoader from '@components/CircleLoader'
@@ -29,10 +31,8 @@ import useHotspots from '@hooks/useHotspots'
 import { IotHotspotInfoV0 } from '@hooks/useIotInfo'
 import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
 import MapLibreGL from '@maplibre/maplibre-react-native'
-import OnPressEvent from '@maplibre/maplibre-react-native/javascript/types/OnPressEvent'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useBackgroundStyle, useColors } from '@theme/themeHooks'
-import { Point, feature, featureCollection } from '@turf/helpers'
 import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY } from '@utils/constants'
 import { parseH3BNLocation } from '@utils/h3'
 import {
@@ -246,29 +246,11 @@ const HotspotMapScreen = () => {
     }
   }, [activeHex, mapRef, bottomSheetHeight, cameraRef])
 
-  const iconSize = useMemo(() => zoomLevel * 0.02, [zoomLevel])
-
-  const hexsFeature = useMemo(
+  const iconSize = useMemo(() => zoomLevel * 2, [zoomLevel])
+  const iconColor = useMemo(
     () =>
-      featureCollection(
-        Object.keys(hexInfoBuckets).map((h) =>
-          feature(
-            {
-              type: 'Point',
-              coordinates: parseH3BNLocation(new BN(h)).reverse(),
-            } as Point,
-            {
-              id: h,
-              iconImage:
-                h === activeHex
-                  ? `${networkType.toLowerCase()}HexActive`
-                  : `${networkType.toLowerCase()}Hex`,
-              iconSize,
-            },
-          ),
-        ),
-      ),
-    [hexInfoBuckets, activeHex, networkType, iconSize],
+      networkType === 'IOT' ? colors.greenBright500 : colors.blueBright500,
+    [networkType, colors],
   )
 
   const activeHexItem = useMemo(() => {
@@ -331,10 +313,9 @@ const HotspotMapScreen = () => {
   }, [networkType, setNetworkType])
 
   const handleHexClick = useCallback(
-    (event: OnPressEvent) => {
-      const hex = event.features[0]
+    (hex: string) => {
       setLegendVisible(false)
-      setActiveHex(hex.properties?.id)
+      setActiveHex(hex)
     },
     [setActiveHex, setLegendVisible],
   )
@@ -354,13 +335,15 @@ const HotspotMapScreen = () => {
             visible={isLoading}
             exiting={DelayedFadeIn}
             position="absolute"
+            flex={1}
             width="100%"
             height="100%"
             justifyContent="center"
-            alignItems="center"
             zIndex={100}
           >
-            <CircleLoader loaderSize={24} color="white" />
+            <Box flex={1} height="100%" justifyContent="center">
+              <CircleLoader loaderSize={24} color="white" />
+            </Box>
           </ReAnimatedBlurBox>
           <Map
             map={mapRef}
@@ -374,31 +357,39 @@ const HotspotMapScreen = () => {
               onRegionDidChange: handleRegionChanged,
             }}
           >
-            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-            {/* @ts-ignore */}
-            <MapLibreGL.Images
-              images={{
-                iotHex: require('@assets/images/mapIotHex.png'),
-                iotHexActive: require('@assets/images/mapIotHexActive.png'),
-                mobileHex: require('@assets/images/mapMobileHex.png'),
-                mobileHexActive: require('@assets/images/mapMobileHexActive.png'),
-              }}
-            />
-            <MapLibreGL.ShapeSource
-              id="hexsFeature"
-              hitbox={{ width: iconSize, height: iconSize }}
-              onPress={handleHexClick}
-              shape={hexsFeature}
-            >
-              <MapLibreGL.SymbolLayer
-                id="hexs"
-                style={{
-                  iconImage: ['get', 'iconImage'],
-                  iconSize: ['get', 'iconSize'],
-                  iconAllowOverlap: true,
-                }}
-              />
-            </MapLibreGL.ShapeSource>
+            {Object.keys(hexInfoBuckets).map((hex) => {
+              const adjustedSize = hex === activeHex ? iconSize * 1.5 : iconSize
+
+              return (
+                <MapLibreGL.MarkerView
+                  key={hex}
+                  coordinate={parseH3BNLocation(new BN(hex)).reverse()}
+                  allowOverlap
+                >
+                  <TouchableOpacityBox
+                    position="relative"
+                    height={adjustedSize}
+                    width={adjustedSize}
+                    onPress={() => handleHexClick(hex)}
+                  >
+                    {activeHex === hex ? (
+                      <MapHexActive
+                        width={adjustedSize}
+                        height={adjustedSize}
+                        color={iconColor}
+                      />
+                    ) : (
+                      <MapHex
+                        width={adjustedSize}
+                        height={adjustedSize}
+                        opacity={0.5}
+                        color={iconColor}
+                      />
+                    )}
+                  </TouchableOpacityBox>
+                </MapLibreGL.MarkerView>
+              )
+            })}
           </Map>
           <Box
             flexDirection="row"

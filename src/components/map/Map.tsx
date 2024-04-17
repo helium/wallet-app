@@ -1,4 +1,3 @@
-import useMount from '@hooks/useMount'
 import MapLibreGL from '@maplibre/maplibre-react-native'
 import { Position } from '@turf/helpers'
 import React, { PropsWithChildren, useMemo } from 'react'
@@ -29,12 +28,6 @@ const Map: React.FC<
   mapProps = {},
   cameraProps = {},
 }) => {
-  useMount(() => {
-    // Will be null for most users (only Mapbox authenticates this way).
-    // Required on Android. See Android installation notes.
-    MapLibreGL.setAccessToken(null)
-  })
-
   const mapStyle: string = useMemo(
     () =>
       JSON.stringify({
