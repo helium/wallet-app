@@ -1129,7 +1129,7 @@ export async function getCachedIotInfo(
         IdlAccounts<HeliumEntityManager>['iotHotspotInfoV0']
       >('IotHotspotInfoV0', account.data),
     }),
-    true,
+    false,
     false,
   )
 
@@ -1151,7 +1151,7 @@ export async function getCachedIotInfos(
           IdlAccounts<HeliumEntityManager>['iotHotspotInfoV0']
         >('IotHotspotInfoV0', account.data),
       }),
-      true,
+      false,
       false,
     )
   )
@@ -1173,7 +1173,7 @@ export async function getCachedMobileInfo(
         IdlAccounts<HeliumEntityManager>['mobileHotspotInfoV0']
       >('MobileHotspotInfoV0', account.data),
     }),
-    true,
+    false,
     false,
   )
 
@@ -1195,7 +1195,7 @@ export async function getCachedMobileInfos(
           IdlAccounts<HeliumEntityManager>['mobileHotspotInfoV0']
         >('MobileHotspotInfoV0', account.data),
       }),
-      true,
+      false,
       false,
     )
   )
