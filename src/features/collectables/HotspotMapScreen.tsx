@@ -349,20 +349,19 @@ const HotspotMapScreen = () => {
           overflow="hidden"
           position="relative"
         >
-          {isLoading && (
-            <ReAnimatedBlurBox
-              visible
-              position="absolute"
-              flex={1}
-              width="100%"
-              height="100%"
-              zIndex={100}
-            >
-              <Box flex={1} height="100%" justifyContent="center">
-                <CircleLoader loaderSize={24} color="white" />
-              </Box>
-            </ReAnimatedBlurBox>
-          )}
+          <ReAnimatedBlurBox
+            visible={isLoading}
+            exiting={DelayedFadeIn}
+            position="absolute"
+            flex={1}
+            width="100%"
+            height="100%"
+            zIndex={100}
+          >
+            <Box flex={1} height="100%" justifyContent="center">
+              <CircleLoader loaderSize={24} color="white" />
+            </Box>
+          </ReAnimatedBlurBox>
           <Map
             map={mapRef}
             camera={cameraRef}
