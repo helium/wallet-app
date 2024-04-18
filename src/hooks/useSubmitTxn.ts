@@ -135,7 +135,9 @@ export default () => {
             payee,
           )
 
-      const serializedTx = toVersionedTx(transferTxn).serialize()
+      const serializedTx = toVersionedTx(
+        await populateMissingDraftInfo(anchorProvider.connection, transferTxn),
+      ).serialize()
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
@@ -223,7 +225,9 @@ export default () => {
         recipient,
       )
 
-      const serializedTx = toVersionedTx(swapTxn).serialize()
+      const serializedTx = toVersionedTx(
+        await populateMissingDraftInfo(connection, swapTxn),
+      ).serialize()
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
