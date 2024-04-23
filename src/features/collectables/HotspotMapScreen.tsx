@@ -84,15 +84,14 @@ const HotspotMapScreen = () => {
   const [activeHex, setActiveHex] = useState<string>()
   const [activeHotspotIndex, setActiveHotspotIndex] = useState(0)
   const [legendVisible, setLegendVisible] = useState(false)
-  const { hotspotsWithMeta, fetchMore, fetchingMore, loading, onEndReached } =
-    useHotspots()
+  const { hotspots, fetchAll, loading, onEndReached } = useHotspots()
 
   // - fetch all hotspots
   useEffect(() => {
-    if (!loading && !fetchingMore && !onEndReached) {
-      fetchMore(100)
+    if (!loading && !onEndReached) {
+      fetchAll()
     }
-  }, [loading, fetchingMore, onEndReached, fetchMore])
+  }, [loading, onEndReached, fetchAll])
 
   // - fetch infos by networkType for all hotspots
   // - setUp hexInfoBuckets
@@ -103,7 +102,7 @@ const HotspotMapScreen = () => {
 
       const infos = (
         await Promise.all(
-          chunks(hotspotsWithMeta, 100).map(async (chunk) => {
+          chunks(hotspots, 100).map(async (chunk) => {
             const keyToAssetKeys = chunk.map((h) =>
               keyToAssetForAsset(toAsset(h)),
             )
@@ -166,7 +165,7 @@ const HotspotMapScreen = () => {
     onEndReached,
     anchorProvider,
     networkType,
-    hotspotsWithMeta,
+    hotspots,
     setLoadingInfos,
     setHexInfoBuckets,
   ])
@@ -281,8 +280,8 @@ const HotspotMapScreen = () => {
 
       const info = hexInfoBuckets[activeHex][activeHotspotIndex]
       return {
-        hotspot: hotspotsWithMeta.find(
-          (h) => h.content.metadata.asset_id === info.asset.toBase58(),
+        hotspot: hotspots.find(
+          (h) => h.id === info.asset.toBase58(),
         ) as HotspotWithPendingRewards,
         info,
       }
@@ -292,13 +291,13 @@ const HotspotMapScreen = () => {
     hexInfoBuckets,
     activeHex,
     activeHotspotIndex,
-    hotspotsWithMeta,
+    hotspots,
     hotspot,
   ])
 
   const isLoading = useMemo(
-    () => loading || fetchingMore || !onEndReached || loadingInfos,
-    [loading, fetchingMore, onEndReached, loadingInfos],
+    () => loading || !onEndReached || loadingInfos,
+    [loading, onEndReached, loadingInfos],
   )
 
   const handleUserLocationPress = useCallback(() => {

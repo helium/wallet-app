@@ -94,7 +94,7 @@ export class WrappedConnection extends Connection {
     }
   }
 
-  async getAsset<T>(assetId: any): Promise<T> {
+  async getAsset<T>(assetId: string): Promise<T> {
     try {
       const response = await axios.post(this.baseURL, {
         jsonrpc: '2.0',

@@ -36,8 +36,9 @@ import { SvgUri } from 'react-native-svg'
 import { ReAnimatedBlurBox } from '@components/AnimatedBox'
 import CircleLoader from '@components/CircleLoader'
 import { DelayedFadeIn } from '@components/FadeInOut'
+import { useHotspotWithMetaAndRewards } from '@hooks/useHotspotWithMeta'
 import { useSolana } from '../../solana/SolanaProvider'
-import { HotspotWithPendingRewards } from '../../types/solana'
+import { CompressedNFT } from '../../types/solana'
 import { IOT_CONFIG_KEY, Mints, MOBILE_CONFIG_KEY } from '../../utils/constants'
 import { CollectableNavigationProp } from './collectablesTypes'
 
@@ -137,7 +138,7 @@ export const HotspotMapHotspotDetails = ({
   showActions,
   network,
 }: {
-  hotspot: HotspotWithPendingRewards
+  hotspot: CompressedNFT
   info?: IotHotspotInfoV0 | MobileHotspotInfoV0
   showActions: boolean
   network: NetworkType
@@ -145,14 +146,16 @@ export const HotspotMapHotspotDetails = ({
   const { t } = useTranslation()
   const navigation = useNavigation<CollectableNavigationProp>()
   const { anchorProvider } = useSolana()
-  const entityKey = useEntityKey(hotspot)
+  const { loading: loadingMeta, hotspotWithMeta } =
+    useHotspotWithMetaAndRewards(hotspot)
+  const entityKey = useEntityKey(hotspotWithMeta)
   const [selectExplorerOpen, setSelectExplorerOpen] = useState(false)
-  const streetAddress = useHotspotAddress(hotspot)
+  const streetAddress = useHotspotAddress(hotspotWithMeta)
   const { info: iotMint } = useMint(IOT_MINT)
   const { info: mobileMint } = useMint(MOBILE_MINT)
   const iotInfoAcc = useIotInfo(entityKey)
   const mobileInfoAcc = useMobileInfo(entityKey)
-  const { metadata } = hotspot.content
+  const { metadata } = hotspotWithMeta?.content || {}
   const copyText = useCopyText()
   const collection = hotspot.grouping.find(
     (k) => k.group_key === 'collection',
@@ -195,33 +198,36 @@ export const HotspotMapHotspotDetails = ({
     (mobileMakerApprovalAcc && !mobileInfoAcc?.info)
 
   const pendingIotRewards = useMemo(
-    () => hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.IOT]),
-    [hotspot],
+    () =>
+      hotspotWithMeta?.pendingRewards &&
+      new BN(hotspotWithMeta?.pendingRewards[Mints.IOT]),
+    [hotspotWithMeta],
   )
 
   const pendingIotRewardsString = useMemo(() => {
-    if (!hotspot.pendingRewards) return
+    if (!hotspotWithMeta?.pendingRewards) return
     const num = toNumber(
-      new BN(hotspot.pendingRewards[Mints.IOT]),
+      new BN(hotspotWithMeta?.pendingRewards[Mints.IOT]),
       iotMint?.decimals || 6,
     )
     return formatLargeNumber(new BigNumber(num))
-  }, [hotspot, iotMint])
+  }, [hotspotWithMeta, iotMint])
 
   const pendingMobileRewards = useMemo(
     () =>
-      hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.MOBILE]),
-    [hotspot],
+      hotspotWithMeta?.pendingRewards &&
+      new BN(hotspotWithMeta?.pendingRewards[Mints.MOBILE]),
+    [hotspotWithMeta],
   )
 
   const pendingMobileRewardsString = useMemo(() => {
-    if (!hotspot.pendingRewards) return
+    if (!hotspotWithMeta?.pendingRewards) return
     const num = toNumber(
-      new BN(hotspot.pendingRewards[Mints.MOBILE]),
+      new BN(hotspotWithMeta?.pendingRewards[Mints.MOBILE]),
       mobileMint?.decimals || 6,
     )
     return formatLargeNumber(new BigNumber(num))
-  }, [hotspot, mobileMint])
+  }, [hotspotWithMeta, mobileMint])
 
   const hasIotRewards = useMemo(
     () => pendingIotRewards && pendingIotRewards.gt(new BN(0)),
@@ -238,8 +244,8 @@ export const HotspotMapHotspotDetails = ({
   )
 
   const isLoading = useMemo(
-    () => mplxLoading || explorerLoading || makerLoading,
-    [mplxLoading, explorerLoading, makerLoading],
+    () => mplxLoading || explorerLoading || makerLoading || loadingMeta,
+    [mplxLoading, explorerLoading, makerLoading, loadingMeta],
   )
 
   const eccCompact = useMemo(() => {
@@ -296,10 +302,12 @@ export const HotspotMapHotspotDetails = ({
   )
 
   const handleClaimRewards = useCallback(() => {
-    navigation.navigate('ClaimRewardsScreen', {
-      hotspot,
-    })
-  }, [hotspot, navigation])
+    if (hotspotWithMeta) {
+      navigation.navigate('ClaimRewardsScreen', {
+        hotspot: hotspotWithMeta,
+      })
+    }
+  }, [hotspotWithMeta, navigation])
 
   const handleTransfer = useCallback(() => {
     navigation.navigate('TransferCollectableScreen', {
@@ -308,16 +316,20 @@ export const HotspotMapHotspotDetails = ({
   }, [hotspot, navigation])
 
   const handleAssertLocation = useCallback(() => {
-    navigation.navigate('AssertLocationScreen', {
-      collectable: hotspot,
-    })
-  }, [hotspot, navigation])
+    if (hotspotWithMeta) {
+      navigation.navigate('AssertLocationScreen', {
+        collectable: hotspotWithMeta,
+      })
+    }
+  }, [hotspotWithMeta, navigation])
 
   const handleAntennaSetup = useCallback(() => {
-    navigation.navigate('AntennaSetupScreen', {
-      collectable: hotspot,
-    })
-  }, [hotspot, navigation])
+    if (hotspotWithMeta) {
+      navigation.navigate('AntennaSetupScreen', {
+        collectable: hotspotWithMeta,
+      })
+    }
+  }, [hotspotWithMeta, navigation])
 
   const handleMetadataPress = () => {
     if (metadata) {
@@ -392,90 +404,105 @@ export const HotspotMapHotspotDetails = ({
     })
   })
 
-  if (isLoading) return null
-
   return (
     <>
       <Box padding="ms" borderBottomColor="black900" borderBottomWidth={1}>
-        <Box flexDirection="row">
-          <ImageBox
-            borderRadius="lm"
-            height={60}
-            width={60}
-            mr="ms"
-            source={{
-              uri: metadata?.image,
-              cache: 'force-cache',
-            }}
-          />
-          <Box flex={1}>
-            <Box flexDirection="row" alignItems="center">
-              <Text
-                variant="h3Bold"
-                color="white"
-                numberOfLines={1}
-                adjustsFontSizeToFit
-              >
-                {hotspot.content.metadata.name}
-              </Text>
-            </Box>
-            <Box flex={1} flexDirection="row" alignItems="center">
-              {streetAddress && (
-                <>
-                  <Box flexShrink={1} flexDirection="row">
-                    <Text numberOfLines={1} variant="body1">
-                      {streetAddress}
-                    </Text>
-                  </Box>
-                  <Box
-                    backgroundColor="surfaceContrast"
-                    height={6}
-                    width={6}
-                    borderRadius="round"
-                    marginHorizontal="ms"
-                  />
-                </>
-              )}
-              {eccCompact && (
-                <TouchableOpacityBox
-                  flexDirection="row"
-                  alignItems="center"
-                  onPress={handleCopyAddress}
-                >
-                  <Text variant="body1" numberOfLines={1} marginRight="xs">
-                    {ellipsizeAddress(eccCompact, { numChars: 4 })}
-                  </Text>
-                  <CopyAddress width={16} height={16} color={primaryText} />
-                </TouchableOpacityBox>
-              )}
-            </Box>
-          </Box>
-        </Box>
-        {!isLoading && network === 'IOT' && info && (
-          <IotMapDetails
-            maker={makerAcc?.name || 'Unknown'}
-            info={info as IotHotspotInfoV0}
-          />
-        )}
-        {!isLoading && network === 'MOBILE' && info && (
-          <MobileMapDetails
-            maker={makerAcc?.name || 'Unknown'}
-            info={info as MobileHotspotInfoV0}
-          />
-        )}
-        {onboardError && (
+        {isLoading && (
           <Box
             flexDirection="row"
+            minHeight={110}
             justifyContent="center"
-            alignItems="center"
-            paddingTop="ms"
+            alignContent="center"
           >
-            <Text variant="body3Medium" color="red500">
-              {onboardError.toString()}
-            </Text>
+            <Box justifyContent="center">
+              <CircleLoader loaderSize={24} color="white" />
+            </Box>
           </Box>
         )}
+        {!isLoading && (
+          <>
+            <Box flexDirection="row">
+              <ImageBox
+                borderRadius="lm"
+                height={60}
+                width={60}
+                mr="ms"
+                source={{
+                  uri: metadata?.image,
+                  cache: 'force-cache',
+                }}
+              />
+              <Box flex={1}>
+                <Box flexDirection="row" alignItems="center">
+                  <Text
+                    variant="h3Bold"
+                    color="white"
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                  >
+                    {hotspot.content.metadata.name}
+                  </Text>
+                </Box>
+                <Box flex={1} flexDirection="row" alignItems="center">
+                  {streetAddress && (
+                    <>
+                      <Box flexShrink={1} flexDirection="row">
+                        <Text numberOfLines={1} variant="body1">
+                          {streetAddress}
+                        </Text>
+                      </Box>
+                      <Box
+                        backgroundColor="surfaceContrast"
+                        height={6}
+                        width={6}
+                        borderRadius="round"
+                        marginHorizontal="ms"
+                      />
+                    </>
+                  )}
+                  {eccCompact && (
+                    <TouchableOpacityBox
+                      flexDirection="row"
+                      alignItems="center"
+                      onPress={handleCopyAddress}
+                    >
+                      <Text variant="body1" numberOfLines={1} marginRight="xs">
+                        {ellipsizeAddress(eccCompact, { numChars: 4 })}
+                      </Text>
+                      <CopyAddress width={16} height={16} color={primaryText} />
+                    </TouchableOpacityBox>
+                  )}
+                </Box>
+              </Box>
+            </Box>
+            {network === 'IOT' && info && (
+              <IotMapDetails
+                maker={makerAcc?.name || 'Unknown'}
+                info={info as IotHotspotInfoV0}
+              />
+            )}
+            {network === 'MOBILE' && info && (
+              <MobileMapDetails
+                maker={makerAcc?.name || 'Unknown'}
+                info={info as MobileHotspotInfoV0}
+              />
+            )}
+            {onboardError && (
+              <Box
+                flexDirection="row"
+                justifyContent="center"
+                alignItems="center"
+                paddingTop="ms"
+              >
+                <Text variant="body3Medium" color="red500">
+                  {onboardError.toString()}
+                </Text>
+              </Box>
+            )}
+          </>
+        )}
       </Box>
+
       {showActions && (
         <Box position="relative">
           <ReAnimatedBlurBox
