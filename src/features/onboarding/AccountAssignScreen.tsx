@@ -1,23 +1,24 @@
-import React, { memo, useCallback, useMemo, useState } from 'react'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
-import { useTranslation } from 'react-i18next'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import CheckBox from '@react-native-community/checkbox'
-import Box from '@components/Box'
-import SafeAreaBox from '@components/SafeAreaBox'
-import TextInput from '@components/TextInput'
-import FabButton from '@components/FabButton'
 import AccountIcon from '@components/AccountIcon'
+import Box from '@components/Box'
+import FabButton from '@components/FabButton'
+import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
+import TextInput from '@components/TextInput'
+import { heliumAddressFromSolAddress } from '@helium/spl-utils'
+import CheckBox from '@react-native-community/checkbox'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { storeSecureAccount, toSecureAccount } from '@storage/secureStorage'
 import { useColors, useSpacing } from '@theme/themeHooks'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useOnboarding } from './OnboardingProvider'
-import { accountNetType } from '../../utils/accountUtils'
-import { ImportAccountNavigationProp } from './import/importAccountNavTypes'
-import { CreateAccountNavigationProp } from './create/createAccountNavTypes'
-import { HomeStackParamList } from '../home/homeTypes'
+import React, { memo, useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { RootNavigationProp } from '../../navigation/rootTypes'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { HomeStackParamList } from '../home/homeTypes'
+import { useOnboarding } from './OnboardingProvider'
+import { CreateAccountNavigationProp } from './create/createAccountNavTypes'
+import { ImportAccountNavigationProp } from './import/importAccountNavTypes'
 
 type Route = RouteProp<HomeStackParamList, 'AccountAssignScreen'>
 
@@ -32,31 +33,49 @@ const AccountAssignScreen = () => {
   const [alias, setAlias] = useState('')
   const {
     reset,
-    onboardingData: { secureAccount },
+    onboardingData: { paths, words },
   } = useOnboarding()
   const insets = useSafeAreaInsets()
   const spacing = useSpacing()
   const colors = useColors()
-  const { upsertAccount, hasAccounts, updateDefaultAccountAddress } =
+  const { upsertAccounts, hasAccounts, updateDefaultAccountAddress } =
     useAccountStorage()
   const [setAsDefault, toggleSetAsDefault] = useState(false)
 
-  const account = useMemo(() => {
-    return secureAccount || route?.params?.secureAccount
-  }, [route, secureAccount])
-
   const handlePress = useCallback(async () => {
-    if (!account) return
-
     if (hasAccounts) {
       try {
-        await upsertAccount({
-          alias,
-          address: account.address,
-          secureAccount: account,
-        })
+        await Promise.all(
+          paths.map(async (p) => {
+            await storeSecureAccount(
+              toSecureAccount({
+                keypair: p.keypair,
+                words,
+                derivationPath: p.derivationPath,
+              }),
+            )
+          }),
+        )
+        const newAccounts = paths.map((p, index) => ({
+          alias: index === 0 ? alias : `${alias} ${index + 1}`,
+          address: heliumAddressFromSolAddress(p.keypair.publicKey.toBase58()),
+          solanaAddress: p.keypair.publicKey.toBase58(),
+          derivationPath: p.derivationPath,
+        }))
+        await Promise.all(
+          paths.map(async (p) => {
+            await storeSecureAccount(
+              toSecureAccount({
+                words,
+                keypair: p.keypair,
+                derivationPath: p.derivationPath,
+              }),
+            )
+          }),
+        )
+        await upsertAccounts(newAccounts)
         if (setAsDefault) {
-          await updateDefaultAccountAddress(account.address)
+          await updateDefaultAccountAddress(newAccounts[0].address)
         }
 
         rootNav.reset({
@@ -73,22 +92,20 @@ const AccountAssignScreen = () => {
 
     onboardingNav.navigate('AccountCreatePinScreen', {
       pinReset: false,
-      account: {
-        ...account,
-        alias,
-        netType: accountNetType(account.address),
-      },
+      ...route.params,
     })
   }, [
-    account,
     hasAccounts,
     onboardingNav,
-    alias,
-    upsertAccount,
+    route.params,
+    paths,
+    upsertAccounts,
     setAsDefault,
-    reset,
-    updateDefaultAccountAddress,
     rootNav,
+    reset,
+    words,
+    alias,
+    updateDefaultAccountAddress,
   ])
 
   const onCheckboxToggled = useCallback(
@@ -126,7 +143,10 @@ const AccountAssignScreen = () => {
             marginTop="xl"
             flexDirection="row"
           >
-            <AccountIcon size={40} address={account?.address} />
+            <AccountIcon
+              size={40}
+              address={paths[0] && paths[0].keypair.publicKey.toBase58()}
+            />
             <TextInput
               textColor="primaryText"
               fontSize={24}

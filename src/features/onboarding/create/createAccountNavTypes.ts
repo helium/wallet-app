@@ -1,21 +1,24 @@
 import { StackNavigationProp } from '@react-navigation/stack'
-import { CSAccount } from '../../../storage/cloudStorage'
-import { SecureAccount } from '../../../storage/secureStorage'
+import { Keypair } from '@solana/web3.js'
 
 export type CreateAccountStackParamList = {
   AccountCreateStartScreen: undefined
   AccountCreatePassphraseScreen: undefined
-  AccountEnterPassphraseScreen: undefined | { secureAccount?: SecureAccount }
-  AccountAssignScreen: undefined | { secureAccount?: SecureAccount }
+  AccountEnterPassphraseScreen:
+    | undefined
+    | { keypair?: Keypair; words: string[] }
+  AccountAssignScreen: undefined | { keypair?: Keypair; words: string[] }
   AccountCreatePinScreen:
     | {
         pinReset?: boolean
-        account?: SecureAccount & CSAccount
+        keypair?: Keypair
+        words?: string[]
       }
     | undefined
   AccountConfirmPinScreen: {
     pin: string
-    account?: SecureAccount & CSAccount
+    keypair?: Keypair
+    words?: string[]
   }
 }
 

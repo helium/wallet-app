@@ -15,6 +15,7 @@ export type CSAccount = {
   address: string
   solanaAddress?: string
   netType: NetType.NetType
+  derivationPath?: string,
   ledgerDevice?: LedgerDevice
   accountIndex?: number
   proposalCountByMint?: Record<string, number>

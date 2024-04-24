@@ -1,32 +1,33 @@
-import React, { useCallback, memo, useMemo } from 'react'
-import { useNavigation } from '@react-navigation/native'
-import { useTranslation } from 'react-i18next'
-import { useAsync } from 'react-async-hook'
 import Close from '@assets/images/close.svg'
 import InfoError from '@assets/images/infoError.svg'
 import Box from '@components/Box'
-import Text from '@components/Text'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { useColors } from '@theme/themeHooks'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import RevealWords from '@components/RevealWords'
-import { CreateAccountNavigationProp } from './createAccountNavTypes'
+import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useNavigation } from '@react-navigation/native'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
+import {
+  DEFAULT_DERIVATION_PATH,
+  createDefaultKeypair,
+} from '@storage/secureStorage'
+import { useColors } from '@theme/themeHooks'
+import React, { memo, useCallback, useMemo } from 'react'
+import { useAsync } from 'react-async-hook'
+import { useTranslation } from 'react-i18next'
 import { useOnboarding } from '../OnboardingProvider'
 import { OnboardingNavigationProp } from '../onboardingTypes'
+import { CreateAccountNavigationProp } from './createAccountNavTypes'
 
 const AccountCreatePassphraseScreen = () => {
   const { t } = useTranslation()
-  const { createSecureAccount, hasAccounts } = useAccountStorage()
+  const { hasAccounts } = useAccountStorage()
   const colors = useColors()
-  const {
-    setOnboardingData,
-    onboardingData: { netType },
-  } = useOnboarding()
+  const { setOnboardingData } = useOnboarding()
   const parentNav = useNavigation<OnboardingNavigationProp>()
   const navigation = useNavigation<CreateAccountNavigationProp>()
-  const { result: secureAccount } = useAsync(
-    async () => createSecureAccount({ netType, use24Words: true }),
-    [createSecureAccount, netType],
+  const { result: defaultKeypair } = useAsync(
+    async () => createDefaultKeypair({ use24Words: true }),
+    [],
   )
 
   const navToTop = useCallback(() => {
@@ -38,11 +39,20 @@ const AccountCreatePassphraseScreen = () => {
   }, [hasAccounts, parentNav])
 
   const navNext = useCallback(() => {
-    if (!secureAccount) return
+    if (!defaultKeypair) return
 
-    setOnboardingData((prev) => ({ ...prev, secureAccount }))
-    navigation.navigate('AccountEnterPassphraseScreen', { secureAccount })
-  }, [navigation, secureAccount, setOnboardingData])
+    setOnboardingData((prev) => ({
+      ...prev,
+      words: defaultKeypair?.words,
+      paths: [
+        {
+          derivationPath: DEFAULT_DERIVATION_PATH,
+          keypair: defaultKeypair.keypair,
+        },
+      ],
+    }))
+    navigation.navigate('AccountEnterPassphraseScreen', defaultKeypair)
+  }, [defaultKeypair, navigation, setOnboardingData])
 
   const ListHeaderComponent = useMemo(() => {
     return (
@@ -86,7 +96,7 @@ const AccountCreatePassphraseScreen = () => {
     <Box flex={1} backgroundColor="secondaryBackground">
       <RevealWords
         ListHeaderComponent={ListHeaderComponent}
-        mnemonic={secureAccount?.mnemonic || []}
+        mnemonic={defaultKeypair?.words || []}
         onDone={navNext}
       />
     </Box>

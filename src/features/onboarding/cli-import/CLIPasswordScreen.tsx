@@ -11,9 +11,11 @@ import ButtonPressable from '@components/ButtonPressable'
 import Box from '@components/Box'
 import CloseButton from '@components/CloseButton'
 import TextInput from '@components/TextInput'
-import { createSecureAccount } from '@storage/secureStorage'
+import {
+  DEFAULT_DERIVATION_PATH,
+  createDefaultKeypair,
+} from '@storage/secureStorage'
 import useAlert from '@hooks/useAlert'
-import { accountNetType } from '@utils/accountUtils'
 import {
   CLIAccountNavigationProp,
   CLIAccountStackParamList,
@@ -31,7 +33,6 @@ const CLIPasswordScreen = () => {
   const { setOnboardingData } = useOnboarding()
 
   const {
-    address,
     seed: { ciphertext, nonce, salt },
   } = route.params
 
@@ -64,13 +65,21 @@ const CLIPasswordScreen = () => {
         key,
       )
 
-      const account = await createSecureAccount({
+      const { keypair, words } = await createDefaultKeypair({
         givenMnemonic: Buffer.from(phrase, 'base64').toString().split(' '),
         use24Words: true,
-        netType: accountNetType(address),
       })
 
-      setOnboardingData((prev) => ({ ...prev, secureAccount: account }))
+      setOnboardingData((prev) => ({
+        ...prev,
+        words,
+        paths: [
+          {
+            keypair,
+            derivationPath: DEFAULT_DERIVATION_PATH,
+          },
+        ],
+      }))
       navigation.navigate('AccountAssignScreen')
     } catch (error) {
       await showOKAlert({
@@ -79,7 +88,6 @@ const CLIPasswordScreen = () => {
       })
     }
   }, [
-    address,
     ciphertext,
     navigation,
     nonce,

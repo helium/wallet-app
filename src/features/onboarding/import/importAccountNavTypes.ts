@@ -19,6 +19,7 @@ export type ImportAccountStackParamList = {
     pin: string
     account?: SecureAccount & CSAccount
   }
+  ImportSubAccounts: undefined
   CLIAccountNavigator: undefined
 }
 
