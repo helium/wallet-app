@@ -18,6 +18,7 @@ if (Reactotron.createEnhancer && __DEV__) {
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
+  version: 1,
   blacklist: [
     solanaStatusApi.reducerPath,
     solanaSliceName,
