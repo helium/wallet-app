@@ -642,7 +642,7 @@ export default {
     timeoutAlert: {
       title: 'Login Failed',
       message:
-        'Please close and reopen the login screen in Crowdspot and scan a new QR code to try again.',
+        'Please close and reopen the login screen and scan a new QR code to try again.',
     },
   },
   editContact: {
