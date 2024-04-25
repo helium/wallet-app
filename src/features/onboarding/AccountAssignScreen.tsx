@@ -83,7 +83,7 @@ const AccountAssignScreen = () => {
         }),
       )
       // eslint-disable-next-line no-inner-declarations
-      function getName(index: number) {
+      function getName(index: number): string {
         const name = `${alias} ${index + 1}`
         if (!existingNames?.has(name)) {
           return name
