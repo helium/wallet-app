@@ -163,7 +163,7 @@ const ImportPrivateKey = () => {
       return [
         'OnboardingNavigator',
         {
-          screen: 'CreateAccount',
+          screen: 'ImportAccount',
           params: {
             screen: subRoute,
           },
@@ -174,10 +174,6 @@ const ImportPrivateKey = () => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       navigation.replace(...getRoute('ImportSubAccounts'))
-    } else if (hasAccounts) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      navigation.replace(...getRoute('AccountAssignScreen'))
     } else {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore

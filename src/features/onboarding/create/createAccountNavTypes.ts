@@ -1,25 +1,19 @@
 import { StackNavigationProp } from '@react-navigation/stack'
-import { Keypair } from '@solana/web3.js'
+
+export type RouteAccount = {
+  secretKey?: string
+  words?: string[]
+  alias?: string
+  derivationPath?: string
+}
 
 export type CreateAccountStackParamList = {
   AccountCreateStartScreen: undefined
   AccountCreatePassphraseScreen: undefined
-  AccountEnterPassphraseScreen:
-    | undefined
-    | { keypair?: Keypair; words: string[] }
-  AccountAssignScreen: undefined | { keypair?: Keypair; words: string[] }
-  AccountCreatePinScreen:
-    | {
-        pinReset?: boolean
-        keypair?: Keypair
-        words?: string[]
-      }
-    | undefined
-  AccountConfirmPinScreen: {
-    pin: string
-    keypair?: Keypair
-    words?: string[]
-  }
+  AccountEnterPassphraseScreen: undefined | RouteAccount
+  AccountAssignScreen: undefined | RouteAccount
+  AccountCreatePinScreen: RouteAccount | undefined
+  AccountConfirmPinScreen: RouteAccount
 }
 
 export type CreateAccountNavigationProp =

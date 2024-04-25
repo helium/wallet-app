@@ -237,7 +237,11 @@ const AccountImportScreen = () => {
   )
 
   const handleOnPaste = useCallback((copiedContent: string) => {
-    setWords(copiedContent.split(' '))
+    const newWords = copiedContent.split(' ')
+    setWords(newWords)
+    if (newWords.length > 12) {
+      setWordCount(24)
+    }
   }, [])
 
   return (

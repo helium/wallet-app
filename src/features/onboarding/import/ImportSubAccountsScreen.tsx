@@ -15,7 +15,7 @@ import { useColors } from '@theme/themeHooks'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import { humanReadable } from '@utils/formatting'
 import BN from 'bn.js'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, RefreshControl } from 'react-native'
 import { RootNavigationProp } from 'src/navigation/rootTypes'
@@ -49,6 +49,15 @@ export default () => {
   const [selected, setSelected] = React.useState<Set<string>>(
     new Set([DEFAULT_DERIVATION_PATH]),
   )
+  useEffect(() => {
+    setOnboardingData((data) => ({
+      ...data,
+      paths: derivationAccounts.filter((acc) =>
+        selected.has(acc.derivationPath),
+      ),
+    }))
+  }, [setOnboardingData, selected, derivationAccounts])
+
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item, index }: { item: ResolvedPath; index: number }) => {
@@ -60,13 +69,6 @@ export default () => {
           selected.add(item.derivationPath)
           setSelected(new Set(selected))
         }
-
-        setOnboardingData({
-          ...onboardingData,
-          paths: derivationAccounts.filter((acc) =>
-            selected.has(acc.derivationPath),
-          ),
-        })
       }
       return (
         <TouchableContainer
@@ -148,9 +150,7 @@ export default () => {
       colors.secondary,
       colors.transparent10,
       derivationAccounts,
-      onboardingData,
       selected,
-      setOnboardingData,
       t,
     ],
   )

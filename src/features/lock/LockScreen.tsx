@@ -42,6 +42,7 @@ const LockScreen = ({ children }: Props) => {
   // handle app state changes
   useAsync(async () => {
     if (locked || !pin || pin?.status === 'off' || !hasAccounts) return
+
     if (appState === 'background' || appState === 'inactive') {
       await storeSecureItem('lastIdle', Date.now().toString())
       return

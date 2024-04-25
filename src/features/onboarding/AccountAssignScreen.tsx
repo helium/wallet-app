@@ -1,5 +1,6 @@
 import AccountIcon from '@components/AccountIcon'
 import Box from '@components/Box'
+import CircleLoader from '@components/CircleLoader'
 import FabButton from '@components/FabButton'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
@@ -7,9 +8,11 @@ import TextInput from '@components/TextInput'
 import { heliumAddressFromSolAddress } from '@helium/spl-utils'
 import CheckBox from '@react-native-community/checkbox'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { Keypair } from '@solana/web3.js'
 import { storeSecureAccount, toSecureAccount } from '@storage/secureStorage'
 import { useColors, useSpacing } from '@theme/themeHooks'
-import React, { memo, useCallback, useState } from 'react'
+import React, { memo, useCallback, useMemo, useState } from 'react'
+import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -38,75 +41,94 @@ const AccountAssignScreen = () => {
   const insets = useSafeAreaInsets()
   const spacing = useSpacing()
   const colors = useColors()
-  const { upsertAccounts, hasAccounts, updateDefaultAccountAddress } =
+  const { upsertAccounts, hasAccounts, updateDefaultAccountAddress, accounts } =
     useAccountStorage()
   const [setAsDefault, toggleSetAsDefault] = useState(false)
 
-  const handlePress = useCallback(async () => {
-    if (hasAccounts) {
-      try {
-        await Promise.all(
-          paths.map(async (p) => {
-            await storeSecureAccount(
-              toSecureAccount({
-                keypair: p.keypair,
-                words,
-                derivationPath: p.derivationPath,
-              }),
-            )
-          }),
-        )
-        const newAccounts = paths.map((p, index) => ({
-          alias: index === 0 ? alias : `${alias} ${index + 1}`,
-          address: heliumAddressFromSolAddress(p.keypair.publicKey.toBase58()),
-          solanaAddress: p.keypair.publicKey.toBase58(),
-          derivationPath: p.derivationPath,
-        }))
-        await Promise.all(
-          paths.map(async (p) => {
-            await storeSecureAccount(
-              toSecureAccount({
-                words,
-                keypair: p.keypair,
-                derivationPath: p.derivationPath,
-              }),
-            )
-          }),
-        )
-        await upsertAccounts(newAccounts)
-        if (setAsDefault) {
-          await updateDefaultAccountAddress(newAccounts[0].address)
+  const existingNames = useMemo(
+    () => accounts && new Set(Object.values(accounts).map((a) => a.alias)),
+    [accounts],
+  )
+
+  const allPaths = useMemo(() => {
+    if (
+      route.params?.secretKey &&
+      route.params?.derivationPath &&
+      !paths.some((p) => p.derivationPath === route.params?.derivationPath)
+    ) {
+      return [
+        ...paths,
+        {
+          keypair: Keypair.fromSecretKey(
+            Uint8Array.from(Buffer.from(route.params.secretKey, 'base64')),
+          ),
+          derivationPath: route.params.derivationPath,
+        },
+      ]
+    }
+    return paths
+  }, [paths, route.params?.secretKey, route.params?.derivationPath])
+
+  const { execute: handlePress, loading } = useAsyncCallback(async () => {
+    try {
+      await Promise.all(
+        allPaths.map(async (p) => {
+          await storeSecureAccount(
+            toSecureAccount({
+              keypair: p.keypair,
+              words,
+              derivationPath: p.derivationPath,
+            }),
+          )
+        }),
+      )
+      // eslint-disable-next-line no-inner-declarations
+      function getName(index: number) {
+        const name = `${alias} ${index + 1}`
+        if (!existingNames?.has(name)) {
+          return name
         }
 
-        rootNav.reset({
-          index: 0,
-          routes: [{ name: 'TabBarNavigator' }],
-        })
-        reset()
-        return
-      } catch (e) {
-        console.error(e)
-        return
+        return getName(index + 1)
       }
-    }
+      const newAccounts = allPaths.map((p, index) => ({
+        alias: index === 0 ? alias : getName(index),
+        address: heliumAddressFromSolAddress(p.keypair.publicKey.toBase58()),
+        solanaAddress: p.keypair.publicKey.toBase58(),
+        derivationPath: p.derivationPath,
+      }))
+      await Promise.all(
+        allPaths.map(async (p) => {
+          await storeSecureAccount(
+            toSecureAccount({
+              words,
+              keypair: p.keypair,
+              derivationPath: p.derivationPath,
+            }),
+          )
+        }),
+      )
+      await upsertAccounts(newAccounts)
+      if (setAsDefault) {
+        await updateDefaultAccountAddress(newAccounts[0].address)
+      }
 
-    onboardingNav.navigate('AccountCreatePinScreen', {
-      pinReset: false,
-      ...route.params,
-    })
-  }, [
-    hasAccounts,
-    onboardingNav,
-    route.params,
-    paths,
-    upsertAccounts,
-    setAsDefault,
-    rootNav,
-    reset,
-    words,
-    alias,
-    updateDefaultAccountAddress,
-  ])
+      reset()
+    } catch (e) {
+      console.error(e)
+      return
+    }
+    if (hasAccounts) {
+      rootNav.reset({
+        index: 0,
+        routes: [{ name: 'TabBarNavigator' }],
+      })
+    } else {
+      onboardingNav.navigate('AccountCreatePinScreen', {
+        pinReset: true,
+      })
+    }
+  })
 
   const onCheckboxToggled = useCallback(
     (newValue) => toggleSetAsDefault(newValue),
@@ -198,16 +220,24 @@ const AccountAssignScreen = () => {
           </Box>
 
           <Box flex={1} />
-
-          <FabButton
-            onPress={handlePress}
-            icon="arrowRight"
-            iconColor="primary"
-            disabled={!alias}
-            backgroundColor="primaryText"
-            backgroundColorPressed="surfaceContrast"
-            backgroundColorOpacityPressed={0.1}
-          />
+          {!loading && existingNames?.has(alias) ? (
+            <Text mb="m" color="red500">
+              {t('accountAssign.nameExists')}
+            </Text>
+          ) : null}
+          {loading ? (
+            <CircleLoader />
+          ) : (
+            <FabButton
+              onPress={handlePress}
+              icon="arrowRight"
+              iconColor="primary"
+              disabled={!alias || existingNames?.has(alias)}
+              backgroundColor="primaryText"
+              backgroundColorPressed="surfaceContrast"
+              backgroundColorOpacityPressed={0.1}
+            />
+          )}
         </Box>
       </KeyboardAvoidingView>
     </SafeAreaBox>

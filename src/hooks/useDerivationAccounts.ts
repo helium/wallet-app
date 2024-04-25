@@ -15,7 +15,7 @@ import * as ed25519 from 'ed25519-hd-key'
 import { useEffect, useMemo, useState } from 'react'
 import Config from 'react-native-config'
 
-const solanaDerivation = (account = -1, change: number | undefined) => {
+export const solanaDerivation = (account = -1, change: number | undefined) => {
   if (account === -1) {
     return "m/44'/501'" // main derivation path
   }

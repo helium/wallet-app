@@ -51,7 +51,13 @@ const AccountCreatePassphraseScreen = () => {
         },
       ],
     }))
-    navigation.navigate('AccountEnterPassphraseScreen', defaultKeypair)
+    navigation.navigate('AccountEnterPassphraseScreen', {
+      secretKey: Buffer.from(defaultKeypair.keypair.secretKey).toString(
+        'base64',
+      ),
+      words: defaultKeypair.words,
+      derivationPath: DEFAULT_DERIVATION_PATH,
+    })
   }, [defaultKeypair, navigation, setOnboardingData])
 
   const ListHeaderComponent = useMemo(() => {
