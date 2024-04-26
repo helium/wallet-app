@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-underscore-dangle */
 import { AnchorProvider, BN, IdlAccounts, Program } from '@coral-xyz/anchor'
 import { getSingleton } from '@helium/account-fetch-cache'
-import * as dc from '@helium/data-credits-sdk'
 import {
+  init as initDc,
   delegatedDataCreditsKey,
   escrowAccountKey,
 } from '@helium/data-credits-sdk'
@@ -15,12 +16,12 @@ import {
 import {
   decodeEntityKey,
   entityCreatorKey,
-  init,
+  init as initHem,
   keyToAssetForAsset,
 } from '@helium/helium-entity-manager-sdk'
 import { subDaoKey } from '@helium/helium-sub-daos-sdk'
 import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'
-import * as lz from '@helium/lazy-distributor-sdk'
+import { init as initLazy, recipientKey } from '@helium/lazy-distributor-sdk'
 import {
   Asset,
   DC_MINT,
@@ -34,7 +35,10 @@ import {
   toBN,
   truthy,
 } from '@helium/spl-utils'
-import * as tm from '@helium/treasury-management-sdk'
+import {
+  init as initTm,
+  treasuryManagementKey,
+} from '@helium/treasury-management-sdk'
 import {
   PROGRAM_ID as VoterStakeRegistryProgramId,
   registrarCollectionKey,
@@ -98,6 +102,7 @@ import Config from 'react-native-config'
 import { IotHotspotInfoV0 } from '@hooks/useIotInfo'
 import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
 import { KeyToAssetV0 } from '@hooks/useKeyToAsset'
+import { RecipientV0 } from '@hooks/useRecipient'
 import { getSessionKey } from '../storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
 import {
@@ -583,8 +588,7 @@ export const mintDataCredits = async ({
 }): Promise<TransactionDraft> => {
   try {
     const { publicKey: payer } = anchorProvider.wallet
-
-    const program = await dc.init(anchorProvider)
+    const program = await initDc(anchorProvider)
 
     const ix = await program.methods
       .mintDataCreditsV0({
@@ -620,8 +624,7 @@ export const delegateDataCredits = async (
 ) => {
   try {
     const { publicKey: payer } = anchorProvider.wallet
-
-    const program = await dc.init(anchorProvider)
+    const program = await initDc(anchorProvider)
     const subDao = subDaoKey(mint)[0]
 
     const instructions: TransactionInstruction[] = []
@@ -1054,13 +1057,10 @@ export const getHotspotPendingRewards = async (
     pendingRewards: Record<string, string> | undefined
   }[]
 > => {
-  const program = await lz.init(provider)
-  const hemProgram = await init(provider)
+  const program = await initLazy(provider)
+  const hemProgram = await initHem(provider)
   const dao = DAO_KEY
-  const keyToAssets = hotspots.map((h) =>
-    keyToAssetForAsset(toAsset(h as CompressedNFT)),
-  )
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const keyToAssets = hotspots.map((h) => keyToAssetForAsset(toAsset(h)))
   const ktaAccs = await getCachedKeyToAssets(hemProgram as any, keyToAssets)
   const entityKeys = ktaAccs.map(
     (kta) =>
@@ -1094,6 +1094,52 @@ export const getHotspotPendingRewards = async (
       pendingRewards: {
         [Mints.MOBILE]: mobileRewards[entityKey],
         [Mints.IOT]: iotRewards[entityKey],
+      },
+    }
+  })
+}
+
+export const getHotspotRecipients = async (
+  provider: AnchorProvider,
+  hotspots: CompressedNFT[],
+): Promise<
+  {
+    id: string
+    recipients: Record<string, RecipientV0> | undefined
+  }[]
+> => {
+  const program = await initLazy(provider)
+  const hemProgram = await initHem(provider)
+  const keyToAssets = hotspots.map((h) => keyToAssetForAsset(toAsset(h)))
+  const ktaAccs = await getCachedKeyToAssets(hemProgram as any, keyToAssets)
+  const assetKeys = ktaAccs.map((kta) => kta.asset)
+  const [mobileRecipientKeys, iotRecipientKeys] = assetKeys.reduce(
+    (acc: PublicKey[][], asset) => [
+      [...(acc[0] || []), recipientKey(MOBILE_LAZY_KEY, asset)[0]],
+      [...(acc[1] || []), recipientKey(IOT_LAZY_KEY, asset)[0]],
+    ],
+    [],
+  )
+
+  const mobileRecipients =
+    (await program.account.recipientV0.fetchMultiple(mobileRecipientKeys)) || []
+
+  const iotRecipients =
+    (await program.account.recipientV0.fetchMultiple(iotRecipientKeys)) || []
+
+  return hotspots.map((hotspot, index) => {
+    const asset = assetKeys[index]
+
+    return {
+      id: hotspot.id,
+      recipients: {
+        [Mints.MOBILE]:
+          (mobileRecipients?.find((r) =>
+            r?.asset.equals(asset),
+          ) as RecipientV0) || undefined,
+        [Mints.IOT]:
+          (iotRecipients?.find((r) => r?.asset.equals(asset)) as RecipientV0) ||
+          undefined,
       },
     }
   })
@@ -1268,13 +1314,12 @@ export async function annotateWithPendingRewards(
   provider: AnchorProvider,
   hotspots: CompressedNFT[],
 ): Promise<HotspotWithPendingRewards[]> {
-  const program = await lz.init(provider)
-  const hemProgram = await init(provider)
+  const program = await initLazy(provider)
+  const hemProgram = await initHem(provider)
   const dao = DAO_KEY
   const keyToAssets = hotspots.map((h) =>
     keyToAssetForAsset(toAsset(h as CompressedNFT)),
   )
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ktaAccs = await getCachedKeyToAssets(hemProgram as any, keyToAssets)
   const entityKeys = ktaAccs.map(
     (kta) =>
@@ -1554,9 +1599,9 @@ export async function createTreasurySwapTxn(
 ): Promise<TransactionDraft> {
   const conn = anchorProvider.connection
   try {
-    const program = await tm.init(anchorProvider)
+    const program = await initTm(anchorProvider)
     const fromMintAcc = await getMint(conn, fromMint)
-    const treasuryManagement = tm.treasuryManagementKey(fromMint)[0]
+    const treasuryManagement = treasuryManagementKey(fromMint)[0]
 
     const ix = await program.methods
       .redeemV0({
@@ -1601,10 +1646,10 @@ export async function createTreasurySwapMessage(
   const conn = anchorProvider.connection
 
   try {
-    const program = await tm.init(anchorProvider)
+    const program = await initTm(anchorProvider)
     const fromMintAcc = await getMint(conn, fromMint)
+    const treasuryManagement = treasuryManagementKey(fromMint)[0]
 
-    const treasuryManagement = tm.treasuryManagementKey(fromMint)[0]
     const tx = await program.methods
       .redeemV0({
         amount: toBN(amount, fromMintAcc.decimals),
