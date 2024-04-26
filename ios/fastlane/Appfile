@@ -1,0 +1,7 @@
+app_identifier("com.helium.wallet.app") # The bundle identifier of your app
+
+itc_team_id("118077280") # App Store Connect Team ID
+team_id("PVM9KJZ2AD") # Developer Portal Team ID
+
+# For more information about the Appfile, see:
+#     https://docs.fastlane.tools/advanced/#appfile
