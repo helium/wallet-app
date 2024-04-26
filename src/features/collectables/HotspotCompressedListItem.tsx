@@ -44,7 +44,6 @@ const HotspotListItem = ({
 
   const pendingIotRewardsString = useMemo(() => {
     if (!hotspot.pendingRewards) return
-    if (!hotspot.pendingRewards) return
     const num = toNumber(
       new BN(hotspot.pendingRewards[Mints.IOT]),
       iotMint?.decimals || 6,

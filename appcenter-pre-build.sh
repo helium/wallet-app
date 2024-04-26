@@ -17,12 +17,4 @@ echo MIGRATION_SERVER_URL=$MIGRATION_SERVER_URL >> .env
 echo RPC_SESSION_KEY_FALLBACK=$RPC_SESSION_KEY_FALLBACK >> .env
 echo TOKENS_TO_RENT_SERVICE_URL=$TOKENS_TO_RENT_SERVICE_URL >> .env
 echo TOKENS_TO_RENT_SERVICE_DEVNET_URL=$TOKENS_TO_RENT_SERVICE_DEVNET_URL >> .env
-echo MAPBOX_ACCESS_TOKEN=$MAPBOX_ACCESS_TOKEN >> .env
-echo MAPBOX_DOWNLOAD_TOKEN=$MAPBOX_DOWNLOAD_TOKEN >> .env
-echo MAPBOX_STYLE_URL=$MAPBOX_STYLE_URL >> .env
-
-# generate credential for mapbox
-echo machine api.mapbox.com > ~/.netrc
-echo login mapbox >> ~/.netrc
-echo password $MAPBOX_DOWNLOAD_TOKEN >> ~/.netrc
-chmod 0600 ~/.netrc
+echo PMTILES_URL=$PMTILES_URL >> .env

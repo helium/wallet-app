@@ -284,6 +284,7 @@ export default {
       hotspotCount_plural: '{{count}} Hotspots',
       chooseAmountOfHotspots: 'Choose amount of hotspots to show per page',
       connect: 'Connect Hotspot',
+      openMap: 'Open Map',
       copyEccCompact: 'Copy Hotspot Key',
       onboard: {
         title: 'Repair Onboarding',
@@ -293,7 +294,13 @@ export default {
       viewInExplorer: 'View in Explorer',
       assertLocation: 'Assert Location',
       transferHotspot: 'Transfer Hotspot',
+      showMetadata: 'Show Metadata',
       antennaSetup: 'Antenna Setup',
+      map: {
+        back: 'Back to Hotspots List',
+        type: '{{type}} Hotspots',
+        transmitScale: 'Transmit Scale',
+      },
     },
   },
   activityScreen: {
@@ -663,6 +670,12 @@ export default {
     body: 'By continuing, you agree to the',
   },
   generic: {
+    dBi: 'dBi',
+    gain: 'Gain',
+    maker: 'Maker',
+    elevation: 'Elevation',
+    radioType: 'Radio Type',
+    coverage: 'Coverage',
     airdrop: 'Airdrop',
     account: 'Wallet',
     and: 'and',
@@ -1078,7 +1091,6 @@ export default {
   signHotspot: {
     burnAmounts: 'Amount To Be Burned',
     direction: 'Direction',
-    elevation: 'Elevation:',
     error: {
       subtitle:
         'Unable to add this Hotspot to the Helium Network. Contact {{maker}} to troubleshoot this issue.',
@@ -1087,7 +1099,6 @@ export default {
     },
     gain: 'Gain:',
     location: 'Location:',
-    maker: 'Maker:',
     name: 'Hotspot Name:',
     newOwner: 'New Owner:',
     owner: 'Owner:',

@@ -57,13 +57,8 @@ const ListItem = ({
       {...rest}
     >
       {Icon && Icon}
-      <Box
-        flex={1}
-        justifyContent="center"
-        marginStart={Icon ? 'm' : 'l'}
-        marginEnd="m"
-      >
-        <Text variant="subtitle2">{title}</Text>
+      <Box flex={1} justifyContent="center" marginHorizontal="m">
+        <Text variant="subtitle3">{title}</Text>
         {subtitle && (
           <Text marginTop="xs" color={subtitleColor}>
             {subtitle}

@@ -1,6 +1,4 @@
-import { rewardableEntityConfigKey } from '@helium/helium-entity-manager-sdk'
 import { useOwnedAmount, useSolOwnedAmount } from '@helium/helium-react-hooks'
-import { subDaoKey } from '@helium/helium-sub-daos-sdk'
 import { Maker } from '@helium/onboarding'
 import { useOnboarding } from '@helium/react-native-sdk'
 import {
@@ -14,12 +12,16 @@ import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { useSubDao } from '@hooks/useSubDao'
 import { useBalance } from '@utils/Balance'
-import { IOT_SUB_DAO_KEY } from '@utils/constants'
+import {
+  IOT_CONFIG_KEY,
+  IOT_SUB_DAO_KEY,
+  MOBILE_CONFIG_KEY,
+} from '@utils/constants'
 import BN from 'bn.js'
 import { useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
-import { useRewardableEntityConfig } from './useRewardableEntityConfig'
 import { useIotInfo } from './useIotInfo'
+import { useRewardableEntityConfig } from './useRewardableEntityConfig'
 
 function useBN(bigint?: bigint) {
   return useMemo(
@@ -27,16 +29,6 @@ function useBN(bigint?: bigint) {
     [bigint],
   )
 }
-
-const IOT_REWARDABLE_ENTITY_CONFIG = rewardableEntityConfigKey(
-  subDaoKey(IOT_MINT)[0],
-  'IOT',
-)[0]
-
-const MOBILE_REWARDABLE_ENTITY_CONFIG = rewardableEntityConfigKey(
-  subDaoKey(MOBILE_MINT)[0],
-  'MOBILE',
-)[0]
 
 export function useOnboardingBalnces(hotspotAddress: string | undefined): {
   maker?: Maker
@@ -102,10 +94,10 @@ export function useOnboardingBalnces(hotspotAddress: string | undefined): {
     true,
   )
   const { info: iotREC, loading: loadingIotREC } = useRewardableEntityConfig(
-    IOT_REWARDABLE_ENTITY_CONFIG.toBase58(),
+    IOT_CONFIG_KEY.toBase58(),
   )
   const { info: mobileREC, loading: loadingMobileREC } =
-    useRewardableEntityConfig(MOBILE_REWARDABLE_ENTITY_CONFIG.toBase58())
+    useRewardableEntityConfig(MOBILE_CONFIG_KEY.toBase58())
   const deviceType = lowercaseFirstLetter(
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore

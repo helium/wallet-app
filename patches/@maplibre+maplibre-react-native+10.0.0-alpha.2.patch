@@ -1,0 +1,242 @@
+diff --git a/node_modules/@maplibre/maplibre-react-native/.yarn/sdks/eslint/package.json b/node_modules/@maplibre/maplibre-react-native/.yarn/sdks/eslint/package.json
+index 379e652..43bdcae 100644
+--- a/node_modules/@maplibre/maplibre-react-native/.yarn/sdks/eslint/package.json
++++ b/node_modules/@maplibre/maplibre-react-native/.yarn/sdks/eslint/package.json
+@@ -2,5 +2,57 @@
+   "name": "eslint",
+   "version": "8.30.0-sdk",
+   "main": "./lib/api.js",
+-  "type": "commonjs"
++  "type": "commonjs",
++  "react-native": {
++    "zlib": "browserify-zlib",
++    "console": "console-browserify",
++    "constants": "constants-browserify",
++    "crypto": "react-native-crypto",
++    "dns": "dns.js",
++    "net": "react-native-tcp",
++    "domain": "domain-browser",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "querystring": "querystring-es3",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "dgram": "react-native-udp",
++    "stream": "stream-browserify",
++    "timers": "timers-browserify",
++    "tty": "tty-browserify",
++    "vm": "vm-browserify",
++    "tls": false
++  },
++  "browser": {
++    "zlib": "browserify-zlib",
++    "console": "console-browserify",
++    "constants": "constants-browserify",
++    "crypto": "react-native-crypto",
++    "dns": "dns.js",
++    "net": "react-native-tcp",
++    "domain": "domain-browser",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "querystring": "querystring-es3",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "dgram": "react-native-udp",
++    "stream": "stream-browserify",
++    "timers": "timers-browserify",
++    "tty": "tty-browserify",
++    "vm": "vm-browserify",
++    "tls": false
++  }
+ }
+diff --git a/node_modules/@maplibre/maplibre-react-native/.yarn/sdks/prettier/package.json b/node_modules/@maplibre/maplibre-react-native/.yarn/sdks/prettier/package.json
+index 3f8599a..1679a5a 100644
+--- a/node_modules/@maplibre/maplibre-react-native/.yarn/sdks/prettier/package.json
++++ b/node_modules/@maplibre/maplibre-react-native/.yarn/sdks/prettier/package.json
+@@ -2,5 +2,57 @@
+   "name": "prettier",
+   "version": "2.8.1-sdk",
+   "main": "./index.js",
+-  "type": "commonjs"
++  "type": "commonjs",
++  "react-native": {
++    "zlib": "browserify-zlib",
++    "console": "console-browserify",
++    "constants": "constants-browserify",
++    "crypto": "react-native-crypto",
++    "dns": "dns.js",
++    "net": "react-native-tcp",
++    "domain": "domain-browser",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "querystring": "querystring-es3",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "dgram": "react-native-udp",
++    "stream": "stream-browserify",
++    "timers": "timers-browserify",
++    "tty": "tty-browserify",
++    "vm": "vm-browserify",
++    "tls": false
++  },
++  "browser": {
++    "zlib": "browserify-zlib",
++    "console": "console-browserify",
++    "constants": "constants-browserify",
++    "crypto": "react-native-crypto",
++    "dns": "dns.js",
++    "net": "react-native-tcp",
++    "domain": "domain-browser",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "querystring": "querystring-es3",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "dgram": "react-native-udp",
++    "stream": "stream-browserify",
++    "timers": "timers-browserify",
++    "tty": "tty-browserify",
++    "vm": "vm-browserify",
++    "tls": false
++  }
+ }
+diff --git a/node_modules/@maplibre/maplibre-react-native/.yarn/sdks/typescript/package.json b/node_modules/@maplibre/maplibre-react-native/.yarn/sdks/typescript/package.json
+index 6aac31b..86b2d95 100644
+--- a/node_modules/@maplibre/maplibre-react-native/.yarn/sdks/typescript/package.json
++++ b/node_modules/@maplibre/maplibre-react-native/.yarn/sdks/typescript/package.json
+@@ -2,5 +2,57 @@
+   "name": "typescript",
+   "version": "4.9.4-sdk",
+   "main": "./lib/typescript.js",
+-  "type": "commonjs"
++  "type": "commonjs",
++  "react-native": {
++    "zlib": "browserify-zlib",
++    "console": "console-browserify",
++    "constants": "constants-browserify",
++    "crypto": "react-native-crypto",
++    "dns": "dns.js",
++    "net": "react-native-tcp",
++    "domain": "domain-browser",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "querystring": "querystring-es3",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "dgram": "react-native-udp",
++    "stream": "stream-browserify",
++    "timers": "timers-browserify",
++    "tty": "tty-browserify",
++    "vm": "vm-browserify",
++    "tls": false
++  },
++  "browser": {
++    "zlib": "browserify-zlib",
++    "console": "console-browserify",
++    "constants": "constants-browserify",
++    "crypto": "react-native-crypto",
++    "dns": "dns.js",
++    "net": "react-native-tcp",
++    "domain": "domain-browser",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "querystring": "querystring-es3",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "dgram": "react-native-udp",
++    "stream": "stream-browserify",
++    "timers": "timers-browserify",
++    "tty": "tty-browserify",
++    "vm": "vm-browserify",
++    "tls": false
++  }
+ }
+diff --git a/node_modules/@maplibre/maplibre-react-native/javascript/components/HeadingIndicator.tsx b/node_modules/@maplibre/maplibre-react-native/javascript/components/HeadingIndicator.tsx
+index 64912d7..d34d17e 100644
+--- a/node_modules/@maplibre/maplibre-react-native/javascript/components/HeadingIndicator.tsx
++++ b/node_modules/@maplibre/maplibre-react-native/javascript/components/HeadingIndicator.tsx
+@@ -1,12 +1,12 @@
+ import BaseProps from '../types/BaseProps';
+-import headingIcon from '../../assets/heading.png';
++// import headingIcon from '../../assets/heading.png';
+ 
+ import SymbolLayer from './SymbolLayer';
+ 
+ import React, {ReactElement} from 'react';
+ 
+ const style = {
+-  iconImage: headingIcon,
++  //  iconImage: headingIcon,
+   iconAllowOverlap: true,
+   iconPitchAlignment: 'map',
+   iconRotationAlignment: 'map',
+diff --git a/node_modules/@maplibre/maplibre-react-native/javascript/components/SymbolLayer.tsx b/node_modules/@maplibre/maplibre-react-native/javascript/components/SymbolLayer.tsx
+index d3722c2..c5f24f0 100644
+--- a/node_modules/@maplibre/maplibre-react-native/javascript/components/SymbolLayer.tsx
++++ b/node_modules/@maplibre/maplibre-react-native/javascript/components/SymbolLayer.tsx
+@@ -3,7 +3,7 @@ import BaseProps from '../types/BaseProps';
+ 
+ import AbstractLayer, {BaseLayerProps, NativeBaseProps} from './AbstractLayer';
+ 
+-import React, {ReactElement} from 'react';
++import React, {ReactElement, isValidElement} from 'react';
+ import {View, NativeModules, requireNativeComponent} from 'react-native';
+ 
+ const MapLibreGL = NativeModules.MGLModule;
+@@ -43,7 +43,7 @@ class SymbolLayer extends AbstractLayer<SymbolLayerProps, NativeBaseProps> {
+     }
+ 
+     React.Children.forEach(this.props.children, child => {
+-      if (child?.type === View) {
++      if (isValidElement(child) && child.type === View) {
+         isSnapshot = true;
+       }
+     });
+diff --git a/node_modules/@maplibre/maplibre-react-native/javascript/components/annotations/Annotation.tsx b/node_modules/@maplibre/maplibre-react-native/javascript/components/annotations/Annotation.tsx
+index 7e48101..faaf2ee 100644
+--- a/node_modules/@maplibre/maplibre-react-native/javascript/components/annotations/Annotation.tsx
++++ b/node_modules/@maplibre/maplibre-react-native/javascript/components/annotations/Annotation.tsx
+@@ -119,6 +119,7 @@ class Annotation extends React.Component<AnnotationProps, AnnotationState> {
+     }
+ 
+     return (
++      // @ts-ignore
+       <Animated.ShapeSource
+         id={this.props.id}
+         onPress={this.onPress}

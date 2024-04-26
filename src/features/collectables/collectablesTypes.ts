@@ -11,9 +11,12 @@ export type PaymentRouteParam = {
 
 export type CollectableStackParamList = {
   CollectablesTopTab: undefined
-  HotspotDetailsScreen: {
-    collectable: HotspotWithPendingRewards
-  }
+  HotspotMapScreen:
+    | undefined
+    | {
+        hotspot?: HotspotWithPendingRewards
+        network?: 'IOT' | 'MOBILE'
+      }
   AssertLocationScreen: {
     collectable: HotspotWithPendingRewards
   }

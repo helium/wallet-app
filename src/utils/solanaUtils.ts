@@ -95,6 +95,9 @@ import { withPriorityFees } from '@utils/priorityFees'
 import axios from 'axios'
 import bs58 from 'bs58'
 import Config from 'react-native-config'
+import { IotHotspotInfoV0 } from '@hooks/useIotInfo'
+import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
+import { KeyToAssetV0 } from '@hooks/useKeyToAsset'
 import { getSessionKey } from '../storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
 import {
@@ -935,11 +938,24 @@ export const getHotspotWithRewards = async (
   anchorProvider: AnchorProvider,
 ): Promise<HotspotWithPendingRewards> => {
   const conn = anchorProvider.connection as WrappedConnection
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const asset = ((await conn.getAsset(assetId.toBase58())) as any).result
-
-  const withMetadata = await getCompressedNFTMetadata([asset as CompressedNFT])
-  return (await annotateWithPendingRewards(anchorProvider, withMetadata))[0]
+  const asset = (
+    await conn.getAsset<{ result: CompressedNFT }>(assetId.toBase58())
+  ).result
+  const [{ metadata }] = await getCompressedNFTMetadata([asset])
+  return (
+    await annotateWithPendingRewards(anchorProvider, [
+      {
+        ...asset,
+        content: {
+          ...asset.content,
+          metadata: {
+            ...asset.content.metadata,
+            ...metadata,
+          },
+        },
+      },
+    ])
+  )[0]
 }
 
 export const getCompressedCollectablesByCreator = async (
@@ -972,26 +988,24 @@ export const getCompressedCollectablesByCreator = async (
 /**
  * Returns the account's collectables with metadata
  * @param collectables collectables without metadata
- * @param metaplex metaplex connection
  * @returns collectables with metadata
  */
-export const getNFTsMetadata = async (collectables: any[]) => {
-  const collectablesWithMetadata = await Promise.all(
-    collectables.map(async (col) => {
-      try {
-        const { data } = await axios.get(col.uri, {
-          timeout: 3000,
-        })
+export const getNFTsMetadata = async (collectables: any[]) =>
+  (
+    await Promise.all(
+      collectables.map(async (col) => {
+        try {
+          const { data } = await axios.get(col.uri, {
+            timeout: 3000,
+          })
 
-        return { ...col, json: data }
-      } catch (e: any) {
-        return null
-      }
-    }),
-  )
-
-  return collectablesWithMetadata.filter((c) => c !== null) as Collectable[]
-}
+          return { ...col, json: data }
+        } catch (e: any) {
+          return null
+        }
+      }),
+    )
+  ).filter(truthy)
 
 /**
  * Returns the account's collectables grouped by token type
@@ -1031,35 +1045,85 @@ export const groupNFTsWithMetaData = (collectables: Collectable[]) => {
   return collectablesGroupedByName
 }
 
+export const getHotspotPendingRewards = async (
+  provider: AnchorProvider,
+  hotspots: CompressedNFT[],
+): Promise<
+  {
+    id: string
+    pendingRewards: { [key: string]: string }
+  }[]
+> => {
+  const program = await lz.init(provider)
+  const hemProgram = await init(provider)
+  const dao = DAO_KEY
+  const keyToAssets = hotspots.map((h) =>
+    keyToAssetForAsset(toAsset(h as CompressedNFT)),
+  )
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ktaAccs = await getCachedKeyToAssets(hemProgram as any, keyToAssets)
+  const entityKeys = ktaAccs.map(
+    (kta) =>
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      decodeEntityKey(kta.entityKey, kta.keySerialization)!,
+  )
+
+  const mobileRewards = await getPendingRewards(
+    program,
+    MOBILE_LAZY_KEY,
+    dao,
+    entityKeys,
+    'b58',
+    true,
+  )
+
+  const iotRewards = await getPendingRewards(
+    program,
+    IOT_LAZY_KEY,
+    dao,
+    entityKeys,
+    'b58',
+    true,
+  )
+
+  return hotspots.map((hotspot, index) => {
+    const entityKey = entityKeys[index]
+
+    return {
+      id: hotspot.id,
+      pendingRewards: {
+        [Mints.MOBILE]: mobileRewards[entityKey],
+        [Mints.IOT]: iotRewards[entityKey],
+      },
+    }
+  })
+}
+
 /**
  * Returns the account's collectables with metadata
  * @param collectables collectables without metadata
- * @param metaplex metaplex connection
  * @returns collectables with metadata
  */
 export const getCompressedNFTMetadata = async (
   collectables: CompressedNFT[],
-): Promise<CompressedNFT[]> => {
-  const collectablesWithMetadata = await Promise.all(
+): Promise<{ id: string; metadata: { [key: string]: any } }[]> =>
+  Promise.all(
     collectables.map(async (col) => {
       try {
         const data = await getMetadata(col.content.json_uri)
         return {
-          ...col,
-          content: {
-            ...col.content,
-            metadata: { ...col.content.metadata, ...data },
-          },
+          id: col.id,
+          metadata: data,
         }
       } catch (e) {
         Logger.error(e)
-        return col
+        return {
+          id: col.id,
+          metadata: {},
+        }
       }
     }),
   )
-
-  return collectablesWithMetadata.filter((c) => c !== null) as CompressedNFT[]
-}
 
 export async function exists(
   connection: Connection,
@@ -1068,10 +1132,31 @@ export async function exists(
   return Boolean(await connection.getAccountInfo(account))
 }
 
+export async function getCachedKeyToAsset(
+  hemProgram: Program<HeliumEntityManager>,
+  keyToAsset: PublicKey,
+): Promise<KeyToAssetV0 | undefined> {
+  const cache = await getSingleton(hemProgram.provider.connection)
+  const kta = await cache.search(
+    keyToAsset,
+    (pubkey, account) => ({
+      pubkey,
+      account,
+      info: hemProgram.coder.accounts.decode<
+        IdlAccounts<HeliumEntityManager>['keyToAssetV0']
+      >('KeyToAssetV0', account.data),
+    }),
+    true,
+    false,
+  )
+
+  return kta?.info
+}
+
 export async function getCachedKeyToAssets(
   hemProgram: Program<HeliumEntityManager>,
   keyToAssets: PublicKey[],
-) {
+): Promise<KeyToAssetV0[]> {
   const cache = await getSingleton(hemProgram.provider.connection)
   return (
     await cache.searchMultiple(
@@ -1088,6 +1173,94 @@ export async function getCachedKeyToAssets(
     )
   )
     .map((kta) => kta?.info)
+    .filter(truthy)
+}
+
+export async function getCachedIotInfo(
+  hemProgram: Program<HeliumEntityManager>,
+  infoKey: PublicKey,
+): Promise<IotHotspotInfoV0 | undefined> {
+  const cache = await getSingleton(hemProgram.provider.connection)
+  const iotInfo = await cache.search(
+    infoKey,
+    (pubkey, account) => ({
+      pubkey,
+      account,
+      info: hemProgram.coder.accounts.decode<
+        IdlAccounts<HeliumEntityManager>['iotHotspotInfoV0']
+      >('IotHotspotInfoV0', account.data),
+    }),
+    false,
+    false,
+  )
+
+  return iotInfo?.info
+}
+
+export async function getCachedIotInfos(
+  hemProgram: Program<HeliumEntityManager>,
+  infoKeys: PublicKey[],
+): Promise<IotHotspotInfoV0[]> {
+  const cache = await getSingleton(hemProgram.provider.connection)
+  return (
+    await cache.searchMultiple(
+      infoKeys,
+      (pubkey, account) => ({
+        pubkey,
+        account,
+        info: hemProgram.coder.accounts.decode<
+          IdlAccounts<HeliumEntityManager>['iotHotspotInfoV0']
+        >('IotHotspotInfoV0', account.data),
+      }),
+      false,
+      false,
+    )
+  )
+    .map((iotInfo) => iotInfo?.info)
+    .filter(truthy)
+}
+
+export async function getCachedMobileInfo(
+  hemProgram: Program<HeliumEntityManager>,
+  infoKey: PublicKey,
+): Promise<MobileHotspotInfoV0 | undefined> {
+  const cache = await getSingleton(hemProgram.provider.connection)
+  const mobileInfo = await cache.search(
+    infoKey,
+    (pubkey, account) => ({
+      pubkey,
+      account,
+      info: hemProgram.coder.accounts.decode<
+        IdlAccounts<HeliumEntityManager>['mobileHotspotInfoV0']
+      >('MobileHotspotInfoV0', account.data),
+    }),
+    false,
+    false,
+  )
+
+  return mobileInfo?.info
+}
+
+export async function getCachedMobileInfos(
+  hemProgram: Program<HeliumEntityManager>,
+  infoKeys: PublicKey[],
+): Promise<MobileHotspotInfoV0[]> {
+  const cache = await getSingleton(hemProgram.provider.connection)
+  return (
+    await cache.searchMultiple(
+      infoKeys,
+      (pubkey, account) => ({
+        pubkey,
+        account,
+        info: hemProgram.coder.accounts.decode<
+          IdlAccounts<HeliumEntityManager>['mobileHotspotInfoV0']
+        >('MobileHotspotInfoV0', account.data),
+      }),
+      false,
+      false,
+    )
+  )
+    .map((mobileInfo) => mobileInfo?.info)
     .filter(truthy)
 }
 

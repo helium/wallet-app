@@ -4,11 +4,11 @@ import { toAsset } from '@utils/solanaUtils'
 import { CompressedNFT, HotspotWithPendingRewards } from '../types/solana'
 import { useKeyToAsset } from './useKeyToAsset'
 
-export const useKeyToAssetForHotspot = (hotspot: HotspotWithPendingRewards) => {
-  const keyToAssetKey = keyToAssetForAsset(
-    toAsset(hotspot as CompressedNFT),
-    DAO_KEY,
-  )
+export const useKeyToAssetForHotspot = (
+  hotspot: HotspotWithPendingRewards | undefined,
+) => {
+  const keyToAssetKey =
+    hotspot && keyToAssetForAsset(toAsset(hotspot as CompressedNFT), DAO_KEY)
 
   return useKeyToAsset(keyToAssetKey?.toBase58())
 }

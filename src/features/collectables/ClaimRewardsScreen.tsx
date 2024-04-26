@@ -42,6 +42,7 @@ const ClaimRewardsScreen = () => {
       new BN(hotspot.pendingRewards[Mints.IOT]),
     [hotspot],
   )
+
   const pendingMobileRewards = useMemo(
     () =>
       hotspot &&

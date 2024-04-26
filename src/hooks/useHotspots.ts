@@ -5,8 +5,8 @@ import { useSolana } from '../solana/SolanaProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { RootState } from '../store/rootReducer'
 import {
+  fetchAllHotspots,
   fetchHotspots,
-  fetchMoreHotspots,
   hotspotsSlice,
 } from '../store/slices/hotspotsSlice'
 import { useAppDispatch } from '../store/store'
@@ -22,40 +22,81 @@ const useHotspots = (): {
   loading: boolean
   refresh: (limit?: number) => void
   fetchMore: (limit?: number) => void
+  fetchAll: () => void
   fetchingMore: boolean
   onEndReached: boolean
 } => {
   const dispatch = useAppDispatch()
   const { currentAccount } = useAccountStorage()
   const { anchorProvider, cluster } = useSolana()
-  const hotspots = useSelector(
+  const hotspotsState = useSelector(
     (state: RootState) => state.hotspots[cluster] || {},
   )
+
+  const hotspots = useMemo(() => {
+    if (
+      !currentAccount?.solanaAddress ||
+      !hotspotsState[currentAccount?.solanaAddress]
+    )
+      return []
+
+    return Object.values(
+      hotspotsState[currentAccount?.solanaAddress].hotspotsById || {},
+    )
+  }, [currentAccount?.solanaAddress, hotspotsState])
+
+  const hotspotsWithMeta = useMemo(() => {
+    if (
+      !currentAccount?.solanaAddress ||
+      !hotspotsState[currentAccount?.solanaAddress]
+    )
+      return []
+
+    return Object.values(
+      hotspotsState[currentAccount?.solanaAddress].hotspotsById || {},
+    ).map((hotspot) => ({
+      ...hotspot,
+      pendingRewards: {
+        ...(hotspotsState[currentAccount?.solanaAddress as string]
+          .hotspotsRewardsById[hotspot.id] || {}),
+      },
+      content: {
+        ...hotspot.content,
+        metadata: {
+          ...hotspot.content.metadata,
+          ...(hotspotsState[currentAccount?.solanaAddress as string]
+            .hotspotsMetadataById[hotspot.id] || {}),
+        },
+      },
+    }))
+  }, [currentAccount?.solanaAddress, hotspotsState])
+
   const page = useMemo(() => {
     if (
       !currentAccount?.solanaAddress ||
-      !hotspots[currentAccount?.solanaAddress]
+      !hotspotsState[currentAccount?.solanaAddress]
     )
       return 0
-    return hotspots[currentAccount?.solanaAddress].page
-  }, [currentAccount?.solanaAddress, hotspots])
+    return hotspotsState[currentAccount?.solanaAddress].page
+  }, [currentAccount?.solanaAddress, hotspotsState])
+
   const totalHotspots = useMemo(() => {
     if (
       !currentAccount?.solanaAddress ||
-      !hotspots[currentAccount?.solanaAddress]
+      !hotspotsState[currentAccount?.solanaAddress]
     )
       return undefined
-    return hotspots[currentAccount?.solanaAddress].totalHotspots
-  }, [currentAccount?.solanaAddress, hotspots])
+    return hotspotsState[currentAccount?.solanaAddress].totalHotspots
+  }, [currentAccount?.solanaAddress, hotspotsState])
 
   const onEndReached = useMemo(() => {
     if (
       !currentAccount?.solanaAddress ||
-      !hotspots[currentAccount?.solanaAddress]
+      !hotspotsState[currentAccount?.solanaAddress]
     )
       return true
-    return hotspots[currentAccount?.solanaAddress].onEndReached
-  }, [currentAccount?.solanaAddress, hotspots])
+    return hotspotsState[currentAccount?.solanaAddress].onEndReached
+  }, [currentAccount?.solanaAddress, hotspotsState])
 
   useEffect(() => {
     if (!currentAccount?.solanaAddress) return
@@ -86,26 +127,26 @@ const useHotspots = (): {
   const fetchingMore = useMemo(() => {
     if (
       !currentAccount?.solanaAddress ||
-      !hotspots[currentAccount?.solanaAddress]
+      !hotspotsState[currentAccount?.solanaAddress]
     )
       return false
 
-    return hotspots[currentAccount?.solanaAddress].fetchingMore
-  }, [currentAccount?.solanaAddress, hotspots])
+    return hotspotsState[currentAccount?.solanaAddress].fetchingMore
+  }, [currentAccount?.solanaAddress, hotspotsState])
 
   const fetchMore = useCallback(
     (limit?) => {
       if (
         !currentAccount?.solanaAddress ||
         !anchorProvider ||
-        hotspots[currentAccount?.solanaAddress].loading
+        hotspotsState[currentAccount?.solanaAddress].loading
       ) {
         return
       }
 
       dispatch(
-        fetchMoreHotspots({
-          provider: anchorProvider,
+        fetchHotspots({
+          anchorProvider,
           cluster,
           account: currentAccount,
           page,
@@ -113,12 +154,26 @@ const useHotspots = (): {
         }),
       )
     },
-    [currentAccount, anchorProvider, hotspots, cluster, dispatch, page],
+    [currentAccount, anchorProvider, hotspotsState, cluster, dispatch, page],
   )
 
-  const hotspotsWithMeta = currentAccount?.solanaAddress
-    ? hotspots[currentAccount?.solanaAddress]?.hotspotsWithMeta
-    : undefined
+  const fetchAll = useCallback(() => {
+    if (
+      !currentAccount?.solanaAddress ||
+      !anchorProvider ||
+      hotspotsState[currentAccount?.solanaAddress].loading
+    ) {
+      return
+    }
+
+    dispatch(
+      fetchAllHotspots({
+        anchorProvider,
+        cluster,
+        account: currentAccount,
+      }),
+    )
+  }, [currentAccount, anchorProvider, hotspotsState, cluster, dispatch])
 
   const pendingIotRewards = useMemo(
     () =>
@@ -131,6 +186,7 @@ const useHotspots = (): {
       }, new BN(0)),
     [hotspotsWithMeta],
   )
+
   const pendingMobileRewards = useMemo(
     () =>
       hotspotsWithMeta?.reduce((acc, hotspot) => {
@@ -145,7 +201,7 @@ const useHotspots = (): {
 
   if (
     !currentAccount?.solanaAddress ||
-    !hotspots[currentAccount?.solanaAddress]
+    !hotspotsState[currentAccount?.solanaAddress]
   ) {
     return {
       totalHotspots,
@@ -155,6 +211,7 @@ const useHotspots = (): {
       hotspots: [],
       hotspotsWithMeta: [],
       refresh,
+      fetchAll,
       fetchMore,
       fetchingMore,
       onEndReached,
@@ -165,12 +222,12 @@ const useHotspots = (): {
     totalHotspots,
     pendingIotRewards,
     pendingMobileRewards,
-    hotspots: hotspots[currentAccount?.solanaAddress].hotspots || [],
-    hotspotsWithMeta:
-      hotspots[currentAccount?.solanaAddress]?.hotspotsWithMeta || [],
-    loading: hotspots[currentAccount?.solanaAddress].loading,
+    hotspots,
+    hotspotsWithMeta,
+    loading: hotspotsState[currentAccount?.solanaAddress].loading,
     refresh,
     fetchMore,
+    fetchAll,
     fetchingMore,
     onEndReached,
   }

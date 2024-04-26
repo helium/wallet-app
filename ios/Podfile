@@ -5,7 +5,6 @@ require_relative '../node_modules/react-native-permissions/scripts/setup'
 
 platform :ios, '13.0'
 prepare_react_native_project!
-$RNMapboxMapsImpl = 'mapbox'
 
 
 # If you are using a `react-native-flipper` your iOS build will fail when `NO_FLIPPER=1` is set.
@@ -74,16 +73,11 @@ target 'HeliumWallet' do
     # Pods for testing
   end
 
-  pre_install do |installer|
-    $RNMapboxMaps.pre_install(installer)
-  end
-
-
   permissions_path = '../node_modules/react-native-permissions/ios'
   setup_permissions(['BluetoothPeripheral'])
 
   post_install do |installer|
-    $RNMapboxMaps.post_install(installer)
+    $RNMBGL.post_install(installer)
 
     react_native_post_install(
       installer,

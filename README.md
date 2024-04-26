@@ -73,19 +73,7 @@ Follow the instructions for "React Native CLI Quickstart" found [here](https://r
   ```bash
   yarn
   ```
-- Fill out your env.sample with your values and rename it to `.env`. Set up a Mapbox account and generate a public and private key for the access token and download token environment variables.
-
-- Create a netrc file to authenticate with mapbox
-  ```bash
-  touch ~/.netrc
-  nano ~/.netrc
-  ```
-- Insert your mapbox authentication details
-  ```bash
-  machine api.mapbox.com
-   login mapbox
-   password <INSERT API TOKEN>
-  ```
+- Fill out your env.sample with your values and rename it to `.env`.
 - Install Pods
   ```bash
   yarn pod-install

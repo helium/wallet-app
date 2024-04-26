@@ -324,7 +324,7 @@ const SignHotspot = () => {
           {locationData?.gain !== undefined && (
             <Box marginEnd="xxl">
               <Text variant="body1" color="surfaceContrastText">
-                {t('signHotspot.gain')}
+                {t('generic.gain')}:
               </Text>
               <Text
                 variant="subtitle1"
@@ -338,7 +338,7 @@ const SignHotspot = () => {
           {locationData?.elevation !== undefined && (
             <Box>
               <Text variant="body1" color="surfaceContrastText">
-                {t('signHotspot.elevation')}
+                {t('generic.elevation')}:
               </Text>
               <Text
                 variant="subtitle1"
@@ -413,7 +413,7 @@ const SignHotspot = () => {
         {!!gatewayAddress && (
           <>
             <Text variant="body1" color="surfaceContrastText">
-              {t('signHotspot.maker')}
+              {t('generic.maker')}:
             </Text>
             <Text variant="subtitle1" color="surfaceContrastText">
               {onboardingRecord?.maker.name || 'Unknown'}

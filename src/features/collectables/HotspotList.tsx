@@ -1,4 +1,5 @@
 import Plus from '@assets/images/plus.svg'
+import Globe from '@assets/images/globe.svg'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
@@ -85,16 +86,6 @@ const HotspotList = () => {
     totalHotspots,
   } = useHotspots()
 
-  const handleNavigateToCollectable = useCallback(
-    (collectable: HotspotWithPendingRewards) => {
-      if (collectable.content.metadata) {
-        triggerImpact('light')
-        navigation.navigate('HotspotDetailsScreen', { collectable })
-      }
-    },
-    [navigation, triggerImpact],
-  )
-
   const pageAmount = 20
   const handleOnEndReached = useCallback(() => {
     if (!fetchingMore && isFocused && !onEndReached) {
@@ -102,8 +93,30 @@ const HotspotList = () => {
     }
   }, [fetchingMore, isFocused, fetchMore, pageAmount, onEndReached])
 
+  const handleNavigateToHotspot = useCallback(
+    (hotspot: HotspotWithPendingRewards) => {
+      if (hotspot.content.metadata) {
+        triggerImpact('light')
+        const { iot, mobile } = hotspot.content.metadata.hotspot_infos || {}
+        navigation.navigate('HotspotMapScreen', {
+          hotspot,
+          network: iot?.location
+            ? 'IOT'
+            : mobile?.location
+            ? 'MOBILE'
+            : undefined,
+        })
+      }
+    },
+    [navigation, triggerImpact],
+  )
+
   const handleNavigateToClaimRewards = useCallback(() => {
     navigation.navigate('ClaimAllRewardsScreen')
+  }, [navigation])
+
+  const handleNavigateToMap = useCallback(() => {
+    navigation.navigate('HotspotMapScreen')
   }, [navigation])
 
   const handleNavigateToHotspotOnboard = useCallback(() => {
@@ -113,25 +126,44 @@ const HotspotList = () => {
   const renderHeader = useCallback(() => {
     return (
       <Box
-        marginHorizontal="l"
+        marginHorizontal="s"
         marginTop="m"
         marginBottom="s"
         flexDirection="column"
         alignItems="stretch"
       >
-        <ButtonPressable
-          height={36}
-          borderRadius="round"
-          backgroundColor="white"
-          backgroundColorOpacityPressed={0.7}
-          flexGrow={1}
-          LeadingComponent={<Plus width={18} height={18} color="black" />}
-          title={t('collectablesScreen.hotspots.connect')}
-          titleColor="black"
-          fontSize={14}
+        <Box
+          flexDirection="row"
+          justifyContent="space-between"
+          alignItems="stretch"
           marginBottom="l"
-          onPress={handleNavigateToHotspotOnboard}
-        />
+        >
+          <ButtonPressable
+            height={36}
+            borderRadius="round"
+            backgroundColor="surfaceSecondary"
+            backgroundColorOpacityPressed={0.7}
+            flex={1}
+            LeadingComponent={<Globe width={18} height={18} color="white" />}
+            title={t('collectablesScreen.hotspots.openMap')}
+            titleColor="white"
+            fontSize={14}
+            onPress={handleNavigateToMap}
+          />
+          <Box marginHorizontal="xs" />
+          <ButtonPressable
+            height={36}
+            borderRadius="round"
+            backgroundColor="white"
+            backgroundColorOpacityPressed={0.7}
+            flex={1}
+            LeadingComponent={<Plus width={18} height={18} color="black" />}
+            title={t('collectablesScreen.hotspots.connect')}
+            titleColor="black"
+            fontSize={14}
+            onPress={handleNavigateToHotspotOnboard}
+          />
+        </Box>
         <Box flexDirection="row" alignItems="center">
           <Box backgroundColor="grey500" height={1} flexGrow={1} />
           <Box flexDirection="row" alignItems="center" paddingHorizontal="s">
@@ -145,7 +177,7 @@ const HotspotList = () => {
         </Box>
       </Box>
     )
-  }, [t, handleNavigateToHotspotOnboard, totalHotspots])
+  }, [t, handleNavigateToMap, handleNavigateToHotspotOnboard, totalHotspots])
 
   const renderCollectable = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
@@ -153,13 +185,13 @@ const HotspotList = () => {
       return (
         <HotspotCompressedListItem
           hotspot={item}
-          onPress={handleNavigateToCollectable}
+          onPress={handleNavigateToHotspot}
           key={item.id}
           marginBottom="s"
         />
       )
     },
-    [handleNavigateToCollectable],
+    [handleNavigateToHotspot],
   )
 
   const renderEmptyComponent = useCallback(() => {

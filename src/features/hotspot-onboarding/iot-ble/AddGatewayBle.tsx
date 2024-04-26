@@ -9,7 +9,6 @@ import {
   iotInfoKey,
   mobileInfoKey,
   keyToAssetKey,
-  rewardableEntityConfigKey,
 } from '@helium/helium-entity-manager-sdk'
 import { useOnboarding } from '@helium/react-native-sdk'
 import {
@@ -26,7 +25,7 @@ import { useOnboardingBalnces } from '@hooks/useOnboardingBalances'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { LAMPORTS_PER_SOL, Transaction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { DAO_KEY, IOT_SUB_DAO_KEY, MOBILE_SUB_DAO_KEY } from '@utils/constants'
+import { DAO_KEY, IOT_CONFIG_KEY, MOBILE_CONFIG_KEY } from '@utils/constants'
 import sleep from '@utils/sleep'
 import { getHotspotWithRewards, isInsufficientBal } from '@utils/solanaUtils'
 import BN from 'bn.js'
@@ -203,10 +202,7 @@ const AddGatewayBle = () => {
       wrapProgramError(e)
     }
 
-    const [configKey] = rewardableEntityConfigKey(
-      network === 'IOT' ? IOT_SUB_DAO_KEY : MOBILE_SUB_DAO_KEY,
-      network,
-    )
+    const configKey = network === 'IOT' ? IOT_CONFIG_KEY : MOBILE_CONFIG_KEY
     const fetcher =
       network === 'IOT'
         ? hemProgram.account.iotHotspotInfoV0
@@ -277,10 +273,12 @@ const AddGatewayBle = () => {
     }
     const { asset } = keyToAsset
     const collectable = await getHotspotWithRewards(asset, anchorProvider)
-    collectNav.navigate(
-      networkInfo ? 'HotspotDetailsScreen' : 'AssertLocationScreen',
-      { collectable },
-    )
+
+    if (networkInfo) {
+      collectNav.navigate('HotspotMapScreen', { hotspot: collectable, network })
+    } else {
+      collectNav.navigate('AssertLocationScreen', { collectable })
+    }
   })
   const error =
     onboardBalError ||
