@@ -2,7 +2,6 @@ import React, { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAsync } from 'react-async-hook'
 import { useNavigation } from '@react-navigation/native'
-import bs58 from 'bs58'
 import Text from '@components/Text'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
@@ -29,7 +28,9 @@ const RevealPrivateKeyScreen = () => {
     const secureAccount = await getSecureAccount(currentAccount.address)
     if (!secureAccount?.keypair.sk) return
     setPrivateKey(
-      bs58.encode(Buffer.from(secureAccount?.keypair?.sk, 'base64')),
+      JSON.stringify(
+        Buffer.from(secureAccount?.keypair?.sk, 'base64').toJSON().data,
+      ),
     )
   }, [currentAccount?.address, revealed])
 
@@ -57,7 +58,7 @@ const RevealPrivateKeyScreen = () => {
         <>
           <Box
             marginHorizontal="xs"
-            height={{ smallPhone: 80, phone: 100 }}
+            height={140}
             marginVertical="l"
             backgroundColor="grey900"
             padding="l"

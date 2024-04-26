@@ -1,6 +1,5 @@
 import { StackNavigationProp } from '@react-navigation/stack'
-import { CSAccount } from '../../../storage/cloudStorage'
-import { SecureAccount } from '../../../storage/secureStorage'
+import { RouteAccount } from '../create/createAccountNavTypes'
 
 export type ImportAccountStackParamList = {
   AccountImportStartScreen: undefined
@@ -10,15 +9,14 @@ export type ImportAccountStackParamList = {
   }
   AccountAssignScreen: undefined
   AccountCreatePinScreen:
-    | {
+    | ({
         pinReset?: boolean
-        account?: SecureAccount & CSAccount
-      }
+      } & RouteAccount)
     | undefined
   AccountConfirmPinScreen: {
     pin: string
-    account?: SecureAccount & CSAccount
-  }
+  } & RouteAccount
+  ImportSubAccounts: undefined
   CLIAccountNavigator: undefined
 }
 

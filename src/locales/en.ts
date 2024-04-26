@@ -13,6 +13,7 @@ export default {
     AccountNamePlaceholder: 'Wallet Name',
     setDefault: 'Set as Default',
     title: 'Name this wallet',
+    nameExists: 'Name already exists',
   },
   errors: {
     account: 'Account missing',
@@ -130,6 +131,10 @@ export default {
     },
     privateKey: {
       title: 'Import Private Key',
+      needsMigration: 'Helium L1 Wallet, needs to be migrated to Solana',
+      selectAccounts: 'Select Accounts',
+      selectAccountsBody:
+        'A secret phrase can be used to generate multiple wallets by using derivation paths. The following derivation paths have been automatically detected. Select the wallets you would like to import.',
       paste: 'Copy and paste your private key.',
       inputPlaceholder: 'Your private key...',
       error: 'Invalid Private Key',
@@ -619,7 +624,8 @@ export default {
     amount: 'Amount (DC)',
   },
   connectedWallets: {
-    add: 'Add New Wallet',
+    add: 'Import or Create Wallet',
+    addSub: 'Add Wallet',
     addTestnet: 'Add New Testnet Wallet',
   },
   dappLogin: {

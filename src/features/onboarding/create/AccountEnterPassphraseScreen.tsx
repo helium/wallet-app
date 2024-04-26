@@ -15,7 +15,7 @@ const AccountEnterPassphraseScreen = () => {
   const navigation = useNavigation<CreateAccountNavigationProp>()
   const { params } = useRoute<Route>()
   const {
-    onboardingData: { secureAccount },
+    onboardingData: { words },
   } = useOnboarding()
 
   const onWordsConfirmed = useCallback(
@@ -24,12 +24,7 @@ const AccountEnterPassphraseScreen = () => {
   )
 
   return (
-    <ConfirmWordsScreen
-      mnemonic={
-        params?.secureAccount?.mnemonic || secureAccount?.mnemonic || []
-      }
-      onComplete={onWordsConfirmed}
-    />
+    <ConfirmWordsScreen mnemonic={words || []} onComplete={onWordsConfirmed} />
   )
 }
 

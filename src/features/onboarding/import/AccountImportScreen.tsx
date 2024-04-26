@@ -1,25 +1,28 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import Close from '@assets/images/close.svg'
-import { FlatList } from 'react-native'
-import { useTranslation } from 'react-i18next'
-import { upperCase } from 'lodash'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import Box from '@components/Box'
-import { useColors, usePaddingStyle } from '@theme/themeHooks'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import useAlert from '@hooks/useAlert'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Color } from '@theme/theme'
+import { useColors, usePaddingStyle } from '@theme/themeHooks'
+import { upperCase } from 'lodash'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { FlatList } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { useAccountStorage } from '../../../storage/AccountStorageProvider'
+import {
+  createDefaultKeypair,
+  toSecureAccount,
+} from '../../../storage/secureStorage'
+import { useOnboarding } from '../OnboardingProvider'
 import { OnboardingNavigationProp } from '../onboardingTypes'
 import PassphraseAutocomplete from './PassphraseAutocomplete'
-import { useOnboarding } from '../OnboardingProvider'
 import {
   ImportAccountNavigationProp,
   ImportAccountStackParamList,
 } from './importAccountNavTypes'
-import { useAccountStorage } from '../../../storage/AccountStorageProvider'
-import { createSecureAccount } from '../../../storage/secureStorage'
 
 const accentColors = [
   'purple500',
@@ -38,11 +41,7 @@ const accentColors = [
 
 type Route = RouteProp<ImportAccountStackParamList, 'AccountImportScreen'>
 const AccountImportScreen = () => {
-  const {
-    setOnboardingData,
-    onboardingData: { netType },
-    reset,
-  } = useOnboarding()
+  const { setOnboardingData, reset } = useOnboarding()
   const { upsertAccount, hasAccounts, accounts } = useAccountStorage()
   const navigation = useNavigation<ImportAccountNavigationProp>()
   const parentNav = useNavigation<OnboardingNavigationProp>()
@@ -150,10 +149,9 @@ const AccountImportScreen = () => {
   const handleNext = useCallback(async () => {
     try {
       const filteredWords: string[] = words.flatMap((w) => (w ? [w] : []))
-      const account = await createSecureAccount({
+      const { keypair } = await createDefaultKeypair({
         givenMnemonic: filteredWords,
         use24Words: words?.length === 24,
-        netType,
       })
       if (restoringAccount) {
         if (!accounts || !accountAddress) {
@@ -164,7 +162,7 @@ const AccountImportScreen = () => {
           return
         }
         const restoredAccount = Object.values(accounts).find(
-          (a) => a.address === account.address,
+          (a) => a.solanaAddress === keypair.publicKey.toBase58(),
         )
         if (!restoredAccount || accountAddress !== restoredAccount.address) {
           await showOKAlert({
@@ -175,14 +173,14 @@ const AccountImportScreen = () => {
         }
         await upsertAccount({
           alias: restoredAccount.alias,
-          address: account.address,
-          secureAccount: account,
+          address: restoredAccount.address,
+          secureAccount: toSecureAccount({ keypair, words: filteredWords }),
         })
         reset()
         navigation.popToTop()
       } else {
-        setOnboardingData((prev) => ({ ...prev, secureAccount: account }))
-        navigation.navigate('AccountAssignScreen')
+        setOnboardingData((prev) => ({ ...prev, words: filteredWords }))
+        navigation.navigate('ImportSubAccounts')
       }
     } catch (error) {
       await showOKAlert({
@@ -192,7 +190,6 @@ const AccountImportScreen = () => {
     }
   }, [
     words,
-    netType,
     restoringAccount,
     accounts,
     accountAddress,
@@ -240,7 +237,11 @@ const AccountImportScreen = () => {
   )
 
   const handleOnPaste = useCallback((copiedContent: string) => {
-    setWords(copiedContent.split(' '))
+    const newWords = copiedContent.split(' ')
+    setWords(newWords)
+    if (newWords.length > 12) {
+      setWordCount(24)
+    }
   }, [])
 
   return (

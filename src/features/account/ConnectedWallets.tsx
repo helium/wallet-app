@@ -45,11 +45,16 @@ export type ConnectedWalletsRef = {
 type Props = {
   onClose?: () => void
   onAddNew: () => void
+  onAddSub: () => void
+  canAddSub: boolean
   children: ReactNode
 }
 
 const ConnectedWallets = forwardRef(
-  ({ onClose, onAddNew, children }: Props, ref: Ref<ConnectedWalletsRef>) => {
+  (
+    { canAddSub, onClose, onAddNew, onAddSub, children }: Props,
+    ref: Ref<ConnectedWalletsRef>,
+  ) => {
     useImperativeHandle(ref, () => ({ show, hide }))
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const keyExtractor = useCallback((item) => item.address, [])
@@ -117,6 +122,14 @@ const ConnectedWallets = forwardRef(
       [handleNetTypeChange, onAddNew, hide],
     )
 
+    const handleAddSub = useCallback(
+      () => () => {
+        hide()
+        onAddSub()
+      },
+      [hide, onAddSub],
+    )
+
     const handleAccountChange = useCallback(
       (item: CSAccount) => () => {
         hide()
@@ -175,6 +188,22 @@ const ConnectedWallets = forwardRef(
       () => (
         <Box>
           <BackgroundFill backgroundColor="secondary" />
+          {canAddSub ? (
+            <TouchableContainer
+              onPress={handleAddSub()}
+              flexDirection="row"
+              paddingHorizontal="l"
+              paddingVertical="lm"
+              borderTopColor="primaryBackground"
+              borderTopWidth={1}
+              alignItems="center"
+            >
+              <Add color={primaryText} />
+              <Text variant="subtitle1" color="primaryText" marginLeft="m">
+                {t('connectedWallets.addSub')}
+              </Text>
+            </TouchableContainer>
+          ) : null}
           <TouchableContainer
             onPress={handleAddNew(NetTypes.MAINNET)}
             flexDirection="row"
@@ -209,7 +238,7 @@ const ConnectedWallets = forwardRef(
           )}
         </Box>
       ),
-      [enableTestnet, handleAddNew, primaryText, t],
+      [canAddSub, enableTestnet, handleAddNew, handleAddSub, primaryText, t],
     )
 
     const renderBackdrop = useCallback(
