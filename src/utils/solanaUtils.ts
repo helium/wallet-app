@@ -1051,7 +1051,7 @@ export const getHotspotPendingRewards = async (
 ): Promise<
   {
     id: string
-    pendingRewards: Record<string, string> | undefined
+    pendingRewards: { [key: string]: string }
   }[]
 > => {
   const program = await lz.init(provider)
