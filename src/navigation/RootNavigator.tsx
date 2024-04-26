@@ -1,4 +1,8 @@
-import { keypairFromSeed, solanaDerivation } from '@hooks/useDerivationAccounts'
+import {
+  HELIUM_DERIVATION,
+  keypairFromSeed,
+  solanaDerivation,
+} from '@hooks/useDerivationAccounts'
 import { useNavigation } from '@react-navigation/native'
 import {
   StackNavigationOptions,
@@ -11,6 +15,7 @@ import * as bip39 from 'bip39'
 import React, { memo, useCallback, useEffect, useRef } from 'react'
 import { useAsync, useAsyncCallback } from 'react-async-hook'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
+import Toast from 'react-native-simple-toast'
 import { useSelector } from 'react-redux'
 import ConnectedWallets, {
   ConnectedWalletsRef,
@@ -61,13 +66,18 @@ const RootNavigator = () => {
   }, [navigation])
 
   const { execute: handleAddSub } = useAsyncCallback(async () => {
-    if (seed && currentAccount && currentAccount.derivationPath) {
+    try {
+      if (!seed || !currentAccount || !currentAccount?.derivationPath) {
+        throw new Error('Missing seed or derivation path')
+      }
       const currentPath = currentAccount.derivationPath
       const takenAddresses = new Set(
         Object.values(accounts || {}).map((a) => a.solanaAddress),
       )
       let currentAccountNum =
-        Number(currentPath.split('/')[3].replace("'", '')) + 1
+        currentPath === HELIUM_DERIVATION
+          ? 0
+          : Number(currentPath.split('/')[3].replace("'", '')) + 1
       let derivationPath = solanaDerivation(currentAccountNum, 0)
       let keypair = await keypairFromSeed(seed, derivationPath)
       while (
@@ -79,7 +89,7 @@ const RootNavigator = () => {
         keypair = await keypairFromSeed(seed, derivationPath)
       }
       if (currentAccountNum >= 100) {
-        return
+        throw new Error('More than 100 accounts are not supported')
       }
       if (keypair) {
         const words = (await getSecureAccount(currentAccount.address))?.mnemonic
@@ -105,6 +115,8 @@ const RootNavigator = () => {
           },
         })
       }
+    } catch (e: any) {
+      Toast.show(e.message || e.toString())
     }
   })
 

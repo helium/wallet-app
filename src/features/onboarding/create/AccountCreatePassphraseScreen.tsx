@@ -1,6 +1,7 @@
 import Close from '@assets/images/close.svg'
 import InfoError from '@assets/images/infoError.svg'
 import Box from '@components/Box'
+import CircleLoader from '@components/CircleLoader'
 import RevealWords from '@components/RevealWords'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -25,7 +26,7 @@ const AccountCreatePassphraseScreen = () => {
   const { setOnboardingData } = useOnboarding()
   const parentNav = useNavigation<OnboardingNavigationProp>()
   const navigation = useNavigation<CreateAccountNavigationProp>()
-  const { result: defaultKeypair } = useAsync(
+  const { result: defaultKeypair, loading } = useAsync(
     async () => createDefaultKeypair({ use24Words: true }),
     [],
   )
@@ -100,11 +101,22 @@ const AccountCreatePassphraseScreen = () => {
 
   return (
     <Box flex={1} backgroundColor="secondaryBackground">
-      <RevealWords
-        ListHeaderComponent={ListHeaderComponent}
-        mnemonic={defaultKeypair?.words || []}
-        onDone={navNext}
-      />
+      {loading ? (
+        <Box
+          height="100%"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <CircleLoader />
+        </Box>
+      ) : (
+        <RevealWords
+          ListHeaderComponent={ListHeaderComponent}
+          mnemonic={defaultKeypair?.words || []}
+          onDone={navNext}
+        />
+      )}
     </Box>
   )
 }

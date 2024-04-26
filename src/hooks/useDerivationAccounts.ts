@@ -62,7 +62,7 @@ export type ResolvedPath = {
   needsMigrated?: boolean
 }
 
-const HELIUM_DERIVATION = 'Helium L1'
+export const HELIUM_DERIVATION = 'Helium L1'
 export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
   const mains = [
     HELIUM_DERIVATION,
