@@ -37,7 +37,7 @@ react {
     // debuggableVariants = ["liteDebug", "prodDebug"]
     /* Bundling */
     //   A list containing the node command and its flags. Default is just 'node'.
-    // nodeExecutableAndArgs = ["node"]
+    nodeExecutableAndArgs = ["node", "--max_old_space_size=8192"]
     //
     //   The command to run when bundling. By default is 'bundle'
     // bundleCommand = "ram-bundle"
