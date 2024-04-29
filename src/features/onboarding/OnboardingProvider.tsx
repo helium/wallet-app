@@ -1,3 +1,6 @@
+import { NetTypes as NetType } from '@helium/address'
+import OnboardingClient, { Maker } from '@helium/onboarding'
+import { ResolvedPath } from '@hooks/useDerivationAccounts'
 import React, {
   createContext,
   ReactNode,
@@ -7,16 +10,13 @@ import React, {
   useMemo,
   useState,
 } from 'react'
-import OnboardingClient, { Maker } from '@helium/onboarding'
-import { NetTypes as NetType } from '@helium/address'
 import { CSAccount } from '../../storage/cloudStorage'
-import { SecureAccount } from '../../storage/secureStorage'
 
 type OnboardingData = {
   account?: CSAccount
-  secureAccount?: SecureAccount
-  words: string[]
+  words?: string[]
   netType: NetType.NetType
+  paths: ResolvedPath[]
 }
 
 const useOnboardingHook = ({ baseUrl }: { baseUrl: string }) => {
@@ -24,6 +24,7 @@ const useOnboardingHook = ({ baseUrl }: { baseUrl: string }) => {
     return {
       words: [],
       netType: NetType.MAINNET,
+      paths: [],
     } as OnboardingData
   }, [])
   const [onboardingData, setOnboardingData] =
@@ -54,6 +55,7 @@ const initialState = {
   onboardingData: {
     words: [] as string[],
     netType: NetType.MAINNET,
+    paths: [] as ResolvedPath[],
   },
   reset: () => undefined,
   setNetType: () => undefined,

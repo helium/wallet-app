@@ -13,10 +13,10 @@ export type WalletHotspots = {
   page: number
   totalHotspots?: number
 
-  hotspotsById: Record<string, CompressedNFT>
-  hotspotsMetadataById: Record<string, any>
-  hotspotsRewardsById: Record<string, any>
-  hotspotsRecipientsById: Record<string, any>
+  hotspotsById: { [key: string]: CompressedNFT }
+  hotspotsMetadataById: { [key: string]: { [key: string]: any } }
+  hotspotsRewardsById: { [key: string]: { [key: string]: string } }
+  hotspotsRecipientsById: { [key: string]: { [key: string]: string } }
 }
 
 export type HotspotsByWallet = Record<string, WalletHotspots>
@@ -41,22 +41,30 @@ export const fetchAllHotspots = createAsyncThunk(
   }) => {
     if (!account.solanaAddress) throw new Error('Solana address missing')
     const pubKey = new PublicKey(account.solanaAddress)
+
+    let pageNumber = 1
     let fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
       pubKey,
       anchorProvider,
-      1,
+      pageNumber,
       1000,
     )
 
-    let hotspots: CompressedNFT[] = []
-    while (hotspots.length < fetchedHotspots.total) {
-      hotspots = hotspots.concat(fetchedHotspots.items)
+    const hotspots: CompressedNFT[] = fetchedHotspots.items ?? []
+
+    while (
+      hotspots.length < (fetchedHotspots.grandTotal ?? fetchedHotspots.total)
+    ) {
+      // eslint-disable-next-line no-plusplus
+      pageNumber++
       fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
         pubKey,
         anchorProvider,
-        fetchedHotspots.page + 1,
+        pageNumber,
         1000,
       )
+
+      hotspots.push(...(fetchedHotspots.items ?? []))
     }
 
     const hotspotsRecipients = await solUtils.getHotspotRecipients(

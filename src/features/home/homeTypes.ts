@@ -1,4 +1,5 @@
 import { StackNavigationProp } from '@react-navigation/stack'
+import { RouteAccount } from '../onboarding/create/createAccountNavTypes'
 
 export type PaymentRouteParam = {
   payer?: string
@@ -23,15 +24,7 @@ export type HomeStackParamList = {
   AccountsScreen: undefined
   AccountManageTokenListScreen: undefined
   AccountTokenScreen: { mint: string }
-  AccountAssignScreen:
-    | undefined
-    | {
-        secureAccount?: {
-          mnemonic: string[]
-          keypair: { pk: string; sk: string }
-          address: string
-        }
-      }
+  AccountAssignScreen: undefined | RouteAccount
   ConfirmPin: {
     action: 'payment'
   }

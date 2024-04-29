@@ -37,7 +37,6 @@ import {
 } from './cloudStorage'
 import { removeAccountTag, tagAccount } from './oneSignalStorage'
 import {
-  createSecureAccount,
   deleteSecureAccount,
   SecureAccount,
   signoutSecureStore,
@@ -252,6 +251,7 @@ const useAccountStorageHook = () => {
         ledgerDevice?: LedgerDevice
         ledgerIndex?: number
         solanaAddress: string
+        derivationPath?: string
       }[],
     ) => {
       if (!accountBulk.length) return
@@ -267,6 +267,7 @@ const useAccountStorageHook = () => {
             ledgerDevice: curr.ledgerDevice,
             accountIndex,
             solanaAddress: curr.solanaAddress,
+            derivationPath: curr.derivationPath,
           },
         }
       }, {})
@@ -404,7 +405,6 @@ const useAccountStorageHook = () => {
     addContact,
     contacts,
     contactsForNetType,
-    createSecureAccount,
     currentAccount,
     currentNetworkAddress,
     defaultAccountAddress,
@@ -435,11 +435,6 @@ const initialState = {
   updateDefaultAccountAddress: async () => undefined,
   contacts: [],
   contactsForNetType: () => [],
-  createSecureAccount: async () => ({
-    mnemonic: [],
-    keypair: { pk: '', sk: '' },
-    address: '',
-  }),
   currentAccount: undefined,
   currentNetworkAddress: '',
   hasAccounts: false,

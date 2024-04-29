@@ -1,13 +1,16 @@
+import Address from '@helium/address'
 import { Keypair, Mnemonic } from '@helium/crypto-react-native'
-import Address, { NetTypes as NetType } from '@helium/address'
+import { heliumAddressFromSolAddress } from '@helium/spl-utils'
+import { keypairFromSeed } from '@hooks/useDerivationAccounts'
+import { Keypair as SolanaKeypair } from '@solana/web3.js'
+import * as bip39 from 'bip39'
 import * as SecureStore from 'expo-secure-store'
 import { Alert } from 'react-native'
-import { Keypair as SolanaKeypair } from '@solana/web3.js'
 import Config from 'react-native-config'
-import { CSAccount } from './cloudStorage'
-import i18n from '../utils/i18n'
 import { navToImportAccount } from '../navigation/NavigationHelper'
 import { ellipsizeAddress } from '../utils/accountUtils'
+import i18n from '../utils/i18n'
+import { CSAccount } from './cloudStorage'
 
 export enum SecureStorageKeys {
   WALLET_API_TOKEN = 'walletApiToken',
@@ -31,36 +34,49 @@ export enum SecureStorageKeys {
 type SecureStorageKeyTypes = `${SecureStorageKeys}`
 
 export type SecureAccount = {
-  mnemonic: string[]
+  mnemonic?: string[]
   keypair: { pk: string; sk: string }
   address: string
+  derivationPath?: string
 }
 
-export const createSecureAccount = async ({
+export function toSecureAccount({
+  words,
+  keypair,
+  derivationPath = DEFAULT_DERIVATION_PATH,
+}: {
+  words?: string[]
+  keypair: SolanaKeypair
+  derivationPath?: string
+}): SecureAccount {
+  return {
+    mnemonic: words,
+    keypair: {
+      pk: keypair.publicKey.toBuffer().toString('base64'),
+      sk: Buffer.from(keypair.secretKey).toString('base64'),
+    },
+    address: heliumAddressFromSolAddress(keypair.publicKey.toString()),
+    derivationPath,
+  }
+}
+
+export const DEFAULT_DERIVATION_PATH = "m/44'/501'/0'/0'"
+export const createDefaultKeypair = async ({
   givenMnemonic = null,
-  netType,
   use24Words,
 }: {
-  givenMnemonic?: Mnemonic | Array<string> | null
-  netType: NetType.NetType
+  givenMnemonic?: Array<string> | null
   use24Words?: boolean
-}): Promise<SecureAccount> => {
-  let mnemonic: Mnemonic
+}): Promise<{ words: string[]; keypair: SolanaKeypair }> => {
+  let mnemonic: Array<string>
   if (!givenMnemonic) {
-    mnemonic = await Mnemonic.create(use24Words ? 24 : 12)
-  } else if ('words' in givenMnemonic) {
-    mnemonic = givenMnemonic
+    mnemonic = (await Mnemonic.create(use24Words ? 24 : 12)).words
   } else {
-    mnemonic = new Mnemonic(givenMnemonic)
+    mnemonic = givenMnemonic
   }
-  const { keypair, address } = await Keypair.fromMnemonic(mnemonic, netType)
-
-  const secureAccount = {
-    mnemonic: mnemonic.words,
-    keypair,
-  }
-
-  return { address: address.b58, ...secureAccount }
+  const seed = bip39.mnemonicToSeedSync(mnemonic.join(' '), '')
+  const keypair = await keypairFromSeed(seed, DEFAULT_DERIVATION_PATH)
+  return { keypair: keypair!, words: mnemonic }
 }
 
 export const checkSecureAccount = async (

@@ -1,14 +1,17 @@
+import ConfirmPinView from '@components/ConfirmPinView'
+import { heliumAddressFromSolAddress } from '@helium/spl-utils'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { Keypair } from '@solana/web3.js'
+import { toSecureAccount } from '@storage/secureStorage'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { RouteProp, useRoute, useNavigation } from '@react-navigation/native'
-import ConfirmPinView from '@components/ConfirmPinView'
-import { OnboardingNavigationProp } from './onboardingTypes'
+import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useOnboarding } from './OnboardingProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
+import { useOnboarding } from './OnboardingProvider'
 import { CreateAccountStackParamList } from './create/createAccountNavTypes'
 import { ImportAccountStackParamList } from './import/importAccountNavTypes'
-import { RootNavigationProp } from '../../navigation/rootTypes'
+import { OnboardingNavigationProp } from './onboardingTypes'
 
 type Route = RouteProp<
   CreateAccountStackParamList & ImportAccountStackParamList,
@@ -27,34 +30,49 @@ const AccountConfirmPinScreen = () => {
 
   const pinSuccess = useCallback(
     async (pin: string) => {
-      if (params.account) {
+      if (params.secretKey) {
         try {
+          const keypair = Keypair.fromSecretKey(
+            Uint8Array.from(Buffer.from(params.secretKey, 'base64')),
+          )
           await upsertAccount({
-            address: params.account.address,
-            alias: params.account.alias,
-            secureAccount: {
-              mnemonic: params.account.mnemonic,
-              keypair: params.account.keypair,
-              address: params.account.address,
-            },
-          })
-          reset()
-          rootNav.reset({
-            index: 0,
-            routes: [
-              {
-                name: 'TabBarNavigator',
-              },
-            ],
+            address: heliumAddressFromSolAddress(keypair.publicKey.toBase58()),
+            alias: params.alias!,
+            secureAccount: toSecureAccount({
+              words: params.words,
+              keypair,
+              derivationPath: params.derivationPath,
+            }),
+            derivationPath: params.derivationPath,
           })
         } catch (e) {
           console.error(e)
         }
       }
 
+      reset()
+
+      rootNav.reset({
+        index: 0,
+        routes: [
+          {
+            name: 'TabBarNavigator',
+          },
+        ],
+      })
+
       await updatePin(pin)
     },
-    [params.account, reset, rootNav, updatePin, upsertAccount],
+    [
+      params.alias,
+      params.derivationPath,
+      params.secretKey,
+      params.words,
+      reset,
+      rootNav,
+      updatePin,
+      upsertAccount,
+    ],
   )
 
   return (

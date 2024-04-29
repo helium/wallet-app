@@ -1,61 +1,63 @@
-import React, { memo, useCallback, useState } from 'react'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { Mnemonic } from '@helium/crypto-react-native'
-import bs58 from 'bs58'
-import { useAsync } from 'react-async-hook'
-import RNSodium from 'react-native-sodium'
-import { MAINNET } from '@helium/address/build/NetTypes'
-import { useTranslation } from 'react-i18next'
-import { Buffer } from 'buffer'
-import Text from '@components/Text'
-import SafeAreaBox from '@components/SafeAreaBox'
 import BackButton from '@components/BackButton'
-import ButtonPressable from '@components/ButtonPressable'
 import Box from '@components/Box'
+import ButtonPressable from '@components/ButtonPressable'
+import SafeAreaBox from '@components/SafeAreaBox'
+import Text from '@components/Text'
 import TextInput from '@components/TextInput'
-import { useAccountStorage } from '../../../storage/AccountStorageProvider'
+import { Mnemonic } from '@helium/crypto-react-native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { Keypair } from '@solana/web3.js'
+import bs58 from 'bs58'
+import { Buffer } from 'buffer'
+import React, { memo, useCallback, useState } from 'react'
+import { useAsync } from 'react-async-hook'
+import { useTranslation } from 'react-i18next'
+import RNSodium from 'react-native-sodium'
 import { RootNavigationProp } from '../../../navigation/rootTypes'
-import { OnboardingStackParamList } from '../onboardingTypes'
-import { useOnboarding } from '../OnboardingProvider'
+import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import {
-  createSecureAccount,
-  SecureAccount,
+  DEFAULT_DERIVATION_PATH,
+  createDefaultKeypair,
 } from '../../../storage/secureStorage'
 import * as Logger from '../../../utils/logger'
+import { useOnboarding } from '../OnboardingProvider'
+import { OnboardingStackParamList } from '../onboardingTypes'
 
 type Route = RouteProp<OnboardingStackParamList, 'ImportPrivateKey'>
 
 const ImportPrivateKey = () => {
-  const { hasAccounts } = useAccountStorage()
+  const { hasAccounts, accounts } = useAccountStorage()
   const navigation = useNavigation<RootNavigationProp>()
   const route = useRoute<Route>()
   const { t } = useTranslation()
   const encodedKey = route.params.key
-  const { setOnboardingData } = useOnboarding()
+  const { setOnboardingData, onboardingData } = useOnboarding()
   const [publicKey, setPublicKey] = useState<string>()
-  const [secureAccount, setSecureAccount] = useState<SecureAccount>()
   const [password, setPassword] = useState<string>()
   const [error, setError] = useState<string>()
-  const { accounts } = useAccountStorage()
 
   const createAccount = useCallback(
-    async (mnemonic: Mnemonic) => {
-      const account = await createSecureAccount({
-        givenMnemonic: mnemonic,
-        netType: MAINNET,
-      })
-      if (
-        accounts &&
-        Object.keys(accounts).find((a) => a === account.address)
-      ) {
-        const alias = accounts[account.address]?.alias
+    async ({ keypair, words }: { keypair: Keypair; words?: string[] }) => {
+      const overlap = Object.values(accounts || {}).find(
+        (a) => a.solanaAddress === keypair.publicKey.toBase58(),
+      )
+      if (accounts && overlap) {
+        const alias = accounts[overlap.address]?.alias
         setError(t('accountImport.privateKey.exists', { alias }))
         return
       }
-      setSecureAccount(account)
-      setPublicKey(account.address)
+      setPublicKey(keypair.publicKey.toBase58())
       setOnboardingData((prev) => {
-        return { ...prev, secureAccount: account }
+        return {
+          ...prev,
+          words,
+          paths: [
+            {
+              keypair,
+              derivationPath: DEFAULT_DERIVATION_PATH,
+            },
+          ],
+        }
       })
       setError(undefined)
     },
@@ -64,7 +66,6 @@ const ImportPrivateKey = () => {
 
   const decodePrivateKey = useCallback(
     async (key?: string) => {
-      setSecureAccount(undefined)
       setPublicKey(undefined)
 
       if (key) {
@@ -76,10 +77,17 @@ const ImportPrivateKey = () => {
           )
           const seedBuffer = Buffer.from(seedBase64, 'base64')
           const mnemonic = Mnemonic.fromEntropy(seedBuffer)
-          await createAccount(mnemonic)
+          const { keypair, words } = await createDefaultKeypair({
+            givenMnemonic: mnemonic.words,
+            use24Words: mnemonic.words.length === 24,
+          })
+          await createAccount({ keypair, words })
         } catch (e) {
-          setError(t('accountImport.privateKey.error'))
-          Logger.error(e)
+          // Must not be b58, try solana keypair
+          const keypair = Keypair.fromSecretKey(
+            Uint8Array.from(JSON.parse(key)),
+          )
+          await createAccount({ keypair })
         }
       } else if (encodedKey) {
         // decoding base64 encrypted key
@@ -110,8 +118,11 @@ const ImportPrivateKey = () => {
           const words = JSON.parse(
             Buffer.from(base64Words, 'base64').toString(),
           )
-          const mnemonic = new Mnemonic(words)
-          await createAccount(mnemonic)
+          const { keypair } = await createDefaultKeypair({
+            givenMnemonic: words,
+            use24Words: words.length === 24,
+          })
+          await createAccount({ keypair, words })
         } catch (e) {
           setError(t('accountImport.privateKey.errorPassword'))
           Logger.error(e)
@@ -136,32 +147,39 @@ const ImportPrivateKey = () => {
   }, [hasAccounts, navigation])
 
   const onImportAccount = useCallback(() => {
-    if (hasAccounts) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      navigation.replace('TabBarNavigator', {
-        screen: 'Home',
-        params: {
-          screen: 'AccountAssignScreen',
+    function getRoute(subRoute: string) {
+      if (hasAccounts) {
+        return [
+          'TabBarNavigator',
+          {
+            screen: 'Home',
+            params: {
+              screen: subRoute,
+            },
+          },
+        ]
+      }
+
+      return [
+        'OnboardingNavigator',
+        {
+          screen: 'ImportAccount',
           params: {
-            secureAccount,
+            screen: subRoute,
           },
         },
-      })
+      ]
+    }
+    if (onboardingData.words) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      navigation.replace(...getRoute('ImportSubAccounts'))
     } else {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      navigation.replace('OnboardingNavigator', {
-        screen: 'CreateAccount',
-        params: {
-          screen: 'AccountAssignScreen',
-          params: {
-            secureAccount,
-          },
-        },
-      })
+      navigation.replace(...getRoute('AccountAssignScreen'))
     }
-  }, [hasAccounts, navigation, secureAccount])
+  }, [onboardingData.words, hasAccounts, navigation])
 
   const onChangePassword = useCallback((text: string) => {
     setPassword(text)
@@ -253,7 +271,7 @@ const ImportPrivateKey = () => {
         backgroundColorDisabled="surfaceSecondary"
         backgroundColorDisabledOpacity={0.5}
         titleColor="black"
-        disabled={!!error || secureAccount === undefined}
+        disabled={!!error || publicKey === undefined}
       />
     </SafeAreaBox>
   )

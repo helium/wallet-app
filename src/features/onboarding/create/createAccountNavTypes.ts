@@ -1,22 +1,19 @@
 import { StackNavigationProp } from '@react-navigation/stack'
-import { CSAccount } from '../../../storage/cloudStorage'
-import { SecureAccount } from '../../../storage/secureStorage'
+
+export type RouteAccount = {
+  secretKey?: string
+  words?: string[]
+  alias?: string
+  derivationPath?: string
+}
 
 export type CreateAccountStackParamList = {
   AccountCreateStartScreen: undefined
   AccountCreatePassphraseScreen: undefined
-  AccountEnterPassphraseScreen: undefined | { secureAccount?: SecureAccount }
-  AccountAssignScreen: undefined | { secureAccount?: SecureAccount }
-  AccountCreatePinScreen:
-    | {
-        pinReset?: boolean
-        account?: SecureAccount & CSAccount
-      }
-    | undefined
-  AccountConfirmPinScreen: {
-    pin: string
-    account?: SecureAccount & CSAccount
-  }
+  AccountEnterPassphraseScreen: undefined | RouteAccount
+  AccountAssignScreen: undefined | RouteAccount
+  AccountCreatePinScreen: RouteAccount | undefined
+  AccountConfirmPinScreen: RouteAccount
 }
 
 export type CreateAccountNavigationProp =

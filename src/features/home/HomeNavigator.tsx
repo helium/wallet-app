@@ -21,6 +21,7 @@ import RequestScreen from '../request/RequestScreen'
 import SettingsNavigator from '../settings/SettingsNavigator'
 import SwapNavigator from '../swaps/SwapNavigator'
 import AddNewAccountNavigator from './addNewAccount/AddNewAccountNavigator'
+import ImportSubAccountsScreen from '../onboarding/import/ImportSubAccountsScreen'
 
 const HomeStack = createStackNavigator()
 
@@ -98,6 +99,10 @@ const HomeStackScreen = () => {
       <HomeStack.Screen
         name="ReImportAccountNavigator"
         component={ImportAccountNavigator}
+      />
+      <HomeStack.Screen
+        name="ImportSubAccounts"
+        component={ImportSubAccountsScreen}
       />
     </HomeStack.Navigator>
   )

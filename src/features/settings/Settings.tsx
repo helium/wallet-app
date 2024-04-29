@@ -3,6 +3,7 @@ import CloseButton from '@components/CloseButton'
 import ImageBox from '@components/ImageBox'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
+import { truthy } from '@helium/spl-utils'
 import useAlert from '@hooks/useAlert'
 import { useAppVersion } from '@hooks/useDevice'
 import { useExplorer } from '@hooks/useExplorer'
@@ -10,6 +11,7 @@ import { useNavigation } from '@react-navigation/native'
 import { Cluster } from '@solana/web3.js'
 import { useHitSlop, useSpacing } from '@theme/themeHooks'
 import React, { ReactText, memo, useCallback, useMemo } from 'react'
+import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert, Linking, Platform, SectionList } from 'react-native'
 import deviceInfo from 'react-native-device-info'
@@ -91,6 +93,13 @@ const Settings = () => {
     ({ section: { footer } }) => footer,
     [],
   )
+
+  const { result: hasWords } = useAsync(async () => {
+    if (!currentAccount?.address) return false
+
+    const secureAccount = await getSecureAccount(currentAccount.address)
+    return !!secureAccount?.mnemonic
+  }, [currentAccount?.address])
 
   const handleIntervalSelected = useCallback(
     async (value: ReactText) => {
@@ -185,7 +194,11 @@ const Settings = () => {
 
   const handleSignOut = useCallback(async () => {
     const secureAccount = await getSecureAccount(currentAccount?.address)
-    if (!secureAccount || !!currentAccount?.ledgerDevice) {
+    if (
+      !secureAccount ||
+      !!currentAccount?.ledgerDevice ||
+      !secureAccount?.mnemonic
+    ) {
       const currentAddress = currentAccount?.address
       const savedAccountAddresses = Object.keys(accounts || {})
       const isLastAccount =
@@ -415,15 +428,17 @@ const Settings = () => {
           alias: currentAccount?.alias,
         }),
         data: [
-          {
-            title: t('settings.sections.backup.revealWords'),
-            onPress: handleRevealWords,
-          },
+          hasWords
+            ? {
+                title: t('settings.sections.backup.revealWords'),
+                onPress: handleRevealWords,
+              }
+            : undefined,
           {
             title: t('settings.sections.backup.revealPrivateKey'),
             onPress: handleRevealPrivateKey,
           },
-        ],
+        ].filter(truthy),
       },
       {
         title: t('settings.sections.security.title'),
@@ -520,6 +535,7 @@ const Settings = () => {
     handleShareAddress,
     handleMigrateWallet,
     handleSignOut,
+    hasWords,
     handleRevealWords,
     handleRevealPrivateKey,
     language,

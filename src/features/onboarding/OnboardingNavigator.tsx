@@ -1,16 +1,15 @@
-import React, { memo, useMemo } from 'react'
 import {
-  createStackNavigator,
   StackNavigationOptions,
   TransitionPresets,
+  createStackNavigator,
 } from '@react-navigation/stack'
+import React, { memo, useMemo } from 'react'
 import LedgerNavigator from '../ledger/LedgerNavigator'
 import CreateImportAccountScreen from './CreateImportAccountScreen'
-import IntroScreen from './IntroScreen'
 import CreateAccountNavigator from './create/CreateAccountNavigator'
 import ImportAccountNavigator from './import/ImportAccountNavigator'
-import { OnboardingStackParamList } from './onboardingTypes'
 import ImportPrivateKey from './import/ImportPrivateKey'
+import { OnboardingStackParamList } from './onboardingTypes'
 
 const OnboardingStack = createStackNavigator<OnboardingStackParamList>()
 
@@ -32,7 +31,6 @@ const OnboardingNavigator = () => {
   )
   return (
     <OnboardingStack.Navigator screenOptions={screenOptions}>
-      <OnboardingStack.Screen name="Intro" component={IntroScreen} />
       <OnboardingStack.Screen
         name="CreateImport"
         component={CreateImportAccountScreen}

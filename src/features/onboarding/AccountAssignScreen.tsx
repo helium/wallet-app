@@ -1,23 +1,27 @@
-import React, { memo, useCallback, useMemo, useState } from 'react'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
-import { useTranslation } from 'react-i18next'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import CheckBox from '@react-native-community/checkbox'
-import Box from '@components/Box'
-import SafeAreaBox from '@components/SafeAreaBox'
-import TextInput from '@components/TextInput'
-import FabButton from '@components/FabButton'
 import AccountIcon from '@components/AccountIcon'
+import Box from '@components/Box'
+import CircleLoader from '@components/CircleLoader'
+import FabButton from '@components/FabButton'
+import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
+import TextInput from '@components/TextInput'
+import { heliumAddressFromSolAddress } from '@helium/spl-utils'
+import CheckBox from '@react-native-community/checkbox'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { Keypair } from '@solana/web3.js'
+import { storeSecureAccount, toSecureAccount } from '@storage/secureStorage'
 import { useColors, useSpacing } from '@theme/themeHooks'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useOnboarding } from './OnboardingProvider'
-import { accountNetType } from '../../utils/accountUtils'
-import { ImportAccountNavigationProp } from './import/importAccountNavTypes'
-import { CreateAccountNavigationProp } from './create/createAccountNavTypes'
-import { HomeStackParamList } from '../home/homeTypes'
+import React, { memo, useCallback, useMemo, useState } from 'react'
+import { useAsyncCallback } from 'react-async-hook'
+import { useTranslation } from 'react-i18next'
+import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { RootNavigationProp } from '../../navigation/rootTypes'
+import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { HomeStackParamList } from '../home/homeTypes'
+import { useOnboarding } from './OnboardingProvider'
+import { CreateAccountNavigationProp } from './create/createAccountNavTypes'
+import { ImportAccountNavigationProp } from './import/importAccountNavTypes'
 
 type Route = RouteProp<HomeStackParamList, 'AccountAssignScreen'>
 
@@ -32,64 +36,99 @@ const AccountAssignScreen = () => {
   const [alias, setAlias] = useState('')
   const {
     reset,
-    onboardingData: { secureAccount },
+    onboardingData: { paths, words },
   } = useOnboarding()
   const insets = useSafeAreaInsets()
   const spacing = useSpacing()
   const colors = useColors()
-  const { upsertAccount, hasAccounts, updateDefaultAccountAddress } =
+  const { upsertAccounts, hasAccounts, updateDefaultAccountAddress, accounts } =
     useAccountStorage()
   const [setAsDefault, toggleSetAsDefault] = useState(false)
 
-  const account = useMemo(() => {
-    return secureAccount || route?.params?.secureAccount
-  }, [route, secureAccount])
+  const existingNames = useMemo(
+    () => accounts && new Set(Object.values(accounts).map((a) => a.alias)),
+    [accounts],
+  )
 
-  const handlePress = useCallback(async () => {
-    if (!account) return
+  const allPaths = useMemo(() => {
+    if (
+      route.params?.secretKey &&
+      route.params?.derivationPath &&
+      !paths.some((p) => p.derivationPath === route.params?.derivationPath)
+    ) {
+      return [
+        ...paths,
+        {
+          keypair: Keypair.fromSecretKey(
+            Uint8Array.from(Buffer.from(route.params.secretKey, 'base64')),
+          ),
+          derivationPath: route.params.derivationPath,
+        },
+      ]
+    }
+    return paths
+  }, [paths, route.params?.secretKey, route.params?.derivationPath])
 
-    if (hasAccounts) {
-      try {
-        await upsertAccount({
-          alias,
-          address: account.address,
-          secureAccount: account,
-        })
-        if (setAsDefault) {
-          await updateDefaultAccountAddress(account.address)
+  const { execute: handlePress, loading } = useAsyncCallback(async () => {
+    try {
+      await Promise.all(
+        allPaths.map(async (p) => {
+          await storeSecureAccount(
+            toSecureAccount({
+              keypair: p.keypair,
+              words,
+              derivationPath: p.derivationPath,
+            }),
+          )
+        }),
+      )
+      // eslint-disable-next-line no-inner-declarations
+      function getName(index: number): string {
+        const name = `${alias} ${index + 1}`
+        if (!existingNames?.has(name)) {
+          return name
         }
 
-        rootNav.reset({
-          index: 0,
-          routes: [{ name: 'TabBarNavigator' }],
-        })
-        reset()
-        return
-      } catch (e) {
-        console.error(e)
-        return
+        return getName(index + 1)
       }
-    }
+      const newAccounts = allPaths.map((p, index) => ({
+        alias: index === 0 ? alias : getName(index),
+        address: heliumAddressFromSolAddress(p.keypair.publicKey.toBase58()),
+        solanaAddress: p.keypair.publicKey.toBase58(),
+        derivationPath: p.derivationPath,
+      }))
+      await Promise.all(
+        allPaths.map(async (p) => {
+          await storeSecureAccount(
+            toSecureAccount({
+              words,
+              keypair: p.keypair,
+              derivationPath: p.derivationPath,
+            }),
+          )
+        }),
+      )
+      await upsertAccounts(newAccounts)
+      if (setAsDefault) {
+        await updateDefaultAccountAddress(newAccounts[0].address)
+      }
 
-    onboardingNav.navigate('AccountCreatePinScreen', {
-      pinReset: false,
-      account: {
-        ...account,
-        alias,
-        netType: accountNetType(account.address),
-      },
-    })
-  }, [
-    account,
-    hasAccounts,
-    onboardingNav,
-    alias,
-    upsertAccount,
-    setAsDefault,
-    reset,
-    updateDefaultAccountAddress,
-    rootNav,
-  ])
+      reset()
+    } catch (e) {
+      console.error(e)
+      return
+    }
+    if (hasAccounts) {
+      rootNav.reset({
+        index: 0,
+        routes: [{ name: 'TabBarNavigator' }],
+      })
+    } else {
+      onboardingNav.navigate('AccountCreatePinScreen', {
+        pinReset: true,
+      })
+    }
+  })
 
   const onCheckboxToggled = useCallback(
     (newValue) => toggleSetAsDefault(newValue),
@@ -126,7 +165,10 @@ const AccountAssignScreen = () => {
             marginTop="xl"
             flexDirection="row"
           >
-            <AccountIcon size={40} address={account?.address} />
+            <AccountIcon
+              size={40}
+              address={paths[0] && paths[0].keypair.publicKey.toBase58()}
+            />
             <TextInput
               textColor="primaryText"
               fontSize={24}
@@ -178,16 +220,24 @@ const AccountAssignScreen = () => {
           </Box>
 
           <Box flex={1} />
-
-          <FabButton
-            onPress={handlePress}
-            icon="arrowRight"
-            iconColor="primary"
-            disabled={!alias}
-            backgroundColor="primaryText"
-            backgroundColorPressed="surfaceContrast"
-            backgroundColorOpacityPressed={0.1}
-          />
+          {!loading && existingNames?.has(alias) ? (
+            <Text mb="m" color="red500">
+              {t('accountAssign.nameExists')}
+            </Text>
+          ) : null}
+          {loading ? (
+            <CircleLoader />
+          ) : (
+            <FabButton
+              onPress={handlePress}
+              icon="arrowRight"
+              iconColor="primary"
+              disabled={!alias || existingNames?.has(alias)}
+              backgroundColor="primaryText"
+              backgroundColorPressed="surfaceContrast"
+              backgroundColorOpacityPressed={0.1}
+            />
+          )}
         </Box>
       </KeyboardAvoidingView>
     </SafeAreaBox>
