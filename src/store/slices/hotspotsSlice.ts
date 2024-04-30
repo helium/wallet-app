@@ -2,6 +2,7 @@ import { AnchorProvider } from '@coral-xyz/anchor'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Cluster, PublicKey } from '@solana/web3.js'
 import { CompressedNFT } from 'src/types/solana'
+import { RecipientV0 } from '@hooks/useRecipient'
 import { DEFAULT_PAGE_AMOUNT } from '../../features/collectables/HotspotList'
 import { CSAccount } from '../../storage/cloudStorage'
 import * as solUtils from '../../utils/solanaUtils'
@@ -16,7 +17,9 @@ export type WalletHotspots = {
   hotspotsById: { [key: string]: CompressedNFT }
   hotspotsMetadataById: { [key: string]: { [key: string]: any } }
   hotspotsRewardsById: { [key: string]: { [key: string]: string } }
-  hotspotsRecipientsById: { [key: string]: { [key: string]: string } }
+  hotspotsRecipientsById: {
+    [key: string]: { [key: string]: RecipientV0 | undefined }
+  }
 }
 
 export type HotspotsByWallet = Record<string, WalletHotspots>

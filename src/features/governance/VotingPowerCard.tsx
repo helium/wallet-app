@@ -32,7 +32,7 @@ export const VotingPowerCardSkeleton = (boxProps: BoxProps<Theme>) => {
       <Box
         flexDirection="row"
         justifyContent="space-between"
-        backgroundColor="secondaryBackground"
+        backgroundColor="surfaceSecondary"
         borderRadius="l"
         padding="m"
         {...boxProps}
@@ -207,7 +207,7 @@ export const VotingPowerCard = ({
   if (onPress)
     return (
       <ReAnimatedBox
-        backgroundColor="secondaryBackground"
+        backgroundColor="surfaceSecondary"
         borderRadius="l"
         entering={FadeIn}
         exiting={FadeOut}
@@ -221,7 +221,7 @@ export const VotingPowerCard = ({
 
   return (
     <ReAnimatedBox
-      backgroundColor="secondaryBackground"
+      backgroundColor="surfaceSecondary"
       borderRadius="l"
       {...boxProps}
     >

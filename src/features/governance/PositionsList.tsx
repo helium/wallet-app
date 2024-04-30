@@ -73,7 +73,7 @@ export const PositionsList = ({
       <Box
         flex={1}
         flexDirection="row"
-        backgroundColor="secondaryBackground"
+        backgroundColor="surfaceSecondary"
         alignItems="center"
         justifyContent="center"
         borderRadius="l"

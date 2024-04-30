@@ -13,6 +13,7 @@ import { Theme } from '@theme/theme'
 import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
 import { useMint } from '@helium/helium-react-hooks'
 import BigNumber from 'bignumber.js'
+import { useColors } from '@theme/themeHooks'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import { ww } from '../../utils/layout'
 import { formatLargeNumber } from '../../utils/accountUtils'
@@ -29,6 +30,7 @@ const HotspotListItem = ({
   onPress,
   ...rest
 }: HotspotListItemProps) => {
+  const colors = useColors()
   const COLLECTABLE_HEIGHT = ww / 2
   const {
     content: { metadata },
@@ -121,7 +123,7 @@ const HotspotListItem = ({
             <Text variant="body2Medium" marginEnd="xs" color="black">
               {pendingMobileRewardsString}
             </Text>
-            <MobileSymbol color="black" />
+            <MobileSymbol color={colors.mobileBlue} />
           </Box>
         )}
         {!!hasIotRewards && (
@@ -147,7 +149,7 @@ const HotspotListItem = ({
             <Text variant="body2Medium" marginEnd="xs" color="black">
               {pendingIotRewardsString}
             </Text>
-            <IotSymbol color="black" />
+            <IotSymbol color={colors.iotGreen} />
           </Box>
         )}
       </TouchableOpacityBox>

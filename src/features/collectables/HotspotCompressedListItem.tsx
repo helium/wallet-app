@@ -15,6 +15,7 @@ import BigNumber from 'bignumber.js'
 import BN from 'bn.js'
 import React, { useMemo } from 'react'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
+import { useColors } from '@theme/themeHooks'
 import { HotspotWithPendingRewards } from '../../types/solana'
 import { Mints } from '../../utils/constants'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
@@ -32,6 +33,7 @@ const HotspotListItem = ({
   const {
     content: { metadata },
   } = hotspot
+  const colors = useColors()
   const streetAddress = useHotspotAddress(hotspot)
 
   const { info: iotMint } = useMint(IOT_MINT)
@@ -85,107 +87,153 @@ const HotspotListItem = ({
     [pendingMobileRewards],
   )
 
+  const mobileRecipient = useMemo(
+    () => hotspot.rewardRecipients?.[Mints.MOBILE],
+    [hotspot.rewardRecipients],
+  )
+
+  const iotRecipient = useMemo(
+    () => hotspot.rewardRecipients?.[Mints.IOT],
+    [hotspot.rewardRecipients],
+  )
+
+  console.log({
+    mobileRecipient,
+    iotRecipient,
+  })
+  /*   const hasIotRecipient = useMemo(
+    () => iotRecipient && !iotRecipient.destination.equals(PublicKey.default),
+    [iotRecipient],
+  )
+
+  const hasMobileRecipient = useMemo(
+    () =>
+      mobileRecipient && !mobileRecipient.destination.equals(PublicKey.default),
+    [mobileRecipient],
+  ) */
+
   return (
-    <ReAnimatedBox entering={FadeIn} exiting={FadeOut} {...rest}>
-      <TouchableOpacityBox
-        flexDirection="row"
-        marginHorizontal="s"
-        marginVertical="xs"
-        backgroundColor="surfaceSecondary"
-        borderRadius="xl"
-        alignItems="center"
-        paddingVertical="xs"
-        paddingHorizontal="s"
-        onPress={() => onPress(hotspot)}
-      >
-        <ImageBox
-          borderRadius="lm"
-          ml="s"
-          height={72}
-          width={62}
-          source={{
-            uri: metadata?.image,
-            cache: 'force-cache',
-          }}
-        />
-        <Box marginStart="m" marginVertical="s" flex={1}>
-          {metadata?.name && (
+    <ReAnimatedBox
+      backgroundColor="surfaceSecondary"
+      borderRadius="l"
+      position="relative"
+      entering={FadeIn}
+      exiting={FadeOut}
+      {...rest}
+    >
+      <TouchableOpacityBox onPress={() => onPress(hotspot)}>
+        <Box
+          flex={1}
+          flexDirection="row"
+          alignItems="center"
+          paddingHorizontal="m"
+          paddingVertical="ms"
+        >
+          <ImageBox
+            borderRadius="lm"
+            height={72}
+            width={62}
+            source={{
+              uri: metadata?.image,
+              cache: 'force-cache',
+            }}
+          />
+          <Box marginLeft="ms" flex={1}>
+            {metadata?.name && (
+              <Text
+                textAlign="left"
+                variant="subtitle2"
+                numberOfLines={1}
+                adjustsFontSizeToFit
+              >
+                {removeDashAndCapitalize(metadata.name)}
+              </Text>
+            )}
+
+            {streetAddress && (
+              <Text variant="body2" numberOfLines={1} adjustsFontSizeToFit>
+                {streetAddress}
+              </Text>
+            )}
             <Text
-              textAlign="left"
-              variant="subtitle2"
+              variant="subtitle3"
+              color="secondaryText"
               numberOfLines={1}
               adjustsFontSizeToFit
             >
-              {removeDashAndCapitalize(metadata.name)}
+              {eccCompact ? ellipsizeAddress(eccCompact) : ''}
             </Text>
-          )}
-
-          {streetAddress && (
-            <Text variant="body2" numberOfLines={1} adjustsFontSizeToFit>
-              {streetAddress}
-            </Text>
-          )}
-          <Text
-            variant="subtitle3"
-            color="secondaryText"
-            numberOfLines={1}
-            adjustsFontSizeToFit
-          >
-            {eccCompact ? ellipsizeAddress(eccCompact) : ''}
-          </Text>
-        </Box>
-        <Box marginVertical="s" marginLeft="s">
-          {!!hasMobileRewards && (
-            <Box flex={1}>
+          </Box>
+          <Box marginLeft="ms">
+            {!!hasMobileRewards && (
               <Box
-                marginBottom="s"
-                justifyContent="center"
+                flexDirection="row"
+                justifyContent="space-between"
                 alignItems="center"
                 backgroundColor="mobileDarkBlue"
                 borderRadius="xl"
                 padding="xs"
-                flexDirection="row"
-                shadowRadius={6}
-                shadowColor="black"
-                shadowOffset={{
-                  width: 0,
-                  height: 3,
-                }}
-                shadowOpacity={0.3}
-                elevation={2}
+                paddingRight="s"
+                marginBottom="s"
               >
-                <MobileSymbol color="black" />
+                <MobileSymbol color={colors.mobileBlue} />
                 <Text variant="body2Medium" marginLeft="xs" color="mobileBlue">
                   {pendingMobileRewardsString}
                 </Text>
               </Box>
-            </Box>
-          )}
-          {!!hasIotRewards && (
-            <Box flex={1}>
+            )}
+            {!!hasIotRewards && (
               <Box
-                justifyContent="flex-end"
+                flexDirection="row"
+                justifyContent="space-between"
                 alignItems="center"
                 backgroundColor="iotDarkGreen"
                 borderRadius="xl"
                 padding="xs"
-                flexDirection="row"
-                shadowRadius={6}
-                shadowColor="black"
-                shadowOffset={{
-                  width: 0,
-                  height: 3,
-                }}
-                shadowOpacity={0.3}
-                elevation={2}
+                paddingRight="s"
               >
-                <IotSymbol color="black" />
+                <IotSymbol color={colors.iotGreen} />
                 <Text variant="body2Medium" marginLeft="xs" color="iotGreen">
                   {pendingIotRewardsString}
                 </Text>
               </Box>
+            )}
+          </Box>
+        </Box>
+        <Box
+          flex={1}
+          paddingHorizontal="m"
+          paddingBottom="ms"
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          gap={4}
+        >
+          <Box
+            flex={1}
+            flexDirection="row"
+            padding="s"
+            backgroundColor="black600"
+            borderRadius="m"
+            justifyContent="space-between"
+            position="relative"
+          >
+            <Box
+              flexDirection="row"
+              alignItems="center"
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              gap={8}
+            >
+              <IotSymbol color={colors.flamenco} />
+              <MobileSymbol color={colors.flamenco} />
+              <Text variant="body2" color="flamenco">
+                Destination
+              </Text>
             </Box>
-          )}
+            <Text variant="body1">
+              {ellipsizeAddress('2AdZQmGikAMWahuJRb27PGABQyF6iyQ8aUUYyDDwRRG6')}
+            </Text>
+          </Box>
         </Box>
       </TouchableOpacityBox>
     </ReAnimatedBox>

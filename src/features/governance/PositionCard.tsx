@@ -633,7 +633,7 @@ export const PositionCard = ({
     <>
       {isLoading && (
         <Box
-          backgroundColor="secondaryBackground"
+          backgroundColor="surfaceSecondary"
           borderRadius="l"
           padding="m"
           paddingHorizontal="xl"
@@ -660,7 +660,7 @@ export const PositionCard = ({
       {!isLoading && (
         <>
           <ReAnimatedBox
-            backgroundColor="secondaryBackground"
+            backgroundColor="surfaceSecondary"
             borderRadius="l"
             entering={FadeIn}
             exiting={FadeOut}

@@ -126,7 +126,6 @@ const HotspotList = () => {
   const renderHeader = useCallback(() => {
     return (
       <Box
-        marginHorizontal="s"
         marginTop="m"
         marginBottom="s"
         flexDirection="column"

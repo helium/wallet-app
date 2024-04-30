@@ -1054,7 +1054,7 @@ export const getHotspotPendingRewards = async (
 ): Promise<
   {
     id: string
-    pendingRewards: Record<string, string> | undefined
+    pendingRewards: { [key: string]: string }
   }[]
 > => {
   const program = await initLazy(provider)
@@ -1105,7 +1105,7 @@ export const getHotspotRecipients = async (
 ): Promise<
   {
     id: string
-    recipients: Record<string, RecipientV0> | undefined
+    recipients: { [key: string]: RecipientV0 | undefined }
   }[]
 > => {
   const program = await initLazy(provider)

@@ -288,7 +288,7 @@ export const ProposalScreen = () => {
               <Box
                 flexGrow={1}
                 justifyContent="center"
-                backgroundColor="secondaryBackground"
+                backgroundColor="surfaceSecondary"
                 borderRadius="l"
                 padding="m"
               >
@@ -303,7 +303,7 @@ export const ProposalScreen = () => {
                         backgroundColor={
                           tag.toLowerCase().includes('temp check')
                             ? 'orange500'
-                            : 'surfaceSecondary'
+                            : 'black600'
                         }
                         borderRadius="m"
                       >
@@ -379,7 +379,7 @@ export const ProposalScreen = () => {
                   </Box>
                   {showVoteResults && votingResults?.totalVotes.gt(new BN(0)) && (
                     <Box
-                      backgroundColor="secondaryBackground"
+                      backgroundColor="surfaceSecondary"
                       borderRadius="l"
                       paddingTop="m"
                     >
@@ -447,7 +447,7 @@ export const ProposalScreen = () => {
                     justifyContent="space-between"
                     alignItems="center"
                     flexGrow={1}
-                    backgroundColor="secondaryBackground"
+                    backgroundColor="surfaceSecondary"
                     borderRadius="l"
                     padding="m"
                     marginTop="m"
@@ -467,7 +467,7 @@ export const ProposalScreen = () => {
                 <Box
                   flexGrow={1}
                   justifyContent="center"
-                  backgroundColor="secondaryBackground"
+                  backgroundColor="surfaceSecondary"
                   borderRadius="l"
                   padding="m"
                   marginTop="m"
@@ -508,7 +508,7 @@ export const ProposalScreen = () => {
               <Box
                 flexGrow={1}
                 justifyContent="center"
-                backgroundColor="secondaryBackground"
+                backgroundColor="surfaceSecondary"
                 borderRadius="l"
                 padding="m"
                 marginTop="m"

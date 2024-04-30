@@ -6,7 +6,6 @@ import Box from '@components/Box'
 import ImageBox from '@components/ImageBox'
 import ListItem from '@components/ListItem'
 import Text from '@components/Text'
-import TouchableContainer from '@components/TouchableContainer'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { makerApprovalKey } from '@helium/helium-entity-manager-sdk'
 import { useMint } from '@helium/helium-react-hooks'
@@ -144,6 +143,7 @@ export const HotspotMapHotspotDetails = ({
   network: NetworkType
 }) => {
   const { t } = useTranslation()
+  const colors = useColors()
   const navigation = useNavigation<CollectableNavigationProp>()
   const { anchorProvider } = useSolana()
   const { loading: loadingMeta, hotspotWithMeta } =
@@ -558,7 +558,7 @@ export const HotspotMapHotspotDetails = ({
             </>
           ) : (
             <>
-              <TouchableContainer
+              <TouchableOpacityBox
                 alignItems="center"
                 flex={1}
                 flexDirection="row"
@@ -594,7 +594,7 @@ export const HotspotMapHotspotDetails = ({
                       paddingRight="s"
                       flexDirection="row"
                     >
-                      <IotSymbol color="black" />
+                      <IotSymbol color={colors.iotGreen} />
                       <Text
                         variant="body2Medium"
                         marginLeft="s"
@@ -612,7 +612,7 @@ export const HotspotMapHotspotDetails = ({
                       paddingRight="s"
                       flexDirection="row"
                     >
-                      <MobileSymbol color="black" />
+                      <MobileSymbol color={colors.mobileBlue} />
                       <Text
                         variant="body2Medium"
                         marginLeft="s"
@@ -623,7 +623,7 @@ export const HotspotMapHotspotDetails = ({
                     </Box>
                   </Box>
                 </Box>
-              </TouchableContainer>
+              </TouchableOpacityBox>
               <ListItem
                 title={t('collectablesScreen.hotspots.viewInExplorer')}
                 onPress={handleViewInExplorer}

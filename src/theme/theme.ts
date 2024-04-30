@@ -104,7 +104,7 @@ const palette = {
   black300: '#464646',
   black400: '#333333',
   black500: '#2B2B2B',
-  black600: '#313131',
+  black600: '#212121',
   black650: '#191919',
   black700: '#161616',
   black750: '#1A1A1A',
