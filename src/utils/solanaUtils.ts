@@ -1345,6 +1345,17 @@ export async function annotateWithPendingRewards(
     true,
   )
 
+  const rewardRecipients = await getHotspotRecipients(provider, hotspots)
+  const rewardRecipientsById: {
+    [key: string]: { [key: string]: RecipientV0 }
+  } = rewardRecipients.reduce(
+    (acc, item) => ({
+      ...acc,
+      [item.id]: item.recipients,
+    }),
+    {},
+  )
+
   return hotspots.map((hotspot, index) => {
     const entityKey = entityKeys[index]
 
@@ -1354,6 +1365,7 @@ export async function annotateWithPendingRewards(
         [Mints.MOBILE]: mobileRewards[entityKey],
         [Mints.IOT]: iotRewards[entityKey],
       },
+      rewardRecipients: rewardRecipientsById[hotspot.id] || {},
     } as HotspotWithPendingRewards
   })
 }

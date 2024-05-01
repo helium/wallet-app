@@ -2,7 +2,10 @@ import CopyAddress from '@assets/images/copyAddress.svg'
 import Hex from '@assets/images/hex.svg'
 import IotSymbol from '@assets/images/iotSymbol.svg'
 import MobileSymbol from '@assets/images/mobileSymbol.svg'
+import { ReAnimatedBlurBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
+import CircleLoader from '@components/CircleLoader'
+import { DelayedFadeIn } from '@components/FadeInOut'
 import ImageBox from '@components/ImageBox'
 import ListItem from '@components/ListItem'
 import Text from '@components/Text'
@@ -15,6 +18,7 @@ import useCopyText from '@hooks/useCopyText'
 import { useEntityKey } from '@hooks/useEntityKey'
 import { getExplorerUrl, useExplorer } from '@hooks/useExplorer'
 import { useHotspotAddress } from '@hooks/useHotspotAddress'
+import { useHotspotWithMetaAndRewards } from '@hooks/useHotspotWithMeta'
 import { IotHotspotInfoV0, useIotInfo } from '@hooks/useIotInfo'
 import { useMaker } from '@hooks/useMaker'
 import { useMakerApproval } from '@hooks/useMakerApproval'
@@ -22,6 +26,7 @@ import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { MobileHotspotInfoV0, useMobileInfo } from '@hooks/useMobileInfo'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { useNavigation } from '@react-navigation/native'
+import { PublicKey } from '@solana/web3.js'
 import { useColors } from '@theme/themeHooks'
 import { ellipsizeAddress, formatLargeNumber } from '@utils/accountUtils'
 import { Explorer } from '@utils/walletApiV2'
@@ -32,10 +37,7 @@ import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert, AlertButton, Linking } from 'react-native'
 import { SvgUri } from 'react-native-svg'
-import { ReAnimatedBlurBox } from '@components/AnimatedBox'
-import CircleLoader from '@components/CircleLoader'
-import { DelayedFadeIn } from '@components/FadeInOut'
-import { useHotspotWithMetaAndRewards } from '@hooks/useHotspotWithMeta'
+import { removeDashAndCapitalize } from '@utils/hotspotNftsUtils'
 import { useSolana } from '../../solana/SolanaProvider'
 import { CompressedNFT } from '../../types/solana'
 import { IOT_CONFIG_KEY, Mints, MOBILE_CONFIG_KEY } from '../../utils/constants'
@@ -243,6 +245,38 @@ export const HotspotMapHotspotDetails = ({
     [hasIotRewards, hasMobileRewards],
   )
 
+  const mobileRecipient = useMemo(
+    () => hotspotWithMeta?.rewardRecipients?.[Mints.MOBILE],
+    [hotspotWithMeta],
+  )
+
+  const iotRecipient = useMemo(
+    () => hotspotWithMeta?.rewardRecipients?.[Mints.IOT],
+    [hotspotWithMeta],
+  )
+
+  const hasIotRecipient = useMemo(
+    () =>
+      iotRecipient?.destination &&
+      iotRecipient.destination.equals(PublicKey.default),
+    [iotRecipient],
+  )
+
+  const hasMobileRecipient = useMemo(
+    () =>
+      mobileRecipient?.destination &&
+      mobileRecipient.destination.equals(PublicKey.default),
+    [mobileRecipient],
+  )
+
+  const recipientsAreDifferent = useMemo(
+    () =>
+      iotRecipient?.destination &&
+      mobileRecipient?.destination &&
+      !iotRecipient?.destination.equals(mobileRecipient?.destination),
+    [iotRecipient, mobileRecipient],
+  )
+
   const isLoading = useMemo(
     () => mplxLoading || explorerLoading || makerLoading || loadingMeta,
     [mplxLoading, explorerLoading, makerLoading, loadingMeta],
@@ -440,7 +474,7 @@ export const HotspotMapHotspotDetails = ({
                     numberOfLines={1}
                     adjustsFontSizeToFit
                   >
-                    {hotspot.content.metadata.name}
+                    {removeDashAndCapitalize(hotspot.content.metadata.name)}
                   </Text>
                 </Box>
                 <Box flex={1} flexDirection="row" alignItems="center">
@@ -559,9 +593,6 @@ export const HotspotMapHotspotDetails = ({
           ) : (
             <>
               <TouchableOpacityBox
-                alignItems="center"
-                flex={1}
-                flexDirection="row"
                 paddingVertical="m"
                 borderBottomColor="black900"
                 borderBottomWidth={1}
@@ -623,6 +654,142 @@ export const HotspotMapHotspotDetails = ({
                     </Box>
                   </Box>
                 </Box>
+                {!recipientsAreDifferent ? (
+                  <>
+                    {(hasIotRecipient || hasMobileRecipient) && (
+                      <Box
+                        flex={1}
+                        marginTop="s"
+                        paddingHorizontal="m"
+                        paddingBottom="ms"
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        gap={4}
+                      >
+                        <Box
+                          flex={1}
+                          flexDirection="row"
+                          padding="s"
+                          backgroundColor="black600"
+                          borderRadius="m"
+                          justifyContent="space-between"
+                          position="relative"
+                        >
+                          <Box
+                            flexDirection="row"
+                            alignItems="center"
+                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                            // @ts-ignore
+                            gap={8}
+                          >
+                            {hasIotRecipient && (
+                              <IotSymbol color={colors.flamenco} />
+                            )}
+                            {hasMobileRecipient && (
+                              <MobileSymbol color={colors.flamenco} />
+                            )}
+                            <Text variant="body2" color="flamenco">
+                              Destination
+                            </Text>
+                          </Box>
+                          <Text variant="body1">
+                            {ellipsizeAddress(
+                              new PublicKey(
+                                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+                                iotRecipient?.destination!,
+                              ).toBase58(),
+                            )}
+                          </Text>
+                        </Box>
+                      </Box>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {hasIotRecipient && (
+                      <Box
+                        flex={1}
+                        paddingHorizontal="m"
+                        paddingBottom="ms"
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        gap={4}
+                      >
+                        <Box
+                          flex={1}
+                          flexDirection="row"
+                          padding="s"
+                          backgroundColor="black600"
+                          borderRadius="m"
+                          justifyContent="space-between"
+                          position="relative"
+                        >
+                          <Box
+                            flexDirection="row"
+                            alignItems="center"
+                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                            // @ts-ignore
+                            gap={8}
+                          >
+                            <IotSymbol color={colors.flamenco} />
+                            <Text variant="body2" color="flamenco">
+                              Destination
+                            </Text>
+                          </Box>
+                          <Text variant="body1">
+                            {ellipsizeAddress(
+                              new PublicKey(
+                                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+                                iotRecipient?.destination!,
+                              ).toBase58(),
+                            )}
+                          </Text>
+                        </Box>
+                      </Box>
+                    )}
+                    {hasMobileRecipient && (
+                      <Box
+                        flex={1}
+                        paddingHorizontal="m"
+                        paddingBottom="ms"
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        gap={4}
+                      >
+                        <Box
+                          flex={1}
+                          flexDirection="row"
+                          padding="s"
+                          backgroundColor="black600"
+                          borderRadius="m"
+                          justifyContent="space-between"
+                          position="relative"
+                        >
+                          <Box
+                            flexDirection="row"
+                            alignItems="center"
+                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                            // @ts-ignore
+                            gap={8}
+                          >
+                            <MobileSymbol color={colors.flamenco} />
+                            <Text variant="body2" color="flamenco">
+                              Destination
+                            </Text>
+                          </Box>
+                          <Text variant="body1">
+                            {ellipsizeAddress(
+                              new PublicKey(
+                                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+                                mobileRecipient?.destination!,
+                              ).toBase58(),
+                            )}
+                          </Text>
+                        </Box>
+                      </Box>
+                    )}
+                  </>
+                )}
               </TouchableOpacityBox>
               <ListItem
                 title={t('collectablesScreen.hotspots.viewInExplorer')}
