@@ -1,48 +1,48 @@
-import React, { useCallback, useMemo, useRef, useState, memo } from 'react'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import {
-  ScrollView,
-  LogBox,
-  NativeSyntheticEvent,
-  TextInputEndEditingEventData,
-  KeyboardAvoidingView,
-} from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
-import 'text-encoding-polyfill'
-import { useTranslation } from 'react-i18next'
-import { useAsync } from 'react-async-hook'
-import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 import ArrowRight from '@assets/images/arrowRight.svg'
-import Menu from '@assets/images/menu.svg'
 import InfoIcon from '@assets/images/info.svg'
-import SafeAreaBox from '@components/SafeAreaBox'
-import { DelayedFadeIn } from '@components/FadeInOut'
-import Box from '@components/Box'
-import ImageBox from '@components/ImageBox'
-import ButtonPressable from '@components/ButtonPressable'
-import Text from '@components/Text'
-import BackScreen from '@components/BackScreen'
-import { useColors, useSpacing } from '@theme/themeHooks'
-import TextInput from '@components/TextInput'
+import Menu from '@assets/images/menu.svg'
 import AddressBookSelector, {
   AddressBookRef,
 } from '@components/AddressBookSelector'
-import TextTransform from '@components/TextTransform'
 import { ReAnimatedBox } from '@components/AnimatedBox'
+import BackScreen from '@components/BackScreen'
+import Box from '@components/Box'
+import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
-import { Collectable, CompressedNFT } from '../../types/solana'
-import { solAddressIsValid } from '../../utils/accountUtils'
-import { createTransferCollectableMessage } from '../../utils/solanaUtils'
+import { DelayedFadeIn } from '@components/FadeInOut'
+import ImageBox from '@components/ImageBox'
+import SafeAreaBox from '@components/SafeAreaBox'
+import Text from '@components/Text'
+import TextInput from '@components/TextInput'
+import TextTransform from '@components/TextTransform'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
+import { useColors, useSpacing } from '@theme/themeHooks'
+import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
+import { useAsync } from 'react-async-hook'
+import { useTranslation } from 'react-i18next'
+import {
+  KeyboardAvoidingView,
+  LogBox,
+  NativeSyntheticEvent,
+  ScrollView,
+  TextInputEndEditingEventData,
+} from 'react-native'
+import { Edge } from 'react-native-safe-area-context'
+import 'text-encoding-polyfill'
+import useSubmitTxn from '../../hooks/useSubmitTxn'
+import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
-import * as Logger from '../../utils/logger'
+import { Collectable, CompressedNFT } from '../../types/solana'
+import { solAddressIsValid } from '../../utils/accountUtils'
 import { ww } from '../../utils/layout'
+import * as Logger from '../../utils/logger'
+import { createTransferCollectableMessage } from '../../utils/solanaUtils'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import useSubmitTxn from '../../hooks/useSubmitTxn'
-import { useSolana } from '../../solana/SolanaProvider'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',

@@ -16,7 +16,7 @@ import BN from 'bn.js'
 import React, { useMemo } from 'react'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useColors } from '@theme/themeHooks'
-import { PublicKey } from '@solana/web3.js'
+import { HotspotRewardsRecipients } from '@components/HotspotRewardsRecipients'
 import { HotspotWithPendingRewards } from '../../types/solana'
 import { Mints } from '../../utils/constants'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
@@ -86,38 +86,6 @@ const HotspotListItem = ({
   const hasMobileRewards = useMemo(
     () => pendingMobileRewards && pendingMobileRewards.gt(new BN(0)),
     [pendingMobileRewards],
-  )
-
-  const mobileRecipient = useMemo(
-    () => hotspot.rewardRecipients?.[Mints.MOBILE],
-    [hotspot.rewardRecipients],
-  )
-
-  const iotRecipient = useMemo(
-    () => hotspot.rewardRecipients?.[Mints.IOT],
-    [hotspot.rewardRecipients],
-  )
-
-  const hasIotRecipient = useMemo(
-    () =>
-      iotRecipient?.destination &&
-      !iotRecipient.destination.equals(PublicKey.default),
-    [iotRecipient],
-  )
-
-  const hasMobileRecipient = useMemo(
-    () =>
-      mobileRecipient?.destination &&
-      !mobileRecipient.destination.equals(PublicKey.default),
-    [mobileRecipient],
-  )
-
-  const recipientsAreDifferent = useMemo(
-    () =>
-      iotRecipient?.destination &&
-      mobileRecipient?.destination &&
-      !iotRecipient?.destination.equals(mobileRecipient?.destination),
-    [iotRecipient, mobileRecipient],
   )
 
   return (
@@ -208,133 +176,9 @@ const HotspotListItem = ({
             )}
           </Box>
         </Box>
-        {!recipientsAreDifferent ? (
-          <>
-            {(hasIotRecipient || hasMobileRecipient) && (
-              <Box
-                flex={1}
-                paddingHorizontal="m"
-                paddingBottom="ms"
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                gap={4}
-              >
-                <Box
-                  flex={1}
-                  flexDirection="row"
-                  padding="s"
-                  backgroundColor="black600"
-                  borderRadius="m"
-                  justifyContent="space-between"
-                  position="relative"
-                >
-                  <Box
-                    flexDirection="row"
-                    alignItems="center"
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    gap={8}
-                  >
-                    {hasIotRecipient && <IotSymbol color={colors.flamenco} />}
-                    {hasMobileRecipient && (
-                      <MobileSymbol color={colors.flamenco} />
-                    )}
-                    <Text variant="body2" color="flamenco">
-                      Destination
-                    </Text>
-                  </Box>
-                  <Text variant="body1">
-                    {ellipsizeAddress(
-                      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-                      new PublicKey(iotRecipient?.destination!).toBase58(),
-                    )}
-                  </Text>
-                </Box>
-              </Box>
-            )}
-          </>
-        ) : (
-          <>
-            {hasIotRecipient && (
-              <Box
-                flex={1}
-                paddingHorizontal="m"
-                paddingBottom="ms"
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                gap={4}
-              >
-                <Box
-                  flex={1}
-                  flexDirection="row"
-                  padding="s"
-                  backgroundColor="black600"
-                  borderRadius="m"
-                  justifyContent="space-between"
-                  position="relative"
-                >
-                  <Box
-                    flexDirection="row"
-                    alignItems="center"
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    gap={8}
-                  >
-                    <IotSymbol color={colors.flamenco} />
-                    <Text variant="body2" color="flamenco">
-                      Destination
-                    </Text>
-                  </Box>
-                  <Text variant="body1">
-                    {ellipsizeAddress(
-                      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-                      new PublicKey(iotRecipient?.destination!).toBase58(),
-                    )}
-                  </Text>
-                </Box>
-              </Box>
-            )}
-            {hasMobileRecipient && (
-              <Box
-                flex={1}
-                paddingHorizontal="m"
-                paddingBottom="ms"
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                gap={4}
-              >
-                <Box
-                  flex={1}
-                  flexDirection="row"
-                  padding="s"
-                  backgroundColor="black600"
-                  borderRadius="m"
-                  justifyContent="space-between"
-                  position="relative"
-                >
-                  <Box
-                    flexDirection="row"
-                    alignItems="center"
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    gap={8}
-                  >
-                    <MobileSymbol color={colors.flamenco} />
-                    <Text variant="body2" color="flamenco">
-                      Destination
-                    </Text>
-                  </Box>
-                  <Text variant="body1">
-                    {ellipsizeAddress(
-                      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-                      new PublicKey(mobileRecipient?.destination!).toBase58(),
-                    )}
-                  </Text>
-                </Box>
-              </Box>
-            )}
-          </>
-        )}
+        <Box position="relative" top={-14} paddingHorizontal="m">
+          <HotspotRewardsRecipients hotspot={hotspot} />
+        </Box>
       </TouchableOpacityBox>
     </ReAnimatedBox>
   )

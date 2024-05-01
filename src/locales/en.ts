@@ -395,6 +395,12 @@ export default {
       COMPRESSED_NFT_MINT: 'Compressed NFT Minted!',
     },
   },
+  changeRewardsRecipientScreen: {
+    title: 'Update Recipient',
+    description: 'Update recipient of this hotspots rewards',
+    submit: 'Update Recipient',
+    newRecipient: 'New Recipient',
+  },
   assertLocationScreen: {
     title: 'Assert Location',
     whichLocation: 'Which location do you want to assert?',
