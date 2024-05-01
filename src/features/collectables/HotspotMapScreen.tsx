@@ -85,6 +85,38 @@ const HotspotMapScreen = () => {
   const [activeHotspotIndex, setActiveHotspotIndex] = useState(0)
   const [legendVisible, setLegendVisible] = useState(false)
   const { hotspots, fetchAll, loading, onEndReached } = useHotspots()
+  const [initialUserLocation, setInitialUserLocation] = useState<number[]>()
+  const [initialCenterSet, setInitalCenter] = useState(false)
+
+  useEffect(() => {
+    const coords = userLocationRef?.current?.state?.coordinates
+    if (!initialUserLocation && coords) {
+      setInitialUserLocation(coords)
+    }
+  }, [
+    initialUserLocation,
+    setInitialUserLocation,
+    userLocationRef?.current?.state?.coordinates,
+  ])
+
+  const initialCenter = useMemo(() => {
+    return initialUserLocation || INITIAL_MAP_VIEW_STATE.centerCoordinate
+  }, [initialUserLocation])
+
+  useEffect(() => {
+    if (
+      initialCenter &&
+      JSON.stringify(initialCenter) !==
+        JSON.stringify(INITIAL_MAP_VIEW_STATE.centerCoordinate) &&
+      !initialCenterSet
+    ) {
+      setInitalCenter(true)
+      cameraRef.current?.setCamera({
+        centerCoordinate: initialCenter,
+        animationDuration: 0,
+      })
+    }
+  }, [initialCenter, cameraRef, initialCenterSet, setInitalCenter])
 
   // - fetch all hotspots
   useEffect(() => {
@@ -365,6 +397,7 @@ const HotspotMapScreen = () => {
             map={mapRef}
             camera={cameraRef}
             userLocation={userLocationRef}
+            centerCoordinate={initialCenter}
             mapProps={{
               onRegionDidChange: handleRegionChanged,
               onPress: () => {

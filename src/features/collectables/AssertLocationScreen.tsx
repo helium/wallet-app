@@ -18,7 +18,7 @@ import {
   TextInput,
 } from '@components'
 import Map from '@components/map/Map'
-import { MAX_MAP_ZOOM } from '@components/map/utils'
+import { INITIAL_MAP_VIEW_STATE, MAX_MAP_ZOOM } from '@components/map/utils'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { NetworkType } from '@helium/onboarding'
 import { IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
@@ -129,6 +129,7 @@ const AssertLocationScreen = () => {
   }, [iotLocation, mobileLocation])
 
   const [initialUserLocation, setInitialUserLocation] = useState<number[]>()
+  const [initialCenterSet, setInitalCenter] = useState(false)
 
   useEffect(() => {
     const coords = userLocationRef?.current?.state?.coordinates
@@ -145,10 +146,25 @@ const AssertLocationScreen = () => {
     return (
       iotLocation ||
       mobileLocation ||
-      initialUserLocation || [-122.419418, 37.774929]
+      initialUserLocation ||
+      INITIAL_MAP_VIEW_STATE.centerCoordinate
     )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialUserLocation, iotLocation, mobileLocation])
+
+  useEffect(() => {
+    if (
+      initialCenter &&
+      JSON.stringify(initialCenter) !==
+        JSON.stringify(INITIAL_MAP_VIEW_STATE.centerCoordinate) &&
+      !initialCenterSet
+    ) {
+      setInitalCenter(true)
+      cameraRef.current?.setCamera({
+        centerCoordinate: initialCenter,
+        animationDuration: 0,
+      })
+    }
+  }, [initialCenter, cameraRef, initialCenterSet, setInitalCenter])
 
   useEffect(() => {
     if (!elevGainVisible) {

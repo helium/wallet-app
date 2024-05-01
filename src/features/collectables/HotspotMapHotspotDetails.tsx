@@ -37,6 +37,7 @@ import { ReAnimatedBlurBox } from '@components/AnimatedBox'
 import CircleLoader from '@components/CircleLoader'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import { useHotspotWithMetaAndRewards } from '@hooks/useHotspotWithMeta'
+import { removeDashAndCapitalize } from '@utils/hotspotNftsUtils'
 import { useSolana } from '../../solana/SolanaProvider'
 import { CompressedNFT } from '../../types/solana'
 import { IOT_CONFIG_KEY, Mints, MOBILE_CONFIG_KEY } from '../../utils/constants'
@@ -440,7 +441,7 @@ export const HotspotMapHotspotDetails = ({
                     numberOfLines={1}
                     adjustsFontSizeToFit
                   >
-                    {hotspot.content.metadata.name}
+                    {removeDashAndCapitalize(hotspot.content.metadata.name)}
                   </Text>
                 </Box>
                 <Box flex={1} flexDirection="row" alignItems="center">
