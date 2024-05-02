@@ -5,6 +5,7 @@ import {
   populateMissingDraftInfo,
   sendAndConfirmWithRetry,
   toVersionedTx,
+  truthy,
 } from '@helium/spl-utils'
 import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
@@ -12,6 +13,7 @@ import i18n from '@utils/i18n'
 import * as solUtils from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { useCallback } from 'react'
+import { recipientKey } from '@helium/lazy-distributor-sdk'
 import { useSolana } from '../solana/SolanaProvider'
 import { useWalletSign } from '../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
@@ -24,6 +26,7 @@ import {
   sendJupiterSwap,
   sendMintDataCredits,
   sendTreasurySwap,
+  updateRewardsDestinations,
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import {
@@ -469,10 +472,6 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      if (!currentAccount) {
-        throw new Error(t('errors.account'))
-      }
-
       const data = await getAssertData({
         networkDetails: [
           {
@@ -557,6 +556,94 @@ export default () => {
     ],
   )
 
+  const submitUpdateRewardsDestination = useCallback(
+    async ({
+      lazyDistributors,
+      destination,
+      assetId,
+      payer,
+    }: {
+      lazyDistributors: PublicKey[]
+      destination: string
+      assetId: string
+      payer?: string
+    }) => {
+      if (
+        !anchorProvider ||
+        !currentAccount?.solanaAddress ||
+        !walletSignBottomSheetRef
+      ) {
+        throw new Error(t('errors.account'))
+      }
+
+      const { connection } = anchorProvider
+      const assetPk = new PublicKey(assetId)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const payeePk = new PublicKey(payer || currentAccount.solanaAddress!)
+      const destinationPk = new PublicKey(destination)
+      const destinationExists = Boolean(
+        await connection.getAccountInfo(destinationPk),
+      )
+
+      const txns = (
+        await Promise.all(
+          lazyDistributors.map(async (lazy) => {
+            const [recipientPk] = recipientKey(lazy, assetPk)
+            const recipientExists = Boolean(
+              await connection.getAccountInfo(recipientPk),
+            )
+
+            if (recipientExists) {
+              return populateMissingDraftInfo(
+                anchorProvider.connection,
+                await solUtils.createUpdateCompressionDestinationTxn(
+                  anchorProvider,
+                  lazy,
+                  payeePk,
+                  assetPk,
+                  destinationPk,
+                ),
+              )
+            }
+          }),
+        )
+      ).filter(truthy)
+
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        warning: destinationExists
+          ? ''
+          : t('transactions.recipientNonExistent'),
+        additionalMessage: t('transactions.signPaymentTxn'),
+        serializedTxs: txns.map((tx) =>
+          Buffer.from(toVersionedTx(tx).serialize()),
+        ),
+      })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
+      }
+
+      dispatch(
+        updateRewardsDestinations({
+          txns,
+          account: currentAccount,
+          cluster,
+          anchorProvider,
+        }),
+      )
+    },
+    [
+      t,
+      dispatch,
+      cluster,
+      anchorProvider,
+      currentAccount,
+      walletSignBottomSheetRef,
+    ],
+  )
+
   return {
     submitPayment,
     submitCollectable,
@@ -568,5 +655,6 @@ export default () => {
     submitMintDataCredits,
     submitDelegateDataCredits,
     submitUpdateEntityInfo,
+    submitUpdateRewardsDestination,
   }
 }

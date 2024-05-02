@@ -6,6 +6,7 @@ import { PublicKey } from '@solana/web3.js'
 import { useColors } from '@theme/themeHooks'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import React, { useMemo } from 'react'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { Mints } from '../utils/constants'
 import { HotspotWithPendingRewards } from '../types/solana'
 
@@ -15,6 +16,7 @@ export const HotspotRewardsRecipients = ({
   hotspot: HotspotWithPendingRewards
 }) => {
   const colors = useColors()
+  const wallet = useCurrentWallet()
   const mobileRecipient = useMemo(
     () => hotspot?.rewardRecipients?.[Mints.MOBILE],
     [hotspot],
@@ -28,15 +30,19 @@ export const HotspotRewardsRecipients = ({
   const hasIotRecipient = useMemo(
     () =>
       iotRecipient?.destination &&
+      wallet &&
+      !new PublicKey(iotRecipient.destination).equals(wallet) &&
       !new PublicKey(iotRecipient.destination).equals(PublicKey.default),
-    [iotRecipient],
+    [iotRecipient, wallet],
   )
 
   const hasMobileRecipient = useMemo(
     () =>
       mobileRecipient?.destination &&
+      wallet &&
+      !new PublicKey(mobileRecipient.destination).equals(wallet) &&
       !new PublicKey(mobileRecipient.destination).equals(PublicKey.default),
-    [mobileRecipient],
+    [mobileRecipient, wallet],
   )
 
   const recipientsAreDifferent = useMemo(
@@ -48,6 +54,10 @@ export const HotspotRewardsRecipients = ({
       ),
     [iotRecipient, mobileRecipient],
   )
+
+  const hasRecipients = hasIotRecipient || hasMobileRecipient
+
+  if (!hasRecipients) return null
 
   return !recipientsAreDifferent ? (
     <>

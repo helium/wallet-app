@@ -12,7 +12,6 @@ import { HotspotRewardsRecipients } from '@components/HotspotRewardsRecipients'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
-import { useEntityKey } from '@hooks/useEntityKey'
 import useSubmitTxn from '@hooks/useSubmitTxn'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { CSAccount } from '@storage/cloudStorage'
@@ -27,13 +26,14 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
+import { IOT_LAZY_KEY, MOBILE_LAZY_KEY } from '@utils/constants'
+import { PublicKey } from '@solana/web3.js'
 import * as Logger from '../../utils/logger'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
 
-const BUTTON_HEIGHT = 65
 type Route = RouteProp<
   CollectableStackParamList,
   'ChangeRewardsRecipientScreen'
@@ -43,7 +43,6 @@ const ChangeRewardsRecipientScreen = () => {
   const route = useRoute<Route>()
   const nav = useNavigation<CollectableNavigationProp>()
   const { hotspot } = route.params
-  const entityKey = useEntityKey(hotspot)
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])
   const addressBookRef = useRef<AddressBookRef>(null)
@@ -52,7 +51,7 @@ const ChangeRewardsRecipientScreen = () => {
   const [updating, setUpdating] = useState(false)
   const [hasError, setHasError] = useState(false)
   const [transactionError, setTransactionError] = useState<string>()
-  // const { submitUpdateEntityInfo } = useSubmitTxn()
+  const { submitUpdateRewardsDestination } = useSubmitTxn()
 
   const handleAddressBookSelected = useCallback(() => {
     addressBookRef?.current?.showAddressBook({})
@@ -87,18 +86,38 @@ const ChangeRewardsRecipientScreen = () => {
       return
     }
 
-    setUpdating(true)
-    setTransactionError(undefined)
-
     try {
-      console.log('Updating rewards recipient')
+      setUpdating(true)
+      setTransactionError(undefined)
+      await submitUpdateRewardsDestination({
+        lazyDistributors: [IOT_LAZY_KEY, MOBILE_LAZY_KEY],
+        destination: recipient,
+        assetId: hotspot.id,
+      })
       nav.goBack()
     } catch (error) {
       setUpdating(false)
       Logger.error(error)
       setTransactionError((error as Error).message)
     }
-  }, [recipient, setUpdating, nav])
+  }, [recipient, hotspot, setUpdating, nav, submitUpdateRewardsDestination])
+
+  const handleRemoveRecipient = useCallback(async () => {
+    try {
+      setUpdating(true)
+      setTransactionError(undefined)
+      await submitUpdateRewardsDestination({
+        lazyDistributors: [IOT_LAZY_KEY, MOBILE_LAZY_KEY],
+        destination: PublicKey.default.toBase58(),
+        assetId: hotspot.id,
+      })
+      nav.goBack()
+    } catch (error) {
+      setUpdating(false)
+      Logger.error(error)
+      setTransactionError((error as Error).message)
+    }
+  }, [hotspot, setUpdating, nav, submitUpdateRewardsDestination])
 
   const showError = useMemo(() => {
     if (hasError) return t('generic.notValidSolanaAddress')
@@ -163,45 +182,66 @@ const ChangeRewardsRecipientScreen = () => {
                     }}
                   />
                 </Box>
-                <Box
-                  flexDirection="row"
-                  justifyContent="center"
-                  alignItems="center"
-                  marginVertical="s"
-                  minHeight={40}
-                >
-                  {showError && (
-                    <Text variant="body3Medium" color="red500">
-                      {showError}
-                    </Text>
-                  )}
-                </Box>
-                <Box>
-                  <ButtonPressable
-                    height={BUTTON_HEIGHT}
-                    flexGrow={1}
-                    borderRadius="round"
-                    backgroundColor="white"
-                    backgroundColorOpacityPressed={0.7}
-                    backgroundColorDisabled="white"
-                    backgroundColorDisabledOpacity={0.0}
-                    titleColorDisabled="grey600"
-                    title={
-                      updating ? '' : t('changeRewardsRecipientScreen.submit')
-                    }
-                    titleColor="black"
-                    onPress={handleUpdateRecipient}
-                    TrailingComponent={
-                      updating ? (
-                        <CircleLoader loaderSize={20} color="black" />
-                      ) : undefined
-                    }
-                  />
-                </Box>
               </SafeAreaBox>
             </KeyboardAvoidingView>
           </TouchableWithoutFeedback>
         </AddressBookSelector>
+        <Box
+          flexDirection="row"
+          justifyContent="center"
+          alignItems="center"
+          minHeight={40}
+        >
+          {showError && (
+            <Text variant="body3Medium" color="red500">
+              {showError}
+            </Text>
+          )}
+        </Box>
+        <Box
+          flexDirection="row"
+          paddingHorizontal="m"
+          paddingBottom="m"
+          justifyContent="center"
+          alignItems="center"
+        >
+          {updating ? (
+            <Box padding="lm">
+              <CircleLoader loaderSize={24} color="white" />
+            </Box>
+          ) : (
+            <>
+              <ButtonPressable
+                flex={1}
+                fontSize={16}
+                borderRadius="round"
+                borderWidth={2}
+                borderColor="white"
+                backgroundColorOpacityPressed={0.7}
+                title={updating ? '' : t('generic.remove')}
+                titleColor="white"
+                titleColorPressed="black"
+                onPress={handleRemoveRecipient}
+              />
+              <Box paddingHorizontal="s" />
+              <ButtonPressable
+                flex={1}
+                fontSize={16}
+                borderRadius="round"
+                borderWidth={2}
+                borderColor="white"
+                backgroundColor="white"
+                backgroundColorOpacityPressed={0.7}
+                backgroundColorDisabled="surfaceSecondary"
+                backgroundColorDisabledOpacity={0.9}
+                titleColorDisabled="secondaryText"
+                title={updating ? '' : t('generic.update')}
+                titleColor="black"
+                onPress={handleUpdateRecipient}
+              />
+            </>
+          )}
+        </Box>
       </BackScreen>
     </ReAnimatedBox>
   )

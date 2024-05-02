@@ -30,6 +30,7 @@ import {
   MOBILE_MINT,
   TransactionDraft,
   getAsset,
+  proofArgsAndAccounts,
   searchAssetsWithPageInfo,
   sendAndConfirmWithRetry,
   toBN,
@@ -165,9 +166,7 @@ const govProgramId = new PublicKey(
 
 export const SolanaConnection = (sessionKey: string) =>
   ({
-    devnet: new WrappedConnection(
-      `${Config.DEVNET_RPC_URL}/?session-key=${sessionKey}`,
-    ),
+    devnet: new WrappedConnection(`${Config.DEVNET_RPC_URL}`),
     testnet: new WrappedConnection(clusterApiUrl('testnet')),
     'mainnet-beta': new WrappedConnection(
       `${Config.MAINNET_RPC_URL}/?session-key=${sessionKey}`,
@@ -1914,4 +1913,50 @@ function recursivelyConvertPubkeysToString(value: any): any {
     return newObj
   }
   return value
+}
+
+export const createUpdateCompressionDestinationTxn = async (
+  anchorProvider: AnchorProvider,
+  lazyDistributor: PublicKey,
+  payer: PublicKey,
+  assetId: PublicKey,
+  destination: PublicKey,
+): Promise<TransactionDraft> => {
+  const program = await initLazy(anchorProvider)
+  const {
+    asset: {
+      ownership: { owner },
+    },
+    args,
+    accounts,
+    remainingAccounts,
+  } = await proofArgsAndAccounts({
+    connection: program.provider.connection,
+    assetId,
+  })
+
+  const instructions: TransactionInstruction[] = []
+  instructions.push(
+    await program.methods
+      .updateCompressionDestinationV0({
+        ...args,
+      })
+      .accounts({
+        ...accounts,
+        owner,
+        recipient: recipientKey(lazyDistributor, assetId)[0],
+        destination: destination == null ? PublicKey.default : destination,
+      })
+      .remainingAccounts(remainingAccounts)
+      .instruction(),
+  )
+
+  return {
+    instructions: await withPriorityFees({
+      connection: anchorProvider.connection,
+      instructions,
+      feePayer: payer,
+    }),
+    feePayer: payer,
+  }
 }

@@ -134,6 +134,13 @@ type DelegateDataCreditsInput = {
   delegateDCTxn: TransactionDraft
 }
 
+type UpdateRewardsDestinationInput = {
+  account: CSAccount
+  cluster: Cluster
+  anchorProvider: AnchorProvider
+  txns: TransactionDraft[]
+}
+
 export const makePayment = createAsyncThunk(
   'solana/makePayment',
   async ({ account, cluster, anchorProvider, paymentTxns }: PaymentInput) => {
@@ -627,6 +634,36 @@ export const getTxns = createAsyncThunk(
   },
 )
 
+export const updateRewardsDestinations = createAsyncThunk(
+  'solana/updateRewardsDestinations',
+  async (
+    { account, anchorProvider, cluster, txns }: UpdateRewardsDestinationInput,
+    { dispatch },
+  ) => {
+    if (!account?.solanaAddress) throw new Error('No solana account found')
+    try {
+      const signatures = await bulkSendTransactions(
+        anchorProvider,
+        txns,
+        undefined,
+        10,
+        [],
+        MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
+      )
+
+      postPayment({ signatures, cluster })
+
+      // If the update is successful, we need to update the hotspots
+      dispatch(fetchHotspots({ account, anchorProvider, cluster }))
+
+      return { signatures }
+    } catch (error) {
+      Logger.error(error)
+      throw error
+    }
+  },
+)
+
 const solanaSlice = createSlice({
   name: 'solana',
   initialState,
@@ -849,6 +886,29 @@ const solanaSlice = createSlice({
       }
     })
     builder.addCase(makePayment.rejected, (state, action) => {
+      state.payment = {
+        success: false,
+        loading: false,
+        error: action.error,
+        signature: undefined,
+      }
+    })
+    builder.addCase(updateRewardsDestinations.pending, (state, _action) => {
+      state.payment = {
+        success: false,
+        loading: true,
+        error: undefined,
+        signature: undefined,
+      }
+    })
+    builder.addCase(updateRewardsDestinations.fulfilled, (state, _action) => {
+      state.payment = {
+        success: true,
+        loading: false,
+        error: undefined,
+      }
+    })
+    builder.addCase(updateRewardsDestinations.rejected, (state, action) => {
       state.payment = {
         success: false,
         loading: false,
