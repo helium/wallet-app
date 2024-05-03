@@ -26,7 +26,7 @@ import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { MobileHotspotInfoV0, useMobileInfo } from '@hooks/useMobileInfo'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { useNavigation } from '@react-navigation/native'
-import { useColors } from '@theme/themeHooks'
+import { useColors, useOpacity } from '@theme/themeHooks'
 import { ellipsizeAddress, formatLargeNumber } from '@utils/accountUtils'
 import { Explorer } from '@utils/walletApiV2'
 import BigNumber from 'bignumber.js'
@@ -37,7 +37,8 @@ import { useTranslation } from 'react-i18next'
 import { Alert, AlertButton, Linking } from 'react-native'
 import { SvgUri } from 'react-native-svg'
 import { removeDashAndCapitalize } from '@utils/hotspotNftsUtils'
-import { HotspotRewardsRecipients } from '@components/HotspotRewardsRecipients'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { PublicKey } from '@solana/web3.js'
 import { useSolana } from '../../solana/SolanaProvider'
 import { CompressedNFT } from '../../types/solana'
 import { IOT_CONFIG_KEY, Mints, MOBILE_CONFIG_KEY } from '../../utils/constants'
@@ -146,6 +147,7 @@ export const HotspotMapHotspotDetails = ({
 }) => {
   const { t } = useTranslation()
   const colors = useColors()
+  const wallet = useCurrentWallet()
   const navigation = useNavigation<CollectableNavigationProp>()
   const { anchorProvider } = useSolana()
   const { loading: loadingMeta, hotspotWithMeta } =
@@ -164,6 +166,7 @@ export const HotspotMapHotspotDetails = ({
   )?.group_value
   const collectionKey = usePublicKey(collection)
   const { primaryText } = useColors()
+  const { backgroundStyle: flamecoOpaque } = useOpacity('flamenco', 0.1)
 
   const { loading: mplxLoading, metadata: mplxMetadata } =
     useMetaplexMetadata(collectionKey)
@@ -243,6 +246,39 @@ export const HotspotMapHotspotDetails = ({
   const hasRewards = useMemo(
     () => hasIotRewards || hasMobileRewards,
     [hasIotRewards, hasMobileRewards],
+  )
+
+  const mobileRecipient = useMemo(
+    () => hotspotWithMeta?.rewardRecipients?.[Mints.MOBILE],
+    [hotspotWithMeta],
+  )
+
+  const iotRecipient = useMemo(
+    () => hotspotWithMeta?.rewardRecipients?.[Mints.IOT],
+    [hotspotWithMeta],
+  )
+
+  const hasIotRecipient = useMemo(
+    () =>
+      iotRecipient?.destination &&
+      wallet &&
+      !new PublicKey(iotRecipient.destination).equals(wallet) &&
+      !new PublicKey(iotRecipient.destination).equals(PublicKey.default),
+    [iotRecipient, wallet],
+  )
+
+  const hasMobileRecipient = useMemo(
+    () =>
+      mobileRecipient?.destination &&
+      wallet &&
+      !new PublicKey(mobileRecipient.destination).equals(wallet) &&
+      !new PublicKey(mobileRecipient.destination).equals(PublicKey.default),
+    [mobileRecipient, wallet],
+  )
+
+  const hasRecipientSet = useMemo(
+    () => hasIotRecipient || hasMobileRecipient,
+    [hasIotRecipient, hasMobileRecipient],
   )
 
   const isLoading = useMemo(
@@ -586,56 +622,97 @@ export const HotspotMapHotspotDetails = ({
                     // @ts-ignore
                     gap={4}
                   >
-                    <Box
-                      justifyContent="center"
-                      alignItems="center"
-                      backgroundColor="iotDarkGreen"
-                      borderRadius="xl"
-                      padding="xs"
-                      paddingRight="s"
-                      flexDirection="row"
-                    >
-                      <IotSymbol color={colors.iotGreen} />
-                      <Text
-                        variant="body2Medium"
-                        marginLeft="s"
-                        color="iotGreen"
+                    {!!hasMobileRewards && (
+                      <Box
+                        flexDirection="row"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        backgroundColor="mobileDarkBlue"
+                        borderRadius="m"
+                        paddingVertical="xs"
+                        paddingLeft="xs"
+                        paddingRight="s"
                       >
-                        {pendingIotRewardsString}
-                      </Text>
-                    </Box>
-                    <Box
-                      justifyContent="center"
-                      alignItems="center"
-                      backgroundColor="mobileDarkBlue"
-                      borderRadius="xl"
-                      padding="xs"
-                      paddingRight="s"
-                      flexDirection="row"
-                    >
-                      <MobileSymbol color={colors.mobileBlue} />
-                      <Text
-                        variant="body2Medium"
-                        marginLeft="s"
-                        color="mobileBlue"
+                        <MobileSymbol
+                          color={colors.mobileBlue}
+                          width={20}
+                          height={20}
+                        />
+                        <Text
+                          variant="body3Medium"
+                          marginLeft="s"
+                          color="mobileBlue"
+                        >
+                          {pendingMobileRewardsString}
+                        </Text>
+                      </Box>
+                    )}
+                    {!!hasIotRewards && (
+                      <Box
+                        flexDirection="row"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        backgroundColor="iotDarkGreen"
+                        borderRadius="m"
+                        paddingVertical="xs"
+                        paddingLeft="xs"
+                        paddingRight="s"
                       >
-                        {pendingMobileRewardsString}
-                      </Text>
-                    </Box>
+                        <IotSymbol
+                          color={colors.iotGreen}
+                          width={20}
+                          height={20}
+                        />
+                        <Text
+                          variant="body3Medium"
+                          marginLeft="s"
+                          color="iotGreen"
+                        >
+                          {pendingIotRewardsString}
+                        </Text>
+                      </Box>
+                    )}
                   </Box>
                 </Box>
-                {hotspotWithMeta && (
-                  <Box paddingHorizontal="m">
-                    <HotspotRewardsRecipients hotspot={hotspotWithMeta} />
-                  </Box>
-                )}
               </TouchableOpacityBox>
-              <ListItem
-                title="Change Recipient"
+              <TouchableOpacityBox
+                paddingVertical="m"
+                borderBottomColor="black900"
+                borderBottomWidth={1}
                 onPress={handleRecipientChange}
-                selected={false}
-                hasPressedState={false}
-              />
+              >
+                <Box
+                  flex={1}
+                  flexDirection="row"
+                  alignItems="center"
+                  marginHorizontal="m"
+                  justifyContent="space-between"
+                >
+                  <Text variant="subtitle3" opacity={!hasRewards ? 0.5 : 1}>
+                    Change Recipient
+                  </Text>
+                  {hasRecipientSet && (
+                    <Box flexDirection="row" alignItems="center">
+                      <Box
+                        flexDirection="row"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        borderRadius="m"
+                        paddingVertical="sx"
+                        paddingLeft="s"
+                        paddingRight="s"
+                        style={{
+                          ...flamecoOpaque,
+                        }}
+                      >
+                        <Text variant="body3Medium" color="flamenco">
+                          {t('changeRewardsRecipientScreen.set')}
+                        </Text>
+                      </Box>
+                    </Box>
+                  )}
+                </Box>
+              </TouchableOpacityBox>
               <ListItem
                 title={t('collectablesScreen.hotspots.viewInExplorer')}
                 onPress={handleViewInExplorer}

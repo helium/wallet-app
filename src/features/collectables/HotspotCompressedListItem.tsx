@@ -15,8 +15,10 @@ import BigNumber from 'bignumber.js'
 import BN from 'bn.js'
 import React, { useMemo } from 'react'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
-import { useColors } from '@theme/themeHooks'
-import { HotspotRewardsRecipients } from '@components/HotspotRewardsRecipients'
+import { useColors, useOpacity } from '@theme/themeHooks'
+import { PublicKey } from '@solana/web3.js'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { useTranslation } from 'react-i18next'
 import { HotspotWithPendingRewards } from '../../types/solana'
 import { Mints } from '../../utils/constants'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
@@ -34,7 +36,10 @@ const HotspotListItem = ({
   const {
     content: { metadata },
   } = hotspot
+  const { t } = useTranslation()
   const colors = useColors()
+  const wallet = useCurrentWallet()
+  const { backgroundStyle: flamecoOpaque } = useOpacity('flamenco', 0.1)
   const streetAddress = useHotspotAddress(hotspot)
 
   const { info: iotMint } = useMint(IOT_MINT)
@@ -88,6 +93,39 @@ const HotspotListItem = ({
     [pendingMobileRewards],
   )
 
+  const mobileRecipient = useMemo(
+    () => hotspot?.rewardRecipients?.[Mints.MOBILE],
+    [hotspot],
+  )
+
+  const iotRecipient = useMemo(
+    () => hotspot?.rewardRecipients?.[Mints.IOT],
+    [hotspot],
+  )
+
+  const hasIotRecipient = useMemo(
+    () =>
+      iotRecipient?.destination &&
+      wallet &&
+      !new PublicKey(iotRecipient.destination).equals(wallet) &&
+      !new PublicKey(iotRecipient.destination).equals(PublicKey.default),
+    [iotRecipient, wallet],
+  )
+
+  const hasMobileRecipient = useMemo(
+    () =>
+      mobileRecipient?.destination &&
+      wallet &&
+      !new PublicKey(mobileRecipient.destination).equals(wallet) &&
+      !new PublicKey(mobileRecipient.destination).equals(PublicKey.default),
+    [mobileRecipient, wallet],
+  )
+
+  const hasRecipientSet = useMemo(
+    () => hasIotRecipient || hasMobileRecipient,
+    [hasIotRecipient, hasMobileRecipient],
+  )
+
   return (
     <ReAnimatedBox
       backgroundColor="surfaceSecondary"
@@ -97,14 +135,33 @@ const HotspotListItem = ({
       exiting={FadeOut}
       {...rest}
     >
-      <TouchableOpacityBox onPress={() => onPress(hotspot)}>
-        <Box
-          flex={1}
-          flexDirection="row"
-          alignItems="center"
-          paddingHorizontal="m"
-          paddingVertical="ms"
-        >
+      <TouchableOpacityBox
+        flex={1}
+        padding="ms"
+        paddingTop="s"
+        onPress={() => onPress(hotspot)}
+      >
+        {hasRecipientSet && (
+          <Box flexDirection="row" alignItems="center">
+            <Box
+              flexDirection="row"
+              justifyContent="space-between"
+              alignItems="center"
+              borderRadius="m"
+              paddingVertical="sx"
+              paddingLeft="s"
+              paddingRight="s"
+              style={{
+                ...flamecoOpaque,
+              }}
+            >
+              <Text variant="body3Medium" color="flamenco">
+                {t('changeRewardsRecipientScreen.set')}
+              </Text>
+            </Box>
+          </Box>
+        )}
+        <Box flex={1} flexDirection="row" alignItems="center">
           <ImageBox
             borderRadius="lm"
             height={72}
@@ -147,13 +204,18 @@ const HotspotListItem = ({
                 justifyContent="space-between"
                 alignItems="center"
                 backgroundColor="mobileDarkBlue"
-                borderRadius="xl"
-                padding="xs"
+                borderRadius="m"
+                paddingVertical="xs"
+                paddingLeft="xs"
                 paddingRight="s"
-                marginBottom="s"
+                marginBottom="xs"
               >
-                <MobileSymbol color={colors.mobileBlue} />
-                <Text variant="body2Medium" marginLeft="xs" color="mobileBlue">
+                <MobileSymbol
+                  color={colors.mobileBlue}
+                  width={20}
+                  height={20}
+                />
+                <Text variant="body3Medium" marginLeft="xs" color="mobileBlue">
                   {pendingMobileRewardsString}
                 </Text>
               </Box>
@@ -164,20 +226,18 @@ const HotspotListItem = ({
                 justifyContent="space-between"
                 alignItems="center"
                 backgroundColor="iotDarkGreen"
-                borderRadius="xl"
-                padding="xs"
+                borderRadius="m"
+                paddingVertical="xs"
+                paddingLeft="xs"
                 paddingRight="s"
               >
-                <IotSymbol color={colors.iotGreen} />
-                <Text variant="body2Medium" marginLeft="xs" color="iotGreen">
+                <IotSymbol color={colors.iotGreen} width={20} height={20} />
+                <Text variant="body3Medium" marginLeft="xs" color="iotGreen">
                   {pendingIotRewardsString}
                 </Text>
               </Box>
             )}
           </Box>
-        </Box>
-        <Box position="relative" top={-14} paddingHorizontal="m">
-          <HotspotRewardsRecipients hotspot={hotspot} />
         </Box>
       </TouchableOpacityBox>
     </ReAnimatedBox>

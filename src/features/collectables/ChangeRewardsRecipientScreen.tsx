@@ -8,14 +8,15 @@ import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
 import { DelayedFadeIn } from '@components/FadeInOut'
-import { HotspotRewardsRecipients } from '@components/HotspotRewardsRecipients'
+import IotSymbol from '@assets/images/iotSymbol.svg'
+import MobileSymbol from '@assets/images/mobileSymbol.svg'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import useSubmitTxn from '@hooks/useSubmitTxn'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { CSAccount } from '@storage/cloudStorage'
-import { solAddressIsValid } from '@utils/accountUtils'
+import { ellipsizeAddress, solAddressIsValid } from '@utils/accountUtils'
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -28,11 +29,15 @@ import {
 import { Edge } from 'react-native-safe-area-context'
 import { IOT_LAZY_KEY, MOBILE_LAZY_KEY } from '@utils/constants'
 import { PublicKey } from '@solana/web3.js'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { useColors } from '@theme/themeHooks'
 import * as Logger from '../../utils/logger'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
+import { Mints } from '../../utils/constants'
 
 type Route = RouteProp<
   CollectableStackParamList,
@@ -40,8 +45,10 @@ type Route = RouteProp<
 >
 const ChangeRewardsRecipientScreen = () => {
   const { t } = useTranslation()
+  const colors = useColors()
   const route = useRoute<Route>()
   const nav = useNavigation<CollectableNavigationProp>()
+  const wallet = useCurrentWallet()
   const { hotspot } = route.params
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])
@@ -49,9 +56,50 @@ const ChangeRewardsRecipientScreen = () => {
   const [recipient, setRecipient] = useState('')
   const [recipientName, setRecipientName] = useState('')
   const [updating, setUpdating] = useState(false)
+  const [removing, setRemoving] = useState(false)
   const [hasError, setHasError] = useState(false)
   const [transactionError, setTransactionError] = useState<string>()
   const { submitUpdateRewardsDestination } = useSubmitTxn()
+
+  const mobileRecipient = useMemo(
+    () => hotspot?.rewardRecipients?.[Mints.MOBILE],
+    [hotspot],
+  )
+
+  const iotRecipient = useMemo(
+    () => hotspot?.rewardRecipients?.[Mints.IOT],
+    [hotspot],
+  )
+
+  const hasIotRecipient = useMemo(
+    () =>
+      iotRecipient?.destination &&
+      wallet &&
+      !new PublicKey(iotRecipient.destination).equals(wallet) &&
+      !new PublicKey(iotRecipient.destination).equals(PublicKey.default),
+    [iotRecipient, wallet],
+  )
+
+  const hasMobileRecipient = useMemo(
+    () =>
+      mobileRecipient?.destination &&
+      wallet &&
+      !new PublicKey(mobileRecipient.destination).equals(wallet) &&
+      !new PublicKey(mobileRecipient.destination).equals(PublicKey.default),
+    [mobileRecipient, wallet],
+  )
+
+  const recipientsAreDifferent = useMemo(
+    () =>
+      iotRecipient?.destination &&
+      mobileRecipient?.destination &&
+      !new PublicKey(iotRecipient?.destination).equals(
+        new PublicKey(mobileRecipient?.destination),
+      ),
+    [iotRecipient, mobileRecipient],
+  )
+
+  const hasRecipients = hasIotRecipient || hasMobileRecipient
 
   const handleAddressBookSelected = useCallback(() => {
     addressBookRef?.current?.showAddressBook({})
@@ -104,20 +152,19 @@ const ChangeRewardsRecipientScreen = () => {
 
   const handleRemoveRecipient = useCallback(async () => {
     try {
-      setUpdating(true)
+      setRemoving(true)
       setTransactionError(undefined)
       await submitUpdateRewardsDestination({
         lazyDistributors: [IOT_LAZY_KEY, MOBILE_LAZY_KEY],
         destination: PublicKey.default.toBase58(),
         assetId: hotspot.id,
       })
-      nav.goBack()
     } catch (error) {
-      setUpdating(false)
+      setRemoving(false)
       Logger.error(error)
       setTransactionError((error as Error).message)
     }
-  }, [hotspot, setUpdating, nav, submitUpdateRewardsDestination])
+  }, [hotspot, setRemoving, submitUpdateRewardsDestination])
 
   const showError = useMemo(() => {
     if (hasError) return t('generic.notValidSolanaAddress')
@@ -158,7 +205,175 @@ const ChangeRewardsRecipientScreen = () => {
                   <Text variant="subtitle4" color="secondaryText">
                     {t('changeRewardsRecipientScreen.description')}
                   </Text>
-                  <HotspotRewardsRecipients hotspot={hotspot} />
+                  <Box
+                    borderRadius="m"
+                    backgroundColor="secondary"
+                    padding="ms"
+                    marginTop="s"
+                  >
+                    <Text variant="body3">
+                      {t('changeRewardsRecipientScreen.blurb')}
+                    </Text>
+                  </Box>
+                  {hasRecipients && (
+                    <Box
+                      flexDirection="row"
+                      justifyContent="space-between"
+                      marginTop="s"
+                    >
+                      {!recipientsAreDifferent ? (
+                        <>
+                          {(hasIotRecipient || hasMobileRecipient) && (
+                            <Box
+                              flex={1}
+                              flexDirection="row"
+                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                              // @ts-ignore
+                              gap={4}
+                            >
+                              <Box
+                                flex={1}
+                                flexDirection="row"
+                                padding="s"
+                                backgroundColor="black600"
+                                borderRadius="m"
+                                justifyContent="space-between"
+                                position="relative"
+                              >
+                                <Box
+                                  flexDirection="row"
+                                  alignItems="center"
+                                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                  // @ts-ignore
+                                  gap={8}
+                                >
+                                  {hasIotRecipient && (
+                                    <IotSymbol
+                                      color={colors.iotGreen}
+                                      width={20}
+                                      height={20}
+                                    />
+                                  )}
+                                  {hasMobileRecipient && (
+                                    <MobileSymbol
+                                      color={colors.mobileBlue}
+                                      width={20}
+                                      height={20}
+                                    />
+                                  )}
+                                  <Text variant="body3">Recipient</Text>
+                                </Box>
+                                <Text variant="body2">
+                                  {ellipsizeAddress(
+                                    new PublicKey(
+                                      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+                                      iotRecipient?.destination!,
+                                    ).toBase58(),
+                                  )}
+                                </Text>
+                              </Box>
+                            </Box>
+                          )}
+                        </>
+                      ) : (
+                        <Box
+                          flex={1}
+                          marginTop="s"
+                          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                          // @ts-ignore
+                          gap={4}
+                        >
+                          {hasIotRecipient && (
+                            <Box
+                              flexDirection="row"
+                              padding="s"
+                              backgroundColor="black600"
+                              borderRadius="m"
+                              justifyContent="space-between"
+                              position="relative"
+                            >
+                              <Box
+                                flexDirection="row"
+                                alignItems="center"
+                                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                // @ts-ignore
+                                gap={8}
+                              >
+                                <IotSymbol
+                                  color={colors.iotGreen}
+                                  width={20}
+                                  height={20}
+                                />
+                                <Text variant="body3">Recipient</Text>
+                              </Box>
+                              <Text variant="body2">
+                                {ellipsizeAddress(
+                                  new PublicKey(
+                                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+                                    iotRecipient?.destination!,
+                                  ).toBase58(),
+                                )}
+                              </Text>
+                            </Box>
+                          )}
+                          {hasMobileRecipient && (
+                            <Box
+                              flexDirection="row"
+                              padding="s"
+                              backgroundColor="black600"
+                              borderRadius="m"
+                              justifyContent="space-between"
+                              position="relative"
+                            >
+                              <Box
+                                flexDirection="row"
+                                alignItems="center"
+                                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                // @ts-ignore
+                                gap={8}
+                                l
+                              >
+                                <MobileSymbol
+                                  color={colors.mobileBlue}
+                                  width={20}
+                                  height={20}
+                                />
+                                <Text variant="body3">Recipient</Text>
+                              </Box>
+                              <Text variant="body2">
+                                {ellipsizeAddress(
+                                  new PublicKey(
+                                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+                                    mobileRecipient?.destination!,
+                                  ).toBase58(),
+                                )}
+                              </Text>
+                            </Box>
+                          )}
+                        </Box>
+                      )}
+                      <TouchableOpacityBox
+                        flexDirection="row"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        borderRadius="m"
+                        paddingVertical="sx"
+                        marginLeft="s"
+                        paddingLeft="s"
+                        paddingRight="s"
+                        backgroundColor="black600"
+                        onPress={handleRemoveRecipient}
+                      >
+                        {removing ? (
+                          <CircleLoader loaderSize={20} color="white" />
+                        ) : (
+                          <Text variant="body3Medium">
+                            {t('generic.remove')}
+                          </Text>
+                        )}
+                      </TouchableOpacityBox>
+                    </Box>
+                  )}
                   <TextInput
                     floatingLabel={`${t(
                       'changeRewardsRecipientScreen.newRecipient',
@@ -181,6 +396,16 @@ const ChangeRewardsRecipientScreen = () => {
                       value: recipient,
                     }}
                   />
+                  <Box
+                    borderRadius="m"
+                    backgroundColor="secondary"
+                    padding="ms"
+                    marginVertical="s"
+                  >
+                    <Text variant="body3Medium" color="flamenco">
+                      {t('changeRewardsRecipientScreen.warning')}
+                    </Text>
+                  </Box>
                 </Box>
               </SafeAreaBox>
             </KeyboardAvoidingView>
@@ -205,42 +430,26 @@ const ChangeRewardsRecipientScreen = () => {
           justifyContent="center"
           alignItems="center"
         >
-          {updating ? (
-            <Box padding="lm">
-              <CircleLoader loaderSize={24} color="white" />
-            </Box>
-          ) : (
-            <>
-              <ButtonPressable
-                flex={1}
-                fontSize={16}
-                borderRadius="round"
-                borderWidth={2}
-                borderColor="white"
-                backgroundColorOpacityPressed={0.7}
-                title={updating ? '' : t('generic.remove')}
-                titleColor="white"
-                titleColorPressed="black"
-                onPress={handleRemoveRecipient}
-              />
-              <Box paddingHorizontal="s" />
-              <ButtonPressable
-                flex={1}
-                fontSize={16}
-                borderRadius="round"
-                borderWidth={2}
-                borderColor="white"
-                backgroundColor="white"
-                backgroundColorOpacityPressed={0.7}
-                backgroundColorDisabled="surfaceSecondary"
-                backgroundColorDisabledOpacity={0.9}
-                titleColorDisabled="secondaryText"
-                title={updating ? '' : t('generic.update')}
-                titleColor="black"
-                onPress={handleUpdateRecipient}
-              />
-            </>
-          )}
+          <ButtonPressable
+            flex={1}
+            fontSize={16}
+            borderRadius="round"
+            borderWidth={2}
+            borderColor="white"
+            backgroundColor="white"
+            backgroundColorOpacityPressed={0.7}
+            backgroundColorDisabled="surfaceSecondary"
+            backgroundColorDisabledOpacity={0.9}
+            titleColorDisabled="secondaryText"
+            title={updating ? '' : t('changeRewardsRecipientScreen.submit')}
+            titleColor="black"
+            onPress={removing || updating ? () => {} : handleUpdateRecipient}
+            TrailingComponent={
+              updating ? (
+                <CircleLoader loaderSize={20} color="black" />
+              ) : undefined
+            }
+          />
         </Box>
       </BackScreen>
     </ReAnimatedBox>

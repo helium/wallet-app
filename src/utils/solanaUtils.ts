@@ -166,9 +166,7 @@ const govProgramId = new PublicKey(
 
 export const SolanaConnection = (sessionKey: string) =>
   ({
-    devnet: new WrappedConnection(
-      `${Config.DEVNET_RPC_URL}/?session-key=${sessionKey}`,
-    ),
+    devnet: new WrappedConnection(`${Config.DEVNET_RPC_URL}`),
     testnet: new WrappedConnection(clusterApiUrl('testnet')),
     'mainnet-beta': new WrappedConnection(
       `${Config.MAINNET_RPC_URL}/?session-key=${sessionKey}`,

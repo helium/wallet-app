@@ -397,9 +397,14 @@ export default {
   },
   changeRewardsRecipientScreen: {
     title: 'Update Recipient',
-    description: 'Update recipient of this hotspots rewards',
+    description: 'Update recipient of this Hotspot’s rewards',
+    blurb: 'Rewards from this Hotspot will go to this recipient when claimed',
+    warning:
+      'This recipient will receive all rewards for this Hotspot. Make sure this is a trusted party',
     submit: 'Update Recipient',
     newRecipient: 'New Recipient',
+    removeRecipient: 'Remove Recipient',
+    set: 'Rewards Recipient Set',
   },
   assertLocationScreen: {
     title: 'Assert Location',
