@@ -140,6 +140,7 @@ export const VotingPowerScreen = () => {
         ],
       },
     )
+
     const asVersionedTx = transactions.map(toVersionedTx)
 
     const decision = await walletSignBottomSheetRef.show({

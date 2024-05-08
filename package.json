@@ -53,7 +53,7 @@
     "@helium/sus": "0.7.10",
     "@helium/transactions": "4.8.1",
     "@helium/treasury-management-sdk": "0.7.10",
-    "@helium/voter-stake-registry-hooks": "0.7.10",
+    "@helium/voter-stake-registry-hooks": "file:.yalc/@helium/voter-stake-registry-hooks",
     "@helium/voter-stake-registry-sdk": "0.7.10",
     "@helium/wallet-link": "4.11.0",
     "@jup-ag/api": "^6.0.6",

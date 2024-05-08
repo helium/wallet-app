@@ -1218,6 +1218,8 @@ export default {
     claiming: {
       title: 'Claiming Rewards',
       body: 'Please wait while we claim all\nthe rewards from your positions',
+      multiple:
+        'You may be asked to approve multiple times\nif you havent claimed rewards for awhile',
     },
     votingPower: {
       title: 'Voting Power',

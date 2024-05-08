@@ -68,9 +68,19 @@ export const ClaimingRewardsModal = ({ status }: { status?: Status }) => {
             >
               {t('gov.claiming.title')}
             </Text>
-            <Text variant="subtitle4" color="secondaryText" marginBottom="m">
-              {t('gov.claiming.body')}
-            </Text>
+            <Box paddingHorizontal="l" marginBottom="m">
+              <Text
+                variant="subtitle4"
+                color="secondaryText"
+                marginBottom="s"
+                textAlign="center"
+              >
+                {t('gov.claiming.body')}
+              </Text>
+              <Text variant="subtitle4" color="flamenco" textAlign="center">
+                {t('gov.claiming.multiple')}
+              </Text>
+            </Box>
 
             <Box alignItems="center" marginTop="m">
               <Box flexDirection="row">
