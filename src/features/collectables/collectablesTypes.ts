@@ -31,7 +31,7 @@ export type CollectableStackParamList = {
   ClaimAllRewardsScreen: undefined
   ClaimingRewardsScreen: undefined
   CollectionScreen: {
-    collection: CompressedNFT[]
+    collection: Collectable[]
   }
   NftDetailsScreen: {
     collectable: Collectable

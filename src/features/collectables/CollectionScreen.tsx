@@ -14,7 +14,7 @@ import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import { Collectable, CompressedNFT } from '../../types/solana'
+import { Collectable } from '../../types/solana'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -73,7 +73,7 @@ const CollectionScreen = () => {
     [COLLECTABLE_HEIGHT, borderRadius, handleNavigateToCollectable],
   )
 
-  const keyExtractor = useCallback((item: CompressedNFT) => item.id, [])
+  const keyExtractor = useCallback((item: Collectable) => item.id, [])
 
   return (
     <BackScreen
