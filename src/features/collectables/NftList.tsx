@@ -40,7 +40,7 @@ const NftList = () => {
     }) => {
       return (
         <NFTListItem
-          item={collectablesWithMeta[token][0].symbol}
+          item={collectablesWithMeta[token][0]?.content.metadata.symbol}
           collectables={collectablesWithMeta[token]}
         />
       )
