@@ -109,24 +109,29 @@ export class WrappedConnection extends Connection {
     }
   }
 
-  async getAssetsByOwner(
+  async getAssetsByOwner<T>(
     assetId: string,
     sortBy: any,
     limit: number,
-    page: number,
-    before: string,
-    after: string,
-  ): Promise<any> {
+    page = 1,
+    before?: string,
+    after?: string,
+    options?: {
+      showFungible: boolean
+    },
+  ): Promise<T> {
     try {
       const response = await axios.post(this.baseURL, {
         jsonrpc: '2.0',
         method: 'getAssetsByOwner',
         id: 'rpd-op-123',
-        params: [assetId, sortBy, limit, page, before, after],
+        params: [assetId, sortBy, limit, page, before, after, options],
       })
+
       return response.data.result
     } catch (error) {
       logger.error(error)
+      throw error
     }
   }
 

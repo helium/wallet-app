@@ -73,15 +73,13 @@ const CollectionScreen = () => {
     [COLLECTABLE_HEIGHT, borderRadius, handleNavigateToCollectable],
   )
 
-  const keyExtractor = useCallback((item: Collectable) => {
-    return item.address.toString()
-  }, [])
+  const keyExtractor = useCallback((item: Collectable) => item.id, [])
 
   return (
     <BackScreen
       padding="none"
       headerBackgroundColor="primaryBackground"
-      title={`${collectables[0]?.symbol} ${collectables.length}`}
+      title={`${collectables[0]?.content.metadata.symbol} ${collectables.length}`}
       headerTopMargin="l"
     >
       <ReAnimatedBox

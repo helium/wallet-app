@@ -896,41 +896,25 @@ export const getNFTs = async (
 ) => {
   const approvedNFTs = heliumNFTs()
 
-  const collectables = (await connection.getAssetsByOwner(
+  const { items } = await connection.getAssetsByOwner<{
+    items: CompressedNFT[]
+  }>(
     pubKey.toBase58(),
     { sortBy: 'created', sortDirection: 'asc' },
-    500,
-    0,
+    1000,
+    1,
     '',
     '',
-  )) as any[]
-
-  return collectables.filter((c) =>
-    approvedNFTs.includes(c.collection?.address.toBase58() || ''),
-  )
-}
-
-/**
- * Returns the account's collectables
- * @param pubKey public key of the account
- * @param oldestCollectable starting point for the query
- * @returns collectables
- */
-export const getCompressedCollectables = async (
-  pubKey: PublicKey,
-  anchorProvider: AnchorProvider,
-) => {
-  const conn = anchorProvider.connection as WrappedConnection
-  const { items } = await conn.getAssetsByOwner(
-    pubKey.toString(),
-    { sortBy: 'created', sortDirection: 'asc' },
-    500,
-    0,
-    '',
-    '',
+    { showFungible: true },
   )
 
-  return items as CompressedNFT[]
+  return items.filter((item) => {
+    const collection = item.grouping.find(
+      (k) => k.group_key === 'collection',
+    )?.group_value
+
+    return approvedNFTs.includes(collection || '')
+  })
 }
 
 export const getHotspotWithRewards = async (
@@ -990,12 +974,12 @@ export const getCompressedCollectablesByCreator = async (
  * @param collectables collectables without metadata
  * @returns collectables with metadata
  */
-export const getNFTsMetadata = async (collectables: any[]) =>
+export const getNFTsMetadata = async (collectables: CompressedNFT[]) =>
   (
     await Promise.all(
       collectables.map(async (col) => {
         try {
-          const { data } = await axios.get(col.uri, {
+          const { data } = await axios.get(col.content.json_uri, {
             timeout: 3000,
           })
 
@@ -1012,13 +996,17 @@ export const getNFTsMetadata = async (collectables: any[]) =>
  * @param collectables collectables
  * @returns grouped collecables by token type
  */
-export const groupNFTs = (collectables: any[]) => {
+export const groupNFTs = (collectables: CompressedNFT[]) => {
   const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const { collection, symbol } = cur
-    if (!acc[collection?.address?.toBase58() || symbol]) {
-      acc[collection?.address?.toBase58() || symbol] = [cur]
+    const { symbol } = cur.content.metadata
+    const collection = cur.grouping.find(
+      (k) => k.group_key === 'collection',
+    )?.group_value
+
+    if (!acc[collection || symbol]) {
+      acc[collection || symbol] = [cur]
     } else {
-      acc[collection?.address?.toBase58() || symbol].push(cur)
+      acc[collection || symbol].push(cur)
     }
     return acc
   }, {} as Record<string, any[]>)
@@ -1031,13 +1019,17 @@ export const groupNFTs = (collectables: any[]) => {
  * @param collectables collectables with metadata
  * @returns grouped collecables by token type
  */
-export const groupNFTsWithMetaData = (collectables: Collectable[]) => {
+export const groupNFTsWithMetaData = (collectables: CompressedNFT[]) => {
   const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const { collection, symbol } = cur
-    if (!acc[collection?.address?.toBase58() || symbol]) {
-      acc[collection?.address?.toBase58() || symbol] = [cur]
+    const { symbol } = cur.content.metadata
+    const collection = cur.grouping.find(
+      (k) => k.group_key === 'collection',
+    )?.group_value
+
+    if (!acc[collection || symbol]) {
+      acc[collection || symbol] = [cur]
     } else {
-      acc[collection?.address?.toBase58() || symbol].push(cur)
+      acc[collection || symbol].push(cur)
     }
     return acc
   }, {} as Record<string, Collectable[]>)
