@@ -6,6 +6,11 @@ import expo.modules.ApplicationLifecycleDispatcher;
 import expo.modules.ReactNativeHostWrapper;
 
 import android.app.Application;
+import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.os.Build;
 
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
@@ -13,6 +18,7 @@ import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactNativeHost;
+import com.facebook.react.modules.network.OkHttpClientProvider;
 import com.facebook.soloader.SoLoader;
 
 import java.util.List;
@@ -58,6 +64,7 @@ public class MainApplication extends Application implements ReactApplication {
   @Override
   public void onCreate() {
     super.onCreate();
+    OkHttpClientProvider.setOkHttpClientFactory(new UserAgentClientFactory(userAgent()));
     SoLoader.init(this, /* native exopackage */ false);
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
       // If you opted-in for the New Architecture, we load the native entry point for this app.
@@ -71,5 +78,20 @@ public class MainApplication extends Application implements ReactApplication {
   public void onConfigurationChanged(Configuration newConfig) {
     super.onConfigurationChanged(newConfig);
     ApplicationLifecycleDispatcher.onConfigurationChanged(this, newConfig);
+  }
+
+  private String userAgent() {
+    try {
+      Context context = getApplicationContext();
+      PackageManager packageManager = context.getPackageManager();
+      ApplicationInfo applicationInfo = packageManager.getApplicationInfo(context.getPackageName(), 0);
+      PackageInfo packageInfo = packageManager.getPackageInfo(context.getPackageName(), 0);
+
+      String appName = (String) packageManager.getApplicationLabel(applicationInfo);
+      Long appVersionCode = packageInfo.getLongVersionCode();
+      return appName + "/" + appVersionCode.toString() + " " + "android/" + Build.VERSION.RELEASE;
+    } catch (PackageManager.NameNotFoundException e) {
+      return null;
+    }
   }
 }

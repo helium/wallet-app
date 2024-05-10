@@ -138,6 +138,7 @@ export const VotingPowerScreen = () => {
         addressLookupTableAddresses: [
           cluster === 'devnet' ? HELIUM_COMMON_LUT_DEVNET : HELIUM_COMMON_LUT,
         ],
+        extraSigners: sigs,
       },
     )
 
