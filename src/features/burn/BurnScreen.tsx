@@ -95,7 +95,7 @@ const BurnScreen = () => {
   const [dcAmount, setDcAmount] = useState(new BN(route.params.amount || 0))
   const [delegateAddress, setDelegateAddress] = useState(route.params.address)
   const [mint, setMint] = useState<PublicKey>(
-    (route.params.mint && new PublicKey(route.params.mint)) || MOBILE_MINT,
+    (route.params.mint && new PublicKey(route.params.mint)) || IOT_MINT,
   )
   const [memo, setMemo] = useState(route.params.memo)
   const [hasError, setHasError] = useState(false)
