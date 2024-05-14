@@ -1919,7 +1919,7 @@ function recursivelyConvertPubkeysToString(value: any): any {
 
 export const createUpdateCompressionDestinationTxn = async (
   anchorProvider: AnchorProvider,
-  lazyDistributor: PublicKey,
+  lazyDistributors: PublicKey[],
   payer: PublicKey,
   assetId: PublicKey,
   destination: PublicKey,
@@ -1937,21 +1937,33 @@ export const createUpdateCompressionDestinationTxn = async (
     assetId,
   })
 
-  const instructions: TransactionInstruction[] = []
-  instructions.push(
-    await program.methods
-      .updateCompressionDestinationV0({
-        ...args,
-      })
-      .accounts({
-        ...accounts,
-        owner,
-        recipient: recipientKey(lazyDistributor, assetId)[0],
-        destination: destination == null ? PublicKey.default : destination,
-      })
-      .remainingAccounts(remainingAccounts)
-      .instruction(),
-  )
+  const instructions: TransactionInstruction[] = (
+    await Promise.all(
+      lazyDistributors.map(async (lazy) => {
+        const [recipientPk] = recipientKey(lazy, assetId)
+        const recipientExists = await exists(
+          anchorProvider.connection,
+          recipientPk,
+        )
+
+        if (recipientExists) {
+          return program.methods
+            .updateCompressionDestinationV0({
+              ...args,
+            })
+            .accounts({
+              ...accounts,
+              owner,
+              recipient: recipientKey(lazy, assetId)[0],
+              destination:
+                destination == null ? PublicKey.default : destination,
+            })
+            .remainingAccounts(remainingAccounts)
+            .instruction()
+        }
+      }),
+    )
+  ).filter(truthy)
 
   return {
     instructions: await withPriorityFees({

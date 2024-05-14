@@ -5,7 +5,6 @@ import {
   populateMissingDraftInfo,
   sendAndConfirmWithRetry,
   toVersionedTx,
-  truthy,
 } from '@helium/spl-utils'
 import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
@@ -13,7 +12,6 @@ import i18n from '@utils/i18n'
 import * as solUtils from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { useCallback } from 'react'
-import { recipientKey } from '@helium/lazy-distributor-sdk'
 import { useSolana } from '../solana/SolanaProvider'
 import { useWalletSign } from '../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
@@ -585,29 +583,16 @@ export default () => {
         await connection.getAccountInfo(destinationPk),
       )
 
-      const txns = (
-        await Promise.all(
-          lazyDistributors.map(async (lazy) => {
-            const [recipientPk] = recipientKey(lazy, assetPk)
-            const recipientExists = Boolean(
-              await connection.getAccountInfo(recipientPk),
-            )
-
-            if (recipientExists) {
-              return populateMissingDraftInfo(
-                anchorProvider.connection,
-                await solUtils.createUpdateCompressionDestinationTxn(
-                  anchorProvider,
-                  lazy,
-                  payeePk,
-                  assetPk,
-                  destinationPk,
-                ),
-              )
-            }
-          }),
-        )
-      ).filter(truthy)
+      const txn = await populateMissingDraftInfo(
+        anchorProvider.connection,
+        await solUtils.createUpdateCompressionDestinationTxn(
+          anchorProvider,
+          lazyDistributors,
+          payeePk,
+          assetPk,
+          destinationPk,
+        ),
+      )
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
@@ -616,9 +601,7 @@ export default () => {
           ? ''
           : t('transactions.recipientNonExistent'),
         additionalMessage: t('transactions.signPaymentTxn'),
-        serializedTxs: txns.map((tx) =>
-          Buffer.from(toVersionedTx(tx).serialize()),
-        ),
+        serializedTxs: [Buffer.from(toVersionedTx(txn).serialize())],
       })
 
       if (!decision) {
@@ -627,7 +610,7 @@ export default () => {
 
       dispatch(
         updateRewardsDestinations({
-          txns,
+          txn,
           account: currentAccount,
           cluster,
           anchorProvider,

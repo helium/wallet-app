@@ -138,7 +138,7 @@ type UpdateRewardsDestinationInput = {
   account: CSAccount
   cluster: Cluster
   anchorProvider: AnchorProvider
-  txns: TransactionDraft[]
+  txn: TransactionDraft
 }
 
 export const makePayment = createAsyncThunk(
@@ -192,6 +192,7 @@ export const makeCollectablePayment = createAsyncThunk(
         },
         'confirmed',
       )
+
       postPayment({ signatures: [sig], cluster })
 
       dispatch(
@@ -637,30 +638,36 @@ export const getTxns = createAsyncThunk(
 export const updateRewardsDestinations = createAsyncThunk(
   'solana/updateRewardsDestinations',
   async (
-    { account, anchorProvider, cluster, txns }: UpdateRewardsDestinationInput,
+    { account, anchorProvider, cluster, txn }: UpdateRewardsDestinationInput,
     { dispatch },
   ) => {
     if (!account?.solanaAddress) throw new Error('No solana account found')
+
     try {
-      const signatures = await bulkSendTransactions(
-        anchorProvider,
-        txns,
-        undefined,
-        10,
-        [],
-        MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
+      const signed = await anchorProvider.wallet.signTransaction(
+        toVersionedTx(
+          await populateMissingDraftInfo(anchorProvider.connection, txn),
+        ),
       )
 
-      postPayment({ signatures, cluster })
+      const { txid: sig } = await sendAndConfirmWithRetry(
+        anchorProvider.connection,
+        Buffer.from(signed.serialize()),
+        {
+          skipPreflight: true,
+        },
+        'confirmed',
+      )
 
-      // If the update is successful, we need to update the hotspots
+      postPayment({ signatures: [sig], cluster })
+
       dispatch(fetchHotspots({ account, anchorProvider, cluster }))
-
-      return { signatures }
     } catch (error) {
       Logger.error(error)
       throw error
     }
+
+    return true
   },
 )
 

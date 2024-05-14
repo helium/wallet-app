@@ -57,6 +57,7 @@ const ChangeRewardsRecipientScreen = () => {
   const [recipientName, setRecipientName] = useState('')
   const [updating, setUpdating] = useState(false)
   const [removing, setRemoving] = useState(false)
+  const [removed, setRemoved] = useState(false)
   const [hasError, setHasError] = useState(false)
   const [transactionError, setTransactionError] = useState<string>()
   const { submitUpdateRewardsDestination } = useSubmitTxn()
@@ -134,14 +135,15 @@ const ChangeRewardsRecipientScreen = () => {
       return
     }
 
+    setTransactionError(undefined)
+    setUpdating(true)
     try {
-      setUpdating(true)
-      setTransactionError(undefined)
       await submitUpdateRewardsDestination({
         lazyDistributors: [IOT_LAZY_KEY, MOBILE_LAZY_KEY],
         destination: recipient,
         assetId: hotspot.id,
       })
+      setUpdating(false)
       nav.goBack()
     } catch (error) {
       setUpdating(false)
@@ -151,20 +153,22 @@ const ChangeRewardsRecipientScreen = () => {
   }, [recipient, hotspot, setUpdating, nav, submitUpdateRewardsDestination])
 
   const handleRemoveRecipient = useCallback(async () => {
+    setTransactionError(undefined)
+    setRemoving(true)
     try {
-      setRemoving(true)
-      setTransactionError(undefined)
       await submitUpdateRewardsDestination({
         lazyDistributors: [IOT_LAZY_KEY, MOBILE_LAZY_KEY],
         destination: PublicKey.default.toBase58(),
         assetId: hotspot.id,
       })
+      setRemoving(false)
+      setRemoved(true)
     } catch (error) {
       setRemoving(false)
       Logger.error(error)
       setTransactionError((error as Error).message)
     }
-  }, [hotspot, setRemoving, submitUpdateRewardsDestination])
+  }, [hotspot, setRemoving, setRemoved, submitUpdateRewardsDestination])
 
   const showError = useMemo(() => {
     if (hasError) return t('generic.notValidSolanaAddress')
@@ -215,165 +219,167 @@ const ChangeRewardsRecipientScreen = () => {
                       {t('changeRewardsRecipientScreen.blurb')}
                     </Text>
                   </Box>
-                  {hasRecipients && (
-                    <Box
-                      flexDirection="row"
-                      justifyContent="space-between"
-                      marginTop="s"
-                    >
-                      {!recipientsAreDifferent ? (
-                        <>
-                          {(hasIotRecipient || hasMobileRecipient) && (
+                  {removed
+                    ? null
+                    : hasRecipients && (
+                        <Box
+                          flexDirection="row"
+                          justifyContent="space-between"
+                          marginTop="s"
+                        >
+                          {!recipientsAreDifferent ? (
+                            <>
+                              {(hasIotRecipient || hasMobileRecipient) && (
+                                <Box
+                                  flex={1}
+                                  flexDirection="row"
+                                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                  // @ts-ignore
+                                  gap={4}
+                                >
+                                  <Box
+                                    flex={1}
+                                    flexDirection="row"
+                                    padding="s"
+                                    backgroundColor="black600"
+                                    borderRadius="m"
+                                    justifyContent="space-between"
+                                    position="relative"
+                                  >
+                                    <Box
+                                      flexDirection="row"
+                                      alignItems="center"
+                                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                      // @ts-ignore
+                                      gap={8}
+                                    >
+                                      {hasIotRecipient && (
+                                        <IotSymbol
+                                          color={colors.iotGreen}
+                                          width={20}
+                                          height={20}
+                                        />
+                                      )}
+                                      {hasMobileRecipient && (
+                                        <MobileSymbol
+                                          color={colors.mobileBlue}
+                                          width={20}
+                                          height={20}
+                                        />
+                                      )}
+                                      <Text variant="body3">Recipient</Text>
+                                    </Box>
+                                    <Text variant="body2">
+                                      {ellipsizeAddress(
+                                        new PublicKey(
+                                          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+                                          iotRecipient?.destination!,
+                                        ).toBase58(),
+                                      )}
+                                    </Text>
+                                  </Box>
+                                </Box>
+                              )}
+                            </>
+                          ) : (
                             <Box
                               flex={1}
-                              flexDirection="row"
+                              marginTop="s"
                               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                               // @ts-ignore
                               gap={4}
                             >
-                              <Box
-                                flex={1}
-                                flexDirection="row"
-                                padding="s"
-                                backgroundColor="black600"
-                                borderRadius="m"
-                                justifyContent="space-between"
-                                position="relative"
-                              >
+                              {hasIotRecipient && (
                                 <Box
                                   flexDirection="row"
-                                  alignItems="center"
-                                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                  // @ts-ignore
-                                  gap={8}
+                                  padding="s"
+                                  backgroundColor="black600"
+                                  borderRadius="m"
+                                  justifyContent="space-between"
+                                  position="relative"
                                 >
-                                  {hasIotRecipient && (
+                                  <Box
+                                    flexDirection="row"
+                                    alignItems="center"
+                                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                    // @ts-ignore
+                                    gap={8}
+                                  >
                                     <IotSymbol
                                       color={colors.iotGreen}
                                       width={20}
                                       height={20}
                                     />
-                                  )}
-                                  {hasMobileRecipient && (
+                                    <Text variant="body3">Recipient</Text>
+                                  </Box>
+                                  <Text variant="body2">
+                                    {ellipsizeAddress(
+                                      new PublicKey(
+                                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+                                        iotRecipient?.destination!,
+                                      ).toBase58(),
+                                    )}
+                                  </Text>
+                                </Box>
+                              )}
+                              {hasMobileRecipient && (
+                                <Box
+                                  flexDirection="row"
+                                  padding="s"
+                                  backgroundColor="black600"
+                                  borderRadius="m"
+                                  justifyContent="space-between"
+                                  position="relative"
+                                >
+                                  <Box
+                                    flexDirection="row"
+                                    alignItems="center"
+                                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                    // @ts-ignore
+                                    gap={8}
+                                    l
+                                  >
                                     <MobileSymbol
                                       color={colors.mobileBlue}
                                       width={20}
                                       height={20}
                                     />
-                                  )}
-                                  <Text variant="body3">Recipient</Text>
+                                    <Text variant="body3">Recipient</Text>
+                                  </Box>
+                                  <Text variant="body2">
+                                    {ellipsizeAddress(
+                                      new PublicKey(
+                                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+                                        mobileRecipient?.destination!,
+                                      ).toBase58(),
+                                    )}
+                                  </Text>
                                 </Box>
-                                <Text variant="body2">
-                                  {ellipsizeAddress(
-                                    new PublicKey(
-                                      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-                                      iotRecipient?.destination!,
-                                    ).toBase58(),
-                                  )}
-                                </Text>
-                              </Box>
+                              )}
                             </Box>
                           )}
-                        </>
-                      ) : (
-                        <Box
-                          flex={1}
-                          marginTop="s"
-                          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                          // @ts-ignore
-                          gap={4}
-                        >
-                          {hasIotRecipient && (
-                            <Box
-                              flexDirection="row"
-                              padding="s"
-                              backgroundColor="black600"
-                              borderRadius="m"
-                              justifyContent="space-between"
-                              position="relative"
-                            >
-                              <Box
-                                flexDirection="row"
-                                alignItems="center"
-                                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                // @ts-ignore
-                                gap={8}
-                              >
-                                <IotSymbol
-                                  color={colors.iotGreen}
-                                  width={20}
-                                  height={20}
-                                />
-                                <Text variant="body3">Recipient</Text>
-                              </Box>
-                              <Text variant="body2">
-                                {ellipsizeAddress(
-                                  new PublicKey(
-                                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-                                    iotRecipient?.destination!,
-                                  ).toBase58(),
-                                )}
+                          <TouchableOpacityBox
+                            flexDirection="row"
+                            justifyContent="space-between"
+                            alignItems="center"
+                            borderRadius="m"
+                            paddingVertical="sx"
+                            marginLeft="s"
+                            paddingLeft="s"
+                            paddingRight="s"
+                            backgroundColor="black600"
+                            onPress={handleRemoveRecipient}
+                          >
+                            {removing ? (
+                              <CircleLoader loaderSize={20} color="white" />
+                            ) : (
+                              <Text variant="body3Medium">
+                                {t('generic.remove')}
                               </Text>
-                            </Box>
-                          )}
-                          {hasMobileRecipient && (
-                            <Box
-                              flexDirection="row"
-                              padding="s"
-                              backgroundColor="black600"
-                              borderRadius="m"
-                              justifyContent="space-between"
-                              position="relative"
-                            >
-                              <Box
-                                flexDirection="row"
-                                alignItems="center"
-                                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                // @ts-ignore
-                                gap={8}
-                                l
-                              >
-                                <MobileSymbol
-                                  color={colors.mobileBlue}
-                                  width={20}
-                                  height={20}
-                                />
-                                <Text variant="body3">Recipient</Text>
-                              </Box>
-                              <Text variant="body2">
-                                {ellipsizeAddress(
-                                  new PublicKey(
-                                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-                                    mobileRecipient?.destination!,
-                                  ).toBase58(),
-                                )}
-                              </Text>
-                            </Box>
-                          )}
+                            )}
+                          </TouchableOpacityBox>
                         </Box>
                       )}
-                      <TouchableOpacityBox
-                        flexDirection="row"
-                        justifyContent="space-between"
-                        alignItems="center"
-                        borderRadius="m"
-                        paddingVertical="sx"
-                        marginLeft="s"
-                        paddingLeft="s"
-                        paddingRight="s"
-                        backgroundColor="black600"
-                        onPress={handleRemoveRecipient}
-                      >
-                        {removing ? (
-                          <CircleLoader loaderSize={20} color="white" />
-                        ) : (
-                          <Text variant="body3Medium">
-                            {t('generic.remove')}
-                          </Text>
-                        )}
-                      </TouchableOpacityBox>
-                    </Box>
-                  )}
                   <TextInput
                     floatingLabel={`${t(
                       'changeRewardsRecipientScreen.newRecipient',
