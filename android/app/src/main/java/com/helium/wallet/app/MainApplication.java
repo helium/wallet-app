@@ -98,7 +98,7 @@ public class MainApplication extends Application implements ReactApplication {
         appVersionCode = packageInfo.versionCode;
       }
 
-      return appName + "/" + appVersionCode.toString() + " " + "android/" + Build.VERSION.RELEASE;
+      return appName + "/" + appVersionCode + " " + "android/" + Build.VERSION.RELEASE;
     } catch (PackageManager.NameNotFoundException e) {
       return null;
     }
