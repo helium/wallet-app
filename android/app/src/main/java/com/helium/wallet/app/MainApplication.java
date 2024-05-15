@@ -88,17 +88,17 @@ public class MainApplication extends Application implements ReactApplication {
       PackageInfo packageInfo = packageManager.getPackageInfo(context.getPackageName(), 0);
 
       String appName = (String) packageManager.getApplicationLabel(applicationInfo);
-      long appVersionCode;
+      Long appVersionCode;
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         // For API level 28 and above
         appVersionCode = packageInfo.getLongVersionCode();
       } else {
         // For lower API levels
-        appVersionCode = packageInfo.versionCode;
+        appVersionCode = (long) packageInfo.versionCode;
       }
 
-      return appName + "/" + appVersionCode + " " + "android/" + Build.VERSION.RELEASE;
+      return appName + "$" + appVersionCode.toString() + " " + "android/" + Build.VERSION.RELEASE;
     } catch (PackageManager.NameNotFoundException e) {
       return null;
     }
