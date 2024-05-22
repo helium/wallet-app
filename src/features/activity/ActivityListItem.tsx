@@ -1,14 +1,16 @@
-import React, { useMemo } from 'react'
-import { ConfirmedSignatureInfo } from '@solana/web3.js'
-import { useTranslation } from 'react-i18next'
-import CheckmarkFilled from '@assets/images/checkmarkFill.svg'
+import Send from '@assets/images/send.svg'
+import Receive from '@assets/images/receive.svg'
 import Error from '@assets/images/error.svg'
-import Text from '@components/Text'
 import Box from '@components/Box'
-import { TouchableOpacityBoxProps } from '@components/TouchableOpacityBox'
-import { useColors } from '@theme/themeHooks'
+import Text from '@components/Text'
 import TouchableContainer from '@components/TouchableContainer'
+import { TouchableOpacityBoxProps } from '@components/TouchableOpacityBox'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { ConfirmedSignatureInfo } from '@solana/web3.js'
+import { useColors } from '@theme/themeHooks'
 import { ellipsizeAddress, solAddressIsValid } from '@utils/accountUtils'
+import React, { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Insets } from 'react-native'
 import { EnrichedTransaction } from '../../types/solana'
 
@@ -25,6 +27,8 @@ const ActivityListItem = ({
 }: ActivityListItemProps) => {
   const colors = useColors()
   const { t, i18n } = useTranslation()
+
+  const wallet = useCurrentWallet()
 
   const title = useMemo(() => {
     const enrichedTx = transaction as EnrichedTransaction
@@ -80,17 +84,31 @@ const ActivityListItem = ({
     return !!confirmedSig?.err || !!enrichedTx.transactionError
   }, [transaction])
 
+  const userSignedTransaction = useMemo(() => {
+    const enrichedTx = transaction as EnrichedTransaction
+    if (wallet && enrichedTx.signers) {
+      return enrichedTx.signers?.includes(wallet?.toBase58())
+    }
+
+    return false
+  }, [transaction, wallet])
+
   return (
     <TouchableContainer
       backgroundColor="surfaceSecondary"
       flexDirection="row"
+      alignItems="center"
       padding="m"
       borderBottomWidth={hasDivider ? 1 : 0}
       borderBottomColor="black"
       {...rest}
     >
       {!transactionFailed ? (
-        <CheckmarkFilled width={25} height={25} color={colors.greenBright500} />
+        userSignedTransaction ? (
+          <Send width={25} height={25} color={colors.green500} />
+        ) : (
+          <Receive width={25} height={25} color={colors.blue500} />
+        )
       ) : (
         <Error width={25} height={25} color={colors.error} />
       )}
