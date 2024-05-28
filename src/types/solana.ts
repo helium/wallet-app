@@ -138,6 +138,7 @@ type NativeTokenPayload = {
 }
 
 export type EnrichedTransaction = {
+  signers: string[]
   description: string
   type: string
   source: string
