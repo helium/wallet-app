@@ -103,7 +103,7 @@ const PaymentItem = ({
   const isProgramAccount = useMemo(() => {
     if (solAddressIsValid(debouncedAddress)) {
       const pubkey = new PublicKey(debouncedAddress)
-      return PublicKey.isOnCurve(pubkey)
+      return !PublicKey.isOnCurve(pubkey)
     }
 
     return false
