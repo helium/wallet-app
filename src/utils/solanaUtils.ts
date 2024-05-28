@@ -3,9 +3,9 @@
 import { AnchorProvider, BN, IdlAccounts, Program } from '@coral-xyz/anchor'
 import { getSingleton } from '@helium/account-fetch-cache'
 import {
-  init as initDc,
   delegatedDataCreditsKey,
   escrowAccountKey,
+  init as initDc,
 } from '@helium/data-credits-sdk'
 import { getPendingRewards } from '@helium/distributor-oracle'
 import {
@@ -45,11 +45,15 @@ import {
   registrarCollectionKey,
   registrarKey,
 } from '@helium/voter-stake-registry-sdk'
+import { IotHotspotInfoV0 } from '@hooks/useIotInfo'
+import { KeyToAssetV0 } from '@hooks/useKeyToAsset'
 import {
   METADATA_PARSER,
   getMetadata,
   getMetadataId,
 } from '@hooks/useMetaplexMetadata'
+import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
+import { RecipientV0 } from '@hooks/useRecipient'
 import {
   PROGRAM_ID as BUBBLEGUM_PROGRAM_ID,
   TreeConfig,
@@ -76,6 +80,7 @@ import {
 } from '@solana/spl-token'
 import {
   AccountMeta,
+  AddressLookupTableAccount,
   Cluster,
   ComputeBudgetProgram,
   ConfirmedSignatureInfo,
@@ -100,10 +105,6 @@ import { withPriorityFees } from '@utils/priorityFees'
 import axios from 'axios'
 import bs58 from 'bs58'
 import Config from 'react-native-config'
-import { IotHotspotInfoV0 } from '@hooks/useIotInfo'
-import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
-import { KeyToAssetV0 } from '@hooks/useKeyToAsset'
-import { RecipientV0 } from '@hooks/useRecipient'
 import { getSessionKey } from '../storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
 import {
@@ -1454,7 +1455,9 @@ export const getAllTransactions = async (
   cluster: Cluster,
   oldestTransaction?: string,
   newestTransaction?: string,
-): Promise<(EnrichedTransaction | ConfirmedSignatureInfo)[]> => {
+): Promise<
+  (EnrichedTransaction | (ConfirmedSignatureInfo & { signers: string[] }))[]
+> => {
   const pubKey = new PublicKey(address)
   const conn = anchorProvider.connection
   const sessionKey = await getSessionKey()
@@ -1466,12 +1469,81 @@ export const getAllTransactions = async (
   }`
 
   try {
-    const txList = await conn.getSignaturesForAddress(pubKey, {
+    const sigs = await conn.getSignaturesForAddress(pubKey, {
       before: oldestTransaction,
       limit: 100,
       until: newestTransaction,
     })
-    const sigList = txList.map((tx) => tx.signature)
+    const sigList = sigs.map((tx) => tx.signature)
+    const txs = await conn.getTransactions(sigList, {
+      commitment: 'confirmed',
+      maxSupportedTransactionVersion: 0,
+    })
+    const cachedLuts: { [key: string]: AddressLookupTableAccount } = {}
+    // eslint-disable-next-line no-restricted-syntax
+    for (const rawTx of txs) {
+      const message = rawTx?.transaction.message
+      if (message) {
+        const { addressTableLookups } = message
+        // eslint-disable-next-line no-restricted-syntax
+        for (const addressTableLookup of addressTableLookups) {
+          if (!cachedLuts[addressTableLookup.accountKey.toBase58()]) {
+            const result = await conn?.getAddressLookupTable(
+              addressTableLookup.accountKey,
+            )
+            if (result.value) {
+              cachedLuts[addressTableLookup.accountKey.toBase58()] =
+                result.value
+            }
+          }
+        }
+      }
+    }
+
+    // Annotate the transactions with their signers
+    const txList = await Promise.all(
+      sigs.map(async (tx, index) => {
+        // Yes, this is extremely gross. It's also the only way to get the signers
+        // on a versioned tx.
+        const rawTx = txs[index]
+        const message = rawTx?.transaction.message
+        if (message) {
+          const { addressTableLookups } = message
+          const addressLookupTableAccounts: Array<AddressLookupTableAccount> =
+            []
+          // eslint-disable-next-line no-restricted-syntax
+          for (const addressTableLookup of addressTableLookups) {
+            addressLookupTableAccounts.push(
+              cachedLuts[addressTableLookup.accountKey.toBase58()],
+            )
+          }
+          const accountKeys = message.getAccountKeys({
+            addressLookupTableAccounts,
+          })
+          return {
+            ...tx,
+            signers: [
+              ...new Set(
+                message.compiledInstructions
+                  .map((ix) =>
+                    ix.accountKeyIndexes.filter((idx) =>
+                      message.isAccountSigner(idx),
+                    ),
+                  )
+                  .flat(),
+              ),
+            ]
+              .map((idx) => accountKeys.get(idx)?.toBase58())
+              .filter(truthy),
+          }
+        }
+
+        return {
+          ...tx,
+          signers: [],
+        }
+      }),
+    )
 
     if (cluster !== 'mainnet-beta' && cluster !== 'devnet') {
       return txList
@@ -1482,7 +1554,9 @@ export const getAllTransactions = async (
     })
 
     const allTxnsWithMetadata: EnrichedTransaction[] = await Promise.all(
-      data.map(async (tx: EnrichedTransaction) => {
+      data.map(async (tx: EnrichedTransaction, index: number) => {
+        // eslint-disable-next-line no-param-reassign
+        tx.signers = txList[index].signers
         try {
           const firstTokenTransfer = tx.tokenTransfers[0]
           if (firstTokenTransfer && firstTokenTransfer.mint) {
