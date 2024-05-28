@@ -15,6 +15,10 @@ import BigNumber from 'bignumber.js'
 import BN from 'bn.js'
 import React, { useMemo } from 'react'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
+import { useColors, useOpacity } from '@theme/themeHooks'
+import { PublicKey } from '@solana/web3.js'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { useTranslation } from 'react-i18next'
 import { HotspotWithPendingRewards } from '../../types/solana'
 import { Mints } from '../../utils/constants'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
@@ -32,6 +36,10 @@ const HotspotListItem = ({
   const {
     content: { metadata },
   } = hotspot
+  const { t } = useTranslation()
+  const colors = useColors()
+  const wallet = useCurrentWallet()
+  const { backgroundStyle: flamecoOpaque } = useOpacity('flamenco', 0.1)
   const streetAddress = useHotspotAddress(hotspot)
 
   const { info: iotMint } = useMint(IOT_MINT)
@@ -85,107 +93,151 @@ const HotspotListItem = ({
     [pendingMobileRewards],
   )
 
+  const mobileRecipient = useMemo(
+    () => hotspot?.rewardRecipients?.[Mints.MOBILE],
+    [hotspot],
+  )
+
+  const iotRecipient = useMemo(
+    () => hotspot?.rewardRecipients?.[Mints.IOT],
+    [hotspot],
+  )
+
+  const hasIotRecipient = useMemo(
+    () =>
+      iotRecipient?.destination &&
+      wallet &&
+      !new PublicKey(iotRecipient.destination).equals(wallet) &&
+      !new PublicKey(iotRecipient.destination).equals(PublicKey.default),
+    [iotRecipient, wallet],
+  )
+
+  const hasMobileRecipient = useMemo(
+    () =>
+      mobileRecipient?.destination &&
+      wallet &&
+      !new PublicKey(mobileRecipient.destination).equals(wallet) &&
+      !new PublicKey(mobileRecipient.destination).equals(PublicKey.default),
+    [mobileRecipient, wallet],
+  )
+
+  const hasRecipientSet = useMemo(
+    () => hasIotRecipient || hasMobileRecipient,
+    [hasIotRecipient, hasMobileRecipient],
+  )
+
   return (
-    <ReAnimatedBox entering={FadeIn} exiting={FadeOut} {...rest}>
+    <ReAnimatedBox
+      backgroundColor="surfaceSecondary"
+      borderRadius="l"
+      position="relative"
+      entering={FadeIn}
+      exiting={FadeOut}
+      {...rest}
+    >
       <TouchableOpacityBox
-        flexDirection="row"
-        marginHorizontal="s"
-        marginVertical="xs"
-        backgroundColor="surfaceSecondary"
-        borderRadius="xl"
-        alignItems="center"
-        paddingVertical="xs"
-        paddingHorizontal="s"
+        flex={1}
+        padding="ms"
+        paddingTop="s"
         onPress={() => onPress(hotspot)}
       >
-        <ImageBox
-          borderRadius="lm"
-          ml="s"
-          height={72}
-          width={62}
-          source={{
-            uri: metadata?.image,
-            cache: 'force-cache',
-          }}
-        />
-        <Box marginStart="m" marginVertical="s" flex={1}>
-          {metadata?.name && (
+        {hasRecipientSet && (
+          <Box flexDirection="row" alignItems="center">
+            <Box
+              flexDirection="row"
+              justifyContent="space-between"
+              alignItems="center"
+              borderRadius="m"
+              paddingVertical="sx"
+              paddingLeft="s"
+              paddingRight="s"
+              style={{
+                ...flamecoOpaque,
+              }}
+            >
+              <Text variant="body3Medium" color="flamenco">
+                {t('changeRewardsRecipientScreen.set')}
+              </Text>
+            </Box>
+          </Box>
+        )}
+        <Box flex={1} flexDirection="row" alignItems="center">
+          <ImageBox
+            borderRadius="lm"
+            height={72}
+            width={62}
+            source={{
+              uri: metadata?.image,
+              cache: 'force-cache',
+            }}
+          />
+          <Box marginLeft="ms" flex={1}>
+            {metadata?.name && (
+              <Text
+                textAlign="left"
+                variant="subtitle2"
+                numberOfLines={1}
+                adjustsFontSizeToFit
+              >
+                {removeDashAndCapitalize(metadata.name)}
+              </Text>
+            )}
+
+            {streetAddress && (
+              <Text variant="body2" numberOfLines={1} adjustsFontSizeToFit>
+                {streetAddress}
+              </Text>
+            )}
             <Text
-              textAlign="left"
-              variant="subtitle2"
+              variant="subtitle3"
+              color="secondaryText"
               numberOfLines={1}
               adjustsFontSizeToFit
             >
-              {removeDashAndCapitalize(metadata.name)}
+              {eccCompact ? ellipsizeAddress(eccCompact) : ''}
             </Text>
-          )}
-
-          {streetAddress && (
-            <Text variant="body2" numberOfLines={1} adjustsFontSizeToFit>
-              {streetAddress}
-            </Text>
-          )}
-          <Text
-            variant="subtitle3"
-            color="secondaryText"
-            numberOfLines={1}
-            adjustsFontSizeToFit
-          >
-            {eccCompact ? ellipsizeAddress(eccCompact) : ''}
-          </Text>
-        </Box>
-        <Box marginVertical="s" marginLeft="s">
-          {!!hasMobileRewards && (
-            <Box flex={1}>
+          </Box>
+          <Box marginLeft="ms">
+            {!!hasMobileRewards && (
               <Box
-                marginBottom="s"
-                justifyContent="center"
+                flexDirection="row"
+                justifyContent="space-between"
                 alignItems="center"
                 backgroundColor="mobileDarkBlue"
-                borderRadius="xl"
-                padding="xs"
-                flexDirection="row"
-                shadowRadius={6}
-                shadowColor="black"
-                shadowOffset={{
-                  width: 0,
-                  height: 3,
-                }}
-                shadowOpacity={0.3}
-                elevation={2}
+                borderRadius="m"
+                paddingVertical="xs"
+                paddingLeft="xs"
+                paddingRight="s"
+                marginBottom="xs"
               >
-                <MobileSymbol color="black" />
-                <Text variant="body2Medium" marginLeft="xs" color="mobileBlue">
+                <MobileSymbol
+                  color={colors.mobileBlue}
+                  width={20}
+                  height={20}
+                />
+                <Text variant="body3Medium" marginLeft="xs" color="mobileBlue">
                   {pendingMobileRewardsString}
                 </Text>
               </Box>
-            </Box>
-          )}
-          {!!hasIotRewards && (
-            <Box flex={1}>
+            )}
+            {!!hasIotRewards && (
               <Box
-                justifyContent="flex-end"
+                flexDirection="row"
+                justifyContent="space-between"
                 alignItems="center"
                 backgroundColor="iotDarkGreen"
-                borderRadius="xl"
-                padding="xs"
-                flexDirection="row"
-                shadowRadius={6}
-                shadowColor="black"
-                shadowOffset={{
-                  width: 0,
-                  height: 3,
-                }}
-                shadowOpacity={0.3}
-                elevation={2}
+                borderRadius="m"
+                paddingVertical="xs"
+                paddingLeft="xs"
+                paddingRight="s"
               >
-                <IotSymbol color="black" />
-                <Text variant="body2Medium" marginLeft="xs" color="iotGreen">
+                <IotSymbol color={colors.iotGreen} width={20} height={20} />
+                <Text variant="body3Medium" marginLeft="xs" color="iotGreen">
                   {pendingIotRewardsString}
                 </Text>
               </Box>
-            </Box>
-          )}
+            )}
+          </Box>
         </Box>
       </TouchableOpacityBox>
     </ReAnimatedBox>

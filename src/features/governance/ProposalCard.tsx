@@ -115,7 +115,7 @@ export const ProposalCard = ({
   if (isLoading) return null
   return (
     <ReAnimatedBox
-      backgroundColor="secondaryBackground"
+      backgroundColor="surfaceSecondary"
       borderRadius="l"
       position="relative"
       entering={FadeIn}
@@ -136,7 +136,7 @@ export const ProposalCard = ({
                   flexDirection="row"
                   padding="s"
                   alignItems="center"
-                  backgroundColor="surfaceSecondary"
+                  backgroundColor="black600"
                   borderRadius="m"
                 >
                   <Box
@@ -158,7 +158,7 @@ export const ProposalCard = ({
                   flexDirection="row"
                   padding="s"
                   alignItems="center"
-                  backgroundColor="surfaceSecondary"
+                  backgroundColor="black600"
                   borderRadius="m"
                 >
                   <Box
@@ -183,7 +183,7 @@ export const ProposalCard = ({
                     backgroundColor={
                       tag.toLowerCase().includes('temp check')
                         ? 'orange500'
-                        : 'surfaceSecondary'
+                        : 'black600'
                     }
                     borderRadius="m"
                   >
@@ -214,7 +214,7 @@ export const ProposalCard = ({
             </Text>
           )}
         </Box>
-        {/* todo (gov): add back once we can derive what they voted easily */}
+        {/* TODO (gov): add back once we can derive what they voted easily */}
         {/*         {derivedState === 'active' && (
           <Box
             borderTopColor="primaryBackground"
@@ -232,7 +232,7 @@ export const ProposalCard = ({
         {}
         <Box
           paddingHorizontal="m"
-          /* todo (gov): add back once we can derive what they voted easily */
+          /* TODO (gov): add back once we can derive what they voted easily */
           /* paddingTop={derivedState === 'active' ? 'm' : 'none'} */
           paddingBottom="ms"
         >

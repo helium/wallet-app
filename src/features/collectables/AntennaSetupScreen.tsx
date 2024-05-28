@@ -108,7 +108,6 @@ const AntennaSetupScreen = () => {
         padding="none"
         title={t('antennaSetupScreen.title')}
         edges={backEdges}
-        backgroundImageUri={collectable.content?.metadata?.image || ''}
       >
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
           <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">

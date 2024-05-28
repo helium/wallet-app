@@ -22,6 +22,7 @@ import TransferCollectableScreen from './TransferCollectableScreen'
 import TransferCompleteScreen from './TransferCompleteScreen'
 import HotspotMapScreen from './HotspotMapScreen'
 import AssertLocationScreen from './AssertLocationScreen'
+import ChangeRewardsRecipientScreen from './ChangeRewardsRecipientScreen'
 
 const CollectablesStack = createStackNavigator()
 
@@ -119,6 +120,10 @@ const CollectablesStackScreen = () => {
         name="OnboardingNavigator"
         component={OnboardingNav}
         options={screenOptions}
+      />
+      <CollectablesStack.Screen
+        name="ChangeRewardsRecipientScreen"
+        component={ChangeRewardsRecipientScreen}
       />
     </CollectablesStack.Navigator>
   )

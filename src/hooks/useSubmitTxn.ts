@@ -24,6 +24,7 @@ import {
   sendJupiterSwap,
   sendMintDataCredits,
   sendTreasurySwap,
+  updateRewardsDestinations,
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
 import {
@@ -469,10 +470,6 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      if (!currentAccount) {
-        throw new Error(t('errors.account'))
-      }
-
       const data = await getAssertData({
         networkDetails: [
           {
@@ -557,6 +554,79 @@ export default () => {
     ],
   )
 
+  const submitUpdateRewardsDestination = useCallback(
+    async ({
+      lazyDistributors,
+      destination,
+      assetId,
+      payer,
+    }: {
+      lazyDistributors: PublicKey[]
+      destination: string
+      assetId: string
+      payer?: string
+    }) => {
+      if (
+        !anchorProvider ||
+        !currentAccount?.solanaAddress ||
+        !walletSignBottomSheetRef
+      ) {
+        throw new Error(t('errors.account'))
+      }
+
+      const { connection } = anchorProvider
+      const assetPk = new PublicKey(assetId)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const payeePk = new PublicKey(payer || currentAccount.solanaAddress!)
+      const destinationPk = new PublicKey(destination)
+      const destinationExists = Boolean(
+        await connection.getAccountInfo(destinationPk),
+      )
+
+      const txn = await populateMissingDraftInfo(
+        anchorProvider.connection,
+        await solUtils.createUpdateCompressionDestinationTxn(
+          anchorProvider,
+          lazyDistributors,
+          payeePk,
+          assetPk,
+          destinationPk,
+        ),
+      )
+
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        warning: destinationExists
+          ? ''
+          : t('transactions.recipientNonExistent'),
+        additionalMessage: t('transactions.signPaymentTxn'),
+        serializedTxs: [Buffer.from(toVersionedTx(txn).serialize())],
+      })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
+      }
+
+      dispatch(
+        updateRewardsDestinations({
+          txn,
+          account: currentAccount,
+          cluster,
+          anchorProvider,
+        }),
+      )
+    },
+    [
+      t,
+      dispatch,
+      cluster,
+      anchorProvider,
+      currentAccount,
+      walletSignBottomSheetRef,
+    ],
+  )
+
   return {
     submitPayment,
     submitCollectable,
@@ -568,5 +638,6 @@ export default () => {
     submitMintDataCredits,
     submitDelegateDataCredits,
     submitUpdateEntityInfo,
+    submitUpdateRewardsDestination,
   }
 }

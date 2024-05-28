@@ -30,6 +30,9 @@ export type CollectableStackParamList = {
   }
   ClaimAllRewardsScreen: undefined
   ClaimingRewardsScreen: undefined
+  ChangeRewardsRecipientScreen: {
+    hotspot: HotspotWithPendingRewards
+  }
   CollectionScreen: {
     collection: Collectable[]
   }

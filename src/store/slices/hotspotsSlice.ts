@@ -2,6 +2,7 @@ import { AnchorProvider } from '@coral-xyz/anchor'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Cluster, PublicKey } from '@solana/web3.js'
 import { CompressedNFT } from 'src/types/solana'
+import { RecipientV0 } from '@hooks/useRecipient'
 import { DEFAULT_PAGE_AMOUNT } from '../../features/collectables/HotspotList'
 import { CSAccount } from '../../storage/cloudStorage'
 import * as solUtils from '../../utils/solanaUtils'
@@ -16,6 +17,9 @@ export type WalletHotspots = {
   hotspotsById: { [key: string]: CompressedNFT }
   hotspotsMetadataById: { [key: string]: { [key: string]: any } }
   hotspotsRewardsById: { [key: string]: { [key: string]: string } }
+  hotspotsRecipientsById: {
+    [key: string]: { [key: string]: RecipientV0 | undefined }
+  }
 }
 
 export type HotspotsByWallet = Record<string, WalletHotspots>
@@ -66,8 +70,14 @@ export const fetchAllHotspots = createAsyncThunk(
       hotspots.push(...(fetchedHotspots.items ?? []))
     }
 
+    const hotspotsRecipients = await solUtils.getHotspotRecipients(
+      anchorProvider,
+      hotspots,
+    )
+
     return {
       fetchedHotspots: hotspots,
+      hotspotsRecipients,
     }
   },
 )
@@ -106,10 +116,16 @@ export const fetchHotspots = createAsyncThunk(
       fetchedHotspots.items,
     )
 
+    const hotspotsRecipients = await solUtils.getHotspotRecipients(
+      anchorProvider,
+      fetchedHotspots.items,
+    )
+
     return {
       fetchedHotspots,
       hotspotsMetadata,
       hotspotsRewards,
+      hotspotsRecipients,
       page: page + 1,
       limit,
       total: fetchedHotspots.grandTotal,
@@ -150,6 +166,7 @@ const hotspotSlice = createSlice({
         hotspotsById: {},
         hotspotsMetadataById: {},
         hotspotsRewardsById: {},
+        hotspotsRecipientsById: {},
         totalHotspots: undefined,
       }
 
@@ -167,6 +184,7 @@ const hotspotSlice = createSlice({
         fetchedHotspots,
         hotspotsMetadata,
         hotspotsRewards,
+        hotspotsRecipients,
         limit,
         page,
       } = action.payload
@@ -198,6 +216,13 @@ const hotspotSlice = createSlice({
           }),
           page === 1 ? {} : prev.hotspotsRewardsById,
         ),
+        hotspotsRecipientsById: hotspotsRecipients.reduce(
+          (acc, item) => ({
+            ...acc,
+            [item.id]: item.recipients,
+          }),
+          page === 1 ? {} : prev.hotspotsRecipientsById,
+        ),
         totalHotspots: fetchedHotspots.grandTotal,
         loading: false,
         fetchingMore: false,
@@ -214,6 +239,7 @@ const hotspotSlice = createSlice({
         hotspotsById: {},
         hotspotsMetadataById: {},
         hotspotsRewardsById: {},
+        hotspotsRecipientsById: {},
       }
 
       state[cluster][address] = {
@@ -232,6 +258,7 @@ const hotspotSlice = createSlice({
         hotspotsById: {},
         hotspotsMetadataById: {},
         hotspotsRewardsById: {},
+        hotspotsRecipientsById: {},
         totalHotspots: undefined,
       }
 
@@ -243,7 +270,7 @@ const hotspotSlice = createSlice({
     builder.addCase(fetchAllHotspots.fulfilled, (state, action) => {
       if (!action.meta.arg?.account.solanaAddress) return state
       const { cluster } = action.meta.arg
-      const { fetchedHotspots } = action.payload
+      const { fetchedHotspots, hotspotsRecipients } = action.payload
 
       const address = action.meta.arg.account.solanaAddress
       const prev = state[cluster][address]
@@ -256,6 +283,13 @@ const hotspotSlice = createSlice({
             [item.id]: item,
           }),
           prev.hotspotsById || {},
+        ),
+        hotspotsRecipientsById: hotspotsRecipients.reduce(
+          (acc, item) => ({
+            ...acc,
+            [item.id]: item.recipients,
+          }),
+          prev.hotspotsRecipientsById || {},
         ),
         totalHotspots: fetchedHotspots.length,
         loading: false,
@@ -272,6 +306,7 @@ const hotspotSlice = createSlice({
         hotspotsById: {},
         hotspotsMetadataById: {},
         hotspotsRewardsById: {},
+        hotspotsRecipientsById: {},
       }
 
       state[cluster][address] = {

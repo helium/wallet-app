@@ -174,7 +174,7 @@ const ClaimRewardsScreen = () => {
             backgroundColorDisabledOpacity={0.5}
             titleColorDisabled="secondaryText"
             title={
-              !redeeming ? t('collectablesScreen.hotspots.addToAccount') : ''
+              !redeeming ? t('collectablesScreen.hotspots.claimRewards') : ''
             }
             titleColor="black"
             marginHorizontal="l"

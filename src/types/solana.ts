@@ -4,10 +4,12 @@ import { init as initHem } from '@helium/helium-entity-manager-sdk'
 import { init as initLazy } from '@helium/lazy-distributor-sdk'
 import { TokenAmount } from '@solana/web3.js'
 import { Creator } from '@metaplex-foundation/mpl-bubblegum'
+import { RecipientV0 } from '@hooks/useRecipient'
 
 export type HotspotWithPendingRewards = CompressedNFT & {
   // mint id to pending rewards
   pendingRewards: Record<string, string> | undefined
+  rewardRecipients: Record<string, RecipientV0 | undefined>
 }
 
 export type HemProgram = Awaited<ReturnType<typeof initHem>>

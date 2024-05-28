@@ -134,6 +134,13 @@ type DelegateDataCreditsInput = {
   delegateDCTxn: TransactionDraft
 }
 
+type UpdateRewardsDestinationInput = {
+  account: CSAccount
+  cluster: Cluster
+  anchorProvider: AnchorProvider
+  txn: TransactionDraft
+}
+
 export const makePayment = createAsyncThunk(
   'solana/makePayment',
   async ({ account, cluster, anchorProvider, paymentTxns }: PaymentInput) => {
@@ -185,6 +192,7 @@ export const makeCollectablePayment = createAsyncThunk(
         },
         'confirmed',
       )
+
       postPayment({ signatures: [sig], cluster })
 
       dispatch(
@@ -627,6 +635,42 @@ export const getTxns = createAsyncThunk(
   },
 )
 
+export const updateRewardsDestinations = createAsyncThunk(
+  'solana/updateRewardsDestinations',
+  async (
+    { account, anchorProvider, cluster, txn }: UpdateRewardsDestinationInput,
+    { dispatch },
+  ) => {
+    if (!account?.solanaAddress) throw new Error('No solana account found')
+
+    try {
+      const signed = await anchorProvider.wallet.signTransaction(
+        toVersionedTx(
+          await populateMissingDraftInfo(anchorProvider.connection, txn),
+        ),
+      )
+
+      const { txid: sig } = await sendAndConfirmWithRetry(
+        anchorProvider.connection,
+        Buffer.from(signed.serialize()),
+        {
+          skipPreflight: true,
+        },
+        'confirmed',
+      )
+
+      postPayment({ signatures: [sig], cluster })
+
+      dispatch(fetchHotspots({ account, anchorProvider, cluster }))
+    } catch (error) {
+      Logger.error(error)
+      throw error
+    }
+
+    return true
+  },
+)
+
 const solanaSlice = createSlice({
   name: 'solana',
   initialState,
@@ -849,6 +893,29 @@ const solanaSlice = createSlice({
       }
     })
     builder.addCase(makePayment.rejected, (state, action) => {
+      state.payment = {
+        success: false,
+        loading: false,
+        error: action.error,
+        signature: undefined,
+      }
+    })
+    builder.addCase(updateRewardsDestinations.pending, (state, _action) => {
+      state.payment = {
+        success: false,
+        loading: true,
+        error: undefined,
+        signature: undefined,
+      }
+    })
+    builder.addCase(updateRewardsDestinations.fulfilled, (state, _action) => {
+      state.payment = {
+        success: true,
+        loading: false,
+        error: undefined,
+      }
+    })
+    builder.addCase(updateRewardsDestinations.rejected, (state, action) => {
       state.payment = {
         success: false,
         loading: false,

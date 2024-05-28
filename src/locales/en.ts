@@ -395,6 +395,17 @@ export default {
       COMPRESSED_NFT_MINT: 'Compressed NFT Minted!',
     },
   },
+  changeRewardsRecipientScreen: {
+    title: 'Update Recipient',
+    description: 'Update recipient of this Hotspot’s rewards',
+    blurb: 'Rewards from this Hotspot will go to this recipient when claimed',
+    warning:
+      'This recipient will receive all rewards for this Hotspot. Make sure this is a trusted party',
+    submit: 'Update Recipient',
+    newRecipient: 'New Recipient',
+    removeRecipient: 'Remove Recipient',
+    set: 'Rewards Recipient Set',
+  },
   assertLocationScreen: {
     title: 'Assert Location',
     whichLocation: 'Which location do you want to assert?',
@@ -726,6 +737,7 @@ export default {
     solanaHealthDown: 'Solana RPC is down. Please try again later.',
     solanaTpsSlow: 'Solana RPC is slow. {{ tps }} tps.',
     sendLogs: 'Send Logs',
+    update: 'Update',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',
