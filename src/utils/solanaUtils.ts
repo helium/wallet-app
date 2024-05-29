@@ -1475,13 +1475,21 @@ export const getAllTransactions = async (
       until: newestTransaction,
     })
     const sigList = sigs.map((tx) => tx.signature)
-    const txs = await conn.getTransactions(sigList, {
-      commitment: 'confirmed',
-      maxSupportedTransactionVersion: 0,
-    })
+    const txs = (
+      await conn.getTransactions(sigList, {
+        commitment: 'confirmed',
+        maxSupportedTransactionVersion: 0,
+      })
+    ).reduce((acc, tx) => {
+      const sig = tx?.transaction.signatures[0]
+      if (sig) {
+        acc[sig] = tx
+      }
+      return acc
+    }, {} as { [key: string]: VersionedTransactionResponse })
     const cachedLuts: { [key: string]: AddressLookupTableAccount } = {}
     // eslint-disable-next-line no-restricted-syntax
-    for (const rawTx of txs) {
+    for (const rawTx of Object.values(txs)) {
       const message = rawTx?.transaction.message
       if (message) {
         const { addressTableLookups } = message
@@ -1502,10 +1510,10 @@ export const getAllTransactions = async (
 
     // Annotate the transactions with their signers
     const txList = await Promise.all(
-      sigs.map(async (tx, index) => {
+      sigs.map(async (tx) => {
         // Yes, this is extremely gross. It's also the only way to get the signers
         // on a versioned tx.
-        const rawTx = txs[index]
+        const rawTx = txs[tx.signature]
         const message = rawTx?.transaction.message
         if (message) {
           const { addressTableLookups } = message

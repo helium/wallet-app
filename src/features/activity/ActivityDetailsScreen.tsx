@@ -1,29 +1,31 @@
-import { RouteProp, useRoute } from '@react-navigation/native'
-import React, { useCallback, useMemo, useState } from 'react'
-import { Linking, ScrollView } from 'react-native'
-import { ConfirmedSignatureInfo } from '@solana/web3.js'
-import { useTranslation } from 'react-i18next'
-import CheckmarkFilled from '@assets/images/checkmarkFill.svg'
 import Error from '@assets/images/error.svg'
+import Receive from '@assets/images/receive.svg'
+import Send from '@assets/images/send.svg'
 import { ReAnimatedBox } from '@components/AnimatedBox'
-import ListItem from '@components/ListItem'
-import ImageBox from '@components/ImageBox'
 import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import ButtonPressable from '@components/ButtonPressable'
-import { useColors } from '@theme/themeHooks'
 import BlurActionSheet from '@components/BlurActionSheet'
-import globalStyles from '@theme/globalStyles'
-import { DelayedFadeIn } from '@components/FadeInOut'
-import useCopyText from '@hooks/useCopyText'
-import useHaptic from '@hooks/useHaptic'
+import Box from '@components/Box'
+import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
+import { DelayedFadeIn } from '@components/FadeInOut'
+import ImageBox from '@components/ImageBox'
+import ListItem from '@components/ListItem'
+import Text from '@components/Text'
+import useCopyText from '@hooks/useCopyText'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import useHaptic from '@hooks/useHaptic'
+import { RouteProp, useRoute } from '@react-navigation/native'
+import { ConfirmedSignatureInfo } from '@solana/web3.js'
+import globalStyles from '@theme/globalStyles'
+import { useColors } from '@theme/themeHooks'
+import React, { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Linking, ScrollView } from 'react-native'
 import { useCreateExplorerUrl } from '../../constants/urls'
-import { ActivityStackParamList } from './activityTypes'
+import { EnrichedTransaction } from '../../types/solana'
 import { ellipsizeAddress, solAddressIsValid } from '../../utils/accountUtils'
 import AddressActivityItem from './AddressActivityItem'
-import { EnrichedTransaction } from '../../types/solana'
+import { ActivityStackParamList } from './activityTypes'
 
 type Route = RouteProp<ActivityStackParamList, 'ActivityDetailsScreen'>
 
@@ -120,6 +122,7 @@ const ActivityDetailsScreen = () => {
     return `${formattedString} | ${time}`
   }, [transaction])
 
+  const wallet = useCurrentWallet()
   const activityImage = useMemo(() => {
     const enrichedTx = transaction as EnrichedTransaction
     const confirmedSig = transaction as ConfirmedSignatureInfo
@@ -127,6 +130,8 @@ const ActivityDetailsScreen = () => {
     if (enrichedTx.transactionError || confirmedSig.err) {
       return <Error color={colors.error} width={150} height={150} />
     }
+    const userSignedTransaction =
+      wallet && enrichedTx.signers.includes(wallet.toBase58())
 
     const { tokenTransfers, events } = enrichedTx
 
@@ -178,10 +183,12 @@ const ActivityDetailsScreen = () => {
       )
     }
 
-    return (
-      <CheckmarkFilled color={colors.greenBright500} width={150} height={150} />
+    return userSignedTransaction ? (
+      <Send color={colors.blue500} width={150} height={150} />
+    ) : (
+      <Receive color={colors.green500} width={150} height={150} />
     )
-  }, [colors, transaction])
+  }, [colors, transaction, wallet])
 
   const onAddressItemPress = useCallback(
     (address: string) => () => {
