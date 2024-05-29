@@ -130,7 +130,8 @@ const ActivityDetailsScreen = () => {
     if (enrichedTx.transactionError || confirmedSig.err) {
       return <Error color={colors.error} width={150} height={150} />
     }
-    const userSignedTransaction = wallet && enrichedTx.signers.includes(wallet.toBase58())
+    const userSignedTransaction =
+      wallet && enrichedTx.signers.includes(wallet.toBase58())
 
     const { tokenTransfers, events } = enrichedTx
 
