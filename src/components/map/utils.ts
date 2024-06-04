@@ -19,7 +19,7 @@ export const INITIAL_MAP_VIEW_STATE: {
 } = {
   centerCoordinate: [-122.419418, 37.774929],
   bounds: WORLD_BOUNDS,
-  zoomLevel: MAX_MAP_ZOOM / 1.2,
+  zoomLevel: 12,
   animationDuration: 500,
 }
 
