@@ -301,6 +301,10 @@ export default {
         type: '{{type}} Hotspots',
         transmitScale: 'Transmit Scale',
       },
+      selectActive: {
+        title: 'Select Hotspot',
+        which: 'Which hotspot would you like to select as active?',
+      },
     },
   },
   activityScreen: {
@@ -396,7 +400,7 @@ export default {
     },
   },
   changeRewardsRecipientScreen: {
-    title: 'Update Recipient',
+    title: 'Change Recipient',
     description: 'Update recipient of this Hotspot’s rewards',
     blurb: 'Rewards from this Hotspot will go to this recipient when claimed',
     warning:
