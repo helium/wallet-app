@@ -1116,10 +1116,13 @@ export const getHotspotRecipients = async (
   )
 
   const mobileRecipients =
-    (await program.account.recipientV0.fetchMultiple(mobileRecipientKeys)) || []
+    (await program.account.recipientV0.fetchMultiple(
+      mobileRecipientKeys || [],
+    )) || []
 
   const iotRecipients =
-    (await program.account.recipientV0.fetchMultiple(iotRecipientKeys)) || []
+    (await program.account.recipientV0.fetchMultiple(iotRecipientKeys || [])) ||
+    []
 
   return hotspots.map((hotspot, index) => {
     const asset = assetKeys[index]

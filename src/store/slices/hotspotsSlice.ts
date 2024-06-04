@@ -313,7 +313,7 @@ const hotspotSlice = createSlice({
         ...prev,
         loading: false,
         fetchingMore: false,
-        onEndReached: false,
+        onEndReached: true,
       }
     })
   },
