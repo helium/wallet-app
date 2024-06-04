@@ -61,8 +61,8 @@ const useHotspots = (): {
           .hotspotsRewardsById[hotspot.id] || {}),
       },
       rewardRecipients: {
-        ...(hotspotsState[currentAccount?.solanaAddress as string]
-          .hotspotsRecipientsById[hotspot.id] || {}),
+        ...((hotspotsState[currentAccount?.solanaAddress as string]
+          .hotspotsRecipientsById || {})[hotspot.id] || {}),
       },
       content: {
         ...hotspot.content,
