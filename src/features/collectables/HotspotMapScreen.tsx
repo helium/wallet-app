@@ -7,11 +7,11 @@ import Box from '@components/Box'
 import CircleLoader from '@components/CircleLoader'
 import FabButton from '@components/FabButton'
 import { DelayedFadeIn } from '@components/FadeInOut'
-import Map from '@components/map/Map'
-import { INITIAL_MAP_VIEW_STATE, MAX_MAP_ZOOM } from '@components/map/utils'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import Map from '@components/map/Map'
+import { INITIAL_MAP_VIEW_STATE, MAX_MAP_ZOOM } from '@components/map/utils'
 import {
   BottomSheetModal,
   BottomSheetModalProvider,
@@ -32,7 +32,7 @@ import MapLibreGL from '@maplibre/maplibre-react-native'
 import OnPressEvent from '@maplibre/maplibre-react-native/javascript/types/OnPressEvent'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useBackgroundStyle, useColors } from '@theme/themeHooks'
-import { Point, feature, featureCollection } from '@turf/helpers'
+import { Polygon, feature, featureCollection } from '@turf/helpers'
 import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY } from '@utils/constants'
 import { parseH3BNLocation } from '@utils/h3'
 import {
@@ -42,18 +42,20 @@ import {
   toAsset,
 } from '@utils/solanaUtils'
 import { BN } from 'bn.js'
+import { cellToBoundary, latLngToCell } from 'h3-js'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
+import { Alert } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
 import { HotspotWithPendingRewards } from '../../types/solana'
+import { HotspotMapHotspotDetails } from './HotspotMapHotspotDetails'
+import { HotspotMapLegend } from './HotspotMapLegend'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import { HotspotMapHotspotDetails } from './HotspotMapHotspotDetails'
-import { HotspotMapLegend } from './HotspotMapLegend'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotMapScreen'>
 
@@ -277,28 +279,35 @@ const HotspotMapScreen = () => {
     }
   }, [activeHex, mapRef, bottomSheetHeight, cameraRef])
 
-  const iconSize = useMemo(() => 0.25 * (zoomLevel / MAX_MAP_ZOOM), [zoomLevel])
+  const iconSize = useMemo(() => 0.17 * (zoomLevel / MAX_MAP_ZOOM), [zoomLevel])
 
   const hexsFeature = useMemo(
     () =>
       featureCollection(
-        Object.keys(hexInfoBuckets).map((h) =>
-          feature(
+        Object.keys(hexInfoBuckets).map((h) => {
+          const center = parseH3BNLocation(new BN(h))
+          return feature(
             {
-              type: 'Point',
-              coordinates: parseH3BNLocation(new BN(h)).reverse(),
-            } as Point,
+              type: 'Polygon',
+              coordinates: [
+                cellToBoundary(
+                  latLngToCell(
+                    center[0],
+                    center[1],
+                    networkType === 'MOBILE' ? (zoomLevel > 16 ? 12 : 10) : 8,
+                  ),
+                ).map((p) => p.reverse()),
+              ],
+            } as Polygon,
             {
               id: h,
-              iconImage:
-                h === activeHex
-                  ? `${networkType.toLowerCase()}HexActive`
-                  : `${networkType.toLowerCase()}Hex`,
+              color: networkType === 'MOBILE' ? '#009EF8' : '#26ED75',
+              opacity: h === activeHex ? 1 : 0.3,
             },
-          ),
-        ),
+          )
+        }),
       ),
-    [hexInfoBuckets, activeHex, networkType],
+    [activeHex, hexInfoBuckets, networkType, zoomLevel],
   )
 
   const activeHexItem = useMemo(() => {
@@ -364,9 +373,23 @@ const HotspotMapScreen = () => {
     (event: OnPressEvent) => {
       const hex = event.features[0]
       setLegendVisible(false)
-      setActiveHex(hex.properties?.id)
+      const id = hex.properties?.id
+      setActiveHex(id)
+      if (id && (hexInfoBuckets[id]?.length || 0) > 1) {
+        Alert.alert(
+          t('collectablesScreen.hotspots.selectActive.title'),
+          t('collectablesScreen.hotspots.selectActive.which'),
+          hexInfoBuckets[id].map((info, index) => ({
+            text: hotspots.find((h) => h.id === info.asset.toBase58())?.content
+              ?.metadata?.name,
+            onPress: () => {
+              setActiveHotspotIndex(index)
+            },
+          })),
+        )
+      }
     },
-    [setActiveHex, setLegendVisible],
+    [hexInfoBuckets, hotspots, t],
   )
 
   return (
@@ -422,12 +445,12 @@ const HotspotMapScreen = () => {
               onPress={handleHexClick}
               hitbox={{ width: iconSize, height: iconSize }}
             >
-              <MapLibreGL.SymbolLayer
-                id="hexs"
+              <MapLibreGL.FillLayer
+                sourceID="hexs"
+                id="hexs-fill"
                 style={{
-                  iconSize,
-                  iconAllowOverlap: true,
-                  iconImage: ['get', 'iconImage'],
+                  fillColor: ['get', 'color'],
+                  fillOpacity: ['get', 'opacity'],
                 }}
               />
             </MapLibreGL.ShapeSource>

@@ -15,19 +15,23 @@ import { useMint } from '@helium/helium-react-hooks'
 import { NetworkType } from '@helium/onboarding'
 import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
 import useCopyText from '@hooks/useCopyText'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useEntityKey } from '@hooks/useEntityKey'
 import { getExplorerUrl, useExplorer } from '@hooks/useExplorer'
 import { useHotspotAddress } from '@hooks/useHotspotAddress'
 import { useHotspotWithMetaAndRewards } from '@hooks/useHotspotWithMeta'
 import { IotHotspotInfoV0, useIotInfo } from '@hooks/useIotInfo'
+import { useKeyToAssetForHotspot } from '@hooks/useKeyToAssetForHotspot'
 import { useMaker } from '@hooks/useMaker'
 import { useMakerApproval } from '@hooks/useMakerApproval'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { MobileHotspotInfoV0, useMobileInfo } from '@hooks/useMobileInfo'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { useNavigation } from '@react-navigation/native'
+import { PublicKey } from '@solana/web3.js'
 import { useColors, useOpacity } from '@theme/themeHooks'
 import { ellipsizeAddress, formatLargeNumber } from '@utils/accountUtils'
+import { removeDashAndCapitalize } from '@utils/hotspotNftsUtils'
 import { Explorer } from '@utils/walletApiV2'
 import BigNumber from 'bignumber.js'
 import BN from 'bn.js'
@@ -36,12 +40,9 @@ import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert, AlertButton, Linking } from 'react-native'
 import { SvgUri } from 'react-native-svg'
-import { removeDashAndCapitalize } from '@utils/hotspotNftsUtils'
-import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import { PublicKey } from '@solana/web3.js'
 import { useSolana } from '../../solana/SolanaProvider'
 import { CompressedNFT } from '../../types/solana'
-import { IOT_CONFIG_KEY, Mints, MOBILE_CONFIG_KEY } from '../../utils/constants'
+import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY, Mints } from '../../utils/constants'
 import { CollectableNavigationProp } from './collectablesTypes'
 
 const IotMapDetails = ({
@@ -153,12 +154,15 @@ export const HotspotMapHotspotDetails = ({
   const { loading: loadingMeta, hotspotWithMeta } =
     useHotspotWithMetaAndRewards(hotspot)
   const entityKey = useEntityKey(hotspotWithMeta)
+  const { info: kta } = useKeyToAssetForHotspot(hotspot)
+
   const [selectExplorerOpen, setSelectExplorerOpen] = useState(false)
   const streetAddress = useHotspotAddress(hotspotWithMeta)
   const { info: iotMint } = useMint(IOT_MINT)
   const { info: mobileMint } = useMint(MOBILE_MINT)
-  const iotInfoAcc = useIotInfo(entityKey)
-  const mobileInfoAcc = useMobileInfo(entityKey)
+  // Use entity key from kta since it's a buffer
+  const iotInfoAcc = useIotInfo(kta?.entityKey)
+  const mobileInfoAcc = useMobileInfo(kta?.entityKey)
   const { metadata } = hotspotWithMeta?.content || {}
   const copyText = useCopyText()
   const collection = hotspot.grouping.find(
@@ -688,8 +692,8 @@ export const HotspotMapHotspotDetails = ({
                   marginHorizontal="m"
                   justifyContent="space-between"
                 >
-                  <Text variant="subtitle3" opacity={!hasRewards ? 0.5 : 1}>
-                    Change Recipient
+                  <Text variant="subtitle3">
+                    {t('changeRewardsRecipientScreen.title')}
                   </Text>
                   {hasRecipientSet && (
                     <Box flexDirection="row" alignItems="center">

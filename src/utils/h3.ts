@@ -1,4 +1,4 @@
-import { latLngToCell, cellToLatLng } from 'h3-js'
+import { latLngToCell, cellToLatLng, cellToBoundary } from 'h3-js'
 import { BN } from '@coral-xyz/anchor'
 
 export const DEFAULT_H3_RES = 12
@@ -16,3 +16,7 @@ export const getH3Location = (lat: number, lng: number, res = DEFAULT_H3_RES) =>
 
 export const parseH3BNLocation = (location: BN) =>
   cellToLatLng(location.toString('hex'))
+
+export const parseH3BNBoundary = (location: BN) => {
+  return cellToBoundary(location.toString('hex'))
+}
