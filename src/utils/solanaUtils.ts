@@ -21,7 +21,11 @@ import {
 } from '@helium/helium-entity-manager-sdk'
 import { subDaoKey } from '@helium/helium-sub-daos-sdk'
 import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'
-import { init as initLazy, recipientKey } from '@helium/lazy-distributor-sdk'
+import {
+  init as initLazy,
+  initializeCompressionRecipient,
+  recipientKey,
+} from '@helium/lazy-distributor-sdk'
 import {
   Asset,
   DC_MINT,
@@ -2020,8 +2024,21 @@ export const createUpdateCompressionDestinationTxn = async (
           recipientPk,
         )
 
-        if (recipientExists) {
-          return program.methods
+        const ixs = []
+        if (!recipientExists) {
+          ixs.push(
+            await (
+              await initializeCompressionRecipient({
+                program,
+                assetId,
+                lazyDistributor: lazy,
+                payer,
+              })
+            ).instruction(),
+          )
+        }
+        ixs.push(
+          await program.methods
             .updateCompressionDestinationV0({
               ...args,
             })
@@ -2033,11 +2050,12 @@ export const createUpdateCompressionDestinationTxn = async (
                 destination == null ? PublicKey.default : destination,
             })
             .remainingAccounts(remainingAccounts)
-            .instruction()
-        }
+            .instruction(),
+        )
+        return ixs
       }),
     )
-  ).filter(truthy)
+  ).flat()
 
   return {
     instructions: await withPriorityFees({
