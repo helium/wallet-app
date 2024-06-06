@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Cluster, Connection, PublicKey } from '@solana/web3.js'
 import { WrappedConnection } from '@utils/WrappedConnection'
+import { PURGE } from 'redux-persist'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Collectable } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
@@ -116,6 +117,7 @@ const collectables = createSlice({
         loading: false,
       }
     })
+    builder.addCase(PURGE, () => initialState)
   },
 })
 

@@ -1,8 +1,9 @@
 import { AnchorProvider } from '@coral-xyz/anchor'
+import { RecipientV0 } from '@hooks/useRecipient'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Cluster, PublicKey } from '@solana/web3.js'
+import { PURGE } from 'redux-persist'
 import { CompressedNFT } from 'src/types/solana'
-import { RecipientV0 } from '@hooks/useRecipient'
 import { DEFAULT_PAGE_AMOUNT } from '../../features/collectables/HotspotList'
 import { CSAccount } from '../../storage/cloudStorage'
 import * as solUtils from '../../utils/solanaUtils'
@@ -316,9 +317,10 @@ const hotspotSlice = createSlice({
         onEndReached: true,
       }
     })
+    builder.addCase(PURGE, () => initialState)
   },
 })
 
 const { reducer, name } = hotspotSlice
-export { name, hotspotSlice as hotspotsSlice }
+export { hotspotSlice as hotspotsSlice, name }
 export default reducer

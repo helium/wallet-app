@@ -1065,6 +1065,9 @@ export default {
           },
           title: 'Preview Solana Experience',
         },
+        clearCache: 'Clear Cache',
+        clearCacheMessage:
+          'Are you sure you want to clear the cache? This will remove all cached data from the app.',
         solanaCluster: { title: 'Solana Cluster' },
         testnet: {
           enablePrompt: {

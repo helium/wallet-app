@@ -424,7 +424,7 @@ const AssertLocationScreen = () => {
             flex={1}
             width="100%"
             height="100%"
-            zIndex={100}
+            zIndex={isLoading ? 100 : 0}
           >
             <Box flex={1} height="100%" justifyContent="center">
               <CircleLoader loaderSize={24} color="white" />
