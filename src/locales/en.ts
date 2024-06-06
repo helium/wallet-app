@@ -705,6 +705,7 @@ export default {
     copiedSeedPhrase: 'Copied Seed Phrase',
     copy: 'Copy',
     copyToClipboard: 'Copy to clipboard',
+    toClipboard: 'to clipboard',
     done: 'Done',
     error: 'Error',
     fee: 'Fee',
@@ -742,6 +743,11 @@ export default {
     solanaTpsSlow: 'Solana RPC is slow. {{ tps }} tps.',
     sendLogs: 'Send Logs',
     update: 'Update',
+  },
+  crash: {
+    title: 'App Crashed',
+    subTitle: 'Please report this issue in the Helium Discord.',
+    resetApp: 'Clear Cache and Reset App',
   },
   hntKeyboard: {
     enterAmount: 'Enter {{ticker}} Amount',
