@@ -25,7 +25,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:host="wallet.helium.com" />
+                <data android:host="wallet.helium.com/payment" />
                 <data android:scheme="https" />
             </intent-filter>
 
