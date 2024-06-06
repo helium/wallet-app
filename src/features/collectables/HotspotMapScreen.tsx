@@ -320,11 +320,13 @@ const HotspotMapScreen = () => {
       }
 
       const info = (hexInfoBuckets[activeHex] || [])[activeHotspotIndex]
-      return {
-        hotspot: hotspots.find(
-          (h) => h.id === info.asset.toBase58(),
-        ) as HotspotWithPendingRewards,
-        info,
+      if (info) {
+        return {
+          hotspot: hotspots.find(
+            (h) => h.id === info.asset.toBase58(),
+          ) as HotspotWithPendingRewards,
+          info,
+        }
       }
     }
   }, [
