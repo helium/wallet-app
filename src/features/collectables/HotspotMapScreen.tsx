@@ -319,12 +319,14 @@ const HotspotMapScreen = () => {
         }
       }
 
-      const info = hexInfoBuckets[activeHex][activeHotspotIndex]
-      return {
-        hotspot: hotspots.find(
-          (h) => h.id === info.asset.toBase58(),
-        ) as HotspotWithPendingRewards,
-        info,
+      const info = (hexInfoBuckets[activeHex] || [])[activeHotspotIndex]
+      if (info) {
+        return {
+          hotspot: hotspots.find(
+            (h) => h.id === info.asset.toBase58(),
+          ) as HotspotWithPendingRewards,
+          info,
+        }
       }
     }
   }, [
@@ -410,7 +412,8 @@ const HotspotMapScreen = () => {
             flex={1}
             width="100%"
             height="100%"
-            zIndex={100}
+            // On android, the blur just doesn't go away when done loading.
+            zIndex={isLoading ? 100 : 0}
           >
             <Box flex={1} height="100%" justifyContent="center">
               <CircleLoader loaderSize={24} color="white" />
