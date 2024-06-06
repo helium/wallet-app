@@ -83,7 +83,7 @@ const IotMapDetails = ({
             {t('generic.gain')}
           </Text>
           <Text variant="body3">
-            {gain} {t('generic.dBi')}
+            {gain ? gain / 10 : gain} {t('generic.dBi')}
           </Text>
         </Box>
         <Box>
