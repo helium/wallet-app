@@ -36,6 +36,7 @@ import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import BN from 'bn.js'
 import bs58 from 'bs58'
 import { first, last } from 'lodash'
+import { PURGE } from 'redux-persist'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
 import { CompressedNFT, HotspotWithPendingRewards } from '../../types/solana'
@@ -1007,6 +1008,7 @@ const solanaSlice = createSlice({
         state.activity.error = error
       }
     })
+    builder.addCase(PURGE, () => initialState)
   },
 })
 

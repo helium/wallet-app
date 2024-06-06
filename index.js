@@ -4,7 +4,6 @@ import 'react-native-url-polyfill/auto'
 import { AppRegistry } from 'react-native'
 import { Provider as ReduxProvider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
-import { persistStore } from 'redux-persist'
 import { ThemeProvider } from '@shopify/restyle'
 import { darkThemeColors, theme } from './src/theme/theme'
 import App from './src/App'
@@ -15,13 +14,12 @@ import AppStorageProvider from './src/storage/AppStorageProvider'
 import LanguageProvider from './src/storage/LanguageProvider'
 import NotificationStorageProvider from './src/storage/NotificationStorageProvider'
 import store from './src/store/store'
+import { persistor } from './src/store/persistence'
 
 // eslint-disable-next-line no-undef
 if (__DEV__) {
   import('./ReactotronConfig')
 }
-
-export const persistor = persistStore(store)
 
 const render = () => {
   return (

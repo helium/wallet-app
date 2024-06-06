@@ -26,6 +26,7 @@ import {
   checkSecureAccount,
   getSecureAccount,
 } from '../../storage/secureStorage'
+import { persistor } from '../../store/persistence'
 import { SUPPORTED_LANGUAGUES } from '../../utils/i18n'
 import SUPPORTED_CURRENCIES from '../../utils/supportedCurrencies'
 import { HomeNavigationProp } from '../home/homeTypes'
@@ -64,7 +65,7 @@ const Settings = () => {
     updateEnableHaptic,
   } = useAppStorage()
   const { showOKAlert, showOKCancelAlert } = useAlert()
-  const { updateCluster, cluster } = useSolana()
+  const { updateCluster, cluster, cache } = useSolana()
 
   const isDefaultAccount = useMemo(
     () => defaultAccountAddress === currentAccount?.address,
@@ -382,6 +383,30 @@ const Settings = () => {
           onValueSelect: handleSolanaClusterChange,
         },
       },
+      {
+        title: t('settings.sections.dev.clearCache'),
+        onPress: () => {
+          Alert.alert(
+            t('settings.sections.dev.clearCache'),
+            t('settings.sections.dev.clearCacheMessage'),
+            [
+              { text: t('generic.cancel'), style: 'cancel' },
+              {
+                text: t('generic.clear'),
+                style: 'destructive',
+                onPress: async () => {
+                  await persistor.purge()
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  Object.keys(cache?.genericCache.cache).forEach((key) => {
+                    cache?.delete(key)
+                  })
+                },
+              },
+            ],
+          )
+        },
+      },
     ]
 
     const accountSettings = [
@@ -556,6 +581,7 @@ const Settings = () => {
     handleResetPin,
     handlePinForPayment,
     requirePinForPayment,
+    cache,
   ])
 
   const renderItem = useCallback(

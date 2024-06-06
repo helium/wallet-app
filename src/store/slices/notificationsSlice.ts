@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import * as WalletApi from '../../utils/walletApiV2'
+import { PURGE } from 'redux-persist'
 import { CSAccount } from '../../storage/cloudStorage'
+import * as WalletApi from '../../utils/walletApiV2'
 
 type NotificationsByResource = Record<string, WalletApi.Notification[]>
 
@@ -58,6 +59,7 @@ const notificationsSlice = createSlice({
         viewedAt: new Date().toISOString(),
       }
     })
+    builder.addCase(PURGE, () => initialState)
   },
 })
 
