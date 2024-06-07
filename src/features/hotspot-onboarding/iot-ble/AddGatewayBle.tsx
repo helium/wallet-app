@@ -7,11 +7,13 @@ import Text from '@components/Text'
 import {
   init,
   iotInfoKey,
-  mobileInfoKey,
   keyToAssetKey,
+  mobileInfoKey,
 } from '@helium/helium-entity-manager-sdk'
+import { daoKey } from '@helium/helium-sub-daos-sdk'
 import { useOnboarding } from '@helium/react-native-sdk'
 import {
+  HNT_MINT,
   IOT_MINT,
   MOBILE_MINT,
   bufferToTransaction,
@@ -21,17 +23,18 @@ import {
 } from '@helium/spl-utils'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useImplicitBurn } from '@hooks/useImplicitBurn'
+import { useKeyToAsset } from '@hooks/useKeyToAsset'
 import { useOnboardingBalnces } from '@hooks/useOnboardingBalances'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { LAMPORTS_PER_SOL, Transaction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { DAO_KEY, IOT_CONFIG_KEY, MOBILE_CONFIG_KEY } from '@utils/constants'
+import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY } from '@utils/constants'
 import sleep from '@utils/sleep'
 import { getHotspotWithRewards, isInsufficientBal } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { Buffer } from 'buffer'
-import React, { useState } from 'react'
-import { useAsyncCallback } from 'react-async-hook'
+import React, { useMemo, useState } from 'react'
+import { useAsync, useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert, Linking, ScrollView } from 'react-native'
 import { useSolana } from '../../../solana/SolanaProvider'
@@ -67,6 +70,17 @@ const AddGatewayBle = () => {
     locationAssertDcRequirements,
     loadingOnboardingDcRequirements,
   } = useOnboardingBalnces(onboardingAddress)
+  const keyToAssetK = useMemo(() => {
+    return keyToAssetKey(daoKey(HNT_MINT)[0], onboardingAddress)[0].toBase58()
+  }, [onboardingAddress])
+  const { info: keyToAsset } = useKeyToAsset(keyToAssetK)
+  const { result: asset } = useAsync(async () => {
+    if (anchorProvider && keyToAsset) {
+      return getAsset(anchorProvider.connection.rpcEndpoint, keyToAsset.asset)
+    }
+    return undefined
+  }, [anchorProvider, keyToAsset])
+  const wrongOwner = asset && wallet && !asset.ownership.owner.equals(wallet)
   const mint = network === 'IOT' ? IOT_MINT : MOBILE_MINT
   const requiredDc = onboardingDcRequirements[mint.toBase58()] || new BN(0)
   const assertRequiredDc =
@@ -138,19 +152,6 @@ const AddGatewayBle = () => {
     // const txnStr = tx.toString()
     const txnStr = createGatewayTx
     const hemProgram = await init(anchorProvider)
-    const keyToAssetK = keyToAssetKey(DAO_KEY, onboardingAddress, 'b58')[0]
-    let keyToAsset = await hemProgram.account.keyToAssetV0.fetchNullable(
-      keyToAssetK,
-    )
-    if (keyToAsset) {
-      const asset = await getAsset(
-        anchorProvider.connection.rpcEndpoint,
-        keyToAsset.asset,
-      )
-      if (!asset?.ownership.owner.equals(wallet)) {
-        throw new Error(t('hotspotOnboarding.onboarding.wrongOwner'))
-      }
-    }
     // const txnStr = await createGatewayTxn({
     //   ownerAddress: accountAddress,
     //   payerAddress: maker?.address,
@@ -258,21 +259,24 @@ const AddGatewayBle = () => {
     }
 
     let totalTime = 0
+    let keyToAssetPostOnboard = keyToAsset
     // Wait up to 30s for hotspot to exist
-    while (!keyToAsset && totalTime < 30 * 1000) {
+    while (!keyToAssetPostOnboard && totalTime < 30 * 1000) {
       // eslint-disable-next-line no-await-in-loop
       await sleep(2000)
       totalTime += 2000
       // eslint-disable-next-line no-await-in-loop
-      keyToAsset = await hemProgram.account.keyToAssetV0.fetchNullable(
-        keyToAssetK,
-      )
+      keyToAssetPostOnboard =
+        await hemProgram.account.keyToAssetV0.fetchNullable(keyToAssetK)
     }
-    if (!keyToAsset) {
+    if (!keyToAssetPostOnboard) {
       throw new Error(t('hotspotOnboarding.onboarding.failedToFind'))
     }
-    const { asset } = keyToAsset
-    const collectable = await getHotspotWithRewards(asset, anchorProvider)
+    const { asset: assetPostOnboard } = keyToAssetPostOnboard
+    const collectable = await getHotspotWithRewards(
+      assetPostOnboard,
+      anchorProvider,
+    )
 
     if (networkInfo) {
       collectNav.navigate('HotspotMapScreen', { hotspot: collectable, network })
@@ -283,6 +287,7 @@ const AddGatewayBle = () => {
   const error =
     onboardBalError ||
     callbackError ||
+    (wrongOwner && new Error(t('hotspotOnboarding.onboarding.wrongOwner'))) ||
     (!maker &&
       !loadingMaker &&
       new Error(t('hotspotOnboarding.onboarding.makerNotFound')))
@@ -295,6 +300,7 @@ const AddGatewayBle = () => {
     loadingMySol ||
     loadingOnboardingDcRequirements
   const disabled =
+    wrongOwner ||
     !maker ||
     loading ||
     (balError && (insufficientMyDcBal || insufficientMySolBal))
@@ -324,7 +330,7 @@ const AddGatewayBle = () => {
             {error.message ? error.message.toString() : error.toString()}
           </Text>
         )}
-        {balError && (
+        {!wrongOwner && balError && (
           <>
             <Text variant="body1Medium" color="red500">
               {t('hotspotOnboarding.onboarding.responsible')}
@@ -432,7 +438,7 @@ const AddGatewayBle = () => {
             )}
           </>
         )}
-        {!balError && (
+        {!wrongOwner && !balError ? (
           <ButtonPressable
             marginTop="l"
             borderRadius="round"
@@ -445,7 +451,7 @@ const AddGatewayBle = () => {
             disabled={disabled}
             LeadingComponent={loading ? <CircleLoader /> : undefined}
           />
-        )}
+        ) : null}
       </ScrollView>
     </BackScreen>
   )
