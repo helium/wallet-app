@@ -259,7 +259,7 @@ const AddGatewayBle = () => {
     }
 
     let totalTime = 0
-    let keyToAssetPostOnboard
+    let keyToAssetPostOnboard = keyToAsset
     // Wait up to 30s for hotspot to exist
     while (!keyToAssetPostOnboard && totalTime < 30 * 1000) {
       // eslint-disable-next-line no-await-in-loop
