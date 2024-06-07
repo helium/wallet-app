@@ -287,6 +287,7 @@ const AddGatewayBle = () => {
   const error =
     onboardBalError ||
     callbackError ||
+    (wrongOwner && new Error(t('hotspotOnboarding.onboarding.wrongOwner'))) ||
     (!maker &&
       !loadingMaker &&
       new Error(t('hotspotOnboarding.onboarding.makerNotFound')))
