@@ -394,7 +394,7 @@ export const HotspotMapHotspotDetails = ({
       (resolve) => {
         const options: AlertButton[] = []
 
-        if (!iotInfoAcc?.info) {
+        if (iotMakerApprovalAcc && !iotInfoAcc?.info) {
           options.push({
             text: 'IOT',
             onPress: () => {
@@ -403,7 +403,7 @@ export const HotspotMapHotspotDetails = ({
           })
         }
 
-        if (!mobileInfoAcc?.info) {
+        if (mobileMakerApprovalAcc && !mobileInfoAcc?.info) {
           options.push({
             text: 'MOBILE',
             onPress: () => {
