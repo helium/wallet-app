@@ -25,8 +25,54 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:host="wallet.helium.com/payment" />
+                <data android:host="wallet.helium.com" />
                 <data android:scheme="https" />
+                <data android:pathPrefix="/link_wallet" />
+            </intent-filter>
+
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="wallet.helium.com" />
+                <data android:scheme="https" />
+                <data android:pathPrefix="/import_key" />
+            </intent-filter>
+
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="wallet.helium.com" />
+                <data android:scheme="https" />
+                <data android:pathPrefix="/sign_hotspot" />
+            </intent-filter>
+
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="wallet.helium.com" />
+                <data android:scheme="https" />
+                <data android:pathPrefix="/payment" />
+            </intent-filter>
+
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="wallet.helium.com" />
+                <data android:scheme="https" />
+                <data android:pathPrefix="/dapp_login" />
+            </intent-filter>
+
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="wallet.helium.com" />
+                <data android:scheme="https" />
+                <data android:pathPrefix="/governance" />
             </intent-filter>
 
             <intent-filter>
