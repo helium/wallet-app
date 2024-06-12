@@ -1,10 +1,13 @@
+import { Wallet } from '@coral-xyz/anchor'
+import { useOrganization } from '@helium/modular-governance-hooks'
+import { organizationKey } from '@helium/organization-sdk'
 import { HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import {
-  useRegistrar,
-  getRegistrarKey,
   HeliumVsrStateProvider,
   useHeliumVsrState,
+  useRegistrar,
 } from '@helium/voter-stake-registry-hooks'
+import { getRegistrarKey } from '@helium/voter-stake-registry-sdk'
 import { PublicKey } from '@solana/web3.js'
 import React, {
   FC,
@@ -14,10 +17,8 @@ import React, {
   useMemo,
   useState,
 } from 'react'
-import { Wallet } from '@coral-xyz/anchor'
-import { organizationKey } from '@helium/organization-sdk'
-import { useOrganization } from '@helium/modular-governance-hooks'
 import { useAsync } from 'react-async-hook'
+import Config from 'react-native-config'
 import { useSolana } from '../solana/SolanaProvider'
 import { useAccountStorage } from './AccountStorageProvider'
 
@@ -143,6 +144,7 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
         mint={mint}
         wallet={anchorProvider?.wallet as Wallet}
         connection={anchorProvider?.connection}
+        heliumVoteUri={Config.HELIUM_VOTE_API_URL}
       >
         {children}
       </HeliumVsrStateProvider>

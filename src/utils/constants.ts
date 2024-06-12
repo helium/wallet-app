@@ -13,6 +13,12 @@ export const Mints: Record<string, string> = {
   DC: DC_MINT.toBase58(),
 }
 
+export const networksToMint: { [key: string]: PublicKey } = {
+  hnt: HNT_MINT,
+  mobile: MOBILE_MINT,
+  iot: IOT_MINT,
+}
+
 export const GovMints: string[] = [Mints.HNT, Mints.MOBILE, Mints.IOT]
 
 export const MOBILE_LAZY_KEY = lazyDistributorKey(

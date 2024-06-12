@@ -2,6 +2,7 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import { DelayedFadeIn } from '@components/FadeInOut'
+import { Markdown } from '@components/Markdown'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -23,12 +24,10 @@ import {
   useVote,
 } from '@helium/voter-stake-registry-hooks'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { useTheme } from '@shopify/restyle'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useGovernance } from '@storage/GovernanceProvider'
 import globalStyles from '@theme/globalStyles'
-import { Theme } from '@theme/theme'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import { humanReadable } from '@utils/formatting'
@@ -40,7 +39,6 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
-import Markdown from 'react-native-markdown-display'
 import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
@@ -59,7 +57,6 @@ export const ProposalScreen = () => {
   const { t } = useTranslation()
   const route = useRoute<Route>()
   const navigation = useNavigation<GovernanceNavigationProp>()
-  const theme = useTheme<Theme>()
   const { upsertAccount, currentAccount } = useAccountStorage()
   const [currVote, setCurrVote] = useState(0)
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
@@ -128,11 +125,7 @@ export const ProposalScreen = () => {
     error: relErr,
   } = useRelinquishVote(proposalKey)
 
-  const {
-    error: markdownErr,
-    loading: markdownLoading,
-    result: markdown,
-  } = useAsync(async () => {
+  const { error: markdownErr, result: markdown } = useAsync(async () => {
     if (proposal && proposal.uri) {
       const { data } = await axios.get(proposal.uri)
       return data
@@ -437,7 +430,7 @@ export const ProposalScreen = () => {
               {noVotingPower && (
                 <TouchableOpacityBox
                   onPress={() =>
-                    navigation.push('VotingPowerScreen', {
+                    navigation.push('PositionsScreen', {
                       mint: mint.toBase58(),
                     })
                   }
@@ -505,53 +498,18 @@ export const ProposalScreen = () => {
                   </Box>
                 </Box>
               )}
-              <Box
-                flexGrow={1}
-                justifyContent="center"
-                backgroundColor="surfaceSecondary"
-                borderRadius="l"
-                padding="m"
-                marginTop="m"
-              >
-                {!markdownLoading && markdown && (
-                  <Markdown
-                    style={{
-                      hr: {
-                        marginTop: theme.spacing.m,
-                      },
-                      blockquote: {
-                        ...theme.textVariants.body2,
-                        color: theme.colors.primaryText,
-                        backgroundColor: 'transparent',
-                      },
-                      body: {
-                        ...theme.textVariants.body2,
-                        color: theme.colors.primaryText,
-                      },
-                      heading1: {
-                        ...theme.textVariants.subtitle1,
-                        color: theme.colors.primaryText,
-                        paddingTop: theme.spacing.ms,
-                        paddingBottom: theme.spacing.ms,
-                      },
-                      heading2: {
-                        ...theme.textVariants.subtitle2,
-                        color: theme.colors.primaryText,
-                        paddingTop: theme.spacing.ms,
-                        paddingBottom: theme.spacing.ms,
-                      },
-                      heading3: {
-                        ...theme.textVariants.subtitle3,
-                        color: theme.colors.primaryText,
-                        paddingTop: theme.spacing.ms,
-                        paddingBottom: theme.spacing.ms,
-                      },
-                    }}
-                  >
-                    {markdown}
-                  </Markdown>
-                )}
-              </Box>
+              {markdown && (
+                <Box
+                  flexGrow={1}
+                  justifyContent="center"
+                  backgroundColor="surfaceSecondary"
+                  borderRadius="l"
+                  padding="m"
+                  marginTop="m"
+                >
+                  <Markdown markdown={markdown} />
+                </Box>
+              )}
             </Box>
           </ScrollView>
         </SafeAreaBox>

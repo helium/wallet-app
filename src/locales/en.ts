@@ -1254,6 +1254,30 @@ export default {
       youHave: 'You have {{amount}} more {{symbol}} available to lock.',
       increase: 'Increase your voting power by locking tokens.',
     },
+    voters: {
+      title: 'Browse Voters',
+      searchPlaceholder: "Search for voter's name or public key",
+      warning:
+        'Assigning proxy to majority voters may threaten the decentralization of the network.',
+      majority: 'Majority Voter',
+      minority: 'Minority Voter',
+      assignBelow: 'Consider assigning proxy to voters below this point.',
+      noneFound: 'No voters found matching this search',
+    },
+    history: {
+      noneFound: 'No proposals found',
+      cancelled: 'Cancelled',
+      active: 'Active',
+      notVoted: 'Not Voted',
+      estTimeRemaining: 'Estimated Time Remaining',
+      percentOfVote: 'Percent of Vote',
+      voted: 'Voted',
+      completed: 'Completed',
+      result: 'Result',
+    },
+    voter: {
+      assignProxy: 'Assign Proxy',
+    },
     positions: {
       relinquish: 'Relinquish Votes',
       lockedAmount: 'Locked Amount {{amount}} {{symbol}}',

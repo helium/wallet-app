@@ -46,6 +46,8 @@ const SearchInput = ({
     >
       <Search color={colors[color as Color]} />
       <TextInput
+        fontSize={16}
+        fontWeight="normal"
         textInputProps={{
           onChangeText,
           onSubmitEditing: handleSubmitEditing,
