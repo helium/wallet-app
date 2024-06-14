@@ -1,11 +1,13 @@
-import { ReAnimatedBox } from '@components/AnimatedBox'
+import ActiveCircle from '@assets/images/activeCircle.svg'
+import CancelledCircle from '@assets/images/cancelledCircle.svg'
 import Box from '@components/Box'
-import CircleLoader from '@components/CircleLoader'
+import { CardSkeleton } from '@components/CardSkeleton'
 import { Pill } from '@components/Pill'
 import Text from '@components/Text'
 import TouchableContainer from '@components/TouchableContainer'
 import { ProposalWithVotes } from '@helium/voter-stake-registry-sdk'
 import { useProposalStatus } from '@hooks/useProposalStatus'
+import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { useColors } from '@theme/themeHooks'
@@ -16,16 +18,15 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { FlatList, RefreshControl } from 'react-native'
-import { FadeIn, FadeOut } from 'react-native-reanimated'
-import { VoterCardStat } from './VoterCardStat'
-import ActiveCircle from '@assets/images/activeCircle.svg'
-import CancelledCircle from '@assets/images/cancelledCircle.svg'
 import { ProposalTags } from './ProposalTags'
+import { VoterCardStat } from './VoterCardStat'
+import { GovernanceNavigationProp } from './governanceTypes'
 
 export const VoteHistory: React.FC<{
   wallet: PublicKey
   header: React.ReactElement
-}> = ({ wallet, header }) => {
+  onRefresh?: () => void
+}> = ({ wallet, header, onRefresh = () => {} }) => {
   const { voteService } = useGovernance()
   const [voteHistories, setVoteHistory] = useState<ProposalWithVotes[]>([])
   const [hasMore, setHasMore] = useState(true)
@@ -68,14 +69,20 @@ export const VoteHistory: React.FC<{
 
   const { t } = useTranslation()
 
-  const refresh = useCallback(() => {
-    setHasMore(true)
-    setVoteHistory([])
-    fetchMoreData(1)
-  }, [fetchMoreData])
+  const refresh = useCallback(
+    (initial = false) => {
+      if (!initial) {
+        onRefresh()
+      }
+      setHasMore(true)
+      setVoteHistory([])
+      fetchMoreData(1)
+    },
+    [fetchMoreData, onRefresh],
+  )
   useEffect(() => {
     if (voteService) {
-      refresh()
+      refresh(true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [voteService?.registrar.toBase58()])
@@ -129,7 +136,7 @@ export const VoteHistory: React.FC<{
 
   return (
     <FlatList
-      ListHeaderComponent={() => header}
+      ListHeaderComponent={header}
       keyExtractor={keyExtractor}
       data={dedupedVoteHistories}
       renderItem={renderItem}
@@ -150,21 +157,7 @@ export const VoteHistory: React.FC<{
 const HISTORY_HEIGHT = 110
 
 export const VoteHistorySkeleton = () => {
-  return (
-    <ReAnimatedBox entering={FadeIn} exiting={FadeOut}>
-      <Box
-        backgroundColor="surfaceSecondary"
-        borderRadius="l"
-        height={HISTORY_HEIGHT}
-        width="100%"
-        justifyContent="center"
-        alignItems="center"
-        mb="m"
-      >
-        <CircleLoader loaderSize={30} />
-      </Box>
-    </ReAnimatedBox>
-  )
+  return <CardSkeleton height={HISTORY_HEIGHT} />
 }
 
 const ProposalItem: React.FC<{
@@ -173,9 +166,17 @@ const ProposalItem: React.FC<{
   const { completed, timeExpired, endTs, votingResults, isCancelled } =
     useProposalStatus(proposal)
   const { t } = useTranslation()
+  const { mint } = useGovernance()
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const choices = proposal.state?.resolved?.choices
+  const navigation = useNavigation<GovernanceNavigationProp>()
+  const handlePress = useCallback(() => {
+    navigation.navigate('ProposalScreen', {
+      mint: mint.toBase58(),
+      proposal: proposal.address,
+    })
+  }, [mint, navigation, proposal.address])
 
   return (
     <TouchableContainer
@@ -183,6 +184,7 @@ const ProposalItem: React.FC<{
       borderRadius="l"
       flexDirection="column"
       mb="m"
+      onPress={handlePress}
     >
       <Box
         px="m"

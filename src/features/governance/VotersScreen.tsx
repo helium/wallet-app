@@ -5,9 +5,8 @@ import BlueCheck from '@assets/images/blueCheck.svg'
 import MajorityCircle from '@assets/images/majorityCircle.svg'
 import MinorityCircle from '@assets/images/minorityCircle.svg'
 import Warning from '@assets/images/warning2.svg'
-import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
-import CircleLoader from '@components/CircleLoader'
+import { CardSkeleton } from '@components/CardSkeleton'
 import { Pill } from '@components/Pill'
 import SearchInput from '@components/SearchInput'
 import Text from '@components/Text'
@@ -22,7 +21,6 @@ import BN from 'bn.js'
 import { times } from 'lodash'
 import { useAsyncCallback } from 'react-async-hook'
 import { FlatList, Image, RefreshControl } from 'react-native'
-import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { GovernanceWrapper } from './GovernanceWrapper'
 import { VoterCardStat } from './VoterCardStat'
 import { GovernanceNavigationProp } from './governanceTypes'
@@ -277,21 +275,7 @@ const VoterCard: React.FC<{
 const VOTER_HEIGHT = 110
 
 export const VoterSkeleton = () => {
-  return (
-    <ReAnimatedBox entering={FadeIn} exiting={FadeOut}>
-      <Box
-        backgroundColor="surfaceSecondary"
-        borderRadius="l"
-        height={VOTER_HEIGHT}
-        width="100%"
-        justifyContent="center"
-        alignItems="center"
-        mb="m"
-      >
-        <CircleLoader loaderSize={30} />
-      </Box>
-    </ReAnimatedBox>
-  )
+  return <CardSkeleton height={VOTER_HEIGHT} />
 }
 
 function debounce<T extends unknown[], U>(

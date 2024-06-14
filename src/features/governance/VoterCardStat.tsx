@@ -1,6 +1,6 @@
-import Box from '@components/Box';
-import Text from '@components/Text';
-import React from 'react';
+import Box from '@components/Box'
+import Text from '@components/Text'
+import React from 'react'
 
 export const VoterCardStat: React.FC<{ title: string; value: string }> = ({
   title,

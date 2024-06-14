@@ -88,7 +88,7 @@ export const GovernanceWrapper: React.FC<
   return (
     <ReAnimatedBox style={globalStyles.container}>
       <SafeAreaBox edges={safeEdges} flex={1}>
-        <Box flexDirection="column">
+        <Box flexDirection="column" height="100%">
           <Text marginTop="m" alignSelf="center" variant="h4">
             {t('gov.title')}
           </Text>
@@ -96,9 +96,11 @@ export const GovernanceWrapper: React.FC<
             <NetworkTabs />
           </Box>
           {loading ? (
-            <CircleLoader loaderSize={24} color="white" />
+            <Box paddingHorizontal="m" mt="xxl" flexDirection="column" flex={1}>
+              <CircleLoader loaderSize={24} color="white" />
+            </Box>
           ) : (
-            <Box paddingHorizontal="m" mt="xxl">
+            <Box paddingHorizontal="m" mt="xxl" flexDirection="column" flex={1}>
               {header}
               <Select
                 mb="xl"

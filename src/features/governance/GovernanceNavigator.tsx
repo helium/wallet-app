@@ -1,16 +1,18 @@
+import { PortalHost } from '@gorhom/portal'
 import {
   StackNavigationOptions,
   createStackNavigator,
 } from '@react-navigation/stack'
-import React, { memo } from 'react'
-import { PortalHost } from '@gorhom/portal'
 import { useAppStorage } from '@storage/AppStorageProvider'
+import React, { memo } from 'react'
+import AssignProxyScreen from './AssignProxyScreen'
 import GovernanceTutorialScreen from './GovernanceTutorialScreen'
-import ProposalsScreen from './ProposalsScreen'
-import ProposalScreen from './ProposalScreen'
 import PositionsScreen from './PositionsScreen'
-import VotersScreen from './VotersScreen'
+import ProposalScreen from './ProposalScreen'
+import ProposalsScreen from './ProposalsScreen'
+import RevokeProxyScreen from './RevokeProxyScreen'
 import VoterScreen from './VoterScreen'
+import VotersScreen from './VotersScreen'
 
 const GovernanceStack = createStackNavigator()
 const screenOptions: StackNavigationOptions = {
@@ -44,6 +46,14 @@ const GovernanceStackScreen = () => {
           component={ProposalScreen}
         />
         <GovernanceStack.Screen name="VoterScreen" component={VoterScreen} />
+        <GovernanceStack.Screen
+          name="AssignProxyScreen"
+          component={AssignProxyScreen}
+        />
+        <GovernanceStack.Screen
+          name="RevokeProxyScreen"
+          component={RevokeProxyScreen}
+        />
       </GovernanceStack.Navigator>
       <PortalHost name="GovernancePortalHost" />
     </>

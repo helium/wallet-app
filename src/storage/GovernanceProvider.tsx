@@ -4,6 +4,8 @@ import { organizationKey } from '@helium/organization-sdk'
 import { HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import {
   HeliumVsrStateProvider,
+  SubDaoWithMeta,
+  getSubDaos,
   useHeliumVsrState,
   useRegistrar,
 } from '@helium/voter-stake-registry-hooks'
@@ -40,7 +42,7 @@ export interface IGovernanceContextState {
   registrar?: ReturnType<typeof useRegistrar>['info']
   proposalCountByMint?: Record<string, number>
   hasUnseenProposals?: boolean
-
+  subDaos?: SubDaoWithMeta[]
   setMint: (mint: PublicKey) => void
 }
 
@@ -68,9 +70,14 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
     organizationKey(mintsToNetwork[IOT_MINT.toBase58()])[0],
   )
 
+  const { loading: loadingSubdaos, result: subDaos } = useAsync(
+    async () => anchorProvider && getSubDaos(anchorProvider),
+    [anchorProvider],
+  )
+
   const loading = useMemo(
-    () => loadingHntOrg || loadingMobileOrg || loadingIotOrg,
-    [loadingHntOrg, loadingMobileOrg, loadingIotOrg],
+    () => loadingHntOrg || loadingMobileOrg || loadingIotOrg || loadingSubdaos,
+    [loadingHntOrg, loadingMobileOrg, loadingIotOrg, loadingSubdaos],
   )
 
   const proposalCountByMint = useMemo(() => {
@@ -124,8 +131,8 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
       registrar,
       proposalCountByMint,
       hasUnseenProposals: hasUnseenProposals || false,
-
       setMint,
+      subDaos,
     }),
     [
       loading,
@@ -134,7 +141,7 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
       registrar,
       proposalCountByMint,
       hasUnseenProposals,
-      setMint,
+      subDaos,
     ],
   )
 

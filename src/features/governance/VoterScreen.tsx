@@ -15,10 +15,10 @@ import { useGovernance } from '@storage/GovernanceProvider'
 import { networksToMint } from '@utils/constants'
 import { humanReadable, shortenAddress } from '@utils/formatting'
 import BN from 'bn.js'
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { Image, ScrollView } from 'react-native'
+import { Image } from 'react-native'
 import { NetworkTabs } from './NetworkTabs'
 import { VoteHistory } from './VoteHistory'
 import { VoterCardStat } from './VoterCardStat'
@@ -38,6 +38,10 @@ export const VoterScreen = () => {
     [route.params.wallet],
   )
   const { mint, voteService, positions } = useGovernance()
+  const [index, searchIndex] = useState(0)
+  const refresh = useCallback(() => {
+    searchIndex((i) => i + 1)
+  }, [])
   const { result: proxy } = useAsync(async () => {
     if (voteService) {
       const p = await voteService.getProxy(wallet.toBase58())
@@ -47,7 +51,7 @@ export const VoterScreen = () => {
       }
       return p
     }
-  }, [voteService, wallet])
+  }, [voteService, wallet, index])
   const unproxiedPositions = useMemo(
     () =>
       positions?.filter(
@@ -68,10 +72,9 @@ export const VoterScreen = () => {
   const { info: mintAcc } = useMint(mint)
   const decimals = mintAcc?.decimals
   const { votingPower, positions: proxiedToPositions } = useProxiedTo(wallet)
-  const { network } = useGovernance()
   const { result: networks } = useAsync(
     async (vs: VoteService | undefined) => {
-      if (vs) {
+      if (vs && proxy) {
         const registrars = await vs.getRegistrarsForProxy(
           new PublicKey(proxy.wallet),
         )
@@ -90,6 +93,20 @@ export const VoterScreen = () => {
     [voteService],
   )
 
+  const handleAssignProxy = useCallback(() => {
+    navigation.navigate('AssignProxyScreen', {
+      wallet: wallet.toBase58(),
+      mint: mint.toBase58(),
+    })
+  }, [navigation, wallet, mint])
+
+  const handleRevokeProxy = useCallback(() => {
+    navigation.navigate('RevokeProxyScreen', {
+      wallet: wallet.toBase58(),
+      mint: mint.toBase58(),
+    })
+  }, [navigation, wallet, mint])
+
   if (!proxy) {
     return (
       <BackScreen title={t('gov.title')}>
@@ -103,6 +120,7 @@ export const VoterScreen = () => {
     <BackScreen padding="m" title={t('gov.title')}>
       <Box flexDirection="column">
         <VoteHistory
+          onRefresh={refresh}
           wallet={wallet}
           header={
             <>
@@ -145,6 +163,7 @@ export const VoterScreen = () => {
                           />
                         )
                     }
+                    return null
                   })}
                 </Box>
               </Box>
@@ -184,6 +203,7 @@ export const VoterScreen = () => {
                 title={t('gov.voter.assignProxy')}
                 disabled={!unproxiedPositions?.length}
                 mb={proxiedPositions?.length ? 's' : 'm'}
+                onPress={handleAssignProxy}
               />
               {proxiedPositions?.length ? (
                 <ButtonPressable
@@ -192,12 +212,12 @@ export const VoterScreen = () => {
                   backgroundColor="transparent"
                   titleColor="white"
                   borderColor="white"
+                  borderWidth={1}
+                  borderRadius="round"
                   backgroundColorOpacityPressed={0.7}
-                  backgroundColorDisabledOpacity={0.5}
-                  titleColorDisabled="secondaryText"
-                  title={t('gov.voter.assignProxy')}
-                  disabled={!unproxiedPositions?.length}
+                  title={t('gov.voter.revokeProxy')}
                   mb="m"
+                  onPress={handleRevokeProxy}
                 />
               ) : null}
               <Box mb="m">

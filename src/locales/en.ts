@@ -1264,6 +1264,24 @@ export default {
       assignBelow: 'Consider assigning proxy to voters below this point.',
       noneFound: 'No voters found matching this search',
     },
+    assignProxy: {
+      title: 'Assign Proxy',
+      description:
+        "Select the voter to assign as your position's proxy. Once assigned, they can cast a vote on your behalf and/or assign it to others.",
+      searchPlaceholder: 'Select Proxy',
+      selectNetwork: 'Select Network',
+      assignPositions: 'Assign Positions',
+      selectAll: 'Select All',
+      deSelectAll: 'Deselect All',
+      expiryDate: 'Expiry Date',
+      days: 'days',
+    },
+    revokeProxy: {
+      title: 'Revoke Proxy',
+      description:
+        'Select the voter to revoke as your position’s proxy. Once revoked, they can no longer cast a vote on your behalf and/or assign it to others.',
+      revokePositions: 'Revoke Positions',
+    },
     history: {
       noneFound: 'No proposals found',
       cancelled: 'Cancelled',
@@ -1277,6 +1295,7 @@ export default {
     },
     voter: {
       assignProxy: 'Assign Proxy',
+      revokeProxy: 'Revoke Proxy',
     },
     positions: {
       relinquish: 'Relinquish Votes',
@@ -1327,8 +1346,9 @@ export default {
         'Transfering out of a Landrush position, will result in losing the multiplier!',
       cantTransfer: 'There are no positions that meet this criteria.',
       selectTransfer: 'Select position to transfer too.',
-      selectSubDao: 'Select a existing SubNetwork to delegate to.',
+      selectSubDao: 'Select an existing SubNetwork to delegate to.',
       fetchingSubDaos: 'Fetching SubDaos...',
+      noneFound: 'No Positions Found',
     },
     proposals: {
       overviewTitle: 'Proposal Overview',
@@ -1346,6 +1366,8 @@ export default {
         'To vote, click on any option. To remove your vote, click the option again. Vote for up to {{maxChoicesPerVoter}} of {{choicesLength}} options.',
     },
     transactions: {
+      assignProxy: 'Assign Proxy',
+      revokeProxy: 'Revoke Proxy',
       castVote: 'Cast Vote',
       relinquishVote: 'Relinquish Vote',
       lockTokens: 'Lock Tokens',
