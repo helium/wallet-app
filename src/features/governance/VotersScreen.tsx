@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import BlueCheck from '@assets/images/blueCheck.svg'
@@ -12,15 +12,17 @@ import SearchInput from '@components/SearchInput'
 import Text from '@components/Text'
 import TouchableContainer from '@components/TouchableContainer'
 import { useMint } from '@helium/helium-react-hooks'
+import { proxiesQuery } from '@helium/voter-stake-registry-hooks'
 import { EnhancedProxy } from '@helium/voter-stake-registry-sdk'
 import { useNavigation } from '@react-navigation/native'
 import { useGovernance } from '@storage/GovernanceProvider'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { useColors } from '@theme/themeHooks'
 import { humanReadable, shortenAddress } from '@utils/formatting'
 import BN from 'bn.js'
 import { times } from 'lodash'
-import { useAsyncCallback } from 'react-async-hook'
 import { FlatList, Image, RefreshControl } from 'react-native'
+import { useDebounce } from 'use-debounce'
 import { GovernanceWrapper } from './GovernanceWrapper'
 import { VoterCardStat } from './VoterCardStat'
 import { GovernanceNavigationProp } from './governanceTypes'
@@ -32,53 +34,35 @@ export default function VotersScreen() {
   const { voteService, mint } = useGovernance()
   const { info: mintAcc } = useMint(mint)
   const decimals = mintAcc?.decimals
-  const [proxies, setProxies] = useState<EnhancedProxy[]>([])
-  const [hasMore, setHasMore] = useState(false)
-  const [page, setPage] = useState(1)
   const [proxySearch, setProxySearch] = useState('')
 
-  const fn = useMemo(
-    () =>
-      // eslint-disable-next-line @typescript-eslint/no-shadow
-      debounce(async (page: number, search: string) => {
-        setPage(page)
-        if (voteService) {
-          const newProxies = await voteService.getProxies({
-            page,
-            limit: 100,
-            query: search,
-          })
-          if (newProxies.length === 100) {
-            setHasMore(true)
-          }
-          setProxies((prevProxies) => [...prevProxies, ...newProxies])
-        }
-      }, 300),
-    [voteService],
+  const [searchDebounced] = useDebounce(proxySearch, 300)
+  const {
+    data: voters,
+    fetchNextPage,
+    hasNextPage,
+    isLoading,
+    isFetchingNextPage,
+    refetch,
+  } = useInfiniteQuery(
+    proxiesQuery({
+      search: searchDebounced,
+      amountPerPage: 100,
+      voteService: voteService,
+    }),
   )
-  const { execute: fetchMoreData, loading } = useAsyncCallback(fn)
-  const refresh = useCallback(() => {
-    setProxies([])
-    setPage(1)
-    fetchMoreData(1, proxySearch)
-  }, [fetchMoreData, proxySearch])
-  useEffect(() => {
-    if (voteService) {
-      refresh()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [voteService?.registrar.toBase58(), proxySearch])
+  const proxies = voters?.pages.flat() || []
 
   const handleOnEndReached = useCallback(() => {
-    if (!loading && hasMore) {
-      fetchMoreData(page + 1, proxySearch)
+    if (!isLoading && hasNextPage) {
+      fetchNextPage()
     }
-  }, [hasMore, fetchMoreData, loading, page, proxySearch])
+  }, [fetchNextPage, hasNextPage, isLoading, proxySearch])
 
   const renderEmptyComponent = useCallback(() => {
     if (!proxies) return null
 
-    if (loading) {
+    if (isLoading) {
       return (
         <Box flex={1} flexDirection="column">
           {times(5).map((i) => (
@@ -103,7 +87,7 @@ export default function VotersScreen() {
         </Text>
       </Box>
     )
-  }, [proxies, loading, t])
+  }, [proxies, isLoading, t])
 
   const renderItem = useCallback(
     ({ item: proxy, index }) => {
@@ -185,8 +169,8 @@ export default function VotersScreen() {
         ListEmptyComponent={renderEmptyComponent}
         refreshControl={
           <RefreshControl
-            refreshing={loading}
-            onRefresh={refresh}
+            refreshing={isLoading || isFetchingNextPage}
+            onRefresh={refetch}
             title=""
             tintColor={primaryText}
           />

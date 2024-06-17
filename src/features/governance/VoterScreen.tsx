@@ -7,7 +7,7 @@ import { Markdown } from '@components/Markdown'
 import { Pill } from '@components/Pill'
 import Text from '@components/Text'
 import { useMint } from '@helium/helium-react-hooks'
-import { useProxiedTo } from '@helium/voter-stake-registry-hooks'
+import { proxyQuery, useProxiedTo } from '@helium/voter-stake-registry-hooks'
 import { VoteService, getRegistrarKey } from '@helium/voter-stake-registry-sdk'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
@@ -26,6 +26,7 @@ import {
   GovernanceNavigationProp,
   GovernanceStackParamList,
 } from './governanceTypes'
+import { useQuery } from '@tanstack/react-query'
 
 type Route = RouteProp<GovernanceStackParamList, 'VoterScreen'>
 
@@ -38,20 +39,12 @@ export const VoterScreen = () => {
     [route.params.wallet],
   )
   const { mint, voteService, positions } = useGovernance()
-  const [index, searchIndex] = useState(0)
-  const refresh = useCallback(() => {
-    searchIndex((i) => i + 1)
-  }, [])
-  const { result: proxy } = useAsync(async () => {
-    if (voteService) {
-      const p = await voteService.getProxy(wallet.toBase58())
-      if (p.detail) {
-        const res = await fetch(p.detail)
-        p.detail = await res.text()
-      }
-      return p
-    }
-  }, [voteService, wallet, index])
+  const { data: proxy, refetch } = useQuery(
+    proxyQuery({
+      wallet,
+      voteService,
+    }),
+  )
   const unproxiedPositions = useMemo(
     () =>
       positions?.filter(
@@ -120,7 +113,7 @@ export const VoterScreen = () => {
     <BackScreen padding="m" title={t('gov.title')}>
       <Box flexDirection="column">
         <VoteHistory
-          onRefresh={refresh}
+          onRefresh={refetch}
           wallet={wallet}
           header={
             <>

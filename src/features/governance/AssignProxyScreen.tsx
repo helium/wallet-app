@@ -127,7 +127,11 @@ export const AssignProxyScreen = () => {
     }
   }, [unproxiedPositions, selectedAll])
 
-  const { assignProxies, error, loading: isSubmitting } = useAssignProxies()
+  const {
+    mutateAsync: assignProxies,
+    error,
+    isPending: isSubmitting,
+  } = useAssignProxies()
   const { walletSignBottomSheetRef } = useWalletSign()
   const { anchorProvider } = useSolana()
   const navigation = useNavigation()

@@ -1298,6 +1298,8 @@ export default {
       revokeProxy: 'Revoke Proxy',
     },
     positions: {
+      delegatedTo: 'Delegated To',
+      proxiedTo: 'Proxied To',
       relinquish: 'Relinquish Votes',
       lockedAmount: 'Locked Amount {{amount}} {{symbol}}',
       constant: 'Constant',

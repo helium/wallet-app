@@ -100,7 +100,11 @@ export const RevokeProxyScreen = () => {
     }
   }, [proxiedPositions, selectedAll])
 
-  const { unassignProxies, error, loading: isSubmitting } = useUnassignProxies()
+  const {
+    mutateAsync: unassignProxies,
+    error,
+    isPending: isSubmitting,
+  } = useUnassignProxies()
   const { walletSignBottomSheetRef } = useWalletSign()
   const { anchorProvider } = useSolana()
   const navigation = useNavigation()

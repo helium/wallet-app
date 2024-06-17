@@ -27,6 +27,7 @@ import {
   useDelegatePosition,
   useExtendPosition,
   useFlipPositionLockupKind,
+  useKnownProxy,
   useRegistrar,
   useRelinquishPositionVotes,
   useSplitPosition,
@@ -59,6 +60,8 @@ import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTy
 import { DelegateTokensModal } from './DelegateTokensModal'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { TransferTokensModal } from './TransferTokensModal'
+import { Pill } from '@components/Pill'
+import { shortenAddress } from '@utils/formatting'
 
 interface IPositionCardProps extends Omit<BoxProps<Theme>, 'position'> {
   subDaos?: SubDaoWithMeta[]
@@ -599,6 +602,8 @@ export const PositionCard = ({
     )
   }
 
+  const { knownProxy } = useKnownProxy(position?.proxy?.nextVoter)
+
   const delegatedSubDaoMetadata = position.delegatedSubDao
     ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       subDaos?.find((sd) => sd.pubkey.equals(position.delegatedSubDao!))
@@ -771,27 +776,58 @@ export const PositionCard = ({
                     </Box>
                   )}
                 </Box>
-                {delegatedSubDaoMetadata && (
-                  <Box
-                    flexDirection="row"
-                    justifyContent="center"
-                    alignItems="center"
-                  >
-                    <Box
-                      borderColor="black"
-                      borderWidth={2}
-                      borderRadius="round"
-                    >
-                      <TokenIcon
-                        size={18}
-                        img={delegatedSubDaoMetadata.json?.image || ''}
-                      />
+                <Box mt="s" flexDirection="row" justifyContent="space-between">
+                  {delegatedSubDaoMetadata ? (
+                    <Box>
+                      <Text variant="body2" color="secondaryText">
+                        {t('gov.positions.delegatedTo')}
+                      </Text>
+                      <Box
+                        mt="s"
+                        flexDirection="row"
+                        justifyContent="center"
+                        alignItems="center"
+                      >
+                        <Box
+                          borderColor="black"
+                          borderWidth={2}
+                          borderRadius="round"
+                        >
+                          <TokenIcon
+                            size={18}
+                            img={delegatedSubDaoMetadata.json?.image || ''}
+                          />
+                        </Box>
+                        <Text
+                          variant="body2"
+                          color="primaryText"
+                          marginLeft="s"
+                        >
+                          {delegatedSubDaoMetadata.name}
+                        </Text>
+                      </Box>
                     </Box>
-                    <Text variant="body2" color="primaryText" marginLeft="m">
-                      {delegatedSubDaoMetadata.name}
-                    </Text>
-                  </Box>
-                )}
+                  ) : null}
+                  {position.proxy ? (
+                    <Box
+                      flexDirection="column"
+                      alignItems={delegatedSubDaoMetadata ? "flex-end" : "flex-start"}
+                    >
+                      <Text variant="body2" color="secondaryText">
+                        {t('gov.positions.proxiedTo')}
+                      </Text>
+                      <Box mt="s">
+                        <Pill
+                          color="red"
+                          text={
+                            knownProxy?.name ||
+                            shortenAddress(position.proxy.nextVoter.toBase58())
+                          }
+                        />
+                      </Box>
+                    </Box>
+                  ) : null}
+                </Box>
               </Box>
             </TouchableOpacityBox>
             {showError && (

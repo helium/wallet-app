@@ -2,60 +2,48 @@ import CircleLoader from '@components/CircleLoader'
 import SearchInput from '@components/SearchInput'
 import Text from '@components/Text'
 import TouchableContainer from '@components/TouchableContainer'
-import { useHeliumVsrState } from '@helium/voter-stake-registry-hooks'
+import {
+  proxiesQuery
+} from '@helium/voter-stake-registry-hooks'
 import { PublicKey } from '@solana/web3.js'
-import { debounce } from '@utils/debounce'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { shortenAddress } from '@utils/formatting'
 import React, { useCallback, useMemo, useState } from 'react'
-import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native'
+import { useDebounce } from 'use-debounce'
 
 export const ProxySearch: React.FC<{
   value: string
   onValueChange: (value: string) => void
 }> = ({ value, onValueChange }) => {
-  const [loading, setLoading] = useState(false)
   const [input, setInput] = useState<string>(value)
-  const { voteService } = useHeliumVsrState()
   const [focused, setFocused] = useState(false)
-
-  const debouncedSearch = useMemo(
-    () =>
-      debounce(async (query: string | undefined) => {
-        setLoading(true)
-        try {
-          const results = await voteService?.searchProxies({
-            query: query || '',
-          })
-
-          const resultsAsOptions =
-            results?.map((r: any) => {
-              return {
-                value: r.wallet,
-                label: `${r.name} | ${shortenAddress(r.wallet)}`,
-              }
-            }) || []
-
-          if (
-            isValidPublicKey(query) &&
-            !resultsAsOptions.some((r: { value: string }) => r.value === query)
-          ) {
-            resultsAsOptions.push({
-              value: query || '',
-              label: query || '',
-            })
-          }
-
-          return resultsAsOptions
-        } finally {
-          setLoading(false)
-        }
-      }, 300),
-    [voteService],
+  const [debouncedInput] = useDebounce(input, 300)
+  const { data: resultPaged, isLoading: loading } = useInfiniteQuery(
+    proxiesQuery({
+      search: debouncedInput || '',
+      amountPerPage: 20,
+    }),
   )
 
-  const { result } = useAsync(debouncedSearch, [input])
+  const result = useMemo(() => {
+    const resultsAsOptions =
+      resultPaged?.pages.flat().map((r) => {
+        return {
+          value: r.wallet,
+          label: `${r.name} | ${shortenAddress(r.wallet)}`,
+        }
+      }) || []
+    if (isValidPublicKey(debouncedInput)) {
+      resultsAsOptions.push({
+        value: debouncedInput || '',
+        label: debouncedInput || '',
+      })
+    }
+    return resultsAsOptions
+  }, [resultPaged, debouncedInput])
+
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: { value: string; label: string } }) => {

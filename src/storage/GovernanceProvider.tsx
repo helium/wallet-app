@@ -23,6 +23,8 @@ import { useAsync } from 'react-async-hook'
 import Config from 'react-native-config'
 import { useSolana } from '../solana/SolanaProvider'
 import { useAccountStorage } from './AccountStorageProvider'
+import { RootState } from '../store/rootReducer'
+import { useSelector } from 'react-redux'
 
 enum GovNetwork {
   hnt = 'Helium',
@@ -144,6 +146,17 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
       subDaos,
     ],
   )
+  const cluster = useSelector(
+    (state: RootState) => state.app.cluster || 'mainnet-beta',
+  )
+  const heliumVoteUri = useMemo(() => {
+    if (cluster === 'mainnet-beta') {
+      return Config.HELIUM_VOTE_API_URL
+    }
+
+    return Config.DEVNET_HELIUM_VOTE_API_URL
+
+  }, [Config.HELIUM_VOTE_API_URL, Config.DEVNET_HELIUM_VOTE_API_URL, cluster])
 
   return (
     <GovernanceContext.Provider value={ret}>

@@ -5,17 +5,18 @@ import { CardSkeleton } from '@components/CardSkeleton'
 import { Pill } from '@components/Pill'
 import Text from '@components/Text'
 import TouchableContainer from '@components/TouchableContainer'
+import { votesForWalletQuery } from '@helium/voter-stake-registry-hooks'
 import { ProposalWithVotes } from '@helium/voter-stake-registry-sdk'
 import { useProposalStatus } from '@hooks/useProposalStatus'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { useColors } from '@theme/themeHooks'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import BN from 'bn.js'
 import { times } from 'lodash'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useAsyncCallback } from 'react-async-hook'
+import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, RefreshControl } from 'react-native'
 import { ProposalTags } from './ProposalTags'
@@ -28,67 +29,38 @@ export const VoteHistory: React.FC<{
   onRefresh?: () => void
 }> = ({ wallet, header, onRefresh = () => {} }) => {
   const { voteService } = useGovernance()
-  const [voteHistories, setVoteHistory] = useState<ProposalWithVotes[]>([])
-  const [hasMore, setHasMore] = useState(true)
-  const [page, setPage] = useState(1)
+
+  const {
+    data: voteHistoryPages,
+    fetchNextPage,
+    hasNextPage,
+    refetch,
+    isLoading: loading,
+  } = useInfiniteQuery(
+    votesForWalletQuery({
+      voteService,
+      wallet,
+      amountPerPage: 20,
+    }),
+  )
+  const handleRefresh = useCallback(() => {
+    refetch()
+    onRefresh()
+  }, [onRefresh, refetch])
+
   const dedupedVoteHistories = useMemo(() => {
     const seen = new Set()
-    return (voteHistories || []).filter((p) => {
+    return (voteHistoryPages?.pages?.flat() || []).filter((p) => {
       const has = seen.has(p.name)
       seen.add(p.name)
       return !has
     })
-  }, [voteHistories])
-
-  const { execute: fetchMoreData, loading } = useAsyncCallback(
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    async (page: number) => {
-      setPage(page)
-      if (voteService) {
-        const newVoteHistory = await voteService.getVotesForWallet({
-          wallet,
-          page,
-          limit: 100,
-        })
-        if (newVoteHistory.length < 100) {
-          setHasMore(false)
-        }
-        setVoteHistory((prev) => {
-          const seen = new Set()
-          return [...prev, ...newVoteHistory].filter((x) => {
-            if (!seen.has(x.address)) {
-              seen.add(x.address)
-              return true
-            }
-            return false
-          })
-        })
-      }
-    },
-  )
+  }, [voteHistoryPages])
 
   const { t } = useTranslation()
 
-  const refresh = useCallback(
-    (initial = false) => {
-      if (!initial) {
-        onRefresh()
-      }
-      setHasMore(true)
-      setVoteHistory([])
-      fetchMoreData(1)
-    },
-    [fetchMoreData, onRefresh],
-  )
-  useEffect(() => {
-    if (voteService) {
-      refresh(true)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [voteService?.registrar.toBase58()])
-
   const renderEmptyComponent = useCallback(() => {
-    if (!voteHistories) return null
+    if (!voteHistoryPages) return null
 
     if (loading) {
       return (
@@ -115,7 +87,7 @@ export const VoteHistory: React.FC<{
         </Text>
       </Box>
     )
-  }, [voteHistories, loading, t])
+  }, [voteHistoryPages, loading, t])
 
   const renderItem = useCallback(({ item: proposal }) => {
     return <ProposalItem proposal={proposal} />
@@ -127,10 +99,10 @@ export const VoteHistory: React.FC<{
   )
 
   const handleOnEndReached = useCallback(() => {
-    if (!loading && hasMore) {
-      fetchMoreData(page + 1)
+    if (!loading && hasNextPage) {
+      fetchNextPage()
     }
-  }, [hasMore, fetchMoreData, loading, page])
+  }, [hasNextPage, fetchNextPage, loading])
 
   const { primaryText } = useColors()
 
@@ -145,7 +117,7 @@ export const VoteHistory: React.FC<{
       refreshControl={
         <RefreshControl
           refreshing={loading}
-          onRefresh={refresh}
+          onRefresh={handleRefresh}
           title=""
           tintColor={primaryText}
         />
