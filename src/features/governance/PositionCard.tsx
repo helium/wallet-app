@@ -4,6 +4,7 @@ import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
 import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import ListItem from '@components/ListItem'
+import { Pill } from '@components/Pill'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -27,6 +28,7 @@ import {
   useDelegatePosition,
   useExtendPosition,
   useFlipPositionLockupKind,
+  useHeliumVsrState,
   useKnownProxy,
   useRegistrar,
   useRelinquishPositionVotes,
@@ -36,6 +38,7 @@ import {
 } from '@helium/voter-stake-registry-hooks'
 import useAlert from '@hooks/useAlert'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { useNavigation } from '@react-navigation/native'
 import { BoxProps } from '@shopify/restyle'
 import { Keypair, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
@@ -48,6 +51,7 @@ import {
   getTimeLeftFromNowFmt,
   secsToDays,
 } from '@utils/dateTools'
+import { shortenAddress } from '@utils/formatting'
 import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -60,8 +64,7 @@ import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTy
 import { DelegateTokensModal } from './DelegateTokensModal'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { TransferTokensModal } from './TransferTokensModal'
-import { Pill } from '@components/Pill'
-import { shortenAddress } from '@utils/formatting'
+import { GovernanceNavigationProp } from './governanceTypes'
 
 interface IPositionCardProps extends Omit<BoxProps<Theme>, 'position'> {
   subDaos?: SubDaoWithMeta[]
@@ -467,6 +470,8 @@ export const PositionCard = ({
     })
   }
 
+  const govNavigation = useNavigation<GovernanceNavigationProp>()
+
   const actions = () => {
     return (
       <>
@@ -589,6 +594,35 @@ export const PositionCard = ({
                     onPress={() => {
                       setActionsOpen(false)
                       actionRef.current = 'relinquish'
+                    }}
+                    selected={false}
+                    hasPressedState={false}
+                  />
+                )}
+                {position.proxy ? (
+                  <ListItem
+                    key="proxy"
+                    title={t('gov.assignProxy.title')}
+                    onPress={() => {
+                      setActionsOpen(false)
+                      govNavigation.navigate('AssignProxyScreen', {
+                        mint: votingMint.toBase58(),
+                        position: position.pubkey.toBase58(),
+                      })
+                    }}
+                    selected={false}
+                    hasPressedState={false}
+                  />
+                ) : (
+                  <ListItem
+                    key="revokeProxy"
+                    title={t('gov.revokeProxy.title')}
+                    onPress={() => {
+                      setActionsOpen(false)
+                      govNavigation.navigate('AssignProxyScreen', {
+                        mint: votingMint.toBase58(),
+                        position: position.pubkey.toBase58(),
+                      })
                     }}
                     selected={false}
                     hasPressedState={false}
