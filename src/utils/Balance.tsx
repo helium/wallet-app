@@ -90,8 +90,9 @@ const useBalanceHook = () => {
 
     return oraclePriceRaw
       ? new BN(
-          (oraclePriceRaw.emaPrice.value -
-            oraclePriceRaw.emaConfidence.value * 2) *
+          (oraclePriceRaw.priceMessage.emaPrice.toNumber() -
+            oraclePriceRaw.priceMessage.emaConf.toNumber() * 2) *
+            10 ** oraclePriceRaw.priceMessage.exponent *
             100000,
         )
       : new BN(0)
