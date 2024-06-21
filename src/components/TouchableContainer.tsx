@@ -1,4 +1,7 @@
+import useHaptic from '@hooks/useHaptic'
 import { BoxProps } from '@shopify/restyle'
+import { Theme } from '@theme/theme'
+import { useCreateOpacity } from '@theme/themeHooks'
 import React, { useCallback } from 'react'
 import {
   GestureResponderEvent,
@@ -8,9 +11,6 @@ import {
   StyleSheet,
   ViewStyle,
 } from 'react-native'
-import { useCreateOpacity } from '@theme/themeHooks'
-import useHaptic from '@hooks/useHaptic'
-import { Theme } from '@theme/theme'
 import Box from './Box'
 
 export type ButtonPressAnimationProps = {
@@ -31,8 +31,12 @@ const TouchableContainer = ({
   pressableStyles,
   onLayout,
   hitSlop,
+  backgroundColor = 'surfaceSecondary',
+  backgroundColorPressed = 'black500',
   ...boxProps
-}: ButtonPressAnimationProps) => {
+}: ButtonPressAnimationProps & {
+  backgroundColorPressed?: BoxProps<Theme>['backgroundColor']
+}) => {
   const { triggerImpact } = useHaptic()
 
   const onTouchEnd = useCallback(() => {
@@ -46,11 +50,20 @@ const TouchableContainer = ({
       if (!hasPressedState) return undefined
 
       if (pressed) {
-        return generateBackgroundStyle('black500', 1.0)
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        return generateBackgroundStyle(backgroundColorPressed, 1.0)
       }
-      return generateBackgroundStyle('surfaceSecondary', 1.0)
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      return generateBackgroundStyle(backgroundColor, 1.0)
     },
-    [generateBackgroundStyle, hasPressedState],
+    [
+      generateBackgroundStyle,
+      hasPressedState,
+      backgroundColor,
+      backgroundColorPressed,
+    ],
   )
 
   return (

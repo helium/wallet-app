@@ -743,6 +743,7 @@ export default {
     solanaTpsSlow: 'Solana RPC is slow. {{ tps }} tps.',
     sendLogs: 'Send Logs',
     update: 'Update',
+    or: 'Or',
   },
   crash: {
     title: 'App Crashed',
@@ -1254,7 +1255,53 @@ export default {
       youHave: 'You have {{amount}} more {{symbol}} available to lock.',
       increase: 'Increase your voting power by locking tokens.',
     },
+    voters: {
+      title: 'Browse Voters',
+      searchPlaceholder: "Search for voter's name or public key",
+      warning:
+        'Assigning proxy to majority voters may threaten the decentralization of the network.',
+      majority: 'Majority Voter',
+      minority: 'Minority Voter',
+      assignBelow: 'Consider assigning proxy to voters below this point.',
+      noneFound: 'No voters found matching this search',
+    },
+    assignProxy: {
+      title: 'Assign Proxy',
+      browseVoters: 'Browse Voters',
+      description:
+        "Select the voter to assign as your position's proxy. Once assigned, they can cast a vote on your behalf and/or assign it to others.",
+      searchPlaceholder: 'Select Proxy or Paste Wallet Address',
+      selectNetwork: 'Select Network',
+      assignPositions: 'Assign Positions',
+      selectAll: 'Select All',
+      deSelectAll: 'Deselect All',
+      expiryDate: 'Expiry Date',
+      days: 'days',
+    },
+    revokeProxy: {
+      title: 'Revoke Proxy',
+      description:
+        'Select the voter to revoke as your position’s proxy. Once revoked, they can no longer cast a vote on your behalf and/or assign it to others.',
+      revokePositions: 'Revoke Positions',
+    },
+    history: {
+      noneFound: 'No proposals found',
+      cancelled: 'Cancelled',
+      active: 'Active',
+      notVoted: 'Not Voted',
+      estTimeRemaining: 'Estimated Time Remaining',
+      percentOfVote: 'Percent of Vote',
+      voted: 'Voted',
+      completed: 'Completed',
+      result: 'Result',
+    },
+    voter: {
+      assignProxy: 'Assign Proxy',
+      revokeProxy: 'Revoke Proxy',
+    },
     positions: {
+      delegatedTo: 'Delegated To',
+      proxiedTo: 'Proxied To',
       relinquish: 'Relinquish Votes',
       lockedAmount: 'Locked Amount {{amount}} {{symbol}}',
       constant: 'Constant',
@@ -1303,8 +1350,9 @@ export default {
         'Transfering out of a Landrush position, will result in losing the multiplier!',
       cantTransfer: 'There are no positions that meet this criteria.',
       selectTransfer: 'Select position to transfer too.',
-      selectSubDao: 'Select a existing SubNetwork to delegate to.',
+      selectSubDao: 'Select an existing SubNetwork to delegate to.',
       fetchingSubDaos: 'Fetching SubDaos...',
+      noneFound: 'No Positions Found',
     },
     proposals: {
       overviewTitle: 'Proposal Overview',
@@ -1320,8 +1368,12 @@ export default {
       votes: 'Votes',
       toVote:
         'To vote, click on any option. To remove your vote, click the option again. Vote for up to {{maxChoicesPerVoter}} of {{choicesLength}} options.',
+      assignProxy:
+        "Assign proxy to a trusted voter if you don't want to vote. You can override any active votes anytime - your vote takes precedence over a proxy.",
     },
     transactions: {
+      assignProxy: 'Assign Proxy',
+      revokeProxy: 'Revoke Proxy',
       castVote: 'Cast Vote',
       relinquishVote: 'Relinquish Vote',
       lockTokens: 'Lock Tokens',

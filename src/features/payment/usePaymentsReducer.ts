@@ -71,7 +71,6 @@ type PaymentState = {
   totalAmount: BN
   error?: string
   mint: PublicKey
-  oraclePrice?: BN
   netType: NetTypes.NetType
   networkFee?: BN
   balance: BN
@@ -81,7 +80,6 @@ const initialState = (opts: {
   mint: PublicKey
   payments?: Payment[]
   netType: NetTypes.NetType
-  oraclePrice?: BN
   balance?: BN
 }): PaymentState => ({
   error: undefined,
@@ -250,7 +248,6 @@ function reducer(
       return initialState({
         mint: action.mint,
         payments: newPayments,
-        oraclePrice: state.oraclePrice,
         balance: state.balance,
         netType: state.netType,
       })
@@ -260,7 +257,6 @@ function reducer(
       if (!action.payments.length) {
         return initialState({
           mint: state.mint,
-          oraclePrice: state.oraclePrice,
           balance: state.balance,
           netType: state.netType,
         })
@@ -314,6 +310,5 @@ function reducer(
 export default (opts: {
   netType: NetTypes.NetType
   mint: PublicKey
-  oraclePrice?: BN
   balance?: BN
 }) => useReducer(reducer, initialState(opts))

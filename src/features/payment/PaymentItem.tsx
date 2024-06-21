@@ -93,7 +93,7 @@ const PaymentItem = ({
 }: Props) => {
   const decimals = useMint(mint)?.info?.decimals
   const { colorStyle } = useOpacity('primaryText', 0.3)
-  const { dcToNetworkTokens, oraclePrice } = useBalance()
+  const { dcToNetworkTokens } = useBalance()
   const { t } = useTranslation()
   const { secondaryText } = useColors()
   const { symbol, loading: loadingMeta } = useMetaplexMetadata(mint)
@@ -143,10 +143,10 @@ const PaymentItem = ({
   }, [rawAddress, handleEditAddress])
 
   const feeAsTokens = useMemo(() => {
-    if (!fee || !oraclePrice) return
+    if (!fee) return
 
     return dcToNetworkTokens(fee)
-  }, [dcToNetworkTokens, fee, oraclePrice])
+  }, [dcToNetworkTokens, fee])
 
   const handleAddressBookSelected = useCallback(() => {
     Keyboard.dismiss()

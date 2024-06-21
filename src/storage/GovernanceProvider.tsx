@@ -1,10 +1,15 @@
+import { Wallet } from '@coral-xyz/anchor'
+import { useOrganization } from '@helium/modular-governance-hooks'
+import { organizationKey } from '@helium/organization-sdk'
 import { HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import {
-  useRegistrar,
-  getRegistrarKey,
   HeliumVsrStateProvider,
+  SubDaoWithMeta,
+  getSubDaos,
   useHeliumVsrState,
+  useRegistrar,
 } from '@helium/voter-stake-registry-hooks'
+import { getRegistrarKey } from '@helium/voter-stake-registry-sdk'
 import { PublicKey } from '@solana/web3.js'
 import React, {
   FC,
@@ -14,12 +19,12 @@ import React, {
   useMemo,
   useState,
 } from 'react'
-import { Wallet } from '@coral-xyz/anchor'
-import { organizationKey } from '@helium/organization-sdk'
-import { useOrganization } from '@helium/modular-governance-hooks'
 import { useAsync } from 'react-async-hook'
+import Config from 'react-native-config'
 import { useSolana } from '../solana/SolanaProvider'
 import { useAccountStorage } from './AccountStorageProvider'
+import { RootState } from '../store/rootReducer'
+import { useSelector } from 'react-redux'
 
 enum GovNetwork {
   hnt = 'Helium',
@@ -39,7 +44,7 @@ export interface IGovernanceContextState {
   registrar?: ReturnType<typeof useRegistrar>['info']
   proposalCountByMint?: Record<string, number>
   hasUnseenProposals?: boolean
-
+  subDaos?: SubDaoWithMeta[]
   setMint: (mint: PublicKey) => void
 }
 
@@ -67,9 +72,14 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
     organizationKey(mintsToNetwork[IOT_MINT.toBase58()])[0],
   )
 
+  const { loading: loadingSubdaos, result: subDaos } = useAsync(
+    async () => anchorProvider && getSubDaos(anchorProvider),
+    [anchorProvider],
+  )
+
   const loading = useMemo(
-    () => loadingHntOrg || loadingMobileOrg || loadingIotOrg,
-    [loadingHntOrg, loadingMobileOrg, loadingIotOrg],
+    () => loadingHntOrg || loadingMobileOrg || loadingIotOrg || loadingSubdaos,
+    [loadingHntOrg, loadingMobileOrg, loadingIotOrg, loadingSubdaos],
   )
 
   const proposalCountByMint = useMemo(() => {
@@ -123,8 +133,8 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
       registrar,
       proposalCountByMint,
       hasUnseenProposals: hasUnseenProposals || false,
-
       setMint,
+      subDaos,
     }),
     [
       loading,
@@ -133,9 +143,20 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
       registrar,
       proposalCountByMint,
       hasUnseenProposals,
-      setMint,
+      subDaos,
     ],
   )
+  const cluster = useSelector(
+    (state: RootState) => state.app.cluster || 'mainnet-beta',
+  )
+  const heliumVoteUri = useMemo(() => {
+    if (cluster === 'mainnet-beta') {
+      return Config.HELIUM_VOTE_API_URL
+    }
+
+    return Config.DEVNET_HELIUM_VOTE_API_URL
+
+  }, [Config.HELIUM_VOTE_API_URL, Config.DEVNET_HELIUM_VOTE_API_URL, cluster])
 
   return (
     <GovernanceContext.Provider value={ret}>
@@ -143,6 +164,7 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
         mint={mint}
         wallet={anchorProvider?.wallet as Wallet}
         connection={anchorProvider?.connection}
+        heliumVoteUri={Config.HELIUM_VOTE_API_URL}
       >
         {children}
       </HeliumVsrStateProvider>

@@ -4,6 +4,7 @@ import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
 import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import ListItem from '@components/ListItem'
+import { Pill } from '@components/Pill'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -27,6 +28,7 @@ import {
   useDelegatePosition,
   useExtendPosition,
   useFlipPositionLockupKind,
+  useKnownProxy,
   useRegistrar,
   useRelinquishPositionVotes,
   useSplitPosition,
@@ -35,8 +37,9 @@ import {
 } from '@helium/voter-stake-registry-hooks'
 import useAlert from '@hooks/useAlert'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { useNavigation } from '@react-navigation/native'
 import { BoxProps } from '@shopify/restyle'
-import { Keypair, TransactionInstruction } from '@solana/web3.js'
+import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { Theme } from '@theme/theme'
 import { useCreateOpacity } from '@theme/themeHooks'
@@ -47,6 +50,7 @@ import {
   getTimeLeftFromNowFmt,
   secsToDays,
 } from '@utils/dateTools'
+import { shortenAddress } from '@utils/formatting'
 import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -59,6 +63,7 @@ import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTy
 import { DelegateTokensModal } from './DelegateTokensModal'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { TransferTokensModal } from './TransferTokensModal'
+import { GovernanceNavigationProp } from './governanceTypes'
 
 interface IPositionCardProps extends Omit<BoxProps<Theme>, 'position'> {
   subDaos?: SubDaoWithMeta[]
@@ -464,20 +469,56 @@ export const PositionCard = ({
     })
   }
 
+  const govNavigation = useNavigation<GovernanceNavigationProp>()
+
   const actions = () => {
+    const proxyAction =
+      position.proxy && !position.proxy.nextVoter.equals(PublicKey.default) ? (
+        <ListItem
+          key="revokeProxy"
+          title={t('gov.revokeProxy.title')}
+          onPress={() => {
+            setActionsOpen(false)
+            govNavigation.navigate('RevokeProxyScreen', {
+              mint: votingMint.mint.toBase58(),
+              position: position.pubkey.toBase58(),
+              wallet: position.proxy?.nextVoter?.toBase58(),
+            })
+          }}
+          selected={false}
+          hasPressedState={false}
+        />
+      ) : (
+        <ListItem
+          key="proxy"
+          title={t('gov.assignProxy.title')}
+          onPress={() => {
+            setActionsOpen(false)
+            govNavigation.navigate('AssignProxyScreen', {
+              mint: votingMint.mint.toBase58(),
+              position: position.pubkey.toBase58(),
+            })
+          }}
+          selected={false}
+          hasPressedState={false}
+        />
+      )
     return (
       <>
         {position.isDelegated ? (
-          <ListItem
-            key="undelegate"
-            title={t('gov.positions.undelegate')}
-            onPress={async () => {
-              setActionsOpen(false)
-              actionRef.current = 'undelegate'
-            }}
-            selected={false}
-            hasPressedState={false}
-          />
+          <>
+            <ListItem
+              key="undelegate"
+              title={t('gov.positions.undelegate')}
+              onPress={async () => {
+                setActionsOpen(false)
+                actionRef.current = 'undelegate'
+              }}
+              selected={false}
+              hasPressedState={false}
+            />
+            {proxyAction}
+          </>
         ) : (
           <>
             {lockupExpired ? (
@@ -591,6 +632,7 @@ export const PositionCard = ({
                     hasPressedState={false}
                   />
                 )}
+                {proxyAction}
               </>
             )}
           </>
@@ -598,6 +640,8 @@ export const PositionCard = ({
       </>
     )
   }
+
+  const { knownProxy } = useKnownProxy(position?.proxy?.nextVoter)
 
   const delegatedSubDaoMetadata = position.delegatedSubDao
     ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -771,27 +815,61 @@ export const PositionCard = ({
                     </Box>
                   )}
                 </Box>
-                {delegatedSubDaoMetadata && (
-                  <Box
-                    flexDirection="row"
-                    justifyContent="center"
-                    alignItems="center"
-                  >
-                    <Box
-                      borderColor="black"
-                      borderWidth={2}
-                      borderRadius="round"
-                    >
-                      <TokenIcon
-                        size={18}
-                        img={delegatedSubDaoMetadata.json?.image || ''}
-                      />
+                <Box mt="s" flexDirection="row" justifyContent="space-between">
+                  {delegatedSubDaoMetadata ? (
+                    <Box>
+                      <Text variant="body2" color="secondaryText">
+                        {t('gov.positions.delegatedTo')}
+                      </Text>
+                      <Box
+                        mt="s"
+                        flexDirection="row"
+                        justifyContent="center"
+                        alignItems="center"
+                      >
+                        <Box
+                          borderColor="black"
+                          borderWidth={2}
+                          borderRadius="round"
+                        >
+                          <TokenIcon
+                            size={18}
+                            img={delegatedSubDaoMetadata.json?.image || ''}
+                          />
+                        </Box>
+                        <Text
+                          variant="body2"
+                          color="primaryText"
+                          marginLeft="s"
+                        >
+                          {delegatedSubDaoMetadata.name}
+                        </Text>
+                      </Box>
                     </Box>
-                    <Text variant="body2" color="primaryText" marginLeft="m">
-                      {delegatedSubDaoMetadata.name}
-                    </Text>
-                  </Box>
-                )}
+                  ) : null}
+                  {position.proxy &&
+                  !position.proxy.nextVoter.equals(PublicKey.default) ? (
+                    <Box
+                      flexDirection="column"
+                      alignItems={
+                        delegatedSubDaoMetadata ? 'flex-end' : 'flex-start'
+                      }
+                    >
+                      <Text variant="body2" color="secondaryText">
+                        {t('gov.positions.proxiedTo')}
+                      </Text>
+                      <Box mt="s">
+                        <Pill
+                          color="red"
+                          text={
+                            knownProxy?.name ||
+                            shortenAddress(position.proxy.nextVoter.toBase58())
+                          }
+                        />
+                      </Box>
+                    </Box>
+                  ) : null}
+                </Box>
               </Box>
             </TouchableOpacityBox>
             {showError && (

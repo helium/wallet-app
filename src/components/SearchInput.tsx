@@ -1,9 +1,10 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import { BoxProps } from '@shopify/restyle'
-import React, { useCallback } from 'react'
 import Search from '@assets/images/search.svg'
+import { BoxProps } from '@shopify/restyle'
 import { BorderRadii, Color, Spacing, Theme } from '@theme/theme'
 import { useColors, useInputVariants } from '@theme/themeHooks'
+import React, { useCallback } from 'react'
+import { TextInputProps } from 'react-native'
 import Box from './Box'
 import TextInput from './TextInput'
 
@@ -14,6 +15,7 @@ type Props = BoxProps<Theme> & {
   onEnter?: (text: string) => void
   variant?: 'plain' | 'regular' | 'underline'
   autoFocus?: boolean
+  textInputProps?: TextInputProps
 }
 const SearchInput = ({
   placeholder,
@@ -22,6 +24,7 @@ const SearchInput = ({
   onEnter,
   variant,
   autoFocus = false,
+  textInputProps = {},
   ...boxProps
 }: Props) => {
   const {
@@ -46,6 +49,8 @@ const SearchInput = ({
     >
       <Search color={colors[color as Color]} />
       <TextInput
+        fontSize={16}
+        fontWeight="normal"
         textInputProps={{
           onChangeText,
           onSubmitEditing: handleSubmitEditing,
@@ -54,6 +59,7 @@ const SearchInput = ({
           autoCorrect: false,
           autoComplete: 'off',
           autoFocus,
+          ...textInputProps,
         }}
         variant={variant || 'transparent'}
         backgroundColor="red500"
