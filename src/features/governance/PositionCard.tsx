@@ -28,7 +28,6 @@ import {
   useDelegatePosition,
   useExtendPosition,
   useFlipPositionLockupKind,
-  useHeliumVsrState,
   useKnownProxy,
   useRegistrar,
   useRelinquishPositionVotes,
@@ -40,7 +39,7 @@ import useAlert from '@hooks/useAlert'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { useNavigation } from '@react-navigation/native'
 import { BoxProps } from '@shopify/restyle'
-import { Keypair, TransactionInstruction } from '@solana/web3.js'
+import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { Theme } from '@theme/theme'
 import { useCreateOpacity } from '@theme/themeHooks'
@@ -473,19 +472,53 @@ export const PositionCard = ({
   const govNavigation = useNavigation<GovernanceNavigationProp>()
 
   const actions = () => {
+    const proxyAction =
+      position.proxy && !position.proxy.nextVoter.equals(PublicKey.default) ? (
+        <ListItem
+          key="revokeProxy"
+          title={t('gov.revokeProxy.title')}
+          onPress={() => {
+            setActionsOpen(false)
+            govNavigation.navigate('RevokeProxyScreen', {
+              mint: votingMint.mint.toBase58(),
+              position: position.pubkey.toBase58(),
+              wallet: position.proxy?.nextVoter?.toBase58(),
+            })
+          }}
+          selected={false}
+          hasPressedState={false}
+        />
+      ) : (
+        <ListItem
+          key="proxy"
+          title={t('gov.assignProxy.title')}
+          onPress={() => {
+            setActionsOpen(false)
+            govNavigation.navigate('AssignProxyScreen', {
+              mint: votingMint.mint.toBase58(),
+              position: position.pubkey.toBase58(),
+            })
+          }}
+          selected={false}
+          hasPressedState={false}
+        />
+      )
     return (
       <>
         {position.isDelegated ? (
-          <ListItem
-            key="undelegate"
-            title={t('gov.positions.undelegate')}
-            onPress={async () => {
-              setActionsOpen(false)
-              actionRef.current = 'undelegate'
-            }}
-            selected={false}
-            hasPressedState={false}
-          />
+          <>
+            <ListItem
+              key="undelegate"
+              title={t('gov.positions.undelegate')}
+              onPress={async () => {
+                setActionsOpen(false)
+                actionRef.current = 'undelegate'
+              }}
+              selected={false}
+              hasPressedState={false}
+            />
+            {proxyAction}
+          </>
         ) : (
           <>
             {lockupExpired ? (
@@ -599,35 +632,7 @@ export const PositionCard = ({
                     hasPressedState={false}
                   />
                 )}
-                {position.proxy ? (
-                  <ListItem
-                    key="proxy"
-                    title={t('gov.assignProxy.title')}
-                    onPress={() => {
-                      setActionsOpen(false)
-                      govNavigation.navigate('AssignProxyScreen', {
-                        mint: votingMint.toBase58(),
-                        position: position.pubkey.toBase58(),
-                      })
-                    }}
-                    selected={false}
-                    hasPressedState={false}
-                  />
-                ) : (
-                  <ListItem
-                    key="revokeProxy"
-                    title={t('gov.revokeProxy.title')}
-                    onPress={() => {
-                      setActionsOpen(false)
-                      govNavigation.navigate('AssignProxyScreen', {
-                        mint: votingMint.toBase58(),
-                        position: position.pubkey.toBase58(),
-                      })
-                    }}
-                    selected={false}
-                    hasPressedState={false}
-                  />
-                )}
+                {proxyAction}
               </>
             )}
           </>
@@ -842,10 +847,13 @@ export const PositionCard = ({
                       </Box>
                     </Box>
                   ) : null}
-                  {position.proxy ? (
+                  {position.proxy &&
+                  !position.proxy.nextVoter.equals(PublicKey.default) ? (
                     <Box
                       flexDirection="column"
-                      alignItems={delegatedSubDaoMetadata ? "flex-end" : "flex-start"}
+                      alignItems={
+                        delegatedSubDaoMetadata ? 'flex-end' : 'flex-start'
+                      }
                     >
                       <Text variant="body2" color="secondaryText">
                         {t('gov.positions.proxiedTo')}

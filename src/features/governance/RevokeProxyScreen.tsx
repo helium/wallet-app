@@ -9,6 +9,7 @@ import {
   bulkSendTransactions,
   populateMissingDraftInfo,
   toVersionedTx,
+  truthy,
 } from '@helium/spl-utils'
 import {
   PositionWithMeta,
@@ -36,10 +37,11 @@ type Route = RouteProp<GovernanceStackParamList, 'RevokeProxyScreen'>
 
 export const RevokeProxyScreen = () => {
   const route = useRoute<Route>()
-  const { wallet } = route.params
+  const { wallet, position } = route.params
   const { t } = useTranslation()
   const [proxyWallet, setProxyWallet] = useState(wallet)
   const proxyWalletKey = usePublicKey(proxyWallet)
+  const positionKey = usePublicKey(position)
   const { positions, refetch } = useGovernance()
 
   const networks = useMemo(() => {
@@ -58,12 +60,13 @@ export const RevokeProxyScreen = () => {
           p.proxy &&
           !p.proxy.nextVoter.equals(PublicKey.default) &&
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          (!proxyWalletKey || p.proxy.nextVoter.equals(proxyWalletKey!)),
+          (!proxyWalletKey || p.proxy.nextVoter.equals(proxyWalletKey!)) &&
+          (!positionKey || p.pubkey.equals(positionKey!)),
       ),
-    [positions, proxyWalletKey],
+    [positions, proxyWalletKey, positionKey],
   )
   const [selectedPositions, setSelectedPositions] = useState<Set<string>>(
-    new Set<string>(),
+    new Set<string>([position].filter(truthy)),
   )
 
   const renderPosition = ({ item }: { item: PositionWithMeta }) => {
@@ -190,8 +193,10 @@ export const RevokeProxyScreen = () => {
             {t('gov.revokeProxy.description')}
           </Text>
         </Box>
+        {/* If this view is for a singular position, do not show the set proxy wallet */}
         <Box mb="m">
           <ProxySearch
+            disabled={!!position}
             value={proxyWallet || ''}
             onValueChange={setProxyWallet}
           />

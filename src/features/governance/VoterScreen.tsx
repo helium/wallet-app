@@ -1,4 +1,5 @@
 import UserShare from '@assets/images/userShare.svg'
+import UserX from '@assets/images/userX.svg'
 import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
@@ -8,15 +9,13 @@ import { Pill } from '@components/Pill'
 import Text from '@components/Text'
 import { useMint } from '@helium/helium-react-hooks'
 import { proxyQuery, useProxiedTo } from '@helium/voter-stake-registry-hooks'
-import { VoteService, getRegistrarKey } from '@helium/voter-stake-registry-sdk'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
-import { networksToMint } from '@utils/constants'
+import { useQuery } from '@tanstack/react-query'
 import { humanReadable, shortenAddress } from '@utils/formatting'
 import BN from 'bn.js'
-import React, { useCallback, useMemo, useState } from 'react'
-import { useAsync } from 'react-async-hook'
+import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Image } from 'react-native'
 import { NetworkTabs } from './NetworkTabs'
@@ -26,7 +25,6 @@ import {
   GovernanceNavigationProp,
   GovernanceStackParamList,
 } from './governanceTypes'
-import { useQuery } from '@tanstack/react-query'
 
 type Route = RouteProp<GovernanceStackParamList, 'VoterScreen'>
 
@@ -65,26 +63,7 @@ export const VoterScreen = () => {
   const { info: mintAcc } = useMint(mint)
   const decimals = mintAcc?.decimals
   const { votingPower, positions: proxiedToPositions } = useProxiedTo(wallet)
-  const { result: networks } = useAsync(
-    async (vs: VoteService | undefined) => {
-      if (vs && proxy) {
-        const registrars = await vs.getRegistrarsForProxy(
-          new PublicKey(proxy.wallet),
-        )
-        if (registrars) {
-          return new Set(
-            Object.entries(networksToMint)
-              .filter(([_, m]) => {
-                return registrars.includes(getRegistrarKey(m).toBase58())
-              })
-              .map(([n]) => n),
-          )
-        }
-      }
-      return new Set()
-    },
-    [voteService],
-  )
+  const networks = proxy?.networks
 
   const handleAssignProxy = useCallback(() => {
     navigation.navigate('AssignProxyScreen', {
@@ -134,6 +113,7 @@ export const VoterScreen = () => {
                       case 'mobile':
                         return (
                           <Pill
+                            key={n}
                             textProps={{ variant: 'body3' }}
                             color="mobileBlue"
                             text="MOBILE"
@@ -142,6 +122,7 @@ export const VoterScreen = () => {
                       case 'hnt':
                         return (
                           <Pill
+                            key={n}
                             textProps={{ variant: 'body3' }}
                             color="hntBlue"
                             text="HNT"
@@ -150,6 +131,7 @@ export const VoterScreen = () => {
                       case 'iot':
                         return (
                           <Pill
+                            key={n}
                             textProps={{ variant: 'body3' }}
                             color="iotGreen"
                             text="IOT"
@@ -182,37 +164,40 @@ export const VoterScreen = () => {
                   }
                 />
               </Box>
-              <ButtonPressable
-                LeadingComponent={<UserShare width={16} height={16} />}
-                width="100%"
-                backgroundColor="transparent"
-                titleColor="white"
-                borderColor="white"
-                borderWidth={1}
-                borderRadius="round"
-                backgroundColorOpacityPressed={0.7}
-                backgroundColorDisabled="surfaceSecondary"
-                titleColorDisabled="secondaryText"
-                title={t('gov.voter.assignProxy')}
-                disabled={!unproxiedPositions?.length}
-                mb={proxiedPositions?.length ? 's' : 'm'}
-                onPress={handleAssignProxy}
-              />
-              {proxiedPositions?.length ? (
+              <Box flexDirection="row" alignItems="center">
                 <ButtonPressable
+                  flex={1}
                   LeadingComponent={<UserShare width={16} height={16} />}
-                  width="100%"
                   backgroundColor="transparent"
                   titleColor="white"
                   borderColor="white"
-                  borderWidth={1}
+                  borderWidth={unproxiedPositions?.length ? 1 : 0}
                   borderRadius="round"
                   backgroundColorOpacityPressed={0.7}
-                  title={t('gov.voter.revokeProxy')}
-                  mb="m"
-                  onPress={handleRevokeProxy}
+                  backgroundColorDisabled="black500"
+                  title={t('gov.voter.assignProxy')}
+                  disabled={!unproxiedPositions?.length}
+                  mb={proxiedPositions?.length ? 's' : 'm'}
+                  onPress={handleAssignProxy}
                 />
-              ) : null}
+                {proxiedPositions?.length ? (
+                  <ButtonPressable
+                    ml="m"
+                    flex={1}
+                    LeadingComponent={<UserX width={16} height={16} />}
+                    backgroundColor="transparent"
+                    titleColor="white"
+                    borderColor="white"
+                    borderWidth={1}
+                    borderRadius="round"
+                    backgroundColorOpacityPressed={0.7}
+                    title={t('gov.voter.revokeProxy')}
+                    mb="m"
+                    onPress={handleRevokeProxy}
+                  />
+                ) : null}
+              </Box>
+
               <Box mb="m">
                 <Markdown markdown={proxy.detail} />
               </Box>
@@ -228,10 +213,23 @@ export const VoterScreen = () => {
                   flexDirection="row"
                   borderBottomColor="dividerGrey"
                   borderBottomWidth={1}
+                  justifyContent="space-between"
                 >
                   <VoterCardStat
                     title="Current Rank"
                     value={`#${proxy.rank} of ${proxy.numProxies}`}
+                  />
+                  <VoterCardStat
+                    title="Total Power"
+                    value={
+                      // Force 2 decimals
+                      humanReadable(
+                        new BN(proxy.delegatedVeTokens).div(
+                          new BN(Math.pow(10, (decimals || 0) - 2)),
+                        ),
+                        2,
+                      ) || ''
+                    }
                   />
                 </Box>
                 <Box pt="s" flexDirection="row" justifyContent="space-between">
@@ -252,7 +250,15 @@ export const VoterScreen = () => {
                   >
                     <VoterCardStat
                       title="Power From Me"
-                      value={humanReadable(votingPower, decimals) || ''}
+                      value={
+                        // Force 2 decimals
+                        humanReadable(
+                          new BN(votingPower).div(
+                            new BN(Math.pow(10, (decimals || 0) - 2)),
+                          ),
+                          2,
+                        ) || ''
+                      }
                     />
                     <VoterCardStat
                       title="Positions Assigned"

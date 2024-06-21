@@ -224,12 +224,21 @@ const ProposalItem: React.FC<{
           />
         </Box>
       ) : null}
+      <Box px="m">
+        {!timeExpired && (
+          <VoterCardStat
+            title={t('gov.history.estTimeRemaining')}
+            value={getTimeFromNowFmt(endTs || new BN(0))}
+          />
+        )}
+      </Box>
       <Box
         px="m"
         width="100%"
         flexDirection="row"
         justifyContent="space-between"
         alignItems="center"
+        pb="s"
       >
         {proposal.votes[0].weight ? (
           <>
@@ -241,7 +250,7 @@ const ProposalItem: React.FC<{
               title={t('gov.history.percentOfVote')}
               value={
                 // Calc with 4 decimals precision
-                proposal.votes[0].weight
+                proposal.votes[0].weight && !votingResults?.totalVotes.isZero()
                   ? `${(
                       new BN(proposal.votes[0].weight)
                         .mul(new BN(10000))
@@ -253,15 +262,15 @@ const ProposalItem: React.FC<{
             />
           </>
         ) : (
-          <Pill color="orange" text={t('gov.history.notVoted')} />
-        )}
-      </Box>
-      <Box px="m">
-        {!timeExpired && (
-          <VoterCardStat
-            title={t('gov.history.estTimeRemaining')}
-            value={getTimeFromNowFmt(endTs || new BN(0))}
-          />
+          <Box
+            mt="s"
+            flexDirection="row"
+            justifyContent="center"
+            alignItems="center"
+            width="100%"
+          >
+            <Pill color="orange" text={t('gov.history.notVoted')} />
+          </Box>
         )}
       </Box>
     </TouchableContainer>

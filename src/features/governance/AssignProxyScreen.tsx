@@ -9,11 +9,13 @@ import {
   bulkSendTransactions,
   populateMissingDraftInfo,
   toVersionedTx,
+  truthy,
 } from '@helium/spl-utils'
 import {
   PositionWithMeta,
   useAssignProxies,
 } from '@helium/voter-stake-registry-hooks'
+import { usePublicKey } from '@hooks/usePublicKey'
 import Slider from '@react-native-community/slider'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
@@ -38,10 +40,11 @@ type Route = RouteProp<GovernanceStackParamList, 'AssignProxyScreen'>
 export const AssignProxyScreen = () => {
   const route = useRoute<Route>()
 
-  const { wallet } = route.params
+  const { wallet, position } = route.params
   const { t } = useTranslation()
   const [proxyWallet, setProxyWallet] = useState(wallet)
   const { positions, refetch } = useGovernance()
+  const positionKey = usePublicKey(position)
 
   const networks = useMemo(() => {
     return [
@@ -55,12 +58,15 @@ export const AssignProxyScreen = () => {
   const unproxiedPositions = useMemo(
     () =>
       positions?.filter(
-        (p) => !p.proxy || p.proxy.nextVoter.equals(PublicKey.default),
+        (p) =>
+          !p.proxy ||
+          (p.proxy.nextVoter.equals(PublicKey.default) &&
+            (!positionKey || p.pubkey.equals(positionKey!))),
       ) || [],
-    [positions],
+    [positions, positionKey],
   )
   const [selectedPositions, setSelectedPositions] = useState<Set<string>>(
-    new Set<string>(),
+    new Set<string>([position].filter(truthy)),
   )
   const today = new Date()
   const augustFirst = Date.UTC(
@@ -230,16 +236,19 @@ export const AssignProxyScreen = () => {
           />
         </Box>
 
-        <Box mb="m">
-          <Text variant="body3" color="secondaryText">
-            {t('gov.assignProxy.selectNetwork')}
-          </Text>
-          <Select
-            value={network}
-            onValueChange={setNetwork}
-            options={networks}
-          />
-        </Box>
+        {/* Don't show network when position already defined */}
+        {position ? null : (
+          <Box mb="m">
+            <Text variant="body3" color="secondaryText">
+              {t('gov.assignProxy.selectNetwork')}
+            </Text>
+            <Select
+              value={network}
+              onValueChange={setNetwork}
+              options={networks}
+            />
+          </Box>
+        )}
         <Box flexDirection="row" justifyContent="space-between">
           <Text variant="body1" color="white" opacity={0.5}>
             {t('gov.assignProxy.assignPositions')}

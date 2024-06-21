@@ -235,7 +235,12 @@ const VoterCard: React.FC<{
           title="Total Voting Power"
           value={
             proxy.delegatedVeTokens
-              ? humanReadable(new BN(proxy.delegatedVeTokens), decimals) || ''
+              ? humanReadable(
+                  new BN(proxy.delegatedVeTokens).div(
+                    new BN(Math.pow(10, (decimals || 0) - 2)),
+                  ),
+                  2,
+                ) || ''
               : '0'
           }
         />

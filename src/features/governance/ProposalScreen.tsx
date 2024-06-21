@@ -1,6 +1,8 @@
+import BrowseVoters from '@assets/images/browseVoters.svg'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
+import ButtonPressable from '@components/ButtonPressable'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import { Markdown } from '@components/Markdown'
 import SafeAreaBox from '@components/SafeAreaBox'
@@ -35,7 +37,7 @@ import { getDerivedProposalState } from '@utils/governanceUtils'
 import { getBasePriorityFee } from '@utils/walletApiV2'
 import axios from 'axios'
 import BN from 'bn.js'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
@@ -68,6 +70,11 @@ export const ProposalScreen = () => {
   const { anchorProvider } = useSolana()
   const { walletSignBottomSheetRef } = useWalletSign()
   const { mint, setMint, loading, amountLocked } = useGovernance()
+  const handleBrowseVoters = useCallback(() => {
+    navigation.navigate('VotersScreen', {
+      mint: mint.toBase58(),
+    })
+  }, [navigation])
   const { info: proposal } = useProposal(proposalKey)
   const { info: proposalConfig } = useProposalConfig(proposal?.proposalConfig)
   const { info: registrar } = useRegistrar(proposalConfig?.voteController)
@@ -116,6 +123,7 @@ export const ProposalScreen = () => {
     vote,
     loading: voting,
     error: voteErr,
+    voters,
   } = useVote(proposalKey)
 
   const {
@@ -457,46 +465,89 @@ export const ProposalScreen = () => {
                 </TouchableOpacityBox>
               )}
               {derivedState === 'active' && !noVotingPower && (
-                <Box
-                  flexGrow={1}
-                  justifyContent="center"
-                  backgroundColor="surfaceSecondary"
-                  borderRadius="l"
-                  padding="m"
-                  marginTop="m"
-                >
-                  <Text variant="body2" color="primaryText">
-                    {t('gov.proposals.toVote', {
-                      maxChoicesPerVoter: proposal?.maxChoicesPerVoter,
-                      choicesLength: proposal?.choices.length,
-                    })}
-                  </Text>
-                  <Box marginTop="ms">
-                    {showError && (
-                      <Box flexDirection="row" paddingBottom="ms">
-                        <Text variant="body3Medium" color="red500">
-                          {showError}
-                        </Text>
+                <>
+                  <Box
+                    flexGrow={1}
+                    justifyContent="center"
+                    backgroundColor="surfaceSecondary"
+                    borderRadius="l"
+                    padding="m"
+                    marginTop="m"
+                  >
+                    <Text variant="body2" color="primaryText">
+                      {t('gov.proposals.toVote', {
+                        maxChoicesPerVoter: proposal?.maxChoicesPerVoter,
+                        choicesLength: proposal?.choices.length,
+                      })}
+                    </Text>
+                    <Box flexDirection="row" alignItems="center">
+                      <Box
+                        borderBottomColor="white"
+                        opacity={0.5}
+                        borderBottomWidth={1}
+                        flex={1}
+                      />
+                      <Text color="white" opacity={0.5} p="m" variant="body2">
+                        OR
+                      </Text>
+                      <Box
+                        borderBottomColor="white"
+                        opacity={0.5}
+                        borderBottomWidth={1}
+                        flex={1}
+                      />
+                    </Box>
+                    <Text variant="body2" color="primaryText">
+                      {t('gov.proposals.assignProxy')}
+                    </Text>
+                    <ButtonPressable
+                      fontSize={16}
+                      height={48}
+                      backgroundColor="black500"
+                      LeadingComponent={<BrowseVoters width={18} height={18} />}
+                      borderRadius="round"
+                      mt="m"
+                      onPress={handleBrowseVoters}
+                      padding="s"
+                      title={t('gov.assignProxy.browseVoters')}
+                    />
+                  </Box>
+                  <Box
+                    flexGrow={1}
+                    justifyContent="center"
+                    backgroundColor="surfaceSecondary"
+                    borderRadius="l"
+                    padding="m"
+                    marginTop="m"
+                  >
+                    <Box>
+                      {showError && (
+                        <Box flexDirection="row" paddingBottom="ms">
+                          <Text variant="body3Medium" color="red500">
+                            {showError}
+                          </Text>
+                        </Box>
+                      )}
+                      <Box flex={1} flexDirection="column" {...{ gap: 8 }}>
+                        {votingResults.results?.map((r, index) => (
+                          <VoteOption
+                            voters={voters?.[index] || []}
+                            key={r.name}
+                            voting={
+                              currVote === r.index && (voting || relinquishing)
+                            }
+                            option={r}
+                            myWeight={voteWeights?.[r.index]}
+                            canVote={canVote(r.index)}
+                            canRelinquishVote={canRelinquishVote(r.index)}
+                            onVote={handleVote(r)}
+                            onRelinquishVote={handleRelinquish(r)}
+                          />
+                        ))}
                       </Box>
-                    )}
-                    <Box flex={1} flexDirection="column" {...{ gap: 8 }}>
-                      {votingResults.results?.map((r) => (
-                        <VoteOption
-                          key={r.name}
-                          voting={
-                            currVote === r.index && (voting || relinquishing)
-                          }
-                          option={r}
-                          myWeight={voteWeights?.[r.index]}
-                          canVote={canVote(r.index)}
-                          canRelinquishVote={canRelinquishVote(r.index)}
-                          onVote={handleVote(r)}
-                          onRelinquishVote={handleRelinquish(r)}
-                        />
-                      ))}
                     </Box>
                   </Box>
-                </Box>
+                </>
               )}
               {markdown && (
                 <Box

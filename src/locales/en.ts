@@ -743,6 +743,7 @@ export default {
     solanaTpsSlow: 'Solana RPC is slow. {{ tps }} tps.',
     sendLogs: 'Send Logs',
     update: 'Update',
+    or: 'Or',
   },
   crash: {
     title: 'App Crashed',
@@ -1266,9 +1267,10 @@ export default {
     },
     assignProxy: {
       title: 'Assign Proxy',
+      browseVoters: 'Browse Voters',
       description:
         "Select the voter to assign as your position's proxy. Once assigned, they can cast a vote on your behalf and/or assign it to others.",
-      searchPlaceholder: 'Select Proxy',
+      searchPlaceholder: 'Select Proxy or Paste Wallet Address',
       selectNetwork: 'Select Network',
       assignPositions: 'Assign Positions',
       selectAll: 'Select All',
@@ -1366,6 +1368,8 @@ export default {
       votes: 'Votes',
       toVote:
         'To vote, click on any option. To remove your vote, click the option again. Vote for up to {{maxChoicesPerVoter}} of {{choicesLength}} options.',
+      assignProxy:
+        "Assign proxy to a trusted voter if you don't want to vote. You can override any active votes anytime - your vote takes precedence over a proxy.",
     },
     transactions: {
       assignProxy: 'Assign Proxy',

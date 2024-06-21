@@ -25,6 +25,7 @@ import MapUserLocation from '@assets/images/mapUserLocation.svg'
 import Search from '@assets/images/search.svg'
 import Info from '@assets/images/info.svg'
 import QuestionMark from '@assets/images/questionMark.svg'
+import BrowseVoters from '@assets/images/browseVoters.svg'
 import Box from './Box'
 import Text from './Text'
 import ButtonPressAnimation from './ButtonPressAnimation'
@@ -47,6 +48,7 @@ type IconName =
   | 'search'
   | 'info'
   | 'questionMark'
+  | 'browseVoters'
 
 type Props = BoxProps<Theme> & {
   backgroundColor?: Color
@@ -285,6 +287,8 @@ const FabIcon = ({ icon, pressed, color, colorPressed }: IconProps) => {
       return <Info color={getIconColor()} />
     case 'questionMark':
       return <QuestionMark color={getIconColor()} />
+    case 'browseVoters':
+      return <BrowseVoters color={getIconColor()} />
   }
 }
 
