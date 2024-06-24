@@ -2016,7 +2016,7 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
-"@helium/account-fetch-cache-hooks@0.7.17", "@helium/account-fetch-cache-hooks@^0.5.0", "@helium/account-fetch-cache-hooks@^0.7.17":
+"@helium/account-fetch-cache-hooks@0.7.17", "@helium/account-fetch-cache-hooks@^0.7.17":
   version "0.7.17"
   resolved "https://registry.yarnpkg.com/@helium/account-fetch-cache-hooks/-/account-fetch-cache-hooks-0.7.17.tgz#212b07962b768415d08bc7a1b7d945ec2e62ea21"
   integrity sha512-Ec8SNkxM1InRHF5AXcJkpHAOuFnog+L1r0tfcpJIGD234gt0sOQrq8+gQeGLxdHjH+GzNJ6atzFksulVF46sRw==
