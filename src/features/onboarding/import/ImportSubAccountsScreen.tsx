@@ -40,6 +40,7 @@ export default () => {
       (acc) =>
         (acc.tokens?.value.length || 0) > 0 ||
         (acc?.balance || 0) > 0 ||
+        acc.needsMigrated ||
         acc.derivationPath === DEFAULT_DERIVATION_PATH,
     )
   }, [foundAccounts])
@@ -49,6 +50,14 @@ export default () => {
   const [selected, setSelected] = React.useState<Set<string>>(
     new Set([DEFAULT_DERIVATION_PATH]),
   )
+  useEffect(() => {
+    setSelected(
+      new Set([
+        ...derivationAccounts.map((d) => d.derivationPath),
+        DEFAULT_DERIVATION_PATH,
+      ]),
+    )
+  }, [derivationAccounts])
   useEffect(() => {
     setOnboardingData((data) => ({
       ...data,

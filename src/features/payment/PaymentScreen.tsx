@@ -58,7 +58,6 @@ import { CSAccount } from '../../storage/cloudStorage'
 import { RootState } from '../../store/rootReducer'
 import { solanaSlice } from '../../store/slices/solanaSlice'
 import { useAppDispatch } from '../../store/store'
-import { useBalance } from '../../utils/Balance'
 import {
   accountNetType,
   formatAccountAlias,
@@ -113,7 +112,6 @@ const PaymentScreen = () => {
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
-  const { oraclePrice } = useBalance()
   const { visibleTokens } = useVisibleTokens()
   const inputMint = usePublicKey(route.params?.mint)
   const [mint, setMint] = useState<PublicKey>(inputMint || HNT_MINT)
@@ -178,7 +176,6 @@ const PaymentScreen = () => {
 
   const [paymentState, dispatch] = usePaymentsReducer({
     mint,
-    oraclePrice,
     balance,
     netType: networkType,
   })
