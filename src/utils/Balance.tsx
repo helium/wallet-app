@@ -77,7 +77,7 @@ const useBalanceHook = () => {
     )
   }, [cluster, anchorProvider, allBalances])
 
-  const { result: hntToDcPrice, error } = useAsync(async () => {
+  const { result: hntToDcPrice } = useAsync(async () => {
     if (!anchorProvider) {
       return
     }
