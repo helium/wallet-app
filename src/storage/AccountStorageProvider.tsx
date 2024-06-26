@@ -300,17 +300,23 @@ const useAccountStorageHook = () => {
   useAsync(async () => {
     if (accounts) {
       // One time migration
-      const changed = (await Promise.all(
-        Object.values(accounts)
-          .filter((account) => account.derivationPath && !account.mnemonicHash)
-          .map(async (acct) => {
-            const { mnemonic } = (await getSecureAccount(acct.address)) || {}
-            if (!mnemonic) return
-            const mnemonicHash = createHash('sha256').update(mnemonic.join(' ')).digest('hex')
-            acct.mnemonicHash = mnemonicHash
-            return acct
-          }),
-      )).filter(truthy)
+      const changed = (
+        await Promise.all(
+          Object.values(accounts)
+            .filter(
+              (account) => account.derivationPath && !account.mnemonicHash,
+            )
+            .map(async (acct) => {
+              const { mnemonic } = (await getSecureAccount(acct.address)) || {}
+              if (!mnemonic) return
+              const mnemonicHash = createHash('sha256')
+                .update(mnemonic.join(' '))
+                .digest('hex')
+              acct.mnemonicHash = mnemonicHash
+              return acct
+            }),
+        )
+      ).filter(truthy)
 
       if (changed.length) {
         await upsertAccounts(

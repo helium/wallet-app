@@ -9,6 +9,7 @@ import {
   createStackNavigator,
 } from '@react-navigation/stack'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { CSAccount } from '@storage/cloudStorage'
 import { getSecureAccount } from '@storage/secureStorage'
 import { useColors } from '@theme/themeHooks'
 import * as bip39 from 'bip39'
@@ -37,7 +38,6 @@ import {
   RootStackParamList,
   TabBarNavigationProp,
 } from './rootTypes'
-import { CSAccount } from '@storage/cloudStorage'
 
 const screenOptions = { headerShown: false } as StackNavigationOptions
 
