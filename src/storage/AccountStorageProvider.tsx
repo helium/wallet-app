@@ -38,11 +38,14 @@ import {
 import { removeAccountTag, tagAccount } from './oneSignalStorage'
 import {
   deleteSecureAccount,
+  getSecureAccount,
   SecureAccount,
   signoutSecureStore,
   storeSecureAccount,
   storeSecureItem,
 } from './secureStorage'
+import { createHash, Hash } from 'crypto'
+import { truthy } from '@helium/spl-utils'
 
 const { VIEW_AS } = Config
 
@@ -252,6 +255,7 @@ const useAccountStorageHook = () => {
         ledgerIndex?: number
         solanaAddress: string
         derivationPath?: string
+        mnemonicHash?: string
       }[],
     ) => {
       if (!accountBulk.length) return
@@ -268,6 +272,7 @@ const useAccountStorageHook = () => {
             accountIndex,
             solanaAddress: curr.solanaAddress,
             derivationPath: curr.derivationPath,
+            mnemonicHash: curr.mnemonicHash,
           },
         }
       }, {})
@@ -291,6 +296,32 @@ const useAccountStorageHook = () => {
     },
     [accounts],
   )
+
+  useAsync(async () => {
+    if (accounts) {
+      // One time migration
+      const changed = (await Promise.all(
+        Object.values(accounts)
+          .filter((account) => account.derivationPath && !account.mnemonicHash)
+          .map(async (acct) => {
+            const { mnemonic } = (await getSecureAccount(acct.address)) || {}
+            if (!mnemonic) return
+            const mnemonicHash = createHash('sha256').update(mnemonic.join(' ')).digest('hex')
+            acct.mnemonicHash = mnemonicHash
+            return acct
+          }),
+      )).filter(truthy)
+
+      if (changed.length) {
+        await upsertAccounts(
+          changed.map((acct) => ({
+            ...acct,
+            solanaAddress: heliumAddressToSolAddress(acct.address),
+          })),
+        )
+      }
+    }
+  }, [accounts, upsertAccounts])
 
   const addContact = useCallback(
     async (account: CSAccount) => {

@@ -647,7 +647,7 @@ export default {
   },
   connectedWallets: {
     add: 'Import or Create Wallet',
-    addSub: 'Add Wallet',
+    addSub: 'Add Sub Wallet',
     addTestnet: 'Add New Testnet Wallet',
   },
   dappLogin: {
