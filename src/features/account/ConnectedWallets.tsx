@@ -30,10 +30,7 @@ import React, {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent } from 'react-native'
-import {
-  initialWindowMetrics,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context'
+import { initialWindowMetrics } from 'react-native-safe-area-context'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
@@ -91,7 +88,6 @@ const ConnectedWallets = forwardRef(
           .reduce((acc, [key, height]) => ({ ...acc, [key]: height }), {}),
       )
     }, [sortedAccounts])
-    const { top } = useSafeAreaInsets()
     const navigation = useNavigation<TabBarNavigationProp>()
     const { enableTestnet } = useAppStorage()
 
@@ -137,7 +133,8 @@ const ConnectedWallets = forwardRef(
       filteredAccounts,
       listItemHeight,
       sortedAccounts.length,
-      top,
+      sectionFooterHeight,
+      sectionHeaderHeight,
     ])
 
     const { setOnboardingData } = useOnboarding()
@@ -175,14 +172,6 @@ const ConnectedWallets = forwardRef(
         onAddNew()
       },
       [handleNetTypeChange, onAddNew, hide],
-    )
-
-    const handleAddSub = useCallback(
-      (acc: CSAccount) => {
-        hide()
-        onAddSub(acc)
-      },
-      [hide, onAddSub],
     )
 
     const handleAccountChange = useCallback(
@@ -277,7 +266,7 @@ const ConnectedWallets = forwardRef(
           )}
         </Box>
       ),
-      [enableTestnet, handleAddNew, handleAddSub, primaryText, t],
+      [enableTestnet, handleAddNew, primaryText, t, setFooterHeight],
     )
 
     const renderBackdrop = useCallback(
@@ -369,7 +358,6 @@ const SectionFooter: React.FC<{
   onLayout: (height: LayoutChangeEvent) => void
 }> = ({ data, onAddSub, onLayout }) => {
   const handleAddSub = useCallback(() => {
-    console.log(data[data.length - 1])
     if (data[0] && data[0].derivationPath) {
       onAddSub(data[data.length - 1])
     }
