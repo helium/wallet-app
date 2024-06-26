@@ -72,7 +72,7 @@ export const sortAccounts = (
 const getAccounts = async (): Promise<CSAccounts> => {
   const csAccounts = await CloudStorage.getItem(CloudStorageKeys.ACCOUNTS)
   if (!csAccounts) return {}
-  
+
   return JSON.parse(csAccounts) as CSAccounts
 }
 

@@ -312,6 +312,7 @@ const useAccountStorageHook = () => {
               const mnemonicHash = createHash('sha256')
                 .update(mnemonic.join(' '))
                 .digest('hex')
+              // eslint-disable-next-line no-param-reassign
               acct.mnemonicHash = mnemonicHash
               return acct
             }),

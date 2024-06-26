@@ -179,7 +179,8 @@ export default {
       subtitle2: 'No one can recover these words',
       title: 'Keep these\nwords safe',
     },
-    subtitle1: 'Your 24-word seed phrase can be used to generate multiple sub-wallets.',
+    subtitle1:
+      'Your 24-word seed phrase can be used to generate multiple sub-wallets.',
     subtitle2:
       'Please ensure these are written down, kept safe, and never shared.',
     title: 'Create New\nSeed Phrase',
