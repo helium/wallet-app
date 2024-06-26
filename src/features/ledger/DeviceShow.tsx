@@ -286,6 +286,7 @@ const DeviceShow = () => {
         ledgerDevice,
         ledgerIndex: acc.accountIndex,
         solanaAddress: acc.solanaAddress,
+        version: 'v1',
       }
     })
 

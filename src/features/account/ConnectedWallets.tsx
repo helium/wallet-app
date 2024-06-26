@@ -357,7 +357,8 @@ const SectionFooter: React.FC<{
   onAddSub: (acc: CSAccount) => void
   onLayout: (height: LayoutChangeEvent) => void
 }> = ({ data, onAddSub, onLayout }) => {
-  const handleAddSub = useCallback(() => {
+  const handleAddSub
+   = useCallback(() => {
     if (data[0] && data[0].derivationPath) {
       onAddSub(data[data.length - 1])
     }
