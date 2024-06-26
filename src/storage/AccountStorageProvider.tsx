@@ -224,7 +224,7 @@ const useAccountStorageHook = () => {
         await storeSecureAccount(secureAccount)
       }
 
-      let mnemonicHash: string | undefined;
+      let mnemonicHash: string | undefined
       if (secureAccount?.mnemonic) {
         mnemonicHash = createHash('sha256')
           .update(secureAccount?.mnemonic.join(' '))
@@ -316,9 +316,7 @@ const useAccountStorageHook = () => {
       const changed = (
         await Promise.all(
           Object.values(accounts)
-            .filter(
-              (account) => !account.version,
-            )
+            .filter((account) => !account.version)
             .map(async (acct) => {
               // eslint-disable-next-line no-param-reassign
               acct.version = 'v1'

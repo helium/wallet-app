@@ -23,6 +23,7 @@ import { useOnboarding } from './OnboardingProvider'
 import { CreateAccountNavigationProp } from './create/createAccountNavTypes'
 import { ImportAccountNavigationProp } from './import/importAccountNavTypes'
 import { createHash } from 'crypto'
+import { CSAccountVersion } from '@storage/cloudStorage'
 
 type Route = RouteProp<HomeStackParamList, 'AccountAssignScreen'>
 
@@ -92,19 +93,19 @@ const AccountAssignScreen = () => {
 
         return getName(index + 1)
       }
-            let mnemonicHash: string | undefined
-            if (words) {
-              mnemonicHash = createHash('sha256')
-                .update(words.join(' '))
-                .digest('hex')
-            }
+      let mnemonicHash: string | undefined
+      if (words) {
+        mnemonicHash = createHash('sha256')
+          .update(words.join(' '))
+          .digest('hex')
+      }
       const newAccounts = allPaths.map((p, index) => ({
         alias: index === 0 ? alias : getName(index),
         address: heliumAddressFromSolAddress(p.keypair.publicKey.toBase58()),
         solanaAddress: p.keypair.publicKey.toBase58(),
         derivationPath: p.derivationPath,
         mnemonicHash,
-        version: 'v1'
+        version: 'v1' as CSAccountVersion,
       }))
       await Promise.all(
         allPaths.map(async (p) => {
