@@ -17,5 +17,5 @@ const authSlice = createSlice({
 })
 
 const { reducer, name } = authSlice
-export { name, authSlice }
+export { authSlice, name }
 export default reducer

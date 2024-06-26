@@ -22,7 +22,7 @@ export type CSAccount = {
   mnemonicHash?: string
   proposalCountByMint?: Record<string, number>
   proposalIdsSeenByMint?: Record<string, string[]>
-  // 
+  //
   version?: CSAccountVersion
 }
 export type CSAccountVersion = 'v1'

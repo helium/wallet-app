@@ -1,5 +1,6 @@
 import { NetTypes as NetType } from '@helium/address'
 import { truthy } from '@helium/spl-utils'
+import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 import { useAppState } from '@react-native-community/hooks'
 import { createHash } from 'crypto'
 import * as SecureStore from 'expo-secure-store'
@@ -47,7 +48,6 @@ import {
   storeSecureAccount,
   storeSecureItem,
 } from './secureStorage'
-import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 
 const { VIEW_AS } = Config
 
@@ -328,6 +328,8 @@ const useAccountStorageHook = () => {
               // eslint-disable-next-line no-param-reassign
               acct.mnemonicHash = mnemonicHash
               if (!acct.derivationPath) {
+                // eslint-disable-next-line no-param-reassign
+                
                 acct.derivationPath = HELIUM_DERIVATION
               }
 
