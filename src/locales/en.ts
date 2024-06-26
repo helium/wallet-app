@@ -158,7 +158,7 @@ export default {
       subtitle: 'Re-enter your PIN',
       title: 'Repeat PIN',
     },
-    createButtonTitle: 'Create a Wallet',
+    createButtonTitle: 'Create a Seed Phrase',
     createImport: {
       create: 'Create a new Wallet',
       helperText:
@@ -179,10 +179,10 @@ export default {
       subtitle2: 'No one can recover these words',
       title: 'Keep these\nwords safe',
     },
-    subtitle1: 'Every new wallet is accessed via 24 secure words - your ‘key’.',
+    subtitle1: 'Your 24-word seed phrase can be used to generate multiple sub-wallets.',
     subtitle2:
       'Please ensure these are written down, kept safe, and never shared.',
-    title: 'Create New\nWallet',
+    title: 'Create New\nSeed Phrase',
   },
   airdropScreen: {
     title: 'Token Faucet',

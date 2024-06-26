@@ -29,6 +29,7 @@ import React, {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
+import { LayoutChangeEvent } from 'react-native'
 import {
   initialWindowMetrics,
   useSafeAreaInsets,
@@ -38,7 +39,6 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
-import { LayoutChangeEvent } from 'react-native'
 
 export type ConnectedWalletsRef = {
   show: () => void
@@ -67,14 +67,18 @@ const ConnectedWallets = forwardRef(
     const [listItemHeight, setListItemHeight] = useLayoutHeight()
     const [sectionHeaderHeight, setSectionHeaderHeight] = useLayoutHeight()
     const [footerHeight, setFooterHeight] = useLayoutHeight()
-    const [sectionFooterHeights, setSectionFooterHeights] = useState<{ [key: string]: number }>(
-      {},
-    )
+    const [sectionFooterHeights, setSectionFooterHeights] = useState<{
+      [key: string]: number
+    }>({})
     const sectionFooterHeight = useMemo(
-      () => Object.values(sectionFooterHeights).reduce((acc, height) => acc + height, 0),
+      () =>
+        Object.values(sectionFooterHeights).reduce(
+          (acc, height) => acc + height,
+          0,
+        ),
       [sectionFooterHeights],
     )
-    
+
     const { sortedAccounts, currentAccount, setCurrentAccount } =
       useAccountStorage()
     useEffect(() => {
@@ -110,33 +114,31 @@ const ConnectedWallets = forwardRef(
       }))
     }, [sortedAccounts])
 
-    const snapPoints = useMemo(
-      () => {
-        const totalHeight = listItemHeight &&
+    const snapPoints = useMemo(() => {
+      const totalHeight =
+        listItemHeight &&
         footerHeight &&
         sectionHeaderHeight &&
-        sortedAccounts.length
-          && (listItemHeight * (sortedAccounts.length + (enableTestnet ? 2 : 1)) +
-            footerHeight +
-            sectionHeaderHeight * filteredAccounts.length +
-            sectionFooterHeight)
-        
-        return [
-          totalHeight &&
-          totalHeight < 0.7 * (initialWindowMetrics?.frame.height || 0)
-            ? totalHeight
-            : '70%',
-        ]
-      },
-      [
-        footerHeight,
-        enableTestnet,
-        filteredAccounts,
-        listItemHeight,
-        sortedAccounts.length,
-        top,
-      ],
-    )
+        sortedAccounts.length &&
+        listItemHeight * (sortedAccounts.length + (enableTestnet ? 2 : 1)) +
+          footerHeight +
+          sectionHeaderHeight * filteredAccounts.length +
+          sectionFooterHeight
+
+      return [
+        totalHeight &&
+        totalHeight < 0.7 * (initialWindowMetrics?.frame.height || 0)
+          ? totalHeight
+          : '70%',
+      ]
+    }, [
+      footerHeight,
+      enableTestnet,
+      filteredAccounts,
+      listItemHeight,
+      sortedAccounts.length,
+      top,
+    ])
 
     const { setOnboardingData } = useOnboarding()
 
@@ -311,9 +313,10 @@ const ConnectedWallets = forwardRef(
             data={data}
             onAddSub={onAddSub}
             onLayout={(height) => {
-              setSectionFooterHeights(prev => {
+              setSectionFooterHeights((prev) => {
                 const newHeight = { ...prev }
-                newHeight[data[0].mnemonicHash || 'none'] = height.nativeEvent.layout.height
+                newHeight[data[0].mnemonicHash || 'none'] =
+                  height.nativeEvent.layout.height
                 return newHeight
               })
             }}
@@ -375,9 +378,7 @@ const SectionFooter: React.FC<{
   const { t } = useTranslation()
 
   return (
-    <Box
-      onLayout={onLayout}
-    >
+    <Box onLayout={onLayout}>
       {data[0] && data[0].derivationPath ? (
         <TouchableContainer
           onPress={handleAddSub}

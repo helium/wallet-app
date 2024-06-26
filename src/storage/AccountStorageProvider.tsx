@@ -1,5 +1,7 @@
 import { NetTypes as NetType } from '@helium/address'
+import { truthy } from '@helium/spl-utils'
 import { useAppState } from '@react-native-community/hooks'
+import { createHash } from 'crypto'
 import * as SecureStore from 'expo-secure-store'
 import React, {
   createContext,
@@ -44,8 +46,6 @@ import {
   storeSecureAccount,
   storeSecureItem,
 } from './secureStorage'
-import { createHash, Hash } from 'crypto'
-import { truthy } from '@helium/spl-utils'
 
 const { VIEW_AS } = Config
 
