@@ -18,6 +18,8 @@ export type CSAccount = {
   derivationPath?: string
   ledgerDevice?: LedgerDevice
   accountIndex?: number
+  // Hash of the mnemonic so we can group accts with the same mnemonic
+  mnemonicHash?: string
   proposalCountByMint?: Record<string, number>
   proposalIdsSeenByMint?: Record<string, string[]>
 }

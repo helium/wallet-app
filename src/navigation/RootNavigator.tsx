@@ -9,6 +9,7 @@ import {
   createStackNavigator,
 } from '@react-navigation/stack'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { CSAccount } from '@storage/cloudStorage'
 import { getSecureAccount } from '@storage/secureStorage'
 import { useColors } from '@theme/themeHooks'
 import * as bip39 from 'bip39'
@@ -65,12 +66,12 @@ const RootNavigator = () => {
     navigation.navigate('AddNewAccountNavigator')
   }, [navigation])
 
-  const { execute: handleAddSub } = useAsyncCallback(async () => {
+  const { execute: handleAddSub } = useAsyncCallback(async (acc: CSAccount) => {
     try {
-      if (!seed || !currentAccount || !currentAccount?.derivationPath) {
+      if (!seed || !acc?.derivationPath) {
         throw new Error('Missing seed or derivation path')
       }
-      const currentPath = currentAccount.derivationPath
+      const currentPath = acc.derivationPath
       const takenAddresses = new Set(
         Object.values(accounts || {}).map((a) => a.solanaAddress),
       )
@@ -92,7 +93,7 @@ const RootNavigator = () => {
         throw new Error('More than 100 accounts are not supported')
       }
       if (keypair) {
-        const words = (await getSecureAccount(currentAccount.address))?.mnemonic
+        const words = (await getSecureAccount(acc.address))?.mnemonic
         setOnboardingData({
           ...onboardingData,
           words,
@@ -114,6 +115,7 @@ const RootNavigator = () => {
             },
           },
         })
+        connectedWalletsRef.current?.hide()
       }
     } catch (e: any) {
       Toast.show(e.message || e.toString())
@@ -139,7 +141,6 @@ const RootNavigator = () => {
       onAddNew={handleAddNew}
       ref={connectedWalletsRef}
       onClose={onClose}
-      canAddSub={!!currentAccount?.derivationPath}
       onAddSub={handleAddSub}
     >
       <RootStack.Navigator screenOptions={screenOptions}>
