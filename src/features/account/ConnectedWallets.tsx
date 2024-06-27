@@ -92,26 +92,27 @@ const ConnectedWallets = forwardRef(
     const { enableTestnet } = useAppStorage()
 
     const filteredAccounts = useMemo(() => {
-      const grouped = Object.entries(
-        sortedAccounts
-          .filter((a) => a.netType !== NetTypes.TESTNET)
-          .reduce((acc, account) => {
-            acc[account.mnemonicHash || 'none'] = [
-              ...(acc[account.mnemonicHash || 'none'] || []),
-              account,
-            ]
-            return acc
-          }, {} as { [key: string]: CSAccount[] }),
-      )
-      return grouped
-        .sort((a, b) => (a[0] === 'none' ? 1 : b[0] === 'none' ? -1 : 0))
-        .map(([mnemonicHash, accounts], index) => ({
-          title:
-            mnemonicHash === 'none'
-              ? 'Private Keys'
-              : `Seed Phrase ${index + 1}`,
+      const grouped = sortedAccounts
+        .filter((a) => a.netType !== NetTypes.TESTNET)
+        .reduce((acc, account) => {
+          acc[account.mnemonicHash || 'none'] = [
+            ...(acc[account.mnemonicHash || 'none'] || []),
+            account,
+          ]
+          return acc
+        }, {} as { [key: string]: CSAccount[] })
+
+      const { none, ...rest } = grouped
+      return [
+        ...Object.values(rest).map((accounts, index) => ({
+          title: `Seed Phrase ${index + 1}`,
           data: accounts,
-        }))
+        })),
+        {
+          title: 'Private Keys',
+          data: none,
+        },
+      ]
     }, [sortedAccounts])
 
     const snapPoints = useMemo(() => {
@@ -362,16 +363,15 @@ const SectionFooter: React.FC<{
   onLayout: (height: LayoutChangeEvent) => void
 }> = ({ data, onAddSub, onLayout }) => {
   const handleAddSub = useCallback(() => {
-    if (data[0] && data[0].derivationPath) {
+    if (data[0] && data[0].mnemonicHash) {
       onAddSub(data[data.length - 1])
     }
   }, [data, onAddSub])
   const { primaryText } = useColors()
   const { t } = useTranslation()
-
   return (
     <Box onLayout={onLayout}>
-      {data[0] && data[0].derivationPath ? (
+      {data[0] && data[0].mnemonicHash ? (
         <TouchableContainer
           onPress={handleAddSub}
           flexDirection="row"
