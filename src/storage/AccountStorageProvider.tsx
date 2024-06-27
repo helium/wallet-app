@@ -1,5 +1,6 @@
 import { NetTypes as NetType } from '@helium/address'
 import { truthy } from '@helium/spl-utils'
+import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 import { useAppState } from '@react-native-community/hooks'
 import { createHash } from 'crypto'
 import * as SecureStore from 'expo-secure-store'
@@ -28,6 +29,7 @@ import { useAppStorage } from './AppStorageProvider'
 import {
   CSAccount,
   CSAccounts,
+  CSAccountVersion,
   getCloudDefaultAccountAddress,
   LedgerDevice,
   restoreAccounts,
@@ -222,6 +224,13 @@ const useAccountStorageHook = () => {
         await storeSecureAccount(secureAccount)
       }
 
+      let mnemonicHash: string | undefined
+      if (secureAccount?.mnemonic) {
+        mnemonicHash = createHash('sha256')
+          .update(secureAccount?.mnemonic.join(' '))
+          .digest('hex')
+      }
+
       let { solanaAddress } = csAccount
 
       if (!solanaAddress) {
@@ -230,6 +239,8 @@ const useAccountStorageHook = () => {
 
       const nextAccount: CSAccount = {
         ...csAccount,
+        mnemonicHash,
+        version: 'v1',
         netType: accountNetType(csAccount.address),
         solanaAddress,
       }
@@ -256,6 +267,7 @@ const useAccountStorageHook = () => {
         solanaAddress: string
         derivationPath?: string
         mnemonicHash?: string
+        version?: CSAccountVersion
       }[],
     ) => {
       if (!accountBulk.length) return
@@ -273,6 +285,7 @@ const useAccountStorageHook = () => {
             solanaAddress: curr.solanaAddress,
             derivationPath: curr.derivationPath,
             mnemonicHash: curr.mnemonicHash,
+            version: curr.version,
           },
         }
       }, {})
@@ -303,17 +316,22 @@ const useAccountStorageHook = () => {
       const changed = (
         await Promise.all(
           Object.values(accounts)
-            .filter(
-              (account) => account.derivationPath && !account.mnemonicHash,
-            )
+            .filter((account) => !account.version)
             .map(async (acct) => {
+              // eslint-disable-next-line no-param-reassign
+              acct.version = 'v1'
               const { mnemonic } = (await getSecureAccount(acct.address)) || {}
-              if (!mnemonic) return
+              if (!mnemonic) return acct
               const mnemonicHash = createHash('sha256')
                 .update(mnemonic.join(' '))
                 .digest('hex')
               // eslint-disable-next-line no-param-reassign
               acct.mnemonicHash = mnemonicHash
+              if (!acct.derivationPath) {
+                // eslint-disable-next-line no-param-reassign
+                acct.derivationPath = HELIUM_DERIVATION
+              }
+
               return acct
             }),
         )

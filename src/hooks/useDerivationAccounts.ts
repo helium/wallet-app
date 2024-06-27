@@ -1,7 +1,7 @@
+import { Keypair as HeliumKeypair, Mnemonic } from '@helium/crypto'
 import { useSolana } from '@helium/react-native-sdk'
 import { truthy } from '@helium/spl-utils'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
-import { Keypair as HeliumKeypair, Mnemonic } from '@helium/crypto'
 import {
   AccountInfo,
   Keypair,
