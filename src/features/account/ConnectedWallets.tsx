@@ -103,11 +103,15 @@ const ConnectedWallets = forwardRef(
             return acc
           }, {} as { [key: string]: CSAccount[] }),
       )
-      return grouped.map(([mnemonicHash, accounts], index) => ({
-        title:
-          mnemonicHash === 'none' ? 'Private Keys' : `Seed Phrase ${index + 1}`,
-        data: accounts,
-      }))
+      return grouped
+        .sort((a, b) => (a[0] === 'none' ? 1 : b[0] === 'none' ? -1 : 0))
+        .map(([mnemonicHash, accounts], index) => ({
+          title:
+            mnemonicHash === 'none'
+              ? 'Private Keys'
+              : `Seed Phrase ${index + 1}`,
+          data: accounts,
+        }))
     }, [sortedAccounts])
 
     const snapPoints = useMemo(() => {
