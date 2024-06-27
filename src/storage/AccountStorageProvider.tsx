@@ -329,7 +329,6 @@ const useAccountStorageHook = () => {
               acct.mnemonicHash = mnemonicHash
               if (!acct.derivationPath) {
                 // eslint-disable-next-line no-param-reassign
-                
                 acct.derivationPath = HELIUM_DERIVATION
               }
 
