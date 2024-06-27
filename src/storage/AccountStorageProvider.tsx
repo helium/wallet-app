@@ -1,6 +1,4 @@
 import { NetTypes as NetType } from '@helium/address'
-import { truthy } from '@helium/spl-utils'
-import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 import { useAppState } from '@react-native-community/hooks'
 import { createHash } from 'crypto'
 import * as SecureStore from 'expo-secure-store'
@@ -42,7 +40,6 @@ import {
 import { removeAccountTag, tagAccount } from './oneSignalStorage'
 import {
   deleteSecureAccount,
-  getSecureAccount,
   SecureAccount,
   signoutSecureStore,
   storeSecureAccount,
@@ -309,44 +306,6 @@ const useAccountStorageHook = () => {
     },
     [accounts],
   )
-
-  useAsync(async () => {
-    if (accounts) {
-      // One time migration
-      const changed = (
-        await Promise.all(
-          Object.values(accounts)
-            .filter((account) => !account.version)
-            .map(async (acct) => {
-              // eslint-disable-next-line no-param-reassign
-              acct.version = 'v1'
-              const { mnemonic } = (await getSecureAccount(acct.address)) || {}
-              if (!mnemonic) return acct
-              const mnemonicHash = createHash('sha256')
-                .update(mnemonic.join(' '))
-                .digest('hex')
-              // eslint-disable-next-line no-param-reassign
-              acct.mnemonicHash = mnemonicHash
-              if (!acct.derivationPath) {
-                // eslint-disable-next-line no-param-reassign
-                acct.derivationPath = HELIUM_DERIVATION
-              }
-
-              return acct
-            }),
-        )
-      ).filter(truthy)
-
-      if (changed.length) {
-        await upsertAccounts(
-          changed.map((acct) => ({
-            ...acct,
-            solanaAddress: heliumAddressToSolAddress(acct.address),
-          })),
-        )
-      }
-    }
-  }, [accounts, upsertAccounts])
 
   const addContact = useCallback(
     async (account: CSAccount) => {

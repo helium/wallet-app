@@ -1,8 +1,12 @@
 import { NetTypes as NetType } from '@helium/address'
+import { heliumAddressToSolAddress } from '@helium/spl-utils'
+import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { createHash } from 'crypto'
 import { sortBy, values } from 'lodash'
 import { Platform } from 'react-native'
 import iCloudStorage from 'react-native-icloudstore'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import { getSecureAccount } from './secureStorage'
 
 export type LedgerDevice = {
   id: string
@@ -90,6 +94,47 @@ export const restoreAccounts = async () => {
   if (Object.keys(csAccounts).length) {
     const [first] = sortAccounts(csAccounts, defaultAccountAddress)
     currentAccount = first
+  }
+
+  // One time migration
+  let updatedVersions = false
+  const changed = await Promise.all(
+    Object.entries(csAccounts).map(async ([address, acct]) => {
+      if (!acct.version) {
+        updatedVersions = true
+        // eslint-disable-next-line no-param-reassign
+        acct.version = 'v1'
+        const { mnemonic } = (await getSecureAccount(acct.address)) || {}
+        if (mnemonic) {
+          const mnemonicHash = createHash('sha256')
+            .update(mnemonic.join(' '))
+            .digest('hex')
+          // eslint-disable-next-line no-param-reassign
+          acct.mnemonicHash = mnemonicHash
+          if (!acct.derivationPath) {
+            // eslint-disable-next-line no-param-reassign
+            acct.derivationPath = HELIUM_DERIVATION
+          }
+        }
+      }
+
+      if (!acct.solanaAddress) {
+        // eslint-disable-next-line no-param-reassign
+        acct.solanaAddress = heliumAddressToSolAddress(acct.address)
+      }
+
+      return { address, acct }
+    }),
+  )
+
+  if (updatedVersions) {
+    await updateCloudAccounts(
+      changed.reduce((acc, { address, acct }) => {
+        // eslint-disable-next-line no-param-reassign
+        acc[address] = acct
+        return acc
+      }, {} as CSAccounts),
+    )
   }
 
   return { csAccounts, current: currentAccount, contacts: contacts || [] }
