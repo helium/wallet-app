@@ -221,8 +221,8 @@ const useAccountStorageHook = () => {
         await storeSecureAccount(secureAccount)
       }
 
-      let mnemonicHash: string | undefined
-      if (secureAccount?.mnemonic) {
+      let { mnemonicHash } = csAccount
+      if (secureAccount?.mnemonic && !mnemonicHash) {
         mnemonicHash = createHash('sha256')
           .update(secureAccount?.mnemonic.join(' '))
           .digest('hex')
