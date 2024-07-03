@@ -13,7 +13,8 @@ import { FlatList } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import {
-  createDefaultKeypair,
+  DEFAULT_DERIVATION_PATH,
+  createKeypair,
   toSecureAccount,
 } from '../../../storage/secureStorage'
 import { useOnboarding } from '../OnboardingProvider'
@@ -149,9 +150,12 @@ const AccountImportScreen = () => {
   const handleNext = useCallback(async () => {
     try {
       const filteredWords: string[] = words.flatMap((w) => (w ? [w] : []))
-      const { keypair } = await createDefaultKeypair({
+      const { keypair } = await createKeypair({
         givenMnemonic: filteredWords,
         use24Words: words?.length === 24,
+        derivationPath: Object.values(accounts || {}).find(
+          (a) => a.address === accountAddress,
+        )?.derivationPath || DEFAULT_DERIVATION_PATH,
       })
       if (restoringAccount) {
         if (!accounts || !accountAddress) {

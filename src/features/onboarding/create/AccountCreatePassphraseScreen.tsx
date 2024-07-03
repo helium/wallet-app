@@ -9,7 +9,7 @@ import { useNavigation } from '@react-navigation/native'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import {
   DEFAULT_DERIVATION_PATH,
-  createDefaultKeypair,
+  createKeypair,
 } from '@storage/secureStorage'
 import { useColors } from '@theme/themeHooks'
 import React, { memo, useCallback, useMemo } from 'react'
@@ -27,7 +27,7 @@ const AccountCreatePassphraseScreen = () => {
   const parentNav = useNavigation<OnboardingNavigationProp>()
   const navigation = useNavigation<CreateAccountNavigationProp>()
   const { result: defaultKeypair, loading } = useAsync(
-    async () => createDefaultKeypair({ use24Words: true }),
+    async () => createKeypair({ use24Words: true }),
     [],
   )
 

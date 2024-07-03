@@ -13,7 +13,7 @@ import CloseButton from '@components/CloseButton'
 import TextInput from '@components/TextInput'
 import {
   DEFAULT_DERIVATION_PATH,
-  createDefaultKeypair,
+  createKeypair,
 } from '@storage/secureStorage'
 import useAlert from '@hooks/useAlert'
 import {
@@ -21,6 +21,7 @@ import {
   CLIAccountStackParamList,
 } from './CLIAccountNavigatorTypes'
 import { useOnboarding } from '../OnboardingProvider'
+import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 
 type Route = RouteProp<CLIAccountStackParamList, 'CLIPasswordScreen'>
 
@@ -65,9 +66,10 @@ const CLIPasswordScreen = () => {
         key,
       )
 
-      const { keypair, words } = await createDefaultKeypair({
+      const { keypair, words } = await createKeypair({
         givenMnemonic: Buffer.from(phrase, 'base64').toString().split(' '),
         use24Words: true,
+        derivationPath: HELIUM_DERIVATION,
       })
 
       setOnboardingData((prev) => ({
@@ -76,7 +78,7 @@ const CLIPasswordScreen = () => {
         paths: [
           {
             keypair,
-            derivationPath: DEFAULT_DERIVATION_PATH,
+            derivationPath: HELIUM_DERIVATION,
           },
         ],
       }))

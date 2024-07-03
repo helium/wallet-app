@@ -1,7 +1,10 @@
 import Address from '@helium/address'
 import { Keypair, Mnemonic } from '@helium/crypto-react-native'
 import { heliumAddressFromSolAddress } from '@helium/spl-utils'
-import { keypairFromSeed } from '@hooks/useDerivationAccounts'
+import {
+  HELIUM_DERIVATION,
+  keypairFromSeed,
+} from '@hooks/useDerivationAccounts'
 import { Keypair as SolanaKeypair } from '@solana/web3.js'
 import * as bip39 from 'bip39'
 import * as SecureStore from 'expo-secure-store'
@@ -61,12 +64,14 @@ export function toSecureAccount({
 }
 
 export const DEFAULT_DERIVATION_PATH = "m/44'/501'/0'/0'"
-export const createDefaultKeypair = async ({
+export const createKeypair = async ({
   givenMnemonic = null,
   use24Words,
+  derivationPath = DEFAULT_DERIVATION_PATH,
 }: {
   givenMnemonic?: Array<string> | null
   use24Words?: boolean
+  derivationPath?: string
 }): Promise<{ words: string[]; keypair: SolanaKeypair }> => {
   let mnemonic: Array<string>
   if (!givenMnemonic) {
@@ -75,7 +80,15 @@ export const createDefaultKeypair = async ({
     mnemonic = givenMnemonic
   }
   const seed = bip39.mnemonicToSeedSync(mnemonic.join(' '), '')
-  const keypair = await keypairFromSeed(seed, DEFAULT_DERIVATION_PATH)
+  let keypair
+  if (derivationPath === HELIUM_DERIVATION) {
+    keypair = SolanaKeypair.fromSecretKey(
+      (await Keypair.fromMnemonic(new Mnemonic(mnemonic))).privateKey,
+    )
+  } else {
+    keypair = await keypairFromSeed(seed, derivationPath)
+  }
+
   return { keypair: keypair!, words: mnemonic }
 }
 

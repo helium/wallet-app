@@ -17,11 +17,12 @@ import { RootNavigationProp } from '../../../navigation/rootTypes'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import {
   DEFAULT_DERIVATION_PATH,
-  createDefaultKeypair,
+  createKeypair,
 } from '../../../storage/secureStorage'
 import * as Logger from '../../../utils/logger'
 import { useOnboarding } from '../OnboardingProvider'
 import { OnboardingStackParamList } from '../onboardingTypes'
+import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 
 type Route = RouteProp<OnboardingStackParamList, 'ImportPrivateKey'>
 
@@ -77,9 +78,10 @@ const ImportPrivateKey = () => {
           )
           const seedBuffer = Buffer.from(seedBase64, 'base64')
           const mnemonic = Mnemonic.fromEntropy(seedBuffer)
-          const { keypair, words } = await createDefaultKeypair({
+          const { keypair, words } = await createKeypair({
             givenMnemonic: mnemonic.words,
             use24Words: mnemonic.words.length === 24,
+            derivationPath: HELIUM_DERIVATION
           })
           await createAccount({ keypair, words })
         } catch (e) {
@@ -118,7 +120,7 @@ const ImportPrivateKey = () => {
           const words = JSON.parse(
             Buffer.from(base64Words, 'base64').toString(),
           )
-          const { keypair } = await createDefaultKeypair({
+          const { keypair } = await createKeypair({
             givenMnemonic: words,
             use24Words: words.length === 24,
           })
