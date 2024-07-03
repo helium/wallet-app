@@ -63,6 +63,8 @@ export const VoterScreen = () => {
   const { info: mintAcc } = useMint(mint)
   const decimals = mintAcc?.decimals
   const { votingPower, positions: proxiedToPositions } = useProxiedTo(wallet)
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   const networks = proxy?.networks
 
   const handleAssignProxy = useCallback(() => {
@@ -223,12 +225,14 @@ export const VoterScreen = () => {
                     title="Total Power"
                     value={
                       // Force 2 decimals
-                      humanReadable(
-                        new BN(proxy.delegatedVeTokens).div(
-                          new BN(Math.pow(10, (decimals || 0) - 2)),
-                        ),
-                        2,
-                      ) || ''
+                      decimals && proxy.proxiedVeTokens
+                        ? humanReadable(
+                            new BN(proxy.proxiedVeTokens).div(
+                              new BN(Math.pow(10, decimals - 2)),
+                            ),
+                            2,
+                          ) || ''
+                        : ''
                     }
                   />
                 </Box>
@@ -252,12 +256,14 @@ export const VoterScreen = () => {
                       title="Power From Me"
                       value={
                         // Force 2 decimals
-                        humanReadable(
-                          new BN(votingPower).div(
-                            new BN(Math.pow(10, (decimals || 0) - 2)),
-                          ),
-                          2,
-                        ) || ''
+                        votingPower && decimals
+                          ? humanReadable(
+                              new BN(votingPower).div(
+                                new BN(Math.pow(10, decimals - 2)),
+                              ),
+                              2,
+                            ) || ''
+                          : ''
                       }
                     />
                     <VoterCardStat
