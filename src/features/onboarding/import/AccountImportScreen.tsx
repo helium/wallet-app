@@ -153,9 +153,10 @@ const AccountImportScreen = () => {
       const { keypair } = await createKeypair({
         givenMnemonic: filteredWords,
         use24Words: words?.length === 24,
-        derivationPath: Object.values(accounts || {}).find(
-          (a) => a.address === accountAddress,
-        )?.derivationPath || DEFAULT_DERIVATION_PATH,
+        derivationPath:
+          Object.values(accounts || {}).find(
+            (a) => a.address === accountAddress,
+          )?.derivationPath || DEFAULT_DERIVATION_PATH,
       })
       if (restoringAccount) {
         if (!accounts || !accountAddress) {

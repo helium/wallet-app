@@ -1,27 +1,24 @@
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import React, { useCallback, useMemo, useState } from 'react'
-import { Edge } from 'react-native-safe-area-context'
 import Terminal from '@assets/images/terminal.svg'
-import { TextStyle } from 'react-native'
-import RNSodium from 'react-native-sodium'
-import { useTranslation } from 'react-i18next'
-import Text from '@components/Text'
-import SafeAreaBox from '@components/SafeAreaBox'
-import ButtonPressable from '@components/ButtonPressable'
 import Box from '@components/Box'
+import ButtonPressable from '@components/ButtonPressable'
 import CloseButton from '@components/CloseButton'
+import SafeAreaBox from '@components/SafeAreaBox'
+import Text from '@components/Text'
 import TextInput from '@components/TextInput'
-import {
-  DEFAULT_DERIVATION_PATH,
-  createKeypair,
-} from '@storage/secureStorage'
 import useAlert from '@hooks/useAlert'
+import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { createKeypair } from '@storage/secureStorage'
+import React, { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { TextStyle } from 'react-native'
+import { Edge } from 'react-native-safe-area-context'
+import RNSodium from 'react-native-sodium'
+import { useOnboarding } from '../OnboardingProvider'
 import {
   CLIAccountNavigationProp,
   CLIAccountStackParamList,
 } from './CLIAccountNavigatorTypes'
-import { useOnboarding } from '../OnboardingProvider'
-import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 
 type Route = RouteProp<CLIAccountStackParamList, 'CLIPasswordScreen'>
 

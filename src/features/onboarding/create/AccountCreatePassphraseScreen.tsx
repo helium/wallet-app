@@ -7,10 +7,7 @@ import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useNavigation } from '@react-navigation/native'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import {
-  DEFAULT_DERIVATION_PATH,
-  createKeypair,
-} from '@storage/secureStorage'
+import { DEFAULT_DERIVATION_PATH, createKeypair } from '@storage/secureStorage'
 import { useColors } from '@theme/themeHooks'
 import React, { memo, useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'

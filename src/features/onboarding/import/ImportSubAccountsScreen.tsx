@@ -130,9 +130,7 @@ export default () => {
                   maxFontSizeMultiplier={1.3}
                 >
                   {`${
-                    item.nfts?.length == 10
-                      ? '10+'
-                      : item.nfts?.length
+                    item.nfts?.length === 10 ? '10+' : item.nfts?.length
                   } NFTs`}
                 </Text>
               ) : null}

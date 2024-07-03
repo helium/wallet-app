@@ -5,6 +5,7 @@ import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import { Mnemonic } from '@helium/crypto-react-native'
+import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Keypair } from '@solana/web3.js'
 import bs58 from 'bs58'
@@ -22,7 +23,6 @@ import {
 import * as Logger from '../../../utils/logger'
 import { useOnboarding } from '../OnboardingProvider'
 import { OnboardingStackParamList } from '../onboardingTypes'
-import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 
 type Route = RouteProp<OnboardingStackParamList, 'ImportPrivateKey'>
 
@@ -81,7 +81,7 @@ const ImportPrivateKey = () => {
           const { keypair, words } = await createKeypair({
             givenMnemonic: mnemonic.words,
             use24Words: mnemonic.words.length === 24,
-            derivationPath: HELIUM_DERIVATION
+            derivationPath: HELIUM_DERIVATION,
           })
           await createAccount({ keypair, words })
         } catch (e) {
