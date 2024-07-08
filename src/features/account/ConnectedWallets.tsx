@@ -103,16 +103,20 @@ const ConnectedWallets = forwardRef(
         }, {} as { [key: string]: CSAccount[] })
 
       const { none, ...rest } = grouped
-      return [
+      const ret = [
         ...Object.values(rest).map((accounts, index) => ({
           title: `Seed Phrase ${index + 1}`,
           data: accounts,
         })),
-        {
-          title: 'Private Keys',
-          data: none || [],
-        },
       ]
+      if (none) {
+        ret.push({
+          title: 'Private Keys',
+          data: none,
+        })
+      }
+
+      return ret
     }, [sortedAccounts])
 
     const snapPoints = useMemo(() => {
