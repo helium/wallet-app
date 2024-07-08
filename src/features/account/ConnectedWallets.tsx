@@ -110,7 +110,7 @@ const ConnectedWallets = forwardRef(
         })),
         {
           title: 'Private Keys',
-          data: none,
+          data: none || [],
         },
       ]
     }, [sortedAccounts])
