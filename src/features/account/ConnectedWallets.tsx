@@ -103,12 +103,10 @@ const ConnectedWallets = forwardRef(
         }, {} as { [key: string]: CSAccount[] })
 
       const { none, ...rest } = grouped
-      const ret = [
-        ...Object.values(rest).map((accounts, index) => ({
-          title: `Seed Phrase ${index + 1}`,
-          data: accounts,
-        })),
-      ]
+      const ret = Object.values(rest).map((accounts, index) => ({
+        title: `Seed Phrase ${index + 1}`,
+        data: accounts,
+      }))
       if (none) {
         ret.push({
           title: 'Private Keys',
