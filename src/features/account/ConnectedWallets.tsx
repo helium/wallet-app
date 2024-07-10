@@ -308,6 +308,9 @@ const ConnectedWallets = forwardRef(
           <SectionFooter
             data={data}
             onAddSub={onAddSub}
+            isSelected={
+              data[0] && data[0].mnemonicHash === currentAccount?.mnemonicHash
+            }
             onLayout={(height) => {
               setSectionFooterHeights((prev) => {
                 const newHeight = { ...prev }
@@ -319,7 +322,7 @@ const ConnectedWallets = forwardRef(
           />
         )
       },
-      [onAddSub],
+      [onAddSub, currentAccount?.mnemonicHash],
     )
 
     return (
@@ -340,7 +343,7 @@ const ConnectedWallets = forwardRef(
             renderItem={renderItem}
             ListFooterComponent={footer}
             scrollEnabled
-            renderSectionHeader={({ section: { title } }) => (
+            renderSectionHeader={({ section: { title, data } }) => (
               <Box
                 onLayout={setSectionHeaderHeight}
                 flexDirection="row"
@@ -348,7 +351,17 @@ const ConnectedWallets = forwardRef(
                 backgroundColor="surfaceSecondary"
                 paddingHorizontal="l"
               >
-                <Text variant="subtitle1">{title}</Text>
+                <Text
+                  variant="subtitle1"
+                  color={
+                    data[0] &&
+                    data[0]?.mnemonicHash === currentAccount?.mnemonicHash
+                      ? 'primaryText'
+                      : 'secondaryText'
+                  }
+                >
+                  {title}
+                </Text>
               </Box>
             )}
             renderSectionFooter={sectionFooter}
@@ -361,9 +374,10 @@ const ConnectedWallets = forwardRef(
 
 const SectionFooter: React.FC<{
   data: CSAccount[]
+  isSelected: boolean
   onAddSub: (acc: CSAccount) => void
   onLayout: (height: LayoutChangeEvent) => void
-}> = ({ data, onAddSub, onLayout }) => {
+}> = ({ data, onAddSub, onLayout, isSelected }) => {
   const handleAddSub = useCallback(() => {
     if (data[0] && data[0].mnemonicHash) {
       onAddSub(data[data.length - 1])
@@ -373,7 +387,7 @@ const SectionFooter: React.FC<{
   const { t } = useTranslation()
   return (
     <Box onLayout={onLayout}>
-      {data[0] && data[0].mnemonicHash ? (
+      {isSelected && data[0] && data[0].mnemonicHash ? (
         <TouchableContainer
           onPress={handleAddSub}
           flexDirection="row"
@@ -383,7 +397,7 @@ const SectionFooter: React.FC<{
           alignItems="center"
         >
           <Add color={primaryText} />
-          <Text variant="subtitle1" color="primaryText" marginLeft="m">
+          <Text variant="subtitle1" color="secondaryText" marginLeft="m">
             {t('connectedWallets.addSub')}
           </Text>
         </TouchableContainer>

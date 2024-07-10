@@ -638,8 +638,8 @@ export default {
     recipient: 'Recipient Address',
     swipeToBurn: 'Swipe to Burn',
     title: 'Burn',
-    subdao: '{{subdao}} subDAO',
-    choooseSubDAO: 'Choose a subDAO',
+    subdao: '{{subdao}} Subnetwork',
+    choooseSubDAO: 'Choose a Subnetwork',
   },
   delegate: {
     title: 'Delegate',
