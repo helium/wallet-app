@@ -68,7 +68,7 @@ export const GovernanceTutorialScreen = () => {
 
   const handleVotePressed = useCallback(() => {
     setVoteTutorialCompleted()
-    navigation.replace('GovernanceScreen', {})
+    navigation.replace('ProposalsScreen', {})
   }, [navigation, setVoteTutorialCompleted])
 
   const onSnapToItem = useCallback((index: number) => {

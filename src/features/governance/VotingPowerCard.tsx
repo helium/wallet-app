@@ -90,6 +90,7 @@ export const VotingPowerCard = ({
   }, [onPress, mint])
 
   const noVotingPower = !loading && (!amountLocked || amountLocked.isZero())
+
   const renderCard = (compact = false) => {
     if (loading) return <VotingPowerCardSkeleton />
 
@@ -182,7 +183,6 @@ export const VotingPowerCard = ({
           )}
         </Box>
         <Box
-          flex={1}
           borderTopColor="primaryBackground"
           borderTopWidth={2}
           paddingVertical="ms"

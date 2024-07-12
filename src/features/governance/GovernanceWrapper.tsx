@@ -46,9 +46,9 @@ export const GovernanceWrapper: React.FC<
   useEffect(() => {
     // if we have a mint and proposal, navigate to the proposal screen
     // this is used for deep linking and to maintain
-    // GovernanceScreen as the back button
+    // ProposalsScreen as the back button
     if (route.params?.mint && route.params?.proposal) {
-      navigation.navigate('ProposalScreen', {
+      navigation.navigate('ProposalsScreen', {
         mint: route.params.mint,
         proposal: route.params.proposal,
       })
