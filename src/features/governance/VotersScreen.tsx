@@ -1,6 +1,3 @@
-import React, { useCallback, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-
 import BlueCheck from '@assets/images/blueCheck.svg'
 import MajorityCircle from '@assets/images/majorityCircle.svg'
 import MinorityCircle from '@assets/images/minorityCircle.svg'
@@ -14,28 +11,41 @@ import TouchableContainer from '@components/TouchableContainer'
 import { useMint } from '@helium/helium-react-hooks'
 import { proxiesQuery } from '@helium/voter-stake-registry-hooks'
 import { EnhancedProxy } from '@helium/voter-stake-registry-sdk'
-import { useNavigation } from '@react-navigation/native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useColors } from '@theme/themeHooks'
 import { humanReadable, shortenAddress } from '@utils/formatting'
+import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import { times } from 'lodash'
+import React, { useCallback, useMemo, useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FlatList, Image, RefreshControl } from 'react-native'
 import { useDebounce } from 'use-debounce'
+import {
+  GovernanceNavigationProp,
+  GovernanceStackParamList,
+} from './governanceTypes'
 import { GovernanceWrapper } from './GovernanceWrapper'
 import { VoterCardStat } from './VoterCardStat'
-import { GovernanceNavigationProp } from './governanceTypes'
 
 const DECENTRALIZATION_RISK_INDEX = 6
+const VOTER_HEIGHT = 110
+
+export const VoterSkeleton = () => {
+  return <CardSkeleton height={VOTER_HEIGHT} />
+}
+
+type Route = RouteProp<GovernanceStackParamList, 'VotersScreen'>
 
 export default function VotersScreen() {
   const { t } = useTranslation()
-  const { voteService, mint } = useGovernance()
+  const route = useRoute<Route>()
+  const { loading, voteService, mint, setMint } = useGovernance()
   const { info: mintAcc } = useMint(mint)
   const decimals = mintAcc?.decimals
   const [proxySearch, setProxySearch] = useState('')
-
   const [searchDebounced] = useDebounce(proxySearch, 300)
   const {
     data: voters,
@@ -48,21 +58,31 @@ export default function VotersScreen() {
     proxiesQuery({
       search: searchDebounced,
       amountPerPage: 100,
-      voteService: voteService,
+      voteService,
     }),
   )
-  const proxies = voters?.pages.flat() || []
+  const proxies = useMemo(() => voters?.pages.flat() || [], [voters])
+
+  useEffect(() => {
+    if (mint && route.params.mint) {
+      const routeMint = new PublicKey(route.params.mint)
+
+      if (!mint.equals(routeMint)) {
+        setMint(routeMint)
+      }
+    }
+  }, [mint, route, setMint])
 
   const handleOnEndReached = useCallback(() => {
     if (!isLoading && hasNextPage) {
       fetchNextPage()
     }
-  }, [fetchNextPage, hasNextPage, isLoading, proxySearch])
+  }, [fetchNextPage, hasNextPage, isLoading])
 
   const renderEmptyComponent = useCallback(() => {
     if (!proxies) return null
 
-    if (isLoading) {
+    if (loading || isLoading) {
       return (
         <Box flex={1} flexDirection="column">
           {times(5).map((i) => (
@@ -87,7 +107,7 @@ export default function VotersScreen() {
         </Text>
       </Box>
     )
-  }, [proxies, isLoading, t])
+  }, [proxies, isLoading, loading, t])
 
   const renderItem = useCallback(
     ({ item: proxy, index }) => {
@@ -237,7 +257,7 @@ const VoterCard: React.FC<{
             proxy.proxiedVeTokens
               ? humanReadable(
                   new BN(proxy.proxiedVeTokens).div(
-                    new BN(Math.pow(10, (decimals || 0) - 2)),
+                    new BN(10 ** (decimals || 0) - 2),
                   ),
                   2,
                 ) || ''
@@ -259,24 +279,4 @@ const VoterCard: React.FC<{
       </Box>
     </TouchableContainer>
   )
-}
-
-const VOTER_HEIGHT = 110
-
-export const VoterSkeleton = () => {
-  return <CardSkeleton height={VOTER_HEIGHT} />
-}
-
-function debounce<T extends unknown[], U>(
-  callback: (...args: T) => PromiseLike<U> | U,
-  wait: number,
-) {
-  let timer: any
-
-  return (...args: T): Promise<U> => {
-    clearTimeout(timer)
-    return new Promise((resolve) => {
-      timer = setTimeout(() => resolve(callback(...args)), wait)
-    })
-  }
 }

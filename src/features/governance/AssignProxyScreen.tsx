@@ -46,7 +46,7 @@ export const AssignProxyScreen = () => {
   const { t } = useTranslation()
   const [proxyWallet, setProxyWallet] = useState(wallet)
   const positionKey = usePublicKey(position)
-  const { positions, refetch, mint, setMint } = useGovernance()
+  const { loading, positions, refetch, mint, setMint } = useGovernance()
   const networks = useMemo(() => {
     return [
       { label: 'HNT', value: HNT_MINT.toBase58() },
@@ -121,6 +121,7 @@ export const AssignProxyScreen = () => {
       />
     )
   }
+
   const selectedAll = unproxiedPositions.length === selectedPositions.size
 
   const handleSelectAll = useCallback(() => {
@@ -216,6 +217,8 @@ export const AssignProxyScreen = () => {
   ])
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
 
+  if (loading) return null
+
   return (
     <BackScreen
       edges={safeEdges}
@@ -244,7 +247,7 @@ export const AssignProxyScreen = () => {
             </Text>
             <Select
               value={mint.toBase58()}
-              onValueChange={(m: string) => setMint(new PublicKey(m))}
+              onValueChange={(pk) => setMint(new PublicKey(pk))}
               options={networks}
             />
           </Box>

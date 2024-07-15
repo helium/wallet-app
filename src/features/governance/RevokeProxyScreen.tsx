@@ -45,7 +45,7 @@ export const RevokeProxyScreen = () => {
   const [proxyWallet, setProxyWallet] = useState(wallet)
   const proxyWalletKey = usePublicKey(proxyWallet)
   const positionKey = usePublicKey(position)
-  const { positions, refetch, mint, setMint } = useGovernance()
+  const { loading, positions, refetch, mint, setMint } = useGovernance()
   const networks = useMemo(() => {
     return [
       { label: 'HNT', value: HNT_MINT.toBase58() },
@@ -182,6 +182,8 @@ export const RevokeProxyScreen = () => {
   ])
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
 
+  if (loading) return null
+
   return (
     <BackScreen
       edges={safeEdges}
@@ -204,16 +206,19 @@ export const RevokeProxyScreen = () => {
           />
         </Box>
 
-        <Box mb="m">
-          <Text variant="body3" color="secondaryText">
-            {t('gov.assignProxy.selectNetwork')}
-          </Text>
-          <Select
-            value={mint.toBase58()}
-            onValueChange={(m: string) => setMint(new PublicKey(m))}
-            options={networks}
-          />
-        </Box>
+        {/* Don't show network when position already defined */}
+        {position ? null : (
+          <Box mb="m">
+            <Text variant="body3" color="secondaryText">
+              {t('gov.assignProxy.selectNetwork')}
+            </Text>
+            <Select
+              value={mint.toBase58()}
+              onValueChange={(m: string) => setMint(new PublicKey(m))}
+              options={networks}
+            />
+          </Box>
+        )}
         <Box flexDirection="row" justifyContent="space-between">
           <Text variant="body1" color="white" opacity={0.5}>
             {t('gov.revokeProxy.revokePositions')}
