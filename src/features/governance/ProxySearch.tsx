@@ -30,7 +30,6 @@ export const ProxySearch: React.FC<{
     data: resultPaged,
     isLoading: loading,
     isPending,
-    error,
   } = useInfiniteQuery(
     proxiesQuery({
       search: debouncedInput || '',
@@ -79,12 +78,12 @@ export const ProxySearch: React.FC<{
     [onValueChange],
   )
   const ListEmptyComponent = useCallback(() => {
-    if (loading) {
+    if (loading || isPending) {
       return <CircleLoader />
     }
 
     return null
-  }, [loading])
+  }, [loading, isPending])
 
   const selected = useMemo(() => {
     return result?.find((r: { value: string }) => r.value === input)
@@ -107,7 +106,7 @@ export const ProxySearch: React.FC<{
     navigation.navigate('VotersScreen', {
       mint: mint.toBase58(),
     })
-  }, [navigation])
+  }, [navigation, mint])
 
   return (
     <FlatList

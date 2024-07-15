@@ -7,6 +7,9 @@ import Text from '@components/Text'
 import {
   batchInstructionsToTxsWithPriorityFee,
   bulkSendTransactions,
+  HNT_MINT,
+  IOT_MINT,
+  MOBILE_MINT,
   populateMissingDraftInfo,
   toVersionedTx,
   truthy,
@@ -24,7 +27,7 @@ import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import sleep from '@utils/sleep'
 import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
@@ -39,21 +42,18 @@ type Route = RouteProp<GovernanceStackParamList, 'AssignProxyScreen'>
 
 export const AssignProxyScreen = () => {
   const route = useRoute<Route>()
-
   const { wallet, position } = route.params
   const { t } = useTranslation()
   const [proxyWallet, setProxyWallet] = useState(wallet)
-  const { positions, refetch } = useGovernance()
   const positionKey = usePublicKey(position)
-
+  const { positions, refetch, mint, setMint } = useGovernance()
   const networks = useMemo(() => {
     return [
-      { label: 'HNT', value: 'hnt' },
-      { label: 'MOBILE', value: 'mobile' },
-      { label: 'IOT', value: 'iot' },
+      { label: 'HNT', value: HNT_MINT.toBase58() },
+      { label: 'MOBILE', value: MOBILE_MINT.toBase58() },
+      { label: 'IOT', value: IOT_MINT.toBase58() },
     ]
   }, [])
-  const [network, setNetwork] = useState('hnt')
 
   const unproxiedPositions = useMemo(
     () =>
@@ -61,6 +61,7 @@ export const AssignProxyScreen = () => {
         (p) =>
           !p.proxy ||
           (p.proxy.nextVoter.equals(PublicKey.default) &&
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             (!positionKey || p.pubkey.equals(positionKey!))),
       ) || [],
     [positions, positionKey],
@@ -93,11 +94,10 @@ export const AssignProxyScreen = () => {
         : new Date().valueOf() / 1000 + selectedDays * (24 * 60 * 60),
     [selectedDays, maxDays, maxDate],
   )
-  useEffect(() => {
-    if (selectedDays > maxDays) {
-      setSelectedDays(maxDays)
-    }
-  }, [maxDays, selectedDays])
+
+  const handleSelectedDays = (days: number) => {
+    setSelectedDays(days > maxDays ? maxDays : days)
+  }
 
   const renderPosition = ({ item }: { item: PositionWithMeta }) => {
     const selected = selectedPositions.has(item.pubkey.toBase58())
@@ -243,8 +243,8 @@ export const AssignProxyScreen = () => {
               {t('gov.assignProxy.selectNetwork')}
             </Text>
             <Select
-              value={network}
-              onValueChange={setNetwork}
+              value={mint.toBase58()}
+              onValueChange={(m: string) => setMint(new PublicKey(m))}
               options={networks}
             />
           </Box>
@@ -285,7 +285,7 @@ export const AssignProxyScreen = () => {
           </Text>
           <Slider
             value={selectedDays}
-            onSlidingComplete={setSelectedDays}
+            onSlidingComplete={handleSelectedDays}
             minimumValue={1}
             maximumValue={maxDays}
             step={1}

@@ -74,7 +74,7 @@ export const ProposalScreen = () => {
     navigation.navigate('VotersScreen', {
       mint: mint.toBase58(),
     })
-  }, [navigation])
+  }, [navigation, mint])
   const { info: proposal } = useProposal(proposalKey)
   const { info: proposalConfig } = useProposalConfig(proposal?.proposalConfig)
   const { info: registrar } = useRegistrar(proposalConfig?.voteController)

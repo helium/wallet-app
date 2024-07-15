@@ -7,6 +7,9 @@ import Text from '@components/Text'
 import {
   batchInstructionsToTxsWithPriorityFee,
   bulkSendTransactions,
+  HNT_MINT,
+  IOT_MINT,
+  MOBILE_MINT,
   populateMissingDraftInfo,
   toVersionedTx,
   truthy,
@@ -42,16 +45,14 @@ export const RevokeProxyScreen = () => {
   const [proxyWallet, setProxyWallet] = useState(wallet)
   const proxyWalletKey = usePublicKey(proxyWallet)
   const positionKey = usePublicKey(position)
-  const { positions, refetch } = useGovernance()
-
+  const { positions, refetch, mint, setMint } = useGovernance()
   const networks = useMemo(() => {
     return [
-      { label: 'HNT', value: 'hnt' },
-      { label: 'MOBILE', value: 'mobile' },
-      { label: 'IOT', value: 'iot' },
+      { label: 'HNT', value: HNT_MINT.toBase58() },
+      { label: 'MOBILE', value: MOBILE_MINT.toBase58() },
+      { label: 'IOT', value: IOT_MINT.toBase58() },
     ]
   }, [])
-  const [network, setNetwork] = useState('hnt')
 
   const proxiedPositions = useMemo(
     () =>
@@ -61,6 +62,7 @@ export const RevokeProxyScreen = () => {
           !p.proxy.nextVoter.equals(PublicKey.default) &&
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           (!proxyWalletKey || p.proxy.nextVoter.equals(proxyWalletKey!)) &&
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           (!positionKey || p.pubkey.equals(positionKey!)),
       ),
     [positions, proxyWalletKey, positionKey],
@@ -207,8 +209,8 @@ export const RevokeProxyScreen = () => {
             {t('gov.assignProxy.selectNetwork')}
           </Text>
           <Select
-            value={network}
-            onValueChange={setNetwork}
+            value={mint.toBase58()}
+            onValueChange={(m: string) => setMint(new PublicKey(m))}
             options={networks}
           />
         </Box>

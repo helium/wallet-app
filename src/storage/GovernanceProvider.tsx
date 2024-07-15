@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import { Wallet } from '@coral-xyz/anchor'
 import { useOrganization } from '@helium/modular-governance-hooks'
 import { organizationKey } from '@helium/organization-sdk'
@@ -21,10 +22,10 @@ import React, {
 } from 'react'
 import { useAsync } from 'react-async-hook'
 import Config from 'react-native-config'
-import { useSolana } from '../solana/SolanaProvider'
-import { useAccountStorage } from './AccountStorageProvider'
-import { RootState } from '../store/rootReducer'
 import { useSelector } from 'react-redux'
+import { useSolana } from '../solana/SolanaProvider'
+import { RootState } from '../store/rootReducer'
+import { useAccountStorage } from './AccountStorageProvider'
 
 enum GovNetwork {
   hnt = 'Helium',
@@ -37,6 +38,7 @@ const mintsToNetwork: { [key: string]: GovNetwork } = {
   [MOBILE_MINT.toBase58()]: GovNetwork.mobile,
   [IOT_MINT.toBase58()]: GovNetwork.iot,
 }
+
 export interface IGovernanceContextState {
   loading: boolean
   mint: PublicKey
@@ -146,17 +148,18 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
       subDaos,
     ],
   )
+
   const cluster = useSelector(
     (state: RootState) => state.app.cluster || 'mainnet-beta',
   )
+
   const heliumVoteUri = useMemo(() => {
     if (cluster === 'mainnet-beta') {
       return Config.HELIUM_VOTE_API_URL
     }
 
     return Config.DEVNET_HELIUM_VOTE_API_URL
-
-  }, [Config.HELIUM_VOTE_API_URL, Config.DEVNET_HELIUM_VOTE_API_URL, cluster])
+  }, [cluster])
 
   return (
     <GovernanceContext.Provider value={ret}>
@@ -164,7 +167,7 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
         mint={mint}
         wallet={anchorProvider?.wallet as Wallet}
         connection={anchorProvider?.connection}
-        heliumVoteUri={Config.HELIUM_VOTE_API_URL}
+        heliumVoteUri={heliumVoteUri}
       >
         {children}
       </HeliumVsrStateProvider>

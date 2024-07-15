@@ -63,7 +63,6 @@ export const PositionPreview: React.FC<
     [subDaos, position.delegatedSubDao],
   )
 
-  // const Icon = <NetworkSvg width={32} height={32} network={network} />
   const Icon = <Hnt width={32} height={32} />
   const delegatedNetwork = subDao?.dntMetadata.json?.symbol.toLowerCase()
   const DelegatedIcon = delegatedNetwork && (
