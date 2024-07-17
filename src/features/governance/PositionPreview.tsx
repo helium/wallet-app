@@ -6,13 +6,8 @@ import Text from '@components/Text'
 import TouchableContainer, {
   ButtonPressAnimationProps,
 } from '@components/TouchableContainer'
-import { useMint } from '@helium/helium-react-hooks'
-import {
-  PositionWithMeta,
-  useRegistrar,
-} from '@helium/voter-stake-registry-hooks'
+import { PositionWithMeta } from '@helium/voter-stake-registry-hooks'
 import { useGovernance } from '@storage/GovernanceProvider'
-import { networksToMint } from '@utils/constants'
 import { getMinDurationFmt } from '@utils/dateTools'
 import { humanReadable } from '@utils/formatting'
 import BN from 'bn.js'
@@ -38,20 +33,15 @@ const NetworkSvg: React.FC<{ network: string } & SvgProps> = ({
 type Props = {
   position: Partial<PositionWithMeta>
 }
+
 export const PositionPreview: React.FC<
   Props & Partial<Omit<ButtonPressAnimationProps, 'position'>>
 > = ({ position, ...boxProps }) => {
-  // eslint-disable-next-line react/prop-types
-  const { info: registrar } = useRegistrar(position.registrar)
-  const votingMint = registrar?.votingMints[0].mint
-  const network =
-    Object.entries(networksToMint).find(
-      ([_, mint]) => votingMint && mint.equals(votingMint),
-    )?.[0] || 'hnt'
-  const { info: mint } = useMint(votingMint)
-  // eslint-disable-next-line react/prop-types
-  const amount = humanReadable(position.amountDepositedNative, mint?.decimals)
-  const { subDaos } = useGovernance()
+  const { subDaos, network, mintAcc } = useGovernance()
+  const amount = humanReadable(
+    position.amountDepositedNative,
+    mintAcc?.decimals,
+  )
   const subDao = useMemo(
     () =>
       subDaos?.find(
@@ -63,7 +53,7 @@ export const PositionPreview: React.FC<
     [subDaos, position.delegatedSubDao],
   )
 
-  const Icon = <Hnt width={32} height={32} />
+  const Icon = <NetworkSvg width={32} height={32} network={network} />
   const delegatedNetwork = subDao?.dntMetadata.json?.symbol.toLowerCase()
   const DelegatedIcon = delegatedNetwork && (
     <NetworkSvg width={18} height={18} network={delegatedNetwork} />

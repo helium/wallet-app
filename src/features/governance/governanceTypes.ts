@@ -25,8 +25,8 @@ export type GovernanceStackParamList = {
   VotersScreen: { mint?: string }
   ProposalScreen: { mint: string; proposal: string }
   VoterScreen: { mint: string; wallet: string }
-  AssignProxyScreen: { position?: string; mint: string; wallet?: string }
-  RevokeProxyScreen: { position?: string; mint: string; wallet?: string }
+  AssignProxyScreen: { mint: string; position?: string; wallet?: string }
+  RevokeProxyScreen: { mint: string; position?: string; wallet?: string }
 }
 
 export type GovernanceNavigationProp =

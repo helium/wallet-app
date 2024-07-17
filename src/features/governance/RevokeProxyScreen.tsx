@@ -34,18 +34,24 @@ import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { PositionPreview } from './PositionPreview'
 import { ProxySearch } from './ProxySearch'
-import { GovernanceStackParamList } from './governanceTypes'
+import {
+  GovernanceStackParamList,
+  GovernanceNavigationProp,
+} from './governanceTypes'
 
 type Route = RouteProp<GovernanceStackParamList, 'RevokeProxyScreen'>
 
 export const RevokeProxyScreen = () => {
+  const { walletSignBottomSheetRef } = useWalletSign()
+  const { anchorProvider } = useSolana()
+  const navigation = useNavigation<GovernanceNavigationProp>()
   const route = useRoute<Route>()
   const { wallet, position } = route.params
   const { t } = useTranslation()
   const [proxyWallet, setProxyWallet] = useState(wallet)
   const proxyWalletKey = usePublicKey(proxyWallet)
   const positionKey = usePublicKey(position)
-  const { loading, positions, refetch, mint, setMint } = useGovernance()
+  const { loading, positions, refetch, mint } = useGovernance()
   const networks = useMemo(() => {
     return [
       { label: 'HNT', value: HNT_MINT.toBase58() },
@@ -110,9 +116,7 @@ export const RevokeProxyScreen = () => {
     error,
     isPending: isSubmitting,
   } = useUnassignProxies()
-  const { walletSignBottomSheetRef } = useWalletSign()
-  const { anchorProvider } = useSolana()
-  const navigation = useNavigation()
+
   const decideAndExecute = useCallback(
     async (header: string, instructions: TransactionInstruction[]) => {
       if (!anchorProvider || !walletSignBottomSheetRef) return
@@ -214,7 +218,7 @@ export const RevokeProxyScreen = () => {
             </Text>
             <Select
               value={mint.toBase58()}
-              onValueChange={(m: string) => setMint(new PublicKey(m))}
+              onValueChange={(m: string) => navigation.setParams({ mint: m })}
               options={networks}
             />
           </Box>

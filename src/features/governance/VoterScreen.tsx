@@ -7,7 +7,6 @@ import CircleLoader from '@components/CircleLoader'
 import { Markdown } from '@components/Markdown'
 import { Pill } from '@components/Pill'
 import Text from '@components/Text'
-import { useMint } from '@helium/helium-react-hooks'
 import { proxyQuery, useProxiedTo } from '@helium/voter-stake-registry-hooks'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
@@ -36,7 +35,7 @@ export const VoterScreen = () => {
     () => new PublicKey(route.params.wallet),
     [route.params.wallet],
   )
-  const { mint, voteService, positions } = useGovernance()
+  const { mint, mintAcc, voteService, positions } = useGovernance()
   const { data: proxy, refetch } = useQuery(
     proxyQuery({
       wallet,
@@ -60,7 +59,7 @@ export const VoterScreen = () => {
       ),
     [positions, wallet],
   )
-  const { info: mintAcc } = useMint(mint)
+
   const decimals = mintAcc?.decimals
   const { votingPower, positions: proxiedToPositions } = useProxiedTo(wallet)
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -69,15 +68,15 @@ export const VoterScreen = () => {
 
   const handleAssignProxy = useCallback(() => {
     navigation.navigate('AssignProxyScreen', {
-      wallet: wallet.toBase58(),
       mint: mint.toBase58(),
+      wallet: wallet.toBase58(),
     })
   }, [navigation, wallet, mint])
 
   const handleRevokeProxy = useCallback(() => {
     navigation.navigate('RevokeProxyScreen', {
-      wallet: wallet.toBase58(),
       mint: mint.toBase58(),
+      wallet: wallet.toBase58(),
     })
   }, [navigation, wallet, mint])
 
@@ -228,7 +227,7 @@ export const VoterScreen = () => {
                       decimals && proxy.proxiedVeTokens
                         ? humanReadable(
                             new BN(proxy.proxiedVeTokens).div(
-                              new BN(Math.pow(10, decimals - 2)),
+                              new BN(10 ** (decimals - 2)),
                             ),
                             2,
                           ) || ''
@@ -259,7 +258,7 @@ export const VoterScreen = () => {
                         votingPower && decimals
                           ? humanReadable(
                               new BN(votingPower).div(
-                                new BN(Math.pow(10, decimals - 2)),
+                                new BN(10 ** (decimals - 2)),
                               ),
                               2,
                             ) || ''

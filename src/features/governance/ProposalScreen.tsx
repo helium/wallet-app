@@ -37,7 +37,7 @@ import { getDerivedProposalState } from '@utils/governanceUtils'
 import { getBasePriorityFee } from '@utils/walletApiV2'
 import axios from 'axios'
 import BN from 'bn.js'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
@@ -69,7 +69,7 @@ export const ProposalScreen = () => {
   )
   const { anchorProvider } = useSolana()
   const { walletSignBottomSheetRef } = useWalletSign()
-  const { mint, setMint, loading, amountLocked } = useGovernance()
+  const { mint, loading, amountLocked } = useGovernance()
   const handleBrowseVoters = useCallback(() => {
     navigation.navigate('VotersScreen', {
       mint: mint.toBase58(),
@@ -90,16 +90,6 @@ export const ProposalScreen = () => {
       )
     }
   }, [currentAccount, mint, proposalKey])
-
-  useEffect(() => {
-    if (mint && route.params.mint) {
-      const routeMint = new PublicKey(route.params.mint)
-
-      if (!mint.equals(routeMint)) {
-        setMint(routeMint)
-      }
-    }
-  }, [mint, route, setMint])
 
   useAsync(async () => {
     if (currentAccount?.address && !hasSeen && proposal && resolution) {

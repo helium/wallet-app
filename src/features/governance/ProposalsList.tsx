@@ -1,20 +1,19 @@
 import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
+import CircleLoader from '@components/CircleLoader'
 import ListItem from '@components/ListItem'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { BoxProps } from '@shopify/restyle'
-import { Theme } from '@theme/theme'
-import React, { useCallback, useMemo, useState } from 'react'
-import { useNavigation } from '@react-navigation/native'
-import { useGovernance } from '@storage/GovernanceProvider'
-import { useTranslation } from 'react-i18next'
-import { organizationKey } from '@helium/organization-sdk'
 import { useOrganizationProposals } from '@helium/modular-governance-hooks'
-import CircleLoader from '@components/CircleLoader'
-import { useAsync } from 'react-async-hook'
+import { useNavigation } from '@react-navigation/native'
+import { BoxProps } from '@shopify/restyle'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { useGovernance } from '@storage/GovernanceProvider'
+import { Theme } from '@theme/theme'
 import { getDerivedProposalState } from '@utils/governanceUtils'
+import React, { useCallback, useMemo, useState } from 'react'
+import { useAsync } from 'react-async-hook'
+import { useTranslation } from 'react-i18next'
 import { ProposalCard } from './ProposalCard'
 import {
   GovernanceNavigationProp,
@@ -29,14 +28,13 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
   const navigation = useNavigation<GovernanceNavigationProp>()
   const [filter, setFilter] = useState<ProposalFilter>('all')
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const { mint, network } = useGovernance()
-  const organization = useMemo(() => organizationKey(network)[0], [network])
-  const { loading, accounts: proposalsWithDups } =
+  const { loading, mint, organization } = useGovernance()
+  const { loading: loadingProposals, accounts: proposalsWithDups } =
     useOrganizationProposals(organization)
 
   const isLoading = useMemo(
-    () => !currentAccount || loading || !proposalsWithDups,
-    [currentAccount, loading, proposalsWithDups],
+    () => !currentAccount || loading || loadingProposals || !proposalsWithDups,
+    [currentAccount, loading, loadingProposals, proposalsWithDups],
   )
 
   const proposals = useMemo(() => {

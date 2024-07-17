@@ -1,15 +1,18 @@
 import Box from '@components/Box'
 import TokenPill from '@components/TokenPill'
+import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { GovMints } from '@utils/constants'
 import React, { useRef } from 'react'
 import { Animated } from 'react-native'
+import { GovernanceNavigationProp } from './governanceTypes'
 
 export const NetworkTabs: React.FC = () => {
+  const navigation = useNavigation<GovernanceNavigationProp>()
   const { currentAccount } = useAccountStorage()
-  const { mint, setMint, proposalCountByMint } = useGovernance()
+  const { mint, proposalCountByMint } = useGovernance()
   const anim = useRef(new Animated.Value(1))
 
   return (
@@ -29,7 +32,7 @@ export const NetworkTabs: React.FC = () => {
             <TokenPill
               mint={pk}
               isActive={mint.equals(pk)}
-              onPress={() => setMint(pk)}
+              onPress={() => navigation.setParams({ mint: pk.toBase58() })}
               inactiveColor="secondaryBackground"
               activeColor="secondary"
             />

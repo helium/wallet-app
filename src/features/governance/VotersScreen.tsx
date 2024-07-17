@@ -8,25 +8,20 @@ import { Pill } from '@components/Pill'
 import SearchInput from '@components/SearchInput'
 import Text from '@components/Text'
 import TouchableContainer from '@components/TouchableContainer'
-import { useMint } from '@helium/helium-react-hooks'
 import { proxiesQuery } from '@helium/voter-stake-registry-hooks'
 import { EnhancedProxy } from '@helium/voter-stake-registry-sdk'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useColors } from '@theme/themeHooks'
 import { humanReadable, shortenAddress } from '@utils/formatting'
-import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import { times } from 'lodash'
-import React, { useCallback, useMemo, useState, useEffect } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, Image, RefreshControl } from 'react-native'
 import { useDebounce } from 'use-debounce'
-import {
-  GovernanceNavigationProp,
-  GovernanceStackParamList,
-} from './governanceTypes'
+import { GovernanceNavigationProp } from './governanceTypes'
 import { GovernanceWrapper } from './GovernanceWrapper'
 import { VoterCardStat } from './VoterCardStat'
 
@@ -37,13 +32,9 @@ export const VoterSkeleton = () => {
   return <CardSkeleton height={VOTER_HEIGHT} />
 }
 
-type Route = RouteProp<GovernanceStackParamList, 'VotersScreen'>
-
 export default function VotersScreen() {
   const { t } = useTranslation()
-  const route = useRoute<Route>()
-  const { loading, voteService, mint, setMint } = useGovernance()
-  const { info: mintAcc } = useMint(mint)
+  const { loading, voteService, mintAcc } = useGovernance()
   const decimals = mintAcc?.decimals
   const [proxySearch, setProxySearch] = useState('')
   const [searchDebounced] = useDebounce(proxySearch, 300)
@@ -62,17 +53,6 @@ export default function VotersScreen() {
     }),
   )
   const proxies = useMemo(() => voters?.pages.flat() || [], [voters])
-
-  useEffect(() => {
-    if (mint && route.params.mint) {
-      const routeMint = new PublicKey(route.params.mint)
-
-      if (!mint.equals(routeMint)) {
-        setMint(routeMint)
-      }
-    }
-  }, [mint, route, setMint])
-
   const handleOnEndReached = useCallback(() => {
     if (!isLoading && hasNextPage) {
       fetchNextPage()
@@ -189,7 +169,7 @@ export default function VotersScreen() {
         ListEmptyComponent={renderEmptyComponent}
         refreshControl={
           <RefreshControl
-            refreshing={isLoading || isFetchingNextPage}
+            refreshing={loading || isLoading || isFetchingNextPage}
             onRefresh={refetch}
             title=""
             tintColor={primaryText}
