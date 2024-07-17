@@ -47,7 +47,7 @@
     "@helium/onboarding": "4.11.0",
     "@helium/organization-sdk": "^0.0.8",
     "@helium/proto-ble": "4.0.0",
-    "@helium/react-native-sdk": "^3.0.4",
+    "@helium/react-native-sdk": "3.0.5",
     "@helium/spl-utils": "0.8.6",
     "@helium/state-controller-sdk": "^0.0.8",
     "@helium/sus": "0.8.6",

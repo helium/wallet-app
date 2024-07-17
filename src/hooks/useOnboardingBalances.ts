@@ -106,7 +106,8 @@ export function useOnboardingBalnces(hotspotAddress: string | undefined): {
   const mobileSetting = useMemo(
     () =>
       (
-        mobileREC?.settings?.mobileConfigV1 || mobileREC?.settings?.mobileConfigV2
+        mobileREC?.settings?.mobileConfigV1 ||
+        mobileREC?.settings?.mobileConfigV2
       )?.feesByDevice.find(
         (fee: any) => Object.keys(fee.deviceType)[0] === deviceType,
       ),
