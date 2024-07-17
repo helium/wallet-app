@@ -106,7 +106,7 @@ export function useOnboardingBalnces(hotspotAddress: string | undefined): {
   const mobileSetting = useMemo(
     () =>
       (
-        mobileREC?.settings.mobileConfigV1 || mobileREC?.settings.mobileConfigV2
+        mobileREC?.settings?.mobileConfigV1 || mobileREC?.settings?.mobileConfigV2
       )?.feesByDevice.find(
         (fee: any) => Object.keys(fee.deviceType)[0] === deviceType,
       ),
@@ -119,8 +119,8 @@ export function useOnboardingBalnces(hotspotAddress: string | undefined): {
   const iotAssertFee = useMemo(
     () =>
       !iotInfo || iotInfo?.isFullHotspot
-        ? iotREC?.settings.iotConfig.fullLocationStakingFee
-        : iotREC?.settings.iotConfig.dataonlyLocationStakingFee,
+        ? iotREC?.settings?.iotConfig?.fullLocationStakingFee
+        : iotREC?.settings?.iotConfig?.dataonlyLocationStakingFee,
     [iotInfo, iotREC],
   )
   const loadingOnboardingDcRequirements = loadingMobileREC || loadingSubDao
