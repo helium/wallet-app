@@ -236,6 +236,7 @@ export const AssignProxyScreen = () => {
             {t('gov.assignProxy.description')}
           </Text>
         </Box>
+
         <Box mb="m">
           <ProxySearch
             value={proxyWallet || ''}
@@ -246,7 +247,7 @@ export const AssignProxyScreen = () => {
         {/* Don't show network when position already defined */}
         {position ? null : (
           <Box mb="m">
-            <Text variant="body3" color="secondaryText">
+            <Text variant="body3" color="secondaryText" mb="xs">
               {t('gov.assignProxy.selectNetwork')}
             </Text>
             <Select

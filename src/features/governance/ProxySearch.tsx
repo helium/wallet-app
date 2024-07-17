@@ -114,7 +114,7 @@ export const ProxySearch: React.FC<{
       renderItem={renderItem}
       ListHeaderComponent={
         <>
-          <Text variant="body3" color="secondaryText">
+          <Text variant="body3" color="secondaryText" mb="xs">
             {selected ? selected.label : t('gov.assignProxy.searchPlaceholder')}
           </Text>
           <Box flexDirection="row" alignItems="center">

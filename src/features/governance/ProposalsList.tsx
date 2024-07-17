@@ -26,11 +26,11 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
   const { t } = useTranslation()
   const { upsertAccount, currentAccount } = useAccountStorage()
   const navigation = useNavigation<GovernanceNavigationProp>()
-  const [filter, setFilter] = useState<ProposalFilter>('all')
-  const [filtersOpen, setFiltersOpen] = useState(false)
   const { loading, mint, organization } = useGovernance()
   const { loading: loadingProposals, accounts: proposalsWithDups } =
     useOrganizationProposals(organization)
+  const [filter, setFilter] = useState<ProposalFilter>('all')
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   const isLoading = useMemo(
     () => !currentAccount || loading || loadingProposals || !proposalsWithDups,

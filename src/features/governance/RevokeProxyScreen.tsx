@@ -213,7 +213,7 @@ export const RevokeProxyScreen = () => {
         {/* Don't show network when position already defined */}
         {position ? null : (
           <Box mb="m">
-            <Text variant="body3" color="secondaryText">
+            <Text variant="body3" color="secondaryText" mb="xs">
               {t('gov.assignProxy.selectNetwork')}
             </Text>
             <Select

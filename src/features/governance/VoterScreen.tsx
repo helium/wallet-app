@@ -154,10 +154,12 @@ export const VoterScreen = () => {
               >
                 <VoterCardStat
                   title="Current Rank"
+                  alignItems="center"
                   value={`#${proxy.rank} of ${proxy.numProxies}`}
                 />
                 <VoterCardStat
                   title="Last Time Voted"
+                  alignItems="center"
                   value={
                     proxy.lastVotedAt
                       ? new Date(proxy.lastVotedAt).toLocaleDateString()
@@ -165,26 +167,27 @@ export const VoterScreen = () => {
                   }
                 />
               </Box>
-              <Box flexDirection="row" alignItems="center">
+              <Box flexDirection="row" alignItems="center" mb="m">
                 <ButtonPressable
+                  height={50}
                   flex={1}
                   LeadingComponent={<UserShare width={16} height={16} />}
                   backgroundColor="transparent"
                   titleColor="white"
                   borderColor="white"
-                  borderWidth={unproxiedPositions?.length ? 1 : 0}
+                  borderWidth={1}
                   borderRadius="round"
                   backgroundColorOpacityPressed={0.7}
                   backgroundColorDisabled="black500"
                   title={t('gov.voter.assignProxy')}
                   disabled={!unproxiedPositions?.length}
-                  mb={proxiedPositions?.length ? 's' : 'm'}
                   onPress={handleAssignProxy}
                 />
                 {proxiedPositions?.length ? (
                   <ButtonPressable
-                    ml="m"
                     flex={1}
+                    height={50}
+                    ml="m"
                     LeadingComponent={<UserX width={16} height={16} />}
                     backgroundColor="transparent"
                     titleColor="white"
@@ -193,7 +196,6 @@ export const VoterScreen = () => {
                     borderRadius="round"
                     backgroundColorOpacityPressed={0.7}
                     title={t('gov.voter.revokeProxy')}
-                    mb="m"
                     onPress={handleRevokeProxy}
                   />
                 ) : null}
@@ -222,6 +224,7 @@ export const VoterScreen = () => {
                   />
                   <VoterCardStat
                     title="Total Power"
+                    alignItems="flex-end"
                     value={
                       // Force 2 decimals
                       decimals && proxy.proxiedVeTokens
@@ -242,6 +245,7 @@ export const VoterScreen = () => {
                   />
                   <VoterCardStat
                     title="Num Assignments"
+                    alignItems="flex-end"
                     value={proxy.numAssignments}
                   />
                 </Box>
@@ -267,6 +271,7 @@ export const VoterScreen = () => {
                     />
                     <VoterCardStat
                       title="Positions Assigned"
+                      alignItems="flex-end"
                       value={proxiedToPositions?.length?.toString() || '0'}
                     />
                   </Box>

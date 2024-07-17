@@ -104,18 +104,18 @@ export default function VotersScreen() {
         return (
           <>
             <Box
-              mt="m"
+              my="m"
               p="m"
-              mb="m"
               backgroundColor="surfaceSecondary"
               borderRadius="l"
               flexDirection="row"
               alignItems="center"
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              gap={8}
             >
-              <Box>
-                <Warning width={24} height={24} />
-              </Box>
-              <Text variant="body2" color="grey600" px="s">
+              <Warning width={24} height={24} />
+              <Text variant="body2" color="grey600" flex={1}>
                 {t('gov.voters.warning')}
               </Text>
             </Box>
@@ -246,10 +246,12 @@ const VoterCard: React.FC<{
         />
         <VoterCardStat
           title="Proposals Voted"
+          alignItems="center"
           value={proxy.numProposalsVoted}
         />
         <VoterCardStat
           title="Last Voted"
+          alignItems="flex-end"
           value={
             proxy.lastVotedAt
               ? new Date(proxy.lastVotedAt).toLocaleDateString()
