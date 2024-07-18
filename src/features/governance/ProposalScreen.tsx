@@ -505,21 +505,28 @@ export const ProposalScreen = () => {
                   <Box
                     flexGrow={1}
                     justifyContent="center"
-                    backgroundColor="surfaceSecondary"
-                    borderRadius="l"
-                    padding="m"
-                    marginTop="m"
+                    mt="m"
+                    {...{ gap: 14 }}
                   >
-                    <Box>
-                      {showError && (
-                        <Box flexDirection="row" paddingBottom="ms">
-                          <Text variant="body3Medium" color="red500">
-                            {showError}
-                          </Text>
-                        </Box>
-                      )}
-                      <Box flex={1} flexDirection="column" {...{ gap: 8 }}>
-                        {votingResults.results?.map((r, index) => (
+                    {showError && (
+                      <Box
+                        flexDirection="row"
+                        backgroundColor="surfaceSecondary"
+                        borderRadius="l"
+                        padding="m"
+                      >
+                        <Text variant="body3Medium" color="red500">
+                          {showError}
+                        </Text>
+                      </Box>
+                    )}
+                    <Box flex={1} flexDirection="column" {...{ gap: 14 }}>
+                      {votingResults.results?.map((r, index) => (
+                        <Box
+                          backgroundColor="surfaceSecondary"
+                          borderRadius="l"
+                          padding="xs"
+                        >
                           <VoteOption
                             voters={voters?.[index] || []}
                             key={r.name}
@@ -533,8 +540,8 @@ export const ProposalScreen = () => {
                             onVote={handleVote(r)}
                             onRelinquishVote={handleRelinquish(r)}
                           />
-                        ))}
-                      </Box>
+                        </Box>
+                      ))}
                     </Box>
                   </Box>
                 </>

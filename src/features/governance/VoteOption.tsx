@@ -1,17 +1,17 @@
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import BN from 'bn.js'
-import React from 'react'
 import Box from '@components/Box'
 import CircleLoader from '@components/CircleLoader'
-import { useColors } from '@theme/themeHooks'
-import { Color, Theme } from '@theme/theme'
-import { BoxProps } from '@shopify/restyle'
-import { VoteChoiceWithMeta, VotingResultColors } from './governanceTypes'
-import { PublicKey } from '@solana/web3.js'
-import { useKnownProxy } from '@helium/voter-stake-registry-hooks'
-import { shortenAddress } from '@utils/formatting'
 import { Pill } from '@components/Pill'
+import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useKnownProxy } from '@helium/voter-stake-registry-hooks'
+import { BoxProps } from '@shopify/restyle'
+import { PublicKey } from '@solana/web3.js'
+import { Color, Theme } from '@theme/theme'
+import { useColors } from '@theme/themeHooks'
+import { shortenAddress } from '@utils/formatting'
+import BN from 'bn.js'
+import React from 'react'
+import { VoteChoiceWithMeta, VotingResultColors } from './governanceTypes'
 
 export const VoteOption = ({
   option,
@@ -76,13 +76,32 @@ export const VoteOption = ({
       </Box>
 
       {voters && voters.length > 0 && (
-        <Box flexDirection="row" alignItems="center">
-          <Text variant="body2" color="secondaryText">
-            Voted by
-          </Text>
-          <Box flexDirection="row" flexWrap="wrap">
-            {voters.map((voter) => (
-              <Voter key={voter.toBase58()} voter={voter} />
+        <Box
+          flex={1}
+          borderTopColor="primaryBackground"
+          borderTopWidth={2}
+          mt="ms"
+          pt="s"
+        >
+          <Box
+            flex={1}
+            flexDirection="row"
+            flexWrap="wrap"
+            alignItems="center"
+            {...{ gap: 4 }}
+          >
+            <Text variant="body2" color="secondaryText">
+              Voted by -
+            </Text>
+            {voters.map((voter, idx) => (
+              <>
+                <Voter key={voter.toBase58()} voter={voter} />
+                {idx !== voters.length - 1 && (
+                  <Text variant="body2" color="secondaryText">
+                    |
+                  </Text>
+                )}
+              </>
             ))}
           </Box>
         </Box>
@@ -94,11 +113,8 @@ export const VoteOption = ({
 export const Voter = ({ voter }: { voter: PublicKey }) => {
   const { knownProxy } = useKnownProxy(voter)
   return (
-    <Box ml="xs">
-      <Pill
-        color="red"
-        text={knownProxy?.name || shortenAddress(voter.toBase58())}
-      />
-    </Box>
+    <Text variant="body2" color="red500">
+      {knownProxy?.name || shortenAddress(voter.toBase58())}
+    </Text>
   )
 }
