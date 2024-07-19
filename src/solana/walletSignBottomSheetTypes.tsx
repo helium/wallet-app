@@ -7,13 +7,18 @@ export enum WalletStandardMessageTypes {
   signMessage = 'signMessage',
 }
 
-export type BalanceChange = {
-  ticker: string
-  amount: number
-  type: 'send' | 'receive'
+export type WalletSignOptsCommon = {
+  onCancelHandler: () => void
+  onAcceptHandler: () => void
 }
 
-export type WalletSignOpts = {
+export type WalletSignOptsCompact = {
+  header: string
+  message: string
+  onSimulate: () => Promise<void>
+}
+
+export type WalletSignOptsSimulated = {
   type: WalletStandardMessageTypes
   url: string
   serializedTxs: Buffer[] | undefined
@@ -24,15 +29,10 @@ export type WalletSignOpts = {
   suppressWarnings?: boolean
 }
 
+export type WalletSignOpts = WalletSignOptsCompact | WalletSignOptsSimulated
+
 export type WalletSignBottomSheetRef = {
-  show: ({
-    type,
-    url,
-    additionalMessage,
-    serializedTxs,
-    header,
-    suppressWarnings,
-  }: WalletSignOpts) => Promise<boolean>
+  show: (opts: WalletSignOpts) => Promise<boolean>
   hide: () => void
 }
 

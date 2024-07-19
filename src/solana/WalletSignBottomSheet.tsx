@@ -52,11 +52,13 @@ import {
   WalletSignOpts,
   WalletStandardMessageTypes,
 } from './walletSignBottomSheetTypes'
-
-let promiseResolve: (value: boolean | PromiseLike<boolean>) => void
+import { WalletSignBottomSheetCompact } from './WalletSignBottomSheetCompact'
+import { WalletSignBottomSheetSimulated } from './WalletSIgnBottomSheetSimulated'
 
 const WELL_KNOWN_CANOPY_URL =
   'https://shdw-drive.genesysgo.net/6tcnBSybPG7piEDShBcrVtYJDPSvGrDbVvXmXKpzBvWP/merkles.json'
+
+let promiseResolve: (value: boolean | PromiseLike<boolean>) => void
 let wellKnownCanopyCache: Record<string, number> | undefined
 
 const WalletSignBottomSheet = forwardRef(
@@ -65,16 +67,21 @@ const WalletSignBottomSheet = forwardRef(
     ref: Ref<WalletSignBottomSheetRef>,
   ) => {
     useImperativeHandle(ref, () => ({ show, hide }))
-    const { rentExempt } = useRentExempt()
-    const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
-    const { secondaryText } = useColors()
     const { t } = useTranslation()
+    const { connection, cluster } = useSolana()
     const wallet = useCurrentWallet()
+    const { secondaryText } = useColors()
+    const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
+    const animatedContentHeight = useSharedValue(0)
     const solBalance = useBN(useSolOwnedAmount(wallet).amount)
+    const { rentExempt } = useRentExempt()
+
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const [isVisible, setIsVisible] = useState(false)
     const [infoVisible, setInfoVisible] = useState(false)
     const [writableInfoVisible, setWritableInfoVisible] = useState(false)
+    const [feesExpanded, setFeesExpanded] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1)
     const [walletSignOpts, setWalletSignOpts] = useState<WalletSignOpts>({
       type: WalletStandardMessageTypes.connect,
       url: '',
@@ -83,7 +90,11 @@ const WalletSignBottomSheet = forwardRef(
       header: undefined,
       suppressWarnings: false,
     })
-    const { connection, cluster } = useSolana()
+
+    useEffect(() => {
+      bottomSheetModalRef.current?.present()
+    }, [bottomSheetModalRef])
+
     const { result: accountBlacklist } = useAsync(async () => {
       if (!wellKnownCanopyCache)
         wellKnownCanopyCache = await (
@@ -96,11 +107,7 @@ const WalletSignBottomSheet = forwardRef(
 
       return new Set([])
     }, [])
-    const [feesExpanded, setFeesExpanded] = useState(false)
-    const Chevron = feesExpanded ? ChevronUp : ChevronDown
 
-    const itemsPerPage = 5
-    const [currentPage, setCurrentPage] = useState(1)
     const {
       result: simulationResults,
       error,
@@ -132,22 +139,21 @@ const WalletSignBottomSheet = forwardRef(
       wallet,
       accountBlacklist,
     ])
+
     const [currentTxs, hasMore] = useMemo(() => {
+      if (!simulationResults) return [[], false]
+
+      let scopedTxs
+      const itemsPerPage = 5
+      const pages = Math.ceil((simulationResults.length || 0) / itemsPerPage)
+      const more = currentPage < pages
+
       if (simulationResults) {
-        const totalPages = Math.ceil(
-          (simulationResults.length || 0) / itemsPerPage,
-        )
-        const more = currentPage < totalPages
-        let scopedTxs
-
-        if (simulationResults) {
-          const endIndex = currentPage * itemsPerPage
-          scopedTxs = simulationResults.slice(0, endIndex)
-        }
-
-        return [scopedTxs, more]
+        const endIndex = currentPage * itemsPerPage
+        scopedTxs = simulationResults.slice(0, endIndex)
       }
-      return [[], false]
+
+      return [scopedTxs, more]
     }, [simulationResults, currentPage])
 
     const handleLoadMore = useCallback(() => {
@@ -162,11 +168,13 @@ const WalletSignBottomSheet = forwardRef(
         ) || 0,
       [simulationResults],
     )
+
     const estimatedTotalSol = useMemo(
       () =>
         loading ? '...' : humanReadable(new BN(estimatedTotalLamports), 9),
       [estimatedTotalLamports, loading],
     )
+
     const estimatedTotalBaseFee = useMemo(
       () =>
         humanReadable(
@@ -175,6 +183,7 @@ const WalletSignBottomSheet = forwardRef(
         ),
       [simulationResults],
     )
+
     const estimatedTotalPriorityFee = useMemo(
       () =>
         humanReadable(
@@ -186,6 +195,7 @@ const WalletSignBottomSheet = forwardRef(
         ),
       [simulationResults],
     )
+
     const totalWarnings = useMemo(
       () =>
         simulationResults?.reduce(
@@ -198,6 +208,7 @@ const WalletSignBottomSheet = forwardRef(
         ),
       [simulationResults],
     )
+
     const worstSeverity = useMemo(() => {
       if (simulationResults) {
         return simulationResults?.reduce((a, b) => {
@@ -230,41 +241,20 @@ const WalletSignBottomSheet = forwardRef(
       [solBalance, estimatedTotalLamports, simulationResults],
     )
 
-    const animatedContentHeight = useSharedValue(0)
-
     const hide = useCallback(() => {
       setIsVisible(false)
       bottomSheetModalRef.current?.close()
     }, [])
 
-    const show = useCallback(
-      ({
-        type,
-        url,
-        warning,
-        additionalMessage,
-        serializedTxs,
-        header,
-        suppressWarnings,
-      }: WalletSignOpts) => {
-        bottomSheetModalRef.current?.expand()
-        setIsVisible(true)
-        setWalletSignOpts({
-          type,
-          url,
-          warning,
-          additionalMessage,
-          serializedTxs,
-          header,
-          suppressWarnings,
-        })
-        const p = new Promise<boolean>((resolve) => {
-          promiseResolve = resolve
-        })
-        return p
-      },
-      [],
-    )
+    const show = useCallback((opts: WalletSignOpts) => {
+      bottomSheetModalRef.current?.expand()
+      setIsVisible(true)
+      setWalletSignOpts(opts)
+
+      return new Promise<boolean>((resolve) => {
+        promiseResolve = resolve
+      })
+    }, [])
 
     const renderBackdrop = useCallback(
       (props) => (
@@ -290,12 +280,6 @@ const WalletSignBottomSheet = forwardRef(
       }
     }, [onClose])
 
-    const handleIndicatorStyle = useMemo(() => {
-      return {
-        backgroundColor: secondaryText,
-      }
-    }, [secondaryText])
-
     const onAcceptHandler = useCallback(() => {
       if (promiseResolve) {
         hide()
@@ -310,16 +294,86 @@ const WalletSignBottomSheet = forwardRef(
       }
     }, [hide])
 
-    useEffect(() => {
-      bottomSheetModalRef.current?.present()
-    }, [bottomSheetModalRef])
-
+    const Chevron = feesExpanded ? ChevronUp : ChevronDown
+    const isCompact = walletSignOpts instanceof WalletSignBottomSheetCompact
+    const { type, warning, additionalMessage, suppressWarnings } =
+      walletSignOpts
     const showWarnings =
-      totalWarnings &&
-      !walletSignOpts.suppressWarnings &&
-      worstSeverity === 'critical'
+      totalWarnings && !suppressWarnings && worstSeverity === 'critical'
 
-    const { type, warning, additionalMessage } = walletSignOpts
+    const renderButtons = () => (
+      <>
+        {showWarnings ? (
+          <Box
+            flexDirection="row"
+            justifyContent="flex-start"
+            alignItems="center"
+            mt={feesExpanded ? 's' : 'm'}
+          >
+            <Box flex={1}>
+              <SubmitButton
+                color="matchaRed500"
+                backgroundColor="white"
+                title={
+                  type === WalletStandardMessageTypes.connect
+                    ? t('browserScreen.connect')
+                    : t('browserScreen.swipeToApprove')
+                }
+                onSubmit={onAcceptHandler}
+              />
+            </Box>
+            <ButtonPressable
+              ml="s"
+              width={65}
+              height={65}
+              innerContainerProps={{
+                justifyContent: 'center',
+              }}
+              borderRadius="round"
+              backgroundColor="black200"
+              Icon={CancelIcon}
+              onPress={onCancelHandler}
+            />
+          </Box>
+        ) : (
+          <Box
+            flexDirection="row"
+            justifyContent="space-between"
+            mt={feesExpanded ? 's' : 'm'}
+          >
+            <ButtonPressable
+              width="48%"
+              borderRadius="round"
+              backgroundColor="white"
+              backgroundColorOpacity={0.1}
+              backgroundColorOpacityPressed={0.05}
+              titleColorPressedOpacity={0.3}
+              titleColor="white"
+              title={t('browserScreen.cancel')}
+              onPress={onCancelHandler}
+            />
+
+            <ButtonPressable
+              width="48%"
+              borderRadius="round"
+              backgroundColor="white"
+              backgroundColorOpacityPressed={0.7}
+              backgroundColorDisabled="surfaceSecondary"
+              backgroundColorDisabledOpacity={0.5}
+              titleColorDisabled="secondaryText"
+              title={
+                type === WalletStandardMessageTypes.connect
+                  ? t('browserScreen.connect')
+                  : t('browserScreen.approve')
+              }
+              titleColor="black"
+              onPress={onAcceptHandler}
+            />
+          </Box>
+        )}
+      </>
+    )
+
     return (
       <Box flex={1}>
         <BottomSheetModalProvider>
@@ -330,7 +384,9 @@ const WalletSignBottomSheet = forwardRef(
             backdropComponent={renderBackdrop}
             onDismiss={handleModalDismiss}
             enableDismissOnClose
-            handleIndicatorStyle={handleIndicatorStyle}
+            handleIndicatorStyle={{
+              backgroundColor: secondaryText,
+            }}
             // https://ethercreative.github.io/react-native-shadow-generator/
             style={{
               shadowColor: '#000',
@@ -455,6 +511,7 @@ const WalletSignBottomSheet = forwardRef(
                               text={t('browserScreen.suspiciousActivity', {
                                 num: totalWarnings,
                               })}
+                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
                               variant={worstSeverity as any}
                             />
                           </Box>
@@ -625,74 +682,7 @@ const WalletSignBottomSheet = forwardRef(
                     </Box>
                   </Box>
                 )}
-                {showWarnings ? (
-                  <Box
-                    flexDirection="row"
-                    justifyContent="flex-start"
-                    alignItems="center"
-                    mt={feesExpanded ? 's' : 'm'}
-                  >
-                    <Box flex={1}>
-                      <SubmitButton
-                        color="matchaRed500"
-                        backgroundColor="white"
-                        title={
-                          type === WalletStandardMessageTypes.connect
-                            ? t('browserScreen.connect')
-                            : t('browserScreen.swipeToApprove')
-                        }
-                        onSubmit={onAcceptHandler}
-                      />
-                    </Box>
-                    <ButtonPressable
-                      ml="s"
-                      width={65}
-                      height={65}
-                      innerContainerProps={{
-                        justifyContent: 'center',
-                      }}
-                      borderRadius="round"
-                      backgroundColor="black200"
-                      Icon={CancelIcon}
-                      onPress={onCancelHandler}
-                    />
-                  </Box>
-                ) : (
-                  <Box
-                    flexDirection="row"
-                    justifyContent="space-between"
-                    mt={feesExpanded ? 's' : 'm'}
-                  >
-                    <ButtonPressable
-                      width="48%"
-                      borderRadius="round"
-                      backgroundColor="white"
-                      backgroundColorOpacity={0.1}
-                      backgroundColorOpacityPressed={0.05}
-                      titleColorPressedOpacity={0.3}
-                      titleColor="white"
-                      title={t('browserScreen.cancel')}
-                      onPress={onCancelHandler}
-                    />
-
-                    <ButtonPressable
-                      width="48%"
-                      borderRadius="round"
-                      backgroundColor="white"
-                      backgroundColorOpacityPressed={0.7}
-                      backgroundColorDisabled="surfaceSecondary"
-                      backgroundColorDisabledOpacity={0.5}
-                      titleColorDisabled="secondaryText"
-                      title={
-                        type === WalletStandardMessageTypes.connect
-                          ? t('browserScreen.connect')
-                          : t('browserScreen.approve')
-                      }
-                      titleColor="black"
-                      onPress={onAcceptHandler}
-                    />
-                  </Box>
-                )}
+                {renderButtons()}
               </Box>
             </BottomSheetScrollView>
           </BottomSheetModal>

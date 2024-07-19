@@ -75,13 +75,20 @@ export default () => {
         }),
       )
 
-      const decision = await walletSignBottomSheetRef.show({
-        type: WalletStandardMessageTypes.signTransaction,
-        url: '',
-        additionalMessage: t('transactions.signPaymentTxn'),
-        serializedTxs: txns.map((tx) =>
-          Buffer.from(toVersionedTx(tx).serialize()),
-        ),
+      let decision
+      decision = await walletSignBottomSheetRef.show({
+        header: 'Send Tokens',
+        message: t('transactions.signPaymentTxn'),
+        onSimulate: async () => {
+          decision = await walletSignBottomSheetRef.show({
+            type: WalletStandardMessageTypes.signTransaction,
+            url: '',
+            additionalMessage: t('transactions.signPaymentTxn'),
+            serializedTxs: txns.map((tx) =>
+              Buffer.from(toVersionedTx(tx).serialize()),
+            ),
+          })
+        },
       })
 
       if (!decision) {
@@ -490,6 +497,7 @@ export default () => {
           maker: {
             address: currentAccount.address,
           },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
       })
 
