@@ -5,6 +5,7 @@ import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import { Mnemonic } from '@helium/crypto-react-native'
+import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Keypair } from '@solana/web3.js'
 import bs58 from 'bs58'
@@ -17,7 +18,7 @@ import { RootNavigationProp } from '../../../navigation/rootTypes'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import {
   DEFAULT_DERIVATION_PATH,
-  createDefaultKeypair,
+  createKeypair,
 } from '../../../storage/secureStorage'
 import * as Logger from '../../../utils/logger'
 import { useOnboarding } from '../OnboardingProvider'
@@ -77,9 +78,10 @@ const ImportPrivateKey = () => {
           )
           const seedBuffer = Buffer.from(seedBase64, 'base64')
           const mnemonic = Mnemonic.fromEntropy(seedBuffer)
-          const { keypair, words } = await createDefaultKeypair({
+          const { keypair, words } = await createKeypair({
             givenMnemonic: mnemonic.words,
             use24Words: mnemonic.words.length === 24,
+            derivationPath: HELIUM_DERIVATION,
           })
           await createAccount({ keypair, words })
         } catch (e) {
@@ -118,7 +120,7 @@ const ImportPrivateKey = () => {
           const words = JSON.parse(
             Buffer.from(base64Words, 'base64').toString(),
           )
-          const { keypair } = await createDefaultKeypair({
+          const { keypair } = await createKeypair({
             givenMnemonic: words,
             use24Words: words.length === 24,
           })

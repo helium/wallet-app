@@ -9,8 +9,10 @@ import { heliumAddressFromSolAddress } from '@helium/spl-utils'
 import CheckBox from '@react-native-community/checkbox'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Keypair } from '@solana/web3.js'
+import { CSAccountVersion } from '@storage/cloudStorage'
 import { storeSecureAccount, toSecureAccount } from '@storage/secureStorage'
 import { useColors, useSpacing } from '@theme/themeHooks'
+import { createHash } from 'crypto'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
@@ -91,11 +93,19 @@ const AccountAssignScreen = () => {
 
         return getName(index + 1)
       }
+      let mnemonicHash: string | undefined
+      if (words) {
+        mnemonicHash = createHash('sha256')
+          .update(words.join(' '))
+          .digest('hex')
+      }
       const newAccounts = allPaths.map((p, index) => ({
         alias: index === 0 ? alias : getName(index),
         address: heliumAddressFromSolAddress(p.keypair.publicKey.toBase58()),
         solanaAddress: p.keypair.publicKey.toBase58(),
         derivationPath: p.derivationPath,
+        mnemonicHash,
+        version: 'v1' as CSAccountVersion,
       }))
       await Promise.all(
         allPaths.map(async (p) => {

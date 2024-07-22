@@ -11,7 +11,7 @@ import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
 import { useColors, useSpacing } from '@theme/themeHooks'
 import BackButton from '@components/BackButton'
-import { CSAccounts } from '@storage/cloudStorage'
+import { CSAccountVersion, CSAccounts } from '@storage/cloudStorage'
 import useLedger, { LedgerAccount } from '@hooks/useLedger'
 import {
   LedgerNavigatorNavigationProp,
@@ -286,6 +286,7 @@ const DeviceShow = () => {
         ledgerDevice,
         ledgerIndex: acc.accountIndex,
         solanaAddress: acc.solanaAddress,
+        version: 'v1' as CSAccountVersion,
       }
     })
 

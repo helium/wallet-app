@@ -58,7 +58,6 @@ import { CSAccount } from '../../storage/cloudStorage'
 import { RootState } from '../../store/rootReducer'
 import { solanaSlice } from '../../store/slices/solanaSlice'
 import { useAppDispatch } from '../../store/store'
-import { useBalance } from '../../utils/Balance'
 import {
   accountNetType,
   formatAccountAlias,

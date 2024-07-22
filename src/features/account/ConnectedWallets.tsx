@@ -1,41 +1,41 @@
+import Add from '@assets/images/add.svg'
+import Checkmark from '@assets/images/checkmark.svg'
+import AccountIcon from '@components/AccountIcon'
+import BackgroundFill from '@components/BackgroundFill'
+import Box from '@components/Box'
+import Text from '@components/Text'
+import TouchableContainer from '@components/TouchableContainer'
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetModalProvider,
+  BottomSheetSectionList,
+} from '@gorhom/bottom-sheet'
+import { NetTypes } from '@helium/address'
+import useBackHandler from '@hooks/useBackHandler'
+import useLayoutHeight from '@hooks/useLayoutHeight'
+import { useNavigation } from '@react-navigation/native'
+import { useColors, useOpacity } from '@theme/themeHooks'
 import React, {
-  forwardRef,
-  memo,
   ReactNode,
   Ref,
+  forwardRef,
+  memo,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
+  useState,
 } from 'react'
-import Checkmark from '@assets/images/checkmark.svg'
-import Add from '@assets/images/add.svg'
 import { useTranslation } from 'react-i18next'
-import { NetTypes } from '@helium/address'
-import {
-  BottomSheetBackdrop,
-  BottomSheetFlatList,
-  BottomSheetModal,
-  BottomSheetModalProvider,
-} from '@gorhom/bottom-sheet'
-import {
-  useSafeAreaInsets,
-  initialWindowMetrics,
-} from 'react-native-safe-area-context'
-import { useNavigation } from '@react-navigation/native'
-import useLayoutHeight from '@hooks/useLayoutHeight'
-import useBackHandler from '@hooks/useBackHandler'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import { useColors, useOpacity } from '@theme/themeHooks'
-import AccountIcon from '@components/AccountIcon'
-import BackgroundFill from '@components/BackgroundFill'
-import TouchableContainer from '@components/TouchableContainer'
+import { LayoutChangeEvent } from 'react-native'
+import { initialWindowMetrics } from 'react-native-safe-area-context'
+import { TabBarNavigationProp } from '../../navigation/rootTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
-import { useAppStorage } from '../../storage/AppStorageProvider'
-import { TabBarNavigationProp } from '../../navigation/rootTypes'
 
 export type ConnectedWalletsRef = {
   show: () => void
@@ -45,14 +45,13 @@ export type ConnectedWalletsRef = {
 type Props = {
   onClose?: () => void
   onAddNew: () => void
-  onAddSub: () => void
-  canAddSub: boolean
+  onAddSub: (acc: CSAccount) => void
   children: ReactNode
 }
 
 const ConnectedWallets = forwardRef(
   (
-    { canAddSub, onClose, onAddNew, onAddSub, children }: Props,
+    { onClose, onAddNew, onAddSub, children }: Props,
     ref: Ref<ConnectedWalletsRef>,
   ) => {
     useImperativeHandle(ref, () => ({ show, hide }))
@@ -63,27 +62,87 @@ const ConnectedWallets = forwardRef(
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
     const [listItemHeight, setListItemHeight] = useLayoutHeight()
+    const [sectionHeaderHeight, setSectionHeaderHeight] = useLayoutHeight()
+    const [footerHeight, setFooterHeight] = useLayoutHeight()
+    const [sectionFooterHeights, setSectionFooterHeights] = useState<{
+      [key: string]: number
+    }>({})
+    const sectionFooterHeight = useMemo(
+      () =>
+        Object.values(sectionFooterHeights).reduce(
+          (acc, height) => acc + height,
+          0,
+        ),
+      [sectionFooterHeights],
+    )
+
     const { sortedAccounts, currentAccount, setCurrentAccount } =
       useAccountStorage()
-    const { top } = useSafeAreaInsets()
+    useEffect(() => {
+      const hashes = new Set(
+        sortedAccounts.map((a) => a.mnemonicHash || 'none'),
+      )
+      setSectionFooterHeights((prev) =>
+        Object.entries(prev)
+          .filter(([key]) => hashes.has(key))
+          .reduce((acc, [key, height]) => ({ ...acc, [key]: height }), {}),
+      )
+    }, [sortedAccounts])
     const navigation = useNavigation<TabBarNavigationProp>()
     const { enableTestnet } = useAppStorage()
 
     const filteredAccounts = useMemo(() => {
-      return sortedAccounts.filter((a) => a.netType !== NetTypes.TESTNET)
+      const grouped = sortedAccounts
+        .filter((a) => a.netType !== NetTypes.TESTNET)
+        .reduce((acc, account) => {
+          acc[account.mnemonicHash || 'none'] = [
+            ...(acc[account.mnemonicHash || 'none'] || []),
+            account,
+          ]
+          return acc
+        }, {} as { [key: string]: CSAccount[] })
+
+      const { none, ...rest } = grouped
+      const ret = Object.values(rest).map((accounts, index) => ({
+        title: `Seed Phrase ${index + 1}`,
+        data: accounts,
+      }))
+      if (none) {
+        ret.push({
+          title: 'Private Keys',
+          data: none,
+        })
+      }
+
+      return ret
     }, [sortedAccounts])
 
-    const snapPoints = useMemo(
-      () => [
-        listItemHeight && sortedAccounts.length
-          ? listItemHeight * (sortedAccounts.length + (enableTestnet ? 2 : 1)) +
-            (top === 0 && initialWindowMetrics?.insets
-              ? initialWindowMetrics?.insets.top
-              : top)
+    const snapPoints = useMemo(() => {
+      const totalHeight =
+        listItemHeight &&
+        footerHeight &&
+        sectionHeaderHeight &&
+        sortedAccounts.length &&
+        listItemHeight * (sortedAccounts.length + (enableTestnet ? 2 : 1)) +
+          footerHeight +
+          sectionHeaderHeight * filteredAccounts.length +
+          sectionFooterHeight
+
+      return [
+        totalHeight &&
+        totalHeight < 0.7 * (initialWindowMetrics?.frame.height || 0)
+          ? totalHeight
           : '70%',
-      ],
-      [enableTestnet, listItemHeight, sortedAccounts.length, top],
-    )
+      ]
+    }, [
+      footerHeight,
+      enableTestnet,
+      filteredAccounts,
+      listItemHeight,
+      sortedAccounts.length,
+      sectionFooterHeight,
+      sectionHeaderHeight,
+    ])
 
     const { setOnboardingData } = useOnboarding()
 
@@ -122,14 +181,6 @@ const ConnectedWallets = forwardRef(
       [handleNetTypeChange, onAddNew, hide],
     )
 
-    const handleAddSub = useCallback(
-      () => () => {
-        hide()
-        onAddSub()
-      },
-      [hide, onAddSub],
-    )
-
     const handleAccountChange = useCallback(
       (item: CSAccount) => () => {
         hide()
@@ -155,6 +206,7 @@ const ConnectedWallets = forwardRef(
             flexDirection="row"
             paddingHorizontal="l"
             paddingVertical="lm"
+            paddingLeft="xxl"
             alignItems="center"
           >
             {item.netType === NetTypes.TESTNET && (
@@ -186,24 +238,7 @@ const ConnectedWallets = forwardRef(
 
     const footer = useCallback(
       () => (
-        <Box>
-          <BackgroundFill backgroundColor="secondary" />
-          {canAddSub ? (
-            <TouchableContainer
-              onPress={handleAddSub()}
-              flexDirection="row"
-              paddingHorizontal="l"
-              paddingVertical="lm"
-              borderTopColor="primaryBackground"
-              borderTopWidth={1}
-              alignItems="center"
-            >
-              <Add color={primaryText} />
-              <Text variant="subtitle1" color="primaryText" marginLeft="m">
-                {t('connectedWallets.addSub')}
-              </Text>
-            </TouchableContainer>
-          ) : null}
+        <Box onLayout={setFooterHeight}>
           <TouchableContainer
             onPress={handleAddNew(NetTypes.MAINNET)}
             flexDirection="row"
@@ -238,7 +273,7 @@ const ConnectedWallets = forwardRef(
           )}
         </Box>
       ),
-      [canAddSub, enableTestnet, handleAddNew, handleAddSub, primaryText, t],
+      [enableTestnet, handleAddNew, primaryText, t, setFooterHeight],
     )
 
     const renderBackdrop = useCallback(
@@ -267,6 +302,29 @@ const ConnectedWallets = forwardRef(
       }
     }, [secondaryText])
 
+    const sectionFooter = useCallback(
+      ({ section: { data } }) => {
+        return (
+          <SectionFooter
+            data={data}
+            onAddSub={onAddSub}
+            isSelected={
+              data[0] && data[0].mnemonicHash === currentAccount?.mnemonicHash
+            }
+            onLayout={(height) => {
+              setSectionFooterHeights((prev) => {
+                const newHeight = { ...prev }
+                newHeight[data[0].mnemonicHash || 'none'] =
+                  height.nativeEvent.layout.height
+                return newHeight
+              })
+            }}
+          />
+        )
+      },
+      [onAddSub, currentAccount?.mnemonicHash],
+    )
+
     return (
       <BottomSheetModalProvider>
         {children}
@@ -279,17 +337,73 @@ const ConnectedWallets = forwardRef(
           onDismiss={handleModalDismiss}
           handleIndicatorStyle={handleIndicatorStyle}
         >
-          <BottomSheetFlatList
-            data={filteredAccounts}
+          <BottomSheetSectionList
+            sections={filteredAccounts}
             keyExtractor={keyExtractor}
             renderItem={renderItem}
             ListFooterComponent={footer}
             scrollEnabled
+            renderSectionHeader={({ section: { title, data } }) => (
+              <Box
+                onLayout={setSectionHeaderHeight}
+                flexDirection="row"
+                alignItems="center"
+                backgroundColor="surfaceSecondary"
+                paddingHorizontal="l"
+              >
+                <Text
+                  variant="subtitle1"
+                  color={
+                    data[0] &&
+                    data[0]?.mnemonicHash === currentAccount?.mnemonicHash
+                      ? 'primaryText'
+                      : 'secondaryText'
+                  }
+                >
+                  {title}
+                </Text>
+              </Box>
+            )}
+            renderSectionFooter={sectionFooter}
           />
         </BottomSheetModal>
       </BottomSheetModalProvider>
     )
   },
 )
+
+const SectionFooter: React.FC<{
+  data: CSAccount[]
+  isSelected: boolean
+  onAddSub: (acc: CSAccount) => void
+  onLayout: (height: LayoutChangeEvent) => void
+}> = ({ data, onAddSub, onLayout, isSelected }) => {
+  const handleAddSub = useCallback(() => {
+    if (data[0] && data[0].mnemonicHash) {
+      onAddSub(data[data.length - 1])
+    }
+  }, [data, onAddSub])
+  const { primaryText } = useColors()
+  const { t } = useTranslation()
+  return (
+    <Box onLayout={onLayout}>
+      {isSelected && data[0] && data[0].mnemonicHash ? (
+        <TouchableContainer
+          onPress={handleAddSub}
+          flexDirection="row"
+          paddingHorizontal="l"
+          paddingLeft="xxl"
+          paddingVertical="lm"
+          alignItems="center"
+        >
+          <Add color={primaryText} />
+          <Text variant="subtitle1" color="secondaryText" marginLeft="m">
+            {t('connectedWallets.addSub')}
+          </Text>
+        </TouchableContainer>
+      ) : null}
+    </Box>
+  )
+}
 
 export default memo(ConnectedWallets)

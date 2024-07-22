@@ -1,5 +1,6 @@
 import { NetTypes as NetType } from '@helium/address'
 import { useAppState } from '@react-native-community/hooks'
+import { createHash } from 'crypto'
 import * as SecureStore from 'expo-secure-store'
 import React, {
   createContext,
@@ -26,6 +27,7 @@ import { useAppStorage } from './AppStorageProvider'
 import {
   CSAccount,
   CSAccounts,
+  CSAccountVersion,
   getCloudDefaultAccountAddress,
   LedgerDevice,
   restoreAccounts,
@@ -219,6 +221,13 @@ const useAccountStorageHook = () => {
         await storeSecureAccount(secureAccount)
       }
 
+      let { mnemonicHash } = csAccount
+      if (secureAccount?.mnemonic && !mnemonicHash) {
+        mnemonicHash = createHash('sha256')
+          .update(secureAccount?.mnemonic.join(' '))
+          .digest('hex')
+      }
+
       let { solanaAddress } = csAccount
 
       if (!solanaAddress) {
@@ -227,6 +236,8 @@ const useAccountStorageHook = () => {
 
       const nextAccount: CSAccount = {
         ...csAccount,
+        mnemonicHash,
+        version: 'v1',
         netType: accountNetType(csAccount.address),
         solanaAddress,
       }
@@ -252,6 +263,8 @@ const useAccountStorageHook = () => {
         ledgerIndex?: number
         solanaAddress: string
         derivationPath?: string
+        mnemonicHash?: string
+        version?: CSAccountVersion
       }[],
     ) => {
       if (!accountBulk.length) return
@@ -268,6 +281,8 @@ const useAccountStorageHook = () => {
             accountIndex,
             solanaAddress: curr.solanaAddress,
             derivationPath: curr.derivationPath,
+            mnemonicHash: curr.mnemonicHash,
+            version: curr.version,
           },
         }
       }, {})

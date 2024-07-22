@@ -208,7 +208,7 @@ const AccountTokenList = ({ onLayout }: Props) => {
 
   const keyExtractor = useCallback((mint: PublicKey) => {
     const isGov = GovMints.some((m) => new PublicKey(m).equals(mint))
-    return `${mint.toBase58}${isGov ? '-gov' : ''}`
+    return `${mint.toBase58()}${isGov ? '-gov' : ''}`
   }, [])
 
   const contentContainerStyle = useMemo(

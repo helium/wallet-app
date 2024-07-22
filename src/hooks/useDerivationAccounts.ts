@@ -1,7 +1,7 @@
-import { useSolana } from '@helium/react-native-sdk'
-import { truthy } from '@helium/spl-utils'
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { Keypair as HeliumKeypair, Mnemonic } from '@helium/crypto'
+import { useSolana } from '@helium/react-native-sdk'
+import { Asset, getAssetsByOwner, truthy } from '@helium/spl-utils'
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
   AccountInfo,
   Keypair,
@@ -59,6 +59,7 @@ export type ResolvedPath = {
       account: AccountInfo<Buffer>
     }>
   >
+  nfts?: Asset[]
   needsMigrated?: boolean
 }
 
@@ -127,6 +128,13 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
                         keypair.publicKey,
                         { programId: TOKEN_PROGRAM_ID },
                       )
+                      const nfts = await getAssetsByOwner(
+                        connection.rpcEndpoint,
+                        keypair.publicKey.toBase58(),
+                        {
+                          limit: 10,
+                        },
+                      )
                       let needsMigrated = false
                       if (derivationPath === heliumDerivation(-1)) {
                         const url = `${
@@ -142,6 +150,7 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
                         balance,
                         tokens,
                         needsMigrated,
+                        nfts,
                       } as ResolvedPath
                     }
                   }),
