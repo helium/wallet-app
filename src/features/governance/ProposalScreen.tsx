@@ -37,7 +37,7 @@ import { getDerivedProposalState } from '@utils/governanceUtils'
 import { getBasePriorityFee } from '@utils/walletApiV2'
 import axios from 'axios'
 import BN from 'bn.js'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
@@ -69,12 +69,12 @@ export const ProposalScreen = () => {
   )
   const { anchorProvider } = useSolana()
   const { walletSignBottomSheetRef } = useWalletSign()
-  const { mint, setMint, loading, amountLocked } = useGovernance()
+  const { mint, loading, amountLocked } = useGovernance()
   const handleBrowseVoters = useCallback(() => {
     navigation.navigate('VotersScreen', {
       mint: mint.toBase58(),
     })
-  }, [navigation])
+  }, [navigation, mint])
   const { info: proposal } = useProposal(proposalKey)
   const { info: proposalConfig } = useProposalConfig(proposal?.proposalConfig)
   const { info: registrar } = useRegistrar(proposalConfig?.voteController)
@@ -90,16 +90,6 @@ export const ProposalScreen = () => {
       )
     }
   }, [currentAccount, mint, proposalKey])
-
-  useEffect(() => {
-    if (mint && route.params.mint) {
-      const routeMint = new PublicKey(route.params.mint)
-
-      if (!mint.equals(routeMint)) {
-        setMint(routeMint)
-      }
-    }
-  }, [mint, route, setMint])
 
   useAsync(async () => {
     if (currentAccount?.address && !hasSeen && proposal && resolution) {
@@ -515,21 +505,28 @@ export const ProposalScreen = () => {
                   <Box
                     flexGrow={1}
                     justifyContent="center"
-                    backgroundColor="surfaceSecondary"
-                    borderRadius="l"
-                    padding="m"
-                    marginTop="m"
+                    mt="m"
+                    {...{ gap: 14 }}
                   >
-                    <Box>
-                      {showError && (
-                        <Box flexDirection="row" paddingBottom="ms">
-                          <Text variant="body3Medium" color="red500">
-                            {showError}
-                          </Text>
-                        </Box>
-                      )}
-                      <Box flex={1} flexDirection="column" {...{ gap: 8 }}>
-                        {votingResults.results?.map((r, index) => (
+                    {showError && (
+                      <Box
+                        flexDirection="row"
+                        backgroundColor="surfaceSecondary"
+                        borderRadius="l"
+                        padding="m"
+                      >
+                        <Text variant="body3Medium" color="red500">
+                          {showError}
+                        </Text>
+                      </Box>
+                    )}
+                    <Box flex={1} flexDirection="column" {...{ gap: 14 }}>
+                      {votingResults.results?.map((r, index) => (
+                        <Box
+                          backgroundColor="surfaceSecondary"
+                          borderRadius="l"
+                          padding="xs"
+                        >
                           <VoteOption
                             voters={voters?.[index] || []}
                             key={r.name}
@@ -543,8 +540,8 @@ export const ProposalScreen = () => {
                             onVote={handleVote(r)}
                             onRelinquishVote={handleRelinquish(r)}
                           />
-                        ))}
-                      </Box>
+                        </Box>
+                      ))}
                     </Box>
                   </Box>
                 </>

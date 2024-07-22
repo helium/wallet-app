@@ -1,6 +1,3 @@
-import React, { useCallback, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-
 import BlueCheck from '@assets/images/blueCheck.svg'
 import MajorityCircle from '@assets/images/majorityCircle.svg'
 import MinorityCircle from '@assets/images/minorityCircle.svg'
@@ -11,7 +8,6 @@ import { Pill } from '@components/Pill'
 import SearchInput from '@components/SearchInput'
 import Text from '@components/Text'
 import TouchableContainer from '@components/TouchableContainer'
-import { useMint } from '@helium/helium-react-hooks'
 import { proxiesQuery } from '@helium/voter-stake-registry-hooks'
 import { EnhancedProxy } from '@helium/voter-stake-registry-sdk'
 import { useNavigation } from '@react-navigation/native'
@@ -21,21 +17,26 @@ import { useColors } from '@theme/themeHooks'
 import { humanReadable, shortenAddress } from '@utils/formatting'
 import BN from 'bn.js'
 import { times } from 'lodash'
+import React, { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FlatList, Image, RefreshControl } from 'react-native'
 import { useDebounce } from 'use-debounce'
+import { GovernanceNavigationProp } from './governanceTypes'
 import { GovernanceWrapper } from './GovernanceWrapper'
 import { VoterCardStat } from './VoterCardStat'
-import { GovernanceNavigationProp } from './governanceTypes'
 
 const DECENTRALIZATION_RISK_INDEX = 6
+const VOTER_HEIGHT = 110
+
+export const VoterSkeleton = () => {
+  return <CardSkeleton height={VOTER_HEIGHT} />
+}
 
 export default function VotersScreen() {
   const { t } = useTranslation()
-  const { voteService, mint } = useGovernance()
-  const { info: mintAcc } = useMint(mint)
+  const { loading, voteService, mintAcc } = useGovernance()
   const decimals = mintAcc?.decimals
   const [proxySearch, setProxySearch] = useState('')
-
   const [searchDebounced] = useDebounce(proxySearch, 300)
   const {
     data: voters,
@@ -48,21 +49,20 @@ export default function VotersScreen() {
     proxiesQuery({
       search: searchDebounced,
       amountPerPage: 100,
-      voteService: voteService,
+      voteService,
     }),
   )
-  const proxies = voters?.pages.flat() || []
-
+  const proxies = useMemo(() => voters?.pages.flat() || [], [voters])
   const handleOnEndReached = useCallback(() => {
     if (!isLoading && hasNextPage) {
       fetchNextPage()
     }
-  }, [fetchNextPage, hasNextPage, isLoading, proxySearch])
+  }, [fetchNextPage, hasNextPage, isLoading])
 
   const renderEmptyComponent = useCallback(() => {
     if (!proxies) return null
 
-    if (isLoading) {
+    if (loading || isLoading) {
       return (
         <Box flex={1} flexDirection="column">
           {times(5).map((i) => (
@@ -87,7 +87,7 @@ export default function VotersScreen() {
         </Text>
       </Box>
     )
-  }, [proxies, isLoading, t])
+  }, [proxies, isLoading, loading, t])
 
   const renderItem = useCallback(
     ({ item: proxy, index }) => {
@@ -104,18 +104,18 @@ export default function VotersScreen() {
         return (
           <>
             <Box
-              mt="m"
+              my="m"
               p="m"
-              mb="m"
               backgroundColor="surfaceSecondary"
               borderRadius="l"
               flexDirection="row"
               alignItems="center"
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              gap={8}
             >
-              <Box>
-                <Warning width={24} height={24} />
-              </Box>
-              <Text variant="body2" color="grey600" px="s">
+              <Warning width={24} height={24} />
+              <Text variant="body2" color="grey600" flex={1}>
                 {t('gov.voters.warning')}
               </Text>
             </Box>
@@ -169,7 +169,7 @@ export default function VotersScreen() {
         ListEmptyComponent={renderEmptyComponent}
         refreshControl={
           <RefreshControl
-            refreshing={isLoading || isFetchingNextPage}
+            refreshing={loading || isLoading || isFetchingNextPage}
             onRefresh={refetch}
             title=""
             tintColor={primaryText}
@@ -237,7 +237,7 @@ const VoterCard: React.FC<{
             proxy.proxiedVeTokens
               ? humanReadable(
                   new BN(proxy.proxiedVeTokens).div(
-                    new BN(Math.pow(10, (decimals || 0) - 2)),
+                    new BN(10 ** (decimals || 0) - 2),
                   ),
                   2,
                 ) || ''
@@ -246,10 +246,12 @@ const VoterCard: React.FC<{
         />
         <VoterCardStat
           title="Proposals Voted"
+          alignItems="center"
           value={proxy.numProposalsVoted}
         />
         <VoterCardStat
           title="Last Voted"
+          alignItems="flex-end"
           value={
             proxy.lastVotedAt
               ? new Date(proxy.lastVotedAt).toLocaleDateString()
@@ -259,24 +261,4 @@ const VoterCard: React.FC<{
       </Box>
     </TouchableContainer>
   )
-}
-
-const VOTER_HEIGHT = 110
-
-export const VoterSkeleton = () => {
-  return <CardSkeleton height={VOTER_HEIGHT} />
-}
-
-function debounce<T extends unknown[], U>(
-  callback: (...args: T) => PromiseLike<U> | U,
-  wait: number,
-) {
-  let timer: any
-
-  return (...args: T): Promise<U> => {
-    clearTimeout(timer)
-    return new Promise((resolve) => {
-      timer = setTimeout(() => resolve(callback(...args)), wait)
-    })
-  }
 }

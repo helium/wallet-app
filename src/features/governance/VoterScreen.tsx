@@ -7,7 +7,6 @@ import CircleLoader from '@components/CircleLoader'
 import { Markdown } from '@components/Markdown'
 import { Pill } from '@components/Pill'
 import Text from '@components/Text'
-import { useMint } from '@helium/helium-react-hooks'
 import { proxyQuery, useProxiedTo } from '@helium/voter-stake-registry-hooks'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
@@ -36,7 +35,7 @@ export const VoterScreen = () => {
     () => new PublicKey(route.params.wallet),
     [route.params.wallet],
   )
-  const { mint, voteService, positions } = useGovernance()
+  const { mint, mintAcc, voteService, positions } = useGovernance()
   const { data: proxy, refetch } = useQuery(
     proxyQuery({
       wallet,
@@ -60,7 +59,7 @@ export const VoterScreen = () => {
       ),
     [positions, wallet],
   )
-  const { info: mintAcc } = useMint(mint)
+
   const decimals = mintAcc?.decimals
   const { votingPower, positions: proxiedToPositions } = useProxiedTo(wallet)
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -69,15 +68,15 @@ export const VoterScreen = () => {
 
   const handleAssignProxy = useCallback(() => {
     navigation.navigate('AssignProxyScreen', {
-      wallet: wallet.toBase58(),
       mint: mint.toBase58(),
+      wallet: wallet.toBase58(),
     })
   }, [navigation, wallet, mint])
 
   const handleRevokeProxy = useCallback(() => {
     navigation.navigate('RevokeProxyScreen', {
-      wallet: wallet.toBase58(),
       mint: mint.toBase58(),
+      wallet: wallet.toBase58(),
     })
   }, [navigation, wallet, mint])
 
@@ -155,10 +154,12 @@ export const VoterScreen = () => {
               >
                 <VoterCardStat
                   title="Current Rank"
+                  alignItems="center"
                   value={`#${proxy.rank} of ${proxy.numProxies}`}
                 />
                 <VoterCardStat
                   title="Last Time Voted"
+                  alignItems="center"
                   value={
                     proxy.lastVotedAt
                       ? new Date(proxy.lastVotedAt).toLocaleDateString()
@@ -166,26 +167,27 @@ export const VoterScreen = () => {
                   }
                 />
               </Box>
-              <Box flexDirection="row" alignItems="center">
+              <Box flexDirection="row" alignItems="center" mb="m">
                 <ButtonPressable
+                  height={50}
                   flex={1}
                   LeadingComponent={<UserShare width={16} height={16} />}
                   backgroundColor="transparent"
                   titleColor="white"
                   borderColor="white"
-                  borderWidth={unproxiedPositions?.length ? 1 : 0}
+                  borderWidth={1}
                   borderRadius="round"
                   backgroundColorOpacityPressed={0.7}
                   backgroundColorDisabled="black500"
                   title={t('gov.voter.assignProxy')}
                   disabled={!unproxiedPositions?.length}
-                  mb={proxiedPositions?.length ? 's' : 'm'}
                   onPress={handleAssignProxy}
                 />
                 {proxiedPositions?.length ? (
                   <ButtonPressable
-                    ml="m"
                     flex={1}
+                    height={50}
+                    ml="m"
                     LeadingComponent={<UserX width={16} height={16} />}
                     backgroundColor="transparent"
                     titleColor="white"
@@ -194,7 +196,6 @@ export const VoterScreen = () => {
                     borderRadius="round"
                     backgroundColorOpacityPressed={0.7}
                     title={t('gov.voter.revokeProxy')}
-                    mb="m"
                     onPress={handleRevokeProxy}
                   />
                 ) : null}
@@ -223,12 +224,13 @@ export const VoterScreen = () => {
                   />
                   <VoterCardStat
                     title="Total Power"
+                    alignItems="flex-end"
                     value={
                       // Force 2 decimals
                       decimals && proxy.proxiedVeTokens
                         ? humanReadable(
                             new BN(proxy.proxiedVeTokens).div(
-                              new BN(Math.pow(10, decimals - 2)),
+                              new BN(10 ** (decimals - 2)),
                             ),
                             2,
                           ) || ''
@@ -243,6 +245,7 @@ export const VoterScreen = () => {
                   />
                   <VoterCardStat
                     title="Num Assignments"
+                    alignItems="flex-end"
                     value={proxy.numAssignments}
                   />
                 </Box>
@@ -259,7 +262,7 @@ export const VoterScreen = () => {
                         votingPower && decimals
                           ? humanReadable(
                               new BN(votingPower).div(
-                                new BN(Math.pow(10, decimals - 2)),
+                                new BN(10 ** (decimals - 2)),
                               ),
                               2,
                             ) || ''
@@ -268,6 +271,7 @@ export const VoterScreen = () => {
                     />
                     <VoterCardStat
                       title="Positions Assigned"
+                      alignItems="flex-end"
                       value={proxiedToPositions?.length?.toString() || '0'}
                     />
                   </Box>

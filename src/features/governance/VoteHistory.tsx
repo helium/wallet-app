@@ -212,6 +212,7 @@ const ProposalItem: React.FC<{
           />
           <VoterCardStat
             title={t('gov.history.result')}
+            alignItems="flex-end"
             value={
               choices
                 ? Object.values(choices)
@@ -248,6 +249,7 @@ const ProposalItem: React.FC<{
             />
             <VoterCardStat
               title={t('gov.history.percentOfVote')}
+              alignItems="flex-end"
               value={
                 // Calc with 4 decimals precision
                 proposal.votes[0].weight && !votingResults?.totalVotes.isZero()

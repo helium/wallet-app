@@ -20,14 +20,13 @@ import {
   useCreatePosition,
 } from '@helium/voter-stake-registry-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import { RouteProp, useRoute } from '@react-navigation/native'
-import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
+import { Keypair, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import { daysToSecs } from '@utils/dateTools'
 import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
@@ -37,13 +36,9 @@ import GovernanceWrapper from './GovernanceWrapper'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { PositionsList } from './PositionsList'
 import { VotingPowerCard } from './VotingPowerCard'
-import { GovernanceStackParamList } from './governanceTypes'
-
-type Route = RouteProp<GovernanceStackParamList, 'PositionsScreen'>
 
 export const PositionsScreen = () => {
   const { t } = useTranslation()
-  const route = useRoute<Route>()
   const wallet = useCurrentWallet()
   const { walletSignBottomSheetRef } = useWalletSign()
   const [isLockModalOpen, setIsLockModalOpen] = useState(false)
@@ -54,7 +49,6 @@ export const PositionsScreen = () => {
     loading,
     refetch: refetchState,
     positions,
-    setMint,
   } = useGovernance()
   const { amount: ownedAmount, decimals } = useOwnedAmount(wallet, mint)
   const { error: createPositionError, createPosition } = useCreatePosition()
@@ -64,16 +58,6 @@ export const PositionsScreen = () => {
     claimAllPositionsRewards,
   } = useClaimAllPositionsRewards()
   const { cluster } = useSolana()
-
-  useEffect(() => {
-    if (mint && route.params.mint) {
-      const routeMint = new PublicKey(route.params.mint)
-
-      if (!mint.equals(routeMint)) {
-        setMint(routeMint)
-      }
-    }
-  }, [mint, route, setMint])
 
   const positionsWithRewards = useMemo(
     () => positions?.filter((p) => p.hasRewards),

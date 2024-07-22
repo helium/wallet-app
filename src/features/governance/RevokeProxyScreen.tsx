@@ -7,6 +7,9 @@ import Text from '@components/Text'
 import {
   batchInstructionsToTxsWithPriorityFee,
   bulkSendTransactions,
+  HNT_MINT,
+  IOT_MINT,
+  MOBILE_MINT,
   populateMissingDraftInfo,
   toVersionedTx,
   truthy,
@@ -31,27 +34,31 @@ import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { PositionPreview } from './PositionPreview'
 import { ProxySearch } from './ProxySearch'
-import { GovernanceStackParamList } from './governanceTypes'
+import {
+  GovernanceStackParamList,
+  GovernanceNavigationProp,
+} from './governanceTypes'
 
 type Route = RouteProp<GovernanceStackParamList, 'RevokeProxyScreen'>
 
 export const RevokeProxyScreen = () => {
+  const { walletSignBottomSheetRef } = useWalletSign()
+  const { anchorProvider } = useSolana()
+  const navigation = useNavigation<GovernanceNavigationProp>()
   const route = useRoute<Route>()
   const { wallet, position } = route.params
   const { t } = useTranslation()
   const [proxyWallet, setProxyWallet] = useState(wallet)
   const proxyWalletKey = usePublicKey(proxyWallet)
   const positionKey = usePublicKey(position)
-  const { positions, refetch } = useGovernance()
-
+  const { loading, positions, refetch, mint } = useGovernance()
   const networks = useMemo(() => {
     return [
-      { label: 'HNT', value: 'hnt' },
-      { label: 'MOBILE', value: 'mobile' },
-      { label: 'IOT', value: 'iot' },
+      { label: 'HNT', value: HNT_MINT.toBase58() },
+      { label: 'MOBILE', value: MOBILE_MINT.toBase58() },
+      { label: 'IOT', value: IOT_MINT.toBase58() },
     ]
   }, [])
-  const [network, setNetwork] = useState('hnt')
 
   const proxiedPositions = useMemo(
     () =>
@@ -61,6 +68,7 @@ export const RevokeProxyScreen = () => {
           !p.proxy.nextVoter.equals(PublicKey.default) &&
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           (!proxyWalletKey || p.proxy.nextVoter.equals(proxyWalletKey!)) &&
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           (!positionKey || p.pubkey.equals(positionKey!)),
       ),
     [positions, proxyWalletKey, positionKey],
@@ -108,9 +116,7 @@ export const RevokeProxyScreen = () => {
     error,
     isPending: isSubmitting,
   } = useUnassignProxies()
-  const { walletSignBottomSheetRef } = useWalletSign()
-  const { anchorProvider } = useSolana()
-  const navigation = useNavigation()
+
   const decideAndExecute = useCallback(
     async (header: string, instructions: TransactionInstruction[]) => {
       if (!anchorProvider || !walletSignBottomSheetRef) return
@@ -180,6 +186,8 @@ export const RevokeProxyScreen = () => {
   ])
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
 
+  if (loading) return null
+
   return (
     <BackScreen
       edges={safeEdges}
@@ -202,16 +210,19 @@ export const RevokeProxyScreen = () => {
           />
         </Box>
 
-        <Box mb="m">
-          <Text variant="body3" color="secondaryText">
-            {t('gov.assignProxy.selectNetwork')}
-          </Text>
-          <Select
-            value={network}
-            onValueChange={setNetwork}
-            options={networks}
-          />
-        </Box>
+        {/* Don't show network when position already defined */}
+        {position ? null : (
+          <Box mb="m">
+            <Text variant="body3" color="secondaryText" mb="xs">
+              {t('gov.assignProxy.selectNetwork')}
+            </Text>
+            <Select
+              value={mint.toBase58()}
+              onValueChange={(m: string) => navigation.setParams({ mint: m })}
+              options={networks}
+            />
+          </Box>
+        )}
         <Box flexDirection="row" justifyContent="space-between">
           <Text variant="body1" color="white" opacity={0.5}>
             {t('gov.revokeProxy.revokePositions')}

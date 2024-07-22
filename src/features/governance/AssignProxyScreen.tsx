@@ -7,6 +7,9 @@ import Text from '@components/Text'
 import {
   batchInstructionsToTxsWithPriorityFee,
   bulkSendTransactions,
+  HNT_MINT,
+  IOT_MINT,
+  MOBILE_MINT,
   populateMissingDraftInfo,
   toVersionedTx,
   truthy,
@@ -24,7 +27,7 @@ import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import sleep from '@utils/sleep'
 import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
@@ -33,27 +36,30 @@ import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { PositionPreview } from './PositionPreview'
 import { ProxySearch } from './ProxySearch'
-import { GovernanceStackParamList } from './governanceTypes'
+import {
+  GovernanceNavigationProp,
+  GovernanceStackParamList,
+} from './governanceTypes'
 
 type Route = RouteProp<GovernanceStackParamList, 'AssignProxyScreen'>
 
 export const AssignProxyScreen = () => {
+  const { anchorProvider } = useSolana()
+  const { walletSignBottomSheetRef } = useWalletSign()
+  const navigation = useNavigation<GovernanceNavigationProp>()
   const route = useRoute<Route>()
-
   const { wallet, position } = route.params
   const { t } = useTranslation()
   const [proxyWallet, setProxyWallet] = useState(wallet)
-  const { positions, refetch } = useGovernance()
   const positionKey = usePublicKey(position)
-
+  const { loading, positions, refetch, mint } = useGovernance()
   const networks = useMemo(() => {
     return [
-      { label: 'HNT', value: 'hnt' },
-      { label: 'MOBILE', value: 'mobile' },
-      { label: 'IOT', value: 'iot' },
+      { label: 'HNT', value: HNT_MINT.toBase58() },
+      { label: 'MOBILE', value: MOBILE_MINT.toBase58() },
+      { label: 'IOT', value: IOT_MINT.toBase58() },
     ]
   }, [])
-  const [network, setNetwork] = useState('hnt')
 
   const unproxiedPositions = useMemo(
     () =>
@@ -61,6 +67,7 @@ export const AssignProxyScreen = () => {
         (p) =>
           !p.proxy ||
           (p.proxy.nextVoter.equals(PublicKey.default) &&
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             (!positionKey || p.pubkey.equals(positionKey!))),
       ) || [],
     [positions, positionKey],
@@ -93,11 +100,10 @@ export const AssignProxyScreen = () => {
         : new Date().valueOf() / 1000 + selectedDays * (24 * 60 * 60),
     [selectedDays, maxDays, maxDate],
   )
-  useEffect(() => {
-    if (selectedDays > maxDays) {
-      setSelectedDays(maxDays)
-    }
-  }, [maxDays, selectedDays])
+
+  const handleSelectedDays = (days: number) => {
+    setSelectedDays(days > maxDays ? maxDays : days)
+  }
 
   const renderPosition = ({ item }: { item: PositionWithMeta }) => {
     const selected = selectedPositions.has(item.pubkey.toBase58())
@@ -121,6 +127,7 @@ export const AssignProxyScreen = () => {
       />
     )
   }
+
   const selectedAll = unproxiedPositions.length === selectedPositions.size
 
   const handleSelectAll = useCallback(() => {
@@ -138,9 +145,7 @@ export const AssignProxyScreen = () => {
     error,
     isPending: isSubmitting,
   } = useAssignProxies()
-  const { walletSignBottomSheetRef } = useWalletSign()
-  const { anchorProvider } = useSolana()
-  const navigation = useNavigation()
+
   const decideAndExecute = useCallback(
     async (header: string, instructions: TransactionInstruction[]) => {
       if (!anchorProvider || !walletSignBottomSheetRef) return
@@ -216,6 +221,8 @@ export const AssignProxyScreen = () => {
   ])
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
 
+  if (loading) return null
+
   return (
     <BackScreen
       edges={safeEdges}
@@ -229,6 +236,7 @@ export const AssignProxyScreen = () => {
             {t('gov.assignProxy.description')}
           </Text>
         </Box>
+
         <Box mb="m">
           <ProxySearch
             value={proxyWallet || ''}
@@ -239,12 +247,12 @@ export const AssignProxyScreen = () => {
         {/* Don't show network when position already defined */}
         {position ? null : (
           <Box mb="m">
-            <Text variant="body3" color="secondaryText">
+            <Text variant="body3" color="secondaryText" mb="xs">
               {t('gov.assignProxy.selectNetwork')}
             </Text>
             <Select
-              value={network}
-              onValueChange={setNetwork}
+              value={mint.toBase58()}
+              onValueChange={(pk) => navigation.setParams({ mint: pk })}
               options={networks}
             />
           </Box>
@@ -285,7 +293,7 @@ export const AssignProxyScreen = () => {
           </Text>
           <Slider
             value={selectedDays}
-            onSlidingComplete={setSelectedDays}
+            onSlidingComplete={handleSelectedDays}
             minimumValue={1}
             maximumValue={maxDays}
             step={1}
