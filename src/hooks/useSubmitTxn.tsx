@@ -11,7 +11,9 @@ import { useAccountStorage } from '@storage/AccountStorageProvider'
 import i18n from '@utils/i18n'
 import * as solUtils from '@utils/solanaUtils'
 import BN from 'bn.js'
-import { useCallback } from 'react'
+import React, { useCallback } from 'react'
+import { CollectablePreview } from '../solana/CollectablePreview'
+import { PaymentPreivew } from '../solana/PaymentPreview'
 import { useSolana } from '../solana/SolanaProvider'
 import { useWalletSign } from '../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
@@ -75,20 +77,17 @@ export default () => {
         }),
       )
 
-      let decision
-      decision = await walletSignBottomSheetRef.show({
-        header: 'Send Tokens',
+      const serializedTxs = txns.map((tx) =>
+        Buffer.from(toVersionedTx(tx).serialize()),
+      )
+
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        header: t('transactions.sendTokens'),
         message: t('transactions.signPaymentTxn'),
-        onSimulate: async () => {
-          decision = await walletSignBottomSheetRef.show({
-            type: WalletStandardMessageTypes.signTransaction,
-            url: '',
-            additionalMessage: t('transactions.signPaymentTxn'),
-            serializedTxs: txns.map((tx) =>
-              Buffer.from(toVersionedTx(tx).serialize()),
-            ),
-          })
-        },
+        serializedTxs,
+        renderer: () => <PaymentPreivew {...{ payments, mint }} />,
       })
 
       if (!decision) {
@@ -148,10 +147,12 @@ export default () => {
       ).serialize()
 
       const decision = await walletSignBottomSheetRef.show({
-        type: WalletStandardMessageTypes.signTransaction,
         url: '',
-        additionalMessage: t('transactions.signTransferCollectableTxn'),
+        type: WalletStandardMessageTypes.signTransaction,
+        header: t('transactions.transferCollectable'),
+        message: t('transactions.signTransferCollectableTxn'),
         serializedTxs: [Buffer.from(serializedTx)],
+        renderer: () => <CollectablePreview {...{ collectable, payee }} />,
       })
 
       if (!decision) {
@@ -188,7 +189,7 @@ export default () => {
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
-        additionalMessage: t('transactions.signSwapTxn'),
+        message: t('transactions.signSwapTxn'),
         serializedTxs: [Buffer.from(serializedTx)],
         suppressWarnings: true,
       })
@@ -241,7 +242,7 @@ export default () => {
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         warning: recipientExists ? '' : t('transactions.recipientNonExistent'),
-        additionalMessage: t('transactions.signSwapTxn'),
+        message: t('transactions.signSwapTxn'),
         serializedTxs: [Buffer.from(serializedTx)],
       })
 
@@ -286,7 +287,7 @@ export default () => {
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
-        additionalMessage: t('transactions.signClaimRewardsTxn'),
+        message: t('transactions.signClaimRewardsTxn'),
         serializedTxs: serializedTxs.map(Buffer.from),
       })
 
@@ -376,7 +377,7 @@ export default () => {
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         warning: recipientExists ? '' : t('transactions.recipientNonExistent'),
-        additionalMessage: t('transactions.signMintDataCreditsTxn'),
+        message: t('transactions.signMintDataCreditsTxn'),
         serializedTxs: [Buffer.from(serializedTx)],
       })
 
@@ -429,7 +430,7 @@ export default () => {
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
-        additionalMessage: t('transactions.signDelegateDCTxn'),
+        message: t('transactions.signDelegateDCTxn'),
         serializedTxs: [Buffer.from(serializedTx)],
       })
 
@@ -508,7 +509,7 @@ export default () => {
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
-        additionalMessage: t('transactions.signAssertLocationTxn'),
+        message: t('transactions.signAssertLocationTxn'),
         serializedTxs,
       })
 
@@ -608,7 +609,7 @@ export default () => {
         warning: destinationExists
           ? ''
           : t('transactions.recipientNonExistent'),
-        additionalMessage: t('transactions.signPaymentTxn'),
+        message: t('transactions.signPaymentTxn'),
         serializedTxs: [Buffer.from(toVersionedTx(txn).serialize())],
       })
 

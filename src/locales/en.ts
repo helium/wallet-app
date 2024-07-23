@@ -1198,7 +1198,11 @@ export default {
     unstakeValidator: 'Unstake {{ticker}}',
     validator: 'Validator',
     delegated: 'Delegated',
+    sendTokens: 'Send Tokens',
+    transferCollectable: 'Transfer Collectable',
     signPaymentTxn: 'Sign this transaction to send your payment.',
+    simulateTxn: 'Simulate Transaction',
+    signTxn: 'Sign Transaction',
     signTransferCollectableTxn:
       'Sign this transaction to transfer your collectable.',
     signSwapTxn: 'Sign this transaction to swap your tokens.',

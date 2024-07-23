@@ -7,29 +7,16 @@ export enum WalletStandardMessageTypes {
   signMessage = 'signMessage',
 }
 
-export type WalletSignOptsCommon = {
-  onCancelHandler: () => void
-  onAcceptHandler: () => void
-}
-
-export type WalletSignOptsCompact = {
-  header: string
-  message: string
-  onSimulate: () => Promise<void>
-}
-
-export type WalletSignOptsSimulated = {
+export type WalletSignOpts = {
+  url?: string
   type: WalletStandardMessageTypes
-  url: string
-  serializedTxs: Buffer[] | undefined
-  warning?: string
-  additionalMessage?: string
-  header?: string
-  // Allow supressing warnings for our own txs
   suppressWarnings?: boolean
+  header?: string
+  message?: string
+  warning?: string
+  serializedTxs?: Buffer[]
+  renderer?: () => ReactNode
 }
-
-export type WalletSignOpts = WalletSignOptsCompact | WalletSignOptsSimulated
 
 export type WalletSignBottomSheetRef = {
   show: (opts: WalletSignOpts) => Promise<boolean>
