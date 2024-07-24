@@ -815,7 +815,7 @@ const SwapScreen = () => {
                     onPress={handleSwapTokens}
                     TrailingComponent={
                       swapping ? (
-                        <CircleLoader loaderSize={20} color="black" />
+                        <CircleLoader loaderSize={20} color="white" />
                       ) : undefined
                     }
                   />

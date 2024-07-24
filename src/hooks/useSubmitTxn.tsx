@@ -192,7 +192,7 @@ export default () => {
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
-        header: t('transactions.swapTokens'),
+        header: t('swapsScreen.swapTokens'),
         message: t('transactions.signSwapTxn'),
         serializedTxs: [Buffer.from(serializedTx)],
         suppressWarnings: true,
