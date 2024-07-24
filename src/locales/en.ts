@@ -1137,6 +1137,7 @@ export default {
     description: 'Last updated {{date}}. Tap for info.',
   },
   transactions: {
+    updateRecipient: 'Update Recipient',
     added: 'Hotspot Added to Blockchain',
     addToAddressBook: {
       message: 'Would you like to add this wallet to your address book?',
@@ -1192,12 +1193,14 @@ export default {
     transfer: 'Hotspot Transfer',
     transferBuy: 'Transfer Hotspot (Buy)',
     transferSell: 'Transfer Hotspot (Sell)',
+    delegateDC: 'Delegate data credits',
     transferValidator: 'Transfer Stake',
     txnFee: 'Transaction Fee',
     txnFeePaidBy: 'Transaction Fee paid by {{feePayer}}',
     unstakeValidator: 'Unstake {{ticker}}',
     validator: 'Validator',
     delegated: 'Delegated',
+    claimRewards: 'Claim Rewards',
     sendTokens: 'Send Tokens',
     transferCollectable: 'Transfer Collectable',
     signPaymentTxn: 'Sign this transaction to send your payment.',

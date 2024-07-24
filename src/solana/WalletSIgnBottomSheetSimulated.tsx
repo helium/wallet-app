@@ -28,7 +28,7 @@ import { ScrollView } from 'react-native-gesture-handler'
 import { useSolana } from './SolanaProvider'
 import WalletSignBottomSheetTransaction from './WalletSignBottomSheetTransaction'
 import {
-  WalletSignOptsSimulated,
+  WalletSignOpts,
   WalletStandardMessageTypes,
 } from './walletSignBottomSheetTypes'
 
@@ -36,7 +36,7 @@ const WELL_KNOWN_CANOPY_URL =
   'https://shdw-drive.genesysgo.net/6tcnBSybPG7piEDShBcrVtYJDPSvGrDbVvXmXKpzBvWP/merkles.json'
 let wellKnownCanopyCache: Record<string, number> | undefined
 
-type IWalletSignBottomSheetSimulatedProps = WalletSignOptsSimulated & {
+type IWalletSignBottomSheetSimulatedProps = WalletSignOpts & {
   onCancel: () => void
   onAccept: () => void
 }
@@ -201,9 +201,9 @@ export const WalletSignBottomSheetSimulated = ({
   return (
     <Box p="m">
       {header || url ? (
-        <Box marginBottom="l">
+        <Box marginBottom="s">
           {header ? (
-            <Text variant="h4Medium" color="white" textAlign="center">
+            <Text variant="h4Medium" color="white">
               {header}
             </Text>
           ) : null}

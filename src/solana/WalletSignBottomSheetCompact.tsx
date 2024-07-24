@@ -12,9 +12,10 @@ import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 import BN from 'bn.js'
 import { getBasePriorityFee } from '@utils/walletApiV2'
 import { useAsync } from 'react-async-hook'
-import { WalletSignOptsCompact } from './walletSignBottomSheetTypes'
+import { WalletSignOpts } from './walletSignBottomSheetTypes'
 
-type IWalletSignBottomSheetCompactProps = WalletSignOptsCompact & {
+type IWalletSignBottomSheetCompactProps = WalletSignOpts & {
+  onSimulate: () => void
   onCancel: () => void
   onAccept: () => void
 }
@@ -79,12 +80,10 @@ export const WalletSignBottomSheetCompact = ({
       )}
 
       {!(insufficientFunds || insufficientRentExempt) && (
-        <Text variant="subtitle2" marginBottom="s">
-          {header || t('transactions.signTxn')}
-        </Text>
+        <Text variant="subtitle2">{header || t('transactions.signTxn')}</Text>
       )}
 
-      {!(insufficientFunds || insufficientRentExempt) && (
+      {!(insufficientFunds || insufficientRentExempt) && message && (
         <Text variant="body1Medium" color="secondaryText">
           {message}
         </Text>

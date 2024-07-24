@@ -53,6 +53,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
+import { MessagePreview } from '../../solana/MessagePreview'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
@@ -147,11 +148,19 @@ export const PositionCard = ({
 
   const { anchorProvider } = useSolana()
 
-  const decideAndExecute = async (
-    header: string,
-    instructions: TransactionInstruction[],
-    sigs: Keypair[] = [],
-  ) => {
+  const decideAndExecute = async ({
+    header,
+    message,
+    instructions,
+    renderer,
+    sigs = [],
+  }: {
+    header: string
+    message: string
+    instructions: TransactionInstruction[]
+    sigs?: Keypair[]
+    renderer?: () => React.ReactNode
+  }) => {
     if (!anchorProvider || !walletSignBottomSheetRef) return
 
     const transactions = await batchInstructionsToTxsWithPriorityFee(
@@ -173,6 +182,9 @@ export const PositionCard = ({
       url: '',
       header,
       serializedTxs: txs.map((t) => Buffer.from(t.serialize())),
+      renderer: !renderer
+        ? () => <MessagePreview message={message} />
+        : renderer,
     })
 
     if (decision) {
@@ -348,7 +360,11 @@ export const PositionCard = ({
     await closePosition({
       position,
       onInstructions: async (ixs) => {
-        await decideAndExecute(t('gov.transactions.closePosition'), ixs)
+        await decideAndExecute({
+          header: t('gov.transactions.closePosition'),
+          message: 'Are you sure you want to close your position?',
+          instructions: ixs,
+        })
         if (!closingError) {
           refetchState()
         }
@@ -360,12 +376,15 @@ export const PositionCard = ({
     await flipPositionLockupKind({
       position,
       onInstructions: async (ixs) => {
-        await decideAndExecute(
-          isConstant
+        await decideAndExecute({
+          header: isConstant
             ? t('gov.transactions.unpauseLockup')
             : t('gov.transactions.pauseLockup'),
-          ixs,
-        )
+          message: isConstant
+            ? 'Are you sure you want to upause this positions lockup?'
+            : 'Are you sure you want to pause this positions lockup?',
+          instructions: ixs,
+        })
 
         if (!flippingError) {
           refetchState()
@@ -379,7 +398,11 @@ export const PositionCard = ({
       position,
       lockupPeriodsInDays: values.lockupPeriodInDays,
       onInstructions: async (ixs) => {
-        await decideAndExecute(t('gov.transactions.extendPosition'), ixs)
+        await decideAndExecute({
+          header: t('gov.transactions.extendPosition'),
+          message: "Are you sure you want to extend this position's lockup?",
+          instructions: ixs,
+        })
         if (!extendingError) {
           refetchState()
         }
@@ -394,7 +417,13 @@ export const PositionCard = ({
       lockupKind: values.lockupKind.value,
       lockupPeriodsInDays: values.lockupPeriodInDays,
       onInstructions: async (ixs, sigs) => {
-        await decideAndExecute(t('gov.transactions.splitPosition'), ixs, sigs)
+        await decideAndExecute({
+          header: t('gov.transactions.splitPosition'),
+          message: "Are you sure you want to split this position's tokens?",
+          instructions: ixs,
+          sigs,
+        })
+
         if (!splitingError) {
           refetchState()
         }
@@ -411,7 +440,12 @@ export const PositionCard = ({
       amount,
       targetPosition,
       onInstructions: async (ixs) => {
-        await decideAndExecute(t('gov.transactions.transferPosition'), ixs)
+        await decideAndExecute({
+          header: t('gov.transactions.transferPosition'),
+          message: "Are you sure you want to transfer this position's tokens?",
+          instructions: ixs,
+        })
+
         if (!transferingError) {
           refetchState()
         }
@@ -424,7 +458,13 @@ export const PositionCard = ({
       position,
       subDao,
       onInstructions: async (ixs) => {
-        await decideAndExecute(t('gov.transactions.delegatePosition'), ixs)
+        await decideAndExecute({
+          header: t('gov.transactions.delegatePosition'),
+          message: `Are you sure you want to delegate this position's tokens to the
+          ${subDao.dntMetadata.name} subdao?`,
+          instructions: ixs,
+        })
+
         if (!delegatingError) {
           refetchState()
         }
@@ -439,11 +479,20 @@ export const PositionCard = ({
         const undelegate = ixs[ixs.length - 1]
         const claims = ixs.slice(0, ixs.length - 1)
         if (claims.length > 0) {
-          await decideAndExecute(t('gov.transactions.claimRewards'), claims)
+          await decideAndExecute({
+            header: t('gov.transactions.claimRewards'),
+            message: 'Claim your rewards',
+            instructions: claims,
+          })
         }
-        await decideAndExecute(t('gov.transactions.undelegatePosition'), [
-          undelegate,
-        ])
+
+        await decideAndExecute({
+          header: t('gov.transactions.undelegatePosition'),
+          message:
+            "Are you sure you want to undelegate this position's tokens?",
+          instructions: [undelegate],
+        })
+
         if (!undelegatingError) {
           refetchState()
         }
@@ -456,7 +505,12 @@ export const PositionCard = ({
       position,
       organization,
       onInstructions: async (ixs) => {
-        await decideAndExecute(t('gov.transactions.relinquishPosition'), ixs)
+        await decideAndExecute({
+          header: t('gov.transactions.relinquishPosition'),
+          message: "Are you sure you want to relinquish this position's votes?",
+          instructions: ixs,
+        })
+
         if (!relinquishingError) {
           refetchState()
         }

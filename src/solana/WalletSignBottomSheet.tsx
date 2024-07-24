@@ -13,6 +13,7 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -38,7 +39,7 @@ const WalletSignBottomSheet = forwardRef(
     const animatedContentHeight = useSharedValue(0)
 
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-    const [isCompact, setIsCompact] = useState(true)
+    const [simulated, setSimulated] = useState(false)
     const [walletSignOpts, setWalletSignOpts] = useState<WalletSignOpts>({
       type: WalletStandardMessageTypes.connect,
       url: undefined,
@@ -48,12 +49,18 @@ const WalletSignBottomSheet = forwardRef(
       suppressWarnings: false,
     })
 
+    const hasRenderer = useMemo(
+      () => walletSignOpts.renderer !== undefined,
+      [walletSignOpts],
+    )
+
     useEffect(() => {
       bottomSheetModalRef.current?.present()
     }, [bottomSheetModalRef])
 
     const hide = useCallback(() => {
       bottomSheetModalRef.current?.close()
+      setSimulated(false)
     }, [])
 
     const show = useCallback((opts: WalletSignOpts) => {
@@ -130,9 +137,10 @@ const WalletSignBottomSheet = forwardRef(
             contentHeight={animatedContentHeight}
           >
             <BottomSheetScrollView>
-              {isCompact(walletSignOpts) ? (
+              {hasRenderer && !simulated ? (
                 <WalletSignBottomSheetCompact
                   {...walletSignOpts}
+                  onSimulate={() => setSimulated(true)}
                   onAccept={onAcceptHandler}
                   onCancel={onCancelHandler}
                 />
