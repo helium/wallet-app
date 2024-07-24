@@ -126,6 +126,8 @@ export const RevokeProxyScreen = () => {
         instructions,
         {
           basePriorityFee: await getBasePriorityFee(),
+          useFirstEstimateForAll: true,
+          computeScaleUp: 1.4,
         },
       )
       const populatedTxs = await Promise.all(

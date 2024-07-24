@@ -18,7 +18,7 @@ import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { useCallback, useMemo } from 'react'
 import {
-  getPositionKeys,
+  getPositionKeysForOwner,
   useHeliumVsrState,
   usePositions,
 } from '@helium/voter-stake-registry-hooks'
@@ -196,7 +196,7 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async (args: any | undefined, useContext: boolean) => {
       if (args && !useContext) {
-        return getPositionKeys(args)
+        return getPositionKeysForOwner(args)
       }
     },
     [args, useContextPositions],
@@ -217,7 +217,9 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
     if (positions && positions.length) {
       let amountLocked = new BN(0)
       positions.forEach((position) => {
-        if (position) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        if (position && !position.isProxiedToMe) {
           amountLocked = amountLocked.add(position.amountDepositedNative)
         }
       })

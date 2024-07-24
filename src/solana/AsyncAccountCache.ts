@@ -45,11 +45,20 @@ const TWO_MB = 2 * 1024 * 1024
 export class AsyncAccountCache implements AccountCache {
   cacheKey: string
 
+  timeout: any | null = null
+
   cache = new Map<string, ParsedAccountBase<unknown> | null>()
 
   private cacheOrder: Map<string, number> = new Map() // Maintain the order of keys based on usage
 
-  debouncedSet: () => void
+  debouncedSet() {
+    if (this.timeout) {
+      clearTimeout(this.timeout)
+    }
+    this.timeout = setTimeout(() => {
+      this.setAsyncStorage()
+    }, 10000)
+  }
 
   constructor(cacheKey: string) {
     this.cacheKey = cacheKey

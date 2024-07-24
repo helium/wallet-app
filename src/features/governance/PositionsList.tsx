@@ -13,7 +13,7 @@ import { useColors } from '@theme/themeHooks'
 import { times } from 'lodash'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlatList, RefreshControl } from 'react-native'
+import { RefreshControl, SectionList } from 'react-native'
 import { PositionCard } from './PositionCard'
 
 interface IPositionsListProps extends BoxProps<Theme> {
@@ -59,6 +59,14 @@ export const PositionsList = ({ header, ...boxProps }: IPositionsListProps) => {
     [positions, loading],
   )
 
+  const proxiedPositions = useMemo(
+    () => sortedPositions?.filter((p) => p.isProxiedToMe),
+    [sortedPositions],
+  )
+  const unProxiedPositions = useMemo(
+    () => sortedPositions?.filter((p) => !p.isProxiedToMe),
+    [sortedPositions],
+  )
   const renderItem = useCallback(
     ({ item: p, index: idx }) => {
       return (
@@ -109,8 +117,36 @@ export const PositionsList = ({ header, ...boxProps }: IPositionsListProps) => {
     )
   }, [loading, positions, t])
 
+  const SectionData = useMemo(() => {
+    return [
+      { title: 'My Positions', data: unProxiedPositions || [] },
+      { title: 'Proxied To Me', data: proxiedPositions || [] },
+    ]
+  }, [proxiedPositions, unProxiedPositions])
+
+  const renderSectionHeader = useCallback(
+    ({ section: { title, icon } }) => (
+      <Box
+        flexDirection="row"
+        alignItems="center"
+        paddingTop="xl"
+        paddingBottom="m"
+        paddingHorizontal="l"
+        backgroundColor="primaryBackground"
+        justifyContent="center"
+      >
+        {icon !== undefined && icon}
+        <Text variant="body3" textAlign="center" color="secondaryText">
+          {title}
+        </Text>
+      </Box>
+    ),
+    [],
+  )
+
   return (
-    <FlatList
+    <SectionList
+      renderSectionHeader={renderSectionHeader}
       ListHeaderComponent={
         <>
           {header}
@@ -150,7 +186,7 @@ export const PositionsList = ({ header, ...boxProps }: IPositionsListProps) => {
         </>
       }
       keyExtractor={keyExtractor}
-      data={sortedPositions}
+      sections={SectionData}
       renderItem={renderItem}
       ListEmptyComponent={renderEmptyComponent}
       refreshControl={

@@ -25,7 +25,7 @@ import { GovernanceNavigationProp } from './governanceTypes'
 import { GovernanceWrapper } from './GovernanceWrapper'
 import { VoterCardStat } from './VoterCardStat'
 
-const DECENTRALIZATION_RISK_INDEX = 6
+const DECENTRALIZATION_RISK_PERCENT = 10
 const VOTER_HEIGHT = 110
 
 export const VoterSkeleton = () => {
@@ -89,9 +89,15 @@ export default function VotersScreen() {
     )
   }, [proxies, isLoading, loading, t])
 
+  const renderBelowIndex = useMemo(() => {
+    return proxies.findIndex(
+      (proxy) => Number(proxy.percent) < DECENTRALIZATION_RISK_PERCENT,
+    )
+  }, [proxies])
+
   const renderItem = useCallback(
     ({ item: proxy, index }) => {
-      const majority = index < DECENTRALIZATION_RISK_INDEX
+      const majority = Number(proxy.percent) >= DECENTRALIZATION_RISK_PERCENT
       const card = (
         <VoterCard
           decimals={decimals}
@@ -123,7 +129,7 @@ export default function VotersScreen() {
           </>
         )
       }
-      if (index === DECENTRALIZATION_RISK_INDEX) {
+      if (renderBelowIndex > 0 && index === renderBelowIndex) {
         return (
           <>
             <Box p="m">
@@ -146,7 +152,7 @@ export default function VotersScreen() {
       }
       return card
     },
-    [decimals, t],
+    [decimals, renderBelowIndex, t],
   )
 
   const keyExtractor = useCallback((proxy) => proxy.wallet, [])
