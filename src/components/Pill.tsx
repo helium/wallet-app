@@ -1,9 +1,9 @@
 import Box from '@components/Box'
+import { TextProps } from '@shopify/restyle'
+import { Theme } from '@theme/theme'
 import React, { memo } from 'react'
 import { SvgProps } from 'react-native-svg'
 import Text from './Text'
-import { TextProps } from '@shopify/restyle'
-import { Theme } from '@theme/theme'
 
 type Color =
   | 'blue'

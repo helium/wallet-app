@@ -1,6 +1,5 @@
 import Box from '@components/Box'
 import CircleLoader from '@components/CircleLoader'
-import { Pill } from '@components/Pill'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useKnownProxy } from '@helium/voter-stake-registry-hooks'
