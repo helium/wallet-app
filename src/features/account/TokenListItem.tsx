@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 import Arrow from '@assets/images/listItemRight.svg'
+import Lock from '@assets/images/lockClosed.svg'
 import InfoWarning from '@assets/images/warning.svg'
 import Box from '@components/Box'
 import FadeInOut from '@components/FadeInOut'
@@ -7,25 +8,24 @@ import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableContainer from '@components/TouchableContainer'
 import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
+import {
+  useHeliumVsrState,
+  usePositions,
+} from '@helium/voter-stake-registry-hooks'
+import { getPositionKeysForOwner } from '@helium/voter-stake-registry-sdk'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import useHaptic from '@hooks/useHaptic'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import usePrevious from '@hooks/usePrevious'
 import { useNavigation } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
+import { useColors } from '@theme/themeHooks'
 import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { useCallback, useMemo } from 'react'
-import {
-  getPositionKeysForOwner,
-  useHeliumVsrState,
-  usePositions,
-} from '@helium/voter-stake-registry-hooks'
 import { useAsync } from 'react-async-hook'
-import usePrevious from '@hooks/usePrevious'
-import Lock from '@assets/images/lockClosed.svg'
-import { useColors } from '@theme/themeHooks'
 import { useSolana } from '../../solana/SolanaProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
@@ -203,7 +203,7 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
   )
 
   const { accounts: fetchedPositions, loading: loadingFetchedPositions } =
-    usePositions(result?.positionKeys)
+    usePositions(result?.positions)
   const loadingPositions = loadingFetchedPositions || loadingContext
   const positions = useMemo(
     () =>
