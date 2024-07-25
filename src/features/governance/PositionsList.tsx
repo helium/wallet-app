@@ -129,7 +129,7 @@ export const PositionsList = ({ header, ...boxProps }: IPositionsListProps) => {
       <Box
         flexDirection="row"
         alignItems="center"
-        paddingTop="xl"
+        paddingTop="m"
         paddingBottom="m"
         paddingHorizontal="l"
         backgroundColor="primaryBackground"

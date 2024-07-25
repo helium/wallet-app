@@ -59,7 +59,7 @@ PODS:
     - ReactCommon/turbomodule/core (= 0.71.5)
   - fmt (6.2.1)
   - glog (0.3.5)
-  - helium-react-native-sdk (3.0.4):
+  - helium-react-native-sdk (3.0.5):
     - React-Core
   - hermes-engine (0.71.5):
     - hermes-engine/Pre-built (= 0.71.5)
@@ -864,7 +864,7 @@ SPEC CHECKSUMS:
   FBReactNativeSpec: 627fd07f1b9d498c9fa572e76d7f1a6b1ee9a444
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
-  helium-react-native-sdk: bd924fa4ff053a6afb2b2febf03c3dfacd7dd671
+  helium-react-native-sdk: 54928dcd95ea131437ac6e269cf5bb2d473bf57f
   hermes-engine: 0784cadad14b011580615c496f77e0ae112eed75
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   lottie-ios: e047b1d2e6239b787cc5e9755b988869cf190494

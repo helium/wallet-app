@@ -541,73 +541,77 @@ export const PositionCard = ({
               />
             ) : (
               <>
-                <ListItem
-                  key="split"
-                  title="Split"
-                  onPress={() => {
-                    setActionsOpen(false)
-                    if (hasActiveVotes) {
-                      showOKAlert({
-                        title: t('gov.positions.unableToSplit'),
-                        message: t('gov.positions.partakingInVote'),
-                      })
-                    } else {
-                      setIsSplitModalOpen(true)
-                    }
-                  }}
-                  selected={false}
-                  hasPressedState={false}
-                />
-                <ListItem
-                  key="transfer"
-                  title="Transfer"
-                  onPress={() => {
-                    setActionsOpen(false)
-                    if (hasActiveVotes) {
-                      showOKAlert({
-                        title: t('gov.positions.unableToTransfer'),
-                        message: t('gov.positions.partakingInVote'),
-                      })
-                    } else {
-                      setIsTransferModalOpen(true)
-                    }
-                  }}
-                  selected={false}
-                  hasPressedState={false}
-                />
-                <ListItem
-                  key="extend"
-                  title={t('gov.positions.extend')}
-                  onPress={() => {
-                    setActionsOpen(false)
-                    setIsExtendModalOpen(true)
-                  }}
-                  selected={false}
-                  hasPressedState={false}
-                />
-                <ListItem
-                  key="pause"
-                  title={
-                    isConstant
-                      ? t('gov.transactions.unpauseLockup')
-                      : t('gov.transactions.pauseLockup')
-                  }
-                  onPress={async () => {
-                    setActionsOpen(false)
-                    if (hasActiveVotes) {
-                      showOKAlert({
-                        title: isConstant
-                          ? t('gov.positions.unableToUnpauseLockup')
-                          : t('gov.positions.unableToPauseLockup'),
-                        message: t('gov.positions.partakingInVote'),
-                      })
-                    } else {
-                      actionRef.current = 'flipLockupKind'
-                    }
-                  }}
-                  selected={false}
-                  hasPressedState={false}
-                />
+                {!position.isProxiedToMe && (
+                  <>
+                    <ListItem
+                      key="split"
+                      title="Split"
+                      onPress={() => {
+                        setActionsOpen(false)
+                        if (hasActiveVotes) {
+                          showOKAlert({
+                            title: t('gov.positions.unableToSplit'),
+                            message: t('gov.positions.partakingInVote'),
+                          })
+                        } else {
+                          setIsSplitModalOpen(true)
+                        }
+                      }}
+                      selected={false}
+                      hasPressedState={false}
+                    />
+                    <ListItem
+                      key="transfer"
+                      title="Transfer"
+                      onPress={() => {
+                        setActionsOpen(false)
+                        if (hasActiveVotes) {
+                          showOKAlert({
+                            title: t('gov.positions.unableToTransfer'),
+                            message: t('gov.positions.partakingInVote'),
+                          })
+                        } else {
+                          setIsTransferModalOpen(true)
+                        }
+                      }}
+                      selected={false}
+                      hasPressedState={false}
+                    />
+                    <ListItem
+                      key="extend"
+                      title={t('gov.positions.extend')}
+                      onPress={() => {
+                        setActionsOpen(false)
+                        setIsExtendModalOpen(true)
+                      }}
+                      selected={false}
+                      hasPressedState={false}
+                    />
+                    <ListItem
+                      key="pause"
+                      title={
+                        isConstant
+                          ? t('gov.transactions.unpauseLockup')
+                          : t('gov.transactions.pauseLockup')
+                      }
+                      onPress={async () => {
+                        setActionsOpen(false)
+                        if (hasActiveVotes) {
+                          showOKAlert({
+                            title: isConstant
+                              ? t('gov.positions.unableToUnpauseLockup')
+                              : t('gov.positions.unableToPauseLockup'),
+                            message: t('gov.positions.partakingInVote'),
+                          })
+                        } else {
+                          actionRef.current = 'flipLockupKind'
+                        }
+                      }}
+                      selected={false}
+                      hasPressedState={false}
+                    />
+                  </>
+                )}
                 {canDelegate && !position.isDelegated && (
                   <ListItem
                     key="delegate"
