@@ -14,6 +14,7 @@ import * as solUtils from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { useCallback } from 'react'
 import { ellipsizeAddress } from '@utils/accountUtils'
+import { SwapPreview } from '../solana/SwapPreview'
 import { CollectablePreview } from '../solana/CollectablePreview'
 import { MessagePreview } from '../solana/MessagePreview'
 import { PaymentPreivew } from '../solana/PaymentPreview'
@@ -182,7 +183,21 @@ export default () => {
   )
 
   const submitJupiterSwap = useCallback(
-    async (swapTxn: VersionedTransaction) => {
+    async ({
+      inputMint,
+      inputAmount,
+      outputMint,
+      outputAmount,
+      minReceived,
+      swapTxn,
+    }: {
+      inputMint: PublicKey
+      inputAmount: number
+      outputMint: PublicKey
+      outputAmount: number
+      minReceived: number
+      swapTxn: VersionedTransaction
+    }) => {
       if (!currentAccount || !anchorProvider || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
       }
@@ -196,6 +211,17 @@ export default () => {
         message: t('transactions.signSwapTxn'),
         serializedTxs: [Buffer.from(serializedTx)],
         suppressWarnings: true,
+        renderer: () => (
+          <SwapPreview
+            {...{
+              inputMint,
+              inputAmount,
+              outputMint,
+              outputAmount,
+              minReceived,
+            }}
+          />
+        ),
       })
 
       if (!decision) {
