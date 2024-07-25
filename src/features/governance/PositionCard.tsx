@@ -568,7 +568,7 @@ export const PositionCard = ({
               <>
                 <ListItem
                   key="split"
-                  title="Split"
+                  title={t('gov.positions.split')}
                   onPress={() => {
                     setActionsOpen(false)
                     if (hasActiveVotes) {
@@ -585,7 +585,7 @@ export const PositionCard = ({
                 />
                 <ListItem
                   key="transfer"
-                  title="Transfer"
+                  title={t('gov.positions.transfer')}
                   onPress={() => {
                     setActionsOpen(false)
                     if (hasActiveVotes) {
@@ -614,8 +614,8 @@ export const PositionCard = ({
                   key="pause"
                   title={
                     isConstant
-                      ? t('gov.transactions.unpauseLockup')
-                      : t('gov.transactions.pauseLockup')
+                      ? t('gov.positions.unpause')
+                      : t('gov.positions.pause')
                   }
                   onPress={async () => {
                     setActionsOpen(false)

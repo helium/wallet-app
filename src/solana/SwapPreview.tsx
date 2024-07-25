@@ -89,7 +89,7 @@ export const SwapPreview = ({
             alignItems="center"
             justifyContent="space-between"
           >
-            <Text variant="body2">Min Recieved due to slippage:</Text>
+            <Text variant="body2">Min Received due to slippage:</Text>
             <Text variant="body2" color="green500">
               {`~${minReceived.toFixed(outputDecimals)}`}
             </Text>
