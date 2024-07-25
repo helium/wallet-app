@@ -120,7 +120,7 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
         const decision = await walletSignBottomSheetRef.show({
           type: WalletStandardMessageTypes.signTransaction,
           url: '',
-          additionalMessage: t('transactions.autoGasConvert', { symbol }),
+          message: t('transactions.autoGasConvert', { symbol }),
           serializedTxs: [serializedTx],
           header: t('transactions.autoGasConvertHeader'),
         })

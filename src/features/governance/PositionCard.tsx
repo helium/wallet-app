@@ -43,6 +43,7 @@ import { useCreateOpacity } from '@theme/themeHooks'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import {
   daysToSecs,
+  getFormattedStringFromDays,
   getMinDurationFmt,
   getTimeLeftFromNowFmt,
   secsToDays,
@@ -53,6 +54,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
+import { MessagePreview } from '../../solana/MessagePreview'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
@@ -147,11 +149,17 @@ export const PositionCard = ({
 
   const { anchorProvider } = useSolana()
 
-  const decideAndExecute = async (
-    header: string,
-    instructions: TransactionInstruction[],
-    sigs: Keypair[] = [],
-  ) => {
+  const decideAndExecute = async ({
+    header,
+    message,
+    instructions,
+    sigs = [],
+  }: {
+    header: string
+    message: string
+    instructions: TransactionInstruction[]
+    sigs?: Keypair[]
+  }) => {
     if (!anchorProvider || !walletSignBottomSheetRef) return
 
     const transactions = await batchInstructionsToTxsWithPriorityFee(
@@ -172,6 +180,7 @@ export const PositionCard = ({
       type: WalletStandardMessageTypes.signTransaction,
       url: '',
       header,
+      renderer: () => <MessagePreview message={message} />,
       serializedTxs: txs.map((t) => Buffer.from(t.serialize())),
     })
 
@@ -348,7 +357,11 @@ export const PositionCard = ({
     await closePosition({
       position,
       onInstructions: async (ixs) => {
-        await decideAndExecute(t('gov.transactions.closePosition'), ixs)
+        await decideAndExecute({
+          header: t('gov.transactions.closePosition'),
+          message: t('gov.positions.closeMessage'),
+          instructions: ixs,
+        })
         if (!closingError) {
           refetchState()
         }
@@ -360,12 +373,18 @@ export const PositionCard = ({
     await flipPositionLockupKind({
       position,
       onInstructions: async (ixs) => {
-        await decideAndExecute(
-          isConstant
+        await decideAndExecute({
+          header: isConstant
             ? t('gov.transactions.unpauseLockup')
             : t('gov.transactions.pauseLockup'),
-          ixs,
-        )
+          message: t('gov.positions.flipLockupMessage', {
+            amount: lockedTokens,
+            symbol,
+            status: isConstant ? 'paused' : 'decaying',
+            action: isConstant ? 'let it decay' : 'pause it',
+          }),
+          instructions: ixs,
+        })
 
         if (!flippingError) {
           refetchState()
@@ -379,7 +398,19 @@ export const PositionCard = ({
       position,
       lockupPeriodsInDays: values.lockupPeriodInDays,
       onInstructions: async (ixs) => {
-        await decideAndExecute(t('gov.transactions.extendPosition'), ixs)
+        await decideAndExecute({
+          header: t('gov.transactions.extendPosition'),
+          message: t('gov.positions.extendMessage', {
+            existing: isConstant
+              ? getMinDurationFmt(
+                  position.lockup.startTs,
+                  position.lockup.endTs,
+                )
+              : getTimeLeftFromNowFmt(position.lockup.endTs),
+            new: getFormattedStringFromDays(values.lockupPeriodInDays),
+          }),
+          instructions: ixs,
+        })
         if (!extendingError) {
           refetchState()
         }
@@ -394,7 +425,18 @@ export const PositionCard = ({
       lockupKind: values.lockupKind.value,
       lockupPeriodsInDays: values.lockupPeriodInDays,
       onInstructions: async (ixs, sigs) => {
-        await decideAndExecute(t('gov.transactions.splitPosition'), ixs, sigs)
+        await decideAndExecute({
+          header: t('gov.transactions.splitPosition'),
+          message: t('gov.positions.splitMessage', {
+            amount: values.amount,
+            symbol,
+            lockupKind: values.lockupKind.display.toLocaleLowerCase(),
+            duration: getFormattedStringFromDays(values.lockupPeriodInDays),
+          }),
+          instructions: ixs,
+          sigs,
+        })
+
         if (!splitingError) {
           refetchState()
         }
@@ -411,7 +453,20 @@ export const PositionCard = ({
       amount,
       targetPosition,
       onInstructions: async (ixs) => {
-        await decideAndExecute(t('gov.transactions.transferPosition'), ixs)
+        await decideAndExecute({
+          header: t('gov.transactions.transferPosition'),
+          message: t('gov.positions.transferMessage', {
+            amount,
+            symbol,
+            targetAmount: humanReadable(
+              targetPosition.amountDepositedNative,
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              mintAcc!.decimals,
+            ),
+          }),
+          instructions: ixs,
+        })
+
         if (!transferingError) {
           refetchState()
         }
@@ -424,7 +479,16 @@ export const PositionCard = ({
       position,
       subDao,
       onInstructions: async (ixs) => {
-        await decideAndExecute(t('gov.transactions.delegatePosition'), ixs)
+        await decideAndExecute({
+          header: t('gov.transactions.delegatePosition'),
+          message: t('gov.positions.delegateMessage', {
+            amount: lockedTokens,
+            symbol,
+            subDao: subDao.dntMetadata.name,
+          }),
+          instructions: ixs,
+        })
+
         if (!delegatingError) {
           refetchState()
         }
@@ -439,11 +503,22 @@ export const PositionCard = ({
         const undelegate = ixs[ixs.length - 1]
         const claims = ixs.slice(0, ixs.length - 1)
         if (claims.length > 0) {
-          await decideAndExecute(t('gov.transactions.claimRewards'), claims)
+          await decideAndExecute({
+            header: t('gov.transactions.claimRewards'),
+            message: t('gov.transactions.claimRewards'),
+            instructions: claims,
+          })
         }
-        await decideAndExecute(t('gov.transactions.undelegatePosition'), [
-          undelegate,
-        ])
+
+        await decideAndExecute({
+          header: t('gov.transactions.undelegatePosition'),
+          message: t('gov.positions.undelegateMessage', {
+            amount: lockedTokens,
+            symbol,
+          }),
+          instructions: [undelegate],
+        })
+
         if (!undelegatingError) {
           refetchState()
         }
@@ -456,7 +531,12 @@ export const PositionCard = ({
       position,
       organization,
       onInstructions: async (ixs) => {
-        await decideAndExecute(t('gov.transactions.relinquishPosition'), ixs)
+        await decideAndExecute({
+          header: t('gov.transactions.relinquishPosition'),
+          message: t('gov.positions.relinquishVotesMessage'),
+          instructions: ixs,
+        })
+
         if (!relinquishingError) {
           refetchState()
         }
@@ -502,7 +582,7 @@ export const PositionCard = ({
               <>
                 <ListItem
                   key="split"
-                  title="Split"
+                  title={t('gov.positions.split')}
                   onPress={() => {
                     setActionsOpen(false)
                     if (hasActiveVotes) {
@@ -519,7 +599,7 @@ export const PositionCard = ({
                 />
                 <ListItem
                   key="transfer"
-                  title="Transfer"
+                  title={t('gov.positions.transfer')}
                   onPress={() => {
                     setActionsOpen(false)
                     if (hasActiveVotes) {
@@ -548,8 +628,8 @@ export const PositionCard = ({
                   key="pause"
                   title={
                     isConstant
-                      ? t('gov.transactions.unpauseLockup')
-                      : t('gov.transactions.pauseLockup')
+                      ? t('gov.positions.unpause')
+                      : t('gov.positions.pause')
                   }
                   onPress={async () => {
                     setActionsOpen(false)

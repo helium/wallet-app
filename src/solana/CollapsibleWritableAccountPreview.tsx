@@ -94,6 +94,7 @@ const NativeSolBalanceChange = ({
     />
   )
 }
+
 function accountExists(account: AccountInfo<Buffer> | null): boolean {
   return account ? account.lamports > 0 : false
 }

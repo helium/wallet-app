@@ -42,6 +42,7 @@ import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
 import Markdown from 'react-native-markdown-display'
 import { Edge } from 'react-native-safe-area-context'
+import { MessagePreview } from '../../solana/MessagePreview'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
@@ -183,10 +184,15 @@ export const ProposalScreen = () => {
     [proposal],
   )
 
-  const decideAndExecute = async (
-    header: string,
-    instructions: TransactionInstruction[],
-  ) => {
+  const decideAndExecute = async ({
+    header,
+    message,
+    instructions,
+  }: {
+    header: string
+    message: string
+    instructions: TransactionInstruction[]
+  }) => {
     if (!anchorProvider || !walletSignBottomSheetRef) return
 
     const transactions = await batchInstructionsToTxsWithPriorityFee(
@@ -207,6 +213,7 @@ export const ProposalScreen = () => {
       type: WalletStandardMessageTypes.signTransaction,
       url: '',
       header,
+      renderer: () => <MessagePreview message={message} />,
       serializedTxs: txs.map((transaction) =>
         Buffer.from(transaction.serialize()),
       ),
@@ -232,7 +239,11 @@ export const ProposalScreen = () => {
       await vote({
         choice: choice.index,
         onInstructions: (ixs) =>
-          decideAndExecute(t('gov.transactions.castVote'), ixs),
+          decideAndExecute({
+            header: t('gov.transactions.castVote'),
+            message: t('gov.proposals.castVoteFor', { choice: choice.name }),
+            instructions: ixs,
+          }),
       })
     }
   }
@@ -243,7 +254,13 @@ export const ProposalScreen = () => {
       relinquishVote({
         choice: choice.index,
         onInstructions: async (instructions) =>
-          decideAndExecute(t('gov.transactions.relinquishVote'), instructions),
+          decideAndExecute({
+            header: t('gov.transactions.relinquishVote'),
+            message: t('gov.proposals.relinquishVoteFor', {
+              choice: choice.name,
+            }),
+            instructions,
+          }),
       })
     }
   }

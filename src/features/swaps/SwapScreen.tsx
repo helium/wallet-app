@@ -591,7 +591,7 @@ const SwapScreen = () => {
   )
 
   const handleSwapTokens = useCallback(async () => {
-    if (connection && currentAccount?.solanaAddress) {
+    if (connection && currentAccount?.solanaAddress && inputMint) {
       try {
         setSwapping(true)
 
@@ -624,7 +624,15 @@ const SwapScreen = () => {
           if (!swapTxn) {
             throw new Error(t('errors.swap.tx'))
           }
-          await submitJupiterSwap(swapTxn)
+
+          await submitJupiterSwap({
+            inputMint,
+            inputAmount,
+            outputMint,
+            outputAmount,
+            minReceived,
+            swapTxn,
+          })
         }
 
         setSwapping(false)
@@ -646,6 +654,7 @@ const SwapScreen = () => {
     inputAmount,
     outputMint,
     outputAmount,
+    minReceived,
     navigation,
     submitTreasurySwap,
     submitMintDataCredits,
@@ -815,7 +824,7 @@ const SwapScreen = () => {
                     onPress={handleSwapTokens}
                     TrailingComponent={
                       swapping ? (
-                        <CircleLoader loaderSize={20} color="black" />
+                        <CircleLoader loaderSize={20} color="white" />
                       ) : undefined
                     }
                   />
