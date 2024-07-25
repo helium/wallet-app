@@ -1261,6 +1261,7 @@ export default {
       locked: '{{symbol}} Locked',
       youHave: 'You have {{amount}} more {{symbol}} available to lock.',
       increase: 'Increase your voting power by locking tokens.',
+      lockYourTokens: 'Lock {{amount}} {{symbol}} for {{duration}}?',
     },
     positions: {
       relinquish: 'Relinquish Votes',
@@ -1317,6 +1318,19 @@ export default {
       selectTransfer: 'Select position to transfer too.',
       selectSubDao: 'Select a existing SubNetwork to delegate to.',
       fetchingSubDaos: 'Fetching SubDaos...',
+      closeMessage: 'Close this position?',
+      flipLockupMesage:
+        "Your current position of {{amount}} {{symbol}} is {{status}}, please confirm whether you'd like to {{action}} or not?",
+      extendMessage:
+        'Extend this positions lockup from {{existing}} to {{new}}?',
+      splitMessage:
+        'Split {{amount}} {{symbol}} into a new position with {{lockupKind}} lockup of {{duration}}?',
+      transferMessage:
+        'Transfer {{amount}} {{symbol}} to the position with {{targetAmount}} {{symbol}}?',
+      delegateMessage:
+        'delegate {{amount}} {{symbol}} to the {{subdao}} subdao?',
+      undelegateMessage: 'Undelegate {{amount}} {{symbol}}?',
+      relinquishVotesMessage: 'Relinquish this positions votes?',
     },
     proposals: {
       overviewTitle: 'Proposal Overview',
@@ -1330,6 +1344,8 @@ export default {
       failed: 'Failed',
       cancelled: 'Cancelled',
       votes: 'Votes',
+      castVoteFor: 'Cast your vote for {{choice}}?',
+      relinquishVoteFor: 'Relinquish your vote for {{choice}}?',
       toVote:
         'To vote, click on any option. To remove your vote, click the option again. Vote for up to {{maxChoicesPerVoter}} of {{choicesLength}} options.',
     },

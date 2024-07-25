@@ -359,7 +359,7 @@ export const PositionCard = ({
       onInstructions: async (ixs) => {
         await decideAndExecute({
           header: t('gov.transactions.closePosition'),
-          message: 'Are you sure you want to close your position?',
+          message: t('gov.positions.closeMessage'),
           instructions: ixs,
         })
         if (!closingError) {
@@ -377,11 +377,12 @@ export const PositionCard = ({
           header: isConstant
             ? t('gov.transactions.unpauseLockup')
             : t('gov.transactions.pauseLockup'),
-          message: `Your current position of ${lockedTokens} ${symbol} is ${
-            isConstant ? 'paused' : 'decaying'
-          }, please confirm whether you'd like to ${
-            isConstant ? 'let it decay' : 'pause it'
-          } or not?`,
+          message: t('gov.positions.flipLockupMessage', {
+            amount: lockedTokens,
+            symbol,
+            status: isConstant ? 'paused' : 'decaying',
+            action: isConstant ? 'let it decay' : 'pause it',
+          }),
           instructions: ixs,
         })
 
@@ -399,14 +400,15 @@ export const PositionCard = ({
       onInstructions: async (ixs) => {
         await decideAndExecute({
           header: t('gov.transactions.extendPosition'),
-          message: `Are you sure you want to extend this position's lockup from ${
-            isConstant
+          message: t('gov.positions.extendMessage', {
+            existing: isConstant
               ? getMinDurationFmt(
                   position.lockup.startTs,
                   position.lockup.endTs,
                 )
-              : getTimeLeftFromNowFmt(position.lockup.endTs)
-          } to ${getFormattedStringFromDays(values.lockupPeriodInDays)}?`,
+              : getTimeLeftFromNowFmt(position.lockup.endTs),
+            new: getFormattedStringFromDays(values.lockupPeriodInDays),
+          }),
           instructions: ixs,
         })
         if (!extendingError) {
@@ -425,11 +427,12 @@ export const PositionCard = ({
       onInstructions: async (ixs, sigs) => {
         await decideAndExecute({
           header: t('gov.transactions.splitPosition'),
-          message: `Are you sure you want to split ${
-            values.amount
-          } ${symbol} to a new position with a ${values.lockupKind.display.toLocaleLowerCase()} lockup of ${getFormattedStringFromDays(
-            values.lockupPeriodInDays,
-          )}?`,
+          message: t('gov.positions.splitMessage', {
+            amount: values.amount,
+            symbol,
+            lockupKind: values.lockupKind.display.toLocaleLowerCase(),
+            duration: getFormattedStringFromDays(values.lockupPeriodInDays),
+          }),
           instructions: ixs,
           sigs,
         })
@@ -452,11 +455,15 @@ export const PositionCard = ({
       onInstructions: async (ixs) => {
         await decideAndExecute({
           header: t('gov.transactions.transferPosition'),
-          message: `Are you sure you want to transfer ${amount} ${symbol} to the position with ${humanReadable(
-            targetPosition.amountDepositedNative,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            mintAcc!.decimals,
-          )} ${symbol}?`,
+          message: t('gov.positions.transferMessage', {
+            amount,
+            symbol,
+            targetAmount: humanReadable(
+              targetPosition.amountDepositedNative,
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              mintAcc!.decimals,
+            ),
+          }),
           instructions: ixs,
         })
 
@@ -474,7 +481,11 @@ export const PositionCard = ({
       onInstructions: async (ixs) => {
         await decideAndExecute({
           header: t('gov.transactions.delegatePosition'),
-          message: `Are you sure you want to delegate ${lockedTokens} ${symbol} to the ${subDao.dntMetadata.name} subdao?`,
+          message: t('gov.positions.delegateMessage', {
+            amount: lockedTokens,
+            symbol,
+            subDao: subDao.dntMetadata.name,
+          }),
           instructions: ixs,
         })
 
@@ -494,14 +505,17 @@ export const PositionCard = ({
         if (claims.length > 0) {
           await decideAndExecute({
             header: t('gov.transactions.claimRewards'),
-            message: 'Claim your rewards',
+            message: t('gov.transactions.claimRewards'),
             instructions: claims,
           })
         }
 
         await decideAndExecute({
           header: t('gov.transactions.undelegatePosition'),
-          message: `Are you sure you want to undelegate ${lockedTokens} ${symbol}?`,
+          message: t('gov.positions.undelegateMessage', {
+            amount: lockedTokens,
+            symbol,
+          }),
           instructions: [undelegate],
         })
 
@@ -519,7 +533,7 @@ export const PositionCard = ({
       onInstructions: async (ixs) => {
         await decideAndExecute({
           header: t('gov.transactions.relinquishPosition'),
-          message: "Are you sure you want to relinquish this position's votes?",
+          message: t('gov.positions.relinquishVotesMessage'),
           instructions: ixs,
         })
 

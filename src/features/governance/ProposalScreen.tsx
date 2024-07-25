@@ -241,7 +241,7 @@ export const ProposalScreen = () => {
         onInstructions: (ixs) =>
           decideAndExecute({
             header: t('gov.transactions.castVote'),
-            message: `Are you sure you want to cast your vote for ${choice.name}?`,
+            message: t('gov.proposals.castVoteFor', { choice: choice.name }),
             instructions: ixs,
           }),
       })
@@ -256,7 +256,9 @@ export const ProposalScreen = () => {
         onInstructions: async (instructions) =>
           decideAndExecute({
             header: t('gov.transactions.relinquishVote'),
-            message: `Are you sure you want to relinquish your vote for ${choice.name}?`,
+            message: t('gov.proposals.relinquishVoteFor', {
+              choice: choice.name,
+            }),
             instructions,
           }),
       })

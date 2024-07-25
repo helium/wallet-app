@@ -221,12 +221,11 @@ export const VotingPowerScreen = () => {
         onInstructions: (ixs, sigs) =>
           decideAndExecute({
             header: t('gov.transactions.lockTokens'),
-            message: `Are you sure you want to lock ${humanReadable(
-              amountToLock,
-              decimals,
-            )} ${symbol} for ${getFormattedStringFromDays(
-              lockupPeriodInDays,
-            )}?`,
+            message: t('gov.votingPower.lockYourTokens', {
+              amount: humanReadable(amountToLock, decimals),
+              symbol,
+              duration: getFormattedStringFromDays(lockupPeriodInDays),
+            }),
             instructions: ixs,
             sigs,
             sequentially: !!subDao,
