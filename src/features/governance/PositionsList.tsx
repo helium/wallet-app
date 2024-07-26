@@ -186,7 +186,7 @@ export const PositionsList = ({ header, ...boxProps }: IPositionsListProps) => {
         </>
       }
       keyExtractor={keyExtractor}
-      sections={SectionData}
+      sections={loading ? [] : SectionData}
       renderItem={renderItem}
       ListEmptyComponent={renderEmptyComponent}
       refreshControl={
