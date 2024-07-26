@@ -9,6 +9,7 @@ import {
   Status,
   batchInstructionsToTxsWithPriorityFee,
   bulkSendTransactions,
+  humanReadable,
   sendAndConfirmWithRetry,
   toBN,
   toNumber,
@@ -20,14 +21,16 @@ import {
   useCreatePosition,
 } from '@helium/voter-stake-registry-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { Keypair, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
-import { daysToSecs } from '@utils/dateTools'
+import { daysToSecs, getFormattedStringFromDays } from '@utils/dateTools'
 import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { MessagePreview } from '../../solana/MessagePreview'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
@@ -50,6 +53,7 @@ export const PositionsScreen = () => {
     refetch: refetchState,
     positions,
   } = useGovernance()
+  const { symbol } = useMetaplexMetadata(mint)
   const { amount: ownedAmount, decimals } = useOwnedAmount(wallet, mint)
   const { error: createPositionError, createPosition } = useCreatePosition()
   const {
@@ -99,13 +103,21 @@ export const PositionsScreen = () => {
 
   const { anchorProvider } = useSolana()
 
-  const decideAndExecute = async (
-    header: string,
-    instructions: TransactionInstruction[],
-    sigs: Keypair[] = [],
-    onProgress: (status: Status) => void = () => {},
+  const decideAndExecute = async ({
+    header,
+    message,
+    instructions,
+    sigs = [],
+    onProgress = () => {},
     sequentially = false,
-  ) => {
+  }: {
+    header: string
+    message: string
+    instructions: TransactionInstruction[]
+    sigs?: Keypair[]
+    onProgress?: (status: Status) => void
+    sequentially?: boolean
+  }) => {
     if (!anchorProvider || !walletSignBottomSheetRef) return
 
     const transactions = await batchInstructionsToTxsWithPriorityFee(
@@ -130,6 +142,7 @@ export const PositionsScreen = () => {
         Buffer.from(transaction.serialize()),
       ),
       suppressWarnings: sequentially,
+      renderer: () => <MessagePreview message={message} />,
     })
 
     if (decision) {
@@ -174,7 +187,7 @@ export const PositionsScreen = () => {
 
   const handleLockTokens = async (values: LockTokensModalFormValues) => {
     const { amount, lockupPeriodInDays, lockupKind, subDao } = values
-    if (decimals && walletSignBottomSheetRef) {
+    if (decimals && walletSignBottomSheetRef && symbol) {
       const amountToLock = toBN(amount, decimals)
 
       await createPosition({
@@ -184,13 +197,17 @@ export const PositionsScreen = () => {
         mint,
         subDao,
         onInstructions: (ixs, sigs) =>
-          decideAndExecute(
-            t('gov.transactions.lockTokens'),
-            ixs,
+          decideAndExecute({
+            header: t('gov.transactions.lockTokens'),
+            message: t('gov.votingPower.lockYourTokens', {
+              amount: humanReadable(amountToLock, decimals),
+              symbol,
+              duration: getFormattedStringFromDays(lockupPeriodInDays),
+            }),
+            instructions: ixs,
             sigs,
-            undefined,
-            !!subDao,
-          ),
+            sequentially: !!subDao,
+          }),
       })
 
       refetchState()
@@ -202,12 +219,12 @@ export const PositionsScreen = () => {
       await claimAllPositionsRewards({
         positions: positionsWithRewards,
         onInstructions: (ixs) =>
-          decideAndExecute(
-            t('gov.transactions.claimRewards'),
-            ixs,
-            undefined,
-            setStatusOfClaim,
-          ),
+          decideAndExecute({
+            header: t('gov.transactions.claimRewards'),
+            message: 'Approve this transaction to claim your rewards',
+            instructions: ixs,
+            onProgress: setStatusOfClaim,
+          }),
       })
 
       if (!claimingAllRewardsError) {

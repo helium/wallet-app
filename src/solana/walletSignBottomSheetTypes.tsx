@@ -7,32 +7,19 @@ export enum WalletStandardMessageTypes {
   signMessage = 'signMessage',
 }
 
-export type BalanceChange = {
-  ticker: string
-  amount: number
-  type: 'send' | 'receive'
-}
-
 export type WalletSignOpts = {
+  url?: string
   type: WalletStandardMessageTypes
-  url: string
-  serializedTxs: Buffer[] | undefined
-  warning?: string
-  additionalMessage?: string
-  header?: string
-  // Allow supressing warnings for our own txs
   suppressWarnings?: boolean
+  header?: string
+  message?: string
+  warning?: string
+  serializedTxs?: Buffer[]
+  renderer?: () => ReactNode
 }
 
 export type WalletSignBottomSheetRef = {
-  show: ({
-    type,
-    url,
-    additionalMessage,
-    serializedTxs,
-    header,
-    suppressWarnings,
-  }: WalletSignOpts) => Promise<boolean>
+  show: (opts: WalletSignOpts) => Promise<boolean>
   hide: () => void
 }
 

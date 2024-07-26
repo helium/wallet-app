@@ -2,6 +2,7 @@ import { NetworkType } from '@helium/onboarding'
 import { useOnboarding } from '@helium/react-native-sdk'
 import {
   chunks,
+  DC_MINT,
   populateMissingDraftInfo,
   sendAndConfirmWithRetry,
   toVersionedTx,
@@ -11,7 +12,12 @@ import { useAccountStorage } from '@storage/AccountStorageProvider'
 import i18n from '@utils/i18n'
 import * as solUtils from '@utils/solanaUtils'
 import BN from 'bn.js'
-import { useCallback } from 'react'
+import React, { useCallback } from 'react'
+import { ellipsizeAddress } from '@utils/accountUtils'
+import { SwapPreview } from '../solana/SwapPreview'
+import { CollectablePreview } from '../solana/CollectablePreview'
+import { MessagePreview } from '../solana/MessagePreview'
+import { PaymentPreivew } from '../solana/PaymentPreview'
 import { useSolana } from '../solana/SolanaProvider'
 import { useWalletSign } from '../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
@@ -75,13 +81,17 @@ export default () => {
         }),
       )
 
+      const serializedTxs = txns.map((tx) =>
+        Buffer.from(toVersionedTx(tx).serialize()),
+      )
+
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
-        additionalMessage: t('transactions.signPaymentTxn'),
-        serializedTxs: txns.map((tx) =>
-          Buffer.from(toVersionedTx(tx).serialize()),
-        ),
+        header: t('transactions.sendTokens'),
+        message: t('transactions.signPaymentTxn'),
+        serializedTxs,
+        renderer: () => <PaymentPreivew {...{ payments, mint }} />,
       })
 
       if (!decision) {
@@ -141,10 +151,12 @@ export default () => {
       ).serialize()
 
       const decision = await walletSignBottomSheetRef.show({
-        type: WalletStandardMessageTypes.signTransaction,
         url: '',
-        additionalMessage: t('transactions.signTransferCollectableTxn'),
+        type: WalletStandardMessageTypes.signTransaction,
+        header: t('transactions.transferCollectable'),
+        message: t('transactions.signTransferCollectableTxn'),
         serializedTxs: [Buffer.from(serializedTx)],
+        renderer: () => <CollectablePreview {...{ collectable, payee }} />,
       })
 
       if (!decision) {
@@ -171,7 +183,21 @@ export default () => {
   )
 
   const submitJupiterSwap = useCallback(
-    async (swapTxn: VersionedTransaction) => {
+    async ({
+      inputMint,
+      inputAmount,
+      outputMint,
+      outputAmount,
+      minReceived,
+      swapTxn,
+    }: {
+      inputMint: PublicKey
+      inputAmount: number
+      outputMint: PublicKey
+      outputAmount: number
+      minReceived: number
+      swapTxn: VersionedTransaction
+    }) => {
       if (!currentAccount || !anchorProvider || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
       }
@@ -181,9 +207,21 @@ export default () => {
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
-        additionalMessage: t('transactions.signSwapTxn'),
+        header: t('swapsScreen.swapTokens'),
+        message: t('transactions.signSwapTxn'),
         serializedTxs: [Buffer.from(serializedTx)],
         suppressWarnings: true,
+        renderer: () => (
+          <SwapPreview
+            {...{
+              inputMint,
+              inputAmount,
+              outputMint,
+              outputAmount,
+              minReceived,
+            }}
+          />
+        ),
       })
 
       if (!decision) {
@@ -234,7 +272,8 @@ export default () => {
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         warning: recipientExists ? '' : t('transactions.recipientNonExistent'),
-        additionalMessage: t('transactions.signSwapTxn'),
+        header: t('transactions.swapTokens'),
+        message: t('transactions.signSwapTxn'),
         serializedTxs: [Buffer.from(serializedTx)],
       })
 
@@ -279,8 +318,12 @@ export default () => {
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
-        additionalMessage: t('transactions.signClaimRewardsTxn'),
+        header: t('transactions.claimRewards'),
+        message: t('transactions.signClaimRewardsTxn'),
         serializedTxs: serializedTxs.map(Buffer.from),
+        renderer: () => (
+          <MessagePreview warning={t('transactions.claimRewards')} />
+        ),
       })
 
       if (!decision) {
@@ -369,7 +412,7 @@ export default () => {
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         warning: recipientExists ? '' : t('transactions.recipientNonExistent'),
-        additionalMessage: t('transactions.signMintDataCreditsTxn'),
+        message: t('transactions.signMintDataCreditsTxn'),
         serializedTxs: [Buffer.from(serializedTx)],
       })
 
@@ -422,8 +465,22 @@ export default () => {
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
-        additionalMessage: t('transactions.signDelegateDCTxn'),
+        header: t('transactions.delegateDC'),
+        message: t('transactions.signDelegateDCTxn'),
         serializedTxs: [Buffer.from(serializedTx)],
+        renderer: () => (
+          <PaymentPreivew
+            {...{
+              payments: [
+                {
+                  payee: delegateAddress,
+                  balanceAmount: new BN(amount),
+                },
+              ],
+              mint: DC_MINT,
+            }}
+          />
+        ),
       })
 
       if (!decision) {
@@ -490,6 +547,7 @@ export default () => {
           maker: {
             address: currentAccount.address,
           },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
       })
 
@@ -500,8 +558,16 @@ export default () => {
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
-        additionalMessage: t('transactions.signAssertLocationTxn'),
+        header: t('collectablesScreen.hotspots.assertLocation'),
+        message: t('transactions.signAssertLocationTxn'),
         serializedTxs,
+        renderer: () => (
+          <MessagePreview
+            warning={`Please make sure you're asserting the correct location${
+              decimalGain || elevation ? ' and correct antenna info' : ''
+            } of this hotspot.`}
+          />
+        ),
       })
 
       if (!decision) {
@@ -600,8 +666,16 @@ export default () => {
         warning: destinationExists
           ? ''
           : t('transactions.recipientNonExistent'),
-        additionalMessage: t('transactions.signPaymentTxn'),
+        header: t('transactions.updateRecipient'),
+        message: t('transactions.signPaymentTxn'),
         serializedTxs: [Buffer.from(toVersionedTx(txn).serialize())],
+        renderer: () => (
+          <MessagePreview
+            warning={`New Recipient: ${ellipsizeAddress(
+              destinationPk.toBase58(),
+            )}`}
+          />
+        ),
       })
 
       if (!decision) {

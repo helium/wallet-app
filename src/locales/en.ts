@@ -1138,6 +1138,7 @@ export default {
     description: 'Last updated {{date}}. Tap for info.',
   },
   transactions: {
+    updateRecipient: 'Update Recipient',
     added: 'Hotspot Added to Blockchain',
     addToAddressBook: {
       message: 'Would you like to add this wallet to your address book?',
@@ -1193,13 +1194,19 @@ export default {
     transfer: 'Hotspot Transfer',
     transferBuy: 'Transfer Hotspot (Buy)',
     transferSell: 'Transfer Hotspot (Sell)',
+    delegateDC: 'Delegate data credits',
     transferValidator: 'Transfer Stake',
     txnFee: 'Transaction Fee',
     txnFeePaidBy: 'Transaction Fee paid by {{feePayer}}',
     unstakeValidator: 'Unstake {{ticker}}',
     validator: 'Validator',
     delegated: 'Delegated',
+    claimRewards: 'Claim Rewards',
+    sendTokens: 'Send Tokens',
+    transferCollectable: 'Transfer Collectable',
     signPaymentTxn: 'Sign this transaction to send your payment.',
+    simulateTxn: 'Simulate Transaction',
+    signTxn: 'Sign Transaction',
     signTransferCollectableTxn:
       'Sign this transaction to transfer your collectable.',
     signSwapTxn: 'Sign this transaction to swap your tokens.',
@@ -1255,6 +1262,7 @@ export default {
       locked: '{{symbol}} Locked',
       youHave: 'You have {{amount}} more {{symbol}} available to lock.',
       increase: 'Increase your voting power by locking tokens.',
+      lockYourTokens: 'Lock {{amount}} {{symbol}} for {{duration}}?',
     },
     voters: {
       title: 'Browse Voters',
@@ -1307,10 +1315,14 @@ export default {
       lockedAmount: 'Locked Amount {{amount}} {{symbol}}',
       constant: 'Constant',
       decaying: 'Decaying',
-      delegate: 'Delegate',
-      undelegate: 'Undelegate',
-      extend: 'Extend',
-      close: 'Close',
+      delegate: 'Delegate position',
+      undelegate: 'Undelegate position',
+      extend: 'Extend position',
+      close: 'Close position',
+      split: 'Split position',
+      transfer: 'Transfer between positions',
+      unpause: 'Unlock to start decaying',
+      pause: 'Pause to stop decaying',
       unableToClose: 'Unable to close',
       unableToSplit: 'Unable to split',
       unableToTransfer: 'Unable to transfer',
@@ -1354,6 +1366,19 @@ export default {
       selectSubDao: 'Select an existing SubNetwork to delegate to.',
       fetchingSubDaos: 'Fetching SubDaos...',
       noneFound: 'No Positions Found',
+      closeMessage: 'Close this position?',
+      flipLockupMesage:
+        "Your current position of {{amount}} {{symbol}} is {{status}}, please confirm whether you'd like to {{action}} or not?",
+      extendMessage:
+        'Extend this positions lockup from {{existing}} to {{new}}?',
+      splitMessage:
+        'Split {{amount}} {{symbol}} into a new position with {{lockupKind}} lockup of {{duration}}?',
+      transferMessage:
+        'Transfer {{amount}} {{symbol}} to the position with {{targetAmount}} {{symbol}}?',
+      delegateMessage:
+        'delegate {{amount}} {{symbol}} to the {{subdao}} subdao?',
+      undelegateMessage: 'Undelegate {{amount}} {{symbol}}?',
+      relinquishVotesMessage: 'Relinquish this positions votes?',
     },
     proposals: {
       overviewTitle: 'Proposal Overview',
@@ -1367,6 +1392,8 @@ export default {
       failed: 'Failed',
       cancelled: 'Cancelled',
       votes: 'Votes',
+      castVoteFor: 'Cast your vote for {{choice}}?',
+      relinquishVoteFor: 'Relinquish your vote for {{choice}}?',
       toVote:
         'To vote, click on any option. To remove your vote, click the option again. Vote for up to {{maxChoicesPerVoter}} of {{choicesLength}} options.',
       assignProxy:
