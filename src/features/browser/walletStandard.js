@@ -284,15 +284,16 @@ class HeliumWallet {
             const listener = (message) => {
               // Metamask provider sends some weird objects that we don't use
               if (typeof message.data == "string") {
-                parent.removeEventListener('message', listener)
                 const parsedData = JSON.parse(message.data)
                 if (parsedData.type === 'connectDeclined') {
+                    parent.removeEventListener('message', listener)
                     isConnecting = false
                     reject(new Error('Connection declined'))
+                } else if (parsedData.type === 'connectApproved') {
+                    parent.removeEventListener('message', listener)
+                    this.#connected()
+                    resolve({ accounts: this.accounts })
                 }
-      
-                this.#connected()
-                resolve({ accounts: this.accounts })
               }
             }
             parent.addEventListener('message', listener)
