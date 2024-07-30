@@ -1417,7 +1417,8 @@ export default {
       relinquishPosition: 'Relinquish Votes',
     },
     errors: {
-      lockTokens: 'Lock failed, please try again.',
+      lockTokens:
+        'Lock or delegation failed. Please check your positions as the lock may have been successful.',
       claimRewards: 'Claim failed, please try again.',
       extendLockup: 'Extend failed, please try again.',
       splitTokens: 'Split failed, please try again.',
