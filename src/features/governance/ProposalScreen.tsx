@@ -1,7 +1,10 @@
+import BrowseVoters from '@assets/images/browseVoters.svg'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
+import ButtonPressable from '@components/ButtonPressable'
 import { DelayedFadeIn } from '@components/FadeInOut'
+import { Markdown } from '@components/Markdown'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -23,12 +26,10 @@ import {
   useVote,
 } from '@helium/voter-stake-registry-hooks'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { useTheme } from '@shopify/restyle'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useGovernance } from '@storage/GovernanceProvider'
 import globalStyles from '@theme/globalStyles'
-import { Theme } from '@theme/theme'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import { humanReadable } from '@utils/formatting'
@@ -36,11 +37,10 @@ import { getDerivedProposalState } from '@utils/governanceUtils'
 import { getBasePriorityFee } from '@utils/walletApiV2'
 import axios from 'axios'
 import BN from 'bn.js'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
-import Markdown from 'react-native-markdown-display'
 import { Edge } from 'react-native-safe-area-context'
 import { MessagePreview } from '../../solana/MessagePreview'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -60,7 +60,6 @@ export const ProposalScreen = () => {
   const { t } = useTranslation()
   const route = useRoute<Route>()
   const navigation = useNavigation<GovernanceNavigationProp>()
-  const theme = useTheme<Theme>()
   const { upsertAccount, currentAccount } = useAccountStorage()
   const [currVote, setCurrVote] = useState(0)
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
@@ -71,7 +70,12 @@ export const ProposalScreen = () => {
   )
   const { anchorProvider } = useSolana()
   const { walletSignBottomSheetRef } = useWalletSign()
-  const { mint, setMint, loading, amountLocked } = useGovernance()
+  const { mint, loading, amountLocked } = useGovernance()
+  const handleBrowseVoters = useCallback(() => {
+    navigation.navigate('VotersScreen', {
+      mint: mint.toBase58(),
+    })
+  }, [navigation, mint])
   const { info: proposal } = useProposal(proposalKey)
   const { info: proposalConfig } = useProposalConfig(proposal?.proposalConfig)
   const { info: registrar } = useRegistrar(proposalConfig?.voteController)
@@ -87,16 +91,6 @@ export const ProposalScreen = () => {
       )
     }
   }, [currentAccount, mint, proposalKey])
-
-  useEffect(() => {
-    if (mint && route.params.mint) {
-      const routeMint = new PublicKey(route.params.mint)
-
-      if (!mint.equals(routeMint)) {
-        setMint(routeMint)
-      }
-    }
-  }, [mint, route, setMint])
 
   useAsync(async () => {
     if (currentAccount?.address && !hasSeen && proposal && resolution) {
@@ -120,6 +114,7 @@ export const ProposalScreen = () => {
     vote,
     loading: voting,
     error: voteErr,
+    voters,
   } = useVote(proposalKey)
 
   const {
@@ -129,11 +124,7 @@ export const ProposalScreen = () => {
     error: relErr,
   } = useRelinquishVote(proposalKey)
 
-  const {
-    error: markdownErr,
-    loading: markdownLoading,
-    result: markdown,
-  } = useAsync(async () => {
+  const { error: markdownErr, result: markdown } = useAsync(async () => {
     if (proposal && proposal.uri) {
       const { data } = await axios.get(proposal.uri)
       return data
@@ -200,6 +191,8 @@ export const ProposalScreen = () => {
       instructions,
       {
         basePriorityFee: await getBasePriorityFee(),
+        useFirstEstimateForAll: true,
+        computeScaleUp: 1.4,
       },
     )
     const populatedTxs = await Promise.all(
@@ -454,7 +447,7 @@ export const ProposalScreen = () => {
               {noVotingPower && (
                 <TouchableOpacityBox
                   onPress={() =>
-                    navigation.push('VotingPowerScreen', {
+                    navigation.push('PositionsScreen', {
                       mint: mint.toBase58(),
                     })
                   }
@@ -481,6 +474,98 @@ export const ProposalScreen = () => {
                 </TouchableOpacityBox>
               )}
               {derivedState === 'active' && !noVotingPower && (
+                <>
+                  <Box
+                    flexGrow={1}
+                    justifyContent="center"
+                    backgroundColor="surfaceSecondary"
+                    borderRadius="l"
+                    padding="m"
+                    marginTop="m"
+                  >
+                    <Text variant="body2" color="primaryText">
+                      {t('gov.proposals.toVote', {
+                        maxChoicesPerVoter: proposal?.maxChoicesPerVoter,
+                        choicesLength: proposal?.choices.length,
+                      })}
+                    </Text>
+                    <Box flexDirection="row" alignItems="center">
+                      <Box
+                        borderBottomColor="white"
+                        opacity={0.5}
+                        borderBottomWidth={1}
+                        flex={1}
+                      />
+                      <Text color="white" opacity={0.5} p="m" variant="body2">
+                        OR
+                      </Text>
+                      <Box
+                        borderBottomColor="white"
+                        opacity={0.5}
+                        borderBottomWidth={1}
+                        flex={1}
+                      />
+                    </Box>
+                    <Text variant="body2" color="primaryText">
+                      {t('gov.proposals.assignProxy')}
+                    </Text>
+                    <ButtonPressable
+                      fontSize={16}
+                      height={48}
+                      backgroundColor="black500"
+                      LeadingComponent={<BrowseVoters width={18} height={18} />}
+                      borderRadius="round"
+                      mt="m"
+                      onPress={handleBrowseVoters}
+                      padding="s"
+                      title={t('gov.assignProxy.browseVoters')}
+                    />
+                  </Box>
+                  <Box
+                    flexGrow={1}
+                    justifyContent="center"
+                    mt="m"
+                    {...{ gap: 14 }}
+                  >
+                    {showError && (
+                      <Box
+                        flexDirection="row"
+                        backgroundColor="surfaceSecondary"
+                        borderRadius="l"
+                        padding="m"
+                      >
+                        <Text variant="body3Medium" color="red500">
+                          {showError}
+                        </Text>
+                      </Box>
+                    )}
+                    <Box flex={1} flexDirection="column" {...{ gap: 14 }}>
+                      {votingResults.results?.map((r, index) => (
+                        <Box
+                          backgroundColor="surfaceSecondary"
+                          borderRadius="l"
+                          padding="xs"
+                        >
+                          <VoteOption
+                            voters={voters?.[index] || []}
+                            key={r.name}
+                            voting={
+                              currVote === r.index && (voting || relinquishing)
+                            }
+                            option={r}
+                            myWeight={voteWeights?.[r.index]}
+                            canVote={canVote(r.index)}
+                            canRelinquishVote={canRelinquishVote(r.index)}
+                            onVote={handleVote(r)}
+                            onRelinquishVote={handleRelinquish(r)}
+                          />
+                        </Box>
+                      ))}
+                    </Box>
+                  </Box>
+                </>
+              )}
+              {markdown && (
                 <Box
                   flexGrow={1}
                   justifyContent="center"
@@ -489,86 +574,9 @@ export const ProposalScreen = () => {
                   padding="m"
                   marginTop="m"
                 >
-                  <Text variant="body2" color="primaryText">
-                    {t('gov.proposals.toVote', {
-                      maxChoicesPerVoter: proposal?.maxChoicesPerVoter,
-                      choicesLength: proposal?.choices.length,
-                    })}
-                  </Text>
-                  <Box marginTop="ms">
-                    {showError && (
-                      <Box flexDirection="row" paddingBottom="ms">
-                        <Text variant="body3Medium" color="red500">
-                          {showError}
-                        </Text>
-                      </Box>
-                    )}
-                    <Box flex={1} flexDirection="column" {...{ gap: 8 }}>
-                      {votingResults.results?.map((r) => (
-                        <VoteOption
-                          key={r.name}
-                          voting={
-                            currVote === r.index && (voting || relinquishing)
-                          }
-                          option={r}
-                          myWeight={voteWeights?.[r.index]}
-                          canVote={canVote(r.index)}
-                          canRelinquishVote={canRelinquishVote(r.index)}
-                          onVote={handleVote(r)}
-                          onRelinquishVote={handleRelinquish(r)}
-                        />
-                      ))}
-                    </Box>
-                  </Box>
+                  <Markdown markdown={markdown} />
                 </Box>
               )}
-              <Box
-                flexGrow={1}
-                justifyContent="center"
-                backgroundColor="surfaceSecondary"
-                borderRadius="l"
-                padding="m"
-                marginTop="m"
-              >
-                {!markdownLoading && markdown && (
-                  <Markdown
-                    style={{
-                      hr: {
-                        marginTop: theme.spacing.m,
-                      },
-                      blockquote: {
-                        ...theme.textVariants.body2,
-                        color: theme.colors.primaryText,
-                        backgroundColor: 'transparent',
-                      },
-                      body: {
-                        ...theme.textVariants.body2,
-                        color: theme.colors.primaryText,
-                      },
-                      heading1: {
-                        ...theme.textVariants.subtitle1,
-                        color: theme.colors.primaryText,
-                        paddingTop: theme.spacing.ms,
-                        paddingBottom: theme.spacing.ms,
-                      },
-                      heading2: {
-                        ...theme.textVariants.subtitle2,
-                        color: theme.colors.primaryText,
-                        paddingTop: theme.spacing.ms,
-                        paddingBottom: theme.spacing.ms,
-                      },
-                      heading3: {
-                        ...theme.textVariants.subtitle3,
-                        color: theme.colors.primaryText,
-                        paddingTop: theme.spacing.ms,
-                        paddingBottom: theme.spacing.ms,
-                      },
-                    }}
-                  >
-                    {markdown}
-                  </Markdown>
-                )}
-              </Box>
             </Box>
           </ScrollView>
         </SafeAreaBox>

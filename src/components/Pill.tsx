@@ -1,18 +1,32 @@
 import Box from '@components/Box'
+import { TextProps } from '@shopify/restyle'
+import { Theme } from '@theme/theme'
 import React, { memo } from 'react'
 import { SvgProps } from 'react-native-svg'
 import Text from './Text'
 
-type Color = 'blue' | 'green' | 'red' | 'orange'
+type Color =
+  | 'blue'
+  | 'green'
+  | 'red'
+  | 'orange'
+  | 'black'
+  | 'iotGreen'
+  | 'mobileBlue'
+  | 'hntBlue'
 export const Pill = memo(
   ({
     text,
     Icon,
     color,
+    textProps = {},
+    iconProps = {},
   }: {
     text?: string
     color: Color
     Icon?: React.FC<SvgProps>
+    textProps?: TextProps<Theme>
+    iconProps?: SvgProps
   }) => {
     const colorDefs = {
       blue: {
@@ -35,6 +49,26 @@ export const Pill = memo(
         background: 'orange950',
         text: 'orange500',
       },
+      black: {
+        background: 'black',
+        text: 'white',
+        border: 'black',
+      },
+      hntBlue: {
+        background: 'hntBlue',
+        text: 'white',
+        border: 'black',
+      },
+      iotGreen: {
+        background: 'iotGreen',
+        text: 'white',
+        border: 'black',
+      },
+      mobileBlue: {
+        background: 'mobileBlue',
+        text: 'white',
+        border: 'black',
+      },
     }
     return (
       <Box
@@ -48,12 +82,17 @@ export const Pill = memo(
       >
         {Icon ? (
           <Box>
-            <Icon width={22} height={22} color={colorDefs[color].text as any} />
+            <Icon color={colorDefs[color].text as any} {...iconProps} />
           </Box>
         ) : null}
 
         {text ? (
-          <Text ml="s" mr="s" color={colorDefs[color].text as any}>
+          <Text
+            ml="s"
+            mr="s"
+            color={colorDefs[color].text as any}
+            {...textProps}
+          >
             {text}
           </Text>
         ) : null}

@@ -1,18 +1,23 @@
+import { PortalHost } from '@gorhom/portal'
 import {
   StackNavigationOptions,
   createStackNavigator,
 } from '@react-navigation/stack'
-import React, { memo } from 'react'
-import { PortalHost } from '@gorhom/portal'
 import { useAppStorage } from '@storage/AppStorageProvider'
+import React, { memo } from 'react'
+import AssignProxyScreen from './AssignProxyScreen'
 import GovernanceTutorialScreen from './GovernanceTutorialScreen'
-import GovernanceScreen from './GovernanceScreen'
+import PositionsScreen from './PositionsScreen'
 import ProposalScreen from './ProposalScreen'
-import VotingPowerScreen from './VotingPowerScreen'
+import ProposalsScreen from './ProposalsScreen'
+import RevokeProxyScreen from './RevokeProxyScreen'
+import VoterScreen from './VoterScreen'
+import VotersScreen from './VotersScreen'
 
 const GovernanceStack = createStackNavigator()
 const screenOptions: StackNavigationOptions = {
   headerShown: false,
+  animationEnabled: false,
 }
 
 const GovernanceStackScreen = () => {
@@ -28,16 +33,26 @@ const GovernanceStackScreen = () => {
           />
         )}
         <GovernanceStack.Screen
-          name="GovernanceScreen"
-          component={GovernanceScreen}
+          name="ProposalsScreen"
+          component={ProposalsScreen}
         />
         <GovernanceStack.Screen
-          name="VotingPowerScreen"
-          component={VotingPowerScreen}
+          name="PositionsScreen"
+          component={PositionsScreen}
         />
+        <GovernanceStack.Screen name="VotersScreen" component={VotersScreen} />
         <GovernanceStack.Screen
           name="ProposalScreen"
           component={ProposalScreen}
+        />
+        <GovernanceStack.Screen name="VoterScreen" component={VoterScreen} />
+        <GovernanceStack.Screen
+          name="AssignProxyScreen"
+          component={AssignProxyScreen}
+        />
+        <GovernanceStack.Screen
+          name="RevokeProxyScreen"
+          component={RevokeProxyScreen}
         />
       </GovernanceStack.Navigator>
       <PortalHost name="GovernancePortalHost" />
