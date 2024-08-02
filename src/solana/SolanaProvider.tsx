@@ -8,6 +8,7 @@ import {
   AccountInfo,
   Cluster,
   Commitment,
+  Connection,
   PublicKey,
   RpcResponseAndContext,
   Transaction,
@@ -207,9 +208,12 @@ const useSolanaHook = () => {
     // Async fetch the cache accounts to check for changes and update account fetch cache
     ;(async () => {
       const keys = asyncCache.keys().map((k) => new PublicKey(k))
+      const nonWrappedConnection = new Connection(connection.rpcEndpoint)
       const accts = (
         await Promise.all(
-          chunks(keys, 100).map((k) => connection.getMultipleAccountsInfo(k)),
+          chunks(keys, 100).map((k) =>
+            nonWrappedConnection.getMultipleAccountsInfo(k),
+          ),
         )
       ).flat()
       accts.forEach((acc, index) => {
