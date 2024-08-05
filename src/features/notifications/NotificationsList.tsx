@@ -13,8 +13,8 @@ import NotificationListItem from './NotificationListItem'
 import { Notification } from '../../utils/walletApiV2'
 
 export type NotificationsListProps = {
-  HeaderComponent: JSX.Element
-  FooterComponent: JSX.Element
+  HeaderComponent: React.JSX.Element
+  FooterComponent: React.JSX.Element
 }
 
 const NotificationsList = ({

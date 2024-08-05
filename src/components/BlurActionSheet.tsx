@@ -16,7 +16,7 @@ import { wh } from '../utils/layout'
 type Props = {
   title: string
   open?: boolean
-  children: JSX.Element
+  children: React.JSX.Element
   onClose?: () => void
 }
 

@@ -288,7 +288,7 @@ type Payment = {
 }
 type TxnDetails = {
   feePayer: string
-  icon?: JSX.Element
+  icon?: React.JSX.Element
   title: string
   time: string
   color: Color

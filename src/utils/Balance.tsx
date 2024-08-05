@@ -20,7 +20,6 @@ import React, {
   useState,
 } from 'react'
 import { useAsync } from 'react-async-hook'
-import CurrencyFormatter from 'react-native-currency-format'
 import { useSelector } from 'react-redux'
 import usePrevious from '../hooks/usePrevious'
 import { useSolana } from '../solana/SolanaProvider'
@@ -34,6 +33,7 @@ import StoreAtaBalance from './StoreAtaBalance'
 import { humanReadable } from './solanaUtils'
 import { useBalanceHistory } from './useBalanceHistory'
 import { usePollTokenPrices } from './usePollTokenPrices'
+import { useLanguage } from './i18n'
 
 export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
 const useBalanceHook = () => {
@@ -135,6 +135,7 @@ const useBalanceHook = () => {
     [],
   )
 
+  const { language } = useLanguage()
   const { result: tokenInfo } = useAsync(async () => {
     const balancesForCluster = allBalances[cluster]
     const accountBalancesForCluster = balancesForCluster[solanaAddress]
@@ -148,32 +149,30 @@ const useBalanceHook = () => {
     const solBalance = solToken?.balance || 0
     const solPrice = tokenPrices?.solana?.[currency] || 0
     const solValue = solPrice * (solBalance / LAMPORTS_PER_SOL)
-    const formattedSolValue = await CurrencyFormatter.format(solValue, currency)
+    const formattedSolValue = numberFormat(language, currency, solValue)
 
     const hntBalance = getBalance(HNT_MINT, atas)
     const hntPrice = tokenPrices?.helium?.[currency] || 0
     const hntValue = hntPrice * toNumber(hntBalance, 8)
-    const formattedHntValue = await CurrencyFormatter.format(hntValue, currency)
+    const formattedHntValue = numberFormat(language, currency, hntValue)
 
     const iotBalance = getBalance(IOT_MINT, atas)
     const iotPrice = tokenPrices?.['helium-iot']?.[currency] || 0
     const iotValue = iotPrice * toNumber(iotBalance, 6)
-    const formattedIotValue = await CurrencyFormatter.format(iotValue, currency)
+    const formattedIotValue = numberFormat(language, currency, iotValue)
 
     const mobileBalance = getBalance(MOBILE_MINT, atas)
     const mobilePrice = tokenPrices?.['helium-mobile']?.[currency] || 0
     const mobileValue = mobilePrice * toNumber(mobileBalance, 6)
-    const formattedMobileValue = await CurrencyFormatter.format(
-      mobileValue,
-      currency,
-    )
+    const formattedMobileValue = numberFormat(language, currency, mobileValue)
 
     const dcBalance = new BN(getBalance(DC_MINT, atas))
     const formattedDcValue = humanReadable(dcBalance, 5)
 
-    const formattedTotal = await CurrencyFormatter.format(
-      solValue + hntValue + mobileValue + iotValue,
+    const formattedTotal = numberFormat(
+      language,
       currency,
+      solValue + hntValue + mobileValue + iotValue,
     )
 
     return {
@@ -279,3 +278,13 @@ export const BalanceProvider = ({ children }: { children: ReactNode }) => {
 }
 
 export const useBalance = () => useContext(BalanceContext)
+
+export const numberFormat = (
+  language: string,
+  currency: string,
+  value: number,
+) =>
+  new Intl.NumberFormat(language, {
+    style: 'currency',
+    currency,
+  }).format(value)
