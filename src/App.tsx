@@ -18,7 +18,7 @@ import { LogBox, Platform } from 'react-native'
 import useAppState from 'react-native-appstate-hook'
 import Config from 'react-native-config'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import OneSignal, { OpenedEvent } from 'react-native-onesignal'
+import { OneSignal } from 'react-native-onesignal'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import NetworkAwareStatusBar from './components/NetworkAwareStatusBar'
@@ -100,13 +100,11 @@ const App = () => {
   useMount(() => {
     // init OneSignal
     if (Config.ONE_SIGNAL_APP_ID) {
-      OneSignal.setAppId(Config.ONE_SIGNAL_APP_ID)
-      OneSignal.setNotificationOpenedHandler((event: OpenedEvent) => {
+      OneSignal.initialize(Config.ONE_SIGNAL_APP_ID)
+      OneSignal.Notifications.addEventListener('click', (event) => {
         setOpenedNotification(event.notification)
       })
-      if (Platform.OS === 'ios') {
-        OneSignal.promptForPushNotificationsWithUserResponse(() => {})
-      }
+      OneSignal.Notifications.requestPermission(true)
     }
   })
 

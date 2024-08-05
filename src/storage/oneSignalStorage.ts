@@ -6,12 +6,12 @@ export const tagAccount = async (address: string) => {
   if (!Config.ONE_SIGNAL_ACCOUNT_TAG_SALT) return
   const salt = Config.ONE_SIGNAL_ACCOUNT_TAG_SALT
   const hash = await Bcrypt.hash(salt, address)
-  OneSignal.sendTag(hash, ' ')
+  OneSignal.OneSignal.User.addTag(hash, ' ')
 }
 
 export const removeAccountTag = async (address: string) => {
   if (!Config.ONE_SIGNAL_ACCOUNT_TAG_SALT) return
   const salt = Config.ONE_SIGNAL_ACCOUNT_TAG_SALT
   const hash = await Bcrypt.hash(salt, address)
-  OneSignal.deleteTag(hash)
+  OneSignal.OneSignal.User.removeTag(hash)
 }

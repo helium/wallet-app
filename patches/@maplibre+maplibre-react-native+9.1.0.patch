@@ -1,0 +1,316 @@
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/generated/source/buildConfig/debug/com/mapbox/rctmgl/BuildConfig.java b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/generated/source/buildConfig/debug/com/mapbox/rctmgl/BuildConfig.java
+new file mode 100644
+index 0000000..ea64509
+--- /dev/null
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/generated/source/buildConfig/debug/com/mapbox/rctmgl/BuildConfig.java
+@@ -0,0 +1,10 @@
++/**
++ * Automatically generated file. DO NOT MODIFY
++ */
++package com.mapbox.rctmgl;
++
++public final class BuildConfig {
++  public static final boolean DEBUG = Boolean.parseBoolean("true");
++  public static final String LIBRARY_PACKAGE_NAME = "com.mapbox.rctmgl";
++  public static final String BUILD_TYPE = "debug";
++}
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/aapt_friendly_merged_manifests/debug/aapt/AndroidManifest.xml b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/aapt_friendly_merged_manifests/debug/aapt/AndroidManifest.xml
+new file mode 100644
+index 0000000..eecf75d
+--- /dev/null
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/aapt_friendly_merged_manifests/debug/aapt/AndroidManifest.xml
+@@ -0,0 +1,10 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="com.mapbox.rctmgl" >
++
++    <uses-sdk android:minSdkVersion="23" />
++
++    <uses-permission android:name="android.permission.INTERNET" />
++    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
++
++</manifest>
+\ No newline at end of file
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/aapt_friendly_merged_manifests/debug/aapt/output-metadata.json b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/aapt_friendly_merged_manifests/debug/aapt/output-metadata.json
+new file mode 100644
+index 0000000..67b2315
+--- /dev/null
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/aapt_friendly_merged_manifests/debug/aapt/output-metadata.json
+@@ -0,0 +1,18 @@
++{
++  "version": 3,
++  "artifactType": {
++    "type": "AAPT_FRIENDLY_MERGED_MANIFESTS",
++    "kind": "Directory"
++  },
++  "applicationId": "com.mapbox.rctmgl",
++  "variantName": "debug",
++  "elements": [
++    {
++      "type": "SINGLE",
++      "filters": [],
++      "attributes": [],
++      "outputFile": "AndroidManifest.xml"
++    }
++  ],
++  "elementType": "File"
++}
+\ No newline at end of file
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/aar_metadata/debug/aar-metadata.properties b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/aar_metadata/debug/aar-metadata.properties
+new file mode 100644
+index 0000000..1211b1e
+--- /dev/null
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/aar_metadata/debug/aar-metadata.properties
+@@ -0,0 +1,6 @@
++aarFormatVersion=1.0
++aarMetadataVersion=1.0
++minCompileSdk=1
++minCompileSdkExtension=0
++minAndroidGradlePluginVersion=1.0.0
++coreLibraryDesugaringEnabled=false
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/annotation_processor_list/debug/annotationProcessors.json b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/annotation_processor_list/debug/annotationProcessors.json
+new file mode 100644
+index 0000000..9e26dfe
+--- /dev/null
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/annotation_processor_list/debug/annotationProcessors.json
+@@ -0,0 +1 @@
++{}
+\ No newline at end of file
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/compile_r_class_jar/debug/R.jar b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/compile_r_class_jar/debug/R.jar
+new file mode 100644
+index 0000000..190e46b
+Binary files /dev/null and b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/compile_r_class_jar/debug/R.jar differ
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/compile_symbol_list/debug/R.txt b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/compile_symbol_list/debug/R.txt
+new file mode 100644
+index 0000000..e6bb791
+--- /dev/null
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/compile_symbol_list/debug/R.txt
+@@ -0,0 +1,8 @@
++int drawable empty 0x0
++int drawable empty_drawable 0x0
++int drawable red_marker 0x0
++int id annotation_img 0x0
++int id annotation_layout 0x0
++int id annotation_view_container 0x0
++int layout annotation 0x0
++int string app_name 0x0
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/compiled_local_resources/debug/out/drawable-xxhdpi-v4_red_marker.png.flat b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/compiled_local_resources/debug/out/drawable-xxhdpi-v4_red_marker.png.flat
+new file mode 100644
+index 0000000..5b0aa33
+Binary files /dev/null and b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/compiled_local_resources/debug/out/drawable-xxhdpi-v4_red_marker.png.flat differ
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/compiled_local_resources/debug/out/drawable_empty.xml.flat b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/compiled_local_resources/debug/out/drawable_empty.xml.flat
+new file mode 100644
+index 0000000..8a833ad
+Binary files /dev/null and b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/compiled_local_resources/debug/out/drawable_empty.xml.flat differ
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/compiled_local_resources/debug/out/drawable_empty_drawable.png.flat b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/compiled_local_resources/debug/out/drawable_empty_drawable.png.flat
+new file mode 100644
+index 0000000..b53aa0c
+Binary files /dev/null and b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/compiled_local_resources/debug/out/drawable_empty_drawable.png.flat differ
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/compiled_local_resources/debug/out/layout_annotation.xml.flat b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/compiled_local_resources/debug/out/layout_annotation.xml.flat
+new file mode 100644
+index 0000000..942d161
+Binary files /dev/null and b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/compiled_local_resources/debug/out/layout_annotation.xml.flat differ
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties
+new file mode 100644
+index 0000000..62539fb
+--- /dev/null
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties
+@@ -0,0 +1,5 @@
++#Mon Aug 05 14:40:58 PDT 2024
++com.mapbox.rctmgl.maplibre_maplibre-react-native-main-6\:/drawable-xxhdpi/red_marker.png=/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/drawable-xxhdpi-v4/red_marker.png
++com.mapbox.rctmgl.maplibre_maplibre-react-native-main-6\:/drawable/empty.xml=/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/drawable/empty.xml
++com.mapbox.rctmgl.maplibre_maplibre-react-native-main-6\:/layout/annotation.xml=/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/layout/annotation.xml
++com.mapbox.rctmgl.maplibre_maplibre-react-native-main-6\:/drawable/empty_drawable.png=/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/drawable/empty_drawable.png
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/incremental/debug/packageDebugResources/merged.dir/values/values.xml b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/incremental/debug/packageDebugResources/merged.dir/values/values.xml
+new file mode 100644
+index 0000000..1b0b5d6
+--- /dev/null
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/incremental/debug/packageDebugResources/merged.dir/values/values.xml
+@@ -0,0 +1,4 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="app_name">RCTMGL</string>
++</resources>
+\ No newline at end of file
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/incremental/debug/packageDebugResources/merger.xml b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/incremental/debug/packageDebugResources/merger.xml
+new file mode 100644
+index 0000000..5f8b0ab
+--- /dev/null
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/incremental/debug/packageDebugResources/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main" generated-set="main$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/res"><file name="empty" path="/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/res/drawable/empty.xml" qualifiers="" type="drawable"/><file name="empty_drawable" path="/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/res/drawable/empty_drawable.png" qualifiers="" type="drawable"/><file name="annotation" path="/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/res/layout/annotation.xml" qualifiers="" type="layout"/><file path="/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/res/values/strings.xml" qualifiers=""><string name="app_name">RCTMGL</string></file><file name="red_marker" path="/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/res/drawable-xxhdpi/red_marker.png" qualifiers="xxhdpi-v4" type="drawable"/></source></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/debug/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug" generated-set="debug$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/debug/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/generated/res/resValues/debug"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated" generated-set="generated$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/generated/res/resValues/debug"/></dataSet><mergedItems/></merger>
+\ No newline at end of file
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/local_only_symbol_list/debug/R-def.txt b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/local_only_symbol_list/debug/R-def.txt
+new file mode 100644
+index 0000000..826dbbd
+--- /dev/null
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/local_only_symbol_list/debug/R-def.txt
+@@ -0,0 +1,10 @@
++R_DEF: Internal format may change without notice
++local
++drawable empty
++drawable empty_drawable
++drawable red_marker
++id annotation_img
++id annotation_layout
++id annotation_view_container
++layout annotation
++string app_name
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/manifest_merge_blame_file/debug/manifest-merger-blame-debug-report.txt b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/manifest_merge_blame_file/debug/manifest-merger-blame-debug-report.txt
+new file mode 100644
+index 0000000..9065ef8
+--- /dev/null
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/manifest_merge_blame_file/debug/manifest-merger-blame-debug-report.txt
+@@ -0,0 +1,14 @@
++1<?xml version="1.0" encoding="utf-8"?>
++2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++3    package="com.mapbox.rctmgl" >
++4
++5    <uses-sdk android:minSdkVersion="23" />
++6
++7    <uses-permission android:name="android.permission.INTERNET" />
++7-->/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/AndroidManifest.xml:2:5-67
++7-->/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/AndroidManifest.xml:2:22-64
++8    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
++8-->/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/AndroidManifest.xml:3:5-78
++8-->/Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/AndroidManifest.xml:3:22-76
++9
++10</manifest>
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/merged_manifest/debug/AndroidManifest.xml b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/merged_manifest/debug/AndroidManifest.xml
+new file mode 100644
+index 0000000..eecf75d
+--- /dev/null
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/merged_manifest/debug/AndroidManifest.xml
+@@ -0,0 +1,10 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="com.mapbox.rctmgl" >
++
++    <uses-sdk android:minSdkVersion="23" />
++
++    <uses-permission android:name="android.permission.INTERNET" />
++    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
++
++</manifest>
+\ No newline at end of file
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/navigation_json/debug/navigation.json b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/navigation_json/debug/navigation.json
+new file mode 100644
+index 0000000..0637a08
+--- /dev/null
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/navigation_json/debug/navigation.json
+@@ -0,0 +1 @@
++[]
+\ No newline at end of file
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/drawable-xxhdpi-v4/red_marker.png b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/drawable-xxhdpi-v4/red_marker.png
+new file mode 100644
+index 0000000..be782e1
+Binary files /dev/null and b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/drawable-xxhdpi-v4/red_marker.png differ
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/drawable/empty.xml b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/drawable/empty.xml
+new file mode 100644
+index 0000000..1f83bff
+--- /dev/null
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/drawable/empty.xml
+@@ -0,0 +1,5 @@
++<?xml version="1.0" encoding="utf-8"?>
++<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
++  <size android:height="1dp" android:width="1dp" />
++  <solid android:color="@android:color/transparent" />
++</shape>
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/drawable/empty_drawable.png b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/drawable/empty_drawable.png
+new file mode 100644
+index 0000000..9da19ea
+Binary files /dev/null and b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/drawable/empty_drawable.png differ
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/layout/annotation.xml b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/layout/annotation.xml
+new file mode 100644
+index 0000000..4994bd0
+--- /dev/null
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/layout/annotation.xml
+@@ -0,0 +1,17 @@
++<?xml version="1.0" encoding="utf-8"?>
++<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:id="@+id/annotation_layout"
++    android:layout_width="wrap_content"
++    android:layout_height="wrap_content">
++
++    <ImageView
++        android:id="@+id/annotation_img"
++        android:layout_width="match_parent"
++        android:layout_height="match_parent" />
++
++    <LinearLayout
++        android:orientation="vertical"
++        android:id="@+id/annotation_view_container"
++        android:layout_width="wrap_content"
++        android:layout_height="wrap_content" />
++</RelativeLayout>
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/values/values.xml b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/values/values.xml
+new file mode 100644
+index 0000000..1b0b5d6
+--- /dev/null
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/packaged_res/debug/values/values.xml
+@@ -0,0 +1,4 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="app_name">RCTMGL</string>
++</resources>
+\ No newline at end of file
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/symbol_list_with_package_name/debug/package-aware-r.txt b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/symbol_list_with_package_name/debug/package-aware-r.txt
+new file mode 100644
+index 0000000..44307d6
+--- /dev/null
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/intermediates/symbol_list_with_package_name/debug/package-aware-r.txt
+@@ -0,0 +1,9 @@
++com.mapbox.rctmgl
++drawable empty
++drawable empty_drawable
++drawable red_marker
++id annotation_img
++id annotation_layout
++id annotation_view_container
++layout annotation
++string app_name
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/outputs/logs/manifest-merger-debug-report.txt b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/outputs/logs/manifest-merger-debug-report.txt
+new file mode 100644
+index 0000000..3581c51
+--- /dev/null
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/build/outputs/logs/manifest-merger-debug-report.txt
+@@ -0,0 +1,25 @@
++-- Merging decision tree log ---
++manifest
++ADDED from /Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/AndroidManifest.xml:1:1-4:12
++INJECTED from /Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/AndroidManifest.xml:1:1-4:12
++	package
++		ADDED from /Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/AndroidManifest.xml:1:70-97
++		INJECTED from /Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/AndroidManifest.xml
++	xmlns:android
++		ADDED from /Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/AndroidManifest.xml:1:11-69
++uses-permission#android.permission.INTERNET
++ADDED from /Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/AndroidManifest.xml:2:5-67
++	android:name
++		ADDED from /Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/AndroidManifest.xml:2:22-64
++uses-permission#android.permission.ACCESS_FINE_LOCATION
++ADDED from /Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/AndroidManifest.xml:3:5-78
++	android:name
++		ADDED from /Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/AndroidManifest.xml:3:22-76
++uses-sdk
++INJECTED from /Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/AndroidManifest.xml reason: use-sdk injection requested
++INJECTED from /Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/AndroidManifest.xml
++INJECTED from /Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/AndroidManifest.xml
++	android:targetSdkVersion
++		INJECTED from /Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/AndroidManifest.xml
++	android:minSdkVersion
++		INJECTED from /Users/noahprince/source/wallet-app/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/AndroidManifest.xml
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/java/com/mapbox/rctmgl/components/styles/RCTMGLStyleFunctionParser.java b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/java/com/mapbox/rctmgl/components/styles/RCTMGLStyleFunctionParser.java
+index 3aa0522..9a2248f 100644
+--- a/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/java/com/mapbox/rctmgl/components/styles/RCTMGLStyleFunctionParser.java
++++ b/node_modules/@maplibre/maplibre-react-native/android/rctmgl/src/main/java/com/mapbox/rctmgl/components/styles/RCTMGLStyleFunctionParser.java
+@@ -3,7 +3,7 @@ package com.mapbox.rctmgl.components.styles;
+ import android.util.Log;
+ 
+ import com.facebook.react.bridge.Dynamic;
+-import com.facebook.react.bridge.DynamicFromMap;
++// import com.facebook.react.bridge.DynamicFromMap;
+ import com.facebook.react.bridge.NoSuchKeyException;
+ import com.facebook.react.bridge.ReadableArray;
+ import com.facebook.react.bridge.ReadableMap;

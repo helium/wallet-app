@@ -44,6 +44,12 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
+  <dict>
+    <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSAllowsLocalNetworking</key>
+    <true/>
 		<key>NSExceptionDomains</key>
 		<dict>
 			<key>ec2-35-82-2-45.us-west-2.compute.amazonaws.com</key>
@@ -52,11 +58,6 @@
 				<true/>
 			</dict>
 		</dict>
-	  <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
-		<key>NSAllowsArbitraryLoads</key>
-		<false/>
-		<key>NSAllowsLocalNetworking</key>
-    <true/>
 	</dict>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Allow Helium to connect and manage your devices</string>

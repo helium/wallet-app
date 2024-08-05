@@ -1,4 +1,4 @@
-package com.rndiffapp
+package com.helium.wallet.app
 
 import android.app.Application
 import com.facebook.react.PackageList
