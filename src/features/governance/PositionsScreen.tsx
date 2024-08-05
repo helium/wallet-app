@@ -1,21 +1,19 @@
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import Text from '@components/Text'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
 import {
+  HELIUM_COMMON_LUT,
+  HELIUM_COMMON_LUT_DEVNET,
   HNT_MINT,
   Status,
   batchInstructionsToTxsWithPriorityFee,
   bulkSendTransactions,
+  humanReadable,
   sendAndConfirmWithRetry,
   toBN,
   toNumber,
   toVersionedTx,
-  HELIUM_COMMON_LUT_DEVNET,
-  HELIUM_COMMON_LUT,
 } from '@helium/spl-utils'
 import {
   calcLockupMultiplier,
@@ -23,35 +21,29 @@ import {
   useCreatePosition,
 } from '@helium/voter-stake-registry-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import { RouteProp, useRoute } from '@react-navigation/native'
-import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { Keypair, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
-import globalStyles from '@theme/globalStyles'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
-import { daysToSecs } from '@utils/dateTools'
+import { daysToSecs, getFormattedStringFromDays } from '@utils/dateTools'
 import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ScrollView } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
+import { MessagePreview } from '../../solana/MessagePreview'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { ClaimingRewardsModal } from './ClaimingRewardsModal'
+import GovernanceWrapper from './GovernanceWrapper'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { PositionsList } from './PositionsList'
 import { VotingPowerCard } from './VotingPowerCard'
-import { GovernanceStackParamList } from './governanceTypes'
 
-type Route = RouteProp<GovernanceStackParamList, 'VotingPowerScreen'>
-
-export const VotingPowerScreen = () => {
+export const PositionsScreen = () => {
   const { t } = useTranslation()
-  const route = useRoute<Route>()
   const wallet = useCurrentWallet()
   const { walletSignBottomSheetRef } = useWalletSign()
-  const backEdges = useMemo(() => ['top'] as Edge[], [])
   const [isLockModalOpen, setIsLockModalOpen] = useState(false)
   const [statusOfClaim, setStatusOfClaim] = useState<Status | undefined>()
   const {
@@ -60,8 +52,8 @@ export const VotingPowerScreen = () => {
     loading,
     refetch: refetchState,
     positions,
-    setMint,
   } = useGovernance()
+  const { symbol } = useMetaplexMetadata(mint)
   const { amount: ownedAmount, decimals } = useOwnedAmount(wallet, mint)
   const { error: createPositionError, createPosition } = useCreatePosition()
   const {
@@ -70,16 +62,6 @@ export const VotingPowerScreen = () => {
     claimAllPositionsRewards,
   } = useClaimAllPositionsRewards()
   const { cluster } = useSolana()
-
-  useEffect(() => {
-    if (mint && route.params.mint) {
-      const routeMint = new PublicKey(route.params.mint)
-
-      if (!mint.equals(routeMint)) {
-        setMint(routeMint)
-      }
-    }
-  }, [mint, route, setMint])
 
   const positionsWithRewards = useMemo(
     () => positions?.filter((p) => p.hasRewards),
@@ -121,13 +103,21 @@ export const VotingPowerScreen = () => {
 
   const { anchorProvider } = useSolana()
 
-  const decideAndExecute = async (
-    header: string,
-    instructions: TransactionInstruction[],
-    sigs: Keypair[] = [],
-    onProgress: (status: Status) => void = () => {},
+  const decideAndExecute = async ({
+    header,
+    message,
+    instructions,
+    sigs = [],
+    onProgress = () => {},
     sequentially = false,
-  ) => {
+  }: {
+    header: string
+    message: string
+    instructions: TransactionInstruction[]
+    sigs?: Keypair[]
+    onProgress?: (status: Status) => void
+    sequentially?: boolean
+  }) => {
     if (!anchorProvider || !walletSignBottomSheetRef) return
 
     const transactions = await batchInstructionsToTxsWithPriorityFee(
@@ -152,6 +142,7 @@ export const VotingPowerScreen = () => {
         Buffer.from(transaction.serialize()),
       ),
       suppressWarnings: sequentially,
+      renderer: () => <MessagePreview message={message} />,
     })
 
     if (decision) {
@@ -172,7 +163,7 @@ export const VotingPowerScreen = () => {
             anchorProvider.connection,
             Buffer.from(tx.serialize()),
             {
-              skipPreflight: true,
+              skipPreflight: false,
             },
             'confirmed',
           )
@@ -196,7 +187,7 @@ export const VotingPowerScreen = () => {
 
   const handleLockTokens = async (values: LockTokensModalFormValues) => {
     const { amount, lockupPeriodInDays, lockupKind, subDao } = values
-    if (decimals && walletSignBottomSheetRef) {
+    if (decimals && walletSignBottomSheetRef && symbol) {
       const amountToLock = toBN(amount, decimals)
 
       await createPosition({
@@ -206,13 +197,17 @@ export const VotingPowerScreen = () => {
         mint,
         subDao,
         onInstructions: (ixs, sigs) =>
-          decideAndExecute(
-            t('gov.transactions.lockTokens'),
-            ixs,
+          decideAndExecute({
+            header: t('gov.transactions.lockTokens'),
+            message: t('gov.votingPower.lockYourTokens', {
+              amount: humanReadable(amountToLock, decimals),
+              symbol,
+              duration: getFormattedStringFromDays(lockupPeriodInDays),
+            }),
+            instructions: ixs,
             sigs,
-            undefined,
-            !!subDao,
-          ),
+            sequentially: !!subDao,
+          }),
       })
 
       refetchState()
@@ -224,12 +219,12 @@ export const VotingPowerScreen = () => {
       await claimAllPositionsRewards({
         positions: positionsWithRewards,
         onInstructions: (ixs) =>
-          decideAndExecute(
-            t('gov.transactions.claimRewards'),
-            ixs,
-            undefined,
-            setStatusOfClaim,
-          ),
+          decideAndExecute({
+            header: t('gov.transactions.claimRewards'),
+            message: 'Approve this transaction to claim your rewards',
+            instructions: ixs,
+            onProgress: setStatusOfClaim,
+          }),
       })
 
       if (!claimingAllRewardsError) {
@@ -239,95 +234,83 @@ export const VotingPowerScreen = () => {
   }
 
   return (
-    <>
-      <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
-        <BackScreen
-          headerTopMargin="l"
-          padding="none"
-          title={t('gov.votingPower.yourPower')}
-          edges={backEdges}
-        >
-          <ScrollView>
-            <Box flex={1} paddingHorizontal="m">
-              <VotingPowerCard marginTop="l" />
-              <PositionsList positions={positions} />
-            </Box>
-          </ScrollView>
-          {showError && (
-            <Box
-              flexDirection="row"
-              justifyContent="center"
-              alignItems="center"
-              paddingTop="ms"
-            >
-              <Text variant="body3Medium" color="red500">
-                {showError}
-              </Text>
-            </Box>
-          )}
-          <Box flexDirection="row" padding="m">
-            <ButtonPressable
-              flex={1}
-              fontSize={16}
-              borderRadius="round"
-              borderWidth={2}
-              borderColor="white"
-              backgroundColorOpacityPressed={0.7}
-              title={t('gov.transactions.lockTokens')}
-              titleColor="white"
-              titleColorPressed="black"
-              onPress={() => setIsLockModalOpen(true)}
-              disabled={claimingAllRewards || loading}
-            />
-            {HNT_MINT.equals(mint) && (
-              <>
-                <Box paddingHorizontal="s" />
-                <ButtonPressable
-                  flex={1}
-                  fontSize={16}
-                  borderRadius="round"
-                  borderWidth={2}
-                  borderColor={
-                    // eslint-disable-next-line no-nested-ternary
-                    claimingAllRewards
-                      ? 'surfaceSecondary'
-                      : !positionsWithRewards?.length
-                      ? 'surfaceSecondary'
-                      : 'white'
-                  }
-                  backgroundColor="white"
-                  backgroundColorOpacityPressed={0.7}
-                  backgroundColorDisabled="surfaceSecondary"
-                  backgroundColorDisabledOpacity={0.9}
-                  titleColorDisabled="secondaryText"
-                  title={
-                    claimingAllRewards ? '' : t('gov.transactions.claimRewards')
-                  }
-                  titleColor="black"
-                  onPress={handleClaimRewards}
-                  disabled={
-                    !positionsWithRewards?.length ||
-                    claimingAllRewards ||
-                    loading
-                  }
-                />
-              </>
-            )}
+    <GovernanceWrapper selectedTab="positions">
+      <Box flexDirection="column" flex={1}>
+        <Box flex={1}>
+          <PositionsList header={<VotingPowerCard marginBottom="l" />} />
+        </Box>
+        {showError && (
+          <Box
+            flexDirection="row"
+            justifyContent="center"
+            alignItems="center"
+            paddingTop="ms"
+          >
+            <Text variant="body3Medium" color="red500">
+              {showError}
+            </Text>
           </Box>
-        </BackScreen>
-      </ReAnimatedBox>
-      {claimingAllRewards && <ClaimingRewardsModal status={statusOfClaim} />}
-      {isLockModalOpen && (
-        <LockTokensModal
-          mint={mint}
-          maxLockupAmount={maxLockupAmount}
-          calcMultiplierFn={handleCalcLockupMultiplier}
-          onClose={() => setIsLockModalOpen(false)}
-          onSubmit={handleLockTokens}
-        />
-      )}
-    </>
+        )}
+        <Box flexDirection="row" padding="m">
+          <ButtonPressable
+            flex={1}
+            fontSize={16}
+            borderRadius="round"
+            borderWidth={2}
+            borderColor="white"
+            backgroundColorOpacityPressed={0.7}
+            title={t('gov.transactions.lockTokens')}
+            titleColor="white"
+            titleColorPressed="black"
+            onPress={() => setIsLockModalOpen(true)}
+            disabled={claimingAllRewards || loading}
+          />
+          {HNT_MINT.equals(mint) && (
+            <>
+              <Box paddingHorizontal="s" />
+              <ButtonPressable
+                flex={1}
+                fontSize={16}
+                borderRadius="round"
+                borderWidth={2}
+                borderColor={
+                  // eslint-disable-next-line no-nested-ternary
+                  claimingAllRewards
+                    ? 'surfaceSecondary'
+                    : !positionsWithRewards?.length
+                    ? 'surfaceSecondary'
+                    : 'white'
+                }
+                backgroundColor="white"
+                backgroundColorOpacityPressed={0.7}
+                backgroundColorDisabled="surfaceSecondary"
+                backgroundColorDisabledOpacity={0.9}
+                titleColorDisabled="secondaryText"
+                title={
+                  claimingAllRewards ? '' : t('gov.transactions.claimRewards')
+                }
+                titleColor="black"
+                onPress={handleClaimRewards}
+                disabled={
+                  !positionsWithRewards?.length || claimingAllRewards || loading
+                }
+              />
+            </>
+          )}
+        </Box>
+        {claimingAllRewards && <ClaimingRewardsModal status={statusOfClaim} />}
+        {isLockModalOpen && (
+          <LockTokensModal
+            mint={mint}
+            maxLockupAmount={maxLockupAmount}
+            calcMultiplierFn={handleCalcLockupMultiplier}
+            onClose={() => setIsLockModalOpen(false)}
+            onSubmit={handleLockTokens}
+          />
+        )}
+      </Box>
+    </GovernanceWrapper>
   )
 }
 
-export default VotingPowerScreen
+export default PositionsScreen

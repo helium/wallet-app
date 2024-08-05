@@ -23,6 +23,7 @@ import { getTimeFromNowFmt } from '@utils/dateTools'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { getDerivedProposalState } from '@utils/governanceUtils'
 import { ProposalFilter, ProposalV0 } from './governanceTypes'
+import { ProposalTags } from './ProposalTags'
 
 interface IProposalCardProps extends BoxProps<Theme> {
   filter: ProposalFilter
@@ -174,25 +175,7 @@ export const ProposalCard = ({
                 </Box>
               </Box>
             )}
-            {proposal?.tags
-              .filter((tag) => tag !== 'tags')
-              .map((tag) => (
-                <Box key={tag} marginRight="s" marginBottom="s">
-                  <Box
-                    padding="s"
-                    backgroundColor={
-                      tag.toLowerCase().includes('temp check')
-                        ? 'orange500'
-                        : 'black600'
-                    }
-                    borderRadius="m"
-                  >
-                    <Text fontSize={10} color="secondaryText">
-                      {tag.toUpperCase()}
-                    </Text>
-                  </Box>
-                </Box>
-              ))}
+            <ProposalTags tags={proposal?.tags} />
           </Box>
           <Box
             flexDirection="row"

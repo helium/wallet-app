@@ -160,6 +160,7 @@ const palette = {
   grey800: '#54596F',
   grey900: '#2C2E37',
   lightGrey: '#E2E2E2',
+  dividerGrey: '#2E2E2E',
 
   matchaGray900: '#2B2B2B',
 

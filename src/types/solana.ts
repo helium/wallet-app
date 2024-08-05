@@ -87,6 +87,12 @@ export type CompressedNFT = {
 
 export type Collectable = any
 
+export const isCompressedNFT = (
+  collectable: CompressedNFT | Collectable,
+): collectable is CompressedNFT => {
+  return (collectable as CompressedNFT).compression?.compressed !== undefined
+}
+
 type NativeTransfer = {
   fromUserAccount: string
   toUserAccount: string

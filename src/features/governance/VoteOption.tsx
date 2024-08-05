@@ -1,12 +1,15 @@
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import BN from 'bn.js'
-import React from 'react'
 import Box from '@components/Box'
 import CircleLoader from '@components/CircleLoader'
-import { useColors } from '@theme/themeHooks'
-import { Color, Theme } from '@theme/theme'
+import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useKnownProxy } from '@helium/voter-stake-registry-hooks'
 import { BoxProps } from '@shopify/restyle'
+import { PublicKey } from '@solana/web3.js'
+import { Color, Theme } from '@theme/theme'
+import { useColors } from '@theme/themeHooks'
+import { shortenAddress } from '@utils/formatting'
+import BN from 'bn.js'
+import React from 'react'
 import { VoteChoiceWithMeta, VotingResultColors } from './governanceTypes'
 
 export const VoteOption = ({
@@ -17,8 +20,10 @@ export const VoteOption = ({
   voting,
   onVote,
   onRelinquishVote,
+  voters,
   ...boxProps
 }: {
+  voters?: PublicKey[]
   option: VoteChoiceWithMeta
   myWeight?: BN
   canVote: boolean
@@ -32,7 +37,7 @@ export const VoteOption = ({
   return (
     <TouchableOpacityBox
       flexGrow={1}
-      flexDirection="row"
+      flexDirection="column"
       padding="ms"
       borderRadius="m"
       backgroundColor="surfaceSecondary"
@@ -42,30 +47,73 @@ export const VoteOption = ({
         canVote ? onVote : canRelinquishVote ? onRelinquishVote : undefined
       }
     >
-      {!voting ? (
-        <Box
-          width={20}
-          height={20}
-          borderRadius="round"
-          marginRight="ms"
-          borderWidth={2}
-          borderColor={VotingResultColors[option.index]}
-          backgroundColor={
-            !myWeight ? 'transparent' : VotingResultColors[option.index]
-          }
-        />
-      ) : (
-        <Box marginRight="ms">
-          <CircleLoader
-            color={colors[VotingResultColors[option.index]] as Color}
-            loaderSize={20}
+      <Box flexDirection="row">
+        {!voting ? (
+          <Box
+            width={20}
+            height={20}
+            borderRadius="round"
+            marginRight="ms"
+            borderWidth={2}
+            borderColor={VotingResultColors[option.index]}
+            backgroundColor={
+              !myWeight ? 'transparent' : VotingResultColors[option.index]
+            }
           />
+        ) : (
+          <Box marginRight="ms">
+            <CircleLoader
+              color={colors[VotingResultColors[option.index]] as Color}
+              loaderSize={20}
+            />
+          </Box>
+        )}
+
+        <Text variant="body2" color="secondaryText">
+          {option.name}
+        </Text>
+      </Box>
+
+      {voters && voters.length > 0 && (
+        <Box
+          flex={1}
+          borderTopColor="primaryBackground"
+          borderTopWidth={2}
+          mt="ms"
+          pt="s"
+        >
+          <Box
+            flex={1}
+            flexDirection="row"
+            flexWrap="wrap"
+            alignItems="center"
+            {...{ gap: 4 }}
+          >
+            <Text variant="body2" color="secondaryText">
+              Voted by -
+            </Text>
+            {voters.map((voter, idx) => (
+              <>
+                <Voter key={voter.toBase58()} voter={voter} />
+                {idx !== voters.length - 1 && (
+                  <Text variant="body2" color="secondaryText">
+                    |
+                  </Text>
+                )}
+              </>
+            ))}
+          </Box>
         </Box>
       )}
-
-      <Text variant="body2" color="secondaryText">
-        {option.name}
-      </Text>
     </TouchableOpacityBox>
+  )
+}
+
+export const Voter = ({ voter }: { voter: PublicKey }) => {
+  const { knownProxy } = useKnownProxy(voter)
+  return (
+    <Text variant="body2" color="red500">
+      {knownProxy?.name || shortenAddress(voter.toBase58())}
+    </Text>
   )
 }

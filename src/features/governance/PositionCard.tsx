@@ -4,6 +4,7 @@ import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
 import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import ListItem from '@components/ListItem'
+import { Pill } from '@components/Pill'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -27,6 +28,7 @@ import {
   useDelegatePosition,
   useExtendPosition,
   useFlipPositionLockupKind,
+  useKnownProxy,
   useRegistrar,
   useRelinquishPositionVotes,
   useSplitPosition,
@@ -35,30 +37,35 @@ import {
 } from '@helium/voter-stake-registry-hooks'
 import useAlert from '@hooks/useAlert'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { useNavigation } from '@react-navigation/native'
 import { BoxProps } from '@shopify/restyle'
-import { Keypair, TransactionInstruction } from '@solana/web3.js'
+import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { Theme } from '@theme/theme'
 import { useCreateOpacity } from '@theme/themeHooks'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import {
   daysToSecs,
+  getFormattedStringFromDays,
   getMinDurationFmt,
   getTimeLeftFromNowFmt,
   secsToDays,
 } from '@utils/dateTools'
+import { shortenAddress } from '@utils/formatting'
 import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
+import { MessagePreview } from '../../solana/MessagePreview'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { DelegateTokensModal } from './DelegateTokensModal'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { TransferTokensModal } from './TransferTokensModal'
+import { GovernanceNavigationProp } from './governanceTypes'
 
 interface IPositionCardProps extends Omit<BoxProps<Theme>, 'position'> {
   subDaos?: SubDaoWithMeta[]
@@ -147,11 +154,17 @@ export const PositionCard = ({
 
   const { anchorProvider } = useSolana()
 
-  const decideAndExecute = async (
-    header: string,
-    instructions: TransactionInstruction[],
-    sigs: Keypair[] = [],
-  ) => {
+  const decideAndExecute = async ({
+    header,
+    message,
+    instructions,
+    sigs = [],
+  }: {
+    header: string
+    message: string
+    instructions: TransactionInstruction[]
+    sigs?: Keypair[]
+  }) => {
     if (!anchorProvider || !walletSignBottomSheetRef) return
 
     const transactions = await batchInstructionsToTxsWithPriorityFee(
@@ -172,6 +185,7 @@ export const PositionCard = ({
       type: WalletStandardMessageTypes.signTransaction,
       url: '',
       header,
+      renderer: () => <MessagePreview message={message} />,
       serializedTxs: txs.map((t) => Buffer.from(t.serialize())),
     })
 
@@ -348,7 +362,11 @@ export const PositionCard = ({
     await closePosition({
       position,
       onInstructions: async (ixs) => {
-        await decideAndExecute(t('gov.transactions.closePosition'), ixs)
+        await decideAndExecute({
+          header: t('gov.transactions.closePosition'),
+          message: t('gov.positions.closeMessage'),
+          instructions: ixs,
+        })
         if (!closingError) {
           refetchState()
         }
@@ -360,12 +378,18 @@ export const PositionCard = ({
     await flipPositionLockupKind({
       position,
       onInstructions: async (ixs) => {
-        await decideAndExecute(
-          isConstant
+        await decideAndExecute({
+          header: isConstant
             ? t('gov.transactions.unpauseLockup')
             : t('gov.transactions.pauseLockup'),
-          ixs,
-        )
+          message: t('gov.positions.flipLockupMessage', {
+            amount: lockedTokens,
+            symbol,
+            status: isConstant ? 'paused' : 'decaying',
+            action: isConstant ? 'let it decay' : 'pause it',
+          }),
+          instructions: ixs,
+        })
 
         if (!flippingError) {
           refetchState()
@@ -379,7 +403,19 @@ export const PositionCard = ({
       position,
       lockupPeriodsInDays: values.lockupPeriodInDays,
       onInstructions: async (ixs) => {
-        await decideAndExecute(t('gov.transactions.extendPosition'), ixs)
+        await decideAndExecute({
+          header: t('gov.transactions.extendPosition'),
+          message: t('gov.positions.extendMessage', {
+            existing: isConstant
+              ? getMinDurationFmt(
+                  position.lockup.startTs,
+                  position.lockup.endTs,
+                )
+              : getTimeLeftFromNowFmt(position.lockup.endTs),
+            new: getFormattedStringFromDays(values.lockupPeriodInDays),
+          }),
+          instructions: ixs,
+        })
         if (!extendingError) {
           refetchState()
         }
@@ -394,7 +430,18 @@ export const PositionCard = ({
       lockupKind: values.lockupKind.value,
       lockupPeriodsInDays: values.lockupPeriodInDays,
       onInstructions: async (ixs, sigs) => {
-        await decideAndExecute(t('gov.transactions.splitPosition'), ixs, sigs)
+        await decideAndExecute({
+          header: t('gov.transactions.splitPosition'),
+          message: t('gov.positions.splitMessage', {
+            amount: values.amount,
+            symbol,
+            lockupKind: values.lockupKind.display.toLocaleLowerCase(),
+            duration: getFormattedStringFromDays(values.lockupPeriodInDays),
+          }),
+          instructions: ixs,
+          sigs,
+        })
+
         if (!splitingError) {
           refetchState()
         }
@@ -411,7 +458,20 @@ export const PositionCard = ({
       amount,
       targetPosition,
       onInstructions: async (ixs) => {
-        await decideAndExecute(t('gov.transactions.transferPosition'), ixs)
+        await decideAndExecute({
+          header: t('gov.transactions.transferPosition'),
+          message: t('gov.positions.transferMessage', {
+            amount,
+            symbol,
+            targetAmount: humanReadable(
+              targetPosition.amountDepositedNative,
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              mintAcc!.decimals,
+            ),
+          }),
+          instructions: ixs,
+        })
+
         if (!transferingError) {
           refetchState()
         }
@@ -424,7 +484,16 @@ export const PositionCard = ({
       position,
       subDao,
       onInstructions: async (ixs) => {
-        await decideAndExecute(t('gov.transactions.delegatePosition'), ixs)
+        await decideAndExecute({
+          header: t('gov.transactions.delegatePosition'),
+          message: t('gov.positions.delegateMessage', {
+            amount: lockedTokens,
+            symbol,
+            subDao: subDao.dntMetadata.name,
+          }),
+          instructions: ixs,
+        })
+
         if (!delegatingError) {
           refetchState()
         }
@@ -439,11 +508,22 @@ export const PositionCard = ({
         const undelegate = ixs[ixs.length - 1]
         const claims = ixs.slice(0, ixs.length - 1)
         if (claims.length > 0) {
-          await decideAndExecute(t('gov.transactions.claimRewards'), claims)
+          await decideAndExecute({
+            header: t('gov.transactions.claimRewards'),
+            message: t('gov.transactions.claimRewards'),
+            instructions: claims,
+          })
         }
-        await decideAndExecute(t('gov.transactions.undelegatePosition'), [
-          undelegate,
-        ])
+
+        await decideAndExecute({
+          header: t('gov.transactions.undelegatePosition'),
+          message: t('gov.positions.undelegateMessage', {
+            amount: lockedTokens,
+            symbol,
+          }),
+          instructions: [undelegate],
+        })
+
         if (!undelegatingError) {
           refetchState()
         }
@@ -456,7 +536,12 @@ export const PositionCard = ({
       position,
       organization,
       onInstructions: async (ixs) => {
-        await decideAndExecute(t('gov.transactions.relinquishPosition'), ixs)
+        await decideAndExecute({
+          header: t('gov.transactions.relinquishPosition'),
+          message: t('gov.positions.relinquishVotesMessage'),
+          instructions: ixs,
+        })
+
         if (!relinquishingError) {
           refetchState()
         }
@@ -464,20 +549,56 @@ export const PositionCard = ({
     })
   }
 
+  const govNavigation = useNavigation<GovernanceNavigationProp>()
+
   const actions = () => {
+    const proxyAction =
+      position.proxy && !position.proxy.nextVoter.equals(PublicKey.default) ? (
+        <ListItem
+          key="revokeProxy"
+          title={t('gov.revokeProxy.title')}
+          onPress={() => {
+            setActionsOpen(false)
+            govNavigation.navigate('RevokeProxyScreen', {
+              mint: votingMint.mint.toBase58(),
+              position: position.pubkey.toBase58(),
+              wallet: position.proxy?.nextVoter?.toBase58(),
+            })
+          }}
+          selected={false}
+          hasPressedState={false}
+        />
+      ) : (
+        <ListItem
+          key="proxy"
+          title={t('gov.assignProxy.title')}
+          onPress={() => {
+            setActionsOpen(false)
+            govNavigation.navigate('AssignProxyScreen', {
+              mint: votingMint.mint.toBase58(),
+              position: position.pubkey.toBase58(),
+            })
+          }}
+          selected={false}
+          hasPressedState={false}
+        />
+      )
     return (
       <>
         {position.isDelegated ? (
-          <ListItem
-            key="undelegate"
-            title={t('gov.positions.undelegate')}
-            onPress={async () => {
-              setActionsOpen(false)
-              actionRef.current = 'undelegate'
-            }}
-            selected={false}
-            hasPressedState={false}
-          />
+          <>
+            <ListItem
+              key="undelegate"
+              title={t('gov.positions.undelegate')}
+              onPress={async () => {
+                setActionsOpen(false)
+                actionRef.current = 'undelegate'
+              }}
+              selected={false}
+              hasPressedState={false}
+            />
+            {proxyAction}
+          </>
         ) : (
           <>
             {lockupExpired ? (
@@ -500,73 +621,77 @@ export const PositionCard = ({
               />
             ) : (
               <>
-                <ListItem
-                  key="split"
-                  title="Split"
-                  onPress={() => {
-                    setActionsOpen(false)
-                    if (hasActiveVotes) {
-                      showOKAlert({
-                        title: t('gov.positions.unableToSplit'),
-                        message: t('gov.positions.partakingInVote'),
-                      })
-                    } else {
-                      setIsSplitModalOpen(true)
-                    }
-                  }}
-                  selected={false}
-                  hasPressedState={false}
-                />
-                <ListItem
-                  key="transfer"
-                  title="Transfer"
-                  onPress={() => {
-                    setActionsOpen(false)
-                    if (hasActiveVotes) {
-                      showOKAlert({
-                        title: t('gov.positions.unableToTransfer'),
-                        message: t('gov.positions.partakingInVote'),
-                      })
-                    } else {
-                      setIsTransferModalOpen(true)
-                    }
-                  }}
-                  selected={false}
-                  hasPressedState={false}
-                />
-                <ListItem
-                  key="extend"
-                  title={t('gov.positions.extend')}
-                  onPress={() => {
-                    setActionsOpen(false)
-                    setIsExtendModalOpen(true)
-                  }}
-                  selected={false}
-                  hasPressedState={false}
-                />
-                <ListItem
-                  key="pause"
-                  title={
-                    isConstant
-                      ? t('gov.transactions.unpauseLockup')
-                      : t('gov.transactions.pauseLockup')
-                  }
-                  onPress={async () => {
-                    setActionsOpen(false)
-                    if (hasActiveVotes) {
-                      showOKAlert({
-                        title: isConstant
-                          ? t('gov.positions.unableToUnpauseLockup')
-                          : t('gov.positions.unableToPauseLockup'),
-                        message: t('gov.positions.partakingInVote'),
-                      })
-                    } else {
-                      actionRef.current = 'flipLockupKind'
-                    }
-                  }}
-                  selected={false}
-                  hasPressedState={false}
-                />
+                {!position.isProxiedToMe && (
+                  <>
+                    <ListItem
+                      key="split"
+                      title="Split"
+                      onPress={() => {
+                        setActionsOpen(false)
+                        if (hasActiveVotes) {
+                          showOKAlert({
+                            title: t('gov.positions.unableToSplit'),
+                            message: t('gov.positions.partakingInVote'),
+                          })
+                        } else {
+                          setIsSplitModalOpen(true)
+                        }
+                      }}
+                      selected={false}
+                      hasPressedState={false}
+                    />
+                    <ListItem
+                      key="transfer"
+                      title="Transfer"
+                      onPress={() => {
+                        setActionsOpen(false)
+                        if (hasActiveVotes) {
+                          showOKAlert({
+                            title: t('gov.positions.unableToTransfer'),
+                            message: t('gov.positions.partakingInVote'),
+                          })
+                        } else {
+                          setIsTransferModalOpen(true)
+                        }
+                      }}
+                      selected={false}
+                      hasPressedState={false}
+                    />
+                    <ListItem
+                      key="extend"
+                      title={t('gov.positions.extend')}
+                      onPress={() => {
+                        setActionsOpen(false)
+                        setIsExtendModalOpen(true)
+                      }}
+                      selected={false}
+                      hasPressedState={false}
+                    />
+                    <ListItem
+                      key="pause"
+                      title={
+                        isConstant
+                          ? t('gov.transactions.unpauseLockup')
+                          : t('gov.transactions.pauseLockup')
+                      }
+                      onPress={async () => {
+                        setActionsOpen(false)
+                        if (hasActiveVotes) {
+                          showOKAlert({
+                            title: isConstant
+                              ? t('gov.positions.unableToUnpauseLockup')
+                              : t('gov.positions.unableToPauseLockup'),
+                            message: t('gov.positions.partakingInVote'),
+                          })
+                        } else {
+                          actionRef.current = 'flipLockupKind'
+                        }
+                      }}
+                      selected={false}
+                      hasPressedState={false}
+                    />
+                  </>
+                )}
                 {canDelegate && !position.isDelegated && (
                   <ListItem
                     key="delegate"
@@ -591,6 +716,7 @@ export const PositionCard = ({
                     hasPressedState={false}
                   />
                 )}
+                {proxyAction}
               </>
             )}
           </>
@@ -598,6 +724,8 @@ export const PositionCard = ({
       </>
     )
   }
+
+  const { knownProxy } = useKnownProxy(position?.proxy?.nextVoter)
 
   const delegatedSubDaoMetadata = position.delegatedSubDao
     ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -771,27 +899,61 @@ export const PositionCard = ({
                     </Box>
                   )}
                 </Box>
-                {delegatedSubDaoMetadata && (
-                  <Box
-                    flexDirection="row"
-                    justifyContent="center"
-                    alignItems="center"
-                  >
-                    <Box
-                      borderColor="black"
-                      borderWidth={2}
-                      borderRadius="round"
-                    >
-                      <TokenIcon
-                        size={18}
-                        img={delegatedSubDaoMetadata.json?.image || ''}
-                      />
+                <Box mt="s" flexDirection="row" justifyContent="space-between">
+                  {delegatedSubDaoMetadata ? (
+                    <Box>
+                      <Text variant="body2" color="secondaryText">
+                        {t('gov.positions.delegatedTo')}
+                      </Text>
+                      <Box
+                        mt="s"
+                        flexDirection="row"
+                        justifyContent="center"
+                        alignItems="center"
+                      >
+                        <Box
+                          borderColor="black"
+                          borderWidth={2}
+                          borderRadius="round"
+                        >
+                          <TokenIcon
+                            size={18}
+                            img={delegatedSubDaoMetadata.json?.image || ''}
+                          />
+                        </Box>
+                        <Text
+                          variant="body2"
+                          color="primaryText"
+                          marginLeft="s"
+                        >
+                          {delegatedSubDaoMetadata.name}
+                        </Text>
+                      </Box>
                     </Box>
-                    <Text variant="body2" color="primaryText" marginLeft="m">
-                      {delegatedSubDaoMetadata.name}
-                    </Text>
-                  </Box>
-                )}
+                  ) : null}
+                  {position.proxy &&
+                  !position.proxy.nextVoter.equals(PublicKey.default) ? (
+                    <Box
+                      flexDirection="column"
+                      alignItems={
+                        delegatedSubDaoMetadata ? 'flex-end' : 'flex-start'
+                      }
+                    >
+                      <Text variant="body2" color="secondaryText">
+                        {t('gov.positions.proxiedTo')}
+                      </Text>
+                      <Box mt="s">
+                        <Pill
+                          color="red"
+                          text={
+                            knownProxy?.name ||
+                            shortenAddress(position.proxy.nextVoter.toBase58())
+                          }
+                        />
+                      </Box>
+                    </Box>
+                  ) : null}
+                </Box>
               </Box>
             </TouchableOpacityBox>
             {showError && (

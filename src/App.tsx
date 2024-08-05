@@ -20,6 +20,7 @@ import Config from 'react-native-config'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import OneSignal, { OpenedEvent } from 'react-native-onesignal'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import NetworkAwareStatusBar from './components/NetworkAwareStatusBar'
 import SplashScreen from './components/SplashScreen'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
@@ -109,63 +110,69 @@ const App = () => {
     }
   })
 
-  return (
-    <GestureHandlerRootView style={globalStyles.container}>
-      <SafeAreaProvider>
-        <ThemeProvider theme={colorAdaptedTheme}>
-          <PortalProvider>
-            <BottomSheetModalProvider>
-              <SolanaProvider>
-                <SplashScreen>
-                  <WalletOnboardingProvider baseUrl={Config.ONBOARDING_API_URL}>
-                    <WalletConnectProvider>
-                      <HotspotOnboardingProvider
-                        baseUrl={Config.ONBOARDING_API_URL}
-                      >
-                        <LockScreen>
-                          {accountsRestored && (
-                            <>
-                              <NavigationContainer
-                                theme={navTheme}
-                                linking={linking}
-                                ref={navigationRef}
-                              >
-                                <BalanceProvider>
-                                  <TokensProvider>
-                                    <ModalProvider>
-                                      <WalletSignProvider>
-                                        <GovernanceProvider>
-                                          <AutoGasBanner />
-                                          <NetworkAwareStatusBar />
-                                          <RootNavigator />
+  const queryClient = React.useMemo(() => new QueryClient(), [])
 
-                                          {/* place app specific modals here */}
-                                          <InsufficientSolConversionModal />
-                                        </GovernanceProvider>
-                                      </WalletSignProvider>
-                                    </ModalProvider>
-                                  </TokensProvider>
-                                </BalanceProvider>
-                              </NavigationContainer>
-                              <SecurityScreen
-                                visible={
-                                  appState !== 'active' &&
-                                  appState !== 'unknown'
-                                }
-                              />
-                            </>
-                          )}
-                        </LockScreen>
-                      </HotspotOnboardingProvider>
-                    </WalletConnectProvider>
-                  </WalletOnboardingProvider>
-                </SplashScreen>
-              </SolanaProvider>
-            </BottomSheetModalProvider>
-          </PortalProvider>
-        </ThemeProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+  return (
+    <QueryClientProvider client={queryClient}>
+      <GestureHandlerRootView style={globalStyles.container}>
+        <SafeAreaProvider>
+          <ThemeProvider theme={colorAdaptedTheme}>
+            <PortalProvider>
+              <BottomSheetModalProvider>
+                <SolanaProvider>
+                  <SplashScreen>
+                    <WalletOnboardingProvider
+                      baseUrl={Config.ONBOARDING_API_URL}
+                    >
+                      <WalletConnectProvider>
+                        <HotspotOnboardingProvider
+                          baseUrl={Config.ONBOARDING_API_URL}
+                        >
+                          <LockScreen>
+                            {accountsRestored && (
+                              <>
+                                <NavigationContainer
+                                  theme={navTheme}
+                                  linking={linking}
+                                  ref={navigationRef}
+                                >
+                                  <BalanceProvider>
+                                    <TokensProvider>
+                                      <ModalProvider>
+                                        <WalletSignProvider>
+                                          <GovernanceProvider>
+                                            <AutoGasBanner />
+                                            <NetworkAwareStatusBar />
+                                            <RootNavigator />
+
+                                            {/* place app specific modals here */}
+                                            <InsufficientSolConversionModal />
+                                          </GovernanceProvider>
+                                        </WalletSignProvider>
+                                      </ModalProvider>
+                                    </TokensProvider>
+                                  </BalanceProvider>
+                                </NavigationContainer>
+                                <SecurityScreen
+                                  visible={
+                                    appState !== 'active' &&
+                                    appState !== 'unknown'
+                                  }
+                                />
+                              </>
+                            )}
+                          </LockScreen>
+                        </HotspotOnboardingProvider>
+                      </WalletConnectProvider>
+                    </WalletOnboardingProvider>
+                  </SplashScreen>
+                </SolanaProvider>
+              </BottomSheetModalProvider>
+            </PortalProvider>
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </QueryClientProvider>
   )
 }
 
