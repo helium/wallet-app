@@ -9,7 +9,7 @@ export const INCIDENT_STATUSES = [
   'verifying',
 ] as const
 
-export type IncidentStatus = typeof INCIDENT_STATUSES[number]
+export type IncidentStatus = (typeof INCIDENT_STATUSES)[number]
 
 export type StoredIncident = {
   id: string

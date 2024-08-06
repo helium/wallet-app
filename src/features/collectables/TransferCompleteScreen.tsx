@@ -111,17 +111,19 @@ const TransferCollectableScreen = () => {
                 />
               </Box>
             )}
-            {solanaPayment && !solanaPayment.error && !solanaPayment.loading && (
-              <Animated.View
-                style={{ alignItems: 'center' }}
-                entering={FadeIn}
-                exiting={FadeOut}
-              >
-                <Text variant="h2" color="white" marginTop="xl">
-                  {t('collectablesScreen.transferComplete')}
-                </Text>
-              </Animated.View>
-            )}
+            {solanaPayment &&
+              !solanaPayment.error &&
+              !solanaPayment.loading && (
+                <Animated.View
+                  style={{ alignItems: 'center' }}
+                  entering={FadeIn}
+                  exiting={FadeOut}
+                >
+                  <Text variant="h2" color="white" marginTop="xl">
+                    {t('collectablesScreen.transferComplete')}
+                  </Text>
+                </Animated.View>
+              )}
 
             {solanaPayment?.error && (
               <Animated.View

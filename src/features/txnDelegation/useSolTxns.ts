@@ -31,7 +31,7 @@ const ValidTxnKeys = [
   'transfer',
   'mintDataCreditsV0',
 ] as const
-export type ValidTxn = typeof ValidTxnKeys[number]
+export type ValidTxn = (typeof ValidTxnKeys)[number]
 type Txn = {
   transaction: web3.Transaction
   gatewayAddress?: string

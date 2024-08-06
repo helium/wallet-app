@@ -20,7 +20,7 @@ export const TokenArr = [
   'helium-iot',
   'helium-mobile',
 ] as const
-export type Token = typeof TokenArr[number]
+export type Token = (typeof TokenArr)[number]
 export type Prices = Record<Token, Record<string, number>>
 
 export type BalanceInfo = {

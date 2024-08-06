@@ -387,61 +387,62 @@ export const ProposalScreen = () => {
                       </Box>
                     )}
                   </Box>
-                  {showVoteResults && votingResults?.totalVotes.gt(new BN(0)) && (
-                    <Box
-                      backgroundColor="surfaceSecondary"
-                      borderRadius="l"
-                      paddingTop="m"
-                    >
-                      {votingResults.results
-                        ?.sort((a, b) => b.percent - a.percent)
-                        .map((r, idx) => (
-                          <Box
-                            key={r.name}
-                            flex={1}
-                            marginTop={idx > 0 ? 's' : 'none'}
-                          >
-                            <Text
-                              variant="body2"
-                              color="primaryText"
-                              marginBottom="xs"
-                            >
-                              {r.name}
-                            </Text>
+                  {showVoteResults &&
+                    votingResults?.totalVotes.gt(new BN(0)) && (
+                      <Box
+                        backgroundColor="surfaceSecondary"
+                        borderRadius="l"
+                        paddingTop="m"
+                      >
+                        {votingResults.results
+                          ?.sort((a, b) => b.percent - a.percent)
+                          .map((r, idx) => (
                             <Box
-                              flexDirection="row"
+                              key={r.name}
                               flex={1}
-                              backgroundColor="grey900"
-                              borderRadius="m"
-                              overflow="hidden"
-                              marginBottom="xs"
-                            >
-                              <Box
-                                flexDirection="row"
-                                height={6}
-                                width={`${r.percent}%`}
-                                backgroundColor={VotingResultColors[r.index]}
-                              />
-                            </Box>
-                            <Box
-                              flexDirection="row"
-                              justifyContent="space-between"
+                              marginTop={idx > 0 ? 's' : 'none'}
                             >
                               <Text
                                 variant="body2"
-                                color="secondaryText"
-                                marginRight="ms"
+                                color="primaryText"
+                                marginBottom="xs"
                               >
-                                {humanReadable(r.weight, decimals)}
+                                {r.name}
                               </Text>
-                              <Text variant="body2" color="primaryText">
-                                {r.percent.toFixed(2)}%
-                              </Text>
+                              <Box
+                                flexDirection="row"
+                                flex={1}
+                                backgroundColor="grey900"
+                                borderRadius="m"
+                                overflow="hidden"
+                                marginBottom="xs"
+                              >
+                                <Box
+                                  flexDirection="row"
+                                  height={6}
+                                  width={`${r.percent}%`}
+                                  backgroundColor={VotingResultColors[r.index]}
+                                />
+                              </Box>
+                              <Box
+                                flexDirection="row"
+                                justifyContent="space-between"
+                              >
+                                <Text
+                                  variant="body2"
+                                  color="secondaryText"
+                                  marginRight="ms"
+                                >
+                                  {humanReadable(r.weight, decimals)}
+                                </Text>
+                                <Text variant="body2" color="primaryText">
+                                  {r.percent.toFixed(2)}%
+                                </Text>
+                              </Box>
                             </Box>
-                          </Box>
-                        ))}
-                    </Box>
-                  )}
+                          ))}
+                      </Box>
+                    )}
                 </Box>
               </Box>
               {noVotingPower && (

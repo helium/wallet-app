@@ -1,16 +1,36 @@
 diff --git a/node_modules/react-native-sodium/android/build.gradle b/node_modules/react-native-sodium/android/build.gradle
-index 1563c0d..e144aa1 100644
+index 1f5e62f..416578e 100644
 --- a/node_modules/react-native-sodium/android/build.gradle
 +++ b/node_modules/react-native-sodium/android/build.gradle
-@@ -39,11 +39,6 @@ android {
-             path "CMakeLists.txt"
-         }
-     }
--    sourceSets {
--        main {
--            jniLibs.srcDirs = ['./lib']
--        }
--    }
- }
-
- dependencies {
+@@ -11,12 +11,12 @@ buildscript {
+ apply plugin: 'com.android.library'
+ 
+ android {
+-    compileSdkVersion 28
+-    buildToolsVersion "28.0.3"
++    compileSdkVersion 34
++    buildToolsVersion "34.0.0"
+     defaultConfig {
+         minSdkVersion 16
+-        compileSdkVersion 28
+-        targetSdkVersion 28
++        compileSdkVersion 34
++        targetSdkVersion 34
+         versionCode 1
+         versionName "0.1"
+         compileOptions {
+diff --git a/node_modules/react-native-sodium/ios/RCTSodium/RCTSodium.m b/node_modules/react-native-sodium/ios/RCTSodium/RCTSodium.m
+index 5599c58..e4fd8a8 100644
+--- a/node_modules/react-native-sodium/ios/RCTSodium/RCTSodium.m
++++ b/node_modules/react-native-sodium/ios/RCTSodium/RCTSodium.m
+@@ -5,8 +5,8 @@
+ //  Created by Lyubomir Ivanov on 9/25/16.
+ //  Copyright © 2016 Lyubomir Ivanov. All rights reserved.
+ //
+-#import "RCTBridgeModule.h"
+-#import "RCTUtils.h"
++#import <React/RCTBridgeModule.h>
++#import <React/RCTUtils.h>
+ #import "sodium.h"
+ 
+ #import "RCTSodium.h"
