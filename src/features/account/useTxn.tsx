@@ -36,7 +36,7 @@ export const MintParser = (pubKey: PublicKey, info: AccountInfo<Buffer>) => {
 }
 
 export const TxnTypeKeys = ['payment_v2'] as const
-type TxnType = typeof TxnTypeKeys[number]
+type TxnType = (typeof TxnTypeKeys)[number]
 
 const useTxn = (
   mint?: PublicKey,

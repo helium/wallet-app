@@ -30,10 +30,10 @@ import { syncTokenAccounts } from '../store/slices/balancesSlice'
 import { useAppDispatch } from '../store/store'
 import { AccountBalance, BalanceInfo, TokenAccount } from '../types/balance'
 import StoreAtaBalance from './StoreAtaBalance'
+import { useLanguage } from './i18n'
 import { humanReadable } from './solanaUtils'
 import { useBalanceHistory } from './useBalanceHistory'
 import { usePollTokenPrices } from './usePollTokenPrices'
-import { useLanguage } from './i18n'
 
 export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
 const useBalanceHook = () => {
