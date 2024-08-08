@@ -26,14 +26,13 @@ export default () => {
   const { hasAccounts } = useAccountStorage()
   const { onboardingData, setOnboardingData } = useOnboarding()
   const { words } = onboardingData
+  const mnemonic = useMemo(() => words?.join(' '), [words])
   const {
     error,
     loading,
     derivationAccounts: foundAccounts,
     fetchMore,
-  } = useDerivationAccounts({
-    mnemonic: words?.join(' '),
-  })
+  } = useDerivationAccounts({ mnemonic })
 
   const derivationAccounts = useMemo(() => {
     return foundAccounts.filter(
@@ -47,10 +46,10 @@ export default () => {
   }, [foundAccounts])
 
   const colors = useColors()
-
   const [selected, setSelected] = React.useState<Set<string>>(
     new Set([DEFAULT_DERIVATION_PATH]),
   )
+
   useEffect(() => {
     setSelected(
       new Set([
@@ -59,6 +58,7 @@ export default () => {
       ]),
     )
   }, [derivationAccounts])
+
   useEffect(() => {
     setOnboardingData((data) => ({
       ...data,
