@@ -13,6 +13,7 @@ import { Buffer } from 'buffer'
 import * as ed25519 from 'ed25519-hd-key'
 import { useEffect, useMemo, useState } from 'react'
 import Config from 'react-native-config'
+import { retryWithBackoff } from '@utils/retryWithBackoff'
 import { useSolana } from '../solana/SolanaProvider'
 
 export const solanaDerivation = (account = -1, change: number | undefined) => {
@@ -129,16 +130,25 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
                     if (keypair) {
                       let needsMigrated = false
                       const [balance, tokens, nfts] = await Promise.all([
-                        connection.getBalance(keypair.publicKey),
-                        connection.getTokenAccountsByOwner(keypair.publicKey, {
-                          programId: TOKEN_PROGRAM_ID,
-                        }),
-                        getAssetsByOwner(
-                          connection.rpcEndpoint,
-                          keypair.publicKey.toBase58(),
-                          {
-                            limit: 10,
-                          },
+                        retryWithBackoff(() =>
+                          connection.getBalance(keypair.publicKey),
+                        ),
+                        retryWithBackoff(() =>
+                          connection.getTokenAccountsByOwner(
+                            keypair.publicKey,
+                            {
+                              programId: TOKEN_PROGRAM_ID,
+                            },
+                          ),
+                        ),
+                        retryWithBackoff(() =>
+                          getAssetsByOwner(
+                            connection.rpcEndpoint,
+                            keypair.publicKey.toBase58(),
+                            {
+                              limit: 10,
+                            },
+                          ),
                         ),
                       ])
 
