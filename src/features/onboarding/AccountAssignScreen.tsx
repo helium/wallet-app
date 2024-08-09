@@ -18,17 +18,20 @@ import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { accountNetType } from '@utils/accountUtils'
 import { RootNavigationProp } from '../../navigation/rootTypes'
+import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { HomeStackParamList } from '../home/homeTypes'
-import { useOnboarding } from './OnboardingProvider'
 import { CreateAccountNavigationProp } from './create/createAccountNavTypes'
 import { ImportAccountNavigationProp } from './import/importAccountNavTypes'
+import { useOnboarding } from './OnboardingProvider'
 
 type Route = RouteProp<HomeStackParamList, 'AccountAssignScreen'>
 
 const AccountAssignScreen = () => {
   const route = useRoute<Route>()
+  const { connection } = useSolana()
   const onboardingNav = useNavigation<
     ImportAccountNavigationProp & CreateAccountNavigationProp
   >()
@@ -43,8 +46,13 @@ const AccountAssignScreen = () => {
   const insets = useSafeAreaInsets()
   const spacing = useSpacing()
   const colors = useColors()
-  const { upsertAccounts, hasAccounts, updateDefaultAccountAddress, accounts } =
-    useAccountStorage()
+  const {
+    setCurrentAccount,
+    upsertAccounts,
+    hasAccounts,
+    updateDefaultAccountAddress,
+    accounts,
+  } = useAccountStorage()
   const [setAsDefault, toggleSetAsDefault] = useState(false)
 
   const existingNames = useMemo(
@@ -72,43 +80,48 @@ const AccountAssignScreen = () => {
   }, [paths, route.params?.secretKey, route.params?.derivationPath])
 
   const { execute: handlePress, loading } = useAsyncCallback(async () => {
-    try {
-      await Promise.all(
-        allPaths.map(async (p) => {
-          await storeSecureAccount(
-            toSecureAccount({
-              keypair: p.keypair,
-              words,
-              derivationPath: p.derivationPath,
-            }),
-          )
-        }),
-      )
-      // eslint-disable-next-line no-inner-declarations
-      function getName(index: number): string {
-        const name = `${alias} ${index + 1}`
-        if (!existingNames?.has(name)) {
-          return name
-        }
-
-        return getName(index + 1)
+    const getName = (index: number): string => {
+      const name = `${alias} ${index + 1}`
+      if (!existingNames?.has(name)) {
+        return name
       }
+
+      return getName(index + 1)
+    }
+
+    try {
       let mnemonicHash: string | undefined
       if (words) {
         mnemonicHash = createHash('sha256')
           .update(words.join(' '))
           .digest('hex')
       }
-      const newAccounts = allPaths.map((p, index) => ({
-        alias: index === 0 ? alias : getName(index),
-        address: heliumAddressFromSolAddress(p.keypair.publicKey.toBase58()),
-        solanaAddress: p.keypair.publicKey.toBase58(),
-        derivationPath: p.derivationPath,
-        mnemonicHash,
-        version: 'v1' as CSAccountVersion,
-      }))
+
+      const newAccounts = await Promise.all(
+        allPaths.map(async (p, index) => ({
+          alias: index === 0 ? alias : getName(index),
+          address: heliumAddressFromSolAddress(p.keypair.publicKey.toBase58()),
+          solanaAddress: p.keypair.publicKey.toBase58(),
+          derivationPath: p.derivationPath,
+          mnemonicHash,
+          version: 'v1' as CSAccountVersion,
+          balance: await connection?.getBalance(p.keypair.publicKey),
+        })),
+      )
+
+      const highestBalanceAcc = newAccounts.reduce((acc, curr) => {
+        if (
+          curr.balance !== undefined &&
+          (acc.balance === undefined || curr.balance > acc.balance)
+        ) {
+          return curr
+        }
+
+        return acc
+      }, newAccounts[0])
+
       await Promise.all(
-        allPaths.map(async (p) => {
+        allPaths.reverse().map(async (p) => {
           await storeSecureAccount(
             toSecureAccount({
               words,
@@ -118,9 +131,16 @@ const AccountAssignScreen = () => {
           )
         }),
       )
+
       await upsertAccounts(newAccounts)
+
+      setCurrentAccount({
+        ...highestBalanceAcc,
+        netType: accountNetType(highestBalanceAcc.address),
+      })
+
       if (setAsDefault) {
-        await updateDefaultAccountAddress(newAccounts[0].address)
+        await updateDefaultAccountAddress(highestBalanceAcc.address)
       }
 
       reset()
@@ -128,6 +148,7 @@ const AccountAssignScreen = () => {
       console.error(e)
       return
     }
+
     if (hasAccounts) {
       rootNav.reset({
         index: 0,
