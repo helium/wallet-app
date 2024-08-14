@@ -19,6 +19,7 @@ import bs58 from 'bs58'
 import { get, last } from 'lodash'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
+import { IdlInstruction } from '@coral-xyz/anchor/dist/cjs/idl'
 import { useSolana } from '../../solana/SolanaProvider'
 import { getKeypair, getSolanaKeypair } from '../../storage/secureStorage'
 import { submitSolana } from '../../utils/solanaUtils'
@@ -92,6 +93,7 @@ const useSolTxns = ({
     async ({
       decodedInstruction,
       instruction,
+      idlInstruction,
       coder,
       connection,
     }: {
@@ -99,12 +101,27 @@ const useSolTxns = ({
       instruction: web3.TransactionInstruction
       coder: BorshInstructionCoder
       connection: Connection
+      idlInstruction: IdlInstruction | undefined
     }) => {
-      const formatted = coder.format(decodedInstruction, instruction.keys)
-      const keyToAssetAccount = formatted?.accounts.find(
-        ({ name }) => name === 'Key To Asset',
-      )
-      if (!keyToAssetAccount) return {}
+      const rootInfo = get(decodedInstruction, 'data.args') as {
+        location: BN
+        elevation: number
+        gain: number
+        index: number
+      }
+
+      const wifiInfo = get(
+        decodedInstruction,
+        'data.args.deploymentInfo.wifiInfoV0',
+      ) as { azimuth: number; elevation: number } | undefined
+
+      const accounts = idlInstruction?.accounts || []
+      const keyToAssetIndex = accounts.findIndex((a) => a.name === 'keyToAsset')
+      const keyToAssetAccount = instruction.keys[keyToAssetIndex]
+
+      if (!keyToAssetAccount) {
+        throw new Error('Failed to format instruction')
+      }
 
       const sigs = await connection.getSignaturesForAddress(
         new PublicKey(keyToAssetAccount.pubkey),
@@ -143,22 +160,13 @@ const useSolTxns = ({
         }
       })
 
-      const { location, elevation, gain } = get(
-        decodedInstruction,
-        'data.args',
-      ) as {
-        location: BN
-        elevation: number
-        gain: number
-        index: number
-      }
-
       return {
-        name: decodedInstruction.name || '',
+        location: rootInfo.location?.toString('hex'),
+        elevation: wifiInfo?.elevation || rootInfo.elevation,
+        gain: rootInfo.gain,
+        name: decodedInstruction.name,
         gatewayAddress,
-        location: location?.toString('hex'),
-        elevation,
-        gain,
+        azimuth: wifiInfo?.azimuth,
       }
     },
     [],
@@ -185,47 +193,48 @@ const useSolTxns = ({
     async ({
       decodedInstruction,
       instruction,
+      idlInstruction,
       connection,
-      coder,
     }: {
-      coder: BorshInstructionCoder
       decodedInstruction: Instruction
       instruction: web3.TransactionInstruction
+      idlInstruction: IdlInstruction | undefined
       connection: Connection
     }) => {
-      const formatted = coder.format(decodedInstruction, instruction.keys)
-
-      const merkleTreeAccount = formatted?.accounts.find(
-        ({ name }) => name === 'Merkle Tree',
-      )
-      if (!merkleTreeAccount) {
-        throw new Error('Failed to format instruction')
-      }
-
-      const { location, elevation, gain, index } = get(
-        decodedInstruction,
-        'data.args',
-      ) as {
+      const rootInfo = get(decodedInstruction, 'data.args') as {
         location: BN
         elevation: number
         gain: number
         index: number
       }
 
+      const wifiInfo = get(
+        decodedInstruction,
+        'data.args.deploymentInfo.wifiInfoV0',
+      ) as { azimuth: number; elevation: number } | undefined
+
+      const accounts = idlInstruction?.accounts || []
+      const merkleIndex = accounts.findIndex((a) => a.name === 'merkleTree')
+      const merkleTreeAccount = instruction.keys[merkleIndex]
+
+      if (!merkleTreeAccount) {
+        throw new Error('Failed to format instruction')
+      }
       const pubKey = await getLeafAssetId(
         merkleTreeAccount.pubkey,
-        new BN(index),
+        new BN(rootInfo.index),
       )
       const asset = await getAsset(connection.rpcEndpoint, pubKey)
 
       const gatewayAddress = await assetToAddress(asset)
 
       return {
-        location: location?.toString('hex'),
-        elevation,
-        gain,
+        location: rootInfo.location?.toString('hex'),
+        elevation: wifiInfo?.elevation || rootInfo.elevation,
+        gain: rootInfo.gain,
         name: decodedInstruction.name,
         gatewayAddress,
+        azimuth: wifiInfo?.azimuth,
       }
     },
     [assetToAddress],
@@ -324,17 +333,29 @@ const useSolTxns = ({
 
       try {
         const idl = await fetchIdl(instruction.programId)
+
         const coder = new BorshInstructionCoder(idl)
         const decodedInstruction = coder.decode(instruction.data)
 
         if (!decodedInstruction) return {}
 
-        switch (decodedInstruction.name as ValidTxn) {
+        const name = decodedInstruction.name as ValidTxn
+        let idlInstruction: IdlInstruction | undefined
+        idl.instructions.every((i) => {
+          const found = i.name === name
+          if (found) {
+            idlInstruction = i
+          }
+          return !found
+        })
+
+        switch (name) {
           case 'onboardIotHotspotV0':
           case 'onboardMobileHotspotV0':
             return await handleOnboard({
               decodedInstruction,
               instruction,
+              idlInstruction,
               coder,
               connection,
             })
@@ -344,8 +365,8 @@ const useSolTxns = ({
             return await handleUpdateMeta({
               decodedInstruction,
               instruction,
+              idlInstruction,
               connection,
-              coder,
             })
           case 'transfer':
             return await handleTransfer({
@@ -364,6 +385,7 @@ const useSolTxns = ({
             })
         }
       } catch (e) {
+        console.error(e)
         return {}
       }
     },
