@@ -65,6 +65,11 @@ export type ResolvedPath = {
 }
 
 export const HELIUM_DERIVATION = 'Helium L1'
+export const MAIN_DERIVATION_PATHS = [
+  HELIUM_DERIVATION,
+  heliumDerivation(-1),
+  solanaDerivation(-1, undefined),
+]
 export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
   const { connection } = useSolana()
   const [resolvedGroups, setResolvedGroups] = useState<ResolvedPath[][]>([])
@@ -75,12 +80,6 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
     [resolvedGroups],
   )
 
-  const mains = [
-    HELIUM_DERIVATION,
-    heliumDerivation(-1),
-    solanaDerivation(-1, undefined),
-  ]
-
   const solanaWithChange = (start: number, end: number) =>
     new Array(end - start).fill(0).map((_, i) => solanaDerivation(i + start, 0))
 
@@ -90,7 +89,11 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
       .map((_, i) => solanaDerivation(i + start, undefined))
 
   const [groups, setGroups] = useState([
-    [...mains, ...solanaWithChange(0, 10), ...solanaWithoutChange(0, 10)],
+    [
+      ...MAIN_DERIVATION_PATHS,
+      ...solanaWithChange(0, 10),
+      ...solanaWithoutChange(0, 10),
+    ],
   ])
 
   // When mnemonic changes, reset resolved groups
