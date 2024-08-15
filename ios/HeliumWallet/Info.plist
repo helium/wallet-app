@@ -70,9 +70,9 @@
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Allow this app to use your location to add your Hotspots to the network</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Allow Location</string>
+	<string>Allow this app to use your location to add your Hotspots to the network</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Allow Location</string>
+	<string>Allow this app to use your location to add your Hotspots to the network</string>
 	<key>NSUserActivityTypes</key>
 	<array>
 		<string>ConfigurationIntent</string>
