@@ -176,7 +176,8 @@ const AccountImportScreen = () => {
 
         if (keypair) {
           restoredAccount = Object.values(accounts).find(
-            (a) => a.solanaAddress === keypair.publicKey.toBase58(),
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            (a) => a.solanaAddress === keypair!.publicKey.toBase58(),
           )
         } else {
           const keypairs = await Promise.all(
