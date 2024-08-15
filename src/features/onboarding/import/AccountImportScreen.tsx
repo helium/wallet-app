@@ -11,12 +11,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { MAIN_DERIVATION_PATHS } from '@hooks/useDerivationAccounts'
+import { Keypair } from '@solana/web3.js'
+import { CSAccount } from '@storage/cloudStorage'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
-import {
-  DEFAULT_DERIVATION_PATH,
-  createKeypair,
-  toSecureAccount,
-} from '../../../storage/secureStorage'
+import { createKeypair, toSecureAccount } from '../../../storage/secureStorage'
 import { useOnboarding } from '../OnboardingProvider'
 import { OnboardingNavigationProp } from '../onboardingTypes'
 import PassphraseAutocomplete from './PassphraseAutocomplete'
@@ -149,16 +148,24 @@ const AccountImportScreen = () => {
 
   const handleNext = useCallback(async () => {
     try {
+      let keypair: Keypair | undefined
       const filteredWords: string[] = words.flatMap((w) => (w ? [w] : []))
-      const { keypair } = await createKeypair({
-        givenMnemonic: filteredWords,
-        use24Words: words?.length === 24,
-        derivationPath:
-          Object.values(accounts || {}).find(
-            (a) => a.address === accountAddress,
-          )?.derivationPath || DEFAULT_DERIVATION_PATH,
-      })
+      const foundDerivation = Object.values(accounts || {}).find(
+        (a) => a.address === accountAddress,
+      )?.derivationPath
+
+      if (foundDerivation) {
+        keypair = (
+          await createKeypair({
+            givenMnemonic: filteredWords,
+            use24Words: words?.length === 24,
+            derivationPath: foundDerivation,
+          })
+        ).keypair
+      }
+
       if (restoringAccount) {
+        let restoredAccount: CSAccount | undefined
         if (!accounts || !accountAddress) {
           await showOKAlert({
             title: t('restoreAccount.errorAlert.title'),
@@ -166,10 +173,42 @@ const AccountImportScreen = () => {
           })
           return
         }
-        const restoredAccount = Object.values(accounts).find(
-          (a) => a.solanaAddress === keypair.publicKey.toBase58(),
-        )
-        if (!restoredAccount || accountAddress !== restoredAccount.address) {
+
+        if (keypair) {
+          restoredAccount = Object.values(accounts).find(
+            (a) => a.solanaAddress === keypair.publicKey.toBase58(),
+          )
+        } else {
+          const keypairs = await Promise.all(
+            MAIN_DERIVATION_PATHS.map((dpath) =>
+              createKeypair({
+                givenMnemonic: filteredWords,
+                use24Words: words?.length === 24,
+                derivationPath: dpath,
+              }),
+            ),
+          )
+
+          restoredAccount = Object.values(accounts).find((a) =>
+            keypairs.some(
+              (k) => a.solanaAddress === k.keypair.publicKey.toBase58(),
+            ),
+          )
+
+          if (restoredAccount) {
+            keypair = keypairs.find(
+              (k) =>
+                restoredAccount?.solanaAddress ===
+                k.keypair.publicKey.toBase58(),
+            )?.keypair
+          }
+        }
+
+        if (
+          !keypair ||
+          !restoredAccount ||
+          accountAddress !== restoredAccount.address
+        ) {
           await showOKAlert({
             title: t('restoreAccount.errorAlert.title'),
             message: t('restoreAccount.errorAlert.message'),
@@ -183,10 +222,9 @@ const AccountImportScreen = () => {
         })
         reset()
         navigation.popToTop()
-      } else {
-        setOnboardingData((prev) => ({ ...prev, words: filteredWords }))
-        navigation.navigate('ImportSubAccounts')
       }
+      setOnboardingData((prev) => ({ ...prev, words: filteredWords }))
+      navigation.navigate('ImportSubAccounts')
     } catch (error) {
       await showOKAlert({
         title: t('accountImport.alert.title'),
