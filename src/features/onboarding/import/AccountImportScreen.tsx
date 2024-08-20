@@ -223,9 +223,10 @@ const AccountImportScreen = () => {
         })
         reset()
         navigation.popToTop()
+      } else {
+        setOnboardingData((prev) => ({ ...prev, words: filteredWords }))
+        navigation.navigate('ImportSubAccounts')
       }
-      setOnboardingData((prev) => ({ ...prev, words: filteredWords }))
-      navigation.navigate('ImportSubAccounts')
     } catch (error) {
       await showOKAlert({
         title: t('accountImport.alert.title'),
