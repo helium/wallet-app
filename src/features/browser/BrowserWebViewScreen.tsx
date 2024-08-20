@@ -66,6 +66,7 @@ const BrowserWebViewScreen = () => {
   const { favorites, addFavorite, removeFavorite } = useBrowser()
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
   const spacing = useSpacing()
+  const [injected, setInjected] = useState(false)
 
   const isFavorite = useMemo(() => {
     return favorites.some((favorite) => favorite === currentUrl)
@@ -456,9 +457,12 @@ const BrowserWebViewScreen = () => {
   }, [injectModule])
 
   const onLoadEnd = useCallback(() => {
-    webview.current?.injectJavaScript('')
-    webview.current?.injectJavaScript(injectedJavascript())
-  }, [injectedJavascript])
+    if (!injected) {
+      webview.current?.injectJavaScript('')
+      webview.current?.injectJavaScript(injectedJavascript())
+      setInjected(true)
+    }
+  }, [injectedJavascript, injected, setInjected])
 
   const BrowserFooter = useCallback(() => {
     return (
