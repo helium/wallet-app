@@ -455,6 +455,11 @@ const BrowserWebViewScreen = () => {
     injectModule()
   }, [injectModule])
 
+  const onLoadEnd = useCallback(() => {
+    webview.current?.injectJavaScript('')
+    webview.current?.injectJavaScript(injectedJavascript())
+  }, [injectedJavascript])
+
   const BrowserFooter = useCallback(() => {
     return (
       <Box padding="m" flexDirection="row" backgroundColor="black900">
@@ -503,12 +508,10 @@ const BrowserWebViewScreen = () => {
             ref={webview}
             originWhitelist={['*']}
             javaScriptEnabled
-            injectedJavaScript={injectedJavascript()}
+            onLoadEnd={onLoadEnd}
             onNavigationStateChange={onNavigationChange}
             onMessage={onMessage}
-            source={{
-              uri,
-            }}
+            source={{ uri }}
             onShouldStartLoadWithRequest={(event) => {
               // Sites should not do this, but if you click MWA on realms it bricks us
               return !event.url.startsWith('solana-wallet:')
