@@ -18,6 +18,9 @@ import { useAsync, useAsyncCallback } from 'react-async-hook'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
 import Toast from 'react-native-simple-toast'
 import { useSelector } from 'react-redux'
+import ScanQrCodeScreen from '../features/keystone/ScanQrCodeScreen'
+import ImportSubAccountsScreen from '../features/onboarding/import/ImportSubAccountsScreen'
+import SelectKeystoneAccountsScreen from '../features/keystone/SelectKeystoneAccountsScreen'
 import ConnectedWallets, {
   ConnectedWalletsRef,
 } from '../features/account/ConnectedWallets'
@@ -178,6 +181,18 @@ const RootNavigator = () => {
         <RootStack.Screen
           name="ImportPrivateKey"
           component={ImportPrivateKey}
+          options={screenOptions}
+        />
+        <RootStack.Screen
+          name="SelectKeystoneAccounts"
+          component={SelectKeystoneAccountsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <RootStack.Screen
+          name="ScanQrCode"
+          component={ScanQrCodeScreen}
           options={screenOptions}
         />
       </RootStack.Navigator>

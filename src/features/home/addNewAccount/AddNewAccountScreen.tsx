@@ -8,6 +8,7 @@ import FadeInOut from '@components/FadeInOut'
 import TabBar from '@components/TabBar'
 import Text from '@components/Text'
 import globalStyles from '@theme/globalStyles'
+import ConnectKeystoneStart from '../../keystone/ConnectKeystoneStart'
 import PairStart from '../../ledger/PairStart'
 import AccountCreateStart from '../../onboarding/create/AccountCreateStart'
 import AccountImportStartScreen from '../../onboarding/import/AccountImportStartScreen'
@@ -27,6 +28,7 @@ const AddNewAccountScreen = () => {
       { value: 'create', title: t('onboarding.create') },
       { value: 'import', title: t('onboarding.import') },
       { value: 'ledger', title: t('onboarding.ledger') },
+      { value: 'keystone', title: t('onboarding.keystone') },
     ]
   }, [t])
 
@@ -75,6 +77,11 @@ const AddNewAccountScreen = () => {
           {selectedOption === 'ledger' && (
             <FadeInOut style={globalStyles.container}>
               <PairStart />
+            </FadeInOut>
+          )}
+          {selectedOption === 'keystone' && (
+            <FadeInOut style={globalStyles.container}>
+              <ConnectKeystoneStart />
             </FadeInOut>
           )}
         </Box>

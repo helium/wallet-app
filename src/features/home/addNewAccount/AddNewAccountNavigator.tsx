@@ -3,6 +3,7 @@ import {
   createStackNavigator,
   StackNavigationOptions,
 } from '@react-navigation/stack'
+import KeystoneNavigator from '../../keystone/KeystoneNavigator'
 import AddNewAccountScreen from './AddNewAccountScreen'
 import LedgerNavigator from '../../ledger/LedgerNavigator'
 import ImportAccountNavigator from '../../onboarding/import/ImportAccountNavigator'
@@ -40,6 +41,10 @@ const AddNewAccountNavigator = () => {
       <AddAccountStack.Screen
         name="CLIAccountNavigator"
         component={CLIAccountNavigator}
+      />
+      <AddAccountStack.Screen
+        name="KeystoneNavigator"
+        component={KeystoneNavigator}
       />
     </AddAccountStack.Navigator>
   )

@@ -29,6 +29,7 @@ import {
   CSAccounts,
   CSAccountVersion,
   getCloudDefaultAccountAddress,
+  KeystoneDevice,
   LedgerDevice,
   restoreAccounts,
   setCloudDefaultAccountAddress,
@@ -261,6 +262,7 @@ const useAccountStorageHook = () => {
         address: string
         ledgerDevice?: LedgerDevice
         ledgerIndex?: number
+        keystoneDevice?: KeystoneDevice
         solanaAddress: string
         derivationPath?: string
         mnemonicHash?: string
@@ -283,6 +285,7 @@ const useAccountStorageHook = () => {
             derivationPath: curr.derivationPath,
             mnemonicHash: curr.mnemonicHash,
             version: curr.version,
+            keystoneDevice: curr.keystoneDevice,
           },
         }
       }, {})
