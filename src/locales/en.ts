@@ -167,6 +167,7 @@ export default {
       importPrivateKey: 'Import a Private Key',
       ledger: 'Pair with Ledger',
       title: 'What would\nyou like to do?',
+      keystone: 'Connect Keystone to Wallet',
     },
     createPin: {
       subtitle: 'Let’s secure your wallet with a PIN Code.',
@@ -762,6 +763,16 @@ export default {
     tap: 'Get Started',
     title: 'Welcome to\nHelium Wallet',
   },
+  keystone: {
+    connectKeystoneStart: {
+      subtitle:
+        'Click on the "Connect with Keystone" button below to scan the QR code displayed on the Keystone device.',
+      title: 'Connect Keystone to Wallet',
+      scanQrCode: 'Scan QR Code',
+      warning: 'Please enable your camera permission via [Settings]',
+      ok: 'OK',
+    },
+  },
   ledger: {
     openTheSolanaApp: 'Open the Solana app on your {{ device }}',
     pleaseConfirmTransaction: 'Please confirm transaction on your {{ device }}',
@@ -868,6 +879,7 @@ export default {
     create: 'New',
     import: 'Import',
     ledger: 'Ledger',
+    keystone: 'Keystone',
   },
   ordinals: [
     '1st',

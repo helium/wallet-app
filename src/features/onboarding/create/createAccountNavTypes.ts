@@ -14,6 +14,7 @@ export type CreateAccountStackParamList = {
   AccountAssignScreen: undefined | RouteAccount
   AccountCreatePinScreen: RouteAccount | undefined
   AccountConfirmPinScreen: RouteAccount
+  KeystoneAccountAssignScreen: undefined
 }
 
 export type CreateAccountNavigationProp =

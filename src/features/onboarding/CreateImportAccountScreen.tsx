@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import Plus from '@assets/images/plus.svg'
 import DownArrow from '@assets/images/importIcon.svg'
 import Ledger from '@assets/images/ledger.svg'
+import Keystone from '@assets/images/keystoneLogo.svg'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from '@components/Box'
 import Text from '@components/Text'
@@ -33,6 +34,10 @@ const CreateImportAccountScreen = () => {
     navigation.navigate('LedgerNavigator')
   }, [navigation])
 
+  const connectKeystone = useCallback(() => {
+    navigation.navigate('KeystoneNavigator')
+  }, [navigation])
+
   return (
     <SafeAreaBox flex={1} paddingHorizontal="l" justifyContent="center">
       <NetTypeSegment marginBottom="l" marginTop="n_xxl" />
@@ -54,6 +59,15 @@ const CreateImportAccountScreen = () => {
               {t('accountSetup.createImport.create')}
             </Text>
             <Plus height={20} width={20} color={colors.greenBright500} />
+          </Box>
+        </TouchableOpacityBox>
+        <Box height={1} backgroundColor="primaryBackground" />
+        <TouchableOpacityBox onPress={connectKeystone} padding="lm">
+          <Box flexDirection="row" alignItems="center">
+            <Text variant="subtitle1" flex={1}>
+              {t('accountSetup.createImport.keystone')}
+            </Text>
+            <Keystone height={20} width={20} color={colors.primaryText} />
           </Box>
         </TouchableOpacityBox>
         <Box height={1} backgroundColor="primaryBackground" />

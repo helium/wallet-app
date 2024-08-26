@@ -1,3 +1,6 @@
+/* eslint-disable no-debugger */
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-console */
 import { NetTypes as NetType } from '@helium/address'
 import { heliumAddressToSolAddress } from '@helium/spl-utils'
 import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
@@ -14,6 +17,11 @@ export type LedgerDevice = {
   type: 'usb' | 'bluetooth'
 }
 
+export type KeystoneDevice = {
+  masterFingerprint: string
+  device: string
+}
+
 export type CSAccount = {
   alias: string
   address: string
@@ -21,6 +29,7 @@ export type CSAccount = {
   netType: NetType.NetType
   derivationPath?: string
   ledgerDevice?: LedgerDevice
+  keystoneDevice?: KeystoneDevice
   accountIndex?: number
   // Hash of the mnemonic so we can group accts with the same mnemonic
   mnemonicHash?: string
@@ -33,7 +42,7 @@ export type CSAccountVersion = 'v1'
 export type CSAccounts = Record<string, CSAccount>
 
 export type CSToken = Record<string, string[]>
-
+// android use sqlite as local storage and the total default sqlite size is 6 MB
 // for android we use AsyncStorage and auto backup to Google Drive using
 // https://developer.android.com/guide/topics/data/autobackup
 const CloudStorage = Platform.OS === 'ios' ? iCloudStorage : AsyncStorage
@@ -63,18 +72,28 @@ export const sortAccounts = (
 ) => {
   const acctList = values(accts)
   const sortedByAlias = sortBy(acctList, 'alias') || []
+  // if account is keystone account, add solanaAddress
+  const sortedByAliasWithSolanaAddress = sortedByAlias.map((acct) => {
+    // here we need to check if the account is keystone account
+    if (acct.keystoneDevice) {
+      return { ...acct, solanaAddress: acct.address }
+    }
+    return acct
+  })
   if (defaultAddress) {
-    const defaultAccount = sortedByAlias.find(
+    const defaultAccount = sortedByAliasWithSolanaAddress.find(
       (a) => a.address === defaultAddress,
     )
     if (defaultAccount) {
       // put default at beginning
-      const filtered = sortedByAlias.filter((a) => a.address !== defaultAddress)
+      const filtered = sortedByAliasWithSolanaAddress.filter(
+        (a) => a.address !== defaultAddress,
+      )
       filtered.unshift(defaultAccount)
       return filtered
     }
   }
-  return sortedByAlias
+  return sortedByAliasWithSolanaAddress
 }
 const getAccounts = async (): Promise<CSAccounts> => {
   const csAccounts = await CloudStorage.getItem(CloudStorageKeys.ACCOUNTS)
@@ -118,7 +137,7 @@ export const restoreAccounts = async () => {
         }
       }
 
-      if (!acct.solanaAddress) {
+      if (!acct.solanaAddress && !acct.keystoneDevice) {
         // eslint-disable-next-line no-param-reassign
         acct.solanaAddress = heliumAddressToSolAddress(acct.address)
       }

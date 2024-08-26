@@ -18,6 +18,7 @@ export type ImportAccountStackParamList = {
   } & RouteAccount
   ImportSubAccounts: undefined
   CLIAccountNavigator: undefined
+  KeystoneAccountAssignScreen: undefined
 }
 
 export type ImportAccountNavigationProp =

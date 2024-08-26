@@ -28,6 +28,7 @@ import {
   CSAccount,
   CSAccounts,
   getCloudDefaultAccountAddress,
+  KeystoneDevice,
   restoreAccounts,
   setCloudDefaultAccountAddress,
   signoutCloudStorage,
@@ -259,6 +260,7 @@ const useAccountStorageHook = () => {
           address: string
           solanaAddress: string
           ledgerIndex?: number
+          keystoneDevice?:KeystoneDevice
         }
       >,
     ) => {
@@ -271,6 +273,7 @@ const useAccountStorageHook = () => {
           address,
           netType: accountNetType(address),
           accountIndex: ledgerIndex ?? 0,
+          keystoneDevice:curr.keystoneDevice
         } as CSAccount
         return acc
       }, {})
