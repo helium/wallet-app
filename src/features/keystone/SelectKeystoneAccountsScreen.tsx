@@ -1,11 +1,5 @@
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable no-param-reassign */
-/* eslint-disable @typescript-eslint/no-unused-expressions */
-/* eslint-disable @typescript-eslint/no-shadow */
-/* eslint-disable no-console */
-/* eslint-disable react/no-unused-prop-types */
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react/react-in-jsx-scope */
+/* eslint-disable no-restricted-syntax */
 import React, { useCallback, useEffect, useState } from 'react'
 import { NetTypes as NetType } from '@helium/address'
 import Box from '@components/Box'
@@ -107,7 +101,6 @@ const SelectKeystoneAccountsScreen = () => {
       const balance = await connection.getBalance(
         new PublicKey(base58.encode(Buffer.from(publicKey, 'hex'))),
       )
-      console.log('sol balance ', balance)
       return balance.toString()
     }
     return '0'
@@ -128,13 +121,7 @@ const SelectKeystoneAccountsScreen = () => {
   }, [derivationAccounts])
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
-    ({
-      item,
-      index,
-    }: {
-      item: typeof derivationAccounts[number]
-      index: number
-    }) => {
+    ({ item, index }: { item: KeystoneAccountType; index: number }) => {
       const onSelect = () => {
         if (selected.has(item.path as string)) {
           selected.delete(item.path as string)

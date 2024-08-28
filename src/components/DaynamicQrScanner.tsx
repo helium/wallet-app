@@ -7,7 +7,7 @@ import { useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import useAlert from '@hooks/useAlert'
-import { CameraBackgroundImage } from '../features/keystone/CameraBackgroundImage'
+import { CameraScannerLayout } from './CameraScannerLayout'
 import Box from './Box'
 import BackScreen from './BackScreen'
 import ProgressBar from './ProgressBar'
@@ -74,11 +74,13 @@ const DaynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
         style={StyleSheet.absoluteFillObject}
         ratio="16:9"
       />
-      <CameraBackgroundImage />
+      <CameraScannerLayout />
 
-      <Box position="relative" bottom="30%" width="70%" alignSelf="center">
-        <ProgressBar progress={progress} />
-      </Box>
+      {progress > 0 && (
+        <Box position="relative" bottom="30%" width="70%" alignSelf="center">
+          <ProgressBar progress={progress} />
+        </Box>
+      )}
 
       <Box
         position="relative"
@@ -87,7 +89,7 @@ const DaynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
         paddingHorizontal="s"
       >
         <Text variant="subtitle3" marginTop="xxxl" textAlign="center">
-          Place the QR code from your Keystone device in front of the camera.
+          {t('keystone.payment.scanTxQrcodeScreenSubtitle3666')}
         </Text>
       </Box>
     </BackScreen>

@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-shadow */
-/* eslint-disable no-console */
-/* eslint-disable react/react-in-jsx-scope */
 import React, { useEffect, useMemo, useState } from 'react'
 import DaynamicQrScanner from '@components/DaynamicQrScanner'
 import SafeAreaBox from '@components/SafeAreaBox'
@@ -21,12 +18,12 @@ const ScanQrCodeScreen = () => {
     setProgress(Number((decoder.getProgress() * 100).toFixed(0)))
     if (decoder.isComplete()) {
       const ur = decoder.resultUR()
-      const multiAccounts: MultiAccounts = new KeystoneSDK().parseMultiAccounts(
-        new UR(Buffer.from(ur.cbor, 'hex'), ur.type),
+      const qrCodeDataRes: MultiAccounts = new KeystoneSDK().parseMultiAccounts(
+        new UR(Buffer.from(ur.cbor.toString('hex'), 'hex'), ur.type),
       )
       setProgress(100)
       setIsScanQrCodeComplete(true)
-      setMultiAccounts(multiAccounts)
+      setMultiAccounts(qrCodeDataRes)
     }
   }
 
@@ -41,7 +38,6 @@ const ScanQrCodeScreen = () => {
           device: multiAccounts.device || 'Keystone Device',
         })
       })
-      //   clear progress
       setProgress(0)
       setIsScanQrCodeComplete(false)
       navigation.navigate('SelectKeystoneAccounts', {

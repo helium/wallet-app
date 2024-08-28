@@ -772,6 +772,16 @@ export default {
       warning: 'Please enable your camera permission via [Settings]',
       ok: 'OK',
     },
+    scanQrCode: 'Scan the QR Code',
+    payment: {
+      scanTxQrcodeScreenTitle: 'Scan the QR Code',
+      scanTxQrcodeScreenSubtitle1: 'Scan the QR code via your Keystone device',
+      scanTxQrcodeScreenSubtitle2:
+        "Click on the 'Get Signature' button after signing the transaction with your Keystone device.",
+      scanTxQrcodeScreenSubtitle3:
+        'Place the QR code from your Keystone device in front of the camera.',
+      getSignature: 'Get Signature',
+    },
   },
   ledger: {
     openTheSolanaApp: 'Open the Solana app on your {{ device }}',
