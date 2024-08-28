@@ -1,5 +1,3 @@
-/* eslint-disable no-debugger */
-/* eslint-disable no-console */
 import AccountIcon from '@components/AccountIcon'
 import Box from '@components/Box'
 import CircleLoader from '@components/CircleLoader'

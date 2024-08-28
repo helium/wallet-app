@@ -1,5 +1,3 @@
-/* eslint-disable react/jsx-no-undef */
-/* eslint-disable react/react-in-jsx-scope */
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import SafeAreaBox from '@components/SafeAreaBox'
@@ -34,6 +32,15 @@ const CameraPermissionBottomSheetAlert = forwardRef(
     { children }: { children: ReactNode },
     ref: Ref<CameraPermissionBottomSheetAlertRef>,
   ) => {
+    useImperativeHandle(ref, () => ({
+      show: () => {
+        bottomSheetModalRef.current?.present()
+      },
+      dismiss: () => {
+        bottomSheetModalRef.current?.dismiss()
+      },
+    }))
+
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { m } = useSpacing()
@@ -57,15 +64,6 @@ const CameraPermissionBottomSheetAlert = forwardRef(
       ),
       [],
     )
-
-    useImperativeHandle(ref, () => ({
-      show: () => {
-        bottomSheetModalRef.current?.present()
-      },
-      dismiss: () => {
-        bottomSheetModalRef.current?.dismiss()
-      },
-    }))
 
     return (
       <BottomSheetModal
@@ -125,8 +123,9 @@ const ConnectKeystoneStart = () => {
   const handleStart = useCallback(() => {
     if (!hasPermission) {
       cameraPermissionBottomSheetAlertRef.current?.show()
+    } else {
+      rootNav.navigate('ScanQrCode')
     }
-    rootNav.navigate('ScanQrCode')
   }, [rootNav, hasPermission])
   return (
     <SafeAreaBox
