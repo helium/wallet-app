@@ -53,9 +53,7 @@ const SelectKeystoneAccountsScreen = () => {
   const storageSelectedAccounts = () => {
     const selectedAccounts: KeystoneAccountType[] = Array.from(selected).map(
       (path) => {
-        const account = derivationAccounts.find(
-          (account) => account.path === path,
-        )
+        const account = derivationAccounts.find((item) => item.path === path)
         return {
           path,
           publicKey: account?.publicKey || '',
