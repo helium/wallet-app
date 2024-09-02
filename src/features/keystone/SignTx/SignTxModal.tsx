@@ -5,7 +5,11 @@ import Box from '@components/Box'
 import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
 import { useTranslation } from 'react-i18next'
-import KeystoneSDK, { UR, URDecoder } from '@keystonehq/keystone-sdk'
+import KeystoneSDK, {
+  SolSignature,
+  UR,
+  URDecoder,
+} from '@keystonehq/keystone-sdk'
 import { AnimatedQrCode } from '@components/StaticQrCode'
 import useAlert from '@hooks/useAlert'
 import { BarCodeScanningResult, Camera } from 'expo-camera'
@@ -106,7 +110,7 @@ const ScanTxQrcodeScreen = ({
   }, [keystoneSDK, solSignRequest])
   const [openQrCodeScanner, setOpenQrCodeScanner] = useState(false)
   const [progress, setProgress] = useState<number>(0)
-
+  const [signature, setSignature] = useState<SolSignature | null>(null)
   const handleGetSignature = () => {
     setOpenQrCodeScanner(true)
   }
@@ -117,11 +121,22 @@ const ScanTxQrcodeScreen = ({
     if (decoder.isComplete()) {
       const ur = decoder.resultUR()
       const buffer = Buffer.from(ur.cbor.toString('hex'), 'hex')
-      const signature = keystoneSDK.sol.parseSignature(new UR(buffer, ur.type))
-      eventEmitter.emit('keystoneSignature', signature.signature)
       setProgress(100)
+      setSignature(keystoneSDK.sol.parseSignature(new UR(buffer, ur.type)))
     }
   }
+  useEffect(() => {
+    if (progress === 100 && signature) {
+      setOpenQrCodeScanner(false)
+      eventEmitter.emit(
+        `keystoneSignature_${solSignRequest.requestId}`,
+        signature?.signature,
+      )
+      setProgress(0)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signature, progress])
+
   const hitSlop = useHitSlop('l')
   return (
     <SafeAreaBox flex={1} edges={['bottom']}>
