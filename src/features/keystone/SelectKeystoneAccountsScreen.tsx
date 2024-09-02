@@ -45,7 +45,7 @@ const SelectKeystoneAccountsScreen = () => {
   const { hasAccounts } = useAccountStorage()
   const { derivationAccounts } = route.params
   const [selected, setSelected] = React.useState<Set<string>>(
-    new Set([derivationAccounts[0].path as string]),
+    new Set(derivationAccounts.map((item) => item.path)),
   )
   const [loading, setLoading] = useState<boolean>(true)
   const { connection } = useSolana()
@@ -117,6 +117,7 @@ const SelectKeystoneAccountsScreen = () => {
       setLoading(false)
     })
   }, [derivationAccounts])
+
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item, index }: { item: KeystoneAccountType; index: number }) => {
