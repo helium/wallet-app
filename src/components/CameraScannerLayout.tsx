@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react'
-import { View, StyleSheet, Image } from 'react-native'
+import { Image } from 'react-native'
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withRepeat,
   withTiming,
 } from 'react-native-reanimated'
+import Box from './Box'
 
 const SCANNER_SIZE = 300
 const SCANNER_LINE_HEIGHT = 43
@@ -27,67 +28,72 @@ export const CameraScannerLayout = () => {
   }, [linePosition])
 
   return (
-    <View style={styles.container}>
-      <View style={styles.scanner}>
-        <View style={[styles.corner, styles.topLeft]} />
-        <View style={[styles.corner, styles.topRight]} />
-        <View style={[styles.corner, styles.bottomLeft]} />
-        <View style={[styles.corner, styles.bottomRight]} />
+    <Box
+      position="absolute"
+      top={0}
+      left={0}
+      right={0}
+      bottom={0}
+      justifyContent="center"
+      alignItems="center"
+    >
+      <Box
+        position="relative"
+        width={SCANNER_SIZE}
+        height={SCANNER_SIZE}
+        justifyContent="space-between"
+        alignItems="center"
+        overflow="hidden"
+      >
+        {/* top left */}
+        <Box
+          position="absolute"
+          borderColor="hntBlue"
+          width={40}
+          height={40}
+          borderTopWidth={4}
+          borderLeftWidth={4}
+          top={0}
+          left={0}
+        />
+        {/* top right */}
+        <Box
+          position="absolute"
+          borderColor="hntBlue"
+          width={40}
+          height={40}
+          borderTopWidth={4}
+          borderRightWidth={4}
+          top={0}
+          right={0}
+        />
+        {/* bottom left */}
+        <Box
+          position="absolute"
+          borderColor="hntBlue"
+          width={40}
+          height={40}
+          borderBottomWidth={4}
+          borderLeftWidth={4}
+          bottom={0}
+          left={0}
+        />
+        {/* bottom right */}
+        <Box
+          position="absolute"
+          borderColor="hntBlue"
+          width={40}
+          height={40}
+          borderBottomWidth={4}
+          borderRightWidth={4}
+          bottom={0}
+          right={0}
+        />
+        {/* animated scanner line */}
         <Animated.View style={animatedStyle}>
           <Image source={require('../assets/images/scannerLine.png')} />
         </Animated.View>
-      </View>
-    </View>
+      </Box>
+    </Box>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  scanner: {
-    width: SCANNER_SIZE,
-    height: SCANNER_SIZE,
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  corner: {
-    width: 40,
-    height: 40,
-    borderColor: '#2755F8',
-    position: 'absolute',
-  },
-  topLeft: {
-    borderTopWidth: 4,
-    borderLeftWidth: 4,
-    top: 0,
-    left: 0,
-  },
-  topRight: {
-    borderTopWidth: 4,
-    borderRightWidth: 4,
-    top: 0,
-    right: 0,
-  },
-  bottomLeft: {
-    borderBottomWidth: 4,
-    borderLeftWidth: 4,
-    bottom: 0,
-    left: 0,
-  },
-  bottomRight: {
-    borderBottomWidth: 4,
-    borderRightWidth: 4,
-    bottom: 0,
-    right: 0,
-  },
-})
