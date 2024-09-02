@@ -19,7 +19,6 @@ import changeNavigationBarColor from 'react-native-navigation-bar-color'
 import Toast from 'react-native-simple-toast'
 import { useSelector } from 'react-redux'
 import ScanQrCodeScreen from '../features/keystone/ScanQrCodeScreen'
-import ImportSubAccountsScreen from '../features/onboarding/import/ImportSubAccountsScreen'
 import SelectKeystoneAccountsScreen from '../features/keystone/SelectKeystoneAccountsScreen'
 import ConnectedWallets, {
   ConnectedWalletsRef,
