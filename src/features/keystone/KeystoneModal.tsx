@@ -55,11 +55,12 @@ const KeystoneModal = forwardRef(
         transaction?: Buffer
         message?: Buffer
       }): Promise<Buffer | undefined> => {
+        const requestId = uuid.v4()
         bottomSheetModalRef.current?.present()
 
         if (transaction) {
           setSolSignRequest({
-            requestId: uuid.v4(),
+            requestId,
             signData: transaction.toString('hex'),
             dataType: KeystoneSolanaSDK.DataType.Message,
             path: currentAccount?.derivationPath || '',
@@ -70,7 +71,7 @@ const KeystoneModal = forwardRef(
         }
         if (message) {
           setSolSignRequest({
-            requestId: uuid.v4(),
+            requestId,
             signData: message.toString('hex'),
             dataType: KeystoneSolanaSDK.DataType.Message,
             path: currentAccount?.derivationPath || '',
@@ -83,7 +84,7 @@ const KeystoneModal = forwardRef(
           promiseResolve = resolve
         })
         // listen the keystone signature event
-        eventEmitter.on('keystoneSignature', (signature) => {
+        eventEmitter.on(`keystoneSignature_${requestId}`, (signature) => {
           promiseResolve(Buffer.from(signature, 'hex'))
           bottomSheetModalRef.current?.dismiss()
         })

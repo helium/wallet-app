@@ -271,39 +271,22 @@ const BrowserWebViewScreen = () => {
           return
         }
 
-        const signedTransactions = await Promise.all(
-          transactions.map(
-            async ({
-              transaction,
-            }: SolanaSignAndSendTransactionInput & {
-              transaction: Transaction | VersionedTransaction
-            }) => {
-              let signedTransaction:
-                | Transaction
-                | VersionedTransaction
-                | undefined
-              if (!isVersionedTransaction) {
-                // TODO: Verify when lookup table is needed
-                // transaction.add(lookupTableAddress)
-                signedTransaction =
-                  await anchorProvider?.wallet.signTransaction(
-                    transaction as Transaction,
-                  )
-              } else {
-                signedTransaction =
-                  await anchorProvider?.wallet.signTransaction(
-                    transaction as VersionedTransaction,
-                  )
-              }
-
-              if (!signedTransaction) {
-                throw new Error('Failed to sign transaction')
-              }
-
-              return signedTransaction
-            },
-          ),
-        )
+        const signedTransactions: (Transaction | VersionedTransaction)[] = []
+        // eslint-disable-next-line no-restricted-syntax
+        for (const txInput of transactions) {
+          try {
+            const { transaction } = txInput
+            const convertTx = isVersionedTransaction
+              ? (transaction as VersionedTransaction)
+              : (transaction as Transaction)
+            const signedTransaction =
+              await anchorProvider?.wallet.signTransaction(convertTx)
+            signedTransactions.push(signedTransaction)
+            await new Promise((resolve) => setTimeout(resolve, 2000))
+          } catch (e) {
+            throw new Error('Failed to sign transaction')
+          }
+        }
 
         outputs.push(
           ...signedTransactions.map((signedTransaction) => {
