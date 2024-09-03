@@ -76,20 +76,18 @@ const DaynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
       />
       <CameraScannerLayout />
 
-      {progress > 0 && (
-        <Box position="relative" bottom="30%" width="70%" alignSelf="center">
-          <ProgressBar progress={progress} />
-        </Box>
-      )}
+      <Box position="absolute" bottom="20%" width="70%" alignSelf="center">
+        <ProgressBar progress={progress} />
+      </Box>
 
       <Box
-        position="relative"
-        bottom="30%"
+        position="absolute"
+        bottom="10%"
         alignSelf="center"
         paddingHorizontal="s"
       >
         <Text variant="subtitle3" marginTop="xxxl" textAlign="center">
-          {t('keystone.payment.scanTxQrcodeScreenSubtitle3666')}
+          {t('keystone.payment.scanTxQrcodeScreenSubtitle3')}
         </Text>
       </Box>
     </BackScreen>
