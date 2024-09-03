@@ -36,6 +36,8 @@ export const CameraScannerLayout = () => {
       bottom={0}
       justifyContent="center"
       alignItems="center"
+      opacity={0.5}
+      backgroundColor="primaryBackground"
     >
       <Box
         position="relative"
