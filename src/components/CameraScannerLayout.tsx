@@ -11,7 +11,7 @@ import Box from './Box'
 const SCANNER_SIZE = 300
 const SCANNER_LINE_HEIGHT = 43
 const SCAN_DURATION = 2000
-
+const BORDER_SEGMENT_SIZE = 40
 export const CameraScannerLayout = () => {
   const linePosition = useSharedValue<number>(-SCANNER_LINE_HEIGHT)
   const animatedStyle = useAnimatedStyle(() => ({
@@ -51,8 +51,8 @@ export const CameraScannerLayout = () => {
         <Box
           position="absolute"
           borderColor="hntBlue"
-          width={40}
-          height={40}
+          width={BORDER_SEGMENT_SIZE}
+          height={BORDER_SEGMENT_SIZE}
           borderTopWidth={4}
           borderLeftWidth={4}
           top={0}
@@ -62,8 +62,8 @@ export const CameraScannerLayout = () => {
         <Box
           position="absolute"
           borderColor="hntBlue"
-          width={40}
-          height={40}
+          width={BORDER_SEGMENT_SIZE}
+          height={BORDER_SEGMENT_SIZE}
           borderTopWidth={4}
           borderRightWidth={4}
           top={0}
@@ -73,8 +73,8 @@ export const CameraScannerLayout = () => {
         <Box
           position="absolute"
           borderColor="hntBlue"
-          width={40}
-          height={40}
+          width={BORDER_SEGMENT_SIZE}
+          height={BORDER_SEGMENT_SIZE}
           borderBottomWidth={4}
           borderLeftWidth={4}
           bottom={0}
@@ -84,8 +84,8 @@ export const CameraScannerLayout = () => {
         <Box
           position="absolute"
           borderColor="hntBlue"
-          width={40}
-          height={40}
+          width={BORDER_SEGMENT_SIZE}
+          height={BORDER_SEGMENT_SIZE}
           borderBottomWidth={4}
           borderRightWidth={4}
           bottom={0}

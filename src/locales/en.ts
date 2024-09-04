@@ -772,6 +772,11 @@ export default {
       warning: 'Please enable your camera permission via [Settings]',
       ok: 'OK',
     },
+    selectKeystoneAccounts: {
+      subtitle:
+        'A secret phrase can be used to generate multiple wallets by using derivation paths. The following derivation paths have been automatically detected. Select the wallets you would like to import.',
+      title: 'Select Keystone Accounts',
+    },
     scanQrCode: 'Scan the QR Code',
     payment: {
       scanTxQrcodeScreenTitle: 'Scan the QR Code',

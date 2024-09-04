@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import DaynamicQrScanner from '@components/DaynamicQrScanner'
+import DynamicQrScanner from '@components/DynamicQrScanner'
 import SafeAreaBox from '@components/SafeAreaBox'
 import { URDecoder } from '@ngraveio/bc-ur'
 import KeystoneSDK, { MultiAccounts, UR } from '@keystonehq/keystone-sdk'
@@ -48,7 +48,7 @@ const ScanQrCodeScreen = () => {
   }, [isScanQrCodeComplete])
   return (
     <SafeAreaBox flex={1}>
-      <DaynamicQrScanner
+      <DynamicQrScanner
         onBarCodeScanned={handleBarCodeScanned}
         progress={progress}
       />

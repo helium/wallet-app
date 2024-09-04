@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-restricted-syntax */
 import React, { useCallback, useEffect, useState } from 'react'
-import { NetTypes as NetType } from '@helium/address'
 import Box from '@components/Box'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
@@ -22,6 +21,7 @@ import { ellipsizeAddress } from '@utils/accountUtils'
 import base58 from 'bs58'
 import { retryWithBackoff } from '@utils/retryWithBackoff'
 import { PublicKey } from '@solana/web3.js'
+import { useTranslation } from 'react-i18next'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useKeystoneOnboarding } from './KeystoneOnboardingProvider'
 
@@ -47,6 +47,7 @@ const SelectKeystoneAccountsScreen = () => {
   const [selected, setSelected] = React.useState<Set<string>>(
     new Set(derivationAccounts.map((item) => item.path)),
   )
+  const { t } = useTranslation()
   const [loading, setLoading] = useState<boolean>(true)
   const { connection } = useSolana()
   // storage the selected accounts
@@ -65,7 +66,6 @@ const SelectKeystoneAccountsScreen = () => {
     )
     setKeystoneOnboardingData({
       accounts: selectedAccounts,
-      netType: NetType.MAINNET,
     })
   }
   // next page
@@ -212,12 +212,10 @@ const SelectKeystoneAccountsScreen = () => {
           lineHeight={44}
           mb="s"
         >
-          Select Keystone Accounts
+          {t('keystone.selectKeystoneAccounts.title')}
         </Text>
         <Text textAlign="center" p="s" variant="body1" mb="l">
-          A secret phrase can be used to generate multiple wallets by using
-          derivation paths. The following derivation paths have been
-          automatically detected. Select the wallets you would like to import.
+          {t('keystone.selectKeystoneAccounts.subtitle')}
         </Text>
         <FlatList
           refreshControl={

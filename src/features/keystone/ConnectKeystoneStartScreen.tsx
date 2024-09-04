@@ -20,7 +20,7 @@ import useBackHandler from '@hooks/useBackHandler'
 import { useTheme } from '@shopify/restyle'
 import { t } from 'i18next'
 import { RootNavigationProp } from 'src/navigation/rootTypes'
-import { Image } from 'react-native'
+import { Image, Linking, Platform } from 'react-native'
 
 type CameraPermissionBottomSheetAlertRef = {
   show: () => void
@@ -82,7 +82,14 @@ const CameraPermissionBottomSheetAlert = forwardRef(
   },
 )
 
-const WarningContent = ({ handleDismiss }: { handleDismiss: () => void }) => {
+const WarningContent = () => {
+  const handleOpenSettings = () => {
+    if (Platform.OS === 'ios') {
+      Linking.openURL('app-settings:')
+    } else {
+      Linking.openSettings()
+    }
+  }
   return (
     <SafeAreaBox
       flex={1}
@@ -100,7 +107,7 @@ const WarningContent = ({ handleDismiss }: { handleDismiss: () => void }) => {
       </Box>
       <ButtonPressable
         borderRadius="round"
-        onPress={handleDismiss}
+        onPress={handleOpenSettings}
         backgroundColor="primaryText"
         backgroundColorOpacityPressed={0.7}
         backgroundColorDisabled="surfaceSecondary"
@@ -150,11 +157,7 @@ const ConnectKeystoneStart = () => {
       <CameraPermissionBottomSheetAlert
         ref={cameraPermissionBottomSheetAlertRef}
       >
-        <WarningContent
-          handleDismiss={
-            cameraPermissionBottomSheetAlertRef.current?.dismiss as () => void
-          }
-        />
+        <WarningContent />
       </CameraPermissionBottomSheetAlert>
       <ButtonPressable
         borderRadius="round"
