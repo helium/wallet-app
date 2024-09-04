@@ -123,9 +123,7 @@ const App = () => {
                     <WalletOnboardingProvider
                       baseUrl={Config.ONBOARDING_API_URL}
                     >
-                      <KeystoneOnboardingProvider
-                        baseUrl={Config.ONBOARDING_API_URL}
-                      >
+                      <KeystoneOnboardingProvider>
                         <WalletConnectProvider>
                           <HotspotOnboardingProvider
                             baseUrl={Config.ONBOARDING_API_URL}

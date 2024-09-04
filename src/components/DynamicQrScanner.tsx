@@ -17,7 +17,7 @@ type Props = {
   progress: number
   onBarCodeScanned: (data: string) => void
 }
-const DaynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
+const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
   const [hasPermission, setHasPermission] = useState<boolean>()
   const navigation = useNavigation()
   const { showOKCancelAlert } = useAlert()
@@ -32,12 +32,14 @@ const DaynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
   useAsync(async () => {
     if (hasPermission !== false) return
 
+    // if permission is not granted, show alert to open settings
     const decision = await showOKCancelAlert({
       title: t('qrScanner.deniedAlert.title'),
       message: t('qrScanner.deniedAlert.message'),
       ok: t('qrScanner.deniedAlert.ok'),
     })
 
+    // if user clicks ok, open settings
     if (decision) {
       if (Platform.OS === 'ios') {
         Linking.openURL('app-settings:')
@@ -46,7 +48,10 @@ const DaynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
       }
     }
 
-    navigation.goBack()
+    // if user clicks cancel, go back to the previous screen
+    if (decision === false) {
+      navigation.goBack()
+    }
   }, [hasPermission, navigation, showOKCancelAlert])
 
   const barCodeScannerSettings = useMemo(
@@ -59,38 +64,38 @@ const DaynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
     onBarCodeScanned(result.data)
   }
 
-  if (!hasPermission) {
-    return (
-      <BackScreen>
-        <Box />
-      </BackScreen>
-    )
-  }
   return (
     <BackScreen padding="none">
-      <Camera
-        onBarCodeScanned={handleBarCodeScanned}
-        barCodeScannerSettings={barCodeScannerSettings}
-        style={StyleSheet.absoluteFillObject}
-        ratio="16:9"
-      />
-      <CameraScannerLayout />
+      {/* if permission is not granted, show a black screen and notice alert modal */}
+      {hasPermission !== true && <Box />}
 
-      <Box position="absolute" bottom="20%" width="70%" alignSelf="center">
-        <ProgressBar progress={progress} />
-      </Box>
+      {hasPermission === true && (
+        <Box flex={1}>
+          <Camera
+            onBarCodeScanned={handleBarCodeScanned}
+            barCodeScannerSettings={barCodeScannerSettings}
+            style={StyleSheet.absoluteFillObject}
+            ratio="16:9"
+          />
+          <CameraScannerLayout />
 
-      <Box
-        position="absolute"
-        bottom="10%"
-        alignSelf="center"
-        paddingHorizontal="s"
-      >
-        <Text variant="subtitle3" marginTop="xxxl" textAlign="center">
-          {t('keystone.payment.scanTxQrcodeScreenSubtitle3')}
-        </Text>
-      </Box>
+          <Box position="absolute" bottom="20%" width="70%" alignSelf="center">
+            <ProgressBar progress={progress} />
+          </Box>
+
+          <Box
+            position="absolute"
+            bottom="10%"
+            alignSelf="center"
+            paddingHorizontal="s"
+          >
+            <Text variant="subtitle3" marginTop="xxxl" textAlign="center">
+              {t('keystone.payment.scanTxQrcodeScreenSubtitle3')}
+            </Text>
+          </Box>
+        </Box>
+      )}
     </BackScreen>
   )
 }
-export default DaynamicQrScanner
+export default DynamicQrScanner
