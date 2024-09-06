@@ -397,7 +397,7 @@ class HeliumWallet {
                         })),
                     }
                 })
-                
+
                 resolve(signedMessages)
               }
             }
@@ -406,26 +406,24 @@ class HeliumWallet {
     }
 }
 
-window.heliumWallet = wallet
 const walletObj = new HeliumWallet(wallet)
 
-const registerEvent = new CustomEvent('wallet-standard:register-wallet', {
-    bubbles: false,
-    cancelable: false,
-    composed: false,
-    detail: ({ register }) => register(walletObj),
-})
-
-window.dispatchEvent(registerEvent)
-
-// Attach the reference to the window, guarding against errors.
 try {
     Object.defineProperty(window, 'heliumWallet', { value: wallet })
 } catch (error) {
     console.error(error)
 }
 
-parent.addEventListener('wallet-standard:app-ready', function (event) {
+// Listen for the 'wallet-standard:app-ready' event
+window.addEventListener('wallet-standard:app-ready', function (event) {
+    const registerEvent = new CustomEvent('wallet-standard:register-wallet', {
+        bubbles: false,
+        cancelable: false,
+        composed: false,
+        detail: ({ register }) => register(walletObj),
+    })
+
+    window.dispatchEvent(registerEvent)
     event.detail.register(walletObj)
 })
 }`
