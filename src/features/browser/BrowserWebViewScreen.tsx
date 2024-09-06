@@ -402,7 +402,7 @@ const BrowserWebViewScreen = () => {
         }
 
         if (document.readyState === 'loading') {
-          document.addEventListener('wallet-standard:app-ready', injectWhenReady);
+          document.addEventListener('DOMContentLoaded', injectWhenReady);
         } else {
           injectWhenReady();
         }
