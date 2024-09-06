@@ -282,7 +282,6 @@ const BrowserWebViewScreen = () => {
             const signedTransaction =
               await anchorProvider?.wallet.signTransaction(convertTx)
             signedTransactions.push(signedTransaction)
-            await new Promise((resolve) => setTimeout(resolve, 2000))
           } catch (e) {
             throw new Error('Failed to sign transaction')
           }
