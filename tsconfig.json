@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "commonjs",
+    "module": "es2015",
     "lib": ["es2021"],
     "allowJs": true,
     "jsx": "react-native",
