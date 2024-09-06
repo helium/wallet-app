@@ -56,8 +56,10 @@ const KeystoneModal = forwardRef(
         message?: Buffer
       }): Promise<Buffer | undefined> => {
         const requestId = uuid.v4()
-        bottomSheetModalRef.current?.present()
-
+        // why need setTimeout? modal mounted --> sleep 1s --> modal present
+        setTimeout(() => {
+          bottomSheetModalRef.current?.present()
+        }, 1000)
         if (transaction) {
           setSolSignRequest({
             requestId,
@@ -85,8 +87,8 @@ const KeystoneModal = forwardRef(
         })
         // listen the keystone signature event
         eventEmitter.on(`keystoneSignature_${requestId}`, (signature) => {
-          promiseResolve(Buffer.from(signature, 'hex'))
           bottomSheetModalRef.current?.dismiss()
+          promiseResolve(Buffer.from(signature, 'hex'))
         })
 
         eventEmitter.on('closeKeystoneSignatureModal', () => {
