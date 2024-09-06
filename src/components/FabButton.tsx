@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react/jsx-props-no-spreading */
 import { BoxProps } from '@shopify/restyle'
-import React, { memo, useCallback } from 'react'
+import React, { memo, useCallback, useMemo, useState } from 'react'
 import {
   GestureResponderEvent,
   Pressable,
@@ -85,71 +85,70 @@ const ButtonPressable = ({
   reverse = false,
   ...boxProps
 }: Props) => {
+  const [pressed, setPressed] = useState(false)
   const { backgroundStyle } = useCreateOpacity()
 
-  const getBackgroundColorStyle = useCallback(
-    (pressed: boolean) => {
-      if (pressed) {
-        return backgroundStyle(
-          backgroundColorPressed || backgroundColor || 'white',
-          backgroundColorOpacityPressed,
-        )
-      }
+  const backgroundColorStyle = useMemo(() => {
+    if (pressed) {
+      return backgroundStyle(
+        backgroundColorPressed || backgroundColor || 'white',
+        backgroundColorOpacityPressed,
+      )
+    }
 
-      if (!pressed && backgroundColor) {
-        return backgroundStyle(backgroundColor, backgroundColorOpacity)
-      }
-    },
-    [
-      backgroundColor,
-      backgroundColorOpacity,
-      backgroundColorOpacityPressed,
-      backgroundColorPressed,
-      backgroundStyle,
-    ],
-  )
+    if (!pressed && backgroundColor) {
+      return backgroundStyle(backgroundColor, backgroundColorOpacity)
+    }
+  }, [
+    pressed,
+    backgroundColor,
+    backgroundColorOpacity,
+    backgroundColorOpacityPressed,
+    backgroundColorPressed,
+    backgroundStyle,
+  ])
 
   if (title) {
     return (
       <Box visible={visible} marginHorizontal="s">
         <Pressable
           onPress={onPress}
+          onPressIn={() => setPressed(true)}
+          onPressOut={() => setPressed(false)}
           style={styles.pressable}
           disabled={disabled}
         >
-          {({ pressed }) => (
-            <Box
-              style={getBackgroundColorStyle(pressed)}
-              height={size}
-              alignItems="center"
-              justifyContent="center"
-              flexDirection={reverse ? 'row-reverse' : 'row'}
-              paddingHorizontal="m"
-              borderRadius="round"
-              {...containerProps}
+          <Box
+            style={backgroundColorStyle}
+            height={size}
+            alignItems="center"
+            justifyContent="center"
+            flexDirection={reverse ? 'row-reverse' : 'row'}
+            paddingHorizontal="m"
+            borderRadius="round"
+            {...containerProps}
+          >
+            {icon && (
+              <Box paddingHorizontal="xs">
+                <FabIcon
+                  icon={icon}
+                  pressed={pressed}
+                  color={iconColor}
+                  colorPressed={iconColorPressed}
+                />
+              </Box>
+            )}
+            <Text
+              variant="subtitle2"
+              color={iconColor}
+              paddingHorizontal="xs"
+              maxFontSizeMultiplier={1.1}
+              numberOfLines={1}
+              adjustsFontSizeToFit
             >
-              {icon && (
-                <Box paddingHorizontal="xs">
-                  <FabIcon
-                    icon={icon}
-                    pressed={pressed}
-                    color={iconColor}
-                    colorPressed={iconColorPressed}
-                  />
-                </Box>
-              )}
-              <Text
-                variant="subtitle2"
-                color={iconColor}
-                paddingHorizontal="xs"
-                maxFontSizeMultiplier={1.1}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-              >
-                {title}
-              </Text>
-            </Box>
-          )}
+              {title}
+            </Text>
+          </Box>
         </Pressable>
       </Box>
     )
@@ -164,19 +163,19 @@ const ButtonPressable = ({
       onPress={onPress}
       pressableStyles={styles.pressable}
       disabled={disabled}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
       {...boxProps}
     >
-      {({ pressed }: { pressed: boolean }) => (
-        <FabButtonCircle
-          pressed={pressed}
-          size={size}
-          icon={icon}
-          iconColor={iconColor}
-          iconColorPressed={iconColorPressed}
-          props={containerProps}
-          style={getBackgroundColorStyle(pressed)}
-        />
-      )}
+      <FabButtonCircle
+        pressed={pressed}
+        size={size}
+        icon={icon}
+        iconColor={iconColor}
+        iconColorPressed={iconColorPressed}
+        props={containerProps}
+        style={backgroundColorStyle}
+      />
     </ButtonPressAnimation>
   )
 }

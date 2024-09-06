@@ -1,26 +1,26 @@
-import React, { memo, useCallback, useMemo } from 'react'
 import DetailArrow from '@assets/images/detailArrow.svg'
-import { Linking } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
-import { useTranslation } from 'react-i18next'
+import AccountIcon from '@components/AccountIcon'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useColors, useHitSlop, useVerticalHitSlop } from '@theme/themeHooks'
-import { Color } from '@theme/theme'
-import useCopyText from '@hooks/useCopyText'
 import useAlert from '@hooks/useAlert'
-import AccountIcon from '@components/AccountIcon'
+import useCopyText from '@hooks/useCopyText'
+import { useNavigation } from '@react-navigation/native'
+import { Color } from '@theme/theme'
+import { useColors, useHitSlop, useVerticalHitSlop } from '@theme/themeHooks'
+import React, { memo, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Linking } from 'react-native'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { AddressBookNavigationProp } from '../addressBook/addressBookTypes'
-import { locale } from '../../utils/i18n'
 import { ellipsizeAddress } from '../../utils/accountUtils'
+import { locale } from '../../utils/i18n'
+import { AddressBookNavigationProp } from '../addressBook/addressBookTypes'
 
 type Props = {
   title: string
   bodyText: string | number
   bodyTextEnd?: string | number
-  icon?: Element
+  icon?: React.ReactNode
   isAddress?: boolean
   navTo?: string
   bodyColor?: Color

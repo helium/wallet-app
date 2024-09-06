@@ -14,7 +14,7 @@ const Map: React.FC<
   PropsWithChildren<{
     map?: React.RefObject<MapLibreGL.MapView>
     camera?: React.RefObject<MapLibreGL.Camera>
-    userLocation?: React.RefObject<MapLibreGL.UserLocation>
+    onUserLocationUpdate?: (userLocation: MapLibreGL.Location) => void
     centerCoordinate?: Position
     mapProps?: Omit<React.ComponentProps<typeof MapLibreGL.MapView>, 'children'>
     cameraProps?: React.ComponentProps<typeof MapLibreGL.Camera>
@@ -23,7 +23,7 @@ const Map: React.FC<
   children,
   map,
   camera,
-  userLocation,
+  onUserLocationUpdate,
   centerCoordinate,
   mapProps = {},
   cameraProps = {},
@@ -54,6 +54,7 @@ const Map: React.FC<
       pitchEnabled={false}
       attributionEnabled={false}
       rotateEnabled={false}
+      onUserLocationUpdate={onUserLocationUpdate}
       styleJSON={mapStyle}
       {...mapProps}
     >
@@ -68,7 +69,7 @@ const Map: React.FC<
         maxZoomLevel={MAX_MAP_ZOOM}
         {...cameraProps}
       />
-      <MapLibreGL.UserLocation ref={userLocation} />
+      <MapLibreGL.UserLocation />
       {children}
     </MapLibreGL.MapView>
   )

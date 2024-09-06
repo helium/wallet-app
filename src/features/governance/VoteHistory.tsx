@@ -36,7 +36,7 @@ export const VoteHistory: React.FC<{
     hasNextPage,
     refetch,
     isLoading: loading,
-  } = useInfiniteQuery(
+  } = useInfiniteQuery<ProposalWithVotes>(
     votesForWalletQuery({
       voteService,
       wallet,

@@ -119,8 +119,8 @@ export const PositionsList = ({ header, ...boxProps }: IPositionsListProps) => {
 
   const SectionData = useMemo(() => {
     return [
-      { title: 'My Positions', data: unProxiedPositions || [] },
-      { title: 'Proxied To Me', data: proxiedPositions || [] },
+      { title: 'My Positions', data: unProxiedPositions || [], icon: null },
+      { title: 'Proxied To Me', data: proxiedPositions || [], icon: null },
     ]
   }, [proxiedPositions, unProxiedPositions])
 

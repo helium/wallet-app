@@ -1885,16 +1885,16 @@ SPEC CHECKSUMS:
   ExpoSecureStore: 060cebcb956b80ddae09821610ac1aa9e1ac74cd
   EXSplashScreen: fbf0ec78e9cee911df188bf17b4fe51d15a84b87
   FBLazyVector: ac12dc084d1c8ec4cc4d7b3cf1b0ebda6dab85af
-  fmt: 4c2741a687cc09f0634a2e2c72a838b99f1ff120
-  glog: fdfdfe5479092de0c4bdbebedd9056951f092c4f
+  fmt: 8083860262b879fc92bca720969c91bdb88ada93
+  glog: 77f46f3d5c779b34a09b51a92fa9e0fcab64df1c
   helium-react-native-sdk: 54928dcd95ea131437ac6e269cf5bb2d473bf57f
-  hermes-engine: 8c1577f3fdb849cbe7729c2e7b5abc4b845e88f8
+  hermes-engine: e52d9706e7fd6078e529d8ada1af7b95946c4ce6
   lottie-ios: e047b1d2e6239b787cc5e9755b988869cf190494
   lottie-react-native: f851c0e235f171d99083c803f728f644be1dcf65
   maplibre-react-native: 3a0d9beca427ff9000d75e0974c366ecd3c5375e
   MultiplatformBleAdapter: 5a6a897b006764392f9cef785e4360f54fb9477d
   OneSignalXCFramework: f06edd9b146c7ac5935136a117ce2a5fdd6420f6
-  RCT-Folly: 02617c592a293bd6d418e0a88ff4ee1f88329b47
+  RCT-Folly: 36944e180e3143948e1c8b0c5eade65a3dd45142
   RCTDeprecation: 3afceddffa65aee666dafd6f0116f1d975db1584
   RCTRequired: ec1239bc9d8bf63e10fb92bd8b26171a9258e0c1
   RCTTypeSafety: f5ecbc86c5c5fa163c05acb7a1c5012e15b5f994

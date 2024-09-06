@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-await-in-loop */
-import { AnchorProvider } from '@coral-xyz/anchor'
+import { AnchorProvider, Program } from '@coral-xyz/anchor'
 import {
   formBulkTransactions,
   getBulkRewards,
@@ -37,6 +37,8 @@ import BN from 'bn.js'
 import bs58 from 'bs58'
 import { first, last } from 'lodash'
 import { PURGE } from 'redux-persist'
+import { LazyDistributor } from '@helium/idls/lib/types/lazy_distributor'
+import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Activity } from '../../types/activity'
 import { CompressedNFT, HotspotWithPendingRewards } from '../../types/solana'
@@ -426,8 +428,12 @@ export const claimAllRewards = createAsyncThunk(
       }
       const ret: string[] = []
       let triesRemaining = 10
-      const program = await lz.init(anchorProvider)
-      const hemProgram = await init(anchorProvider)
+      const program = (await lz.init(
+        anchorProvider,
+      )) as Program<LazyDistributor>
+      const hemProgram = (await init(
+        anchorProvider,
+      )) as Program<HeliumEntityManager>
 
       const mints = await Promise.all(
         lazyDistributors.map(async (d) => {

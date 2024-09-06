@@ -10,7 +10,7 @@ import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, Linking } from 'react-native'
-import { useDebouncedCallback } from 'use-debounce/lib'
+import { useDebouncedCallback } from 'use-debounce'
 import {
   RootNavigationProp,
   RootStackParamList,

@@ -15,18 +15,23 @@ import {
 } from 'react-native-reanimated'
 import { ReAnimatedBox } from './AnimatedBox'
 
-export type ButtonPressAnimationProps = {
-  onPress: ((event: GestureResponderEvent) => void) | null | undefined
-  disabled?: boolean
-  children: React.ReactNode
-  pressableStyles?: ViewStyle
-} & BoxProps<Theme>
+export type ButtonPressAnimationProps = React.PropsWithChildren<
+  {
+    onPress: ((event: GestureResponderEvent) => void) | null | undefined
+    disabled?: boolean
+    pressableStyles?: ViewStyle
+    onPressIn?: () => void
+    onPressOut?: () => void
+  } & BoxProps<Theme>
+>
 
 const ButtonPressAnimation = ({
   onPress,
   disabled,
   children,
   pressableStyles,
+  onPressIn: onPressInProp,
+  onPressOut: onPressOutProp,
   ...boxProps
 }: ButtonPressAnimationProps) => {
   const { triggerImpact } = useHaptic()
@@ -39,9 +44,11 @@ const ButtonPressAnimation = ({
   const onPressIn = () => {
     triggerImpact('light')
     animation.value = withSpring(0.3)
+    onPressInProp?.()
   }
   const onPressOut = () => {
     animation.value = withSpring(0)
+    onPressOutProp?.()
   }
 
   return (

@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "es2015",
+    "module": "ES2015",
     "lib": ["es2021"],
     "allowJs": true,
     "jsx": "react-native",
     "noEmit": true,
+    "noImplicitAny": false,
     "isolatedModules": true,
     "strict": true,
     "allowSyntheticDefaultImports": true,
@@ -14,6 +15,30 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "paths": {
+      "@helium/idls/lib/types/lazy_distributor": [
+        "./node_modules/@helium/idls/lib/types/lazy_distributor.d.ts"
+      ],
+      "@helium/idls/lib/types/data_credits": [
+        "./node_modules/@helium/idls/lib/types/data_credits.d.ts"
+      ],
+      "@helium/idls/lib/types/helium_entity_manager": [
+        "./node_modules/@helium/idls/lib/types/helium_entity_manager.d.ts"
+      ],
+      "@helium/idls/lib/types/helium_sub_daos": [
+        "./node_modules/@helium/idls/lib/types/helium_sub_daos.d.ts"
+      ],
+      "@helium/idls/lib/types/treasury_management": [
+        "./node_modules/@helium/idls/lib/types/treasury_management.d.ts"
+      ],
+      "@helium/idls/lib/types/voter_stake_registry": [
+        "./node_modules/@helium/idls/lib/types/voter_stake_registry.d.ts"
+      ],
+      "@helium/modular-governance-idls/lib/types/proposal": [
+        "./node_modules/@helium/modular-governance-idls/lib/types/proposal.d.ts"
+      ],
+      "@helium/modular-governance-idls/lib/types/nft_proxy": [
+        "./node_modules/@helium/modular-governance-idls/lib/types/nft_proxy.d.ts"
+      ],
       "@helium/crypto": ["./node_modules/@helium/crypto-react-native"],
       "@assets": ["./src/assets"],
       "@components/*": ["./src/components/*"],

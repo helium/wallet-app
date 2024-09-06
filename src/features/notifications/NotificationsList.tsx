@@ -109,7 +109,7 @@ const NotificationsList = ({
   )
 
   const renderSectionHeader = useCallback(
-    ({ section: { title: sectionTitle, icon } }) => (
+    ({ section: { title: sectionTitle } }) => (
       <FadeInOut>
         <Box
           flexDirection="row"
@@ -120,7 +120,6 @@ const NotificationsList = ({
           backgroundColor="primaryBackground"
           justifyContent="center"
         >
-          {icon !== undefined && icon}
           <Text variant="body2" textAlign="center" color="secondaryText">
             {sectionTitle}
           </Text>

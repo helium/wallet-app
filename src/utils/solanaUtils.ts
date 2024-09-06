@@ -8,6 +8,8 @@ import {
   init as initDc,
 } from '@helium/data-credits-sdk'
 import { getPendingRewards } from '@helium/distributor-oracle'
+import { DataCredits } from '@helium/idls/lib/types/data_credits'
+import { LazyDistributor } from '@helium/idls/lib/types/lazy_distributor'
 import {
   PROGRAM_ID as FanoutProgramId,
   fanoutKey,
@@ -594,7 +596,7 @@ export const mintDataCredits = async ({
 }): Promise<TransactionDraft> => {
   try {
     const { publicKey: payer } = anchorProvider.wallet
-    const program = await initDc(anchorProvider)
+    const program = (await initDc(anchorProvider)) as Program<DataCredits>
 
     const ix = await program.methods
       .mintDataCreditsV0({
@@ -688,7 +690,7 @@ export const getEscrowTokenAccount = (
  * @returns
  */
 export function bufferToArray(buffer: Buffer): number[] {
-  const nums = []
+  const nums: number[] = []
   for (let i = 0; i < buffer.length; i += 1) {
     nums.push(buffer[i])
   }
@@ -1106,8 +1108,8 @@ export const getHotspotRecipients = async (
     recipients: { [key: string]: RecipientV0 | undefined }
   }[]
 > => {
-  const program = await initLazy(provider)
-  const hemProgram = await initHem(provider)
+  const program = (await initLazy(provider)) as Program<LazyDistributor>
+  const hemProgram = (await initHem(provider)) as Program<HeliumEntityManager>
   const keyToAssets = hotspots.map((h) => keyToAssetForAsset(toAsset(h)))
   const ktaAccs = await getCachedKeyToAssets(hemProgram as any, keyToAssets)
   const assetKeys = ktaAccs.map((kta) => kta.asset)
@@ -2027,7 +2029,7 @@ export const createUpdateCompressionDestinationTxn = async (
           recipientPk,
         )
 
-        const ixs = []
+        const ixs: TransactionInstruction[] = []
         if (!recipientExists) {
           ixs.push(
             await (
