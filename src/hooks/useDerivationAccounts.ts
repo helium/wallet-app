@@ -1,5 +1,4 @@
 import { Keypair as HeliumKeypair, Mnemonic } from '@helium/crypto'
-import { useSolana } from '@helium/react-native-sdk'
 import { Asset, getAssetsByOwner, truthy } from '@helium/spl-utils'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
@@ -14,6 +13,8 @@ import { Buffer } from 'buffer'
 import * as ed25519 from 'ed25519-hd-key'
 import { useEffect, useMemo, useState } from 'react'
 import Config from 'react-native-config'
+import { retryWithBackoff } from '@utils/retryWithBackoff'
+import { useSolana } from '../solana/SolanaProvider'
 
 export const solanaDerivation = (account = -1, change: number | undefined) => {
   if (account === -1) {
@@ -64,27 +65,36 @@ export type ResolvedPath = {
 }
 
 export const HELIUM_DERIVATION = 'Helium L1'
+export const MAIN_DERIVATION_PATHS = [
+  HELIUM_DERIVATION,
+  heliumDerivation(-1),
+  solanaDerivation(-1, undefined),
+]
 export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
-  const mains = [
-    HELIUM_DERIVATION,
-    heliumDerivation(-1),
-    solanaDerivation(-1, undefined),
-  ]
+  const { connection } = useSolana()
+  const [resolvedGroups, setResolvedGroups] = useState<ResolvedPath[][]>([])
+  const [error, setError] = useState<Error | null>(null)
+  const [loading, setLoading] = useState(false)
+  const derivationAccounts = useMemo(
+    () => resolvedGroups.flat(),
+    [resolvedGroups],
+  )
+
   const solanaWithChange = (start: number, end: number) =>
     new Array(end - start).fill(0).map((_, i) => solanaDerivation(i + start, 0))
+
   const solanaWithoutChange = (start: number, end: number) =>
     new Array(end - start)
       .fill(0)
       .map((_, i) => solanaDerivation(i + start, undefined))
 
-  const { connection } = useSolana()
-
   const [groups, setGroups] = useState([
-    [...mains, ...solanaWithChange(0, 10), ...solanaWithoutChange(0, 10)],
+    [
+      ...MAIN_DERIVATION_PATHS,
+      ...solanaWithChange(0, 10),
+      ...solanaWithoutChange(0, 10),
+    ],
   ])
-  const [resolvedGroups, setResolvedGroups] = useState<ResolvedPath[][]>([])
-  const [error, setError] = useState<Error | null>(null)
-  const [loading, setLoading] = useState(false)
 
   // When mnemonic changes, reset resolved groups
   useEffect(() => {
@@ -96,6 +106,7 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
       return bip39.mnemonicToSeedSync(mnemonic, '')
     }
   }, [mnemonic])
+
   useEffect(() => {
     if (seed && groups.some((_, i) => !resolvedGroups[i])) {
       ;(async () => {
@@ -108,34 +119,42 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
               return (
                 await Promise.all(
                   group.map(async (derivationPath) => {
-                    let keypair
-                    if (derivationPath === HELIUM_DERIVATION) {
-                      keypair = Keypair.fromSecretKey(
-                        (
-                          await HeliumKeypair.fromMnemonic(
-                            new Mnemonic(mnemonic?.split(' ') || []),
+                    const keypair =
+                      derivationPath === HELIUM_DERIVATION
+                        ? Keypair.fromSecretKey(
+                            (
+                              await HeliumKeypair.fromMnemonic(
+                                new Mnemonic(mnemonic?.split(' ') || []),
+                              )
+                            ).privateKey,
                           )
-                        ).privateKey,
-                      )
-                    } else {
-                      keypair = await keypairFromSeed(seed, derivationPath)
-                    }
+                        : await keypairFromSeed(seed, derivationPath)
+
                     if (keypair) {
-                      const balance = await connection.getBalance(
-                        keypair.publicKey,
-                      )
-                      const tokens = await connection.getTokenAccountsByOwner(
-                        keypair.publicKey,
-                        { programId: TOKEN_PROGRAM_ID },
-                      )
-                      const nfts = await getAssetsByOwner(
-                        connection.rpcEndpoint,
-                        keypair.publicKey.toBase58(),
-                        {
-                          limit: 10,
-                        },
-                      )
                       let needsMigrated = false
+                      const [balance, tokens, nfts] = await Promise.all([
+                        retryWithBackoff(() =>
+                          connection.getBalance(keypair.publicKey),
+                        ),
+                        retryWithBackoff(() =>
+                          connection.getTokenAccountsByOwner(
+                            keypair.publicKey,
+                            {
+                              programId: TOKEN_PROGRAM_ID,
+                            },
+                          ),
+                        ),
+                        retryWithBackoff(() =>
+                          getAssetsByOwner(
+                            connection.rpcEndpoint,
+                            keypair.publicKey.toBase58(),
+                            {
+                              limit: 10,
+                            },
+                          ),
+                        ),
+                      ])
+
                       if (derivationPath === heliumDerivation(-1)) {
                         const url = `${
                           Config.MIGRATION_SERVER_URL
@@ -144,6 +163,7 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
                         const { transactions } = (await axios.get(url)).data
                         needsMigrated = transactions.length > 0
                       }
+
                       return {
                         derivationPath,
                         keypair,
@@ -158,6 +178,7 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
               ).filter(truthy)
             }),
           )
+
           setResolvedGroups(resolved)
         } catch (e: any) {
           setError(e)
@@ -171,7 +192,7 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
   return {
     error,
     loading,
-    derivationAccounts: useMemo(() => resolvedGroups.flat(), [resolvedGroups]),
+    derivationAccounts,
     fetchMore: () =>
       setGroups([
         ...groups,

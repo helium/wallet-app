@@ -66,6 +66,7 @@ const BrowserWebViewScreen = () => {
   const { favorites, addFavorite, removeFavorite } = useBrowser()
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
   const spacing = useSpacing()
+  const [injected, setInjected] = useState(false)
 
   const isFavorite = useMemo(() => {
     return favorites.some((favorite) => favorite === currentUrl)
@@ -455,6 +456,14 @@ const BrowserWebViewScreen = () => {
     injectModule()
   }, [injectModule])
 
+  const onLoadEnd = useCallback(() => {
+    if (!injected) {
+      webview.current?.injectJavaScript('')
+      webview.current?.injectJavaScript(injectedJavascript())
+      setInjected(true)
+    }
+  }, [injectedJavascript, injected, setInjected])
+
   const BrowserFooter = useCallback(() => {
     return (
       <Box padding="m" flexDirection="row" backgroundColor="black900">
@@ -503,12 +512,10 @@ const BrowserWebViewScreen = () => {
             ref={webview}
             originWhitelist={['*']}
             javaScriptEnabled
-            injectedJavaScript={injectedJavascript()}
+            onLoadEnd={onLoadEnd}
             onNavigationStateChange={onNavigationChange}
             onMessage={onMessage}
-            source={{
-              uri,
-            }}
+            source={{ uri }}
             onShouldStartLoadWithRequest={(event) => {
               // Sites should not do this, but if you click MWA on realms it bricks us
               return !event.url.startsWith('solana-wallet:')
