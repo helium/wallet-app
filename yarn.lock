@@ -12553,7 +12553,7 @@ __metadata:
     readable-stream: 3.6.0
     redux-persist: 6.0.0
     rn-nodeify: 10.3.0
-    rn-swipe-button: 1.3.7
+    rn-swipe-button: 1.3.8
     rxjs: 7.5.6
     semver: 7.3.8
     snakecase-keys: 5.4.2
@@ -18981,13 +18981,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rn-swipe-button@npm:1.3.7":
-  version: 1.3.7
-  resolution: "rn-swipe-button@npm:1.3.7"
+"rn-swipe-button@npm:1.3.8":
+  version: 1.3.8
+  resolution: "rn-swipe-button@npm:1.3.8"
   peerDependencies:
     react: ">=16.8.6"
     react-native: ">=0.60.5"
-  checksum: 3be15b4463c738558ae111dfcca381daa4fc6daabe22692240ba50e74d7b244991e00548bfbf9e9f4c4de22220b33da142cc07a905967032ddc55384696bc0c8
+  checksum: b0b909b5d1f11444d30ab6a3116ca2c5e58f993ef7fa6486f7a3ad87a1e76592c5b2300b44e2c9121e285c0706b4a8b2a30002ff9b951470086d8c4bdafa3ad1
   languageName: node
   linkType: hard
 

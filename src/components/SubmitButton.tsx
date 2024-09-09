@@ -13,11 +13,12 @@ type Props = {
   color?: string
   backgroundColor?: string
 } & BoxProps<Theme>
+
 const SubmitButton = ({
   color = 'blueBright500',
   onSubmit,
   title,
-  disabled,
+  disabled = false,
   backgroundColor = 'secondaryIcon',
   ...boxProps
 }: Props) => {
@@ -43,12 +44,10 @@ const SubmitButton = ({
         paddingLeft: 8,
       },
     }),
-
     [colorActual, disabled, secondaryText, surfaceSecondary],
   )
 
   return (
-    // eslint-disable-next-line react/jsx-props-no-spreading
     <Box
       backgroundColor={backgroundColor as any}
       borderRadius="round"
