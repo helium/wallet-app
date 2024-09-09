@@ -66,7 +66,7 @@ const BrowserWebViewScreen = () => {
   const { favorites, addFavorite, removeFavorite } = useBrowser()
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
   const spacing = useSpacing()
-  const [injected, setInjected] = useState(false)
+  const [isScriptInjected, setIsScriptInjected] = useState(false)
 
   const isFavorite = useMemo(() => {
     return favorites.some((favorite) => favorite === currentUrl)
@@ -376,6 +376,8 @@ const BrowserWebViewScreen = () => {
   )
 
   const injectedJavascript = useCallback(() => {
+    if (isScriptInjected) return ''
+
     const script = `
     ${injectWalletStandard.toString()}
 
@@ -387,15 +389,43 @@ const BrowserWebViewScreen = () => {
     `
 
     return script
-  }, [accountAddress, isAndroid])
+  }, [accountAddress, isAndroid, isScriptInjected])
 
-  // Inject wallet standard into the webview
   const injectModule = useCallback(() => {
-    if (!webview?.current) return
+    if (!webview?.current || isScriptInjected) return
+    setIsScriptInjected(true)
 
-    const script = injectedJavascript()
-    webview?.current?.injectJavaScript(script)
-  }, [injectedJavascript])
+    const injectionScript = `
+      (function() {
+        function injectWhenReady() {
+          ${injectedJavascript()}
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', injectWhenReady);
+        } else {
+          injectWhenReady();
+        }
+      })();
+    `
+
+    webview.current.injectJavaScript(injectionScript)
+  }, [injectedJavascript, isScriptInjected])
+
+  const onLoadStart = useCallback(() => {
+    setIsScriptInjected(false)
+  }, [])
+
+  const onLoadEnd = useCallback(() => {
+    if (!isScriptInjected) {
+      injectModule()
+    }
+  }, [isScriptInjected, injectModule])
+
+  const onRefresh = useCallback(() => {
+    setIsScriptInjected(false)
+    webview.current?.reload()
+  }, [])
 
   const onNavigationChange = useCallback((event: WebViewNavigation) => {
     const baseUrl = event.url.replace('https://', '').split('/')
@@ -450,20 +480,6 @@ const BrowserWebViewScreen = () => {
     }
   }, [addFavorite, removeFavorite, isFavorite, currentUrl])
 
-  const onRefresh = useCallback(() => {
-    webview.current?.injectJavaScript('')
-    webview.current?.reload()
-    injectModule()
-  }, [injectModule])
-
-  const onLoadEnd = useCallback(() => {
-    if (!injected) {
-      webview.current?.injectJavaScript('')
-      webview.current?.injectJavaScript(injectedJavascript())
-      setInjected(true)
-    }
-  }, [injectedJavascript, injected, setInjected])
-
   const BrowserFooter = useCallback(() => {
     return (
       <Box padding="m" flexDirection="row" backgroundColor="black900">
@@ -512,7 +528,9 @@ const BrowserWebViewScreen = () => {
             ref={webview}
             originWhitelist={['*']}
             javaScriptEnabled
+            onLoadStart={onLoadStart}
             onLoadEnd={onLoadEnd}
+            injectedJavaScriptBeforeContentLoaded={injectedJavascript()}
             onNavigationStateChange={onNavigationChange}
             onMessage={onMessage}
             source={{ uri }}
