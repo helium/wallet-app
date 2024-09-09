@@ -314,8 +314,11 @@ const ConnectedWallets = forwardRef(
             onLayout={(height) => {
               setSectionFooterHeights((prev) => {
                 const newHeight = { ...prev }
-                newHeight[data[0].mnemonicHash || 'none'] =
-                  height.nativeEvent.layout.height
+                if (height.nativeEvent) {
+                  newHeight[data[0].mnemonicHash || 'none'] =
+                    height.nativeEvent.layout.height
+                }
+
                 return newHeight
               })
             }}
