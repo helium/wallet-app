@@ -91,7 +91,7 @@ const Settings = () => {
   const keyExtractor = useCallback((item, index) => item.title + index, [])
 
   const renderSectionFooter = useCallback(
-    ({ section: { footer } }) => footer,
+    ({ section }) => section.footer as React.ReactElement,
     [],
   )
 
@@ -330,6 +330,7 @@ const Settings = () => {
 
   const SectionData = useMemo((): {
     title: string
+    icon: React.ReactNode | null
     data: SettingsListItemType[]
   }[] => {
     let pin: SettingsListItemType[] = [
@@ -446,12 +447,14 @@ const Settings = () => {
         title: t('settings.sections.account.title', {
           alias: currentAccount?.alias,
         }),
+        icon: null,
         data: accountSettings,
       },
       {
         title: t('settings.sections.backup.title', {
           alias: currentAccount?.alias,
         }),
+        icon: null,
         data: [
           hasWords
             ? {
@@ -467,10 +470,12 @@ const Settings = () => {
       },
       {
         title: t('settings.sections.security.title'),
+        icon: null,
         data: pin,
       },
       {
         title: t('settings.sections.app.title'),
+        icon: null,
         data: [
           {
             title: t('settings.sections.app.language'),
@@ -496,6 +501,7 @@ const Settings = () => {
           },
           {
             title: t('settings.sections.app.explorer'),
+            icon: null,
             value: explorer?.value,
             select: {
               onValueSelect: handleExplorerChange,
@@ -514,15 +520,18 @@ const Settings = () => {
           },
           {
             title: t('settings.sections.app.enableHaptic'),
+            icon: null,
             onToggle: updateEnableHaptic,
             value: enableHaptic,
           },
           {
             title: t('settings.sections.app.autoGasManager'),
+            icon: null,
             onPress: handlePressAutoGasManager,
           },
           {
             title: t('settings.sections.app.version'),
+            icon: null,
             staticText: true,
             value: `v${version} (${buildNumber})`,
           },
@@ -532,9 +541,11 @@ const Settings = () => {
       {
         title: t('settings.sections.dev.title'),
         data: devData,
+        icon: null,
       },
       {
         title: t('settings.sections.finePrint.title'),
+        icon: null,
         data: [
           {
             title: t('settings.sections.finePrint.privacyPolicy'),

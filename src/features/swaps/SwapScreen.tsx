@@ -171,7 +171,8 @@ const SwapScreen = () => {
     }
   }, [inputAmount, inputMintBalance, inputMintAcc])
 
-  const showError = useMemo(() => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const showError: any = useMemo(() => {
     if (hasRecipientError) return t('generic.notValidSolanaAddress')
     if (insufficientTokensToSwap)
       return t('swapsScreen.insufficientTokensToSwap')

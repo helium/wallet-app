@@ -1,7 +1,24 @@
 diff --git a/node_modules/react-native-os/android/build.gradle b/node_modules/react-native-os/android/build.gradle
-index 7055b60..784681d 100644
+index 7055b60..aca9a6b 100644
 --- a/node_modules/react-native-os/android/build.gradle
 +++ b/node_modules/react-native-os/android/build.gradle
+@@ -15,12 +15,12 @@ buildscript {
+ apply plugin: 'com.android.library'
+ 
+ android {
+-    compileSdkVersion safeExtGet('compileSdkVersion', 23)
+-    buildToolsVersion safeExtGet('buildToolsVersion', '23.0.1')
++    compileSdkVersion safeExtGet('compileSdkVersion', 34)
++    buildToolsVersion safeExtGet('buildToolsVersion', '34.0.0')
+ 
+     defaultConfig {
+-        minSdkVersion safeExtGet('minSdkVersion', 16)
+-        targetSdkVersion safeExtGet('targetSdkVersion', 22)
++        minSdkVersion safeExtGet('minSdkVersion', 34)
++        targetSdkVersion safeExtGet('targetSdkVersion', 34)
+         versionCode 1
+         versionName "0.2.0"
+     }
 @@ -44,5 +44,5 @@ repositories {
  }
  

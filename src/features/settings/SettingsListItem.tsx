@@ -27,7 +27,7 @@ export type SettingsListItemType = {
   destructive?: boolean
   onPress?: () => void
   onToggle?: (value: boolean) => void
-  renderModal?: () => void
+  renderModal?: () => React.ReactNode
   value?: boolean | string | number
   select?: SelectProps
   openUrl?: string

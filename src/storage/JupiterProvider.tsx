@@ -32,7 +32,9 @@ interface IJupiterContextState {
 }
 
 const JupiterContext = createContext<IJupiterContextState | null>(null)
-export const JupiterProvider: React.FC = ({ children }) => {
+export const JupiterProvider: React.FC<React.PropsWithChildren> = ({
+  children,
+}) => {
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
   const [loading, setLoading] = useState(false)

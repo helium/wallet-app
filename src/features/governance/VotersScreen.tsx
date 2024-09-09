@@ -45,7 +45,7 @@ export default function VotersScreen() {
     isLoading,
     isFetchingNextPage,
     refetch,
-  } = useInfiniteQuery(
+  } = useInfiniteQuery<EnhancedProxy>(
     proxiesQuery({
       search: searchDebounced,
       amountPerPage: 100,

@@ -19,6 +19,7 @@ import bs58 from 'bs58'
 import { get, last } from 'lodash'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
+import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'
 import { IdlInstruction } from '@coral-xyz/anchor/dist/cjs/idl'
 import { useSolana } from '../../solana/SolanaProvider'
 import { getKeypair, getSolanaKeypair } from '../../storage/secureStorage'
@@ -32,7 +33,7 @@ const ValidTxnKeys = [
   'transfer',
   'mintDataCreditsV0',
 ] as const
-export type ValidTxn = typeof ValidTxnKeys[number]
+export type ValidTxn = (typeof ValidTxnKeys)[number]
 type Txn = {
   transaction: web3.Transaction
   gatewayAddress?: string
@@ -175,7 +176,9 @@ const useSolTxns = ({
   const assetToAddress = useCallback(
     async (asset?: Asset): Promise<string> => {
       if (!anchorProvider || !asset) return ''
-      const hemProgram = await init(anchorProvider)
+      const hemProgram = (await init(
+        anchorProvider,
+      )) as Program<HeliumEntityManager>
       const keyToAssetKey = keyToAssetForAsset(asset)
       const keyToAsset = await hemProgram.account.keyToAssetV0.fetch(
         keyToAssetKey,

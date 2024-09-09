@@ -1,9 +1,14 @@
 import { ViewProps } from 'react-native'
-import { CameraBounds } from '@maplibre/maplibre-react-native'
 import { CameraStop } from '@maplibre/maplibre-react-native/javascript/components/Camera'
+import { CameraPadding } from '@maplibre/maplibre-react-native'
 
 export const MIN_MAP_ZOOM = 2
 export const MAX_MAP_ZOOM = 18
+
+type CameraBounds = CameraPadding & {
+  ne: number[]
+  sw: number[]
+}
 
 const WORLD_BOUNDS: CameraBounds = {
   ne: [-134.827109, 57.785781],

@@ -159,7 +159,7 @@ const useSolanaHook = () => {
       signAllTransactions: async (
         transactions: (Transaction | VersionedTransaction)[],
       ) => {
-        const signedTxns = []
+        const signedTxns: (Transaction | VersionedTransaction)[] = []
         // eslint-disable-next-line no-restricted-syntax
         for (const transaction of transactions) {
           // eslint-disable-next-line no-await-in-loop

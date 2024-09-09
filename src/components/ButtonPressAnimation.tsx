@@ -1,3 +1,6 @@
+import useHaptic from '@hooks/useHaptic'
+import { BoxProps } from '@shopify/restyle'
+import { Theme } from '@theme/theme'
 import React from 'react'
 import {
   GestureResponderEvent,
@@ -5,63 +8,51 @@ import {
   StyleSheet,
   ViewStyle,
 } from 'react-native'
-import { BoxProps } from '@shopify/restyle'
-import Animated from 'react-native-reanimated'
-import { Theme } from '@theme/theme'
-import useHaptic from '@hooks/useHaptic'
+import {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated'
 import { ReAnimatedBox } from './AnimatedBox'
 
-export type ButtonPressAnimationProps = {
-  onPress: ((event: GestureResponderEvent) => void) | null | undefined
-  disabled?: boolean
-  children: React.ReactNode
-  pressableStyles?: ViewStyle
-} & BoxProps<Theme>
+export type ButtonPressAnimationProps = React.PropsWithChildren<
+  {
+    onPress: ((event: GestureResponderEvent) => void) | null | undefined
+    disabled?: boolean
+    pressableStyles?: ViewStyle
+    onPressIn?: () => void
+    onPressOut?: () => void
+  } & BoxProps<Theme>
+>
 
 const ButtonPressAnimation = ({
   onPress,
   disabled,
   children,
   pressableStyles,
+  onPressIn: onPressInProp,
+  onPressOut: onPressOutProp,
   ...boxProps
 }: ButtonPressAnimationProps) => {
   const { triggerImpact } = useHaptic()
 
-  const animation = new Animated.Value(0)
-  const inputRange = [0, 1]
-  const outputRange = [1, 0.8]
-  const scale = animation.interpolate({ inputRange, outputRange })
+  const animation = useSharedValue(0)
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: 1 - animation.value * 0.2 }],
+  }))
 
   const onPressIn = () => {
     triggerImpact('light')
-    Animated.spring(animation, {
-      toValue: 0.3,
-      damping: 10,
-      mass: 0.1,
-      stiffness: 100,
-      overshootClamping: false,
-      restSpeedThreshold: 0.001,
-      restDisplacementThreshold: 2,
-    }).start()
+    animation.value = withSpring(0.3)
+    onPressInProp?.()
   }
   const onPressOut = () => {
-    Animated.spring(animation, {
-      toValue: 0,
-      damping: 10,
-      mass: 0.1,
-      stiffness: 100,
-      overshootClamping: false,
-      restSpeedThreshold: 0.001,
-      restDisplacementThreshold: 2,
-    }).start()
+    animation.value = withSpring(0)
+    onPressOutProp?.()
   }
 
   return (
-    <ReAnimatedBox
-      overflow="hidden"
-      style={{ transform: [{ scale }], overflow: 'hidden' }}
-      {...boxProps}
-    >
+    <ReAnimatedBox overflow="hidden" style={animatedStyle} {...boxProps}>
       <Pressable
         onPressIn={onPressIn}
         onPressOut={onPressOut}

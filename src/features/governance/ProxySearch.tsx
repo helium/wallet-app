@@ -6,6 +6,7 @@ import SearchInput from '@components/SearchInput'
 import Text from '@components/Text'
 import TouchableContainer from '@components/TouchableContainer'
 import { proxiesQuery } from '@helium/voter-stake-registry-hooks'
+import { EnhancedProxy } from '@helium/voter-stake-registry-sdk'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
@@ -30,7 +31,7 @@ export const ProxySearch: React.FC<{
     data: resultPaged,
     isLoading: loading,
     isPending,
-  } = useInfiniteQuery(
+  } = useInfiniteQuery<EnhancedProxy>(
     proxiesQuery({
       search: debouncedInput || '',
       amountPerPage: 20,

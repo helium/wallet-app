@@ -13,8 +13,8 @@ import NotificationListItem from './NotificationListItem'
 import { Notification } from '../../utils/walletApiV2'
 
 export type NotificationsListProps = {
-  HeaderComponent: JSX.Element
-  FooterComponent: JSX.Element
+  HeaderComponent: React.JSX.Element
+  FooterComponent: React.JSX.Element
 }
 
 const NotificationsList = ({
@@ -109,7 +109,7 @@ const NotificationsList = ({
   )
 
   const renderSectionHeader = useCallback(
-    ({ section: { title: sectionTitle, icon } }) => (
+    ({ section: { title: sectionTitle } }) => (
       <FadeInOut>
         <Box
           flexDirection="row"
@@ -120,7 +120,6 @@ const NotificationsList = ({
           backgroundColor="primaryBackground"
           justifyContent="center"
         >
-          {icon !== undefined && icon}
           <Text variant="body2" textAlign="center" color="secondaryText">
             {sectionTitle}
           </Text>

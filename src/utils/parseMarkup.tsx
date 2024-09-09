@@ -14,7 +14,7 @@ import Link from '@components/Link'
 import Bullet from '@components/Bullet'
 import * as Logger from './logger'
 
-const symbols: Record<string, JSX.Element> = {
+const symbols: Record<string, React.JSX.Element> = {
   b: <Text fontWeight="700" variant="body2" />,
   light: <Text fontWeight="200" variant="body2" />,
   blue: <Text color="blueBright500" variant="body2" />,
@@ -31,7 +31,7 @@ const symbols: Record<string, JSX.Element> = {
 
 const parseMarkup = (
   rawText: string,
-  OuterComponent?: JSX.Element,
+  OuterComponent?: React.JSX.Element,
   style?: ViewStyle,
 ) => {
   if (!rawText) return rawText
@@ -72,9 +72,9 @@ const parseMarkup = (
   if (!isEmpty(style)) {
     const prevStyle = get(values[0], 'props.style', {})
     values[0] = {
-      ...(values[0] as JSX.Element),
+      ...(values[0] as React.JSX.Element),
       props: {
-        ...(values[0] as JSX.Element).props,
+        ...(values[0] as React.JSX.Element).props,
         style: { ...prevStyle, ...style },
       },
     }
@@ -85,7 +85,7 @@ const parseMarkup = (
 
 const parseNode = (
   node: DefaultTreeTextNode | DefaultTreeElement | DefaultTreeNode,
-): string | JSX.Element => {
+): string | React.JSX.Element => {
   if (node.nodeName === '#text') return (node as DefaultTreeTextNode).value
 
   const element = node as DefaultTreeElement

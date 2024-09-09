@@ -8,6 +8,7 @@ import { Markdown } from '@components/Markdown'
 import { Pill } from '@components/Pill'
 import Text from '@components/Text'
 import { proxyQuery, useProxiedTo } from '@helium/voter-stake-registry-hooks'
+import { PartialEnhancedProxy } from '@helium/voter-stake-registry-sdk'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
@@ -36,7 +37,9 @@ export const VoterScreen = () => {
     [route.params.wallet],
   )
   const { mint, mintAcc, voteService, positions } = useGovernance()
-  const { data: proxy, refetch } = useQuery(
+  const { data: proxy, refetch } = useQuery<
+    PartialEnhancedProxy & { networks: string[] }
+  >(
     proxyQuery({
       wallet,
       voteService,

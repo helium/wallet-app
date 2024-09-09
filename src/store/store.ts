@@ -1,4 +1,4 @@
-import { configureStore } from '@reduxjs/toolkit'
+import { StoreEnhancer, configureStore } from '@reduxjs/toolkit'
 import { useDispatch, useStore } from 'react-redux'
 import { persistReducer } from 'redux-persist'
 import { setupListeners } from '@reduxjs/toolkit/query'
@@ -10,7 +10,7 @@ import { name as balancesSliceName } from './slices/balancesSlice'
 import { name as notificationsSliceName } from './slices/notificationsSlice'
 import Reactotron from '../../ReactotronConfig'
 
-const enhancers = []
+const enhancers: StoreEnhancer[] = []
 if (Reactotron.createEnhancer && __DEV__) {
   enhancers.push(Reactotron.createEnhancer())
 }

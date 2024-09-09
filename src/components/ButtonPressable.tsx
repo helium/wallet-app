@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { BoxProps } from '@shopify/restyle'
-import React, { FC, memo, useCallback } from 'react'
+import React, { FC, memo, useState, useMemo } from 'react'
 import { GestureResponderEvent, ViewStyle } from 'react-native'
 import { SvgProps } from 'react-native-svg'
 import { useDebouncedCallback } from 'use-debounce'
@@ -63,129 +63,115 @@ const ButtonPressable = ({
   TrailingComponent,
   ...boxProps
 }: Props) => {
+  const [pressed, setPressed] = useState(false)
+  const { backgroundStyle, colorStyle, color } = useCreateOpacity()
+
   const debouncedHandler = useDebouncedCallback(
     (event: GestureResponderEvent) => onPress?.(event),
     debounceDuration,
     { leading: true, trailing: false },
   )
 
-  const handlePress = useCallback(
-    (event: GestureResponderEvent) => {
+  const handlePress = useMemo(() => {
+    return (event: GestureResponderEvent) => {
       if (debounceDuration) {
         debouncedHandler(event)
       } else {
         onPress?.(event)
       }
-    },
-    [debounceDuration, debouncedHandler, onPress],
-  )
+    }
+  }, [debounceDuration, debouncedHandler, onPress])
 
-  const { backgroundStyle, colorStyle, color } = useCreateOpacity()
+  const titleColorActual = useMemo(() => {
+    if (disabled && titleColorDisabled) return titleColorDisabled
+    if (pressed && titleColorPressed) return titleColorPressed
+    if (titleColor) return titleColor
+    return 'primaryText'
+  }, [disabled, pressed, titleColor, titleColorDisabled, titleColorPressed])
 
-  const getTitleColor = useCallback(
-    (pressed: boolean) => {
-      if (disabled && titleColorDisabled) {
-        return titleColorDisabled
-      }
-      if (pressed && titleColorPressed) {
-        return titleColorPressed
-      }
-      if (titleColor) {
-        return titleColor
-      }
-      return 'primaryText'
-    },
-    [disabled, titleColor, titleColorDisabled, titleColorPressed],
-  )
+  const titleColorStyle = useMemo(() => {
+    const opacity =
+      pressed && titleColorPressedOpacity
+        ? titleColorPressedOpacity
+        : titleColorOpacity
+    return colorStyle(titleColorActual, opacity)
+  }, [
+    colorStyle,
+    pressed,
+    titleColorActual,
+    titleColorOpacity,
+    titleColorPressedOpacity,
+  ])
 
-  const getTitleColorStyle = useCallback(
-    (pressed: boolean) => {
-      return colorStyle(
-        getTitleColor(pressed),
-        pressed && titleColorPressedOpacity
-          ? titleColorPressedOpacity
-          : titleColorOpacity,
+  const iconColor = useMemo(() => {
+    return color(titleColorActual, titleColorOpacity)
+  }, [color, titleColorActual, titleColorOpacity])
+
+  const backgroundColorStyle = useMemo(() => {
+    if (disabled && backgroundColorDisabled) {
+      return backgroundStyle(
+        backgroundColorDisabled,
+        backgroundColorDisabledOpacity,
       )
-    },
-    [colorStyle, getTitleColor, titleColorOpacity, titleColorPressedOpacity],
-  )
-
-  const getIconColor = useCallback(
-    (pressed: boolean) => {
-      const c = getTitleColor(pressed)
-      return color(c, titleColorOpacity)
-    },
-    [color, getTitleColor, titleColorOpacity],
-  )
-
-  const getBackgroundColorStyle = useCallback(
-    (pressed: boolean) => {
-      if (disabled && backgroundColorDisabled) {
-        return backgroundStyle(
-          backgroundColorDisabled,
-          backgroundColorDisabledOpacity,
-        )
-      }
-      if (pressed || selected) {
-        return backgroundStyle(
-          backgroundColorPressed || backgroundColor || 'white',
-          backgroundColorOpacityPressed,
-        )
-      }
-
-      if (!pressed && backgroundColor) {
-        return backgroundStyle(backgroundColor, backgroundColorOpacity)
-      }
-    },
-    [
-      disabled,
-      backgroundColorDisabled,
-      selected,
-      backgroundColor,
-      backgroundStyle,
-      backgroundColorDisabledOpacity,
-      backgroundColorPressed,
-      backgroundColorOpacityPressed,
-      backgroundColorOpacity,
-    ],
-  )
+    }
+    if (pressed || selected) {
+      return backgroundStyle(
+        backgroundColorPressed || backgroundColor || 'white',
+        backgroundColorOpacityPressed,
+      )
+    }
+    if (backgroundColor) {
+      return backgroundStyle(backgroundColor, backgroundColorOpacity)
+    }
+  }, [
+    backgroundStyle,
+    disabled,
+    pressed,
+    selected,
+    backgroundColorDisabled,
+    backgroundColorDisabledOpacity,
+    backgroundColorPressed,
+    backgroundColor,
+    backgroundColorOpacityPressed,
+    backgroundColorOpacity,
+  ])
 
   return (
     <ButtonPressAnimation
       overflow="hidden"
       onPress={handlePress}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
       disabled={disabled}
       {...boxProps}
     >
-      {({ pressed }: { pressed: boolean }) => (
-        <Box
-          height={height}
-          minHeight={boxProps.minHeight}
-          maxHeight={boxProps.maxHeight}
-          padding={height || boxProps.maxHeight || padding ? padding : 'l'}
-          style={getBackgroundColorStyle(pressed)}
-          flexDirection="row"
-          justifyContent={Icon ? 'space-between' : 'center'}
-          alignItems="center"
-          {...containerProps}
-        >
-          {LeadingComponent && <Box marginEnd="xs">{LeadingComponent}</Box>}
+      <Box
+        height={height}
+        minHeight={boxProps.minHeight}
+        maxHeight={boxProps.maxHeight}
+        padding={height || boxProps.maxHeight || padding ? padding : 'l'}
+        style={backgroundColorStyle}
+        flexDirection="row"
+        justifyContent={Icon ? 'space-between' : 'center'}
+        alignItems="center"
+        {...containerProps}
+      >
+        {LeadingComponent && <Box marginEnd="xs">{LeadingComponent}</Box>}
 
-          {title && (
-            <Text
-              variant="subtitle1"
-              fontSize={fontSize || 19}
-              fontWeight={fontWeight}
-              style={getTitleColorStyle(pressed)}
-              marginHorizontal="xs"
-            >
-              {title}
-            </Text>
-          )}
-          {Icon && <Icon color={getIconColor(pressed)} />}
-          {TrailingComponent && <Box marginStart="xs">{TrailingComponent}</Box>}
-        </Box>
-      )}
+        {title && (
+          <Text
+            variant="subtitle1"
+            fontSize={fontSize || 19}
+            fontWeight={fontWeight}
+            style={titleColorStyle}
+            marginHorizontal="xs"
+          >
+            {title}
+          </Text>
+        )}
+        {Icon && <Icon color={iconColor} />}
+        {TrailingComponent && <Box marginStart="xs">{TrailingComponent}</Box>}
+      </Box>
     </ButtonPressAnimation>
   )
 }

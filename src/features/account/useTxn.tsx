@@ -36,7 +36,7 @@ export const MintParser = (pubKey: PublicKey, info: AccountInfo<Buffer>) => {
 }
 
 export const TxnTypeKeys = ['payment_v2'] as const
-type TxnType = typeof TxnTypeKeys[number]
+type TxnType = (typeof TxnTypeKeys)[number]
 
 const useTxn = (
   mint?: PublicKey,
@@ -288,7 +288,7 @@ type Payment = {
 }
 type TxnDetails = {
   feePayer: string
-  icon?: JSX.Element
+  icon?: React.JSX.Element
   title: string
   time: string
   color: Color

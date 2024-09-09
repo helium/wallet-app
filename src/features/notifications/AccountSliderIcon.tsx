@@ -5,7 +5,7 @@ import { heliumAddressToSolAddress } from '@helium/spl-utils'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 
 type Props = {
-  icon: Element
+  icon: React.ReactNode
   resource: string
   index: number
   onPress: (index: number) => void

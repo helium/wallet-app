@@ -28,8 +28,7 @@ import { chunks, truthy } from '@helium/spl-utils'
 import useHotspots from '@hooks/useHotspots'
 import { IotHotspotInfoV0 } from '@hooks/useIotInfo'
 import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
-import MapLibreGL from '@maplibre/maplibre-react-native'
-import OnPressEvent from '@maplibre/maplibre-react-native/javascript/types/OnPressEvent'
+import MapLibreGL, { OnPressEvent } from '@maplibre/maplibre-react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useBackgroundStyle, useColors } from '@theme/themeHooks'
 import { Polygon, feature, featureCollection } from '@turf/helpers'
@@ -69,7 +68,6 @@ const HotspotMapScreen = () => {
   const colors = useColors()
   const mapRef = useRef<MapLibreGL.MapView>(null)
   const cameraRef = useRef<MapLibreGL.Camera>(null)
-  const userLocationRef = useRef<MapLibreGL.UserLocation>(null)
   const bottomSheetRef = useRef<BottomSheetModal>(null)
   const [bottomSheetHeight, setBottomSheetHeight] = useState(0)
   const [bottomSheetSnapIndex, setBottomSheetSnapIndex] = useState(-1)
@@ -89,17 +87,20 @@ const HotspotMapScreen = () => {
   const { hotspots, fetchAll, loading, onEndReached } = useHotspots()
   const [initialUserLocation, setInitialUserLocation] = useState<number[]>()
   const [initialCenterSet, setInitalCenter] = useState(false)
+  const [userLocation, setUserLocation] = useState<MapLibreGL.Location>()
+  const onUserLocationUpdate = useCallback(
+    (loc: MapLibreGL.Location) => {
+      setUserLocation(loc)
+    },
+    [setUserLocation],
+  )
 
   useEffect(() => {
-    const coords = userLocationRef?.current?.state?.coordinates
+    const coords = userLocation?.coords
     if (!initialUserLocation && coords) {
-      setInitialUserLocation(coords)
+      setInitialUserLocation([coords.longitude, coords.latitude])
     }
-  }, [
-    initialUserLocation,
-    setInitialUserLocation,
-    userLocationRef?.current?.state?.coordinates,
-  ])
+  }, [initialUserLocation, setInitialUserLocation, userLocation?.coords])
 
   const initialCenter = useMemo(() => {
     return initialUserLocation || INITIAL_MAP_VIEW_STATE.centerCoordinate
@@ -243,6 +244,8 @@ const HotspotMapScreen = () => {
       bottomSheetHeight
     ) {
       const cords = parseH3BNLocation(new BN(activeHex)).reverse()
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       const mapHeight = mapRef.current.state.height
 
       if (mapHeight - bottomSheetHeight > 0) {
@@ -344,14 +347,14 @@ const HotspotMapScreen = () => {
   )
 
   const handleUserLocationPress = useCallback(() => {
-    if (cameraRef?.current && userLocationRef?.current?.state.coordinates) {
+    if (cameraRef?.current && userLocation?.coords) {
       cameraRef.current.setCamera({
         animationDuration: 500,
         zoomLevel: MAX_MAP_ZOOM,
-        centerCoordinate: userLocationRef.current.state.coordinates,
+        centerCoordinate: userLocation.coords,
       })
     }
-  }, [userLocationRef, cameraRef])
+  }, [userLocation, cameraRef])
 
   const handleRegionChanged = useCallback(async () => {
     if (mapRef?.current) {
@@ -422,7 +425,7 @@ const HotspotMapScreen = () => {
           <Map
             map={mapRef}
             camera={cameraRef}
-            userLocation={userLocationRef}
+            onUserLocationUpdate={onUserLocationUpdate}
             centerCoordinate={initialCenter}
             mapProps={{
               onRegionDidChange: handleRegionChanged,

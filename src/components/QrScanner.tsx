@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { BarCodeScanningResult, Camera } from 'expo-camera'
+import React, { useCallback, useEffect, useState } from 'react'
+import { BarcodeScanningResult, Camera, CameraView } from 'expo-camera'
 import { Linking, Platform, StyleSheet } from 'react-native'
-import { BarCodeScanner } from 'expo-barcode-scanner'
 import { useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
@@ -43,14 +42,8 @@ const QrScanner = ({ onBarCodeScanned }: Props) => {
     navigation.goBack()
   }, [hasPermission, navigation, showOKCancelAlert])
 
-  const barCodeScannerSettings = useMemo(
-    () => ({
-      barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
-    }),
-    [],
-  )
   const handleBarCodeScanned = useCallback(
-    async (result: BarCodeScanningResult) => {
+    async (result: BarcodeScanningResult) => {
       if (scanned) return
 
       setScanned(true)
@@ -70,10 +63,14 @@ const QrScanner = ({ onBarCodeScanned }: Props) => {
 
   return (
     <BackScreen>
-      <Camera
-        onBarCodeScanned={handleBarCodeScanned}
-        barCodeScannerSettings={barCodeScannerSettings}
+      <CameraView
+        onBarcodeScanned={handleBarCodeScanned}
+        barcodeScannerSettings={{
+          barcodeTypes: ['qr'],
+        }}
         style={StyleSheet.absoluteFillObject}
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         ratio="16:9"
       />
     </BackScreen>

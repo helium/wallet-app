@@ -76,7 +76,7 @@ const ActivityScreen = () => {
   }, [transactions])
 
   const renderSectionHeader = useCallback(
-    ({ section: { title, icon } }) => (
+    ({ section: { title } }) => (
       <Box
         flexDirection="row"
         alignItems="center"
@@ -86,7 +86,6 @@ const ActivityScreen = () => {
         backgroundColor="primaryBackground"
         justifyContent="center"
       >
-        {icon !== undefined && icon}
         <Text variant="body3" textAlign="center" color="secondaryText">
           {title}
         </Text>

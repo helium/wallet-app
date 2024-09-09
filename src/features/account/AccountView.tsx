@@ -1,19 +1,19 @@
-import React, { memo, useEffect, useState } from 'react'
-import { addMinutes } from 'date-fns'
-import { BoxProps } from '@shopify/restyle'
-import { GestureResponderEvent } from 'react-native'
-import Text from '@components/Text'
-import FadeInOut from '@components/FadeInOut'
-import useLayoutHeight from '@hooks/useLayoutHeight'
 import Box from '@components/Box'
-import { Theme } from '@theme/theme'
 import CopyAddressPill from '@components/CopyAddressPill'
-import CurrencyFormatter from 'react-native-currency-format'
-import { useBalance } from '../../utils/Balance'
+import FadeInOut from '@components/FadeInOut'
+import Text from '@components/Text'
+import useLayoutHeight from '@hooks/useLayoutHeight'
+import { BoxProps } from '@shopify/restyle'
+import { Theme } from '@theme/theme'
+import { useLanguage } from '@utils/i18n'
+import { addMinutes } from 'date-fns'
+import React, { memo, useEffect, useState } from 'react'
+import { GestureResponderEvent } from 'react-native'
 import { useAppStorage } from '../../storage/AppStorageProvider'
-import AccountActionBar from './AccountActionBar'
-import DateModule from '../../utils/DateModule'
 import { AccountBalance } from '../../types/balance'
+import { numberFormat, useBalance } from '../../utils/Balance'
+import DateModule from '../../utils/DateModule'
+import AccountActionBar from './AccountActionBar'
 
 type Props = {
   selectedBalance?: AccountBalance
@@ -39,15 +39,17 @@ const AccountView = ({ selectedBalance, ...boxProps }: Props) => {
     )
   }, [selectedBalance])
 
+  const { language } = useLanguage()
+
   useEffect(() => {
     if (selectedBalance) {
-      CurrencyFormatter.format(selectedBalance.balance, currency).then(
-        setBalanceString,
+      setBalanceString(
+        numberFormat(language, currency, Number(selectedBalance.balance)),
       )
     } else {
       setBalanceString(formattedTotal || '')
     }
-  }, [currency, selectedBalance, formattedTotal])
+  }, [language, currency, selectedBalance, formattedTotal])
 
   return (
     <Box flexDirection="column" alignItems="center" {...boxProps}>

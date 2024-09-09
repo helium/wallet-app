@@ -75,7 +75,6 @@ const AssertLocationScreen = () => {
   const backEdges = useMemo(() => ['top'] as Edge[], [])
   const mapRef = useRef<MapLibreGL.MapView>(null)
   const cameraRef = useRef<MapLibreGL.Camera>(null)
-  const userLocationRef = useRef<MapLibreGL.UserLocation>(null)
   const { showOKAlert } = useAlert()
   const colors = useColors()
   const [mapCenter, setMapCenter] = useState<number[]>()
@@ -131,16 +130,20 @@ const AssertLocationScreen = () => {
   const [initialUserLocation, setInitialUserLocation] = useState<number[]>()
   const [initialCenterSet, setInitalCenter] = useState(false)
 
+  const [userLocation, setUserLocation] = useState<MapLibreGL.Location>()
+  const onUserLocationUpdate = useCallback(
+    (loc: MapLibreGL.Location) => {
+      setUserLocation(loc)
+    },
+    [setUserLocation],
+  )
+
   useEffect(() => {
-    const coords = userLocationRef?.current?.state?.coordinates
+    const coords = userLocation?.coords
     if (!initialUserLocation && coords) {
-      setInitialUserLocation(coords)
+      setInitialUserLocation([coords.longitude, coords.latitude])
     }
-  }, [
-    initialUserLocation,
-    setInitialUserLocation,
-    userLocationRef?.current?.state?.coordinates,
-  ])
+  }, [initialUserLocation, setInitialUserLocation, userLocation?.coords])
 
   const initialCenter = useMemo(() => {
     return (
@@ -244,14 +247,14 @@ const AssertLocationScreen = () => {
   }, [mapRef, mapCenter, setMapCenter, hideSearch])
 
   const handleUserLocationPress = useCallback(() => {
-    if (cameraRef?.current && userLocationRef?.current?.state.coordinates) {
+    if (cameraRef?.current && userLocation?.coords) {
       cameraRef.current.setCamera({
         animationDuration: 500,
         zoomLevel: MAX_MAP_ZOOM,
-        centerCoordinate: userLocationRef.current.state.coordinates,
+        centerCoordinate: userLocation?.coords,
       })
     }
-  }, [userLocationRef, cameraRef])
+  }, [cameraRef, userLocation?.coords])
 
   const assertLocation = useCallback(
     async (type: NetworkType) => {
@@ -433,7 +436,7 @@ const AssertLocationScreen = () => {
           <Map
             map={mapRef}
             camera={cameraRef}
-            userLocation={userLocationRef}
+            onUserLocationUpdate={onUserLocationUpdate}
             centerCoordinate={initialCenter}
             mapProps={{
               onPress: hideSearch,
@@ -446,8 +449,7 @@ const AssertLocationScreen = () => {
 
                 return (
                   <MapLibreGL.MarkerView
-                    key={`MarkerView-${i + 1}`}
-                    allowOverlap
+                    id={`MarkerView-${i + 1}`}
                     coordinate={[
                       i === 0 ? location[0] + 0.001 : location[0],
                       location[1],

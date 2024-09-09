@@ -1,4 +1,6 @@
 import { init as initDataCredits } from '@helium/data-credits-sdk'
+import { Program } from '@coral-xyz/anchor'
+import { DataCredits } from '@helium/idls/lib/types/data_credits'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
 import { DC_MINT, sendAndConfirmWithRetry } from '@helium/spl-utils'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
@@ -37,7 +39,9 @@ export function useImplicitBurn(): {
     if (!wallet) throw new Error('No wallet')
 
     if ((myDc || BigInt(0)) < BigInt(totalDcReq)) {
-      const program = await initDataCredits(anchorProvider)
+      const program = (await initDataCredits(
+        anchorProvider,
+      )) as Program<DataCredits>
       const dcDeficit = BigInt(totalDcReq) - (myDc || BigInt(0))
       const burnTx = new Transaction({
         feePayer: wallet,
