@@ -527,191 +527,193 @@ const AssertLocationScreen = () => {
           >
             <MapPin width={30} height={30} />
           </Box>
-
-          <Box
-            flexDirection="row"
-            justifyContent="space-between"
-            position="absolute"
-            marginHorizontal="ms"
-            width="100%"
-            bottom={!searchVisible ? 20 : 0}
-          >
-            {!searchVisible ? (
-              <>
-                <Box
-                  flexShrink={1}
-                  flexDirection="row"
-                  alignItems="center"
-                  marginHorizontal="ms"
-                >
-                  {reverseGeoLoading && (
-                    <Box>
-                      <CircleLoader
-                        loaderSize={20}
-                        color="white"
-                        marginRight={reverseGeo.result ? 'ms' : 'none'}
-                      />
-                    </Box>
-                  )}
-                  {showError && (
-                    <Text variant="body3Medium" color="red500">
-                      {showError}
-                    </Text>
-                  )}
-                  {!reverseGeoLoading && !showError && reverseGeo.result && (
-                    <FadeInOut>
-                      <Box
-                        flexShrink={1}
-                        style={backgroundStyle('white', 0.3)}
-                        flexDirection="row"
-                        alignItems="center"
-                        paddingHorizontal="ms"
-                        paddingVertical="sx"
-                        borderRadius="round"
-                        minHeight={36}
-                      >
-                        <Text
-                          variant="body3Medium"
-                          color="white"
-                          numberOfLines={1}
-                        >
-                          {reverseGeo.result}
-                        </Text>
-                      </Box>
-                    </FadeInOut>
-                  )}
-                </Box>
-                <Box
-                  flexShrink={0}
-                  flexDirection="row"
-                  alignItems="center"
-                  justifyContent="flex-end"
-                  marginHorizontal="ms"
-                >
-                  <FabButton
-                    icon="search"
-                    backgroundColor="white"
-                    backgroundColorOpacity={0.3}
-                    backgroundColorOpacityPressed={0.5}
-                    marginRight="ms"
-                    width={36}
-                    height={36}
-                    justifyContent="center"
-                    onPress={handleSearchPress}
-                  />
-                  <FabButton
-                    icon="mapUserLocation"
-                    backgroundColor="white"
-                    backgroundColorOpacity={0.3}
-                    backgroundColorOpacityPressed={0.5}
-                    width={36}
-                    height={36}
-                    justifyContent="center"
-                    onPress={handleUserLocationPress}
-                  />
-                </Box>
-              </>
-            ) : (
-              <SearchInput
-                paddingBottom="s"
-                placeholder={t('assertLocationScreen.searchLocation')}
-                onChangeText={setSearchValue}
-                onEnter={handleOnSearch}
-                value={searchValue}
-                width="100%"
-                borderRadius="none"
-                autoFocus
-              />
-            )}
-          </Box>
-        </Box>
-        <Box
-          style={{
-            marginTop: -10,
-          }}
-          backgroundColor="surfaceSecondary"
-          borderTopLeftRadius="l"
-          borderTopRightRadius="l"
-          padding="ms"
-        >
-          <Box flexDirection="row" marginBottom="m">
-            <ImageBox
-              borderRadius="lm"
-              height={60}
-              width={60}
-              mr="ms"
-              source={{
-                uri: metadata?.image,
-                cache: 'force-cache',
-              }}
-            />
-            <Box flex={1}>
-              <Box flexDirection="row" alignItems="center">
-                {metadata?.name && (
-                  <Text
-                    variant="h3Bold"
-                    color="white"
-                    numberOfLines={1}
-                    adjustsFontSizeToFit
-                  >
-                    {removeDashAndCapitalize(metadata.name)}
+          {!searchVisible ? (
+            <Box
+              flexDirection="row"
+              justifyContent="space-between"
+              position="absolute"
+              marginHorizontal="ms"
+              width="100%"
+              bottom={20}
+            >
+              <Box
+                flexShrink={1}
+                flexDirection="row"
+                alignItems="center"
+                marginHorizontal="ms"
+              >
+                {reverseGeoLoading && (
+                  <Box>
+                    <CircleLoader
+                      loaderSize={20}
+                      color="white"
+                      marginRight={reverseGeo.result ? 'ms' : 'none'}
+                    />
+                  </Box>
+                )}
+                {showError && (
+                  <Text variant="body3Medium" color="red500">
+                    {showError}
                   </Text>
                 )}
+                {!reverseGeoLoading && !showError && reverseGeo.result && (
+                  <FadeInOut>
+                    <Box
+                      flexShrink={1}
+                      style={backgroundStyle('white', 0.3)}
+                      flexDirection="row"
+                      alignItems="center"
+                      paddingHorizontal="ms"
+                      paddingVertical="sx"
+                      borderRadius="round"
+                      minHeight={36}
+                    >
+                      <Text
+                        variant="body3Medium"
+                        color="white"
+                        numberOfLines={1}
+                      >
+                        {reverseGeo.result}
+                      </Text>
+                    </Box>
+                  </FadeInOut>
+                )}
               </Box>
-              <Box flexDirection="row" alignItems="center">
-                <Box flexDirection="row" alignItems="center" marginRight="m">
-                  <Text
-                    variant="subtitle4"
-                    color="secondaryText"
-                    marginRight="s"
-                  >
-                    IOT:
-                  </Text>
-                  <Hex width={16} height={16} color={colors.greenBright500} />
+              <Box
+                flexShrink={0}
+                flexDirection="row"
+                alignItems="center"
+                justifyContent="flex-end"
+                marginHorizontal="ms"
+              >
+                <FabButton
+                  icon="search"
+                  backgroundColor="white"
+                  backgroundColorOpacity={0.3}
+                  backgroundColorOpacityPressed={0.5}
+                  marginRight="ms"
+                  width={36}
+                  height={36}
+                  justifyContent="center"
+                  onPress={handleSearchPress}
+                />
+                <FabButton
+                  icon="mapUserLocation"
+                  backgroundColor="white"
+                  backgroundColorOpacity={0.3}
+                  backgroundColorOpacityPressed={0.5}
+                  width={36}
+                  height={36}
+                  justifyContent="center"
+                  onPress={handleUserLocationPress}
+                />
+              </Box>
+            </Box>
+          ) : (
+            <Box flex={1}>
+              <KeyboardAvoidingView style={{ flex: 1 }}>
+                <SearchInput
+                  placeholder={t('assertLocationScreen.searchLocation')}
+                  onChangeText={setSearchValue}
+                  onEnter={handleOnSearch}
+                  value={searchValue}
+                  width="100%"
+                  borderRadius="none"
+                  autoFocus
+                />
+              </KeyboardAvoidingView>
+            </Box>
+          )}
+        </Box>
+        {!searchVisible && (
+          <Box
+            style={{
+              marginTop: -10,
+            }}
+            backgroundColor="surfaceSecondary"
+            borderTopLeftRadius="l"
+            borderTopRightRadius="l"
+            padding="ms"
+          >
+            <Box flexDirection="row" marginBottom="m">
+              <ImageBox
+                borderRadius="lm"
+                height={60}
+                width={60}
+                mr="ms"
+                source={{
+                  uri: metadata?.image,
+                  cache: 'force-cache',
+                }}
+              />
+              <Box flex={1}>
+                <Box flexDirection="row" alignItems="center">
+                  {metadata?.name && (
+                    <Text
+                      variant="h3Bold"
+                      color="white"
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                    >
+                      {removeDashAndCapitalize(metadata.name)}
+                    </Text>
+                  )}
                 </Box>
-                <Box flexDirection="row" alignItems="center" marginRight="m">
-                  <Text
-                    variant="subtitle4"
-                    color="secondaryText"
-                    marginRight="s"
-                  >
-                    {t('assertLocationScreen.mobileTitle')}:
-                  </Text>
-                  <Hex
-                    width={16}
-                    height={16}
-                    color={
-                      mobileLocation ? colors.blueBright500 : colors.darkGrey
-                    }
-                  />
+                <Box flexDirection="row" alignItems="center">
+                  <Box flexDirection="row" alignItems="center" marginRight="m">
+                    <Text
+                      variant="subtitle4"
+                      color="secondaryText"
+                      marginRight="s"
+                    >
+                      IOT:
+                    </Text>
+                    <Hex width={16} height={16} color={colors.greenBright500} />
+                  </Box>
+                  <Box flexDirection="row" alignItems="center" marginRight="m">
+                    <Text
+                      variant="subtitle4"
+                      color="secondaryText"
+                      marginRight="s"
+                    >
+                      {t('assertLocationScreen.mobileTitle')}:
+                    </Text>
+                    <Hex
+                      width={16}
+                      height={16}
+                      color={
+                        mobileLocation ? colors.blueBright500 : colors.darkGrey
+                      }
+                    />
+                  </Box>
                 </Box>
               </Box>
             </Box>
+            <TouchableOpacityBox
+              width="100%"
+              backgroundColor="surfaceContrast"
+              borderRadius="round"
+              paddingVertical="lm"
+              disabled={disabled}
+              height={65}
+              alignItems="center"
+              justifyContent="center"
+              onPress={handleAssertLocationPress}
+            >
+              {debouncedDisabled || asserting ? (
+                <CircleLoader loaderSize={19} color="black" />
+              ) : (
+                <Text
+                  variant="subtitle2"
+                  marginHorizontal="xs"
+                  color="surfaceContrastText"
+                >
+                  {t('assertLocationScreen.title')}
+                </Text>
+              )}
+            </TouchableOpacityBox>
           </Box>
-          <TouchableOpacityBox
-            width="100%"
-            backgroundColor="surfaceContrast"
-            borderRadius="round"
-            paddingVertical="lm"
-            disabled={disabled}
-            height={65}
-            alignItems="center"
-            justifyContent="center"
-            onPress={handleAssertLocationPress}
-          >
-            {debouncedDisabled || asserting ? (
-              <CircleLoader loaderSize={19} color="black" />
-            ) : (
-              <Text
-                variant="subtitle2"
-                marginHorizontal="xs"
-                color="surfaceContrastText"
-              >
-                {t('assertLocationScreen.title')}
-              </Text>
-            )}
-          </TouchableOpacityBox>
-        </Box>
+        )}
         {elevGainVisible ? (
           <ReAnimatedBlurBox
             visible={elevGainVisible}
