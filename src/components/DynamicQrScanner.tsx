@@ -1,8 +1,7 @@
 /* eslint-disable no-console */
-import React, { useEffect, useMemo, useState } from 'react'
-import { BarCodeScanningResult, Camera } from 'expo-camera'
+import React, { useEffect, useState } from 'react'
+import { BarcodeScanningResult, Camera, CameraView } from 'expo-camera'
 import { Linking, Platform, StyleSheet } from 'react-native'
-import { BarCodeScanner } from 'expo-barcode-scanner'
 import { useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
@@ -24,9 +23,13 @@ const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
   const { t } = useTranslation()
 
   useEffect(() => {
-    Camera.requestCameraPermissionsAsync().then(({ status }) => {
-      setHasPermission(status === 'granted')
-    })
+    console.log('useEffect')
+    Camera.requestCameraPermissionsAsync().then(
+      ({ status }: { status: string }) => {
+        setHasPermission(status === 'granted')
+      },
+    )
+    console.log('useEffect2')
   }, [])
 
   useAsync(async () => {
@@ -54,13 +57,7 @@ const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
     }
   }, [hasPermission, navigation, showOKCancelAlert])
 
-  const barCodeScannerSettings = useMemo(
-    () => ({
-      barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
-    }),
-    [],
-  )
-  const handleBarCodeScanned = (result: BarCodeScanningResult) => {
+  const handleBarCodeScanned = (result: BarcodeScanningResult) => {
     onBarCodeScanned(result.data)
   }
 
@@ -71,10 +68,12 @@ const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
 
       {hasPermission === true && (
         <Box flex={1}>
-          <Camera
-            onBarCodeScanned={handleBarCodeScanned}
-            barCodeScannerSettings={barCodeScannerSettings}
+          <CameraView
+            onBarcodeScanned={handleBarCodeScanned}
+            barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
             style={StyleSheet.absoluteFillObject}
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             ratio="16:9"
           />
           <CameraScannerLayout />

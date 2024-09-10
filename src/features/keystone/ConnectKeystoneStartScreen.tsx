@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import SafeAreaBox from '@components/SafeAreaBox'
@@ -101,7 +102,7 @@ const WarningContent = () => {
         <Box alignItems="center">
           <WarningKeystone />
           <Text variant="body0" textAlign="center" marginVertical="l">
-            {t('keystone.connectKeystoneStart.warning')}
+            {t('keystone.connectKeystoneStart.warning') as string}
           </Text>
         </Box>
       </Box>
@@ -147,10 +148,10 @@ const ConnectKeystoneStart = () => {
             source={require('../../assets/images/connectKeystoneLogo.png')}
           />
           <Text variant="h0" textAlign="center" marginVertical="l">
-            {t('keystone.connectKeystoneStart.title')}
+            {t('keystone.connectKeystoneStart.title') as string}
           </Text>
           <Text variant="subtitle1" textAlign="center">
-            {t('keystone.connectKeystoneStart.subtitle')}
+            {t('keystone.connectKeystoneStart.subtitle') as string}
           </Text>
         </Box>
       </Box>
