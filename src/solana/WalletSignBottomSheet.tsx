@@ -56,7 +56,7 @@ const WalletSignBottomSheet = forwardRef(
     }, [])
 
     const show = useCallback((opts: WalletSignOpts) => {
-      bottomSheetModalRef.current?.present() // Move the present() call here
+      bottomSheetModalRef.current?.present()
       bottomSheetModalRef.current?.expand()
       setWalletSignOpts(opts)
 
