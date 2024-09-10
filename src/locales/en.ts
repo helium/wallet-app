@@ -1415,7 +1415,6 @@ export default {
       delegatePosition: 'Delegate Position',
       undelegatePosition: 'Undelegate Tokens',
       relinquishPosition: 'Relinquish Votes',
-      flipLockup: 'Flip Lockup',
     },
     errors: {
       lockTokens:
