@@ -12,9 +12,8 @@ import KeystoneSDK, {
 } from '@keystonehq/keystone-sdk'
 import { AnimatedQrCode } from '@components/StaticQrCode'
 import useAlert from '@hooks/useAlert'
-import { BarCodeScanningResult, Camera } from 'expo-camera'
+import { BarcodeScanningResult, Camera, CameraView } from 'expo-camera'
 import { Linking, Platform, StyleSheet } from 'react-native'
-import { BarCodeScanner } from 'expo-barcode-scanner'
 import ProgressBar from '@components/ProgressBar'
 import { useAsync } from 'react-async-hook'
 import EventEmitter from 'events'
@@ -56,22 +55,20 @@ const DaynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
     }
   }, [hasPermission, showOKCancelAlert])
 
-  const barCodeScannerSettings = useMemo(
-    () => ({
-      barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
-    }),
-    [],
-  )
-  const handleBarCodeScanned = (result: BarCodeScanningResult) => {
+  const handleBarCodeScanned = (result: BarcodeScanningResult) => {
     onBarCodeScanned(result.data)
   }
 
   return (
     <SafeAreaBox flex={1} edges={['top']}>
-      <Camera
-        onBarCodeScanned={handleBarCodeScanned}
-        barCodeScannerSettings={barCodeScannerSettings}
+      <CameraView
+        onBarcodeScanned={handleBarCodeScanned}
+        barcodeScannerSettings={{
+          barcodeTypes: ['qr'],
+        }}
         style={StyleSheet.absoluteFillObject}
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         ratio="16:9"
       />
       <CameraScannerLayout />
