@@ -23,13 +23,11 @@ const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
   const { t } = useTranslation()
 
   useEffect(() => {
-    console.log('useEffect')
     Camera.requestCameraPermissionsAsync().then(
       ({ status }: { status: string }) => {
         setHasPermission(status === 'granted')
       },
     )
-    console.log('useEffect2')
   }, [])
 
   useAsync(async () => {
