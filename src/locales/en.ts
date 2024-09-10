@@ -1367,7 +1367,7 @@ export default {
       fetchingSubDaos: 'Fetching SubDaos...',
       noneFound: 'No Positions Found',
       closeMessage: 'Close this position?',
-      flipLockupMesage:
+      flipLockupMessage:
         "Your current position of {{amount}} {{symbol}} is {{status}}, please confirm whether you'd like to {{action}} or not?",
       extendMessage:
         'Extend this positions lockup from {{existing}} to {{new}}?',
@@ -1415,6 +1415,7 @@ export default {
       delegatePosition: 'Delegate Position',
       undelegatePosition: 'Undelegate Tokens',
       relinquishPosition: 'Relinquish Votes',
+      flipLockup: 'Flip Lockup',
     },
     errors: {
       lockTokens:
