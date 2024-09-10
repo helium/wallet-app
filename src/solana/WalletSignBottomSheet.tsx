@@ -11,9 +11,7 @@ import React, {
   forwardRef,
   memo,
   useCallback,
-  useEffect,
   useImperativeHandle,
-  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -27,12 +25,14 @@ import {
   WalletStandardMessageTypes,
 } from './walletSignBottomSheetTypes'
 
-let promiseResolve: (value: boolean | PromiseLike<boolean>) => void
 const WalletSignBottomSheet = forwardRef(
   (
     { onClose, children }: WalletSignBottomSheetProps,
     ref: Ref<WalletSignBottomSheetRef>,
   ) => {
+    const [promiseResolve, setPromiseResolve] = useState<
+      ((value: boolean | PromiseLike<boolean>) => void) | null
+    >(null)
     useImperativeHandle(ref, () => ({ show, hide }))
     const { secondaryText } = useColors()
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
@@ -49,26 +49,20 @@ const WalletSignBottomSheet = forwardRef(
       suppressWarnings: false,
     })
 
-    const hasRenderer = useMemo(
-      () => walletSignOpts.renderer !== undefined,
-      [walletSignOpts],
-    )
-
-    useEffect(() => {
-      bottomSheetModalRef.current?.present()
-    }, [bottomSheetModalRef])
-
+    const hasRenderer = walletSignOpts.renderer !== undefined
     const hide = useCallback(() => {
       bottomSheetModalRef.current?.close()
       setSimulated(false)
     }, [])
 
     const show = useCallback((opts: WalletSignOpts) => {
+      bottomSheetModalRef.current?.present()
       bottomSheetModalRef.current?.expand()
       setWalletSignOpts(opts)
 
       return new Promise<boolean>((resolve) => {
-        promiseResolve = resolve
+        setPromiseResolve(() => resolve)
+        bottomSheetModalRef.current?.snapToIndex(0)
       })
     }, [])
 
@@ -88,47 +82,39 @@ const WalletSignBottomSheet = forwardRef(
       if (promiseResolve) {
         promiseResolve(false)
       }
-      // We need to re present the bottom sheet after it is dismissed so that it can be expanded again
-      bottomSheetModalRef.current?.present()
       if (onClose) {
         onClose()
       }
-    }, [onClose])
+    }, [onClose, promiseResolve])
 
     const onAcceptHandler = useCallback(() => {
       if (promiseResolve) {
         hide()
         promiseResolve(true)
       }
-    }, [hide])
+    }, [hide, promiseResolve])
 
     const onCancelHandler = useCallback(() => {
       if (promiseResolve) {
         hide()
         promiseResolve(false)
       }
-    }, [hide])
+    }, [hide, promiseResolve])
 
     return (
       <Box flex={1}>
         <BottomSheetModalProvider>
           <BottomSheetModal
             ref={bottomSheetModalRef}
-            index={-1}
+            index={0}
             backgroundStyle={backgroundStyle}
             backdropComponent={renderBackdrop}
             onDismiss={handleModalDismiss}
             enableDismissOnClose
-            handleIndicatorStyle={{
-              backgroundColor: secondaryText,
-            }}
-            // https://ethercreative.github.io/react-native-shadow-generator/
+            handleIndicatorStyle={{ backgroundColor: secondaryText }}
             style={{
               shadowColor: '#000',
-              shadowOffset: {
-                width: 0,
-                height: 12,
-              },
+              shadowOffset: { width: 0, height: 12 },
               shadowOpacity: 0.58,
               shadowRadius: 16.0,
               elevation: 24,
