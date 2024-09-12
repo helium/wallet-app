@@ -72,12 +72,7 @@ export const sortAccounts = (
 ) => {
   const acctList = values(accts)
   const sortedByAlias = sortBy(acctList, 'alias') || []
-  // if account is keystone account, add solanaAddress
   const sortedByAliasWithSolanaAddress = sortedByAlias.map((acct) => {
-    // here we need to check if the account is keystone account
-    if (acct.keystoneDevice) {
-      return { ...acct, solanaAddress: acct.address }
-    }
     return acct
   })
   if (defaultAddress) {
@@ -137,7 +132,7 @@ export const restoreAccounts = async () => {
         }
       }
 
-      if (!acct.solanaAddress && !acct.keystoneDevice) {
+      if (!acct.solanaAddress) {
         // eslint-disable-next-line no-param-reassign
         acct.solanaAddress = heliumAddressToSolAddress(acct.address)
       }

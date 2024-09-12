@@ -16,6 +16,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import base58 from 'bs58'
 import { CSAccountVersion } from '@storage/cloudStorage'
 import { hex } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
+import { PublicKey } from '@solana/web3.js'
+import Address from '@helium/address'
+import { ED25519_KEY_TYPE } from '@helium/address/build/KeyTypes'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { ImportAccountNavigationProp } from '../onboarding/import/importAccountNavTypes'
@@ -50,11 +53,18 @@ const KeystoneAccountAssignScreen = () => {
       return getName(index + 1)
     }
 
+    // convert solana public key to helium address
+    const solanaPublicKeyToHeliumAddress = (publicKey: string): string => {
+      const pkey = new PublicKey(hex.decode(publicKey))
+      const heliumAddr = new Address(0, 0, ED25519_KEY_TYPE, pkey.toBytes())
+      const heliumAddress = heliumAddr.b58
+      return heliumAddress
+    }
     const accountBulk = keystoneOnboardingData.accounts.map(
       (account, index) => ({
         alias: getName(index),
-        address: base58.encode(
-          hex.decode(keystoneOnboardingData.accounts[index].publicKey),
+        address: solanaPublicKeyToHeliumAddress(
+          keystoneOnboardingData.accounts[index].publicKey,
         ),
         solanaAddress: base58.encode(
           hex.decode(keystoneOnboardingData.accounts[index].publicKey),
