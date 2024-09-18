@@ -15,7 +15,7 @@ type Props = {
   disabled?: boolean
 }
 const AccountListItem = ({ selected, account, onPress, disabled }: Props) => {
-  const { primary } = useColors()
+  const { primaryText } = useColors()
 
   const handlePress = useCallback(() => onPress?.(account), [account, onPress])
 
@@ -53,7 +53,7 @@ const AccountListItem = ({ selected, account, onPress, disabled }: Props) => {
           justifyContent="center"
           alignItems="center"
         >
-          <Checkmark color={primary} />
+          <Checkmark color={primaryText} />
         </Box>
       )}
     </TouchableContainer>

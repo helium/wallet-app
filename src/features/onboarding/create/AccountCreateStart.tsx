@@ -1,4 +1,5 @@
 import React, { memo, useCallback } from 'react'
+import { useColors } from '@theme/themeHooks'
 import { useTranslation } from 'react-i18next'
 import CreateAccount from '@assets/images/createAccount.svg'
 import { useNavigation } from '@react-navigation/native'
@@ -9,7 +10,6 @@ import CloseButton from '@components/CloseButton'
 import SafeAreaBox from '@components/SafeAreaBox'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import { CreateAccountNavigationProp } from './createAccountNavTypes'
-import { useColors } from '@theme/themeHooks'
 
 type Props = { onCreate: () => void; inline?: boolean }
 const AccountCreateStart = ({ onCreate, inline }: Props) => {

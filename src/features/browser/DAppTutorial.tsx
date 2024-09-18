@@ -115,7 +115,7 @@ const DAppTutorial = () => {
       marginHorizontal: spacing['0.5'],
       backgroundColor: colors['base.white'],
     }),
-    [colors['base.white'], spacing['0.5']],
+    [colors, spacing],
   )
 
   return (

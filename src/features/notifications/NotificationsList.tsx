@@ -31,7 +31,7 @@ const NotificationsList = ({
     () => ({
       paddingBottom: spacing['15'],
     }),
-    [spacing['15']],
+    [spacing],
   )
 
   const SectionData = useMemo((): {

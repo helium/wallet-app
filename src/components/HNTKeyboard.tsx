@@ -505,7 +505,7 @@ const HNTKeyboardSelector = forwardRef(
                   maxFontSizeMultiplier={1}
                   numberOfLines={1}
                   adjustsFontSizeToFit
-                  color={'primaryText'}
+                  color="primaryText"
                 >
                   {`${value || '0'} ${symbol || ''}`}
                 </Text>

@@ -266,7 +266,7 @@ const BrowserScreen = () => {
   const keyExtractor = useCallback((item, index) => item + index, [])
 
   return (
-    <Box flex={1} backgroundColor={'primaryBackground'}>
+    <Box flex={1} backgroundColor="primaryBackground">
       <Box
         backgroundColor="primaryBackground"
         height={top}

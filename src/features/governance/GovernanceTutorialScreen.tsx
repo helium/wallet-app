@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { Edge } from 'react-native-safe-area-context'
 import { Carousel, Pagination } from 'react-native-snap-carousel'
 import Box from '@components/Box'
-import CloseButton from '@components/CloseButton'
 import ImageBox from '@components/ImageBox'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
@@ -82,7 +81,7 @@ export const GovernanceTutorialScreen = () => {
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: CarouselItem }) => {
       return (
-        <Box flex={1} justifyContent={'center'}>
+        <Box flex={1} justifyContent="center">
           <ImageBox
             flexShrink={1}
             source={item.image}

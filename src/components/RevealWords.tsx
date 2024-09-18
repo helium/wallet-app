@@ -48,7 +48,7 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
           overflow="hidden"
           backgroundColor="cardBackground"
           borderWidth={1}
-          borderColor={'border.primary'}
+          borderColor="border.primary"
           alignItems="center"
           justifyContent="center"
           flexDirection="row"

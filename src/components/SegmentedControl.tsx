@@ -1,10 +1,10 @@
 import React, { memo, useCallback, useMemo } from 'react'
-import { Box, ReAnimatedBox, Text } from '.'
 import { BoxProps } from '@shopify/restyle'
-import { Theme } from '../theme/theme'
 import useLayoutWidth from '@hooks/useLayoutWidth'
 import { GestureResponderEvent } from 'react-native'
 import { useAnimatedStyle, withSpring } from 'react-native-reanimated'
+import { Theme } from '../theme/theme'
+import { Box, ReAnimatedBox, Text } from '.'
 import TouchableOpacityBox from './TouchableOpacityBox'
 
 type Option = { value: string; label: string }

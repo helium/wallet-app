@@ -48,13 +48,13 @@ const CopyAddress = ({ address, ...boxProps }: Props) => {
       onPress={copyAddress}
       marginRight="3"
     >
-      <CopyAddressIcon color={colors.primaryIcon} />
+      <CopyAddressIcon color={colors.secondaryText} />
       <Text
         marginLeft="2"
         variant="textMdRegular"
         fontWeight="500"
         fontSize={17}
-        color="primaryIcon"
+        color="primaryText"
       >
         {t('generic.copy')}
       </Text>

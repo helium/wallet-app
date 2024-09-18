@@ -1,3 +1,4 @@
+import { useColors } from '@theme/themeHooks'
 import ChevronDown from '@assets/images/chevronDown.svg'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
@@ -8,7 +9,6 @@ import Box from './Box'
 import ListItem from './ListItem'
 import Text from './Text'
 import TouchableContainer from './TouchableContainer'
-import { useColors } from '@theme/themeHooks'
 
 export type SelectProps = {
   value: string

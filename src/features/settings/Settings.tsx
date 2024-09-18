@@ -1,7 +1,6 @@
+import { useDispatch, useSelector } from 'react-redux'
 import Box from '@components/Box'
-import CloseButton from '@components/CloseButton'
 import ImageBox from '@components/ImageBox'
-import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import { truthy } from '@helium/spl-utils'
 import useAlert from '@hooks/useAlert'
@@ -9,13 +8,16 @@ import { useAppVersion } from '@hooks/useDevice'
 import { useExplorer } from '@hooks/useExplorer'
 import { useNavigation } from '@react-navigation/native'
 import { Cluster } from '@solana/web3.js'
-import { useColors, useHitSlop, useSpacing } from '@theme/themeHooks'
+import { useColors, useSpacing } from '@theme/themeHooks'
 import React, { ReactText, memo, useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert, Linking, Platform, ScrollView, SectionList } from 'react-native'
 import deviceInfo from 'react-native-device-info'
 import { SvgUri } from 'react-native-svg'
+import SegmentedControl from '@components/SegmentedControl'
+import BackScreen from '@components/BackScreen'
+
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -33,11 +35,8 @@ import { HomeNavigationProp } from '../home/homeTypes'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
 import { SettingsNavigationProp } from './settingsTypes'
 import useAuthIntervals from './useAuthIntervals'
-import { useDispatch, useSelector } from 'react-redux'
 import { appSlice } from '../../store/slices/appSlice'
-import SegmentedControl from '@components/SegmentedControl'
 import { RootState } from '../../store/rootReducer'
-import BackScreen from '@components/BackScreen'
 
 const Settings = () => {
   const { t } = useTranslation()
@@ -47,7 +46,6 @@ const Settings = () => {
   const spacing = useSpacing()
   const version = useAppVersion()
   const buildNumber = deviceInfo.getBuildNumber()
-  const hitSlop = useHitSlop('12')
   const authIntervals = useAuthIntervals()
   const colors = useColors()
   const {
@@ -84,16 +82,11 @@ const Settings = () => {
     () => appPin !== undefined && appPin.status !== 'off',
     [appPin],
   )
-
-  const onRequestClose = useCallback(() => {
-    homeNav.navigate('AccountsScreen')
-  }, [homeNav])
-
   const contentContainer = useMemo(
     () => ({
       paddingBottom: spacing['15'],
     }),
-    [spacing['15']],
+    [spacing],
   )
 
   const keyExtractor = useCallback((item, index) => item.title + index, [])
@@ -649,7 +642,7 @@ const Settings = () => {
     >
       <BackScreen
         headerBackgroundColor="secondaryBackground"
-        padding={'0'}
+        padding="0"
         backgroundColor="secondaryBackground"
         edges={['top']}
       >
@@ -662,7 +655,7 @@ const Settings = () => {
           <Text
             color="primaryText"
             variant="displayMdRegular"
-            marginVertical={'4'}
+            marginVertical="4"
           >
             {t('settings.title')}
           </Text>

@@ -136,7 +136,7 @@ const HotspotList = () => {
           justifyContent="space-between"
           alignItems="stretch"
           marginBottom="6"
-          paddingHorizontal={'4'}
+          paddingHorizontal="4"
         >
           <ButtonPressable
             height={36}

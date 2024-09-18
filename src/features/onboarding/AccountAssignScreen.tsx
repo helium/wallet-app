@@ -55,8 +55,6 @@ const AccountAssignScreen = () => {
   } = useAccountStorage()
   const [setAsDefault, toggleSetAsDefault] = useState(false)
 
-  console.log('accounts', accounts)
-
   const existingNames = useMemo(
     () => accounts && new Set(Object.values(accounts).map((a) => a.alias)),
     [accounts],
@@ -198,7 +196,7 @@ const AccountAssignScreen = () => {
             width="100%"
             marginTop="8"
             flexDirection="row"
-            borderColor={'border.primary'}
+            borderColor="border.primary"
             borderWidth={1}
           >
             <AccountIcon

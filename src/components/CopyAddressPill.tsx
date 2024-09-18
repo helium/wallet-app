@@ -43,7 +43,7 @@ const CopyAddressPill = ({ ...rest }: BoxProps<Theme>) => {
     <Box flexDirection="column" alignItems="center" {...rest}>
       <ButtonPressAnimation
         backgroundColor="cardBackground"
-        borderColor={'border.primary'}
+        borderColor="border.primary"
         borderWidth={1}
         borderRadius="full"
         marginBottom="6"

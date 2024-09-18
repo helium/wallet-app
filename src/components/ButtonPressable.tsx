@@ -37,6 +37,7 @@ type Props = BoxProps<Theme> & {
 }
 
 const ButtonPressable = ({
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   backgroundColor,
   backgroundColorDisabled,

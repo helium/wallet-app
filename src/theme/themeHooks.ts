@@ -138,9 +138,9 @@ export const useBreakpoints = () => {
   const { breakpoints } = useTheme<Theme>()
   const width = ww
   return {
-    smallPhone: breakpoints.phone > width,
-    largePhone: breakpoints.largePhone <= width,
-    phone: breakpoints.phone <= width,
+    smallPhone: breakpoints.sm > width,
+    largePhone: breakpoints.md <= width,
+    phone: breakpoints.sm <= width,
   }
 }
 

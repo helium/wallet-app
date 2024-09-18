@@ -16,7 +16,6 @@ import {
   Platform,
 } from 'react-native'
 import Checkmark from '@assets/images/checkmark.svg'
-import { useKeyboard } from '@react-native-community/hooks'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import { useColors, useOpacity, useSpacing } from '@theme/themeHooks'
@@ -51,7 +50,6 @@ type Props = {
 }
 
 const ContactDetails = ({ action, contact }: Props) => {
-  const { keyboardShown } = useKeyboard()
   const { t } = useTranslation()
   const homeNav = useNavigation<HomeNavigationProp>()
   const addressBookNav = useNavigation<AddressBookNavigationProp>()
@@ -240,7 +238,7 @@ const ContactDetails = ({ action, contact }: Props) => {
             </Box>
             <TextInput
               variant="plain"
-              textColor={'primaryText'}
+              textColor="primaryText"
               textInputProps={{
                 placeholder: t('addNewContact.address.placeholder'),
                 onChangeText: handleAddressChange,
@@ -268,7 +266,7 @@ const ContactDetails = ({ action, contact }: Props) => {
             </Box>
             <TextInput
               variant="plain"
-              textColor={'primaryText'}
+              textColor="primaryText"
               textInputProps={{
                 placeholder: t('addNewContact.nickname.placeholder'),
                 onChangeText: setNickname,

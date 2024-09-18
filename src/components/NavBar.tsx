@@ -191,7 +191,7 @@ const NavBar = ({
   return (
     <Box
       {...containerProps}
-      borderTopColor={'border.secondary'}
+      borderTopColor="border.secondary"
       borderTopWidth={1}
     >
       <Box flexDirection="row" justifyContent="center" paddingVertical="3">
