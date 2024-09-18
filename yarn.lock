@@ -4078,6 +4078,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@novalabsxyz/mobile-theme@npm:^2.0.0-y.24":
+  version: 2.0.0-y.24
+  resolution: "@novalabsxyz/mobile-theme@npm:2.0.0-y.24"
+  checksum: 26e21dfb68557d8413403c596f2ee1f9e62238306b06f199897e9828ebaf9e49a8b0b37bb94344fd67847db3a1eb3ed08ae1cde64281245168d81f4cdcea17ff
+  languageName: node
+  linkType: hard
+
 "@npmcli/agent@npm:^2.0.0":
   version: 2.2.2
   resolution: "@npmcli/agent@npm:2.2.2"
@@ -12374,6 +12381,7 @@ __metadata:
     "@maplibre/maplibre-react-native": ^9.1.0
     "@metaplex-foundation/mpl-bubblegum": 0.6.0
     "@metaplex-foundation/mpl-token-metadata": 2.10.0
+    "@novalabsxyz/mobile-theme": ^2.0.0-y.24
     "@onsol/tldparser": ^0.5.3
     "@react-native-async-storage/async-storage": 1.18.1
     "@react-native-community/blur": 4.3.0

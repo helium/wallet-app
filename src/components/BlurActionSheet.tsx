@@ -8,7 +8,7 @@ import { LayoutChangeEvent } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useAsync } from 'react-async-hook'
 import { Portal } from '@gorhom/portal'
-import { useOpacity } from '@theme/themeHooks'
+import { useColors, useOpacity } from '@theme/themeHooks'
 import CustomBlurBackdrop from './CustomBlurBackdrop'
 import SafeAreaBox from './SafeAreaBox'
 import { wh } from '../utils/layout'
@@ -23,7 +23,8 @@ type Props = {
 const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const [contentHeight, setContentHeight] = useState(0)
-  const { backgroundStyle } = useOpacity('black400', 0.4)
+  const { backgroundStyle } = useOpacity('gray.700', 0.4)
+  const colors = useColors()
 
   const handleOnClose = useCallback(() => {
     if (onClose) {
@@ -78,6 +79,9 @@ const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
           backdropComponent={renderBackdrop}
           backgroundStyle={backgroundStyle}
           onDismiss={handleOnClose}
+          handleIndicatorStyle={{
+            backgroundColor: colors.primaryText,
+          }}
         >
           <BottomSheetScrollView>
             <SafeAreaBox edges={safeEdges} onLayout={handleContentLayout}>

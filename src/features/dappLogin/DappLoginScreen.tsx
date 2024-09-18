@@ -224,17 +224,17 @@ const DappLoginScreen = () => {
   return (
     <SafeAreaBox
       backgroundColor="primaryBackground"
-      paddingHorizontal="l"
+      paddingHorizontal="6"
       flex={1}
     >
       <TouchableOpacityBox
         onPress={goBack}
         alignSelf="flex-end"
         justifyContent="center"
-        paddingHorizontal="m"
-        marginEnd="n_m"
+        paddingHorizontal="4"
+        marginEnd="-4"
       >
-        <Close color={colors.white} height={21} width={21} />
+        <Close color={colors['base.white']} height={21} width={21} />
       </TouchableOpacityBox>
       {body}
     </SafeAreaBox>

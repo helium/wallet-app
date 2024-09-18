@@ -196,10 +196,10 @@ const AccountTokenList = ({ onLayout }: Props) => {
         onPress={onManageTokenList}
         flexDirection="row"
         justifyContent="center"
-        mt="m"
+        mt="4"
       >
         <Config />
-        <Text ml="s" fontWeight="500" color="grey400">
+        <Text ml="2" fontWeight="500" color="gray.400">
           {t('accountTokenList.manage')}
         </Text>
       </TouchableOpacityBox>

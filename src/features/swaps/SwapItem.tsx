@@ -38,9 +38,9 @@ const SwapItem = ({
   const getBackgroundColorStyle = useCallback(
     (pressed: boolean) => {
       if (pressed) {
-        return generateBackgroundStyle('black500', 1.0)
+        return generateBackgroundStyle('gray.800', 1.0)
       }
-      return generateBackgroundStyle('surfaceSecondary', 1.0)
+      return generateBackgroundStyle('bg.tertiary', 1.0)
     },
     [generateBackgroundStyle],
   )
@@ -51,7 +51,7 @@ const SwapItem = ({
         <Box
           height={120}
           style={getBackgroundColorStyle(pressed)}
-          borderRadius="xl"
+          borderRadius="4xl"
           {...rest}
         >
           <Box flex={1} justifyContent="center" alignItems="center">
@@ -62,14 +62,21 @@ const SwapItem = ({
                 onPress={onCurrencySelect}
               />
             </Box>
-            <Text variant="body3" color="secondaryText" marginBottom="xs">
+            <Text
+              variant="textXsRegular"
+              color="secondaryText"
+              marginBottom="xs"
+            >
               {isPaying ? t('swapsScreen.youPay') : t('swapsScreen.youReceive')}
             </Text>
             <Box flexDirection="row">
-              <Text marginEnd="s" variant="h4">
+              <Text marginEnd="2" variant="textXlRegular">
                 {!loading ? amount.toString() : t('generic.loading')}
               </Text>
-              <Text variant="h4" color="secondaryText">{`${symbol}`}</Text>
+              <Text
+                variant="textXlRegular"
+                color="secondaryText"
+              >{`${symbol}`}</Text>
             </Box>
           </Box>
           {isPaying && (

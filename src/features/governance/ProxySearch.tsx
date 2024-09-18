@@ -61,16 +61,16 @@ export const ProxySearch: React.FC<{
     ({ item }: { item: { value: string; label: string } }) => {
       return (
         <TouchableContainer
-          backgroundColor="surfaceSecondary"
-          p="m"
-          mt="s"
+          backgroundColor="bg.tertiary"
+          p="4"
+          mt="2"
           onPress={() => {
             onValueChange(item.value)
             setInput(item.value)
             setFocused(false)
           }}
         >
-          <Text variant="body3" color="white">
+          <Text variant="textXsRegular" color="primaryText">
             {item.label}
           </Text>
         </TouchableContainer>
@@ -115,7 +115,7 @@ export const ProxySearch: React.FC<{
       renderItem={renderItem}
       ListHeaderComponent={
         <>
-          <Text variant="body3" color="secondaryText" mb="xs">
+          <Text variant="textXsRegular" color="secondaryText" mb="xs">
             {selected ? selected.label : t('gov.assignProxy.searchPlaceholder')}
           </Text>
           <Box flexDirection="row" alignItems="center">
@@ -131,14 +131,14 @@ export const ProxySearch: React.FC<{
               }}
             />
             <ButtonPressable
-              backgroundColor="secondary"
+              backgroundColor="secondaryBackground"
               Icon={BrowseVoters}
-              borderRadius="l"
-              ml="s"
+              borderRadius="2xl"
+              ml="2"
               onPress={handleBrowseVoters}
-              padding="s"
+              padding="2"
               height={52}
-              innerContainerProps={{ px: 'm' }}
+              innerContainerProps={{ px: '4' }}
             />
           </Box>
         </>

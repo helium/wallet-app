@@ -168,24 +168,29 @@ const InsufficientSolConversionModal: FC = () => {
       zIndex={9999}
       height="100%"
       width="100%"
-      paddingBottom="xl"
+      paddingBottom="8"
     >
       <SafeAreaBox edges={edges} flex={1}>
         <Box
           flexDirection="row"
           alignItems="center"
           justifyContent="center"
-          paddingTop="s"
-          paddingHorizontal="m"
+          paddingTop="2"
+          paddingHorizontal="4"
         >
-          <Text variant="h4" color="white" flex={1} textAlign="center">
+          <Text
+            variant="textXlRegular"
+            color="primaryText"
+            flex={1}
+            textAlign="center"
+          >
             {t('insufficientSolConversionModal.title')}
           </Text>
         </Box>
-        <Box flex={1} paddingHorizontal="m" marginTop="l">
+        <Box flex={1} paddingHorizontal="4" marginTop="6">
           <Text
-            variant="body1Medium"
-            color="white"
+            variant="textMdMedium"
+            color="primaryText"
             opacity={0.6}
             textAlign="center"
           >
@@ -194,7 +199,7 @@ const InsufficientSolConversionModal: FC = () => {
           <Box
             flexDirection="row"
             justifyContent="space-between"
-            marginTop="xxl"
+            marginTop="12"
           >
             {validInputMints.map((mint) => (
               <TokenPill
@@ -206,67 +211,71 @@ const InsufficientSolConversionModal: FC = () => {
               />
             ))}
           </Box>
-          <Box flex={1} marginTop="xxl" alignItems="center">
-            {loading && <CircleLoader loaderSize={30} color="white" />}
+          <Box flex={1} marginTop="12" alignItems="center">
+            {loading && <CircleLoader loaderSize={30} color="primaryText" />}
             {!loading && !hasAtLeastOne && (
-              <Box justifyContent="center" alignItems="center" marginTop="xxl">
-                <Text variant="body2Medium" color="white" textAlign="center">
+              <Box justifyContent="center" alignItems="center" marginTop="12">
+                <Text
+                  variant="textSmMedium"
+                  color="primaryText"
+                  textAlign="center"
+                >
                   {t('insufficientSolConversionModal.noBalance')}
                 </Text>
               </Box>
             )}
             {!loading && hasAtLeastOne && (
               <>
-                <Box
-                  justifyContent="center"
-                  alignItems="center"
-                  marginTop="xxl"
-                >
+                <Box justifyContent="center" alignItems="center" marginTop="12">
                   <Text
-                    variant="body3"
-                    color="white"
+                    variant="textXsRegular"
+                    color="primaryText"
                     opacity={0.6}
                     marginBottom="xs"
                   >
                     {t('swapsScreen.youPay')}
                   </Text>
                   <Box flexDirection="row">
-                    <Text marginEnd="s" variant="h4">
+                    <Text marginEnd="2" variant="textXlRegular">
                       {inputAmount}
                     </Text>
-                    <Text variant="h4" color="white" opacity={0.6}>
+                    <Text
+                      variant="textXlRegular"
+                      color="primaryText"
+                      opacity={0.6}
+                    >
                       {symbol}
                     </Text>
                   </Box>
                 </Box>
-                <Box
-                  marginTop="xxl"
-                  justifyContent="center"
-                  alignItems="center"
-                >
+                <Box marginTop="12" justifyContent="center" alignItems="center">
                   <Text
-                    variant="body3"
-                    color="white"
+                    variant="textXsRegular"
+                    color="primaryText"
                     opacity={0.6}
                     marginBottom="xs"
                   >
                     {t('swapsScreen.youReceive')}
                   </Text>
                   <Box flexDirection="row">
-                    <Text marginEnd="s" variant="h4">
+                    <Text marginEnd="2" variant="textXlRegular">
                       ~0.02
                     </Text>
-                    <Text variant="h4" color="white" opacity={0.6}>
+                    <Text
+                      variant="textXlRegular"
+                      color="primaryText"
+                      opacity={0.6}
+                    >
                       SOL
                     </Text>
                   </Box>
                 </Box>
                 <Text
                   opacity={transactionError || solConvertError ? 100 : 0}
-                  marginHorizontal="m"
-                  variant="body3Medium"
-                  marginBottom="l"
-                  color="red500"
+                  marginHorizontal="4"
+                  variant="textXsMedium"
+                  marginBottom="6"
+                  color="ros.500"
                 >
                   {showError}
                 </Text>
@@ -276,19 +285,19 @@ const InsufficientSolConversionModal: FC = () => {
         </Box>
         <Box
           flexDirection="row"
-          paddingHorizontal="m"
-          marginBottom="l"
-          marginTop="xxl"
+          paddingHorizontal="4"
+          marginBottom="6"
+          marginTop="12"
           alignItems="center"
         >
           <Switch
             value={useAuto}
-            trackColor={{ false: 'secondaryText', true: 'blueBright500' }}
+            trackColor={{ false: 'secondaryText', true: 'blue.light-500' }}
             thumbColor="primaryBackground"
             onValueChange={() => setUseAuto((ua) => !ua)}
           />
           <Box flex={1}>
-            <Text ml="m" color="white">
+            <Text ml="4" color="primaryText">
               {t('insufficientSolConversionModal.useAuto')}
             </Text>
           </Box>
@@ -296,16 +305,16 @@ const InsufficientSolConversionModal: FC = () => {
         {!loading && (
           <Box
             flexDirection="row"
-            marginHorizontal="m"
+            marginHorizontal="4"
             justifyContent="space-between"
           >
             <ButtonPressable
               width={hasAtLeastOne ? '48%' : '100%'}
-              borderRadius="round"
-              backgroundColor="black400"
+              borderRadius="full"
+              backgroundColor="gray.700"
               backgroundColorOpacityPressed={0.05}
               titleColorPressedOpacity={0.3}
-              titleColor="white"
+              titleColor="base.white"
               title={t('generic.cancel')}
               disabled={loading}
               onPress={handleCancel}
@@ -313,12 +322,12 @@ const InsufficientSolConversionModal: FC = () => {
             {hasAtLeastOne && (
               <ButtonPressable
                 width="48%"
-                borderRadius="round"
-                backgroundColor="white"
+                borderRadius="full"
+                backgroundColor="base.white"
                 backgroundColorOpacityPressed={0.7}
                 backgroundColorDisabled="secondaryBackground"
                 titleColorDisabled="secondaryText"
-                titleColor="black"
+                titleColor="base.black"
                 disabled={!inputMint}
                 titleColorPressedOpacity={0.3}
                 title={swapping ? '' : t('generic.swap')}

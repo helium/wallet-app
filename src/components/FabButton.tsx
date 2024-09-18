@@ -91,7 +91,7 @@ const ButtonPressable = ({
   const backgroundColorStyle = useMemo(() => {
     if (pressed) {
       return backgroundStyle(
-        backgroundColorPressed || backgroundColor || 'white',
+        backgroundColorPressed || backgroundColor || 'base.white',
         backgroundColorOpacityPressed,
       )
     }
@@ -110,7 +110,7 @@ const ButtonPressable = ({
 
   if (title) {
     return (
-      <Box visible={visible} marginHorizontal="s">
+      <Box visible={visible} marginHorizontal="2">
         <Pressable
           onPress={onPress}
           onPressIn={() => setPressed(true)}
@@ -124,8 +124,8 @@ const ButtonPressable = ({
             alignItems="center"
             justifyContent="center"
             flexDirection={reverse ? 'row-reverse' : 'row'}
-            paddingHorizontal="m"
-            borderRadius="round"
+            paddingHorizontal="4"
+            borderRadius="full"
             {...containerProps}
           >
             {icon && (
@@ -139,7 +139,7 @@ const ButtonPressable = ({
               </Box>
             )}
             <Text
-              variant="subtitle2"
+              variant="textLgMedium"
               color={iconColor}
               paddingHorizontal="xs"
               maxFontSizeMultiplier={1.1}
@@ -158,7 +158,7 @@ const ButtonPressable = ({
     <ButtonPressAnimation
       height={size}
       width={size}
-      borderRadius="round"
+      borderRadius="full"
       visible={visible}
       onPress={onPress}
       pressableStyles={styles.pressable}

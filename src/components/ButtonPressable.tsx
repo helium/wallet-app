@@ -37,6 +37,7 @@ type Props = BoxProps<Theme> & {
 }
 
 const ButtonPressable = ({
+  // @ts-ignore
   backgroundColor,
   backgroundColorDisabled,
   backgroundColorDisabledOpacity = 1,
@@ -116,7 +117,7 @@ const ButtonPressable = ({
     }
     if (pressed || selected) {
       return backgroundStyle(
-        backgroundColorPressed || backgroundColor || 'white',
+        backgroundColorPressed || backgroundColor || 'base.white',
         backgroundColorOpacityPressed,
       )
     }
@@ -149,7 +150,7 @@ const ButtonPressable = ({
         height={height}
         minHeight={boxProps.minHeight}
         maxHeight={boxProps.maxHeight}
-        padding={height || boxProps.maxHeight || padding ? padding : 'l'}
+        padding={height || boxProps.maxHeight || padding ? padding : '6'}
         style={backgroundColorStyle}
         flexDirection="row"
         justifyContent={Icon ? 'space-between' : 'center'}
@@ -160,7 +161,7 @@ const ButtonPressable = ({
 
         {title && (
           <Text
-            variant="subtitle1"
+            variant="textXlMedium"
             fontSize={fontSize || 19}
             fontWeight={fontWeight}
             style={titleColorStyle}

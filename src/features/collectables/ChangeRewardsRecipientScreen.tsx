@@ -178,8 +178,8 @@ const ChangeRewardsRecipientScreen = () => {
   return (
     <ReAnimatedBox flex={1} entering={DelayedFadeIn}>
       <BackScreen
-        headerTopMargin="l"
-        padding="none"
+        headerTopMargin="6"
+        padding="0"
         title={t('changeRewardsRecipientScreen.title')}
         edges={backEdges}
       >
@@ -194,28 +194,28 @@ const ChangeRewardsRecipientScreen = () => {
                 edges={safeEdges}
                 backgroundColor="transparent"
                 flex={1}
-                padding="m"
-                marginHorizontal="s"
+                padding="4"
+                marginHorizontal="2"
                 marginVertical="xs"
               >
                 <Box flexGrow={1} justifyContent="center">
                   <Text
                     textAlign="left"
-                    variant="subtitle2"
+                    variant="textLgMedium"
                     adjustsFontSizeToFit
                   >
                     {t('changeRewardsRecipientScreen.title')}
                   </Text>
-                  <Text variant="subtitle4" color="secondaryText">
+                  <Text variant="textSmMedium" color="secondaryText">
                     {t('changeRewardsRecipientScreen.description')}
                   </Text>
                   <Box
-                    borderRadius="m"
-                    backgroundColor="secondary"
-                    padding="ms"
-                    marginTop="s"
+                    borderRadius="2xl"
+                    backgroundColor="secondaryBackground"
+                    padding="3"
+                    marginTop="2"
                   >
-                    <Text variant="body3">
+                    <Text variant="textXsRegular">
                       {t('changeRewardsRecipientScreen.blurb')}
                     </Text>
                   </Box>
@@ -225,7 +225,7 @@ const ChangeRewardsRecipientScreen = () => {
                         <Box
                           flexDirection="row"
                           justifyContent="space-between"
-                          marginTop="s"
+                          marginTop="2"
                         >
                           {!recipientsAreDifferent ? (
                             <>
@@ -240,9 +240,9 @@ const ChangeRewardsRecipientScreen = () => {
                                   <Box
                                     flex={1}
                                     flexDirection="row"
-                                    padding="s"
-                                    backgroundColor="black600"
-                                    borderRadius="m"
+                                    padding="2"
+                                    backgroundColor="cardBackground"
+                                    borderRadius="2xl"
                                     justifyContent="space-between"
                                     position="relative"
                                   >
@@ -267,9 +267,11 @@ const ChangeRewardsRecipientScreen = () => {
                                           height={20}
                                         />
                                       )}
-                                      <Text variant="body3">Recipient</Text>
+                                      <Text variant="textXsRegular">
+                                        Recipient
+                                      </Text>
                                     </Box>
-                                    <Text variant="body2">
+                                    <Text variant="textSmRegular">
                                       {ellipsizeAddress(
                                         new PublicKey(
                                           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
@@ -284,7 +286,7 @@ const ChangeRewardsRecipientScreen = () => {
                           ) : (
                             <Box
                               flex={1}
-                              marginTop="s"
+                              marginTop="2"
                               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                               // @ts-ignore
                               gap={4}
@@ -292,9 +294,9 @@ const ChangeRewardsRecipientScreen = () => {
                               {hasIotRecipient && (
                                 <Box
                                   flexDirection="row"
-                                  padding="s"
-                                  backgroundColor="black600"
-                                  borderRadius="m"
+                                  padding="2"
+                                  backgroundColor="cardBackground"
+                                  borderRadius="2xl"
                                   justifyContent="space-between"
                                   position="relative"
                                 >
@@ -310,9 +312,11 @@ const ChangeRewardsRecipientScreen = () => {
                                       width={20}
                                       height={20}
                                     />
-                                    <Text variant="body3">Recipient</Text>
+                                    <Text variant="textXsRegular">
+                                      Recipient
+                                    </Text>
                                   </Box>
-                                  <Text variant="body2">
+                                  <Text variant="textSmRegular">
                                     {ellipsizeAddress(
                                       new PublicKey(
                                         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
@@ -325,9 +329,9 @@ const ChangeRewardsRecipientScreen = () => {
                               {hasMobileRecipient && (
                                 <Box
                                   flexDirection="row"
-                                  padding="s"
-                                  backgroundColor="black600"
-                                  borderRadius="m"
+                                  padding="2"
+                                  backgroundColor="cardBackground"
+                                  borderRadius="2xl"
                                   justifyContent="space-between"
                                   position="relative"
                                 >
@@ -344,9 +348,11 @@ const ChangeRewardsRecipientScreen = () => {
                                       width={20}
                                       height={20}
                                     />
-                                    <Text variant="body3">Recipient</Text>
+                                    <Text variant="textXsRegular">
+                                      Recipient
+                                    </Text>
                                   </Box>
-                                  <Text variant="body2">
+                                  <Text variant="textSmRegular">
                                     {ellipsizeAddress(
                                       new PublicKey(
                                         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
@@ -362,18 +368,21 @@ const ChangeRewardsRecipientScreen = () => {
                             flexDirection="row"
                             justifyContent="space-between"
                             alignItems="center"
-                            borderRadius="m"
-                            paddingVertical="sx"
-                            marginLeft="s"
-                            paddingLeft="s"
-                            paddingRight="s"
-                            backgroundColor="black600"
+                            borderRadius="2xl"
+                            paddingVertical="1.5"
+                            marginLeft="2"
+                            paddingLeft="2"
+                            paddingRight="2"
+                            backgroundColor="cardBackground"
                             onPress={handleRemoveRecipient}
                           >
                             {removing ? (
-                              <CircleLoader loaderSize={20} color="white" />
+                              <CircleLoader
+                                loaderSize={20}
+                                color="primaryText"
+                              />
                             ) : (
-                              <Text variant="body3Medium">
+                              <Text variant="textXsMedium">
                                 {t('generic.remove')}
                               </Text>
                             )}
@@ -384,17 +393,17 @@ const ChangeRewardsRecipientScreen = () => {
                     floatingLabel={`${t(
                       'changeRewardsRecipientScreen.newRecipient',
                     )} ${recipientName}`}
-                    variant="regular"
-                    marginTop="s"
+                    variant="textSmRegular"
+                    marginTop="2"
                     height={80}
                     width="100%"
-                    textColor="white"
+                    textColor="base.white"
                     fontSize={15}
                     TrailingIcon={Menu}
                     onTrailingIconPress={handleAddressBookSelected}
                     textInputProps={{
                       placeholder: t('generic.solanaAddress'),
-                      placeholderTextColor: 'white',
+                      placeholderTextColor: 'base.white',
                       autoCorrect: false,
                       autoComplete: 'off',
                       onChangeText: handleEditAddress,
@@ -403,12 +412,12 @@ const ChangeRewardsRecipientScreen = () => {
                     }}
                   />
                   <Box
-                    borderRadius="m"
-                    backgroundColor="secondary"
-                    padding="ms"
-                    marginVertical="s"
+                    borderRadius="2xl"
+                    backgroundColor="secondaryBackground"
+                    padding="3"
+                    marginVertical="2"
                   >
-                    <Text variant="body3Medium" color="flamenco">
+                    <Text variant="textXsMedium" color="orange.500">
                       {t('changeRewardsRecipientScreen.warning')}
                     </Text>
                   </Box>
@@ -424,35 +433,35 @@ const ChangeRewardsRecipientScreen = () => {
           minHeight={40}
         >
           {showError && (
-            <Text variant="body3Medium" color="red500">
+            <Text variant="textXsMedium" color="ros.500">
               {showError}
             </Text>
           )}
         </Box>
         <Box
           flexDirection="row"
-          paddingHorizontal="m"
-          paddingBottom="m"
+          paddingHorizontal="4"
+          paddingBottom="4"
           justifyContent="center"
           alignItems="center"
         >
           <ButtonPressable
             flex={1}
             fontSize={16}
-            borderRadius="round"
+            borderRadius="full"
             borderWidth={2}
-            borderColor="white"
-            backgroundColor="white"
+            borderColor="base.white"
+            backgroundColor="base.white"
             backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="surfaceSecondary"
+            backgroundColorDisabled="bg.tertiary"
             backgroundColorDisabledOpacity={0.9}
             titleColorDisabled="secondaryText"
             title={updating ? '' : t('changeRewardsRecipientScreen.submit')}
-            titleColor="black"
+            titleColor="base.black"
             onPress={removing || updating ? () => {} : handleUpdateRecipient}
             TrailingComponent={
               updating ? (
-                <CircleLoader loaderSize={20} color="black" />
+                <CircleLoader loaderSize={20} color="primaryText" />
               ) : undefined
             }
           />

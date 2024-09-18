@@ -28,7 +28,7 @@ const slides: Array<CarouselItem> = [
     titleKey: 'gov.tutorial.slides.0.title',
     bodyKey: 'gov.tutorial.slides.0.body',
     image: require('@assets/images/voteSlide0.png'),
-    imageVerticalOffset: 'n_xxl',
+    imageVerticalOffset: '-12',
   },
   {
     titleKey: 'gov.tutorial.slides.1.title',
@@ -39,19 +39,19 @@ const slides: Array<CarouselItem> = [
     titleKey: 'gov.tutorial.slides.2.title',
     bodyKey: 'gov.tutorial.slides.2.body',
     image: require('@assets/images/voteSlide2.png'),
-    imageVerticalOffset: 'xxl',
+    imageVerticalOffset: '12',
   },
   {
     titleKey: 'gov.tutorial.slides.3.title',
     bodyKey: 'gov.tutorial.slides.3.body',
     image: require('@assets/images/voteSlide3.png'),
-    imageVerticalOffset: 'xxl',
+    imageVerticalOffset: '12',
   },
   {
     titleKey: 'gov.tutorial.slides.4.title',
     bodyKey: 'gov.tutorial.slides.4.body',
     image: require('@assets/images/voteSlide4.png'),
-    imageVerticalOffset: 'xxl',
+    imageVerticalOffset: '12',
   },
 ]
 
@@ -82,7 +82,7 @@ export const GovernanceTutorialScreen = () => {
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: CarouselItem }) => {
       return (
-        <Box flex={1}>
+        <Box flex={1} justifyContent={'center'}>
           <ImageBox
             flexShrink={1}
             source={item.image}
@@ -90,18 +90,18 @@ export const GovernanceTutorialScreen = () => {
             alignSelf="center"
           />
           <Text
-            variant="h1"
+            variant="displayMdRegular"
             textAlign="center"
             marginTop={item.imageVerticalOffset}
+            color="primaryText"
           >
             {t(item.titleKey)}
           </Text>
           <TextTransform
-            variant="body1"
-            colorTextVariant="bold"
+            variant="textMdBold"
             textAlign="center"
             color="secondaryText"
-            marginTop="m"
+            marginTop="4"
             i18nKey={t(item.bodyKey)}
           />
         </Box>
@@ -115,20 +115,15 @@ export const GovernanceTutorialScreen = () => {
       width: 6,
       height: 6,
       borderRadius: 3,
-      marginHorizontal: spacing.s,
-      backgroundColor: colors.white,
+      marginHorizontal: spacing['0.5'],
+      backgroundColor: colors['base.white'],
     }),
-    [colors.white, spacing.s],
+    [colors, spacing],
   )
 
   return (
     <SafeAreaBox flex={1} edges={edges}>
-      <CloseButton
-        alignSelf="flex-end"
-        padding="l"
-        onPress={navigation.goBack}
-      />
-      <Box flexGrow={1} justifyContent="center">
+      <Box flexGrow={1} justifyContent="center" paddingTop="6">
         <Carousel
           ref={carouselRef}
           layout="default"
@@ -148,18 +143,20 @@ export const GovernanceTutorialScreen = () => {
             inactiveDotScale={1}
           />
 
-          <Box flexDirection="row" marginHorizontal="lx" marginVertical="m">
+          <Box flexDirection="row" marginHorizontal="7" marginVertical="4">
             <ButtonPressable
               flex={1}
               fontSize={16}
-              borderRadius="round"
+              borderRadius="full"
               borderWidth={2}
-              backgroundColor={viewedSlides ? 'white' : undefined}
+              title={t('gov.tutorial.goToVote')}
+              titleColor="primaryBackground"
+              backgroundColor="primaryText"
               backgroundColorOpacityPressed={0.7}
-              titleColorDisabled="secondaryText"
-              title={viewedSlides ? t('gov.tutorial.goToVote') : ' '}
-              titleColor="black"
+              backgroundColorDisabled="bg.disabled"
+              titleColorDisabled="text.disabled"
               onPress={handleVotePressed}
+              disabled={!viewedSlides}
             />
           </Box>
         </Box>

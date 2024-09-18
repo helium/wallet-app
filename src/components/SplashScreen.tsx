@@ -56,7 +56,7 @@ const SplashScreen = ({ children }: { children: ReactNode }) => {
     <View style={globalStyles.container}>
       {isAppReady && children}
       <ReAnimatedBox
-        pointerEvents="none"
+        pointerEvents="0"
         top={0}
         left={0}
         right={0}

@@ -97,8 +97,8 @@ const AccountActionBar = ({
   )
 
   const fabMargin = useMemo(() => {
-    if (compact) return 'm'
-    if (maxCompact) return 's'
+    if (compact) return '4'
+    if (maxCompact) return '2'
     return undefined
   }, [compact, maxCompact])
 
@@ -118,10 +118,10 @@ const AccountActionBar = ({
         >
           <FabButton
             icon="fatArrowDown"
-            backgroundColor="greenBright500"
+            backgroundColor="green.light-500"
             backgroundColorOpacity={0.2}
             backgroundColorOpacityPressed={0.4}
-            iconColor="greenBright500"
+            iconColor="green.light-500"
             title={compact || maxCompact ? undefined : t('accountView.deposit')}
             onPress={handleAction('request')}
             width={maxCompact ? 47.5 : undefined}
@@ -129,9 +129,9 @@ const AccountActionBar = ({
             justifyContent="center"
           />
           {hasBottomTitle && (
-            <Box marginTop="s">
+            <Box marginTop="2">
               <Text
-                variant="body2Medium"
+                variant="textSmMedium"
                 color="secondaryText"
                 marginTop="xs"
                 textAlign="center"
@@ -149,10 +149,10 @@ const AccountActionBar = ({
         >
           <FabButton
             icon="swaps"
-            backgroundColor="orange500"
+            backgroundColor="orange.500"
             backgroundColorOpacity={0.2}
             backgroundColorOpacityPressed={0.4}
-            iconColor="orange500"
+            iconColor="orange.500"
             title={compact || maxCompact ? undefined : t('accountView.swaps')}
             onPress={handleAction('swaps')}
             width={maxCompact ? 47.5 : undefined}
@@ -160,9 +160,9 @@ const AccountActionBar = ({
             justifyContent="center"
           />
           {hasBottomTitle && (
-            <Box marginTop="s">
+            <Box marginTop="2">
               <Text
-                variant="body2Medium"
+                variant="textSmMedium"
                 color="secondaryText"
                 marginTop="xs"
                 textAlign="center"
@@ -180,10 +180,10 @@ const AccountActionBar = ({
         >
           <FabButton
             icon="airdrop"
-            backgroundColor="electricViolet"
+            backgroundColor="violet.200"
             backgroundColorOpacity={0.2}
             backgroundColorOpacityPressed={0.4}
-            iconColor="electricViolet"
+            iconColor="violet.200"
             title={
               compact || maxCompact ? undefined : t('airdropScreen.airdrop')
             }
@@ -193,9 +193,9 @@ const AccountActionBar = ({
             justifyContent="center"
           />
           {hasBottomTitle && (
-            <Box marginTop="s">
+            <Box marginTop="2">
               <Text
-                variant="body2Medium"
+                variant="textSmMedium"
                 color="secondaryText"
                 marginTop="xs"
                 textAlign="center"
@@ -213,10 +213,10 @@ const AccountActionBar = ({
         >
           <FabButton
             icon="fatArrowUp"
-            backgroundColor="blueBright500"
+            backgroundColor="blue.light-500"
             backgroundColorOpacity={0.2}
             backgroundColorOpacityPressed={0.4}
-            iconColor="blueBright500"
+            iconColor="blue.light-500"
             title={compact || maxCompact ? undefined : t('accountView.send')}
             onPress={handleAction('send')}
             reverse
@@ -225,9 +225,9 @@ const AccountActionBar = ({
             justifyContent="center"
           />
           {hasBottomTitle && (
-            <Box marginTop="s">
+            <Box marginTop="2">
               <Text
-                variant="body2Medium"
+                variant="textSmMedium"
                 color="secondaryText"
                 marginTop="xs"
                 textAlign="center"
@@ -240,10 +240,10 @@ const AccountActionBar = ({
       )}
       {hasDelegate && (
         <FabButton
-          backgroundColor="blueBright500"
+          backgroundColor="blue.light-500"
           backgroundColorOpacity={0.2}
           backgroundColorOpacityPressed={0.1}
-          iconColor="blueBright500"
+          iconColor="blue.light-500"
           title={compact || maxCompact ? undefined : t('accountView.delegate')}
           onPress={handleAction('delegate')}
           reverse

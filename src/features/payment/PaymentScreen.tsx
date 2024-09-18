@@ -142,7 +142,7 @@ const PaymentScreen = () => {
   const rootNav = useNavigation<RootNavigationProp>()
   const { t } = useTranslation()
   const { primaryText } = useColors()
-  const hitSlop = useHitSlop('l')
+  const hitSlop = useHitSlop('6')
 
   useDisappear(() => {
     appDispatch(solanaSlice.actions.resetPayment())
@@ -690,18 +690,18 @@ const PaymentScreen = () => {
               <Box
                 flex={1}
                 style={containerStyle}
-                borderTopStartRadius="xl"
-                borderTopEndRadius="xl"
+                borderTopStartRadius="4xl"
+                borderTopEndRadius="4xl"
                 backgroundColor="secondaryBackground"
               >
                 <Box
                   flexDirection="row"
                   justifyContent="space-between"
                   alignItems="center"
-                  borderTopStartRadius="xl"
-                  borderTopEndRadius="xl"
+                  borderTopStartRadius="4xl"
+                  borderTopEndRadius="4xl"
                 >
-                  <Box hitSlop={hitSlop} padding="s">
+                  <Box hitSlop={hitSlop} padding="2">
                     <IconPressedContainer
                       onPress={handleQrScan}
                       activeOpacity={0.75}
@@ -711,14 +711,14 @@ const PaymentScreen = () => {
                     </IconPressedContainer>
                   </Box>
                   <Text
-                    variant="subtitle2"
+                    variant="textLgMedium"
                     textAlign="center"
                     color="primaryText"
                     maxFontSizeMultiplier={1}
                   >
                     {t('payment.send')}
                   </Text>
-                  <Box hitSlop={hitSlop} padding="s">
+                  <Box hitSlop={hitSlop} padding="2">
                     <IconPressedContainer
                       onPress={navBack}
                       activeOpacity={0.75}
@@ -735,9 +735,9 @@ const PaymentScreen = () => {
                   keyboardShouldPersistTaps="always"
                 >
                   <AccountButton
-                    backgroundColor="secondary"
+                    backgroundColor="cardBackground"
                     accountIconSize={41}
-                    paddingTop="l"
+                    paddingTop="6"
                     title={formatAccountAlias(currentAccount)}
                     subtitle={t('payment.senderAccount')}
                     showChevron={
@@ -746,18 +746,18 @@ const PaymentScreen = () => {
                     address={currentAccount?.address}
                     onPress={handleShowAccounts}
                     showBubbleArrow
-                    marginHorizontal="l"
+                    marginHorizontal="6"
                     marginBottom="xs"
                   />
 
                   <TokenButton
-                    backgroundColor="secondary"
+                    backgroundColor="cardBackground"
                     title={t('payment.title', { ticker: symbol })}
                     subtitle={tokenButtonBalance}
                     address={currentAccount?.address}
                     onPress={handleTokenTypeSelected}
                     showBubbleArrow
-                    marginHorizontal="l"
+                    marginHorizontal="6"
                     mint={mint}
                   />
 
@@ -768,7 +768,7 @@ const PaymentScreen = () => {
                         {...p}
                         hideMemo
                         marginTop={index === 0 ? 'xs' : 'none'}
-                        marginBottom="l"
+                        marginBottom="6"
                         hasError={
                           p.address === currentAccount?.address || p.hasError
                         }
@@ -794,15 +794,15 @@ const PaymentScreen = () => {
                     <TouchableOpacityBox
                       minHeight={75}
                       onPress={handleAddPayee}
-                      borderRadius="xl"
+                      borderRadius="4xl"
                       overflow="hidden"
-                      marginHorizontal="l"
-                      marginBottom="l"
+                      marginHorizontal="6"
+                      marginBottom="6"
                       alignItems="center"
                       justifyContent="center"
-                      backgroundColor="secondary"
+                      backgroundColor="secondaryBackground"
                     >
-                      <Text variant="body1" color="surfaceSecondaryText">
+                      <Text variant="textMdRegular" color="secondaryText">
                         {t('payment.addRecipient')}
                       </Text>
                     </TouchableOpacityBox>

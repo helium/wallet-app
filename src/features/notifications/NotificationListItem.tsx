@@ -40,24 +40,24 @@ const NotificationListItem = ({
     <TouchableContainer
       backgroundColor="secondaryBackground"
       flexDirection="row"
-      padding="m"
+      padding="4"
       borderBottomWidth={hasDivider ? 1 : 0}
-      borderBottomColor="black"
+      borderBottomColor="base.black"
       {...rest}
     >
-      <Box marginStart="s" flexGrow={1} flexBasis={0.5} justifyContent="center">
+      <Box marginStart="2" flexGrow={1} flexBasis={0.5} justifyContent="center">
         <Box flexDirection="row" alignItems="center" marginBottom="xs">
           {!viewed && (
             <Box
-              borderRadius="round"
-              backgroundColor="malachite"
+              borderRadius="full"
+              backgroundColor="green.500"
               width={10}
               height={10}
               marginRight="xs"
             />
           )}
           <Text
-            variant="subtitle4"
+            variant="textSmMedium"
             color="primaryText"
             adjustsFontSizeToFit
             allowFontScaling
@@ -65,16 +65,16 @@ const NotificationListItem = ({
             {title}
           </Text>
         </Box>
-        <Text variant="body3" color="secondaryText" numberOfLines={2}>
+        <Text variant="textXsRegular" color="secondaryText" numberOfLines={2}>
           {subtitle}
         </Text>
       </Box>
       <Text
-        variant="body3"
+        variant="textXsRegular"
         fontSize={10}
         fontStyle="italic"
         color="secondaryText"
-        paddingStart="s"
+        paddingStart="2"
       >
         {time}
       </Text>

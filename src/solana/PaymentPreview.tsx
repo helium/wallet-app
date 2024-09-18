@@ -26,11 +26,11 @@ export const PaymentPreivew = ({ mint, payments }: IPaymentPreviewProps) => {
 
   return (
     <Box
-      backgroundColor="surface"
-      borderRadius="l"
-      mt="m"
-      px="m"
-      py="ms"
+      backgroundColor="cardBackground"
+      borderRadius="2xl"
+      mt="4"
+      px="4"
+      py="3"
       {...{ gap: 8 }}
     >
       {payments.map(({ payee, balanceAmount }, index) => (
@@ -43,8 +43,8 @@ export const PaymentPreivew = ({ mint, payments }: IPaymentPreviewProps) => {
         >
           <Box flexDirection="row" alignItems="center" {...{ gap: 4 }}>
             {json?.image ? <TokenIcon img={json.image} size={30} /> : null}
-            <Text variant="body1">{symbol}</Text>
-            <Text variant="body4">{ellipsizeAddress(payee)}</Text>
+            <Text variant="textMdRegular">{symbol}</Text>
+            <Text variant="textXsRegular">{ellipsizeAddress(payee)}</Text>
           </Box>
           <Box flexDirection="row" alignItems="center">
             <Pill

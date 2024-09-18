@@ -21,7 +21,7 @@ const onTapStatusBanner = async () => {
 const StatusBanner = () => {
   const { t } = useTranslation()
   const incidents = useStatusPage()
-  const hitSlop = useHitSlop('m')
+  const hitSlop = useHitSlop('4')
   const { primaryText } = useColors()
 
   const getAlertDescription = useCallback(
@@ -42,7 +42,7 @@ const StatusBanner = () => {
     const [lastIncident] = incidents
 
     showMessage({
-      type: lastIncident.impact === 'critical' ? 'danger' : 'warning',
+      type: lastIncident.impact === 'critical' ? 'danger' : 'warning.500',
       message: lastIncident.name,
       description: getAlertDescription(lastIncident.updated_at),
     })
@@ -53,7 +53,7 @@ const StatusBanner = () => {
     return (
       <TouchableOpacityBox
         onPress={hideMessage}
-        padding="s"
+        padding="2"
         hitSlop={hitSlop}
         alignItems="flex-end"
         flex={1}

@@ -9,11 +9,11 @@ import { ModalProvider } from '@storage/ModalsProvider'
 import TokensProvider from '@storage/TokensProvider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import globalStyles from '@theme/globalStyles'
-import { darkThemeColors, lightThemeColors, theme } from '@theme/theme'
+import { lightTheme, darkTheme } from '@theme/theme'
 import { useColorScheme } from '@theme/themeHooks'
 import * as SplashLib from 'expo-splash-screen'
 import React, { useMemo } from 'react'
-import { LogBox } from 'react-native'
+import { LogBox, Platform, StatusBar, UIManager } from 'react-native'
 import useAppState from 'react-native-appstate-hook'
 import Config from 'react-native-config'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
@@ -38,6 +38,8 @@ import { GovernanceProvider } from './storage/GovernanceProvider'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
 import { BalanceProvider } from './utils/Balance'
 import { useDeepLinking } from './utils/linking'
+import { RootState } from './store/rootReducer'
+import { useSelector } from 'react-redux'
 
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -67,34 +69,51 @@ const App = () => {
 
   const { appState } = useAppState()
   const { restored: accountsRestored } = useAccountStorage()
-  // const { cache } = useSolana()
   const { setOpenedNotification } = useNotificationStorage()
+  const theme = useSelector((state: RootState) => state.app.theme)
 
   const linking = useDeepLinking()
 
   const colorScheme = useColorScheme()
+
+  const themeObject = useMemo(() => {
+    if (!theme) return darkTheme
+    if (theme === 'system' && colorScheme) {
+      return colorScheme === 'dark' ? darkTheme : lightTheme
+    }
+    return theme === 'dark' ? darkTheme : lightTheme
+  }, [theme, colorScheme])
+
+  const barStyle = useMemo(() => {
+    if (theme === 'system' && colorScheme) {
+      return colorScheme === 'dark' ? 'light-content' : 'dark-content'
+    }
+
+    return theme === 'dark' ? 'light-content' : 'dark-content'
+  }, [theme, colorScheme])
+
+  if (Platform.OS === 'android') {
+    if (UIManager.setLayoutAnimationEnabledExperimental) {
+      UIManager.setLayoutAnimationEnabledExperimental(true)
+    }
+  }
   const colorAdaptedTheme = useMemo(
     () => ({
-      ...theme,
-      colors: colorScheme === 'light' ? lightThemeColors : darkThemeColors,
+      ...themeObject,
     }),
-    [colorScheme],
+    [themeObject],
   )
 
   const navTheme = useMemo(
     () => ({
       ...DarkTheme,
-      dark: colorScheme === 'light',
+      dark: true,
       colors: {
         ...DarkTheme.colors,
-        background:
-          colorScheme === 'light'
-            ? lightThemeColors.primaryBackground
-            : darkThemeColors.primaryBackground,
+        background: themeObject.colors.primaryBackground,
       },
     }),
-
-    [colorScheme],
+    [themeObject],
   )
 
   useMount(() => {
@@ -113,6 +132,10 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={globalStyles.container}>
+        <StatusBar
+          backgroundColor={themeObject.colors.primaryBackground}
+          barStyle={barStyle}
+        />
         <SafeAreaProvider>
           <ThemeProvider theme={colorAdaptedTheme}>
             <PortalProvider>
@@ -140,7 +163,6 @@ const App = () => {
                                         <WalletSignProvider>
                                           <GovernanceProvider>
                                             <AutoGasBanner />
-                                            <NetworkAwareStatusBar />
                                             <RootNavigator />
 
                                             {/* place app specific modals here */}

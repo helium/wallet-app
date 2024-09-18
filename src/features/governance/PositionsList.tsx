@@ -74,7 +74,7 @@ export const PositionsList = ({ header, ...boxProps }: IPositionsListProps) => {
           // eslint-disable-next-line react/no-array-index-key
           key={`${p.pubkey.toBase58()}-${p.amountDepositedNative.toString()}-${idx}`}
           position={p}
-          marginTop={idx > 0 ? 'm' : 'none'}
+          marginTop={idx > 0 ? '4' : 'none'}
           subDaos={subDaos}
         />
       )
@@ -102,15 +102,15 @@ export const PositionsList = ({ header, ...boxProps }: IPositionsListProps) => {
 
     return (
       <Box
-        backgroundColor="surfaceSecondary"
-        borderRadius="l"
+        backgroundColor="bg.tertiary"
+        borderRadius="2xl"
         height={POSITION_HEIGHT}
         width="100%"
         justifyContent="center"
         alignItems="center"
-        mb="m"
+        mb="4"
       >
-        <Text variant="body1" color="white">
+        <Text variant="textMdRegular" color="primaryText">
           {t('gov.positions.noneFound')}
         </Text>
       </Box>
@@ -129,14 +129,14 @@ export const PositionsList = ({ header, ...boxProps }: IPositionsListProps) => {
       <Box
         flexDirection="row"
         alignItems="center"
-        paddingTop="m"
-        paddingBottom="m"
-        paddingHorizontal="l"
+        paddingTop="4"
+        paddingBottom="4"
+        paddingHorizontal="6"
         backgroundColor="primaryBackground"
         justifyContent="center"
       >
         {icon !== undefined && icon}
-        <Text variant="body3" textAlign="center" color="secondaryText">
+        <Text variant="textXsRegular" textAlign="center" color="secondaryText">
           {title}
         </Text>
       </Box>
@@ -154,31 +154,31 @@ export const PositionsList = ({ header, ...boxProps }: IPositionsListProps) => {
             flexDirection="row"
             justifyContent="center"
             alignItems="center"
-            paddingVertical="lm"
+            paddingVertical="5"
           >
-            <Text variant="body3" color="secondaryText">
+            <Text variant="textXsRegular" color="secondaryText">
               Positions
             </Text>
           </Box>
           <Box
             flex={1}
             flexDirection="row"
-            backgroundColor="surfaceSecondary"
+            backgroundColor="bg.tertiary"
             alignItems="center"
             justifyContent="center"
-            borderRadius="l"
-            padding="ms"
-            marginBottom="m"
-            paddingLeft="none"
+            borderRadius="2xl"
+            padding="3"
+            marginBottom="4"
+            paddingLeft="0"
             {...boxProps}
           >
             <LightningBolt
-              color={colors.blueBright500}
+              color={colors['blue.light-500']}
               height={36}
               width={36}
             />
             <Box flexShrink={1}>
-              <Text variant="body2" color="secondaryText">
+              <Text variant="textSmRegular" color="secondaryText">
                 Increase your voting power by locking tokens
               </Text>
             </Box>

@@ -89,7 +89,13 @@ const CollectablesTopTabs = () => {
 
   return (
     <SafeAreaBox flex={1} edges={edges}>
-      <Text marginTop="m" marginBottom="l" alignSelf="center" variant="h4">
+      <Text
+        marginTop="4"
+        marginBottom="6"
+        alignSelf="center"
+        variant="textXlRegular"
+        color="primaryText"
+      >
         {t('collectablesScreen.title')}
       </Text>
       {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}

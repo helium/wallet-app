@@ -8,6 +8,7 @@ import Box from './Box'
 import ListItem from './ListItem'
 import Text from './Text'
 import TouchableContainer from './TouchableContainer'
+import { useColors } from '@theme/themeHooks'
 
 export type SelectProps = {
   value: string
@@ -26,15 +27,16 @@ export const Select: React.FC<SelectProps> = ({
 }) => {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const { t } = useTranslation()
+  const colors = useColors()
 
   return (
     <>
       <TouchableContainer
-        padding="m"
+        padding="4"
         borderWidth={1}
-        borderColor="grey400"
-        backgroundColor="black"
-        borderRadius="l"
+        borderColor="border.primary"
+        backgroundColor="cardBackground"
+        borderRadius="2xl"
         flexDirection="row"
         justifyContent="space-between"
         alignItems="center"
@@ -43,11 +45,11 @@ export const Select: React.FC<SelectProps> = ({
       >
         <Box flexDirection="row" alignItems="center">
           {options.find((o) => o.value === value)?.icon}
-          <Text variant="body2" color="white" ml="s">
+          <Text variant="textSmRegular" color="primaryText" ml="2">
             {options.find((o) => o.value === value)?.label}
           </Text>
         </Box>
-        <ChevronDown color="gray" />
+        <ChevronDown color={colors.secondaryText} />
       </TouchableContainer>
       <BlurActionSheet
         title={t('gov.proposals.filterTitle')}

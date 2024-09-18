@@ -29,9 +29,9 @@ const ActivityScreen = () => {
 
   const contentContainer = useMemo(
     () => ({
-      paddingBottom: spacing.xxxl,
+      paddingBottom: spacing['15'],
     }),
-    [spacing.xxxl],
+    [spacing['15']],
   )
 
   const SectionData = useMemo((): {
@@ -80,13 +80,13 @@ const ActivityScreen = () => {
       <Box
         flexDirection="row"
         alignItems="center"
-        paddingTop="xl"
-        paddingBottom="m"
-        paddingHorizontal="l"
+        paddingTop="8"
+        paddingBottom="4"
+        paddingHorizontal="6"
         backgroundColor="primaryBackground"
         justifyContent="center"
       >
-        <Text variant="body3" textAlign="center" color="secondaryText">
+        <Text variant="textXsRegular" textAlign="center" color="secondaryText">
           {title}
         </Text>
       </Box>
@@ -97,12 +97,12 @@ const ActivityScreen = () => {
   const renderHeader = useCallback(() => {
     return (
       <Box
-        paddingTop="xxl"
-        paddingBottom="m"
-        paddingHorizontal="l"
+        paddingTop="12"
+        paddingBottom="4"
+        paddingHorizontal="6"
         backgroundColor="primaryBackground"
       >
-        <Text variant="h4" textAlign="center">
+        <Text variant="textXlRegular" textAlign="center" color="primaryText">
           {t('activityScreen.title')}
         </Text>
       </Box>
@@ -134,7 +134,7 @@ const ActivityScreen = () => {
             borderBottomStartRadius={lastItem ? 'xl' : undefined}
             borderBottomEndRadius={lastItem ? 'xl' : undefined}
             hasDivider={!lastItem || (firstItem && section.data.length !== 1)}
-            marginHorizontal="m"
+            marginHorizontal="4"
             transaction={item}
             onPress={handleActivityItemPress(item)}
           />
@@ -146,7 +146,7 @@ const ActivityScreen = () => {
 
   const Footer = useCallback(() => {
     return fetchingMore ? (
-      <Box marginTop="m">
+      <Box marginTop="4">
         <CircleLoader loaderSize={40} />
       </Box>
     ) : null

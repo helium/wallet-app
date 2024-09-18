@@ -36,7 +36,7 @@ const TokenChange = ({
   return (
     <Box flexDirection="row" alignItems="center">
       <TokenIcon img={image} size={24} />
-      <Text ml="xs" color="white">
+      <Text ml="xs" color="primaryText">
         {symbol}
       </Text>
     </Box>
@@ -132,7 +132,7 @@ export const CollapsibleWritableAccountPreview = ({
   return (
     <TouchableOpacityBox onPress={() => setExpanded(!expanded)}>
       <Box
-        p="s"
+        p="2"
         flexDirection="row"
         justifyContent="space-between"
         alignItems="center"
@@ -152,16 +152,21 @@ export const CollapsibleWritableAccountPreview = ({
           ) : (
             <Box flexDirection="row" alignItems="center">
               {writableAccount.name.startsWith('Unknown') ? (
-                <UnknownAccount color="white" width={24} height={24} />
+                <UnknownAccount color="primaryText" width={24} height={24} />
               ) : (
                 <AnchorAccount width={24} height={24} />
               )}
-              <Text maxWidth={115} ml="xs" color="white" numberOfLines={1}>
+              <Text
+                maxWidth={115}
+                ml="xs"
+                color="primaryText"
+                numberOfLines={1}
+              >
                 {writableAccount.name}
               </Text>
             </Box>
           )}
-          <Text variant="body4" ml="xs" color="grey50">
+          <Text variant="textXsRegular" ml="xs" color="gray.50">
             {shortenAddress(writableAccount.address.toBase58())}
           </Text>
         </Box>
@@ -205,7 +210,7 @@ export const CollapsibleWritableAccountPreview = ({
             </Box>
           ) : null}
 
-          <Chevron color={colors.grey500} />
+          <Chevron color={colors['gray.500']} />
         </Box>
       </Box>
       {expanded ? (

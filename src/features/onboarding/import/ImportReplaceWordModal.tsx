@@ -69,15 +69,15 @@ const ImportReplaceWordModal = ({
         opacity={0.97}
       />
       <SafeAreaBox flex={1}>
-        <TouchableOpacityBox onPress={onRequestClose} padding="l">
+        <TouchableOpacityBox onPress={onRequestClose} padding="6">
           <Close color={primaryText} height={24} width={24} />
         </TouchableOpacityBox>
-        <Box marginTop={{ smallPhone: 'l', phone: 'xxxl' }}>
+        <Box marginTop={{ none: 'l', sm: 'xxxl' }}>
           <Box minHeight={53}>
             <ScrollView
               horizontal
               keyboardShouldPersistTaps="always"
-              keyboardDismissMode="none"
+              keyboardDismissMode="0"
               showsHorizontalScrollIndicator={false}
             >
               {matchingWords.length <= 20 &&
@@ -108,9 +108,9 @@ const ImportReplaceWordModal = ({
               returnKeyType: 'next',
               autoFocus: true,
             }}
-            marginHorizontal="l"
+            marginHorizontal="6"
             variant="underline"
-            marginBottom="s"
+            marginBottom="2"
           />
         </Box>
       </SafeAreaBox>

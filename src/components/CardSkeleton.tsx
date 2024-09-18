@@ -8,13 +8,13 @@ export const CardSkeleton: React.FC<{ height: number }> = ({ height }) => {
   return (
     <ReAnimatedBox entering={FadeIn} exiting={FadeOut}>
       <Box
-        backgroundColor="surfaceSecondary"
-        borderRadius="l"
+        backgroundColor="bg.tertiary"
+        borderRadius="2xl"
         height={height}
         width="100%"
         justifyContent="center"
         alignItems="center"
-        mb="m"
+        mb="4"
       >
         <CircleLoader loaderSize={30} />
       </Box>

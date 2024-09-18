@@ -761,14 +761,14 @@ export const PositionCard = ({
     <>
       {isLoading && (
         <Box
-          backgroundColor="surfaceSecondary"
-          borderRadius="l"
-          padding="m"
-          paddingHorizontal="xl"
+          backgroundColor="bg.tertiary"
+          borderRadius="2xl"
+          padding="4"
+          paddingHorizontal="8"
           {...boxProps}
         >
           <Box flex={1} alignItems="center">
-            <Text variant="body2" color="primaryText">
+            <Text variant="textSmRegular" color="primaryText">
               {isSpliting && t('gov.positions.splitting')}
               {isExtending && t('gov.positions.extending')}
               {isTransfering && t('gov.positions.transfering')}
@@ -779,7 +779,7 @@ export const PositionCard = ({
               {isUndelegating && t('gov.positions.undelegating')}
               {isRelinquishing && t('gov.positions.relinquishing')}
             </Text>
-            <Box flex={1} marginTop="ms" width="100%">
+            <Box flex={1} marginTop="3" width="100%">
               <IndeterminateProgressBar height={6} />
             </Box>
           </Box>
@@ -788,39 +788,43 @@ export const PositionCard = ({
       {!isLoading && (
         <>
           <ReAnimatedBox
-            backgroundColor="surfaceSecondary"
-            borderRadius="l"
+            backgroundColor="bg.tertiary"
+            borderRadius="2xl"
             entering={FadeIn}
             exiting={FadeOut}
             {...boxProps}
           >
             <TouchableOpacityBox onPress={() => setActionsOpen(true)}>
-              <Box paddingHorizontal="m" paddingVertical="ms">
+              <Box paddingHorizontal="4" paddingVertical="3">
                 <Box
                   flexDirection="row"
                   justifyContent="space-between"
-                  marginBottom="m"
+                  marginBottom="4"
                 >
                   <Box flexDirection="row" alignItems="center">
                     {json?.image ? (
                       <TokenIcon size={26} img={json.image} />
                     ) : undefined}
                     <Text
-                      variant="subtitle3"
+                      variant="textMdMedium"
                       color="primaryText"
-                      marginLeft="m"
+                      marginLeft="4"
                     >
                       {`${lockedTokens} ${symbol}`}
                     </Text>
                   </Box>
                   {hasGenesisMultiplier && (
                     <Box
-                      padding="s"
-                      paddingHorizontal="m"
-                      backgroundColor="blueBright500"
-                      borderRadius="m"
+                      padding="2"
+                      paddingHorizontal="4"
+                      backgroundColor="blue.light-500"
+                      borderRadius="2xl"
                     >
-                      <Text variant="body3" fontSize={10} color="black">
+                      <Text
+                        variant="textXsRegular"
+                        fontSize={10}
+                        color="primaryText"
+                      >
                         {t('gov.positions.landrush').toUpperCase()}
                       </Text>
                     </Box>
@@ -829,25 +833,29 @@ export const PositionCard = ({
                 <Box
                   flexDirection="row"
                   justifyContent="space-between"
-                  paddingBottom="s"
+                  paddingBottom="2"
                 >
                   <Box>
-                    <Text variant="body2" color="secondaryText">
+                    <Text variant="textSmRegular" color="secondaryText">
                       {t('gov.positions.lockupType')}
                     </Text>
-                    <Text variant="body2" color="primaryText">
+                    <Text variant="textSmRegular" color="primaryText">
                       {lockupKindDisplay}
                     </Text>
                   </Box>
                   <Box>
                     <Text
-                      variant="body2"
+                      variant="textSmRegular"
                       color="secondaryText"
                       textAlign="right"
                     >
                       {t('gov.positions.voteMult')}
                     </Text>
-                    <Text variant="body2" color="primaryText" textAlign="right">
+                    <Text
+                      variant="textSmRegular"
+                      color="primaryText"
+                      textAlign="right"
+                    >
                       {(
                         (position.votingPower.isZero()
                           ? 0
@@ -865,12 +873,12 @@ export const PositionCard = ({
                 </Box>
                 <Box flexDirection="row" justifyContent="space-between">
                   <Box>
-                    <Text variant="body2" color="secondaryText">
+                    <Text variant="textSmRegular" color="secondaryText">
                       {isConstant
                         ? t('gov.positions.minDur')
                         : t('gov.positions.timeLeft')}
                     </Text>
-                    <Text variant="body2" color="primaryText">
+                    <Text variant="textSmRegular" color="primaryText">
                       {isConstant
                         ? getMinDurationFmt(
                             position.lockup.startTs,
@@ -882,14 +890,14 @@ export const PositionCard = ({
                   {hasGenesisMultiplier && (
                     <Box>
                       <Text
-                        variant="body2"
+                        variant="textSmRegular"
                         color="secondaryText"
                         textAlign="right"
                       >
                         {t('gov.positions.landrush')}
                       </Text>
                       <Text
-                        variant="body2"
+                        variant="textSmRegular"
                         color="primaryText"
                         textAlign="right"
                       >
@@ -899,22 +907,22 @@ export const PositionCard = ({
                     </Box>
                   )}
                 </Box>
-                <Box mt="s" flexDirection="row" justifyContent="space-between">
+                <Box mt="2" flexDirection="row" justifyContent="space-between">
                   {delegatedSubDaoMetadata ? (
                     <Box>
-                      <Text variant="body2" color="secondaryText">
+                      <Text variant="textSmRegular" color="secondaryText">
                         {t('gov.positions.delegatedTo')}
                       </Text>
                       <Box
-                        mt="s"
+                        mt="2"
                         flexDirection="row"
                         justifyContent="center"
                         alignItems="center"
                       >
                         <Box
-                          borderColor="black"
+                          borderColor="base.black"
                           borderWidth={2}
-                          borderRadius="round"
+                          borderRadius="full"
                         >
                           <TokenIcon
                             size={18}
@@ -922,9 +930,9 @@ export const PositionCard = ({
                           />
                         </Box>
                         <Text
-                          variant="body2"
+                          variant="textSmRegular"
                           color="primaryText"
-                          marginLeft="s"
+                          marginLeft="2"
                         >
                           {delegatedSubDaoMetadata.name}
                         </Text>
@@ -939,10 +947,10 @@ export const PositionCard = ({
                         delegatedSubDaoMetadata ? 'flex-end' : 'flex-start'
                       }
                     >
-                      <Text variant="body2" color="secondaryText">
+                      <Text variant="textSmRegular" color="secondaryText">
                         {t('gov.positions.proxiedTo')}
                       </Text>
-                      <Box mt="s">
+                      <Box mt="2">
                         <Pill
                           color="red"
                           text={
@@ -963,13 +971,13 @@ export const PositionCard = ({
                 width="100%"
                 height="100%"
                 justifyContent="center"
-                paddingVertical="ms"
-                borderBottomLeftRadius="l"
-                borderBottomRightRadius="l"
-                style={backgroundStyle('error', 0.1)}
+                paddingVertical="3"
+                borderBottomLeftRadius="2xl"
+                borderBottomRightRadius="2xl"
+                style={backgroundStyle('ros.500', 0.1)}
               >
-                <Box flexDirection="row" alignSelf="center" marginRight="s">
-                  <Text fontSize={10} color="error" marginLeft="s">
+                <Box flexDirection="row" alignSelf="center" marginRight="2">
+                  <Text fontSize={10} color="ros.500" marginLeft="2">
                     {showError}
                   </Text>
                 </Box>

@@ -57,40 +57,40 @@ const IotMapDetails = ({
   const { gain, elevation } = info
 
   return (
-    <Box flexDirection="row" marginTop="m">
+    <Box flexDirection="row" marginTop="4">
       <Box flex={1} flexDirection="row" justifyContent="space-between">
         <Box>
-          <Text variant="body2Medium">
+          <Text variant="textSmMedium">
             {t('collectablesScreen.hotspots.map.transmitScale')}
           </Text>
           <Box flexDirection="row" alignItems="center">
-            <Hex width={16} height={16} color={colors.darkGrey} />
-            <Text marginLeft="s" variant="body3">
+            <Hex width={16} height={16} color={colors['gray.700']} />
+            <Text marginLeft="2" variant="textXsRegular">
               ---
             </Text>
           </Box>
         </Box>
         <Box>
-          <Text variant="body2Medium" adjustsFontSizeToFit numberOfLines={1}>
+          <Text variant="textSmMedium" adjustsFontSizeToFit numberOfLines={1}>
             {t('generic.maker')}
           </Text>
-          <Text variant="body3" numberOfLines={1}>
+          <Text variant="textXsRegular" numberOfLines={1}>
             {maker}
           </Text>
         </Box>
         <Box>
-          <Text variant="body2Medium" adjustsFontSizeToFit numberOfLines={1}>
+          <Text variant="textSmMedium" adjustsFontSizeToFit numberOfLines={1}>
             {t('generic.gain')}
           </Text>
-          <Text variant="body3">
+          <Text variant="textXsRegular">
             {gain ? gain / 10 : gain} {t('generic.dBi')}
           </Text>
         </Box>
         <Box>
-          <Text variant="body2Medium" adjustsFontSizeToFit numberOfLines={1}>
+          <Text variant="textSmMedium" adjustsFontSizeToFit numberOfLines={1}>
             {t('generic.elevation')}
           </Text>
-          <Text variant="body3">{elevation}m</Text>
+          <Text variant="textXsRegular">{elevation}m</Text>
         </Box>
       </Box>
     </Box>
@@ -109,24 +109,24 @@ const MobileMapDetails = ({
   const { deviceType } = info
 
   return (
-    <Box flexDirection="row" marginTop="m">
+    <Box flexDirection="row" marginTop="4">
       <Box flex={1} flexDirection="row" justifyContent="space-between">
         <Box>
-          <Text variant="body2Medium">{t('generic.coverage')}</Text>
+          <Text variant="textSmMedium">{t('generic.coverage')}</Text>
           <Box flexDirection="row" alignItems="center">
-            <Hex width={16} height={16} color={colors.darkGrey} />
-            <Text marginLeft="s" variant="body3">
+            <Hex width={16} height={16} color={colors['gray.700']} />
+            <Text marginLeft="2" variant="textXsRegular">
               ---
             </Text>
           </Box>
         </Box>
         <Box>
-          <Text variant="body2Medium">{t('generic.maker')}</Text>
-          <Text variant="body3">{maker}</Text>
+          <Text variant="textSmMedium">{t('generic.maker')}</Text>
+          <Text variant="textXsRegular">{maker}</Text>
         </Box>
         <Box>
-          <Text variant="body2Medium">{t('generic.radioType')}</Text>
-          <Text variant="body3">
+          <Text variant="textSmMedium">{t('generic.radioType')}</Text>
+          <Text variant="textXsRegular">
             {deviceType ? Object.keys(deviceType)[0] : '---'}
           </Text>
         </Box>
@@ -170,7 +170,7 @@ export const HotspotMapHotspotDetails = ({
   )?.group_value
   const collectionKey = usePublicKey(collection)
   const { primaryText } = useColors()
-  const { backgroundStyle: flamecoOpaque } = useOpacity('flamenco', 0.1)
+  const { backgroundStyle: flamecoOpaque } = useOpacity('orange.500', 0.1)
 
   const { loading: mplxLoading, metadata: mplxMetadata } =
     useMetaplexMetadata(collectionKey)
@@ -448,7 +448,7 @@ export const HotspotMapHotspotDetails = ({
 
   return (
     <>
-      <Box padding="ms" borderBottomColor="black900" borderBottomWidth={1}>
+      <Box padding="3" borderBottomColor="base.black" borderBottomWidth={1}>
         {isLoading && (
           <Box
             flexDirection="row"
@@ -457,7 +457,7 @@ export const HotspotMapHotspotDetails = ({
             alignContent="center"
           >
             <Box justifyContent="center">
-              <CircleLoader loaderSize={24} color="white" />
+              <CircleLoader loaderSize={24} color="primaryText" />
             </Box>
           </Box>
         )}
@@ -465,10 +465,10 @@ export const HotspotMapHotspotDetails = ({
           <>
             <Box flexDirection="row">
               <ImageBox
-                borderRadius="lm"
+                borderRadius="2xl"
                 height={60}
                 width={60}
-                mr="ms"
+                mr="3"
                 source={{
                   uri: metadata?.image,
                   cache: 'force-cache',
@@ -478,8 +478,8 @@ export const HotspotMapHotspotDetails = ({
                 <Box flexDirection="row" alignItems="center">
                   <Box flex={1} flexDirection="row">
                     <Text
-                      variant="h3Bold"
-                      color="white"
+                      variant="displayXsBold"
+                      color="primaryText"
                       numberOfLines={1}
                       adjustsFontSizeToFit
                     >
@@ -491,16 +491,16 @@ export const HotspotMapHotspotDetails = ({
                   {streetAddress && (
                     <>
                       <Box flexShrink={1} flexDirection="row">
-                        <Text numberOfLines={1} variant="body1">
+                        <Text numberOfLines={1} variant="textMdRegular">
                           {streetAddress}
                         </Text>
                       </Box>
                       <Box
-                        backgroundColor="surfaceContrast"
+                        backgroundColor="primaryBackground"
                         height={6}
                         width={6}
-                        borderRadius="round"
-                        marginHorizontal="ms"
+                        borderRadius="full"
+                        marginHorizontal="3"
                       />
                     </>
                   )}
@@ -510,7 +510,11 @@ export const HotspotMapHotspotDetails = ({
                       alignItems="center"
                       onPress={handleCopyAddress}
                     >
-                      <Text variant="body1" numberOfLines={1} marginRight="xs">
+                      <Text
+                        variant="textMdRegular"
+                        numberOfLines={1}
+                        marginRight="xs"
+                      >
                         {ellipsizeAddress(eccCompact, { numChars: 4 })}
                       </Text>
                       <CopyAddress width={16} height={16} color={primaryText} />
@@ -536,9 +540,9 @@ export const HotspotMapHotspotDetails = ({
                 flexDirection="row"
                 justifyContent="center"
                 alignItems="center"
-                paddingTop="ms"
+                paddingTop="3"
               >
-                <Text variant="body3Medium" color="red500">
+                <Text variant="textXsMedium" color="ros.500">
                   {onboardError.toString()}
                 </Text>
               </Box>
@@ -559,20 +563,20 @@ export const HotspotMapHotspotDetails = ({
             alignItems="center"
             zIndex={100}
           >
-            <CircleLoader loaderSize={24} color="white" />
+            <CircleLoader loaderSize={24} color="primaryText" />
           </ReAnimatedBlurBox>
           {selectExplorerOpen ? (
             <>
               <Box
-                borderBottomColor="black900"
-                padding="m"
+                borderBottomColor="base.black"
+                padding="4"
                 borderBottomWidth={1}
               >
-                <Text variant="subtitle1">
+                <Text variant="textXlMedium">
                   {t('activityScreen.selectExplorer')}
                 </Text>
 
-                <Text variant="body2">
+                <Text variant="textSmRegular">
                   {t('activityScreen.selectExplorerSubtitle')}
                 </Text>
               </Box>
@@ -603,8 +607,8 @@ export const HotspotMapHotspotDetails = ({
           ) : (
             <>
               <TouchableOpacityBox
-                paddingVertical="m"
-                borderBottomColor="black900"
+                paddingVertical="4"
+                borderBottomColor="base.black"
                 borderBottomWidth={1}
                 onPress={hasRewards ? handleClaimRewards : undefined}
                 disabled={!hasRewards}
@@ -613,9 +617,9 @@ export const HotspotMapHotspotDetails = ({
                   flex={1}
                   flexDirection="row"
                   alignItems="center"
-                  marginHorizontal="m"
+                  marginHorizontal="4"
                 >
-                  <Text variant="subtitle3" opacity={!hasRewards ? 0.5 : 1}>
+                  <Text variant="textMdMedium" opacity={!hasRewards ? 0.5 : 1}>
                     {t('collectablesScreen.hotspots.claimRewards')}
                   </Text>
                   <Box
@@ -632,10 +636,10 @@ export const HotspotMapHotspotDetails = ({
                         justifyContent="space-between"
                         alignItems="center"
                         backgroundColor="mobileDarkBlue"
-                        borderRadius="m"
+                        borderRadius="2xl"
                         paddingVertical="xs"
                         paddingLeft="xs"
-                        paddingRight="s"
+                        paddingRight="2"
                       >
                         <MobileSymbol
                           color={colors.mobileBlue}
@@ -643,8 +647,8 @@ export const HotspotMapHotspotDetails = ({
                           height={20}
                         />
                         <Text
-                          variant="body3Medium"
-                          marginLeft="s"
+                          variant="textXsMedium"
+                          marginLeft="2"
                           color="mobileBlue"
                         >
                           {pendingMobileRewardsString}
@@ -657,10 +661,10 @@ export const HotspotMapHotspotDetails = ({
                         justifyContent="space-between"
                         alignItems="center"
                         backgroundColor="iotDarkGreen"
-                        borderRadius="m"
+                        borderRadius="2xl"
                         paddingVertical="xs"
                         paddingLeft="xs"
-                        paddingRight="s"
+                        paddingRight="2"
                       >
                         <IotSymbol
                           color={colors.iotGreen}
@@ -668,8 +672,8 @@ export const HotspotMapHotspotDetails = ({
                           height={20}
                         />
                         <Text
-                          variant="body3Medium"
-                          marginLeft="s"
+                          variant="textXsMedium"
+                          marginLeft="2"
                           color="iotGreen"
                         >
                           {pendingIotRewardsString}
@@ -680,8 +684,8 @@ export const HotspotMapHotspotDetails = ({
                 </Box>
               </TouchableOpacityBox>
               <TouchableOpacityBox
-                paddingVertical="m"
-                borderBottomColor="black900"
+                paddingVertical="4"
+                borderBottomColor="base.black"
                 borderBottomWidth={1}
                 onPress={handleRecipientChange}
               >
@@ -689,10 +693,10 @@ export const HotspotMapHotspotDetails = ({
                   flex={1}
                   flexDirection="row"
                   alignItems="center"
-                  marginHorizontal="m"
+                  marginHorizontal="4"
                   justifyContent="space-between"
                 >
-                  <Text variant="subtitle3">
+                  <Text variant="textMdMedium">
                     {t('changeRewardsRecipientScreen.title')}
                   </Text>
                   {hasRecipientSet && (
@@ -701,15 +705,15 @@ export const HotspotMapHotspotDetails = ({
                         flexDirection="row"
                         justifyContent="space-between"
                         alignItems="center"
-                        borderRadius="m"
-                        paddingVertical="sx"
-                        paddingLeft="s"
-                        paddingRight="s"
+                        borderRadius="2xl"
+                        paddingVertical="1.5"
+                        paddingLeft="2"
+                        paddingRight="2"
                         style={{
                           ...flamecoOpaque,
                         }}
                       >
-                        <Text variant="body3Medium" color="flamenco">
+                        <Text variant="textXsMedium" color="orange.500">
                           {t('changeRewardsRecipientScreen.set')}
                         </Text>
                       </Box>

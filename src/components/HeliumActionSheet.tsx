@@ -75,7 +75,7 @@ const HeliumActionSheet = forwardRef(
     const [data, setData] = useState<Array<HeliumActionSheetItemType>>([])
     const { t } = useTranslation()
     const colors = useColors()
-    const hitSlop = useHitSlop('l')
+    const hitSlop = useHitSlop('6')
 
     useEffect(() => {
       setData(propsData)
@@ -148,15 +148,15 @@ const HeliumActionSheet = forwardRef(
 
     const footer = useMemo(() => {
       return (
-        <Box marginBottom="xl">
+        <Box marginBottom="8">
           <TouchableOpacityBox
             onPress={handleClose}
-            backgroundColor="surface"
+            backgroundColor="cardBackground"
             height={49}
-            marginVertical="m"
+            marginVertical="4"
             alignItems="center"
             justifyContent="center"
-            borderRadius="ms"
+            borderRadius="3"
           >
             <Text
               fontWeight="500"
@@ -192,7 +192,7 @@ const HeliumActionSheet = forwardRef(
           <Box flexDirection="row">
             {!!prefix && (
               <Text
-                color="primary"
+                color="primaryText"
                 maxFontSizeMultiplier={1}
                 marginRight="xs"
                 fontWeight="bold"
@@ -205,10 +205,10 @@ const HeliumActionSheet = forwardRef(
             {!!buttonTitle && (
               <Text
                 maxFontSizeMultiplier={1}
-                marginRight="s"
+                marginRight="2"
                 fontWeight="bold"
                 fontSize={20}
-                color="primary"
+                color="primaryText"
                 {...textProps}
               >
                 {buttonTitle}

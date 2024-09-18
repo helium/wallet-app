@@ -25,18 +25,18 @@ import {
 } from './importAccountNavTypes'
 
 const accentColors = [
-  'purple500',
-  'blueBright500',
-  'greenBright500',
-  'orange500',
-  'persianRose',
-  'grey350',
-  'flamenco',
-  'electricViolet',
-  'malachite',
-  'turquoise',
-  'white',
-  'red500',
+  'purple.500',
+  'blue.light-500',
+  'green.light-500',
+  'orange.500',
+  'pink.500',
+  'gray.350',
+  'orange.500',
+  'violet.200',
+  'green.500',
+  'cyan.500',
+  'base.white',
+  'ros.500',
 ] as Color[]
 
 type Route = RouteProp<ImportAccountStackParamList, 'AccountImportScreen'>
@@ -52,7 +52,7 @@ const AccountImportScreen = () => {
   const [wordCount, setWordCount] = useState(12)
   const colors = useColors()
   const { t } = useTranslation()
-  const flatListStyle = usePaddingStyle('m', ['left', 'right'])
+  const flatListStyle = usePaddingStyle('4', ['left', 'right'])
 
   const [wordIndex, setWordIndex] = useState(0)
   const [words, setWords] = useState<(string | null)[]>(
@@ -260,13 +260,13 @@ const AccountImportScreen = () => {
     ({ index, item: w }: { item: string | null; index: number }) => {
       return (
         <TouchableOpacityBox
-          paddingHorizontal="s"
+          paddingHorizontal="2"
           onPress={handleWordSelectedAtIndex(index)}
-          paddingVertical="lm"
+          paddingVertical="5"
           alignItems="center"
         >
           <Text
-            variant="body1"
+            variant="textMdRegular"
             color={
               w || wordIndex === index ? getAccent(index).key : 'secondaryText'
             }
@@ -291,7 +291,7 @@ const AccountImportScreen = () => {
 
   return (
     <Box flex={1} backgroundColor="secondaryBackground">
-      <TouchableOpacityBox padding="l" onPress={navToTop} alignItems="flex-end">
+      <TouchableOpacityBox padding="6" onPress={navToTop} alignItems="flex-end">
         <Close color={colors.primaryText} height={16} width={16} />
       </TouchableOpacityBox>
       <KeyboardAwareScrollView
@@ -300,14 +300,15 @@ const AccountImportScreen = () => {
         keyboardShouldPersistTaps="always"
       >
         <Text
-          variant="h1"
+          color="primaryText"
+          variant="displayMdRegular"
           lineHeight={33}
           numberOfLines={3}
           maxFontSizeMultiplier={1}
-          marginHorizontal="l"
+          marginHorizontal="6"
           adjustsFontSizeToFit
-          paddingTop="xxxl"
-          paddingBottom="m"
+          paddingTop="15"
+          paddingBottom="4"
         >
           {t('accountImport.wordEntry.title', { totalWords: wordCount })}
         </Text>
@@ -338,7 +339,7 @@ const AccountImportScreen = () => {
           flex={1}
           alignItems="center"
         >
-          <Text variant="body1">
+          <Text variant="textMdRegular" color="secondaryText">
             {t('accountImport.wordEntry.changeWordAmount', {
               totalWords: wordCount === 12 ? 24 : 12,
             })}

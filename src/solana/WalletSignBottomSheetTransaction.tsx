@@ -120,13 +120,13 @@ const WalletSignBottomSheetTransaction = ({
   }, [transaction.writableAccounts, warningsByAccount, wallet])
 
   return (
-    <Box flexDirection="column" marginBottom="m">
+    <Box flexDirection="column" marginBottom="4">
       <Box
         flexDirection="column"
-        backgroundColor="black500"
-        borderTopLeftRadius="l"
-        borderTopRightRadius="l"
-        padding="s"
+        backgroundColor="gray.800"
+        borderTopLeftRadius="2xl"
+        borderTopRightRadius="2xl"
+        padding="2"
       >
         <Box
           flexDirection="row"
@@ -134,10 +134,10 @@ const WalletSignBottomSheetTransaction = ({
           alignItems="stretch"
         >
           <Box flexDirection="row" alignItems="center">
-            <Text variant="body1Bold">
+            <Text variant="textMdBold">
               {uncollapsedAccounts.length + collapsedAccounts.length}
             </Text>
-            <Text variant="body1"> {t('browserScreen.accounts')}</Text>
+            <Text variant="textMdRegular"> {t('browserScreen.accounts')}</Text>
           </Box>
           {nonAccountWarnings.length > 0 ? (
             <TouchableOpacityBox
@@ -145,10 +145,10 @@ const WalletSignBottomSheetTransaction = ({
               flexDirection="row"
               alignItems="center"
             >
-              <Box mr="s">
-                <Alert width={16} height={16} color="matchaRed500" />
+              <Box mr="2">
+                <Alert width={16} height={16} color="ros.500" />
               </Box>
-              <Text variant="body3" color="matchaRed500">
+              <Text variant="textXsRegular" color="ros.500">
                 {nonAccountWarnings.length === 1
                   ? nonAccountWarnings[0].shortMessage
                   : `${nonAccountWarnings.length} Warnings`}
@@ -156,14 +156,14 @@ const WalletSignBottomSheetTransaction = ({
             </TouchableOpacityBox>
           ) : null}
           <Box flexDirection="row" alignItems="center">
-            <Text variant="body1">{transactionIdx + 1}</Text>
-            <Text variant="body1"> {t('generic.of')} </Text>
-            <Text variant="body1">{totalTransactions}</Text>
+            <Text variant="textMdRegular">{transactionIdx + 1}</Text>
+            <Text variant="textMdRegular"> {t('generic.of')} </Text>
+            <Text variant="textMdRegular">{totalTransactions}</Text>
 
             <TouchableOpacityBox
               alignItems="center"
-              mb="xxs"
-              ml="s"
+              mb="0.5"
+              ml="2"
               onPress={() => Linking.openURL(transaction.explorerLink)}
             >
               <ExternalLink />
@@ -173,7 +173,7 @@ const WalletSignBottomSheetTransaction = ({
         {!transaction.error &&
         nonAccountWarnings.length > 0 &&
         !errorsCollapsed ? (
-          <Box mt="s">
+          <Box mt="2">
             {nonAccountWarnings.map((warning, idx) => (
               <WarningBox
                 // eslint-disable-next-line react/no-array-index-key
@@ -193,13 +193,13 @@ const WalletSignBottomSheetTransaction = ({
       </Box>
       {transaction.error ? (
         <Box
-          p="s"
+          p="2"
           flexDirection="column"
           alignItems="stretch"
-          borderBottomLeftRadius="l"
-          borderBottomRightRadius="l"
-          backgroundColor="black500"
-          mt="xxs"
+          borderBottomLeftRadius="6"
+          borderBottomRightRadius="6"
+          backgroundColor="gray.800"
+          mt="0.5"
         >
           <WarningBox
             header="Simulation Failed"
@@ -216,12 +216,12 @@ const WalletSignBottomSheetTransaction = ({
         </Box>
       ) : (
         <Box
-          mt="xxs"
+          mt="0.5"
           flexDirection="column"
           alignItems="stretch"
-          borderBottomLeftRadius="l"
-          borderBottomRightRadius="l"
-          backgroundColor="black500"
+          borderBottomLeftRadius="6"
+          borderBottomRightRadius="6"
+          backgroundColor="gray.800"
         >
           {uncollapsedAccounts.map((writableAccount) => (
             <CollapsibleWritableAccountPreview
@@ -241,16 +241,20 @@ const WalletSignBottomSheetTransaction = ({
             <>
               <TouchableOpacityBox onPress={() => setExpanded(!expanded)}>
                 <Box
-                  p="s"
+                  p="2"
                   flexDirection="row"
                   justifyContent="space-between"
                   alignItems="center"
                 >
                   <Box flexDirection="row" alignItems="center">
                     <Box flexDirection="row" alignItems="center">
-                      <UnknownAccount color="white" width={24} height={24} />
+                      <UnknownAccount
+                        color="primaryText"
+                        width={24}
+                        height={24}
+                      />
                     </Box>
-                    <Text ml="xs" color="white">
+                    <Text ml="xs" color="primaryText">
                       {collapsedAccounts.length} {t('browserScreen.accounts')}
                     </Text>
                   </Box>
@@ -262,7 +266,7 @@ const WalletSignBottomSheetTransaction = ({
                     <Box mr="xs">
                       <Pill text="Unknown Changes" color="orange" />
                     </Box>
-                    <Chevron color="grey500" />
+                    <Chevron color="gray.500" />
                   </Box>
                 </Box>
               </TouchableOpacityBox>
@@ -286,9 +290,9 @@ const WalletSignBottomSheetTransaction = ({
             </>
           ) : null}
           {transaction.possibleCNftChanges.slice(0, 10).map((asset) => (
-            <Box key={asset.id} p="s" flexDirection="row" alignItems="center">
+            <Box key={asset.id} p="2" flexDirection="row" alignItems="center">
               <AssetImage uri={asset.content.json_uri} />
-              <Text ml="xs" color="white">
+              <Text ml="xs" color="primaryText">
                 {asset.content.metadata?.name || 'Unknown cNFT'}
               </Text>
             </Box>

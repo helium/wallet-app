@@ -9,11 +9,11 @@ import { useAppVersion } from '@hooks/useDevice'
 import { useExplorer } from '@hooks/useExplorer'
 import { useNavigation } from '@react-navigation/native'
 import { Cluster } from '@solana/web3.js'
-import { useHitSlop, useSpacing } from '@theme/themeHooks'
+import { useColors, useHitSlop, useSpacing } from '@theme/themeHooks'
 import React, { ReactText, memo, useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { Alert, Linking, Platform, SectionList } from 'react-native'
+import { Alert, Linking, Platform, ScrollView, SectionList } from 'react-native'
 import deviceInfo from 'react-native-device-info'
 import { SvgUri } from 'react-native-svg'
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
@@ -33,6 +33,11 @@ import { HomeNavigationProp } from '../home/homeTypes'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
 import { SettingsNavigationProp } from './settingsTypes'
 import useAuthIntervals from './useAuthIntervals'
+import { useDispatch, useSelector } from 'react-redux'
+import { appSlice } from '../../store/slices/appSlice'
+import SegmentedControl from '@components/SegmentedControl'
+import { RootState } from '../../store/rootReducer'
+import BackScreen from '@components/BackScreen'
 
 const Settings = () => {
   const { t } = useTranslation()
@@ -42,8 +47,9 @@ const Settings = () => {
   const spacing = useSpacing()
   const version = useAppVersion()
   const buildNumber = deviceInfo.getBuildNumber()
-  const hitSlop = useHitSlop('xxl')
+  const hitSlop = useHitSlop('12')
   const authIntervals = useAuthIntervals()
+  const colors = useColors()
   const {
     currentAccount,
     accounts,
@@ -66,6 +72,8 @@ const Settings = () => {
   } = useAppStorage()
   const { showOKAlert, showOKCancelAlert } = useAlert()
   const { updateCluster, cluster, cache } = useSolana()
+  const theme = useSelector((state: RootState) => state.app.theme)
+  const dispatch = useDispatch()
 
   const isDefaultAccount = useMemo(
     () => defaultAccountAddress === currentAccount?.address,
@@ -83,9 +91,9 @@ const Settings = () => {
 
   const contentContainer = useMemo(
     () => ({
-      paddingBottom: spacing.xxxl,
+      paddingBottom: spacing['15'],
     }),
-    [spacing.xxxl],
+    [spacing['15']],
   )
 
   const keyExtractor = useCallback((item, index) => item.title + index, [])
@@ -600,17 +608,32 @@ const Settings = () => {
     [],
   )
 
+  const options = useMemo(() => {
+    return [
+      { value: 'system', label: t('system') },
+      { value: 'light', label: t('light') },
+      { value: 'dark', label: t('dark') },
+    ] as { value: 'system' | 'light' | 'dark'; label: string }[]
+  }, [t])
+
+  const onSegmentSelected = useCallback(
+    (index: number) => {
+      dispatch(appSlice.actions.updateTheme(options[index].value))
+    },
+    [dispatch, options],
+  )
+
   const renderSectionHeader = useCallback(
     ({ section: { title, icon } }) => (
       <Box
         flexDirection="row"
         alignItems="center"
-        paddingTop="xxl"
-        paddingBottom="m"
-        paddingHorizontal="l"
+        paddingTop="12"
+        paddingBottom="4"
+        paddingHorizontal="6"
       >
         {icon !== undefined && icon}
-        <Text variant="body2" fontWeight="bold">
+        <Text variant="textSmRegular" fontWeight="bold" color="primaryText">
           {title}
         </Text>
       </Box>
@@ -619,33 +642,51 @@ const Settings = () => {
   )
 
   return (
-    <SafeAreaBox backgroundColor="surfaceSecondary">
-      <Box
-        flexDirection="row"
-        justifyContent="space-between"
-        alignItems="center"
-        paddingHorizontal="l"
+    <ScrollView
+      style={{
+        backgroundColor: colors.secondaryBackground,
+      }}
+    >
+      <BackScreen
+        headerBackgroundColor="secondaryBackground"
+        padding={'0'}
+        backgroundColor="secondaryBackground"
+        edges={['top']}
       >
-        <Text variant="h1">{t('settings.title')}</Text>
-        <CloseButton
-          onPress={onRequestClose}
-          hitSlop={hitSlop}
-          paddingVertical="m"
+        <Box
+          flexDirection="column"
+          justifyContent="space-between"
+          alignItems="flex-start"
+          paddingHorizontal="6"
+        >
+          <Text
+            color="primaryText"
+            variant="displayMdRegular"
+            marginVertical={'4'}
+          >
+            {t('settings.title')}
+          </Text>
+          <SegmentedControl
+            options={options}
+            selectedIndex={options.findIndex((s) => s.value === theme)}
+            onItemSelected={onSegmentSelected}
+          />
+        </Box>
+
+        <SectionList
+          contentContainerStyle={contentContainer}
+          sections={SectionData}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+          renderSectionHeader={renderSectionHeader}
+          renderSectionFooter={renderSectionFooter}
+          initialNumToRender={100}
+          stickySectionHeadersEnabled={false}
+          // ^ Sometimes on initial page load there is a bug with SectionList
+          // where it won't render all items right away. This seems to fix it.
         />
-      </Box>
-      <SectionList
-        contentContainerStyle={contentContainer}
-        sections={SectionData}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        renderSectionHeader={renderSectionHeader}
-        renderSectionFooter={renderSectionFooter}
-        initialNumToRender={100}
-        stickySectionHeadersEnabled={false}
-        // ^ Sometimes on initial page load there is a bug with SectionList
-        // where it won't render all items right away. This seems to fix it.
-      />
-    </SafeAreaBox>
+      </BackScreen>
+    </ScrollView>
   )
 }
 

@@ -27,7 +27,7 @@ const CollectionScreen = () => {
   const navigation = useNavigation<CollectableNavigationProp>()
   const COLLECTABLE_HEIGHT = Dimensions.get('window').width / 2
   const collectables = route.params.collection
-  const { lm: borderRadius } = useBorderRadii()
+  const { 5: borderRadius } = useBorderRadii()
   const { triggerImpact } = useHaptic()
 
   const handleNavigateToCollectable = useCallback(
@@ -52,11 +52,11 @@ const CollectionScreen = () => {
           exiting={FadeOut}
         >
           <TouchableOpacityBox
-            marginHorizontal="s"
-            marginVertical="s"
+            marginHorizontal="2"
+            marginVertical="2"
             alignItems="center"
-            backgroundColor="surfaceSecondary"
-            borderRadius="xxl"
+            backgroundColor="bg.tertiary"
+            borderRadius="4xl"
             onPress={() => handleNavigateToCollectable(item)}
           >
             <Image
@@ -77,13 +77,13 @@ const CollectionScreen = () => {
 
   return (
     <BackScreen
-      padding="none"
+      padding="0"
       headerBackgroundColor="primaryBackground"
       title={`${collectables[0]?.content?.metadata?.symbol} ${collectables.length}`}
-      headerTopMargin="l"
+      headerTopMargin="6"
     >
       <ReAnimatedBox
-        marginTop="s"
+        marginTop="2"
         entering={DelayedFadeIn}
         style={globalStyles.container}
       >

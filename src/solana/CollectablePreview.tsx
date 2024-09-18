@@ -26,11 +26,11 @@ export const CollectablePreview = ({
 
   return (
     <Box
-      backgroundColor="surface"
-      borderRadius="l"
-      mt="m"
-      px="m"
-      py="ms"
+      backgroundColor="cardBackground"
+      borderRadius="2xl"
+      mt="4"
+      px="4"
+      py="3"
       {...{ gap: 8 }}
     >
       <Box
@@ -41,25 +41,25 @@ export const CollectablePreview = ({
         <Box flexDirection="row" alignItems="center" {...{ gap: 4 }}>
           {metadata && (
             <Box
-              shadowColor="black"
+              shadowColor="base.black"
               shadowOpacity={0.4}
               shadowOffset={{ width: 0, height: 10 }}
               shadowRadius={10}
               elevation={12}
             >
               <ImageBox
-                backgroundColor={metadata.image ? 'black' : 'surfaceSecondary'}
+                backgroundColor={metadata.image ? 'black' : 'bg.tertiary'}
                 height={40}
                 width={40}
                 source={{
                   uri: metadata?.image,
                   cache: 'force-cache',
                 }}
-                borderRadius="m"
+                borderRadius="2xl"
               />
             </Box>
           )}
-          <Text variant="body4">{ellipsizeAddress(payee)}</Text>
+          <Text variant="textXsRegular">{ellipsizeAddress(payee)}</Text>
         </Box>
         <Box flexDirection="row" alignItems="center">
           <Pill Icon={Send} color="blue" />

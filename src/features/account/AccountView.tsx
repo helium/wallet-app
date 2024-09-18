@@ -59,7 +59,7 @@ const AccountView = ({ selectedBalance, ...boxProps }: Props) => {
         {!balanceString && (
           <Text
             maxFontSizeMultiplier={1.1}
-            variant="h0"
+            variant="displayLgRegular"
             color="primaryText"
             numberOfLines={1}
             adjustsFontSizeToFit
@@ -72,12 +72,12 @@ const AccountView = ({ selectedBalance, ...boxProps }: Props) => {
           <FadeInOut>
             <Text
               maxFontSizeMultiplier={1.1}
-              variant="h0"
+              variant="displayLgRegular"
               color="primaryText"
               numberOfLines={1}
               adjustsFontSizeToFit
               textAlign="center"
-              marginBottom="m"
+              marginBottom="4"
             >
               {balanceString}
             </Text>
@@ -104,7 +104,7 @@ const AccountView = ({ selectedBalance, ...boxProps }: Props) => {
           <FadeInOut>
             <Box minHeight={actionBarHeight}>
               <Text
-                variant="body3"
+                variant="textXsRegular"
                 color="secondaryText"
                 marginLeft="xs"
                 numberOfLines={1}

@@ -54,7 +54,7 @@ const LedgerModal = forwardRef(
 
     const { currentAccount } = useAccountStorage()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-    const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
+    const { backgroundStyle } = useOpacity('bg.tertiary', 1)
     const { setIsShowing } = useBackHandler(bottomSheetModalRef)
     const { secondaryText } = useColors()
     const { t } = useTranslation()
@@ -271,7 +271,7 @@ const LedgerModal = forwardRef(
           return null
         case 'openApp':
           return (
-            <Text variant="h4Medium" color="primaryText">
+            <Text variant="textXlMedium" color="primaryText">
               {t('ledger.openTheSolanaApp', {
                 device: currentAccount?.ledgerDevice?.name,
               })}
@@ -279,7 +279,7 @@ const LedgerModal = forwardRef(
           )
         case 'sign':
           return (
-            <Text variant="h4Medium" color="primaryText">
+            <Text variant="textXlMedium" color="primaryText">
               {t('ledger.pleaseConfirmTransaction', {
                 device: currentAccount?.ledgerDevice?.name,
               })}
@@ -288,19 +288,19 @@ const LedgerModal = forwardRef(
         case 'enterPinCode':
           return (
             <Box>
-              <Text variant="h4Medium" color="primaryText">
+              <Text variant="textXlMedium" color="primaryText">
                 {t('ledger.pleaseEnterPinCode', {
                   device: currentAccount?.ledgerDevice?.name,
                 })}
               </Text>
               <TouchableOpacityBox
-                marginTop="s"
+                marginTop="2"
                 onPress={handleRetry}
-                backgroundColor="surface"
-                padding="l"
-                borderRadius="round"
+                backgroundColor="cardBackground"
+                padding="6"
+                borderRadius="full"
               >
-                <Text variant="subtitle1" textAlign="center">
+                <Text variant="textXlMedium" textAlign="center">
                   {t('generic.tryAgain')}
                 </Text>
               </TouchableOpacityBox>
@@ -309,17 +309,17 @@ const LedgerModal = forwardRef(
         case 'enableBlindSign':
           return (
             <Box>
-              <Text variant="h4Medium" color="primaryText">
+              <Text variant="textXlMedium" color="primaryText">
                 {t('ledger.enableBlindSign')}
               </Text>
               <TouchableOpacityBox
-                marginTop="s"
+                marginTop="2"
                 onPress={handleRetry}
-                backgroundColor="surface"
-                padding="l"
-                borderRadius="round"
+                backgroundColor="cardBackground"
+                padding="6"
+                borderRadius="full"
               >
-                <Text variant="subtitle1" textAlign="center">
+                <Text variant="textXlMedium" textAlign="center">
                   {t('generic.tryAgain')}
                 </Text>
               </TouchableOpacityBox>
@@ -347,7 +347,7 @@ const LedgerModal = forwardRef(
             enableDynamicSizing
           >
             <BottomSheetScrollView>
-              <Box paddingHorizontal="l">
+              <Box paddingHorizontal="6">
                 <Box flex={1} alignItems="flex-end">
                   <CloseButton onPress={onDismiss} />
                 </Box>

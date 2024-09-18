@@ -34,7 +34,7 @@ const AccountButton = ({
   backgroundColor: backgroundColorProps,
   ...boxProps
 }: Props) => {
-  const hitSlop = useHitSlop('l')
+  const hitSlop = useHitSlop('6')
   const colors = useColors()
   const { triggerImpact } = useHaptic()
 
@@ -58,21 +58,26 @@ const AccountButton = ({
     >
       <Box
         backgroundColor={backgroundColorProps as Color}
-        borderRadius="xl"
+        borderRadius="4xl"
         alignItems="center"
         flexDirection="row"
-        paddingHorizontal={innerBoxProps?.paddingHorizontal || 'l'}
-        paddingVertical={innerBoxProps?.paddingVertical || 'm'}
+        paddingHorizontal={innerBoxProps?.paddingHorizontal || '6'}
+        paddingVertical={innerBoxProps?.paddingVertical || '4'}
         {...innerBoxProps}
       >
         <AccountIcon size={accountIconSize} address={address} />
         <Box flex={1}>
           {!!subtitle && (
-            <Text marginLeft="ms" variant="body3" color={textColor}>
+            <Text marginLeft="3" variant="textXsRegular" color={textColor}>
               {subtitle}
             </Text>
           )}
-          <Text marginLeft="ms" marginRight="xs" variant="subtitle2">
+          <Text
+            marginLeft="3"
+            marginRight="xs"
+            variant="textLgMedium"
+            color="primaryText"
+          >
             {title}
           </Text>
         </Box>

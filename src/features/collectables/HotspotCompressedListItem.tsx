@@ -39,7 +39,7 @@ const HotspotListItem = ({
   const { t } = useTranslation()
   const colors = useColors()
   const wallet = useCurrentWallet()
-  const { backgroundStyle: flamecoOpaque } = useOpacity('flamenco', 0.1)
+  const { backgroundStyle: flamecoOpaque } = useOpacity('orange.500', 0.1)
   const streetAddress = useHotspotAddress(hotspot)
 
   const { info: iotMint } = useMint(IOT_MINT)
@@ -105,7 +105,7 @@ const HotspotListItem = ({
 
   const hasIotRecipient = useMemo(
     () =>
-      iotRecipient?.destination &&
+      (iotRecipient as any)?.destination &&
       wallet &&
       !new PublicKey(iotRecipient.destination).equals(wallet) &&
       !new PublicKey(iotRecipient.destination).equals(PublicKey.default),
@@ -128,8 +128,8 @@ const HotspotListItem = ({
 
   return (
     <ReAnimatedBox
-      backgroundColor="surfaceSecondary"
-      borderRadius="l"
+      backgroundColor="bg.tertiary"
+      borderRadius="2xl"
       position="relative"
       entering={FadeIn}
       exiting={FadeOut}
@@ -137,8 +137,8 @@ const HotspotListItem = ({
     >
       <TouchableOpacityBox
         flex={1}
-        padding="ms"
-        paddingTop="s"
+        padding="3"
+        paddingTop="2"
         onPress={() => onPress(hotspot)}
       >
         {hasRecipientSet && (
@@ -147,15 +147,15 @@ const HotspotListItem = ({
               flexDirection="row"
               justifyContent="space-between"
               alignItems="center"
-              borderRadius="m"
-              paddingVertical="sx"
-              paddingLeft="s"
-              paddingRight="s"
+              borderRadius="2xl"
+              paddingVertical="1.5"
+              paddingLeft="2"
+              paddingRight="2"
               style={{
                 ...flamecoOpaque,
               }}
             >
-              <Text variant="body3Medium" color="flamenco">
+              <Text variant="textXsMedium" color="orange.500">
                 {t('changeRewardsRecipientScreen.set')}
               </Text>
             </Box>
@@ -163,7 +163,7 @@ const HotspotListItem = ({
         )}
         <Box flex={1} flexDirection="row" alignItems="center">
           <ImageBox
-            borderRadius="lm"
+            borderRadius="2xl"
             height={72}
             width={62}
             source={{
@@ -171,11 +171,11 @@ const HotspotListItem = ({
               cache: 'force-cache',
             }}
           />
-          <Box marginLeft="ms" flex={1}>
+          <Box marginLeft="3" flex={1}>
             {metadata?.name && (
               <Text
                 textAlign="left"
-                variant="subtitle2"
+                variant="textLgMedium"
                 numberOfLines={1}
                 adjustsFontSizeToFit
               >
@@ -184,12 +184,16 @@ const HotspotListItem = ({
             )}
 
             {streetAddress && (
-              <Text variant="body2" numberOfLines={1} adjustsFontSizeToFit>
+              <Text
+                variant="textSmRegular"
+                numberOfLines={1}
+                adjustsFontSizeToFit
+              >
                 {streetAddress}
               </Text>
             )}
             <Text
-              variant="subtitle3"
+              variant="textMdMedium"
               color="secondaryText"
               numberOfLines={1}
               adjustsFontSizeToFit
@@ -197,17 +201,17 @@ const HotspotListItem = ({
               {eccCompact ? ellipsizeAddress(eccCompact) : ''}
             </Text>
           </Box>
-          <Box marginLeft="ms">
+          <Box marginLeft="3">
             {!!hasMobileRewards && (
               <Box
                 flexDirection="row"
                 justifyContent="space-between"
                 alignItems="center"
                 backgroundColor="mobileDarkBlue"
-                borderRadius="m"
+                borderRadius="2xl"
                 paddingVertical="xs"
                 paddingLeft="xs"
-                paddingRight="s"
+                paddingRight="2"
                 marginBottom="xs"
               >
                 <MobileSymbol
@@ -215,7 +219,7 @@ const HotspotListItem = ({
                   width={20}
                   height={20}
                 />
-                <Text variant="body3Medium" marginLeft="xs" color="mobileBlue">
+                <Text variant="textXsMedium" marginLeft="xs" color="mobileBlue">
                   {pendingMobileRewardsString}
                 </Text>
               </Box>
@@ -226,13 +230,13 @@ const HotspotListItem = ({
                 justifyContent="space-between"
                 alignItems="center"
                 backgroundColor="iotDarkGreen"
-                borderRadius="m"
+                borderRadius="2xl"
                 paddingVertical="xs"
                 paddingLeft="xs"
-                paddingRight="s"
+                paddingRight="2"
               >
                 <IotSymbol color={colors.iotGreen} width={20} height={20} />
-                <Text variant="body3Medium" marginLeft="xs" color="iotGreen">
+                <Text variant="textXsMedium" marginLeft="xs" color="iotGreen">
                   {pendingIotRewardsString}
                 </Text>
               </Box>

@@ -51,7 +51,12 @@ const CustomBlurBackdrop = ({
           alignItems="center"
           width="100%"
         >
-          <Text marginHorizontal="l" textAlign="center" variant="h4">
+          <Text
+            marginHorizontal="6"
+            textAlign="center"
+            variant="textXlRegular"
+            color="primaryText"
+          >
             {title || ''}
           </Text>
         </SafeAreaBox>

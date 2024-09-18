@@ -59,76 +59,76 @@ const NftDetailsScreen = () => {
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <BackScreen
-        padding="none"
+        padding="0"
         title={t('collectablesScreen.nfts.nftDetialTitle')}
         backgroundImageUri={backgroundImageUri}
         edges={backEdges}
         TrailingIcon={InfoIcon}
         onTrailingIconPress={handleInfoPress}
-        headerTopMargin="l"
+        headerTopMargin="6"
       >
         <ScrollView>
           <SafeAreaBox
             edges={safeEdges}
             backgroundColor="transparent"
             flex={1}
-            padding="m"
+            padding="4"
             alignItems="center"
           >
             {json && (
               <Box
-                shadowColor="black"
+                shadowColor="base.black"
                 shadowOpacity={0.4}
                 shadowOffset={{ width: 0, height: 10 }}
                 shadowRadius={10}
                 elevation={12}
               >
                 <ImageBox
-                  marginTop="l"
-                  backgroundColor={json.image ? 'black' : 'surfaceSecondary'}
+                  marginTop="6"
+                  backgroundColor={json.image ? 'black' : 'bg.tertiary'}
                   height={COLLECTABLE_HEIGHT - spacing.xl * 2}
                   width={COLLECTABLE_HEIGHT - spacing.xl * 2}
                   source={{ uri: json.image, cache: 'force-cache' }}
-                  borderRadius="xxl"
+                  borderRadius="4xl"
                 />
               </Box>
             )}
             <Text
-              marginTop="l"
-              marginBottom="s"
-              marginHorizontal="l"
+              marginTop="6"
+              marginBottom="2"
+              marginHorizontal="6"
               textAlign="center"
-              variant="h1Medium"
+              variant="displayMdMedium"
             >
               {json?.name}
             </Text>
             <Text
-              variant="body3Medium"
-              color="grey600"
-              marginBottom="xl"
+              variant="textXsMedium"
+              color="gray.600"
+              marginBottom="8"
               textAlign="center"
             >
               {json?.description || t('collectables.noDescription')}
             </Text>
             <Box
               flexDirection="row"
-              marginBottom="xl"
-              marginTop="m"
-              marginHorizontal="xl"
+              marginBottom="8"
+              marginTop="4"
+              marginHorizontal="8"
             >
               {collectable.model === 'nft' && (
                 <ButtonPressable
                   height={65}
                   flexGrow={1}
-                  borderRadius="round"
-                  backgroundColor="white"
+                  borderRadius="full"
+                  backgroundColor="base.white"
                   backgroundColorOpacity={1}
                   backgroundColorOpacityPressed={0.7}
-                  titleColorDisabled="grey600"
-                  backgroundColorDisabled="white"
+                  titleColorDisabled="gray.600"
+                  backgroundColorDisabled="base.white"
                   backgroundColorDisabledOpacity={0.1}
                   title={t('collectablesScreen.transfer')}
-                  titleColor="black"
+                  titleColor="base.black"
                   onPress={handleSend}
                   TrailingComponent={
                     <ArrowRight width={16} height={15} color="black" />

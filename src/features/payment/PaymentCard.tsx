@@ -66,14 +66,14 @@ const PaymentCard = ({
 
   return (
     <Box
-      borderTopLeftRadius="xl"
-      borderTopRightRadius="xl"
-      padding="l"
+      borderTopLeftRadius="4xl"
+      borderTopRightRadius="4xl"
+      padding="6"
       height={height || undefined}
       onLayout={handleLayout}
       overflow="hidden"
       minHeight={232}
-      backgroundColor="secondary"
+      backgroundColor="secondaryBackground"
     >
       <PaymentSummary
         mint={mint}
@@ -86,38 +86,42 @@ const PaymentCard = ({
       <Box flex={1} justifyContent="flex-end">
         {!payEnabled ? (
           <>
-            <Box flexDirection="row" marginTop="l" marginBottom="m">
+            <Box flexDirection="row" marginTop="6" marginBottom="4">
               <TouchableOpacityBox
                 flex={1}
                 minHeight={66}
                 justifyContent="center"
-                marginEnd="m"
-                borderRadius="round"
+                marginEnd="4"
+                borderRadius="full"
                 overflow="hidden"
-                backgroundColor="secondaryIcon"
+                backgroundColor="secondaryText"
                 onPress={handleCancel}
               >
-                <Text variant="subtitle1" textAlign="center" color="grey600">
+                <Text
+                  variant="textXlMedium"
+                  textAlign="center"
+                  color="gray.600"
+                >
                   {t('generic.cancel')}
                 </Text>
               </TouchableOpacityBox>
               <TouchableOpacityBox
                 flex={1}
                 minHeight={66}
-                backgroundColor="surfaceContrast"
+                backgroundColor="primaryBackground"
                 opacity={disabled ? 0.6 : 1}
                 justifyContent="center"
                 alignItems="center"
                 onPress={handlePayPressed}
                 disabled={disabled}
-                borderRadius="round"
+                borderRadius="full"
                 flexDirection="row"
               >
                 <Text
-                  marginLeft="s"
-                  variant="subtitle1"
+                  marginLeft="2"
+                  variant="textXlMedium"
                   textAlign="center"
-                  color={disabled ? 'secondaryText' : 'surfaceContrastText'}
+                  color={disabled ? 'text.disabled' : 'secondaryText'}
                 >
                   {t('payment.pay')}
                 </Text>
@@ -126,7 +130,7 @@ const PaymentCard = ({
           </>
         ) : (
           <SubmitButton
-            marginTop="l"
+            marginTop="6"
             title={t('payment.sendButton', {
               ticker: symbol,
             })}

@@ -21,7 +21,7 @@ const SecretKeyWarningScreen = ({ children }: { children: ReactNode }) => {
   const [secondsPassed, setSecondsPassed] = useState(0)
   const animValue = useSharedValue(1)
   const [animationComplete, setAnimationComplete] = useState(false)
-  const { primaryBackground, red500 } = useColors()
+  const { primaryBackground, ...colors } = useColors()
 
   useEffect(() => {
     // set interval to update text every second
@@ -85,18 +85,14 @@ const SecretKeyWarningScreen = ({ children }: { children: ReactNode }) => {
               backgroundColor="primaryBackground"
               flex={1}
               justifyContent="center"
-              paddingHorizontal="xl"
+              paddingHorizontal="8"
               height="100%"
             >
-              <Box
-                justifyContent="center"
-                alignItems="center"
-                marginBottom="xl"
-              >
-                <InfoWarning color={red500} height={80} width={80} />
+              <Box justifyContent="center" alignItems="center" marginBottom="8">
+                <InfoWarning color={colors['ros.500']} height={80} width={80} />
               </Box>
               <Text
-                variant="h1"
+                variant="displayMdRegular"
                 textAlign="center"
                 fontSize={40}
                 adjustsFontSizeToFit
@@ -106,49 +102,49 @@ const SecretKeyWarningScreen = ({ children }: { children: ReactNode }) => {
               </Text>
 
               <Text
-                variant="subtitle1"
+                variant="textXlMedium"
                 color="secondaryText"
                 textAlign="center"
-                marginTop="m"
-                marginHorizontal="l"
+                marginTop="4"
+                marginHorizontal="6"
                 adjustsFontSizeToFit
               >
                 {t('secretKeyWarningScreen.body')}
               </Text>
 
               <ButtonPressable
-                borderRadius="round"
+                borderRadius="full"
                 onPress={goBack}
                 borderWidth={2}
-                borderColor="white"
+                borderColor="base.white"
                 backgroundColor="transparent"
                 backgroundColorOpacityPressed={0.7}
                 titleColorDisabled="secondaryText"
-                titleColor="white"
+                titleColor="base.white"
                 fontWeight="500"
                 title={t('secretKeyWarningScreen.goBack')}
-                marginTop="l"
+                marginTop="6"
               />
 
               <ButtonPressable
                 disabled={secondsPassed < 5}
-                borderRadius="round"
+                borderRadius="full"
                 onPress={handleClose}
                 backgroundColor="primaryText"
                 backgroundColorOpacityPressed={0.7}
-                backgroundColorDisabled="surfaceSecondary"
+                backgroundColorDisabled="bg.tertiary"
                 backgroundColorDisabledOpacity={0.5}
-                titleColorDisabled="black500"
-                titleColor="primary"
+                titleColorDisabled="gray.800"
+                titleColor="primaryText"
                 fontWeight="500"
                 title={t('secretKeyWarningScreen.proceed')}
-                marginTop="m"
+                marginTop="4"
               />
 
               <Text
-                variant="body2Medium"
+                variant="textSmMedium"
                 color="secondaryText"
-                marginTop="m"
+                marginTop="4"
                 textAlign="center"
                 visible={secondsPassed < 5}
               >

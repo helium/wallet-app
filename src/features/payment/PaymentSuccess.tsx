@@ -30,19 +30,19 @@ const PaymentSuccess = ({
   const { t } = useTranslation()
   return (
     <Box flex={1} justifyContent="flex-end">
-      <Box padding="l" paddingBottom="none">
+      <Box padding="6" paddingBottom="0">
         <SuccessIcon />
       </Box>
-      <Text variant="h2" color="surfaceText" padding="l">
+      <Text variant="displaySmRegular" color="surfaceText" padding="6">
         {t('payment.submitSuccess')}
       </Text>
       <Box
-        borderTopLeftRadius="xl"
-        borderTopRightRadius="xl"
-        padding="l"
+        borderTopLeftRadius="8"
+        borderTopRightRadius="8"
+        padding="6"
         overflow="hidden"
       >
-        <BackgroundFill backgroundColor="secondary" opacity={0.4} />
+        <BackgroundFill backgroundColor="secondaryBackground" opacity={0.4} />
         <PaymentSummary
           mint={mint}
           totalBalance={totalBalance}
@@ -51,15 +51,15 @@ const PaymentSuccess = ({
           alwaysShowRecipients
         />
         <TouchableOpacityBox
-          marginTop="xxl"
-          marginBottom="m"
+          marginTop="12"
+          marginBottom="4"
           onPress={onSuccess}
-          backgroundColor="blueBright500"
-          paddingVertical="m"
-          borderRadius="round"
+          backgroundColor="blue.light-500"
+          paddingVertical="4"
+          borderRadius="full"
           alignItems="center"
         >
-          <Text variant="body1" color="black900">
+          <Text variant="textMdRegular" color="black">
             {actionTitle}
           </Text>
         </TouchableOpacityBox>

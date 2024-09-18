@@ -80,7 +80,7 @@ const HomeStackScreen = () => {
       <HomeStack.Screen
         name="SettingsNavigator"
         component={SettingsNavigator}
-        options={screenModalOptions}
+        // options={screenModalOptions}
       />
       <HomeStack.Screen
         name="SwapNavigator"

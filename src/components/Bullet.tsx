@@ -12,13 +12,13 @@ const Bullet = ({ children, color = 'black', style = {} }: Props) => (
   <Box
     flexDirection="row"
     alignItems="flex-start"
-    marginBottom="s"
+    marginBottom="2"
     style={style}
   >
-    <Text style={{ color }} fontSize={24} lineHeight={22} marginRight="s">
+    <Text style={{ color }} fontSize={24} lineHeight={22} marginRight="2">
       &bull;
     </Text>
-    <Text variant="body2" color="grey500" width="90%">
+    <Text variant="textSmRegular" color="gray.500" width="90%">
       {children}
     </Text>
   </Box>

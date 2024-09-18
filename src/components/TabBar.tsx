@@ -54,7 +54,7 @@ const TabBarItem = ({
       key={value}
       onPress={onPress}
       onLayout={onLayout}
-      marginRight={stretch ? 'none' : 'm'}
+      marginRight={stretch ? 'none' : '4'}
       hitSlop={hitSlop}
       alignItems="center"
       flexGrow={stretch ? 1 : undefined}
@@ -68,7 +68,7 @@ const TabBarItem = ({
           marginEnd={
             iconPosition === 'top' || iconPosition === undefined
               ? undefined
-              : 's'
+              : '2'
           }
         >
           <Icon
@@ -80,7 +80,7 @@ const TabBarItem = ({
       )}
       {title && (
         <Text
-          variant="subtitle2"
+          variant="textLgMedium"
           color={selected ? 'primaryText' : 'secondaryText'}
           minWidth={
             iconPosition === 'top' || iconPosition === undefined ? 75 : 0
@@ -122,7 +122,7 @@ const TabBar = ({
   hasIndicator = true,
   ...containerProps
 }: Props) => {
-  const hitSlop = useVerticalHitSlop('l')
+  const hitSlop = useVerticalHitSlop('6')
   const [itemRects, setItemRects] = useState<Record<string, LayoutRectangle>>()
   const offset = useSharedValue<number | null>(null)
   const { triggerImpact } = useHaptic()
@@ -190,7 +190,7 @@ const TabBar = ({
 
   return (
     <Box {...containerProps}>
-      <Box flexDirection="row" justifyContent="center" paddingVertical="ms">
+      <Box flexDirection="row" justifyContent="center" paddingVertical="3">
         {items}
       </Box>
       {hasIndicator && (
@@ -204,7 +204,9 @@ const TabBar = ({
           />
         </Animated.View>
       )}
-      {hasDivider && <Box backgroundColor="black200" height={1} width="100%" />}
+      {hasDivider && (
+        <Box backgroundColor="gray.true-700" height={1} width="100%" />
+      )}
     </Box>
   )
 }

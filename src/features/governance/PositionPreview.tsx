@@ -62,23 +62,23 @@ export const PositionPreview: React.FC<
   return (
     <TouchableContainer
       flexDirection="row"
-      backgroundColor="surfaceSecondary"
-      borderRadius="l"
+      backgroundColor="bg.tertiary"
+      borderRadius="2xl"
       alignItems="center"
-      p="m"
-      mt="s"
+      p="4"
+      mt="2"
       {...boxProps}
     >
-      <Box mr="s">{Icon}</Box>
+      <Box mr="2">{Icon}</Box>
       <Box flexDirection="column">
         <Box flexDirection="row" alignItems="center">
-          <Text variant="body3" mr="xxs">
+          <Text variant="textXsRegular" mr="0.5">
             {amount} {network.toUpperCase()}
           </Text>
-          <Text variant="body3" mr="xxs">
+          <Text variant="textXsRegular" mr="0.5">
             for
           </Text>
-          <Text variant="body3" mr="xxs">
+          <Text variant="textXsRegular" mr="0.5">
             {position.lockup?.endTs
               ? getMinDurationFmt(
                   new BN(Date.now() / 1000),
@@ -86,17 +86,22 @@ export const PositionPreview: React.FC<
                 )
               : null}
           </Text>
-          <Text variant="body3" mr="xxs">
+          <Text variant="textXsRegular" mr="0.5">
             {position.lockup?.kind?.cliff ? 'decaying' : 'decaying delayed'}
           </Text>
         </Box>
         {subDao && (
           <Box mt="xs" flexDirection="row" alignItems="center">
-            <Text mr="xs" variant="body3" color="white" opacity={0.5}>
+            <Text
+              mr="xs"
+              variant="textXsRegular"
+              color="primaryText"
+              opacity={0.5}
+            >
               and delegated to
             </Text>
             <Box mr="xs">{DelegatedIcon}</Box>
-            <Text variant="body3">{subDao.dntMetadata.symbol}</Text>
+            <Text variant="textXsRegular">{subDao.dntMetadata.symbol}</Text>
           </Box>
         )}
       </Box>

@@ -107,19 +107,19 @@ const WifiSettings = () => {
       return (
         <TouchableOpacityBox
           alignItems="center"
-          padding="m"
+          padding="4"
           flexDirection="row"
           onPress={handleNetworkSelected({ network, type })}
         >
           <FabButton
             icon={type === 'configured' ? 'close' : 'add'}
-            backgroundColor="secondary"
-            iconColor="white"
+            backgroundColor="secondaryBackground"
+            iconColor="base.white"
             size={20}
             disabled
-            marginRight="ms"
+            marginRight="3"
           />
-          <Text color="secondaryText" variant="body1Medium">
+          <Text color="secondaryText" variant="textMdMedium">
             {network}
           </Text>
         </TouchableOpacityBox>
@@ -135,7 +135,7 @@ const WifiSettings = () => {
   }: {
     section: Section
   }) => (
-    <Text variant="h3Medium" color="primaryText">
+    <Text variant="displayXsMedium" color="primaryText">
       {title}
     </Text>
   )
@@ -159,7 +159,7 @@ const WifiSettings = () => {
   return (
     <BackScreen title={t('hotspotOnboarding.wifiSettings.title')}>
       {error && (
-        <Text variant="body1Medium" color="red500">
+        <Text variant="textMdMedium" color="ros.500">
           {error.message ? error.message.toString() : error.toString()}
         </Text>
       )}
@@ -172,11 +172,11 @@ const WifiSettings = () => {
         onRefresh={handleRefresh}
       />
       <ButtonPressable
-        marginTop="l"
-        borderRadius="round"
-        titleColor="black"
+        marginTop="6"
+        borderRadius="full"
+        titleColor="base.black"
         borderColor="transparent"
-        backgroundColor="white"
+        backgroundColor="base.white"
         title={t('generic.done')}
         onPress={navNext}
       />

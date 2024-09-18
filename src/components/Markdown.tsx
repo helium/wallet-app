@@ -29,7 +29,7 @@ export const Markdown: React.FC<{ markdown?: string }> = ({ markdown }) => {
           color: theme.colors.primaryText,
         },
         heading1: {
-          ...theme.textVariants.subtitle1,
+          ...theme.textVariants.textXlMedium,
           color: theme.colors.primaryText,
           paddingTop: theme.spacing.ms,
           paddingBottom: theme.spacing.ms,

@@ -222,12 +222,12 @@ const SignHotspot = () => {
 
   if (linkInvalid) {
     return (
-      <SafeAreaBox backgroundColor="primaryBackground" flex={1} padding="xl">
+      <SafeAreaBox backgroundColor="primaryBackground" flex={1} padding="8">
         <Box justifyContent="center" flex={1}>
-          <Text variant="body1" marginBottom="m">
+          <Text variant="textMdRegular" marginBottom="4">
             {t('signHotspot.error.title')}
           </Text>
-          <Text variant="body1">
+          <Text variant="textMdRegular">
             {t('signHotspot.error.subtitle', {
               maker: parsedToken?.appName || 'Maker',
             })}
@@ -238,10 +238,10 @@ const SignHotspot = () => {
             <TouchableOpacityBox
               minHeight={56}
               justifyContent="center"
-              borderRadius="l"
+              borderRadius="2xl"
               onPress={handleError}
             >
-              <Text variant="body1" textAlign="center">
+              <Text variant="textMdRegular" textAlign="center">
                 {t('signHotspot.error.takeMeBack', {
                   maker: parsedToken?.appName || 'Maker',
                 })}
@@ -257,12 +257,12 @@ const SignHotspot = () => {
     <SafeAreaBox
       backgroundColor="primaryBackground"
       flex={1}
-      padding="xl"
+      padding="8"
       justifyContent="center"
     >
       {title ? (
         <Text
-          variant="h1"
+          variant="displayMdRegular"
           letterSpacing={-0.5}
           lineHeight={42}
           color="primaryText"
@@ -277,41 +277,33 @@ const SignHotspot = () => {
       )}
 
       <Box
-        backgroundColor="surfaceContrast"
-        borderRadius="l"
-        padding="l"
-        marginTop="l"
+        backgroundColor="primaryBackground"
+        borderRadius="2xl"
+        padding="6"
+        marginTop="6"
       >
-        <Text variant="body1" color="surfaceContrastText">
+        <Text variant="textMdRegular" color="primaryText">
           {t('signHotspot.name')}
         </Text>
-        <Text variant="subtitle1" color="surfaceContrastText" marginBottom="m">
+        <Text variant="textXlMedium" color="primaryText" marginBottom="4">
           {name}
         </Text>
         {locationData?.location && (
           <>
-            <Text variant="body1" color="surfaceContrastText">
+            <Text variant="textMdRegular" color="primaryText">
               {t('signHotspot.location')}
             </Text>
-            <Text
-              variant="subtitle1"
-              color="surfaceContrastText"
-              marginBottom="m"
-            >
+            <Text variant="textXlMedium" color="primaryText" marginBottom="4">
               {locationData.location}
             </Text>
           </>
         )}
         {solana.configMsg && (
           <>
-            <Text variant="body1" color="surfaceContrastText">
+            <Text variant="textMdRegular" color="primaryText">
               {t('signHotspot.direction')}
             </Text>
-            <Text
-              variant="subtitle1"
-              color="surfaceContrastText"
-              marginBottom="m"
-            >
+            <Text variant="textXlMedium" color="primaryText" marginBottom="4">
               {`${(
                 METERS_TO_FEET * solana.configMsg.height
               ).toLocaleString()}ft/${solana.configMsg.azimuth}° ${degToCompass(
@@ -322,29 +314,21 @@ const SignHotspot = () => {
         )}
         <Box flexDirection="row">
           {locationData?.gain !== undefined && (
-            <Box marginEnd="xxl">
-              <Text variant="body1" color="surfaceContrastText">
+            <Box marginEnd="12">
+              <Text variant="textMdRegular" color="primaryText">
                 {t('generic.gain')}:
               </Text>
-              <Text
-                variant="subtitle1"
-                color="surfaceContrastText"
-                marginBottom="m"
-              >
+              <Text variant="textXlMedium" color="primaryText" marginBottom="4">
                 {locationData.gain}
               </Text>
             </Box>
           )}
           {locationData?.elevation !== undefined && (
             <Box>
-              <Text variant="body1" color="surfaceContrastText">
+              <Text variant="textMdRegular" color="primaryText">
                 {t('generic.elevation')}:
               </Text>
-              <Text
-                variant="subtitle1"
-                color="surfaceContrastText"
-                marginBottom="m"
-              >
+              <Text variant="textXlMedium" color="primaryText" marginBottom="4">
                 {locationData.elevation}
               </Text>
             </Box>
@@ -353,26 +337,18 @@ const SignHotspot = () => {
         {(solana.burnAmounts?.hntFee?.gt(new BN(0)) ||
           solana.burnAmounts?.dcFee?.gt(new BN(0))) && (
           <>
-            <Text variant="body1" color="surfaceContrastText">
+            <Text variant="textMdRegular" color="primaryText">
               {t('signHotspot.burnAmounts')}
             </Text>
 
             {solana.burnAmounts?.dcFee?.gt(new BN(0)) && (
-              <Text
-                variant="subtitle1"
-                color="surfaceContrastText"
-                marginBottom="m"
-              >
+              <Text variant="textXlMedium" color="primaryText" marginBottom="4">
                 {solana.burnAmounts?.dcFee?.toString()}
               </Text>
             )}
 
             {solana.burnAmounts?.hntFee?.gt(new BN(0)) && (
-              <Text
-                variant="subtitle1"
-                color="surfaceContrastText"
-                marginBottom="m"
-              >
+              <Text variant="textXlMedium" color="primaryText" marginBottom="4">
                 {solana.burnAmounts?.hntFee?.toString()}
               </Text>
             )}
@@ -380,30 +356,26 @@ const SignHotspot = () => {
         )}
         {transferData?.newOwner && (
           <>
-            <Text variant="body1" color="surfaceContrastText">
+            <Text variant="textMdRegular" color="primaryText">
               {t('signHotspot.newOwner')}
             </Text>
-            <Text
-              variant="subtitle1"
-              color="surfaceContrastText"
-              marginBottom="m"
-            >
+            <Text variant="textXlMedium" color="primaryText" marginBottom="4">
               {transferData.newOwner}
             </Text>
           </>
         )}
         {!!parsedToken?.address && accounts?.[parsedToken.address] && (
           <>
-            <Text variant="body1" color="surfaceContrastText">
+            <Text variant="textMdRegular" color="primaryText">
               {t('signHotspot.owner')}
             </Text>
-            <Box flexDirection="row" alignItems="center" marginBottom="m">
+            <Box flexDirection="row" alignItems="center" marginBottom="4">
               <AccountIcon size={20} address={parsedToken.address} />
               <Text
-                variant="subtitle1"
-                marginLeft="s"
+                variant="textXlMedium"
+                marginLeft="2"
                 flex={1}
-                color="surfaceContrastText"
+                color="primaryText"
               >
                 {formatAccountAlias(accounts[parsedToken.address])}
               </Text>
@@ -412,50 +384,46 @@ const SignHotspot = () => {
         )}
         {!!gatewayAddress && (
           <>
-            <Text variant="body1" color="surfaceContrastText">
+            <Text variant="textMdRegular" color="primaryText">
               {t('generic.maker')}:
             </Text>
-            <Text variant="subtitle1" color="surfaceContrastText">
+            <Text variant="textXlMedium" color="primaryText">
               {onboardingRecord?.maker.name || 'Unknown'}
             </Text>
           </>
         )}
       </Box>
-      <Box flexDirection="row" marginTop="l">
+      <Box flexDirection="row" marginTop="6">
         <TouchableOpacityBox
           flex={1}
           minHeight={66}
           justifyContent="center"
-          marginEnd="m"
-          backgroundColor="secondary"
-          borderRadius="round"
+          marginEnd="4"
+          backgroundColor="secondaryBackground"
+          borderRadius="full"
           onPress={handleCancel}
           disabled={submitLoading}
         >
-          <Text variant="subtitle1" textAlign="center" color="primaryText">
+          <Text variant="textXlMedium" textAlign="center" color="primaryText">
             {t('generic.cancel')}
           </Text>
         </TouchableOpacityBox>
         <TouchableOpacityBox
           flex={1}
           minHeight={66}
-          backgroundColor="surfaceContrast"
+          backgroundColor="primaryBackground"
           justifyContent="center"
-          borderRadius="round"
+          borderRadius="full"
           onPress={handleLink}
           disabled={!validated || submitLoading || !solana.hasTransactions}
           flexDirection="row"
           alignItems="center"
         >
-          <Text
-            variant="subtitle1"
-            textAlign="center"
-            color="surfaceContrastText"
-          >
+          <Text variant="textXlMedium" textAlign="center" color="primaryText">
             {t('generic.confirm')}
           </Text>
           {submitLoading && (
-            <Box marginLeft="s">
+            <Box marginLeft="2">
               <ActivityIndicator color={surfaceContrastText} />
             </Box>
           )}

@@ -62,33 +62,39 @@ const AccountCreatePassphraseScreen = () => {
     return (
       <>
         <TouchableOpacityBox
-          padding="l"
+          padding="6"
           onPress={navToTop}
           alignItems="flex-end"
         >
           <Close color={colors.primaryText} height={16} width={16} />
         </TouchableOpacityBox>
-        <Box justifyContent="center" alignItems="center" marginBottom="xl">
+        <Box justifyContent="center" alignItems="center" marginBottom="8">
           <InfoError />
         </Box>
-        <Text variant="h1" textAlign="center" fontSize={40} lineHeight={40}>
+        <Text
+          variant="displayMdRegular"
+          textAlign="center"
+          fontSize={40}
+          lineHeight={40}
+          color="primaryText"
+        >
           {t('accountSetup.passphrase.title')}
         </Text>
         <Text
-          variant="subtitle1"
+          variant="textXlMedium"
           color="secondaryText"
           textAlign="center"
-          marginTop="m"
-          marginHorizontal="l"
+          marginTop="4"
+          marginHorizontal="6"
         >
           {t('accountSetup.passphrase.subtitle1')}
         </Text>
         <Text
-          variant="subtitle1"
-          color="red500"
+          variant="textXlMedium"
+          color="ros.500"
           textAlign="center"
-          marginVertical="l"
-          marginHorizontal="xl"
+          marginVertical="6"
+          marginHorizontal="8"
         >
           {t('accountSetup.passphrase.subtitle2')}
         </Text>

@@ -34,7 +34,13 @@ const NotificationsScreen = () => {
   const HeaderComponent = useMemo(() => {
     return (
       <>
-        <Text textAlign="center" variant="h4" marginTop="m" marginBottom="l">
+        <Text
+          textAlign="center"
+          variant="textXlRegular"
+          marginTop="4"
+          marginBottom="6"
+          color="primaryText"
+        >
           {t('notifications.title')}
         </Text>
         <AccountSlider />
@@ -49,17 +55,17 @@ const NotificationsScreen = () => {
         position="absolute"
         bottom={0}
         width="100%"
-        paddingHorizontal="m"
-        marginBottom="xl"
+        paddingHorizontal="4"
+        marginBottom="8"
       >
         <ButtonPressable
           title={selectedNotification.actionTitle}
           onPress={onActionPress}
           backgroundColor="highlight"
-          marginTop="m"
-          borderRadius="round"
+          marginTop="4"
+          borderRadius="full"
           height={60}
-          titleColor="black900"
+          titleColor="base.black"
         />
       </Box>
     ) : (

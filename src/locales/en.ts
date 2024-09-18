@@ -121,7 +121,7 @@ export default {
     recoveryPhrase: 'Secret Phrase',
     keyImport: 'Private Key',
     subTitle:
-      'To import your existing Helium wallet, enter its <havelockBlue>12</havelockBlue> or <jazzberryJam>24</jazzberryJam> word security key.',
+      'To import your existing Helium wallet, enter its <blue.500>12</blue.500> or <pink.500>24</pink.500> word security key.',
     title: 'Import\nWallet',
     wordEntry: {
       changeWordAmount: 'Change to a {{totalWords}}-word recovery phrase',
@@ -991,6 +991,9 @@ export default {
     },
   },
   settings: {
+    system: 'System',
+    light: 'Light',
+    dark: 'Dark',
     confirmSignout: {
       forgotAlert: {
         body: 'Would you like to reveal your wallets words?',
@@ -1004,14 +1007,14 @@ export default {
       alertTitle: 'Are you sure?',
       done: 'Done',
       subtitle:
-        '<secondaryText>Do not share your private key!</secondaryText><red500>\n\nIf someone has your private key they will have full control of your wallet! Do not enter this into any websites. Any individual asking for this key is likely a scammer.</red500>',
+        '<secondaryText>Do not share your private key!</secondaryText><ros.500>\n\nIf someone has your private key they will have full control of your wallet! Do not enter this into any websites. Any individual asking for this key is likely a scammer.</ros.500>',
       tap: 'Tap to reveal your private key',
       title: 'Your Private Key',
     },
     revealWords: {
       next: 'I have written these down',
       subtitle:
-        '<secondaryText>Never give these words to anyone, or enter them into any website. <red500>Any person or website asking for these words is likely a scammer</red500>. It is crucial you write all of these\n{{numWords}} words down, in order, and keep them safe.</secondaryText><red500>\n\nHelium cannot recover these words.</red500>',
+        '<secondaryText>Never give these words to anyone, or enter them into any website. <ros.500>Any person or website asking for these words is likely a scammer</ros.500>. It is crucial you write all of these\n{{numWords}} words down, in order, and keep them safe.</secondaryText><ros.500>\n\nHelium cannot recover these words.</ros.500>',
       title: 'Your {{numWords}} Word Password',
       warning: 'Helium cannot recover these words',
     },
@@ -1244,7 +1247,7 @@ export default {
           title: 'Vote Power',
         },
         {
-          body: '<caribbeanGreen>Get your voice heard.</caribbeanGreen>\n\nVote on Active Votes\nManage your locked positions\nOr browse past HIPs.',
+          body: '<green.400>Get your voice heard.</green.400>\n\nVote on Active Votes\nManage your locked positions\nOr browse past HIPs.',
           title: 'Ready to Vote?',
         },
       ],

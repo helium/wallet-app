@@ -68,25 +68,25 @@ const LedgerAccountListItem = ({
   )
 
   return (
-    <Box paddingHorizontal="l">
+    <Box paddingHorizontal="6">
       <Surface
         flexDirection="row"
         alignItems="center"
-        padding="m"
+        padding="4"
         opacity={disabled ? 0.5 : 1}
         borderTopEndRadius={borderTopEndRadius}
         borderTopStartRadius={borderTopStartRadius}
         borderBottomEndRadius={borderBottomEndRadius}
         borderBottomStartRadius={borderBottomStartRadius}
-        backgroundColor="secondary"
+        backgroundColor="secondaryBackground"
       >
         <AccountIcon size={40} address={account.address} />
-        <Box marginRight="l" marginLeft="l" flexGrow={1}>
-          <Text variant="subtitle2" marginBottom="xxs">
+        <Box marginRight="6" marginLeft="6" flexGrow={1}>
+          <Text variant="textLgMedium" marginBottom="0.5">
             {account.alias}
           </Text>
           <Text
-            variant="body2"
+            variant="textSmRegular"
             color="secondaryText"
             numberOfLines={1}
             adjustsFontSizeToFit
@@ -97,19 +97,19 @@ const LedgerAccountListItem = ({
             })} | ${humanReadable(balance, 8)}`}
           </Text>
         </Box>
-        <Box marginEnd="s">
+        <Box marginEnd="2">
           <CheckBox
             disabled={!!disabled}
             style={{ width: 25, height: 25 }}
             value={isSelected || section.index === Section.ALREADY_LINKED}
             tintColors={{
-              true: colors.purple500,
-              false: colors.surfaceSecondary,
+              true: colors['purple.500'],
+              false: colors.bg.tertiary,
             }}
-            onFillColor={colors.white}
-            onCheckColor={colors.surfaceSecondary}
-            onTintColor={colors.white}
-            tintColor={colors.white}
+            onFillColor={colors['base.white']}
+            onCheckColor={colors.bg.tertiary}
+            onTintColor={colors['base.white']}
+            tintColor={colors['base.white']}
             onAnimationType="fill"
             offAnimationType="fill"
             boxType="circle"
@@ -118,7 +118,9 @@ const LedgerAccountListItem = ({
           />
         </Box>
       </Surface>
-      {hasBottomBorder ? <Box backgroundColor="primary" height={1} /> : null}
+      {hasBottomBorder ? (
+        <Box backgroundColor="primaryText" height={1} />
+      ) : null}
     </Box>
   )
 }

@@ -37,8 +37,8 @@ const TransactionLineItem = ({
   bodyEndColor,
 }: Props) => {
   const { primaryText } = useColors()
-  const linkHitSlop = useHitSlop('s')
-  const copyHitSlop = useVerticalHitSlop('s')
+  const linkHitSlop = useHitSlop('2')
+  const copyHitSlop = useVerticalHitSlop('2')
   const { contacts, sortedAccounts } = useAccountStorage()
   const copyText = useCopyText()
   const navigation = useNavigation<AddressBookNavigationProp>()
@@ -115,13 +115,13 @@ const TransactionLineItem = ({
     <Box
       borderBottomColor="surface"
       borderBottomWidth={1}
-      paddingVertical="m"
-      paddingHorizontal="l"
+      paddingVertical="4"
+      paddingHorizontal="6"
     >
       <Text
         numberOfLines={2}
         adjustsFontSizeToFit
-        variant="body2"
+        variant="textSmRegular"
         color="secondaryText"
         marginBottom="xs"
       >
@@ -148,7 +148,7 @@ const TransactionLineItem = ({
             numberOfLines={3}
             adjustsFontSizeToFit
             flexShrink={1}
-            variant="body1"
+            variant="textMdRegular"
             color={bodyColor || 'primaryText'}
             marginLeft={icon ? 'xs' : 'none'}
           >
@@ -162,7 +162,7 @@ const TransactionLineItem = ({
             adjustsFontSizeToFit
             flex={1}
             textAlign="right"
-            variant="body1"
+            variant="textMdRegular"
             color={bodyEndColor || 'primaryText'}
             marginLeft={icon ? 'xs' : 'none'}
           >
@@ -179,7 +179,7 @@ const TransactionLineItem = ({
             <TouchableOpacityBox
               onPress={handleExplorerLink}
               hitSlop={linkHitSlop}
-              paddingLeft="s"
+              paddingLeft="2"
             >
               <DetailArrow color={primaryText} />
             </TouchableOpacityBox>

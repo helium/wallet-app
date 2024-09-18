@@ -439,9 +439,9 @@ const BrowserWebViewScreen = () => {
   const BrowserHeader = useCallback(() => {
     return (
       <Box
-        backgroundColor="black900"
-        paddingBottom="m"
-        paddingStart="m"
+        backgroundColor="base.black"
+        paddingBottom="4"
+        paddingStart="4"
         flexDirection="row"
         alignItems="center"
         justifyContent="center"
@@ -450,15 +450,15 @@ const BrowserWebViewScreen = () => {
         <Box flex={1}>
           <Text
             textAlign="center"
-            variant="body2Medium"
+            variant="textSmMedium"
             color="secondaryText"
             adjustsFontSizeToFit
           >
             {currentUrl}
           </Text>
         </Box>
-        <TouchableOpacityBox onPress={closeModal} paddingHorizontal="m">
-          <Close color="white" width={14} height={14} />
+        <TouchableOpacityBox onPress={closeModal} paddingHorizontal="4">
+          <Close color="primaryText" width={14} height={14} />
         </TouchableOpacityBox>
       </Box>
     )
@@ -482,7 +482,7 @@ const BrowserWebViewScreen = () => {
 
   const BrowserFooter = useCallback(() => {
     return (
-      <Box padding="m" flexDirection="row" backgroundColor="black900">
+      <Box padding="4" flexDirection="row" backgroundColor="base.black">
         <Box flexGrow={1} alignItems="center">
           <TouchableOpacityBox onPress={onBack}>
             <BackArrow width={20} height={20} />
@@ -496,9 +496,9 @@ const BrowserWebViewScreen = () => {
         <Box flexGrow={1} alignItems="center">
           <TouchableOpacityBox onPress={onFavorite}>
             {isFavorite ? (
-              <BookmarkFilled color="white" width={20} height={20} />
+              <BookmarkFilled color="primaryText" width={20} height={20} />
             ) : (
-              <Bookmark color="white" width={20} height={20} />
+              <Bookmark color="primaryText" width={20} height={20} />
             )}
           </TouchableOpacityBox>
         </Box>
@@ -515,7 +515,7 @@ const BrowserWebViewScreen = () => {
     <Box position="absolute" top={0} left={0} right={0} bottom={0}>
       <WalletSignBottomSheet ref={walletSignBottomSheetRef} onClose={() => {}}>
         <Box
-          backgroundColor="black900"
+          backgroundColor="base.black"
           height={top}
           position="absolute"
           top={0}
@@ -542,7 +542,7 @@ const BrowserWebViewScreen = () => {
           <BrowserFooter />
         </SafeAreaBox>
         <Box
-          backgroundColor="black900"
+          backgroundColor="base.black"
           height={bottom}
           position="absolute"
           bottom={0}

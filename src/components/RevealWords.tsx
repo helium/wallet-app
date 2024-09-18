@@ -12,6 +12,7 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import useCopyText from '@hooks/useCopyText'
 import useHaptic from '@hooks/useHaptic'
 import { FadeIn } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type Props = {
   mnemonic: string[]
@@ -24,6 +25,7 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
   const { secondaryText } = useColors()
   const copyText = useCopyText()
   const { triggerImpact } = useHaptic()
+  const { bottom } = useSafeAreaInsets()
 
   const handleCopySeedPhrase = useCallback(() => {
     triggerImpact('light')
@@ -38,13 +40,15 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
     ({ item, index }: { item: string; index: number }) => {
       return (
         <Box
-          borderRadius="round"
-          padding="s"
-          marginHorizontal="s"
-          marginBottom="m"
+          borderRadius="full"
+          padding="2"
+          marginHorizontal="2"
+          marginBottom="4"
           flex={1}
           overflow="hidden"
-          backgroundColor="surfaceSecondary"
+          backgroundColor="cardBackground"
+          borderWidth={1}
+          borderColor={'border.primary'}
           alignItems="center"
           justifyContent="center"
           flexDirection="row"
@@ -72,7 +76,7 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
   const contentContainerStyle = useMemo(
     () => ({
       flexGrow: 1,
-      paddingHorizontal: spacing.l,
+      paddingHorizontal: spacing[4],
     }),
     [spacing],
   )
@@ -85,13 +89,13 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
           justifyContent="center"
           alignItems="center"
           flexDirection="row"
-          marginTop="m"
-          marginBottom="xl"
+          marginTop="4"
+          marginBottom="8"
         >
           <CopyAddress width={16} height={16} color={secondaryText} />
           <Text
-            marginStart="s"
-            variant="body2"
+            marginStart="2"
+            variant="textSmRegular"
             color="secondaryText"
             numberOfLines={1}
             adjustsFontSizeToFit
@@ -104,11 +108,11 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
         <Box flex={1} />
         <ButtonPressable
           height={60}
-          borderRadius="round"
-          backgroundColor="surfaceSecondary"
+          borderRadius="full"
+          backgroundColor="bg.tertiary"
           titleColor="primaryText"
           title={t('settings.revealWords.next')}
-          marginBottom="m"
+          marginBottom="4"
           onPress={onDone}
         />
       </Box>
@@ -131,6 +135,7 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
         ListFooterComponentStyle={{
           flexGrow: 1,
           justifyContent: 'flex-end',
+          paddingBottom: bottom,
         }}
         renderItem={renderItem}
         contentContainerStyle={contentContainerStyle}

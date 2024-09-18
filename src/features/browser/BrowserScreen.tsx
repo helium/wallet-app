@@ -79,7 +79,7 @@ const BrowserScreen = () => {
     if (inputFocused) {
       // Animate margin end
       return {
-        marginEnd: withTiming(spacing.xxl, {
+        marginEnd: withTiming(spacing[12], {
           duration: 100,
         }),
       }
@@ -115,14 +115,14 @@ const BrowserScreen = () => {
   const BrowserHeader = useCallback(() => {
     return (
       <Box
-        backgroundColor="black900"
-        padding="s"
+        backgroundColor="primaryBackground"
+        padding="2"
         flexDirection={inputFocused ? 'row' : 'column'}
       >
         <ReAnimatedBox
-          backgroundColor="surfaceSecondary"
-          borderRadius="l"
-          marginHorizontal="s"
+          backgroundColor="cardBackground"
+          borderRadius="2xl"
+          marginHorizontal="2"
           style={headerStyles}
         >
           <TextInput
@@ -133,7 +133,7 @@ const BrowserScreen = () => {
             TrailingIcon={inputFocused ? CloseCircle : undefined}
             onTrailingIconPress={onClearPressed}
             TrailingIconOptions={{
-              paddingStart: 's',
+              paddingStart: '2',
             }}
             textInputProps={{
               placeholder: 'Search or type URL',
@@ -155,12 +155,12 @@ const BrowserScreen = () => {
         </ReAnimatedBox>
         {inputFocused && (
           <TouchableOpacityBox
-            marginStart="n_xxl"
+            marginStart="-12"
             justifyContent="center"
-            width={spacing.xxxl + spacing.l}
+            width={spacing['15'] + spacing[6]}
             onPress={onCancelPressed}
           >
-            <Text textAlign="center" variant="body1Medium">
+            <Text textAlign="center" variant="textMdMedium" color="primaryText">
               {t('generic.cancel')}
             </Text>
           </TouchableOpacityBox>
@@ -187,13 +187,13 @@ const BrowserScreen = () => {
       <Box
         flexDirection="row"
         alignItems="center"
-        paddingTop={firstSection ? 's' : 'xl'}
-        paddingBottom="m"
-        paddingHorizontal="l"
+        paddingTop={firstSection ? '2' : 'xl'}
+        paddingBottom="4"
+        paddingHorizontal="6"
         backgroundColor="primaryBackground"
         justifyContent="center"
       >
-        <Text variant="body3" textAlign="center" color="secondaryText">
+        <Text variant="textXsRegular" textAlign="center" color="secondaryText">
           {title}
         </Text>
       </Box>
@@ -222,7 +222,7 @@ const BrowserScreen = () => {
             borderBottomStartRadius={lastItem ? 'xl' : undefined}
             borderBottomEndRadius={lastItem ? 'xl' : undefined}
             hasDivider={!lastItem || (firstItem && section.data?.length !== 1)}
-            marginHorizontal="m"
+            marginHorizontal="4"
             url={item}
             onPress={handleBrowserListItemPress(item)}
           />
@@ -240,12 +240,12 @@ const BrowserScreen = () => {
 
       return (
         <Box
-          backgroundColor="surfaceSecondary"
-          padding="m"
-          marginHorizontal="m"
-          borderRadius="xl"
+          backgroundColor="cardBackground"
+          padding="4"
+          marginHorizontal="4"
+          borderRadius="4xl"
         >
-          <Text variant="body2Medium" color="white" textAlign="center">
+          <Text variant="textSmMedium" color="primaryText" textAlign="center">
             {title === t('browserScreen.myFavorites')
               ? t('browserScreen.myFavoritesEmpty')
               : t('browserScreen.recentlyVisitedEmpty')}
@@ -258,17 +258,17 @@ const BrowserScreen = () => {
 
   const contentContainer = useMemo(
     () => ({
-      paddingTop: spacing.m,
+      paddingTop: spacing[4],
     }),
-    [spacing.m],
+    [spacing],
   )
 
   const keyExtractor = useCallback((item, index) => item + index, [])
 
   return (
-    <Box flex={1}>
+    <Box flex={1} backgroundColor={'primaryBackground'}>
       <Box
-        backgroundColor="black900"
+        backgroundColor="primaryBackground"
         height={top}
         position="absolute"
         top={0}

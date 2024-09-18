@@ -104,7 +104,7 @@ export const WritableAccountPreview = ({
         )
       : diff(writableAccount.pre.account, writableAccount.post.account)
   return (
-    <Box flexDirection="column" p="s">
+    <Box flexDirection="column" p="2">
       {warnings.map((warning, idx) => (
         <WarningBox
           // eslint-disable-next-line react/no-array-index-key
@@ -118,32 +118,32 @@ export const WritableAccountPreview = ({
           flexDirection="row"
           justifyContent="space-between"
           alignItems="stretch"
-          backgroundColor="black650"
-          borderTopLeftRadius="l"
-          borderTopRightRadius="l"
-          padding="s"
+          backgroundColor="gray.900"
+          borderTopLeftRadius="2xl"
+          borderTopRightRadius="2xl"
+          padding="2"
         >
-          <Text color="white" variant="body3Bold">
+          <Text color="primaryText" variant="textXsBold">
             {t('browserScreen.estimatedAccountChanges')}
           </Text>
         </Box>
-        <Box pt="xxs" backgroundColor="black" />
+        <Box pt="0.5" backgroundColor="base.black" />
         <Box
-          p="s"
-          mb="s"
+          p="2"
+          mb="2"
           flexDirection="column"
           alignItems="stretch"
-          borderBottomLeftRadius="l"
-          borderBottomRightRadius="l"
-          backgroundColor="black650"
+          borderBottomLeftRadius="6"
+          borderBottomRightRadius="6"
+          backgroundColor="gray.900"
         >
           {writableAccount.pre.account && !writableAccount.post.account && (
-            <Text variant="body3Medium" color="white" alignSelf="center">
+            <Text variant="textXsMedium" color="primaryText" alignSelf="center">
               {t('browserScreen.accountDeleted')}
             </Text>
           )}
           {!writableAccount.pre.account && writableAccount.post.account && (
-            <Text variant="body3Medium" color="white" alignSelf="center">
+            <Text variant="textXsMedium" color="primaryText" alignSelf="center">
               {t('browserScreen.accountCreated')}
             </Text>
           )}
@@ -155,7 +155,7 @@ export const WritableAccountPreview = ({
               justifyContent="flex-start"
               overflow="hidden"
             >
-              <Text variant="body3" color="white">
+              <Text variant="textXsRegular" color="primaryText">
                 {d.field}
               </Text>
               <Box
@@ -166,15 +166,15 @@ export const WritableAccountPreview = ({
                 flexWrap="wrap"
               >
                 <Text
-                  variant="body3"
-                  mr="s"
+                  variant="textXsRegular"
+                  mr="2"
                   textDecorationLine="line-through"
-                  color="white"
+                  color="primaryText"
                 >
                   {d.preValue || 'null'}
                 </Text>
                 <ArrowRight />
-                <Text variant="body3" ml="s" color="white">
+                <Text variant="textXsRegular" ml="2" color="primaryText">
                   {d.postValue || 'null'}
                 </Text>
               </Box>
@@ -184,27 +184,27 @@ export const WritableAccountPreview = ({
       </Box>
       <Box flexDirection="column">
         <Box
-          p="s"
+          p="2"
           flexDirection="row"
           justifyContent="space-between"
           alignItems="stretch"
-          backgroundColor="black650"
-          borderTopLeftRadius="l"
-          borderTopRightRadius="l"
-          padding="s"
+          backgroundColor="gray.900"
+          borderTopLeftRadius="2xl"
+          borderTopRightRadius="2xl"
+          padding="2"
         >
-          <Text color="white" variant="body3Bold">
+          <Text color="primaryText" variant="textXsBold">
             {t('browserScreen.instructionsAndPrograms')}
           </Text>
         </Box>
-        <Box pt="xxs" backgroundColor="black" />
+        <Box pt="0.5" backgroundColor="base.black" />
         <Box
-          p="s"
+          p="2"
           flexDirection="column"
           alignItems="stretch"
-          borderBottomLeftRadius="l"
-          borderBottomRightRadius="l"
-          backgroundColor="black650"
+          borderBottomLeftRadius="6"
+          borderBottomRightRadius="6"
+          backgroundColor="gray.900"
         >
           {instructions.map(({ parsed, raw }, index) => (
             <Box
@@ -215,10 +215,10 @@ export const WritableAccountPreview = ({
               justifyContent="space-between"
               alignItems="center"
             >
-              <Text variant="body3" color="white">
+              <Text variant="textXsRegular" color="primaryText">
                 {parsed?.name || t('generic.unknown')}
               </Text>
-              <Text variant="body3" color="white">
+              <Text variant="textXsRegular" color="primaryText">
                 {shortenAddress(raw.programId.toBase58())} (
                 {parsed?.programName})
               </Text>
