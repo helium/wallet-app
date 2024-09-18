@@ -38,6 +38,7 @@ import { GovernanceProvider } from './storage/GovernanceProvider'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
 import { BalanceProvider } from './utils/Balance'
 import { useDeepLinking } from './utils/linking'
+import KeystoneOnboardingProvider from './features/keystone/KeystoneOnboardingProvider'
 
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -122,46 +123,48 @@ const App = () => {
                     <WalletOnboardingProvider
                       baseUrl={Config.ONBOARDING_API_URL}
                     >
-                      <WalletConnectProvider>
-                        <HotspotOnboardingProvider
-                          baseUrl={Config.ONBOARDING_API_URL}
-                        >
-                          <LockScreen>
-                            {accountsRestored && (
-                              <>
-                                <NavigationContainer
-                                  theme={navTheme}
-                                  linking={linking}
-                                  ref={navigationRef}
-                                >
-                                  <BalanceProvider>
-                                    <TokensProvider>
-                                      <ModalProvider>
-                                        <WalletSignProvider>
-                                          <GovernanceProvider>
-                                            <AutoGasBanner />
-                                            <NetworkAwareStatusBar />
-                                            <RootNavigator />
+                      <KeystoneOnboardingProvider>
+                        <WalletConnectProvider>
+                          <HotspotOnboardingProvider
+                            baseUrl={Config.ONBOARDING_API_URL}
+                          >
+                            <LockScreen>
+                              {accountsRestored && (
+                                <>
+                                  <NavigationContainer
+                                    theme={navTheme}
+                                    linking={linking}
+                                    ref={navigationRef}
+                                  >
+                                    <BalanceProvider>
+                                      <TokensProvider>
+                                        <ModalProvider>
+                                          <WalletSignProvider>
+                                            <GovernanceProvider>
+                                              <AutoGasBanner />
+                                              <NetworkAwareStatusBar />
+                                              <RootNavigator />
 
-                                            {/* place app specific modals here */}
-                                            <InsufficientSolConversionModal />
-                                          </GovernanceProvider>
-                                        </WalletSignProvider>
-                                      </ModalProvider>
-                                    </TokensProvider>
-                                  </BalanceProvider>
-                                </NavigationContainer>
-                                <SecurityScreen
-                                  visible={
-                                    appState !== 'active' &&
-                                    appState !== 'unknown'
-                                  }
-                                />
-                              </>
-                            )}
-                          </LockScreen>
-                        </HotspotOnboardingProvider>
-                      </WalletConnectProvider>
+                                              {/* place app specific modals here */}
+                                              <InsufficientSolConversionModal />
+                                            </GovernanceProvider>
+                                          </WalletSignProvider>
+                                        </ModalProvider>
+                                      </TokensProvider>
+                                    </BalanceProvider>
+                                  </NavigationContainer>
+                                  <SecurityScreen
+                                    visible={
+                                      appState !== 'active' &&
+                                      appState !== 'unknown'
+                                    }
+                                  />
+                                </>
+                              )}
+                            </LockScreen>
+                          </HotspotOnboardingProvider>
+                        </WalletConnectProvider>
+                      </KeystoneOnboardingProvider>
                     </WalletOnboardingProvider>
                   </SplashScreen>
                 </SolanaProvider>

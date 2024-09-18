@@ -13,6 +13,7 @@ export type AddNewAccountParamList = {
         }
       }
   LedgerNavigator: undefined
+  KeystoneNavigator: undefined
   CLIAccountNavigator: undefined
   VoteNavigator: undefined
 }

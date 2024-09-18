@@ -82,15 +82,17 @@ const SolanaMigration = ({
   )
 
   const { loading, error } = useAsync(async () => {
+    // if current account is keystone account, then we don't need to migrate
     if (
       !currentAccount?.solanaAddress ||
+      currentAccount?.keystoneDevice ||
       !anchorProvider ||
       !cluster ||
       (doneSolanaMigration[cluster]?.includes(currentAccount?.solanaAddress) &&
         !manual)
     )
       return
-
+    // eslint-disable-next-line no-console
     try {
       await migrateWallet(
         anchorProvider,
