@@ -57,7 +57,7 @@ const HeliumActionSheet = forwardRef(
       title,
       prefix,
       iconVariant = 'carot',
-      iconColor: carotColor = 'primary',
+      iconColor: carotColor = 'primaryText',
       buttonProps,
       initialValue,
       textProps,
@@ -156,12 +156,12 @@ const HeliumActionSheet = forwardRef(
             marginVertical="4"
             alignItems="center"
             justifyContent="center"
-            borderRadius="3"
+            borderRadius="2xl"
           >
             <Text
               fontWeight="500"
               fontSize={18}
-              color="surfaceText"
+              color="secondaryText"
               maxFontSizeMultiplier={1.2}
             >
               {t('generic.cancel')}

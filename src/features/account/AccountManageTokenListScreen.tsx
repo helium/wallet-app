@@ -99,7 +99,7 @@ const CheckableTokenListItem = ({
             true: colors.primaryText,
             false: colors.transparent10,
           }}
-          onCheckColor={colors.secondary}
+          onCheckColor={colors.secondaryText}
           onTintColor={colors.primaryText}
           tintColor={colors.transparent10}
           onFillColor={colors.primaryText}
@@ -168,8 +168,8 @@ const AccountManageTokenListScreen: React.FC = () => {
         flexDirection="row"
         justifyContent="space-between"
         alignItems="center"
-        borderTopStartRadius="8"
-        borderTopEndRadius="8"
+        borderTopStartRadius="4xl"
+        borderTopEndRadius="4xl"
         marginBottom="4"
       >
         <Box hitSlop={hitSlop} padding="2">

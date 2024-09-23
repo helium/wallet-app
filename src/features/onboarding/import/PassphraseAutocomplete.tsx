@@ -143,7 +143,7 @@ const PassphraseAutocomplete = ({
           ref={matchingListRef}
           horizontal
           keyboardShouldPersistTaps="always"
-          keyboardDismissMode="0"
+          keyboardDismissMode="none"
           showsHorizontalScrollIndicator={false}
         >
           {matchingWords.length <= 20 &&

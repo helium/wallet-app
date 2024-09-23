@@ -197,7 +197,7 @@ const AntennaSetupScreen = () => {
                   onPress={handleUpdateElevGain}
                   TrailingComponent={
                     updating ? (
-                      <CircleLoader loaderSize={20} color="black" />
+                      <CircleLoader loaderSize={20} color="primaryBackground" />
                     ) : undefined
                   }
                 />

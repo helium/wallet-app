@@ -118,13 +118,13 @@ const DappLogin = ({ onLogin, onCancel, appName, loading }: Props) => {
             flexDirection="row"
           >
             {loading ? (
-              <ActivityIndicator color={colors.surfaceContrastText} />
+              <ActivityIndicator color={colors.secondaryText} />
             ) : (
               <Text
                 marginLeft="2"
                 variant="textXlMedium"
                 textAlign="center"
-                color="secondary"
+                color="secondaryText"
               >
                 {t('dappLogin.login')}
               </Text>

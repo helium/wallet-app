@@ -17,34 +17,34 @@ export const Markdown: React.FC<{ markdown?: string }> = ({ markdown }) => {
       markdown={markdown}
       style={{
         hr: {
-          marginTop: theme.spacing.m,
+          marginTop: theme.spacing[4],
         },
         blockquote: {
-          ...theme.textVariants.body2,
+          ...theme.textVariants.textSmRegular,
           color: theme.colors.primaryText,
           backgroundColor: 'transparent',
         },
         body: {
-          ...theme.textVariants.body2,
+          ...(theme.textVariants.textSmRegular as any),
           color: theme.colors.primaryText,
         },
         heading1: {
           ...theme.textVariants.textXlMedium,
           color: theme.colors.primaryText,
-          paddingTop: theme.spacing.ms,
-          paddingBottom: theme.spacing.ms,
+          paddingTop: theme.spacing[4],
+          paddingBottom: theme.spacing[4],
         },
         heading2: {
-          ...theme.textVariants.subtitle2,
+          ...theme.textVariants.textSmMedium,
           color: theme.colors.primaryText,
-          paddingTop: theme.spacing.ms,
-          paddingBottom: theme.spacing.ms,
+          paddingTop: theme.spacing[4],
+          paddingBottom: theme.spacing[4],
         },
         heading3: {
-          ...theme.textVariants.subtitle3,
+          ...theme.textVariants.textXsMedium,
           color: theme.colors.primaryText,
-          paddingTop: theme.spacing.ms,
-          paddingBottom: theme.spacing.ms,
+          paddingTop: theme.spacing[4],
+          paddingBottom: theme.spacing[4],
         },
       }}
     >

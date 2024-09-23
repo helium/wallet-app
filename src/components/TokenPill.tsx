@@ -16,7 +16,7 @@ export const TokenPill = memo(
     isActive = false,
     isDisabled = false,
     onPress,
-    activeColor = 'black',
+    activeColor = 'primaryBackground',
     inactiveColor = 'bg.tertiary',
     ...rest
   }: {

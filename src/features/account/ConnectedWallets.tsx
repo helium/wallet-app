@@ -1,7 +1,6 @@
 import Add from '@assets/images/add.svg'
 import Checkmark from '@assets/images/checkmark.svg'
 import AccountIcon from '@components/AccountIcon'
-import BackgroundFill from '@components/BackgroundFill'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableContainer from '@components/TouchableContainer'
@@ -209,9 +208,6 @@ const ConnectedWallets = forwardRef(
             paddingLeft="12"
             alignItems="center"
           >
-            {item.netType === NetTypes.TESTNET && (
-              <BackgroundFill backgroundColor="testnet" opacity={0.4} />
-            )}
             <AccountIcon address={accountAddress} size={25} />
             <Text
               variant="textXlMedium"
@@ -253,27 +249,9 @@ const ConnectedWallets = forwardRef(
               {t('connectedWallets.add')}
             </Text>
           </TouchableContainer>
-
-          {enableTestnet && (
-            <TouchableContainer
-              onPress={handleAddNew(NetTypes.TESTNET)}
-              flexDirection="row"
-              paddingHorizontal="6"
-              paddingVertical="5"
-              borderTopColor="primaryBackground"
-              borderTopWidth={1}
-              alignItems="center"
-            >
-              <BackgroundFill backgroundColor="testnet" opacity={0.4} />
-              <Add color={primaryText} />
-              <Text variant="textXlMedium" color="primaryText" marginLeft="4">
-                {t('connectedWallets.addTestnet')}
-              </Text>
-            </TouchableContainer>
-          )}
         </Box>
       ),
-      [enableTestnet, handleAddNew, primaryText, t, setFooterHeight],
+      [handleAddNew, primaryText, t, setFooterHeight],
     )
 
     const renderBackdrop = useCallback(

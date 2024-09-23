@@ -61,7 +61,7 @@ const NotificationsScreen = () => {
         <ButtonPressable
           title={selectedNotification.actionTitle}
           onPress={onActionPress}
-          backgroundColor="highlight"
+          backgroundColor="yellow.500"
           marginTop="4"
           borderRadius="full"
           height={60}

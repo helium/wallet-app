@@ -120,7 +120,11 @@ const HotspotListItem = ({
             shadowOpacity={0.3}
             elevation={2}
           >
-            <Text variant="textSmMedium" marginEnd="xs" color="black">
+            <Text
+              variant="textSmMedium"
+              marginEnd="xs"
+              color="primaryBackground"
+            >
               {pendingMobileRewardsString}
             </Text>
             <MobileSymbol color={colors.mobileBlue} />
@@ -146,7 +150,11 @@ const HotspotListItem = ({
             shadowOpacity={0.3}
             elevation={2}
           >
-            <Text variant="textSmMedium" marginEnd="xs" color="black">
+            <Text
+              variant="textSmMedium"
+              marginEnd="xs"
+              color="primaryBackground"
+            >
               {pendingIotRewardsString}
             </Text>
             <IotSymbol color={colors.iotGreen} />

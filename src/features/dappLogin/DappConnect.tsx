@@ -67,7 +67,7 @@ const DappConnect = ({ appName, onApprove, onDeny }: Props) => {
             marginLeft="2"
             variant="textXlMedium"
             textAlign="center"
-            color="secondary"
+            color="secondaryText"
           >
             {t('dappLogin.connect.continue')}
           </Text>

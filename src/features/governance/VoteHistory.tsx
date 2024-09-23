@@ -172,7 +172,7 @@ const ProposalItem: React.FC<{
               iconProps={{ width: 8, height: 8 }}
               Icon={ActiveCircle}
               color="black"
-              textProps={{ variant: 'body3' }}
+              textProps={{ variant: 'textSmRegular' }}
               text={t('gov.history.active')}
             />
           ) : null}
@@ -181,7 +181,7 @@ const ProposalItem: React.FC<{
               iconProps={{ width: 8, height: 8 }}
               Icon={CancelledCircle}
               color="black"
-              textProps={{ variant: 'body3' }}
+              textProps={{ variant: 'textSmRegular' }}
               text={t('gov.history.cancelled')}
             />
           ) : null}

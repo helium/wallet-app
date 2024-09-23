@@ -393,7 +393,7 @@ const ChangeRewardsRecipientScreen = () => {
                     floatingLabel={`${t(
                       'changeRewardsRecipientScreen.newRecipient',
                     )} ${recipientName}`}
-                    variant="textSmRegular"
+                    variant="regular"
                     marginTop="2"
                     height={80}
                     width="100%"

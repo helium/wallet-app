@@ -78,7 +78,7 @@ const MemoInput = ({ onChangeText, value, ...boxProps }: Props) => {
       <Box position="absolute" top={0} right={0}>
         <Text
           variant="textXsRegular"
-          color={valid ? 'base.white' : 'error'}
+          color={valid ? 'primaryText' : 'ros.500'}
           marginRight="4"
         >
           {t('payment.memoBytes', {

@@ -34,7 +34,7 @@ const NotificationDetailBanner = ({ icon }: { icon: string }) => {
       <Image
         source={imageSrc}
         resizeMode="contain"
-        style={{ width: ww - spacing.m * 2 }}
+        style={{ width: ww - spacing[4] * 2 }}
       />
     </Box>
   )

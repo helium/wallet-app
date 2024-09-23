@@ -118,7 +118,7 @@ export const VoterScreen = () => {
                         return (
                           <Pill
                             key={n}
-                            textProps={{ variant: 'body3' }}
+                            textProps={{ variant: 'textSmRegular' }}
                             color="mobileBlue"
                             text="MOBILE"
                           />
@@ -127,7 +127,7 @@ export const VoterScreen = () => {
                         return (
                           <Pill
                             key={n}
-                            textProps={{ variant: 'body3' }}
+                            textProps={{ variant: 'textSmRegular' }}
                             color="hntBlue"
                             text="HNT"
                           />
@@ -136,7 +136,7 @@ export const VoterScreen = () => {
                         return (
                           <Pill
                             key={n}
-                            textProps={{ variant: 'body3' }}
+                            textProps={{ variant: 'textSmRegular' }}
                             color="iotGreen"
                             text="IOT"
                           />

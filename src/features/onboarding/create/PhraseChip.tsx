@@ -26,22 +26,22 @@ const PhraseChip = ({
   disabled,
   ...props
 }: Props) => {
-  const { surface, primary } = useColors()
+  const { cardBackground, primaryText } = useColors()
   const [underlayShowing, setUnderlayShowing] = useState(false)
 
   const getBackgroundColor = useCallback((): Color => {
-    if (fail) return 'error'
+    if (fail) return 'ros.500'
     if (success) return 'green.light-500'
     return 'transparent10'
   }, [fail, success])
 
   const getIcon = useCallback(() => {
-    if (success) return <CheckMark color={primary} />
+    if (success) return <CheckMark color={primaryText} />
 
-    if (fail) return <Fail color={primary} />
+    if (fail) return <Fail color={primaryText} />
 
     return null
-  }, [fail, primary, success])
+  }, [fail, primaryText, success])
 
   const handleUnderlayChange = useCallback(
     (val: boolean) => () => setUnderlayShowing(val),
@@ -55,7 +55,7 @@ const PhraseChip = ({
       paddingVertical="2"
       maxWidth="30%"
       justifyContent="center"
-      underlayColor={surface}
+      underlayColor={cardBackground}
       disabled={selected || disabled}
       onHideUnderlay={handleUnderlayChange(false)}
       onShowUnderlay={handleUnderlayChange(true)}

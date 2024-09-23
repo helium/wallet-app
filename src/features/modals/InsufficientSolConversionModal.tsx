@@ -334,7 +334,7 @@ const InsufficientSolConversionModal: FC = () => {
                 onPress={handleSwapTokens}
                 TrailingComponent={
                   swapping ? (
-                    <CircleLoader loaderSize={20} color="black" />
+                    <CircleLoader loaderSize={20} color="primaryBackground" />
                   ) : undefined
                 }
               />

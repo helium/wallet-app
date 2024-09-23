@@ -446,7 +446,7 @@ const BrowserWebViewScreen = () => {
         alignItems="center"
         justifyContent="center"
       >
-        <Box width={14 + spacing.m} height={14} />
+        <Box width={14 + spacing[4]} height={14} />
         <Box flex={1}>
           <Text
             textAlign="center"

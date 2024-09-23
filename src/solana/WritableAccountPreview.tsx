@@ -133,8 +133,8 @@ export const WritableAccountPreview = ({
           mb="2"
           flexDirection="column"
           alignItems="stretch"
-          borderBottomLeftRadius="6"
-          borderBottomRightRadius="6"
+          borderBottomLeftRadius="2xl"
+          borderBottomRightRadius="2xl"
           backgroundColor="gray.900"
         >
           {writableAccount.pre.account && !writableAccount.post.account && (
@@ -202,8 +202,8 @@ export const WritableAccountPreview = ({
           p="2"
           flexDirection="column"
           alignItems="stretch"
-          borderBottomLeftRadius="6"
-          borderBottomRightRadius="6"
+          borderBottomLeftRadius="2xl"
+          borderBottomRightRadius="2xl"
           backgroundColor="gray.900"
         >
           {instructions.map(({ parsed, raw }, index) => (

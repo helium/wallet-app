@@ -496,7 +496,7 @@ const HotspotMapScreen = () => {
                 justifyContent="center"
                 alignItems="center"
                 backgroundColor={
-                  networkType === 'IOT' ? 'green.950' : 'blue950'
+                  networkType === 'IOT' ? 'green.950' : 'blue.950'
                 }
                 paddingRight="3"
                 paddingLeft="2"

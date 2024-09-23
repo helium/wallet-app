@@ -42,7 +42,7 @@ const StatusBanner = () => {
     const [lastIncident] = incidents
 
     showMessage({
-      type: lastIncident.impact === 'critical' ? 'danger' : 'warning.500',
+      type: lastIncident.impact === 'critical' ? 'danger' : 'warning',
       message: lastIncident.name,
       description: getAlertDescription(lastIncident.updated_at),
     })

@@ -153,7 +153,7 @@ export default () => {
                 true: colors.primaryText,
                 false: colors.transparent10,
               }}
-              onCheckColor={colors.secondary}
+              onCheckColor={colors.secondaryText}
               onTintColor={colors.primaryText}
               tintColor={colors.transparent10}
               onFillColor={colors.primaryText}
@@ -168,7 +168,7 @@ export default () => {
     },
     [
       colors.primaryText,
-      colors.secondary,
+      colors.secondaryText,
       colors.transparent10,
       derivationAccounts,
       selected,

@@ -105,7 +105,7 @@ const HotspotListItem = ({
 
   const hasIotRecipient = useMemo(
     () =>
-      (iotRecipient as any)?.destination &&
+      iotRecipient?.destination &&
       wallet &&
       !new PublicKey(iotRecipient.destination).equals(wallet) &&
       !new PublicKey(iotRecipient.destination).equals(PublicKey.default),

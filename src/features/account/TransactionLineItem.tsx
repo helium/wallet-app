@@ -113,7 +113,7 @@ const TransactionLineItem = ({
 
   return (
     <Box
-      borderBottomColor="surface"
+      borderBottomColor="cardBackground"
       borderBottomWidth={1}
       paddingVertical="4"
       paddingHorizontal="6"

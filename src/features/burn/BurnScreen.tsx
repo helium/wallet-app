@@ -493,8 +493,8 @@ const BurnScreen = () => {
                 </Box>
               )}
               <Box
-                borderTopLeftRadius="8"
-                borderTopRightRadius="8"
+                borderTopLeftRadius="4xl"
+                borderTopRightRadius="4xl"
                 padding="6"
                 overflow="hidden"
                 minHeight={220}

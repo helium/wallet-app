@@ -196,8 +196,8 @@ const WalletSignBottomSheetTransaction = ({
           p="2"
           flexDirection="column"
           alignItems="stretch"
-          borderBottomLeftRadius="6"
-          borderBottomRightRadius="6"
+          borderBottomLeftRadius="2xl"
+          borderBottomRightRadius="2xl"
           backgroundColor="gray.800"
           mt="0.5"
         >
@@ -219,8 +219,8 @@ const WalletSignBottomSheetTransaction = ({
           mt="0.5"
           flexDirection="column"
           alignItems="stretch"
-          borderBottomLeftRadius="6"
-          borderBottomRightRadius="6"
+          borderBottomLeftRadius="2xl"
+          borderBottomRightRadius="2xl"
           backgroundColor="gray.800"
         >
           {uncollapsedAccounts.map((writableAccount) => (

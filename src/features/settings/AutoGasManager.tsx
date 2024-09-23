@@ -105,8 +105,8 @@ const AutoGasManager: FC = () => {
                     mint={mint}
                     isActive={inputMint?.equals(mint)}
                     onPress={onMintSelect(mint)}
-                    inactiveColor="base.black"
-                    activeColor="secondary"
+                    inactiveColor="primaryBackground"
+                    activeColor="secondaryText"
                   />
                 ))}
               </Box>

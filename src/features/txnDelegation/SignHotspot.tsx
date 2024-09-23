@@ -54,7 +54,7 @@ const SignHotspot = () => {
   const { t } = useTranslation()
   const [validated, setValidated] = useState<boolean>()
   const { accounts } = useAccountStorage()
-  const { surfaceContrastText } = useColors()
+  const { secondaryText } = useColors()
 
   const linkInvalid = useMemo(() => {
     return (
@@ -424,7 +424,7 @@ const SignHotspot = () => {
           </Text>
           {submitLoading && (
             <Box marginLeft="2">
-              <ActivityIndicator color={surfaceContrastText} />
+              <ActivityIndicator color={secondaryText} />
             </Box>
           )}
         </TouchableOpacityBox>

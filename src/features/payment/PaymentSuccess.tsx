@@ -33,12 +33,12 @@ const PaymentSuccess = ({
       <Box padding="6" paddingBottom="0">
         <SuccessIcon />
       </Box>
-      <Text variant="displaySmRegular" color="surfaceText" padding="6">
+      <Text variant="displaySmRegular" color="secondaryText" padding="6">
         {t('payment.submitSuccess')}
       </Text>
       <Box
-        borderTopLeftRadius="8"
-        borderTopRightRadius="8"
+        borderTopLeftRadius="4xl"
+        borderTopRightRadius="4xl"
         padding="6"
         overflow="hidden"
       >
@@ -59,7 +59,7 @@ const PaymentSuccess = ({
           borderRadius="full"
           alignItems="center"
         >
-          <Text variant="textMdRegular" color="black">
+          <Text variant="textMdRegular" color="primaryBackground">
             {actionTitle}
           </Text>
         </TouchableOpacityBox>

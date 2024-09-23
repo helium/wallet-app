@@ -228,10 +228,10 @@ const ScanHotspots = () => {
       <ButtonPressable
         marginTop="6"
         borderRadius="full"
-        titleColor={scanning ? 'base.white' : 'black'}
-        borderColor={scanning ? 'base.white' : 'transparent'}
+        titleColor={scanning ? 'primaryText' : 'primaryBackground'}
+        borderColor={scanning ? 'primaryText' : 'transparent'}
         borderWidth={scanning ? 2 : 0}
-        backgroundColor={scanning ? 'transparent' : 'base.white'}
+        backgroundColor={scanning ? 'transparent' : 'primaryText'}
         title={
           // eslint-disable-next-line no-nested-ternary
           canScan

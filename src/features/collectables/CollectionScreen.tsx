@@ -27,7 +27,7 @@ const CollectionScreen = () => {
   const navigation = useNavigation<CollectableNavigationProp>()
   const COLLECTABLE_HEIGHT = Dimensions.get('window').width / 2
   const collectables = route.params.collection
-  const { 5: borderRadius } = useBorderRadii()
+  const borderRadii = useBorderRadii()
   const { triggerImpact } = useHaptic()
 
   const handleNavigateToCollectable = useCallback(
@@ -60,7 +60,7 @@ const CollectionScreen = () => {
             onPress={() => handleNavigateToCollectable(item)}
           >
             <Image
-              borderRadius={borderRadius}
+              borderRadius={borderRadii['4xl']}
               style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
               source={{
                 uri: json?.image || '',
@@ -70,7 +70,7 @@ const CollectionScreen = () => {
         </ReAnimatedBox>
       )
     },
-    [COLLECTABLE_HEIGHT, borderRadius, handleNavigateToCollectable],
+    [COLLECTABLE_HEIGHT, borderRadii, handleNavigateToCollectable],
   )
 
   const keyExtractor = useCallback((item: Collectable) => item.id, [])

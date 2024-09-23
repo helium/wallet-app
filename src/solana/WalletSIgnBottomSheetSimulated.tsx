@@ -365,8 +365,8 @@ export const WalletSignBottomSheetSimulated = ({
                   <Box marginBottom="4">
                     <Box>
                       <Box
-                        borderBottomStartRadius="6"
-                        borderBottomEndRadius="6"
+                        borderBottomStartRadius="2xl"
+                        borderBottomEndRadius="2xl"
                         backgroundColor="secondaryBackground"
                         padding="4"
                       >

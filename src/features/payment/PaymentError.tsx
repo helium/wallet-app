@@ -52,7 +52,7 @@ const PaymentError = ({
       <Box padding="6" paddingBottom="0">
         <FailureIcon />
       </Box>
-      <Text variant="displaySmRegular" color="surfaceText" padding="6">
+      <Text variant="displaySmRegular" color="secondaryText" padding="6">
         {t('payment.submitFailed')}
       </Text>
       {!!errorMessage && (
@@ -67,8 +67,8 @@ const PaymentError = ({
         </Text>
       )}
       <Box
-        borderTopLeftRadius="8"
-        borderTopRightRadius="8"
+        borderTopLeftRadius="4xl"
+        borderTopRightRadius="4xl"
         padding="6"
         overflow="hidden"
       >

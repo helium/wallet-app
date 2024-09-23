@@ -92,6 +92,28 @@ export const baseTheme = {
       paddingBottom: 'xs',
     },
   },
+  cardVariants: {
+    regular: {
+      padding: '4',
+      borderRadius: '4',
+      backgroundColor: 'cardBackground',
+    },
+    elevated: {
+      shadowColor: 'cardBackground',
+      borderRadius: '4',
+      shadowOffset: {
+        width: 0,
+        height: 9,
+      },
+      shadowOpacity: 0.3,
+      shadowRadius: 6,
+      elevation: 9,
+    },
+    modal: {
+      backgroundColor: 'cardBackground',
+      borderRadius: '4xl',
+    },
+  },
   spacing: {
     ...lightThemeTokens.spacing,
   },

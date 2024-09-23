@@ -51,7 +51,6 @@ type IconName =
   | 'browseVoters'
 
 type Props = BoxProps<Theme> & {
-  backgroundColor?: Color
   backgroundColorOpacity?: number
   backgroundColorPressed?: Color
   backgroundColorOpacityPressed?: number
@@ -91,13 +90,13 @@ const ButtonPressable = ({
   const backgroundColorStyle = useMemo(() => {
     if (pressed) {
       return backgroundStyle(
-        backgroundColorPressed || backgroundColor || 'base.white',
+        backgroundColorPressed || (backgroundColor as Color) || 'primaryText',
         backgroundColorOpacityPressed,
       )
     }
 
     if (!pressed && backgroundColor) {
-      return backgroundStyle(backgroundColor, backgroundColorOpacity)
+      return backgroundStyle(backgroundColor as Color, backgroundColorOpacity)
     }
   }, [
     pressed,

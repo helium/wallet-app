@@ -72,12 +72,12 @@ const ImportReplaceWordModal = ({
         <TouchableOpacityBox onPress={onRequestClose} padding="6">
           <Close color={primaryText} height={24} width={24} />
         </TouchableOpacityBox>
-        <Box marginTop={{ none: 'l', sm: 'xxxl' }}>
+        <Box marginTop={{ none: '6', sm: '12' }}>
           <Box minHeight={53}>
             <ScrollView
               horizontal
               keyboardShouldPersistTaps="always"
-              keyboardDismissMode="0"
+              keyboardDismissMode="none"
               showsHorizontalScrollIndicator={false}
             >
               {matchingWords.length <= 20 &&

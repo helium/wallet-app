@@ -104,10 +104,10 @@ const LedgerAccountListItem = ({
             value={isSelected || section.index === Section.ALREADY_LINKED}
             tintColors={{
               true: colors['purple.500'],
-              false: colors.bg.tertiary,
+              false: colors.cardBackground,
             }}
             onFillColor={colors['base.white']}
-            onCheckColor={colors.bg.tertiary}
+            onCheckColor={colors.cardBackground}
             onTintColor={colors['base.white']}
             tintColor={colors['base.white']}
             onAnimationType="fill"

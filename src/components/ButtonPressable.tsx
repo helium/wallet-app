@@ -11,7 +11,6 @@ import ButtonPressAnimation from './ButtonPressAnimation'
 import Text from './Text'
 
 type Props = BoxProps<Theme> & {
-  backgroundColor?: Color
   backgroundColorDisabled?: Color
   backgroundColorOpacity?: number
   backgroundColorDisabledOpacity?: number
@@ -37,8 +36,6 @@ type Props = BoxProps<Theme> & {
 }
 
 const ButtonPressable = ({
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   backgroundColor,
   backgroundColorDisabled,
   backgroundColorDisabledOpacity = 1,
@@ -118,12 +115,12 @@ const ButtonPressable = ({
     }
     if (pressed || selected) {
       return backgroundStyle(
-        backgroundColorPressed || backgroundColor || 'base.white',
+        backgroundColorPressed || (backgroundColor as Color) || 'primaryText',
         backgroundColorOpacityPressed,
       )
     }
     if (backgroundColor) {
-      return backgroundStyle(backgroundColor, backgroundColorOpacity)
+      return backgroundStyle(backgroundColor as Color, backgroundColorOpacity)
     }
   }, [
     backgroundStyle,

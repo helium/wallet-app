@@ -101,7 +101,9 @@ const TransferCollectableScreen = () => {
               >
                 <ImageBox
                   marginTop="6"
-                  backgroundColor={metadata.image ? 'black' : 'bg.tertiary'}
+                  backgroundColor={
+                    metadata.image ? 'primaryBackground' : 'bg.tertiary'
+                  }
                   height={COLLECTABLE_HEIGHT - spacing.xl * 5}
                   width={COLLECTABLE_HEIGHT - spacing.xl * 5}
                   source={{ uri: metadata.image, cache: 'force-cache' }}

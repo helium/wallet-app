@@ -48,7 +48,9 @@ export const CollectablePreview = ({
               elevation={12}
             >
               <ImageBox
-                backgroundColor={metadata.image ? 'black' : 'bg.tertiary'}
+                backgroundColor={
+                  metadata.image ? 'primaryBackground' : 'bg.tertiary'
+                }
                 height={40}
                 width={40}
                 source={{

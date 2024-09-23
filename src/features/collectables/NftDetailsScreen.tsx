@@ -85,7 +85,9 @@ const NftDetailsScreen = () => {
               >
                 <ImageBox
                   marginTop="6"
-                  backgroundColor={json.image ? 'black' : 'bg.tertiary'}
+                  backgroundColor={
+                    json.image ? 'primaryBackground' : 'bg.tertiary'
+                  }
                   height={COLLECTABLE_HEIGHT - spacing.xl * 2}
                   width={COLLECTABLE_HEIGHT - spacing.xl * 2}
                   source={{ uri: json.image, cache: 'force-cache' }}
