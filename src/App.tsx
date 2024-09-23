@@ -1,4 +1,3 @@
-import { useSelector } from 'react-redux'
 import AutoGasBanner from '@components/AutoGasBanner'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { PortalProvider } from '@gorhom/portal'
@@ -10,8 +9,7 @@ import { ModalProvider } from '@storage/ModalsProvider'
 import TokensProvider from '@storage/TokensProvider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import globalStyles from '@theme/globalStyles'
-import { lightTheme, darkTheme } from '@theme/theme'
-import { useColorScheme } from '@theme/themeHooks'
+import { darkTheme } from '@theme/theme'
 import * as SplashLib from 'expo-splash-screen'
 import React, { useMemo } from 'react'
 import { LogBox, Platform, StatusBar, UIManager } from 'react-native'
@@ -38,7 +36,6 @@ import { GovernanceProvider } from './storage/GovernanceProvider'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
 import { BalanceProvider } from './utils/Balance'
 import { useDeepLinking } from './utils/linking'
-import { RootState } from './store/rootReducer'
 
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -69,27 +66,12 @@ const App = () => {
   const { appState } = useAppState()
   const { restored: accountsRestored } = useAccountStorage()
   const { setOpenedNotification } = useNotificationStorage()
-  const theme = useSelector((state: RootState) => state.app.theme)
 
   const linking = useDeepLinking()
 
-  const colorScheme = useColorScheme()
-
   const themeObject = useMemo(() => {
-    if (!theme) return darkTheme
-    if (theme === 'system' && colorScheme) {
-      return colorScheme === 'dark' ? darkTheme : lightTheme
-    }
-    return theme === 'dark' ? darkTheme : lightTheme
-  }, [theme, colorScheme])
-
-  const barStyle = useMemo(() => {
-    if (theme === 'system' && colorScheme) {
-      return colorScheme === 'dark' ? 'light-content' : 'dark-content'
-    }
-
-    return theme === 'dark' ? 'light-content' : 'dark-content'
-  }, [theme, colorScheme])
+    return darkTheme
+  }, [])
 
   if (Platform.OS === 'android') {
     if (UIManager.setLayoutAnimationEnabledExperimental) {
@@ -133,7 +115,7 @@ const App = () => {
       <GestureHandlerRootView style={globalStyles.container}>
         <StatusBar
           backgroundColor={themeObject.colors.primaryBackground}
-          barStyle={barStyle}
+          barStyle="light-content"
         />
         <SafeAreaProvider>
           <ThemeProvider theme={colorAdaptedTheme}>

@@ -559,7 +559,7 @@ const HNTKeyboardSelector = forwardRef(
                     flex={1}
                     backgroundColor={
                       allowOverdraft || hasSufficientBalance
-                        ? 'cardBackground'
+                        ? 'primaryText'
                         : 'gray.300'
                     }
                     disabled={!allowOverdraft ? !hasSufficientBalance : false}

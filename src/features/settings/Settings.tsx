@@ -1,4 +1,3 @@
-import { useDispatch, useSelector } from 'react-redux'
 import Box from '@components/Box'
 import ImageBox from '@components/ImageBox'
 import Text from '@components/Text'
@@ -15,7 +14,6 @@ import { useTranslation } from 'react-i18next'
 import { Alert, Linking, Platform, ScrollView, SectionList } from 'react-native'
 import deviceInfo from 'react-native-device-info'
 import { SvgUri } from 'react-native-svg'
-import SegmentedControl from '@components/SegmentedControl'
 import BackScreen from '@components/BackScreen'
 
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
@@ -35,8 +33,6 @@ import { HomeNavigationProp } from '../home/homeTypes'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
 import { SettingsNavigationProp } from './settingsTypes'
 import useAuthIntervals from './useAuthIntervals'
-import { appSlice } from '../../store/slices/appSlice'
-import { RootState } from '../../store/rootReducer'
 
 const Settings = () => {
   const { t } = useTranslation()
@@ -70,8 +66,6 @@ const Settings = () => {
   } = useAppStorage()
   const { showOKAlert, showOKCancelAlert } = useAlert()
   const { updateCluster, cluster, cache } = useSolana()
-  const theme = useSelector((state: RootState) => state.app.theme)
-  const dispatch = useDispatch()
 
   const isDefaultAccount = useMemo(
     () => defaultAccountAddress === currentAccount?.address,
@@ -601,21 +595,6 @@ const Settings = () => {
     [],
   )
 
-  const options = useMemo(() => {
-    return [
-      { value: 'system', label: t('system') },
-      { value: 'light', label: t('light') },
-      { value: 'dark', label: t('dark') },
-    ] as { value: 'system' | 'light' | 'dark'; label: string }[]
-  }, [t])
-
-  const onSegmentSelected = useCallback(
-    (index: number) => {
-      dispatch(appSlice.actions.updateTheme(options[index].value))
-    },
-    [dispatch, options],
-  )
-
   const renderSectionHeader = useCallback(
     ({ section: { title, icon } }) => (
       <Box
@@ -659,11 +638,6 @@ const Settings = () => {
           >
             {t('settings.title')}
           </Text>
-          <SegmentedControl
-            options={options}
-            selectedIndex={options.findIndex((s) => s.value === theme)}
-            onItemSelected={onSegmentSelected}
-          />
         </Box>
 
         <SectionList

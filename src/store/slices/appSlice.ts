@@ -4,26 +4,18 @@ import { Cluster } from '@solana/web3.js'
 export type AppState = {
   showConnectedWallets: boolean
   showBanner: boolean
-  theme: 'light' | 'dark' | 'system'
   cluster?: Cluster
 }
 
 const initialState: AppState = {
   showConnectedWallets: false,
   showBanner: true,
-  theme: 'system',
 }
 
 const appSlice = createSlice({
   name: 'app',
   initialState,
   reducers: {
-    updateTheme: (
-      state,
-      action: PayloadAction<'light' | 'dark' | 'system'>,
-    ) => {
-      state.theme = action.payload
-    },
     setCluster: (state, action: PayloadAction<Cluster>) => {
       state.cluster = action.payload
     },

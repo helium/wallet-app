@@ -244,7 +244,12 @@ const RequestScreen = () => {
             borderTopStartRadius="4xl"
             borderTopEndRadius="4xl"
           >
-            <Text variant="textLgMedium" paddingTop="6" textAlign="center">
+            <Text
+              variant="textLgMedium"
+              paddingTop="6"
+              textAlign="center"
+              color="primaryText"
+            >
               {t('request.title')}
             </Text>
             <TabBar
