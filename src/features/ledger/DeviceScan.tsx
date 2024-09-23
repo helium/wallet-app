@@ -153,6 +153,7 @@ const DeviceScan = () => {
             marginVertical="6"
             textAlign="center"
             lineHeight={38}
+            color="primaryText"
           >
             {t('ledger.scan.title')}
           </Text>

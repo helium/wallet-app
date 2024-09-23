@@ -50,7 +50,9 @@ const AddNewAccountScreen = () => {
       <Box backgroundColor="bg.tertiary">
         <Box flexDirection="row" paddingVertical="4">
           <Box flex={1} />
-          <Text variant="textXlMedium">{t('addNewAccount.title')}</Text>
+          <Text variant="textXlMedium" color="primaryText">
+            {t('addNewAccount.title')}
+          </Text>
           <Box flex={1} />
         </Box>
         <TabBar

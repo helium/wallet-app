@@ -39,7 +39,7 @@ const LedgerConnectSteps = ({ onLayout, onRetry }: Props) => {
           alignItems="center"
         >
           <Check color={primaryText} height={24} width={24} />
-          <Text variant="textXlMedium" marginLeft="3">
+          <Text variant="textXlMedium" marginLeft="3" color="primaryText">
             {step}
           </Text>
         </Box>
@@ -48,11 +48,15 @@ const LedgerConnectSteps = ({ onLayout, onRetry }: Props) => {
         marginTop="2"
         marginBottom="6"
         onPress={onRetry}
-        backgroundColor="cardBackground"
+        backgroundColor="primaryText"
         padding="6"
         borderRadius="full"
       >
-        <Text variant="textXlMedium" textAlign="center">
+        <Text
+          variant="textXlMedium"
+          textAlign="center"
+          color="primaryBackground"
+        >
           {t('generic.tryAgain')}
         </Text>
       </TouchableOpacityBox>

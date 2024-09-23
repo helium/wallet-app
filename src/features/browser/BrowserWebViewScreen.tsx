@@ -9,7 +9,7 @@ import {
   SolanaSignMessageInput,
 } from '@solana/wallet-standard-features'
 import { Transaction, VersionedTransaction } from '@solana/web3.js'
-import { useSpacing } from '@theme/themeHooks'
+import { useColors, useSpacing } from '@theme/themeHooks'
 import bs58 from 'bs58'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { Platform, StyleSheet } from 'react-native'
@@ -67,6 +67,7 @@ const BrowserWebViewScreen = () => {
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
   const spacing = useSpacing()
   const [isScriptInjected, setIsScriptInjected] = useState(false)
+  const { primaryText } = useColors()
 
   const isFavorite = useMemo(() => {
     return favorites.some((favorite) => favorite === currentUrl)
@@ -458,11 +459,11 @@ const BrowserWebViewScreen = () => {
           </Text>
         </Box>
         <TouchableOpacityBox onPress={closeModal} paddingHorizontal="4">
-          <Close color="primaryText" width={14} height={14} />
+          <Close color={primaryText} width={14} height={14} />
         </TouchableOpacityBox>
       </Box>
     )
-  }, [currentUrl, closeModal, spacing])
+  }, [currentUrl, closeModal, spacing, primaryText])
 
   const onBack = useCallback(() => {
     webview.current?.goBack()
@@ -485,20 +486,20 @@ const BrowserWebViewScreen = () => {
       <Box padding="4" flexDirection="row" backgroundColor="base.black">
         <Box flexGrow={1} alignItems="center">
           <TouchableOpacityBox onPress={onBack}>
-            <BackArrow width={20} height={20} />
+            <BackArrow width={20} height={20} color={primaryText} />
           </TouchableOpacityBox>
         </Box>
         <Box flexGrow={1} alignItems="center">
           <TouchableOpacityBox style={styles.rotatedArrow} onPress={onForward}>
-            <BackArrow width={20} height={20} />
+            <BackArrow width={20} height={20} color={primaryText} />
           </TouchableOpacityBox>
         </Box>
         <Box flexGrow={1} alignItems="center">
           <TouchableOpacityBox onPress={onFavorite}>
             {isFavorite ? (
-              <BookmarkFilled color="primaryText" width={20} height={20} />
+              <BookmarkFilled color={primaryText} width={20} height={20} />
             ) : (
-              <Bookmark color="primaryText" width={20} height={20} />
+              <Bookmark color={primaryText} width={20} height={20} />
             )}
           </TouchableOpacityBox>
         </Box>
@@ -509,7 +510,7 @@ const BrowserWebViewScreen = () => {
         </Box>
       </Box>
     )
-  }, [onBack, onForward, isFavorite, onFavorite, onRefresh])
+  }, [onBack, onForward, isFavorite, onFavorite, onRefresh, primaryText])
 
   return (
     <Box position="absolute" top={0} left={0} right={0} bottom={0}>

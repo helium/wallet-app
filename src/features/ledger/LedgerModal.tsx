@@ -56,7 +56,7 @@ const LedgerModal = forwardRef(
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const { backgroundStyle } = useOpacity('bg.tertiary', 1)
     const { setIsShowing } = useBackHandler(bottomSheetModalRef)
-    const { secondaryText } = useColors()
+    const { primaryText } = useColors()
     const { t } = useTranslation()
     const { getTransport, openSolanaApp } = useLedger()
     const [transactionBuffer, setTransactionBuffer] = useState<Buffer>()
@@ -216,9 +216,9 @@ const LedgerModal = forwardRef(
 
     const handleIndicatorStyle = useMemo(() => {
       return {
-        backgroundColor: secondaryText,
+        backgroundColor: primaryText,
       }
-    }, [secondaryText])
+    }, [primaryText])
 
     const deviceModelId = useMemo(() => {
       let model = DeviceModelId.nanoX
@@ -335,13 +335,11 @@ const LedgerModal = forwardRef(
     return (
       <Box flex={1}>
         <BottomSheetModalProvider>
-          {/* <Box flex={1} {...boxProps}> */}
           <BottomSheetModal
             ref={bottomSheetModalRef}
             index={0}
             backgroundStyle={backgroundStyle}
             backdropComponent={renderBackdrop}
-            // onDismiss={handleModalDismiss}
             handleIndicatorStyle={handleIndicatorStyle}
             contentHeight={animatedContentHeight}
             enableDynamicSizing

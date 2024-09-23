@@ -70,7 +70,7 @@ const SwapItem = ({
               {isPaying ? t('swapsScreen.youPay') : t('swapsScreen.youReceive')}
             </Text>
             <Box flexDirection="row">
-              <Text marginEnd="2" variant="textXlRegular">
+              <Text marginEnd="2" variant="textXlRegular" color="primaryText">
                 {!loading ? amount.toString() : t('generic.loading')}
               </Text>
               <Text

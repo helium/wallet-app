@@ -34,10 +34,11 @@ const PairStart = () => {
             variant="displayLgRegular"
             textAlign="center"
             marginVertical="6"
+            color="primaryText"
           >
             {t('ledger.pairStart.title')}
           </Text>
-          <Text variant="textXlMedium" textAlign="center">
+          <Text variant="textXlMedium" textAlign="center" color="secondaryText">
             {t('ledger.pairStart.subtitle')}
           </Text>
         </Box>
@@ -62,7 +63,7 @@ const PairStart = () => {
         backgroundColorDisabled="bg.tertiary"
         backgroundColorDisabledOpacity={0.5}
         titleColorDisabled="gray.800"
-        titleColor="primaryText"
+        titleColor="primaryBackground"
         fontWeight="500"
         title={t('ledger.pairStart.pair')}
         marginBottom="6"
