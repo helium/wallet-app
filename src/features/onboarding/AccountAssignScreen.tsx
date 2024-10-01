@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import AccountIcon from '@components/AccountIcon'
 import Box from '@components/Box'
 import CircleLoader from '@components/CircleLoader'
@@ -19,6 +20,7 @@ import { useTranslation } from 'react-i18next'
 import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { accountNetType } from '@utils/accountUtils'
+import { ResolvedPath } from '@hooks/useDerivationAccounts'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
@@ -79,85 +81,87 @@ const AccountAssignScreen = () => {
     return paths
   }, [paths, route.params?.secretKey, route.params?.derivationPath])
 
-  const { execute: handlePress, loading } = useAsyncCallback(async () => {
-    const getName = (index: number): string => {
-      const name = `${alias} ${index + 1}`
-      if (!existingNames?.has(name)) {
-        return name
-      }
-
-      return getName(index + 1)
-    }
-
-    try {
-      let mnemonicHash: string | undefined
-      if (words) {
-        mnemonicHash = createHash('sha256')
-          .update(words.join(' '))
-          .digest('hex')
-      }
-
-      const newAccounts = await Promise.all(
-        allPaths.map(async (p, index) => ({
-          alias: index === 0 ? alias : getName(index),
-          address: heliumAddressFromSolAddress(p.keypair.publicKey.toBase58()),
-          solanaAddress: p.keypair.publicKey.toBase58(),
-          derivationPath: p.derivationPath,
-          mnemonicHash,
-          version: 'v1' as CSAccountVersion,
-          balance: await connection?.getBalance(p.keypair.publicKey),
-        })),
-      )
-
-      const highestBalanceAcc = newAccounts.reduce((acc, curr) => {
-        if (
-          curr.balance !== undefined &&
-          (acc.balance === undefined || curr.balance > acc.balance)
-        ) {
-          return curr
-        }
-
-        return acc
-      }, newAccounts[0])
-
-      await Promise.all(
-        allPaths.reverse().map(async (p) => {
-          await storeSecureAccount(
-            toSecureAccount({
-              words,
-              keypair: p.keypair,
-              derivationPath: p.derivationPath,
-            }),
-          )
+  const storeAllSecureAccounts = useCallback(async () => {
+    const secureAccounts = allPaths
+      .slice()
+      .reverse()
+      .map((path) =>
+        toSecureAccount({
+          words,
+          keypair: path.keypair,
+          derivationPath: path.derivationPath,
         }),
       )
 
-      await upsertAccounts(newAccounts)
+    await Promise.all(secureAccounts.map(storeSecureAccount))
+  }, [words, allPaths])
 
-      setCurrentAccount({
-        ...highestBalanceAcc,
-        netType: accountNetType(highestBalanceAcc.address),
-      })
+  const generateMnemonicHash = (words?: string[]): string | undefined => {
+    if (!words) return undefined
+    return createHash('sha256').update(words.join(' ')).digest('hex')
+  }
+
+  const generateUniqueName = useCallback(
+    (baseAlias: string, index: number): string => {
+      const name = `${baseAlias} ${index + 1}`
+      return existingNames?.has(name)
+        ? generateUniqueName(baseAlias, index + 1)
+        : name
+    },
+    [existingNames],
+  )
+
+  const createNewAccounts = async (
+    paths: ResolvedPath[],
+    alias: string,
+    mnemonicHash?: string,
+  ) => {
+    return Promise.all(
+      paths.map(async (p, index) => ({
+        alias: index === 0 ? alias : generateUniqueName(alias, index),
+        address: heliumAddressFromSolAddress(p.keypair.publicKey.toBase58()),
+        solanaAddress: p.keypair.publicKey.toBase58(),
+        derivationPath: p.derivationPath,
+        mnemonicHash,
+        version: 'v1' as CSAccountVersion,
+        balance: (await connection?.getBalance(p.keypair.publicKey)) ?? 0,
+      })),
+    )
+  }
+
+  const { execute: handlePress, loading } = useAsyncCallback(async () => {
+    try {
+      await storeAllSecureAccounts()
+      const mnemonicHash = generateMnemonicHash(words)
+      const newAccounts = await createNewAccounts(allPaths, alias, mnemonicHash)
+      const highestBalanceAcc = newAccounts.reduce((prev, current) =>
+        (current.balance ?? 0) > (prev.balance ?? 0) ? current : prev,
+      )
+
+      await upsertAccounts(newAccounts)
 
       if (setAsDefault) {
         await updateDefaultAccountAddress(highestBalanceAcc.address)
       }
 
-      reset()
+      if (hasAccounts) {
+        rootNav.reset({
+          index: 0,
+          routes: [{ name: 'TabBarNavigator' }],
+        })
+        reset()
+      } else {
+        onboardingNav.navigate('AccountCreatePinScreen', {
+          pinReset: true,
+        })
+      }
+
+      setCurrentAccount({
+        ...highestBalanceAcc,
+        netType: accountNetType(highestBalanceAcc.address),
+      })
     } catch (e) {
       console.error(e)
-      return
-    }
-
-    if (hasAccounts) {
-      rootNav.reset({
-        index: 0,
-        routes: [{ name: 'TabBarNavigator' }],
-      })
-    } else {
-      onboardingNav.navigate('AccountCreatePinScreen', {
-        pinReset: true,
-      })
     }
   })
 
