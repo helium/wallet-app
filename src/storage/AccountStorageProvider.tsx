@@ -27,9 +27,7 @@ import { useAppStorage } from './AppStorageProvider'
 import {
   CSAccount,
   CSAccounts,
-  CSAccountVersion,
   getCloudDefaultAccountAddress,
-  LedgerDevice,
   restoreAccounts,
   setCloudDefaultAccountAddress,
   signoutCloudStorage,
@@ -221,18 +219,14 @@ const useAccountStorageHook = () => {
         await storeSecureAccount(secureAccount)
       }
 
-      let { mnemonicHash } = csAccount
-      if (secureAccount?.mnemonic && !mnemonicHash) {
-        mnemonicHash = createHash('sha256')
-          .update(secureAccount?.mnemonic.join(' '))
-          .digest('hex')
-      }
+      const mnemonicHash = secureAccount?.mnemonic
+        ? createHash('sha256')
+            .update(secureAccount.mnemonic.join(' '))
+            .digest('hex')
+        : csAccount.mnemonicHash
 
-      let { solanaAddress } = csAccount
-
-      if (!solanaAddress) {
-        solanaAddress = heliumAddressToSolAddress(csAccount.address)
-      }
+      const solanaAddress =
+        csAccount.solanaAddress || heliumAddressToSolAddress(csAccount.address)
 
       const nextAccount: CSAccount = {
         ...csAccount,
@@ -246,51 +240,42 @@ const useAccountStorageHook = () => {
         ...accounts,
         [csAccount.address]: nextAccount,
       }
+
       setAccounts(nextAccounts)
       setCurrentAccount(nextAccount)
-      await updateCloudAccounts(nextAccounts)
-      await tagAccount(csAccount.address)
+
+      await Promise.all([
+        updateCloudAccounts(nextAccounts),
+        tagAccount(csAccount.address),
+      ])
     },
     [accounts],
   )
 
   const upsertAccounts = useCallback(
     async (
-      accountBulk: {
-        alias: string
-        address: string
-        ledgerDevice?: LedgerDevice
-        ledgerIndex?: number
-        solanaAddress: string
-        derivationPath?: string
-        mnemonicHash?: string
-        version?: CSAccountVersion
-      }[],
+      accountBulk: Array<
+        Partial<CSAccount> & {
+          address: string
+          solanaAddress: string
+          ledgerIndex?: number
+        }
+      >,
     ) => {
       if (!accountBulk.length) return
 
-      const bulkAccounts = accountBulk.reduce((prev, curr) => {
-        const accountIndex = curr.ledgerIndex || 0
-        return {
-          ...prev,
-          [curr.address]: {
-            alias: curr.alias,
-            address: curr.address,
-            netType: accountNetType(curr.address),
-            ledgerDevice: curr.ledgerDevice,
-            accountIndex,
-            solanaAddress: curr.solanaAddress,
-            derivationPath: curr.derivationPath,
-            mnemonicHash: curr.mnemonicHash,
-            version: curr.version,
-          },
-        }
+      const bulkAccounts = accountBulk.reduce<CSAccounts>((acc, curr) => {
+        const { address, ledgerIndex, ...rest } = curr
+        acc[address] = {
+          ...rest,
+          address,
+          netType: accountNetType(address),
+          accountIndex: ledgerIndex ?? 0,
+        } as CSAccount
+        return acc
       }, {})
 
-      const nextAccounts: CSAccounts = {
-        ...accounts,
-        ...bulkAccounts,
-      }
+      const nextAccounts: CSAccounts = { ...accounts, ...bulkAccounts }
 
       setAccounts(nextAccounts)
       setCurrentAccount(
@@ -298,11 +283,7 @@ const useAccountStorageHook = () => {
       )
       await updateCloudAccounts(nextAccounts)
 
-      // eslint-disable-next-line no-restricted-syntax
-      for (const addr of Object.keys(bulkAccounts)) {
-        // eslint-disable-next-line no-await-in-loop
-        await tagAccount(addr)
-      }
+      await Promise.all(Object.keys(bulkAccounts).map(tagAccount))
     },
     [accounts],
   )
