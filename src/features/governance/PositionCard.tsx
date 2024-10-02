@@ -489,7 +489,7 @@ export const PositionCard = ({
           message: t('gov.positions.delegateMessage', {
             amount: lockedTokens,
             symbol,
-            subDao: subDao.dntMetadata.name,
+            subdao: subDao.dntMetadata.name,
           }),
           instructions: ixs,
         })

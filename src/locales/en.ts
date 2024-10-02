@@ -1376,7 +1376,7 @@ export default {
       transferMessage:
         'Transfer {{amount}} {{symbol}} to the position with {{targetAmount}} {{symbol}}?',
       delegateMessage:
-        'delegate {{amount}} {{symbol}} to the {{subdao}} subdao?',
+        'delegate {{amount}} {{symbol}} to the {{subdao}} Subnetwork?',
       undelegateMessage: 'Undelegate {{amount}} {{symbol}}?',
       relinquishVotesMessage: 'Relinquish this positions votes?',
     },
