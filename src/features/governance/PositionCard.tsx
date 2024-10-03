@@ -159,11 +159,13 @@ export const PositionCard = ({
     message,
     instructions,
     sigs = [],
+    sequentially = false,
   }: {
     header: string
     message: string
     instructions: TransactionInstruction[]
     sigs?: Keypair[]
+    sequentially?: boolean
   }) => {
     if (!anchorProvider || !walletSignBottomSheetRef) return
 
@@ -174,33 +176,35 @@ export const PositionCard = ({
         basePriorityFee: await getBasePriorityFee(),
       },
     )
+
     const populatedDrafts = await Promise.all(
       transactions.map((tx) =>
         populateMissingDraftInfo(anchorProvider.connection, tx),
       ),
     )
-    const txs = populatedDrafts.map((transaction) => toVersionedTx(transaction))
 
+    const asVersionedTx = populatedDrafts.map(toVersionedTx)
     const decision = await walletSignBottomSheetRef.show({
       type: WalletStandardMessageTypes.signTransaction,
       url: '',
       header,
       renderer: () => <MessagePreview message={message} />,
-      serializedTxs: txs.map((t) => Buffer.from(t.serialize())),
+      suppressWarnings: sequentially,
+      serializedTxs: asVersionedTx.map((transaction) =>
+        Buffer.from(transaction.serialize()),
+      ),
     })
 
     if (decision) {
-      if (sigs.length) {
+      if (transactions.length > 1 && sequentially) {
         let i = 0
         // eslint-disable-next-line no-restricted-syntax
-        for (const tx of await anchorProvider.wallet.signAllTransactions(txs)) {
-          // eslint-disable-next-line @typescript-eslint/no-loop-func
+        for (const tx of await anchorProvider.wallet.signAllTransactions(
+          asVersionedTx,
+        )) {
+          const draft = transactions[i]
           sigs.forEach((sig) => {
-            if (
-              transactions[i].signers?.some((s) =>
-                s.publicKey.equals(sig.publicKey),
-              )
-            ) {
+            if (draft.signers?.some((s) => s.publicKey.equals(sig.publicKey))) {
               tx.sign([sig])
             }
           })
@@ -209,7 +213,7 @@ export const PositionCard = ({
             anchorProvider.connection,
             Buffer.from(tx.serialize()),
             {
-              skipPreflight: true,
+              skipPreflight: false,
             },
             'confirmed',
           )
@@ -509,20 +513,24 @@ export const PositionCard = ({
         const claims = ixs.slice(0, ixs.length - 1)
         if (claims.length > 0) {
           await decideAndExecute({
-            header: t('gov.transactions.claimRewards'),
-            message: t('gov.transactions.claimRewards'),
-            instructions: claims,
+            header: t('gov.transactions.undelegatePosition'),
+            message: t('gov.positions.undelegateMessage', {
+              amount: lockedTokens,
+              symbol,
+            }),
+            sequentially: true,
+            instructions: [...claims, undelegate],
+          })
+        } else {
+          await decideAndExecute({
+            header: t('gov.transactions.undelegatePosition'),
+            message: t('gov.positions.undelegateMessage', {
+              amount: lockedTokens,
+              symbol,
+            }),
+            instructions: [undelegate],
           })
         }
-
-        await decideAndExecute({
-          header: t('gov.transactions.undelegatePosition'),
-          message: t('gov.positions.undelegateMessage', {
-            amount: lockedTokens,
-            symbol,
-          }),
-          instructions: [undelegate],
-        })
 
         if (!undelegatingError) {
           refetchState()
