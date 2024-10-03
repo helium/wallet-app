@@ -511,26 +511,16 @@ export const PositionCard = ({
       onInstructions: async (ixs) => {
         const undelegate = ixs[ixs.length - 1]
         const claims = ixs.slice(0, ixs.length - 1)
-        if (claims.length > 0) {
-          await decideAndExecute({
-            header: t('gov.transactions.undelegatePosition'),
-            message: t('gov.positions.undelegateMessage', {
-              amount: lockedTokens,
-              symbol,
-            }),
-            sequentially: true,
-            instructions: [...claims, undelegate],
-          })
-        } else {
-          await decideAndExecute({
-            header: t('gov.transactions.undelegatePosition'),
-            message: t('gov.positions.undelegateMessage', {
-              amount: lockedTokens,
-              symbol,
-            }),
-            instructions: [undelegate],
-          })
-        }
+        const hasClaims = claims.length > 0
+        await decideAndExecute({
+          header: t('gov.transactions.undelegatePosition'),
+          message: t('gov.positions.undelegateMessage', {
+            amount: lockedTokens,
+            symbol,
+          }),
+          sequentially: hasClaims,
+          instructions: hasClaims ? [...claims, undelegate] : [undelegate],
+        })
 
         if (!undelegatingError) {
           refetchState()
