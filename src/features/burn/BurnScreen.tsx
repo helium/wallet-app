@@ -81,7 +81,7 @@ const BurnScreen = () => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const { primaryText } = useColors()
-  const hitSlop = useHitSlop('l')
+  const hitSlop = useHitSlop('6')
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
   const { submitDelegateDataCredits } = useSubmitTxn()
   const addressBookRef = useRef<AddressBookRef>(null)
@@ -327,7 +327,7 @@ const BurnScreen = () => {
                 justifyContent="space-between"
                 alignItems="center"
               >
-                <Box hitSlop={hitSlop} padding="s">
+                <Box hitSlop={hitSlop} padding="2">
                   <IconPressedContainer
                     onPress={handleQrScan}
                     activeOpacity={0.75}
@@ -337,7 +337,7 @@ const BurnScreen = () => {
                   </IconPressedContainer>
                 </Box>
                 <Text
-                  variant="subtitle2"
+                  variant="textLgMedium"
                   flex={1}
                   textAlign="center"
                   color="primaryText"
@@ -348,7 +348,7 @@ const BurnScreen = () => {
                 <TouchableOpacityBox
                   onPress={navigation.goBack}
                   width={64}
-                  padding="l"
+                  padding="6"
                   hitSlop={hitSlop}
                 >
                   <Close color={primaryText} height={16} width={16} />
@@ -360,27 +360,27 @@ const BurnScreen = () => {
                 keyboardShouldPersistTaps="always"
               >
                 <AccountButton
-                  backgroundColor="secondary"
+                  backgroundColor="secondaryBackground"
                   accountIconSize={41}
-                  paddingTop="l"
+                  paddingTop="6"
                   title={formatAccountAlias(currentAccount)}
                   subtitle={t('payment.senderAccount')}
                   showChevron={sortedAccountsForNetType(networkType).length > 1}
                   address={currentAccount?.address}
                   onPress={handleShowAccounts}
                   showBubbleArrow
-                  marginHorizontal="l"
+                  marginHorizontal="6"
                   marginBottom="xs"
                 />
 
                 <TokenButton
-                  backgroundColor="secondary"
+                  backgroundColor="secondaryBackground"
                   title={t('burn.subdao', { subdao: symbol })}
                   subtitle={t('burn.choooseSubDAO')}
                   address={currentAccount?.address}
                   onPress={handleTokenTypeSelected}
                   showBubbleArrow
-                  marginHorizontal="l"
+                  marginHorizontal="6"
                   mint={mint}
                 />
 
@@ -410,7 +410,7 @@ const BurnScreen = () => {
                 ) : (
                   <>
                     <AccountButton
-                      backgroundColor="surfaceSecondary"
+                      backgroundColor="bg.tertiary"
                       accountIconSize={41}
                       subtitle={t('burn.recipient')}
                       title={ellipsizeAddress(
@@ -419,25 +419,29 @@ const BurnScreen = () => {
                       showBubbleArrow
                       showChevron={false}
                       address={route.params.address}
-                      marginHorizontal="l"
+                      marginHorizontal="6"
                     />
                     <Box
                       marginTop="xs"
-                      marginHorizontal="l"
-                      backgroundColor="secondary"
-                      borderRadius="xl"
-                      paddingHorizontal="m"
+                      marginHorizontal="6"
+                      backgroundColor="secondaryBackground"
+                      borderRadius="4xl"
+                      paddingHorizontal="4"
                       overflow="hidden"
                     >
-                      <Text variant="body3" color="secondaryText" marginTop="m">
+                      <Text
+                        variant="textXsRegular"
+                        color="secondaryText"
+                        marginTop="4"
+                      >
                         {t('burn.amount')}
                       </Text>
-                      <Text variant="subtitle2" color="primaryText">
+                      <Text variant="textLgMedium" color="primaryText">
                         {amountBalance.toString()}
                       </Text>
                       <Text
-                        variant="body3"
-                        marginBottom="m"
+                        variant="textXsRegular"
+                        marginBottom="4"
                         color="secondaryText"
                       >
                         {t('payment.fee', {
@@ -448,16 +452,20 @@ const BurnScreen = () => {
                       <Box
                         height={1}
                         backgroundColor="primaryBackground"
-                        marginHorizontal="n_m"
+                        marginHorizontal="-4"
                       />
 
-                      <Text variant="body3" color="secondaryText" marginTop="m">
+                      <Text
+                        variant="textXsRegular"
+                        color="secondaryText"
+                        marginTop="4"
+                      >
                         {t('burn.equivalent')}
                       </Text>
                       <Text
-                        variant="subtitle2"
+                        variant="textLgMedium"
                         color="primaryText"
-                        marginBottom="m"
+                        marginBottom="4"
                       >
                         {amountInDc?.toString()}
                       </Text>
@@ -465,19 +473,19 @@ const BurnScreen = () => {
                       <Box
                         height={1}
                         backgroundColor="primaryBackground"
-                        marginHorizontal="n_m"
+                        marginHorizontal="-4"
                       />
                     </Box>
                   </>
                 )}
               </KeyboardAwareScrollView>
               {submitError && (
-                <Box marginBottom="s">
+                <Box marginBottom="2">
                   <Text
-                    marginTop="s"
-                    marginHorizontal="m"
-                    variant="body3Medium"
-                    color="red500"
+                    marginTop="2"
+                    marginHorizontal="4"
+                    variant="textXsMedium"
+                    color="ros.500"
                     textAlign="center"
                   >
                     {submitError}
@@ -485,12 +493,12 @@ const BurnScreen = () => {
                 </Box>
               )}
               <Box
-                borderTopLeftRadius="xl"
-                borderTopRightRadius="xl"
-                padding="l"
+                borderTopLeftRadius="4xl"
+                borderTopRightRadius="4xl"
+                padding="6"
                 overflow="hidden"
                 minHeight={220}
-                backgroundColor="secondary"
+                backgroundColor="secondaryBackground"
               >
                 <PaymentSummary
                   mint={DC_MINT}
@@ -505,7 +513,7 @@ const BurnScreen = () => {
                       hasError ||
                       (!delegateAddress && isDelegate)
                     }
-                    marginTop="l"
+                    marginTop="6"
                     title={t(
                       isDelegate ? 'delegate.swipe' : 'burn.swipeToBurn',
                     )}

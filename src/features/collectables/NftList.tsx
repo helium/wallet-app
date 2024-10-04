@@ -70,9 +70,9 @@ const NftList = () => {
 
   const contentContainerStyle = useMemo(
     () => ({
-      marginTop: spacing.m,
+      marginTop: spacing[4],
     }),
-    [spacing.m],
+    [spacing],
   )
 
   return (

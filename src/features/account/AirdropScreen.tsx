@@ -146,17 +146,17 @@ const AirdropScreen = () => {
   }, [ring, ringDrop])
 
   return (
-    <BackScreen headerBackgroundColor="black" flex={1} padding="none">
-      <SafeAreaBox edges={edges} backgroundColor="black" flex={1}>
+    <BackScreen headerBackgroundColor="base.black" flex={1} padding="0">
+      <SafeAreaBox edges={edges} backgroundColor="base.black" flex={1}>
         <Box>
-          <Text variant="h4" textAlign="center" marginTop="l">
+          <Text variant="textXlRegular" textAlign="center" marginTop="6">
             {t('airdropScreen.title')}
           </Text>
           <Text
-            variant="body1"
+            variant="textMdRegular"
             textAlign="center"
             color="secondaryText"
-            marginTop="m"
+            marginTop="4"
           >
             {t('airdropScreen.subtitle')}
           </Text>
@@ -165,7 +165,7 @@ const AirdropScreen = () => {
           flex={1}
           justifyContent="center"
           alignItems="center"
-          marginBottom="l"
+          marginBottom="6"
         >
           <Box justifyContent="center" alignItems="center">
             <TokenIcon size={160} img={json?.image} />
@@ -176,18 +176,23 @@ const AirdropScreen = () => {
             </Box>
           </Box>
         </Box>
-        <Text variant="body1" textAlign="center" color="red500" marginTop="m">
+        <Text
+          variant="textMdRegular"
+          textAlign="center"
+          color="ros.500"
+          marginTop="4"
+        >
           {errorMessage ? t('airdropScreen.error') : ''}
         </Text>
         <ButtonPressable
-          borderRadius="round"
+          borderRadius="full"
           onPress={onAirdrop}
           backgroundColor="primaryText"
           backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="surfaceSecondary"
+          backgroundColorDisabled="bg.tertiary"
           backgroundColorDisabledOpacity={0.5}
-          titleColorDisabled="black500"
-          titleColor="primary"
+          titleColorDisabled="gray.800"
+          titleColor="primaryText"
           fontWeight="500"
           title={
             !loading
@@ -195,10 +200,10 @@ const AirdropScreen = () => {
               : ''
           }
           disabled={loading}
-          marginVertical="l"
-          marginHorizontal="l"
+          marginVertical="6"
+          marginHorizontal="6"
           LeadingComponent={
-            loading && <CircleLoader loaderSize={20} color="white" />
+            loading && <CircleLoader loaderSize={20} color="primaryText" />
           }
         />
       </SafeAreaBox>

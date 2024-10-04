@@ -63,7 +63,7 @@ const HotspotMapScreen = () => {
   const { t } = useTranslation()
   const { anchorProvider } = useSolana()
   const route = useRoute<Route>()
-  const bottomSheetStyle = useBackgroundStyle('surfaceSecondary')
+  const bottomSheetStyle = useBackgroundStyle('bg.tertiary')
   const navigation = useNavigation<CollectableNavigationProp>()
   const colors = useColors()
   const mapRef = useRef<MapLibreGL.MapView>(null)
@@ -404,7 +404,7 @@ const HotspotMapScreen = () => {
           flexGrow={1}
           justifyContent="center"
           alignItems="center"
-          backgroundColor="surfaceSecondary"
+          backgroundColor="bg.tertiary"
           overflow="hidden"
           position="relative"
         >
@@ -419,7 +419,7 @@ const HotspotMapScreen = () => {
             zIndex={isLoading ? 100 : 0}
           >
             <Box flex={1} height="100%" justifyContent="center">
-              <CircleLoader loaderSize={24} color="white" />
+              <CircleLoader loaderSize={24} color="primaryText" />
             </Box>
           </ReAnimatedBlurBox>
           <Map
@@ -466,8 +466,8 @@ const HotspotMapScreen = () => {
             alignItems="center"
             position="absolute"
             width="100%"
-            paddingTop="l"
-            paddingLeft="ms"
+            paddingTop="6"
+            paddingLeft="3"
             top={0}
           >
             <TouchableOpacityBox
@@ -476,8 +476,8 @@ const HotspotMapScreen = () => {
               alignItems="center"
               onPress={() => navigation.goBack()}
             >
-              <BackArrow color="white" />
-              <Text variant="subtitle3" color="white" marginLeft="ms">
+              <BackArrow color={colors.primaryText} />
+              <Text variant="textMdMedium" color="primaryText" marginLeft="3">
                 {t('collectablesScreen.hotspots.map.back')}
               </Text>
             </TouchableOpacityBox>
@@ -490,16 +490,18 @@ const HotspotMapScreen = () => {
             width="100%"
             bottom={10}
           >
-            <Box marginHorizontal="ms">
+            <Box marginHorizontal="3">
               <TouchableOpacityBox
                 flexDirection="row"
                 justifyContent="center"
                 alignItems="center"
-                backgroundColor={networkType === 'IOT' ? 'green950' : 'blue950'}
-                paddingRight="ms"
-                paddingLeft="s"
-                paddingVertical="sx"
-                borderRadius="round"
+                backgroundColor={
+                  networkType === 'IOT' ? 'green.950' : 'blue.950'
+                }
+                paddingRight="3"
+                paddingLeft="2"
+                paddingVertical="1.5"
+                borderRadius="full"
                 opacity={0.8}
                 activeOpacity={1}
                 onPress={handleToggleNetwork}
@@ -508,12 +510,14 @@ const HotspotMapScreen = () => {
                   width={24}
                   height={24}
                   color={
-                    networkType === 'IOT' ? colors.green500 : colors.blue500
+                    networkType === 'IOT'
+                      ? colors['green.500']
+                      : colors['blue.500']
                   }
                 />
                 <Text
-                  marginLeft="sx"
-                  color={networkType === 'IOT' ? 'green500' : 'blue500'}
+                  marginLeft="1.5"
+                  color={networkType === 'IOT' ? 'green.500' : 'blue.500'}
                 >
                   {t('collectablesScreen.hotspots.map.type', {
                     type: networkType,
@@ -521,13 +525,13 @@ const HotspotMapScreen = () => {
                 </Text>
               </TouchableOpacityBox>
             </Box>
-            <Box flexDirection="row" alignItems="center" marginHorizontal="ms">
+            <Box flexDirection="row" alignItems="center" marginHorizontal="3">
               <FabButton
                 icon="questionMark"
-                backgroundColor="white"
+                backgroundColor="base.white"
                 backgroundColorOpacity={0.3}
                 backgroundColorOpacityPressed={0.5}
-                marginRight="ms"
+                marginRight="3"
                 width={36}
                 height={36}
                 justifyContent="center"
@@ -537,7 +541,7 @@ const HotspotMapScreen = () => {
               />
               <FabButton
                 icon="mapUserLocation"
-                backgroundColor="white"
+                backgroundColor="base.white"
                 backgroundColorOpacity={0.3}
                 backgroundColorOpacityPressed={0.5}
                 width={36}

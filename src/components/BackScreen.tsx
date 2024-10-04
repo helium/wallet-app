@@ -41,7 +41,7 @@ const BackScreen = ({
   edges,
   onClose,
   hideBack,
-  headerHorizontalPadding = 'lx',
+  headerHorizontalPadding = '7',
   onLayout,
   onHeaderLayout,
   title,
@@ -54,7 +54,7 @@ const BackScreen = ({
   ...rest
 }: Props) => {
   const navigation = useNavigation()
-  const hitSlop = useHitSlop('l')
+  const hitSlop = useHitSlop('6')
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
 
   return (
@@ -76,21 +76,23 @@ const BackScreen = ({
             alignItems="center"
             justifyContent="center"
           >
-            <Text variant="subtitle1">{title}</Text>
+            <Text variant="textXlMedium" color="primaryText">
+              {title}
+            </Text>
           </Box>
           {!hideBack && (
             <BackButton
-              marginHorizontal="n_ms"
-              paddingHorizontal="none"
+              marginHorizontal="-3"
+              paddingHorizontal="0"
               onPress={navigation.goBack}
             />
           )}
           <Box flex={1} />
           {onClose && (
             <CloseButton
-              paddingHorizontal="lx"
+              paddingHorizontal="7"
               hitSlop={hitSlop}
-              marginEnd="n_lx"
+              marginEnd="-7"
               onPress={onClose}
             />
           )}
@@ -98,8 +100,8 @@ const BackScreen = ({
           {TrailingIcon && (
             <TouchableOpacityBox
               hitSlop={hitSlop}
-              marginEnd="n_lx"
-              paddingHorizontal="lx"
+              marginEnd="-7"
+              paddingHorizontal="7"
               onPress={onTrailingIconPress}
               justifyContent="center"
             >
@@ -107,8 +109,7 @@ const BackScreen = ({
             </TouchableOpacityBox>
           )}
         </Box>
-        {/* if padding is not set, set it to 'lx' , if padding set to 'none' , set it to 0 */}
-        <Box padding={padding ?? 'lx'} flex={flex || 1} {...rest}>
+        <Box padding={padding || '7'} flex={flex || 1} {...rest}>
           {children}
         </Box>
       </SafeAreaBox>

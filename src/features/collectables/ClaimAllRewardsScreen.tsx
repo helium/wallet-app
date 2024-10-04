@@ -103,15 +103,15 @@ const ClaimAllRewardsScreen = () => {
       entering={DelayedFadeIn}
       backgroundColor="primaryBackground"
     >
-      <BackScreen title={title} paddingVertical="none" paddingHorizontal="m">
+      <BackScreen title={title} paddingVertical="0" paddingHorizontal="4">
         <Box flexGrow={1}>
           <Box flexGrow={2} alignItems="center">
             <Box flexGrow={1}>
-              <Text variant="body2" color="secondaryText">
+              <Text variant="textSmRegular" color="secondaryText">
                 {subtitle}
               </Text>
             </Box>
-            <Text variant="h3Medium" textAlign="center" marginBottom="xl">
+            <Text variant="displayXsMedium" textAlign="center" marginBottom="8">
               {t('collectablesScreen.hotspots.hotspotsClaimMessage')}
             </Text>
           </Box>
@@ -126,7 +126,7 @@ const ClaimAllRewardsScreen = () => {
               <RewardItem
                 mint={MOBILE_MINT}
                 amount={pendingMobileRewards || new BN(0)}
-                marginEnd="s"
+                marginEnd="2"
                 hasMore={hasMore}
               />
             ) : null}
@@ -135,7 +135,7 @@ const ClaimAllRewardsScreen = () => {
               <RewardItem
                 mint={IOT_MINT}
                 amount={pendingIotRewards || new BN(0)}
-                marginStart="s"
+                marginStart="2"
                 hasMore={hasMore}
               />
             ) : null}
@@ -143,9 +143,9 @@ const ClaimAllRewardsScreen = () => {
           {claimError && (
             <Box>
               <Text
-                variant="body2"
-                color="red500"
-                marginTop="xl"
+                variant="textSmRegular"
+                color="ros.500"
+                marginTop="8"
                 numberOfLines={2}
                 textAlign="center"
               >
@@ -155,23 +155,23 @@ const ClaimAllRewardsScreen = () => {
           )}
           <Box flexGrow={1} />
           <ButtonPressable
-            marginBottom="l"
-            borderRadius="round"
+            marginBottom="6"
+            borderRadius="full"
             backgroundColor="hntBlue"
             backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="surfaceSecondary"
+            backgroundColorDisabled="bg.tertiary"
             backgroundColorDisabledOpacity={0.5}
             titleColorDisabled="secondaryText"
             title={
               !redeeming ? t('collectablesScreen.hotspots.claimAllRewards') : ''
             }
-            titleColor="white"
-            marginHorizontal="l"
+            titleColor="base.white"
+            marginHorizontal="6"
             onPress={onClaimRewards}
             disabled={redeeming}
             TrailingComponent={
               redeeming ? (
-                <CircleLoader loaderSize={20} color="white" />
+                <CircleLoader loaderSize={20} color="primaryText" />
               ) : undefined
             }
           />

@@ -12,7 +12,7 @@ type Props = BoxProps<Theme> & {
 }
 
 const Surface = ({
-  backgroundColor = 'surface',
+  backgroundColor = 'cardBackground',
   children,
   style,
   ...boxProps
@@ -31,7 +31,7 @@ const Surface = ({
 
   return (
     <Box
-      borderRadius="xl"
+      borderRadius="4xl"
       overflow="hidden"
       {...boxProps}
       style={style ? [style, backgroundStyle] : backgroundStyle}

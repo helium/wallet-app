@@ -26,22 +26,22 @@ const PhraseChip = ({
   disabled,
   ...props
 }: Props) => {
-  const { surface, primary } = useColors()
+  const { cardBackground, primaryText } = useColors()
   const [underlayShowing, setUnderlayShowing] = useState(false)
 
   const getBackgroundColor = useCallback((): Color => {
-    if (fail) return 'error'
-    if (success) return 'greenBright500'
+    if (fail) return 'ros.500'
+    if (success) return 'green.light-500'
     return 'transparent10'
   }, [fail, success])
 
   const getIcon = useCallback(() => {
-    if (success) return <CheckMark color={primary} />
+    if (success) return <CheckMark color={primaryText} />
 
-    if (fail) return <Fail color={primary} />
+    if (fail) return <Fail color={primaryText} />
 
     return null
-  }, [fail, primary, success])
+  }, [fail, primaryText, success])
 
   const handleUnderlayChange = useCallback(
     (val: boolean) => () => setUnderlayShowing(val),
@@ -51,11 +51,11 @@ const PhraseChip = ({
   return (
     <TouchableHighlightBox
       backgroundColor={getBackgroundColor()}
-      borderRadius="lm"
-      paddingVertical="s"
+      borderRadius="2xl"
+      paddingVertical="2"
       maxWidth="30%"
       justifyContent="center"
-      underlayColor={surface}
+      underlayColor={cardBackground}
       disabled={selected || disabled}
       onHideUnderlay={handleUnderlayChange(false)}
       onShowUnderlay={handleUnderlayChange(true)}
@@ -74,14 +74,12 @@ const PhraseChip = ({
           {getIcon()}
         </Box>
         <Text
-          paddingHorizontal="m"
+          paddingHorizontal="4"
           numberOfLines={1}
           adjustsFontSizeToFit
           opacity={fail || success ? 0 : 1}
-          variant="body0"
-          color={
-            selected || underlayShowing ? 'primaryText' : 'surfaceSecondaryText'
-          }
+          variant="textXlRegular"
+          color={selected || underlayShowing ? 'primaryText' : 'secondaryText'}
         >
           {upperCase(title)}
         </Text>

@@ -15,14 +15,14 @@ type Props = {
 } & BoxProps<Theme>
 
 const SubmitButton = ({
-  color = 'blueBright500',
+  color = 'blue.light-500',
   onSubmit,
   title,
   disabled = false,
-  backgroundColor = 'secondaryIcon',
+  backgroundColor = 'secondaryText',
   ...boxProps
 }: Props) => {
-  const { surfaceSecondary, secondaryText, ...rest } = useColors()
+  const { secondaryText, ...rest } = useColors()
   const colorActual = rest[color as keyof typeof rest]
   const backgroundActual = rest[backgroundColor as keyof typeof rest]
   const icon = useMemo(
@@ -39,18 +39,18 @@ const SubmitButton = ({
         paddingLeft: 30,
       },
       railStyles: {
-        backgroundColor: surfaceSecondary,
-        borderColor: surfaceSecondary,
+        backgroundColor: rest['bg.tertiary'],
+        borderColor: rest['bg.tertiary'],
         paddingLeft: 8,
       },
     }),
-    [colorActual, disabled, secondaryText, surfaceSecondary],
+    [colorActual, disabled, secondaryText, rest],
   )
 
   return (
     <Box
       backgroundColor={backgroundColor as any}
-      borderRadius="round"
+      borderRadius="full"
       {...boxProps}
     >
       <SwipeButton
@@ -69,8 +69,8 @@ const SubmitButton = ({
         thumbIconComponent={icon}
         disableResetOnTap
         disabled={disabled}
-        disabledRailBackgroundColor={surfaceSecondary}
-        disabledThumbIconBackgroundColor={surfaceSecondary}
+        disabledRailBackgroundColor={rest['bg.tertiary']}
+        disabledThumbIconBackgroundColor={rest['bg.tertiary']}
         disabledThumbIconBorderColor={secondaryText}
       />
     </Box>

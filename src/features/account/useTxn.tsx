@@ -96,7 +96,7 @@ const useTxn = (
   const color = useMemo((): Color => {
     switch (item?.type as TxnType) {
       case 'payment_v2':
-        return isSending ? 'blueBright500' : 'greenBright500'
+        return isSending ? 'blue.light-500' : 'green.light-500'
       default:
         return 'primaryText'
     }

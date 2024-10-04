@@ -314,9 +314,9 @@ const AddGatewayBle = () => {
     <BackScreen title={t('hotspotOnboarding.onboarding.title')}>
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <Text
-          marginTop="m"
-          marginBottom="m"
-          variant="subtitle1"
+          marginTop="4"
+          marginBottom="4"
+          variant="textXlMedium"
           color="secondaryText"
           textAlign="left"
           adjustsFontSizeToFit
@@ -326,16 +326,16 @@ const AddGatewayBle = () => {
           })}
         </Text>
         {error && (
-          <Text variant="body1Medium" color="red500">
+          <Text variant="textMdMedium" color="ros.500">
             {error.message ? error.message.toString() : error.toString()}
           </Text>
         )}
         {!wrongOwner && balError && (
           <>
-            <Text variant="body1Medium" color="red500">
+            <Text variant="textMdMedium" color="ros.500">
               {t('hotspotOnboarding.onboarding.responsible')}
             </Text>
-            <Text mt="s" variant="body1Medium" color="red500">
+            <Text mt="2" variant="textMdMedium" color="ros.500">
               {t('hotspotOnboarding.onboarding.manufacturerMissing', {
                 name: maker?.name,
                 tokens: `${[
@@ -346,11 +346,11 @@ const AddGatewayBle = () => {
                   .join(' and ')}`,
               })}
             </Text>
-            <Text mt="s" variant="body1Medium" color="red500">
+            <Text mt="2" variant="textMdMedium" color="ros.500">
               {t('hotspotOnboarding.onboarding.twoSolutions')}
             </Text>
             <Box
-              pl="s"
+              pl="2"
               flexDirection="column"
               alignItems="flex-start"
               justifyContent="flex-start"
@@ -372,11 +372,11 @@ const AddGatewayBle = () => {
 
             {selectedOption === 'contact' && (
               <ButtonPressable
-                marginTop="l"
-                borderRadius="round"
-                titleColor="black"
+                marginTop="6"
+                borderRadius="full"
+                titleColor="base.black"
                 borderColor="transparent"
-                backgroundColor="white"
+                backgroundColor="base.white"
                 title={t('hotspotOnboarding.onboarding.contact')}
                 onPress={async () => {
                   const url = `https://docs.helium.com/hotspot-makers/#${maker?.name.toLowerCase()}`
@@ -393,12 +393,12 @@ const AddGatewayBle = () => {
             {selectedOption === 'pay' && (
               <>
                 {!callbackLoading && insufficientMySolBal && (
-                  <Text mt="s" variant="body1Medium" color="red500">
+                  <Text mt="2" variant="textMdMedium" color="ros.500">
                     {t('hotspotOnboarding.onboarding.notEnoughSol')}
                   </Text>
                 )}
                 {!callbackLoading && insufficientMyDcBal && (
-                  <Text mt="s" variant="body1Medium" color="red500">
+                  <Text mt="2" variant="textMdMedium" color="ros.500">
                     {t('hotspotOnboarding.onboarding.notEnoughDc')}
                   </Text>
                 )}
@@ -407,9 +407,9 @@ const AddGatewayBle = () => {
                   <>
                     <Text
                       fontWeight="bold"
-                      mt="s"
-                      variant="body1Medium"
-                      color="red500"
+                      mt="2"
+                      variant="textMdMedium"
+                      color="ros.500"
                     >
                       {t('hotspotOnboarding.onboarding.pay', {
                         usd,
@@ -417,12 +417,12 @@ const AddGatewayBle = () => {
                       })}
                     </Text>
                     <ButtonPressable
-                      marginTop="l"
-                      borderRadius="round"
-                      titleColor="black"
+                      marginTop="6"
+                      borderRadius="full"
+                      titleColor="base.black"
                       borderColor="transparent"
                       opacity={disabled ? 0.5 : undefined}
-                      backgroundColor="red500"
+                      backgroundColor="ros.500"
                       title={
                         loading
                           ? undefined
@@ -440,12 +440,12 @@ const AddGatewayBle = () => {
         )}
         {!wrongOwner && !balError ? (
           <ButtonPressable
-            marginTop="l"
-            borderRadius="round"
-            titleColor="black"
+            marginTop="6"
+            borderRadius="full"
+            titleColor="base.black"
             borderColor="transparent"
             opacity={disabled ? 0.5 : undefined}
-            backgroundColor="white"
+            backgroundColor="base.white"
             title={t('hotspotOnboarding.onboarding.onboard')}
             onPress={handleAddGateway}
             disabled={disabled}

@@ -49,10 +49,12 @@ const AddNewAccountScreen = () => {
 
   return (
     <Box flex={1} backgroundColor="secondaryBackground">
-      <Box backgroundColor="surfaceSecondary">
-        <Box flexDirection="row" paddingVertical="m">
+      <Box backgroundColor="bg.tertiary">
+        <Box flexDirection="row" paddingVertical="4">
           <Box flex={1} />
-          <Text variant="subtitle1">{t('addNewAccount.title')}</Text>
+          <Text variant="textXlMedium" color="primaryText">
+            {t('addNewAccount.title')}
+          </Text>
           <Box flex={1} />
         </Box>
         <TabBar

@@ -145,46 +145,46 @@ const DeviceShow = () => {
     return (
       <>
         <BackButton
-          marginVertical="m"
-          paddingHorizontal="m"
-          marginHorizontal="s"
+          marginVertical="4"
+          paddingHorizontal="4"
+          marginHorizontal="2"
           onPress={navigation.goBack}
         />
         <Box
-          marginBottom="xl"
+          marginBottom="8"
           flexDirection="row"
           justifyContent="center"
           alignItems="center"
         >
           <Ledger width={62} height={62} color={colors.primaryText} />
-          <Box marginHorizontal="m">
-            <ArrowRight color="white" />
+          <Box marginHorizontal="4">
+            <ArrowRight color="primaryText" />
           </Box>
           <Image source={require('@assets/images/fingerprintGreen.png')} />
         </Box>
-        <Text variant="h2" textAlign="center">
+        <Text variant="displaySmRegular" textAlign="center">
           {t('ledger.show.title')}
         </Text>
         <Text
-          variant="subtitle1"
-          color="greenBright500"
-          marginTop="l"
+          variant="textXlMedium"
+          color="green.light-500"
+          marginTop="6"
           textAlign="center"
         >
           {t('ledger.show.subtitle')}
         </Text>
         <Text
           visible={reachedAccountLimit}
-          variant="body1"
+          variant="textMdRegular"
           textAlign="center"
-          color="error"
+          color="ros.500"
           fontWeight="500"
-          marginTop="m"
+          marginTop="4"
         >
           {t('accountImport.accountLimitLedger')}
         </Text>
         {isScanning && (
-          <Box marginVertical="l" backgroundColor="primaryBackground">
+          <Box marginVertical="6" backgroundColor="primaryBackground">
             <ActivityIndicator />
           </Box>
         )}
@@ -203,20 +203,20 @@ const DeviceShow = () => {
       <Box backgroundColor="primaryBackground">
         {index === 0 && PageHeader()}
         <Box
-          marginHorizontal="s"
+          marginHorizontal="2"
           flexDirection="row"
           alignItems="center"
-          paddingTop="xl"
-          paddingBottom="m"
-          paddingHorizontal="l"
+          paddingTop="8"
+          paddingBottom="4"
+          paddingHorizontal="6"
         >
-          <Text flexGrow={1} variant="body2" fontWeight="bold">
+          <Text flexGrow={1} variant="textSmRegular" fontWeight="bold">
             {title}
           </Text>
 
           {index === 0 && (
             <TouchableOpacity onPress={onSelectAll}>
-              <Text variant="body2" fontWeight="bold">
+              <Text variant="textSmRegular" fontWeight="bold">
                 {selectAll
                   ? t('ledger.show.deselectAll')
                   : t('ledger.show.selectAll')}
@@ -236,9 +236,9 @@ const DeviceShow = () => {
         <Box backgroundColor="primaryBackground">
           {index === 0 && newLedgerAccounts?.length === 0 && (
             <Text
-              paddingHorizontal="xl"
-              variant="body1"
-              color="grey500"
+              paddingHorizontal="8"
+              variant="textMdRegular"
+              color="gray.500"
               textAlign="left"
             >
               {t('ledger.show.emptyAccount', {
@@ -347,24 +347,24 @@ const DeviceShow = () => {
         bottom={0}
         left={0}
         right={0}
-        borderTopColor="secondaryIcon"
+        borderTopColor="secondaryText"
         borderTopWidth={1}
         height="11%"
       >
         <ButtonPressable
-          marginTop="m"
-          borderRadius="round"
-          backgroundColor="surfaceSecondary"
+          marginTop="4"
+          borderRadius="full"
+          backgroundColor="bg.tertiary"
           backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="surfaceSecondary"
+          backgroundColorDisabled="bg.tertiary"
           backgroundColorDisabledOpacity={0.5}
-          titleColorDisabled="black500"
+          titleColorDisabled="gray.800"
           onPress={canAddAccounts ? handleNext : handleClose}
           title={
             canAddAccounts ? t('ledger.show.next') : t('ledger.show.close')
           }
           marginBottom="xs"
-          marginHorizontal="l"
+          marginHorizontal="6"
         />
       </Box>
     </Box>

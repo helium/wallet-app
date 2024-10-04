@@ -35,7 +35,7 @@ const WalletSignBottomSheet = forwardRef(
     >(null)
     useImperativeHandle(ref, () => ({ show, hide }))
     const { secondaryText } = useColors()
-    const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
+    const { backgroundStyle } = useOpacity('bg.tertiary', 1)
     const animatedContentHeight = useSharedValue(0)
 
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)

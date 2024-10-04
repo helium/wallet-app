@@ -46,7 +46,7 @@ function ScamWarningImageBox(props: any): React.ReactElement<any> {
       >
         <ImageBox {...props} blurRadius={100} />
         <Box
-          p="s"
+          p="2"
           position="absolute"
           top={0}
           left={0}
@@ -58,20 +58,20 @@ function ScamWarningImageBox(props: any): React.ReactElement<any> {
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
           }}
         >
-          <Text textAlign="center" variant="body1Bold" color="red500">
+          <Text textAlign="center" variant="textMdBold" color="ros.500">
             {t('activityScreen.scamWarning')}
           </Text>
           <ButtonPressable
             title={t('activityScreen.showAnyway')}
             onPress={() => setDismissed(true)}
-            borderRadius="round"
-            borderColor="red500"
+            borderRadius="full"
+            borderColor="ros.500"
             borderWidth={1}
-            px="m"
-            titleColorDisabled="black500"
-            titleColor="red500"
+            px="4"
+            titleColorDisabled="gray.800"
+            titleColor="ros.500"
             fontWeight="500"
-            marginTop="l"
+            marginTop="6"
           />
         </Box>
       </Box>
@@ -128,7 +128,7 @@ const ActivityDetailsScreen = () => {
     const confirmedSig = transaction as ConfirmedSignatureInfo
 
     if (enrichedTx.transactionError || confirmedSig.err) {
-      return <Error color={colors.error} width={150} height={150} />
+      return <Error color={colors['ros.500']} width={150} height={150} />
     }
     const userSignedTransaction =
       wallet && enrichedTx.signers?.includes(wallet.toBase58())
@@ -141,8 +141,8 @@ const ActivityDetailsScreen = () => {
       if (!nft?.metadata.image) {
         return (
           <Box
-            backgroundColor="surface"
-            borderRadius="xl"
+            backgroundColor="cardBackground"
+            borderRadius="4xl"
             width={250}
             height={250}
             justifyContent="center"
@@ -161,7 +161,7 @@ const ActivityDetailsScreen = () => {
           }}
           width={250}
           height={250}
-          borderRadius="xxl"
+          borderRadius="4xl"
         />
       )
     }
@@ -178,15 +178,15 @@ const ActivityDetailsScreen = () => {
           }}
           width={250}
           height={250}
-          borderRadius="xxl"
+          borderRadius="4xl"
         />
       )
     }
 
     return userSignedTransaction ? (
-      <Send color={colors.blue500} width={150} height={150} />
+      <Send color={colors['blue.500']} width={150} height={150} />
     ) : (
-      <Receive color={colors.green500} width={150} height={150} />
+      <Receive color={colors['green.500']} width={150} height={150} />
     )
   }, [colors, transaction, wallet])
 
@@ -224,13 +224,13 @@ const ActivityDetailsScreen = () => {
     }
 
     return (
-      <Box marginTop="l" flex={1} width="100%" justifyContent="center">
+      <Box marginTop="6" flex={1} width="100%" justifyContent="center">
         {fromAccount && (
           <AddressActivityItem
             accountAddress={fromAccount}
-            marginHorizontal="l"
+            marginHorizontal="6"
             marginBottom="xs"
-            borderRadius="xl"
+            borderRadius="4xl"
             showBubbleArrow
             onMenuPress={onAddressItemPress(fromAccount)}
           />
@@ -238,8 +238,8 @@ const ActivityDetailsScreen = () => {
         {toAccount && (
           <AddressActivityItem
             accountAddress={toAccount}
-            marginHorizontal="l"
-            borderRadius="xl"
+            marginHorizontal="6"
+            borderRadius="4xl"
             onMenuPress={onAddressItemPress(toAccount)}
           />
         )}
@@ -352,43 +352,47 @@ const ActivityDetailsScreen = () => {
         <BackScreen
           title={t('activityScreen.activityDetails')}
           flex={1}
-          headerTopMargin="m"
+          headerTopMargin="4"
         >
           <Box alignItems="center" justifyContent="center" flex={1}>
-            <Box justifyContent="center" alignItems="center" marginTop="m">
+            <Box justifyContent="center" alignItems="center" marginTop="4">
               {activityImage}
               <Text
-                variant="h1Medium"
-                marginTop="m"
-                marginBottom="s"
+                variant="displayMdMedium"
+                marginTop="4"
+                marginBottom="2"
                 textAlign="center"
               >
                 {title}
               </Text>
               <Text
-                variant="subtitle3"
-                color="offWhite"
-                marginBottom="s"
+                variant="textMdMedium"
+                color="primaryText"
+                marginBottom="2"
                 textAlign="center"
               >
                 {description}
               </Text>
-              <Text variant="body3" textAlign="center" color="secondaryText">
+              <Text
+                variant="textXsRegular"
+                textAlign="center"
+                color="secondaryText"
+              >
                 {dateLabel}
               </Text>
             </Box>
             {AccountAddressListItems}
             <Box width="100%">
               <ButtonPressable
-                marginTop="xl"
-                marginHorizontal="m"
-                borderRadius="round"
-                backgroundColor="white"
-                titleColorDisabled="grey600"
-                backgroundColorDisabled="white"
+                marginTop="8"
+                marginHorizontal="4"
+                borderRadius="full"
+                backgroundColor="base.white"
+                titleColorDisabled="gray.600"
+                backgroundColorDisabled="base.white"
                 backgroundColorDisabledOpacity={0.1}
                 title={t('activityScreen.viewOnExplorer')}
-                titleColor="black"
+                titleColor="base.black"
                 onPress={handleOpenExplorer}
               />
             </Box>

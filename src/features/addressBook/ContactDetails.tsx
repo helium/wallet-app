@@ -16,7 +16,6 @@ import {
   Platform,
 } from 'react-native'
 import Checkmark from '@assets/images/checkmark.svg'
-import { useKeyboard } from '@react-native-community/hooks'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import { useColors, useOpacity, useSpacing } from '@theme/themeHooks'
@@ -51,17 +50,16 @@ type Props = {
 }
 
 const ContactDetails = ({ action, contact }: Props) => {
-  const { keyboardShown } = useKeyboard()
   const { t } = useTranslation()
   const homeNav = useNavigation<HomeNavigationProp>()
   const addressBookNav = useNavigation<AddressBookNavigationProp>()
   const route = useRoute<Route>()
-  const { backgroundStyle } = useOpacity('surface', keyboardShown ? 0.85 : 0.4)
+  const { backgroundStyle } = useOpacity('secondaryBackground', 1)
   const { addContact, editContact, deleteContact } = useAccountStorage()
   const [nickname, setNickname] = useState(contact?.alias || '')
   const [address, setAddress] = useState('')
   const nicknameInput = useRef<RNTextInput | null>(null)
-  const { blueBright500 } = useColors()
+  const colors = useColors()
   const { scannedAddress, setScannedAddress } = useAppStorage()
   const spacing = useSpacing()
   const { showOKCancelAlert } = useAlert()
@@ -175,20 +173,20 @@ const ContactDetails = ({ action, contact }: Props) => {
 
   return (
     <SafeAreaBox
-      flex={1}
       style={backgroundStyle}
-      borderRadius="xl"
+      flex={1}
+      borderRadius="4xl"
       edges={['top']}
     >
-      <Box flex={1} backgroundColor="surfaceSecondary">
+      <Box flex={1} backgroundColor="secondaryBackground">
         <Box
-          marginTop="s"
+          marginTop="2"
           style={{ paddingTop: Platform.OS === 'android' ? 24 : 0 }}
           flexDirection="row"
           alignItems="center"
         >
           <Box flex={1} />
-          <Text variant="subtitle2">
+          <Text variant="textLgMedium" color="primaryText">
             {isAddingContact
               ? t('addNewContact.title')
               : t('editContact.title')}
@@ -196,8 +194,8 @@ const ContactDetails = ({ action, contact }: Props) => {
           <Box flex={1} alignItems="flex-end">
             <CloseButton
               onPress={onRequestClose}
-              paddingVertical="s"
-              paddingHorizontal="m"
+              paddingVertical="2"
+              paddingHorizontal="4"
             />
           </Box>
         </Box>
@@ -206,28 +204,28 @@ const ContactDetails = ({ action, contact }: Props) => {
             <AccountIcon address={address} size={nickname ? 85 : 122} />
           )}
           {!!nickname && (
-            <Text variant="h1" marginTop={addressIsValid ? 'm' : 'none'}>
+            <Text
+              variant="displayMdRegular"
+              marginTop={addressIsValid ? '4' : 'none'}
+              color="primaryText"
+            >
               {nickname}
             </Text>
           )}
         </Box>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'android' ? undefined : 'position'}
-          keyboardVerticalOffset={-spacing.xxxl - BUTTON_HEIGHT}
+          keyboardVerticalOffset={-spacing['15'] - BUTTON_HEIGHT}
         >
-          <SafeAreaBox
-            style={backgroundStyle}
-            borderRadius="xl"
-            edges={['bottom']}
-          >
+          <SafeAreaBox borderRadius="4xl" edges={['bottom']}>
             <Box
               flexDirection="row"
-              marginTop="xl"
-              marginBottom="s"
+              marginTop="8"
+              marginBottom="2"
               justifyContent="space-between"
-              marginHorizontal="xl"
+              marginHorizontal="8"
             >
-              <Text variant="body1">
+              <Text variant="textMdRegular" color="secondaryText">
                 {t('addNewContact.address.title', {
                   network: 'Solana',
                 })}
@@ -240,6 +238,7 @@ const ContactDetails = ({ action, contact }: Props) => {
             </Box>
             <TextInput
               variant="plain"
+              textColor="primaryText"
               textInputProps={{
                 placeholder: t('addNewContact.address.placeholder'),
                 onChangeText: handleAddressChange,
@@ -251,20 +250,23 @@ const ContactDetails = ({ action, contact }: Props) => {
                 autoCorrect: false,
                 onKeyPress: handleKeydown,
               }}
-              paddingVertical="xl"
+              paddingVertical="8"
             />
             <Box
               flexDirection="row"
               justifyContent="space-between"
-              marginTop="m"
-              marginBottom="s"
-              marginHorizontal="xl"
+              marginTop="4"
+              marginBottom="2"
+              marginHorizontal="8"
             >
-              <Text variant="body1">{t('addNewContact.nickname.title')}</Text>
-              {!!nickname && <Checkmark color={blueBright500} />}
+              <Text variant="textMdRegular" color="secondaryText">
+                {t('addNewContact.nickname.title')}
+              </Text>
+              {!!nickname && <Checkmark color={colors['blue.light-500']} />}
             </Box>
             <TextInput
               variant="plain"
+              textColor="primaryText"
               textInputProps={{
                 placeholder: t('addNewContact.nickname.placeholder'),
                 onChangeText: setNickname,
@@ -278,51 +280,52 @@ const ContactDetails = ({ action, contact }: Props) => {
             />
             <ButtonPressable
               visible={isAddingContact}
-              backgroundColor="blueBright500"
-              backgroundColorDisabled="plainInputBackground"
-              titleColorDisabled="grey400"
+              backgroundColor="primaryText"
+              backgroundColorDisabled="bg.disabled"
+              titleColorDisabled="text.disabled"
+              titleColor="primaryBackground"
               fontSize={19}
               backgroundColorOpacityPressed={0.7}
-              borderRadius="round"
-              marginTop="xxxl"
-              marginHorizontal="xl"
+              borderRadius="full"
+              marginTop="15"
+              marginHorizontal="8"
               title={t('addNewContact.addContact')}
               disabled={!addressIsValid || !nickname}
               onPress={handleCreateNewContact}
-              marginBottom="l"
+              marginBottom="6"
             />
             <Box
               flexDirection="row"
               justifyContent="center"
-              marginTop="xxxl"
-              marginHorizontal="xl"
+              marginTop="15"
+              marginHorizontal="8"
               visible={isEditingContact}
             >
               <ButtonPressable
                 flex={1}
-                backgroundColor="error"
+                backgroundColor="ros.500"
                 height={BUTTON_HEIGHT}
-                backgroundColorDisabled="plainInputBackground"
-                titleColorDisabled="grey400"
+                backgroundColorDisabled="gray.300"
+                titleColorDisabled="gray.400"
                 fontSize={19}
                 backgroundColorOpacity={0.5}
                 backgroundColorOpacityPressed={0.3}
-                borderRadius="round"
-                marginRight="s"
+                borderRadius="full"
+                marginRight="2"
                 title={t('editContact.delete')}
                 onPress={handleDeleteContact}
               />
               <ButtonPressable
                 flex={1}
-                backgroundColor="blueBright500"
+                backgroundColor="blue.light-500"
                 height={BUTTON_HEIGHT}
-                backgroundColorDisabled="plainInputBackground"
-                titleColorDisabled="grey400"
+                backgroundColorDisabled="gray.300"
+                titleColorDisabled="gray.400"
                 fontSize={19}
                 backgroundColorOpacityPressed={0.7}
-                borderRadius="round"
+                borderRadius="full"
                 title={t('editContact.save')}
-                marginLeft="s"
+                marginLeft="2"
                 disabled={
                   !addressIsValid ||
                   !nickname ||

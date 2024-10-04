@@ -18,7 +18,7 @@ type Props = BoxProps<Theme> & {
 const BackButton = ({
   color = 'primaryText',
   onPress,
-  paddingHorizontal = 'lx',
+  paddingHorizontal = '7',
   hitSlop,
   ...props
 }: Props) => {

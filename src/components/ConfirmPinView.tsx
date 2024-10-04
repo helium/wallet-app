@@ -86,14 +86,14 @@ const ConfirmPinView = ({
     <Box
       backgroundColor="primaryBackground"
       flex={1}
-      paddingHorizontal="xl"
+      paddingHorizontal="8"
       justifyContent="center"
       alignItems="center"
     >
       <Box flex={1} />
       <Text
-        marginBottom="m"
-        variant="h1"
+        marginBottom="4"
+        variant="displayMdRegular"
         maxFontSizeMultiplier={1}
         numberOfLines={1}
         adjustsFontSizeToFit
@@ -101,11 +101,11 @@ const ConfirmPinView = ({
         {title}
       </Text>
 
-      <Text variant="body1" maxFontSizeMultiplier={1.2}>
+      <Text variant="textMdRegular" maxFontSizeMultiplier={1.2}>
         {subtitle}
       </Text>
       <Animated.View style={{ transform: [{ translateX: shakeAnim.current }] }}>
-        <PinDisplay length={pin.length} marginVertical="xl" />
+        <PinDisplay length={pin.length} marginVertical="8" />
       </Animated.View>
       <Keypad
         flex={2}
@@ -114,8 +114,8 @@ const ConfirmPinView = ({
       />
       <Box alignItems="center">
         {clearable && onCancel && (
-          <TouchableOpacityBox padding="l" onPress={onCancel}>
-            <Text variant="body1">{t('auth.signOut')}</Text>
+          <TouchableOpacityBox padding="6" onPress={onCancel}>
+            <Text variant="textMdRegular">{t('auth.signOut')}</Text>
           </TouchableOpacityBox>
         )}
       </Box>

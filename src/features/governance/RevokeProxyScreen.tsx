@@ -82,7 +82,7 @@ export const RevokeProxyScreen = () => {
     return (
       <PositionPreview
         borderWidth={selected ? 2 : 0}
-        borderColor={selected ? 'blue500' : undefined}
+        borderColor={selected ? 'blue.500' : undefined}
         position={item}
         onPress={() => {
           setSelectedPositions((sel) => {
@@ -194,17 +194,17 @@ export const RevokeProxyScreen = () => {
     <BackScreen
       edges={safeEdges}
       height="100%"
-      padding="s"
+      padding="2"
       title={t('gov.revokeProxy.title')}
     >
       <Box flex={1} flexDirection="column">
-        <Box mb="m">
-          <Text variant="body2" color="white" opacity={0.5}>
+        <Box mb="4">
+          <Text variant="textSmRegular" color="primaryText" opacity={0.5}>
             {t('gov.revokeProxy.description')}
           </Text>
         </Box>
         {/* If this view is for a singular position, do not show the set proxy wallet */}
-        <Box mb="m">
+        <Box mb="4">
           <ProxySearch
             disabled={!!position}
             value={proxyWallet || ''}
@@ -214,8 +214,8 @@ export const RevokeProxyScreen = () => {
 
         {/* Don't show network when position already defined */}
         {position ? null : (
-          <Box mb="m">
-            <Text variant="body3" color="secondaryText" mb="xs">
+          <Box mb="4">
+            <Text variant="textXsRegular" color="secondaryText" mb="xs">
               {t('gov.assignProxy.selectNetwork')}
             </Text>
             <Select
@@ -226,12 +226,12 @@ export const RevokeProxyScreen = () => {
           </Box>
         )}
         <Box flexDirection="row" justifyContent="space-between">
-          <Text variant="body1" color="white" opacity={0.5}>
+          <Text variant="textMdRegular" color="primaryText" opacity={0.5}>
             {t('gov.revokeProxy.revokePositions')}
           </Text>
           <Text
-            variant="body1"
-            color="white"
+            variant="textMdRegular"
+            color="primaryText"
             opacity={0.5}
             onPress={handleSelectAll}
           >
@@ -240,7 +240,7 @@ export const RevokeProxyScreen = () => {
               : t('gov.assignProxy.selectAll')}
           </Text>
         </Box>
-        <Box flex={1} mb="m">
+        <Box flex={1} mb="4">
           <FlatList data={proxiedPositions} renderItem={renderPosition} />
         </Box>
         {error && (
@@ -248,9 +248,9 @@ export const RevokeProxyScreen = () => {
             flexDirection="row"
             justifyContent="center"
             alignItems="center"
-            paddingTop="ms"
+            paddingTop="3"
           >
-            <Text variant="body3Medium" color="red500">
+            <Text variant="textXsMedium" color="ros.500">
               {error.toString()}
             </Text>
           </Box>
@@ -258,20 +258,20 @@ export const RevokeProxyScreen = () => {
         <ButtonPressable
           width="100%"
           fontSize={16}
-          borderRadius="round"
-          backgroundColor="white"
+          borderRadius="full"
+          backgroundColor="base.white"
           backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="surfaceSecondary"
+          backgroundColorDisabled="bg.tertiary"
           backgroundColorDisabledOpacity={0.9}
           titleColorDisabled="secondaryText"
           title={isSubmitting ? undefined : t('gov.revokeProxy.title')}
-          titleColor="black"
+          titleColor="base.black"
           onPress={handleSubmit}
           disabled={
             isSubmitting || selectedPositions.size === 0 || !proxyWallet
           }
           TrailingComponent={
-            isSubmitting ? <CircleLoader color="white" /> : undefined
+            isSubmitting ? <CircleLoader color="primaryText" /> : undefined
           }
         />
       </Box>

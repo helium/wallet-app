@@ -102,7 +102,7 @@ const PassphraseAutocomplete = ({
 
   return (
     <>
-      <Box marginHorizontal="l">
+      <Box marginHorizontal="6">
         <TextInput
           textInputProps={{
             placeholder: t('accountImport.wordEntry.placeholder', {
@@ -120,7 +120,7 @@ const PassphraseAutocomplete = ({
             autoCapitalize: 'characters',
           }}
           variant="underline"
-          marginBottom="s"
+          marginBottom="2"
           style={inputStyle}
         />
 
@@ -131,7 +131,7 @@ const PassphraseAutocomplete = ({
               onPress={onSubmit}
               icon="arrowRight"
               backgroundColor={accentKey}
-              backgroundColorPressed="surfaceContrast"
+              backgroundColorPressed="primaryBackground"
               iconColor="primaryBackground"
               backgroundColorOpacityPressed={0.1}
             />

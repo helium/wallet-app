@@ -1,7 +1,6 @@
 import Add from '@assets/images/add.svg'
 import Checkmark from '@assets/images/checkmark.svg'
 import AccountIcon from '@components/AccountIcon'
-import BackgroundFill from '@components/BackgroundFill'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableContainer from '@components/TouchableContainer'
@@ -55,7 +54,7 @@ const ConnectedWallets = forwardRef(
     ref: Ref<ConnectedWalletsRef>,
   ) => {
     useImperativeHandle(ref, () => ({ show, hide }))
-    const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
+    const { backgroundStyle } = useOpacity('bg.tertiary', 1)
     const keyExtractor = useCallback((item) => item.address, [])
     const { primaryText, secondaryText } = useColors()
     const { t } = useTranslation()
@@ -204,19 +203,16 @@ const ConnectedWallets = forwardRef(
             onPress={handleAccountChange(item)}
             onLayout={setListItemHeight}
             flexDirection="row"
-            paddingHorizontal="l"
-            paddingVertical="lm"
-            paddingLeft="xxl"
+            paddingHorizontal="6"
+            paddingVertical="5"
+            paddingLeft="12"
             alignItems="center"
           >
-            {item.netType === NetTypes.TESTNET && (
-              <BackgroundFill backgroundColor="testnet" opacity={0.4} />
-            )}
             <AccountIcon address={accountAddress} size={25} />
             <Text
-              variant="subtitle1"
+              variant="textXlMedium"
               color={isSelected ? 'primaryText' : 'secondaryText'}
-              marginLeft="m"
+              marginLeft="4"
             >
               {item.alias}
             </Text>
@@ -242,38 +238,20 @@ const ConnectedWallets = forwardRef(
           <TouchableContainer
             onPress={handleAddNew(NetTypes.MAINNET)}
             flexDirection="row"
-            paddingHorizontal="l"
-            paddingVertical="lm"
+            paddingHorizontal="6"
+            paddingVertical="5"
             borderTopColor="primaryBackground"
             borderTopWidth={1}
             alignItems="center"
           >
             <Add color={primaryText} />
-            <Text variant="subtitle1" color="primaryText" marginLeft="m">
+            <Text variant="textXlMedium" color="primaryText" marginLeft="4">
               {t('connectedWallets.add')}
             </Text>
           </TouchableContainer>
-
-          {enableTestnet && (
-            <TouchableContainer
-              onPress={handleAddNew(NetTypes.TESTNET)}
-              flexDirection="row"
-              paddingHorizontal="l"
-              paddingVertical="lm"
-              borderTopColor="primaryBackground"
-              borderTopWidth={1}
-              alignItems="center"
-            >
-              <BackgroundFill backgroundColor="testnet" opacity={0.4} />
-              <Add color={primaryText} />
-              <Text variant="subtitle1" color="primaryText" marginLeft="m">
-                {t('connectedWallets.addTestnet')}
-              </Text>
-            </TouchableContainer>
-          )}
         </Box>
       ),
-      [enableTestnet, handleAddNew, primaryText, t, setFooterHeight],
+      [handleAddNew, primaryText, t, setFooterHeight],
     )
 
     const renderBackdrop = useCallback(
@@ -351,11 +329,11 @@ const ConnectedWallets = forwardRef(
                 onLayout={setSectionHeaderHeight}
                 flexDirection="row"
                 alignItems="center"
-                backgroundColor="surfaceSecondary"
-                paddingHorizontal="l"
+                backgroundColor="bg.tertiary"
+                paddingHorizontal="6"
               >
                 <Text
-                  variant="subtitle1"
+                  variant="textXlMedium"
                   color={
                     data[0] &&
                     data[0]?.mnemonicHash === currentAccount?.mnemonicHash
@@ -394,13 +372,13 @@ const SectionFooter: React.FC<{
         <TouchableContainer
           onPress={handleAddSub}
           flexDirection="row"
-          paddingHorizontal="l"
-          paddingLeft="xxl"
-          paddingVertical="lm"
+          paddingHorizontal="6"
+          paddingLeft="12"
+          paddingVertical="5"
           alignItems="center"
         >
           <Add color={primaryText} />
-          <Text variant="subtitle1" color="secondaryText" marginLeft="m">
+          <Text variant="textXlMedium" color="secondaryText" marginLeft="4">
             {t('connectedWallets.addSub')}
           </Text>
         </TouchableContainer>

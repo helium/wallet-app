@@ -15,7 +15,7 @@ type Props = {
   disabled?: boolean
 }
 const AccountListItem = ({ selected, account, onPress, disabled }: Props) => {
-  const { primary } = useColors()
+  const { primaryText } = useColors()
 
   const handlePress = useCallback(() => onPress?.(account), [account, onPress])
 
@@ -26,34 +26,34 @@ const AccountListItem = ({ selected, account, onPress, disabled }: Props) => {
   return (
     <TouchableContainer
       minHeight={52}
-      paddingVertical="m"
-      paddingHorizontal="xl"
+      paddingVertical="4"
+      paddingHorizontal="8"
       flexDirection="row"
       alignItems="center"
       borderBottomWidth={1}
-      borderColor="primary"
+      borderColor="border.primary"
       onPress={handlePress}
       disabled={disabled}
     >
       <AccountIcon size={40} address={address} />
       <Box flexDirection="column" justifyContent="center" flex={1}>
-        <Text variant="body1" marginLeft="ms">
+        <Text variant="textMdRegular" marginLeft="3" color="primaryText">
           {formatAccountAlias(account)}
         </Text>
-        <Text variant="body3" marginLeft="ms" color="secondaryText">
+        <Text variant="textXsRegular" marginLeft="3" color="secondaryText">
           {ellipsizeAddress(address || '')}
         </Text>
       </Box>
       {selected && (
         <Box
-          backgroundColor="surfaceContrast"
+          backgroundColor="primaryBackground"
           height={27}
           width={27}
-          borderRadius="round"
+          borderRadius="full"
           justifyContent="center"
           alignItems="center"
         >
-          <Checkmark color={primary} />
+          <Checkmark color={primaryText} />
         </Box>
       )}
     </TouchableContainer>

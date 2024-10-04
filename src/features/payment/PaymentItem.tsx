@@ -203,21 +203,21 @@ const PaymentItem = ({
 
   return (
     <Box
-      marginHorizontal="l"
-      backgroundColor="secondary"
-      borderRadius="xl"
+      marginHorizontal="6"
+      backgroundColor="cardBackground"
+      borderRadius="4xl"
       overflow="hidden"
       {...boxProps}
     >
-      {hasError && <BackgroundFill backgroundColor="error" opacity={0.2} />}
+      {hasError && <BackgroundFill backgroundColor="ros.500" opacity={0.2} />}
       <Box flexDirection="row">
         {isDeepLink && address ? (
           <Text
-            variant="subtitle2"
+            variant="textLgMedium"
             color="primaryText"
             flex={1}
-            paddingHorizontal="l"
-            paddingVertical="m"
+            paddingHorizontal="6"
+            paddingVertical="4"
           >
             {ellipsizeAddress(address)}
           </Text>
@@ -229,10 +229,14 @@ const PaymentItem = ({
                 justifyContent="space-between"
                 alignItems="center"
               >
-                <Box flex={1} marginTop="s">
+                <Box flex={1} marginTop="2">
                   <Text />
                   <Box position="absolute" top={10} left={0}>
-                    <Text marginStart="m" variant="body3" color="secondaryText">
+                    <Text
+                      marginStart="4"
+                      variant="textXsRegular"
+                      color="secondaryText"
+                    >
                       {account?.alias && account?.alias.split('.').length === 2
                         ? address && shortenAddress(address, 6)
                         : account?.alias}
@@ -255,13 +259,13 @@ const PaymentItem = ({
                     }}
                   />
                   {isProgramAccount ? (
-                    <Text ml="m" mb="s" color="orange500">
+                    <Text ml="4" mb="2" color="orange.500">
                       {t('payment.programOwnedWarning')}
                     </Text>
                   ) : null}
                 </Box>
                 <TouchableOpacityBox
-                  marginEnd="l"
+                  marginEnd="6"
                   onPress={handleAddressBookSelected}
                 >
                   <AddressIcon />
@@ -273,7 +277,7 @@ const PaymentItem = ({
         {!!onRemove && (
           <TouchableOpacityBox
             justifyContent="center"
-            paddingRight="m"
+            paddingRight="4"
             onPress={handleRemove}
           >
             <Remove color={secondaryText} />
@@ -295,8 +299,8 @@ const PaymentItem = ({
                 {!loadingMeta && (
                   <Text
                     color="secondaryText"
-                    padding="m"
-                    variant="subtitle2"
+                    padding="4"
+                    variant="textLgMedium"
                     fontWeight="100"
                     style={colorStyle}
                   >
@@ -314,14 +318,18 @@ const PaymentItem = ({
               flex={1}
             >
               <Text
-                paddingHorizontal="m"
-                variant="subtitle2"
+                paddingHorizontal="4"
+                variant="textLgMedium"
                 color="primaryText"
               >
                 {humanReadable(amount, decimals)}
               </Text>
               {fee && (
-                <Text paddingHorizontal="m" variant="body3" style={colorStyle}>
+                <Text
+                  paddingHorizontal="4"
+                  variant="textXsRegular"
+                  style={colorStyle}
+                >
                   {t('payment.fee', {
                     value: humanReadable(feeAsTokens, 8),
                   })}
@@ -332,19 +340,22 @@ const PaymentItem = ({
 
           <TouchableOpacityBox
             onPress={handleToggleMax}
-            backgroundColor={max ? 'white' : 'transparent'}
-            borderColor={max ? 'transparent' : 'surface'}
+            backgroundColor={max ? 'base.white' : 'transparent'}
+            borderColor={max ? 'transparent' : 'cardBackground'}
             borderWidth={1.5}
-            borderRadius="m"
+            borderRadius="2xl"
             paddingVertical="xs"
-            paddingHorizontal="ms"
-            marginRight="ms"
-            marginVertical="l"
+            paddingHorizontal="3"
+            marginRight="3"
+            marginVertical="6"
             justifyContent="center"
             disabled
             visible={false} // TODO: Enable once we move to solana (will need some rework)
           >
-            <Text variant="body3" color={max ? 'black900' : 'secondaryText'}>
+            <Text
+              variant="textXsRegular"
+              color={max ? 'base.black' : 'secondaryText'}
+            >
               {toUpper(t('payment.max'))}
             </Text>
           </TouchableOpacityBox>

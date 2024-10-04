@@ -71,7 +71,7 @@ const AccountsScreen = () => {
   const listAnimatedPos = useSharedValue<number>(0)
   const [topHeaderHeight, setTopHeaderHeight] = useState(0)
   const topHeaderRef = useRef<View>(null)
-  const bottomSheetStyle = useBackgroundStyle('surfaceSecondary')
+  const bottomSheetStyle = useBackgroundStyle('cardBackground')
   const dispatch = useAppDispatch()
   const { triggerImpact } = useHaptic()
   const colors = useColors()
@@ -271,16 +271,16 @@ const AccountsScreen = () => {
       <ReAnimatedBox
         flexGrow={1}
         style={headerAnimatedStyle}
-        paddingTop="m"
-        paddingBottom={Platform.OS === 'android' ? 'l' : 'm'}
+        paddingTop="4"
+        paddingBottom={Platform.OS === 'android' ? '6' : '4'}
         flexDirection="row"
         alignItems="center"
         onLayout={handleTopHeaderLayout}
         ref={topHeaderRef}
-        marginHorizontal="l"
+        marginHorizontal="6"
       >
         <Box flex={1}>
-          <AccountTokenCurrencyBalance ticker="ALL" variant="h2Medium" />
+          <AccountTokenCurrencyBalance ticker="ALL" variant="displaySmMedium" />
         </Box>
         <AccountActionBar mint={HNT_MINT} maxCompact hasSwaps />
       </ReAnimatedBox>
@@ -343,7 +343,6 @@ const AccountsScreen = () => {
         ref={bottomSheetRef}
         snapPoints={snapPoints || [10, 100]}
         backgroundStyle={bottomSheetStyle}
-        detached
         animatedPosition={listAnimatedPos}
         handleIndicatorStyle={handleIndicatorStyle}
       >

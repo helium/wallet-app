@@ -44,25 +44,25 @@ const RevealPrivateKeyScreen = () => {
 
   return (
     <BackScreen backgroundColor="primaryBackground" flex={1}>
-      <Text variant="h1" maxFontSizeMultiplier={1} marginTop="xl">
+      <Text variant="displayMdRegular" maxFontSizeMultiplier={1} marginTop="8">
         {t('settings.revealPrivateKey.title')}
       </Text>
       <TextTransform
-        variant="body1"
+        variant="textMdRegular"
         maxFontSizeMultiplier={1}
-        marginTop="m"
+        marginTop="4"
         i18nKey="settings.revealPrivateKey.subtitle"
-        marginBottom="xl"
+        marginBottom="8"
       />
       {revealed ? (
         <>
           <Box
             marginHorizontal="xs"
             height={140}
-            marginVertical="l"
-            backgroundColor="grey900"
-            padding="l"
-            borderRadius="m"
+            marginVertical="6"
+            backgroundColor="gray.900"
+            padding="6"
+            borderRadius="2xl"
             justifyContent="center"
           >
             <Text
@@ -80,11 +80,11 @@ const RevealPrivateKeyScreen = () => {
         <TouchableOpacityBox
           onPress={showConfirmDialog}
           marginHorizontal="xs"
-          height={{ smallPhone: 80, phone: 100 }}
-          marginVertical="l"
-          backgroundColor="grey900"
-          padding="l"
-          borderRadius="m"
+          height={{ none: 80, sm: 100 }}
+          marginVertical="6"
+          backgroundColor="gray.900"
+          padding="6"
+          borderRadius="2xl"
           justifyContent="center"
         >
           <Text
@@ -102,11 +102,11 @@ const RevealPrivateKeyScreen = () => {
       <Box flex={1} />
       <ButtonPressable
         height={60}
-        borderRadius="round"
-        backgroundColor="surfaceSecondary"
+        borderRadius="full"
+        backgroundColor="bg.tertiary"
         titleColor="primaryText"
         title={t('settings.revealPrivateKey.done')}
-        marginBottom="m"
+        marginBottom="4"
         onPress={navigation.goBack}
       />
     </BackScreen>

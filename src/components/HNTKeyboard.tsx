@@ -101,7 +101,7 @@ const HNTKeyboardSelector = forwardRef(
     const { t } = useTranslation()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const { symbol, loading: loadingMeta } = useMetaplexMetadata(mint)
-    const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
+    const { backgroundStyle } = useOpacity('bg.tertiary', 1)
     const [value, setValue] = useState('0')
     const [originalValue, setOriginalValue] = useState('')
     const [payee, setPayee] = useState<CSAccount | string | null | undefined>()
@@ -276,9 +276,9 @@ const HNTKeyboardSelector = forwardRef(
           {...props}
         >
           <BackdropWrapper>
-            <Box padding="l" alignItems="center" onLayout={handleHeaderLayout}>
+            <Box padding="6" alignItems="center" onLayout={handleHeaderLayout}>
               {!loadingMeta && (
-                <Text variant="subtitle2">
+                <Text variant="textLgMedium">
                   {t('hntKeyboard.enterAmount', {
                     ticker: symbol || '',
                   })}
@@ -287,7 +287,7 @@ const HNTKeyboardSelector = forwardRef(
               <Box
                 flexDirection="row"
                 alignItems="center"
-                marginTop={{ smallPhone: 'm', phone: 'xxl' }}
+                marginTop={{ none: '4', sm: '12' }}
               >
                 {payer && (
                   <>
@@ -296,7 +296,7 @@ const HNTKeyboardSelector = forwardRef(
                       address={payer?.address || payer?.solanaAddress}
                     />
 
-                    <Box padding="s">
+                    <Box padding="2">
                       <PaymentArrow />
                     </Box>
                   </>
@@ -306,9 +306,9 @@ const HNTKeyboardSelector = forwardRef(
                 )}
               </Box>
               <Text
-                variant="body2"
-                marginTop="lm"
-                marginBottom={{ smallPhone: 'none', phone: 'lm' }}
+                variant="textSmRegular"
+                marginTop="5"
+                marginBottom={{ none: 'none', sm: '5' }}
               >
                 {payer && balanceForMint && typeof decimals !== 'undefined'
                   ? t('hntKeyboard.hntAvailable', {
@@ -340,33 +340,33 @@ const HNTKeyboardSelector = forwardRef(
 
     const renderHandle = useCallback(() => {
       if (!payer) {
-        return <HandleBasic marginTop="s" marginBottom="m" />
+        return <HandleBasic marginTop="2" marginBottom="4" />
       }
       return (
-        <Box flexDirection="row" margin="m" marginBottom="none">
+        <Box flexDirection="row" margin="4" marginBottom="0">
           <Box flex={1} />
           <Box
             width={58}
             height={5}
-            backgroundColor="black500"
-            borderRadius="round"
+            backgroundColor="gray.800"
+            borderRadius="full"
           />
           <Box flex={1} alignItems="flex-end">
             <TouchableOpacityBox
-              marginBottom="s"
+              marginBottom="2"
               onPress={handleSetMax}
-              backgroundColor={maxEnabled ? 'white' : 'transparent'}
-              borderColor={maxEnabled ? 'transparent' : 'surface'}
+              backgroundColor={maxEnabled ? 'base.white' : 'transparent'}
+              borderColor={maxEnabled ? 'transparent' : 'cardBackground'}
               borderWidth={1.5}
-              borderRadius="m"
+              borderRadius="2xl"
               paddingVertical="xs"
-              paddingHorizontal="ms"
+              paddingHorizontal="3"
             >
               <Text
-                variant="subtitle3"
+                variant="textMdMedium"
                 textAlign="center"
                 alignSelf="flex-end"
-                color={maxEnabled ? 'black900' : 'secondaryText'}
+                color={maxEnabled ? 'base.black' : 'secondaryText'}
               >
                 {t('payment.max')}
               </Text>
@@ -500,22 +500,23 @@ const HNTKeyboardSelector = forwardRef(
                 alignItems="center"
               >
                 <Text
-                  marginHorizontal="l"
-                  variant="h1"
+                  marginHorizontal="6"
+                  variant="displayMdRegular"
                   maxFontSizeMultiplier={1}
                   numberOfLines={1}
                   adjustsFontSizeToFit
+                  color="primaryText"
                 >
                   {`${value || '0'} ${symbol || ''}`}
                 </Text>
                 {payer && networkFee && (
                   <Text
-                    paddingHorizontal="m"
+                    paddingHorizontal="4"
                     maxFontSizeMultiplier={1}
                     numberOfLines={1}
-                    variant="body1"
+                    variant="textMdRegular"
                     color="secondaryText"
-                    marginBottom="l"
+                    marginBottom="6"
                   >
                     {t('hntKeyboard.fee', {
                       value: networkFee && humanReadable(networkFee, 9),
@@ -525,26 +526,26 @@ const HNTKeyboardSelector = forwardRef(
                 <Keypad
                   customButtonType="decimal"
                   onPress={handlePress}
-                  marginHorizontal="l"
+                  marginHorizontal="6"
                   flex={1}
                 />
                 <Box
                   flexDirection="row"
-                  marginHorizontal="l"
-                  marginVertical="l"
+                  marginHorizontal="6"
+                  marginVertical="6"
                 >
                   <TouchableOpacityBox
                     minHeight={66}
                     onPress={handleCancel}
-                    borderRadius="round"
+                    borderRadius="full"
                     alignItems="center"
                     justifyContent="center"
                     flex={1}
                     marginRight="xs"
                     overflow="hidden"
                   >
-                    <BackgroundFill backgroundColor="error" />
-                    <Text variant="subtitle2" color="error">
+                    <BackgroundFill backgroundColor="ros.500" />
+                    <Text variant="textLgMedium" color="ros.500">
                       {t('generic.cancel')}
                     </Text>
                   </TouchableOpacityBox>
@@ -554,16 +555,16 @@ const HNTKeyboardSelector = forwardRef(
                     minHeight={66}
                     alignItems="center"
                     justifyContent="center"
-                    borderRadius="round"
+                    borderRadius="full"
                     flex={1}
                     backgroundColor={
                       allowOverdraft || hasSufficientBalance
-                        ? 'surface'
-                        : 'grey300'
+                        ? 'primaryText'
+                        : 'gray.300'
                     }
                     disabled={!allowOverdraft ? !hasSufficientBalance : false}
                   >
-                    <Text variant="subtitle2">{t('generic.confirm')}</Text>
+                    <Text variant="textLgMedium">{t('generic.confirm')}</Text>
                   </TouchableOpacityBox>
                 </Box>
               </SafeAreaBox>

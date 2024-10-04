@@ -44,26 +44,26 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
     hasBadge?: boolean
   }> => {
     return [
-      { value: 'account', Icon: Dollar, iconColor: 'white' },
+      { value: 'account', Icon: Dollar, iconColor: 'primaryText' },
       {
         value: 'collectables',
         Icon: Gem,
-        iconColor: 'white',
+        iconColor: 'primaryText',
         hasBadge: false,
       },
       {
         value: 'activity',
         Icon: Transactions,
-        iconColor: 'white',
+        iconColor: 'primaryText',
         hasBadge: hasNewTransactions && state.index !== 2,
       },
       {
         value: 'governance',
         Icon: Governance,
-        iconColor: 'white',
+        iconColor: 'primaryText',
         hasBadge: hasUnseenProposals && state.index !== 3,
       },
-      { value: 'browser', Icon: Globe, iconColor: 'white' },
+      { value: 'browser', Icon: Globe, iconColor: 'primaryText' },
     ]
   }, [hasNewTransactions, hasUnseenProposals, state.index])
 
@@ -120,7 +120,7 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
 
   return (
     <Box position="absolute" bottom={0} left={0} right={0}>
-      <Box backgroundColor="black">
+      <Box backgroundColor="primaryBackground">
         <SafeAreaBox edges={safeEdges}>
           <NavBar
             navBarOptions={tabData}
@@ -194,7 +194,7 @@ const TabBarNavigator = () => {
           lazy: true,
         }}
         sceneContainerStyle={{
-          paddingBottom: NavBarHeight + bottom,
+          paddingBottom: NavBarHeight + bottom - 5,
         }}
       >
         <Tab.Screen name="Home" component={HomeNavigator} />

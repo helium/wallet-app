@@ -12,22 +12,22 @@ export const WarningBox = ({
 }) => {
   return (
     <Box
-      p="s"
-      mb="s"
-      backgroundColor="black650"
-      borderRadius="l"
+      p="2"
+      mb="2"
+      backgroundColor="gray.900"
+      borderRadius="2xl"
       flexDirection="column"
       alignItems="stretch"
     >
       <Box flexDirection="row" alignItems="center" mb="xs">
         <Box marginRight="xs">
-          <Alert width={16} height={16} color="matchaRed500" />
+          <Alert width={16} height={16} color="ros.500" />
         </Box>
-        <Text variant="body3Bold" color="white">
+        <Text variant="textXsBold" color="primaryText">
           {header}
         </Text>
       </Box>
-      <Text variant="body3" color="grey50">
+      <Text variant="textXsRegular" color="gray.50">
         {body}
       </Text>
     </Box>

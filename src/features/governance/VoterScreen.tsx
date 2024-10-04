@@ -93,7 +93,7 @@ export const VoterScreen = () => {
     )
   }
   return (
-    <BackScreen padding="m" title={t('gov.title')}>
+    <BackScreen padding="4" title={t('gov.title')}>
       <Box flexDirection="column">
         <VoteHistory
           onRefresh={refetch}
@@ -105,11 +105,11 @@ export const VoterScreen = () => {
                   source={{ uri: proxy?.image }}
                   style={{ width: 80, height: 80, borderRadius: 100 }}
                 />
-                <Text mt="m" variant="h4">
+                <Text mt="4" variant="textXlRegular">
                   {proxy.name}
                 </Text>
-                <Box flexDirection="row" alignItems="center" mb="l">
-                  <Text mr="s" variant="body1">
+                <Box flexDirection="row" alignItems="center" mb="6">
+                  <Text mr="2" variant="textMdRegular">
                     {shortenAddress(proxy.wallet)}
                   </Text>
                   {[...(networks || new Set())].map((n) => {
@@ -118,7 +118,7 @@ export const VoterScreen = () => {
                         return (
                           <Pill
                             key={n}
-                            textProps={{ variant: 'body3' }}
+                            textProps={{ variant: 'textSmRegular' }}
                             color="mobileBlue"
                             text="MOBILE"
                           />
@@ -127,7 +127,7 @@ export const VoterScreen = () => {
                         return (
                           <Pill
                             key={n}
-                            textProps={{ variant: 'body3' }}
+                            textProps={{ variant: 'textSmRegular' }}
                             color="hntBlue"
                             text="HNT"
                           />
@@ -136,7 +136,7 @@ export const VoterScreen = () => {
                         return (
                           <Pill
                             key={n}
-                            textProps={{ variant: 'body3' }}
+                            textProps={{ variant: 'textSmRegular' }}
                             color="iotGreen"
                             text="IOT"
                           />
@@ -148,12 +148,12 @@ export const VoterScreen = () => {
               </Box>
               <Box
                 flexDirection="row"
-                backgroundColor="surfaceSecondary"
-                borderRadius="l"
+                backgroundColor="bg.tertiary"
+                borderRadius="2xl"
                 alignItems="center"
                 justifyContent="space-evenly"
-                p="l"
-                mb="m"
+                p="6"
+                mb="4"
               >
                 <VoterCardStat
                   title="Current Rank"
@@ -170,18 +170,18 @@ export const VoterScreen = () => {
                   }
                 />
               </Box>
-              <Box flexDirection="row" alignItems="center" mb="m">
+              <Box flexDirection="row" alignItems="center" mb="4">
                 <ButtonPressable
                   height={50}
                   flex={1}
                   LeadingComponent={<UserShare width={16} height={16} />}
                   backgroundColor="transparent"
-                  titleColor="white"
-                  borderColor="white"
+                  titleColor="base.white"
+                  borderColor="base.white"
                   borderWidth={1}
-                  borderRadius="round"
+                  borderRadius="full"
                   backgroundColorOpacityPressed={0.7}
-                  backgroundColorDisabled="black500"
+                  backgroundColorDisabled="gray.800"
                   title={t('gov.voter.assignProxy')}
                   disabled={!unproxiedPositions?.length}
                   onPress={handleAssignProxy}
@@ -190,13 +190,13 @@ export const VoterScreen = () => {
                   <ButtonPressable
                     flex={1}
                     height={50}
-                    ml="m"
+                    ml="4"
                     LeadingComponent={<UserX width={16} height={16} />}
                     backgroundColor="transparent"
-                    titleColor="white"
-                    borderColor="white"
+                    titleColor="base.white"
+                    borderColor="base.white"
                     borderWidth={1}
-                    borderRadius="round"
+                    borderRadius="full"
                     backgroundColorOpacityPressed={0.7}
                     title={t('gov.voter.revokeProxy')}
                     onPress={handleRevokeProxy}
@@ -204,20 +204,20 @@ export const VoterScreen = () => {
                 ) : null}
               </Box>
 
-              <Box mb="m">
+              <Box mb="4">
                 <Markdown markdown={proxy.detail} />
               </Box>
               <Box
-                backgroundColor="surfaceSecondary"
-                borderRadius="l"
-                p="m"
-                mt="m"
-                mb="m"
+                backgroundColor="bg.tertiary"
+                borderRadius="2xl"
+                p="4"
+                mt="4"
+                mb="4"
               >
                 <Box
-                  pb="s"
+                  pb="2"
                   flexDirection="row"
-                  borderBottomColor="dividerGrey"
+                  borderBottomColor="border.primary"
                   borderBottomWidth={1}
                   justifyContent="space-between"
                 >
@@ -241,7 +241,7 @@ export const VoterScreen = () => {
                     }
                   />
                 </Box>
-                <Box pt="s" flexDirection="row" justifyContent="space-between">
+                <Box pt="2" flexDirection="row" justifyContent="space-between">
                   <VoterCardStat
                     title="Proposals Voted"
                     value={proxy.numProposalsVoted}
@@ -254,7 +254,7 @@ export const VoterScreen = () => {
                 </Box>
                 {votingPower?.gt(new BN(0)) ? (
                   <Box
-                    pt="s"
+                    pt="2"
                     flexDirection="row"
                     justifyContent="space-between"
                   >
@@ -281,13 +281,13 @@ export const VoterScreen = () => {
                 ) : null}
               </Box>
               <Box
-                mt="l"
-                mb="xxl"
-                borderBottomColor="dividerGrey"
+                mt="6"
+                mb="12"
+                borderBottomColor="border.primary"
                 borderBottomWidth={1}
               />
 
-              <Box mb="m">
+              <Box mb="4">
                 <NetworkTabs />
               </Box>
             </>

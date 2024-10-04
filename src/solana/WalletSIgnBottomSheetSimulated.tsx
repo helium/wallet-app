@@ -173,7 +173,7 @@ export const WalletSignBottomSheetSimulated = ({
         }
 
         return a
-      }, 'warning')
+      }, 'warning.500')
     }
     return 'critical'
   }, [simulationResults])
@@ -199,17 +199,17 @@ export const WalletSignBottomSheetSimulated = ({
     totalWarnings && !suppressWarnings && worstSeverity === 'critical'
 
   return (
-    <Box p="m">
+    <Box p="4">
       {header || url ? (
-        <Box marginBottom="s">
+        <Box marginBottom="2">
           {header ? (
-            <Text variant="h4Medium" color="white">
+            <Text variant="textXlMedium" color="primaryText">
               {header}
             </Text>
           ) : null}
           {url ? (
             <Text
-              variant="body1Medium"
+              variant="textMdMedium"
               color="secondaryText"
               textAlign="center"
             >
@@ -221,30 +221,30 @@ export const WalletSignBottomSheetSimulated = ({
       {type === WalletStandardMessageTypes.connect && (
         <Box flexGrow={1} justifyContent="center">
           <Box
-            borderRadius="l"
+            borderRadius="2xl"
             backgroundColor="secondaryBackground"
             flexDirection="column"
-            padding="m"
+            padding="4"
           >
-            <Box flexDirection="row" marginBottom="m">
-              <Checkmark color="white" />
-              <Text variant="body1" marginStart="s">
+            <Box flexDirection="row" marginBottom="4">
+              <Checkmark color="primaryText" />
+              <Text variant="textMdRegular" marginStart="2">
                 {t('browserScreen.connectBullet1')}
               </Text>
             </Box>
             <Box flexDirection="row">
-              <Checkmark color="white" />
-              <Text marginStart="s" variant="body1">
+              <Checkmark color="primaryText" />
+              <Text marginStart="2" variant="textMdRegular">
                 {t('browserScreen.connectBullet2')}
               </Text>
             </Box>
           </Box>
           <Box>
             <Text
-              variant="body1"
+              variant="textMdRegular"
               color="secondaryText"
               textAlign="center"
-              marginTop="m"
+              marginTop="4"
             >
               {t('browserScreen.connectToWebsitesYouTrust')}
             </Text>
@@ -257,12 +257,12 @@ export const WalletSignBottomSheetSimulated = ({
         <Box flexGrow={1} justifyContent="center">
           {warning && (
             <Box
-              borderRadius="l"
+              borderRadius="2xl"
               backgroundColor="secondaryBackground"
-              padding="m"
-              marginBottom="m"
+              padding="4"
+              marginBottom="4"
             >
-              <Text variant="body1Medium" color="orange500">
+              <Text variant="textMdMedium" color="orange.500">
                 {warning}
               </Text>
             </Box>
@@ -271,7 +271,7 @@ export const WalletSignBottomSheetSimulated = ({
           <Box flexDirection="column" maxHeight={500}>
             <ScrollView>
               <Box flexDirection="row" alignItems="center">
-                <Text variant="subtitle2" mr="s">
+                <Text variant="textLgMedium" mr="2">
                   {t('browserScreen.estimatedChanges')}
                 </Text>
                 <TouchableOpacityBox
@@ -281,20 +281,25 @@ export const WalletSignBottomSheetSimulated = ({
                 </TouchableOpacityBox>
               </Box>
               {infoVisible && (
-                <Text mt="s" variant="body3" color="white">
+                <Text mt="2" variant="textXsRegular" color="primaryText">
                   {t('browserScreen.estimatedChangesDescription')}
                 </Text>
               )}
 
               {!(insufficientFunds || insufficientRentExempt) && message && (
-                <Text mt="s" mb="s" variant="body1Medium" color="secondaryText">
+                <Text
+                  mt="2"
+                  mb="2"
+                  variant="textMdMedium"
+                  color="secondaryText"
+                >
                   {message}
                 </Text>
               )}
 
               {showWarnings ? (
                 <Box
-                  marginVertical="s"
+                  marginVertical="2"
                   flexDirection="row"
                   justifyContent="flex-start"
                 >
@@ -310,7 +315,7 @@ export const WalletSignBottomSheetSimulated = ({
 
               {(insufficientFunds || insufficientRentExempt) && (
                 <Box
-                  marginVertical="s"
+                  marginVertical="2"
                   flexDirection="row"
                   justifyContent="flex-start"
                 >
@@ -330,10 +335,10 @@ export const WalletSignBottomSheetSimulated = ({
               <Box
                 flexDirection="row"
                 justifyContent="space-between"
-                marginTop="s"
+                marginTop="2"
               >
                 <Box flexGrow={1} flexDirection="row" alignItems="center">
-                  <Text variant="subtitle3" mr="s">
+                  <Text variant="textMdMedium" mr="2">
                     {t('browserScreen.writableAccounts')}
                   </Text>
                   <TouchableOpacityBox
@@ -342,32 +347,32 @@ export const WalletSignBottomSheetSimulated = ({
                     <InfoIcon width={15} height={15} />
                   </TouchableOpacityBox>
                 </Box>
-                <Text variant="body1" color="grey50">
+                <Text variant="textMdRegular" color="gray.50">
                   {t('browserScreen.transactions', {
                     num: simulationResults?.length || 1,
                   })}
                 </Text>
               </Box>
               {writableInfoVisible && (
-                <Text mt="s" variant="body3" color="white">
+                <Text mt="2" variant="textXsRegular" color="primaryText">
                   {t('browserScreen.writableAccountsDescription')}
                 </Text>
               )}
 
-              <Box flex={1} paddingTop="m">
+              <Box flex={1} paddingTop="4">
                 {loading && <CircleLoader />}
                 {error ? (
-                  <Box marginBottom="m">
+                  <Box marginBottom="4">
                     <Box>
                       <Box
-                        borderBottomStartRadius="l"
-                        borderBottomEndRadius="l"
+                        borderBottomStartRadius="2xl"
+                        borderBottomEndRadius="2xl"
                         backgroundColor="secondaryBackground"
-                        padding="m"
+                        padding="4"
                       >
                         <Text
-                          variant="body1Medium"
-                          color={loading ? 'white' : 'matchaRed500'}
+                          variant="textMdMedium"
+                          color={loading ? 'base.white' : 'ros.500'}
                         >
                           {error.message || error.toString()}
                         </Text>
@@ -389,12 +394,12 @@ export const WalletSignBottomSheetSimulated = ({
                     {hasMore && (
                       <ButtonPressable
                         width="100%"
-                        borderRadius="round"
-                        backgroundColor="white"
+                        borderRadius="full"
+                        backgroundColor="base.white"
                         backgroundColorOpacity={0.1}
                         backgroundColorOpacityPressed={0.05}
                         titleColorPressedOpacity={0.3}
-                        titleColor="white"
+                        titleColor="base.white"
                         title={t('generic.loadMore')}
                         onPress={handleLoadMore}
                       />
@@ -408,51 +413,51 @@ export const WalletSignBottomSheetSimulated = ({
               <Box flexDirection="column">
                 <TouchableOpacityBox
                   onPress={() => setFeesExpanded(!feesExpanded)}
-                  marginTop="s"
+                  marginTop="2"
                   flexDirection="row"
                   justifyContent="space-between"
                 >
-                  <Text variant="body1Bold">
+                  <Text variant="textMdBold">
                     {t('browserScreen.totalNetworkFee')}
                   </Text>
                   <Box flexDirection="row">
-                    <Text variant="body1Medium" color="blue500">
+                    <Text variant="textMdMedium" color="blue.500">
                       {`~${estimatedTotalSol} SOL`}
                     </Text>
-                    <Chevron color="grey500" />
+                    <Chevron color="gray.500" />
                   </Box>
                 </TouchableOpacityBox>
                 {feesExpanded ? (
-                  <Box paddingRight="l">
+                  <Box paddingRight="6">
                     <Box
-                      marginTop="s"
+                      marginTop="2"
                       flexDirection="row"
                       justifyContent="space-between"
                     >
                       <Box flexDirection="row">
                         <IndentArrow />
-                        <Text variant="body1" ml="s" color="grey50">
+                        <Text variant="textMdRegular" ml="2" color="gray.50">
                           {t('browserScreen.totalBaseFee')}
                         </Text>
                       </Box>
 
-                      <Text variant="body1" color="blue500">
+                      <Text variant="textMdRegular" color="blue.500">
                         {`~${estimatedTotalBaseFee} SOL`}
                       </Text>
                     </Box>
                     <Box
-                      marginTop="s"
+                      marginTop="2"
                       flexDirection="row"
                       justifyContent="space-between"
                     >
                       <Box flexDirection="row">
                         <IndentArrow />
-                        <Text variant="body1" ml="s" color="grey50">
+                        <Text variant="textMdRegular" ml="2" color="gray.50">
                           {t('browserScreen.totalPriorityFee')}
                         </Text>
                       </Box>
 
-                      <Text variant="body1" color="blue500">
+                      <Text variant="textMdRegular" color="blue.500">
                         {`~${estimatedTotalPriorityFee} SOL`}
                       </Text>
                     </Box>
@@ -468,12 +473,12 @@ export const WalletSignBottomSheetSimulated = ({
           flexDirection="row"
           justifyContent="flex-start"
           alignItems="center"
-          mt={feesExpanded ? 's' : 'm'}
+          mt={feesExpanded ? '2' : '4'}
         >
           <Box flex={1}>
             <SubmitButton
-              color="matchaRed500"
-              backgroundColor="white"
+              color="ros.500"
+              backgroundColor="base.white"
               title={
                 type === WalletStandardMessageTypes.connect
                   ? t('browserScreen.connect')
@@ -483,14 +488,14 @@ export const WalletSignBottomSheetSimulated = ({
             />
           </Box>
           <ButtonPressable
-            ml="s"
+            ml="2"
             width={65}
             height={65}
             innerContainerProps={{
               justifyContent: 'center',
             }}
-            borderRadius="round"
-            backgroundColor="black200"
+            borderRadius="full"
+            backgroundColor="gray.true-700"
             Icon={CancelIcon}
             onPress={onCancel}
           />
@@ -499,26 +504,26 @@ export const WalletSignBottomSheetSimulated = ({
         <Box
           flexDirection="row"
           justifyContent="space-between"
-          mt={feesExpanded ? 's' : 'm'}
+          mt={feesExpanded ? '2' : '4'}
         >
           <ButtonPressable
             width="48%"
-            borderRadius="round"
-            backgroundColor="white"
+            borderRadius="full"
+            backgroundColor="base.white"
             backgroundColorOpacity={0.1}
             backgroundColorOpacityPressed={0.05}
             titleColorPressedOpacity={0.3}
-            titleColor="white"
+            titleColor="base.white"
             title={t('browserScreen.cancel')}
             onPress={onCancel}
           />
 
           <ButtonPressable
             width="48%"
-            borderRadius="round"
-            backgroundColor="white"
+            borderRadius="full"
+            backgroundColor="base.white"
             backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="surfaceSecondary"
+            backgroundColorDisabled="bg.tertiary"
             backgroundColorDisabledOpacity={0.5}
             titleColorDisabled="secondaryText"
             title={
@@ -526,7 +531,7 @@ export const WalletSignBottomSheetSimulated = ({
                 ? t('browserScreen.connect')
                 : t('browserScreen.approve')
             }
-            titleColor="black"
+            titleColor="base.black"
             onPress={onAccept}
           />
         </Box>

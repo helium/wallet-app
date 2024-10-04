@@ -104,8 +104,8 @@ const AntennaSetupScreen = () => {
   return (
     <ReAnimatedBox flex={1} entering={DelayedFadeIn}>
       <BackScreen
-        headerTopMargin="l"
-        padding="none"
+        headerTopMargin="6"
+        padding="0"
         title={t('antennaSetupScreen.title')}
         edges={backEdges}
       >
@@ -115,25 +115,29 @@ const AntennaSetupScreen = () => {
               edges={safeEdges}
               backgroundColor="transparent"
               flex={1}
-              padding="m"
-              marginHorizontal="s"
+              padding="4"
+              marginHorizontal="2"
               marginVertical="xs"
             >
               <Box flexGrow={1} justifyContent="center">
-                <Text textAlign="left" variant="subtitle2" adjustsFontSizeToFit>
+                <Text
+                  textAlign="left"
+                  variant="textLgMedium"
+                  adjustsFontSizeToFit
+                >
                   {t('antennaSetupScreen.antennaSetup')}
                 </Text>
                 <Text
-                  variant="subtitle4"
+                  variant="textSmMedium"
                   color="secondaryText"
-                  marginBottom="m"
+                  marginBottom="4"
                 >
                   {t('antennaSetupScreen.antennaSetupDescription')}
                 </Text>
                 <Box
                   width="100%"
-                  backgroundColor="secondary"
-                  borderRadius="l"
+                  backgroundColor="secondaryBackground"
+                  borderRadius="2xl"
                   paddingVertical="xs"
                 >
                   <TextInput
@@ -146,7 +150,11 @@ const AntennaSetupScreen = () => {
                       keyboardType: 'decimal-pad',
                     }}
                   />
-                  <Box height={1} width="100%" backgroundColor="black200" />
+                  <Box
+                    height={1}
+                    width="100%"
+                    backgroundColor="gray.true-700"
+                  />
                   <TextInput
                     variant="transparent"
                     floatingLabel={`${t(
@@ -165,11 +173,11 @@ const AntennaSetupScreen = () => {
                 flexDirection="row"
                 justifyContent="center"
                 alignItems="center"
-                marginVertical="s"
+                marginVertical="2"
                 minHeight={40}
               >
                 {showError && (
-                  <Text variant="body3Medium" color="red500">
+                  <Text variant="textXsMedium" color="ros.500">
                     {showError}
                   </Text>
                 )}
@@ -178,18 +186,18 @@ const AntennaSetupScreen = () => {
                 <ButtonPressable
                   height={BUTTON_HEIGHT}
                   flexGrow={1}
-                  borderRadius="round"
-                  backgroundColor="white"
+                  borderRadius="full"
+                  backgroundColor="base.white"
                   backgroundColorOpacityPressed={0.7}
-                  backgroundColorDisabled="white"
+                  backgroundColorDisabled="base.white"
                   backgroundColorDisabledOpacity={0.0}
-                  titleColorDisabled="grey600"
+                  titleColorDisabled="gray.600"
                   title={updating ? '' : t('antennaSetupScreen.submit')}
-                  titleColor="black"
+                  titleColor="base.black"
                   onPress={handleUpdateElevGain}
                   TrailingComponent={
                     updating ? (
-                      <CircleLoader loaderSize={20} color="black" />
+                      <CircleLoader loaderSize={20} color="primaryBackground" />
                     ) : undefined
                   }
                 />

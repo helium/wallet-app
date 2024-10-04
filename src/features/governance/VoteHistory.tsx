@@ -74,15 +74,15 @@ export const VoteHistory: React.FC<{
 
     return (
       <Box
-        backgroundColor="surfaceSecondary"
-        borderRadius="l"
+        backgroundColor="bg.tertiary"
+        borderRadius="2xl"
         height={HISTORY_HEIGHT}
         width="100%"
         justifyContent="center"
         alignItems="center"
-        mb="m"
+        mb="4"
       >
-        <Text variant="body1" color="white">
+        <Text variant="textMdRegular" color="primaryText">
           {t('gov.history.noneFound')}
         </Text>
       </Box>
@@ -152,15 +152,15 @@ const ProposalItem: React.FC<{
 
   return (
     <TouchableContainer
-      backgroundColor="surfaceSecondary"
-      borderRadius="l"
+      backgroundColor="bg.tertiary"
+      borderRadius="2xl"
       flexDirection="column"
-      mb="m"
+      mb="4"
       onPress={handlePress}
     >
       <Box
-        px="m"
-        pt="s"
+        px="4"
+        pt="2"
         flexDirection="row"
         justifyContent="space-between"
         alignItems="center"
@@ -172,7 +172,7 @@ const ProposalItem: React.FC<{
               iconProps={{ width: 8, height: 8 }}
               Icon={ActiveCircle}
               color="black"
-              textProps={{ variant: 'body3' }}
+              textProps={{ variant: 'textSmRegular' }}
               text={t('gov.history.active')}
             />
           ) : null}
@@ -181,24 +181,24 @@ const ProposalItem: React.FC<{
               iconProps={{ width: 8, height: 8 }}
               Icon={CancelledCircle}
               color="black"
-              textProps={{ variant: 'body3' }}
+              textProps={{ variant: 'textSmRegular' }}
               text={t('gov.history.cancelled')}
             />
           ) : null}
         </Box>
       </Box>
       <Box
-        px="m"
-        pb="m"
-        mb="s"
-        borderBottomColor="dividerGrey"
+        px="4"
+        pb="4"
+        mb="2"
+        borderBottomColor="border.primary"
         borderBottomWidth={1}
       >
-        <Text variant="body1">{proposal.name}</Text>
+        <Text variant="textMdRegular">{proposal.name}</Text>
       </Box>
       {timeExpired ? (
         <Box
-          px="m"
+          px="4"
           width="100%"
           flexDirection="row"
           justifyContent="space-between"
@@ -225,7 +225,7 @@ const ProposalItem: React.FC<{
           />
         </Box>
       ) : null}
-      <Box px="m">
+      <Box px="4">
         {!timeExpired && (
           <VoterCardStat
             title={t('gov.history.estTimeRemaining')}
@@ -234,12 +234,12 @@ const ProposalItem: React.FC<{
         )}
       </Box>
       <Box
-        px="m"
+        px="4"
         width="100%"
         flexDirection="row"
         justifyContent="space-between"
         alignItems="center"
-        pb="s"
+        pb="2"
       >
         {proposal.votes[0].weight ? (
           <>
@@ -265,7 +265,7 @@ const ProposalItem: React.FC<{
           </>
         ) : (
           <Box
-            mt="s"
+            mt="2"
             flexDirection="row"
             justifyContent="center"
             alignItems="center"

@@ -40,7 +40,7 @@ const SearchInput = ({
 
   return (
     <Box
-      backgroundColor="secondary"
+      backgroundColor="secondaryBackground"
       borderRadius={borderRadius as BorderRadii}
       paddingStart={padding as Spacing}
       flexDirection="row"
@@ -62,7 +62,7 @@ const SearchInput = ({
           ...textInputProps,
         }}
         variant={variant || 'transparent'}
-        backgroundColor="red500"
+        backgroundColor="ros.500"
       />
     </Box>
   )

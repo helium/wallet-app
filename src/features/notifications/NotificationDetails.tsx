@@ -70,34 +70,38 @@ const NotificationDetails = () => {
       <SafeAreaBox
         backgroundColor="primaryBackground"
         flex={1}
-        paddingHorizontal="l"
-        paddingTop="m"
+        paddingHorizontal="6"
+        paddingTop="4"
       >
         <BackButton
           onPress={navigation.goBack}
-          color="surfaceSecondaryText"
-          paddingHorizontal="none"
-          marginBottom="m"
+          color="secondaryText"
+          paddingHorizontal="0"
+          marginBottom="4"
         />
 
-        <Box marginHorizontal="m">
+        <Box marginHorizontal="4">
           <NotificationDetailBanner icon={notification.icon} />
           <Text
-            variant="h3"
-            marginTop="m"
+            variant="displayXsRegular"
+            marginTop="4"
             adjustsFontSizeToFit
             numberOfLines={2}
           >
             {notification.title}
           </Text>
-          <Text variant="body2" paddingVertical="m" color="greenBright500">
+          <Text
+            variant="textSmRegular"
+            paddingVertical="4"
+            color="green.light-500"
+          >
             {time}
           </Text>
           <Text
-            variant="body2"
-            color="surfaceSecondaryText"
+            variant="textSmRegular"
+            color="secondaryText"
             style={bodyStyle}
-            marginBottom="xl"
+            marginBottom="8"
           >
             {parseMarkup(notification.body)}
           </Text>

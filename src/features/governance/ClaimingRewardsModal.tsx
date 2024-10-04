@@ -26,7 +26,7 @@ export const ClaimingRewardsModal = ({ status }: { status?: Status }) => {
 
     return {
       helpText: `Sending batch of ${actualBatchSize} transactions.\n${remainingTxs} total transaction${
-        remainingTxs > 1 ? 's' : ''
+        remainingTxs > 1 ? '2' : ''
       } remaining.`,
       percent: (totalProgress * 100) / totalTxs,
     }
@@ -45,13 +45,13 @@ export const ClaimingRewardsModal = ({ status }: { status?: Status }) => {
           edges={edges}
           backgroundColor="transparent"
           flex={1}
-          padding="m"
-          marginHorizontal="s"
+          padding="4"
+          marginHorizontal="2"
           marginVertical="xs"
         >
           <Box flexGrow={1} justifyContent="center" alignItems="center">
             <Box
-              shadowColor="black"
+              shadowColor="base.black"
               shadowOpacity={0.4}
               shadowOffset={{ width: 0, height: 10 }}
               shadowRadius={10}
@@ -61,35 +61,39 @@ export const ClaimingRewardsModal = ({ status }: { status?: Status }) => {
             </Box>
             <Text
               textAlign="left"
-              variant="subtitle2"
+              variant="textLgMedium"
               adjustsFontSizeToFit
-              marginTop="m"
-              marginBottom="ms"
+              marginTop="4"
+              marginBottom="3"
             >
               {t('gov.claiming.title')}
             </Text>
-            <Box paddingHorizontal="l" marginBottom="m">
+            <Box paddingHorizontal="6" marginBottom="4">
               <Text
-                variant="subtitle4"
+                variant="textSmMedium"
                 color="secondaryText"
-                marginBottom="s"
+                marginBottom="2"
                 textAlign="center"
               >
                 {t('gov.claiming.body')}
               </Text>
-              <Text variant="subtitle4" color="flamenco" textAlign="center">
+              <Text
+                variant="textSmMedium"
+                color="orange.500"
+                textAlign="center"
+              >
                 {t('gov.claiming.multiple')}
               </Text>
             </Box>
 
-            <Box alignItems="center" marginTop="m">
+            <Box alignItems="center" marginTop="4">
               <Box flexDirection="row">
                 <ProgressBar progress={percent} />
               </Box>
               <Text
-                variant="body2"
+                variant="textSmRegular"
                 color="secondaryText"
-                marginTop="s"
+                marginTop="2"
                 textAlign="center"
               >
                 {helpText}
