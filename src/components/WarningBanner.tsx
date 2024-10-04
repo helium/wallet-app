@@ -68,15 +68,15 @@ const Banner = ({ type, onLayout, ...rest }: BannerProps) => {
 
   return (
     <ReAnimatedBox
-      backgroundColor="black650"
+      backgroundColor="gray.900"
       style={bannerAnimatedStyles}
       onLayout={onLayout}
       {...rest}
     >
       <Box
         minHeight={MIN_HEIGHT}
-        padding="s"
-        paddingHorizontal="m"
+        padding="2"
+        paddingHorizontal="4"
         flexDirection="row"
         alignItems="center"
         onLayout={setBannerHeight}
@@ -85,8 +85,8 @@ const Banner = ({ type, onLayout, ...rest }: BannerProps) => {
           <InfoWarning width={24} height={24} />
         </Box>
         <Text
-          variant="body3"
-          marginStart="s"
+          variant="textXsRegular"
+          marginStart="2"
           flex={1}
           adjustsFontSizeToFit
           textAlign="center"

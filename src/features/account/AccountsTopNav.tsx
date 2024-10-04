@@ -86,24 +86,25 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
     >
       <Box flexDirection="row">
         <IconPressedContainer onPress={navToSettings}>
-          <CogIco color="white" />
+          <CogIco color={primaryText} />
         </IconPressedContainer>
-        <Box paddingHorizontal="m" />
+        <Box paddingHorizontal="4" />
       </Box>
       <TouchableOpacityBox
         flexDirection="row"
         flex={1}
         flexGrow={1}
-        paddingHorizontal="l"
+        paddingHorizontal="6"
         justifyContent="center"
         alignItems="center"
-        paddingVertical="ms"
+        paddingVertical="3"
         onPress={onPressWallet}
       >
         <AccountIcon address={currentNetworkAddress} size={25} />
         <Text
-          variant="subtitle1"
-          marginLeft="m"
+          color="primaryText"
+          variant="textXlMedium"
+          marginLeft="4"
           marginRight="xs"
           numberOfLines={1}
           adjustsFontSizeToFit
@@ -116,7 +117,7 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
       <Box flexDirection="row">
         <Box position="relative">
           <IconPressedContainer onPress={navToNotifs}>
-            <NotificationsBellIco color="white" />
+            <NotificationsBellIco color={primaryText} />
           </IconPressedContainer>
           {hasUnreadNotifications && (
             <Box
@@ -125,22 +126,22 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
               alignItems="center"
               top={14}
               right={12}
-              backgroundColor="black"
-              borderRadius="round"
+              backgroundColor="base.black"
+              borderRadius="full"
               height={10}
               width={10}
             >
               <Box
-                backgroundColor="malachite"
-                borderRadius="round"
+                backgroundColor="green.500"
+                borderRadius="full"
                 height={6}
                 width={6}
               />
             </Box>
           )}
         </Box>
-        <IconPressedContainer onPress={navToAddressBook} padding="none">
-          <AccountIco color="white" />
+        <IconPressedContainer onPress={navToAddressBook} padding="0">
+          <AccountIco color={primaryText} />
         </IconPressedContainer>
       </Box>
     </Box>

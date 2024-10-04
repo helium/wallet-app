@@ -59,20 +59,24 @@ const CheckableTokenListItem = ({
       flexDirection="row"
       minHeight={72}
       alignItems="center"
-      paddingHorizontal="m"
-      paddingVertical="m"
+      paddingHorizontal="4"
+      paddingVertical="4"
       borderBottomColor="primaryBackground"
       borderBottomWidth={bottomBorder ? 0 : 1}
       disabled
     >
       <TokenIcon img={json?.image} />
-      <Box flex={1} paddingHorizontal="m">
+      <Box flex={1} paddingHorizontal="4">
         <Box flexDirection="row" alignItems="center">
-          <Text variant="body1" color="primaryText" maxFontSizeMultiplier={1.3}>
+          <Text
+            variant="textMdRegular"
+            color="primaryText"
+            maxFontSizeMultiplier={1.3}
+          >
             {`${balanceToDisplay} `}
           </Text>
           <Text
-            variant="body2Medium"
+            variant="textSmMedium"
             color="secondaryText"
             maxFontSizeMultiplier={1.3}
           >
@@ -81,7 +85,7 @@ const CheckableTokenListItem = ({
         </Box>
         {symbol && (
           <AccountTokenCurrencyBalance
-            variant="subtitle4"
+            variant="textSmMedium"
             color="secondaryText"
             ticker={symbol.toUpperCase()}
           />
@@ -95,7 +99,7 @@ const CheckableTokenListItem = ({
             true: colors.primaryText,
             false: colors.transparent10,
           }}
-          onCheckColor={colors.secondary}
+          onCheckColor={colors.secondaryText}
           onTintColor={colors.primaryText}
           tintColor={colors.transparent10}
           onFillColor={colors.primaryText}
@@ -112,7 +116,7 @@ const CheckableTokenListItem = ({
 const AccountManageTokenListScreen: React.FC = () => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { primaryText } = useColors()
-  const hitSlop = useHitSlop('l')
+  const hitSlop = useHitSlop('6')
   const { visibleTokens, setVisibleTokens } = useVisibleTokens()
   const { tokenAccounts } = useBalance()
   const mints = useMemo(() => {
@@ -164,11 +168,11 @@ const AccountManageTokenListScreen: React.FC = () => {
         flexDirection="row"
         justifyContent="space-between"
         alignItems="center"
-        borderTopStartRadius="xl"
-        borderTopEndRadius="xl"
-        marginBottom="m"
+        borderTopStartRadius="4xl"
+        borderTopEndRadius="4xl"
+        marginBottom="4"
       >
-        <Box hitSlop={hitSlop} padding="s">
+        <Box hitSlop={hitSlop} padding="2">
           <IconPressedContainer
             onPress={navigation.goBack}
             activeOpacity={0.75}

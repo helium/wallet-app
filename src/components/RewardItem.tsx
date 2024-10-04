@@ -28,8 +28,8 @@ const RewardItem = ({ mint, amount, hasMore, ...rest }: RewardItemProps) => {
 
   return (
     <Box
-      paddingVertical="l"
-      paddingHorizontal="xl"
+      paddingVertical="6"
+      paddingHorizontal="8"
       justifyContent="center"
       alignItems="center"
       height={197}
@@ -43,14 +43,14 @@ const RewardItem = ({ mint, amount, hasMore, ...rest }: RewardItemProps) => {
       <TokenIcon img={json?.image} size={70} />
 
       <Text
-        marginTop="m"
-        variant="h3Medium"
+        marginTop="4"
+        variant="displayXsMedium"
         adjustsFontSizeToFit
         numberOfLines={1}
       >
         {pendingRewardsString}
       </Text>
-      <Text variant="subtitle3" color="secondaryText">
+      <Text variant="textMdMedium" color="secondaryText">
         {symbol}
       </Text>
     </Box>

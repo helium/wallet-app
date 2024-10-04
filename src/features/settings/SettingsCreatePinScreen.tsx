@@ -43,14 +43,14 @@ const SettingsCreatePinScreen = () => {
     <Box
       backgroundColor="primaryBackground"
       flex={1}
-      paddingHorizontal="xl"
+      paddingHorizontal="8"
       justifyContent="center"
       alignItems="center"
     >
       <Box flex={1} />
       <Text
-        marginBottom="m"
-        variant="h1"
+        marginBottom="4"
+        variant="displayMdRegular"
         maxFontSizeMultiplier={1}
         numberOfLines={1}
         adjustsFontSizeToFit
@@ -58,10 +58,10 @@ const SettingsCreatePinScreen = () => {
         {t('accountSetup.createPin.title')}
       </Text>
 
-      <Text variant="body1" maxFontSizeMultiplier={1.2}>
+      <Text variant="textMdRegular" maxFontSizeMultiplier={1.2}>
         {t('accountSetup.createPin.subtitle')}
       </Text>
-      <PinDisplay length={pin.length} marginVertical="xl" />
+      <PinDisplay length={pin.length} marginVertical="8" />
       <Keypad flex={2} customButtonType="cancel" onPress={handlePress} />
       <Box flex={1} />
     </Box>

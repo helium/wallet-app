@@ -36,23 +36,28 @@ const UpdateAliasScreen = () => {
     <BackScreen
       backgroundColor="primaryBackground"
       flex={1}
-      paddingHorizontal="xl"
+      paddingHorizontal="8"
     >
       <KeyboardAvoidingView
-        keyboardVerticalOffset={insets.top + spacing.xxxl + spacing.xxl}
+        keyboardVerticalOffset={insets.top + spacing[12] + spacing[12]}
         behavior={Platform.OS === 'android' ? 'height' : 'padding'}
         style={styles.container}
       >
         <Box alignItems="center" flex={1}>
-          <Text variant="h1" textAlign="center" fontSize={44} lineHeight={44}>
+          <Text
+            variant="displayMdRegular"
+            textAlign="center"
+            fontSize={44}
+            lineHeight={44}
+          >
             {t('accountAssign.title')}
           </Text>
           <Box
             backgroundColor="transparent10"
-            borderRadius="xl"
-            padding="m"
+            borderRadius="4xl"
+            padding="4"
             width="100%"
-            marginTop="xl"
+            marginTop="8"
             flexDirection="row"
           >
             <AccountIcon size={40} address={currentAccount?.address || ''} />
@@ -67,8 +72,8 @@ const UpdateAliasScreen = () => {
                 autoCapitalize: 'words',
               }}
               fontSize={24}
-              marginLeft="m"
-              marginRight="xl"
+              marginLeft="4"
+              marginRight="8"
             />
           </Box>
 
@@ -79,8 +84,8 @@ const UpdateAliasScreen = () => {
             icon="arrowRight"
             disabled={!alias}
             backgroundColor="primaryText"
-            iconColor="primary"
-            backgroundColorPressed="surfaceContrast"
+            iconColor="primaryText"
+            backgroundColorPressed="primaryBackground"
             backgroundColorOpacityPressed={0.1}
           />
         </Box>

@@ -84,15 +84,15 @@ const HotspotListItem = ({
       {...rest}
     >
       <TouchableOpacityBox
-        marginHorizontal="s"
-        marginVertical="s"
+        marginHorizontal="2"
+        marginVertical="2"
         alignItems="center"
-        backgroundColor="surfaceSecondary"
-        borderRadius="xxl"
+        backgroundColor="bg.tertiary"
+        borderRadius="4xl"
         onPress={() => onPress(hotspot)}
       >
         <ImageBox
-          borderRadius="lm"
+          borderRadius="2xl"
           height={COLLECTABLE_HEIGHT}
           width="100%"
           source={{
@@ -104,15 +104,15 @@ const HotspotListItem = ({
           <Box
             justifyContent="center"
             alignItems="center"
-            backgroundColor="white"
-            borderRadius="xl"
+            backgroundColor="base.white"
+            borderRadius="4xl"
             padding="xs"
             position="absolute"
             top={20}
             right={16}
             flexDirection="row"
             shadowRadius={6}
-            shadowColor="black"
+            shadowColor="base.black"
             shadowOffset={{
               width: 0,
               height: 3,
@@ -120,7 +120,11 @@ const HotspotListItem = ({
             shadowOpacity={0.3}
             elevation={2}
           >
-            <Text variant="body2Medium" marginEnd="xs" color="black">
+            <Text
+              variant="textSmMedium"
+              marginEnd="xs"
+              color="primaryBackground"
+            >
               {pendingMobileRewardsString}
             </Text>
             <MobileSymbol color={colors.mobileBlue} />
@@ -130,15 +134,15 @@ const HotspotListItem = ({
           <Box
             justifyContent="center"
             alignItems="center"
-            backgroundColor="white"
-            borderRadius="xl"
+            backgroundColor="base.white"
+            borderRadius="4xl"
             position="absolute"
             top={hasMobileRewards ? 58 : 20}
             padding="xs"
             right={16}
             flexDirection="row"
             shadowRadius={6}
-            shadowColor="black"
+            shadowColor="base.black"
             shadowOffset={{
               width: 0,
               height: 3,
@@ -146,7 +150,11 @@ const HotspotListItem = ({
             shadowOpacity={0.3}
             elevation={2}
           >
-            <Text variant="body2Medium" marginEnd="xs" color="black">
+            <Text
+              variant="textSmMedium"
+              marginEnd="xs"
+              color="primaryBackground"
+            >
               {pendingIotRewardsString}
             </Text>
             <IotSymbol color={colors.iotGreen} />
@@ -154,7 +162,7 @@ const HotspotListItem = ({
         )}
       </TouchableOpacityBox>
       {metadata?.name && (
-        <Text textAlign="center" variant="subtitle1" marginHorizontal="m">
+        <Text textAlign="center" variant="textXlMedium" marginHorizontal="4">
           {removeDashAndCapitalize(metadata.name)}
         </Text>
       )}

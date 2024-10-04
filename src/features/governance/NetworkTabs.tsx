@@ -19,7 +19,7 @@ export const NetworkTabs: React.FC = () => {
     <Box
       flexDirection="row"
       justifyContent="space-between"
-      paddingHorizontal="m"
+      paddingHorizontal="4"
     >
       {GovMints.map((m) => {
         const pk = new PublicKey(m)
@@ -34,13 +34,13 @@ export const NetworkTabs: React.FC = () => {
               isActive={mint.equals(pk)}
               onPress={() => navigation.setParams({ mint: pk.toBase58() })}
               inactiveColor="secondaryBackground"
-              activeColor="secondary"
+              activeColor="cardBackground"
             />
             {!mint.equals(pk) && hasUnseenProposals && (
               <Box
                 flexDirection="row"
                 alignItems="center"
-                marginRight="s"
+                marginRight="2"
                 position="absolute"
                 top={-4}
                 right={4}
@@ -50,8 +50,8 @@ export const NetworkTabs: React.FC = () => {
                     zIndex={2}
                     width={12}
                     height={12}
-                    backgroundColor="flamenco"
-                    borderRadius="round"
+                    backgroundColor="orange.500"
+                    borderRadius="full"
                   />
                   <Box
                     position="absolute"
@@ -65,10 +65,10 @@ export const NetworkTabs: React.FC = () => {
                     >
                       <Box
                         opacity={0.3}
-                        borderRadius="round"
+                        borderRadius="full"
                         width="100%"
                         height="100%"
-                        backgroundColor="flamenco"
+                        backgroundColor="orange.500"
                       />
                     </Animated.View>
                   </Box>

@@ -29,9 +29,9 @@ const NotificationsList = ({
 
   const contentContainer = useMemo(
     () => ({
-      paddingBottom: spacing.xxxl,
+      paddingBottom: spacing['15'],
     }),
-    [spacing.xxxl],
+    [spacing],
   )
 
   const SectionData = useMemo((): {
@@ -79,7 +79,7 @@ const NotificationsList = ({
       return (
         <FadeInOut>
           <NotificationListItem
-            marginHorizontal="m"
+            marginHorizontal="4"
             borderTopStartRadius={isFirst ? 'xl' : undefined}
             borderTopEndRadius={isFirst ? 'xl' : undefined}
             borderBottomStartRadius={isLast ? 'xl' : undefined}
@@ -99,7 +99,7 @@ const NotificationsList = ({
     () => (
       <FadeInOut>
         <Box alignItems="center">
-          <Text color="primaryText" marginTop="xl">
+          <Text color="primaryText" marginTop="8">
             {t('notifications.emptyTitle')}
           </Text>
         </Box>
@@ -114,13 +114,17 @@ const NotificationsList = ({
         <Box
           flexDirection="row"
           alignItems="center"
-          paddingTop="xl"
-          paddingBottom="m"
-          paddingHorizontal="l"
+          paddingTop="8"
+          paddingBottom="4"
+          paddingHorizontal="6"
           backgroundColor="primaryBackground"
           justifyContent="center"
         >
-          <Text variant="body2" textAlign="center" color="secondaryText">
+          <Text
+            variant="textSmRegular"
+            textAlign="center"
+            color="secondaryText"
+          >
             {sectionTitle}
           </Text>
         </Box>

@@ -217,7 +217,7 @@ const AccountTokenScreen = () => {
         left={0}
         right={0}
         backgroundColor="primaryBackground"
-        paddingHorizontal="l"
+        paddingHorizontal="6"
         flexDirection="row"
         justifyContent="space-between"
         alignItems="center"
@@ -225,10 +225,10 @@ const AccountTokenScreen = () => {
         borderBottomWidth={1}
         borderBottomColor="secondaryText"
         borderTopColor="secondaryText"
-        marginBottom="m"
+        marginBottom="4"
       >
         <Text
-          variant="body1"
+          variant="textMdRegular"
           color="secondaryText"
           numberOfLines={1}
           adjustsFontSizeToFit
@@ -236,7 +236,7 @@ const AccountTokenScreen = () => {
           {filterName}
         </Text>
         <TouchableOpacityBox onPress={toggleFiltersOpen(true)}>
-          <Text variant="body1" padding="ms" color="secondaryText">
+          <Text variant="textMdRegular" padding="3" color="secondaryText">
             {t('accountsScreen.filter')}
           </Text>
         </TouchableOpacityBox>
@@ -255,7 +255,7 @@ const AccountTokenScreen = () => {
       return (
         <FadeInOut>
           <Box
-            paddingHorizontal="l"
+            paddingHorizontal="6"
             backgroundColor="primaryBackground"
             style={{
               marginTop: isFirst ? bottomScreenHeaderHeight : 0,
@@ -286,8 +286,8 @@ const AccountTokenScreen = () => {
       return (
         <Box
           backgroundColor="primaryBackground"
-          paddingVertical="m"
-          paddingHorizontal="s"
+          paddingVertical="4"
+          paddingHorizontal="2"
           flexDirection="row"
           justifyContent="center"
           alignItems="center"
@@ -296,8 +296,8 @@ const AccountTokenScreen = () => {
           }}
         >
           <Text
-            variant="body1"
-            color="surfaceSecondaryText"
+            variant="textMdRegular"
+            color="secondaryText"
             textAlign="center"
             maxFontSizeMultiplier={1.3}
           >
@@ -309,8 +309,8 @@ const AccountTokenScreen = () => {
 
     return (
       <Box
-        paddingVertical="l"
-        paddingHorizontal="s"
+        paddingVertical="6"
+        paddingHorizontal="2"
         flexDirection="row"
         justifyContent="center"
         alignItems="center"
@@ -380,7 +380,7 @@ const AccountTokenScreen = () => {
   )
 
   const backgroundComponent = useCallback(
-    () => <Box backgroundColor="purpleHeart" flex={1} />,
+    () => <Box backgroundColor="purple.500" flex={1} />,
     [],
   )
 
@@ -429,7 +429,7 @@ const AccountTokenScreen = () => {
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <BackScreen
-        padding="none"
+        padding="0"
         title={t('accountsScreen.title', {
           ticker: symbol,
         })}
@@ -445,15 +445,15 @@ const AccountTokenScreen = () => {
           }}
         >
           <Box
-            paddingHorizontal="l"
+            paddingHorizontal="6"
             ref={headerContainerRef}
             onLayout={handleHeaderLayout}
             justifyContent="center"
           >
             <Animated.View style={topHeaderAnimatedStyle}>
               <Box
-                paddingTop="m"
-                paddingBottom={Platform.OS === 'android' ? 'l' : 'm'}
+                paddingTop="4"
+                paddingBottom={Platform.OS === 'android' ? '6' : '4'}
                 flexDirection="row"
                 alignItems="center"
                 justifyContent="center"
@@ -463,7 +463,7 @@ const AccountTokenScreen = () => {
                 <Box flex={1}>
                   <AccountTokenBalance
                     showTicker={false}
-                    textVariant="h2Medium"
+                    textVariant="displaySmMedium"
                     justifyContent="flex-start"
                     mint={mint}
                     flex={1}
@@ -471,7 +471,7 @@ const AccountTokenScreen = () => {
                   {!!symbol && (
                     <AccountTokenCurrencyBalance
                       ticker={symbol.toUpperCase()}
-                      variant="body1"
+                      variant="textMdRegular"
                       color="secondaryText"
                     />
                   )}
@@ -486,18 +486,18 @@ const AccountTokenScreen = () => {
               </Box>
             </Animated.View>
             <Animated.View style={bottomHeaderAnimatedStyle}>
-              <Box marginVertical="xl">
-                <Box alignItems="center" marginBottom="m">
+              <Box marginVertical="8">
+                <Box alignItems="center" marginBottom="4">
                   <TokenIcon img={json?.image} size={50} />
                 </Box>
-                <AccountTokenBalance marginTop="s" mint={mint} />
+                <AccountTokenBalance marginTop="2" mint={mint} />
                 {!!symbol && (
                   <AccountTokenCurrencyBalance
                     ticker={symbol.toUpperCase()}
-                    variant="h4"
+                    variant="textXlRegular"
                     color="secondaryText"
                     textAlign="center"
-                    marginBottom="xl"
+                    marginBottom="8"
                   />
                 )}
                 <AccountActionBar
@@ -517,25 +517,25 @@ const AccountTokenScreen = () => {
               <>
                 <Box
                   minHeight={topHeaderHeight}
-                  mb="l"
-                  backgroundColor="warning"
-                  borderRadius="s"
-                  p="s"
+                  mb="6"
+                  backgroundColor="warning.500"
+                  borderRadius="2xl"
+                  p="2"
                 >
-                  <Text variant="body2" color="black700">
+                  <Text variant="textSmRegular" color="gray.950">
                     {t('accountsScreen.solWarning')}
                   </Text>
                   <TouchableOpacityBox
-                    marginTop="m"
+                    marginTop="4"
                     justifyContent="center"
                     alignItems="center"
-                    backgroundColor="orange500"
-                    borderRadius="m"
+                    backgroundColor="orange.500"
+                    borderRadius="2xl"
                     onPress={() =>
                       showModal({ type: 'InsufficientSolConversion' })
                     }
                   >
-                    <Text variant="body1" padding="ms" color="black700">
+                    <Text variant="textMdRegular" padding="3" color="gray.950">
                       {t('accountsScreen.solSwap')}
                     </Text>
                   </TouchableOpacityBox>

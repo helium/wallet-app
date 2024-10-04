@@ -12,16 +12,16 @@ export const MessagePreview = ({
   message,
 }: IMransactionPreviewProps) => (
   <Box
-    backgroundColor="surface"
-    borderRadius="l"
-    mt="m"
-    px="m"
-    py="ms"
+    backgroundColor="cardBackground"
+    borderRadius="2xl"
+    mt="4"
+    px="4"
+    py="3"
     {...{ gap: 8 }}
   >
-    {message && <Text variant="body2">{message}</Text>}
+    {message && <Text variant="textSmRegular">{message}</Text>}
     {warning && (
-      <Text variant="body2" color="orange500">
+      <Text variant="textSmRegular" color="orange.500">
         {warning}
       </Text>
     )}

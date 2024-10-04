@@ -14,7 +14,7 @@ export default ({
   return useMemo(() => {
     if (netType === NetTypes.TESTNET) {
       if (muted) {
-        return 'lividBrown'
+        return 'orange.dark-500'
       }
       return 'testnet'
     }

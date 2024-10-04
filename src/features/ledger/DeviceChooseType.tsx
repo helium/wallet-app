@@ -32,50 +32,55 @@ const DeviceChooseType = () => {
     <SafeAreaBox
       flex={1}
       backgroundColor="primaryBackground"
-      marginTop="l"
-      paddingHorizontal="xl"
+      marginTop="6"
+      paddingHorizontal="8"
     >
-      <Text variant="h1" textAlign="center" lineHeight={38} marginVertical="xl">
+      <Text
+        variant="displayMdRegular"
+        textAlign="center"
+        lineHeight={38}
+        marginVertical="8"
+      >
         {t('ledger.chooseType.title')}
       </Text>
       <TouchableOpacityBox
         onPress={navNext('bluetooth')}
-        marginBottom="l"
+        marginBottom="6"
         flexDirection="row"
         alignItems="center"
       >
         <Ledger width={26} height={26} color={primaryText} />
-        <Box marginLeft="ms">
+        <Box marginLeft="3">
           <Text
-            variant="subtitle1"
+            variant="textXlMedium"
             color="primaryText"
             fontSize={21}
             lineHeight={23}
           >
             {t('ledger.chooseType.bluetooth.title')}
           </Text>
-          <Text variant="body1" color="secondaryText">
+          <Text variant="textMdRegular" color="secondaryText">
             {t('ledger.chooseType.bluetooth.types')}
           </Text>
         </Box>
       </TouchableOpacityBox>
       <TouchableOpacityBox
         onPress={navNext('usb')}
-        marginBottom="l"
+        marginBottom="6"
         flexDirection="row"
         alignItems="center"
       >
         <Ledger width={26} height={26} color={primaryText} />
-        <Box marginLeft="ms">
+        <Box marginLeft="3">
           <Text
-            variant="subtitle1"
+            variant="textXlMedium"
             color="primaryText"
             fontSize={21}
             lineHeight={23}
           >
             {t('ledger.chooseType.usb.title')}
           </Text>
-          <Text variant="body1" color="secondaryText">
+          <Text variant="textMdRegular" color="secondaryText">
             {t('ledger.chooseType.usb.types')}
           </Text>
         </Box>

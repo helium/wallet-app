@@ -80,30 +80,30 @@ const HeliumBottomSheet = ({
         <TouchableOpacityBox flex={1} onPress={handleClose} />
         <ReAnimatedBox
           style={animatedStyles}
-          borderTopLeftRadius="l"
-          borderTopRightRadius="l"
+          borderTopLeftRadius="2xl"
+          borderTopRightRadius="2xl"
           height={sheetHeight}
-          backgroundColor="surfaceSecondary"
-          paddingHorizontal="lx"
+          backgroundColor="bg.tertiary"
+          paddingHorizontal="7"
         >
           <Box
             flexDirection="row"
             borderBottomWidth={hideHeaderBorder ? 0 : 1}
             borderBottomColor="secondaryText"
-            marginTop="s"
-            marginBottom="m"
+            marginTop="2"
+            marginBottom="4"
             justifyContent="space-between"
             alignItems="center"
           >
-            <Text color="secondaryText" variant="body2">
+            <Text color="secondaryText" variant="textSmRegular">
               {title}
             </Text>
             <TouchableOpacityBox
               onPress={handleClose}
               height={50}
               justifyContent="center"
-              paddingHorizontal="m"
-              marginEnd="n_m"
+              paddingHorizontal="4"
+              marginEnd="-4"
             >
               <Close color={colors.secondaryText} height={14} width={14} />
             </TouchableOpacityBox>

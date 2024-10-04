@@ -120,8 +120,8 @@ export const TransferTokensModal = ({
           onClose={handleOnClose}
           backgroundColor="transparent"
           flex={1}
-          padding="m"
-          marginHorizontal="s"
+          padding="4"
+          marginHorizontal="2"
         >
           <HNTKeyboard
             usePortal
@@ -137,56 +137,71 @@ export const TransferTokensModal = ({
           >
             <ScrollView>
               <Box flexGrow={1} justifyContent="center">
-                <Text textAlign="left" variant="subtitle2" adjustsFontSizeToFit>
+                <Text
+                  textAlign="left"
+                  variant="textLgMedium"
+                  adjustsFontSizeToFit
+                >
                   {t('gov.transactions.transferPosition')}
                 </Text>
                 <Text
-                  variant="subtitle4"
+                  variant="textSmMedium"
                   color="secondaryText"
-                  marginBottom="m"
+                  marginBottom="4"
                 >
                   {t('gov.positions.transferBlurb')}
                 </Text>
                 <Box
-                  borderRadius="l"
-                  backgroundColor="secondary"
-                  padding="m"
-                  marginBottom="m"
+                  borderRadius="2xl"
+                  backgroundColor="secondaryBackground"
+                  padding="4"
+                  marginBottom="4"
                 >
-                  <Text variant="body3">
+                  <Text variant="textXsRegular">
                     {t('gov.positions.transferWarning')}
                   </Text>
                   {!hasTransferablePositions ? (
-                    <Text marginTop="m" variant="body3" color="flamenco">
+                    <Text
+                      marginTop="4"
+                      variant="textXsRegular"
+                      color="orange.500"
+                    >
                       {t('gov.positions.cantTransfer')}
                     </Text>
                   ) : (
-                    <Text marginTop="m" variant="body3">
+                    <Text marginTop="4" variant="textXsRegular">
                       {t('gov.positions.transferLandrushWarning')}
                     </Text>
                   )}
                 </Box>
                 {hasTransferablePositions && (
                   <>
-                    <Box backgroundColor="secondary" borderRadius="l">
+                    <Box
+                      backgroundColor="secondaryBackground"
+                      borderRadius="2xl"
+                    >
                       <TouchableOpacityBox
-                        paddingHorizontal="m"
-                        paddingVertical="l"
+                        paddingHorizontal="4"
+                        paddingVertical="6"
                         onPress={handleAmountPressed}
                       >
-                        <Text variant="subtitle4" color="grey600">
+                        <Text variant="textSmMedium" color="gray.600">
                           {t('gov.positions.amountToTransfer')}
                         </Text>
-                        <Text variant="body1" fontWeight="400" color="grey600">
+                        <Text
+                          variant="textMdRegular"
+                          fontWeight="400"
+                          color="gray.600"
+                        >
                           {amount || 'Amount (tokens)'}
                         </Text>
                       </TouchableOpacityBox>
                     </Box>
-                    <Box justifyContent="center" marginTop="m">
+                    <Box justifyContent="center" marginTop="4">
                       <Text
-                        variant="subtitle4"
+                        variant="textSmMedium"
                         color="secondaryText"
-                        marginBottom="m"
+                        marginBottom="4"
                       >
                         {t('gov.positions.selectTransfer')}
                       </Text>
@@ -200,18 +215,18 @@ export const TransferTokensModal = ({
                       return (
                         <TouchableOpacityBox
                           key={pos.pubkey.toString()}
-                          marginTop={idx > 0 ? 'm' : 'none'}
+                          marginTop={idx > 0 ? '4' : 'none'}
                           flex={1}
-                          borderRadius="l"
+                          borderRadius="2xl"
                           backgroundColor={
-                            isSelected ? 'secondaryBackground' : 'secondary'
+                            isSelected ? 'secondaryBackground' : 'bg.tertiary'
                           }
                           onPress={() => setSelectedPosPk(pos.pubkey)}
                         >
                           <Box
                             flex={1}
                             flexDirection="row"
-                            padding="m"
+                            padding="4"
                             justifyContent="space-between"
                           >
                             <Box
@@ -221,10 +236,16 @@ export const TransferTokensModal = ({
                               justifyContent="center"
                             >
                               <Box flex={1}>
-                                <Text variant="body2" color="secondaryText">
+                                <Text
+                                  variant="textSmRegular"
+                                  color="secondaryText"
+                                >
                                   {t('gov.positions.lockupType')}
                                 </Text>
-                                <Text variant="body2" color="primaryText">
+                                <Text
+                                  variant="textSmRegular"
+                                  color="primaryText"
+                                >
                                   {isConstant ? 'Constant' : 'Decaying'}
                                 </Text>
                               </Box>
@@ -236,10 +257,16 @@ export const TransferTokensModal = ({
                               justifyContent="center"
                             >
                               <Box flex={1}>
-                                <Text variant="body2" color="secondaryText">
+                                <Text
+                                  variant="textSmRegular"
+                                  color="secondaryText"
+                                >
                                   {t('gov.positions.voteMult')}
                                 </Text>
-                                <Text variant="body2" color="primaryText">
+                                <Text
+                                  variant="textSmRegular"
+                                  color="primaryText"
+                                >
                                   {(
                                     (pos.votingPower.isZero()
                                       ? 0
@@ -258,10 +285,16 @@ export const TransferTokensModal = ({
                             </Box>
                             <Box flex={1} flexShrink={0} flexDirection="row">
                               <Box flex={1}>
-                                <Text variant="body2" color="secondaryText">
+                                <Text
+                                  variant="textSmRegular"
+                                  color="secondaryText"
+                                >
                                   {isConstant ? 'Min. Duration' : 'Time left'}
                                 </Text>
-                                <Text variant="body2" color="primaryText">
+                                <Text
+                                  variant="textSmRegular"
+                                  color="primaryText"
+                                >
                                   {isConstant
                                     ? getMinDurationFmt(
                                         pos.lockup.startTs,
@@ -273,12 +306,12 @@ export const TransferTokensModal = ({
                             </Box>
                           </Box>
                           <Box
-                            borderTopColor="black200"
+                            borderTopColor="gray.true-700"
                             borderTopWidth={1}
-                            paddingVertical="s"
-                            paddingHorizontal="m"
+                            paddingVertical="2"
+                            paddingHorizontal="4"
                           >
-                            <Text variant="body2" color="primaryText">
+                            <Text variant="textSmRegular" color="primaryText">
                               {t('gov.positions.lockedAmount', {
                                 amount:
                                   mintAcc &&
@@ -301,32 +334,34 @@ export const TransferTokensModal = ({
                   flexDirection="row"
                   justifyContent="center"
                   alignItems="center"
-                  paddingTop="m"
+                  paddingTop="4"
                 >
-                  <Text variant="body3Medium" color="red500">
+                  <Text variant="textXsMedium" color="ros.500">
                     {showError}
                   </Text>
                 </Box>
               )}
             </ScrollView>
-            <Box flexDirection="row" paddingTop="m">
+            <Box flexDirection="row" paddingTop="4">
               <ButtonPressable
                 flex={1}
                 fontSize={16}
-                borderRadius="round"
-                backgroundColor="white"
+                borderRadius="full"
+                backgroundColor="base.white"
                 backgroundColorOpacityPressed={0.7}
-                backgroundColorDisabled="surfaceSecondary"
+                backgroundColorDisabled="bg.tertiary"
                 backgroundColorDisabledOpacity={0.9}
                 titleColorDisabled="secondaryText"
                 title={
                   isSubmitting ? '' : t('gov.transactions.transferPosition')
                 }
-                titleColor="black"
+                titleColor="base.black"
                 onPress={handleSubmit}
                 disabled={!amount || !selectedPosPk || isSubmitting}
                 TrailingComponent={
-                  isSubmitting ? <CircleLoader color="white" /> : undefined
+                  isSubmitting ? (
+                    <CircleLoader color="primaryText" />
+                  ) : undefined
                 }
               />
             </Box>

@@ -61,26 +61,26 @@ const ContactsList = ({
       <Box>
         <SearchInput
           placeholder={t('addressBook.searchContacts')}
-          marginHorizontal="lx"
-          marginTop="xl"
+          marginHorizontal="7"
+          marginTop="8"
           onChangeText={setSearchTerm}
           value={searchTerm}
         />
         <TouchableOpacityBox
           flexDirection="row"
           alignItems="center"
-          padding="xl"
+          padding="8"
           onPress={onAddNew}
         >
           <FabButton
             icon="add"
-            backgroundColor="secondary"
-            iconColor="white"
+            backgroundColor="secondaryBackground"
+            iconColor="base.white"
             size={40}
             disabled
-            marginRight="ms"
+            marginRight="3"
           />
-          <Text variant="body1" color="secondaryText">
+          <Text variant="textMdRegular" color="secondaryText">
             {t('addressBook.addNext')}
           </Text>
         </TouchableOpacityBox>

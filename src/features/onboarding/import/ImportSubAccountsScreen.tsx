@@ -86,29 +86,29 @@ export default () => {
           flexDirection="row"
           minHeight={72}
           alignItems="center"
-          paddingHorizontal="m"
-          paddingVertical="m"
+          paddingHorizontal="4"
+          paddingVertical="4"
           borderBottomColor="primaryBackground"
           borderBottomWidth={index === derivationAccounts.length - 1 ? 0 : 1}
         >
-          <Box flex={1} paddingHorizontal="m">
+          <Box flex={1} paddingHorizontal="4">
             <Box flexDirection="column" justifyContent="flex-start">
               <Text
-                variant="body1"
+                variant="textMdRegular"
                 color="primaryText"
                 maxFontSizeMultiplier={1.3}
               >
                 {item.derivationPath}
               </Text>
               <Text
-                variant="body2Medium"
+                variant="textSmMedium"
                 color="secondaryText"
                 maxFontSizeMultiplier={1.3}
               >
                 {ellipsizeAddress(item.keypair.publicKey.toBase58())}
               </Text>
               <Text
-                variant="body2Medium"
+                variant="textSmMedium"
                 color="secondaryText"
                 maxFontSizeMultiplier={1.3}
               >
@@ -116,7 +116,7 @@ export default () => {
               </Text>
               {(item.tokens?.value.length || 0) > 0 ? (
                 <Text
-                  variant="body2Medium"
+                  variant="textSmMedium"
                   color="secondaryText"
                   maxFontSizeMultiplier={1.3}
                 >
@@ -125,7 +125,7 @@ export default () => {
               ) : null}
               {(item.nfts?.length || 0) > 0 ? (
                 <Text
-                  variant="body2Medium"
+                  variant="textSmMedium"
                   color="secondaryText"
                   maxFontSizeMultiplier={1.3}
                 >
@@ -136,7 +136,7 @@ export default () => {
               ) : null}
               {item.needsMigrated ? (
                 <Text
-                  variant="body2Medium"
+                  variant="textSmMedium"
                   color="secondaryText"
                   maxFontSizeMultiplier={1.3}
                 >
@@ -153,7 +153,7 @@ export default () => {
                 true: colors.primaryText,
                 false: colors.transparent10,
               }}
-              onCheckColor={colors.secondary}
+              onCheckColor={colors.secondaryText}
               onTintColor={colors.primaryText}
               tintColor={colors.transparent10}
               onFillColor={colors.primaryText}
@@ -168,7 +168,7 @@ export default () => {
     },
     [
       colors.primaryText,
-      colors.secondary,
+      colors.secondaryText,
       colors.transparent10,
       derivationAccounts,
       selected,
@@ -215,19 +215,19 @@ export default () => {
     <SafeAreaBox backgroundColor="secondaryBackground" flex={1}>
       <Box flex={1} backgroundColor="secondaryBackground" height="100%">
         <Text
-          variant="h1"
-          mt="xl"
+          variant="displayMdRegular"
+          mt="8"
           textAlign="center"
           fontSize={44}
           lineHeight={44}
-          mb="s"
+          mb="2"
         >
           {t('accountImport.privateKey.selectAccounts')}
         </Text>
-        <Text textAlign="center" p="s" variant="body1" mb="l">
+        <Text textAlign="center" p="2" variant="textMdRegular" mb="6">
           {t('accountImport.privateKey.selectAccountsBody')}
         </Text>
-        {error && <Text color="red500">{error.message}</Text>}
+        {error && <Text color="ros.500">{error.message}</Text>}
         <FlatList
           refreshControl={
             <RefreshControl
@@ -245,19 +245,19 @@ export default () => {
           onEndReached={fetchMore}
         />
         <ButtonPressable
-          marginTop="l"
-          borderRadius="round"
-          backgroundColor="white"
+          marginTop="6"
+          borderRadius="full"
+          backgroundColor="base.white"
           backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="surfaceSecondary"
+          backgroundColorDisabled="bg.tertiary"
           backgroundColorDisabledOpacity={0.5}
-          titleColorDisabled="black500"
-          titleColor="black500"
+          titleColorDisabled="gray.800"
+          titleColor="gray.800"
           disabled={selected.size === 0}
           onPress={onNext}
           title={t('generic.next')}
-          marginBottom="l"
-          marginHorizontal="l"
+          marginBottom="6"
+          marginHorizontal="6"
         />
       </Box>
     </SafeAreaBox>

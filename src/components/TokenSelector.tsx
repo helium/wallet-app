@@ -46,7 +46,7 @@ const ProvidedListItem = ({
       Icon={json?.image ? <TokenIcon size={30} img={json.image} /> : undefined}
       onPress={onPress}
       selected={selected}
-      paddingStart="l"
+      paddingStart="6"
       hasDivider
     />
   )
@@ -69,7 +69,7 @@ const TokenSelector = forwardRef(
 
     const { bottom } = useSafeAreaInsets()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-    const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
+    const { backgroundStyle } = useOpacity('bg.tertiary', 1)
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
     const { secondaryText } = useColors()
 

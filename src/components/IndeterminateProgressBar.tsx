@@ -59,7 +59,7 @@ const IndeterminateProgressBar = ({ ...rest }: BoxProps<Theme>) => {
     <Box
       onLayout={handleLayout}
       {...rest}
-      borderRadius="round"
+      borderRadius="full"
       width="100%"
       height={rest.height || HEIGHT}
       backgroundColor="transparent10"
@@ -69,8 +69,8 @@ const IndeterminateProgressBar = ({ ...rest }: BoxProps<Theme>) => {
         <Box
           width={PROGRESS_WIDTH / 2}
           height={rest.height || HEIGHT - 1}
-          borderRadius="round"
-          backgroundColor="lightGrey"
+          borderRadius="full"
+          backgroundColor="gray.200"
         />
       </ReAnimatedBox>
     </Box>

@@ -32,29 +32,31 @@ const AddressActivityItem = ({
   return (
     <>
       <Box
-        backgroundColor="black700"
+        backgroundColor="gray.950"
         alignItems="center"
         flexDirection="row"
         height={LIST_ITEM_HEIGHT}
         {...rest}
-        paddingStart="m"
+        paddingStart="4"
       >
         <AccountIcon address={accountAddress} size={40} />
-        <Box flexGrow={1} justifyContent="center" marginStart="m">
+        <Box flexGrow={1} justifyContent="center" marginStart="4">
           {currentAccount &&
             currentAccount.solanaAddress === accountAddress && (
-              <Text variant="subtitle2">{t('activityScreen.myAccount')}</Text>
+              <Text variant="textLgMedium">
+                {t('activityScreen.myAccount')}
+              </Text>
             )}
           <Text color="secondaryText">{ellipsizeAddress(accountAddress)}</Text>
         </Box>
-        <TouchableOpacityBox padding="l" onPress={onMenuPress}>
-          <Menu color={colors.white} width={14} />
+        <TouchableOpacityBox padding="6" onPress={onMenuPress}>
+          <Menu color={colors['base.white']} width={14} />
         </TouchableOpacityBox>
       </Box>
       {showBubbleArrow && (
         <Box height={18}>
           <Box
-            backgroundColor="black700"
+            backgroundColor="gray.950"
             alignSelf="center"
             style={styles.rotatedBox}
           />

@@ -32,41 +32,41 @@ export const Pill = memo(
       blue: {
         border: 'blueBorder',
         background: 'blue950',
-        text: 'blue500',
+        text: 'blue.500',
       },
       green: {
-        border: 'greenBorder',
-        background: 'green950',
-        text: 'green500',
+        border: 'green.300',
+        background: 'green.950',
+        text: 'green.500',
       },
       red: {
-        border: 'redBorder',
-        background: 'matchaRed950',
-        text: 'matchaRed500',
+        border: 'ros.300',
+        background: 'ros.950',
+        text: 'ros.500',
       },
       orange: {
-        border: 'orangeBorder',
-        background: 'orange950',
-        text: 'orange500',
+        border: 'orange.300',
+        background: 'orange.950',
+        text: 'orange.500',
       },
       black: {
         background: 'black',
-        text: 'white',
+        text: 'base.white',
         border: 'black',
       },
       hntBlue: {
         background: 'hntBlue',
-        text: 'white',
+        text: 'base.white',
         border: 'black',
       },
       iotGreen: {
         background: 'iotGreen',
-        text: 'white',
+        text: 'base.white',
         border: 'black',
       },
       mobileBlue: {
         background: 'mobileBlue',
-        text: 'white',
+        text: 'base.white',
         border: 'black',
       },
     }
@@ -74,7 +74,7 @@ export const Pill = memo(
       <Box
         flexDirection="row"
         alignItems="center"
-        borderRadius="xxl"
+        borderRadius="4xl"
         padding="xs"
         borderWidth={2}
         borderColor={colorDefs[color].border as any}
@@ -88,8 +88,8 @@ export const Pill = memo(
 
         {text ? (
           <Text
-            ml="s"
-            mr="s"
+            ml="2"
+            mr="2"
             color={colorDefs[color].text as any}
             {...textProps}
           >

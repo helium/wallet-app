@@ -70,10 +70,10 @@ const WifiSetup = () => {
       </Box>
 
       <ButtonPressable
-        mt="l"
-        borderRadius="round"
-        titleColor="white"
-        borderColor="white"
+        mt="6"
+        borderRadius="full"
+        titleColor="base.white"
+        borderColor="base.white"
         borderWidth={1}
         backgroundColor="transparent"
         onPress={handleSetWifi}

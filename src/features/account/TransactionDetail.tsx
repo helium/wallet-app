@@ -103,7 +103,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
         bottom={0}
         left={0}
         right={0}
-        borderRadius="xl"
+        borderRadius="4xl"
         overflow="hidden"
       />
     )
@@ -130,7 +130,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
           <BottomSheetScrollView>
             <SafeAreaBox
               edges={safeEdges}
-              paddingVertical="l"
+              paddingVertical="6"
               onLayout={handleContentLayout}
             >
               <TransactionLineItem
@@ -146,7 +146,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                       index: index + 1,
                     })}
                     bodyText={amt}
-                    bodyColor="blueBright500"
+                    bodyColor="blue.light-500"
                   />
                 </React.Fragment>
               ))}
@@ -156,7 +156,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                   <TransactionLineItem
                     title={t('transactions.amount')}
                     bodyText={amt}
-                    bodyColor="greenBright500"
+                    bodyColor="green.light-500"
                   />
                 </React.Fragment>
               ))}

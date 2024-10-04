@@ -23,9 +23,9 @@ import { useSetTab } from './useSetTab'
 import { NetworkTabs } from './NetworkTabs'
 
 const icons: { [key: string]: React.ReactElement } = {
-  proposals: <Flag width={16} height={16} color="white" />,
-  voters: <LightningBolt width={16} height={16} color="white" />,
-  positions: <UserStar width={16} height={16} color="white" />,
+  proposals: <Flag width={16} height={16} color="primaryText" />,
+  voters: <LightningBolt width={16} height={16} color="primaryText" />,
+  positions: <UserStar width={16} height={16} color="primaryText" />,
 }
 
 type Route = RouteProp<GovernanceStackParamList, 'ProposalsScreen'>
@@ -89,21 +89,26 @@ export const GovernanceWrapper: React.FC<
     <ReAnimatedBox style={globalStyles.container}>
       <SafeAreaBox edges={safeEdges} flex={1}>
         <Box flexDirection="column" height="100%">
-          <Text marginTop="m" alignSelf="center" variant="h4">
+          <Text
+            marginTop="4"
+            alignSelf="center"
+            variant="textXlRegular"
+            color="primaryText"
+          >
             {t('gov.title')}
           </Text>
-          <Box mt="xl" mb="l">
+          <Box mt="8" mb="6">
             <NetworkTabs />
           </Box>
           {loading ? (
-            <Box paddingHorizontal="m" mt="xxl" flexDirection="column" flex={1}>
-              <CircleLoader loaderSize={24} color="white" />
+            <Box paddingHorizontal="4" mt="12" flexDirection="column" flex={1}>
+              <CircleLoader loaderSize={24} color="primaryText" />
             </Box>
           ) : (
-            <Box paddingHorizontal="m" mt="xxl" flexDirection="column" flex={1}>
+            <Box paddingHorizontal="4" mt="12" flexDirection="column" flex={1}>
               {header}
               <Select
-                mb="xl"
+                mb="8"
                 value={selectedTab}
                 onValueChange={setSelectedTab}
                 options={['proposals', 'voters', 'positions'].map((o) => ({

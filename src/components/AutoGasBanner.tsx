@@ -168,15 +168,15 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
   return (
     <ReAnimatedBox
       visible={swapping}
-      backgroundColor="black650"
+      backgroundColor="gray.900"
       style={bannerAnimatedStyles}
       onLayout={onLayout}
       {...rest}
     >
       <Box
         minHeight={MIN_HEIGHT}
-        padding="s"
-        paddingHorizontal="m"
+        padding="2"
+        paddingHorizontal="4"
         flexDirection="row"
         alignItems="center"
       >
@@ -188,8 +188,8 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
           )}
         </Box>
         <Text
-          variant="body2"
-          marginStart="s"
+          variant="textSmRegular"
+          marginStart="2"
           flex={1}
           adjustsFontSizeToFit
           textAlign="center"

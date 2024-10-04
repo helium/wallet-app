@@ -1,7 +1,5 @@
 import Box from '@components/Box'
-import CloseButton from '@components/CloseButton'
 import ImageBox from '@components/ImageBox'
-import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import { truthy } from '@helium/spl-utils'
 import useAlert from '@hooks/useAlert'
@@ -9,13 +7,15 @@ import { useAppVersion } from '@hooks/useDevice'
 import { useExplorer } from '@hooks/useExplorer'
 import { useNavigation } from '@react-navigation/native'
 import { Cluster } from '@solana/web3.js'
-import { useHitSlop, useSpacing } from '@theme/themeHooks'
+import { useColors, useSpacing } from '@theme/themeHooks'
 import React, { ReactText, memo, useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { Alert, Linking, Platform, SectionList } from 'react-native'
+import { Alert, Linking, Platform, ScrollView, SectionList } from 'react-native'
 import deviceInfo from 'react-native-device-info'
 import { SvgUri } from 'react-native-svg'
+import BackScreen from '@components/BackScreen'
+
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -42,8 +42,8 @@ const Settings = () => {
   const spacing = useSpacing()
   const version = useAppVersion()
   const buildNumber = deviceInfo.getBuildNumber()
-  const hitSlop = useHitSlop('xxl')
   const authIntervals = useAuthIntervals()
+  const colors = useColors()
   const {
     currentAccount,
     accounts,
@@ -76,16 +76,11 @@ const Settings = () => {
     () => appPin !== undefined && appPin.status !== 'off',
     [appPin],
   )
-
-  const onRequestClose = useCallback(() => {
-    homeNav.navigate('AccountsScreen')
-  }, [homeNav])
-
   const contentContainer = useMemo(
     () => ({
-      paddingBottom: spacing.xxxl,
+      paddingBottom: spacing['15'],
     }),
-    [spacing.xxxl],
+    [spacing],
   )
 
   const keyExtractor = useCallback((item, index) => item.title + index, [])
@@ -605,12 +600,12 @@ const Settings = () => {
       <Box
         flexDirection="row"
         alignItems="center"
-        paddingTop="xxl"
-        paddingBottom="m"
-        paddingHorizontal="l"
+        paddingTop="12"
+        paddingBottom="4"
+        paddingHorizontal="6"
       >
         {icon !== undefined && icon}
-        <Text variant="body2" fontWeight="bold">
+        <Text variant="textSmRegular" fontWeight="bold" color="primaryText">
           {title}
         </Text>
       </Box>
@@ -619,33 +614,46 @@ const Settings = () => {
   )
 
   return (
-    <SafeAreaBox backgroundColor="surfaceSecondary">
-      <Box
-        flexDirection="row"
-        justifyContent="space-between"
-        alignItems="center"
-        paddingHorizontal="l"
+    <ScrollView
+      style={{
+        backgroundColor: colors.secondaryBackground,
+      }}
+    >
+      <BackScreen
+        headerBackgroundColor="secondaryBackground"
+        padding="0"
+        backgroundColor="secondaryBackground"
+        edges={['top']}
       >
-        <Text variant="h1">{t('settings.title')}</Text>
-        <CloseButton
-          onPress={onRequestClose}
-          hitSlop={hitSlop}
-          paddingVertical="m"
+        <Box
+          flexDirection="column"
+          justifyContent="space-between"
+          alignItems="flex-start"
+          paddingHorizontal="6"
+        >
+          <Text
+            color="primaryText"
+            variant="displayMdRegular"
+            marginVertical="4"
+          >
+            {t('settings.title')}
+          </Text>
+        </Box>
+
+        <SectionList
+          contentContainerStyle={contentContainer}
+          sections={SectionData}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+          renderSectionHeader={renderSectionHeader}
+          renderSectionFooter={renderSectionFooter}
+          initialNumToRender={100}
+          stickySectionHeadersEnabled={false}
+          // ^ Sometimes on initial page load there is a bug with SectionList
+          // where it won't render all items right away. This seems to fix it.
         />
-      </Box>
-      <SectionList
-        contentContainerStyle={contentContainer}
-        sections={SectionData}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        renderSectionHeader={renderSectionHeader}
-        renderSectionFooter={renderSectionFooter}
-        initialNumToRender={100}
-        stickySectionHeadersEnabled={false}
-        // ^ Sometimes on initial page load there is a bug with SectionList
-        // where it won't render all items right away. This seems to fix it.
-      />
-    </SafeAreaBox>
+      </BackScreen>
+    </ScrollView>
   )
 }
 

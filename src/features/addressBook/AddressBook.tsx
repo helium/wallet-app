@@ -31,20 +31,22 @@ const AddressBook = () => {
   )
 
   return (
-    <Box flex={1} backgroundColor="surfaceSecondary">
+    <Box flex={1} backgroundColor="bg.tertiary">
       <Box
-        marginTop="s"
+        marginTop="2"
         style={{ paddingTop: Platform.OS === 'android' ? 24 : 0 }}
         flexDirection="row"
         alignItems="center"
       >
         <Box flex={1} />
-        <Text variant="subtitle2">{t('addressBook.title')}</Text>
+        <Text variant="textLgMedium" color="primaryText">
+          {t('addressBook.title')}
+        </Text>
         <Box flex={1} alignItems="flex-end">
           <CloseButton
             onPress={onRequestClose}
-            paddingVertical="s"
-            paddingHorizontal="m"
+            paddingVertical="2"
+            paddingHorizontal="4"
           />
         </Box>
       </Box>

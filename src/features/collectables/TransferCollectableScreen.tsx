@@ -185,13 +185,13 @@ const TransferCollectableScreen = () => {
   return (
     <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
       <BackScreen
-        padding="none"
+        padding="0"
         title={t('collectablesScreen.transferCollectable')}
         backgroundImageUri={backgroundImageUri || ''}
         edges={backEdges}
         TrailingIcon={InfoIcon}
         onTrailingIconPress={handleInfoPress}
-        headerTopMargin="l"
+        headerTopMargin="6"
       >
         <AddressBookSelector
           ref={addressBookRef}
@@ -213,21 +213,21 @@ const TransferCollectableScreen = () => {
                 edges={safeEdges}
                 backgroundColor="transparent"
                 flex={1}
-                padding="m"
+                padding="4"
                 alignItems="center"
               >
                 {metadata && (
                   <Box
-                    shadowColor="black"
+                    shadowColor="base.black"
                     shadowOpacity={0.4}
                     shadowOffset={{ width: 0, height: 10 }}
                     shadowRadius={10}
                     elevation={12}
                   >
                     <ImageBox
-                      marginTop="l"
+                      marginTop="6"
                       backgroundColor={
-                        metadata.image ? 'black' : 'surfaceSecondary'
+                        metadata.image ? 'base.black' : 'bg.tertiary'
                       }
                       height={COLLECTABLE_HEIGHT - spacing.xl * 5}
                       width={COLLECTABLE_HEIGHT - spacing.xl * 5}
@@ -235,20 +235,20 @@ const TransferCollectableScreen = () => {
                         uri: metadata?.image,
                         cache: 'force-cache',
                       }}
-                      borderRadius="xxl"
+                      borderRadius="4xl"
                     />
                   </Box>
                 )}
                 <Text
-                  marginTop="l"
-                  marginBottom="s"
-                  marginHorizontal="l"
+                  marginTop="6"
+                  marginBottom="2"
+                  marginHorizontal="6"
                   textAlign="center"
-                  variant="h1Medium"
+                  variant="displayMdMedium"
                 >
                   {metadata.name}
                 </Text>
-                <Text variant="body3Medium" color="grey600" marginBottom="xl">
+                <Text variant="textXsMedium" color="gray.600" marginBottom="8">
                   {metadata.description ||
                     t('collectablesScreen.collectables.noDescription')}
                 </Text>
@@ -257,16 +257,16 @@ const TransferCollectableScreen = () => {
                     'collectablesScreen.transferTo',
                   )} ${recipientName}`}
                   variant="thickBlur"
-                  marginBottom="s"
+                  marginBottom="2"
                   height={80}
                   width="100%"
-                  textColor="white"
+                  textColor="base.white"
                   fontSize={15}
                   TrailingIcon={Menu}
                   onTrailingIconPress={handleAddressBookSelected}
                   textInputProps={{
                     placeholder: t('generic.solanaAddress'),
-                    placeholderTextColor: 'white',
+                    placeholderTextColor: 'base.white',
                     autoCorrect: false,
                     autoComplete: 'off',
                     onChangeText: handleEditAddress,
@@ -276,18 +276,18 @@ const TransferCollectableScreen = () => {
                 />
                 {solFee ? (
                   <TextTransform
-                    marginHorizontal="m"
-                    variant="body3Medium"
-                    marginBottom="s"
-                    color="white"
+                    marginHorizontal="4"
+                    variant="textXsMedium"
+                    marginBottom="2"
+                    color="primaryText"
                     i18nKey="collectablesScreen.transferFee"
                     values={{ amount: solFee }}
                   />
                 ) : (
                   <Text
-                    marginHorizontal="m"
-                    variant="body3Medium"
-                    marginBottom="s"
+                    marginHorizontal="4"
+                    variant="textXsMedium"
+                    marginBottom="2"
                     color="secondaryText"
                   >
                     {t('generic.calculatingTransactionFee')}
@@ -297,38 +297,38 @@ const TransferCollectableScreen = () => {
                   opacity={
                     hasError || hasInsufficientBalance || networkError ? 100 : 0
                   }
-                  marginHorizontal="m"
-                  variant="body3Medium"
-                  marginBottom="l"
-                  color="red500"
+                  marginHorizontal="4"
+                  variant="textXsMedium"
+                  marginBottom="6"
+                  color="ros.500"
                 >
                   {showError}
                 </Text>
-                <Box flexDirection="row" marginTop="m" marginHorizontal="xl">
+                <Box flexDirection="row" marginTop="4" marginHorizontal="8">
                   <ButtonPressable
                     height={65}
                     flexGrow={1}
-                    borderRadius="round"
-                    backgroundColor="white"
+                    borderRadius="full"
+                    backgroundColor="base.white"
                     backgroundColorOpacityPressed={0.7}
-                    backgroundColorDisabled="surfaceSecondary"
+                    backgroundColorDisabled="bg.tertiary"
                     backgroundColorDisabledOpacity={0.5}
                     titleColorDisabled="secondaryText"
                     title={transferring ? '' : t('collectablesScreen.transfer')}
                     disabled={!solAddressIsValid(recipient) || transferring}
-                    titleColor="black"
+                    titleColor="base.black"
                     onPress={handleTransfer}
                     TrailingComponent={
                       transferring ? (
-                        <CircleLoader loaderSize={20} color="white" />
+                        <CircleLoader loaderSize={20} color="primaryText" />
                       ) : (
                         <ArrowRight
                           width={16}
                           height={15}
                           color={
                             !solAddressIsValid(recipient)
-                              ? colors.grey600
-                              : colors.black
+                              ? colors['gray.600']
+                              : colors['base.black']
                           }
                         />
                       )

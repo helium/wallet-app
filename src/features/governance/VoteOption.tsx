@@ -38,9 +38,9 @@ export const VoteOption = ({
     <TouchableOpacityBox
       flexGrow={1}
       flexDirection="column"
-      padding="ms"
-      borderRadius="m"
-      backgroundColor="surfaceSecondary"
+      padding="3"
+      borderRadius="2xl"
+      backgroundColor="bg.tertiary"
       {...boxProps}
       onPress={
         // eslint-disable-next-line no-nested-ternary
@@ -52,8 +52,8 @@ export const VoteOption = ({
           <Box
             width={20}
             height={20}
-            borderRadius="round"
-            marginRight="ms"
+            borderRadius="full"
+            marginRight="3"
             borderWidth={2}
             borderColor={VotingResultColors[option.index]}
             backgroundColor={
@@ -61,7 +61,7 @@ export const VoteOption = ({
             }
           />
         ) : (
-          <Box marginRight="ms">
+          <Box marginRight="3">
             <CircleLoader
               color={colors[VotingResultColors[option.index]] as Color}
               loaderSize={20}
@@ -69,7 +69,7 @@ export const VoteOption = ({
           </Box>
         )}
 
-        <Text variant="body2" color="secondaryText">
+        <Text variant="textSmRegular" color="secondaryText">
           {option.name}
         </Text>
       </Box>
@@ -79,8 +79,8 @@ export const VoteOption = ({
           flex={1}
           borderTopColor="primaryBackground"
           borderTopWidth={2}
-          mt="ms"
-          pt="s"
+          mt="3"
+          pt="2"
         >
           <Box
             flex={1}
@@ -89,14 +89,14 @@ export const VoteOption = ({
             alignItems="center"
             {...{ gap: 4 }}
           >
-            <Text variant="body2" color="secondaryText">
+            <Text variant="textSmRegular" color="secondaryText">
               Voted by -
             </Text>
             {voters.map((voter, idx) => (
               <>
                 <Voter key={voter.toBase58()} voter={voter} />
                 {idx !== voters.length - 1 && (
-                  <Text variant="body2" color="secondaryText">
+                  <Text variant="textSmRegular" color="secondaryText">
                     |
                   </Text>
                 )}
@@ -112,7 +112,7 @@ export const VoteOption = ({
 export const Voter = ({ voter }: { voter: PublicKey }) => {
   const { knownProxy } = useKnownProxy(voter)
   return (
-    <Text variant="body2" color="red500">
+    <Text variant="textSmRegular" color="ros.500">
       {knownProxy?.name || shortenAddress(voter.toBase58())}
     </Text>
   )

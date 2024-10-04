@@ -24,15 +24,15 @@ const RevealWordsScreen = () => {
   const ListHeaderComponent = useMemo(() => {
     return (
       <Box
-        backgroundColor="red500Transparent10"
-        borderRadius="l"
-        padding="l"
-        marginBottom="l"
-        marginTop="s"
+        backgroundColor="ros.300"
+        borderRadius="2xl"
+        padding="6"
+        marginBottom="6"
+        marginTop="2"
       >
         <TextTransform
           textAlign="center"
-          variant="body1"
+          variant="textMdRegular"
           maxFontSizeMultiplier={1}
           i18nKey="settings.revealWords.subtitle"
           values={{ numWords: mnemonic?.length }}
@@ -43,8 +43,8 @@ const RevealWordsScreen = () => {
 
   return (
     <BackScreen
-      rootBackgroundColor="black"
-      backgroundColor="black"
+      rootBackgroundColor="base.black"
+      backgroundColor="base.black"
       flex={1}
       title={
         mnemonic?.length
@@ -52,7 +52,7 @@ const RevealWordsScreen = () => {
           : ''
       }
       edges={[]}
-      padding="none"
+      padding="0"
     >
       <RevealWords
         mnemonic={mnemonic || []}

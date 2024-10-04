@@ -46,17 +46,22 @@ const AutoGasManager: FC = () => {
           flexDirection="row"
           alignItems="center"
           justifyContent="center"
-          paddingTop="s"
-          paddingHorizontal="m"
+          paddingTop="2"
+          paddingHorizontal="4"
         >
-          <Text variant="h4" color="white" flex={1} textAlign="center">
+          <Text
+            variant="textXlRegular"
+            color="primaryText"
+            flex={1}
+            textAlign="center"
+          >
             {t('settings.autoGasManagement.title')}
           </Text>
         </Box>
-        <Box flex={1} paddingHorizontal="m" marginTop="l">
+        <Box flex={1} paddingHorizontal="4" marginTop="6">
           <Text
-            variant="body1Medium"
-            color="white"
+            variant="textMdMedium"
+            color="primaryText"
             opacity={0.6}
             textAlign="center"
           >
@@ -65,20 +70,20 @@ const AutoGasManager: FC = () => {
 
           <Box
             flexDirection="row"
-            paddingHorizontal="m"
-            marginBottom="l"
-            marginTop="xxl"
+            paddingHorizontal="4"
+            marginBottom="6"
+            marginTop="12"
             alignItems="center"
           >
             <Switch
               value={!!inputMint}
-              trackColor={{ false: 'secondaryText', true: 'blueBright500' }}
+              trackColor={{ false: 'secondaryText', true: 'blue.light-500' }}
               thumbColor="primaryBackground"
               onValueChange={
                 inputMint ? onMintSelect(undefined) : onMintSelect(HNT_MINT)
               }
             />
-            <Text ml="m" color="white">
+            <Text ml="4" color="primaryText">
               {t('settings.autoGasManagement.enabled')}
             </Text>
           </Box>
@@ -86,22 +91,22 @@ const AutoGasManager: FC = () => {
           {inputMint && (
             <Box flexDirection="column">
               <Text
-                variant="body1Medium"
-                color="white"
+                variant="textMdMedium"
+                color="primaryText"
                 opacity={0.6}
                 textAlign="center"
               >
                 {t('settings.autoGasManagement.selectTokenBody')}
               </Text>
-              <Box flexDirection="row" justifyContent="space-between" mt="m">
+              <Box flexDirection="row" justifyContent="space-between" mt="4">
                 {validInputMints.map((mint) => (
                   <TokenPill
                     key={mint.toBase58()}
                     mint={mint}
                     isActive={inputMint?.equals(mint)}
                     onPress={onMintSelect(mint)}
-                    inactiveColor="black"
-                    activeColor="secondary"
+                    inactiveColor="primaryBackground"
+                    activeColor="secondaryText"
                   />
                 ))}
               </Box>
@@ -111,27 +116,27 @@ const AutoGasManager: FC = () => {
 
         <Box
           flexDirection="row"
-          marginHorizontal="m"
+          marginHorizontal="4"
           justifyContent="space-between"
         >
           <ButtonPressable
             width="48%"
-            borderRadius="round"
-            backgroundColor="black400"
+            borderRadius="full"
+            backgroundColor="gray.700"
             backgroundColorOpacityPressed={0.05}
             titleColorPressedOpacity={0.3}
-            titleColor="white"
+            titleColor="base.white"
             title={t('generic.cancel')}
             onPress={() => navigation.goBack()}
           />
           <ButtonPressable
             width="48%"
-            borderRadius="round"
-            backgroundColor="white"
+            borderRadius="full"
+            backgroundColor="base.white"
             backgroundColorOpacityPressed={0.7}
             backgroundColorDisabled="secondaryBackground"
             titleColorDisabled="secondaryText"
-            titleColor="black"
+            titleColor="base.black"
             titleColorPressedOpacity={0.3}
             title={t('generic.save')}
             onPress={handleSave}

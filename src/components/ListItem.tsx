@@ -49,26 +49,28 @@ const ListItem = ({
       alignItems="center"
       flex={1}
       flexDirection="row"
-      paddingVertical="m"
-      borderBottomColor="black900"
+      paddingVertical="4"
+      borderBottomColor="border.primary"
       borderBottomWidth={hasDivider ? 1 : 0}
       onPress={handlePress}
       hasPressedState={hasPressedState}
       {...rest}
     >
       {Icon && Icon}
-      <Box flex={1} justifyContent="center" marginHorizontal="m">
-        <Text variant="subtitle3">{title}</Text>
+      <Box flex={1} justifyContent="center" marginHorizontal="4">
+        <Text variant="textMdMedium" color="primaryText">
+          {title}
+        </Text>
         {subtitle && (
           <Text marginTop="xs" color={subtitleColor}>
             {subtitle}
           </Text>
         )}
       </Box>
-      <Box marginEnd="l">
+      <Box marginEnd="6">
         {selected ? (
           <CheckMarkFill
-            color={colors.white}
+            color={colors['base.white']}
             opacity={disabled ? 0.6 : 1.0}
             height={20}
             width={20}

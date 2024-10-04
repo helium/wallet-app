@@ -237,59 +237,59 @@ export const PositionsScreen = () => {
     <GovernanceWrapper selectedTab="positions">
       <Box flexDirection="column" flex={1}>
         <Box flex={1}>
-          <PositionsList header={<VotingPowerCard marginBottom="l" />} />
+          <PositionsList header={<VotingPowerCard marginBottom="6" />} />
         </Box>
         {showError && (
           <Box
             flexDirection="row"
             justifyContent="center"
             alignItems="center"
-            paddingTop="ms"
+            paddingTop="3"
           >
-            <Text variant="body3Medium" color="red500">
+            <Text variant="textXsMedium" color="ros.500">
               {showError}
             </Text>
           </Box>
         )}
-        <Box flexDirection="row" padding="m">
+        <Box flexDirection="row" padding="4">
           <ButtonPressable
             flex={1}
             fontSize={16}
-            borderRadius="round"
+            borderRadius="full"
             borderWidth={2}
-            borderColor="white"
+            borderColor="base.white"
             backgroundColorOpacityPressed={0.7}
             title={t('gov.transactions.lockTokens')}
-            titleColor="white"
-            titleColorPressed="black"
+            titleColor="base.white"
+            titleColorPressed="base.black"
             onPress={() => setIsLockModalOpen(true)}
             disabled={claimingAllRewards || loading}
           />
           {HNT_MINT.equals(mint) && (
             <>
-              <Box paddingHorizontal="s" />
+              <Box paddingHorizontal="2" />
               <ButtonPressable
                 flex={1}
                 fontSize={16}
-                borderRadius="round"
+                borderRadius="full"
                 borderWidth={2}
                 borderColor={
                   // eslint-disable-next-line no-nested-ternary
                   claimingAllRewards
-                    ? 'surfaceSecondary'
+                    ? 'bg.tertiary'
                     : !positionsWithRewards?.length
-                    ? 'surfaceSecondary'
-                    : 'white'
+                    ? 'bg.tertiary'
+                    : 'base.white'
                 }
-                backgroundColor="white"
+                backgroundColor="base.white"
                 backgroundColorOpacityPressed={0.7}
-                backgroundColorDisabled="surfaceSecondary"
+                backgroundColorDisabled="bg.tertiary"
                 backgroundColorDisabledOpacity={0.9}
                 titleColorDisabled="secondaryText"
                 title={
                   claimingAllRewards ? '' : t('gov.transactions.claimRewards')
                 }
-                titleColor="black"
+                titleColor="base.black"
                 onPress={handleClaimRewards}
                 disabled={
                   !positionsWithRewards?.length || claimingAllRewards || loading

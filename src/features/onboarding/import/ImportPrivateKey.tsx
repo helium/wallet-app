@@ -195,15 +195,16 @@ const ImportPrivateKey = () => {
   )
 
   return (
-    <SafeAreaBox paddingHorizontal="l" flex={1}>
-      <BackButton onPress={onBack} paddingHorizontal="none" />
-      <Text variant="h1" marginTop="m">
+    <SafeAreaBox paddingHorizontal="6" flex={1}>
+      <BackButton onPress={onBack} paddingHorizontal="0" />
+      <Text variant="displayMdRegular" marginTop="4" color="primaryText">
         {t('accountImport.privateKey.title')}
       </Text>
       <Text
-        variant="body1"
-        marginTop="xl"
-        marginBottom="xl"
+        color="secondaryText"
+        variant="textMdRegular"
+        marginTop="8"
+        marginBottom="8"
         visible={!publicKey && !encodedKey}
       >
         {t('accountImport.privateKey.paste')}
@@ -222,9 +223,9 @@ const ImportPrivateKey = () => {
         variant="underline"
       />
       <Text
-        variant="body1"
-        marginTop="xl"
-        marginBottom="xl"
+        variant="textMdRegular"
+        marginTop="8"
+        marginBottom="8"
         visible={!!encodedKey}
       >
         Enter the password you set for your private key.
@@ -240,24 +241,25 @@ const ImportPrivateKey = () => {
           autoComplete: 'off',
           returnKeyType: 'done',
         }}
+        textColor="primaryText"
         variant="underline"
       />
       <Text
-        variant="body1"
-        marginTop="m"
-        marginBottom="m"
+        variant="textMdRegular"
+        marginTop="4"
+        marginBottom="4"
         visible={!!error}
-        color="red500"
+        color="ros.500"
       >
         {error}
       </Text>
-      <Text variant="body1" marginTop="xl" visible={!!publicKey}>
+      <Text variant="textMdRegular" marginTop="8" visible={!!publicKey}>
         {t('accountImport.privateKey.body')}
       </Text>
       <Text
-        variant="body1"
+        variant="textMdRegular"
         fontWeight="bold"
-        marginTop="xl"
+        marginTop="8"
         textAlign="center"
         visible={!!publicKey}
       >
@@ -267,12 +269,12 @@ const ImportPrivateKey = () => {
       <ButtonPressable
         onPress={onImportAccount}
         title={t('accountImport.privateKey.action')}
-        borderRadius="round"
-        backgroundColor="white"
+        borderRadius="full"
+        backgroundColor="primaryText"
         backgroundColorOpacityPressed={0.7}
-        backgroundColorDisabled="surfaceSecondary"
+        backgroundColorDisabled="bg.tertiary"
         backgroundColorDisabledOpacity={0.5}
-        titleColor="black"
+        titleColor="primaryBackground"
         disabled={!!error || publicKey === undefined}
       />
     </SafeAreaBox>

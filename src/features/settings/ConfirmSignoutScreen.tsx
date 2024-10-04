@@ -109,7 +109,7 @@ const ConfirmSignoutScreen = () => {
   if (!mnemonic) return null
 
   return (
-    <Box padding="none" flex={1}>
+    <Box padding="0" flex={1}>
       {mnemonic ? (
         <ConfirmWordsScreen
           title={t('settings.confirmSignout.title')}

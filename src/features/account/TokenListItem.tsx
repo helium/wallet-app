@@ -42,19 +42,24 @@ export const TokenSkeleton = () => {
         flexDirection="row"
         height={ITEM_HEIGHT}
         alignItems="center"
-        paddingHorizontal="l"
+        paddingHorizontal="6"
         borderBottomColor="primaryBackground"
         borderBottomWidth={1}
       >
         <Box
           width={40}
           height={40}
-          borderRadius="round"
-          backgroundColor="surface"
+          borderRadius="full"
+          backgroundColor="cardBackground"
         />
-        <Box flex={1} paddingHorizontal="m">
-          <Box width={120} height={16} backgroundColor="surface" />
-          <Box width={70} height={16} marginTop="s" backgroundColor="surface" />
+        <Box flex={1} paddingHorizontal="4">
+          <Box width={120} height={16} backgroundColor="cardBackground" />
+          <Box
+            width={70}
+            height={16}
+            marginTop="2"
+            backgroundColor="cardBackground"
+          />
         </Box>
         <Arrow width={4} height={4} />
       </Box>
@@ -94,8 +99,8 @@ export const TokenListItem = ({ mint }: Props) => {
         flexDirection="row"
         minHeight={ITEM_HEIGHT}
         alignItems="center"
-        paddingHorizontal="m"
-        paddingVertical="m"
+        paddingHorizontal="4"
+        paddingVertical="4"
         borderBottomColor="primaryBackground"
         borderBottomWidth={1}
       >
@@ -103,36 +108,36 @@ export const TokenListItem = ({ mint }: Props) => {
           <Box
             width={40}
             height={40}
-            borderRadius="round"
-            backgroundColor="surface"
+            borderRadius="full"
+            backgroundColor="cardBackground"
           />
         ) : (
           <TokenIcon img={json?.image} />
         )}
 
-        <Box flex={1} paddingHorizontal="m">
+        <Box flex={1} paddingHorizontal="4">
           {loadingOwned ? (
-            <Box flex={1} paddingHorizontal="m">
-              <Box width={120} height={16} backgroundColor="surface" />
+            <Box flex={1} paddingHorizontal="4">
+              <Box width={120} height={16} backgroundColor="cardBackground" />
               <Box
                 width={70}
                 height={16}
-                marginTop="s"
-                backgroundColor="surface"
+                marginTop="2"
+                backgroundColor="cardBackground"
               />
             </Box>
           ) : (
             <Box>
               <Box flexDirection="row" alignItems="center">
                 <Text
-                  variant="body1"
+                  variant="textMdRegular"
                   color="primaryText"
                   maxFontSizeMultiplier={1.3}
                 >
                   {`${balanceToDisplay} `}
                 </Text>
                 <Text
-                  variant="body2Medium"
+                  variant="textSmMedium"
                   color="secondaryText"
                   maxFontSizeMultiplier={1.3}
                 >
@@ -141,7 +146,7 @@ export const TokenListItem = ({ mint }: Props) => {
               </Box>
               {symbol && (
                 <AccountTokenCurrencyBalance
-                  variant="subtitle4"
+                  variant="textSmMedium"
                   color="secondaryText"
                   ticker={symbol.toUpperCase()}
                 />
@@ -150,7 +155,7 @@ export const TokenListItem = ({ mint }: Props) => {
           )}
         </Box>
         {mint.equals(NATIVE_MINT) && (amount || 0) < MIN_BALANCE_THRESHOLD && (
-          <Box mr="m">
+          <Box mr="4">
             <InfoWarning width={28} height={28} />
           </Box>
         )}
@@ -261,8 +266,8 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
         flexDirection="row"
         minHeight={ITEM_HEIGHT}
         alignItems="center"
-        paddingHorizontal="m"
-        paddingVertical="m"
+        paddingHorizontal="4"
+        paddingVertical="4"
         borderBottomColor="primaryBackground"
         borderBottomWidth={1}
       >
@@ -270,8 +275,8 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
           <Box
             width={40}
             height={40}
-            borderRadius="round"
-            backgroundColor="surface"
+            borderRadius="full"
+            backgroundColor="cardBackground"
           />
         ) : (
           <Box position="relative">
@@ -280,16 +285,16 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
               position="absolute"
               top={-6}
               right={-8}
-              backgroundColor="bottomSheetBg"
+              backgroundColor="cardBackground"
               justifyContent="center"
-              borderRadius="round"
+              borderRadius="full"
               alignItems="center"
               height={22}
               width={22}
             >
               <Box
-                backgroundColor="orange500"
-                borderRadius="round"
+                backgroundColor="orange.500"
+                borderRadius="full"
                 justifyContent="center"
                 alignItems="center"
                 height={18}
@@ -305,29 +310,29 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
           </Box>
         )}
 
-        <Box flex={1} paddingHorizontal="m">
+        <Box flex={1} paddingHorizontal="4">
           {loadingAmount ? (
-            <Box flex={1} paddingHorizontal="m">
-              <Box width={120} height={16} backgroundColor="surface" />
+            <Box flex={1} paddingHorizontal="4">
+              <Box width={120} height={16} backgroundColor="cardBackground" />
               <Box
                 width={70}
                 height={16}
-                marginTop="s"
-                backgroundColor="surface"
+                marginTop="2"
+                backgroundColor="cardBackground"
               />
             </Box>
           ) : (
             <Box>
               <Box flexDirection="row" alignItems="center">
                 <Text
-                  variant="body1"
+                  variant="textMdRegular"
                   color="primaryText"
                   maxFontSizeMultiplier={1.3}
                 >
                   {`${balanceToDisplay} `}
                 </Text>
                 <Text
-                  variant="body2Medium"
+                  variant="textSmMedium"
                   color="secondaryText"
                   maxFontSizeMultiplier={1.3}
                 >

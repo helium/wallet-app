@@ -82,56 +82,57 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
       backgroundColor="secondaryBackground"
     >
       {isInline ? null : (
-        <CloseButton alignSelf="flex-end" padding="l" onPress={onClose} />
+        <CloseButton alignSelf="flex-end" padding="6" onPress={onClose} />
       )}
       <Box
         flex={1}
         justifyContent="center"
         alignItems="center"
-        paddingHorizontal="l"
+        paddingHorizontal="6"
       >
         <Image source={require('@assets/images/fingerprint.png')} />
         <Text
-          variant="h1"
+          variant="displayMdRegular"
           fontSize={44}
-          marginTop="l"
-          marginBottom="s"
+          marginTop="6"
+          marginBottom="2"
           textAlign="center"
           lineHeight={44}
+          color="primaryText"
         >
           {t('accountImport.title')}
         </Text>
         <TextTransform
-          variant="subtitle1"
+          variant="textXlMedium"
           textAlign="center"
           color="secondaryText"
           i18nKey="accountImport.subTitle"
         />
       </Box>
       <Text
-        variant={reachedAccountLimit ? 'body1' : 'subtitle1'}
+        variant={reachedAccountLimit ? 'textMdRegular' : 'textXlMedium'}
         textAlign="center"
-        marginBottom="l"
-        marginHorizontal="l"
-        color={reachedAccountLimit ? 'error' : 'secondaryText'}
+        marginBottom="6"
+        marginHorizontal="6"
+        color={reachedAccountLimit ? 'ros.500' : 'secondaryText'}
         fontWeight={reachedAccountLimit ? '500' : undefined}
       >
         {reachedAccountLimit
           ? t('accountImport.accountLimit')
           : t('accountImport.pickKeyType')}
       </Text>
-      <Box flexDirection="row" marginHorizontal="l" marginBottom="l">
+      <Box flexDirection="row" marginHorizontal="6" marginBottom="6">
         <ButtonPressable
           width="33%"
-          borderTopLeftRadius="round"
-          borderBottomLeftRadius="round"
-          backgroundColor="havelockBlue"
-          titleColor="black900"
+          borderTopLeftRadius="full"
+          borderBottomLeftRadius="full"
+          backgroundColor="blue.500"
+          titleColor="base.black"
           title={t('accountImport.recoveryPhrase')}
           onPress={navNext()}
-          titleColorDisabled="black800"
+          titleColorDisabled="text.disabled"
           backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="havelockBlue"
+          backgroundColorDisabled="blue.500"
           backgroundColorDisabledOpacity={0.4}
           fontWeight="500"
           fontSize={18}
@@ -139,14 +140,14 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
         />
         <ButtonPressable
           width="33%"
-          marginLeft="xxs"
-          backgroundColor="grey500"
-          titleColor="black900"
+          marginLeft="0.5"
+          backgroundColor="gray.500"
+          titleColor="base.black"
           title={t('accountImport.keyImport')}
           onPress={importPrivateKey}
-          titleColorDisabled="black800"
+          titleColorDisabled="text.disabled"
           backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="grey500"
+          backgroundColorDisabled="gray.500"
           backgroundColorDisabledOpacity={0.4}
           fontWeight="500"
           fontSize={18}
@@ -154,20 +155,20 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
         />
         <ButtonPressable
           width="33%"
-          marginLeft="xxs"
-          backgroundColor="jazzberryJam"
-          titleColor="black900"
+          marginLeft="0.5"
+          backgroundColor="pink.500"
+          titleColor="base.black"
           title={t('accountImport.cliImport')}
           onPress={cliExport()}
-          titleColorDisabled="black800"
+          titleColorDisabled="text.disabled"
           backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="jazzberryJam"
+          backgroundColorDisabled="pink.500"
           backgroundColorDisabledOpacity={0.4}
           fontWeight="500"
           fontSize={18}
           disabled={reachedAccountLimit}
-          borderTopRightRadius="round"
-          borderBottomRightRadius="round"
+          borderTopRightRadius="full"
+          borderBottomRightRadius="full"
         />
       </Box>
     </SafeAreaBox>

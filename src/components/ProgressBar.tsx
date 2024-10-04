@@ -46,7 +46,7 @@ const ProgressBar = ({
     <Box
       onLayout={handleLayout}
       {...rest}
-      borderRadius="round"
+      borderRadius="full"
       width="100%"
       height={HEIGHT}
       backgroundColor="transparent10"
@@ -57,8 +57,8 @@ const ProgressBar = ({
       <ReAnimatedBox style={progress}>
         <Box
           height={HEIGHT - 1}
-          borderRadius="round"
-          backgroundColor="lightGrey"
+          borderRadius="full"
+          backgroundColor="gray.200"
         />
       </ReAnimatedBox>
     </Box>

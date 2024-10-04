@@ -18,10 +18,9 @@ const AccountEnterPassphraseScreen = () => {
     onboardingData: { words },
   } = useOnboarding()
 
-  const onWordsConfirmed = useCallback(
-    () => navigation.navigate('AccountAssignScreen', params),
-    [navigation, params],
-  )
+  const onWordsConfirmed = useCallback(() => {
+    navigation.navigate('AccountAssignScreen', params)
+  }, [navigation, params])
 
   return (
     <ConfirmWordsScreen mnemonic={words || []} onComplete={onWordsConfirmed} />

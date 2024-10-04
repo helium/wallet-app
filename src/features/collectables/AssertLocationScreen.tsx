@@ -416,7 +416,7 @@ const AssertLocationScreen = () => {
           flexGrow={1}
           justifyContent="center"
           alignItems="center"
-          backgroundColor="surfaceSecondary"
+          backgroundColor="bg.tertiary"
           overflow="hidden"
           position="relative"
         >
@@ -430,7 +430,7 @@ const AssertLocationScreen = () => {
             zIndex={isLoading ? 100 : 0}
           >
             <Box flex={1} height="100%" justifyContent="center">
-              <CircleLoader loaderSize={24} color="white" />
+              <CircleLoader loaderSize={24} color="primaryText" />
             </Box>
           </ReAnimatedBlurBox>
           <Map
@@ -467,7 +467,7 @@ const AssertLocationScreen = () => {
                             <Hex
                               width={16}
                               height={16}
-                              color={colors.greenBright500}
+                              color={colors['green.light-500']}
                             />
                           </Box>
                         </Box>
@@ -481,7 +481,7 @@ const AssertLocationScreen = () => {
                             <Hex
                               width={16}
                               height={16}
-                              color={colors.blueBright500}
+                              color={colors['blue.light-500']}
                             />
                           </Box>
                         </Box>
@@ -491,7 +491,9 @@ const AssertLocationScreen = () => {
                         width={16}
                         height={16}
                         color={
-                          i === 0 ? colors.greenBright500 : colors.blueBright500
+                          i === 0
+                            ? colors['green.light-500']
+                            : colors['blue.light-500']
                         }
                       />
                     )}
@@ -505,8 +507,8 @@ const AssertLocationScreen = () => {
             alignItems="center"
             position="absolute"
             width="100%"
-            paddingTop="l"
-            paddingLeft="ms"
+            paddingTop="6"
+            paddingLeft="3"
             top={0}
           >
             <TouchableOpacityBox
@@ -515,8 +517,8 @@ const AssertLocationScreen = () => {
               alignItems="center"
               onPress={() => navigation.goBack()}
             >
-              <BackArrow color="white" />
-              <Text variant="subtitle3" color="white" marginLeft="ms">
+              <BackArrow color="primaryText" />
+              <Text variant="textMdMedium" color="primaryText" marginLeft="3">
                 Back
               </Text>
             </TouchableOpacityBox>
@@ -534,7 +536,7 @@ const AssertLocationScreen = () => {
               flexDirection="row"
               justifyContent="space-between"
               position="absolute"
-              marginHorizontal="ms"
+              marginHorizontal="3"
               width="100%"
               bottom={20}
             >
@@ -542,19 +544,19 @@ const AssertLocationScreen = () => {
                 flexShrink={1}
                 flexDirection="row"
                 alignItems="center"
-                marginHorizontal="ms"
+                marginHorizontal="3"
               >
                 {reverseGeoLoading && (
                   <Box>
                     <CircleLoader
                       loaderSize={20}
-                      color="white"
-                      marginRight={reverseGeo.result ? 'ms' : 'none'}
+                      color="primaryText"
+                      marginRight={reverseGeo.result ? '3' : 'none'}
                     />
                   </Box>
                 )}
                 {showError && (
-                  <Text variant="body3Medium" color="red500">
+                  <Text variant="textXsMedium" color="ros.500">
                     {showError}
                   </Text>
                 )}
@@ -562,17 +564,17 @@ const AssertLocationScreen = () => {
                   <FadeInOut>
                     <Box
                       flexShrink={1}
-                      style={backgroundStyle('white', 0.3)}
+                      style={backgroundStyle('base.white', 0.3)}
                       flexDirection="row"
                       alignItems="center"
-                      paddingHorizontal="ms"
-                      paddingVertical="sx"
-                      borderRadius="round"
+                      paddingHorizontal="3"
+                      paddingVertical="1.5"
+                      borderRadius="full"
                       minHeight={36}
                     >
                       <Text
-                        variant="body3Medium"
-                        color="white"
+                        variant="textXsMedium"
+                        color="primaryText"
                         numberOfLines={1}
                       >
                         {reverseGeo.result}
@@ -586,14 +588,14 @@ const AssertLocationScreen = () => {
                 flexDirection="row"
                 alignItems="center"
                 justifyContent="flex-end"
-                marginHorizontal="ms"
+                marginHorizontal="3"
               >
                 <FabButton
                   icon="search"
-                  backgroundColor="white"
+                  backgroundColor="base.white"
                   backgroundColorOpacity={0.3}
                   backgroundColorOpacityPressed={0.5}
-                  marginRight="ms"
+                  marginRight="3"
                   width={36}
                   height={36}
                   justifyContent="center"
@@ -601,7 +603,7 @@ const AssertLocationScreen = () => {
                 />
                 <FabButton
                   icon="mapUserLocation"
-                  backgroundColor="white"
+                  backgroundColor="base.white"
                   backgroundColorOpacity={0.3}
                   backgroundColorOpacityPressed={0.5}
                   width={36}
@@ -632,17 +634,17 @@ const AssertLocationScreen = () => {
             style={{
               marginTop: -10,
             }}
-            backgroundColor="surfaceSecondary"
-            borderTopLeftRadius="l"
-            borderTopRightRadius="l"
-            padding="ms"
+            backgroundColor="bg.tertiary"
+            borderTopLeftRadius="2xl"
+            borderTopRightRadius="2xl"
+            padding="3"
           >
-            <Box flexDirection="row" marginBottom="m">
+            <Box flexDirection="row" marginBottom="4">
               <ImageBox
-                borderRadius="lm"
+                borderRadius="2xl"
                 height={60}
                 width={60}
-                mr="ms"
+                mr="3"
                 source={{
                   uri: metadata?.image,
                   cache: 'force-cache',
@@ -652,8 +654,8 @@ const AssertLocationScreen = () => {
                 <Box flexDirection="row" alignItems="center">
                   {metadata?.name && (
                     <Text
-                      variant="h3Bold"
-                      color="white"
+                      variant="displayXsBold"
+                      color="primaryText"
                       numberOfLines={1}
                       adjustsFontSizeToFit
                     >
@@ -662,21 +664,25 @@ const AssertLocationScreen = () => {
                   )}
                 </Box>
                 <Box flexDirection="row" alignItems="center">
-                  <Box flexDirection="row" alignItems="center" marginRight="m">
+                  <Box flexDirection="row" alignItems="center" marginRight="4">
                     <Text
-                      variant="subtitle4"
+                      variant="textSmMedium"
                       color="secondaryText"
-                      marginRight="s"
+                      marginRight="2"
                     >
                       IOT:
                     </Text>
-                    <Hex width={16} height={16} color={colors.greenBright500} />
+                    <Hex
+                      width={16}
+                      height={16}
+                      color={colors['green.light-500']}
+                    />
                   </Box>
-                  <Box flexDirection="row" alignItems="center" marginRight="m">
+                  <Box flexDirection="row" alignItems="center" marginRight="4">
                     <Text
-                      variant="subtitle4"
+                      variant="textSmMedium"
                       color="secondaryText"
-                      marginRight="s"
+                      marginRight="2"
                     >
                       {t('assertLocationScreen.mobileTitle')}:
                     </Text>
@@ -684,7 +690,9 @@ const AssertLocationScreen = () => {
                       width={16}
                       height={16}
                       color={
-                        mobileLocation ? colors.blueBright500 : colors.darkGrey
+                        mobileLocation
+                          ? colors['blue.light-500']
+                          : colors['gray.700']
                       }
                     />
                   </Box>
@@ -693,9 +701,9 @@ const AssertLocationScreen = () => {
             </Box>
             <TouchableOpacityBox
               width="100%"
-              backgroundColor="surfaceContrast"
-              borderRadius="round"
-              paddingVertical="lm"
+              backgroundColor="primaryBackground"
+              borderRadius="full"
+              paddingVertical="5"
               disabled={disabled}
               height={65}
               alignItems="center"
@@ -703,12 +711,12 @@ const AssertLocationScreen = () => {
               onPress={handleAssertLocationPress}
             >
               {debouncedDisabled || asserting ? (
-                <CircleLoader loaderSize={19} color="black" />
+                <CircleLoader loaderSize={19} color="primaryText" />
               ) : (
                 <Text
-                  variant="subtitle2"
+                  variant="textLgMedium"
                   marginHorizontal="xs"
-                  color="surfaceContrastText"
+                  color="primaryText"
                 >
                   {t('assertLocationScreen.title')}
                 </Text>
@@ -733,27 +741,27 @@ const AssertLocationScreen = () => {
                     backgroundColor="transparent"
                     flex={1}
                     height="100%"
-                    marginHorizontal="ms"
+                    marginHorizontal="3"
                   >
                     <Box flex={1} justifyContent="center" height="100%">
                       <Text
                         textAlign="left"
-                        variant="subtitle2"
+                        variant="textLgMedium"
                         adjustsFontSizeToFit
                       >
                         {t('assertLocationScreen.antennaSetup')}
                       </Text>
                       <Text
-                        variant="subtitle4"
+                        variant="textSmMedium"
                         color="secondaryText"
-                        marginBottom="m"
+                        marginBottom="4"
                       >
                         {t('assertLocationScreen.antennaSetupDescription')}
                       </Text>
                       <Box
                         width="100%"
-                        backgroundColor="secondary"
-                        borderRadius="l"
+                        backgroundColor="secondaryBackground"
+                        borderRadius="2xl"
                         paddingVertical="xs"
                       >
                         <TextInput
@@ -773,7 +781,7 @@ const AssertLocationScreen = () => {
                         <Box
                           height={1}
                           width="100%"
-                          backgroundColor="black200"
+                          backgroundColor="gray.true-700"
                         />
                         <TextInput
                           variant="transparent"
@@ -793,17 +801,17 @@ const AssertLocationScreen = () => {
                     </Box>
                   </Box>
                 </KeyboardAvoidingView>
-                <Box padding="ms">
+                <Box padding="3">
                   <ButtonPressable
                     flexGrow={1}
-                    borderRadius="round"
-                    backgroundColor="white"
+                    borderRadius="full"
+                    backgroundColor="base.white"
                     backgroundColorOpacityPressed={0.7}
-                    backgroundColorDisabled="white"
+                    backgroundColorDisabled="base.white"
                     backgroundColorDisabledOpacity={0.0}
-                    titleColorDisabled="grey600"
+                    titleColorDisabled="gray.600"
                     title={asserting ? '' : t('assertLocationScreen.title')}
-                    titleColor="black"
+                    titleColor="base.black"
                     onPress={handleAssertLocationPress}
                   />
                 </Box>
